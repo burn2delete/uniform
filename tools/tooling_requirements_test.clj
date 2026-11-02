@@ -140,19 +140,27 @@
         replay (assoc transition :applying baseline)
         wrong-pair (assoc-in transition [:applying :tree] (:tree baseline))
         wrong-body (assoc-in transition [:applying :sha256] (:sha256 baseline))
+        wrong-prior (assoc-in transition [:prior-application :tree] (:tree baseline))
         wrong-task-extension (assoc-in transition
                                         [:task-source-bridge-extension :added-paths]
-                                        [])]
+                                        [])
+        wrong-stdlib-extension (assoc-in transition
+                                          [:stdlib-task-bridge-extension :added-paths]
+                                          [])
+        wrong-stdlib-ref (assoc-in transition
+                                    [:stdlib-task-bridge-extension :current-ref]
+                                    "wrong")]
     (is (= {:snapshot-provenance :git-commit-tree-blob-and-bytes-verified
             :population :conserved
-            :interpretation :platform-generated-view-v2-plus-pr560-task-source-bridge-extension}
+            :interpretation :platform-generated-view-v2-plus-pr560-and-pr564-task-source-bridge-extension}
            (select-keys
             (tooling-requirements/validate-current-manifest-transition! source-view)
             [:snapshot-provenance :population :interpretation])))
-    ;; A changed applying body, a mismatched commit/tree pair, and replay of the
-    ;; baseline identity must all fail closed even when the source-view digest
-    ;; remains frozen.
-    (doseq [mutated [wrong-body wrong-pair replay wrong-task-extension]]
+    ;; A changed applying body, mismatched snapshot pairs, replay of the
+    ;; baseline identity and either task-bridge delta must all fail closed even
+    ;; when the source-view digest remains frozen.
+    (doseq [mutated [wrong-body wrong-pair replay wrong-prior
+                    wrong-task-extension wrong-stdlib-extension wrong-stdlib-ref]]
       (with-redefs [tooling-requirements/current-manifest-source-transition mutated]
         (is (refuses? #(tooling-requirements/validate-current-manifest-transition!
                         source-view)))))))

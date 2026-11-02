@@ -16,14 +16,14 @@
     :task-interface-qualification :obligation})
 
 ;; The #557 source view deliberately retains its frozen current-manifest
-;; digest. Main later added one exact versioned Platform generated-view bridge
-;; and PR560 adds five authenticated task-source bridge changes to that same
-;; manifest. Accept this named transition only when both immutable Git
-;; snapshots, the complete bridge body, the explicit task-bridge delta and
-;; every source population agree; a live hash refresh alone is never
-;; sufficient.
+;; digest. Main later added one exact versioned Platform generated-view bridge,
+;; PR560 added five authenticated task-source bridge changes, and PR564 adds
+;; one Stdlib task-source bridge to that same manifest. Accept this named
+;; serial transition only when every immutable Git snapshot, complete bridge
+;; body, explicit task-bridge delta and source population agrees; a live hash
+;; refresh alone is never sufficient.
 (def current-manifest-source-transition
-  {:kind :tooling-current-manifest-platform-bridge-and-pr560-task-bridges-v1
+  {:kind :tooling-current-manifest-platform-bridge-pr560-and-pr564-task-bridges-v2
    :path manifest-path
    :source-view-baseline-sha256
    "aa51bfad176edcf7ed75109a68ea1a0bcbcb3eeeedd6311db256bf331ad01ef0"
@@ -33,6 +33,11 @@
     :blob "2dc56539cf67ad1b0170b8fdffa251f7d8535885"
     :sha256 "aa51bfad176edcf7ed75109a68ea1a0bcbcb3eeeedd6311db256bf331ad01ef0"}
    :applying
+   {:commit "802685cdd37ca9bae695c965cd3c4b3a8bb0060a"
+    :tree "a2362dd0d7d8ae2d1b0d6ace2f9df5eb3388c5f6"
+    :blob "b7d73e13401c7fad0d3acaeedcd4bf7dfe78d5fb"
+    :sha256 "699f091469c1bbd8158a2834048bb4b0053717820b00dc968e3f52f0c56012c4"}
+   :prior-application
    {:commit "f4bb6ceb7e7d68fd9590938b1327edf7ace64fd4"
     :tree "605a924d4f24a775301c5d545e75fb4c1a51210f"
     :blob "a37f9c95b0e4534c89d1cf413b2ddbc9fadfe38c"
@@ -46,7 +51,13 @@
     :current-ref "8e6608856edcde2b57c33951839dfa9b79f2c503"
     :current-tree "23974efdf7c3fa19160a344f26084ebe051ef1a5"
     :change-class :acceptance-boundary-extension}
-   :interpretation :platform-generated-view-v2-plus-pr560-task-source-bridge-extension})
+   :stdlib-task-bridge-extension
+   {:added-paths ["specs/stdlib-workflow/tasks.md"]
+    :updated-paths []
+    :current-ref "80d8a655cea00218799446986a976ca64043a1f8"
+    :current-tree "8c7e533bed9536a760254754e26dbb75db0b0f55"
+    :change-class :acceptance-boundary-extension}
+   :interpretation :platform-generated-view-v2-plus-pr560-and-pr564-task-source-bridge-extension})
 
 (def historical-platform-bridge-kind
   :platform-task-authority-current-layout)
@@ -134,9 +145,21 @@
           :kind requirement-sources/platform-generated-view-kind)
    current-platform-bridge-extras))
 
+(def expected-current-stdlib-task-bridge
+  {:path "specs/stdlib-workflow/tasks.md"
+   :marker "stdlib-implementation-tasks"
+   :historical-ref "254a5b50ea5e2825c424248c9216802cc866c0fd"
+   :historical-sha256 "69ac9a7163838c4cb297c94174d0b3061b0e7686f2378c45aa30e6320b6f6d94"
+   :current-ref "80d8a655cea00218799446986a976ca64043a1f8"
+   :current-tree "8c7e533bed9536a760254754e26dbb75db0b0f55"
+   :current-sha256 "9ac5d948a4df974051fe15adce874f6bf39074982991d8c6c80201a971142d57"
+   :change-class :acceptance-boundary-extension
+   :qualification "The current Stdlib task ledger retains the five historical task identities and adds source-specific closing criteria and evidence boundaries. This authenticated source transition preserves historical routing while explicitly conferring no implementation, library-release or requirement acceptance."})
+
 (defn validate-current-manifest-transition! [source-view]
   (let [transition current-manifest-source-transition
         baseline (:baseline transition)
+        prior (:prior-application transition)
         applying (:applying transition)
         current (get-in source-view [:current-source :manifest])
         _ (require! (= (:path transition) (:path current))
@@ -144,14 +167,20 @@
         _ (require! (= (:source-view-baseline-sha256 transition) (:sha256 current))
                     "Frozen tooling source-view manifest identity changed")
         _ (verify-commit-tree! baseline)
+        _ (verify-commit-tree! prior)
         _ (verify-commit-tree! applying)
         baseline-text (git-text (:commit baseline) (:path transition))
+        prior-text (git-text (:commit prior) (:path transition))
         applying-text (git-text (:commit applying) (:path transition))
         live-text (slurp (:path transition))
         _ (require! (= (:sha256 baseline) (sha256 baseline-text))
                     "Tooling transition baseline bytes drifted")
         _ (require! (= (:blob baseline) (git-blob (:commit baseline) (:path transition)))
                     "Tooling transition baseline blob drifted")
+        _ (require! (= (:sha256 prior) (sha256 prior-text))
+                    "Tooling transition prior applying bytes drifted")
+        _ (require! (= (:blob prior) (git-blob (:commit prior) (:path transition)))
+                    "Tooling transition prior applying blob drifted")
         _ (require! (= (:sha256 applying) (sha256 applying-text))
                     "Tooling transition applying bytes drifted")
         _ (require! (= (:blob applying) (git-blob (:commit applying) (:path transition)))
@@ -159,27 +188,36 @@
         _ (require! (= applying-text live-text)
                     "Current manifest is not the authenticated applying source")
         baseline-manifest (edn/read-string baseline-text)
+        prior-manifest (edn/read-string prior-text)
         applying-manifest (edn/read-string applying-text)
         baseline-platform (platform-bridge baseline-manifest)
+        prior-platform (platform-bridge prior-manifest)
         applying-platform (platform-bridge applying-manifest)
         expected-platform (expected-current-platform-bridge)
         extension (:task-source-bridge-extension transition)
+        stdlib-extension (:stdlib-task-bridge-extension transition)
         baseline-task-bridges (task-source-bridges baseline-manifest)
+        prior-task-bridges (task-source-bridges prior-manifest)
         applying-task-bridges (task-source-bridges applying-manifest)
         baseline-task-paths (set (keys baseline-task-bridges))
+        prior-task-paths (set (keys prior-task-bridges))
         applying-task-paths (set (keys applying-task-bridges))
         added-task-paths (set (:added-paths extension))
         updated-task-paths (set (:updated-paths extension))]
     (require! (= (manifest-population baseline-manifest)
+                 (manifest-population prior-manifest))
+              "PR560 manifest transition changed a required source population")
+    (require! (= (manifest-population prior-manifest)
                  (manifest-population applying-manifest))
-              "Tooling manifest transition changed a required source population")
+              "PR564 manifest transition changed a required source population")
     (require! (= historical-platform-bridge-kind (:kind baseline-platform))
               "Tooling manifest transition baseline is not the known Platform bridge")
     (require! (= (:document-id baseline-platform) (:document-id applying-platform))
               "Tooling Platform bridge document identity changed")
     (require! (= (:path baseline-platform) (:path applying-platform))
               "Tooling Platform bridge path changed")
-    (require! (= expected-platform applying-platform)
+    (require! (and (= expected-platform prior-platform)
+                   (= prior-platform applying-platform))
               "Tooling Platform bridge is not the authenticated v2 extension")
     (require! (and (= :acceptance-boundary-extension (:change-class extension))
                    (= "8e6608856edcde2b57c33951839dfa9b79f2c503"
@@ -188,24 +226,49 @@
                       (:current-tree extension)))
               "PR560 task-source bridge extension identity drifted")
     (require! (= added-task-paths
-                 (set/difference applying-task-paths baseline-task-paths))
+                 (set/difference prior-task-paths baseline-task-paths))
               "PR560 task-source bridge additions drifted")
-    (require! (empty? (set/difference baseline-task-paths applying-task-paths))
-              "Task-source bridge was removed during the authenticated transition")
+    (require! (empty? (set/difference baseline-task-paths prior-task-paths))
+              "PR560 task-source bridge was removed during the authenticated transition")
     (require! (set/subset? updated-task-paths baseline-task-paths)
               "PR560 task-source bridge update is not based on an existing bridge")
     (doseq [path (set/difference baseline-task-paths updated-task-paths)]
       (require! (= (get baseline-task-bridges path)
-                   (get applying-task-bridges path))
+                   (get prior-task-bridges path))
                 (str "Unauthenticated task-source bridge change: " path)))
     (doseq [path updated-task-paths]
-      (require! (and (contains? applying-task-bridges path)
+      (require! (and (contains? prior-task-bridges path)
+                     (contains? applying-task-bridges path)
                      (not= (get baseline-task-bridges path)
-                           (get applying-task-bridges path)))
+                           (get prior-task-bridges path))
+                     (= (get prior-task-bridges path)
+                        (get applying-task-bridges path)))
                 (str "Expected PR560 task-source bridge update is absent: " path)))
+    (require! (and (= :acceptance-boundary-extension (:change-class stdlib-extension))
+                   (= ["specs/stdlib-workflow/tasks.md"]
+                      (:added-paths stdlib-extension))
+                   (empty? (:updated-paths stdlib-extension))
+                   (= "80d8a655cea00218799446986a976ca64043a1f8"
+                      (:current-ref stdlib-extension))
+                   (= "8c7e533bed9536a760254754e26dbb75db0b0f55"
+                      (:current-tree stdlib-extension)))
+              "PR564 Stdlib task-source bridge extension identity drifted")
+    (require! (= #{"specs/stdlib-workflow/tasks.md"}
+                 (set/difference applying-task-paths prior-task-paths))
+              "PR564 task-source bridge additions drifted")
+    (require! (empty? (set/difference prior-task-paths applying-task-paths))
+              "PR564 task-source bridge was removed during the authenticated transition")
+    (doseq [path (set/difference prior-task-paths #{"specs/stdlib-workflow/tasks.md"})]
+      (require! (= (get prior-task-bridges path)
+                   (get applying-task-bridges path))
+                (str "Unauthenticated PR564 task-source bridge change: " path)))
+    (require! (= expected-current-stdlib-task-bridge
+                 (get applying-task-bridges "specs/stdlib-workflow/tasks.md"))
+              "PR564 Stdlib task-source bridge is not the authenticated extension")
     {:kind (:kind transition)
      :path (:path transition)
      :baseline baseline
+     :prior-application prior
      :applying applying
      :snapshot-provenance :git-commit-tree-blob-and-bytes-verified
      :population :conserved
