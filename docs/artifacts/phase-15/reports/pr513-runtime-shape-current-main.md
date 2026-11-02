@@ -51,14 +51,14 @@ with no runtime implementation source copied from the stale candidate.
 
 The port preserves concrete validation rather than work admission:
 
-- 65,537 handlers, parameters, instructions, bindings, and recur names are
-  accepted when structurally valid.
-- A 257-character recur target is accepted when nonempty and correctly used.
-- 256 unrelated loop targets are accepted; a target matching the active loop
-  target is still rejected.
-- Malformed final handler, binding, body, parameter, arity and recur cases
-  remain rejected. The wrong-target runtime case retains diagnostic
-  `P15S23X002`.
+- The executed typed-catch kernel accepts 65,537 valid handlers and rejects
+  malformed final handler type, name, body, and extra-field cases.
+- The executed recur kernel accepts a 257-character target when correctly
+  used and rejects the wrong target with `P15S23X002`.
+- The unexecuted standalone fixture encodes the 65K parameter, instruction,
+  binding, and recur-shape cases, 256 unrelated loop targets, same-target
+  containment refusal, and their malformed-member controls. These encoded
+  assertions are not execution or acceptance evidence.
 
 The standalone `runtime_shape_test.clj` fixture was not executed. It calls the
 stage2 runtime directly without the committed owner wrapper and remains
@@ -80,6 +80,15 @@ All commands below used fresh JVMs and the exact selectors shown.
 | full-language roadmap validator | structural claim validation passed |
 | workstream governance validator | 185 workstreams validated |
 | staged diff check | passed |
+
+The later current-main composition at
+`f088d26551a6a13e0ce8306a9235e4a7eec4b535`, tree
+`7ebbad39b1e59c7cf1df63a3e3df66ea84fd79bb`, incorporates base
+`7e297a3df1d3163f27077651a96f1d847cf1c95b`, tree
+`b3005b0b58239ea6ee4ed0a88b7853cb5a3b2088`. The same four permitted
+selectors passed together on that immutable composition: 4 tests, 302
+assertions, zero failures/errors. Boundary, docs, roadmap, governance and
+whitespace checks also passed. The standalone fixture remains unexecuted.
 
 The focused catalog test did not reach its assertions because current main
 already fails `SH01-STANDALONE-TEST-CONTRACT` with 23 unrelated
