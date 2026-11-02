@@ -2,11 +2,6 @@
   (:require [gravity.bootstrap :as bootstrap])
   (:import [java.nio.charset StandardCharsets]))
 
-(def max-plan-instructions 128)
-(def max-generated-source-bytes 65536)
-(def max-reference-output-bytes 8192)
-(def max-scalar-bytes 1024)
-(def max-helper-source-bytes 65536)
 (def helper-source-relative
   "bootstrap/gravity/p15_s23/native_plan_c_emitter.gravity")
 (def helper-function 'p15-s23-native-c-emit-plan)
@@ -34,23 +29,51 @@
 
 (defn helper-scalar-safe?
   [instruction]
-  (case (:op instruction)
-    :literal (printable-ascii-string? (:value instruction))
-    :quote (printable-ascii-string? (:value instruction))
-    :builtin-call
-    (and (= 'str (:function instruction))
-         (seq (:args instruction))
-         (every? helper-scalar-safe? (:args instruction)))
-    false))
+  ;; Keep nested :str operands off the host call stack.  This is a safety
+  ;; predicate, not a depth or work budget: every supplied operand is still
+  ;; visited and checked against the same printable-ASCII contract.
+  (loop [pending [instruction]]
+    (if (seq pending)
+      (let [current (peek pending)
+            pending (pop pending)]
+        (case (:op current)
+          (:literal :quote)
+          (if (printable-ascii-string? (:value current))
+            (recur pending)
+            false)
+
+          :builtin-call
+          (if (and (= 'str (:function current))
+                   (seq (:args current)))
+            (recur (into pending (:args current)))
+            false)
+
+          false))
+      true)))
 
 (defn helper-statement-safe?
   [instruction]
-  (case (:op instruction)
-    :literal true
-    :quote true
-    :println (every? helper-scalar-safe? (:args instruction))
-    :do (every? helper-statement-safe? (:body instruction))
-    false))
+  ;; The helper subset permits arbitrarily nested statement blocks.  Traverse
+  ;; those blocks explicitly so malformed or deep-but-valid plans cannot leak
+  ;; a host StackOverflowError from this admission predicate.
+  (loop [pending [instruction]]
+    (if (seq pending)
+      (let [current (peek pending)
+            pending (pop pending)]
+        (case (:op current)
+          (:literal :quote)
+          (recur pending)
+
+          :println
+          (if (every? helper-scalar-safe? (:args current))
+            (recur pending)
+            false)
+
+          :do
+          (recur (into pending (:body current)))
+
+          false))
+      true)))
 
 (defn helper-safety-proof
   [plan helper-contract-value]
@@ -88,25 +111,3 @@
           {:source-content-hash source-content-hash
            :function-shape function-shape
            :contract contract})))))
-
-(defn scalar-value?
-  [value]
-  (or (nil? value)
-      (boolean? value)
-      (string? value)
-      (number? value)
-      (char? value)
-      (keyword? value)
-      (symbol? value)))
-
-(defn scalar-bound!
-  [source-path value maximum-scalar-bytes bounds-fail!]
-  (when (and (scalar-value? value)
-             (> (alength (utf8-bytes (if (nil? value) "nil" value)))
-                maximum-scalar-bytes))
-    (bounds-fail! source-path
-                  "native plan scalar exceeds the bounded value size"
-                  {:maximum-scalar-bytes maximum-scalar-bytes
-                   :observed-scalar-bytes
-                   (alength (utf8-bytes (if (nil? value) "nil" value)))
-                   :missing-fact :bounded-native-scalar})))

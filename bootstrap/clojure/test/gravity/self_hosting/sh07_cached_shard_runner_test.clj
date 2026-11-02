@@ -38,11 +38,15 @@
     "bootstrap/clojure/test/gravity/self_hosting/execution_lanes.clj"
     "bootstrap/clojure/test/gravity/self_hosting/sh01_exact_tree_warm_worker.clj"
     "bootstrap/clojure/test/gravity/self_hosting/sh01_host_resource_broker.clj"
+    "bootstrap/clojure/test/gravity/self_hosting/sh01_component_test_dependencies.clj"
     "bootstrap/clojure/test/gravity/self_hosting/sh07_cached_shard_runner.clj"
+    "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj"
+    "bootstrap/clojure/test/gravity/self_hosting/sh07_semantic_carrier.clj"
     "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
     "bootstrap/gravity/src/gravity/checked_core.gravity"
     "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_table.clj"
     "bootstrap/clojure/test/gravity/self_hosting/sh07_module_fragment_test.clj"
+    "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
     "bootstrap/clojure/fixtures/self-hosting/sh-07-b13"
     "contracts/verification-catalog.edn"
     "contracts/stage0-incremental-test-dependencies.edn"
@@ -89,14 +93,31 @@
                            :runtime :tool :policy]
               :authoritative? false}
              (:cache-policy route)))
-      (is (= (count selectors)
-             (get-in route [:bounds :max-test-vars]))))))
+      (is (seq selectors)))))
 
 (deftest cached-route-closure-has-no-parent-child-overlap
   (is (= []
          (vec (parent-child-overlaps
                (set (get-in (execution-plan/route "sh07-cached-accepted")
                             [:dependency-closure :paths])))))))
+
+(deftest cached-route-closure-invalidates-when-a-runner-input-is-omitted
+  (let [route-plan (execution-plan/plan {:route-id "sh07-cached-accepted"
+                                         :lane :fast})
+        snapshot (deref (var gravity.self-hosting.unified-execution-plan/closure-snapshot))
+        complete (snapshot route-plan)
+        omitted
+        (update-in route-plan [:dependency-closure :paths]
+                   #(vec (remove #{"bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj"}
+                                 %)))
+        altered (snapshot omitted)]
+    (is (some #(= "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj"
+                  (:path %))
+              (:entries complete)))
+    (is (not (some #(= "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj"
+                       (:path %))
+                   (:entries altered))))
+    (is (not= (:identity complete) (:identity altered)))))
 
 (deftest cached-runner-uses-routes-without-changing-raw-result
   (let [calls (atom [])

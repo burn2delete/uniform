@@ -1,7 +1,8 @@
 (ns gravity.self-hosting.sh08-primitive-type-test
   (:require [clojure.java.io :as io]
             [clojure.test :refer [deftest is testing]]
-            [gravity.bootstrap :as bootstrap]))
+            [gravity.bootstrap :as bootstrap]
+            [gravity.types :as types]))
 
 (defn- repository-root
   []
@@ -109,6 +110,114 @@
    :character :gravity.type/character
    :string :gravity.type/string
    :keyword :gravity.type/keyword})
+
+(defn- current-source-core-data [family basename extension]
+  (let [source (fixture-path family basename extension)
+        reader (path bootstrap/sh03-reader-source-relative-path)
+        invocation {:reader-source-path bootstrap/sh03-reader-source-relative-path
+                    :authenticated-envelope-options {:source :development-current}}
+        inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+        parent (bootstrap/compiler-c5-resolution-source-artifact
+                source (slurp source :encoding "UTF-8") inputs reader invocation)
+        request (bootstrap/sh07-core-authenticated-request parent :gravity.bootstrap/legacy invocation)
+        binding (bootstrap/sh07-core-current-binding!)
+        run (with-bindings {(ns-resolve 'gravity.bootstrap '*sh07-core-execution-binding*) binding}
+              (bootstrap/sh07-core-run-request-for-test parent request invocation))]
+    {:parent parent :request request :run run :binding binding}))
+
+(deftest current-gravity-primitives-use-the-types-stage-without-admission
+  ;; This explicit current-source development route does not enter the pinned
+  ;; file-artifact helper used by the historical owner tests below.
+  (let [source (path c7-source-relative-path)
+        text (slurp source :encoding "UTF-8")
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source :jvm))
+        operations {:compile-plan #'bootstrap/p15-s23-stage2-compiler-artifact-plan
+                    :execute-function #'bootstrap/p15-s23-stage2-runtime-execute-function}
+        runner {:engine :gravity-types-current-primitive-data}
+        plan (types/compile-plan emitter source text operations)
+        original (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source text)]
+    (is (= original plan))
+    (is (= (str "sha256:" (bootstrap/sha256-hex text)) (get-in plan [:source :sha256])))
+    (doseq [extension [".gravity" ".qst"]
+            [family basename expected-status]
+            [["accepted" "primitive-if-join" :accepted]
+             ["rejected" "if-branch-type-mismatch" :rejected]]]
+      (let [{:keys [parent request run binding]} (current-source-core-data family basename extension)
+            core (:canonical-core-artifact run)
+            typed (types/check-primitives runner plan core operations)
+            expected (bootstrap/p15-s23-stage2-runtime-execute-function
+                      runner plan 'sh08-type-core-artifact [core])
+            verified (types/verify-primitives runner plan core typed operations)
+            tampered (assoc typed :type-table {})
+            rejected (types/verify-primitives runner plan core tampered operations)]
+        (is (= :development-unadmitted (:revision-status binding)))
+        (is (= :passed (get-in run [:template-verification :status])
+                       (get-in run [:resolved-verification :status])))
+        (is (= (:artifact-id parent) (get-in request [:lineage :authenticated-sh06-artifact-id])
+                   (get-in core [:lineage :authenticated-sh06-artifact-id])))
+        (is (= expected typed))
+        (is (= expected-status (:status typed)))
+        (is (= :coordinator-adapter-required (:authentication-status typed)))
+        (is (= :passed (:status verified)))
+        (is (= :rejected (:status rejected)))
+        (is (= typed (:expected rejected)))
+        (is (= tampered (:candidate rejected)))
+        (if (= :accepted expected-status)
+          (do
+            (is (= (count (:nodes core)) (count (:type-facts typed)) (count (:type-table typed))))
+            (is (= :coordinator-digest-required (:identity-resolution typed)))
+            (is (= (:artifact-id core) (:sh07-shaped-artifact-id typed)
+                       (get-in typed [:typed-core :core-input])))
+            (is (= (:identity-input typed) (:artifact-id-request typed)))
+            (doseq [node (:nodes core)
+                    :let [fact (first (filter #(= (:node-id node) (:core-node-id %)) (:type-facts typed)))]]
+              (is (= (get-in node [:source :syntax-id]) (:syntax-id fact)))
+              (is (= (get-in node [:source :semantic-span]) (:source-span fact)))
+              (is (= (get-in node [:source :origin-chain]) (:origin-chain fact)))
+              (is (= (get-in node [:source :generated-origin]) (:generated-origin fact)))
+              (is (= (get-in node [:preserved-declarations :effects]) (:effects fact)))
+              (is (= (get-in node [:preserved-declarations :capabilities]) (:capabilities fact)))))
+          (is (= ["C7-TYPE-MISMATCH"] (mapv :rule (:diagnostics typed)))))))))
+
+(deftest types-stage-preserves-production-replay-before-source-intake
+  ;; These are deliberately mocked orchestration records, with no authority.
+  ;; The independently executed primitive test above owns semantic evidence.
+  (doseq [status [:passed :rejected]]
+    (let [events (atom []) report {:status status :checks [:explicit-test-data]}
+          reader {:source-unit-record {:path "retained.gravity"}}
+          request (assoc-in {} [:b47-context :authenticated-wrapper :sh06-resolution-artifact
+                               :sh05-macro-artifact :gravity-macro-boundary :authenticated-sh04-artifact
+                               :c2-reader-artifact] reader)
+          typed-input {:request request :typed {:status :accepted}}
+          observations (atom []) original-compile types/compile-plan original-verify types/verify-function-result
+          seed #(ns-resolve 'gravity.bootstrap %)]
+      (with-redefs-fn
+        {(seed 'p15-s23-stage2-compiler-artifact-source-path) (constantly "/explicit/gravity/p15_s23/emitter.gravity")
+         (seed 'read-gravity-source-text) (fn [source] (swap! events conj :read-compiler) source)
+         (seed 'p15-s23-stage2-compiler-artifact-plan)
+         (fn [_ source _] (swap! events conj :compile) {:source {:path source} :plan-id source})
+         #'types/compile-plan (fn [& args] (swap! events conj :type-plan) (apply original-compile args))
+         #'types/verify-function-result (fn [& args] (swap! events conj :type-replay) (apply original-verify args))
+         (seed 'c2-reader-artifact-source-text)
+         (fn [source actual-reader]
+           (is (= ["retained.gravity" reader] [source actual-reader]))
+           (swap! events conj :retained-source) "retained text")
+         (seed 'p15-s23-stage2-runtime-execute-function)
+         (fn [_ _ function arguments]
+           (case function
+             sh08-verify-function-type-result
+             (do (is (= [request (:typed typed-input)] arguments))
+                 (swap! events conj :c7-replay) report)
+             p15-s23-typed-compile-function
+             (do (swap! events conj :lowering)
+                 (swap! observations conj (last arguments))
+                 {:status :complete :value :lowered})))}
+        #(is (= :lowered ((seed 'p15-s23-stage2-typed-lowering-operation)
+                           :function :emitter {:source-path "module.gravity"} :definition typed-input))))
+      (is (= (vec (concat [:read-compiler :read-compiler :type-plan :compile :compile :type-replay :c7-replay]
+                          (when (= :passed status) [:retained-source]) [:lowering])) @events))
+      (is (= report (:verification (first @observations))))
+      (is (= (when (= :passed status) "retained text") (get-in (first @observations) [:source :text]))))))
 
 (deftest sh08-fixtures-are-paired-and-c7-source-is-executable
   (is (= (slurp (fixture-path

@@ -1171,6 +1171,300 @@ remain unchanged and open.
 Composition receipt SHA-256:
 `be932baae0aa66458e4548b85677948f9d024d90c9cd8ba444c910421346335e`.
 
+## Coherent hosted initializer validation
+
+The census increment merged in PR444 at
+`6b2e63b32f215b0c5f963fadfc018624837685b0`, with full tree equal to reviewed
+`68609de1259c27a1f461abd8cd2d86ce1de0f949`; its branch was retained.
+This next unit began from main
+`f51a43ae267736a81587d81ffe52839c86c02b2d`, tree
+`ddf3e0d60dc0fdb137cb04ca8984df2dd62efd20`.
+
+All real initializer-helper callers were inspected: one production census call,
+the function-arity inventory and 24 direct runtime test calls. The META-only
+native header/identity primitives cannot be used by this hosted runtime. Their
+profile guards were preserved. A separate, explicitly hosted/JVM native DATA
+preflight was implemented and independently reviewed by its owning Native work.
+It supplies representation validation of the same original input, not grammar,
+typing, authentication, a transferable proof or public runtime authority.
+
+### Old-source diagnostic evidence
+
+The first diagnostic is **NONPASS**, natural exit 1 in 15704 ms: the foreign Map
+fixture lacked lookup methods, causing a get/valAt failure before observations
+were written. It is not evidence of a native guard rejection.
+
+A separately corrected fixture passed its cheap 1-test/9-assertion controls.
+The next actual diagnostic is also **NONPASS**, natural exit 1 in 16444 ms.
+Its completed, durably recorded phases established that a 10-element Vector
+initializer was accepted with work count 21; a 33000-element initializer was
+refused at 65537, while the actual direct engine evaluated all 33000 elements
+in order with empty output. A foreign Map was admitted and invoked lookup,
+count and sequence once each. The diagnostic then failed an exception-shape
+assertion: the controlled foreign-cycle fixture returned its raw probe instead
+of a wrapper message. Neither failed run is promoted or summed with later work.
+
+A minimal supplement reran only cycle attribution and previously unreached
+domain questions. It passed naturally in 8073 ms, with exact clean old-source
+bookends, 1200 complete stdout bytes, empty stderr and complete cleanup. The
+foreign-cycle observation was the raw probe after 17 next calls; termination
+belonged to the fixture, not the validator, and does not prove native-cycle
+rejection. Native metadata and a visible SubVector with unused opaque backing
+payloads were accepted and directly quoted with exact object/metadata identity,
+no constructor occurrences and no opaque callbacks. Foreign metadata was also
+admitted by the old implementation; its rejection by the new hosted contract is
+an explicit native-domain strengthening, not preserved old admission. A native
+depth-130 quote was refused by initializer validation despite direct quoting
+completing with the same object. Independent actual-record review accepted these
+engineering observations with their separate original provenance.
+
+### New producer/consumer interface
+
+The accepted Native dependency is PR446 commit
+`0d3061965f34322bf4e9ec03084b8e4614133689`, tree
+`b0fcc7c62949408d65a7480db88650c567bdb11a`, reconciled with main
+`06a256fdb97f49b5fedea36a6803483302631bbc`. Its seven source/test/document
+blobs were imported normally and remain unchanged by this consumer. The Native
+owner retains those paths. API catalog/registration and integration remain a
+dependency of the consumer's main acceptance.
+
+Consumer `22898a2915bf1bb0e3a5ef880230f48769a92501`, tree
+`941042daf7d80a26462b93dcc8f6e332160b39d5`, replaces the old two-argument
+work helper with `runtime-validate-initializer [instruction]`. Its first operation
+checks the original hosted DATA before any field access. It then validates the
+complete initializer grammar and semantic constructor census. All callers and
+the arity inventory migrate together; the old API has no fallback. Work/depth/
+size allowances, reservation arithmetic, attempts and provider-cost fields are
+removed. Semantic constructor counts and duplicate-initializer reasons remain.
+
+Root Set members retain exact literal schemas and a complete homogeneous
+String/Keyword preflight before duplicate equality. Map literal keys remain
+unique Keywords. Quote descendants remain DATA, including opcode-shaped maps;
+native metadata/views retain identity, and quoted containers are not counted
+as constructors. Foreign carriers, native cycles, cyclic metadata and invalid
+views reject through the hosted representation boundary before field access.
+Whole-plan foreign ingress is outside this interface and remains open.
+
+The actual bounded consumer batch passed 18 tests/1019 assertions, zero failures
+or errors, natural exit 0 in 48204 ms on exact clean bookends. It selected all
+five census/initializer tests, seven affected runtime caller kernels and six
+language tests. Coverage includes complete 33000-element closed execution and
+late invalid data, depth-130 quoted execution, preserved metadata/view identity,
+foreign/native-cycle controls with zero callbacks, semantic constructor reports,
+all migrated calls and explicit downstream policy distinctions. The 1025-member
+Set initializer validates but the separate collection type limit still refuses
+it; 80000-unit members validate but actual Set construction still hits its own
+work limit. Those policies are unresolved accounting, not removed safety guards.
+
+The configured 2 GiB child, 120-second watchdog, existing three resource guards
+and capture bounds were unchanged. Stdout was complete at 2440 bytes; stderr
+was complete at 379 bytes and contained the JVM warning from controlled native
+cycle fixtures. No VM flags were changed. Cleanup completed. Independent static
+source and actual retained driver/counts/stdout/stderr/receipt review accepted
+this finite scope; the reviewer did not rerun semantic tests.
+
+Separate cheap checks on that same candidate passed 11 tests/23 assertions and
+the actual repository LOC gate: 2031 source files, no exceptions or violations,
+maximum 250 physical lines. The normal-broker child used 256 MiB/60 seconds,
+exited naturally in 1519 ms, with 489 complete stdout bytes, empty stderr, clean
+bookends and complete cleanup. This is separate evidence, not a summed count.
+
+| Mechanism | Disposition in this unit |
+| --- | --- |
+| Initializer caller budget, cumulative work, depth/size admission, reservation/attempt/provider fields | Removed coherently from helper and callers |
+| Complete member/entry traversal, homogeneous domain, duplicate checks, closed IR schemas | Retained semantic validation |
+| Constructor occurrence counts, definition/source/type/order checks | Retained semantic evidence |
+| Native class/cycle/metadata/view boundary | Explicit hosted preflight; original META guards unchanged |
+| Set type width and collection construction/equality/conversion work policies | Open, explicitly exercised as remaining refusals |
+| Whole-plan native ingress, authenticated/public runtime, C12 and release | Unrun/open; no acceptance credit |
+
+| Evidence | SHA-256 |
+| --- | --- |
+| First failed diagnostic receipt | `b3de98218660fb0215cb78630f40652535ea572f8ff2ed131078303225d44129` |
+| Second failed diagnostic receipt with completed phases | `af9c64b94f552eb1f80b3b260e8c2f70a570130039fe747883fabced71c2054e` |
+| Old-domain supplement receipt | `46f0bc31b06da9efa2d70b41f013c960be76e4cc179a20aefa6a76d9787c4125` |
+| Accepted initializer consumer receipt | `f37e8fe62804813bab26cad5ce58760753e2b211ccb0fedbef24d9053589f103` |
+| Cheap checks receipt | `6137aaabb5afb5dfcdb07ac9d6ba31c388bed0a5c9beeba1a4b248944e044384` |
+| Runtime source | `fb1bcb794a2e379bf06e4f4a8438ee7921178501c80f0139723c33085ce55e7a` |
+| Census/initializer tests | `959fcb92e2449a1f18e9358e474798f6659d963a7bf1aa57d6dad8b0e3b71e75` |
+| Runtime caller tests | `42457123388ccba3e724e613315f33220912eeb150a0e56dfe6870646137d584` |
+
+## Runtime Set literal construction successor
+
+This successor preserves the separate initializer candidate PR450. Its frozen
+baseline is `97a525851f528544d390ee9daebbbdbdc2c9bdc0`, tree
+`c0ef20fa13115e68d2a2dfdedfac5b39a7e43ac2`, a normal composition of current
+main `3bf69cbcd16be840fac8e687adfcf8e52b65696e`, the unchanged Native API
+dependency PR446, and the initializer consumer. Neither dependency is granted
+integration acceptance by this local successor.
+
+### Actual old-family baseline
+
+An independently reviewed read-only diagnostic exited naturally with code 0 in
+8935 ms on exact clean bookends. All four small literal domains, the empty
+family, direct Character-empty construction and equivalent Unicode scalar
+duplicates exercised actual constructor and closed-IR dispatch paths. Small
+positive outputs matched the entire expected Set; duplicate construction made
+zero insertions. At 1030 members, every direct constructor returned the exact
+width refusal while actual dispatch returned the instruction-shape rejection.
+80000-unit String/Keyword members hit the independent content-work refusal.
+Native definition DATA with 1030 positional types passed representation checking
+while the old root-type join still returned false.
+
+A bounded foreign type-map fixture established a distinct ingress dependency:
+the old type join accepted it while invoking three lookups, one count and three
+membership callbacks. Checking the same definition as inert quoted DATA through
+the existing native boundary rejected it with zero callbacks. That observation
+establishes a representation boundary, not type authority. Preflighting only the
+initializer instruction would not protect the separate definition/type operand.
+
+The diagnostic requested 2 GiB and the existing 120-second watchdog; it did not
+record the actual heap. Stdout was complete at 3260 bytes, stderr empty, cleanup
+complete and the process dead. Independent retained-record review accepted this
+baseline. Separate fixture controls passed 1 test/10 assertions without a compiler
+or provider run. These are separate scopes and counts.
+
+### Coherent runtime producer/consumer change
+
+Candidate `8bda620fcd30866fc3618c78a71257dc24fb5ebf`, tree
+`e929c2c389aa6d6e66bba48a185d5e9f825e8280`, changes exactly three runtime/test
+paths. `runtime-construct-scalar-set [input]` and
+`runtime-construct-character-set [input]` replace both old budget APIs. Their
+first operation validates the original native DATA, followed by complete member
+domain validation before equality or insertion. All width/content allowances,
+pair reservations, budget arguments, work-model/provider-cost fields and caller
+debits disappear. Input extents, actual comparison observations, insertion
+counts and semantic duplicate reasons remain; none governs an allowance.
+
+The root type join independently checks the original definition and instruction
+before reading their fields. The Set instruction branch checks original IR
+before reading its item vector. This explicitly rejects foreign/cyclic DATA and
+metadata at these interfaces; it is not preserved arbitrary foreign admission.
+Earlier generic whole-plan header reads remain outside this finite claim.
+
+Every tracked constructor caller, runtime arity inventory and budget-only test
+expectation migrates together. String hash collisions and distinct Unicode
+spellings, Keyword namespace/name collisions, Integer equality without formatting,
+Character duplicate-codepoint semantics, the existing C2-owned atomic Character
+IR premise, quote DATA, invalid side-effecting operands and source/type/constructor
+checks survive. The existing Character IR convention is not expanded into a
+source-decoding claim. Root Set initializer support remains String/Keyword only.
+
+Independent exact-source review accepted the finite candidate and its test plan.
+The actual batch passed 22 tests/1234 assertions with zero failures or errors:
+seven census/initializer tests, nine runtime caller kernels and six language
+tests. It exited naturally with code 0 in 113865 ms, observed heap 2147483648,
+with unchanged 120-second watchdog and resource guards. Complete stdout was
+2964 bytes; complete stderr was 379 bytes, only the existing controlled native
+cycle fixture warning. No VM flags changed. Bookends were exact and clean;
+cleanup completed with no live child. Retained-result independent review is
+recorded separately from execution; the reviewer did not rerun semantic tests.
+
+Coverage includes full 1030-member results in all four literal domains, direct
+constructor and actual dispatch, complete String/Keyword module execution with
+shared initialized object identity, long-content execution, late bad type/source
+controls, foreign/metadata/cycle/view/type-operand rejection with zero callbacks,
+and no early comparison or insertion after a late opaque member. Broader Set
+conversion, membership, insertion and equality policies remain open. ACC-08's
+typed leaf/shared lowering allowance remains open; no widened typed-source
+positive or public/authenticated runtime acceptance is claimed.
+
+Separate cheap checks on the same candidate passed 11 tests/23 assertions and
+the 2031-file repository LOC gate with maximum 250 physical lines. Native PR446's
+seven implementation/test/document blobs remain unchanged. Registration,
+current-main integration, whole-plan ingress, C12, release and whole accounting
+completion remain pending or unrun. No original receipt is relabelled as a new
+execution and no counts are summed across scopes.
+
+| Evidence | SHA-256 |
+| --- | --- |
+| Old Set-family baseline receipt | `c99df07282e1c1867da013c8c3701c86cd29379de98fc8576a484d64b40b97e6` |
+| Runtime Set candidate receipt | `2b2511df880adf45050461c5827c832ed0b5ca10013f46772d0cd8e6e852319b` |
+| Separate cheap checks receipt | `1cadda87688f2a873bec3140eee4564df56747177f6a05609db46249d4ce735c` |
+| Runtime source | `44bae0bd65ca12ca9a9046876e83d286432443ac042141c6d1b00ebb20a0f5d5` |
+| Census/initializer tests | `6bd206f8ced0e43a5a4a2c3d487db146fb19599caa327803879149113d75e97f` |
+| Runtime caller tests | `e54af3b0eb5a1036b27dbb117b6baa0ea142c21f9b6bf9055651cc6b040b255d` |
+
+## Runtime vector/List Set conversion successor
+
+This is another finite unit of original ACC-09, based on the unchanged literal
+successor `93efcde35fce442d9e3ee289331ad421ee8dbe45`, tree
+`52825a064bc93f61c54e94249174997afef00e2d`. The original initializer and literal
+branches, Native API and pending registration request are not modified.
+
+### Baseline and actual scope
+
+The old runtime diagnostic completed naturally with exit 0 in 8080 ms, observed
+heap 2147483648, 1662 complete stdout bytes, empty stderr and exact clean bookends.
+Actual direct helpers and builtin dispatch deduplicated small String/Keyword
+vectors and Keyword Lists. At 1030 elements, all three routes hit exact width
+refusals. Long String/Keyword vector content hit work refusals. The existing
+native List carrier passed representation validation while Cons remained outside
+the List conversion domain. These observations are a baseline, not removal
+acceptance or typed-source admission.
+
+The replacement interfaces validate the original native operand before count,
+lookup, first/rest capture, equality or hashing. List capture completes its
+homogeneous Keyword validation before constructing a Set; vector conversion
+likewise completes String/Keyword validation first. The existing hosted native
+boundary detects foreign/cyclic metadata, malformed views and cyclic native
+List tails. This is an explicit native-domain requirement, not a claim that old
+quotas established acyclicity or that arbitrary foreign admission is preserved.
+Native metadata/visible views and the original input retain identity; unused
+backing DATA stays inert. Host heap/watchdog/broker/capture limits are unchanged.
+
+Conversion still deduplicates, unlike literal construction. Native String and
+Keyword members have the same content/namespace equality used by the former
+guarded comparisons. Hash collisions, distinct Unicode spellings, duplicate
+values, same-printed Keywords with different namespace/name identity, late
+invalid/opaque members, operand evaluation once, throw/catch forwarding, recur
+and arity rejection, and function-produced inputs are covered. Provider comparison
+counts are no longer fabricated as logical reservations; actual input/capture
+extents and unique insertions remain. No Integer/Character conversion or generic
+sequence family is added. C7/Effects/emitter budgets remain a separate open unit.
+
+### Failed first batch and exact correction
+
+First candidate `e278ce927e43f1661f3a285dc79784305d7a5945`, tree
+`8048cecb5086633cf073719a411cade12c6a60d5`, remains NONPASS: 14 tests,
+637 passing assertions and five failures, natural exit 1 in 30338 ms. Every
+failure was the same stale runtime-function census cardinality: the migrated
+inventory contained 56 functions while the test still expected 57. This count
+is a semantic bijection check, not a budget. Native controls and the two unchanged
+lowering selectors passed in this original batch; they retain this provenance.
+Complete stdout was 3063 bytes, stderr 375 bytes containing only the deliberate
+native List-cycle fixture warning. Bookends and cleanup were exact and complete.
+
+Test-only correction `5bcce79ee37194ef14d725c2397ba1626ce355a7`, tree
+`c8a23c8f051ce45ab430f557152eb4f610e505bf`, changes only that expected
+cardinality to 56. Production/runtime/bootstrap/contract inputs and the native
+test body are identical to the first candidate. The five affected runtime caller
+kernels plus six language tests passed fresh: 11 tests/451 assertions, zero
+failures/errors, natural exit 0 in 25827 ms, observed heap 2147483648, 1615 complete
+stdout bytes, empty stderr, exact clean bookends and complete cleanup. This is
+not a fresh passing 14-test batch, and counts are not summed with retained scopes.
+
+Separate cheap checks on the first candidate passed 11 tests/23 assertions and
+the actual 2031-file repository LOC gate, natural exit 0 in 1392 ms, 489 complete
+stdout bytes and empty stderr. The later change affects one test constant only.
+Independent review accepted the exact five-path candidate, retained records and
+outgoing public payload at `d422f0db341218c02ef78e4032c5222938809f14`, tree
+`442ee15d87ee6b93ae81e4e6c8fb1c34bdf2ae9e`. The reviewer verified the source/
+receipt hashes, test-only correction and unchanged-input reuse boundaries and
+performed no semantic execution. Dependency and current-main integration remain
+pending. No authenticated/public runtime, C12, release or
+whole accounting acceptance is claimed.
+
+| Evidence | SHA-256 |
+| --- | --- |
+| Old conversion baseline receipt | `eca22531662daf48c0f072f6427a1dbdd05f25f0f8f4602869a6b20267af963d` |
+| First candidate NONPASS receipt | `74608d20b88f04854f5b79f59ec2d2f5766856c1664bc28dc432817974f674dd` |
+| Corrected targeted receipt | `c3e21a816e0921b525631cf774819b9f3467d091f3d727828ec1fd4fc2ed178a` |
+| Separate cheap checks receipt | `c4621387b119c6cc84b1a072bbfeeea73c6fd6d814bf4da95a45df2ebf3a0c15` |
+| Runtime source | `a66d7f94822b6a43e9f46c3951ce3b999e7fefd31d2a76fb5e78ae151bd48fdb` |
+| Census/native tests | `e66c216a020776ba7f0540f990ade08994f774b7d34cfb6e13304a27d009afe0` |
+| Runtime caller tests | `7f4de1a0b7fdf1af142e2a110789b9908de86a9c9ac84458b5fbbb3a323d0440` |
+
 ## ACC-08 imported-module aggregate removal
 
 This independent finite increment starts at main
@@ -2021,3 +2315,50 @@ Independent review accepted the merge and exact tree.
 Other work pools and BKA runtime policy remain open, as do PMK, ANE and the
 separate DSE and historical mode boundaries. No authenticated-source, runtime,
 Core, C12, release or whole ACC-04 acceptance follows from this finite result.
+
+## PR454 current-main reconciliation, 2026-11-01
+
+The original Set literal candidate 93efcde35fce442d9e3ee289331ad421ee8dbe45
+was composed with repaired initializer candidate
+990972210f8e5edbccc1fd96779e3f83793aed5e, which contains accepted main
+942dbdf8fed7b3ee6e7370a0bfb0780a92158ace. All production sources remain
+identical to that main. The retained unique tests check complete 1030-member
+results in all four literal domains, String/Keyword initialization identity,
+late type/source failures and original native input rejection without foreign
+callbacks. Obsolete result accounting fields are not restored. Existing main
+runtime tests and both parents' historical evidence are preserved.
+
+The reconciled development contents passed the complete module-census namespace:
+7 tests, 218 assertions, zero failures/errors, actual 2 GiB, natural exit zero.
+The deliberate reflective cycle fixture produced the existing final-field
+mutation warning. The language boundary passed 6 tests/11 assertions; document
+and roadmap validators passed. These are development results, not a fresh run
+of the historical 22-test candidate panel. Current-head CI, independent review
+and exact integration preflight remain necessary. No authenticated-source,
+typed lowering, backend, release or whole accounting completion is claimed.
+
+## PR462 current-main reconciliation, 2026-11-01
+
+The preserved conversion candidate 0cd2f29427ca67ae6127c7983eb51896b564f977
+was composed with repaired Set literal candidate
+3c2cbbe6cf32120f4843dfa25082d8a1af00534a. Production sources and existing
+runtime kernels remain identical to accepted main
+942dbdf8fed7b3ee6e7370a0bfb0780a92158ace. The unique native conversion test
+retains original-carrier, cycle, malformed-view, inert metadata and callback
+controls. The additional full-result test preserves the original successor's
+2060-element to 1030-member deduplication cases for String/Keyword vectors
+and Keyword Lists, 80000-character content and late invalid input cases.
+Removed accounting result fields are not restored. Main's broader existing
+runtime controls and both parents' historical evidence remain intact.
+
+The two focused conversion tests passed 73 assertions, zero failures/errors,
+natural exit zero at actual 2 GiB through the development test runner. The
+deliberate native List cycle fixture emitted the existing reflective final-field
+warning. An earlier command selected the self-hosting runner, which rejects
+individual selectors before running tests; that command remains a separate
+nonpassing invocation. Language boundary passed 6 tests/11 assertions and
+document/roadmap validators passed. The preceding PR454 7-test/218-assertion
+run retains its original source identity; no combined fresh suite is claimed.
+Current-head CI, independent review and exact integration preflight remain
+necessary. No typed conversion, authenticated-source, backend, release or
+whole accounting completion is claimed.

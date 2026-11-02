@@ -1,32 +1,14 @@
 
 
-(defn sh06-resolution-dependency-edges
-  [source-path module imports overrides]
-  (let [base
-        (mapv
-         (fn [ordinal dependency]
-           {:from (:module module)
-            :to (:namespace dependency)
-            :kind (:kind dependency)
-            :boundary (:boundary dependency)
-            :semantic-span {:dependency-edge ordinal}
-            :source-span (:source-span dependency)})
-         (range) imports)
-        explicit (get-in overrides [:module-graph :edges])]
-    (vec
-     (distinct
-      (concat
-       base
-       (map-indexed
-        (fn [ordinal edge]
-          (let [[from to] (when (vector? edge) edge)]
-            {:from (or (:from edge) from)
-             :to (or (:to edge) to)
-             :kind (or (:kind edge) :namespace)
-             :boundary (:boundary edge)
-             :semantic-span {:explicit-edge ordinal}
-             :source-span (source-span source-path 0)}))
-        explicit))))))
+(defn
+ sh06-resolution-dependency-edges
+ [source-path module imports overrides]
+ (gravity.resolution/dependency-edges
+  source-path
+  module
+  imports
+  overrides
+  (resolution-stage-operations)))
 
 (declare sh06-resolution-boundary-fail!)
 

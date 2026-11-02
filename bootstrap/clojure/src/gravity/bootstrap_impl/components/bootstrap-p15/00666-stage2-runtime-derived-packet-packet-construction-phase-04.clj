@@ -36,10 +36,8 @@
                                nil
                                {:target requested-target,
                                 :cause-message (.getMessage ex),
-                                :missing-fact :closed-plan-bounds,
-                                :boundary :stage0-oracle-execution,
-                                :maximum-depth p15-s23-closed-runtime-max-depth,
-                                :maximum-nodes p15-s23-closed-runtime-max-nodes}))
+                                :missing-fact :closed-runtime-host-stack-failure,
+                                :boundary :stage0-oracle-execution}))
                            (catch
                              Exception
                              ex

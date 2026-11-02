@@ -1,6 +1,8 @@
 (ns gravity.c7-type-checker-test
   (:require [clojure.test :refer [deftest is testing]]
-            [gravity.c7-type-checker :as c7]))
+            [gravity.c7-type-checker :as c7]
+            [gravity.c7-type-checker.inference :as compatibility]
+            [gravity.types :as types]))
 
 (def module
   {:module 'gravity.c7-test
@@ -167,3 +169,71 @@
         (is (some? error))
         (is (= expected-id (:id (ex-data error))))
         (is (= "C7" (:document-id (ex-data error))))))))
+
+(deftest types-stage-contract-states-the-seed-data-boundary
+  (let [contract (:gravity/namespace-contract (meta #'types/type-fact))
+        publics (ns-publics 'gravity.types)]
+    (is (= :seed-type-products-and-current-gravity-runtime (:contract-boundary contract)))
+    (is (= 11 (count publics)))
+    (is (= (set (keys publics)) (set (keys (:public-api contract)))))
+    (doseq [[name api] (:public-api contract)]
+      (is (= (:arglists api) (:arglists (meta (publics name)))))
+      (is (= contract (:gravity/namespace-contract (meta (publics name)))))
+      (is (= :none (:admission api)))
+      (is (or (true? (:seed-compatibility-data-only? api))
+              (true? (:current-gravity-runtime-data-only? api))))
+      (is (false? (:authenticates-inputs? api)))
+      (is (false? (:proves-canonical-types? api)))
+      (is (false? (:grants-authority? api))))
+    (is (= [] (get-in contract [:dependency-direction :requires])))
+    (is (= '[gravity.c7-type-checker.inference gravity.bootstrap]
+           (get-in contract [:dependency-direction :consumed-by])))
+    (is (false? (:legacy-status-labels-authoritative? contract)))
+    (is (not (contains? (ns-aliases 'gravity.types) 'gravity.bootstrap)))
+    (is (nil? (find-ns 'gravity.bootstrap)))))
+
+(deftest types-stage-products-retain-source-facts-and-constraint-order
+  (let [source {:syntax-id :syntax :span {:source "native.gravity" :form-index 2}
+                :origin-chain [:source] :generated-origin {:from :macro}}
+        node {:node-id :native-function :form 'fn :source source :children {:params ['x 'y]}
+              :profile :hosted :target :jvm :effects #{:io/write} :capabilities #{:io/stdout}}
+        fact (types/type-fact (constantly "ExplicitCallerClassification") node)
+        other (assoc fact :core-node :local :type "BindingRef")
+        environment (types/type-environment [fact other])
+        constraints (types/constraint-ledger [fact other])
+        function (first (:functions (types/function-table [node])))]
+    (is (= "ExplicitCallerClassification" (:type fact)))
+    (is (identical? source (:source fact)))
+    (is (= (select-keys node [:profile :target :effects :capabilities])
+           (select-keys fact [:profile :target :effects :capabilities])))
+    (is (= {:local "BindingRef" :native-function "ExplicitCallerClassification"} (:types environment)))
+    (is (= {:local {:type "BindingRef" :mutability :immutable :ownership :borrowed}} (:locals environment)))
+    (is (= [:native-function :local] (mapv :source-node (:constraints constraints))))
+    (is (= ["c7-constraint-0" "c7-constraint-1"] (mapv :constraint-id (:constraints constraints))))
+    (is (= [[:native-function] [:local]] (mapv :dependencies (:constraints constraints))))
+    (is (= ["Dynamic" "Dynamic"] (:params function)))
+    (is (= (:effects node) (:latent-effects function)))
+    (is (= (:capabilities node) (:capabilities function)))
+    (is (identical? source (:source function)))
+    (is (= [] (:functions (types/function-table [(assoc node :form :literal)]))))))
+
+(deftest types-stage-callbacks-and-compatibility-entry-points-remain-interposable
+  (is (= "I64" (compatibility/literal-type 1) (types/literal-type 1)))
+  (let [calls (atom []) node {:form :literal :value :payload}]
+    (is (= "CallerType"
+           (types/node-type (fn [value] (swap! calls conj [:literal value]) "CallerType")
+                            (fn [value] (swap! calls conj [:operator value]) nil) node)))
+    (is (= [[:operator node] [:literal :payload]] @calls)))
+  (doseq [[name arguments] [['literal-type [1]] ['node-operator [{:children {:operator :call}}]]
+                            ['node-type [identity identity {:form :literal :value :x}]]
+                            ['type-fact [identity {:node-id :node}]] ['type-environment [[]]]
+                            ['constraint-ledger [[]]] ['function-table [[]]]]]
+    (let [stage-var (ns-resolve 'gravity.types name)
+          wrapper (ns-resolve 'gravity.c7-type-checker.inference name)
+          calls (atom []) marker (Object.)]
+      (with-redefs-fn {stage-var (fn [& values] (swap! calls conj values) marker)}
+        #(is (identical? marker (apply wrapper arguments))))
+      (is (= [arguments] @calls))))
+  (is (= "StageInterposition"
+         (with-redefs [types/literal-type (constantly "StageInterposition")]
+           (c7/c7-node-type {:form :literal :value 1})))))

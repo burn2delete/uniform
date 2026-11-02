@@ -65,64 +65,12 @@
 
 (defn p15-s23-b3-llvm-value-reference
   [operation-index operation-id]
-  (str "%v" (get operation-index operation-id)))
+  (gravity.backend.llvm/value-reference operation-index operation-id))
 
 (defn p15-s23-b3-llvm-constant-number
   [value]
-  (cond (true? value) 1 (false? value) 0 (nil? value) 0 :else value))
+  (gravity.backend.llvm/constant-number value))
 
 (defn p15-s23-b3-llvm-operation-line
   [mir operation operations operation-index block-labels]
-  (let [opcode (:opcode operation)
-        result (p15-s23-b3-llvm-value-reference
-                operation-index (:op-id operation))
-        operands (:operands operation)
-        by-id (into {} (map (juxt :op-id identity)) operations)]
-    (cond
-      (= :constant opcode)
-      (str "  " result " = add i64 0, "
-           (p15-s23-b3-llvm-constant-number
-            (get-in operation [:constant-payload :value])))
-
-      (contains? p15-s23-b3-llvm-forward-opcodes opcode)
-      (str "  " result " = add i64 0, "
-           (p15-s23-b3-llvm-value-reference
-            operation-index (last operands)))
-
-      (= :truthiness opcode)
-      (let [operand-id (first operands)
-            operand (get by-id operand-id)]
-        (case (:type operand)
-          :gravity/bool
-          (str "  " result " = and i64 "
-               (p15-s23-b3-llvm-value-reference
-                operation-index operand-id) ", 1")
-          :gravity/nil (str "  " result " = add i64 0, 0")
-          :gravity/integer (str "  " result " = add i64 0, 1")))
-
-      (contains? p15-s23-b3-llvm-comparison-opcodes opcode)
-      (let [[left-id right-id] operands
-            comparison-result
-            (str "%cmp" (get operation-index (:op-id operation)))
-            predicate
-            (case opcode
-              :integer-eq "eq"
-              :integer-lt "slt"
-              :integer-lte "sle"
-              :integer-gt "sgt"
-              :integer-gte "sge")]
-        (str "  " comparison-result " = icmp " predicate " i64 "
-             (p15-s23-b3-llvm-value-reference operation-index left-id)
-             ", "
-             (p15-s23-b3-llvm-value-reference operation-index right-id)
-             "\n  " result " = zext i1 " comparison-result " to i64"))
-
-      (= :conditional-join opcode)
-      (let [[_ then-id else-id] operands
-            [{then-block :predecessor} {else-block :predecessor}]
-            (get-in mir [:control-flow-graph :join :incoming])]
-        (str "  " result " = phi i64 [ "
-             (p15-s23-b3-llvm-value-reference operation-index then-id)
-             ", %" (get block-labels then-block) " ], [ "
-             (p15-s23-b3-llvm-value-reference operation-index else-id)
-             ", %" (get block-labels else-block) " ]")))))
+  (gravity.backend.llvm/operation-line #'p15-s23-b3-llvm-value-reference #'p15-s23-b3-llvm-constant-number #'p15-s23-b3-llvm-forward-opcodes #'p15-s23-b3-llvm-comparison-opcodes mir operation operations operation-index block-labels))

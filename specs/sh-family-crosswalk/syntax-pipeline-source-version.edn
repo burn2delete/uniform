@@ -1,0 +1,16 @@
+{:kind :syntax-pipeline-ownership-source-version
+ :authority :source-conservation-only
+ :status :pending-independent-source-version-review
+ :source-file
+ {:path "docs/self-hosting-slice-ownership.edn"
+  :before {:commit "7b0800bf8a5113b323f693acbaecba11724a6104"
+           :sha256 "5fa64daeb378b1a0c7c269d0dd76a3e0285a7b9653feb782284ccbf3c72fbf0c"}
+  :after {:commit "c7804fa6b5826b5a73a0e98274079376fcf1f3be"
+          :sha256 "c03f626c84f8d2f21405c867735e4bcad8228eb4ced5a8f1a16123ca34e200a4"}}
+ :added-entries
+ {:production-helper-associations "bootstrap/clojure/src/gravity/syntax.clj"
+  :module-owners "bootstrap/clojure/src/gravity/syntax.clj"
+  :standalone-test-owners "bootstrap/clojure/test/gravity/syntax/pipeline_test.clj"}
+ :predecessor-input-fingerprint "6f182237a61e553c07904d63bd73a309babe58154f7965b8b1a6cb6e66596465"
+ :qualification
+ "Only syntax pipeline source/consumer/test ownership is added. All predecessor ownership entries, task predicates/statuses, routing, compiler-domain composition and pending review history remain. This is reporting source provenance, not a frozen compiler migration fingerprint or semantic acceptance. All current whole-criterion assessments remain unassessed."}
