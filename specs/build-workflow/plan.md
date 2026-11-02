@@ -26,7 +26,7 @@ The existing resolution and package/provenance task records now include the
 two proposed governance consumer blocks in [tasks.md](tasks.md#implementation-tasks).
 They preserve the inspected-main task bodies and add actual SAFE14/SAFE15/
 GOV10 policy enforcement and metadata-visibility cases. They continue the
-preserved [Governance/Core source-family composition](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/requirement-reconciliation/governance-core43-current-composition.edn)
+preserved [Governance/Core source-family composition](https://github.com/burn2delete/uniform/blob/53ebb7f4f0bc712b253436b8f53182b07e3399df/specs/requirement-reconciliation/governance-core43-current-composition.edn)
 as an explicit current successor, rather than importing its stale whole-file
 overlay or attributing later criteria to an earlier review.
 

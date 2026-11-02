@@ -36,6 +36,16 @@ unassessed. It is not integrated into the inspected main. This report neither
 imports that aggregate nor retries its stopped public-contract-cluster handoff.
 Existing source-family owners and canonical task writers retain their scope.
 
+GitHub verification found that aggregate `55fed8d9` and its final local
+`ccbd8817` amendment are unavailable there. Source links now use verified
+published per-file versions: twelve context files match the preserved bytes
+exactly; the published Domain task predecessor matches 22 of 23 task bodies.
+Its only later local difference is the explicit C6 projected-consumer
+conjunction in `schema/checked-consumer-projection`, preserved in the current
+proposal and qualified for review. The aggregate remains the local inspection
+subject; source-link repair neither publishes it nor retries its stopped
+handoff or renews an earlier acceptance.
+
 At the inspected main, 32 feature `spec.md` files exist under `specs/`, of which
 24 are component workflows, plus two historical `.specify` packages. Across
 their spec/plan/tasks/evidence artifacts, all 240 canonical documents have a
@@ -115,9 +125,9 @@ AGENTS.md. This branch initially added isolated implementation entries while
 preserving the inspected-main originals and all task/evidence bytes. Later
 proposed consumer and future-task additions are qualified below; none accepts
 the aggregate or its whole-file amendments. Their
-[proposed Compiler API](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/compiler-api-workflow/spec.md),
-[Domains](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/domains-workflow/spec.md)
-and [Platform](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/platform-workflow/spec.md)
+[proposed Compiler API](https://github.com/burn2delete/uniform/blob/ee356a65594a0db80c26f1aa1f82963cd37daa69/specs/compiler-api-workflow/spec.md),
+[Domains](https://github.com/burn2delete/uniform/blob/19e1120301643581e6a8b55b933ec12643d0ba2f/specs/domains-workflow/spec.md)
+and [Platform](https://github.com/burn2delete/uniform/blob/764409ff7c81424f8677e81c70bd364927aca29f/specs/platform-workflow/spec.md)
 packages distinguish migration prose from detailed implementation task criteria.
 The new [Compiler API entry](../specs/compiler-api-workflow/spec.md),
 [Domains entry](../specs/domains-workflow/spec.md) and

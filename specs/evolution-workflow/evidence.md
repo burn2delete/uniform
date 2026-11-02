@@ -7,15 +7,15 @@ remain pending; all ten implementation tasks remain Open.
 ## Preserved source and applicability
 
 The carried [task authority](tasks.md) is byte-identical to
-[the existing reconciliation task file](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/evolution-workflow/tasks.md),
+[the existing reconciliation task file](https://github.com/burn2delete/uniform/blob/46a58eddd4e412064c7a5d0898cc1e583e3dffcc/specs/evolution-workflow/tasks.md),
 SHA-256 `4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31`.
 That preserved aggregate has tree
 `57fd99ba53d8a876d8428ee4a37e63edbfd03ce0`; this successor does not rewrite it.
 
-Its [historical evidence](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/evolution-workflow/evidence.md)
+Its [historical evidence](https://github.com/burn2delete/uniform/blob/53ebb7f4f0bc712b253436b8f53182b07e3399df/specs/evolution-workflow/evidence.md)
 attributes the Governance12 source/test review and affected join reviews to
 their exact earlier subjects, with current composition still pending.
-[Governance14 applicability](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/requirement-reconciliation/governance14-qualified-current-applicability.edn)
+[Governance14 applicability](https://github.com/burn2delete/uniform/blob/fc9eeaf61a61726027261d954907fddf8bbffdbe/specs/requirement-reconciliation/governance14-qualified-current-applicability.edn)
 qualifies fourteen predicates only; it explicitly does not confer full attached
 facet entailment, later predicates or implementation credit. Exact task/source
 bindings and later additions must retain those limits.

@@ -35,7 +35,7 @@ The contracts retained below govern these distinguishing cases:
 
 ## Wider domain interfaces and ownership
 
-The preserved [source-reconciliation proposal](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/domains-workflow/tasks.md#implementation-tasks)
+The preserved [source-reconciliation proposal](https://github.com/burn2delete/uniform/blob/2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc/specs/domains-workflow/tasks.md#implementation-tasks)
 already names nine additional Open integration interfaces: `automation`,
 `blockchain`, `crypto`, `formal`, `native`, `services`, `simulation`,
 `storage` and `visual`. Their records are now resumed as explicit future tasks

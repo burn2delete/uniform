@@ -84,10 +84,19 @@ honestly; no held operation or existing writer is transferred here.
 
 ## Math and Schema producer proposals
 
-The [preserved source authority](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/domains-workflow/tasks.md)
+The [published task predecessor](https://github.com/burn2delete/uniform/blob/2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc/specs/domains-workflow/tasks.md)
 supplies these seven existing future tasks, now resumed in the same task file.
 Their full source/criterion and SH projection composition remain pending;
 they are not completed components or an independent task denominator.
+
+The published predecessor matches 22 of the preserved aggregate's 23 Domain
+task bodies, including the complete Math and Schema parents. The later local
+`ccbd88173689c253f2602937a35390b20996f6f7` amendment adds the C6 projected-consumer
+conjunction to `schema/checked-consumer-projection`; that commit and aggregate
+`55fed8d9` are unavailable on GitHub. The amendment is retained explicitly in
+the resumed task, pending current review. The published predecessor and earlier
+qualified receipts do not accept that later addition. No aggregate publication
+or stopped handoff is retried here.
 
 | Existing proposed ID | Required producer or checker boundary |
 | --- | --- |

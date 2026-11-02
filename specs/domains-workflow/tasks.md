@@ -20,7 +20,7 @@ Status: Open
 
 Current proposed refinement of the existing `math` task (Open). Owner role:
 numeric/EFIR maintainer. Resume the parent criteria from
-[the preserved reconciliation](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/domains-workflow/tasks.md#implementation-tasks).
+[the preserved reconciliation](https://github.com/burn2delete/uniform/blob/2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc/specs/domains-workflow/tasks.md#implementation-tasks).
 Only the five source-context references described below are rebound; criterion
 bodies, literal identities and Open status otherwise remain unchanged. The
 original short paragraph below this amendment remains historical. No person,
@@ -48,7 +48,7 @@ itself, and a named checker without an executed verdict cannot authorize use.
 Math owns its fixture/oracle contract and actual focused domain results.
 Whole-language, differential, formal, library and performance execution also
 requires the existing future Release Testing records in
-[the preserved Release authority](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/release-workflow/tasks.md).
+[the preserved Release authority](https://github.com/burn2delete/uniform/blob/df11890b21f71d3f246cc47e9f63d866239a0d68/specs/release-workflow/tasks.md).
 Those thirteen additional records have not yet been resumed in this checkout;
 they are explicit remaining composition work, not an implemented local runner
 or a reason to mark the Math conformance clause complete.
@@ -64,7 +64,7 @@ remain semantic; project fuel/depth/time/work allowances remain superseded.
 
 The old `profile-system/gap-completion.edn` path is absent from the preserved
 aggregate. Its three named mappings exist in the preserved
-[profile-interface context](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/requirement-reconciliation/profile-residual-interfaces.edn), SHA-256
+[profile-interface context](https://github.com/burn2delete/uniform/blob/bc0a04f8e70de2be04b642aec357dcfe9a532a5c/specs/requirement-reconciliation/profile-residual-interfaces.edn), SHA-256
 `22ba3f689b81fd783d6854bc4c3b821e3ce2ad7eb73fb3ad1826c78ab374e027`.
 The mappings are `formal/numeric-semantics`,
 `formal/profile-proof-contract` and `math/numeric-profile-eligibility`;
@@ -370,7 +370,7 @@ Status: Open
 <!-- domains-schema-parent:start -->
 Current proposed refinement of the existing `schema` task (Open). The four
 criteria below resume the preserved parent criteria from
-[the existing reconciliation](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/domains-workflow/tasks.md#implementation-tasks),
+[the existing reconciliation](https://github.com/burn2delete/uniform/blob/2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc/specs/domains-workflow/tasks.md#implementation-tasks),
 without changing their text. They are future implementation obligations, not
 accepted behavior or a new task authority. Owner role: schema semantics
 maintainer; no individual assignment is inferred.
@@ -542,7 +542,7 @@ added. Exact source/facet/owner overlap and projection composition require
 affected independent review. Isolated development uses declared interfaces,
 not completion of whole components or a new routine permission gate.
 
-The [full preserved Domains context](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/requirement-reconciliation/domain-gap-completion.edn)
+The [full preserved Domains context](https://github.com/burn2delete/uniform/blob/19e1120301643581e6a8b55b933ec12643d0ba2f/specs/requirement-reconciliation/domain-gap-completion.edn)
 contains all seventy historical criterion records; its SHA-256 is
 `cbb47d98fc6120ecfc9a9145c8897151046a89feada36c98f5f820842e844d42`.
 This checkout's same-named local file retains only the MIR-pass criterion's
@@ -772,8 +772,8 @@ current composition. Declared typed/source/provider inputs permit isolated
 producer or checker work; actual composition needs the corresponding real
 artifacts and consumers, never completion of unrelated whole components.
 
-The existing [Math20 applicability](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/requirement-reconciliation/math20-qualified-current-applicability.edn)
-and [Schema25 applicability](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/requirement-reconciliation/schema25-qualified-current-applicability.edn)
+The existing [Math20 applicability](https://github.com/burn2delete/uniform/blob/9640d60e5e5aeb7fb5d860fdfc0c19debb942c42/specs/requirement-reconciliation/math20-qualified-current-applicability.edn)
+and [Schema25 applicability](https://github.com/burn2delete/uniform/blob/65e0704bc180521c3393725b39c284995657a065/specs/requirement-reconciliation/schema25-qualified-current-applicability.edn)
 retain their exact earlier source predicates, subjects and limits. They do
 not independently accept these corrections, every attached source facet,
 new current projection composition or actual execution. No held C12/provider
