@@ -393,6 +393,14 @@ Complete concurrency safety criterion (Open): For each dangerous concurrent acce
 <!-- concurrency-source-classification:end -->
 
 
+<!-- authority-source-legality:start -->
+
+Apply the [complete provider and capability source criteria](../auth-workflow/plan.md#complete-provider-and-capability-source-criteria) within this existing task. Status remains Open; frozen finite reviews do not accept this whole-source/current implementation proposal.
+
+Complete capability compiler-safety criterion (Open): Consume actual inferred effects, checked provider compatibility, typed capability/capture facts and Auth's real intersection/scope/attenuation/revocation/secret/phase decisions before admitting code. Reject missing static authority, forbidden ambient use, scope expansion, wrong phase/lifetime and unsupported revocation or isolation; retain permitted deployment-specific runtime checks only with explicit enforcing contract and declared failure. A profile allowance is not deployment authority and unsafe islands do not mint capabilities or bypass policy. Preserve the four safety outcomes without using runtime checks to repair compile-time-invalid code. Auth owns grant derivation, Types owns type facts, and Runtime owns actual action enforcement; this task checks their legal compiler composition, with source-bound positive/refusal evidence and no new ordinary development review gate.
+<!-- authority-source-legality:end -->
+
+
 - [ ] `legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution` Preserve obligations into MIR and runtime execution
 
 Status: Open
@@ -451,6 +459,14 @@ Allocation interface/safety/safe8/atomic-ordering (Open). Role: legality compile
 
 Complete concurrency preservation criterion (Open): Carry actual ownership/task/capture, synchronization graph, lock/guard, channel/actor schema, atomic operation/order/scope/alignment/target support, replay and four-outcome proof/check/unsafe facts through MIR, optimization, lowering and Runtime. Resolve source atomic order as sequentially consistent by default unless an explicit governing profile/library contract permits a weaker order; preserve relaxed, acquire, release, acquire-release and sequentially-consistent meanings, fences and target legality without importing host-language defaults. Unsupported representation is rejected or uses an explicitly allowed equivalent/audited primitive as required by its contract. Changed alias/control/lifetime/provider/target/order assumptions invalidate and recheck affected facts; metadata copying or a proof label cannot authorize check elision or weakened ordering.
 <!-- concurrency-source-handoff:end -->
+
+
+<!-- authority-source-handoff:start -->
+
+Apply the [complete provider and capability source criteria](../auth-workflow/plan.md#complete-provider-and-capability-source-criteria) within this existing task. Status remains Open; frozen finite reviews do not accept this whole-source/current implementation proposal.
+
+Complete authority preservation criterion (Open): Preserve actual effect/capability separation, provider selection, typed capability scope/lifetime/thread-safety/revocation, grant/policy inputs, required checks, isolation/unsafe/audit and source/generated identities through checked Core, MIR, optimization, Lower, emitted service hooks and Runtime/build consumers. Changed source/provider/version/target/profile/policy/phase/lifetime or transform assumptions invalidate affected facts and restore checks or reprove the exact obligation. Verify that denied operations cannot become permitted after transformation, deployment or older-record composition. Keep secret values out of public diagnostics/code/cache/artifact products. Actual consumer hooks and accepted/refused end-to-end products must witness preservation; copied metadata or a proof/trust/selection label is insufficient.
+<!-- authority-source-handoff:end -->
 
 
 - [ ] `legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface` Close conformance for the declared profile surface

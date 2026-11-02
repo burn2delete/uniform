@@ -25,6 +25,12 @@ an explicit unfinished acceptance boundary. Record evidence in the existing
 package and update only its authoritative task; do not create a parallel
 implementation checklist. Independent review and integration remain separate.
 
+## Provider and capability source interface
+
+Use the [complete provider and capability source criteria](../auth-workflow/plan.md#complete-provider-and-capability-source-criteria). The existing compile-time gate checks actual build-phase provider authority, replay/isolation and exact hermetic premises before invocation. Program P's admission remains distinct from checking generated Q afterward.
+
+Historical finite reviews remain scoped; current whole-source/interface review and implementation acceptance remain pending. Preserve all actual holds and existing task authority.
+
 ## Source effect dependency interface
 
 Use the [source effect and handler dependency order](../effects-workflow/plan.md#source-effect-and-handler-dependency-order) and the existing selected-result table. Keep checked macro program P distinct from generated caller Q. Expand3's early enforcement/replay gate precedes Expand1 execution; later actual action logs feed recording. An output cannot supply its own prior admission; exact hermetic premises remain.

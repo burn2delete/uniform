@@ -22,6 +22,12 @@ cases, residual host/provider boundaries and actual manifest/stability changes.
 Preserve reserved writers and held live operations. Separate reachable compiler
 support, wider module/profile completion, independent acceptance and release.
 
+## Provider and capability source interface
+
+Use the [complete provider and capability source criteria](../auth-workflow/plan.md#complete-provider-and-capability-source-criteria). Real capability-valued or fully declared permitted ambient APIs consume checked provider/grant/startup/action products. Pure value transport does not erase later effects or prove live provider support.
+
+Historical finite reviews remain scoped; current whole-source/interface review and implementation acceptance remain pending. Preserve all actual holds and existing task authority.
+
 ## Concurrency dependency interface
 
 Use the [concurrency producer and consumer order](../legality-workflow/plan.md#concurrency-producer-and-consumer-order) and existing selected-result table. Early typed task/future/channel/actor/atomic definitions precede Core use; real selected Runtime primitives precede compiled API results. Final Release execution is later and does not construct or accept the API.

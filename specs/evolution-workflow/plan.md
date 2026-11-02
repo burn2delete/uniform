@@ -5,6 +5,12 @@ Evidence: [evidence.md](evidence.md). Owner role: language-evolution/governance
 maintainer; accountable individual remains unassigned. Independent acceptance
 and integration stay with the existing coordinator responsibilities.
 
+## Provider and capability source interface
+
+Use the [complete provider and capability source criteria](../auth-workflow/plan.md#complete-provider-and-capability-source-criteria). Changing an existing stable effect/provider safety or authority contract retains its applicable existing change-review scope. Ordinary compatible provider implementation/selection gets no new registration, review or permission gate.
+
+Historical finite reviews remain scoped; current whole-source/interface review and implementation acceptance remain pending. Preserve all actual holds and existing task authority.
+
 ## Concurrency dependency interface
 
 Use the [concurrency producer and consumer order](../legality-workflow/plan.md#concurrency-producer-and-consumer-order) and existing selected-result table. The unchanged conditional concurrency semantic-change criterion consumes actual affected results only where that adoption is sought. It does not gate unchanged-contract implementation or renew an old review.

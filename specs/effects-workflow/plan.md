@@ -23,6 +23,12 @@ provider/replay operations. Refine the existing authoritative task only, record
 exact passed/failed/unrun evidence and retain separate independent acceptance,
 integration and wider-runtime/handler completion boundaries.
 
+## Provider and capability source interface
+
+Use the [complete provider and capability source criteria](../auth-workflow/plan.md#complete-provider-and-capability-source-criteria). Keep concrete actions and required capabilities distinct via the actual registered mapping; checked effect allowances do not issue grants. Capability-value transport alone does not perform its later provider operation.
+
+Historical finite reviews remain scoped; current whole-source/interface review and implementation acceptance remain pending. Preserve all actual holds and existing task authority.
+
 ## Concurrency dependency interface
 
 Use the [concurrency producer and consumer order](../legality-workflow/plan.md#concurrency-producer-and-consumer-order) and existing selected-result table. Check real concurrent actions and ordering/replay obligations from Core, inferred effects, valid capture and profile/grant/provider facts before checked Core and later MIR/target preservation. No later preservation trace supplies an earlier premise.

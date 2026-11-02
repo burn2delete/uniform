@@ -17,6 +17,12 @@ composition. Preserve exact diagnostic and compatibility IDs, private-data
 boundaries and failed/unrun evidence. Refine only the selected task; a successful
 rendering fixture does not establish all-stage integration or release.
 
+## Provider and capability source interface
+
+Use the [complete provider and capability source criteria](../auth-workflow/plan.md#complete-provider-and-capability-source-criteria). Consume the original eleven L15, ten SAFE10 and ten R11 meanings with actual denial-policy/provider/grant/action/source context and secret-safe remediation; nearest valid choices remain conditional and cannot reveal secrets.
+
+Historical finite reviews remain scoped; current whole-source/interface review and implementation acceptance remain pending. Preserve all actual holds and existing task authority.
+
 ## Foundation source criteria
 
 The existing runtime/build/editor integration task now carries the preserved

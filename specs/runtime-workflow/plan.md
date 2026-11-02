@@ -22,6 +22,12 @@ the existing selected task. Distinguish compiler-service subset acceptance,
 wider families, independent review/integration and release; do not restore
 removed project accounting as a runtime admission requirement.
 
+## Provider and capability source interface
+
+Use the [complete provider and capability source criteria](../auth-workflow/plan.md#complete-provider-and-capability-source-criteria). Use Runtime2 for actual pre-user-code provider initialization/fallback, Runtime5 for action/handle/revocation/observation checks, and Runtime4 for real workflow/AI consumers. A manifest or a grant table is not execution.
+
+Historical finite reviews remain scoped; current whole-source/interface review and implementation acceptance remain pending. Preserve all actual holds and existing task authority.
+
 ## Concurrency dependency interface
 
 Use the [concurrency producer and consumer order](../legality-workflow/plan.md#concurrency-producer-and-consumer-order) and existing selected-result table. Separate early support/cleanup/event/gate/record APIs, real selected primitive implementations and later task/message/cancel/replay/enforcement results. A no-runtime profile gains no scheduler, and a manifest is not execution.

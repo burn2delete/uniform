@@ -23,6 +23,12 @@ Record exact source/fixture/consumer identities and passed, failed or unrun work
 preserve operation restrictions and separate author checks, independent
 acceptance, integration and the complete profile/provider matrix.
 
+## Provider and capability source interface
+
+Use the [complete provider and capability source criteria](../auth-workflow/plan.md#complete-provider-and-capability-source-criteria). Auth derives actual intersection/scope/grant and trust/isolation decisions; Legality checks valid compiler composition and preserves the resulting obligations through actual IR/target consumers. Unsafe code cannot mint authority.
+
+Historical finite reviews remain scoped; current whole-source/interface review and implementation acceptance remain pending. Preserve all actual holds and existing task authority.
+
 ## Concurrency producer and consumer order
 
 The [existing selected-result table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition)

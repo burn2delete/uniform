@@ -70,6 +70,18 @@ Complete concurrency cleanup execution criterion (Open): Execute cancellation, f
 <!-- concurrency-source-cleanup:end -->
 
 
+<!-- authority-source-startup:start -->
+
+Apply the [complete provider and capability source criteria](../auth-workflow/plan.md#complete-provider-and-capability-source-criteria) within this existing task. Status remains Open; frozen finite reviews do not accept this whole-source/current implementation proposal.
+
+Preserved finite predicate conjunctions and qualified historical context:
+
+before user code, validate selected provider existence, artifact versions, grant scopes, compiled contracts, profile/target compatibility and enabled safety/audit requirements; reject a missing required provider unless a declared fallback applies, with positive fallback and negative mismatch fixtures
+
+Complete runtime provider initialization criterion (Open): Before executing user code, actually verify required provider presence, artifact-compatible version, scopes satisfying grants, compiled contract, active profile/target compatibility and enabled safety/audit requirements. Missing or incompatible providers fail before user code unless a declared compatible fallback exists; exercise both failure and permitted fallback without hidden host services, widened grants or weakened safe semantics. Runtime/host/OS/deployment/workflow/kernel/firmware/hardware initialization uses the selected explicit boundary; a no-runtime profile gains no provider service implicitly. Emit actual initialization/link/load/denial and applicable cleanup evidence tied to selected provider/source/artifact identities, not contracts-checked=true or an initialized manifest alone. Auth supplies checked selection/grants/gate requirements; this existing Runtime task owns startup execution.
+<!-- authority-source-startup:end -->
+
+
 - [ ] `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries` Implement memory, concurrency and typed FFI boundaries
 
 Status: Open
@@ -171,6 +183,14 @@ Complete concurrent workflow/AI replay criterion (Open): Execute admitted durabl
 <!-- concurrency-source-replay:end -->
 
 
+<!-- authority-source-replay:start -->
+
+Apply the [complete provider and capability source criteria](../auth-workflow/plan.md#complete-provider-and-capability-source-criteria) within this existing task. Status remains Open; frozen finite reviews do not accept this whole-source/current implementation proposal.
+
+Complete provider workflow/AI consumer criterion (Open): Use actual selected provider/grant/typed-handle and installed operation-gate products at each admitted workflow/AI/tool/model/memory or review boundary, including retries, delegation, revocation and cancellation. Check the callee's own contract as well as caller authority and separately supplied required review; no policy definition or review-request capability issues its own approval. Preserve stable typed action/event identities, redacted decision/audit records, retention/evaluation policy and no-repeat replay under the governing L6/R7/R8 conditions. Replay consumes recorded results and cannot reacquire or widen authority through a hidden live provider. Produce actual authorized/refused source-consumer and replay traces; full AI/runtime coverage, live model/tool use and held external actions remain separate and unaccepted.
+<!-- authority-source-replay:end -->
+
+
 - [ ] `runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration` Close enforcement and observability integration
 
 Status: Open
@@ -194,6 +214,20 @@ enforce deployment narrowing
 
 Complete concurrency enforcement/observability criterion (Open): Enforce actual selected service authority and deployment narrowing for each scheduler/task/actor/channel action, including principal/package/deployment/artifact/source/effect/capability identity, deny-by-default grants, provider contract and use-after-revocation refusal. Preserve real task/cancellation/failure/cleanup/replay traces and owning diagnostic context with appropriate redaction; typed captured-value fields do not authorize secret or raw-memory logging. Debug diagnostics may supplement prevention but cannot legalize compile-time-invalid code or replace race-freedom evidence. Return actual allowed/refused actions and observable results rather than an assigned enforcement status.
 <!-- concurrency-source-enforcement:end -->
+
+
+<!-- authority-source-runtime:start -->
+
+Apply the [complete provider and capability source criteria](../auth-workflow/plan.md#complete-provider-and-capability-source-criteria) within this existing task. Status remains Open; frozen finite reviews do not accept this whole-source/current implementation proposal.
+
+Preserved finite predicate conjunctions and qualified historical context:
+
+Emit typed runtime log/trace/metric/audit and diagnostic bundles with stable event schema/ID, timestamp source, family/profile/target/artifact/provider identity, source/generated origins and relevant effect/capability/check/proof/replay links. Enforce sink/deployment grants and the full secret/credential/prompt/model/tainted/raw-memory/environment/package/database redaction policy, reporting redactions without values. Exercise allowed local logging and denied network telemetry, required audit-event retention under sampling and semantic/order/replay/safety equivalence with instrumentation; reject ungranted sinks, policy-forbidden disclosure and missing mandatory events. Mark development-only observability explicitly.
+
+Criterion `runtime/deployment-provider-authority/decision-interface` (Open): Input: Compiler-accepted effect/capability facts, package/deployment grants and actual deployment-specific provider identity, presence, scope, phase/lifetime and revocation state under the declared error/panic/audit policy. Outputs: Actual service-hook allow/deny/delegate/revoke records; Provider presence/scope and error/panic fixtures; Policy-required redacted telemetry/audit and source/identity diagnostics. Accept: At actual HTTP/GraphQL/migration and other applicable authority-bearing runtime boundaries, check provider presence and deployment narrowing plus caller/tool-contract grant scope and supported lifetime/revocation before the action. Preserve declared error/panic and required audit/telemetry behavior, source/generated origins and principal/package/deployment/artifact/effect/capability identity; keep secrets redacted. Conditional provider/family/source contexts remain conditional, not blanket new authority. Refuse: Missing/wrong-scope provider, undeclared/ungranted action, widened deployment authority or supported use after revocation; Missing policy-required audit/source mappings, secret leakage or ungranted observation sink; Compiler legality, Auth policy text or generated wrapper metadata substituted for actual runtime hook checks. Dependencies consume actual artifacts: Auth supplies typed policy/grants, compiler/Legality supplies accepted facts, Lower supplies emitted source/identity maps; Each applicable runtime/provider supplies actual hook results; S4/S5/S6 consumers preserve admission decisions and R12 consumers check required redacted records. Diagnostics: Applicable SAFE10/R11/R12 and S4/S5/S6 boundary diagnostics include provider/deployment/scope/effect/grant/source and declared error/panic/remediation without secret disclosure. These are required future products/results; no execution or implementation acceptance is claimed.
+
+Complete R11 action/handle enforcement criterion (Open): At the actual service sink, deny absent matching authority and check requested effects/capabilities, provider presence/scope/policy and source/package/deployment constraints before each authority-bearing action. Cover filesystem, network, database, environment, process, shell, secrets, FFI, raw memory, devices, models, tools, memory writes, human-review actions, deployment, package mutation and observability sinks. Bind action/principal/agent, namespace/module/package, deployment/artifact/source or generated origin, effect/capability/provider, policy inputs, grant/denial, handle, redaction and audit status. Issue and use typed scoped handles with real grantor/recipient/allowed-effect/lifetime/provider-policy records and supported revocation; reject wider delegation, expired/revoked use, unsupported assumptions and ambient globals. Apply caller/callee dual-contract and deployment narrowing checks, declared error/panic behavior, policy-required audit and actual redaction, including separately authorized observation sinks. Produce real allow/deny/delegate/revoke and no-action-after-denial results; supplied grant tables, empty leak lists, unrevoked flags or coverage counts do not execute enforcement. Required review tokens/events remain distinct from authority to request review.
+<!-- authority-source-runtime:end -->
 
 
 <!-- runtime-implementation-tasks:end -->

@@ -21,6 +21,12 @@ recording exact passed, failed or unrun cases and residual target/host bounds.
 Do not replace actual layouts or helper linkage with manifest assertions.
 Independent acceptance, other target families and release remain separate.
 
+## Provider and capability source interface
+
+Use the [complete provider and capability source criteria](../auth-workflow/plan.md#complete-provider-and-capability-source-criteria). Preserve actual grant/provider/scope/phase/lifetime/check/source facts in emitted service hooks, invalidating changed assumptions. Lowering cannot widen policy or substitute metadata for an executing boundary.
+
+Historical finite reviews remain scoped; current whole-source/interface review and implementation acceptance remain pending. Preserve all actual holds and existing task authority.
+
 ## Concurrency dependency interface
 
 Use the [concurrency producer and consumer order](../legality-workflow/plan.md#concurrency-producer-and-consumer-order) and existing selected-result table. Lower4 consumes actual verified MIR, current facts, compatible target/provider contracts and affected revalidation, preserving valid unoptimized MIR. Actual target operations precede backend artifacts and later end-to-end checks.

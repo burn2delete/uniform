@@ -45,6 +45,14 @@ L6 actual build-effect boundary criterion (Open): Enforce and record the request
 <!-- source-effects-build:end -->
 
 
+<!-- authority-source-expand:start -->
+
+Apply the [complete provider and capability source criteria](../auth-workflow/plan.md#complete-provider-and-capability-source-criteria) within this existing task. Status remains Open; frozen finite reviews do not accept this whole-source/current implementation proposal.
+
+Complete compile-time provider gate criterion (Open): Enforce actual selected provider contracts, build-phase grants, profile/hermetic policy and scoped action gates for reader extensions, macro program P, plugins and generated-code services before their relevant action. Runtime grants cannot authorize build work or vice versa; generated caller Q is checked afterward and cannot supply P's prior admission. Require compile-time providers to support replay or explicitly identify non-replayability; release/conformance/safety-critical builds reject non-replayable use unless the applicable replay-policy exception is recorded. That exception does not override grants, isolation or the exact L6/L12 hermetic premises and recorded environment-wording issue. Preserve actual input/output/provider/phase/replay and redaction/refusal records; no held plugin/probe/provider action runs here.
+<!-- authority-source-expand:end -->
+
+
 - [ ] `expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination` expand/4: Validate reuse and termination
 
 Status: Open; partial source evidence above is not closure

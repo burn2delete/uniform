@@ -23,6 +23,132 @@ the selected authoritative task. Record exact passed, failed and unrun evidence,
 residual host/trust assumptions, independent review and integration separately.
 A structurally valid manifest or supplied verdict does not close enforcement.
 
+## Complete provider and capability source criteria
+
+This proposal reads complete L15, SAFE10 and R11 as joint contracts. Sixteen
+clauses refine fourteen existing tasks across Auth, Legality, Runtime, Expand,
+Build and Stdlib. The source census retains 278 facets, 181 occurrences and
+twenty original owners; exact spans identify obligations, not semantic acceptance.
+Selected PKG6/R12 boundaries support the comparison but retain their broader
+unassessed source obligations. No implementation task or status is added.
+
+| Existing authority | Required real behavior and evidence |
+| --- | --- |
+| [Auth provider declaration/selection](tasks.md) | Complete typed provider contracts, deterministic five-order selection, compatibility/refusal and selected identity/version records |
+| [Auth grant/scope/value](tasks.md) | Actual eight-layer intersection; typed first-class/ambient capabilities; category-specific scope, attenuation, revocation/lifetime and secret/phase decisions |
+| [Auth hooks](tasks.md) | Real operation gates, caller/callee checks and required profile isolation before action; preserved strengthened Runtime/Schema qualifications |
+| [Auth artifact trust](tasks.md) | Exact provider/source/compiler/policy/evidence identities at the real consumer, with relevant trust/signature checks separate from authority |
+| [Auth conformance](tasks.md) | Accepted/refused products, all 31 diagnostic meanings, real safe math plus memory/IO replacement and named residual assumptions |
+| [Legality classification/handoff](../legality-workflow/tasks.md) | Actual compiler composition and preservation of valid effect/grant/provider/safety facts; no unsafe authority escape or runtime repair of static illegality |
+| [Runtime startup](../runtime-workflow/tasks.md) | Actual provider presence/version/scope/contract/profile/target/safety checks before user code, or declared compatible fallback/refusal |
+| [Runtime enforcement](../runtime-workflow/tasks.md) | Real deny-by-default action and typed handle/delegation/revocation checks across all seventeen R11 action families, plus policy-required redacted audit/observation |
+| [Runtime workflow/AI](../runtime-workflow/tasks.md) | Actual caller/callee/grant/handle/review enforcement and no-repeat replay at the source consumer |
+| [Expand compile-time gate](../expand-workflow/tasks.md) | Actual provider/build-grant/isolation/hermetic/replay checks before macro/plugin actions, keeping checked program P separate from generated Q |
+| [Build graph and reproducibility](../build-workflow/tasks.md) | Actual provider graph actions, content-addressed or replay/audit outputs, lock/provenance identity and secret-safe cache/rebuild comparisons |
+| [Stdlib resource/IO APIs](../stdlib-workflow/tasks.md) | Real capability-value or declared-ambient APIs over checked providers and Runtime services, with allowed/refused values and cleanup results |
+
+Auth does not replace Types, Effects, Runtime, Build or a provider implementation.
+Types supplies actual capability id/provider/scope/phase/lifetime/thread-safety/
+revocation type facts; Effects supplies concrete action-to-capability mappings.
+The type of a capability is not proof of an issued grant. Passing a capability
+as data can be pure; later file/model/tool or other use still has its concrete
+effect and requires the actual grant and provider. This selected type interface
+does not adopt full C7 or alter its publication restriction.
+
+The common machinery retains twenty-two provider categories, each with its later
+owning contract and explicit supported/unsupported state. That does not mean all
+providers are installed or implemented. Selection follows explicit source,
+package manifest, workspace policy, profile default, then target compiler default;
+multiple matching providers without a choosing rule produce ambiguity. Validate
+complete versioned effects/contracts/failure/resource/replay/trust and target
+facts, not just a provider name. A replacement cannot weaken promised safe
+semantics, and the required math and memory/IO examples need actual owning
+implementations and applicable proof/check/conformance evidence.
+
+Effective authority is the intersection of source/namespace, function type and
+effect, package, dependency, workspace, profile, build/deployment invocation and
+provider scope. Requests, dependency resolution, selected providers, profile
+allowances, trusted labels and signatures do not mint grants. Ambient use must
+be declared at all required boundaries and still be permitted by profile/policy.
+Attenuation is non-expanding and records parent/derived identities, scope and
+lifetime. Revocation records its actual revoker/failing operations/failure type/
+thread-safety/synchronous behavior; an unsupported profile needs its permitted
+static-lifetime substitute or refuses the API.
+
+Check concrete operation scopes: paths/roots/content/modes; hosts/ports/protocols/
+methods/replay; environment keys/redaction; secret read/export; process command/
+arguments/working-directory/output; model identity/input/output/retention/evaluation;
+tool schema/operations/side effects; memory region/arena/lifetime/alignment/alias;
+hardware ranges/registers/devices/interrupts/width/order; and compiler IR/pass/
+namespaces/transforms. Preserve database/query and deployment authority and
+narrower package capabilities under their own contracts. Scope-satisfied flags
+are not scope derivation. Deterministic policy inputs must yield deterministic
+denials with the owning diagnostic context.
+
+Retain all source provider/capability families and all seventeen R11 runtime
+action families, including environment, device, memory-write, deployment,
+package-mutation and observability actions beyond the shorter example manifest.
+Handles name grantor, recipient, allowed effects, scope, lifetime, provider policy
+and supported revocation. Check caller and callee contracts; an authority to
+request human review is distinct from the separately supplied review decision.
+Untrusted providers require an available profile isolation mechanism and a
+permitting grant; a trusted provider still needs contract, scope and conformance
+checks. No universal new signing, sandbox or review prerequisite is invented.
+
+Build grants and runtime grants remain separate. Compile-time providers support
+replay or explicitly declare non-replayability. Release/conformance/safety-critical
+builds need the specified recorded exception before otherwise non-replayable use;
+that replay exception grants no effect authority and cannot waive the exact
+L6/L12 hermetic premises or their recorded environment-wording issue. Runtime
+initialization checks actual required providers before user code unless its
+compatible fallback is declared. Emitted gate metadata cannot replace that check
+or actual no-action-after-denial behavior.
+
+Secrets stay out of public diagnostics, generated source, stable public cache
+keys and artifacts. A digest-only policy label does not establish redaction.
+Secret export requires its actual capability and policy approval for the exact
+destination. Record only permitted names/presence/redaction metadata; no private
+artifact store or signing/publication action is performed here. Model cost-limit
+wording remains visible as source context, while project work/call/token/fuel
+accounting remains removed. Real external account/billing restrictions, retention,
+evaluation, physical scopes and runtime failure semantics remain separate.
+
+The finite allocation joins preserve sixteen byte witnesses for thirteen records:
+two profile74, seven safety107 (including the no-facet Runtime/Schema
+strengthening decision), six runtime20 fragments and one schema25 runtime
+predicate. Ten missing witnesses are restored and six already exact predicates
+remain. Shared runtime policy snippets are conjunctive fragments, not new tasks.
+Use the already-recorded Runtime2 initialization and Runtime5 deployment consumer
+routes; SAFE10's compiler composition still belongs to Legality and grants to Auth.
+Do not overwrite the strengthened Auth operation gate with older whole records.
+
+Historical profile74/safety107/schema25 reviews remain finite, frozen and bound
+to their exact reviewed subjects; schema25's existing completed pass is not
+consumed or renewed. Runtime20 actual composition remains pending. Whole attached
+owners, current source composition and implementation do not gain acceptance.
+The publicly available schema runtime witness subject is
+`0569306b52fe0972540c76e21d7707e1ee6eb55e`; the preserved aggregate is not published.
+
+Static inspection finds real hosted capability-set intersection, input validation,
+provider-identity, scope/phase mismatch and rejection logic with an explicit
+noncanonical projection boundary. Its scope/trust premises are supplied facts.
+Provider/SAFE10 builders also assign deterministic/complete/safe/granted/redacted
+fields, and R11 assembles fixed manifest, handle and decision rows whose coverage
+validator checks supplied statuses. A named hook or absence of listed leaks is
+not actual action enforcement. The later Gravity pipeline has meaningful bounded
+pure capability closure and explicitly excludes provider selection; that narrower
+behavior is retained without claiming complete L15/SAFE10/R11. No compiler,
+provider, runtime, native, device, plugin, probe or replay operation runs here.
+
+Completion needs actual source-to-checked compiler/gate/startup/provider/API and
+redacted result products, positive/refusal fixtures, real replacement/isolation/
+revocation cases and applicable independent review. Existing Release suites run
+their own exact matrices and oracles. The current dependency table retains 698
+joins and 83 routes; complete provider/capability-specific result staging remains
+pending. Whole-source/current review, all-project entailment and implementation
+acceptance remain pending. Keep all current C7/C12/native/callback/provider/device/
+private-store/replay/signing/publication holds and the stopped handoff untouched.
+
 ## Concurrency dependency interface
 
 Use the [concurrency producer and consumer order](../legality-workflow/plan.md#concurrency-producer-and-consumer-order) and existing selected-result table. Separate provider/support definitions, narrow grants, the early gate API and actual scoped gate installation before use. Later denial/revocation/redaction traces witness the sink; they cannot grant their own permission.

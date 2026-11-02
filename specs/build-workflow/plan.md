@@ -20,6 +20,12 @@ Refine only the selected existing task, keeping failed/unrun cases and exact
 input/output identities. Reviewable package mutation behavior, independent
 acceptance, integration and final seedless Build remain distinct.
 
+## Provider and capability source interface
+
+Use the [complete provider and capability source criteria](../auth-workflow/plan.md#complete-provider-and-capability-source-criteria). Graph execution uses actual provider/grant/gate products, records actual content-addressed or replay/audit outputs, and includes provider/policy identities in secret-safe lock/cache/rebuild evidence. A replay exception is no effect grant.
+
+Historical finite reviews remain scoped; current whole-source/interface review and implementation acceptance remain pending. Preserve all actual holds and existing task authority.
+
 ## Current governance consumer composition
 
 The existing resolution and package/provenance task records now include the

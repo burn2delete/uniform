@@ -56,6 +56,12 @@ component acceptance and coordinator integration pending until their exact
 evidence is present. Whole-domain, full-language, self-hosted and release claims
 remain governed by their separate existing outcomes.
 
+## Provider and capability source interface
+
+Use the [complete provider and capability source criteria](../auth-workflow/plan.md#complete-provider-and-capability-source-criteria). The existing Math owner supplies actual original/replacement function semantics and required proof/check results for L15's safe math-provider example. Auth checks selection/contracts; it does not implement math or accept a proof label.
+
+Historical finite reviews remain scoped; current whole-source/interface review and implementation acceptance remain pending. Preserve all actual holds and existing task authority.
+
 ## Concurrency dependency interface
 
 Use the [concurrency producer and consumer order](../legality-workflow/plan.md#concurrency-producer-and-consumer-order) and existing selected-result table. Selected GPU/workflow/AI definitions precede Runtime/domain IR/backend use. Later actual source consumers need the emitted/checked/task/replay results they claim; DOM13 device/reference evidence is not supplied by a host-only mock.

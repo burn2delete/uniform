@@ -23,6 +23,12 @@ publication restriction and existing writer reservations explicit. Refine only
 the same authoritative task and record exact scoped evidence, unrun work and
 independent review/integration separately; do not issue a competing checklist.
 
+## Provider and capability source interface
+
+Use the [complete provider and capability source criteria](../auth-workflow/plan.md#complete-provider-and-capability-source-criteria). Supply the existing type owner's actual capability id/provider/scope/phase/lifetime/thread-safety/revocation facts; typed data is distinct from an issued grant. This selected L15 interface does not adopt full C7 or alter its publication hold.
+
+Historical finite reviews remain scoped; current whole-source/interface review and implementation acceptance remain pending. Preserve all actual holds and existing task authority.
+
 ## Concurrency dependency interface
 
 Use the [concurrency producer and consumer order](../legality-workflow/plan.md#concurrency-producer-and-consumer-order) and existing selected-result table. Types5 supplies real solved type/message/operation facts before final combined compiler conformance; actual source schemas and serialization codecs stay separate. This selected interface does not adopt full C7 or alter its publication hold.
