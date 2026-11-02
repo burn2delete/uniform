@@ -2666,3 +2666,116 @@ independent acceptance is claimed.
 The final navigation check rejected an assumed Evolution heading anchor. The
 reference now uses the actual task file; the corrected complete check passes.
 The failed preparation is not passing evidence.
+
+## Complete memory-safety source refinement
+
+Source-only commit `78ba0ce55c3c651dbbea38339736b279ec3f6898`, clarified at
+`573cb039d8bd3a1054c1aeab273ec3a6c7ca8f01`, refines the
+[existing Legality tasks and plan](../specs/legality-workflow/plan.md#complete-memory-safety-source-criteria)
+for the complete [SAFE2 memory](../docs/phase-02-safety/031-safe2-memory-safety-model.md),
+[SAFE3 borrowing](../docs/phase-02-safety/032-safe3-ownership-borrowing-and-lifetimes.md),
+[SAFE4 regions](../docs/phase-02-safety/033-safe4-region-and-arena-safety.md) and
+[SAFE5 resources](../docs/phase-02-safety/034-safe5-linear-resource-safety.md)
+contracts, read directly with the Safety phase and current governing sources.
+Eight source criteria refine the five existing Open profile, ownership,
+classification, handoff and conformance tasks. No task identity, status,
+historical receipt or original clause changes.
+
+The preserved safety107 review contains thirty applicable finite allocations:
+ten SAFE2, six SAFE3, eight SAFE4 and six SAFE5. All thirty exact historical
+criteria were absent literally. They all retain the original ownership task,
+source `bc485c7e` and source-file hash
+`ffa5e2a4278d3114ec0a7a8d7347026f7f14701ee972e7cceb7cc1b37e4a1692`.
+Current per-allocation identity/positive/output/negative fields and eight shared
+document-role/refusal/evidence/dependency/nonclaim contexts reconstruct every
+complete historical byte predicate exactly. This keeps the complete conjunction
+without repeating the common context thirty times. The thirty frozen findings
+remain PASS at their original finite scope under `6fb01a54`/`5cbcceae` and receipt
+`0e522488f2a5aa7c0bbc8b5da0e9bcc724fab15c86b2ee62117adcfa322098d7`.
+Whole shared facets, new predicates, current composition and implementation
+remain outside that review. No duplicate source archive or aggregate adoption
+is introduced.
+
+The all-240 census preserves 288 source facets (74/77/71/66), 264 occurrences
+(69/71/65/59) and 33 original owner allocations, all to the ownership task. Its
+209 acceptance-rule and 79 context classifications remain unchanged. Current
+roles join 213 substantive facets across 189 occurrences; 75 heading/provenance
+facets remain context only. Four generic context fragments are substantive
+section context, not context-only credit. Sixty-seven document/section
+conjunctions retain related preambles, lists, examples and following conditions.
+Byte coverage and predicate reconstruction are conservation checks, not
+independent whole-source semantic acceptance.
+
+The eight criteria cover profile availability; all nine access premises and
+eighteen memory operation families; range-specific partial/moved/conditional/
+foreign/device initialization and initialized-only drop; actual layout, bounds,
+allocator, lifetime, alias and synchronization facts; all ownership/call/foreign
+transfer and structured/detached borrow rules; region versus arena generation,
+nested invalidation, provider contracts and cleanup policies; and linear
+state/terminal/transfer/error/generated flow across every modeled exit. Safe
+allocation and cleanup retain declared failure/effect/provider/profile
+conditions. Real physical capacity, alignment, storage, ABI and timing claims
+survive current accounting removal; synthetic compiler work/input allowances
+do not reappear as resource bounds.
+
+Unavailable dynamic metadata or failure machinery retains each source rule's
+static-proof/refusal requirement. Explicit audited unsafe alternatives apply
+only where that rule and profile/mode policy permit them; they do not waive
+SAFE3's normal-borrow or SAFE4's safe arena-use refusal. Cleanup preserves the
+source exception through the value being cleaned, without access to other
+invalidated region values. The thirty historical criteria remain unchanged.
+
+Ownership remains the specialized producer with its original per-rule refusals
+and actual emission/preservation closing evidence. Profile publishes support,
+C10 classification owns the final four-way operation result, Runtime/Backends
+implement real guards/failure/cleanup/transfers, handoff composes preservation
+and conformance consumes those products. No copied provider, classifier or
+harness authority is created. All 43 SAFE2-SAFE5 diagnostic meanings and their
+document-specific source/generated/operation/owner/region/resource/provider/path/
+profile/missing-fact/remediation context remain explicit. Exact memory/check/
+proof/source/provider assumptions must survive or be invalidated/recomputed
+after every governing transform, retaining checks or refusing lost evidence.
+
+Static inspection of the stage0 memory recorder/artifact shows projected
+argument-derived records and assigned valid/passed/completed flags, not complete
+state/flow analysis or actual guard execution. The native-memory validator
+checks declared service/provider/status/proof/diagnostic records, not actual
+allocation, device or target execution. `gravity.ownership` propagates managed
+ownership through selected persistent-value forwarding and checks alias/schema/
+owner-domain data; its contract denies input authentication, general mutable/
+region/arena/linear analysis, grants, native execution and admission. Those
+partial functions remain meaningful at their exact scope. Earlier C9 Gravity
+state/identity/runtime-borrow kernels and their residuals retain their separate
+observations; this source proposal runs none of those compiler/provider paths.
+
+Metadata `:memory-refinement` preserves predecessor `68d3b61c`, its complete
+projection/fingerprint and all prior root/C9/C10 source and dependency scopes.
+It binds 128 current field/context witnesses for the thirty reconstructions,
+eight current clauses, 288 source spans, 264 occurrences, 67 section conjunctions
+and 33 owners. The five changed task-body hashes and plan inspection advance;
+31 file records, 149 current keys, 25 authorities, 84 identical / 55 amended
+original bodies, forty future records, SH/SH07 routes and three Reader receipts
+survive. Root source/dependency controls now read their recorded predecessor.
+Fingerprint:
+`ed29bfbd55c784c10e1997b25c5cdefdc5e711ec662985fcab1be630771f0cda`.
+
+The existing 340 dependency joins retain their selected root/C9/C10 scopes.
+Complete memory-family producer/provider/operation/consumer dependencies and
+full L10/L18/SAFE7/SAFE8/profile/provider predicates remain unassessed. Current
+whole-source review, global reconciliation and implementation acceptance remain
+pending/unassessed. All actual holds remain; no other chat is messaged. Reader
+contract coverage is still the first implementation preparation increment, with
+no release, integration, self-hosting or seed-retirement completion claimed.
+
+Final memory-source validation: SH generation and read-only comparison pass;
+50 crosswalk tests / 10,478 assertions and 23 dependency tests / 2,117
+assertions pass with zero failures/errors. The dependency audit retains 340
+selected joins and no unresolved declarations at its structural scope.
+Conservation/navigation passes for 83 changed files, 77 Markdown files, 3,118
+local references, 139 original task routes, 48 historical specification/plan
+suffixes and all 48 original task/evidence contents after removing declared
+additions. The unchanged canonical-document and full-language structural checks
+pass (240 documents / 19 phase indexes); the language boundary check passes
+six tests / eleven assertions. ASCII and whitespace checks pass. These are
+planning/source/tooling checks, not compiler, provider, target or release
+execution, independent semantic acceptance or integration evidence.
