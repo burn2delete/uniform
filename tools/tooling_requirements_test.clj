@@ -149,12 +149,12 @@
         result (tooling-requirements/validate-current-manifest-transition! source-view)]
     (is (= {:snapshot-provenance :git-commit-tree-blob-and-bytes-verified
             :population :conserved
-            :interpretation :platform-generated-view-v2-plus-pr560-task-source-bridge-extension}
+            :interpretation :platform-generated-view-v2-plus-pr560-task-source-bridge-extension-plus-pr562-domain-composition}
            (select-keys result [:snapshot-provenance :population :interpretation])))
     (is (= {:snapshot-provenance :git-commit-tree-blob-and-bytes-verified
             :population :conserved
             :runtime-task-source :authenticated-successor
-            :interpretation :known-pr560-manifest-to-pr561-runtime-successor}
+            :interpretation :pr562-domain-composition-to-pr561-runtime-successor}
            (select-keys (:successor result)
                         [:snapshot-provenance :population :runtime-task-source
                          :interpretation])))
