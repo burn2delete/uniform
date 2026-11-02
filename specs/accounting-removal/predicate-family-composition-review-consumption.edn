@@ -1,0 +1,2522 @@
+{:integration-mode-preflight :required,
+ :tree "84ad6dcb8d889e9ad8973e873545f0f7102a6623",
+ :nonclaims
+ [:whole-predicate-accounting-removal
+  :semantic-helper-equivalence
+  :authenticated-source-admission
+  :genuine-C7-Effects-emitter-runtime-acceptance
+  :implementation-completion
+  :whole-ACC01
+  :PR502-closure
+  :current-main-extraction
+  :current-head-CI-acceptance
+  :fresh-integration-preflight
+  :integration
+  :release
+  :self-hosting],
+ :execution
+ {:held-relay-retries false,
+  :mode :Clojure-reader-EDN-text-hash-Git-objects-only,
+  :read-eval false,
+  :Bootstrap-loaded false,
+  :new-workers false,
+  :merge false,
+  :author-canonical-shared-writes false,
+  :runtime-helper-kernel-projection-target-execution :none,
+  :APPROVE false,
+  :source-data-checks 24049,
+  :genuine-owner-tests :UNRUN,
+  :checker-sha256
+  "9352896455cf7e95518dbd60cbdb777566fd447ccd016cde38c191fb92dac001"},
+ :inert-corruption-negatives
+ [{:refused true,
+   :reason :all-original-eleven-family-rows,
+   :case [:dropped-family ["map" "mapp"]]}
+  {:refused true,
+   :reason :all-original-eleven-family-rows,
+   :case [:dropped-family ["set" "setp"]]}
+  {:refused true,
+   :reason :all-original-eleven-family-rows,
+   :case [:dropped-family ["list" "listp"]]}
+  {:refused true,
+   :reason :all-original-eleven-family-rows,
+   :case [:dropped-family ["symbol" "symp"]]}
+  {:refused true,
+   :reason :all-original-eleven-family-rows,
+   :case [:dropped-family ["boolean" "boolp"]]}
+  {:refused true,
+   :reason :all-original-eleven-family-rows,
+   :case [:dropped-family ["character" "chp"]]}
+  {:refused true,
+   :reason :all-original-eleven-family-rows,
+   :case [:dropped-family ["nil" "nilp"]]}
+  {:refused true,
+   :reason :all-original-eleven-family-rows,
+   :case [:dropped-family ["keyword" "kp"]]}
+  {:refused true,
+   :reason :all-original-eleven-family-rows,
+   :case [:dropped-family ["string" "strp"]]}
+  {:refused true,
+   :reason :all-original-eleven-family-rows,
+   :case [:dropped-family ["integer" "ip"]]}
+  {:refused true,
+   :reason :all-original-eleven-family-rows,
+   :case [:dropped-family ["vector" "vp"]]}
+  {:refused true,
+   :reason :complete-original-test-with-exact-adaptations,
+   :case
+   [:missing-original-assertion
+    0
+    "(is (= 11 (count families) (count (set families))))"]}
+  {:refused true,
+   :reason :complete-original-test-with-exact-adaptations,
+   :case
+   [:missing-original-assertion
+    1
+    "(is (= :accepted (:status result) (:status effect-context)))"]}
+  {:refused true,
+   :reason :complete-original-test-with-exact-adaptations,
+   :case
+   [:missing-original-assertion
+    2
+    "(is (not (contains? descriptor :operand-type-work)))"]}
+  {:refused true,
+   :reason :complete-original-test-with-exact-adaptations,
+   :case
+   [:missing-original-assertion
+    3
+    "(is (= descriptor emitted effected))"]}
+  {:refused true,
+   :reason :complete-original-test-with-exact-adaptations,
+   :case
+   [:missing-original-assertion
+    4
+    "(is (true? (body (quote body-call-joins-with-foreign-valid?) core checked bindings {})))"]}
+  {:refused true,
+   :reason :complete-original-test-with-exact-adaptations,
+   :case
+   [:missing-original-assertion
+    5
+    "(is (= :complete (:status lowered)))"]}
+  {:refused true,
+   :reason :complete-original-test-with-exact-adaptations,
+   :case
+   [:missing-original-assertion
+    6
+    "(is (= [(= label \"string\") \"\" :normal] (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan (quote p15-s23-runtime-evaluate-closed-instruction) [(:value lowered) {(quote value) \"family-payload\"} \"\"])))"]}
+  {:refused true,
+   :reason :complete-original-test-with-exact-adaptations,
+   :case
+   [:missing-original-assertion
+    7
+    "(is (false? (body (quote body-call-joins-with-foreign-valid?) core changed-facts bindings {})))"]}
+  {:refused true,
+   :reason :complete-original-test-with-exact-adaptations,
+   :case
+   [:missing-original-assertion
+    8
+    "(is (= :rejected (:status (compile changed-lowering))))"]}
+  {:refused true,
+   :reason :complete-original-test-with-exact-adaptations,
+   :case
+   [:missing-original-assertion
+    9
+    "(is (= :rejected (:status (derive changed-input 65536))))"]}
+  {:refused true,
+   :reason :complete-original-test-with-exact-adaptations,
+   :case
+   [:missing-original-assertion
+    10
+    "(is (= :rejected (:status (body context-fn request changed-facts bindings 65536))))"]}
+  {:refused true,
+   :reason :complete-original-test-with-exact-adaptations,
+   :case
+   [:missing-original-assertion
+    11
+    "(is (= :rejected (:status (compile changed-lowering))))"]}
+  {:refused true,
+   :reason :complete-original-test-with-exact-adaptations,
+   :case
+   [:missing-original-assertion
+    12
+    "(is (zero? (clojure.core/deref callbacks)))"]}
+  {:refused true,
+   :reason :complete-original-test-with-exact-adaptations,
+   :case [:missing-required-forgery [:operand-type-work 0]]}
+  {:refused true,
+   :reason :complete-original-test-with-exact-adaptations,
+   :case [:missing-required-forgery [:operand-type-work 1]]}
+  {:refused true,
+   :reason :complete-original-test-with-exact-adaptations,
+   :case [:missing-required-forgery [:operand-type-work nil]]}
+  {:refused true,
+   :reason :complete-original-test-with-exact-adaptations,
+   :case [:missing-required-forgery [:user/unknown-field true]]}
+  {:refused true,
+   :reason :complete-original-test-with-exact-adaptations,
+   :case :late-invalid-moved-to-early-position}
+  {:refused true,
+   :reason :complete-original-test-with-exact-adaptations,
+   :case :runtime-call-replaced-by-constant-result}
+  {:refused true,
+   :reason :complete-original-test-with-exact-adaptations,
+   :case :closed-descriptor-equality-replaced-by-status-only}
+  {:refused true,
+   :reason :complete-original-test-with-exact-adaptations,
+   :case :old-metered-validator-reintroduced}
+  {:refused true,
+   :reason :owner-source-form-hash,
+   :case :forged-owner-pin}
+  {:refused true,
+   :reason :upstream-source-form-hash,
+   :case :forged-upstream-pin}
+  {:refused true,
+   :reason :complete-helper-symbol-map,
+   :case :partial-helper-parameter-map}
+  {:refused true,
+   :reason :known-real-boolean-helper-difference,
+   :case :false-boolean-helper-identity}
+  {:refused true,
+   :reason "EOF while reading",
+   :case :truncated-reader-source}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 0 sh08-mapp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 0 sh08-mapp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 1 sh08-mapp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 1 sh08-mapp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 2 sh08-mapp-constraint]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 2 sh08-mapp-constraint]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 3 sh08-mapp-call-fact]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 3 sh08-mapp-call-fact]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 4 sh08-mapp-derive]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 4 sh08-mapp-derive]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 5 sh08-setp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 5 sh08-setp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 6 sh08-setp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 6 sh08-setp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 7 sh08-setp-constraint]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 7 sh08-setp-constraint]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 8 sh08-setp-call-fact]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 8 sh08-setp-call-fact]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 9 sh08-setp-derive]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 9 sh08-setp-derive]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 10 sh08-listp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 10 sh08-listp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 11 sh08-listp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 11 sh08-listp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 12 sh08-listp-constraint]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 12 sh08-listp-constraint]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 13 sh08-listp-call-fact]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 13 sh08-listp-call-fact]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 14 sh08-listp-derive]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 14 sh08-listp-derive]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 15 sh08-symp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 15 sh08-symp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 16 sh08-symp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 16 sh08-symp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 17 sh08-symp-constraint]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 17 sh08-symp-constraint]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 18 sh08-symp-call-fact]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 18 sh08-symp-call-fact]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 19 sh08-symp-derive]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 19 sh08-symp-derive]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 20 sh08-boolp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 20 sh08-boolp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 21 sh08-boolp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 21 sh08-boolp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 22 sh08-boolp-constraint]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 22 sh08-boolp-constraint]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 23 sh08-boolp-call-fact]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 23 sh08-boolp-call-fact]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 24 sh08-boolp-derive]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 24 sh08-boolp-derive]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 25 sh08-chp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 25 sh08-chp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 26 sh08-chp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 26 sh08-chp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 27 sh08-chp-constraint]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 27 sh08-chp-constraint]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 28 sh08-chp-call-fact]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 28 sh08-chp-call-fact]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 29 sh08-chp-derive]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 29 sh08-chp-derive]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 30 sh08-nilp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 30 sh08-nilp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 31 sh08-nilp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 31 sh08-nilp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 32 sh08-nilp-constraint]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 32 sh08-nilp-constraint]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 33 sh08-nilp-call-fact]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 33 sh08-nilp-call-fact]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 34 sh08-nilp-derive]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 34 sh08-nilp-derive]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 35 sh08-kp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 35 sh08-kp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 36 sh08-kp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 36 sh08-kp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 37 sh08-kp-constraint]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 37 sh08-kp-constraint]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 38 sh08-kp-call-fact]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 38 sh08-kp-call-fact]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 39 sh08-kp-derive]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 39 sh08-kp-derive]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 40 sh08-strp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 40 sh08-strp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 41 sh08-strp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 41 sh08-strp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 42 sh08-strp-constraint]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 42 sh08-strp-constraint]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 43 sh08-strp-call-fact]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 43 sh08-strp-call-fact]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 44 sh08-strp-derive]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 44 sh08-strp-derive]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 45 sh08-ip-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 45 sh08-ip-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 46 sh08-ip-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 46 sh08-ip-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 47 sh08-ip-constraint]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 47 sh08-ip-constraint]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 48 sh08-ip-call-fact]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 48 sh08-ip-call-fact]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 49 sh08-ip-derive]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 49 sh08-ip-derive]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 50 sh08-vp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 50 sh08-vp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 51 sh08-vp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 51 sh08-vp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 52 sh08-vp-constraint]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 52 sh08-vp-constraint]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 53 sh08-vp-call-fact]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 53 sh08-vp-call-fact]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 54 sh08-vp-derive]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 54 sh08-vp-derive]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 55 body-mapp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 55 body-mapp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 56 body-mapp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 56 body-mapp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 57 body-mapp-context]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 57 body-mapp-context]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 58 body-setp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 58 body-setp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 59 body-setp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 59 body-setp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 60 body-setp-context]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 60 body-setp-context]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 61 body-listp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 61 body-listp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 62 body-listp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 62 body-listp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 63 body-listp-context]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 63 body-listp-context]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 64 body-symp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 64 body-symp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 65 body-symp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 65 body-symp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 66 body-symp-context]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 66 body-symp-context]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 67 body-boolp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 67 body-boolp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 68 body-boolp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 68 body-boolp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 69 body-boolp-context]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 69 body-boolp-context]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 70 body-chp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 70 body-chp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 71 body-chp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 71 body-chp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 72 body-chp-context]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 72 body-chp-context]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 73 body-nilp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 73 body-nilp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 74 body-nilp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 74 body-nilp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 75 body-nilp-context]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 75 body-nilp-context]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 76 body-kp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 76 body-kp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 77 body-kp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 77 body-kp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 78 body-kp-context]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 78 body-kp-context]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 79 body-strp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 79 body-strp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 80 body-strp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 80 body-strp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 81 body-strp-context]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 81 body-strp-context]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 82 body-ip-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 82 body-ip-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 83 body-ip-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 83 body-ip-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 84 body-ip-context]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 84 body-ip-context]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 85 body-vp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 85 body-vp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 86 body-vp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 86 body-vp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 87 body-vp-context]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 87 body-vp-context]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 88 p15-s23-mapp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 88 p15-s23-mapp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 89 p15-s23-mapp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 89 p15-s23-mapp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 90 p15-s23-setp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 90 p15-s23-setp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 91 p15-s23-setp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 91 p15-s23-setp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 92 p15-s23-listp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 92 p15-s23-listp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 93 p15-s23-listp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 93 p15-s23-listp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 94 p15-s23-symp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 94 p15-s23-symp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 95 p15-s23-symp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 95 p15-s23-symp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 96 p15-s23-boolp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 96 p15-s23-boolp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 97 p15-s23-boolp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 97 p15-s23-boolp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 98 p15-s23-chp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 98 p15-s23-chp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 99 p15-s23-chp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 99 p15-s23-chp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 100 p15-s23-nilp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 100 p15-s23-nilp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 101 p15-s23-nilp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 101 p15-s23-nilp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 102 p15-s23-kp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 102 p15-s23-kp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 103 p15-s23-kp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 103 p15-s23-kp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 104 p15-s23-strp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 104 p15-s23-strp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 105 p15-s23-strp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 105 p15-s23-strp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 106 p15-s23-ip-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 106 p15-s23-ip-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 107 p15-s23-ip-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 107 p15-s23-ip-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 108 p15-s23-vp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 108 p15-s23-vp-source]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 109 p15-s23-vp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 109 p15-s23-vp-finish]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 110 body-lc-validate-types]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 110 body-lc-validate-types]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 111 p15-s23-lc-validate-types]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case
+   [:forged-pin-with-coherent-body 111 p15-s23-lc-validate-types]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case
+   [:lost-or-changed-definition
+    112
+    body-call-joins-with-foreign-valid?]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case
+   [:forged-pin-with-coherent-body
+    112
+    body-call-joins-with-foreign-valid?]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 113 p15-s23-typed-compile-node]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case
+   [:forged-pin-with-coherent-body 113 p15-s23-typed-compile-node]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 114 map-predicate-input]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 114 map-predicate-input]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 115 map-predicate-derived]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 115 map-predicate-derived]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 116 set-predicate-input]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 116 set-predicate-input]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 117 set-predicate-derived]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 117 set-predicate-derived]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 118 list-predicate-input]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 118 list-predicate-input]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 119 list-predicate-derived]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 119 list-predicate-derived]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 120 symbol-predicate-input]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 120 symbol-predicate-input]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 121 symbol-predicate-derived]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 121 symbol-predicate-derived]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 122 boolean-predicate-input]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 122 boolean-predicate-input]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 123 boolean-predicate-derived]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case
+   [:forged-pin-with-coherent-body 123 boolean-predicate-derived]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 124 character-predicate-input]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case
+   [:forged-pin-with-coherent-body 124 character-predicate-input]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 125 character-predicate-derived]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case
+   [:forged-pin-with-coherent-body 125 character-predicate-derived]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 126 nil-predicate-input]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 126 nil-predicate-input]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 127 nil-predicate-derived]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 127 nil-predicate-derived]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 128 keyword-predicate-input]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 128 keyword-predicate-input]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 129 keyword-predicate-derived]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case
+   [:forged-pin-with-coherent-body 129 keyword-predicate-derived]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 130 string-predicate-input]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 130 string-predicate-input]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 131 string-predicate-derived]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 131 string-predicate-derived]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 132 integer-predicate-input]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 132 integer-predicate-input]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 133 integer-predicate-derived]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case
+   [:forged-pin-with-coherent-body 133 integer-predicate-derived]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 134 vector-predicate-input]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 134 vector-predicate-input]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:lost-or-changed-definition 135 vector-predicate-derived]}
+  {:refused true,
+   :reason :pinned-complete-source-form,
+   :case [:forged-pin-with-coherent-body 135 vector-predicate-derived]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 0 boolean-predicate-derived]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 1 boolean-predicate-input]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case
+   [:lost-direct-source-dependency 2 character-predicate-derived]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 3 character-predicate-input]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 4 integer-predicate-derived]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 5 integer-predicate-input]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 6 integral-ordering-input]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 7 invoke-c7]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 8 keyword-predicate-derived]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 9 keyword-predicate-input]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 10 list-predicate-derived]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 11 list-predicate-input]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 12 map-predicate-derived]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 13 map-predicate-input]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 14 nil-predicate-derived]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 15 nil-predicate-input]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 16 set-predicate-derived]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 17 set-predicate-input]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 18 string-predicate-derived]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 19 string-predicate-input]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 20 symbol-predicate-derived]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 21 symbol-predicate-input]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 22 vector-predicate-derived]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 23 vector-predicate-input]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 24 p15-s23-boolp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 25 p15-s23-boolp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 26 p15-s23-boolp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 27 p15-s23-chp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case
+   [:lost-direct-source-dependency 28 p15-s23-chp-classification]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 29 p15-s23-chp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 30 p15-s23-chp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case
+   [:lost-direct-source-dependency 31 p15-s23-compiler-complete?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 32 p15-s23-compiler-result]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 33 p15-s23-hl-type?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 34 p15-s23-io-child-types]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 35 p15-s23-ip-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 36 p15-s23-ip-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 37 p15-s23-ip-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 38 p15-s23-kp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 39 p15-s23-kp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 40 p15-s23-kp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 41 p15-s23-lc-ancestor?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case
+   [:lost-direct-source-dependency 42 p15-s23-lc-native-arguments]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 43 p15-s23-lc-native-map?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 44 p15-s23-lc-native-view?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 45 p15-s23-lc-validate-types]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 46 p15-s23-listp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 47 p15-s23-listp-call-ids?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 48 p15-s23-listp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 49 p15-s23-listp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 50 p15-s23-mapp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 51 p15-s23-mapp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 52 p15-s23-mapp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 53 p15-s23-ni-type?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 54 p15-s23-ni-valid-view?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 55 p15-s23-nilp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case
+   [:lost-direct-source-dependency 56 p15-s23-nilp-classification]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 57 p15-s23-nilp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 58 p15-s23-nilp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 59 p15-s23-setp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 60 p15-s23-setp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 61 p15-s23-setp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 62 p15-s23-ss-type?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 63 p15-s23-sse-ids?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 64 p15-s23-strp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 65 p15-s23-strp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 66 p15-s23-strp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 67 p15-s23-syc-type?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 68 p15-s23-symp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 69 p15-s23-symp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 70 p15-s23-symp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 71 p15-s23-typed-all]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case
+   [:lost-direct-source-dependency
+    72
+    p15-s23-typed-character-carrier?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case
+   [:lost-direct-source-dependency
+    73
+    p15-s23-typed-compile-boolean-match]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case
+   [:lost-direct-source-dependency 74 p15-s23-typed-compile-call]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case
+   [:lost-direct-source-dependency
+    75
+    p15-s23-typed-compile-children-mode]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case
+   [:lost-direct-source-dependency
+    76
+    p15-s23-typed-compile-collection]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 77 p15-s23-typed-compile-if]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case
+   [:lost-direct-source-dependency
+    78
+    p15-s23-typed-compile-keyword-lookup]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case
+   [:lost-direct-source-dependency
+    79
+    p15-s23-typed-compile-keyword-set]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 80 p15-s23-typed-compile-let]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case
+   [:lost-direct-source-dependency 81 p15-s23-typed-compile-loop]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case
+   [:lost-direct-source-dependency 82 p15-s23-typed-compile-node]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case
+   [:lost-direct-source-dependency 83 p15-s23-typed-compile-recur]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case
+   [:lost-direct-source-dependency
+    84
+    p15-s23-typed-compile-structural-match]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 85 p15-s23-typed-compile-try]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case
+   [:lost-direct-source-dependency
+    86
+    p15-s23-typed-namespace-reference]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 87 p15-s23-typed-node-error]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 88 p15-s23-typed-quote]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 89 p15-s23-vp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 90 p15-s23-vp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 91 p15-s23-vp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 92 sh08-boolp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 93 sh08-boolp-call-fact]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 94 sh08-boolp-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 95 sh08-boolp-derive]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 96 sh08-boolp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 97 sh08-boolp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 98 sh08-chp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 99 sh08-chp-call-fact]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 100 sh08-chp-classification]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 101 sh08-chp-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 102 sh08-chp-derive]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 103 sh08-chp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 104 sh08-chp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 105 sh08-ft-all-true?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case
+   [:lost-direct-source-dependency 106 sh08-ft-ordered-child-types]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 107 sh08-ip-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 108 sh08-ip-call-fact]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 109 sh08-ip-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 110 sh08-ip-derive]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 111 sh08-ip-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 112 sh08-ip-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 113 sh08-kp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 114 sh08-kp-call-fact]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 115 sh08-kp-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 116 sh08-kp-derive]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 117 sh08-kp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 118 sh08-kp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 119 sh08-lc-native-map?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 120 sh08-lc-validate-types]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 121 sh08-listp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 122 sh08-listp-call-fact]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 123 sh08-listp-call-ids?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 124 sh08-listp-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 125 sh08-listp-derive]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 126 sh08-listp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 127 sh08-listp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 128 sh08-ma-form-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 129 sh08-mapp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 130 sh08-mapp-call-fact]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 131 sh08-mapp-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 132 sh08-mapp-derive]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 133 sh08-mapp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 134 sh08-mapp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 135 sh08-nilp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 136 sh08-nilp-call-fact]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 137 sh08-nilp-classification]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 138 sh08-nilp-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 139 sh08-nilp-derive]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 140 sh08-nilp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 141 sh08-nilp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 142 sh08-setp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 143 sh08-setp-call-fact]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 144 sh08-setp-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 145 sh08-setp-derive]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 146 sh08-setp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 147 sh08-setp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 148 sh08-sm-failure]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 149 sh08-strp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 150 sh08-strp-call-fact]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 151 sh08-strp-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 152 sh08-strp-derive]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 153 sh08-strp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 154 sh08-strp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 155 sh08-symp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 156 sh08-symp-call-fact]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 157 sh08-symp-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 158 sh08-symp-derive]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 159 sh08-symp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 160 sh08-symp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 161 sh08-vp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 162 sh08-vp-call-fact]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 163 sh08-vp-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 164 sh08-vp-derive]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 165 sh08-vp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 166 sh08-vp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 167 body-ae-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 168 body-ae-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 169 body-ae-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 170 body-all?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 171 body-ane-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 172 body-ane-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 173 body-ane-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 174 body-bka-entry?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 175 body-boolp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 176 body-boolp-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 177 body-boolp-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 178 body-boolp-context]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 179 body-boolp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 180 body-boolp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case
+   [:lost-direct-source-dependency
+    181
+    body-call-joins-with-foreign-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 182 body-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 183 body-chp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 184 body-chp-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 185 body-chp-classification]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 186 body-chp-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 187 body-chp-context]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 188 body-chp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 189 body-chp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 190 body-cq-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 191 body-cq-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 192 body-cq-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 193 body-cqs-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 194 body-cqs-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 195 body-cqs-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 196 body-ds-captures-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 197 body-failure]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 198 body-hl-type?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case
+   [:lost-direct-source-dependency 199 body-ho-inner-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case
+   [:lost-direct-source-dependency 200 body-ho-outer-fact-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 201 body-ie-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 202 body-import-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 203 body-index]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 204 body-io-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 205 body-io-child-types]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 206 body-io-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 207 body-ip-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 208 body-ip-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 209 body-ip-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 210 body-ip-context]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 211 body-ip-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 212 body-ip-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 213 body-kp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 214 body-kp-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 215 body-kp-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 216 body-kp-context]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 217 body-kp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 218 body-kp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 219 body-kse-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 220 body-ksm-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 221 body-lc-ancestor?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 222 body-lc-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 223 body-lc-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 224 body-lc-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 225 body-lc-native-arguments]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 226 body-lc-native-map?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 227 body-lc-native-view?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 228 body-lc-validate-types]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 229 body-le-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 230 body-listp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 231 body-listp-call-ids?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 232 body-listp-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 233 body-listp-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 234 body-listp-context]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 235 body-listp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 236 body-listp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case
+   [:lost-direct-source-dependency 237 body-local-arguments-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 238 body-lq-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 239 body-lq-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 240 body-lq-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 241 body-lset-entry?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 242 body-ma-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 243 body-ma-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 244 body-ma-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 245 body-mapp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 246 body-mapp-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 247 body-mapp-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 248 body-mapp-context]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 249 body-mapp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 250 body-mapp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 251 body-mc-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 252 body-mc-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 253 body-mc-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 254 body-mg-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 255 body-mg-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 256 body-mg-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 257 body-mkeys-entry?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 258 body-mr-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 259 body-mr-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 260 body-mr-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 261 body-ni-type?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 262 body-nilp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 263 body-nilp-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 264 body-nilp-classification]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 265 body-nilp-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 266 body-nilp-context]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 267 body-nilp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 268 body-nilp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 269 body-nq-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 270 body-nq-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 271 body-nq-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 272 body-nt-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 273 body-nt-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 274 body-nt-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 275 body-path]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 276 body-pl-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 277 body-rv?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 278 body-sc-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 279 body-sc-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 280 body-sc-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 281 body-scv-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 282 body-scv-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 283 body-scv-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 284 body-select]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 285 body-setp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 286 body-setp-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 287 body-setp-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 288 body-setp-context]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 289 body-setp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 290 body-setp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 291 body-si-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 292 body-si-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 293 body-si-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 294 body-ss-type?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 295 body-sse-ids?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 296 body-st-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 297 body-st-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 298 body-st-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 299 body-strp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 300 body-strp-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 301 body-strp-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 302 body-strp-context]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 303 body-strp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 304 body-strp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 305 body-syc-type?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 306 body-symp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 307 body-symp-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 308 body-symp-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 309 body-symp-context]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 310 body-symp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 311 body-symp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 312 body-va-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 313 body-va-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 314 body-va-node?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 315 body-ve-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 316 body-vemp-entry?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 317 body-vemp-index]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 318 body-vn-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 319 body-vn-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 320 body-vn-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 321 body-vp-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 322 body-vp-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 323 body-vp-constraint]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 324 body-vp-context]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 325 body-vp-finish]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 326 body-vp-source]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 327 body-vrest-entry?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 328 body-vsl-binding?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 329 body-vsl-call-valid?]}
+  {:refused true,
+   :reason :direct-dependency-complete-form,
+   :case [:lost-direct-source-dependency 330 body-vsl-constraint]}
+  {:refused true,
+   :reason :complete-tree-path-mode-blob-equation,
+   :case :unrelated-path-deletion}
+  {:refused true,
+   :reason :complete-tree-path-mode-blob-equation,
+   :case :unrelated-path-addition}
+  {:refused true,
+   :reason :complete-tree-path-mode-blob-equation,
+   :case :unrelated-blob-replacement}
+  {:refused true,
+   :reason :complete-tree-path-mode-blob-equation,
+   :case :unrelated-executable-mode}
+  {:refused true,
+   :reason :complete-tree-path-mode-blob-equation,
+   :case :reviewed-test-mode-change}
+  {:refused true,
+   :reason :candidate-tree-identity,
+   :case :incorrect-tree-identity}
+  {:refused true,
+   :reason :whole-file-historical-current-boundary,
+   :case
+   [:historical-whole-file-misrepresented-as-current
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"]}
+  {:refused true,
+   :reason :whole-file-historical-current-boundary,
+   :case
+   [:historical-whole-file-misrepresented-as-current
+    "bootstrap/gravity/src/gravity/effects.gravity"]}
+  {:refused true,
+   :reason :whole-file-historical-current-boundary,
+   :case
+   [:historical-whole-file-misrepresented-as-current
+    "bootstrap/gravity/p15_s23/emitter.gravity"]}
+  {:refused true,
+   :reason :whole-file-historical-current-boundary,
+   :case
+   [:historical-whole-file-misrepresented-as-current
+    "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"]}
+  {:refused true,
+   :reason :complete-host-adapter-pin,
+   :case
+   [:lost-host-adapter p15-s23-stage2-compiler-artifact-source-path]}
+  {:refused true,
+   :reason :complete-host-adapter-pin,
+   :case
+   [:lost-host-adapter c-backend-stage2-plan-emitter-source-rule!]}
+  {:refused true,
+   :reason :complete-host-adapter-pin,
+   :case [:lost-host-adapter p15-s23-stage2-compiler-artifact-plan]}
+  {:refused true,
+   :reason :complete-host-adapter-pin,
+   :case [:lost-host-adapter p15-s23-stage2-runtime-execute-function]}
+  {:refused true,
+   :reason :complete-host-adapter-pin,
+   :case [:lost-host-adapter invoke-c7]}
+  {:refused true,
+   :reason :complete-host-adapter-pin,
+   :case [:lost-host-adapter leaf]}
+  {:refused true,
+   :reason :complete-host-adapter-pin,
+   :case [:lost-host-adapter runtime]}
+  {:refused true,
+   :reason :complete-host-adapter-pin,
+   :case [:lost-host-adapter typed-catch-runtime-projection]}],
+ :consumer-verification
+ {:receipt-checker-artifacts-tree-parents :verified,
+  :independent-source-checker :reproduced-byte-identical-receipt,
+  :clean-worktree true},
+ :original-review
+ {:receipt-sha256
+  "38f50b1539b4d64ce89a613bded7aa5783c69611f89cf63dba0f15b66aaa054f",
+  :checker-sha256
+  "73997169dfcb807b819bbea25eb6f81b1ef9c0b68d48f98180b20d7d47b67369",
+  :all-artifact-generator-owner-upstream-evidence-rehashed true,
+  :prior-claims-not-expanded true},
+ :pins
+ {:selected-owner-forms-and-arguments 114,
+  :upstream-forms-and-arguments 22,
+  :all-freshly-verified true,
+  :current-whole-files
+  [{:path
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+    :historical-sha256
+    "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142",
+    :current-sha256
+    "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+    :base-sha256
+    "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+    :whole-file-scope :historical-and-current-distinct}
+   {:path "bootstrap/gravity/src/gravity/effects.gravity",
+    :historical-sha256
+    "11ab8e2cb4c74a30d5fd3fe48d86affe87966002f88815037a3253d9b4871f57",
+    :current-sha256
+    "a1d6d01540ec67ac3c8aad270f946dfcdc21a94664ee36b4aa8848a18c56f3e5",
+    :base-sha256
+    "a1d6d01540ec67ac3c8aad270f946dfcdc21a94664ee36b4aa8848a18c56f3e5",
+    :whole-file-scope :historical-and-current-distinct}
+   {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+    :historical-sha256
+    "9ea39a7aa26fd53a3683091dd3bf49f3e0517d56e77b5a196c70261b55a43637",
+    :current-sha256
+    "e49189aa370afcdf7c85a98d68cec02c3462e4f964285941e7f1dd956c5b68ae",
+    :base-sha256
+    "e49189aa370afcdf7c85a98d68cec02c3462e4f964285941e7f1dd956c5b68ae",
+    :whole-file-scope :historical-and-current-distinct}
+   {:path
+    "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+    :historical-sha256
+    "5cce988f440520052ae9379634c82c5f5dd60a8e9f71a55d56c74e133aa53443",
+    :current-sha256
+    "03207474a0e691a2ba235ac8aefa0132abf0af4b81f7ae8554cac32ab3becd71",
+    :base-sha256
+    "03207474a0e691a2ba235ac8aefa0132abf0af4b81f7ae8554cac32ab3becd71",
+    :whole-file-scope :historical-and-current-distinct}],
+  :unchanged-census-whole-hashes :historical-only,
+  :semantic-or-transitive-equivalence false},
+ :consumer-source-sha256
+ "6ff23641b64afa9512217f2294c891f17f8bfe0c10afdc5d7199aadb347bcf2f",
+ :candidate "7b4dea35cc0ac17803de06ec56b7484ca7e62319",
+ :public-evidence
+ {:commit "5225189a0fe0fd682a90998f563434635045a25b",
+  :tree "f8ead069873970e43d060c8f5a10431019d6baf7",
+  :path
+  "specs/accounting-removal/predicate-family-clean-composition.edn",
+  :sha256
+  "1d612bc5cc4bb9665bd7b75100de1ca25e4fb79dc22de05e1073328bf4a69309",
+  :generator-path "/tmp/acc01-predicate-clean-composition.clj",
+  :generator-sha256
+  "c296372a3dbdd27b96e605b1f2481c54d88ba85e94443a8b13baf62311a47a59",
+  :executed false},
+ :blocking-findings [],
+ :remaining
+ [:genuine-owner-execution
+  :CI
+  :fresh-integration-preflight
+  :integration
+  :semantic-equivalence
+  :transitive-dependency-proof
+  :implementation-acceptance],
+ :conservation
+ {:base-entries 10084,
+  :candidate-entries 10087,
+  :full-tree-equals-base-plus-three-original-additions true,
+  :every-base-path-mode-blob-preserved true,
+  :all-main-626-634-635-entries-preserved true,
+  :paths
+  ["bootstrap/clojure/test/gravity/self_hosting/predicate_descriptor_family_test.clj"
+   "specs/accounting-removal/predicate-family-controls-census.edn"
+   "specs/accounting-removal/predicate-family-controls.md"]},
+ :CI
+ {:head "7b4dea35cc0ac17803de06ec56b7484ca7e62319",
+  :run 40986953678,
+  :successes 7,
+  :configured-skips 2,
+  :all-completed true},
+ :intake
+ {:author-helper-other-reviewers-read true,
+  :exact-receipt-search-completed true,
+  :existing-exact-result false,
+  :competing-exact-review-or-denial false,
+  :prior-goals-remain-complete true},
+ :preserved-obligations
+ {:opaque-callbacks
+  :equals-hashCode-toString-methods-and-zero-callback-assertion-retained-inert,
+  :runtime-result
+  :original-closed-instruction-result-assertion-retained-unexecuted,
+  :coherent-facts
+  :type-table-plus-regenerated-call-facts-and-constraint-ledger,
+  :Effects-context-and-call-joins :retained,
+  :three-owner-descriptor-equality :complete-structural-equality,
+  :coherent-forgeries
+  [[:operand-type-work 0]
+   [:operand-type-work 1]
+   [:operand-type-work nil]
+   [:user/unknown-field true]],
+  :typed-lowering :complete-status-assertion-retained,
+  :late-invalid
+  {:width 1025,
+   :invalid-position 1024,
+   :invalid-type :gravity.type/unknown},
+  :actual-C7-derive :source-definitions-retained-unexecuted,
+  :coherent-lowering
+  :operator-descriptor-plus-regenerated-call-fact-and-ledger},
+ :original-controls-reexecuted 37,
+ :adaptation-assessment
+ {:Effects-validator
+  {:from body-lc-type-work,
+   :to body-lc-validate-types,
+   :current-arguments [arguments],
+   :retired-allowance-argument :removed,
+   :new-validation-or-stub :none},
+  :lowering-validator
+  {:from p15-s23-lc-type-work,
+   :to p15-s23-lc-validate-types,
+   :current-arguments [arguments],
+   :retired-allowance-argument :removed,
+   :new-validation-or-stub :none},
+  :obsolete-field-forgery
+  {:old-value (:work-count validation),
+   :new-values [0 1 nil],
+   :original-unknown-field :retained,
+   :rationale
+   :closed-descriptor-refusal-independent-of-retired-telemetry},
+  :remaining-owner-allowances
+  :not-retired-or-reclassified-by-this-test-patch},
+ :main-merge :UNRUN,
+ :result :pass-in-exact-source-data-scope,
+ :kind :predicate-family-independent-composition-review-consumption,
+ :parents
+ ["50c7e58c5fb41a3001bf423b39f6e5157e030566"
+  "e4d98947201a9473d8bca5777c1f59f5e3426bfd"],
+ :receipt-sha256
+ "b30e46b07a6e0e5a0d2295f1c03fd0ddc7cea2d8cd08f3a6e7fc721398df249d",
+ :host-adapters
+ {:selected
+  [{:path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00580-p15-s23-stage2-compiler-artifact-expected-artifact-hash.clj",
+    :name p15-s23-stage2-compiler-artifact-source-path,
+    :arguments [],
+    :form-sha256
+    "1d857758143d901914ba5d4acd8d70509e9a815532df47290c1639ca50902d6b",
+    :complete-original-form-unchanged true,
+    :executed false}
+   {:path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00644-c-backend-stage2-plan-emitter-source-rule.clj",
+    :name c-backend-stage2-plan-emitter-source-rule!,
+    :arguments
+    "Load and validate the Gravity-authored P15-S23 stage2 plan-emitter rule.\n\n  Runtime-derived C lowering is deliberately bound to this source rule rather\n  than silently reusing the Clojure stage0 plan emitter.  The returned rule\n  hash is path-neutral and is carried into manifests/provenance so the exact\n  Gravity rule set used for lowering is auditable.",
+    :form-sha256
+    "d1eed19d0704e5755af7b9d0ea82ef79ea397ecb3ebf7263de6e46957b3da112",
+    :complete-original-form-unchanged true,
+    :executed false}
+   {:path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00580-p15-s23-stage2-compiler-artifact-expected-artifact-hash.clj",
+    :name p15-s23-stage2-compiler-artifact-plan,
+    :arguments
+    ([emitter artifact-source artifact-text]
+     (p15-s23-stage2-compiler-artifact-plan-raw
+      emitter
+      artifact-source
+      artifact-text
+      nil)),
+    :form-sha256
+    "2d98e63e939c156e3b4b4f9bc4d2c80d68a5ea68e4fdfaa117704ac7d110edbe",
+    :complete-original-form-unchanged true,
+    :executed false}
+   {:path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00593-p15-s23-stage2-runtime-execute-function.clj",
+    :name p15-s23-stage2-runtime-execute-function,
+    :arguments [runtime plan callee args],
+    :form-sha256
+    "b9e1f9f18ab0d9bfa76a1d234420cf6e3eed5617b845283f6bbfdc0a42adf933",
+    :complete-original-form-unchanged true,
+    :executed false}
+   {:path
+    "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+    :name invoke-c7,
+    :arguments [function arguments],
+    :form-sha256
+    "a239a912a4d78b26ce7ddddb823152bddd50d73ce2af1f10890f8f35e6900a17",
+    :complete-original-form-unchanged true,
+    :executed false}
+   {:path
+    "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj",
+    :name leaf,
+    :arguments [function & args],
+    :form-sha256
+    "654627c47c74e4cd7d3e1f2b0c785f8cd6745ed7214afcd5876d8c9765fe349e",
+    :complete-original-form-unchanged true,
+    :executed false}
+   {:path
+    "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+    :name runtime,
+    :arguments {:engine :stage2-runtime-iteration-test},
+    :form-sha256
+    "4dec83b559d3d03d01e2eb2878abd1c2d1a519e4a857220e27d72312ba0ea2b0",
+    :complete-original-form-unchanged true,
+    :executed false}
+   {:path
+    "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+    :name typed-catch-runtime-projection,
+    :arguments [],
+    :form-sha256
+    "0c2292648487068a702b48a8b2e18353bc3e6120c267429c871b4306f1c0c564",
+    :complete-original-form-unchanged true,
+    :executed false}],
+  :all-unchanged true,
+  :whole-file-pins
+  [{:path "bootstrap/clojure/src/gravity/bootstrap.clj",
+    :original-sha256
+    "f260b6986d36868c82b622f25ab9e387cf51bc0d3d3d3058035298b755557be8",
+    :current-sha256
+    "f260b6986d36868c82b622f25ab9e387cf51bc0d3d3d3058035298b755557be8"}
+   {:path
+    "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+    :original-sha256
+    "5cce988f440520052ae9379634c82c5f5dd60a8e9f71a55d56c74e133aa53443",
+    :current-sha256
+    "03207474a0e691a2ba235ac8aefa0132abf0af4b81f7ae8554cac32ab3becd71"}
+   {:path
+    "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj",
+    :original-sha256
+    "a706799cd44cfa8ddd3539869664012e9df17c421ef8ac7a9a2238d60a51fea9",
+    :current-sha256
+    "7b0797fcb989c3bdbe73433a4e1339336e5f6663f7f0849e44fce29ca85a2b94"}
+   {:path
+    "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+    :original-sha256
+    "28fad6b2626c9def338f2bd76d06a1949e0dfe67262ac7f645dd08f204e1592a",
+    :current-sha256
+    "35efc4f0352d24edae9c5c197859dfe7ac6ea0415c331e68716f908f073774fc"}
+   {:path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00580-p15-s23-stage2-compiler-artifact-expected-artifact-hash.clj",
+    :original-sha256
+    "f2a4eabf001900505e1ad467564d8896304c5b46dd1b9af48bbc6474119ab9c6",
+    :current-sha256
+    "f2a4eabf001900505e1ad467564d8896304c5b46dd1b9af48bbc6474119ab9c6"}
+   {:path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00593-p15-s23-stage2-runtime-execute-function.clj",
+    :original-sha256
+    "d58a451939a3e519150b38da00deaa1d32aad484c181021c998ce69cf9a32a71",
+    :current-sha256
+    "d58a451939a3e519150b38da00deaa1d32aad484c181021c998ce69cf9a32a71"}
+   {:path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00644-c-backend-stage2-plan-emitter-source-rule.clj",
+    :original-sha256
+    "31dabff9b3ee79fbfb493fd3740921e3f49f6a2934d4710a529afe7be46de44a",
+    :current-sha256
+    "31dabff9b3ee79fbfb493fd3740921e3f49f6a2934d4710a529afe7be46de44a"}]},
+ :base-tree "4c6e069bfd7f8bbd375231fc410f85008ccad850",
+ :genuine-owner-tests :UNRUN,
+ :base "e4d98947201a9473d8bca5777c1f59f5e3426bfd",
+ :pr 625,
+ :dependencies
+ {:boundary
+  :syntactic-direct-symbol-references-within-four-source-files,
+  :targets 331,
+  :edges 606,
+  :changed-targets [],
+  :not-a-callgraph-or-name-resolution-proof true,
+  :report-sha256
+  "e64c0494849c4373c8335245b6a22894cdb9c724a3aa13451ea73ce267a48283",
+  :edges-sha256
+  "6a0468a5f9c0280f0be6a976ef93c8f9facd4c1240fe39c2da1153917abeb111"},
+ :owner :ACC-01,
+ :artifacts
+ {"bootstrap/clojure/test/gravity/self_hosting/predicate_descriptor_family_test.clj"
+  "d5ce6ff87e096469dbcf7b3f48a8b217765cded6dcd50ea76ac4c873fe19d5e5",
+  "specs/accounting-removal/predicate-family-controls-census.edn"
+  "545e7208137721650916c1dcec0fe5a54ca43a01581a60a87283ff74caf004af",
+  "specs/accounting-removal/predicate-family-controls.md"
+  "ac12730e08fcfda901c04988a79d4c7383397e68080952fe588b702eb61c4238"},
+ :raw-restoration
+ {:all-other-original-bytes :identical,
+  :historical-file-sha256
+  "90c2ccf628933dcedb370f1a8213b5492bd03a9a1455a0a7603e9fb724a0df30",
+  :deftest complete-predicate-descriptors-cross-actual-owners,
+  :read-forms 3,
+  :replacements
+  [["(lower 'p15-s23-lc-type-work [:gravity.type/string] 65536)"
+    "(lower 'p15-s23-lc-validate-types [:gravity.type/string])"]
+   ["(body 'body-lc-type-work [:gravity.type/string] 65536)"
+    "(body 'body-lc-validate-types [:gravity.type/string])"]
+   ["[[:operand-type-work (:work-count validation)] [::unknown-field true]]"
+    "[[:operand-type-work 0] [:operand-type-work 1] [:operand-type-work nil] [::unknown-field true]]"]],
+  :family-table :byte-and-form-identical,
+  :complete-equation
+  :historical-original-plus-exact-three-single-occurrence-replacements,
+  :candidate-file-sha256
+  "d5ce6ff87e096469dbcf7b3f48a8b217765cded6dcd50ea76ac4c873fe19d5e5",
+  :all-original-assertion-forms :identical,
+  :syntactic-is-forms 13,
+  :families
+  [["map" "mapp"]
+   ["set" "setp"]
+   ["list" "listp"]
+   ["symbol" "symp"]
+   ["boolean" "boolp"]
+   ["character" "chp"]
+   ["nil" "nilp"]
+   ["keyword" "kp"]
+   ["string" "strp"]
+   ["integer" "ip"]
+   ["vector" "vp"]]},
+ :historical-helper-boundaries
+ {:selected-owner-differences-by-file
+  {"bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+   22,
+   "bootstrap/gravity/src/gravity/effects.gravity" 24,
+   "bootstrap/gravity/p15_s23/emitter.gravity" 12},
+  :all22-upstream-helper-forms :historically-identical,
+  :new-selected-validator-names
+  [body-lc-validate-types p15-s23-lc-validate-types],
+  :selected-owner-form-differences 58,
+  :four-complete-explicit-source-correspondences
+  [{:name body-io-child-types,
+    :reference sh08-ft-ordered-child-types,
+    :aliases {ids children, types type-table},
+    :entire-parameters-and-body-after-listed-renames :identical,
+    :semantic-equivalence :not-conferred}
+   {:name p15-s23-io-child-types,
+    :reference sh08-ft-ordered-child-types,
+    :aliases {ids children, types type-table},
+    :entire-parameters-and-body-after-listed-renames :identical,
+    :semantic-equivalence :not-conferred}
+   {:name body-listp-call-ids?,
+    :reference sh08-listp-call-ids?,
+    :aliases {body-sse-ids? sh08-sse-ids?},
+    :complete-body-correspondence true,
+    :dependency-id-validator-body :identical,
+    :semantic-equivalence :not-conferred}
+   {:name p15-s23-listp-call-ids?,
+    :reference sh08-listp-call-ids?,
+    :aliases {p15-s23-sse-ids? sh08-sse-ids?},
+    :complete-body-correspondence true,
+    :dependency-id-validator-body :identical,
+    :semantic-equivalence :not-conferred}],
+  :semantic-equivalence :unproven,
+  :prior-private-or-source-reviews
+  :not-promoted-to-execution-or-parent-acceptance,
+  :two-real-remaining-structural-differences
+  [{:name body-all?,
+    :reference sh08-ft-all-true?,
+    :C7-form
+    (defn
+     sh08-ft-all-true?
+     [values]
+     (if
+      (= (count values) 0)
+      true
+      (if
+       (= (first values) true)
+       (sh08-ft-all-true? (rest values))
+       false))),
+    :other-owner-form
+    (defn
+     body-all?
+     [values]
+     (loop
+      [remaining values]
+      (if
+       (= 0 (count remaining))
+       true
+       (if
+        (= true (first remaining))
+        (recur (rest remaining))
+        false)))),
+    :difference :recursive-call-versus-loop-and-equality-operand-order,
+    :semantic-equivalence :unproven}
+   {:name p15-s23-typed-all,
+    :reference sh08-ft-all-true?,
+    :C7-form
+    (defn
+     sh08-ft-all-true?
+     [values]
+     (if
+      (= (count values) 0)
+      true
+      (if
+       (= (first values) true)
+       (sh08-ft-all-true? (rest values))
+       false))),
+    :other-owner-form
+    (defn
+     p15-s23-typed-all
+     [checks]
+     (loop
+      [remaining checks]
+      (if
+       (= 0 (count remaining))
+       true
+       (if
+        (= true (first remaining))
+        (recur (rest remaining))
+        false)))),
+    :difference :recursive-call-versus-loop-and-equality-operand-order,
+    :semantic-equivalence :unproven}],
+  :ID-width-and-host-guard-quota-disposition :not-assessed-or-changed,
+  :transitive-whole-callgraph-proof false}}

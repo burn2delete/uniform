@@ -1,0 +1,940 @@
+{:findings [],
+ :integration-mode-preflight :required,
+ :tree "d9a23f1c7944288f2756baa073fbc44ca7226496",
+ :nonclaims
+ [:historical-helper-equivalence
+  :runtime-reachability-or-transitive-semantic-proof
+  :genuine-Record-Union-execution
+  :authenticated-source-admission
+  :executable-record-union-support
+  :whole-ACC01-or-accounting-removal
+  :parent569-denied-review-clearance
+  :PR502-closure
+  :release
+  :self-hosting
+  :merge-or-integration-acceptance
+  :GitHub-APPROVE],
+ :execution
+ {:denied-relay-retries false,
+  :reader-eval false,
+  :Bootstrap-loaded false,
+  :new-workers false,
+  :merge false,
+  :CI :separate,
+  :APPROVE false,
+  :genuine-kernels :UNRUN,
+  :runtime-helper-native-target-projection-execution :none,
+  :sealed-source-data-checks 10851,
+  :source-edits false,
+  :checker-sha256
+  "55e23737c0d362e464d4639f0a4980ce7a809b3b3e8b5eb08a174103a1aba4c2",
+  :author-validation :reported-not-rerun},
+ :consumer-verification
+ {:receipt-checker-tree-parents-and-31-pins :verified,
+  :independent-source-checker :reproduced-byte-identical-receipt,
+  :clean-worktree true},
+ :consumer-source-sha256
+ "d1d62b867b20906853f622d025bb5329d2a80df3b11ae9bbe2baa27bf1d16f36",
+ :candidate "7cc4b0bc8e9cf5533d5aae3ae29d07144bea4b55",
+ :public-evidence
+ {:commit "b0aac5f07e50ab89ffebb27d64f9c2f07b4afca0",
+  :tree "d4cf43f0530401496d37fe977875398ddded921d",
+  :path "specs/accounting-removal/record-union-clean-composition.edn",
+  :sha256
+  "fd6d752d4b22fc9f9f87827c58a9abb14cf743b316d71c84f368608652ef4832",
+  :generator-sha256
+  "20e069091a3dc097376a2534038707399e4d6f09bbf4cb3d2ebff174e0acaeda",
+  :composition-generator-sha256
+  "497ab46835da74eba25fd1cca07d86de895f20ebde2a08fe1824ef55f1005ebf",
+  :generators-executed false},
+ :required-next
+ [:CI
+  :fresh-clean-integration-preflight
+  :coordinator-integration
+  :authorized-genuine-execution
+  :authenticated-admission
+  :executable-RecordUnion-behavior],
+ :original-base "e047157d711652a5624012f0da7d6911ce086718",
+ :source-files
+ {:current-test-sha256
+  "d6464313d475da679ff9cf1b723c13a78972c83b42320974e8c698199ee8fb65",
+  :base-test-sha256
+  "03207474a0e691a2ba235ac8aefa0132abf0af4b81f7ae8554cac32ab3becd71",
+  :original-test-sha256
+  "df377565ef47460364b3997d5d0ef8df710d31d228c42283150da9c3fb0ff74b",
+  :suffix-sha256
+  "67ca63e3258d932f6e76e19a269120bcf9a3a1cbf09aae1ea9151aa48c460fdf",
+  :current-C7-sha256
+  "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+  :historical-C7-sha256
+  "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142"},
+ :original-evidence
+ {:receipt-sha256
+  "4abe17689fec09ca290dba77a1bea2d111c6428275d7808d8e536bf215913c40",
+  :all-original-private-artifacts-and-git-inputs-rehashed true,
+  :generator-authenticated-not-executed true,
+  :six-original-controls-reexecuted true},
+ :production
+ {:all31-current-forms-and-arguments-match-original true,
+  :exact-syntactic-closure 31,
+  :roots
+  [sh08-ru-check-family
+   sh08-ru-all-field-schemas-valid?
+   sh08-ru-all-field-values-valid?
+   sh08-ru-all-variant-schemas-valid?
+   sh08-ru-all-match-branches-valid?
+   sh08-ram-symbol-vector?
+   sh08-ram-match-shape?
+   sh08-ram-resolve-program],
+  :owner-pins-sha256
+  "d9d41e111fe4a29219741bfd20f98a7454f968d452226640020a65c462bbdfcf",
+  :whole-file-hashes :historical-current-distinct,
+  :all-production-conserved-from-base true,
+  :six-historical-helper-differences
+  [{:name sh08-ru-all-field-schemas-valid?,
+    :current
+    (defn
+     sh08-ru-all-field-schemas-valid?
+     [fields]
+     (if
+      (sh08-ru-all-record-shapes? fields #{:name :type})
+      (loop
+       [remaining fields]
+       (if
+        (= (count remaining) 0)
+        (sh08-ft-unique-records? fields :name)
+        (let
+         [field (first remaining)]
+         (if
+          (keyword? (get field :name))
+          (if
+           (sh08-ru-supported-type? (get field :type))
+           (recur (rest remaining))
+           false)
+          false))))
+      false)),
+    :historical
+    (defn
+     sh08-ru-all-field-schemas-valid?
+     [fields]
+     (if
+      (sh08-ru-all-record-shapes? fields #{:name :type})
+      (if
+       (sh08-ft-unique-records? fields :name)
+       (loop
+        [remaining fields]
+        (if
+         (= (count remaining) 0)
+         true
+         (let
+          [field (first remaining)]
+          (if
+           (keyword? (get field :name))
+           (if
+            (sh08-ru-supported-type? (get field :type))
+            (recur (rest remaining))
+            false)
+           false))))
+       false)
+      false)),
+    :behavioral-equivalence :unassessed}
+   {:name sh08-ru-all-field-values-valid?,
+    :current
+    (defn
+     sh08-ru-all-field-values-valid?
+     [fields]
+     (if
+      (sh08-ru-all-record-shapes? fields #{:name :value})
+      (loop
+       [remaining fields]
+       (if
+        (= (count remaining) 0)
+        (sh08-ft-unique-records? fields :name)
+        (if
+         (keyword? (get (first remaining) :name))
+         (recur (rest remaining))
+         false)))
+      false)),
+    :historical
+    (defn
+     sh08-ru-all-field-values-valid?
+     [fields]
+     (if
+      (sh08-ru-all-record-shapes? fields #{:name :value})
+      (if
+       (sh08-ft-unique-records? fields :name)
+       (loop
+        [remaining fields]
+        (if
+         (= (count remaining) 0)
+         true
+         (if
+          (keyword? (get (first remaining) :name))
+          (recur (rest remaining))
+          false)))
+       false)
+      false)),
+    :behavioral-equivalence :unassessed}
+   {:name sh08-ru-all-match-branches-valid?,
+    :current
+    (defn
+     sh08-ru-all-match-branches-valid?
+     [branches]
+     (if
+      (sh08-ru-all-record-shapes? branches #{:variant :result})
+      (loop
+       [remaining branches]
+       (if
+        (= (count remaining) 0)
+        (sh08-ft-unique-records? branches :variant)
+        (if
+         (keyword? (get (first remaining) :variant))
+         (recur (rest remaining))
+         false)))
+      false)),
+    :historical
+    (defn
+     sh08-ru-all-match-branches-valid?
+     [branches]
+     (if
+      (sh08-ru-all-record-shapes? branches #{:variant :result})
+      (if
+       (sh08-ft-unique-records? branches :variant)
+       (loop
+        [remaining branches]
+        (if
+         (= (count remaining) 0)
+         true
+         (if
+          (keyword? (get (first remaining) :variant))
+          (recur (rest remaining))
+          false)))
+       false)
+      false)),
+    :behavioral-equivalence :unassessed}
+   {:name sh08-ru-all-variant-schemas-valid?,
+    :current
+    (defn
+     sh08-ru-all-variant-schemas-valid?
+     [variants]
+     (if
+      (sh08-ru-all-record-shapes? variants #{:payload-type :tag})
+      (loop
+       [remaining variants]
+       (if
+        (= (count remaining) 0)
+        (sh08-ft-unique-records? variants :tag)
+        (let
+         [variant (first remaining)]
+         (if
+          (keyword? (get variant :tag))
+          (if
+           (sh08-ru-supported-type? (get variant :payload-type))
+           (recur (rest remaining))
+           false)
+          false))))
+      false)),
+    :historical
+    (defn
+     sh08-ru-all-variant-schemas-valid?
+     [variants]
+     (if
+      (sh08-ru-all-record-shapes? variants #{:payload-type :tag})
+      (if
+       (sh08-ft-unique-records? variants :tag)
+       (loop
+        [remaining variants]
+        (if
+         (= (count remaining) 0)
+         true
+         (let
+          [variant (first remaining)]
+          (if
+           (keyword? (get variant :tag))
+           (if
+            (sh08-ru-supported-type? (get variant :payload-type))
+            (recur (rest remaining))
+            false)
+           false))))
+       false)
+      false)),
+    :behavioral-equivalence :unassessed}
+   {:name sh08-ru-supported-type?,
+    :current
+    (defn
+     sh08-ru-supported-type?
+     [value]
+     (if
+      (keyword? value)
+      (contains?
+       #{:gravity.type/bool
+         :gravity.type/integer
+         :gravity.type/nil
+         :gravity.type/string
+         :gravity.type/keyword}
+       value)
+      false)),
+    :historical
+    (defn
+     sh08-ru-supported-type?
+     [value]
+     (contains?
+      #{:gravity.type/bool
+        :gravity.type/integer
+        :gravity.type/nil
+        :gravity.type/string
+        :gravity.type/keyword}
+      value)),
+    :behavioral-equivalence :unassessed}
+   {:name sh08-ru-value-type,
+    :current
+    (defn
+     sh08-ru-value-type
+     [value]
+     (if
+      (= nil value)
+      :gravity.type/nil
+      (if
+       (boolean? value)
+       :gravity.type/bool
+       (if
+        (integer? value)
+        :gravity.type/integer
+        (if
+         (string? value)
+         :gravity.type/string
+         (if
+          (keyword? value)
+          :gravity.type/keyword
+          :gravity.type/unknown)))))),
+    :historical
+    (defn
+     sh08-ru-value-type
+     [value]
+     (if
+      (= value nil)
+      :gravity.type/nil
+      (if
+       (contains? #{true false} value)
+       :gravity.type/bool
+       (if
+        (integer? value)
+        :gravity.type/integer
+        (if
+         (string? value)
+         :gravity.type/string
+         (if
+          (keyword? value)
+          :gravity.type/keyword
+          :gravity.type/unknown)))))),
+    :behavioral-equivalence :unassessed}],
+  :semantic-equivalence :unproven},
+ :host-dispatch
+ {:name invoke-c7,
+  :form-sha256
+  "a239a912a4d78b26ce7ddddb823152bddd50d73ce2af1f10890f8f35e6900a17",
+  :entire-original-form-unchanged true,
+  :host-source-symbol-closure
+  [{:name c7-plan,
+    :form-sha256
+    "272a25cf110d62a8763fd8be7c2e58e9bbf5f55a203625efd026745004b547be",
+    :executed false}
+   {:name c7-source-relative-path,
+    :form-sha256
+    "c988827cd72f23ed2e2bb6c95b3f004d7139d57561e099f389d1a19b4aa20a76",
+    :executed false}
+   {:name compile-plan,
+    :form-sha256
+    "e83014a8390ec3c0d0494caec91ac77ac8b1073f0ea4c9c8b268e01bbbeaf6f6",
+    :executed false}
+   {:name invoke-c7,
+    :form-sha256
+    "a239a912a4d78b26ce7ddddb823152bddd50d73ce2af1f10890f8f35e6900a17",
+    :executed false}
+   {:name path,
+    :form-sha256
+    "736ef1a649ba77641c3cc67e500f81d691ea621359e8d1b55a5c47bdc91eaa9e",
+    :executed false}
+   {:name repository-root,
+    :form-sha256
+    "463cc4bc321d8e4cfd75b4b45134e4c254b4d0f5f6938841a2263680a9e7ffab",
+    :executed false}
+   {:name root,
+    :form-sha256
+    "094d8021289a81fc67ce1d4e416ad86f1945e5afb3226270c6bebcf29790fe33",
+    :executed false}],
+  :direct-bootstrap-adapters
+  [{:name c-backend-stage2-plan-emitter-source-rule!,
+    :path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00644-c-backend-stage2-plan-emitter-source-rule.clj",
+    :form-sha256
+    "d1eed19d0704e5755af7b9d0ea82ef79ea397ecb3ebf7263de6e46957b3da112",
+    :arguments
+    "Load and validate the Gravity-authored P15-S23 stage2 plan-emitter rule.\n\n  Runtime-derived C lowering is deliberately bound to this source rule rather\n  than silently reusing the Clojure stage0 plan emitter.  The returned rule\n  hash is path-neutral and is carried into manifests/provenance so the exact\n  Gravity rule set used for lowering is auditable.",
+    :executed false}
+   {:name p15-s23-stage2-compiler-artifact-plan,
+    :path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00580-p15-s23-stage2-compiler-artifact-expected-artifact-hash.clj",
+    :form-sha256
+    "05ef085d40e469462a952ebb6ccc3568c3f2df338dcda83a780574c4d5289d68",
+    :arguments
+    ([emitter artifact-source artifact-text module-routes]
+     (p15-s23-stage2-compiler-artifact-plan-raw
+      emitter
+      artifact-source
+      artifact-text
+      module-routes
+      nil)),
+    :executed false}
+   {:name p15-s23-stage2-runtime-execute-function,
+    :path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00593-p15-s23-stage2-runtime-execute-function.clj",
+    :form-sha256
+    "b9e1f9f18ab0d9bfa76a1d234420cf6e3eed5617b845283f6bbfdc0a42adf933",
+    :arguments [runtime plan callee args],
+    :executed false}],
+  :executed false,
+  :runtime-reachability-or-transitive-semantics :not-proven},
+ :CI
+ {:head "7cc4b0bc8e9cf5533d5aae3ae29d07144bea4b55",
+  :run 40988755307,
+  :successes 7,
+  :configured-skips 2,
+  :all-completed true},
+ :assertion-form-count 21,
+ :intake
+ {:author-helper-other-reviewers-read true,
+  :exact-receipt-search-done true,
+  :existing-exact-result false,
+  :competing-or-denied-exact-review false,
+  :prior-goals-remain-complete true},
+ :main-merge :UNRUN,
+ :kind :record-union-independent-composition-review-consumption,
+ :historical-qualifications
+ {:census-old-C7-and-test-file-hashes :historical-only,
+  :two-anonymous-reader-serialized-test-hashes
+  :unendorsed-auxiliary-not-independent-evidence,
+  :normalization :none-for-raw-spans-or-Gravity-pins,
+  :host-reader-local-gensyms-only-for-dispatch-comparison true},
+ :parents
+ ["585c2dab0fcc0a2d8d30ec988a3f3f7d5e151f53"
+  "7d590aa40932b2592f43dd8aa0785ac79328fcfc"],
+ :receipt-sha256
+ "57f46b92d793d97f5be8fd2dbc668061e2acb4f7c2068bff4cf5e5989d39db82",
+ :original-spans
+ [{:name record-union-descriptor-rows-have-no-count-quota,
+   :raw-span-sha256
+   "5e1dd27e8ce47128ec56106dcafb51a080a9c92473735c643d417e7907156efc"}
+  {:name union-branch-definitions-have-no-count-quota,
+   :raw-span-sha256
+   "241fdc205a7da69cfc54dc744313511cc1a1c295d3384c82b76246b0411f2aa7"}],
+ :verdict :scoped-source-pass,
+ :composition
+ {:base-entries 10087,
+  :candidate-entries 10089,
+  :all-base-paths-modes-blobs-conserved-except-exact-test-append true,
+  :exact-original-two-record-additions true,
+  :entire-current-main-test-prefix-retained true,
+  :exact-reviewed-two-test-suffix true,
+  :all-original-comments-and-negative-controls-preserved true,
+  :current-main-quote-collection-reader-predicate-additions-conserved
+  true},
+ :genuine-owner-tests :UNRUN,
+ :base "7d590aa40932b2592f43dd8aa0785ac79328fcfc",
+ :inert-corruption-controls
+ [{:refused true,
+   :check :comment-byte-conservation,
+   :case :mutated-comment}
+  {:refused true,
+   :check :full-original-control,
+   :case :dropped-last-row-coverage}
+  {:refused true, :check :production-pin, :case :forged-production-pin}
+  {:refused true, :check :closure-complete, :case :omitted-dependency}
+  {:refused true,
+   :check :historical-current-forms-differ,
+   :case :false-equivalence}
+  {:case :reader-eval-payload,
+   :refused true,
+   :check :reader-eval-disabled}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case [:lost-complete-original-kernel 0]}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case [:lost-complete-original-kernel 1]}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case
+   [:lost-semantic-assertion
+    0
+    "(is (= {:status :accepted} (check family)))"]}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case [:lost-semantic-assertion 1 "(is (true? (valid? rows)))"]}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case
+   [:lost-semantic-assertion
+    2
+    "(is (false? (valid? (assoc-in rows [64 id-key] (get (first rows) id-key)))))"]}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case
+   [:lost-semantic-assertion
+    3
+    "(is (false? (valid? (assoc-in rows [64 id-key] \"not-a-keyword\"))))"]}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case
+   [:lost-semantic-assertion
+    4
+    "(is (false? (valid? (assoc-in rows [64 :unexpected] true))))"]}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case
+   [:lost-semantic-assertion
+    5
+    "(is (false? (valid? (apply list rows))))"]}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case
+   [:lost-semantic-assertion 6 "(is (= :rejected (:status result)))"]}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case
+   [:lost-semantic-assertion 7 "(is (= reason (:reason result)))"]}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case
+   [:lost-semantic-assertion 8 "(is (true? (valid-names? names)))"]}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case
+   [:lost-semantic-assertion 9 "(is (true? (valid-match? match)))"]}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case
+   [:lost-semantic-assertion
+    10
+    "(is (= :accepted (:status resolved)))"]}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case
+   [:lost-semantic-assertion
+    11
+    "(is (= names (mapv (fn* [reader-generated-0] (get-in reader-generated-0 [:definition :name])) (:branch-sources resolved))))"]}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case
+   [:lost-semantic-assertion
+    12
+    "(is (= 64 (get-in resolved [:branch-sources 64 :family :result])))"]}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case
+   [:lost-semantic-assertion
+    13
+    "(is (false? (valid-names? invalid)))"]}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case
+   [:lost-semantic-assertion
+    14
+    "(is (false? (valid-match? (assoc match :branch-definitions invalid))))"]}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case
+   [:lost-semantic-assertion 15 "(is (= :rejected (:status result)))"]}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case
+   [:lost-semantic-assertion
+    16
+    "(is (= :union-match-shape-invalid (:reason result)))"]}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case
+   [:lost-semantic-assertion
+    17
+    "(is (false? (valid-match? invalid)))"]}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case
+   [:lost-semantic-assertion 18 "(is (= :rejected (:status result)))"]}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case
+   [:lost-semantic-assertion
+    19
+    "(is (= :match-branch-definition-required (:reason result)))"]}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case
+   [:lost-semantic-assertion 20 "(is (= last-name (:actual result)))"]}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case :lost-last-descriptor-row}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case :duplicate-no-longer-late}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case :lost-last-descriptor-type}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case :lost-last-branch-result}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case :lost-last-node-coverage}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case :owner-substitution}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case :changed-historical-comment}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case :lost-scrutinee-negative}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case :lost-final-definition-negative}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ft-index]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ft-index]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ft-index]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ft-node-index]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ft-node-index]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ft-node-index]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ft-record-shape?]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ft-record-shape?]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ft-record-shape?]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ft-unique-records?]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ft-unique-records?]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ft-unique-records?]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ram-match-shape?]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ram-match-shape?]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ram-match-shape?]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ram-program-error]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ram-program-error]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ram-program-error]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ram-program-shape?]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ram-program-shape?]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ram-program-shape?]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ram-resolve-branches]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ram-resolve-branches]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ram-resolve-branches]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ram-resolve-program]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ram-resolve-program]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ram-resolve-program]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ram-symbol-vector?]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ram-symbol-vector?]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ram-symbol-vector?]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ru-all-field-schemas-valid?]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ru-all-field-schemas-valid?]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ru-all-field-schemas-valid?]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ru-all-field-values-valid?]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ru-all-field-values-valid?]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ru-all-field-values-valid?]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ru-all-match-branches-valid?]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ru-all-match-branches-valid?]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ru-all-match-branches-valid?]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ru-all-record-shapes?]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ru-all-record-shapes?]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ru-all-record-shapes?]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ru-all-variant-schemas-valid?]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ru-all-variant-schemas-valid?]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ru-all-variant-schemas-valid?]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ru-check-family]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ru-check-family]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ru-check-family]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ru-check-match]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ru-check-match]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ru-check-match]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ru-check-record]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ru-check-record]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ru-check-record]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ru-check-union]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ru-check-union]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ru-check-union]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ru-definition-matches]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ru-definition-matches]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ru-definition-matches]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ru-entry-by]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ru-entry-by]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ru-entry-by]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ru-family-from-core]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ru-family-from-core]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ru-family-from-core]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ru-family-shape?]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ru-family-shape?]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ru-family-shape?]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ru-first-branch-type-mismatch]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ru-first-branch-type-mismatch]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ru-first-branch-type-mismatch]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ru-first-field-type-mismatch]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ru-first-field-type-mismatch]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ru-first-field-type-mismatch]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ru-first-invalid-branch]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ru-first-invalid-branch]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ru-first-invalid-branch]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ru-first-missing-field]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ru-first-missing-field]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ru-first-missing-field]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ru-first-missing-variant]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ru-first-missing-variant]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ru-first-missing-variant]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ru-name-values]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ru-name-values]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ru-name-values]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ru-supported-type?]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ru-supported-type?]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ru-supported-type?]}
+  {:refused true,
+   :check :syntactic-closure-completeness,
+   :case [:lost-dependency sh08-ru-value-type]}
+  {:refused true,
+   :check :complete-current-definition-pin,
+   :case [:forged-source-pin sh08-ru-value-type]}
+  {:refused true,
+   :check :current-arguments,
+   :case [:lost-arguments sh08-ru-value-type]}
+  {:refused true,
+   :check :full-path-object-mode-equation,
+   :case :unrelated-path-deleted}
+  {:refused true,
+   :check :full-path-object-mode-equation,
+   :case :unrelated-path-added}
+  {:refused true,
+   :check :full-path-object-mode-equation,
+   :case :unrelated-blob-changed}
+  {:refused true,
+   :check :full-path-object-mode-equation,
+   :case :unrelated-mode-changed}
+  {:refused true,
+   :check :full-path-object-mode-equation,
+   :case :test-executable-mode}
+  {:refused true,
+   :check :exact-main-prefix-and-original-suffix,
+   :case :lost-current-main-prefix}
+  {:refused true,
+   :check :historical-whole-production-hash,
+   :case :stale-whole-production-hash}
+  {:refused true,
+   :check :historical-whole-test-hash,
+   :case :stale-whole-test-hash}
+  {:refused true, :check :tree-identity, :case :forged-tree}
+  {:refused true,
+   :check :complete-dispatch-source-form,
+   :case [:lost-dispatch-adapter c7-plan]}
+  {:refused true,
+   :check :complete-dispatch-source-form,
+   :case [:lost-dispatch-adapter c7-source-relative-path]}
+  {:refused true,
+   :check :complete-dispatch-source-form,
+   :case [:lost-dispatch-adapter compile-plan]}
+  {:refused true,
+   :check :complete-dispatch-source-form,
+   :case [:lost-dispatch-adapter invoke-c7]}
+  {:refused true,
+   :check :complete-dispatch-source-form,
+   :case [:lost-dispatch-adapter path]}
+  {:refused true,
+   :check :complete-dispatch-source-form,
+   :case [:lost-dispatch-adapter repository-root]}
+  {:refused true,
+   :check :complete-dispatch-source-form,
+   :case [:lost-dispatch-adapter root]}
+  {:refused true,
+   :check :complete-dispatch-source-form,
+   :case
+   [:lost-dispatch-adapter c-backend-stage2-plan-emitter-source-rule!]}
+  {:refused true,
+   :check :complete-dispatch-source-form,
+   :case
+   [:lost-dispatch-adapter p15-s23-stage2-compiler-artifact-plan]}
+  {:refused true,
+   :check :complete-dispatch-source-form,
+   :case
+   [:lost-dispatch-adapter p15-s23-stage2-runtime-execute-function]}],
+ :pr 620,
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01}
