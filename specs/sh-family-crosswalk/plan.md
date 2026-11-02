@@ -200,3 +200,30 @@ language-boundary checks. Record actual results and failures. No compiler proof
 replay or historical hash renewal is introduced. Publish unfinished work in a
 draft PR. Merge only completed independently reviewed and validated work under
 the standing authorization, then supply accepted graph inputs to the collector.
+
+## Future task dependency projection
+
+Extend the existing crosswalk and dependency checker, preserving the separate
+149-key current SH projection. Capture all forty future records from the four
+existing marked regions with exact bodies, hashes, source pins, owners and
+checkboxes. Reuse the same source snapshots and strict prewrite Git validation;
+do not create another task ledger. Live checks reject missing, changed,
+duplicated or misowned records while allowing navigation-only preamble changes.
+
+Read the explicit twenty-consumer table in
+[the existing dependency contract](../../docs/acceptance-dependencies.md#future-task-construction-and-composition).
+Construction uses declared producer interfaces; selected product construction
+also consumes the specified adopted contracts. Composition consumes the actual
+selected outputs, each with its exact producer source, rather than whole broad
+component completion. Every result remains execution/review-unassessed.
+Report the other twenty consumers as unresolved dependency joins; missing rows
+must not appear as completed or eligible composition. Future-to-SH/full-language
+joins and detailed Math/Schema and Release output allocation remain pending.
+
+Preserve the complete previous readiness bridge/projection and fingerprint
+before updating the dependency document's explicit applying pin. All current
+task file pins, SH/SH07 routes and scoped historical receipts stay fixed. Check
+literal table syntax, known consumers/producers, duplicate/malformed/unknown
+references, missing populations, source tampering, advisory frontier behavior,
+and preservation of selected-result versus whole-task boundaries. Source review,
+actual implementation, independent acceptance and integration remain separate.

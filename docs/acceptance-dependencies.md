@@ -158,6 +158,75 @@ only successful final-tree commands receive passing credit. No compiler suite,
 current-source construction, C12 run, authoritative migration or public seedless
 acceptance is part of this documentation/tooling increment.
 
+## Future task construction and composition
+
+The crosswalk captures the exact forty future task bodies from the four
+existing marked regions in Domains, Release and Platform. Each keeps its sole
+editable component task file, source pin, literal ID, checkbox and full closing
+evidence. Capturing these records does not add SH criteria, route keys or
+accepted evidence. A changed, missing or duplicated body invalidates this view.
+
+The following declarations formalize the nine wider Domain tasks' explicit
+`Dependencies consume` clauses and the eleven Platform Product records together
+with [their existing composition plan](../specs/platform-workflow/plan.md#product-decision-and-implementation-order).
+They are dependency declarations, not another task/status ledger. Full task IDs
+are literal; `none` means this table declares no prerequisite at that boundary.
+Each named producer supplies only the selected output described by the
+consumer's existing full criteria. A broad parent checkbox is never a proxy
+for that output's execution or acceptance.
+
+Construction can use versioned declared producer interfaces. `Start results`
+identifies the adopted product decisions needed for selected product work;
+ordinary interface/fixture development can precede adoption. `Composition
+results` requires real selected outputs before claiming that consumer result.
+Start results are also composition inputs. Every selected result stays
+execution-and-review-unassessed here, including outputs of checked historical
+parents. This view authenticates no execution receipt. Its frontier is advisory
+and grants no platform, provider, device or publication permission.
+
+<!-- future-composition-dependencies:start -->
+| Consumer | Start results | Composition results | Selected output contract |
+| --- | --- | --- | --- |
+| `automation` | none | `build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects`, `auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime` | Typed operation graph, granted roots/commands, dry-run and actual action audit are distinct outputs. |
+| `blockchain` | none | `schema`, `legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries` | Checked versioned state/ABI schemas and deterministic safe transition/authority facts; preserve selected chain rules and current accounting removal. |
+| `crypto` | none | `auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`, `legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries` | Secret/key authority, audited boundaries and protocol-specific checks; metadata does not prove cryptographic execution. |
+| `formal` | none | `legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution`, `emit/current-evidence-and-remaining-work/emit3-bind-provenance-to-bytes` | Surviving obligations and exact emitted subject/proof identities, followed by actual checker/integration results. |
+| `native` | none | `backend-llvm`, `opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors` | Actual selected native artifact and preserved checks/anchors; performance claims require the consumer's real measurements. |
+| `services` | none | `query`, `schema` | Executed typed queries and checked request/result/schema contracts with selected service authority and failures. |
+| `simulation` | none | `math`, `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries` | Selected numeric/rounding contracts and actual runtime boundary behavior for deterministic simulation. |
+| `storage` | none | `schema`, `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries` | Checked durable data contracts and actual ownership/FFI execution with recovery and failure cases. |
+| `visual` | none | `workflow`, `schema`, `ui` | Checked visual/schema mappings and actual workflow/UI operations; visual graph construction alone is insufficient. |
+| `platform-product/adopt-hardware-contract` | none | none | Reviewed ISA/alternative, device model, simulator and executable workloads; hardware architect remains unassigned. |
+| `platform-product/adopt-kernel-contract` | none | none | Reviewed boot, memory, scheduling, IPC, service and driver interfaces; OS architect remains unassigned. |
+| `platform-product/adopt-application-contract` | none | none | Named end-user workloads and accepted/rejected cases; product owner remains unassigned. |
+| `platform-product/adopt-physical-boundary` | none | none | Reviewed simulation/FPGA/reference/fabrication scope and required external owners/provenance/availability; hardware/product owner remains unassigned. |
+| `platform-product/implement-hardware` | `platform-product/adopt-hardware-contract`, `platform-product/adopt-physical-boundary` | `hardware` | Uniform-authored selected design plus applicable structural/state/reset/timing/CDC/tag target conformance. |
+| `platform-product/implement-firmware` | `platform-product/adopt-hardware-contract`, `platform-product/adopt-kernel-contract`, `platform-product/adopt-physical-boundary` | `platform-product/implement-hardware`, `firmware` | Actual selected hardware and startup/boot/image contract plus applicable firmware target conformance. |
+| `platform-product/implement-os` | `platform-product/adopt-hardware-contract`, `platform-product/adopt-kernel-contract` | `kernel` | Uniform-authored selected services and applicable kernel target checks; versioned boot/driver interfaces permit independent development. |
+| `platform-product/implement-drivers` | `platform-product/adopt-hardware-contract`, `platform-product/adopt-kernel-contract` | `devices` | Uniform-authored drivers on the named substrate and applicable device/provider conformance; service ABI is a declared interface before stack integration. |
+| `platform-product/implement-applications` | `platform-product/adopt-application-contract` | `platform-product/implement-os`, `platform-product/implement-drivers` | Actual selected OS/driver service outputs used by every adopted workload, with versioned interfaces available during construction. |
+| `platform-product/integrate-execution` | none | `platform-product/implement-hardware`, `platform-product/implement-firmware`, `platform-product/implement-os`, `platform-product/implement-drivers`, `platform-product/implement-applications` | Same actual five-part stack boots and executes declared workloads with isolation, authority and device-failure evidence. |
+| `platform-product/distribute-product` | none | `platform-product/integrate-execution`, `platform-product/adopt-physical-boundary` | Reproducible distribution of the actual integrated stack; physical deliverable/bring-up only where adopted. |
+<!-- future-composition-dependencies:end -->
+
+These twenty declarations are a partial dependency review. The seven future
+Math/Schema tasks and thirteen Release testing/seed tasks retain their complete
+source clauses but are explicitly reported as unresolved dependency joins.
+Math criterion IDs such as `math/efir-verification` are output facts, not new
+task IDs; they need exact producer/consumer allocation, including independent
+checker backedges. Release suite execution needs selected actual subject/oracle
+interfaces, followed separately by stage comparison, intermediate admission
+and final release. No empty adjacency may label those joins complete.
+
+The versioned boot and service interfaces resolve construction cycles without
+removing the integrated stack's actual five producers. Four product adoption
+tasks remain material decisions with unassigned accountable people. A selected
+compiler release does not require every product surface universally; complete
+project scope still retains those outcomes. Future-to-SH and full-language
+finish-line joins, source conjunction review, independent acceptance and
+integration remain pending. Existing full-language SCCs and final proof gates
+are unchanged by this table.
+
 ## SH acceptance to Spec Kit task projection
 
 The [SH-family crosswalk](../specs/sh-family-crosswalk/spec.md) extends the same
@@ -169,10 +238,13 @@ literal IDs and sole editable marked Spec Kit ledgers.
 
 The project-wide readiness successor binds task-file versions through
 [its explicit source-version record](../specs/sh-family-crosswalk/implementation-readiness-source-version.edn).
-It conserves 135 task bodies, declares four changed Open bodies, and registers
-the resumed ten-task Governance authority. Governance is not another compiler
-pass or SH milestone. The sixteen proposed future Domain records remain outside
-the current SH task-key projection pending their exact composition. Historical
+At the Platform checkpoint it conserves 121 of the original 139 task bodies,
+declares eighteen changed Open bodies, and registers the resumed ten-task
+Governance authority. Governance is not another compiler pass or SH milestone.
+The sixteen Domain, thirteen Release and eleven Platform Product future records
+remain outside the 149-key current SH task projection. The future-task view
+below captures those forty records separately; it does not change SH incidence.
+Historical
 ownership bytes retain their original pin; live drift is reported as unassessed.
 This successor retains the original SH/SH07 routes and scoped Reader receipts,
 but its new input fingerprint requires its own independent source/routing
