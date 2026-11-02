@@ -414,7 +414,7 @@
         resolution (second (re-find #"(?s)\n  resolution:\n(.*?)(?=\n  leaves:)" workflow))]
     (is (some? resolution))
     (is (str/includes? resolution
-                        "mode: [resolution-pipeline, resolution-unmetered, resolution-invocation-selection]"))
+                       "mode: [resolution-pipeline, resolution-unmetered, resolution-invocation-selection]"))
     (is (str/includes? resolution "max-parallel: 1"))
     (is (str/includes? resolution "needs.select.outputs.resolution == 'false'"))
     (is (str/includes? resolution "git rev-parse HEAD 'HEAD^{tree}'"))
@@ -422,9 +422,9 @@
     (is (str/includes? resolution "target/ci/SHA256SUMS"))
     (is (str/includes? workflow "needs: [checks, resolution, leaves, snapshot]"))
     (is (str/includes? workflow
-                        "if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'"))
+                       "if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'"))
     (is (not (str/includes? workflow
-                           "mode: [static, contracts, bootstrap, macro, resolution, checked-core-runtime]")))))
+                            "mode: [static, contracts, bootstrap, macro, resolution, checked-core-runtime]")))))
 
 (deftest stage-selection-follows-owned-downstream-closure
   (let [change (fn [path] {:old-mode "100644" :new-mode "100644"
