@@ -5,8 +5,10 @@
                :base "b7347f6b1b978dbc318e88dfe50e7917f7b1e318"}
  :current-base {:commit "a13e148ae5078faa94f69e86a911dbe2df378e29"
                 :tree "28eeb8b082ae21af6339c3a1d994c1007530a41d"}
- :candidate {:commit "fa88135e6a25671d381ebdc94aef4301d6bb32ab"
-             :tree "d02cddef30fe29391c014341edac1536d607d902"}
+ :candidate {:source-implementation-commit "fa88135e6a25671d381ebdc94aef4301d6bb32ab"
+             :source-implementation-tree "d02cddef30fe29391c014341edac1536d607d902"
+             :final-reviewed-commit "1db48891c26779ca63da61110d68075ee035b245"
+             :final-reviewed-tree "4668a452be23e30c71b331d6ac3a206c7fc058e0"}
  :source-inputs
  [{:path "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
    :sha256 "de0432365fe42154536ca2b41f35a8048f11d426590917ce47613300e0a57b24"
