@@ -73,6 +73,9 @@
             (git! work "commit" "--quiet" "-m" (str "snapshot-" index)))
           (git! work "branch" "-M" "main")
           (git! work "push" "--quiet" "origin" "main")
+          ;; Make the bare remote's default branch explicit so the clone is
+          ;; independent of the host's init.defaultBranch setting.
+          (git! remote "symbolic-ref" "HEAD" "refs/heads/main")
           (let [remote-uri (str "file://" (.getCanonicalPath remote))]
             (git! directory "clone" "--quiet" "--depth=10" remote-uri "clone")
             (is (= "true" (git! clone "rev-parse" "--is-shallow-repository")))
