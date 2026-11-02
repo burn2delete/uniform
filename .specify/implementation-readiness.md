@@ -323,6 +323,13 @@ remains pending, without substituting author self-audit for acceptance.
 
 ## Completion evidence still required
 
+The complete L6 review also exposes a hermetic source-wording decision: L6
+lists environment reads as denied, while the selected L12 hermetic section
+permits a declared key with explicit value policy. Build/Expand retain the
+source-policy resolution before accepting that live hermetic behavior. A grant
+alone cannot substitute for L12's declared/pinned/replay/recorded-input premises.
+Local development under unchanged contracts remains available.
+
 The goal closes only when the existing source reconciliation accounts for every
 substantive original and extension obligation, every required implementation
 outcome has an actionable Spec Kit route, and unresolved decisions/restrictions
@@ -3058,3 +3065,125 @@ and all 48 original task/evidence contents after declared additions are removed.
 ASCII and whitespace checks pass. These results establish source/projection
 consistency and preservation; global source entailment, actual implementation,
 current independent acceptance and integration remain unassessed/pending.
+
+## Complete source effects and typed-handler continuation
+
+Source `a60517246473213ed0930a181f56675218586409` adds the
+[complete L6 source criteria](../specs/effects-workflow/plan.md#complete-source-effect-and-handler-criteria)
+under twelve existing tasks in six authorities. All 133 preserved facets,
+87 occurrences, nineteen substantive section conjunctions and sixteen original
+owners retain their identities. The source has 55 baseline registered labels
+and thirteen diagnostic meanings. Its census kinds are 104 semantic, 27 context
+and two unresolved accounting facets; direct review treats 109 facets and
+66 occurrences as complete semantic conjunctions, preserving the remaining
+hierarchy/provenance context. These counts and byte spans establish conservation,
+not independent semantic entailment.
+
+The new clauses cover actual source action inference and registry semantics,
+ordered/branch/latent/try/match algebra, handled/escaping projections, every
+handler/authority/capture/continuation/replay premise, build/interface records
+and full source consumer conformance. Effects3 consumes actual Types solutions,
+Auth grants and Legality captured-state facts; it does not duplicate their
+producers. Effects4's original interface/record allocation and Effects5's later
+composition remain distinct. Core retains the original observable-order source
+producer. Existing Types task authority and the C7 publication restriction
+remain unchanged; this is no C7 source-family adoption or implementation claim.
+
+Nine finite profile74 predicates retain the already recorded frozen review
+`c21258a8`, applicability `5326078f` and exact receipt qualification. Seven missing
+predicates are restored; record/replay and conditional stable registration were
+already present and remain byte-exact. Async/generator execution stays with
+Runtime memory/concurrency, resumable-error execution with Runtime cleanup,
+workflow/tool interpretation with Runtime distributed/AI, fixture interpretation
+with Stdlib testing, and stable registration with Evolution change-review.
+Auth issues grants, Expand enforces the compile-time boundary, Effects infers
+behavior and Build packages actual logs. Seven formerly empty old task-reference
+fields use their existing concrete candidate links. No second interpreter,
+harness, capability issuer or governance authority is introduced.
+
+The finite review does not accept whole L6, twelve new clauses, current
+composition, full attached owner predicates or implementation. Preserve the
+six handler classes, affine default, actual multi-shot cloning/profile/proof
+conditions, all completed/cancelled/finalized/closed reuse refusals, forbidden
+execution-context transfer, linear/borrow/raw/interrupt/lock/FFI capture and
+approved serialization representation. A handled label survives in records;
+allowances do not grant handling or capability authority. Record and replay
+produce and consume actual typed stable-ID records, with missing/mismatched/
+reordered/extra refusals and no repeated external action under the governing
+profile/R6/R7/R8 boundary. Stable registration is a conditional adoption result,
+not an ordinary unchanged-contract development prerequisite.
+
+Both retained budget-policy facets preserve their original source identity while
+current accounting removal supersedes project work/token/call/fuel allowances.
+Schema/type/result/tool identity, authority, required review and replay conditions
+survive, together with actual host/platform restrictions, external provider/
+account billing and independently meaningful timeout/retry/failure semantics.
+The existing accounting-removal outcome owns canonical cleanup.
+
+Static inspection distinguishes actual hosted label/identity/profile/fixture-
+grant/coverage checks from its generic request/response, abort mode and assigned
+affine/replay records. The seed effect graph copies declared function effects
+and lists build grants; these are not transitive inference or performed actions.
+The later Gravity normalized effect kernel retains meaningful bounded operation
+and identity checks, while its source leaves general handler/transitive analysis
+for later integration. The dated stage0 receipt has its own explicit production
+runtime/backend/package/self-hosting exclusions. None of these selected records
+proves execution of all six L6 interpreter classes. No actual compiler, provider,
+native, callback, plugin, probe or replay operation runs in this source review.
+
+Metadata `:source-effects-refinement` preserves predecessor `9e11b53e`, its
+projection/fingerprint and every earlier source/dependency refinement. It binds
+six task files, eight plans, the Effects specification, twelve current clauses,
+nine finite witnesses, full source spans/sections and sixteen owner allocations.
+Source-file records remain 32. Five newly amended original bodies produce the
+current 75 identical / 64 amended disposition; all 149 keys across 25 authorities,
+forty future records, task statuses, SH/SH07 routes and three scoped Reader
+receipts remain. The previous source-memory dependency controls now read their
+exact recorded subject; current controls check this successor's conservation.
+
+The existing dependency table retains all 409 selected joins and its declared
+scopes. Complete L6 producer/consumer dependency detail, wider full-source
+reconciliation, current independent review and actual implementation acceptance
+remain pending/unassessed. Reader contract coverage remains the first selected
+implementation increment. No other chat is messaged, and all actual execution,
+review, migration, signing and publication restrictions remain.
+
+Source clarification `5ea0927faa58b3ed0b1207c5655f630268c1ae3e`
+replaces a generic hermetic-grant qualification with the exact
+[selected L12 hermetic premises](../docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md#hermetic-builds).
+L6's environment-read denial versus L12's declared-key/value-policy exception
+remains an explicit Build/Expand source-policy decision. A grant alone does not
+admit otherwise forbidden hermetic work. Only the changed Expand task and
+Effects plan pins/witnesses advance to the clarification; unaffected source pins
+and all nine finite predicates remain. This does not accept full L12 or create
+an ordinary development gate.
+
+The governing [D1 build architecture](../docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md#build-and-package-architecture)
+permits project-manifest build grants, while [D8](../docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md)
+rejects build authority outside grants. These establish authority constraints;
+they do not replace L12's declared/pinned/replay/recorded-input premises. The
+current proposal leaves the bare L6 environment-denial wording versus the
+explicit L12 declared-key case with those existing source-policy owners.
+
+Current input fingerprint:
+`436790de37a98803d6f92a682ad63bd8211d16e539ab7b5cf4c670f4609b20f4`.
+
+Final validation: SH generation/read-only comparison and the read-only dependency
+audit pass. All 54 crosswalk tests / 14,019 assertions and 23 dependency tests /
+2,282 assertions pass with zero failures/errors. Controls bind exact source spans,
+complete section membership, finite predicates, original owner obligations and
+references, current task bodies/statuses, exact label/diagnostic sets, preserved
+SH/SH07 routes and Reader receipts; missing occurrence, lost section condition
+and unknown-criterion controls retain refusals. These are source conservation
+and projection checks, not semantic acceptance or interpreter execution.
+Canonical documents (240 / 19 indexes), dated full-language structural validation
+and the language boundary (six tests / eleven assertions) pass. Conservation/
+navigation passes for 87 changed files, 81 Markdown files, 3,231 local references,
+139 original routes, 48 historical spec/plan suffixes and all 48 original task/
+evidence contents after declared additions are removed. ASCII/whitespace checks
+pass. The preliminary conservation helper did not recognize the new marker style;
+its explicit removal rule now reproduces the prior files byte-for-byte without
+weakening source preservation. Temporary script parse corrections preceded their
+writes. The initial pre-clarification projection was superseded by the verified
+fingerprint and checks above. No current semantic, implementation, independent
+review, integration, release or seed-retirement completion is conferred.
