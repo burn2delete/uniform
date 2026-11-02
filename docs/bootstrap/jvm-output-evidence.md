@@ -248,3 +248,15 @@ c0141e35374c76c54b3cd1510bde5cdee730dc6f9f9a78f30d69c1bfb17af5e0
 for .qst. Source and plan identity and all five emitted-file hashes recompute;
 real javac/JAR/java products and the existing source, path, integrity and
 CREATE_NEW refusals remain. No private manifest admission or publication runs.
+
+## Four-slice macro-main composition
+
+The fresh exact-b30 composition is recorded in
+[the shared composition evidence](c-compile-sequencing-evidence.md#four-slice-macro-main-composition).
+Paired JVM records preserve actual host directory
+/var/folders/3y/hpny2h8j4jn2qwyxxrzm3hb00000gn/T/gravity-jvm-output-evidence-5803085413034590558.
+Complete/raw hashes are
+8ff74603e299689142b7e0e48b57a8df5f39a03d8fc8dbd4a205d9daf3837a76
+and 2e7b661cf982262b0e2321595d13bf7b9757bea5dd581df43192cf98438f7ac1.
+Source/plan identity and five emitted hashes per spelling recompute; no actual
+path, mode, pin, native authority record or file field is normalized.

@@ -331,3 +331,33 @@ Exact independent acceptance, candidate-owned CI/artifacts and immediate clean
 current-main preflight remain required. Earlier CI cannot establish eligibility
 for this composition or later main tips. All existing native, authority, pinned
 Reader, package/archive and release restrictions and nonclaims remain.
+
+## Four-slice macro-main composition
+
+Declared base b30e2695148e9a4fd039dbfedc29b0a42531aad5 has tree
+c47b12bb4f9945f425be1b26abec1ddd2de099a4. Source union
+253026c200fd7034a0cccc9e022ad66cf1499091 has tree
+c4bd0716dfdae396ba773ca9a232b7c050a5bd75. It normally merges the reviewed
+C/JVM/Release source, incoming main Macro preparation and reviewed Types
+verification source 5132f802270d0c83b7a2b9d198c89b4ea4cf1d48. All prior
+production/test bodies and main's two Macro files remain exact; the map merges
+their separate rows. The union has 17 owned paths. All four draft/source PR
+histories remain ancestors; they must receive no duplicate integration credit.
+
+Fresh original before processes for all four slices execute exact clean b30
+in the same Runtime checkout and exit before restoration. All complete/native
+data and original serialized records agree with source-union after products;
+source, plan, byte and retained Core provenance hashes recompute. The original
+Release digest-root lookup also agrees. Types' retained Core inputs remain
+historical data and its native report still lacks schema/layout evidence.
+
+Backend tests pass 47/967, Types 10/271, eight selected Release tests 8/94,
+boundary 47/1154 and seed printer 1/15. An initial combined backend/Types
+command loaded Bootstrap before the C7 cold-load assertions and failed twice;
+the complete mixed-bootstrap-nonpass log is retained. The corrected commands
+run the unchanged suites in separate fresh JVMs. Eight whole production files
+reconstruct; twelve-path contextual lint has zero warnings/blockers, archived
+at /tmp/uniform-backend-release-b30-lint. Cold stage counts are 19/20/5/14
+without Bootstrap; docs, roadmap and governance pass. Exact final independent
+acceptance, new candidate-owned CI/artifacts and immediate clean current-main
+preflight remain required. All existing restrictions and nonclaims remain.

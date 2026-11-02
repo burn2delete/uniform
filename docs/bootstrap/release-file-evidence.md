@@ -213,3 +213,11 @@ emitted-plan hash f795cce4d434fb126aae28ed403b71edcb42331fb89a5ea92db3d6a681c252
 complete/raw records and original digest-root lookup order. A missing file still
 raises the original host exception for reads and returns the legacy digest
 sentinel only. Those observations confer no package or release admission.
+
+## Four-slice macro-main composition
+
+Fresh exact-b30 before/after file products and original operation-root lookup
+agree in the same Runtime checkout, as recorded in
+[the shared composition evidence](c-compile-sequencing-evidence.md#four-slice-macro-main-composition).
+Main's inventory suppliers and package observations remain exact. No
+package/archive/release builder or new package-observation test is executed.

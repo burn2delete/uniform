@@ -62,3 +62,17 @@ Three-path contextual lint has zero warnings/blockers; receipts are archived at
 Independent final acceptance, own integration-candidate CI/artifacts and
 immediate clean current-main preflight remain required. Earlier source, CI or
 main-snapshot acceptance cannot confer eligibility on a later composition.
+
+## Four-slice macro-main composition
+
+The exact-b30 base/source tuple and combined checks are recorded in
+[the shared composition evidence](c-compile-sequencing-evidence.md#four-slice-macro-main-composition).
+Fresh before execution uses original legacy verification on clean b30 in the
+Runtime checkout; after execution uses the composed Types source there.
+Complete/raw hashes are
+e9aa8ae256cdecca893b978da37fab9cb178e560b74270bd34f2c0e0b0420616
+and 6b449e0e4918c8aabcec149510cac6ad52740ab69e8b82469f0684ea293a6874.
+The current C7 source/plan identities above remain; actual paths are retained.
+Both historical Core input sets, native views, source/provenance preimages,
+accepted primitive typing/replay and actual pending-constraint/tamper refusals
+remain complete. Native seed report failure is not promoted to type authority.
