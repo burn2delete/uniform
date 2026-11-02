@@ -62,7 +62,7 @@ selected C11 contract does not legalize another source tuple.
 The compiler-free controls evaluate the actual current packet dispatch and
 verification forms in isolated namespaces with explicitly injected owner
 functions. The pinned C11 producer forms are read from immutable current-main
-commit `4df59ab107d5865e3afbf9173041cc9401227542`; their source hashes are
+commit `69d21cb8aacd0be8e74cbf4c9ad8b12b84d244e8`; their source hashes are
 checked before isolated evaluation. These controls prove argument forwarding,
 owner-before-downstream ordering, current v2 header parsing, current v2
 contract/rule projection, policy-binding joins, identity recomputation, and
@@ -78,11 +78,15 @@ or v3 product execution is claimed.
 
 ## Validation record
 
-The focused selector suite ran in a fresh JVM with 9 tests, 113 assertions,
-zero failures and zero errors (`/tmp/uniform-pr552-downstream-selector-v2.log`).
-The affected-owner current-v2 PR453 handoff suite ran separately with 10 tests,
-52 assertions, zero failures and zero errors
-(`/tmp/uniform-pr552-pr453-v2-producer.log`). The language-boundary gate,
+The focused selector suite ran in a fresh JVM against the final main source
+with 9 tests, 113 assertions, zero failures and zero errors
+(`/tmp/uniform-pr552-final-selector-69d.log`). A final-main genuine current-v2
+producer positive (`v2-c11-public-construction-consumes-real-c6-artifact`)
+ran separately with 1 test, 9 assertions, zero failures and zero errors
+(`/tmp/uniform-pr552-final-genuine-v2-counted.log`). The earlier full PR453
+owner suite (10 tests, 52 assertions) was run on the superseded `4df` base and
+is retained only as prior-base evidence, not as a claim about this final run.
+The language-boundary gate,
 document/roadmap validators, `git diff --check`, and current-main composition
 checks remain separate evidence. Any existing broader C13/C14/B1 ownership or
 host boundary nonpass remains a nonpass and is not converted into PR552

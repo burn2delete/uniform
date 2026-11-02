@@ -1,8 +1,7 @@
 (ns gravity.self-hosting.downstream-selection-test
   "Compiler-free controls of the actual packet entrypoint with injected owners.
    Synthetic values and injected diagnostics are NONACCEPTANCE evidence."
-  (:require [clojure.java.io :as io]
-            [clojure.java.shell :as shell]
+  (:require [clojure.java.shell :as shell]
             [clojure.test :refer [deftest is]]))
 
 (def ^:dynamic *packet-source-path*
@@ -40,7 +39,7 @@
 (defn- with-entrypoint [owners f]
   (with-dispatch ['p15-s23-stage2-c13-c14-b1-packet-from-c11!] owners f))
 
-(def native-revision "4df59ab107d5865e3afbf9173041cc9401227542")
+(def native-revision "69d21cb8aacd0be8e74cbf4c9ad8b12b84d244e8")
 
 (defn- pinned-source [path digest]
   ;; Read immutable dependency source; never execute a producer/consumer job.
