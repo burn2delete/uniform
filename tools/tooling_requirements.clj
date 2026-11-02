@@ -17,8 +17,9 @@
 
 ;; The #557 source view deliberately retains its frozen current-manifest
 ;; digest. Main later added one exact versioned Platform generated-view bridge
-;; and PR560 adds five authenticated task-source bridge changes to that same
-;; manifest. Accept this named transition only when both immutable Git
+;; and PR560 adds five authenticated task-source bridge changes. PR562 then
+;; composes the Domain source with its preserved Workflow/UI criteria on a
+;; named successor checkpoint. Accept this named transition only when both immutable Git
 ;; snapshots, the complete bridge body, the explicit task-bridge delta and
 ;; every source population agree; a live hash refresh alone is never
 ;; sufficient.
@@ -33,10 +34,10 @@
     :blob "2dc56539cf67ad1b0170b8fdffa251f7d8535885"
     :sha256 "aa51bfad176edcf7ed75109a68ea1a0bcbcb3eeeedd6311db256bf331ad01ef0"}
    :applying
-   {:commit "f4bb6ceb7e7d68fd9590938b1327edf7ace64fd4"
-    :tree "605a924d4f24a775301c5d545e75fb4c1a51210f"
-    :blob "a37f9c95b0e4534c89d1cf413b2ddbc9fadfe38c"
-    :sha256 "8a41f5aa638ec717b1321a02974e63c6afc8103f498ee5d7bfc5738ebb3ad21e"}
+   {:commit "c7bd27a6543add21a4b715ba9ed13deb67e8816e"
+    :tree "e783d6ccb3251e4af6c00edc47cb23de918b83fd"
+    :blob "c35f30b933d027a9fd7a2b2066bb1756fe4b005c"
+    :sha256 "88ae5e2254a3553321ab49c493cfa78339207d799fa4976068e2df871a4a281e"}
    :task-source-bridge-extension
    {:added-paths ["specs/runtime-workflow/tasks.md"
                   "specs/build-workflow/tasks.md"
@@ -45,24 +46,30 @@
                     "specs/legality-workflow/tasks.md"]
     :current-ref "8e6608856edcde2b57c33951839dfa9b79f2c503"
     :current-tree "23974efdf7c3fa19160a344f26084ebe051ef1a5"
-    :change-class :acceptance-boundary-extension}
-   :interpretation :platform-generated-view-v2-plus-pr560-task-source-bridge-extension})
+    :change-class :acceptance-boundary-extension
+    :successor-task-source-bridges
+    {"specs/domains-workflow/tasks.md"
+     {:current-ref "24e7b5e5cd8bc42fa495997870605b596a380678"
+      :current-tree "52a90b3d537f23b3f572ee65ff03edf827c1e29b"
+      :current-sha256 "5378c2c7fba1bb49318fc6cda890c60c77bdbdc57dfe6f5ea42ea8aa23298943"
+      :change-class :family-criteria-preserved-plus-current-main-safety-criteria}}}
+   :interpretation :platform-generated-view-v2-plus-pr560-task-source-bridge-extension-plus-pr562-domain-composition})
 
 (def pr561-current-manifest-source-transition
-  {:kind :tooling-current-manifest-pr561-runtime-successor-v1
+  {:kind :tooling-current-manifest-pr561-runtime-successor-on-pr562-domain-v1
    :path manifest-path
    :source-view-baseline-sha256
    "aa51bfad176edcf7ed75109a68ea1a0bcbcb3eeeedd6311db256bf331ad01ef0"
    :baseline
-   {:commit "f4bb6ceb7e7d68fd9590938b1327edf7ace64fd4"
-    :tree "605a924d4f24a775301c5d545e75fb4c1a51210f"
-    :blob "a37f9c95b0e4534c89d1cf413b2ddbc9fadfe38c"
-    :sha256 "8a41f5aa638ec717b1321a02974e63c6afc8103f498ee5d7bfc5738ebb3ad21e"}
+   {:commit "c7bd27a6543add21a4b715ba9ed13deb67e8816e"
+    :tree "e783d6ccb3251e4af6c00edc47cb23de918b83fd"
+    :blob "c35f30b933d027a9fd7a2b2066bb1756fe4b005c"
+    :sha256 "88ae5e2254a3553321ab49c493cfa78339207d799fa4976068e2df871a4a281e"}
    :applying
-   {:commit "9837f5ad38ff1c3621559b3496f6a52e591947ce"
-    :tree "32e5de62721c636d861557884c52a60d389b7223"
-    :blob "c604257c273d7681d0da39a169aa8c26b8b510d9"
-    :sha256 "643ca5048101b0af50d3e7285743c163aba0c0b5d7bde8a0e861c6d6fc56db67"}
+   {:commit "19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b"
+    :tree "dc79967f4939df6790c3a16b0a71a71e81191f9e"
+    :blob "4dd11c7af6868616b8bdd0c50c96a025c9e9e270"
+    :sha256 "8948438410df7c5b6c2c547e48be16b3ff8b1033ec866fb1bec432e4e3c32007"}
    :runtime-task-source-successor
    {:path "specs/runtime-workflow/tasks.md"
     :from {:current-ref "8e6608856edcde2b57c33951839dfa9b79f2c503"
@@ -72,7 +79,7 @@
          :current-tree "e8f1cc090800f9fcd9e81b7a5bcea32a88101526"
          :current-sha256 "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c"}
     :changed-record-count 5}
-   :interpretation :known-pr560-manifest-to-pr561-runtime-successor})
+   :interpretation :pr562-domain-composition-to-pr561-runtime-successor})
 
 (def historical-platform-bridge-kind
   :platform-task-authority-current-layout)
@@ -192,7 +199,8 @@
         baseline-task-paths (set (keys baseline-task-bridges))
         applying-task-paths (set (keys applying-task-bridges))
         added-task-paths (set (:added-paths extension))
-        updated-task-paths (set (:updated-paths extension))]
+        updated-task-paths (set (:updated-paths extension))
+        successor-task-source-bridges (:successor-task-source-bridges extension)]
     (require! (= (manifest-population baseline-manifest)
                  (manifest-population applying-manifest))
               "Tooling manifest transition changed a required source population")
@@ -226,6 +234,17 @@
                      (not= (get baseline-task-bridges path)
                            (get applying-task-bridges path)))
                 (str "Expected PR560 task-source bridge update is absent: " path)))
+    (doseq [[path successor] successor-task-source-bridges]
+      (let [bridge (get applying-task-bridges path)]
+        (require! bridge
+                  (str "Authenticated successor task-source bridge is absent: " path))
+        (require! (= successor
+                     (select-keys bridge [:current-ref :current-tree
+                                          :current-sha256 :change-class]))
+                  (str "Authenticated successor task-source bridge drifted: " path))
+        (require! (= (:current-sha256 successor)
+                     (sha256 (git-text (:current-ref successor) path)))
+                  (str "Authenticated successor task source bytes drifted: " path))))
     {:kind (:kind transition)
      :path (:path transition)
      :baseline baseline

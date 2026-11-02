@@ -1,0 +1,29 @@
+(ns math.eml-no-work-budget
+  (:profile :native)
+  (:target :jvm)
+  (:exports [eml-ready])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe-optimized)
+  (:metadata
+   {:math
+    {:numeric {}
+     :efir {}
+     :eml
+     {:search-manifest
+      {:manifest-id :search/sigmoid-eml-no-work-budget
+       :grammar {:basis :exp-minus-log
+                 :max-depth 6
+                 :constants [0 1 2 :pi :e]
+                 :operators [:add :sub :mul :div :eml :neg]}
+       :domain {'x {:real [-8.0 8.0]}}
+       :objective {:kind :equivalence-or-approximation
+                   :metric [:proof-cost :runtime-cost :error-bound]}
+       :ranking {:primary :proof-simplicity
+                 :secondary :estimated-runtime}
+       :pruning-rules [:domain-empty :branch-mismatch :type-invalid]
+       :deterministic? true
+       :tie-policy :stable-source-order}}}}))
+
+(defn eml-ready []
+  true)
