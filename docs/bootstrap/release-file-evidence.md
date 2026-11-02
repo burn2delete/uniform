@@ -49,3 +49,60 @@ pinned Reader, private authority or release verification/export route is run.
 Existing release pipeline tests that execute package/archive builders remain
 unrun; selected data/file tests must be identified exactly. No full artifact,
 release, migration, self-hosting or seed-retirement claim is made.
+
+## Implemented source and current-main evidence
+
+Current base is 32fe90b1e6a41df5a4083d0abe3917e0cb2643e1, tree
+b95a59281e71f741a91e6d93275fd055f8b6c962, including PR 778's shared macro
+digests. Source composition c305998fcc94150303b5cca943d0505c0c9c3fb1 has
+tree ce64d2967f4ab22a2a334139624af341d57bc0da. Incoming main changes no
+Release production or pipeline-test file. Three bodies move; both complete
+production files reconstruct from this immutable base. The legacy inventory
+boundary identifier remains unchanged, with a separate additional file boundary.
+
+Fresh before products execute exact clean main in the same Analysis checkout
+and finish before restoring the source composition. Both complete after records
+AND their original serialization match. Actual source and plan identities and
+emitted file hashes recompute; plan files round-trip to the actual compiler
+plan. Both file hashes remain
+sha256:f795cce4d434fb126aae28ed403b71edcb42331fb89a5ea92db3d6a681c25252.
+Full product digests are
+6d59a40f2e2d0ded4cf7e1b72e246711db5a405ca1306e0ce7d1bfba8e0aed22
+and ea43aa04cd7bd3219cc32dbed543b6134348e632f57ccaacc07959cb81619e6e.
+Previous e766 products remain at
+/tmp/uniform-release-files-evidence-e766-products-history.
+
+A separate fresh original-helper probe runs on exact clean main 32fe in this
+same checkout before restoring the extraction. The file-read callback replaces
+the digest Var root while reading actual bytes. Original and extracted code
+both invoke the digest root selected before argument evaluation. Complete probe
+records and original serialization match. Explicit dereferences in the new API
+preserve this ordering; callbacks are internal dependencies, never authority.
+
+Seven selected tests pass 83 assertions: the existing namespace-boundary,
+canonical-source-order, whole-file-inventory and expected-inventory-var data
+tests, plus real-file-byte-and-digest-operations,
+file-helper-wrapper-ports-and-byte-identity and
+file-digest-preserves-operation-root-lookup-and-failure. The two package/archive
+builder tests are unrun. Language/ownership passes 47 / 1154. Three-path
+contextual lint against exact main has zero warnings and blockers, archived at
+/tmp/uniform-release-files-lint-main32fe. Fresh load exposes five public APIs
+without Bootstrap. Scripts are /tmp/uniform-release-files-{capture,extract,
+verify,lookup}.clj; main32fe and boundary-preserved logs retain exact checks.
+
+## Retained nonpasses
+
+The first byte fixture used an incorrect expected digest literal; both original
+baseline and implementations returned
+89273d2f70b93285bb7ddb4bcee86a5347ca7159352e3cbdd20c23e9d1e507d3.
+Only the fixture literal is corrected; the failed 7/82 run with two failures is
+retained at /tmp/uniform-release-files-focused.log. An ownership check then
+caught an unnecessary change to the existing inventory boundary identifier.
+The original identifier is restored and the additional file boundary is explicit;
+no ownership gate is changed. The failed boundary log remains at
+/tmp/uniform-release-files-boundary-main32fe.log. The corrected focused and
+boundary runs above pass.
+
+Independent exact acceptance, candidate-owned CI/artifacts and immediate clean
+current-main preflight remain required. These data/file checks do not authorize
+any restricted package/archive/release or native route.
