@@ -94,11 +94,7 @@
   "Validate exact native carriers without foreign callbacks or accounting.
   Shared aliases are valid; only an identity on the ancestor path is a cycle."
   ([value sorted-policy]
-   (p15-s23-trusted-carrier-validation value sorted-policy :strict-native))
-  ([value sorted-policy policy]
-   (when-not (contains? #{:strict-native :hosted-initializer} policy)
-     (throw (IllegalArgumentException. "Unknown native carrier policy")))
-   (let [hosted? (= :hosted-initializer policy) active (java.util.IdentityHashMap.)]
+   (let [active (java.util.IdentityHashMap.)]
      (loop [stack [[:visit value]]]
        (if (empty? stack)
          {:status :passed}
@@ -110,8 +106,6 @@
                    [kind metadata? comparator] (p15-s23-host-carrier-header item)
                    list-carrier? (contains? p15-s23-trusted-carrier-list-classes class-name)
                    container? (or (map? item) (vector? item) (set? item) list-carrier?)
-                   view? (identical? clojure.lang.APersistentVector$SubVector (class item))
-                   tracked? (or container? (and hosted? metadata?))
                    reason
                    (cond
                      (and tail? (not (or (nil? item) list-carrier?)))
@@ -124,8 +118,7 @@
                        :untrusted-map-class-or-comparator)
                      (vector? item)
                      (when-not (and (not= :unsupported kind)
-                                    (or (= "clojure.lang.PersistentVector" class-name)
-                                        (and hosted? view?)))
+                                    (= "clojure.lang.PersistentVector" class-name))
                        :untrusted-vector-class)
                      (set? item)
                      (when-not (and (not= :unsupported kind)
@@ -141,16 +134,12 @@
                                (not (contains? p15-s23-trusted-carrier-scalar-classes class-name)))
                        :untrusted-scalar-class))
                    reason (or reason
-                              (when (and metadata? (not hosted?)) :carrier-metadata)
-                              (when (and hosted? view?)
-                                (p15-s23-hosted-native-view-reason item active))
-                              (when (and tracked? (.containsKey active item)) :cyclic-carrier))]
+                              (when metadata? :carrier-metadata)
+                              (when (and container? (.containsKey active item)) :cyclic-carrier))]
                (if reason
                  {:status :rejected :reason reason :class (or class-name :nil)}
-                 (let [pending (if tracked?
+                 (let [pending (if container?
                                  (do (.put active item true) (conj stack [:leave item])) stack)
-                       pending (if (and hosted? metadata?)
-                                 (conj pending [:visit (.meta ^clojure.lang.IObj item)]) pending)
                        pending
                        (cond
                          (map? item)

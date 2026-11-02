@@ -37,8 +37,8 @@
    [:resolution-table [:resolution-table]]])
 
 (defn sh06-resolution-carrier-validation
-  [value]
-  (p15-s23-trusted-carrier-validation value :default-only))
+  ([value] (p15-s23-trusted-carrier-validation value :default-only))
+  ([value _obsolete-bounds] (sh06-resolution-carrier-validation value)))
 
 (defn sh06-resolution-component-validations
   [artifact]

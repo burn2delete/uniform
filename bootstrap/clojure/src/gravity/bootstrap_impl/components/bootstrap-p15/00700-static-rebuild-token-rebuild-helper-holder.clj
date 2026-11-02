@@ -31,7 +31,7 @@
             "<closed-core-context>"
             {}
             {:missing-fact :bounded-closed-core-source-context})))
-      (p15-s23-closed-core-source-request-byte-count!
+      (p15-s23-closed-core-source-request-bounds!
         (:source-path context)
         (:source-text context)
         (:requested-target context))

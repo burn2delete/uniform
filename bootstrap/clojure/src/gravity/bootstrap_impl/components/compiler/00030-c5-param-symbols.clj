@@ -74,7 +74,7 @@
   [source-path artifact]
   (c5-call c5/c5-resolution-validate! source-path artifact))
 
-(defn compiler-c5-stage0-legacy-source-artifact
+(defn compiler-c5-resolution-source-artifact
   [source-path source-text]
   (c5-call c5/compiler-c5-resolution-source-artifact source-path source-text))
 
@@ -137,4 +137,4 @@
    :c5-resolution-capability-proof c5-resolution-capability-proof
    :c5-resolution-validate! c5-resolution-validate!
    :compiler-c5-resolution-source-artifact
-   compiler-c5-stage0-legacy-source-artifact})
+   compiler-c5-resolution-source-artifact})

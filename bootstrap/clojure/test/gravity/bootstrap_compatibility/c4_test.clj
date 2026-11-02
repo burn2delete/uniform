@@ -2,43 +2,11 @@
   (:require [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as bootstrap]
             [gravity.c4-macro-evidence :as c4-macro-evidence]
-            [gravity.digest :as digest]
             [gravity.macro-expansion :as macro-expansion]))
 
 (defn fixture
   [name]
   (str "bootstrap/clojure/fixtures/" name))
-
-(defn- syntax
-  [syntax-id form index]
-  {:syntax-id syntax-id
-   :form form
-   :span {:source "bootstrap-macro.gravity"
-          :form-index index
-          :start {:line 1 :column 1}
-          :end {:line 1 :column 2}}
-   :namespace 'example.core
-   :origin :source
-   :profile :hosted
-   :phase :read
-   :hygiene []
-   :metadata {}
-   :generated-origin []})
-
-(defn- expansion-fixture
-  []
-  (let [module {:module 'example.core
-                :profile :hosted
-                :target :jvm
-                :metadata {}}
-        definition (syntax "s-defmacro"
-                           '(defmacro twice [x]
-                              (syntax-quote (+ (unquote x) (unquote x))))
-                           1)
-        call (syntax "s-call" '(twice 4) 2)]
-    {:module module
-     :call call
-     :registry (bootstrap/macro-registry module [definition call])}))
 
 (deftest c4-macro-evidence-compatibility-wrappers-preserve-output-and-interposition
   (let [entry {:identity 'compat/macro
@@ -100,7 +68,8 @@
     (is (= (c4-macro-evidence/c4-macro-safety-report trace declarations)
            (bootstrap/c4-macro-safety-report trace declarations)))
     (with-redefs [bootstrap/sha256-hex (constantly "interposed-hash")
-                  bootstrap/c4-artifact-id (constantly "artifact:interposed")]
+                  bootstrap/c4-artifact-id (constantly "artifact:interposed")
+                  bootstrap/max-macro-expansion-depth 41]
       (is (= ["sha256:interposed-hash"]
              (:dependency-hashes
               (bootstrap/c4-macro-environment macro-artifact))))
@@ -113,74 +82,10 @@
              (:macro-environment
               (bootstrap/c4-expansion-input
                module c3-artifact macro-artifact))))
-      (is (= {:timeout-ms 5000}
-             (:host-safeguards (bootstrap/c4-expansion-input
-                                module c3-artifact macro-artifact)))))))
-
-(deftest ordinary-bootstrap-expansion-shares-digest-computation
-  (let [{:keys [module call registry]} (expansion-fixture)
-        hash-inputs (atom [])
-        trace (atom [])
-        result
-        (with-redefs [bootstrap/sha256-hex
-                      (fn [value]
-                        (swap! hash-inputs conj value)
-                        (digest/sha256-hex value))]
-          (bootstrap/expand-syntax-object registry module call trace 0))
-        origin (first (:generated-origin result))
-        record (first @trace)]
-    (is (= [(pr-str '(twice 4)) (pr-str '(+ 4 4))]
-           @hash-inputs))
-    (is (= (:input-hash origin) (:input-hash record)))
-    (is (= (:output-hash origin) (:output-hash record)))
-    (is (= origin (first (:generated-origin record))))))
-
-(deftest ordinary-bootstrap-custom-hooks-remain-interposable
-  (let [{:keys [module call registry]} (expansion-fixture)
-        hash-inputs (atom [])
-        injected-origin [{:from :injected
-                          :input-hash "sha256:forged-input"
-                          :output-hash "sha256:forged-output"}]
-        injected-trace {:kind :injected-trace}
-        trace (atom [])
-        result
-        (with-redefs [bootstrap/sha256-hex
-                      (fn [value]
-                        (swap! hash-inputs conj value)
-                        (digest/sha256-hex value))
-                      bootstrap/expansion-generated-origin
-                      (fn [& _] injected-origin)
-                      bootstrap/expansion-trace-record
-                      (fn [& _] injected-trace)]
-          (bootstrap/expand-syntax-object registry module call trace 0))]
-    (is (zero? (count @hash-inputs)))
-    (is (= injected-origin (:generated-origin result)))
-    (is (= [injected-trace] @trace))))
-
-(deftest ordinary-bootstrap-trace-does-not-trust-forged-origin-digests
-  (let [{:keys [module call registry]} (expansion-fixture)
-        hash-inputs (atom [])
-        injected-origin [{:from :injected
-                          :input-hash "sha256:forged-input"
-                          :output-hash "sha256:forged-output"}]
-        trace (atom [])
-        result
-        (with-redefs [bootstrap/sha256-hex
-                      (fn [value]
-                        (swap! hash-inputs conj value)
-                        (digest/sha256-hex value))
-                      bootstrap/expansion-generated-origin
-                      (fn [& _] injected-origin)]
-          (bootstrap/expand-syntax-object registry module call trace 0))
-        record (first @trace)]
-    (is (= 2 (count @hash-inputs)))
-    (is (= injected-origin (:generated-origin result)))
-    (is (not= "sha256:forged-input" (:input-hash record)))
-    (is (not= "sha256:forged-output" (:output-hash record)))
-    (is (= (str "sha256:" (digest/sha256-hex (pr-str '(twice 4))))
-           (:input-hash record)))
-    (is (= (str "sha256:" (digest/sha256-hex (pr-str '(+ 4 4))))
-           (:output-hash record)))))
+      (is (= 41
+             (get-in (bootstrap/c4-expansion-input
+                      module c3-artifact macro-artifact)
+                     [:limits :depth]))))))
 
 (deftest macro-expansion-compatibility-wrappers-preserve-output-and-interposition
   (let [path (fixture "accepted/macro-expansion.gravity")

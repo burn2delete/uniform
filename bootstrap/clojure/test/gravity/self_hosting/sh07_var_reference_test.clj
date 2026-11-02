@@ -659,8 +659,7 @@
       (with-redefs-fn {(ns-resolve 'gravity.bootstrap 'sh07-core-development-binding) (atom nil)}
         (fn []
       (with-redefs [bootstrap/sh07-core-source-path (constantly (str source))
-                    bootstrap/c-backend-resolve-p15-s23-compiler-source-path (constantly (str compiler))
-                    bootstrap/p15-s23-stage2-compiler-artifact-source-path (constantly (str emitter))
+                    bootstrap/p15-s23-stage2-compiler-artifact-source-path (constantly (str compiler))
                     bootstrap/sh07-core-build-binding!
                     (fn [] (swap! builds inc)
                       {:source-content-hash (str "sha256:" (bootstrap/sha256-bytes-hex (java.nio.file.Files/readAllBytes source)))})]

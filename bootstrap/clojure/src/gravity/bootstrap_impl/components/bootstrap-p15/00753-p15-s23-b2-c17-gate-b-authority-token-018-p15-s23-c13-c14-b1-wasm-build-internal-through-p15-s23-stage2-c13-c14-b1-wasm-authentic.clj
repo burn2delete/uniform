@@ -65,7 +65,9 @@
   (p15-s23-c13-c14-b1-require-trusted!
    source-path :c13-c14-b1-wasm-final-packet packet :default-only)
   (p15-s23-c11-mir-bounded-value!
-   source-path :c13-c14-b1-wasm-final-packet packet)
+   source-path :c13-c14-b1-wasm-final-packet packet
+   p15-s23-c13-c14-b1-max-carrier-nodes
+   p15-s23-c13-c14-b1-max-carrier-depth)
   (when-not
    (and (map? packet)
         (= p15-s23-c13-c14-b1-wasm-final-packet-keys

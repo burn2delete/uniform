@@ -100,7 +100,9 @@
   (p15-s23-c13-c14-b1-require-trusted!
    source-path :c13-c14-b1-c-final-packet packet :default-only)
   (p15-s23-c11-mir-bounded-value!
-   source-path :c13-c14-b1-c-final-packet packet)
+   source-path :c13-c14-b1-c-final-packet packet
+   p15-s23-c13-c14-b1-max-carrier-nodes
+   p15-s23-c13-c14-b1-max-carrier-depth)
   (let [top-level-class (when (some? packet) (.getName (class packet)))]
     (when-not
      (and (map? packet)

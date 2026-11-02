@@ -37,12 +37,17 @@
 
 (defn p18-file-bytes
   [path]
-  (gravity.release/file-bytes path))
+  (java.nio.file.Files/readAllBytes
+   (.toPath (java.io.File. path))))
 
 (defn p18-bytes-sha256
   [bytes]
-  (gravity.release/bytes-sha256 bytes))
+  (let [digest (.digest (java.security.MessageDigest/getInstance "SHA-256")
+                        bytes)]
+    (apply str (map #(format "%02x" (bit-and % 0xff)) digest))))
 
 (defn p18-file-sha256
   [path]
-  (gravity.release/file-sha256 #'p18-bytes-sha256 #'p18-file-bytes path))
+  (if (.isFile (java.io.File. path))
+    (str "sha256:" (p18-bytes-sha256 (p18-file-bytes path)))
+    "sha256:missing"))

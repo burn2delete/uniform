@@ -311,6 +311,8 @@
               (assoc-in manifest-route [:dependency-closure :complete?] false)]
              ["wrong resource class"
               (assoc manifest-route :resource-class :normal)]
+             ["wrong maximum vars"
+              (assoc-in manifest-route [:bounds :max-test-vars] 1)]
              ["fresh execution mode"
               (assoc manifest-route :execution-mode :fresh-isolated-process)]
              ["authoritative ceiling"
@@ -611,9 +613,7 @@
           [["bootstrap/clojure/test/gravity/self_hosting/runtime_module_reads_test.clj"
             'gravity.self-hosting.runtime-module-reads-test]
            ["bootstrap/clojure/test/gravity/self_hosting/module_census_test.clj"
-            'gravity.self-hosting.module-census-test]
-           ["bootstrap/clojure/test/gravity/self_hosting/runtime_shape_test.clj"
-            'gravity.self-hosting.runtime-shape-test]]]
+            'gravity.self-hosting.module-census-test]]]
     (let [context (planner/planning-context)
           owner (get-in context [:ownership :standalone-test-owners path])
           entry (get-in context [:standalone-test-index :by-namespace namespace])]
@@ -783,32 +783,6 @@
                    [:by-test-path
                     "bootstrap/clojure/test/gravity/c11_mir_test.clj"
                     :cache-closure-valid?]))))))
-
-(deftest cache-closure-accepts-more-than-former-input-cap
-  (let [index (component-dependencies/dependency-index)
-        component (get-in index [:by-component-id "c11-mir"])
-        test-entry (get-in index
-                           [:by-test-path
-                            "bootstrap/clojure/test/gravity/c11_mir_test.clj"])
-        base (component-dependencies/reviewed-cache-closure
-              'gravity.c11-mir-test)
-        existing (set (map :path (:inputs base)))
-        fixture-inputs
-        (->> (file-seq (io/file "bootstrap/clojure/fixtures"))
-             (filter #(.isFile %))
-             (map #(.getPath %))
-             (map #(str/replace % "\\" "/"))
-             sort
-             (remove existing)
-             (take 97)
-             (mapv #(hash-map :role :fixture :path %)))
-        closure (update base :inputs into fixture-inputs)
-        valid? (deref (ns-resolve
-                       'gravity.self-hosting.sh01-component-test-dependencies
-                       'valid-cache-closure?))]
-    (is (= 97 (count fixture-inputs)))
-    (is (> (count (:inputs closure)) 96))
-    (is (true? (valid? component test-entry closure)))))
 
 (deftest exact-development-metadata-carries-only-validated-closure
   (let [index (component-dependencies/dependency-index)

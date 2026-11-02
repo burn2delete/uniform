@@ -64,6 +64,7 @@
                 (and
                   (= :complete (:status graph))
                   (true? (:all-edges-monotone? graph))
+                  (true? (:edge-count-bounded? graph))
                   (false? (:exclusive-branch-total-order? graph))
                   (false? (:runtime-sequence-claimed? graph))
                   (= (mapv :node-id nodes) (:ordering-vertices graph))
@@ -89,7 +90,7 @@
         source-path
         artifact
         {:missing-fact
-         :topological-effect-order-and-capability-proof-closure}))
+         :bounded-topological-effect-order-and-capability-proof-closure}))
     (when-not (= (:ownership-analysis artifact) (:ownership-analysis recomputed-facts))
       (p15-s23-closed-core-fail!
         "C6-VERIFY"

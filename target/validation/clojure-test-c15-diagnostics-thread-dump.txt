@@ -1,0 +1,166 @@
+2193:
+2026-07-03 17:36:05
+Full thread dump OpenJDK 64-Bit Server VM (25.0.2 mixed mode, sharing):
+
+Threads class SMR info:
+_java_thread_list=0x0000000bd969c9e0, length=12, elements={
+0x00000001016a4b60, 0x00000001016bea40, 0x00000001016bfd50, 0x0000000bd8838000,
+0x0000000bd8838800, 0x0000000bd8839000, 0x0000000bd905a800, 0x0000000bd905b200,
+0x0000000bd8839800, 0x0000000bd883a000, 0x0000000bd57e8800, 0x0000000bd326b000
+}
+
+"main" #3 [5891] prio=5 os_prio=31 cpu=117691.41ms elapsed=391.35s tid=0x00000001016a4b60 nid=5891 waiting on condition  [0x000000016f194000]
+   java.lang.Thread.State: TIMED_WAITING (sleeping)
+	at java.lang.Thread.sleepNanos0(java.base@25.0.2/Native Method)
+	at java.lang.Thread.sleepNanos(java.base@25.0.2/Thread.java:509)
+	at java.lang.Thread.sleep(java.base@25.0.2/Thread.java:540)
+	at gravity.bootstrap_test$wait_for_process_exit.invokeStatic(bootstrap_test.clj:45)
+	at gravity.bootstrap_test$wait_for_process_exit.invoke(bootstrap_test.clj:35)
+	at gravity.bootstrap_test$run_process.invokeStatic(bootstrap_test.clj:78)
+	at gravity.bootstrap_test$run_process.invoke(bootstrap_test.clj:63)
+	at gravity.bootstrap_test$run_bin_env.invokeStatic(bootstrap_test.clj:102)
+	at gravity.bootstrap_test$run_bin_env.doInvoke(bootstrap_test.clj:100)
+	at clojure.lang.RestFn.applyTo(RestFn.java:142)
+	at clojure.core$apply.invokeStatic(core.clj:669)
+	at clojure.core$apply.invoke(core.clj:662)
+	at gravity.bootstrap_test$run_thin_bin.invokeStatic(bootstrap_test.clj:106)
+	at gravity.bootstrap_test$run_thin_bin.doInvoke(bootstrap_test.clj:104)
+	at clojure.lang.RestFn.invoke(RestFn.java:439)
+	at gravity.bootstrap_test$fn__55059.invokeStatic(bootstrap_test.clj:18529)
+	at gravity.bootstrap_test$fn__55059.invoke(bootstrap_test.clj:18519)
+	at clojure.test$test_var$fn__9898.invoke(test.clj:717)
+	at clojure.test$test_var.invokeStatic(test.clj:717)
+	at clojure.test$test_var.invoke(test.clj:708)
+	at clojure.test$test_vars$fn__9924$fn__9929.invoke(test.clj:735)
+	at clojure.test$default_fixture.invokeStatic(test.clj:687)
+	at clojure.test$default_fixture.invoke(test.clj:683)
+	at clojure.test$test_vars$fn__9924.invoke(test.clj:735)
+	at clojure.test$default_fixture.invokeStatic(test.clj:687)
+	at clojure.test$default_fixture.invoke(test.clj:683)
+	at clojure.test$test_vars.invokeStatic(test.clj:731)
+	at clojure.test$test_all_vars.invokeStatic(test.clj:737)
+	at clojure.test$test_ns.invokeStatic(test.clj:758)
+	at clojure.test$test_ns.invoke(test.clj:743)
+	at clojure.core$map$fn__5956.invoke(core.clj:2772)
+	at clojure.lang.LazySeq.force(LazySeq.java:50)
+	at clojure.lang.LazySeq.realize(LazySeq.java:87)
+	at clojure.lang.LazySeq.seq(LazySeq.java:104)
+	at clojure.lang.Cons.next(Cons.java:41)
+	at clojure.lang.RT.boundedLength(RT.java:1810)
+	at clojure.lang.RestFn.applyTo(RestFn.java:133)
+	at clojure.core$apply.invokeStatic(core.clj:669)
+	at clojure.test$run_tests.invokeStatic(test.clj:768)
+	at clojure.test$run_tests.doInvoke(test.clj:768)
+	at clojure.lang.RestFn.invoke(RestFn.java:411)
+	at gravity.bootstrap_test$_main.invokeStatic(bootstrap_test.clj:21162)
+	at gravity.bootstrap_test$_main.doInvoke(bootstrap_test.clj:21160)
+	at clojure.lang.RestFn.invoke(RestFn.java:400)
+	at clojure.lang.AFn.applyToHelper(AFn.java:152)
+	at clojure.lang.RestFn.applyTo(RestFn.java:135)
+	at clojure.lang.Var.applyTo(Var.java:707)
+	at clojure.core$apply.invokeStatic(core.clj:667)
+	at clojure.main$main_opt.invokeStatic(main.clj:515)
+	at clojure.main$main_opt.invoke(main.clj:511)
+	at clojure.main$main.invokeStatic(main.clj:665)
+	at clojure.main$main.doInvoke(main.clj:617)
+	at clojure.lang.RestFn.applyTo(RestFn.java:140)
+	at clojure.lang.Var.applyTo(Var.java:707)
+	at clojure.main.main(main.java:40)
+
+"Reference Handler" #14 [28675] daemon prio=10 os_prio=31 cpu=183.79ms elapsed=391.33s tid=0x00000001016bea40 nid=28675 waiting on condition  [0x000000017030e000]
+   java.lang.Thread.State: RUNNABLE
+	at java.lang.ref.Reference.waitForReferencePendingList(java.base@25.0.2/Native Method)
+	at java.lang.ref.Reference.processPendingReferences(java.base@25.0.2/Reference.java:246)
+	at java.lang.ref.Reference$ReferenceHandler.run(java.base@25.0.2/Reference.java:208)
+
+"Finalizer" #15 [24067] daemon prio=8 os_prio=31 cpu=0.10ms elapsed=391.33s tid=0x00000001016bfd50 nid=24067 in Object.wait()  [0x000000017051a000]
+   java.lang.Thread.State: WAITING (on object monitor)
+	at java.lang.Object.wait0(java.base@25.0.2/Native Method)
+	- waiting on <0x00000006e00001e0> (a java.lang.ref.ReferenceQueue$Lock)
+	at java.lang.Object.wait(java.base@25.0.2/Object.java:389)
+	at java.lang.Object.wait(java.base@25.0.2/Object.java:351)
+	at java.lang.ref.ReferenceQueue.remove0(java.base@25.0.2/ReferenceQueue.java:137)
+	at java.lang.ref.ReferenceQueue.remove(java.base@25.0.2/ReferenceQueue.java:215)
+	- locked <0x00000006e00001e0> (a java.lang.ref.ReferenceQueue$Lock)
+	at java.lang.ref.Finalizer$FinalizerThread.run(java.base@25.0.2/Finalizer.java:165)
+
+"Signal Dispatcher" #16 [28419] daemon prio=9 os_prio=31 cpu=0.37ms elapsed=391.33s tid=0x0000000bd8838000 nid=28419 waiting on condition  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+"Service Thread" #17 [28163] daemon prio=9 os_prio=31 cpu=6.37ms elapsed=391.33s tid=0x0000000bd8838800 nid=28163 runnable  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+"Monitor Deflation Thread" #18 [27651] daemon prio=9 os_prio=31 cpu=17.26ms elapsed=391.33s tid=0x0000000bd8839000 nid=27651 runnable  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+"C2 CompilerThread0" #19 [27395] daemon prio=9 os_prio=31 cpu=10894.38ms elapsed=391.33s tid=0x0000000bd905a800 nid=27395 waiting on condition  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+   No compile task
+
+"C1 CompilerThread0" #22 [26883] daemon prio=9 os_prio=31 cpu=2187.22ms elapsed=391.33s tid=0x0000000bd905b200 nid=26883 waiting on condition  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+   No compile task
+
+"Notification Thread" #23 [25091] daemon prio=9 os_prio=31 cpu=0.03ms elapsed=391.33s tid=0x0000000bd8839800 nid=25091 runnable  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+"Common-Cleaner" #24 [26371] daemon prio=8 os_prio=31 cpu=0.53ms elapsed=391.33s tid=0x0000000bd883a000 nid=26371 in Object.wait()  [0x000000017136e000]
+   java.lang.Thread.State: TIMED_WAITING (on object monitor)
+	at java.lang.Object.wait0(java.base@25.0.2/Native Method)
+	- waiting on <0x00000006e001ac88> (a java.lang.ref.ReferenceQueue$Lock)
+	at java.lang.Object.wait(java.base@25.0.2/Object.java:389)
+	at java.lang.ref.ReferenceQueue.remove0(java.base@25.0.2/ReferenceQueue.java:123)
+	at java.lang.ref.ReferenceQueue.remove(java.base@25.0.2/ReferenceQueue.java:201)
+	- locked <0x00000006e001ac88> (a java.lang.ref.ReferenceQueue$Lock)
+	at jdk.internal.ref.CleanerImpl.run(java.base@25.0.2/CleanerImpl.java:146)
+	at java.lang.Thread.runWith(java.base@25.0.2/Thread.java:1487)
+	at java.lang.Thread.run(java.base@25.0.2/Thread.java:1474)
+	at jdk.internal.misc.InnocuousThread.run(java.base@25.0.2/InnocuousThread.java:148)
+
+"process reaper (pid 15069)" #34 [29459] daemon prio=10 os_prio=31 cpu=19.71ms elapsed=381.80s tid=0x0000000bd57e8800 nid=29459 runnable  [0x00000001700b6000]
+   java.lang.Thread.State: RUNNABLE
+	at java.lang.ProcessHandleImpl.waitForProcessExit0(java.base@25.0.2/Native Method)
+	at java.lang.ProcessHandleImpl$1.run(java.base@25.0.2/ProcessHandleImpl.java:147)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@25.0.2/ThreadPoolExecutor.java:1090)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@25.0.2/ThreadPoolExecutor.java:614)
+	at java.lang.Thread.runWith(java.base@25.0.2/Thread.java:1487)
+	at java.lang.Thread.run(java.base@25.0.2/Thread.java:1474)
+	at jdk.internal.misc.InnocuousThread.run(java.base@25.0.2/InnocuousThread.java:148)
+
+"Attach Listener" #35 [25643] daemon prio=9 os_prio=31 cpu=1.02ms elapsed=0.11s tid=0x0000000bd326b000 nid=25643 waiting on condition  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+"G1 Conc#1" os_prio=31 cpu=53.22ms elapsed=389.91s tid=0x0000000bd67fed00 nid=34051 runnable  
+
+"GC Thread#8" os_prio=31 cpu=805.53ms elapsed=390.36s tid=0x0000000bd6724f00 nid=40451 runnable  
+
+"GC Thread#7" os_prio=31 cpu=807.10ms elapsed=390.77s tid=0x0000000bd8701400 nid=40963 runnable  
+
+"GC Thread#6" os_prio=31 cpu=843.96ms elapsed=390.78s tid=0x0000000bd8700500 nid=41219 runnable  
+
+"GC Thread#5" os_prio=31 cpu=790.00ms elapsed=390.78s tid=0x0000000bd8700000 nid=41731 runnable  
+
+"GC Thread#4" os_prio=31 cpu=808.54ms elapsed=390.78s tid=0x0000000bd86e7700 nid=33539 runnable  
+
+"GC Thread#3" os_prio=31 cpu=830.43ms elapsed=390.78s tid=0x0000000bd86e7200 nid=42499 runnable  
+
+"GC Thread#2" os_prio=31 cpu=831.73ms elapsed=390.78s tid=0x0000000bd86e6d00 nid=43011 runnable  
+
+"GC Thread#1" os_prio=31 cpu=844.77ms elapsed=390.78s tid=0x0000000bd86e6800 nid=33283 runnable  
+
+"VM Thread" os_prio=31 cpu=319.08ms elapsed=391.34s tid=0x0000000bd9069800 nid=18435 runnable  
+
+"VM Periodic Task Thread" os_prio=31 cpu=4.38ms elapsed=391.34s tid=0x0000000bd9069400 nid=17415 waiting on condition  
+
+"G1 Service" os_prio=31 cpu=40.27ms elapsed=391.34s tid=0x0000000bd8c95400 nid=16899 runnable  
+
+"G1 Refine#0" os_prio=31 cpu=190.76ms elapsed=391.34s tid=0x0000000bd8c94f00 nid=16643 runnable  
+
+"G1 Conc#0" os_prio=31 cpu=52.00ms elapsed=391.34s tid=0x0000000bd8c94a00 nid=13827 runnable  
+
+"G1 Main Marker" os_prio=31 cpu=1.07ms elapsed=391.34s tid=0x0000000bd8c94500 nid=14339 runnable  
+
+"GC Thread#0" os_prio=31 cpu=820.11ms elapsed=391.34s tid=0x0000000bd8c94000 nid=14851 runnable  
+
+JNI global refs: 9, weak refs: 0
+

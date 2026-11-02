@@ -1,8 +1,7 @@
 (ns gravity.self-hosting.sh07-b51-attempt30-integration-support
   (:require [clojure.java.io :as io]
             [gravity.bootstrap :as bootstrap]
-            [gravity.self-hosting.sh07-b51-attempt30-fixture-support
-             :as fixture-support]))
+            [gravity.self-hosting.sh07-b51-attempt30-linked-carrier-host-test]))
 
 (def public-root-symbols
   '[sh07-b51-build-template
@@ -27,8 +26,16 @@
       (throw (ex-info "missing Attempt30 integration seam"
                       {:namespace namespace :symbol symbol}))))
 
+(defn- host-test-value [symbol]
+  (var-get
+   (private-var
+    'gravity.self-hosting.sh07-b51-attempt30-linked-carrier-host-test
+    symbol)))
+
 (defn fixture []
-  (fixture-support/fixture))
+  ;; This is deliberately the provisional local candidate produced by the
+  ;; host tests.  Its ids are derived at runtime and are never copied as pins.
+  @(host-test-value 'accepted-fixture))
 
 (defn carrier [] (:carrier (fixture)))
 (defn products [] (:products (fixture)))
@@ -252,7 +259,7 @@
       :scope :sh07-b51-vector-destructuring})))
 
 (defn malformed-raw []
-  (fixture-support/raw-request (carrier)))
+  ((host-test-value 'raw-request) (carrier)))
 
 (defn root-plan [root-ordinal]
   (let [linked-products (products)

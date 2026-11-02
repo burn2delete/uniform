@@ -39,17 +39,12 @@
     "legacy-external-macro"
     "legacy-local-defmacro"})
 
-(def ^:private retired-quota-fixtures
-  #{"depth-limit" "size-limit"})
-
-(def ^:private retired-quota-rules
-  {"depth-limit" "C4-DEPTH"
-   "size-limit" "C4-SIZE"})
-
 (def ^:private rejected-fixtures
   #{"not-macro"
     "phase-mismatch"
     "return-non-syntax"
+    "depth-limit"
+    "size-limit"
     "build-effect-ungranted"
     "hygiene-hidden-binding"
     "capture-authority"
@@ -60,15 +55,14 @@
     "override-vector"
     "override-nil"})
 
-(def ^:private all-rejected-fixtures
-  (into rejected-fixtures retired-quota-fixtures))
-
 (def ^:private malformed-override-fixtures
   #{"override-scalar" "override-vector" "override-nil"})
 
 (def ^:private c4-rules
   #{"C4-NOT-MACRO"
     "C4-RETURN"
+    "C4-DEPTH"
+    "C4-SIZE"
     "C4-BUILD-EFFECT"
     "C4-HYGIENE"
     "C4-CAPTURE"
@@ -243,12 +237,12 @@
   (testing "the checked-in inventory is explicit and symmetric"
     (is (= accepted-fixtures (fixture-basenames "accepted" ".gravity")))
     (is (= accepted-fixtures (fixture-basenames "accepted" ".qst")))
-    (is (= all-rejected-fixtures (fixture-basenames "rejected" ".gravity")))
-    (is (= all-rejected-fixtures (fixture-basenames "rejected" ".qst"))))
+    (is (= rejected-fixtures (fixture-basenames "rejected" ".gravity")))
+    (is (= rejected-fixtures (fixture-basenames "rejected" ".qst"))))
   (testing "every source pair is byte-identical and traverses the Gravity reader"
     (doseq [[family basenames]
             [["accepted" accepted-fixtures]
-             ["rejected" all-rejected-fixtures]]
+             ["rejected" rejected-fixtures]]
             basename (sort basenames)]
       (let [gravity-path (fixture-path family basename ".gravity")
             qst-path (fixture-path family basename ".qst")
@@ -261,15 +255,6 @@
         (is (= :gravity/stage0-c2-reader-document-artifact (:kind qst-c2)))
         (is (= (:parsed-semantic-values gravity-c2)
                (:parsed-semantic-values qst-c2))))))
-  (testing "retired quota records remain co-canonical historical data"
-    (doseq [basename (sort retired-quota-fixtures)]
-      (let [gravity-oracle (rejection-oracle basename ".gravity")
-            qst-oracle (rejection-oracle basename ".qst")]
-        (is (= gravity-oracle qst-oracle) basename)
-        (is (= :macro-expansion (:expected-stage gravity-oracle)) basename)
-        (is (= :error (:expected-severity gravity-oracle)) basename)
-        (is (= (get retired-quota-rules basename)
-               (:expected-rule gravity-oracle)) basename))))
   (testing "oracle data is separate from the executable incompatible request"
     (doseq [basename (sort rejected-fixtures)]
       (let [gravity-request (rejection-request basename ".gravity")

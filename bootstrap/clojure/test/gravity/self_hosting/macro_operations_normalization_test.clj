@@ -99,15 +99,15 @@
             (swap! calls inc)
             (original operations))}
          #(mapv
-           (fn [splice-key]
+           (fn [maximum-depth]
              (macro-expansion/with-normalized-operations
-              {:splice-key splice-key}
+              {:max-macro-expansion-depth maximum-depth}
               (fn [operations]
-                [(get operations :splice-key)
+                [(get operations :max-macro-expansion-depth)
                  (:fixed (macro-expansion/parse-param-list '[value]
                                                             operations))])))
-           [:first :second]))]
-    (is (= [[:first '[value]] [:second '[value]]] values))
+           [7 11]))]
+    (is (= [[7 '[value]] [11 '[value]]] values))
     (is (= 2 @calls))))
 
 (deftest forged-normalization-context-does-not-bypass-validation
@@ -138,21 +138,21 @@
          #(let [first-future
                 (future
                   (macro-expansion/with-normalized-operations
-                   {:splice-key :first}
+                   {:max-macro-expansion-depth 7}
                    (fn [operations]
-                     [(get operations :splice-key)
+                     [(get operations :max-macro-expansion-depth)
                       (:fixed (macro-expansion/parse-param-list '[x]
                                                                  operations))])))
                 second-future
                 (future
                   (macro-expansion/with-normalized-operations
-                   {:splice-key :second}
+                   {:max-macro-expansion-depth 11}
                    (fn [operations]
-                     [(get operations :splice-key)
+                     [(get operations :max-macro-expansion-depth)
                       (:fixed (macro-expansion/parse-param-list '[y]
                                                                  operations))])))]
             [@first-future @second-future]))]
-    (is (= [[:first '[x]] [:second '[y]]] values))
+    (is (= [[7 '[x]] [11 '[y]]] values))
     (is (= 2 @calls))))
 
 (deftest normalization-context-is-discarded-after-request

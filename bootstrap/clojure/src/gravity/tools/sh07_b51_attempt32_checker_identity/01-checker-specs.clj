@@ -62,7 +62,6 @@
                       {:path relative})))
     record))
 
-#_{:clj-kondo/ignore [:unused-private-var]}
 (defn- read-forms [bytes]
   (with-open [reader
               (LineNumberingPushbackReader.
@@ -154,13 +153,21 @@
                                                   source-authority relative))
                                           StandardCharsets/UTF_8))
         component-paths
-        (->> entries
-             (remove :data-resource)
-             (mapv #(str "bootstrap/clojure/src/" (:resource %))))
+        (mapv #(str "bootstrap/clojure/src/" (:resource %)) entries)
         data-resources
-        (->> entries
-             (keep (fn [{:keys [data-resource resource]}]
-                     (when data-resource resource)))
+        (->> component-paths
+             (mapcat
+              (fn [path]
+                (let [forms (read-forms
+                             (:bytes (source-object! source-authority path)))]
+                  (->> (tree-seq coll? seq forms)
+                       (keep
+                        (fn [form]
+                          (when (and (seq? form)
+                                     (= 'gravity.bootstrap-impl.loader/append-data!
+                                        (first form))
+                                     (string? (nth form 2 nil)))
+                            (nth form 2))))))))
              distinct
              sort
              vec)]

@@ -2,6 +2,7 @@
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.set :as set]
+            [clojure.string :as string]
             [clojure.test :refer [deftest is testing]]
             [clojure.walk :as walk]
             [gravity.bootstrap]))
@@ -250,8 +251,19 @@
    :alignments #{1 2 4 8 16 32 64}
    :integer-width-bits 64
    :maximum-integer 9223372036854775807
+   :maximum-capacity 4096
+   :maximum-element-size 64
+   :maximum-size-bytes 131072
+   :maximum-variant-tags 64
+   :maximum-origin-count 64
+   :maximum-generated-origin-depth 64
+   :maximum-identifier-units 256
    :supported-profile-target-pairs #{[:safe :portable] [:meta :portable-mir]}
    :size-policy :capacity-times-element-size-rounded-up-to-alignment
+   :structural-bounds
+   {:maximum-nodes 32768 :maximum-depth 96 :maximum-width 8192
+    :maximum-collections 8192 :maximum-scalars 24576
+    :maximum-scalar-units 262144}
    :diagnostics #{"C12-SCHEMA" "SAFE2-BOUNDS" "L10-HIDDEN-ALLOC"
                   "S7-LAYOUT" "C12-FACTS" "C12-VERIFY"}
    :pending [:authenticated-sh12-mir-input :target-specific-layout
@@ -603,8 +615,15 @@
     (is (contains? (symbols-in identity-input-form) 'sh14-identity-origins))
     (is (not (contains? (symbols-in sha-shape)
                         'authenticated-envelope-verify-template)))
+    (is (= {:maximum-nodes 32768 :maximum-depth 96 :maximum-width 8192
+            :maximum-collections 8192 :maximum-scalars 24576
+            :maximum-scalar-units 262144}
+           (:structural-bounds expected-policy)))
     (is (= #{[:safe :portable] [:meta :portable-mir]}
            (:supported-profile-target-pairs expected-policy)))
+    (is (= 64 (:maximum-origin-count expected-policy)))
+    (is (= 64 (:maximum-generated-origin-depth expected-policy)))
+    (is (= 256 (:maximum-identifier-units expected-policy)))
     (is (= [:authenticated-sh12-mir-input :target-specific-layout
             :actual-allocation :field-offset-calculation
             :pointer-and-lifetime-layouts]

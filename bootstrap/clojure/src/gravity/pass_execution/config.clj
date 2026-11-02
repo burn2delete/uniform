@@ -1,5 +1,12 @@
 (ns gravity.pass-execution.config
-  "Closed schemas, authority ordering, and facade contract data.")
+  "Closed schemas, bounds, authority ordering, and facade contract data.")
+
+(def maximum-depth 64)
+(def maximum-nodes 16384)
+(def maximum-canonical-bytes (* 4 1024 1024))
+(def maximum-integer-bits (* 3 maximum-canonical-bytes))
+(def maximum-evidence-records 4096)
+(def maximum-dag-receipts 1024)
 (def sha256-pattern #"sha256:[0-9a-f]{64}")
 
 (def pass-contract-fields
@@ -70,7 +77,7 @@
   {:namespace 'gravity.pass-execution
    :contract-boundary :hosted-stage0-pass-execution-receipts-v1
    :public-api public-api
-   :owns [:canonical-pass-contract-identity :pass-execution-receipts
+   :owns [:bounded-canonical-pass-contract-identity :pass-execution-receipts
           :fact-flow-validation :evidence-dag-composition
           :authority-monotonicity]
    :dependency-direction

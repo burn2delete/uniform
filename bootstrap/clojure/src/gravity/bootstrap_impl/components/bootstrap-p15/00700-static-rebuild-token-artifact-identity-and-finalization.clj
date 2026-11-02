@@ -132,9 +132,16 @@
                              derived-effect-requirements)
                            (p15-s23-closed-core-scope-contract)),
                          :bounds
-                         {:observed-plan-depth (:maximum-plan-depth product),
+                         {:maximum-plan-depth p15-s23-closed-core-max-plan-depth,
+                          :observed-plan-depth (:maximum-plan-depth product),
+                          :maximum-artifact-scalar-bytes
+                          p15-s23-closed-core-max-artifact-scalar-bytes,
+                          :maximum-source-bytes p15-s23-closed-core-max-source-bytes,
+                          :maximum-plan-nodes p15-s23-closed-core-max-plan-nodes,
+                          :maximum-derived-nodes p15-s23-closed-core-max-derived-nodes,
                           :observed-source-bytes source-byte-count,
                           :observed-derived-nodes (count nodes),
+                          :maximum-integer-bits p15-s23-closed-core-max-integer-bits,
                           :observed-plan-nodes (:plan-node-count product)},
                          :self-hosted? false,
                          :actual-path-binding-id actual-path-binding-id,
@@ -182,7 +189,7 @@
                          :profile (get-in plan [:module :profile]),
                          :clojure-seed-boundary? true}
                         facts)
-        _ (p15-s23-closed-core-value-domain! source-path artifact-base)
+        _ (p15-s23-closed-core-bounded-value! source-path artifact-base)
         artifact-id (p15-s23-closed-core-digest
                       (p15-s23-closed-core-semantic-input artifact-base))
         artifact (assoc artifact-base :artifact-id artifact-id)]

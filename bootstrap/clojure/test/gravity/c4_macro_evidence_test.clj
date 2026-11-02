@@ -43,7 +43,8 @@
                module
                {:syntax-object-stream [{:syntax/id :root}]}
                macro-artifact
-               {:artifact-id-of (constantly "sha256:environment")})
+               {:artifact-id-of (constantly "sha256:environment")
+                :max-macro-expansion-depth 31})
         expanded (evidence/c4-expanded-syntax-stream
                   macro-artifact {:sha256-hex (constantly "expanded")})
         trace (evidence/c4-trace-records macro-artifact)
@@ -62,8 +63,7 @@
                        [:macro-vars 0 :safety-declaration
                         :generates-unsafe])))
     (is (= "sha256:environment" (:macro-environment input)))
-    (is (= {:timeout-ms 5000} (:host-safeguards input)))
-    (is (not (contains? input :limits)))
+    (is (= 31 (get-in input [:limits :depth])))
     (is (= "sha256:expanded" (:expanded-syntax-id (first expanded))))
     (is (= 1 (:step (first trace))))
     (is (= [{:macro 'demo/unsafe-macro
@@ -105,7 +105,9 @@
   (doseq [operations [nil
                       {:unknown identity}
                       {:sha256-hex :keyword-is-invokable-but-not-a-function}
-                      {:artifact-id-of {}}]]
+                      {:artifact-id-of {}}
+                      {:max-macro-expansion-depth 0}
+                      {:max-macro-expansion-depth 1.5}]]
     (is (thrown? clojure.lang.ExceptionInfo
                  (evidence/c4-macro-environment macro-artifact operations))))
   (let [hash-inputs (atom [])
@@ -135,7 +137,7 @@
     (is (= 'gravity.c4-macro-evidence (:namespace contract)))
     (is (= (set (keys (:public-api contract)))
            (set (keys (ns-publics 'gravity.c4-macro-evidence)))))
-    (is (= #{:sha256-hex :artifact-id-of}
+    (is (= #{:sha256-hex :artifact-id-of :max-macro-expansion-depth}
            (get-in contract [:operation-interposition :accepted-keys])))
     (is (true? (get-in contract
                        [:operation-interposition :unknown-keys-rejected?])))

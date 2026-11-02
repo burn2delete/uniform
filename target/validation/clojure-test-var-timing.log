@@ -1,0 +1,108 @@
+VAR-COUNT 250
+START hosted-hello-runs
+END hosted-hello-runs ms 19.695041 counters {:test 1, :pass 6, :fail 0, :error 0}
+START hosted-core-app-runs-user-functions-and-builtins
+END hosted-core-app-runs-user-functions-and-builtins ms 18.461375 counters {:test 2, :pass 24, :fail 0, :error 0}
+START hosted-core-app-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-app-rejected-fixtures-produce-stable-diagnostics ms 6.103209 counters {:test 3, :pass 26, :fail 0, :error 0}
+START hosted-core-compiled-app-runs-instruction-plan
+END hosted-core-compiled-app-runs-instruction-plan ms 26.485625 counters {:test 4, :pass 54, :fail 0, :error 0}
+START hosted-core-compiled-app-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-compiled-app-rejected-fixtures-produce-stable-diagnostics ms 5.899834 counters {:test 5, :pass 56, :fail 0, :error 0}
+START hosted-core-compiled-safety-proof-classifies-instruction-plan
+END hosted-core-compiled-safety-proof-classifies-instruction-plan ms 8.169208 counters {:test 6, :pass 79, :fail 0, :error 0}
+START hosted-core-compiled-safety-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-compiled-safety-rejected-fixtures-produce-stable-diagnostics ms 2.474083 counters {:test 7, :pass 81, :fail 0, :error 0}
+START hosted-core-compiled-profile-proof-validates-effective-authority
+END hosted-core-compiled-profile-proof-validates-effective-authority ms 10.459 counters {:test 8, :pass 109, :fail 0, :error 0}
+START hosted-core-compiled-profile-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-compiled-profile-rejected-fixtures-produce-stable-diagnostics ms 3.100875 counters {:test 9, :pass 112, :fail 0, :error 0}
+START hosted-core-compiled-performance-proof-records-unoptimized-baseline
+END hosted-core-compiled-performance-proof-records-unoptimized-baseline ms 10.211958 counters {:test 10, :pass 142, :fail 0, :error 0}
+START hosted-core-compiled-performance-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-compiled-performance-rejected-fixtures-produce-stable-diagnostics ms 5.957875 counters {:test 11, :pass 145, :fail 0, :error 0}
+START hosted-core-compiled-math-proof-records-integer-baseline
+END hosted-core-compiled-math-proof-records-integer-baseline ms 9.214291 counters {:test 12, :pass 175, :fail 0, :error 0}
+START hosted-core-compiled-math-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-compiled-math-rejected-fixtures-produce-stable-diagnostics ms 8.409584 counters {:test 13, :pass 179, :fail 0, :error 0}
+START hosted-core-compiled-compiler-proof-records-stage0-pipeline
+END hosted-core-compiled-compiler-proof-records-stage0-pipeline ms 12.701 counters {:test 14, :pass 214, :fail 0, :error 0}
+START hosted-core-compiled-compiler-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-compiled-compiler-rejected-fixtures-produce-stable-diagnostics ms 10.234083 counters {:test 15, :pass 220, :fail 0, :error 0}
+START hosted-core-compiled-backend-proof-records-stage0-artifact
+END hosted-core-compiled-backend-proof-records-stage0-artifact ms 11.859542 counters {:test 16, :pass 261, :fail 0, :error 0}
+START hosted-core-compiled-backend-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-compiled-backend-rejected-fixtures-produce-stable-diagnostics ms 11.578 counters {:test 17, :pass 267, :fail 0, :error 0}
+START hosted-core-compiled-runtime-proof-records-stage0-runtime
+END hosted-core-compiled-runtime-proof-records-stage0-runtime ms 7.874041 counters {:test 18, :pass 307, :fail 0, :error 0}
+START hosted-core-compiled-runtime-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-compiled-runtime-rejected-fixtures-produce-stable-diagnostics ms 8.495375 counters {:test 19, :pass 313, :fail 0, :error 0}
+START hosted-core-compiled-domain-proof-records-stage0-domain-gate
+END hosted-core-compiled-domain-proof-records-stage0-domain-gate ms 6.682209 counters {:test 20, :pass 350, :fail 0, :error 0}
+START hosted-core-compiled-domain-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-compiled-domain-rejected-fixtures-produce-stable-diagnostics ms 9.903417 counters {:test 21, :pass 356, :fail 0, :error 0}
+START hosted-core-compiled-schema-proof-records-stage0-schema-gate
+END hosted-core-compiled-schema-proof-records-stage0-schema-gate ms 7.076292 counters {:test 22, :pass 391, :fail 0, :error 0}
+START hosted-core-compiled-schema-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-compiled-schema-rejected-fixtures-produce-stable-diagnostics ms 14.640375 counters {:test 23, :pass 400, :fail 0, :error 0}
+START hosted-core-compiled-ai-proof-records-stage0-ai-gate
+END hosted-core-compiled-ai-proof-records-stage0-ai-gate ms 6.424042 counters {:test 24, :pass 433, :fail 0, :error 0}
+START hosted-core-compiled-ai-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-compiled-ai-rejected-fixtures-produce-stable-diagnostics ms 11.998667 counters {:test 25, :pass 444, :fail 0, :error 0}
+START hosted-core-compiled-package-proof-records-stage0-package-gate
+END hosted-core-compiled-package-proof-records-stage0-package-gate ms 7.922708 counters {:test 26, :pass 478, :fail 0, :error 0}
+START hosted-core-compiled-package-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-compiled-package-rejected-fixtures-produce-stable-diagnostics ms 14.905916 counters {:test 27, :pass 490, :fail 0, :error 0}
+START hosted-core-compiled-tooling-proof-records-stage0-tooling-gate
+END hosted-core-compiled-tooling-proof-records-stage0-tooling-gate ms 7.710459 counters {:test 28, :pass 522, :fail 0, :error 0}
+START hosted-core-compiled-tooling-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-compiled-tooling-rejected-fixtures-produce-stable-diagnostics ms 15.067792 counters {:test 29, :pass 535, :fail 0, :error 0}
+START hosted-core-compiled-conformance-proof-records-stage0-conformance-gate
+END hosted-core-compiled-conformance-proof-records-stage0-conformance-gate ms 6.087875 counters {:test 30, :pass 565, :fail 0, :error 0}
+START hosted-core-compiled-conformance-rejected-fixtures-produce-stable-diagnostics
+END hosted-core-compiled-conformance-rejected-fixtures-produce-stable-diagnostics ms 13.382792 counters {:test 31, :pass 578, :fail 0, :error 0}
+START stage1-bootstrap-source-artifact-preserves-self-hosting-bridge
+END stage1-bootstrap-source-artifact-preserves-self-hosting-bridge ms 14.879208 counters {:test 32, :pass 597, :fail 0, :error 0}
+START stage1-reader-execution-uses-gravity-authored-table
+END stage1-reader-execution-uses-gravity-authored-table ms 41.352042 counters {:test 33, :pass 611, :fail 0, :error 0}
+START stage1-reader-algorithm-executes-gravity-entrypoint
+END stage1-reader-algorithm-executes-gravity-entrypoint ms 39.791834 counters {:test 34, :pass 629, :fail 0, :error 0}
+START stage1-reader-pipeline-splits-reader-host-boundary
+END stage1-reader-pipeline-splits-reader-host-boundary ms 55.38175 counters {:test 35, :pass 653, :fail 0, :error 0}
+START stage1-reader-character-pipeline-removes-scan-token-primitive
+END stage1-reader-character-pipeline-removes-scan-token-primitive ms 62.985333 counters {:test 36, :pass 683, :fail 0, :error 0}
+START stage1-reader-token-classifier-pipeline-removes-tokenizer-primitive
+END stage1-reader-token-classifier-pipeline-removes-tokenizer-primitive ms 49.782542 counters {:test 37, :pass 721, :fail 0, :error 0}
+START stage1-reader-token-realizer-pipeline-removes-classifier-primitive
+END stage1-reader-token-realizer-pipeline-removes-classifier-primitive ms 42.285083 counters {:test 38, :pass 765, :fail 0, :error 0}
+START stage1-reader-token-automaton-pipeline-removes-realizer-primitive
+END stage1-reader-token-automaton-pipeline-removes-realizer-primitive ms 37.522875 counters {:test 39, :pass 817, :fail 0, :error 0}
+START stage1-reader-form-builder-pipeline-removes-forms-primitive
+END stage1-reader-form-builder-pipeline-removes-forms-primitive ms 42.006042 counters {:test 40, :pass 872, :fail 0, :error 0}
+START stage1-reader-executor-pipeline-removes-reader-executors
+END stage1-reader-executor-pipeline-removes-reader-executors ms 41.958375 counters {:test 41, :pass 925, :fail 0, :error 0}
+START stage1-reader-runtime-pipeline-removes-source-character-primitive
+END stage1-reader-runtime-pipeline-removes-source-character-primitive ms 35.333708 counters {:test 42, :pass 982, :fail 0, :error 0}
+START stage1-reader-compiled-pipeline-replaces-runtime-interpreter
+END stage1-reader-compiled-pipeline-replaces-runtime-interpreter ms 28.238875 counters {:test 43, :pass 1035, :fail 0, :error 0}
+START stage1-reader-binary-pipeline-replaces-instruction-executor
+END stage1-reader-binary-pipeline-replaces-instruction-executor ms 27.236667 counters {:test 44, :pass 1095, :fail 0, :error 0}
+START stage1-reader-self-hosted-runtime-replaces-binary-runner-and-character-stream
+END stage1-reader-self-hosted-runtime-replaces-binary-runner-and-character-stream ms 27.648583 counters {:test 45, :pass 1146, :fail 0, :error 0}
+START stage1-reader-core-bootstrap-replaces-seed-builtins
+END stage1-reader-core-bootstrap-replaces-seed-builtins ms 31.5215 counters {:test 46, :pass 1211, :fail 0, :error 0}
+START stage1-reader-compiler-driver-replaces-seed-orchestration
+END stage1-reader-compiler-driver-replaces-seed-orchestration ms 41.727625 counters {:test 47, :pass 1281, :fail 0, :error 0}
+START stage1-reader-runtime-entrypoint-replaces-host-runner-boundaries
+END stage1-reader-runtime-entrypoint-replaces-host-runner-boundaries ms 28.643625 counters {:test 48, :pass 1351, :fail 0, :error 0}
+START stage1-reader-runtime-image-replaces-os-boundaries
+END stage1-reader-runtime-image-replaces-os-boundaries ms 35.690916 counters {:test 49, :pass 1423, :fail 0, :error 0}
+START stage1-reader-verified-boot-chain-replaces-machine-boundaries
+END stage1-reader-verified-boot-chain-replaces-machine-boundaries ms 31.107917 counters {:test 50, :pass 1499, :fail 0, :error 0}
+START stage1-reader-diverse-bootstrap-verification-replaces-trust-anchors
+END stage1-reader-diverse-bootstrap-verification-replaces-trust-anchors ms 32.379 counters {:test 51, :pass 1594, :fail 0, :error 0}
+START stage1-reader-release-attestation-seed-retirement-replaces-physical-release-assumptions
+END stage1-reader-release-attestation-seed-retirement-replaces-physical-release-assumptions ms 34.085083 counters {:test 52, :pass 1721, :fail 0, :error 0}
+START stage1-reader-formal-release-governance-seed-retirement-replaces-release-governance-assumptions
+END stage1-reader-formal-release-governance-seed-retirement-replaces-release-governance-assumptions ms 33.205458 counters {:test 53, :pass 1819, :fail 0, :error 0}
+START p15-s23-whole-language-self-hosting-gate-records-final-completion

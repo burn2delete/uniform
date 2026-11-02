@@ -42,7 +42,7 @@
   ([module c3-artifact macro-artifact]
    (c4-expansion-input module c3-artifact macro-artifact {}))
   ([module c3-artifact macro-artifact operation-overrides]
-   (let [{:keys [artifact-id-of]}
+   (let [{:keys [artifact-id-of max-macro-expansion-depth]}
          (operations operation-overrides)]
      {:artifact :gravity/macro-expansion-input
       :module (:module module)
@@ -54,8 +54,9 @@
                           (:macro-namespace-entries macro-artifact))
       :build-grants (get-in module [:metadata :build-grants] #{})
       :hermetic true
-      ;; This is a host watchdog boundary, not a project expansion quota.
-      :host-safeguards {:timeout-ms 5000}})))
+      :limits {:depth max-macro-expansion-depth
+               :nodes 100000
+               :time-ms 5000}})))
 
 (defn c4-expanded-syntax-stream
   ([macro-artifact]

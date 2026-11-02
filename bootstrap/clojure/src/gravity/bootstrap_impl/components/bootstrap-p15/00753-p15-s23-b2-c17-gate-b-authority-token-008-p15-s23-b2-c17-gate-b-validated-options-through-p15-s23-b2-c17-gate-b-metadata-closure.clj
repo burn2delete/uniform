@@ -18,7 +18,7 @@
        "B2-MANIFEST" source-path {}
        {:missing-fact :exact-c17-gate-b-option-envelope}))
     (let [validation
-          (p15-s23-trusted-carrier-validation options :default-only)]
+          (p15-s23-trusted-carrier-validation options :default-only 32 4 8)]
     (when-not
      (and (= :passed (:status validation))
           exact-shape?)
@@ -26,7 +26,8 @@
        "B2-MANIFEST" source-path {}
        (merge {:missing-fact :trusted-bounded-c17-gate-b-options}
               (select-keys validation
-                           [:reason :class]))))
+                           [:reason :observed-nodes :observed-depth
+                            :maximum-nodes :maximum-depth :maximum-width]))))
     (let [output-directory (:output-directory options)
           character-count
           (when (string? output-directory) (count output-directory))

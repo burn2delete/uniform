@@ -1,0 +1,241 @@
+{:callers
+ [{:target sh08-lc-derive, :callers [sh08-lc-step]}
+  {:target sh08-lc-step,
+   :callers [sh08-ft-infer-pass-products-prepared]}],
+ :nonclaims
+ [:full-LC-context-lowering-accounting-removal
+  :whole-inference-accounting-removal
+  :authenticated-source-admission
+  :runtime-acceptance
+  :ACC06-or-ACC01-closure
+  :PR502-closure
+  :release
+  :self-hosting],
+ :inference-consumer
+ {:updated-expression
+  {:before
+   (sh08-lc-step
+    node
+    type-table
+    binding-types
+    function-result
+    context
+    (- (get context :loop-work-left 65536) lookup-work)),
+   :after
+   (sh08-lc-step
+    node
+    type-table
+    binding-types
+    function-result
+    context)},
+  :all-other-inference-form-conserved true,
+  :existing-absent-work-field-default :unchanged,
+  :generic-accounting-removal :open},
+ :tests
+ [{:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :base-sha256
+   "5cce988f440520052ae9379634c82c5f5dd60a8e9f71a55d56c74e133aa53443",
+   :candidate-sha256
+   "41d3a7b48aad61d75d5c7b64a34cc06ba5dfac30e175263301631fdeed31bfda",
+   :new-control list-construction-admission-development-kernel,
+   :new-form-sha256
+   "e8d6983be2d982625799d242dcde66a3a2231534b622db1517eec94be8b9deed",
+   :existing-changed-definitions
+   [list-construction-derived
+    sh08-list-construction-development-kernel
+    sh08-list-set-cold-and-budget-development-kernel],
+   :execution :UNRUN}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj",
+   :base-sha256
+   "a706799cd44cfa8ddd3539869664012e9df17c421ef8ac7a9a2238d60a51fea9",
+   :candidate-sha256
+   "a9a59981190ebb7e6b38ae325abe7165d4fff38e1debb11265207d0cb9ee0713",
+   :new-control body-list-construction-admission-development-kernel,
+   :new-form-sha256
+   "4605f1eecf2d8acbff12a86fe29fedd8c632c338a0b24d4b647f560bd737b1da",
+   :existing-changed-definitions [],
+   :execution :UNRUN}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+   :base-sha256
+   "28fad6b2626c9def338f2bd76d06a1949e0dfe67262ac7f645dd08f204e1592a",
+   :candidate-sha256
+   "5d9baca24e019084f5f6bfc84f8e01eb03b82c650949d1365c40f8cfd9fa24fc",
+   :new-control
+   lowering-list-construction-admission-development-kernel,
+   :new-form-sha256
+   "2c8eca9fd80524b1f7680a96f3f0299efa79a189ab1493db4d6031100b31b227",
+   :existing-changed-definitions [],
+   :execution :UNRUN}],
+ :integration :UNRUN,
+ :independent-acceptance :pending,
+ :production
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :base-sha256
+   "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142",
+   :candidate-sha256
+   "2bccc04debd00b13d4cc4fd472f3923440fac378c6f30503b24f289209b05774",
+   :all-other-bytes-and-forms-preserved true,
+   :changed-definitions
+   [{:name sh08-ft-infer-pass-products-prepared,
+     :base-form-sha256
+     "37352721734e93c28b937ee1a30c182b6d7b0cb69eb6bc7e0c564b841517ce8e",
+     :candidate-form-sha256
+     "0d805caf258efa740657bd2468fde6f0d22e6b26f667765591f72060d6dc6be2",
+     :historical-form-identical false}
+    {:name sh08-lc-derive,
+     :base-form-sha256
+     "4d4206305f1a14bcf641fd0accec94905866ac8e707e59503760e0f9952bdab2",
+     :candidate-form-sha256
+     "a0e5d8fdc0a71e885329ad5da722ec1f58c41fb313bd28430477c19c9b643869",
+     :historical-form-identical true}
+    {:name sh08-lc-source,
+     :base-form-sha256
+     "e598f41bd024b13c254ea42fb7f9e9641012a912fdb18f717e31c8f377ddbd8e",
+     :candidate-form-sha256
+     "730d6db2542cbc947207b6306c0a388f5fbe1ca0a7413f3a6d2d714619d1e665",
+     :historical-form-identical false}
+    {:name sh08-lc-step,
+     :base-form-sha256
+     "2bc4125f440bcf5d98126e67eca14d438a60a851f7c6a0a66d7473f26ba08a88",
+     :candidate-form-sha256
+     "fe25ce4738b894ffebba0916e7fd0ec689d2776c0dc38b44c9bd7ee561184bdf",
+     :historical-form-identical true}],
+   :header-only-change (remove (<= (count args) 1023)),
+   :native-validation-guards-conserved true,
+   :direct-source-dependencies
+   [{:name sh08-ft-all-true?,
+     :form-sha256
+     "e490157e9d5ffb1425fd53e173c1ee8697244e32ebba91d6a39b42dc2e4e966a",
+     :unchanged-from-base true}
+    {:name sh08-ft-loop-kernel-indexes,
+     :form-sha256
+     "6eda3e204054f720399bb887eba7815cc50639d9979265206453440025682247",
+     :unchanged-from-base true}
+    {:name sh08-ft-ordered-child-types,
+     :form-sha256
+     "08c021d0bccc02bdf623f6e4efad9a9318ef47a2e2a543a54e40dbaa979beed2",
+     :unchanged-from-base true}
+    {:name sh08-lc-binding?,
+     :form-sha256
+     "0586a3e31fc7d50173865149dd3e7453952c5a976837b4ffe47c5eb4739eab82",
+     :unchanged-from-base true}
+    {:name sh08-lc-constraint,
+     :form-sha256
+     "741f9368ef4504b1cd7fdbfef47ac726b588cc21d6f789adb1a995fb076ee352",
+     :unchanged-from-base true}
+    {:name sh08-lc-finish,
+     :form-sha256
+     "124ff13734fb498ef4737ff236304ea48321a8d9344f74d09b0c3cd07b80a4d5",
+     :unchanged-from-base true}
+    {:name sh08-lc-native-map?,
+     :form-sha256
+     "6b2654576b9e5327a5e67a1b4255ee9035d6d3223dfa066391f5a6e97e3c68ab",
+     :unchanged-from-base true}
+    {:name sh08-lc-validate-types,
+     :form-sha256
+     "c7016b2411e4b2559154c26b8473326ae8faeb256cf81081395cf1231c495a59",
+     :unchanged-from-base true}
+    {:name sh08-ma-form-source,
+     :form-sha256
+     "dbad3483351682d1059815ecfb87ab690274cad40ae62450153fe536f6bc8f26",
+     :unchanged-from-base true}
+    {:name sh08-sm-failure,
+     :form-sha256
+     "863576ce9cbb3f0203d958669121db81eae6ebd55e6d4cfdd998d6e079e44a6b",
+     :unchanged-from-base true}]}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :base-sha256
+   "11ab8e2cb4c74a30d5fd3fe48d86affe87966002f88815037a3253d9b4871f57",
+   :candidate-sha256
+   "b1fbd10e61b2ed8e66e813be69ccbe7ad4808a4c62aa71d9fd0269ac03f95529",
+   :all-other-bytes-and-forms-preserved true,
+   :changed-definitions
+   [{:name body-lc-source,
+     :base-form-sha256
+     "b1721e930ddb6d2ecd64aa756caf6df80a89fe40b66041d9f89ff3d501768d79",
+     :candidate-form-sha256
+     "c7393e2da58855a1574a4f66665902d0ef428e1ae3d0d22786dbe3a55feb67be",
+     :historical-form-identical false}],
+   :header-only-change (remove (<= (count args) 1023)),
+   :native-validation-guards-conserved true,
+   :direct-source-dependencies
+   [{:name body-all?,
+     :form-sha256
+     "59ecdffce4ac484afcc3264f368613c3e8aa6facf1451ec7f8376051b66d47de",
+     :unchanged-from-base true}
+    {:name body-io-child-types,
+     :form-sha256
+     "690f66d1459b27f5b2114868e8ba329eb2eb7e2a70261f08ede55b08244cb529",
+     :unchanged-from-base true}
+    {:name body-lc-binding?,
+     :form-sha256
+     "2f77fd0f0ff412e66535e529112fb812803e5fed30bcd74de6e4fe4108af2780",
+     :unchanged-from-base true}
+    {:name body-lc-native-map?,
+     :form-sha256
+     "cedb228784ec7be2648c0413d4477d11777d6b9900e90b79d799f8c7b8df49dc",
+     :unchanged-from-base true}]}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :base-sha256
+   "9ea39a7aa26fd53a3683091dd3bf49f3e0517d56e77b5a196c70261b55a43637",
+   :candidate-sha256
+   "f12fd8cbcf91e35a2d9cf531875be228b809249630238c5c79bc5f7da145aeb4",
+   :all-other-bytes-and-forms-preserved true,
+   :changed-definitions
+   [{:name p15-s23-lc-source,
+     :base-form-sha256
+     "65a78fbf0c76c4d6b287ce0b049a35c3d93fa425059857cbfd656ca56c30222c",
+     :candidate-form-sha256
+     "0be703c129e2569749db232b9459a00a0f3ae1f4992700531d6d3b19f6663b1d",
+     :historical-form-identical false}],
+   :header-only-change (remove (<= (count args) 1023)),
+   :native-validation-guards-conserved true,
+   :direct-source-dependencies
+   [{:name p15-s23-io-child-types,
+     :form-sha256
+     "19dfc3daaba58ed42d0f5e82f8c9d8cd5b3e765d5f623ac0ed90b41510fbf4dc",
+     :unchanged-from-base true}
+    {:name p15-s23-lc-binding?,
+     :form-sha256
+     "2ecba8414c648a5a8051a4d153fc340a38db605956f5b10e4280297dbe51b86b",
+     :unchanged-from-base true}
+    {:name p15-s23-lc-native-map?,
+     :form-sha256
+     "d26a4f4dcd377cba235c8d2f8aa48ccf4979aa9efa029d61a2c8fe3bb6748bb3",
+     :unchanged-from-base true}
+    {:name p15-s23-typed-all,
+     :form-sha256
+     "91661dc440f7f2bb726c2ca0916d05be087ac8a470300b87ea2d80f110e983ae",
+     :unchanged-from-base true}]}],
+ :kind :list-construction-admission-removal,
+ :test-disposition
+ {:retired
+  [:exact-payment
+   :underpayment-refusal
+   :positive-work-counter
+   :width-1024-only-refusal],
+  :preserved
+  [:ordinary-inference-and-constraints
+   :effects-and-allocation
+   :Never-and-each-operand
+   :source-and-binding-tamper
+   :type-class-and-shape
+   :width-depth-and-late-invalid],
+  :direct-derive-test-callers-migrated 2},
+ :generator
+ {:language :clojure,
+  :sha256
+  "9c8c40ee46e8b9dec17152f951faecec8db2538c4ef2505e462aa819ad4f836b",
+  :preserved-locally true},
+ :validation
+ {:reader-eval false,
+  :Bootstrap-loaded false,
+  :source-integrity :passed,
+  :genuine-execution :UNRUN},
+ :base "e047157d711652a5624012f0da7d6911ce086718",
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01}

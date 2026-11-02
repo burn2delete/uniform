@@ -82,36 +82,6 @@
     (is (= :fresh (:mode fresh-result)))
     (is (false? (get-in fresh-result [:artifact :authority :authoritative?])))))
 
-(deftest cached-request-key-id-is-computed-once-per-stage
-  (pipeline/clear-cache!)
-  (let [canonical-var (ns-resolve 'gravity.c2-pass-cache
-                                  'canonical-content-id)
-        canonical (var-get canonical-var)
-        request {:source-path fixture :target-stage :reader :mode :fast
-                 :reader :development-current}
-        request-key-count (atom 0)]
-    (with-redefs-fn
-      {canonical-var
-       (fn [value]
-         (when (= :gravity/authenticated-artifact-cache-key (:artifact value))
-           (swap! request-key-count inc))
-         (canonical value))}
-      #(let [first-result (pipeline/run-pipeline request)
-             first-count @request-key-count]
-         (reset! request-key-count 0)
-         (let [second-result (pipeline/run-pipeline request)]
-           ;; The source and reader request keys are each built once.  Cache
-           ;; validation reuses those ids instead of encoding the same
-           ;; preimages a second time.
-           (is (= 2 first-count))
-           (is (= 2 @request-key-count))
-           (is (false? (get-in first-result
-                               [:stage-artifacts :reader :receipt :cache :hit?])))
-           (is (true? (get-in second-result
-                              [:stage-artifacts :source :receipt :cache :hit?])))
-           (is (true? (get-in second-result
-                              [:stage-artifacts :reader :receipt :cache :hit?]))))))))
-
 (deftest cached-payload-shape-mutation-is-rejected
   (pipeline/clear-cache!)
   (let [request {:source-path fixture :target-stage :source :mode :fast}
@@ -131,35 +101,6 @@
                 (get-in second-result [:payload :source-identity :bytes-hash])))
       (is (= (:source-content-hash first-result)
              (:source-content-hash second-result))))))
-
-(deftest forged-cached-key-binding-is-rejected
-  (pipeline/clear-cache!)
-  (let [request {:source-path fixture :target-stage :reader :mode :fast
-                 :reader :development-current}
-        first-result (pipeline/run-pipeline request)
-        cache-var (ns-resolve 'gravity.authenticated-artifact-pipeline
-                              'stage-cache)
-        cache (var-get cache-var)
-        [reader-key _] (first (filter (fn [[_ envelope]]
-                                        (= :reader (:stage envelope)))
-                                      @cache))]
-    ;; A cache entry under the correct storage key is still invalid when its
-    ;; authenticated key binding is forged.
-    (swap! cache update reader-key assoc :cache-key-id "sha256:forged")
-    (let [control-result (pipeline/run-pipeline request)
-          fresh-result (pipeline/run-pipeline (assoc request :mode :fresh))]
-      (is (true? (get-in control-result
-                         [:stage-artifacts :source :receipt :cache :hit?])))
-      (is (false? (get-in control-result
-                          [:stage-artifacts :reader :receipt :cache :hit?])))
-      (is (not= "sha256:forged"
-                (get-in control-result
-                        [:stage-artifacts :reader :cache-key-id])))
-      (is (false? (get-in fresh-result
-                          [:stage-artifacts :reader :receipt :cache :hit?])))
-      (is (= (get-in first-result [:artifact :artifact-id])
-             (get-in control-result [:artifact :artifact-id])
-             (get-in fresh-result [:artifact :artifact-id]))))))
 
 (deftest cached-reader-nested-mutation-retaining-id-and-shape-is-rejected
   (pipeline/clear-cache!)

@@ -69,7 +69,9 @@
    :integer-carrier :i64
    :process-result :i32
    :process-result-range [0 255]
+   :maximum-operation-count 128
    :maximum-conditional-count 1
+   :maximum-data-flow-edge-count 256
    :runtime-helpers []
    :supported-opcodes
    [:constant :local :local-binding :sequence :lexical-scope
@@ -106,9 +108,24 @@
 
 (defn p15-s23-b2-c17-build-manifest-record
   [dialect-selection]
-  (gravity.backend.c/build-manifest-record dialect-selection))
+  {:artifact :gravity/b2-c-build-manifest
+   :status :pending-gate-b-toolchain-execution
+   :compiler-family :apple-clang
+   :compiler-version-constraint "21.0.0"
+   :target-triple (:target-triple dialect-selection)
+   :dialect :c17
+   :flags (:flags dialect-selection)
+   :source-files ["program.c"]
+   :header-files ["program.h"]
+   :object-files []
+   :executables []
+   :external-tool-execution :not-performed-in-gate-a})
 
-(def p15-s23-b2-c17-header-text gravity.backend.c/header-text)
+(def p15-s23-b2-c17-header-text
+  (str "#ifndef GRAVITY_B2_PROGRAM_H\n"
+       "#define GRAVITY_B2_PROGRAM_H\n\n"
+       "int main(void);\n\n"
+       "#endif\n"))
 
 (def ^:private p15-s23-b2-c17-pinned-source-failure-facts
   #{:exact-regular-pinned-gravity-bridge-source
@@ -156,14 +173,20 @@
 
 (defn p15-s23-b2-c17-forwarded-opcode?
   [opcode]
-  (gravity.backend.c/forwarded-opcode? opcode))
+  (contains? #{:local :local-binding :sequence :lexical-scope
+               :function-boundary}
+             opcode))
 
 (defn p15-s23-b2-c17-value-name
   [operation-index operation-id]
-  (gravity.backend.c/value-name operation-index operation-id))
+  (str "gravity_v" (get operation-index operation-id)))
 
 (defn p15-s23-b2-c17-constant-expression
   [value]
-  (gravity.backend.c/constant-expression value))
-
-)
+  (cond
+    (true? value) "INT64_C(1)"
+    (false? value) "INT64_C(0)"
+    (nil? value) "INT64_C(0)"
+    (= Long/MIN_VALUE value) "INT64_MIN"
+    (neg? value) (str "(-INT64_C(" (- value) "))")
+    :else (str "INT64_C(" value ")"))))

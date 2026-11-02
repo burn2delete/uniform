@@ -89,7 +89,7 @@
               (catch clojure.lang.ExceptionInfo exception
                  (let [data
                        (p15-s23-backend-trusted-exception-data
-                        exception 65536)]
+                        exception 65536 128)]
                    (if (and
                         data
                         (p15-s23-c11-mir-owned-upstream-diagnostic? data))

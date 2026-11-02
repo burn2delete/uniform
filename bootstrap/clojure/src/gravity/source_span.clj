@@ -107,27 +107,6 @@
   (alength (.getBytes ^String text
                       java.nio.charset.StandardCharsets/UTF_8)))
 
-(defn- utf8-prefix-byte-count
-  [^String text end]
-  ;; Match Java's UTF-8 replacement byte for an unpaired surrogate, including
-  ;; a prefix that ends between a valid pair. Do not allocate the prefix text
-  ;; and its encoded byte array for every hosted-reader source position.
-  (if (or (nil? text) (neg? end))
-    (utf8-byte-count (subs text 0 end))
-    (let [end (int end)]
-      (loop [index 0 total 0]
-        (if (= index end)
-          total
-          (let [unit (int (.charAt text index))]
-            (cond
-              (<= unit 0x7f) (recur (inc index) (inc total))
-              (<= unit 0x7ff) (recur (inc index) (+ total 2))
-              (and (<= 0xd800 unit 0xdbff) (< (inc index) end)
-                   (<= 0xdc00 (int (.charAt text (inc index))) 0xdfff))
-              (recur (+ index 2) (+ total 4))
-              (<= 0xd800 unit 0xdfff) (recur (inc index) (inc total))
-              :else (recur (inc index) (+ total 3)))))))))
-
 (defn source-location
   "Build a source location with one-based coordinates and prefix offsets."
   [source-text line-starts line column]
@@ -136,7 +115,7 @@
     {:line line
      :column column
      :char char-index
-     :byte (utf8-prefix-byte-count source-text char-index)}))
+     :byte (utf8-byte-count (subs source-text 0 char-index))}))
 
 (defn source-span
   "Build either a compact source/form reference or a byte-aware source span.

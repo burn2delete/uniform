@@ -15,8 +15,7 @@
      scalar-boundaries
      raw-tokens
      raw-forms
-     semantic-index
-     resolved]}
+     semantic-index]}
    state
    _
    (sh03-reader-semantic-value-closure!
@@ -61,10 +60,7 @@
      scalar-boundaries
      raw-forms
      semantic-index
-     source-unit
-     (select-keys (:plan-binding resolved)
-                  [:source-content-hash :plan-semantic-hash :functions-semantic-hash])
-     result)
+     source-unit)
     (catch
      InterruptedException
      interrupted
@@ -96,6 +92,4 @@
    :host-values
    (:values host-values)
    :extension-dispatch-observations
-   (:extension-dispatch-observations host-values)
-   :pure-extension-results
-   (:pure-extension-results host-values))))
+   (:extension-dispatch-observations host-values))))

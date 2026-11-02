@@ -77,6 +77,8 @@
 
 (defn p15-s23-stage2-module-instructions [plan]
   (loop [pending (vec (mapcat :instructions (vals (:functions plan)))) result []]
+    (when (> (count result) 262144)
+      (p15-s23-stage2-module-fail! :instruction-visit-limit {}))
     (if (empty? pending) result
       (let [instruction (peek pending)]
         (when (or (some #(contains? instruction %) [:external-link :compiler-internal-caller :compiler-internal-provenance
@@ -99,16 +101,16 @@
                      :module (get-in entry [:resolution-artifact :gravity-resolution-boundary :resolved-analysis :module-contract])
                      :exports (mapv #(dissoc % :source-span) (:exports entry))}) entries)})
 
-(declare sh06-resolution-carrier-validation p15-s23-sh02-sha256-id?)
+(declare sh06-resolution-carrier-validation sh06-resolution-artifact-bounds p15-s23-sh02-sha256-id?)
 
 (defn p15-s23-stage2-module-closure [artifact]
   ;; DATA preflight and deduplication only; module-source still freshly verifies
   ;; every unique artifact, including its retained C5 dependency verification.
-  (when-not (= :passed (:status (sh06-resolution-carrier-validation artifact)))
+  (when-not (= :passed (:status (sh06-resolution-carrier-validation artifact sh06-resolution-artifact-bounds)))
     (p15-s23-stage2-module-fail! :bounded-module-artifact-carrier {}))
   (let [enqueue
         (fn [[pending seen] children]
-          (when-not (vector? children)
+          (when-not (and (vector? children) (<= (count children) 256))
             (p15-s23-stage2-module-fail! :bounded-module-dependencies {}))
           (reduce
            (fn [[pending seen] child]
@@ -119,7 +121,9 @@
                  (do (when-not (= previous child)
                        (p15-s23-stage2-module-fail! :conflicting-module-artifact {:module-id id}))
                      [pending seen])
-                 [(conj pending child) (assoc seen id child)])))
+                 (do (when (>= (count seen) 257)
+                       (p15-s23-stage2-module-fail! :module-closure-limit {}))
+                     [(conj pending child) (assoc seen id child)]))))
            [pending seen] children))]
     (loop [[pending seen] (enqueue [[] {}] [artifact])]
       (if (empty? pending)

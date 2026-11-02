@@ -1,0 +1,16 @@
+
+FAIL in (p18-final-release-proves-reproducibility-provenance-sbom-signing-and-governance) (bootstrap_test.clj:20453)
+backend-b4-async.qst
+expected: (str/includes? (:err qst-result) expected-diagnostic)
+  actual: (not (str/includes? "Syntax error reading source at (gravity/bootstrap.clj:106883:1).\nEOF while reading, starting at line 92240\n\nFull report at:\n/var/folders/h0/xgqjbbmj0q51d91_2658k01m0000gn/T/clojure-827370253971216252.edn\n" "B4-ASYNC"))
+
+FAIL in (p18-final-release-proves-reproducibility-provenance-sbom-signing-and-governance) (bootstrap_test.clj:20459)
+backend-b4-async.qst
+expected: (str/includes? (:err qst-result) qst-fixture)
+  actual: (not (str/includes? "Syntax error reading source at (gravity/bootstrap.clj:106883:1).\nEOF while reading, starting at line 92240\n\nFull report at:\n/var/folders/h0/xgqjbbmj0q51d91_2658k01m0000gn/T/clojure-827370253971216252.edn\n" "backend-b4-async.qst"))
+
+FAIL in (p18-final-release-proves-reproducibility-provenance-sbom-signing-and-governance) (bootstrap_test.clj:20462)
+backend-b4-async.qst
+expected: (= (str/replace (:err gravity-result) #"\.gravity" ".qst") (:err qst-result))
+  actual: (not (= "{:diagnostic-family :b4-wasm-backend-document, :remediation \"Emit Wasm only from verified backend input with pinned target features, component contracts, canonical ABI records, import/export capability schemas, linear-memory and bounds evidence, async/replay records, host boundary schemas, feature fallbacks, and complete artifact manifests.\", :missing-fields [:b4-async], :bootstrap-stage :stage0, :source-span {:source \"bootstrap/clojure/fixtures/rejected/backend-b4-async.qst\", :form-index 0}, :stage :b4-wasm-backend-document-coverage, :artifact-id \"b4-document-b4-async\", :missing-evidence :b4-async, :fallback-status :rejected, :id \"B4-ASYNC\", :backend :gravity.backend/wasm, :profile :hosted, :message \"B4 Wasm backend design document coverage validation failed\"}\n" "Syntax error reading source at (gravity/bootstrap.clj:106883:1).\nEOF while reading, starting at line 92240\n\nFull report at:\n/var/folders/h0/xgqjbbmj0q51d91_2658k01m0000gn/T/clojure-827370253971216252.edn\n"))
+{:test 1, :pass 2188, :fail 3, :error 0}

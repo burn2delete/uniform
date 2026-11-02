@@ -14,27 +14,15 @@
             [gravity.pass-cache :as pass-cache]
             [gravity.pass-execution :as pass-execution]))
 
-(defn- build-c15-stage-request
-  [context]
-  (request-builder/build
-   {:require-sha256! validation/require-sha256!
-    :stage-cache-key pass-cache/stage-cache-key}
-   context :c15 contract/c15-pass-contract (:c14-artifact-id context)
-   contract/c15-input-facts true))
-
-(defn- build-c16-stage-request
-  [context c15-artifact-id]
-  (request-builder/build
-   {:require-sha256! validation/require-sha256!
-    :stage-cache-key pass-cache/stage-cache-key}
-   context :c16 contract/c16-pass-contract c15-artifact-id
-   contract/c15-output-facts false))
-
 (defn c15-stage-request
   "Build and validate the exact C15 generic-pass request."
   [context]
-  (let [context (validation/validate-context! context)]
-    (build-c15-stage-request context)))
+  (request-builder/build
+   {:validate-context! validation/validate-context!
+    :require-sha256! validation/require-sha256!
+    :stage-cache-key pass-cache/stage-cache-key}
+   context :c15 contract/c15-pass-contract (:c14-artifact-id context)
+   contract/c15-input-facts true))
 
 (defn c16-stage-request
   "Build and validate the exact C16 request consuming one C15 artifact.
@@ -42,11 +30,12 @@
   The C15 input is deliberately not an external root: when both receipts are
   composed, it must resolve to the C15 producer and form a typed internal edge."
   [context c15-artifact-id]
-  (let [context (validation/validate-context! context)]
-    (build-c16-stage-request context c15-artifact-id)))
-
-(def ^:private c15-stage-request-default c15-stage-request)
-(def ^:private c16-stage-request-default c16-stage-request)
+  (request-builder/build
+   {:validate-context! validation/validate-context!
+    :require-sha256! validation/require-sha256!
+    :stage-cache-key pass-cache/stage-cache-key}
+   context :c16 contract/c16-pass-contract c15-artifact-id
+   contract/c15-output-facts false))
 
 (defn lookup-or-compute!
   "Reuse or execute the adjacent C15 and C16 passes and compose their receipts.
@@ -55,31 +44,20 @@
   exact C15 artifact id, so a changed C15 output invalidates the C16 key and the
   composed DAG contains one real, typed internal edge."
   [store context operations]
-  (let [c15-stage-request* c15-stage-request
-        c16-stage-request* c16-stage-request]
-    (orchestration/lookup-or-compute!
-     {:validate-context! validation/validate-context!
-      :validate-operations! validation/validate-operations!
-      ;; Orchestration has already validated these exact inputs. Keep the
-      ;; default route on the private builders, but retain late public-var
-      ;; interposition for callers that replace either public callback.
-      :c15-stage-request
-      (if (identical? c15-stage-request* c15-stage-request-default)
-        build-c15-stage-request
-        c15-stage-request*)
-      :c16-stage-request
-      (if (identical? c16-stage-request* c16-stage-request-default)
-        build-c16-stage-request
-        c16-stage-request*)
-      :stage-cache-key pass-cache/stage-cache-key
-      :cache-lookup-or-compute! pass-cache/lookup-or-compute!
-      :stage-cache-operations envelope/stage-cache-operations
-      :decode-envelope! envelope/decode!
-      :compose-evidence-dag pass-execution/compose-evidence-dag
-      :evidence-root pass-execution/evidence-root
-      :c15-pass-contract contract/c15-pass-contract
-      :c16-pass-contract contract/c16-pass-contract}
-     store context operations)))
+  (orchestration/lookup-or-compute!
+   {:validate-context! validation/validate-context!
+    :validate-operations! validation/validate-operations!
+    :c15-stage-request c15-stage-request
+    :c16-stage-request c16-stage-request
+    :stage-cache-key pass-cache/stage-cache-key
+    :cache-lookup-or-compute! pass-cache/lookup-or-compute!
+    :stage-cache-operations envelope/stage-cache-operations
+    :decode-envelope! envelope/decode!
+    :compose-evidence-dag pass-execution/compose-evidence-dag
+    :evidence-root pass-execution/evidence-root
+    :c15-pass-contract contract/c15-pass-contract
+    :c16-pass-contract contract/c16-pass-contract}
+   store context operations))
 
 (defn c15-c16-pass-cache-contract
   "Return the exact non-authoritative adapter contract."

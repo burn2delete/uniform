@@ -130,19 +130,17 @@
     :clojure-seed-boundary? :self-hosted?})
 
 (defn p15-s23-c11-mir-final-artifact-base
-  ([checked-core context ingress binding constructed verifier]
-   (p15-s23-c11-mir-final-artifact-base checked-core context ingress binding constructed verifier 1))
-  ([checked-core context ingress binding constructed verifier version]
-  (let [scope (p15-s23-c11-mir-scope-record version)
+  [checked-core context ingress binding constructed verifier]
+  (let [scope (p15-s23-c11-mir-scope-record)
         verifier-record
-        (p15-s23-c11-independent-verifier-record verifier version (:source-policy ingress))
+        (p15-s23-c11-independent-verifier-record verifier)
         mir-module
         (p15-s23-c11-mir-finalize
-         constructed checked-core verifier-record scope version (:source-policy ingress))
+         constructed checked-core verifier-record scope)
         source-rule (p15-s23-c11-mir-source-rule-record binding)
         base
         {:kind :gravity/p15-s23-c11-authenticated-mir-artifact
-         :schema-version version
+         :schema-version 1
          :source-core-artifact-id (:artifact-id checked-core)
          :checked-core-ingress ingress
          :mir-module mir-module
@@ -150,7 +148,7 @@
          :construction-record
          {:semantic-constructor
           {:owner :gravity-source
-           :function (p15-s23-c11-mir-selected-builder-function version)
+           :function p15-s23-c11-mir-builder-function
            :builder-semantic-hash (:builder-semantic-hash source-rule)}
           :execution-tcb
           {:runner :clojure-stage0-rule-runner
@@ -174,9 +172,9 @@
         mir-id (p15-s23-c11-mir-recomputed-id base)
         artifact-id
         (p15-s23-c11-mir-digest
-         {:kind (:kind base) :schema-version version :mir-id mir-id})
+         {:kind (:kind base) :schema-version 1 :mir-id mir-id})
         with-id (assoc base :mir-id mir-id :artifact-id artifact-id)]
     (assoc with-id
            :actual-path-binding-id
            (p15-s23-c11-mir-recomputed-actual-path-binding-id
-            with-id checked-core context)))))
+            with-id checked-core context))))

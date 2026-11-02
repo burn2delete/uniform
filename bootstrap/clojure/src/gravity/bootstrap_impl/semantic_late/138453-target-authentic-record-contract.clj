@@ -121,13 +121,17 @@
    (= :gravity/p15-s23-runtime-closed-plan-validation-record (:artifact validation))
    (=
     #{:observed-operation-set
+      :maximum-depth
       :plan-id
       :operation-set
       :status
       :entrypoint
-      :artifact}
+      :artifact
+      :maximum-nodes}
     (set (keys validation)))
    (= :complete (:status validation))
    (= expected-validation-hash (:validation-hash record))
    (= p15-s23-closed-runtime-operations (:operation-set validation))
-   (= io-write-active? (contains? (:observed-operation-set validation) :println)))))
+   (= io-write-active? (contains? (:observed-operation-set validation) :println))
+   (= p15-s23-closed-runtime-max-depth (:maximum-depth validation))
+   (= p15-s23-closed-runtime-max-nodes (:maximum-nodes validation)))))

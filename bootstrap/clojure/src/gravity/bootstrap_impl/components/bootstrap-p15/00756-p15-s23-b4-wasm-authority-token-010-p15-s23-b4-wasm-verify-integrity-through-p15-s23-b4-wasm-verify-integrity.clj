@@ -10,7 +10,9 @@
        "B4-MANIFEST" source-path {}
        {:missing-fact :bounded-b4-final-artifact-map}))
     (p15-s23-c11-mir-bounded-value!
-     source-path :b4-final-artifact-integrity artifact)
+     source-path :b4-final-artifact-integrity artifact
+     p15-s23-b4-wasm-max-final-artifact-carrier-nodes
+     p15-s23-b4-wasm-max-final-artifact-carrier-depth)
     (let [raw-bytes (get-in artifact [:raw-wasm :bytes])]
       (when (and (vector? raw-bytes)
                  (<= (count raw-bytes) p15-s23-b4-wasm-max-module-bytes)

@@ -46,10 +46,6 @@
    :clojure-seed-boundary? true
    :self-hosted? false})
 
-(defn- lowercase-hex
-  [bytes]
-  (apply str (map #(format "%02x" (bit-and % 0xff)) bytes)))
-
 (defn sha256-hex
   "Return the SHA-256 digest of a String's UTF-8 bytes as lowercase hex.
 
@@ -59,7 +55,7 @@
   [text]
   (let [digest (.digest (java.security.MessageDigest/getInstance "SHA-256")
                         (.getBytes text "UTF-8"))]
-    (lowercase-hex digest)))
+    (apply str (map #(format "%02x" (bit-and % 0xff)) digest))))
 
 (defn sha256-bytes-hex
   "Return the SHA-256 digest of a byte array as lowercase hex.
@@ -69,7 +65,7 @@
   [bytes]
   (let [digest (.digest (java.security.MessageDigest/getInstance "SHA-256")
                         bytes)]
-    (lowercase-hex digest)))
+    (apply str (map #(format "%02x" (bit-and % 0xff)) digest))))
 
 (defn sha256-output-hex
   "Hash bytes written by one invocation of write-bytes! to a scoped sink.
@@ -80,6 +76,6 @@
   [write-bytes!]
   (let [digest (java.security.MessageDigest/getInstance "SHA-256")]
     (with-open [output (java.security.DigestOutputStream.
-                        (java.io.OutputStream/nullOutputStream) digest)]
+                       (java.io.OutputStream/nullOutputStream) digest)]
       (write-bytes! output))
-    (lowercase-hex (.digest digest))))
+    (apply str (map #(format "%02x" (bit-and % 0xff)) (.digest digest)))))

@@ -11,6 +11,7 @@
          p15-s23-b4-wasm-expected-source-content-hash)
 
 (def p15-s23-c13-c14-b1-max-carrier-nodes 65536)
+(def p15-s23-c13-c14-b1-max-carrier-depth 512)
 
 (defn p15-s23-c13-c14-b1-source-rule
   [owner binding builder]
@@ -113,12 +114,17 @@
 (defn p15-s23-c13-c14-b1-require-trusted!
   [source-path carrier value sorted-policy]
   (let [validation
-        (p15-s23-trusted-carrier-validation value sorted-policy)]
+        (p15-s23-trusted-carrier-validation
+         value sorted-policy
+         p15-s23-c13-c14-b1-max-carrier-nodes
+         p15-s23-c13-c14-b1-max-carrier-depth
+         p15-s23-c13-c14-b1-max-carrier-nodes)]
     (when-not (= :passed (:status validation))
       (p15-s23-b3-llvm-fail!
        "B1-INPUT" source-path {}
        (merge {:missing-fact :trusted-bounded-c13-c14-b1-carrier
                :carrier carrier}
               (select-keys validation
-                           [:reason :class]))))
+                           [:reason :observed-nodes :observed-depth
+                            :maximum-nodes :maximum-depth :maximum-width]))))
     validation))

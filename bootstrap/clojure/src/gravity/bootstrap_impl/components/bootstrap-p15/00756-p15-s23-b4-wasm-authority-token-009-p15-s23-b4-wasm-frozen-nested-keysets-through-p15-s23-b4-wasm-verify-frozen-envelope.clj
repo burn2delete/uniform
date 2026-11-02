@@ -73,16 +73,24 @@
    :atomic-tool-identity-binding? false
    :whole-process-tree-reaping-proved? false})
 
+(def p15-s23-b4-wasm-max-final-artifact-carrier-nodes 65536)
+(def p15-s23-b4-wasm-max-final-artifact-carrier-depth 128)
+
 (defn- p15-s23-b4-wasm-require-trusted-final-carrier!
   [source-path artifact]
   (let [validation
-        (p15-s23-trusted-carrier-validation artifact :default-only)]
+        (p15-s23-trusted-carrier-validation
+         artifact :default-only
+         p15-s23-b4-wasm-max-final-artifact-carrier-nodes
+         p15-s23-b4-wasm-max-final-artifact-carrier-depth
+         p15-s23-b4-wasm-max-final-artifact-carrier-nodes)]
     (when-not (= :passed (:status validation))
       (p15-s23-b4-wasm-fail!
        "B4-MANIFEST" source-path {}
        (assoc
         (select-keys validation
-                     [:reason :class])
+                     [:reason :observed-nodes :observed-depth
+                      :maximum-nodes :maximum-depth :maximum-width])
         :missing-fact
         :trusted-comparator-free-b4-final-artifact-carrier)))
     validation))
@@ -96,7 +104,9 @@
      "B4-MANIFEST" source-path {}
      {:missing-fact :bounded-b4-final-artifact-map}))
   (p15-s23-c11-mir-bounded-value!
-   source-path :b4-frozen-envelope artifact)
+   source-path :b4-frozen-envelope artifact
+   p15-s23-b4-wasm-max-final-artifact-carrier-nodes
+   p15-s23-b4-wasm-max-final-artifact-carrier-depth)
   (when-not (= p15-s23-b4-wasm-final-artifact-keys
                (set (keys artifact)))
     (p15-s23-b4-wasm-fail!

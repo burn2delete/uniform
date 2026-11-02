@@ -136,7 +136,8 @@
     sh14-vector-request
     sh14-map-request
     sh14-set-request
-    sh14-mutable-buffer-request])
+    sh14-mutable-buffer-request
+    sh14-maximum-layout-request])
 
 (def ^:private rejected-cases
   {'sh14-missing-fact-request ["C12-FACTS" :invalid-ownership-fact]
@@ -146,6 +147,8 @@
    'sh14-duplicate-set-values-request ["C12-SCHEMA" :duplicate-set-value]
    'sh14-invalid-variant-tag-request
    ["C12-SCHEMA" :invalid-variant-schema]
+   'sh14-excessive-capacity-request
+   ["SAFE2-BOUNDS" :capacity-over-limit]
    'sh14-length-over-capacity-request
    ["SAFE2-BOUNDS" :length-over-capacity]
    'sh14-hidden-mutability-request ["L10-HIDDEN-ALLOC" :allocation-regime]
@@ -168,6 +171,10 @@
    'sh14-reversed-source-span-request
    ["C12-SCHEMA" :invalid-source-span]
    'sh14-malformed-fact-id-request ["C12-FACTS" :invalid-type-fact]
+   'sh14-element-size-over-limit-request
+   ["S7-LAYOUT" :element-size-over-limit]
+   'sh14-total-size-over-limit-request
+   ["S7-LAYOUT" :total-size-over-limit]
    'sh14-duplicate-variant-tags-request
    ["C12-SCHEMA" :invalid-variant-schema]
    'sh14-variant-arity-request
@@ -185,6 +192,9 @@
   (let [policy (invoke-engine 'sh14-layout-policy [])]
     (is (= :gravity/sh14-layout-policy (:artifact policy)))
     (is (= 1 (:version policy)))
+    (is (= 4096 (:maximum-capacity policy)))
+    (is (= 64 (:maximum-element-size policy)))
+    (is (= 131072 (:maximum-size-bytes policy)))
     (is (= 64 (:integer-width-bits policy)))
     (is (= 9223372036854775807 (:maximum-integer policy)))
     (is (= #{1 2 4 8 16 32 64} (:alignments policy)))
@@ -249,7 +259,10 @@
         (build (request accepted-gravity-plan 'sh14-map-request))
         buffer-layout
         (build
-         (request accepted-gravity-plan 'sh14-mutable-buffer-request))]
+         (request accepted-gravity-plan 'sh14-mutable-buffer-request))
+        maximum-layout
+        (build
+         (request accepted-gravity-plan 'sh14-maximum-layout-request))]
     (is (= :utf-8 (get-in string-layout [:identity-input :encoding])))
     (is (= [71 114 97 118 105 116 121 240 159 152 128]
            (get-in string-layout [:identity-input :payload])))
@@ -261,7 +274,8 @@
            (get-in buffer-layout [:layout :allocation-regime])))
     (is (true? (get-in buffer-layout [:layout :mutable])))
     (is (= 64 (get-in buffer-layout [:layout :capacity])))
-    (is (= 64 (get-in buffer-layout [:layout :size-bytes])))))
+    (is (= 64 (get-in buffer-layout [:layout :size-bytes])))
+    (is (= 131072 (get-in maximum-layout [:layout :size-bytes])))))
 
 (deftest sh14-keeps-actual-paths-outside-layout-identity
   (let [first-request
@@ -306,9 +320,9 @@
         (request accepted-gravity-plan 'sh14-symbol-request)
         variant-request
         (request accepted-gravity-plan 'sh14-variant-request)
-        invalid-name "x y"
-        invalid-keyword (keyword invalid-name)
-        invalid-symbol (symbol invalid-name)
+        over-limit-name (apply str (repeat 300 "x"))
+        over-limit-keyword (keyword over-limit-name)
+        over-limit-symbol (symbol over-limit-name)
         cases
         [[(assoc record :unknown-layout-authority :filesystem)
           "C12-SCHEMA" :unexpected-request-fields]
@@ -326,26 +340,26 @@
           "C12-SCHEMA" :invalid-origin-chain]
          [(assoc record :value-id {:host :aggregate})
           "C12-FACTS" :invalid-value-id]
-         [(assoc record :value-id invalid-keyword)
+         [(assoc record :value-id over-limit-keyword)
           "C12-FACTS" :invalid-value-id]
          [(assoc-in record [:source-span :source-id]
-                    invalid-keyword)
+                    over-limit-keyword)
           "C12-SCHEMA" :invalid-source-span]
          [(assoc vector-request :payload [{:host :aggregate}]
                                 :capacity 1 :length 1 :size-bytes 8)
           "C12-SCHEMA" :invalid-vector]
-         [(assoc vector-request :payload [invalid-symbol]
+         [(assoc vector-request :payload [over-limit-symbol]
                                 :capacity 1 :length 1 :size-bytes 8)
           "C12-SCHEMA" :invalid-vector]
          [(assoc vector-request :payload (list 1 2)
                                 :capacity 2 :length 2 :size-bytes 16)
           "SAFE2-BOUNDS" :structure-sequence-carrier]
-         [(assoc record :field-names [invalid-keyword :arity])
+         [(assoc record :field-names [over-limit-keyword :arity])
           "C12-SCHEMA" :invalid-record-fields]
          [(assoc variant-request
-                 :allowed-tags [invalid-keyword]
-                 :variant-arities {invalid-keyword 1}
-                 :tag invalid-keyword)
+                 :allowed-tags [over-limit-keyword]
+                 :variant-arities {over-limit-keyword 1}
+                 :tag over-limit-keyword)
           "C12-SCHEMA" :invalid-variant-schema]
          [(assoc record :profile :future/profile)
           "C12-FACTS" :unsupported-profile-target]
@@ -354,7 +368,7 @@
          [(assoc symbol-request :payload "\u03bb" :capacity 1
                                 :length 1 :size-bytes 8)
           "C12-SCHEMA" :invalid-symbol]
-         [(assoc symbol-request :payload invalid-name)
+         [(assoc symbol-request :payload over-limit-name)
           "C12-SCHEMA" :invalid-symbol]]]
     (doseq [[hostile rule reason] cases]
       (let [result (build hostile)]
@@ -369,7 +383,7 @@
       (is (= :portable-mir
              (get-in result [:identity-input :target]))))))
 
-(deftest sh14-accepts-keyword-and-symbol-values-over-retired-unit-quota
+(deftest sh14-counts-keyword-and-symbol-serialized-structural-units
   (let [base (request accepted-gravity-plan 'sh14-vector-request)
         keyword-value (keyword (apply str (repeat 255 "k")))
         symbol-value (symbol (apply str (repeat 256 "s")))
@@ -382,19 +396,22 @@
         result (build hostile)]
     (is (= 256 (count (str keyword-value))))
     (is (= 256 (count (str symbol-value))))
-    (is (= :accepted (:status result)))
-    (is (= payload (get-in result [:identity-input :payload])))))
+    (is (= :rejected (:status result)))
+    (is (= "SAFE2-BOUNDS"
+           (get-in result [:diagnostics 0 :rule])))
+    (is (= :structure-scalar-unit-bound
+           (get-in result [:diagnostics 0 :reason])))))
 
 (deftest sh14-contains-deep-origin-and-hostile-candidate-graphs
   (let [record (request accepted-gravity-plan 'sh14-record-request)
-        deep-request (generated-request record 500)
+        deep-request (generated-request record 50000)
         deep-result (build deep-request)
         valid-layout (build record)
         hostile-candidate
         (assoc valid-layout
                :hostile-padding
                (generated-origin-chain
-                500 "/checkout-hostile/candidate.gravity"))
+                50000 "/checkout-hostile/candidate.gravity"))
         verification
         (invoke-engine
          'sh14-verify-layout [record hostile-candidate])
@@ -406,16 +423,20 @@
         over-count-result
         (build
          (assoc record :origin-chain
-                (vec (repeat 65 (first (:origin-chain record))))))
-        long-path-result
-        (build
-         (assoc-in record [:source-span :actual-source-path]
-                   (apply str (repeat 4097 "p"))))]
-    (is (= :accepted (:status deep-result)))
+                (vec (repeat 65 (first (:origin-chain record))))))]
+    (is (= :rejected (:status deep-result)))
+    (is (= "SAFE2-BOUNDS"
+           (get-in deep-result [:diagnostics 0 :rule])))
+    (is (contains?
+         #{:structure-depth-bound :structure-node-bound}
+         (get-in deep-result [:diagnostics 0 :reason])))
+    (is (nil? (get-in deep-result [:diagnostics 0 :source-span])))
+    (is (empty?
+         (get-in deep-result [:diagnostics 0 :generated-origin-chain])))
     (is (= :rejected (:status verification)))
     (is (= "C12-VERIFY"
            (get-in verification [:diagnostics 0 :rule])))
-    (is (= :layout-result-substitution
+    (is (= :candidate-structural-bound
            (get-in verification [:diagnostics 0 :reason])))
     (is (= :rejected (:status sequence-verification)))
     (is (= :candidate-structural-bound
@@ -423,9 +444,12 @@
     (is (= :structure-sequence-carrier
            (get-in sequence-verification
                    [:diagnostics 0 :structural-preflight :reason])))
-    (is (= :accepted (:status over-depth-result)))
-    (is (= :accepted (:status over-count-result)))
-    (is (= :accepted (:status long-path-result)))))
+    (is (= :rejected (:status over-depth-result)))
+    (is (= :invalid-origin-chain
+           (get-in over-depth-result [:diagnostics 0 :reason])))
+    (is (= :rejected (:status over-count-result)))
+    (is (= :invalid-origin-chain
+           (get-in over-count-result [:diagnostics 0 :reason])))))
 
 (deftest sh14-accepts-the-complete-flat-payload-boundary
   (let [base (request accepted-gravity-plan 'sh14-vector-request)
@@ -443,46 +467,6 @@
     (is (= 4096 (get-in layout [:layout :capacity])))
     (is (= 4096 (count (get-in layout [:identity-input :payload]))))
     (is (= :passed (:status verification)))))
-
-(deftest sh14-accepts-layout-values-over-retired-input-quotas
-  (let [base (request accepted-gravity-plan 'sh14-vector-request)
-        capacity 4097
-        element-size 65
-        payload (vec (repeat capacity 1))
-        raw-size (* capacity element-size)
-        alignment 8
-        size-bytes (* alignment
-                      (quot (+ raw-size (dec alignment)) alignment))
-        request (assoc base
-                       :payload payload
-                       :capacity capacity
-                       :length capacity
-                       :element-size element-size
-                       :alignment alignment
-                       :size-bytes size-bytes)
-        layout (build request)
-        verification
-        (invoke-engine 'sh14-verify-layout [request layout])]
-    (is (= :accepted (:status layout)))
-    (is (= capacity (get-in layout [:layout :capacity])))
-    (is (= size-bytes (get-in layout [:layout :size-bytes])))
-    (is (= :passed (:status verification)))))
-
-(deftest sh14-retains-i64-aligned-size-representability
-  (let [base (request accepted-gravity-plan 'sh14-vector-request)
-        near-limit 9223372036854775800
-        representable (assoc base
-                             :capacity near-limit
-                             :length 0
-                             :element-size 1
-                             :alignment 8
-                             :size-bytes near-limit)
-        overflowing (assoc representable
-                            :capacity 9223372036854775807
-                            :size-bytes 9223372036854775807)]
-    (is (= nil (invoke-engine 'sh14-v2-size-error [representable])))
-    (is (= :integer-overflow
-           (invoke-engine 'sh14-v2-size-error [overflowing])))))
 
 (deftest sh14-requires-explicit-kind-allocation-and-alignment
   ;; Original normalized layout kernel, not allocation or source admission.

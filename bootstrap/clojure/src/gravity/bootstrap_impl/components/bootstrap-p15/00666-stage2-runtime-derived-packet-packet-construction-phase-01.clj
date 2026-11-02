@@ -24,8 +24,10 @@
                    nil
                    {:target requested-target,
                     :cause-message (.getMessage ex),
-                    :missing-fact :closed-runtime-host-stack-failure,
-                    :boundary :source-to-stage2-plan}))
+                    :missing-fact :closed-plan-bounds,
+                    :boundary :source-to-stage2-plan,
+                    :maximum-depth p15-s23-closed-runtime-max-depth,
+                    :maximum-nodes p15-s23-closed-runtime-max-nodes}))
                (catch
                  Exception
                  ex
@@ -97,24 +99,10 @@
                                      {:source-declared-target source-declared-target,
                                       :requested-target requested-target,
                                       :missing-fact :target-constraint-compatibility}))
-        closed-plan-validation (try
-                                (p15-s23-closed-runtime-plan-validation!
-                                  source-path
-                                  requested-target
-                                  plan)
-                                (catch
-                                  StackOverflowError
-                                  ex
-                                  (p15-s23-stage2-runtime-executor-fail!
-                                    "P15S23X002"
-                                    source-path
-                                    nil
-                                    {:target requested-target,
-                                     :cause-message (.getMessage ex),
-                                     :missing-fact
-                                     :closed-runtime-host-stack-failure,
-                                     :boundary
-                                     :closed-runtime-plan-validation})))]
+        closed-plan-validation (p15-s23-closed-runtime-plan-validation!
+                                 source-path
+                                 requested-target
+                                 plan)]
     (assoc
       state
       'stage2-rule

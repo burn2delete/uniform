@@ -399,7 +399,7 @@
              [:overbound overbound-layout :layout-length-not-four]
              [:overflow overflow-layout :unaligned-size-mismatch]
              [:lazy lazy-request :request-member-carrier-rejected]
-             [:deep deep-request :facts-substitution]]]
+             [:deep deep-request :request-member-carrier-rejected]]]
       (testing (str label)
         (is (not= request mutation)
             "hostile mutation must change the authenticated request")

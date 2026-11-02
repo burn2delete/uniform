@@ -7,6 +7,8 @@
 
 (defn exact-map!
   [value fields id label]
+  ;; Bound operation maps and returned records before inspecting keys.
+  (canonical/preflight-canonical! value)
   (when-not (map? value)
     (diagnostics/fail! id (str label " must be a map") {:field label}))
   (reduce-kv (fn [_ key _]
@@ -43,6 +45,10 @@
   (when-not (vector? value)
     (diagnostics/fail! "C16-ENTRY" "receipt identity field must be a vector"
                        {:field field :observed value}))
+  (when (> (count value) config/maximum-nodes)
+    (diagnostics/fail! "C16-KEY"
+                       "receipt vector exceeds its cardinality bound"
+                       {:field field :maximum-cardinality config/maximum-nodes}))
   (when-not (and (every? predicate value)
                  (= (count value) (count (distinct value))))
     (diagnostics/fail! "C16-ENTRY"

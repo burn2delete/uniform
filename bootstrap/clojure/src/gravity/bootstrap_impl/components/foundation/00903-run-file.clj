@@ -2,7 +2,7 @@
 
 (defn run-file
   [path]
-  (let [source (read-gravity-source-text path)
+  (let [source (slurp path)
         macro-artifact (macro-source-artifact path source)
         module (assoc (:module macro-artifact) :forms (:expanded-forms macro-artifact))
         _ (executable-profile! path module (:forms module))]

@@ -1,12 +1,10 @@
 (ns gravity.c17-c18-pass-cache.request
-  "Pure C17/C18 generic-pass request construction for validated context.
-
-  Callers own context validation; this helper only projects the request and
-  rechecks its input artifact identity before deriving the cache key.")
+  "Pure C17/C18 generic-pass request construction over injected validation.")
 
 (defn build
-  [{:keys [require-sha256! stage-cache-key]}
+  [{:keys [validate-context! require-sha256! stage-cache-key]}
    context stage-key contract input-id input-facts]
+  (validate-context! context)
   (require-sha256! :input-artifact-id input-id)
   (let [request {:stage (:pass contract)
                  :contract contract

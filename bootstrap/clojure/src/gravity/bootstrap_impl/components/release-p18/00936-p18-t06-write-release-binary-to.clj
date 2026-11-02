@@ -117,7 +117,7 @@
                 true)
       (assoc-in [:bootstrap-hosted-command-boundary
                  :delegates-to]
-                "clojure -M:packaged-gravity")))
+                "target/phase-18/jvm-cli/gravity-jvm-cli.jar")))
 
 (defn p18-t06-boundary-seedless?
   [boundary]

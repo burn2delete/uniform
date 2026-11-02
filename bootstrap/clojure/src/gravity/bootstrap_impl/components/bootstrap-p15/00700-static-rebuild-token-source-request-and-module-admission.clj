@@ -7,7 +7,7 @@
           construction-mode
           static-execution-evidence
           static-rebuild-token-candidate]} state
-        source-byte-count (p15-s23-closed-core-source-request-byte-count!
+        source-byte-count (p15-s23-closed-core-source-request-bounds!
                             source-path
                             source-text
                             requested-target)

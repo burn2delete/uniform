@@ -11,7 +11,15 @@
             output
             (str/join " "
                       (map #(p15-s23-seed-readable-value-text source-path %)
-                           snapshot-args))]
+                           snapshot-args))
+            output-bytes (p15-s23-seed-readable-utf8-bytes output)
+            maximum-output-bytes
+            (:maximum-output-bytes p15-s23-seed-readable-printer-limits)]
+        (when (> output-bytes maximum-output-bytes)
+          (p15-s23-seed-readable-printer-fail!
+           source-path :output-byte-limit
+           {:observed-output-bytes output-bytes
+            :maximum-output-bytes maximum-output-bytes}))
         output)
       (catch clojure.lang.ExceptionInfo ex
         (if (.remove ^java.util.IdentityHashMap

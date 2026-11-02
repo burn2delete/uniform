@@ -62,7 +62,10 @@
                                      nil
                                      {:target requested-target,
                                       :cause-message (.getMessage ex),
-                                      :missing-fact :closed-runtime-host-stack-failure}))
+                                      :missing-fact :closed-plan-bounds,
+                                      :maximum-depth p15-s23-closed-runtime-max-depth,
+                                      :maximum-nodes
+                                      p15-s23-closed-runtime-max-nodes}))
                                  (catch
                                    Exception
                                    ex

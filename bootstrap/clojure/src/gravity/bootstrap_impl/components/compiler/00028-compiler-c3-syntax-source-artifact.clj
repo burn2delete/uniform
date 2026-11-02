@@ -70,8 +70,8 @@
   (case id
     "C4-NOT-MACRO" "macro invocation is invalid or unavailable"
     "C4-RETURN" "macro output is not valid syntax"
-    "C4-DEPTH" "macro expansion was recursive or exceeded a host containment boundary"
-    "C4-SIZE" "historical macro expansion-size compatibility diagnostic"
+    "C4-DEPTH" "macro expansion exceeded the deterministic depth limit"
+    "C4-SIZE" "macro expansion exceeded the deterministic size limit"
     "C4-BUILD-EFFECT" "macro used undeclared or ungranted build effects"
     "C4-HYGIENE" "macro expansion violates hygiene"
     "C4-CAPTURE" "macro expansion captures a binding illegally"
@@ -132,7 +132,8 @@
   [module c3-artifact macro-artifact]
   (c4-macro-evidence/c4-expansion-input
    module c3-artifact macro-artifact
-   {:artifact-id-of c4-artifact-id}))
+   {:artifact-id-of c4-artifact-id
+    :max-macro-expansion-depth max-macro-expansion-depth}))
 
 (defn c4-expanded-syntax-stream
   [macro-artifact]

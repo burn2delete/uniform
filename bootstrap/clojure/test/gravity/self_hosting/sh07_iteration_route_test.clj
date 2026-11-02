@@ -94,6 +94,7 @@
   (doseq [[suffix value]
           [[[:authority-ceiling] :acceptance-only]
            [[:cache-policy :authoritative?] true]
+           [[:bounds :max-test-vars] 999999]
            [[:selection :kind] :unknown]
            [[:selection :selectors] ["duplicate" "duplicate"]]
            [[:selection :selectors] [42]]]]

@@ -3,16 +3,23 @@
 (defn- p15-s23-b2-c17-gate-b-integrity-preflight!
   [source-path artifact]
   (let [validation
-        (p15-s23-trusted-carrier-validation artifact :default-only)]
+        (p15-s23-trusted-carrier-validation
+         artifact :default-only
+         p15-s23-c13-c14-b1-max-carrier-nodes
+         p15-s23-c13-c14-b1-max-carrier-depth
+         p15-s23-c13-c14-b1-max-carrier-nodes)]
     (when-not (= :passed (:status validation))
       (p15-s23-c-backend-fail!
        "B13-SCHEMA" source-path {}
        (merge {:missing-fact :trusted-bounded-c17-gate-b-final-carrier}
               (select-keys validation
-                           [:reason :class]))))
+                           [:reason :observed-nodes :observed-depth
+                            :maximum-nodes :maximum-depth :maximum-width]))))
     (try
       (p15-s23-c11-mir-bounded-value!
-       source-path :c17-gate-b-final-artifact artifact)
+       source-path :c17-gate-b-final-artifact artifact
+       p15-s23-c13-c14-b1-max-carrier-nodes
+       p15-s23-c13-c14-b1-max-carrier-depth)
       (catch clojure.lang.ExceptionInfo exception
         (p15-s23-c-backend-fail!
          "B13-SCHEMA" source-path {}

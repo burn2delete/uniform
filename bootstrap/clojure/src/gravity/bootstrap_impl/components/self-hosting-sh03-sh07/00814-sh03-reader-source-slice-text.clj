@@ -2,7 +2,7 @@
 
 (defn sh03-reader-source-slice-text!
   [source-path source-bytes source-content-id scalar-boundaries raw]
-  (let [byte-count (alength ^bytes source-bytes)
+  (let [byte-count (alength source-bytes)
         start (:byte-start raw)
         end (:byte-end raw)
         scalar-start (:scalar-start raw)
@@ -24,10 +24,8 @@
        source-path :source-bound-sh03-reader-slice raw
        {:source-byte-count byte-count
         :expected-source-content-id source-content-id}))
-    ;; Decode only the checked range. A view avoids copying every token/form
-    ;; slice and reflective Arrays overload discovery on large source products.
-    (let [buffer (java.nio.ByteBuffer/wrap ^bytes source-bytes (int start) (int (- end start)))
-          ^String text (sh03-reader-decode-buffer! source-path raw buffer)
+    (let [bytes (java.util.Arrays/copyOfRange source-bytes start end)
+          text (sh03-reader-decode-raw-bytes! source-path raw bytes)
           observed-scalars (.codePointCount text 0 (.length text))]
       (when-not (= observed-scalars (- scalar-end scalar-start))
         (sh03-reader-boundary-fail!

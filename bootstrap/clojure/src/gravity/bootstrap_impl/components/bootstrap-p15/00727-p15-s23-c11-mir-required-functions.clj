@@ -67,6 +67,7 @@
 (def p15-s23-c11-mir-max-carrier-nodes 16384)
 (def p15-s23-c11-mir-max-final-artifact-carrier-nodes 32768)
 (def p15-s23-c11-mir-max-carrier-depth 256)
+(def p15-s23-c11-mir-max-blocks 4)
 
 (def p15-s23-c11-mir-allowed-opcodes
   #{:constant :local :local-binding :truthiness :sequence
@@ -92,7 +93,7 @@
            (try
              (= :valid
                 (:status
-                 (p15-s23-closed-core-diagnostic-utf8-count
+                 (p15-s23-closed-core-bounded-utf8-count
                   source-path 4096)))
              (catch InterruptedException interrupted
                (.interrupt (Thread/currentThread))

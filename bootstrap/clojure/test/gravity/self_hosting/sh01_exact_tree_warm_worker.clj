@@ -86,6 +86,7 @@
   (zipmap [:source :reader :syntax :macroexpansion :resolution :checked-core]
           (range)))
 (def ^:private artifact-max-row-id-length 256)
+(def ^:private artifact-max-bytes (* 256 1024))
 (def ^:private cached-response-keys
   #{:schema :authority :authoritative? :request-id :candidate-commit
     :candidate-tree :lane :route-id :plan-id :catalog-id :closure-identity
@@ -183,7 +184,7 @@
                   (false? (get-in file-attrs [1 :symbolic-link?])))
              "WARM-ARTIFACT-FILE" "Artifact binding target is not a regular file"
              {:path relative})
-    (let [snapshot (c2-pass-cache/source-snapshot! file)
+    (let [snapshot (c2-pass-cache/bounded-source-snapshot! file artifact-max-bytes)
           attrs-after (mapv (fn [^Path path] [(str (.relativize root path))
                                               (file-attributes path)]) paths)]
       (ensure! (= attrs-before attrs-after)

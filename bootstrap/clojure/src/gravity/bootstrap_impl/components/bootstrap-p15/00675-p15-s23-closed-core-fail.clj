@@ -120,7 +120,7 @@
             exception))
           (throw exception))))))
 
-(defn p15-s23-closed-core-source-request-byte-count!
+(defn p15-s23-closed-core-source-request-bounds!
   [source-path source-text requested-target]
   (when-not (and (string? source-path)
                  (string? source-text)
@@ -134,13 +134,15 @@
                           requested-target)}
      {:missing-fact :typed-closed-core-source-request}))
   (let [observation
-        (p15-s23-closed-core-utf8-count source-text)]
+        (p15-s23-closed-core-bounded-utf8-count
+         source-text p15-s23-closed-core-max-source-bytes)]
     (when-not (= :valid (:status observation))
       (p15-s23-closed-core-fail!
        "C6-VERIFY" source-path (source-span source-path 0)
-       {:missing-fact :invalid-closed-core-source-utf8
+       {:missing-fact :bounded-closed-core-source-bytes
         :observed-source-bytes (:bytes observation)
-        :encoding-status (:status observation)}))
+        :encoding-status (:status observation)
+        :maximum-source-bytes p15-s23-closed-core-max-source-bytes}))
     (:bytes observation)))
 
 (defn p15-s23-closed-core-path-neutral-span

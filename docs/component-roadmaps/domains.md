@@ -8,6 +8,8 @@ current owners unassigned by this proposal. Baseline:
 `c21068a6d39259b7110845bbbcefaf9bf6901232`.
 
 Implementation task authority: [Spec Kit domain ledger](../../specs/domains-workflow/tasks.md#implementation-tasks).
+Edit the ledger and run `clojure -M tools/domains_task_projection.clj --write`;
+the seven outcome/task/acceptance blocks below are generated.
 
 ## Purpose and scope
 
@@ -51,7 +53,20 @@ mathematical equality by tree identity. Input: typed numeric expressions and
 mode/domain requirements. Output: EFIR, checked proof/certificate references,
 selected implementation and diagnostic records.
 
-Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/domains-workflow/tasks.md#implementation-tasks).
+<!-- domains-task-projection/math:start -->
+Outcome: [math contracts](../phase-05-mathematical-and-elementary-function-system/README.md) execute with the declared
+numeric semantics and checked justification for transformations. Remaining
+finite tasks, all open: implement numeric-mode/domain checking; implement EFIR
+lowering and evaluation; connect EML/certificate checking to justified rewrites;
+implement certified approximation/interval and symbolic operations; run the
+contract conformance matrix with rejected unproved transformations.
+
+Yes/no acceptance: do domain and branch errors reject? Do proof-dependent
+rewrites require checked evidence? Do strict-mode results match the selected
+semantics? Integration: Types/MIR to EFIR, Opt proof preservation, Lower/Stdlib
+numeric APIs. Decision owner: numeric maintainer; recommendation: keep EML as
+adjacent proof/search representation, never ordinary runtime equality authority.
+<!-- domains-task-projection/math:end -->
 
 ## Schema
 
@@ -62,7 +77,19 @@ permission to weaken source types. Input: typed declarations and version policy.
 Output: validators, generated interface artifacts, encodings and migration
 records under [schema contracts](../phase-10-schema-data-and-interop/README.md).
 
-Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/domains-workflow/tasks.md#implementation-tasks).
+<!-- domains-task-projection/schema:start -->
+Outcome: generated consumers enforce the same source schema. Remaining tasks,
+all open: implement schema normalization and validators; implement canonical
+serialization and version identities; generate GraphQL/OpenAPI and ABI/config
+artifacts; implement checked migration mapping; execute source/generated parity
+and weakening/taint/invalid-data rejection fixtures.
+
+Yes/no acceptance: is schema identity stable? Do generated consumers reject
+invalid values? Are migration loss and secret exposure prevented or explicitly
+rejected? Integration: Types to schema, Emit generated artifacts, Build schema
+identity, Query/AI/Stdlib consumers. Decision owner: schema maintainer;
+recommendation: shared canonical schema IR with explicit target adapters.
+<!-- domains-task-projection/schema:end -->
 
 ## Query
 
@@ -73,7 +100,17 @@ Input: typed query forms, schema and provider contract. Output: query IR,
 parameterized executable query, row validation and transaction diagnostics.
 Governed by [query contract](../phase-09-domain-specific-computing-coverage/134-dom11-data-query-and-analytics-domain-specification.md).
 
-Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/domains-workflow/tasks.md#implementation-tasks).
+<!-- domains-task-projection/query:start -->
+Outcome: real parameterized queries return validated rows and respect declared
+transaction/provider semantics. Remaining tasks, all open: implement relational
+IR and typed parameters; lower to a declared provider; connect row/schema and
+transaction checks; execute result-equivalence, injection, missing-grant and
+invalid-row fixtures. Yes/no acceptance: are parameters separated from query
+syntax? Are results typed and grants enforced? Do transaction failures preserve
+semantics? Integration: Schema/MIR to Query, Runtime provider, Stdlib database
+API. Decision owner: query maintainer; recommendation: explicit provider dialect
+contract, not host SQL strings as semantic authority.
+<!-- domains-task-projection/query:end -->
 
 ## Workflow
 
@@ -84,7 +121,17 @@ workflow forms, event schemas and effect/provider records. Output: workflow IR,
 executable graph, versioned event log and replay evidence. Governed by
 [workflow contract](../phase-11-ai-and-agentic-programming/159-a6-agent-workflow-specification.md).
 
-Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/domains-workflow/tasks.md#implementation-tasks).
+<!-- domains-task-projection/workflow:start -->
+Outcome: a workflow executes and replays without repeating recorded external
+effects. Remaining tasks, all open: implement graph validation/lowering;
+implement event-log schema and durable transitions; connect retry/compensation/
+timer providers; execute crash/restart/replay and unrecorded-nondeterminism
+rejection fixtures. Yes/no acceptance: is replay deterministic? Are external
+calls deduplicated? Are invalid transitions rejected? Integration: MIR/Schema,
+Runtime durability, AI review steps, Stdlib workflows. Decision owner: workflow
+maintainer; recommendation: versioned event log as replay input, explicit
+provider boundary for storage rather than a hidden database choice.
+<!-- domains-task-projection/workflow:end -->
 
 ## AI
 
@@ -95,7 +142,18 @@ model output or retrieved text as authority. Input: checked declarations,
 schema, policy and explicit provider grants. Output: agent/prompt/tool manifests,
 validated structured results, review events and evaluation records.
 
-Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/domains-workflow/tasks.md#implementation-tasks).
+<!-- domains-task-projection/ai:start -->
+Outcome: the declared AI workflow executes through schema, capability, taint
+and human-review boundaries. Remaining tasks, all open: implement declaration
+lowering; connect model/tool/memory providers with explicit policies; implement
+structured-output and taint validation; connect human review and replay;
+execute evaluations plus prompt-injection, missing-review, cross-tenant and
+unvalidated-output rejection fixtures. Yes/no acceptance: does untrusted output
+remain data? Are actions denied without grants/review? Are evaluations bound to
+exact prompt/model/tool identities? Integration: Schema/Auth, Workflow/Runtime,
+Stdlib AI. Decision owner: AI maintainer; recommendation: provider-independent
+artifacts and explicit model identity, never a vendor SDK side path.
+<!-- domains-task-projection/ai:end -->
 
 ## GPU
 
@@ -106,7 +164,17 @@ support. Input: checked kernels and target manifest. Output: GPU IR, kernel
 artifact and memory/synchronization diagnostics. Governed by
 [GPU contract](../phase-09-domain-specific-computing-coverage/136-dom13-gpu-and-accelerator-computing-domain-specification.md).
 
-Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/domains-workflow/tasks.md#implementation-tasks).
+<!-- domains-task-projection/gpu:start -->
+Outcome: kernels execute on the adopted target with validated memory/barrier
+behavior. Remaining tasks, all open: adopt target and kernel ABI; implement GPU
+IR/checking; lower kernel and host dispatch; execute numeric/result and illegal
+memory-space/barrier fixtures. Yes/no acceptance: do kernels produce the
+specified results? Are invalid synchronization and target features rejected?
+Integration: MIR/Legality, Lower/Emit, explicit Runtime dispatch. Decision owner:
+accelerator maintainer; recommendation: one named reference target first,
+additional targets only by their own conformance evidence. Target choice is
+not silently adopted by this roadmap.
+<!-- domains-task-projection/gpu:end -->
 
 ## UI
 
@@ -116,7 +184,17 @@ not all web/mobile applications. Input: checked component/state/event forms and
 platform capabilities. Output: UI IR, render/event artifacts and source maps.
 Governed by [UI domain contract](../phase-09-domain-specific-computing-coverage/129-dom6-web-frontend-and-ui-domain-specification.md).
 
-Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/domains-workflow/tasks.md#implementation-tasks).
+<!-- domains-task-projection/ui:start -->
+Outcome: an actual UI artifact renders, handles typed events and enforces
+capabilities through the adopted adapter. Remaining tasks, all open: lock UI
+IR/state/event contract; implement lowering and rendering adapter; connect
+runtime events and source maps; execute render/update and invalid-event/unsafe
+DOM/authority rejection fixtures. Yes/no acceptance: do state transitions and
+rendering follow typed semantics? Are unsafe or unauthorized actions rejected?
+Integration: Types/MIR, Lower/Emit, Runtime and Stdlib UI. Decision owner: UI
+maintainer; recommendation: explicit adapter contract rather than browser host
+semantics defining the language. Backend choice remains an explicit decision.
+<!-- domains-task-projection/ui:end -->
 
 ## Rollup and nonclaims
 

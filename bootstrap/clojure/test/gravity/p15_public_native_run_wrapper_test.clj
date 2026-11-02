@@ -103,6 +103,7 @@
                    (make-array java.nio.file.attribute.FileAttribute 0))
         fake-bin (.resolve temp-root "fake-bin")
         wrapper (.resolve temp-root "bin/gravity")
+        jar (.resolve temp-root "target/phase-18/jvm-cli/gravity-jvm-cli.jar")
         clojure-capture (.resolve temp-root "clojure-argv.txt")
         java-capture (.resolve temp-root "java-argv.txt")]
     (try
@@ -115,6 +116,7 @@
        (into-array java.nio.file.CopyOption
                    [java.nio.file.StandardCopyOption/REPLACE_EXISTING]))
       (.setExecutable (.toFile wrapper) true)
+      (write-text! jar "not-a-real-jar")
       (executable-text!
        (.resolve fake-bin "clojure")
        (str "#!/bin/sh\n"
@@ -198,17 +200,19 @@
         (is (not (.exists (io/file (str java-capture)))))
         (is (str/blank? (:err result)))))))
 
-(deftest source-wrapper-does-not-auto-select-archived-package-path
+(deftest packaged-wrapper-rejects-incompatible-java-before-forwarding
   (with-fake-wrapper-root
-    (fn [{:keys [temp-root clojure-capture java-capture] :as context}]
+    (fn [{:keys [temp-root java-capture] :as context}]
       (let [result (run-wrapper temp-root
-                                (wrapper-env context {"GRAVITY_BOOTSTRAP_ONLY" "0"})
+                                (wrapper-env context
+                                             {"GRAVITY_BOOTSTRAP_ONLY" "0"
+                                              "GRAVITY_FAKE_JAVA_CLASS_MAJOR" "62"})
                                 ["run" "examples/hello.gravity"])]
-        (is (zero? (:exit result)) result)
-        (is (= ["-M:gravity" "run" "examples/hello.gravity"]
-               (capture-argv clojure-capture)))
-        (is (not (.exists (io/file (str java-capture)))))
-        (is (str/blank? (:err result)))))))
+        (is (= 1 (:exit result)) result)
+        (is (str/includes? (:err result) "P18T02008"))
+        (is (str/includes? (:err result) ":jar-class-major 63"))
+        (is (str/includes? (:err result) ":runtime-class-major 62"))
+        (is (not (.exists (io/file (str java-capture)))))))))
 
 (deftest legacy-help-version-and-run-behavior-remain-bootstrap-hosted
   (with-fake-wrapper-root

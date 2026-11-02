@@ -1,2 +1,0 @@
-#text "registered pure payload"
-#resource "bootstrap/clojure/fixtures/accepted/reader-extension-input.txt"

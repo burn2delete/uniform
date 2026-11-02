@@ -1,0 +1,5 @@
+{:schema :gravity/clojure-source-loc-baseline-v1
+ :maximum-physical-lines 250
+ :source-roots ["bootstrap/clojure/src"]
+ :extensions [".clj" ".cljc"]
+ :oversized-files {}}

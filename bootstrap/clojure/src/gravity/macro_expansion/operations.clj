@@ -44,7 +44,8 @@
    :local-macro-symbol local-macro-symbol
    :source-span source-span
    :sha256-hex digest/sha256-hex
-   :splice-key :gravity.macro-expansion/splice})
+   :splice-key :gravity.macro-expansion/splice
+   :max-macro-expansion-depth 16})
 
 (defn operation
   [ops key fallback]

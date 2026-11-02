@@ -3,13 +3,14 @@
 
 (defn validate-and-emit!
   [packet context
-   {:keys [validate-plan-shape! compile-helper! helper-safety-proof
+   {:keys [plan-bounds! compile-helper! helper-safety-proof
            helper-contract helper-function utf8-bytes
+           max-generated-source-bytes max-reference-output-bytes
            unsupported-fail! helper-contract-fail! helper-rejected-fail!
-           authentication-fail!]}]
+           bounds-fail! authentication-fail!]}]
   (let [source-path (:source-path context)
-        plan (:plan packet)]
-    (validate-plan-shape! source-path plan)
+        plan (:plan packet)
+        bounds (plan-bounds! source-path plan)]
     (try
       (bootstrap/c-backend-validate-runtime-plan! source-path :c plan)
       (catch clojure.lang.ExceptionInfo error
@@ -26,18 +27,7 @@
          {:missing-fact :public-c-backend-runtime-plan-validation
           :cause-message (.getMessage error)})))
     (let [helper (compile-helper! source-path)
-          safety (try
-                   (helper-safety-proof plan)
-                   (catch
-                     StackOverflowError
-                     error
-                     (helper-contract-fail!
-                       source-path
-                       "Gravity C emitter helper safety proof exceeded the host stack"
-                       {:missing-fact
-                        :gravity-c-emitter-helper-safety-host-stack-failure
-                        :boundary :helper-safety-proof
-                        :cause-message (.getMessage error)})))
+          safety (helper-safety-proof plan)
           helper-result
           (try
             (bootstrap/p15-s23-stage2-runtime-execute-function
@@ -88,12 +78,28 @@
                 :observed-result helper-result}))
           source (:source helper-result)
           source-bytes (utf8-bytes source)
-          expected-output (:reference-output packet)]
+          expected-output (:reference-output packet)
+          expected-output-bytes (when (string? expected-output)
+                                  (utf8-bytes expected-output))]
+      (when (> (alength source-bytes) max-generated-source-bytes)
+        (bounds-fail! source-path
+                      "generated C source exceeds the bounded artifact size"
+                      {:maximum-generated-source-bytes max-generated-source-bytes
+                       :observed-generated-source-bytes (alength source-bytes)
+                       :missing-fact :bounded-native-generated-source}))
       (when-not (string? expected-output)
         (authentication-fail! source-path
                               "authenticated packet has no reference output"
                               {:missing-fact :authenticated-reference-output}))
-      {:source source
+      (when (> (alength expected-output-bytes) max-reference-output-bytes)
+        (bounds-fail! source-path
+                      "authenticated reference output exceeds the bounded size"
+                      {:maximum-reference-output-bytes max-reference-output-bytes
+                       :observed-reference-output-bytes
+                       (alength expected-output-bytes)
+                       :missing-fact :bounded-native-reference-output}))
+      {:bounds bounds
+       :source source
        :source-bytes source-bytes
        :source-content-hash (str "sha256:" (bootstrap/sha256-hex source))
        :expected-output expected-output

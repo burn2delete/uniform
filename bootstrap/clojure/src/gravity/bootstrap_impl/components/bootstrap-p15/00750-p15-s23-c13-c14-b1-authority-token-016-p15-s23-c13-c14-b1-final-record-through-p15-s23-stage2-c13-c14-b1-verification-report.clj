@@ -117,10 +117,13 @@
   ;; can execute at this untrusted public boundary.
   (p15-s23-c13-c14-b1-require-trusted!
    source-path :c13-c14-b1-final-packet packet :default-only)
-  ;; Validate the native carrier before any fresh C11 replay or Gravity
-  ;; source-plan reconstruction.
+  ;; The trusted-carrier walk bounds shape only.  Apply the shared C11 scalar,
+  ;; magnitude, collection-width, and total-byte limits before any fresh C11
+  ;; replay or Gravity source-plan reconstruction.
   (p15-s23-c11-mir-bounded-value!
-   source-path :c13-c14-b1-final-packet packet)
+   source-path :c13-c14-b1-final-packet packet
+   p15-s23-c13-c14-b1-max-carrier-nodes
+   p15-s23-c13-c14-b1-max-carrier-depth)
   (let [top-level-class (when (some? packet) (.getName (class packet)))]
     (when-not
      (and (map? packet)

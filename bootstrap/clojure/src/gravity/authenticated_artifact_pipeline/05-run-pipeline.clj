@@ -45,7 +45,7 @@
                                              (contains? @stage-cache key))
                                     (get @stage-cache key))]
                        (if (and cached
-                           (envelope-valid? stage mode key-id cached
+                           (envelope-valid? stage mode key-id preimage cached
                                             source-id provenance [])
                            (revalidate-payload? stage actual-path
                                                  (:payload cached)))

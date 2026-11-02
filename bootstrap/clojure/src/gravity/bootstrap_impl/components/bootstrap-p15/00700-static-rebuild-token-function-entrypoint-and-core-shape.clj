@@ -175,12 +175,14 @@
                :instruction-count (count instructions),
                :body-form-count (count body-form-ids)}))
         validation preflight-plan-validation
-        _ (when-not (= :complete (:status validation))
+        _ (when-not (and
+                      (= :complete (:status validation))
+                      (<= (:node-count validation) p15-s23-closed-core-max-plan-nodes))
             (p15-s23-closed-core-fail!
               "C6-VERIFY"
               source-path
               validation
-              {:missing-fact :closed-plan-source-validation}))
+              {:missing-fact :closed-plan-source-node-bound}))
         observed-operation-set (p15-s23-closed-core-observed-plan-operations plan)]
     (assoc
       state

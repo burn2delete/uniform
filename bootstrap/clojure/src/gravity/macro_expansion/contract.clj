@@ -11,7 +11,7 @@
     :expansion-generated-origin :expansion-trace-record :fail! :form-op?
     :local-macro-symbol :macro-build-effect-record :macro-build-grants
     :macro-call :macro-env-value :macro-namespace-entry :macro-registry
-    :parse-defmacro-form :parse-param-list
+    :max-macro-expansion-depth :parse-defmacro-form :parse-param-list
     :parse-syntax-template :sha256-hex :source-span :splice-key
     :thread-first-step})
 

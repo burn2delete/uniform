@@ -1,12 +1,10 @@
 
 
 (defn p15-s23-c11-mir-source-binding!
-  ([request-source requested-target]
-   (p15-s23-c11-mir-source-binding! request-source requested-target 1))
-  ([request-source requested-target version]
+  [request-source requested-target]
   (try
     (p15-s23-c11-mir-source-binding!*
-     request-source requested-target version)
+     request-source requested-target)
     (catch InterruptedException interrupted
       (.interrupt (Thread/currentThread))
       (throw interrupted))
@@ -24,7 +22,7 @@
        request-source :contained-c11-source-binding-diagnostic exception))
     (catch Exception exception
       (p15-s23-c11-mir-contain-exception!
-       request-source :contained-c11-source-binding-host-failure exception)))))
+       request-source :contained-c11-source-binding-host-failure exception))))
 
 (defn p15-s23-c11-mir-bounded-value!
   "Legacy entrypoint for semantic native-carrier validation, without quotas."

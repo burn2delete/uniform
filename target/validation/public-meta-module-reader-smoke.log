@@ -1,0 +1,1 @@
+{:id "L3-UNKNOWN-ALIAS", :message "qualified symbol uses an unknown namespace alias", :bootstrap-stage :stage0, :source-span {:source "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"}, :alias reader, :symbol reader/read-with-table, :remediation "Declare the alias in :requires or :imports, or use a fully qualified namespace."}

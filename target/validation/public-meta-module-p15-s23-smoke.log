@@ -1,0 +1,1 @@
+{:id "L3-UNKNOWN-ALIAS", :message "qualified symbol uses an unknown namespace alias", :bootstrap-stage :stage0, :source-span {:source "bootstrap/gravity/p15_s23/compiler.gravity"}, :alias p15-s23, :symbol p15-s23/source-syntax-roundtrip, :remediation "Declare the alias in :requires or :imports, or use a fully qualified namespace."}

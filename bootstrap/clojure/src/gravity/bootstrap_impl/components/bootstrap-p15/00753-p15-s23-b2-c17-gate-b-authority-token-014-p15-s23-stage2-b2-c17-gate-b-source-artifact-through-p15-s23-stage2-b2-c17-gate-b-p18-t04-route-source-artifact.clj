@@ -28,7 +28,7 @@
                (catch clojure.lang.ExceptionInfo exception
                  (let [data
                        (p15-s23-backend-trusted-exception-data
-                        exception 65536)]
+                        exception 65536 128)]
                    (if (and data
                             (p15-s23-c11-mir-owned-upstream-diagnostic? data))
                      (p15-s23-c11-mir-contain-checked-core-exception!
@@ -47,7 +47,7 @@
         {:missing-fact :bounded-hostile-c17-gate-b-source-stack}))
      (catch clojure.lang.ExceptionInfo exception
        (let [data
-             (p15-s23-backend-trusted-exception-data exception 65536)
+             (p15-s23-backend-trusted-exception-data exception 65536 128)
              replayed
              (when (map? data)
                (p15-s23-stage2-reader-replayed-diagnostic
@@ -94,7 +94,7 @@
               (catch clojure.lang.ExceptionInfo exception
                 (let [data
                       (p15-s23-backend-trusted-exception-data
-                       exception 65536)]
+                       exception 65536 128)]
                   (if (and data
                            (p15-s23-c11-mir-owned-upstream-diagnostic? data))
                     (p15-s23-c11-mir-contain-checked-core-exception!
@@ -123,7 +123,7 @@
        {:missing-fact :bounded-hostile-c17-projected-source-stack}))
     (catch clojure.lang.ExceptionInfo exception
       (let [data
-            (p15-s23-backend-trusted-exception-data exception 65536)
+            (p15-s23-backend-trusted-exception-data exception 65536 128)
             replayed
             (when (map? data)
               (p15-s23-stage2-reader-replayed-diagnostic

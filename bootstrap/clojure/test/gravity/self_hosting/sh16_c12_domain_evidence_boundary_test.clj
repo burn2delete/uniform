@@ -105,7 +105,7 @@
     (is (= 1 (get-in functions ['sh16-build-c13-evidence-boundary :arity])))
     (is (= 2 (get-in functions ['sh16-verify-c13-evidence-boundary :arity])))
     (is (= :accepted (:status preflight)))
-    (is (= {:status :accepted} preflight))))
+    (is (= 4161 (:nodes preflight)))))
 
 (deftest sh16-c13-evidence-boundary-positive
   (let [{:keys [evidence verification]} @prepared-c12
@@ -230,19 +230,19 @@
            (:status
             (invoke-c13 'sh16-verify-c13-evidence-boundary
                         [request tampered-boundary]))))
-    (is (= :accepted
-           (:status
+    (is (= :source-carrier-bound
+           (:reason
             (invoke-c13 'sh16-c13-evidence-boundary-preflight
                         [over-boundary-member]))))
     (is (= :rejected
            (:status
             (invoke-c13 'sh16-verify-c13-evidence-boundary
                         [request over-boundary-member]))))
-    (is (= :accepted
-           (:status
+    (is (= :carrier-vector-width
+           (:reason
             (invoke-c13 'sh16-c13-evidence-preflight [over-width]))))
-    (is (= :accepted
-           (:status
+    (is (= :carrier-depth-bound
+           (:reason
             (invoke-c13 'sh16-c13-evidence-preflight [over-depth]))))
     (is (= :carrier-sequence
            (:reason

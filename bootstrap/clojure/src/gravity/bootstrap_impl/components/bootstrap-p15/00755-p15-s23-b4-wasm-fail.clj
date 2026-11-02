@@ -27,7 +27,7 @@
   [source-path boundary exception]
   (let [data
         (p15-s23-backend-trusted-exception-data
-         exception 65536)
+         exception 65536 128)
         b4 (p15-s23-b4-wasm-sanitized-complete-diagnostic data)
         bridge (p15-s23-b3-llvm-sanitized-complete-diagnostic data)
         c11 (p15-s23-c11-mir-sanitized-complete-diagnostic data)]

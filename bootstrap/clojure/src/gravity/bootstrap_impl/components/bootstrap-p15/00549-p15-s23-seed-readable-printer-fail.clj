@@ -5,7 +5,7 @@
   (let [failure
         (diagnostic
          "L2-BUILTIN-ERROR"
-         "Clojure-seed readable printer rejected a value"
+         "bounded Clojure-seed readable printer rejected a value"
          (merge
           {:source-span {:source (or source-path "<unknown-source>")}
            :function 'pr-str
@@ -16,7 +16,7 @@
            :result-committed? false
            :output-committed? false
            :remediation
-           "Keep pr-str inputs inside the supported Gravity value algebra until readable printing is implemented and authenticated in Gravity source."}
+           "Keep pr-str inputs inside the bounded Gravity value algebra until readable printing is implemented and authenticated in Gravity source."}
           data))]
     (when *p15-s23-seed-readable-owned-failures*
       (.put ^java.util.IdentityHashMap
@@ -24,22 +24,43 @@
             failure Boolean/TRUE))
     (throw failure)))
 
-(defn p15-s23-seed-readable-valid-utf8?
-  [^String text]
-  (loop [index 0]
+(defn p15-s23-seed-readable-bounded-utf8-observation
+  [^String text maximum-bytes]
+  (loop [index 0
+         bytes 0]
     (if (>= index (.length text))
-      true
+      {:status :valid :bytes bytes}
       (let [unit (.charAt text index)
             high? (Character/isHighSurrogate unit)
             low? (Character/isLowSurrogate unit)]
-        (if high?
-          (if (and (< (inc index) (.length text))
-                   (Character/isLowSurrogate (.charAt text (inc index))))
-            (recur (+ index 2))
-            false)
-          (if low?
-            false
-            (recur (inc index))))))))
+        (cond
+          (and high?
+               (or (>= (inc index) (.length text))
+                   (not (Character/isLowSurrogate
+                         (.charAt text (inc index))))))
+          {:status :invalid-unicode :bytes bytes}
+
+          low?
+          {:status :invalid-unicode :bytes bytes}
+
+          :else
+          (let [codepoint
+                (if high?
+                  (Character/toCodePoint unit (.charAt text (inc index)))
+                  (int unit))
+                width (cond
+                        (<= codepoint 0x7f) 1
+                        (<= codepoint 0x7ff) 2
+                        (<= codepoint 0xffff) 3
+                        :else 4)
+                next-bytes (+ bytes width)]
+            (if (> next-bytes maximum-bytes)
+              {:status :byte-limit :bytes next-bytes}
+              (recur (+ index (if high? 2 1)) next-bytes))))))))
+
+(defn p15-s23-seed-readable-utf8-bytes
+  [^String text]
+  (alength (.getBytes text java.nio.charset.StandardCharsets/UTF_8)))
 
 (defn p15-s23-seed-readable-name-safe?
   [^String text _symbol-name?]
@@ -82,13 +103,42 @@
           (.isArray (class value)) :unsupported-array
           :else :unsupported-host-object)}))))
 
-(defn p15-s23-seed-readable-validate-utf8!
+(defn p15-s23-seed-readable-bounded-text-bytes!
   [source-path scalar-kind text]
-  (when-not (p15-s23-seed-readable-valid-utf8? text)
-    (p15-s23-seed-readable-printer-fail!
-     source-path :invalid-unicode-scalar
-     {:scalar-kind scalar-kind}))
-  text)
+  (let [maximum-scalar-bytes
+        (:maximum-scalar-bytes p15-s23-seed-readable-printer-limits)
+        observation
+        (p15-s23-seed-readable-bounded-utf8-observation
+         text maximum-scalar-bytes)]
+    (case (:status observation)
+      :valid (:bytes observation)
+      :invalid-unicode
+      (p15-s23-seed-readable-printer-fail!
+       source-path :invalid-unicode-scalar
+       {:scalar-kind scalar-kind})
+      :byte-limit
+      (p15-s23-seed-readable-printer-fail!
+       source-path :scalar-byte-limit
+       {:scalar-kind scalar-kind
+        :observed-scalar-bytes-at-least (:bytes observation)
+        :maximum-scalar-bytes maximum-scalar-bytes}))))
+
+(defn p15-s23-seed-readable-integer-bits
+  [value]
+  (.bitLength (.abs ^java.math.BigInteger (biginteger value))))
+
+(defn p15-s23-seed-readable-integer-size!
+  [source-path value component]
+  (let [maximum-integer-bits
+        (:maximum-integer-bits p15-s23-seed-readable-printer-limits)
+        bits (p15-s23-seed-readable-integer-bits value)]
+    (when (> bits maximum-integer-bits)
+      (p15-s23-seed-readable-printer-fail!
+       source-path :integer-magnitude-limit
+       (cond-> {:observed-integer-bits bits
+                :maximum-integer-bits maximum-integer-bits}
+         component (assoc :integer-component component))))
+    (+ 2 (quot (+ bits 2) 3))))
 
 (defn p15-s23-seed-readable-ratio-components!
   [source-path value]
@@ -98,6 +148,12 @@
                    (identical? java.math.BigInteger (class denominator)))
       (p15-s23-seed-readable-printer-fail!
        source-path :invalid-ratio-component-carrier {}))
+    (let [numerator-size
+          (p15-s23-seed-readable-integer-size!
+           source-path numerator :numerator)
+          denominator-size
+          (p15-s23-seed-readable-integer-size!
+           source-path denominator :denominator)]
     (when-not (and (not (zero? (.signum ^java.math.BigInteger numerator)))
                    (pos? (.compareTo ^java.math.BigInteger denominator
                                      java.math.BigInteger/ONE))
@@ -106,7 +162,7 @@
                             ^java.math.BigInteger denominator)))
       (p15-s23-seed-readable-printer-fail!
        source-path :noncanonical-ratio {}))
-    [numerator denominator]))
+      [numerator denominator numerator-size denominator-size])))
 
 (defn p15-s23-seed-readable-floating-text
   [source-path value]

@@ -42,20 +42,18 @@
   (clojure.edn/read-string {:readers {}} (resource-text resource)))
 
 (defn- load-component!
-  [{:keys [resource data-resource data-id reader-line metadata-symbol metadata-line
+  [{:keys [resource reader-line metadata-symbol metadata-line
            metadata-column]}]
-  (if data-resource
-    (append-data! data-id resource)
-    (let [reader (clojure.lang.LineNumberingPushbackReader.
-                  (java.io.StringReader. (resource-text resource)))]
-      (.setLineNumber reader reader-line)
-      (binding [*ns* (the-ns 'gravity.bootstrap)]
-        (clojure.lang.Compiler/load
-         reader original-source-name original-source-name))
-      (when metadata-symbol
-        (when-let [owner-var (ns-resolve 'gravity.bootstrap metadata-symbol)]
-          (alter-meta! owner-var assoc
-                       :line metadata-line :column metadata-column))))))
+  (let [reader (clojure.lang.LineNumberingPushbackReader.
+                (java.io.StringReader. (resource-text resource)))]
+    (.setLineNumber reader reader-line)
+    (binding [*ns* (the-ns 'gravity.bootstrap)]
+      (clojure.lang.Compiler/load
+       reader original-source-name original-source-name))
+    (when metadata-symbol
+      (when-let [owner-var (ns-resolve 'gravity.bootstrap metadata-symbol)]
+        (alter-meta! owner-var assoc
+                     :line metadata-line :column metadata-column)))))
 
 (defn load-components!
   [manifest-resource]

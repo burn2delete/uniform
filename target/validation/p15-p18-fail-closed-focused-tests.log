@@ -1,0 +1,6 @@
+:test p15-s23-final-seed-retirement-records-incomplete-proof
+:test p15-s23-final-seed-retirement-rejects-gaps-and-overclaim
+:test p15-s23-whole-language-self-hosting-gate-records-incomplete-final-proof
+:test p15-s23-whole-language-self-hosting-gate-rejects-overclaims
+:test p18-final-release-proves-reproducibility-provenance-sbom-signing-and-governance
+nil

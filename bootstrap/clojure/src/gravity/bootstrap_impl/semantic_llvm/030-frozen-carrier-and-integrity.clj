@@ -1,12 +1,20 @@
+(def p15-s23-b3-llvm-max-final-artifact-carrier-nodes 65536)
+(def p15-s23-b3-llvm-max-final-artifact-carrier-depth 512)
+
 (defn- p15-s23-b3-llvm-safe-carrier-facts
   [validation]
   (select-keys validation
-               [:reason :class]))
+               [:reason :observed-nodes :observed-depth
+                :maximum-nodes :maximum-depth :maximum-width]))
 
 (defn- p15-s23-b3-llvm-require-trusted-final-carrier!
   [source-path artifact]
   (let [validation
-        (p15-s23-trusted-carrier-validation artifact :default-only)]
+        (p15-s23-trusted-carrier-validation
+         artifact :default-only
+         p15-s23-b3-llvm-max-final-artifact-carrier-nodes
+         p15-s23-b3-llvm-max-final-artifact-carrier-depth
+         p15-s23-b3-llvm-max-final-artifact-carrier-nodes)]
     (when-not (= :passed (:status validation))
       (p15-s23-b3-llvm-fail!
        "B3-MANIFEST" source-path {}
@@ -18,7 +26,7 @@
 (defn- p15-s23-b3-llvm-validated-options!
   [source-path options]
   (let [validation
-        (p15-s23-trusted-carrier-validation options :reject)]
+        (p15-s23-trusted-carrier-validation options :reject 16 4 4)]
     (when-not (= :passed (:status validation))
       (p15-s23-b3-llvm-fail!
        "B3-MANIFEST" source-path {}

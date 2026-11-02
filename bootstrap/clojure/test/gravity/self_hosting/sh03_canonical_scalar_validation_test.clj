@@ -12,8 +12,8 @@
 
 (defn- compare-validation [value]
   (let [reference (observe 'p15-s23-c6c10-canonical-form* value)
-        actual (observe 'p15-s23-c6c10-streaming-validate-scalar! value)
-        key-form (observe 'p15-s23-c6c10-streaming-key-form! value)]
+        actual (observe 'sh03-reader-canonical-validate-scalar! value)
+        key-form (observe 'sh03-reader-canonical-key-form! value)]
     (is (= (:error reference) (:error actual)))
     (is (= reference key-form))
     (when-not (:error actual) (is (nil? (:returned actual))))
@@ -36,7 +36,7 @@
                  "" "ASCII" "λ🙂\r\n\"\\" \a \newline \u03bb (char 0)
                  :plain :name.space/qualified (keyword "λ" "🙂")
                  'plain 'name.space/qualified (symbol "/") (symbol "λ" "🙂")]]
-    (is (true? ((operation 'p15-s23-c6c10-streaming-scalar-value?) value)))
+    (is (true? ((operation 'sh03-reader-canonical-stream-scalar-value?) value)))
     (is (nil? (:error (compare-validation value))))))
 
 (deftest scalar-validation-preserves-semantic-errors-and-precedence
@@ -62,8 +62,8 @@
     {(ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-canonical-form*)
      (fn [& _] (throw (ex-info "Common value reached fallback" {:tripwire true})))}
     #(doseq [value [nil true Long/MIN_VALUE "λ🙂" \u03bb :namespace/name 'namespace/name]]
-       (is (nil? ((operation 'p15-s23-c6c10-streaming-validate-scalar!) path value)))
-       (is (vector? ((operation 'p15-s23-c6c10-streaming-key-form!) path value))))))
+       (is (nil? ((operation 'sh03-reader-canonical-validate-scalar!) path value)))
+       (is (vector? ((operation 'sh03-reader-canonical-key-form!) path value))))))
 
 (deftest scalar-validation-fallback-retains-exact-values-and-native-errors
   (doseq [value [2/3 1.00M (java.math.BigDecimal. java.math.BigInteger/ONE 65537)
@@ -73,18 +73,18 @@
                  (array-map :z (with-meta [] {:present true}) :a (Object.))]]
     (first-guard
      #(is (= (observe 'p15-s23-c6c10-canonical-form* value)
-             (observe 'p15-s23-c6c10-streaming-fallback-form! value)))))
+             (observe 'sh03-reader-canonical-fallback-form! value)))))
   (let [primary (ex-info "Primary fallback" {:original true})
         thrown (with-redefs-fn
                  {(ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-canonical-form*)
                   (fn [& _] (throw primary))}
-                 #(try ((operation 'p15-s23-c6c10-streaming-fallback-form!) path 2/3)
+                 #(try ((operation 'sh03-reader-canonical-fallback-form!) path 2/3)
                        nil (catch Throwable error error)))]
     (is (identical? primary thrown))))
 
 (deftest scalar-name-validation-matches-complete-utf16-code-unit-domain
   (let [reference (operation 'p15-s23-c6c10-valid-named-component?)
-        actual (operation 'p15-s23-c6c10-streaming-named-component?)
+        actual (operation 'sh03-reader-canonical-named-component?)
         mismatches (reduce (fn [out unit]
                              (let [text (str (char unit))]
                                (if (= (reference text) (actual text)) out (conj out unit))))
@@ -100,9 +100,9 @@
                  123456789012345678901234567890N
                  (.shiftLeft java.math.BigInteger/ONE 257)]]
     (is (= (.toString (biginteger value))
-           ((operation 'p15-s23-c6c10-streaming-integer-text) value))))
+           ((operation 'sh03-reader-canonical-integer-text) value))))
   (with-redefs-fn
     {(ns-resolve 'gravity.bootstrap 'biginteger)
      (fn [& _] (throw (ex-info "Native integer converted" {:tripwire true})))}
     #(doseq [value [(byte -1) (short -1) (int -1) Long/MIN_VALUE 0]]
-       (is (string? ((operation 'p15-s23-c6c10-streaming-integer-text) value))))))
+       (is (string? ((operation 'sh03-reader-canonical-integer-text) value))))))
