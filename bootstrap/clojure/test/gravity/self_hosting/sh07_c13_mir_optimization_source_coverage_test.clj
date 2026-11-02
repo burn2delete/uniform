@@ -553,8 +553,8 @@
                     (cond (symbol? key-form) :reference
                           (seq? key-form) :call
                           :else :literal)) dynamic))))
-    (is (= 669 (-> dynamic first meta :line)))
-    (is (= 3724 (-> dynamic last meta :line)))
+    (is (= 670 (-> dynamic first meta :line)))
+    (is (= 3725 (-> dynamic last meta :line)))
     (is (contains? (symbols-in preflight) 'sh16-aggregate-components))
     (is (contains? (symbols-in preflight) 'sh16-structural-scalar-valid?))
     (is (contains? (symbols-in verifier) 'sh16-structural-preflight))
