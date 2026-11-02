@@ -314,5 +314,92 @@
   (doseq [bad ["C00" "C19" "C09-C02" "C01x" "C01 C02" "C01," "all previous"]]
     (is (thrown? Exception (dependencies/sh07-prerequisites bad)))))
 
+(deftest future-declarations-consume-literal-known-ids
+  (let [text (str "<!-- future-composition-dependencies:start -->\n"
+                  "| Consumer | Start results | Composition results | Selected output contract |\n"
+                  "| --- | --- | --- | --- |\n"
+                  "| `consumer` | none | `producer` | Actual selected output. |\n"
+                  "<!-- future-composition-dependencies:end -->")
+        parse #(dependencies/future-dependency-routes % #{"consumer" "producer"} #{"consumer"})]
+    (is (= [{:consumer "consumer" :start-results [] :composition-results ["producer"]
+             :selected-output-contract "Actual selected output."
+             :source {:path dependencies/future-dependency-path :sha256 (dependencies/sha256 text)
+                      :declaration "| `consumer` | none | `producer` | Actual selected output. |"}}]
+           (parse text)))
+    (doseq [[from to] [["`producer`" "`missing`"] ["`producer`" "producer"]
+                       ["`producer`" "`producer`junk"] ["`producer`" "`producer`,"]
+                       ["`producer`" "`producer`, `producer`"]
+                       ["`producer`" "none, `producer`"] ["`producer`" "`producer`; `consumer`"]
+                       ["| `consumer` |" "| `producer` |"]
+                       ["| none |" "| `producer` |"]
+                       ["Actual selected output." ""]
+                       ["Actual selected output." "Split | cell"]
+                       ["dependencies:end" "dependencies:missing"]]]
+      (is (thrown? Exception (parse (str/replace text from to))) to))
+    (is (thrown? Exception (parse (str/replace text "<!-- future-composition-dependencies:end -->"
+                                              (str "| `consumer` | none | none | Duplicate. |\n"
+                                                   "<!-- future-composition-dependencies:end -->")))))))
+
+(deftest future-task-projection-retains-gaps-and-selected-result-boundaries
+  (let [source (edn/read-string (slurp dependencies/sh-crosswalk-path))
+        current (into {} (for [rows (vals (:task-authorities source)) row rows] [(:id row) row]))
+        future (:future-task-authorities source)
+        snapshots (:source-snapshots source)
+        result (dependencies/future-task-view future current snapshots slurp)
+        review (:dependency-review result)
+        edges (:typed-edges result)
+        nodes (:nodes result)
+        frontier (dependencies/advisory-frontier
+                   (merge (into {} (for [[id _] current]
+                                    [(str "task:" id "/interface") {:state :accepted :scope :declared-interface-only}]))
+                          nodes) edges {})
+        hardware "platform-product/implement-hardware"
+        adoption "platform-product/adopt-physical-boundary"]
+    (is (= 149 (count current)))
+    (is (= 40 (:task-count review)))
+    (is (= 20 (count (:declared-consumers review)) (count (:unresolved-consumers review))))
+    (is (= :pending (:future-sh-and-full-language-joins review)))
+    (is (= :unassessed (:implementation-acceptance review)))
+    (is (empty? (:declared-output-cycles review)))
+    (doseq [id (:unresolved-consumers review)]
+      (is (= :dependency-review-pending (get-in frontier [(str "task:" id "/composition") :state])) id)
+      (is (= :dependency-review-pending (get-in frontier [(str "task:" id "/implementation") :state])) id))
+    (is (some #(= [(str "task:" hardware "/implementation") (str "result:" hardware ":" adoption)
+                   :adopted-product-contract] [(:from %) (:to %) (:kind %)]) edges))
+    (is (some #(= ["task:automation/composition"
+                   "result:automation:build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"
+                   :actual-selected-producer-result] [(:from %) (:to %) (:kind %)]) edges))
+    (is (not-any? #(and (= "task:automation/implementation" (:from %))
+                       (str/starts-with? (:to %) "result:")) edges))
+    (doseq [row (filter #(= :selected-acceptance-facet (:scope %)) (vals nodes))]
+      (is (= :unassessed (:state row)))
+      (is (:producer-source row)))
+    (is (empty? (dependencies/cycles
+                  (dependencies/typed-adjacency
+                    (merge (into {} (for [[id _] current] [(str "task:" id "/interface") {}])) nodes) edges {}))))
+    (let [path "specs/platform-workflow/tasks.md" text (slurp path)
+          read-changed #(if (= path %) (str/replace text (str "`" hardware "`") "`platform-product/fabricated`") (slurp %))
+          row (first (get future "platform-product-implementation-tasks"))
+          body (dependencies/source-raw (:source row) snapshots)
+          read-duplicated #(if (= path %) (str text "\n" body) (slurp %))]
+      (is (thrown? Exception (dependencies/future-task-view future current snapshots read-changed)))
+      (is (thrown? Exception (dependencies/future-task-view future current snapshots read-duplicated)))
+      (is (thrown? Exception (dependencies/future-task-view
+                              (assoc-in future ["platform-product-implementation-tasks" 0 :component] "domains")
+                              current snapshots slurp)))
+      (is (thrown? Exception (dependencies/future-task-view
+                              (update future "platform-product-implementation-tasks" pop) current snapshots slurp)))
+      (is (thrown? Exception (dependencies/future-task-view
+                              (assoc-in future ["platform-product-implementation-tasks" 0 :checked] true)
+                              current snapshots slurp))))
+    (let [doc dependencies/future-dependency-path
+          changed (str/replace (slurp doc)
+                    "| `platform-product/adopt-hardware-contract` | none | none |"
+                    "| `platform-product/adopt-hardware-contract` | none | `platform-product/implement-hardware` |")
+          with-backedge (dependencies/future-task-view future current snapshots
+                          #(if (= doc %) changed (slurp %)))]
+      (is (= [["platform-product/adopt-hardware-contract" "platform-product/implement-hardware"]]
+             (get-in with-backedge [:dependency-review :declared-output-cycles]))))))
+
 (let [result (run-tests 'acceptance-dependencies-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))

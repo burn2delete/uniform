@@ -456,23 +456,28 @@
     (loop [rows []] (if (.find m)
                      (recur (conj rows {:groups (mapv #(.group m %) (range 1 (inc (.groupCount m))))
                                         :source (sh-inventory/source-span path text (.start m) (.end m))})) rows))))
-(defn task-records [component]
+(defn task-records
+  ([component] (task-records component (str component "-implementation-tasks")))
+  ([component region]
   (let [path (str "specs/" component "-workflow/tasks.md") text (slurp path)
-        marker (str "<!-- " component "-implementation-tasks:")
+        marker (str "<!-- " region ":")
         start (+ (.indexOf text (str marker "start -->")) (count (str marker "start -->")))
         end (.indexOf text (str marker "end -->"))
-        _ (acceptance-dependencies/implementation-ids text component)
+        _ (when-not (seq (acceptance-dependencies/marked-task-ids text region))
+            (throw (ex-info "Missing task region" {:path path :region region})))
         m (re-matcher #"(?m)^- \[([ xX])\] `([^`]+)`[^\n]*" text)
         positions (loop [v []] (if (.find m) (recur (if (< start (.start m) end)
                    (conj v {:start (.start m) :id (.group m 2) :checked (not= " " (.group m 1))}) v)) v))]
     (mapv (fn [row next-row]
             (let [stop (or (:start next-row) end) raw (str/trimr (subs text (:start row) stop))]
-              {:id (:id row) :component component :path path :checked (:checked row)
+              (cond-> {:id (:id row) :component component :path path :checked (:checked row)
                :authority :component-implementation-ledger
                :source-commit (source-pin path) :file-sha256 (sh-inventory/sha256 text)
                :source (sh-inventory/source-span path text (:start row) (+ (:start row) (count raw)))
-               :owner-source (str "docs/component-roadmaps/" component ".md")}))
-          positions (concat (rest positions) [nil]))))
+               :owner-source (str "docs/component-roadmaps/" component ".md")}
+                (not= region (str component "-implementation-tasks"))
+                (assoc :region region :authority :component-future-task-ledger))))
+          positions (concat (rest positions) [nil])))))
 (defn task-ref [tasks [component selector]]
   (let [id (if (integer? selector) (get-in stable-task-routing-keys [component (dec selector)]) selector)
         row (first (filter #(= id (:id %)) (tasks component)))]
@@ -748,6 +753,19 @@
             (throw (ex-info "Original source changed; retain lineage before rebinding" {})))
         components (mapv second (re-seq #"(?m)^\| [^|\n]+ / `([a-z-]+)` \|" (slurp "docs/component-roadmaps/README.md")))
         tasks (into (sorted-map) (map (fn [c] [c (task-records c)]) components))
+        future-tasks (into (sorted-map)
+                           (for [[component region expected] acceptance-dependencies/future-task-regions
+                                 :let [rows (task-records component region)]]
+                             (do (when-not (= expected (count rows))
+                                   (throw (ex-info "Future task population changed" {:region region})))
+                                 [region rows])))
+        _ (let [captured (into {} (map (juxt :id identity)
+                                      (get-in readiness-source-version [:future-dependency-refinement :task-records])))
+                actual (into {} (for [row (mapcat val future-tasks)]
+                                  [(:id row) (assoc (select-keys row [:id :region :component :path :checked :source-commit :file-sha256])
+                                                   :body-sha256 (get-in row [:source :sha256]))]))]
+            (when-not (= captured actual)
+              (throw (ex-info "Future task sources differ from explicit readiness successor" {}))))
         _ (doseq [[c rows] tasks]
             (when-not (= (set (map :id rows)) (set (stable-task-routing-keys c)))
               (throw (ex-info "Task identity population changed; preserve source/ownership routing before amendment" {:component c}))))
@@ -834,7 +852,7 @@
                    :task-comparisons :source-criteria
                    :retained-historical-source-inputs :math-parent-refinement
                    :release-testing-refinement :domain-parent-refinement
-                   :ai-parent-refinement :platform-refinement])
+                   :ai-parent-refinement :platform-refinement :future-dependency-refinement])
      :pr574-macro-artifacts-composition
      {:path "specs/sh-family-crosswalk/pr574-macro-artifacts-composition.edn" :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/pr574-macro-artifacts-composition.edn"))}
      :pr574-composition-source-version
@@ -938,7 +956,7 @@
        :disposition :preserve-mixed-source-with-existing-supersession-qualification
        :global-equivalence-owner "01a179ad-2198-7392-966a-1e3c31209027"
        :qualification "Original raw wording and historical checks remain provenance. Existing current direction retires project work/capacity-only refusals; it does not retire malformed/cyclic/tampered/stale rejection, intrinsic type/Unicode/index/arity/target constraints, semantic resource ownership, actual broker/heap/watchdog/capture/platform controls or external provider spending limits. OOM/timeout remains a resource failure. This SH view makes no new global facet/equivalence adjudication."}]
-     :task-authorities tasks :requirements requirements
+     :task-authorities tasks :future-task-authorities future-tasks :requirements requirements
      :sh07-sequence (mapv (fn [{:keys [groups source]}]
                             {:id (nth groups 0) :requirement-scope (str/trim (nth groups 1))
                              :accountability (str/trim (nth groups 2))
@@ -1092,7 +1110,7 @@
                        :let [m (into {} node)]
                        :when (and (:path m) (:source-commit m) (:sha256 m))]
                    [(:source-commit m) (:path m) (:sha256 m)])
-        task-files (for [[_ rows] (:task-authorities result) row rows]
+        task-files (for [rows (concat (vals (:task-authorities result)) (vals (:future-task-authorities result))) row rows]
                      [(:source-commit row) (:path row) (:file-sha256 row)])
         digests (into (or (:source-digests result) {})
                       (map (fn [[_ path digest]] [path digest]) (concat locators task-files)))

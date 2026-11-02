@@ -781,3 +781,58 @@ pass. The next dependency work must model restored future-task start/interface/
 composition routes in the existing representation, preserving the distinction
 from SH milestone acceptance. Global source entailment, current repartition,
 material product decisions, independent review and integration remain Open.
+
+## Future task dependency continuation
+
+The existing SH crosswalk now captures all forty future task records separately
+from its unchanged 149 current task keys. Nine wider Domain, seven Math/Schema,
+thirteen Release and eleven Platform Product records retain exact bodies,
+checkboxes, component owners and applying source versions in their existing
+task files. This is a source inventory, not forty accepted implementation units.
+
+The [existing dependency contract](../docs/acceptance-dependencies.md#future-task-construction-and-composition)
+now declares twenty consumers: the nine wider Domain tasks and eleven Platform
+Product tasks. Forty-three selected producer-result joins distinguish declared
+construction interfaces, adopted product contracts needed for selected work,
+and actual outputs required for composition. Result nodes retain the exact
+producer source and stay execution/review-unassessed; a broad parent task's
+checkbox cannot substitute. The projection reports coarse producer cycles
+before staging, with a regression case proving that a source backedge remains
+visible. Current declarations and the staged graph contain no cycles.
+
+The other twenty consumers remain explicit dependency-review gaps: seven
+Math/Schema records need criterion/output and independent-checker allocation;
+thirteen Release testing/seed records need actual subject/oracle and downstream
+comparison/admission/release joins. Their construction/composition frontier is
+reported as dependency-review-pending, without imposing a development permission
+gate. Future-to-SH/full-language finish-line joins and global source conjunctions
+also remain pending. No route count establishes semantic coverage.
+
+Source input `a5533e0c3b80e2a23490008e73d95e1ef616baf9` binds the dependency
+declarations. The successor preserves the complete prior bridge/projection at
+`ea8147fd983a3d7ddb16bd89680af5677b3a636f`, including its pending fingerprint.
+The dependency document previously had a live digest in the projection and no
+explicit applying pin; its exact previous bytes are now retained at that
+checkpoint, and its current version gains an explicit pin. All task-file pins,
+180 SH criteria, thirty milestones, eighteen SH07 rows, current task IDs/states,
+original routes and scoped Reader receipts remain unchanged. Recorded source
+versions now comprise twenty task files, five navigation files and this one
+dependency declaration file.
+
+Final checks pass: 29 crosswalk tests / 1,124 assertions; twenty dependency
+tests / 575 assertions; deterministic crosswalk and original inventory checks;
+read-only dependency audit; canonical document and full-language structural
+validators; and the language boundary gate (six tests / eleven assertions).
+Focused conservation/navigation covers 73 changed files, 67 Markdown files,
+2,652 local references, 139 original component routes, 48 historical suffixes
+and all 48 original task/evidence contents after stripping declared additions.
+All changed files are ASCII and whitespace checks pass. Preliminary new-test
+syntax failures were corrected; the stale fingerprint guard rejected the
+checker edit until the pending successor was refreshed. Those preliminary
+attempts receive no passing credit.
+
+The first implementation preparation increment remains Reader's existing
+`reader/finite-remaining-work/contract-coverage-reconciliation`. No compiler,
+native, C12, provider, device, publication or held operation was executed by
+this continuation. No other chat was messaged. Reconciliation remains active;
+required independent acceptance and coordinator integration remain Open.

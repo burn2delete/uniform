@@ -2,6 +2,7 @@
   "Read-only roadmap dependency audit. Graph edges point to prerequisites.
   No compiler execution, status mutation, receipt authentication or acceptance."
   (:require [clojure.string :as str]
+            [clojure.set :as set]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
             [gravity.tooling.strict-json :as json]))
@@ -140,16 +141,16 @@
                     (.digest (java.security.MessageDigest/getInstance "SHA-256")
                              (.getBytes text java.nio.charset.StandardCharsets/UTF_8)))))
 
-(defn implementation-ids [text component]
-  (let [start (str "<!-- " component "-implementation-tasks:start -->")
-        end (str "<!-- " component "-implementation-tasks:end -->")
+(defn marked-task-ids [text marker]
+  (let [start (str "<!-- " marker ":start -->")
+        end (str "<!-- " marker ":end -->")
         starts (count (re-seq (re-pattern (java.util.regex.Pattern/quote start)) text))
         ends (count (re-seq (re-pattern (java.util.regex.Pattern/quote end)) text))]
     (if (and (zero? starts) (zero? ends))
       nil
       (do
         (require! (and (= 1 starts ends) (< (.indexOf text start) (.indexOf text end)))
-                  (str "Malformed implementation region: " component))
+                  (str "Malformed implementation region: " marker))
         (let [region (subs text (+ (.indexOf text start) (count start)) (.indexOf text end))
               rows (re-seq #"(?m)^- \[[^\n]*" region)
               parsed (mapv #(re-matches #"- \[[ xX]\] `([^\s`]+)`(?: .*)?" %) rows)
@@ -159,8 +160,57 @@
           ;; policy or become a second task authority.
           (require! (and (seq ids) (every? some? parsed)
                          (= (count ids) (count (set ids))))
-                    (str "Missing, duplicate or malformed implementation IDs: " component))
+                    (str "Missing, duplicate or malformed implementation IDs: " marker))
           ids)))))
+
+(defn implementation-ids [text component]
+  (marked-task-ids text (str component "-implementation-tasks")))
+
+(def future-task-regions
+  [["domains" "domains-wider-integration-proposals" 9]
+   ["domains" "domains-math-schema-proposals" 7]
+   ["release" "release-testing-proposals" 13]
+   ["platform" "platform-product-implementation-tasks" 11]])
+
+(def future-dependency-path "docs/acceptance-dependencies.md")
+
+(defn future-dependency-routes [text task-ids future-ids]
+  (let [marker "future-composition-dependencies"
+        start (str "<!-- " marker ":start -->") end (str "<!-- " marker ":end -->")
+        occurrences #(count (re-seq (re-pattern (java.util.regex.Pattern/quote %)) text))
+        _ (require! (and (= 1 (occurrences start) (occurrences end))
+                         (< (.indexOf text start) (.indexOf text end)))
+                    "Malformed future dependency declaration region")
+        lines (vec (remove str/blank? (str/split-lines
+                 (subs text (+ (.indexOf text start) (count start)) (.indexOf text end)))))
+        _ (require! (= ["| Consumer | Start results | Composition results | Selected output contract |"
+                        "| --- | --- | --- | --- |"] (vec (take 2 lines)))
+                    "Unknown future dependency table syntax")
+        ids (fn [cell]
+              (if (= "none" cell) []
+                (let [parts (str/split cell #", " -1)
+                      parsed (mapv #(second (re-matches #"`([^\s`]+)`" %)) parts)]
+                  (require! (and (seq parsed) (every? some? parsed)
+                                 (= (count parsed) (count (set parsed)))
+                                 (every? task-ids parsed)) "Unknown or malformed future dependency ID")
+                  parsed)))
+        rows (mapv (fn [line]
+                     (let [cells (str/split line #"\|" -1)
+                           _ (require! (and (= 6 (count cells)) (= "" (first cells) (last cells)))
+                                       "Malformed future dependency row")
+                           [consumer start-results results contract] (mapv str/trim (subvec (vec cells) 1 5))
+                           consumers (ids consumer) starts (ids start-results) composition (ids results)]
+                       (require! (and (= 1 (count consumers)) (future-ids (first consumers))
+                                      (not (str/blank? contract))
+                                      (empty? (set/intersection (set starts) (set composition))))
+                                 "Invalid future consumer/output declaration")
+                       {:consumer (first consumers) :start-results starts :composition-results composition
+                        :selected-output-contract contract
+                        :source {:path future-dependency-path :sha256 (sha256 text) :declaration line}}))
+                   (drop 2 lines))]
+    (require! (and (seq rows) (= (count rows) (count (set (map :consumer rows)))))
+              "Missing or duplicate future dependency consumer")
+    rows))
 
 (defn component-census [registry read-text exists?]
   (let [components (mapv second (re-seq #"(?m)^\| [^|\n]+ / `([a-z-]+)` \|" registry))]
@@ -291,6 +341,8 @@
             [id {:state (cond
                           (= :accepted (:state row)) :accepted-recorded-scope
                           (= :missing-task-authority (:coverage row)) :missing-task-authority
+                          (= :pending (:dependency-review row)) :dependency-review-pending
+                          (= :unresolved-future-composition (:scope row)) :dependency-review-pending
                           (#{:selected-acceptance-facet :uniform-completion-gate} (:scope row)) :execution-and-review-unassessed
                           (unresolved id) :unknown-condition
                           (some #(not= :accepted (:state (nodes %))) (graph id)) :prerequisite-not-accepted
@@ -360,6 +412,83 @@
    ["release" 3 "cli" 5 nil]
    ["release" 3 "runtime" 2 nil]])
 
+(defn future-task-view [authorities current-tasks snapshots read-text]
+  (let [future-tasks (vec (mapcat val authorities))
+        future-map (into {} (map (juxt :id identity) future-tasks))
+        all-tasks (merge current-tasks future-map)
+        _ (require! (= (set (map second future-task-regions)) (set (keys authorities)))
+                    "Missing or unknown future task authority")
+        _ (require! (= 40 (count future-tasks) (count future-map)) "Changed future task population")
+        _ (require! (= (+ (count current-tasks) (count future-map)) (count all-tasks))
+                    "Future task duplicates a current task authority")
+        _ (doseq [[component region expected] future-task-regions
+                  :let [rows (authorities region) path (str "specs/" component "-workflow/tasks.md")]]
+            (require! (= expected (count rows)) "Changed marked future task population")
+            (require-population! (set (map :id rows)) (marked-task-ids (read-text path) region)
+                                 (str region " live future task"))
+            (doseq [row rows]
+              (require! (= [component region path :component-future-task-ledger]
+                           [(:component row) (:region row) (:path row) (:authority row)])
+                        "Future task owner/region mismatch")
+              (current-task-body! (:source row) snapshots read-text)
+              (let [[_ checked id] (re-find #"^- \[([ xX])\] `([^`]+)`"
+                                          (source-raw (:source row) snapshots))]
+                (require! (and (= id (:id row)) (= (:checked row) (not= " " checked)))
+                          "Future task ID/status differs from authority"))))
+        routes (future-dependency-routes (read-text future-dependency-path) (set (keys all-tasks))
+                                         (set (keys future-map)))
+        declared (set (map :consumer routes))
+        unresolved (vec (sort (remove declared (keys future-map))))
+        output-graph (reduce (fn [graph {:keys [consumer start-results composition-results]}]
+                               (assoc graph consumer (set (concat start-results composition-results))))
+                             (zipmap (keys all-tasks) (repeat #{})) routes)
+        selected (for [{:keys [consumer start-results composition-results source selected-output-contract]} routes
+                       producer (concat start-results composition-results)]
+                   {:id (str "result:" consumer ":" producer) :consumer consumer :producer producer
+                    :source source :selected-output-contract selected-output-contract
+                    :producer-source (source-ref (:source (all-tasks producer)))})
+        nodes (merge
+                (into {} (for [[id row] future-map]
+                           [(str "task:" id "/interface")
+                            {:state :accepted :scope :declared-interface-only :task-id id :component (:component row)}]))
+                (into {} (for [[id row] future-map]
+                           [(str "task:" id "/implementation")
+                            {:state :unassessed :scope :future-task-implementation :task-id id
+                             :dependency-review (if (declared id) :declared :pending)
+                             :recorded-checked (:checked row) :component (:component row)}]))
+                (into {} (for [[id _] future-map]
+                           [(str "task:" id "/composition")
+                            {:state :unassessed :scope (if (declared id) :actual-selected-producer-consumer
+                                                        :unresolved-future-composition) :task-id id}]))
+                (into {} (for [row selected]
+                           [(:id row) (assoc (dissoc row :id) :state :unassessed :scope :selected-acceptance-facet
+                                            :task-id (:producer row))])))
+        edges (vec (concat
+                (for [[id row] future-map]
+                  {:from (str "task:" id "/implementation") :to (str "task:" id "/interface")
+                   :kind :declared-interface :source (source-ref (:source row))})
+                (for [[id row] future-map]
+                  {:from (str "task:" id "/composition") :to (str "task:" id "/implementation")
+                   :kind :actual-implementation :source (source-ref (:source row))})
+                (mapcat (fn [{:keys [consumer start-results composition-results source]}]
+                          (concat
+                            (for [producer (concat start-results composition-results)]
+                              {:from (str "task:" consumer "/implementation") :to (str "task:" producer "/interface")
+                               :kind :declared-producer-interface :source source})
+                            (for [producer start-results]
+                              {:from (str "task:" consumer "/implementation") :to (str "result:" consumer ":" producer)
+                               :kind :adopted-product-contract :source source})
+                            (for [producer (concat start-results composition-results)]
+                              {:from (str "task:" consumer "/composition") :to (str "result:" consumer ":" producer)
+                               :kind :actual-selected-producer-result :source source}))) routes)))]
+    {:nodes nodes :typed-edges edges
+     :dependency-review {:task-count (count future-map) :declared-consumers (vec (sort declared))
+                         :unresolved-consumers unresolved :routes routes
+                         :declared-output-adjacency output-graph :declared-output-cycles (cycles output-graph)
+                         :authority :source-declarations-not-execution
+                         :future-sh-and-full-language-joins :pending
+                         :implementation-acceptance :unassessed}}))
+
 (defn task-sh-view [crosswalk read-text]
   (let [requirements (:requirements crosswalk)
         snapshots (:source-snapshots crosswalk)
@@ -391,6 +520,7 @@
               (when (:checked row)
                 (require! (str/includes? (source-text (:source row)) "Accepted;")
                           "Checked task lacks explicit accepted status"))))
+        future (future-task-view (:future-task-authorities crosswalk) task-map snapshots read-text)
         _ (doseq [r requirements]
             (source-bound! (:acceptance-source r) snapshots read-text)
             (source-bound! (:context-source r) snapshots read-text)
@@ -454,14 +584,14 @@
                                        {:state :unassessed :scope :actual-selected-producer-consumer :task-id id}]))
         shared-gate-nodes (into {} (for [n (range 3 30)] [(format "uniform-gate:SH-%02d" n)
                                       {:state :unassessed :scope :uniform-completion-gate :rule (:id shared-rule)}]))
-        nodes (merge interface-nodes implementation-nodes criterion-nodes milestone-nodes facet-nodes sequence-nodes composition-nodes shared-gate-nodes)
+        nodes (merge interface-nodes implementation-nodes criterion-nodes milestone-nodes facet-nodes sequence-nodes composition-nodes shared-gate-nodes (:nodes future))
         evidence-applicability (mapv #(evidence-source-state % read-text)
                                     (sort-by (juxt :path :source-commit :sha256)
                                       (distinct (mapcat :evidence-source-locators requirements))))
         conditions {:optimization-requested :unknown :runtime-service-required :unknown
                     :compiler-artifacts-consumed :unknown :build-command-selected :unknown
                     :execution-command-selected :unknown :stable-candidate-selection :unknown}
-        edges (vec (concat
+        edges (vec (concat (:typed-edges future)
           [{:from "SH-07" :to "SH07-C18" :kind :single-milestone-completion-decision
             :source (source-ref (:source (last sequence)))}]
           (for [n (range 3 30)]
@@ -499,6 +629,7 @@
         adjacency (typed-adjacency nodes edges conditions)]
     (require! (empty? (cycles adjacency)) "SH/task current acceptance cycle")
     {:schema-version 1 :authority :structural-only :nodes nodes :typed-edges edges
+     :future-task-dependencies (:dependency-review future)
      :condition-values conditions
      :evidence-source-applicability evidence-applicability
      :historical-source-applicability historical-source-applicability

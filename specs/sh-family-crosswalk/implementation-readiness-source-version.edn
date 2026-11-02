@@ -19,7 +19,7 @@
    "evolution/security-review"
    "evolution/stabilization-decision"
    "evolution/target-support-admission"]},
- :source-input-commit "0876063f41e2ad3e13f3c332f4877daecb62b45d",
+ :source-input-commit "a5533e0c3b80e2a23490008e73d95e1ef616baf9",
  :task-comparisons
  {:unchanged-body-count 121,
   :changed-bodies
@@ -430,7 +430,18 @@
    :after
    {:commit "0876063f41e2ad3e13f3c332f4877daecb62b45d",
     :sha256
-    "0dbba94db06b14f66adc29c66fb13506ee87b0e95b603dc3df894419a4bc62b6"}}],
+    "0dbba94db06b14f66adc29c66fb13506ee87b0e95b603dc3df894419a4bc62b6"}}
+  {:path "docs/acceptance-dependencies.md",
+   :before
+   {:commit "ea8147fd983a3d7ddb16bd89680af5677b3a636f",
+    :sha256
+    "3487862f9c4c6bf19b71a4dd7052ec8e9e0b068ad594e5ea7567cd69f6c20eb6",
+    :prior-explicit-applying-pin nil},
+   :after
+   {:commit "a5533e0c3b80e2a23490008e73d95e1ef616baf9",
+    :sha256
+    "cb8b99dbb9caa38a2d777536c429fd8793272cdaa91bd10fcf436c69054ecea6"},
+   :scope :dependency-declaration-version}],
  :inspection-locators
  {"docs/phase-02-safety/043-safe14-supply-chain-safety.md"
   {:commit "697917447d70ba0797a096d9427d4706bf5515df",
@@ -1071,6 +1082,488 @@
    :scope :retained-historical-ownership-not-current-authority}},
  :qualification
  "Bind exact task versions, Governance routing, all seven Domain and four Platform parent refinements plus Release aggregates. Eighteen Open original bodies carry declared additions; 121 bodies and all original checkboxes are conserved. Preserve each readiness predecessor and qualified review subject. Sixteen Domain, thirteen Release and eleven Platform Product future records retain pending SH composition. Global source entailment, independent current review and implementation acceptance remain unassessed.",
+ :future-dependency-refinement
+ {:predecessor-readiness-successor
+  {:commit "ea8147fd983a3d7ddb16bd89680af5677b3a636f",
+   :path
+   "specs/sh-family-crosswalk/implementation-readiness-source-version.edn",
+   :sha256
+   "1ff8783ca98f24d39f316e6f2f3c1637639f603a46efdfc69b157ca42945af52",
+   :projection-path "specs/sh-family-crosswalk/crosswalk.edn",
+   :projection-sha256
+   "8032bc1db0dc646789f9f3692047380b827de128d76ba04e41c11f9a419d1853",
+   :input-fingerprint
+   "a39b2639c5e7f6f25a45bbd4aa707a3d6453299147d5d928e000000f70859f1c"},
+  :task-records
+  [{:id "automation",
+    :region "domains-wider-integration-proposals",
+    :component "domains",
+    :path "specs/domains-workflow/tasks.md",
+    :checked false,
+    :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+    :file-sha256
+    "664ae7028db79ac223795dfbe0cfdb3b429f7822fed86a15268c500ddd8bbd7c",
+    :body-sha256
+    "c0d940760c13936487d8065806937d98852b711242806d86fab66d684ce90f39"}
+   {:id "blockchain",
+    :region "domains-wider-integration-proposals",
+    :component "domains",
+    :path "specs/domains-workflow/tasks.md",
+    :checked false,
+    :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+    :file-sha256
+    "664ae7028db79ac223795dfbe0cfdb3b429f7822fed86a15268c500ddd8bbd7c",
+    :body-sha256
+    "da21d377d58d70dba73dbd3cccc91c718661c596dc9bc2ba262ab89e3dd767df"}
+   {:id "crypto",
+    :region "domains-wider-integration-proposals",
+    :component "domains",
+    :path "specs/domains-workflow/tasks.md",
+    :checked false,
+    :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+    :file-sha256
+    "664ae7028db79ac223795dfbe0cfdb3b429f7822fed86a15268c500ddd8bbd7c",
+    :body-sha256
+    "14dd4ffeb48ca157548f4b3bc0fe40b8b58d982af6b6d5d175a10d3306fc061c"}
+   {:id "formal",
+    :region "domains-wider-integration-proposals",
+    :component "domains",
+    :path "specs/domains-workflow/tasks.md",
+    :checked false,
+    :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+    :file-sha256
+    "664ae7028db79ac223795dfbe0cfdb3b429f7822fed86a15268c500ddd8bbd7c",
+    :body-sha256
+    "468632c36cc7b57fbcfe0fee8f3961ce83d34bdcefbc440585a4d835829ac4d6"}
+   {:id "native",
+    :region "domains-wider-integration-proposals",
+    :component "domains",
+    :path "specs/domains-workflow/tasks.md",
+    :checked false,
+    :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+    :file-sha256
+    "664ae7028db79ac223795dfbe0cfdb3b429f7822fed86a15268c500ddd8bbd7c",
+    :body-sha256
+    "af96d8e0dc3c008b2aef077da854396109c2519f9bd407284a4e542077bef1b8"}
+   {:id "services",
+    :region "domains-wider-integration-proposals",
+    :component "domains",
+    :path "specs/domains-workflow/tasks.md",
+    :checked false,
+    :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+    :file-sha256
+    "664ae7028db79ac223795dfbe0cfdb3b429f7822fed86a15268c500ddd8bbd7c",
+    :body-sha256
+    "a85cdfee26c4448ad5efd9d008431da16e3a42369eb403de2a86e7f569d1d749"}
+   {:id "simulation",
+    :region "domains-wider-integration-proposals",
+    :component "domains",
+    :path "specs/domains-workflow/tasks.md",
+    :checked false,
+    :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+    :file-sha256
+    "664ae7028db79ac223795dfbe0cfdb3b429f7822fed86a15268c500ddd8bbd7c",
+    :body-sha256
+    "f9d45597ff23e8679b8c82bd5c5c9440ce7e74c3b69127e0c2a0cf18e9a1e7ac"}
+   {:id "storage",
+    :region "domains-wider-integration-proposals",
+    :component "domains",
+    :path "specs/domains-workflow/tasks.md",
+    :checked false,
+    :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+    :file-sha256
+    "664ae7028db79ac223795dfbe0cfdb3b429f7822fed86a15268c500ddd8bbd7c",
+    :body-sha256
+    "18954329abf5f416d8576a86c8b2a806ba5f6e45d27fe1dd8ad64296b208405a"}
+   {:id "visual",
+    :region "domains-wider-integration-proposals",
+    :component "domains",
+    :path "specs/domains-workflow/tasks.md",
+    :checked false,
+    :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+    :file-sha256
+    "664ae7028db79ac223795dfbe0cfdb3b429f7822fed86a15268c500ddd8bbd7c",
+    :body-sha256
+    "a48950198a5ec0be8f0632378886ed42fb12179b2f20da6d2ea9731212c7e469"}
+   {:id "math/eml-normalization-and-search",
+    :region "domains-math-schema-proposals",
+    :component "domains",
+    :path "specs/domains-workflow/tasks.md",
+    :checked false,
+    :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+    :file-sha256
+    "664ae7028db79ac223795dfbe0cfdb3b429f7822fed86a15268c500ddd8bbd7c",
+    :body-sha256
+    "e8fc3b4ec5bba68d8dbd9985ba5d73f6954d8700d1327d66ca943e09e37726f7"}
+   {:id "math/certified-implementation-synthesis",
+    :region "domains-math-schema-proposals",
+    :component "domains",
+    :path "specs/domains-workflow/tasks.md",
+    :checked false,
+    :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+    :file-sha256
+    "664ae7028db79ac223795dfbe0cfdb3b429f7822fed86a15268c500ddd8bbd7c",
+    :body-sha256
+    "92f7f81f218555f86406d36f45410577f2bfaa66e1c4bbf1c072d0b3afaa32de"}
+   {:id "math/interval-and-real-proof-production",
+    :region "domains-math-schema-proposals",
+    :component "domains",
+    :path "specs/domains-workflow/tasks.md",
+    :checked false,
+    :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+    :file-sha256
+    "664ae7028db79ac223795dfbe0cfdb3b429f7822fed86a15268c500ddd8bbd7c",
+    :body-sha256
+    "4dd9a3200cda862add2e4e5a6bb634f38795787fc97d07f74235dc3c067be7de"}
+   {:id "math/symbolic-rule-and-trace-production",
+    :region "domains-math-schema-proposals",
+    :component "domains",
+    :path "specs/domains-workflow/tasks.md",
+    :checked false,
+    :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+    :file-sha256
+    "664ae7028db79ac223795dfbe0cfdb3b429f7822fed86a15268c500ddd8bbd7c",
+    :body-sha256
+    "9f80100cd7fc4c576370d7890536c8e6c26ac7a39360d6e1946b5efc2bd0de59"}
+   {:id "math/independent-proof-and-certificate-checking",
+    :region "domains-math-schema-proposals",
+    :component "domains",
+    :path "specs/domains-workflow/tasks.md",
+    :checked false,
+    :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+    :file-sha256
+    "664ae7028db79ac223795dfbe0cfdb3b429f7822fed86a15268c500ddd8bbd7c",
+    :body-sha256
+    "ba8bc4e7ab2bbfd42b182655e684a5629d2e0d1f5153d81e469f1f8c8ca36bed"}
+   {:id "schema/compatibility-and-migration",
+    :region "domains-math-schema-proposals",
+    :component "domains",
+    :path "specs/domains-workflow/tasks.md",
+    :checked false,
+    :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+    :file-sha256
+    "664ae7028db79ac223795dfbe0cfdb3b429f7822fed86a15268c500ddd8bbd7c",
+    :body-sha256
+    "03c13f0584589ae0399bef9726510206fcbaaedc51f4b754fd3e6c5927456859"}
+   {:id "schema/checked-consumer-projection",
+    :region "domains-math-schema-proposals",
+    :component "domains",
+    :path "specs/domains-workflow/tasks.md",
+    :checked false,
+    :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+    :file-sha256
+    "664ae7028db79ac223795dfbe0cfdb3b429f7822fed86a15268c500ddd8bbd7c",
+    :body-sha256
+    "8749844f61158b1cf15fee34f14ea990fdd7f7e88238245911d362a6ad5130ef"}
+   {:id
+    "release/remaining-tasks-and-evidence/execute-agent-and-workflow-evaluations",
+    :region "release-testing-proposals",
+    :component "release",
+    :path "specs/release-workflow/tasks.md",
+    :checked false,
+    :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+    :file-sha256
+    "47076089f754f4525d41d7ac05860a1141e88d3b92c0592b471f38b4ff299373",
+    :body-sha256
+    "8d6215523bd324b10e17e58482aa6955b277041afd3ce0fdeca6b4c6f07bebe4"}
+   {:id
+    "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures",
+    :region "release-testing-proposals",
+    :component "release",
+    :path "specs/release-workflow/tasks.md",
+    :checked false,
+    :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+    :file-sha256
+    "47076089f754f4525d41d7ac05860a1141e88d3b92c0592b471f38b4ff299373",
+    :body-sha256
+    "551177a2b0e469e75657bc5d119b1613c61568e329343eee5b3251edcb54b743"}
+   {:id
+    "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures",
+    :region "release-testing-proposals",
+    :component "release",
+    :path "specs/release-workflow/tasks.md",
+    :checked false,
+    :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+    :file-sha256
+    "47076089f754f4525d41d7ac05860a1141e88d3b92c0592b471f38b4ff299373",
+    :body-sha256
+    "a04fe57ac3daaf5cf002598c8ccf6cd6682080dfd5cda40833f2695f5fecb37c"}
+   {:id
+    "release/remaining-tasks-and-evidence/execute-formal-evidence-checks",
+    :region "release-testing-proposals",
+    :component "release",
+    :path "specs/release-workflow/tasks.md",
+    :checked false,
+    :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+    :file-sha256
+    "47076089f754f4525d41d7ac05860a1141e88d3b92c0592b471f38b4ff299373",
+    :body-sha256
+    "ea0c2bf29a692e6e5e81c8393854a9e7cdfadd225cf079bbf3b811469b0f9777"}
+   {:id
+    "release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures",
+    :region "release-testing-proposals",
+    :component "release",
+    :path "specs/release-workflow/tasks.md",
+    :checked false,
+    :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+    :file-sha256
+    "47076089f754f4525d41d7ac05860a1141e88d3b92c0592b471f38b4ff299373",
+    :body-sha256
+    "9d7d7069d0b7a571902cf6b934b5f6f5a6cd30e0b31139db109c718725ab16df"}
+   {:id
+    "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures",
+    :region "release-testing-proposals",
+    :component "release",
+    :path "specs/release-workflow/tasks.md",
+    :checked false,
+    :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+    :file-sha256
+    "47076089f754f4525d41d7ac05860a1141e88d3b92c0592b471f38b4ff299373",
+    :body-sha256
+    "18bb750d2ab7cad44d643b2fa67c60bb5c61c16bd2f74e98720a5e2efde39c69"}
+   {:id
+    "release/remaining-tasks-and-evidence/execute-library-conformance-fixtures",
+    :region "release-testing-proposals",
+    :component "release",
+    :path "specs/release-workflow/tasks.md",
+    :checked false,
+    :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+    :file-sha256
+    "47076089f754f4525d41d7ac05860a1141e88d3b92c0592b471f38b4ff299373",
+    :body-sha256
+    "290f29b392f82b8797ca86efac46acefa11a81c0131787935de679cd24c3b813"}
+   {:id
+    "release/remaining-tasks-and-evidence/execute-performance-regression-fixtures",
+    :region "release-testing-proposals",
+    :component "release",
+    :path "specs/release-workflow/tasks.md",
+    :checked false,
+    :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+    :file-sha256
+    "47076089f754f4525d41d7ac05860a1141e88d3b92c0592b471f38b4ff299373",
+    :body-sha256
+    "be78b5607529ea317eb86ebf63e3bff40b8fe1778759f24770d766bf90c3f645"}
+   {:id
+    "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures",
+    :region "release-testing-proposals",
+    :component "release",
+    :path "specs/release-workflow/tasks.md",
+    :checked false,
+    :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+    :file-sha256
+    "47076089f754f4525d41d7ac05860a1141e88d3b92c0592b471f38b4ff299373",
+    :body-sha256
+    "015036322a7cc39d779dcc4d2985f0eabc6d9cba6ca8b2de09a318b7226b3acb"}
+   {:id
+    "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures",
+    :region "release-testing-proposals",
+    :component "release",
+    :path "specs/release-workflow/tasks.md",
+    :checked false,
+    :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+    :file-sha256
+    "47076089f754f4525d41d7ac05860a1141e88d3b92c0592b471f38b4ff299373",
+    :body-sha256
+    "85511d988b1316b76b4a26e9da9ef7f6c2e55d38ce2602143db4b4943ba4c0c9"}
+   {:id
+    "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures",
+    :region "release-testing-proposals",
+    :component "release",
+    :path "specs/release-workflow/tasks.md",
+    :checked false,
+    :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+    :file-sha256
+    "47076089f754f4525d41d7ac05860a1141e88d3b92c0592b471f38b4ff299373",
+    :body-sha256
+    "50f51c2e4b1cd734a46d18d0a16e1edfa96aa9784f456c2e0c795a4214432308"}
+   {:id
+    "release/remaining-tasks-and-evidence/execute-staged-compiler-validation",
+    :region "release-testing-proposals",
+    :component "release",
+    :path "specs/release-workflow/tasks.md",
+    :checked false,
+    :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+    :file-sha256
+    "47076089f754f4525d41d7ac05860a1141e88d3b92c0592b471f38b4ff299373",
+    :body-sha256
+    "de657d84993e1332296f00a25bfc896ba19edc09716bb9cc0222d4cbbae8b947"}
+   {:id
+    "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+    :region "release-testing-proposals",
+    :component "release",
+    :path "specs/release-workflow/tasks.md",
+    :checked false,
+    :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+    :file-sha256
+    "47076089f754f4525d41d7ac05860a1141e88d3b92c0592b471f38b4ff299373",
+    :body-sha256
+    "ee83573983288ce10a6d898596408e92ad61d835fa9f42d983c641a403cd0f71"}
+   {:id "platform-product/adopt-hardware-contract",
+    :region "platform-product-implementation-tasks",
+    :component "platform",
+    :path "specs/platform-workflow/tasks.md",
+    :checked false,
+    :source-commit "0876063f41e2ad3e13f3c332f4877daecb62b45d",
+    :file-sha256
+    "0dbba94db06b14f66adc29c66fb13506ee87b0e95b603dc3df894419a4bc62b6",
+    :body-sha256
+    "fec0124ae53255813304b7182f65923eafcf442c13c00602a05f63fbc1b007cf"}
+   {:id "platform-product/adopt-kernel-contract",
+    :region "platform-product-implementation-tasks",
+    :component "platform",
+    :path "specs/platform-workflow/tasks.md",
+    :checked false,
+    :source-commit "0876063f41e2ad3e13f3c332f4877daecb62b45d",
+    :file-sha256
+    "0dbba94db06b14f66adc29c66fb13506ee87b0e95b603dc3df894419a4bc62b6",
+    :body-sha256
+    "7e963af8bdd06f1a78e328feb3577cb86291d4094d9a9be9d31a703267ef0d88"}
+   {:id "platform-product/adopt-application-contract",
+    :region "platform-product-implementation-tasks",
+    :component "platform",
+    :path "specs/platform-workflow/tasks.md",
+    :checked false,
+    :source-commit "0876063f41e2ad3e13f3c332f4877daecb62b45d",
+    :file-sha256
+    "0dbba94db06b14f66adc29c66fb13506ee87b0e95b603dc3df894419a4bc62b6",
+    :body-sha256
+    "d6ae874658fed492c8c015c908419b3b9c3e2c277d64e2148d77ae40a9453c15"}
+   {:id "platform-product/adopt-physical-boundary",
+    :region "platform-product-implementation-tasks",
+    :component "platform",
+    :path "specs/platform-workflow/tasks.md",
+    :checked false,
+    :source-commit "0876063f41e2ad3e13f3c332f4877daecb62b45d",
+    :file-sha256
+    "0dbba94db06b14f66adc29c66fb13506ee87b0e95b603dc3df894419a4bc62b6",
+    :body-sha256
+    "b6d5ae5225691588cd5016c59246efdee92696a2d565e731e7479b983324639d"}
+   {:id "platform-product/implement-hardware",
+    :region "platform-product-implementation-tasks",
+    :component "platform",
+    :path "specs/platform-workflow/tasks.md",
+    :checked false,
+    :source-commit "0876063f41e2ad3e13f3c332f4877daecb62b45d",
+    :file-sha256
+    "0dbba94db06b14f66adc29c66fb13506ee87b0e95b603dc3df894419a4bc62b6",
+    :body-sha256
+    "9afd6d0715b4614216813137210b85d49763af277b2985e7afc2cd1bc9d52685"}
+   {:id "platform-product/implement-firmware",
+    :region "platform-product-implementation-tasks",
+    :component "platform",
+    :path "specs/platform-workflow/tasks.md",
+    :checked false,
+    :source-commit "0876063f41e2ad3e13f3c332f4877daecb62b45d",
+    :file-sha256
+    "0dbba94db06b14f66adc29c66fb13506ee87b0e95b603dc3df894419a4bc62b6",
+    :body-sha256
+    "ea937a0345b50e2a446c8cdd03b82538addd59da12315e1d02ba47c7796717e9"}
+   {:id "platform-product/implement-os",
+    :region "platform-product-implementation-tasks",
+    :component "platform",
+    :path "specs/platform-workflow/tasks.md",
+    :checked false,
+    :source-commit "0876063f41e2ad3e13f3c332f4877daecb62b45d",
+    :file-sha256
+    "0dbba94db06b14f66adc29c66fb13506ee87b0e95b603dc3df894419a4bc62b6",
+    :body-sha256
+    "dc1f4223d6182750a5c63737bc3985178d9c3f78629cee426380d46251db4a10"}
+   {:id "platform-product/implement-drivers",
+    :region "platform-product-implementation-tasks",
+    :component "platform",
+    :path "specs/platform-workflow/tasks.md",
+    :checked false,
+    :source-commit "0876063f41e2ad3e13f3c332f4877daecb62b45d",
+    :file-sha256
+    "0dbba94db06b14f66adc29c66fb13506ee87b0e95b603dc3df894419a4bc62b6",
+    :body-sha256
+    "4abb5a6001e4cb2f62c1dbc1d72d750a685dacafa414f46accbb2c0714263f54"}
+   {:id "platform-product/implement-applications",
+    :region "platform-product-implementation-tasks",
+    :component "platform",
+    :path "specs/platform-workflow/tasks.md",
+    :checked false,
+    :source-commit "0876063f41e2ad3e13f3c332f4877daecb62b45d",
+    :file-sha256
+    "0dbba94db06b14f66adc29c66fb13506ee87b0e95b603dc3df894419a4bc62b6",
+    :body-sha256
+    "981134ff3dd2d3f9b04cd48bf901251ea0966943dae9d068f96b13699d38e6b5"}
+   {:id "platform-product/integrate-execution",
+    :region "platform-product-implementation-tasks",
+    :component "platform",
+    :path "specs/platform-workflow/tasks.md",
+    :checked false,
+    :source-commit "0876063f41e2ad3e13f3c332f4877daecb62b45d",
+    :file-sha256
+    "0dbba94db06b14f66adc29c66fb13506ee87b0e95b603dc3df894419a4bc62b6",
+    :body-sha256
+    "a9e22d269cfc79831a3777d6f228d32703b1fe6a141c24d8231436e0376f1d1f"}
+   {:id "platform-product/distribute-product",
+    :region "platform-product-implementation-tasks",
+    :component "platform",
+    :path "specs/platform-workflow/tasks.md",
+    :checked false,
+    :source-commit "0876063f41e2ad3e13f3c332f4877daecb62b45d",
+    :file-sha256
+    "0dbba94db06b14f66adc29c66fb13506ee87b0e95b603dc3df894419a4bc62b6",
+    :body-sha256
+    "1be8a612524fecf067df3ad086880bfef4d62ca4296b3ad568f5d2794e1797de"}],
+  :dependency-source
+  {:path "docs/acceptance-dependencies.md",
+   :before
+   {:commit "ea8147fd983a3d7ddb16bd89680af5677b3a636f",
+    :sha256
+    "3487862f9c4c6bf19b71a4dd7052ec8e9e0b068ad594e5ea7567cd69f6c20eb6",
+    :prior-explicit-applying-pin nil},
+   :after
+   {:commit "a5533e0c3b80e2a23490008e73d95e1ef616baf9",
+    :sha256
+    "cb8b99dbb9caa38a2d777536c429fd8793272cdaa91bd10fcf436c69054ecea6"}},
+  :declared-consumers
+  ["automation"
+   "blockchain"
+   "crypto"
+   "formal"
+   "native"
+   "platform-product/adopt-application-contract"
+   "platform-product/adopt-hardware-contract"
+   "platform-product/adopt-kernel-contract"
+   "platform-product/adopt-physical-boundary"
+   "platform-product/distribute-product"
+   "platform-product/implement-applications"
+   "platform-product/implement-drivers"
+   "platform-product/implement-firmware"
+   "platform-product/implement-hardware"
+   "platform-product/implement-os"
+   "platform-product/integrate-execution"
+   "services"
+   "simulation"
+   "storage"
+   "visual"],
+  :unresolved-consumers
+  ["math/certified-implementation-synthesis"
+   "math/eml-normalization-and-search"
+   "math/independent-proof-and-certificate-checking"
+   "math/interval-and-real-proof-production"
+   "math/symbolic-rule-and-trace-production"
+   "release/remaining-tasks-and-evidence/execute-agent-and-workflow-evaluations"
+   "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures"
+   "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures"
+   "release/remaining-tasks-and-evidence/execute-formal-evidence-checks"
+   "release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures"
+   "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures"
+   "release/remaining-tasks-and-evidence/execute-library-conformance-fixtures"
+   "release/remaining-tasks-and-evidence/execute-performance-regression-fixtures"
+   "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures"
+   "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures"
+   "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures"
+   "release/remaining-tasks-and-evidence/execute-staged-compiler-validation"
+   "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations"
+   "schema/checked-consumer-projection"
+   "schema/compatibility-and-migration"],
+  :future-sh-and-full-language-joins :pending,
+  :source-entailment :pending-independent-review,
+  :implementation-acceptance :unassessed},
  :platform-refinement
  {:source-input-commit "0876063f41e2ad3e13f3c332f4877daecb62b45d",
   :producer-consumer-allocation :pending-current-repartition-review,
@@ -1286,6 +1779,8 @@
   "92b3917ec51e882338fc221bddde86310815221f",
   "docs/phase-02-safety/043-safe14-supply-chain-safety.md"
   "697917447d70ba0797a096d9427d4706bf5515df",
+  "docs/acceptance-dependencies.md"
+  "a5533e0c3b80e2a23490008e73d95e1ef616baf9",
   "specs/platform-workflow/tasks.md"
   "0876063f41e2ad3e13f3c332f4877daecb62b45d",
   "specs/backends-workflow/tasks.md"
@@ -1297,4 +1792,4 @@
   "specs/emit-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9"},
  :input-fingerprint
- "a39b2639c5e7f6f25a45bbd4aa707a3d6453299147d5d928e000000f70859f1c"}
+ "8a02850a50b119e7b00346788ba87e360b79c2129d6ff7cd6828be75e24da996"}
