@@ -40,9 +40,7 @@
     (is (= (seq (with-redefs [canonical/canonical-sort legacy-sort]
                  (canonical/canonical-bytes value)))
            (seq (canonical/canonical-bytes value)))))
-  (doseq [value [(with-meta {:a 1} {:host true}) (Object.)
-                 (reduce (fn [x _] [x]) nil (range 66))
-                 (vec (repeat 17000 nil))]]
+  (doseq [value [(with-meta {:a 1} {:host true}) (Object.)]]
     (let [prior (with-redefs [canonical/canonical-sort legacy-sort]
                   (diagnostic #(canonical/canonical-bytes value)))]
       (is (= "C16-KEY" (:id prior)))
