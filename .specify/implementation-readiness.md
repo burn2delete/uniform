@@ -1258,7 +1258,8 @@ suffixes and all 48 original task/evidence contents after stripping declared
 additions. Changed files are ASCII, whitespace checks pass, the staged graph
 remains acyclic and mapping readiness remains false.
 
-The next reconciliation source is C11's preserved complete MIR trace at
+At that checkpoint, the next reconciliation source was C11's preserved complete
+MIR trace at
 `bcb98c1c377cbdc79ed1e23a6814727a8f16254e`. A preliminary witness check
 hash-verifies six existing criterion spans for construction, facts, ordering,
 verification, serialization and consumption; none is literal current MIR task
@@ -1266,3 +1267,87 @@ text. Their 134 C11 facets, fourteen foundation MIR predicates, 36 semantic
 conjunction cases and seventy retained unrelated foundation facets require
 direct canonical and current-owner review before amendments or source credit.
 This observation creates no new MIR task, source acceptance or execution route.
+
+## Complete MIR source review
+
+Direct review of C11, the selected D1/D2/D9 predicates and all preserved
+occurrence cases restores six exact source criteria under the five existing
+[MIR tasks](../specs/mir-workflow/tasks.md#implementation-tasks). The
+[MIR plan](../specs/mir-workflow/plan.md#complete-mir-source-criteria)
+connects construction, fact binding, effect ordering, verification, serialization
+and current consumer admission to canonical sections and actual evidence.
+The verifier task implements the checker; the consumer-gate task invokes it
+for the current module/pass/facts and refuses failed, absent or stale results.
+Declared checked-Core/fact interfaces permit local work; actual producer
+products are required for composition. Domain anchors do not clear C12,
+provider, proof-checker or other recorded restrictions. The D1/C1/C6 pipeline
+qualification remains explicit.
+
+The source binding preserves 134 C11 facets (117 semantic and seventeen
+context), fourteen foundation MIR predicates, 53 occurrence cases including
+36 semantic conjunctions, and six original owner joins. Seventy unrelated
+attached foundation facets retain separate scope and source spans. All 218
+selected/residual spans and five whole-file canonical identities match their
+preserved inputs. The C11 spans cover every nonwhitespace document byte; this
+is a conservation check, not proof of semantic entailment. No new task IDs or
+task completion statuses are introduced.
+
+Historical trace SHA-256 is
+`6feb7ad5fc592ab66b5e29f46c8b703016f3dd4b82fcea3528291925be20c243`,
+with criterion source `bcb98c1c377cbdc79ed1e23a6814727a8f16254e`.
+The independent source PASS retains frozen candidate `de0c5c94` and its
+later-head/current-applicability exclusions. Qualified adoption explicitly
+excludes whole-document entailment and held-operation clearance. Current
+entailment is an author-assessed unchanged-predicate proposal; independent
+current review is pending and implementation/global conjunctions remain
+unassessed. The tested historical GitHub context returned Not Found. Current
+canonical sections and task witnesses are used without a replacement dead
+link, aggregate publication or retry of the stopped handoff.
+
+Source `9f9f5a1ae3bebd09bfeffcf3012aa071a07ecb09` advances the MIR task and
+plan inputs from the preserved predecessor `b1739785`. Of 139 original task
+bodies, 102 remain identical and 37 have declared additions. All original
+statuses, 149 current task keys, forty future records, SH/SH07 routes and the
+three scoped Reader receipts remain conserved. These are inventory counts;
+they do not measure substantive completion.
+
+The explicit bridge preserves the predecessor metadata/projection and pending
+review, adds current MIR task/plan witnesses and retains thirty source-version
+file records. Current mapping review remains pending at fingerprint
+`d4eb54adc0b0dfd745c7ee1aaa2aa23b341bffe0a9e35224b4e7a8a4b9d68b1b`.
+Deterministic generation succeeds with implementation acceptance unchanged.
+
+Static inspection of selected unchanged implementation files identifies
+existing partial work to retain. The [Clojure entrypoint](../bootstrap/clojure/src/gravity/c11_mir.clj)
+delegates construction and validation. Its [verifier](../bootstrap/clojure/src/gravity/c11_mir/validation.clj)
+checks several structural/presence conditions but reads dominance status from
+supplied edges; that alone does not establish general dominance analysis.
+The [stage0 projection](../bootstrap/clojure/src/gravity/c11_mir/projection.clj)
+assigns several complete/ready fields directly, which cannot establish actual
+optimization invalidation or target-lowering admission. In the
+[Gravity source](../bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity),
+`verify-c11-mir-module` attaches the module to a quoted check declaration,
+while `sh12-verify-branch-join-mir` performs bounded structural/fact comparisons
+and retains explicit generic-verifier and independent-acceptance nonclaims.
+Selected SH13 result paths also retain public-ingress, generic-execution and
+release nonclaims. This is selected static inspection, not a whole-file audit
+or a current execution receipt. The [2026-06-25 report](../docs/artifacts/phase-06/reports/p06-d090-c11-mir-spec-report.md)
+remains historical stage0 document coverage, with lowering, backend, release
+and self-hosting exclusions; its tests were not rerun or promoted.
+
+Validation passes: 36 crosswalk tests / 2,983 assertions, 23 dependency tests /
+1,774 assertions, deterministic generation/check, read-only dependency audit,
+canonical document/full-language structural validators, and the language
+boundary (six tests / eleven assertions). Conservation/navigation passes for
+80 changed files, 74 Markdown files, 2,853 local references, 139 original routes,
+48 historical spec/plan suffixes and all 48 original task/evidence contents
+after stripping declared additions. Changed files are ASCII and whitespace
+checks pass. The attempted nonexistent MIR projection entrypoint and an initial
+helper shell-delimiter error receive no passing credit; the roadmap directly
+navigates the sole task ledger and the actual projection checks pass.
+
+No actual compiler, native, provider/C12/device, migration, signing,
+private-store or product-publication operation ran, and no other chat was
+messaged. Independent current review, global substantive reconciliation and
+implementation evidence assessment remain unfinished; the goal remains active.
+Reader contract coverage remains the first implementation preparation increment.

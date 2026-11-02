@@ -586,10 +586,10 @@
     (is (= (:sha256 predecessor) (sh-inventory/sha256 prior-text)))
     (is (= (:review predecessor)
            (select-keys (:mapping-review prior) [:status :input-fingerprint :source-version-bridge])))
-    (is (= 107 (:unchanged-body-count comparisons)))
+    (is (= 102 (:unchanged-body-count comparisons)))
     (is (= (set (map :id (:changed-bodies comparisons))) changed))
-    (is (= 32 (count changed)))
-    (is (= 107 (count (remove changed (keys before)))))
+    (is (= 37 (count changed)))
+    (is (= 102 (count (remove changed (keys before)))))
     (let [refinement (:math-parent-refinement bridge)
           predecessor (:predecessor-readiness-successor refinement)
           previous-text (sh-crosswalk/git-source (:commit predecessor) (:path predecessor))
@@ -1239,14 +1239,17 @@
     (is (= refinement (get-in view [:implementation-readiness-source-version :foundation-owner-refinement])))))
 
 (deftest diagnostic-source-successor-preserves-conjunctions-and-owner-boundaries
-  (let [bridge sh-crosswalk/readiness-source-version
+  (let [checkpoint (get-in sh-crosswalk/readiness-source-version [:mir-refinement :predecessor-readiness-successor])
+        bridge (if checkpoint (edn/read-string (sh-crosswalk/git-source (:commit checkpoint) (:path checkpoint)))
+                   sh-crosswalk/readiness-source-version)
         refinement (:c15-refinement bridge)
         previous (:predecessor-readiness-successor refinement)
         old-text (sh-crosswalk/git-source (:commit previous) (:path previous))
         old (edn/read-string old-text)
         old-projection-text (sh-crosswalk/git-source (:commit previous) (:projection-path previous))
         prior (edn/read-string old-projection-text)
-        view (sh-crosswalk/build)
+        view (if checkpoint (edn/read-string (sh-crosswalk/git-source (:commit checkpoint) (:projection-path checkpoint)))
+                 (sh-crosswalk/build))
         records (:criteria refinement)
         criterion-keys (set (map :key records))
         task-map (fn [v] (into {} (for [rs (concat (vals (:task-authorities v)) (vals (:future-task-authorities v))) r rs] [(:id r) r])))
@@ -1315,6 +1318,82 @@
     (is (= :pending (:independent-current-review refinement)))
     (is (= :unassessed (:implementation-acceptance refinement) (:global-source-conjunctions refinement)))
     (is (= refinement (get-in view [:implementation-readiness-source-version :c15-refinement])))))
+
+(deftest mir-source-successor-binds-all-declared-conditions-without-execution-credit
+  (let [bridge sh-crosswalk/readiness-source-version
+        refinement (:mir-refinement bridge)
+        previous (:predecessor-readiness-successor refinement)
+        old-text (sh-crosswalk/git-source (:commit previous) (:path previous))
+        old-projection-text (sh-crosswalk/git-source (:commit previous) (:projection-path previous))
+        prior (edn/read-string old-projection-text)
+        view (sh-crosswalk/build)
+        records (:criteria refinement)
+        criterion-keys (set (map :key records))
+        task-map (fn [v] (into {} (for [rs (vals (:task-authorities v)) r rs] [(:id r) r])))
+        before (task-map prior) after (task-map view)
+        raw (fn [v r] (acceptance-dependencies/source-raw (:source r) (:source-snapshots v)))
+        read-span (fn [text span] (String. (.getBytes text "UTF-8") (int (:start-byte span))
+                                          (int (- (:end-byte span) (:start-byte span))) "UTF-8"))
+        changed (set (for [[id r] before :when (not= (raw prior r) (raw view (after id)))] id))
+        path "specs/mir-workflow/tasks.md" text (slurp path)
+        restored (reduce (fn [body marker]
+                           (str/replace body (re-pattern (str "(?s)\n<!-- " marker ":start -->.*?<!-- " marker ":end -->\n\n")) ""))
+                         text (vals (:markers refinement)))
+        source-text (memoize slurp) facets (:source-facets refinement)
+        mir-facets (filterv #(= "C11" (:document-id %)) facets)
+        uncovered (fn [rows]
+                    (let [body (source-text "docs/phase-06-compiler-architecture/090-c11-gravity-mir-specification.md")
+                          bytes (.getBytes body "UTF-8") covered (java.util.BitSet. (alength bytes))]
+                      (doseq [row rows :let [span (:source-span row)]] (.set covered (int (:start-byte span)) (int (:end-byte span))))
+                      (filterv #(and (> (bit-and 255 (aget bytes %)) 32) (not (.get covered %))) (range (alength bytes)))))]
+    (is (= (:sha256 previous) (sh-inventory/sha256 old-text)))
+    (is (= (:projection-sha256 previous) (sh-inventory/sha256 old-projection-text)))
+    (is (= (:input-fingerprint previous) (:input-fingerprint (edn/read-string old-text))))
+    (is (= (set (keys before)) (set (keys after))))
+    (is (= 5 (count changed)))
+    (is (= changed (set (:changed-task-ids refinement))))
+    (is (= 6 (count records)))
+    (is (= #{:construction :facts :ordering :verifier :serialization :consumption} criterion-keys))
+    (is (= [] (:new-task-identities refinement)))
+    (is (= restored (sh-crosswalk/git-source (:commit previous) path)))
+    (is (= (:future-task-authorities prior) (:future-task-authorities view)))
+    (is (= (mapv :task-references (:requirements prior)) (mapv :task-references (:requirements view))))
+    (is (= (:sh07-sequence prior) (:sh07-sequence view)))
+    (is (= (:accepted-current-scoped-evidence prior) (:accepted-current-scoped-evidence view)))
+    (doseq [[id row] before]
+      (is (= (select-keys row [:id :checked :status]) (select-keys (after id) [:id :checked :status])) id))
+    (doseq [{:keys [key task-id historical-witness current-witness]} records
+            :let [body (source-text (:path current-witness)) span (:source-span current-witness) clause (read-span body span)]]
+      (is (= (:raw-sha256 historical-witness) (:sha256 span) (sh-inventory/sha256 clause)) key)
+      (is (= (:sha256 current-witness) (sh-inventory/sha256 body)))
+      (is (= 1 (count (re-seq (re-pattern (java.util.regex.Pattern/quote clause)) (raw view (after task-id))))) key))
+    (is (= 148 (count facets) (count (set (map :id facets)))))
+    (is (= 134 (count mir-facets)))
+    (is (= {:retained-hierarchy-or-provenance-context 17 :complete-source-predicate-conjunction 117 :foundation-MIR-predicate 14}
+           (frequencies (map :role facets))))
+    (is (= 53 (count (:occurrence-cases refinement))))
+    (is (= 36 (count (filter #(= :complete-source-predicate-conjunction (:role %)) (vals (:occurrence-cases refinement))))))
+    (doseq [row (concat facets (vals (:occurrence-cases refinement)))]
+      (is (every? criterion-keys (:criterion-keys row))))
+    (doseq [row (concat facets (:retained-unjoined-foundation-context refinement))
+            :let [body (source-text (:source-path row)) span (:source-span row)]]
+      (is (= (:sha256 span) (sh-inventory/sha256 (read-span body span))) (:id row)))
+    (is (empty? (uncovered mir-facets)))
+    (let [removed (:id (first (filter #(= :complete-source-predicate-conjunction (:role %)) mir-facets)))]
+      (is (seq (uncovered (remove #(= removed (:id %)) mir-facets)))))
+    (is (= 70 (count (:retained-unjoined-foundation-context refinement))))
+    (is (= 6 (count (:owner-joins refinement))))
+    (doseq [[p root] (:canonical-sources refinement)]
+      (is (= (:sha256 root) (sh-inventory/sha256 (source-text p))
+                 (get-in refinement [:historical-canonical-sources p :file-sha256]))))
+    (is (= :PASS-exact-frozen-source-criterion-conjunctions (get-in refinement [:historical-review :verdict])))
+    (is (= :not-transferred (get-in refinement [:historical-review :current-acceptance])))
+    (is (some #{:whole-document-entailment} (get-in refinement [:historical-review :qualified-adoption :limits])))
+    (is (some #{:held-operation-clearance} (get-in refinement [:historical-review :qualified-adoption :limits])))
+    (is (= :author-assessed-unchanged-predicate-proposal (:source-entailment refinement)))
+    (is (= :pending (:independent-current-review refinement)))
+    (is (= :unassessed (:implementation-acceptance refinement) (:global-source-conjunctions refinement)))
+    (is (= refinement (get-in view [:implementation-readiness-source-version :mir-refinement])))))
 
 (let [result (run-tests 'sh-crosswalk-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))
