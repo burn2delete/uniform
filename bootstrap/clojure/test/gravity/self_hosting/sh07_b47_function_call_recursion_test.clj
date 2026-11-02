@@ -227,19 +227,32 @@
                   (println (pr-str {:two-i64-source-stage label :event :complete
                                     :elapsed-ms (quot (- (System/nanoTime) start) 1000000)}))
                   value))
+        reader-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        syntax-path (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
+        invocation {:reader-source-path reader-path
+                    :authenticated-envelope-options {:source :development-current}
+                    :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                              :source-path syntax-path}
+                    :macro-source-mode :development-current}
+        reader-invocation (dissoc invocation :macro-source-mode)
         syntax (stage :c3 #(bootstrap/compiler-c3-syntax-source-artifact
                            source-path (slurp source-path)
                            (bootstrap/reader-project-context-for-source source-path)
-                           nil nil (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")))
-        expanded (stage :sh05 #(bootstrap/sh05-macro-artifact-from-c3-artifact source-path syntax))
-        resolved (stage :sh06 #(bootstrap/sh06-resolution-artifact-from-sh05-artifact source-path expanded))
-        artifact (stage :sh07 #(bootstrap/sh07-core-from-resolution-artifact resolved))
-        report (stage :fresh-sh07-verification #(bootstrap/sh07-core-artifact-verification artifact))]
-    {:artifact artifact :report report :resolved resolved :source-path source-path}))
+                           nil nil reader-path reader-invocation))
+        expanded (stage :sh05 #(bootstrap/sh05-macro-artifact-from-c3-artifact
+                                source-path syntax reader-invocation :development-current))
+        resolved (stage :sh06 #(bootstrap/sh06-resolution-artifact-from-sh05-artifact
+                                source-path expanded
+                                {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+                                reader-path invocation))
+        artifact (stage :sh07 #(bootstrap/sh07-core-from-resolution-artifact resolved invocation))
+        report (stage :fresh-sh07-verification #(bootstrap/sh07-core-artifact-verification artifact invocation))]
+    {:artifact artifact :report report :resolved resolved :source-path source-path
+     :invocation invocation}))
 
 (defn- assert-two-i64-canonical-call [extension mutation-checks?]
   ;; These are resolved source declarations, not C7 compatibility or C10 proof.
-  (let [{:keys [artifact report resolved source-path]} (two-i64-current-core extension)
+  (let [{:keys [artifact report resolved source-path invocation]} (two-i64-current-core extension)
         product (core artifact) input (request artifact)
         functions (function-by-name artifact)
         callee (get functions 'identity-i64) caller (get functions 'forward-i64)
@@ -309,7 +322,7 @@
     (when mutation-checks?
       ;; Original development session builds its own expected Core and verifies
       ;; the actual resolver parent; candidates never replace those products.
-      (let [session (bootstrap/sh07-core-verification-session resolved)
+      (let [session (bootstrap/sh07-core-verification-session resolved invocation)
             verify #(bootstrap/sh07-core-artifact-verification-against-expected % session)
             caller-index (:ordinal caller)
             operator-index (first (keep-indexed #(when (= (:node-id operator) (:node-id %2)) %1) (:nodes product)))
