@@ -113,6 +113,54 @@ release decision. Each S1-S9 fixture records its stable diagnostic family,
 schema/artifact identity, failing path or edge, applicable source/target/boundary
 and remediation. These clauses specify future evidence, not passing results.
 
+Current source-join obligations remain inside the five Open criteria below; they
+do not add task IDs, change statuses, or claim implementation acceptance. Each
+join must retain the exact source/compiler/profile/target/provider/checker
+identities, actual positive products, negative diagnostics, and any conditional
+unavailability rather than substituting a generated label or prose receipt.
+
+- `source-schema-projection` (S1/S9 and
+  `schema/graphql-generation/full-source-interface`): Generate a JSON Schema
+  and typed `:gravity/artifact-schema` from the same versioned source schema,
+  then compare valid and invalid payloads across the validator and both
+  projections. Preserve schema identity, field/refinement/compatibility paths,
+  exact source/compiler/profile/target/provider/checker identities, and stable
+  source-mapped diagnostics; reject weakened constraints, unknown projection
+  versions, or a malformed payload accepted by only one consumer.
+- `initial-configuration-loading`
+  (`schema/configuration-reload/full-source-interface`): Treat initial loading
+  as a distinct acceptance case before reload. Bind validated provider input,
+  deterministic precedence, required/default/secret fields, and redaction to
+  the exact source/compiler/profile/target/provider identities and stable S8
+  diagnostics. Reject missing/invalid provider input, ambient precedence,
+  stale identity, or secret exposure; S8-INITIAL evidence cannot be inferred
+  from an S8-RELOAD fixture.
+- `hosted-runtime-source-map`
+  (`schema/graphql-generation/full-source-interface` and the runtime consumer):
+  Exercise an actual hosted failure fixture and map its runtime version, host symbol,
+  lowered artifact, generated-origin chain, source span/map, and
+  provider/checker result to Gravity source. Emit P4-SOURCEMAP when a required
+  map is absent or wrong, and record conditional-unavailable only when the
+  declared runtime/profile policy permits it; compiler diagnostics alone are
+  not runtime evidence.
+- `types-schema-static-projection`
+  (`schema/graphql-generation/full-source-interface` and the current Types
+  consumer `types/current-evidence-and-remaining-work/types2-check-declared-abstractions`):
+  Carry the exact static projection intent through the current Types closing
+  criterion: generate records/unions/optional/reference/recursive/refined
+  types from the expanded schema, preserve resolved names, schema/refinement/
+  constraint identity, and reject stale schemas, dropped constraints, or
+  unrepresentable families without explicit policy. A generic Types ledger or
+  schema-normalization result is not this projection evidence.
+- `api-client-openapi`
+  (`schema/graphql-generation/full-source-interface`): Generate the current
+  OpenAPI route/schema/error/auth document, request/response validators, typed API client
+  and handler contract fixtures from one source identity. Bind
+  operation/schema hashes, exact source/compiler/profile/target/provider and
+  diagnostic identities, including source-mapped S5-CLIENT/S5-SOURCEMAP results;
+  reject drift, weakened validation, invalid requests/responses, or a client
+  artifact that lacks the declared provider/checker join.
+
 Criterion `schema/graphql-generation/full-source-interface` (Open).
 Implement a source-schema-to-GraphQL producer and its resolver boundary using
 declared schemas, resolver IDs, query/mutation/subscription effects, grants,

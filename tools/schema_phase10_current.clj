@@ -14,11 +14,12 @@
 (def historical-task-source
   "86747916c4c876d707a1548113409fb939d854c9")
 (def current-source
-  "dbeda7c7dc9a7bb880baa90af1a89046828db327")
+  "585298b5faa75a307c5b06be19a0aebb8b09168c")
 (def proposal-path
   "specs/requirement-reconciliation/schema-family/decision-allocation.edn")
 (def manifest-path "contracts/requirement-reconciliation.edn")
 (def task-path "specs/domains-workflow/tasks.md")
+(def plan-path "specs/domains-workflow/plan.md")
 (def historical-task-sha
   "5abf39bc1af6040f84b4e4db77ee93ee000dc14112e8f636970833d0f945e382")
 (def historical-task-tree
@@ -26,8 +27,12 @@
 (def current-manifest-sha
   "d24ed46e2de0c1672a1a37c0eeacb3340452dcf56ce1b511ecc678761909155b")
 (def current-task-sha
-  "7f67d299cb01671756a442e7165a0b61e5c710c79081daf05c13664d0b9b0fb6")
+  "2da36f34fb68a1f56c8a45eadb5488503135897c728d30e4f0816469037f7873")
+(def current-plan-sha
+  "a6b52ae5da734e54335bfc43fa0c150dab9f07c25160ea5f7575f117828e9a1f")
 (def current-source-tree "5b62819e511bfc7e6b5eba0527d8c9b5883c5572")
+(def current-source-git-tree
+  "2c7faed87df1a204b6acb49bf6e07c5679dc9776")
 (def current-source-baseline "a1b991be499d50579a8b4366976c519ae8949224")
 (def expected-facet-count 463)
 (def expected-facet-digest
@@ -68,6 +73,100 @@
    "schema/artifact-validation/full-source-interface"
    "schema/release-evidence-gating/full-source-interface"])
 
+(def source-join-specs
+  [{:join :source-schema-projection
+    :path "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    :sha256 "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc"
+    :markers ["same source, lockfile, compiler identity, and target matrix produce same artifact IDs"
+              "source schema can generate at least validator, JSON Schema, and typed artifact schema"]}
+   {:join :source-schema-projection
+    :path "docs/phase-10-schema-data-and-interop/153-s9-artifact-schema-specification.md"
+    :sha256 "43efc2c36c338899d42d7a6a4e4c07fc62faf7ffe5335a4be9c91161e1b37138"
+    :markers [":artifact :gravity/artifact-schema"
+              ":compiler-version :source-graph :dependency-lock :passes"]}
+   {:join :initial-configuration-loading
+    :path "docs/phase-10-schema-data-and-interop/152-s8-typed-configuration-and-environment-specification.md"
+    :sha256 "b9067190de850a10200277d2ce8d9bd8b3ceabb45acbb244ca8125af175cd4ac"
+    :markers ["Config declarations must define schema, sources, precedence, defaults,"
+              "Config values decoded from external sources are tainted until validated."
+              "Runtime config reload must define compatibility, lifecycle, and observability"]}
+   {:join :hosted-runtime-source-map
+    :path "docs/phase-03-profile-system/049-p4-hosted-profile-specification.md"
+    :sha256 "398fa6ef060559ad16006444279b6e138b1f164be855c3d8094d6ec7910217f7"
+    :markers ["`P4-SOURCEMAP` for missing diagnostic mapping where required."
+              "Diagnostics must include host runtime, source span, generated-origin chain,"
+              "host symbol"]}
+   {:join :hosted-runtime-source-map
+    :path "docs/phase-09-domain-specific-computing-coverage/129-dom6-web-frontend-and-ui-domain-specification.md"
+    :sha256 "ea9d710d1015178f4a29f04255290162f5ddd79aa3a8f5e88cd78992c9e31127"
+    :markers ["Source maps must connect browser diagnostics to Gravity source and generated"
+              "`DOM6-SOURCEMAP` for browser diagnostics without source mapping."]}
+   {:join :types-schema-static-projection
+    :path "specs/types-workflow/tasks.md"
+    :sha256 "13149ad814bebd312dd5c371ff88ff06255848e86d23b02e2d94922c1240f10f"
+    :markers ["`types/current-evidence-and-remaining-work/types2-check-declared-abstractions`"
+              "Validate generics, protocols/dispatch, records and schema-derived types"]}
+   {:join :api-client-openapi
+    :path "docs/phase-10-schema-data-and-interop/149-s5-openapi-generation-design.md"
+    :sha256 "02e231ed2f359c46ed179cb0524bf35c12dfe5176adf055a4c0bd439d1d5c188"
+    :markers ["OpenAPI generation manifest."
+              "`S5-CLIENT` for generated clients without operation/schema hash validation."
+              "`S5-SOURCEMAP` for OpenAPI operations without source provenance."]}
+   {:join :api-client-openapi
+    :path "specs/compiler-api-workflow/tasks.md"
+    :sha256 "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26"
+    :markers ["retain the exact source/compiler/profile/target and applicable provider/checker identities"
+              "actual positive products and negative diagnostics"]}
+   {:join :hosted-runtime-source-map
+    :path "specs/runtime-workflow/tasks.md"
+    :sha256 "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972"
+    :markers ["Closing evidence: Denial at actual service hook, redacted diagnostics and source-map preservation"]}])
+
+(def current-join-task-specs
+  [{:join :source-schema-projection
+    :markers ["Current source-join obligations remain inside the five Open criteria below"
+              "`source-schema-projection`"
+              "Generate a JSON Schema"
+              "typed `:gravity/artifact-schema`"
+              "exact source/compiler/profile/target/provider/checker identities"]}
+   {:join :initial-configuration-loading
+    :markers ["`initial-configuration-loading`"
+              "distinct acceptance case before reload"
+              "validated provider input"
+              "S8-INITIAL"
+              "S8-RELOAD"]}
+   {:join :hosted-runtime-source-map
+    :markers ["`hosted-runtime-source-map`"
+              "actual hosted failure fixture"
+              "runtime version"
+              "host symbol"
+              "lowered artifact"
+              "P4-SOURCEMAP"
+              "conditional-unavailable"]}
+   {:join :types-schema-static-projection
+    :markers ["`types-schema-static-projection`"
+              "types/current-evidence-and-remaining-work/types2-check-declared-abstractions"
+              "generic Types ledger"
+              "unrepresentable families"]}
+   {:join :api-client-openapi
+    :markers ["`api-client-openapi`"
+              "OpenAPI route/schema/error/auth document"
+              "typed API client"
+              "S5-CLIENT/S5-SOURCEMAP"
+              "operation/schema hashes"]}])
+
+(def current-join-plan-specs
+  [{:join :source-schema-projection
+    :markers ["| source-schema-projection |" "JSON Schema" ":gravity/artifact-schema"]}
+   {:join :initial-configuration-loading
+    :markers ["| initial-configuration-loading |" "S8-INITIAL"]}
+   {:join :hosted-runtime-source-map
+    :markers ["| hosted-runtime-source-map |" "lowered artifact" "conditional-unavailable"]}
+   {:join :types-schema-static-projection
+    :markers ["| types-schema-static-projection |" "types/current-evidence-and-remaining-work/types2-check-declared-abstractions"]}
+   {:join :api-client-openapi
+    :markers ["| api-client-openapi |" "OpenAPI document" "diagnostic identities"]}])
+
 (defn require! [condition message]
   (when-not condition
     (throw (ex-info message {:diagnostic "PR565-CURRENT-SOURCE"}))))
@@ -104,12 +203,46 @@
 (def current-manifest-text (git-text current-source manifest-path))
 (def current-manifest (edn/read-string current-manifest-text))
 (def current-task-text (slurp task-path))
+(def current-plan-text (slurp plan-path))
 
 (def facet-keys
   [:id :document-id :source-occurrence-id :kind :start-byte :end-byte :raw-sha256])
 
 (defn facet-row [facet]
   (select-keys facet facet-keys))
+
+(defn text-markers! [text markers context]
+  (doseq [marker markers]
+    (require! (str/includes? text marker)
+              (str context " is missing marker " marker))))
+
+(defn source-join-entry! [spec text]
+  (let [{:keys [join path markers] expected-sha :sha256} spec]
+    (require! (= expected-sha (sha256 text))
+              (str "Immutable source join bytes changed " join " " path))
+    (text-markers! text markers (str "Immutable source join " join " " path))
+    {:join join :path path :sha256 expected-sha :markers (count markers)}))
+
+(defn source-joins! []
+  (require! (= current-source-git-tree (git-tree current-source))
+            "Current source Git tree identity changed")
+  (mapv (fn [spec]
+          (source-join-entry! spec (git-text current-source (:path spec))))
+        source-join-specs))
+
+(defn task-joins! [text]
+  (doseq [{:keys [join markers]} current-join-task-specs]
+    (text-markers! text markers (str "Current task source join " join)))
+  {:joins (count current-join-task-specs)
+   :markers (reduce + (map #(count (:markers %)) current-join-task-specs))})
+
+(defn plan-joins! [text]
+  (require! (= current-plan-sha (sha256 text))
+            "Current plan bytes changed without a new reconciled predecessor")
+  (doseq [{:keys [join markers]} current-join-plan-specs]
+    (text-markers! text markers (str "Current plan source join " join)))
+  {:joins (count current-join-plan-specs)
+   :markers (reduce + (map #(count (:markers %)) current-join-plan-specs))})
 
 (defn source-pair!
   ([] (source-pair! historical-proposal))
@@ -221,12 +354,19 @@
   (let [ids (mapv second (re-seq #"(?m)^Criterion `([^`]+)` \(Open\)\." text))]
     (require! (= expected-criterion-ids ids)
               "Schema criterion IDs/order/status changed")
-    {:task-sha256 (sha256 text) :schema-criteria (count ids) :task-count 7}))
+    {:task-sha256 (sha256 text)
+     :schema-criteria (count ids)
+     :task-count 7
+     :source-joins (task-joins! text)}))
+
+(defn plan! [text]
+  {:plan-sha256 (sha256 text)
+   :source-joins (plan-joins! text)})
 
 (defn catches? [f]
   (try (f) false (catch clojure.lang.ExceptionInfo _ true)))
 
-(defn negative-controls! [proposal source-summary]
+(defn negative-controls! [proposal source-summary source-join-summary]
   (let [bad [(update proposal :decision-field-proposals pop)
              (update proposal :decision-field-proposals conj
                      (first (:decision-field-proposals proposal)))
@@ -262,6 +402,34 @@
                  (assoc-in proposal [:source-facet-witnesses 0 :path]
                            "docs/forged/unrelated-source.md")))
               "Witness document-path tamper control accepted")
+    (require! (every?
+               (fn [spec]
+                 (let [text (git-text current-source (:path spec))
+                       marker (first (:markers spec))]
+                   (catches?
+                    #(source-join-entry!
+                      spec
+                      (str/replace-first text marker "forged-source-marker")))))
+               source-join-specs)
+              "Immutable source-join tamper control accepted")
+    (require! (every?
+               (fn [{:keys [markers]}]
+                 (catches?
+                  #(task-joins!
+                    (str/replace-first current-task-text
+                                       (first markers)
+                                       "forged-current-task-marker"))))
+               current-join-task-specs)
+              "Current task source-join tamper control accepted")
+    (require! (every?
+               (fn [{:keys [markers]}]
+                 (catches?
+                  #(plan-joins!
+                    (str/replace-first current-plan-text
+                                       (first markers)
+                                       "forged-current-plan-marker"))))
+               current-join-plan-specs)
+              "Current plan source-join tamper control accepted")
     (doseq [[ref expected-sha expected-tree message]
             [[(apply str (repeat 40 "0")) historical-task-sha historical-task-tree
               "Historical task ref tamper control accepted"]
@@ -273,23 +441,35 @@
                 message))
     (require! (= 463 (:facets source-summary))
               "Source summary changed during negative controls")
-    (+ (count bad) 3 1 3)))
+    (require! (= (count source-join-specs) (count source-join-summary))
+              "Source-join summary changed during negative controls")
+    (+ (count bad) 3 1 3
+       (count source-join-specs)
+       (count current-join-task-specs)
+       (count current-join-plan-specs))))
 
 (when (= ["--check"] (vec *command-line-args*))
   (let [source-summary (source-pair!)
+        source-join-summary (source-joins!)
         proposal-summary (proposal! historical-proposal)
         task-summary (task! current-task-text)
-        negative-controls (negative-controls! historical-proposal source-summary)]
+        plan-summary (plan! current-plan-text)
+        negative-controls (negative-controls! historical-proposal
+                                               source-summary
+                                               source-join-summary)]
     (prn {:kind :pr565-current-source-pair
           :historical-head historical-head
           :historical-task-source historical-task-source
           :current-source current-source
+          :current-source-git-tree current-source-git-tree
           :current-manifest-sha256 current-manifest-sha
           :historical-task-sha256 historical-task-sha
           :current-task-sha256 current-task-sha
           :source-pair source-summary
+          :source-joins source-join-summary
           :proposal proposal-summary
           :task task-summary
+          :plan plan-summary
           :task-transition :historical-field-operations-held
           :negative-controls negative-controls
           :implementation-acceptance :unassessed

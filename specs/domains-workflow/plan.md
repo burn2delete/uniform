@@ -75,3 +75,24 @@ refs and nonclaims in the [PR565 receipt](../requirement-reconciliation/schema-f
 The historical proposal remains pending independent allocation review and
 canonical adoption. No denominator, accepted mapping count, roadmap credit,
 release claim or implementation completion follows from this current port.
+
+## Current source-join boundary
+
+The five concrete source joins are part of the existing five Open schema
+criteria, not a new task population. They translate the useful current intent
+from the historical schema plan without replaying its 25 field operations:
+
+| Join | Existing Open criterion | Immutable normative inputs | Required current consumer |
+| --- | --- | --- | --- |
+| source-schema-projection | `schema/graphql-generation/full-source-interface` and `schema/artifact-validation/full-source-interface` | D2 source-schema exit gate and S9 artifact envelope | JSON Schema and typed `:gravity/artifact-schema` with exact source/compiler/profile/target/provider/checker identities and parity diagnostics |
+| initial-configuration-loading | `schema/configuration-reload/full-source-interface` | S8 typed configuration/source policy | Validated provider input, deterministic precedence, redacted S8-INITIAL positive/negative fixtures before any S8-RELOAD claim |
+| hosted-runtime-source-map | existing schema criterion plus Runtime consumer | P4 hosted diagnostics and DOM6 source-map contract | Actual failure fixture joined to runtime version, host symbol, lowered artifact, origin chain and conditional-unavailable result |
+| types-schema-static-projection | `schema/graphql-generation/full-source-interface` plus Types | S1 expanded schema and current Types task `types/current-evidence-and-remaining-work/types2-check-declared-abstractions` | Static records/unions/optional/reference/recursive/refined projection with stale/constraint-loss rejection |
+| api-client-openapi | `schema/graphql-generation/full-source-interface` | S5 OpenAPI artifacts and diagnostics | OpenAPI document, validators, typed client and handler parity joined to operation/schema, source/compiler/profile/target/provider and diagnostic identities |
+
+The [current-source checker](../../tools/schema_phase10_current.clj) authenticates
+these immutable normative paths at current main `585298b5faa75a307c5b06be19a0aebb8b09168c`
+and checks the candidate task/plan wording. Later current-source transitions
+(including the domains, runtime, and standard-library work) must preserve these
+joins by normal composition; no source hash is silently renewed. The checker
+does not execute a compiler, runtime, provider, hosted failure, or release gate.
