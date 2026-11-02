@@ -4,6 +4,7 @@
 
 (binding [*command-line-args* nil]
   (load-file "tools/tooling_requirements.clj"))
+(require '[tooling-requirements])
 
 (def input (tooling-requirements/immutable-inputs))
 (def proposal (:proposal input))

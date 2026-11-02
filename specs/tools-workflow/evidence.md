@@ -88,3 +88,35 @@ Historical task criteria are retained only in
 replaced, implementation acceptance is unassessed, and independent review and
 integration remain pending. This receipt does not claim canonical adoption,
 global nonoverlap, release completion or seed retirement.
+
+## Current-main composition refresh
+
+The repaired source-view increment was normally merged with current main
+`4df59ab107d5865e3afbf9173041cc9401227542`, tree
+`d977cf8ca3de45e73920d6d6a5f5f59aca219527`. The composed merge commit is
+`c3ef5daa788f5d3e534347e04b7eaeb5c60bfdaf`, tree
+`66e06c479e0c25aa6a6fc06eb0d580e7dbd6cbff`, with the original repaired
+candidate `e216a4463a6db730b687da1ff6c190d87becae1a` retained as its other
+parent. The frozen source-view baseline remains `6218e80e0238cbd071a8837193e7afb5f0b87869` / tree
+`51a615a96828ecaff57824625bb062a9dd2c5f20`; it is not repinned to current
+main.
+
+The final comparison against current main contains only the four PR557 paths:
+the source view, this evidence receipt, the bounded checker and its focused
+tests. The manifest, proposal format, occurrence API, Phase 13 documents and
+both current task sources referenced by the source view are byte-identical to
+the frozen base. Main's C6/C11/CI/effects work is disjoint and is not counted
+as tooling-requirements evidence.
+
+The pinned changed-file lint used
+`PATH=/tmp/acc08-controls-01a183dd/kondo-2025.10.23:$PATH clojure -J-Xmx512m -M tools/ci/lint.clj 4df59ab107d5865e3afbf9173041cc9401227542 tools/tooling_requirements.clj tools/tooling_requirements_test.clj`.
+It passed with 0 unchanged baseline warnings and 0 blocking warnings/errors.
+The generated receipt was moved intact to
+`/tmp/uniform-pr557-current-main-ci-lint-c3ef5daa-final`.
+
+The lint-only repair adds an explicit namespace require to the focused test;
+it does not alter checker behavior or source authority. Focused current-port
+checks remain 7 tests / 43 assertions, with the same 13-document, 631-
+occurrence, 960-facet, 65-requirement, 200-edit and 16-task-reference result.
+No hosted CI, GitHub write, push, native execution, release, canonical
+adoption or implementation acceptance is claimed by this composition.
