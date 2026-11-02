@@ -766,7 +766,6 @@
    {:authority [:mechanical-envelope-assembly :opaque-sha256-resolution
                 :phase-orchestration :fresh-digest-replay]
     :post-reader-domain-authority :exact-class-adapter-normalization
-    :gravity-domain-preflight :bounded-defense-in-depth
     :caller-supplied-digests-authoritative? false
     :workflow-acceptance :verified-fresh-replay}
    :lowering-rule :sh07-authenticated-exception-error-exit-v1
@@ -777,17 +776,6 @@
                  "C6-ORIGIN" "C6-EFFECT-DROP" "C6-UNSAFE-DROP"
                  "C6-DOMAIN-BOUNDARY" "C6-LOWERING-GAP"
                  "SH07-C6-EXCEPTION-ERROR-EXIT"]
-   :bounds {:maximum-source-bytes 1048576
-            :maximum-carrier-nodes 8388608
-            :maximum-depth 256
-            :maximum-width 65536
-            :maximum-scalar-bytes 268435456
-            :maximum-forms-and-edges 65536
-            :maximum-fragments 1024
-            :maximum-bindings 2440
-            :maximum-aliases 256
-            :maximum-origin-chain 256
-            :maximum-digest-requests 65540}
    :pending-legality {:typed-catch-compatibility :pending-sh08
                       :effect-legality :pending-sh09
                       :ownership :pending-sh10
@@ -833,15 +821,12 @@
         false
         (recur (rest remaining) (conj observed (first remaining)))))))
 
-(defn c6-sh07-exception-bounded-vector? [value maximum]
-  (if (vector? value) (<= (count value) maximum) false))
-
 (defn c6-sh07-exception-aggregate? [value]
   (if (map? value)
     true
     (if (vector? value)
       true
-      (if (set? value) true (seq? value)))))
+      (if (set? value) true (list? value)))))
 
 (defn c6-sh07-exception-post-reader-scalar? [value]
   (if (= value nil)
@@ -865,46 +850,22 @@
     (vec value)))
 
 (defn c6-sh07-exception-carrier-preflight [value]
-  (loop [frontier [[value 0]] nodes 0 scalar-bytes 0]
+  (loop [frontier [value]]
     (if (= (count frontier) 0)
-      {:status :accepted :nodes nodes :scalar-bytes scalar-bytes}
-      (let [entry (first frontier)
-            current (first entry)
-            depth (first (rest entry))
-            next-nodes (+ nodes 1)]
-        (if (> next-nodes 8388608)
-          {:status :rejected :reason :carrier-node-bound}
-          (if (> depth 256)
-            {:status :rejected :reason :carrier-depth-bound}
-            (if (c6-sh07-exception-aggregate? current)
-              (let [width (if (map? current)
-                            (* 2 (count current))
-                            (count current))]
-                (if (> width 65536)
-                  {:status :rejected :reason :carrier-width-bound}
-                  (if (> (+ next-nodes (count (rest frontier)) width)
-                         8388608)
-                    {:status :rejected :reason :carrier-node-bound}
-                    (let [components
-                          (c6-sh07-exception-components current)
-                          next-frontier
-                          (loop [remaining components result (rest frontier)]
-                            (if (= (count remaining) 0)
-                              result
-                              (recur (rest remaining)
-                                     (conj result
-                                           [(first remaining)
-                                            (+ depth 1)]))))]
-                      (recur next-frontier next-nodes scalar-bytes)))))
-              (if (c6-sh07-exception-post-reader-scalar? current)
-                (let [next-scalar-bytes
-                      (+ scalar-bytes (* 4 (count (str current))))]
-                  (if (> next-scalar-bytes 268435456)
-                    {:status :rejected :reason :carrier-scalar-byte-bound}
-                    (recur (rest frontier) next-nodes
-                           next-scalar-bytes)))
-                {:status :rejected
-                 :reason :carrier-value-domain-invalid}))))))))
+      {:status :accepted}
+      (let [current (first frontier)]
+        (if (c6-sh07-exception-aggregate? current)
+          (recur
+           (loop [remaining (c6-sh07-exception-components current)
+                  result (rest frontier)]
+             (if (= (count remaining) 0)
+               result
+               (recur (rest remaining)
+                      (conj result (first remaining))))))
+          (if (c6-sh07-exception-post-reader-scalar? current)
+            (recur (rest frontier))
+            {:status :rejected
+             :reason :carrier-value-domain-invalid}))))))
 
 (defn c6-sh07-exception-diagnostic
   [request rule reason provenance]
@@ -953,7 +914,7 @@
                :fail-closed true
                :provenance-authenticated? (map? provenance)}
        :remediation
-       "Replay the exact bounded source snapshot, complete SH-06/B47 artifacts, fresh reports, and ordered C6 digest transcript without substitution."}]
+       "Replay the exact source snapshot, complete SH-06/B47 artifacts, fresh reports, and ordered C6 digest transcript without substitution."}]
      :claim-boundary (c6-sh07-exception-contract-value)}))
 
 (defn c6-sh07-exception-rule-for-reason [reason]
@@ -995,7 +956,7 @@
     snapshot
     #{:artifact :schema-version :canonical-path :project-root-path
       :project-relative-path :source-extension :source-kind :byte-count
-      :maximum-source-bytes :bytes :bytes-hash :text :encoding
+      :bytes :bytes-hash :text :encoding
       :single-read? :nofollow-final-component? :bytes-hash-domain
       :bytes-hash-algorithm :bytes-hash-encoding})
     (if (= (get snapshot :artifact) :gravity/sh07-source-snapshot)
@@ -1009,23 +970,19 @@
                   (if (integer? (get snapshot :byte-count))
                   (if (= (get snapshot :byte-count)
                          (count (get snapshot :bytes)))
-                    (if (<= (get snapshot :byte-count) 1048576)
-                      (if (= (get snapshot :maximum-source-bytes) 1048576)
-                        (if (c6-sh07-exception-sha256-id?
-                             (get snapshot :bytes-hash))
-                          (if (string? (get snapshot :text))
-                            (if (= (get snapshot :encoding) :utf-8)
-                              (if (= (get snapshot :single-read?) true)
-                                (if (= (get snapshot :nofollow-final-component?)
-                                       true)
-                                  (if (= (get snapshot :bytes-hash-domain)
-                                         :c2-source-bytes)
-                                    (if (= (get snapshot :bytes-hash-algorithm)
-                                           :sha-256)
-                                      (= (get snapshot :bytes-hash-encoding)
-                                         :sha256-lowercase-hex)
-                                      false)
-                                    false)
+                    (if (c6-sh07-exception-sha256-id?
+                         (get snapshot :bytes-hash))
+                      (if (string? (get snapshot :text))
+                        (if (= (get snapshot :encoding) :utf-8)
+                          (if (= (get snapshot :single-read?) true)
+                            (if (= (get snapshot :nofollow-final-component?)
+                                   true)
+                              (if (= (get snapshot :bytes-hash-domain)
+                                     :c2-source-bytes)
+                                (if (= (get snapshot :bytes-hash-algorithm)
+                                       :sha-256)
+                                  (= (get snapshot :bytes-hash-encoding)
+                                     :sha256-lowercase-hex)
                                   false)
                                 false)
                               false)
@@ -1288,17 +1245,19 @@
     nil))
 
 (defn c6-sh07-exception-form-root-id [indexes form]
-  (loop [current form depth 0]
-    (if (> depth 256)
-      nil
-      (let [parent-id (if (map? current)
-                        (get current :parent-form-id) nil)]
-        (if (= parent-id nil)
-          (if (map? current) (get current :form-id) nil)
-          (let [parent (c6-sh07-exception-form indexes parent-id)]
-            (if (map? parent)
-              (recur parent (+ depth 1))
-              nil)))))))
+  (loop [current form visited #{}]
+    (if (map? current)
+      (let [current-id (get current :form-id)]
+        (if (contains? visited current-id)
+          nil
+          (let [parent-id (get current :parent-form-id)]
+            (if (= parent-id nil)
+              current-id
+              (let [parent (c6-sh07-exception-form indexes parent-id)]
+                (if (map? parent)
+                  (recur parent (conj visited current-id))
+                  nil))))))
+      nil)))
 
 (defn c6-sh07-exception-project-binding [binding]
   {:name (get binding :name)
@@ -1413,7 +1372,7 @@
     false))
 
 (defn c6-sh07-exception-alias-table-valid? [aliases]
-  (if (c6-sh07-exception-bounded-vector? aliases 256)
+  (if (vector? aliases)
     (loop [remaining aliases observed #{}]
       (if (= (count remaining) 0)
         true
@@ -1980,8 +1939,8 @@
       false)
       false)))
 
-(defn c6-sh07-exception-vector-sha? [values maximum]
-  (if (c6-sh07-exception-bounded-vector? values maximum)
+(defn c6-sh07-exception-vector-sha? [values]
+  (if (vector? values)
     (if (c6-sh07-exception-all-unique? values)
       (loop [remaining values]
         (if (= (count remaining) 0)
@@ -2017,7 +1976,7 @@
     false))
 
 (defn c6-sh07-exception-origin-vector-valid? [origins]
-  (if (c6-sh07-exception-bounded-vector? origins 256)
+  (if (vector? origins)
     (loop [remaining origins]
       (if (= (count remaining) 0)
         true
@@ -2040,14 +1999,13 @@
                 true
                 (c6-sh07-exception-sha256-id? (get form :scope-id)))
             (if (c6-sh07-exception-vector-sha?
-                 (get form :child-form-ids) 1024)
+                 (get form :child-form-ids))
               (if (c6-sh07-exception-span-valid? (get form :source-span))
                 (if (c6-sh07-exception-origin-vector-valid?
                      (get form :origin-chain))
                   (if (c6-sh07-exception-origin-vector-valid?
                        (get form :generated-origin))
-                    (if (map? (get form :metadata))
-                      (<= (count (get form :metadata)) 256) false)
+                    (map? (get form :metadata))
                     false)
                   false)
                 false)
@@ -2075,17 +2033,11 @@
             (if (if (= (get binding :scope-id) nil)
                   true
                   (c6-sh07-exception-sha256-id? (get binding :scope-id)))
-              (if (c6-sh07-exception-bounded-vector?
-                   (get binding :profile-set) 128)
-                (if (c6-sh07-exception-bounded-vector?
-                     (get binding :target-set) 128)
-                  (if (c6-sh07-exception-bounded-vector?
-                       (get binding :effects) 128)
-                    (if (c6-sh07-exception-bounded-vector?
-                         (get binding :capabilities) 128)
-                      (if (map? (get binding :semantic-span))
-                        (<= (count (get binding :semantic-span)) 256)
-                        false)
+              (if (vector? (get binding :profile-set))
+                (if (vector? (get binding :target-set))
+                  (if (vector? (get binding :effects))
+                    (if (vector? (get binding :capabilities))
+                      (map? (get binding :semantic-span))
                       false)
                     false)
                   false)
@@ -2169,10 +2121,9 @@
     (if (= [(get module :profile) (get module :target)
             (get module :source-revision-id)]
            [:meta :jvm (get lineage :source-revision-id)])
-      (if (c6-sh07-exception-bounded-vector? (get module :effects) 128)
-        (if (c6-sh07-exception-bounded-vector?
-             (get module :capabilities) 128)
-          (c6-sh07-exception-bounded-vector? (get module :exports) 1024)
+      (if (vector? (get module :effects))
+        (if (vector? (get module :capabilities))
+          (vector? (get module :exports))
           false)
         false)
       false)
@@ -2187,12 +2138,9 @@
             (get step :profile) (get step :target)]
            [:gravity/sh07-preserved-macro-expansion-step ordinal
             (get module :profile) (get module :target)])
-      (if (c6-sh07-exception-bounded-vector?
-           (get step :capabilities) 128)
-        (if (c6-sh07-exception-bounded-vector?
-             (get step :build-effects) 128)
-          (c6-sh07-exception-bounded-vector?
-           (get step :diagnostics) 256)
+      (if (vector? (get step :capabilities))
+        (if (vector? (get step :build-effects))
+          (vector? (get step :diagnostics))
           false)
         false)
       false)
@@ -2213,10 +2161,9 @@
                        :expected-introduced-fn-syntax-ids})
       (if (integer? (get expectation :expanded-defn-count))
         (if (<= 0 (get expectation :expanded-defn-count))
-          (if (<= (get expectation :expanded-defn-count) 1024)
-            (if (c6-sh07-exception-vector-sha? inputs 1024)
-              (if (c6-sh07-exception-vector-sha? definitions 1024)
-                (if (c6-sh07-exception-vector-sha? functions 1024)
+          (if (c6-sh07-exception-vector-sha? inputs)
+            (if (c6-sh07-exception-vector-sha? definitions)
+              (if (c6-sh07-exception-vector-sha? functions)
                   (= [(get expectation :expanded-defn-count)
                       (count traces)
                       (get expectation :source-revision-id)
@@ -2254,7 +2201,6 @@
                   false)
                 false)
               false)
-            false)
           false)
         false)
       false)))
@@ -2305,17 +2251,15 @@
 
 (defn c6-sh07-exception-origin-follow-acyclic?
   [by-id origin-id]
-  (loop [current origin-id visited #{} depth 0]
-    (if (> depth 256)
+  (loop [current origin-id visited #{}]
+    (if (contains? visited current)
       false
-      (if (contains? visited current)
-        false
-        (let [origin (get by-id current)]
-          (if (map? origin)
-            (let [next (get origin :from-syntax-id)]
-              (if (contains? by-id next)
-                (recur next (conj visited current) (+ depth 1)) true))
-            true))))))
+      (let [origin (get by-id current)]
+        (if (map? origin)
+          (let [next (get origin :from-syntax-id)]
+            (if (contains? by-id next)
+              (recur next (conj visited current)) true))
+          true)))))
 
 (defn c6-sh07-exception-retained-origins-unique? [forms]
   (loop [remaining forms global-ids #{} global-records #{}]
@@ -2474,20 +2418,18 @@
     (if (= (get fragment :ordinal) ordinal)
       (if (c6-sh07-exception-sha256-id? (get fragment :fragment-id))
         (if (c6-sh07-exception-sha256-id? (get fragment :content-id))
-          (if (c6-sh07-exception-vector-sha?
-               (get fragment :root-form-ids) 1024)
+            (if (c6-sh07-exception-vector-sha?
+                 (get fragment :root-form-ids))
             (if (= (count (get fragment :root-form-ids)) 1)
               (if (c6-sh07-exception-vector-sha?
-                   (get fragment :form-ids) 1024)
+                   (get fragment :form-ids))
                 (if (c6-sh07-exception-vector-sha?
-                     (get fragment :local-binding-ids) 2048)
+                     (get fragment :local-binding-ids))
                   (if (c6-sh07-exception-vector-sha?
-                       (get fragment :external-binding-ids) 2048)
+                       (get fragment :external-binding-ids))
                     (if (c6-sh07-exception-vector-sha?
-                         (get fragment :resolution-reference-syntax-ids)
-                         2048)
-                      (if (c6-sh07-exception-bounded-vector?
-                           (get fragment :alias-names) 256)
+                         (get fragment :resolution-reference-syntax-ids))
+                      (if (vector? (get fragment :alias-names))
                         (if (c6-sh07-exception-all-unique?
                              (get fragment :alias-names))
                           (= [(get fragment :root-node-ids)
@@ -2514,46 +2456,35 @@
          (loop [remaining (get request :top-level-form-ids) result []]
            (if (= (count remaining) 0)
              result
-             (recur (rest remaining)
-                    (conj result [(first remaining) 1]))))
-         visited #{} edges 0]
+             (recur (rest remaining) (conj result (first remaining)))))
+         visited #{}]
     (if (= (count frontier) 0)
-      (if (= (count visited) (count (get request :forms)))
-        (<= (+ edges (count (get request :forms))) 65536)
-        false)
-      (let [entry (first frontier)
-            form-id (first entry)
-            depth (first (rest entry))
+      (= (count visited) (count (get request :forms)))
+      (let [form-id (first frontier)
             form (c6-sh07-exception-form indexes form-id)
             children (if (map? form) (get form :child-form-ids) [])]
-        (if (> depth 256)
+        (if (contains? visited form-id)
           false
-          (if (contains? visited form-id)
-            false
-            (if (map? form)
-              (if (<= (+ edges (count children)
-                         (count (get request :forms))) 65536)
-                (if (loop [remaining children]
-                      (if (= (count remaining) 0)
-                        true
-                        (let [child
-                              (c6-sh07-exception-form
-                               indexes (first remaining))]
-                          (if (if (map? child)
-                                (= (get child :parent-form-id) form-id)
-                                false)
-                            (recur (rest remaining)) false))))
-                  (recur
-                   (loop [remaining children result (rest frontier)]
-                     (if (= (count remaining) 0)
-                       result
-                       (recur (rest remaining)
-                              (conj result
-                                    [(first remaining) (+ depth 1)]))))
-                   (conj visited form-id) (+ edges (count children)))
-                  false)
-                false)
-              false)))))))
+          (if (map? form)
+            (if (loop [remaining children]
+                  (if (= (count remaining) 0)
+                    true
+                    (let [child
+                          (c6-sh07-exception-form
+                           indexes (first remaining))]
+                      (if (if (map? child)
+                            (= (get child :parent-form-id) form-id)
+                            false)
+                        (recur (rest remaining)) false))))
+              (recur
+               (loop [remaining children result (rest frontier)]
+                 (if (= (count remaining) 0)
+                   result
+                   (recur (rest remaining)
+                          (conj result (first remaining)))))
+               (conj visited form-id))
+              false)
+            false))))))
 
 (defn c6-sh07-exception-fragment-products-valid? [request]
   (let [fragments (get request :fragment-manifest)
@@ -2637,7 +2568,7 @@
       (map? (get request :provenance))]
      [true true true true true true true true true true true true true true]))
 
-(defn c6-sh07-exception-request-bounds-valid? [request]
+(defn c6-sh07-exception-request-domain-valid? [request]
   (let [forms (get request :forms)
         bindings (get request :binding-table)
         aliases (get request :alias-table)
@@ -2645,16 +2576,15 @@
         fragments (get request :fragment-manifest)
         traces (get request :macro-origin-traces)
         indexes (c6-sh07-exception-index-request request)]
-    (if (if (c6-sh07-exception-exact-keys?
-             request #{:artifact :schema-version :lineage :module :forms
-                       :top-level-form-ids :binding-table :alias-table
-                       :resolution-table :fragment-manifest :fragment-coverage
-                       :module-assembly-manifest :macro-expansion-trace
-                       :macro-origin-traces :macro-origin-expectation
-                       :projection-binding :provenance :scope})
-          (c6-sh07-exception-request-collections-shaped? request)
-          false)
-      (if (= [(get request :artifact) (get request :schema-version)
+    (if (c6-sh07-exception-exact-keys?
+         request #{:artifact :schema-version :lineage :module :forms
+                   :top-level-form-ids :binding-table :alias-table
+                   :resolution-table :fragment-manifest :fragment-coverage
+                   :module-assembly-manifest :macro-expansion-trace
+                   :macro-origin-traces :macro-origin-expectation
+                   :projection-binding :provenance :scope})
+      (if (c6-sh07-exception-request-collections-shaped? request)
+        (if (= [(get request :artifact) (get request :schema-version)
               (get request :scope)
               (c6-sh07-exception-lineage-valid? (get request :lineage))
               (c6-sh07-exception-module-valid?
@@ -2663,8 +2593,6 @@
                (get request :projection-binding))
               (c6-sh07-exception-exact-keys?
                (get request :provenance) #{:actual-source-path})
-              (c6-sh07-exception-bounded-vector?
-               (get request :macro-expansion-trace) 65536)
               (loop [remaining (get request :macro-expansion-trace)
                      ordinal 0]
                 (if (= (count remaining) 0)
@@ -2676,56 +2604,46 @@
              [:gravity/sh07-authenticated-sh06-core-request 15
               :sh07-b15-keyword-map-lookup true true true true true true
               true])
-        (if (c6-sh07-exception-bounded-vector? forms 65536)
           (if (loop [remaining forms]
-                (if (= (count remaining) 0)
-                  true
-                  (if (c6-sh07-exception-form-record-valid?
-                       (first remaining))
-                    (recur (rest remaining)) false)))
+              (if (= (count remaining) 0)
+                true
+                (if (c6-sh07-exception-form-record-valid? (first remaining))
+                  (recur (rest remaining)) false)))
             (if (c6-sh07-exception-vector-sha?
-                 (get request :top-level-form-ids) 1024)
-              (if (if (c6-sh07-exception-bounded-vector? fragments 1024)
-                    (> (count fragments) 0) false)
+                 (get request :top-level-form-ids))
+              (if (> (count fragments) 0)
                 (if (loop [remaining fragments ordinal 0]
                       (if (= (count remaining) 0)
                         true
                         (if (c6-sh07-exception-fragment-record-valid?
                              (first remaining) ordinal)
                           (recur (rest remaining) (+ ordinal 1)) false)))
-                  (if (c6-sh07-exception-bounded-vector? bindings 2440)
-                    (if (loop [remaining bindings]
-                          (if (= (count remaining) 0)
-                            true
-                            (if (c6-sh07-exception-binding-record-valid?
-                                 (first remaining))
-                              (recur (rest remaining)) false)))
-                      (if (c6-sh07-exception-alias-table-valid? aliases)
-                        (if (c6-sh07-exception-bounded-vector?
-                             resolutions 65536)
-                          (if (loop [remaining resolutions]
-                                (if (= (count remaining) 0)
-                                  true
-                                  (if (c6-sh07-exception-resolution-record-valid?
-                                       (first remaining))
-                                    (recur (rest remaining)) false)))
-                            (if (c6-sh07-exception-bounded-vector? traces 1024)
-                              (if (loop [remaining traces]
-                                    (if (= (count remaining) 0)
-                                      true
-                                      (if (c6-sh07-exception-trace-record-valid?
-                                           request (first remaining))
-                                        (if (c6-sh07-exception-trace-pair-valid?
-                                             indexes (first remaining))
-                                          (recur (rest remaining)) false)
-                                        false)))
-                                (if (c6-sh07-exception-form-graph-valid?
-                                     request indexes)
-                                  (c6-sh07-exception-fragment-products-valid?
-                                   request)
-                                  false)
-                                false)
-                              false)
+                  (if (loop [remaining bindings]
+                        (if (= (count remaining) 0)
+                          true
+                          (if (c6-sh07-exception-binding-record-valid?
+                               (first remaining))
+                            (recur (rest remaining)) false)))
+                    (if (c6-sh07-exception-alias-table-valid? aliases)
+                      (if (loop [remaining resolutions]
+                            (if (= (count remaining) 0)
+                              true
+                              (if (c6-sh07-exception-resolution-record-valid?
+                                   (first remaining))
+                                (recur (rest remaining)) false)))
+                        (if (loop [remaining traces]
+                              (if (= (count remaining) 0)
+                                true
+                                (if (c6-sh07-exception-trace-record-valid?
+                                     request (first remaining))
+                                  (if (c6-sh07-exception-trace-pair-valid?
+                                       indexes (first remaining))
+                                    (recur (rest remaining)) false)
+                                  false)))
+                          (if (c6-sh07-exception-form-graph-valid?
+                               request indexes)
+                            (c6-sh07-exception-fragment-products-valid?
+                             request)
                             false)
                           false)
                         false)
@@ -2752,10 +2670,10 @@
               (if (c6-sh07-exception-membership-valid? carrier)
               (if (c6-sh07-exception-request-collections-shaped? request)
                 (if (c6-sh07-exception-origin-closure-valid? request)
-                  (if (c6-sh07-exception-request-bounds-valid? request)
-                    {:status :accepted :census preflight}
+                  (if (c6-sh07-exception-request-domain-valid? request)
+                    {:status :accepted}
                     {:status :rejected :rule "C6-VERIFY"
-                     :reason :authenticated-request-bound-or-graph-invalid})
+                     :reason :authenticated-request-domain-or-graph-invalid})
                   {:status :rejected :rule "C6-ORIGIN"
                    :reason :origin-closure-invalid})
                 {:status :rejected :rule "C6-VERIFY"
@@ -3293,7 +3211,6 @@
    :source-extension (get snapshot :source-extension)
    :source-kind (get snapshot :source-kind)
    :byte-count (get snapshot :byte-count)
-   :maximum-source-bytes (get snapshot :maximum-source-bytes)
    :bytes (get snapshot :bytes)
    :bytes-hash (get snapshot :bytes-hash)
    :text (get snapshot :text)
@@ -3751,7 +3668,7 @@
 (defn c6-sh07-independent-exception-aggregate? [value]
   (if (map? value)
     true
-    (if (vector? value) true (if (set? value) true (seq? value)))))
+    (if (vector? value) true (if (set? value) true (list? value)))))
 
 (defn c6-sh07-independent-exception-post-reader-scalar? [value]
   (if (= value nil)
@@ -3775,44 +3692,23 @@
     (vec value)))
 
 (defn c6-sh07-independent-exception-carrier-preflight [value]
-  (loop [frontier [[value 0]] nodes 0 scalar-bytes 0]
+  (loop [frontier [value]]
     (if (= (count frontier) 0)
-      {:status :accepted :nodes nodes :scalar-bytes scalar-bytes}
-      (let [entry (first frontier)
-            current (first entry)
-            depth (first (rest entry))
-            next-nodes (+ nodes 1)]
-        (if (> next-nodes 8388608)
-          {:status :rejected :reason :carrier-node-bound}
-          (if (> depth 256)
-            {:status :rejected :reason :carrier-depth-bound}
-            (if (c6-sh07-independent-exception-aggregate? current)
-              (let [width (if (map? current)
-                            (* 2 (count current)) (count current))]
-                (if (> width 65536)
-                  {:status :rejected :reason :carrier-width-bound}
-                  (if (> (+ next-nodes (count (rest frontier)) width)
-                         8388608)
-                    {:status :rejected :reason :carrier-node-bound}
-                    (let [components
-                          (c6-sh07-independent-exception-components current)]
-                      (recur
-                       (loop [remaining components result (rest frontier)]
-                         (if (= (count remaining) 0)
-                           result
-                           (recur (rest remaining)
-                                  (conj result
-                                        [(first remaining) (+ depth 1)]))))
-                       next-nodes scalar-bytes)))))
-              (if (c6-sh07-independent-exception-post-reader-scalar? current)
-                (let [next-scalar-bytes
-                      (+ scalar-bytes (* 4 (count (str current))))]
-                  (if (> next-scalar-bytes 268435456)
-                    {:status :rejected :reason :carrier-scalar-byte-bound}
-                    (recur (rest frontier) next-nodes
-                           next-scalar-bytes)))
-                {:status :rejected
-                 :reason :carrier-value-domain-invalid}))))))))
+      {:status :accepted}
+      (let [current (first frontier)]
+        (if (c6-sh07-independent-exception-aggregate? current)
+          (recur
+           (loop [remaining
+                  (c6-sh07-independent-exception-components current)
+                  result (rest frontier)]
+             (if (= (count remaining) 0)
+               result
+               (recur (rest remaining)
+                      (conj result (first remaining))))))
+          (if (c6-sh07-independent-exception-post-reader-scalar? current)
+            (recur (rest frontier))
+            {:status :rejected
+             :reason :carrier-value-domain-invalid}))))))
 
 (defn c6-sh07-independent-exception-utf8-continuation? [value]
   (if (integer? value)
@@ -3894,7 +3790,7 @@
     (if (= (set (keys snapshot))
            #{:artifact :schema-version :canonical-path :project-root-path
              :project-relative-path :source-extension :source-kind :byte-count
-             :maximum-source-bytes :bytes :bytes-hash :text :encoding
+             :bytes :bytes-hash :text :encoding
              :single-read? :nofollow-final-component? :bytes-hash-domain
              :bytes-hash-algorithm :bytes-hash-encoding})
       (let [bytes (get snapshot :bytes)
@@ -3906,7 +3802,6 @@
                 (contains? #{".gravity" ".qst"}
                            (get snapshot :source-extension))
                 (vector? bytes) (integer? (get snapshot :byte-count))
-                (get snapshot :maximum-source-bytes)
                 (string? text) (get snapshot :encoding)
                 (get snapshot :single-read?)
                 (get snapshot :nofollow-final-component?)
@@ -3914,14 +3809,12 @@
                 (get snapshot :bytes-hash-algorithm)
                 (get snapshot :bytes-hash-encoding)]
                [:gravity/sh07-source-snapshot 1 true true true true true true
-                1048576 true :utf-8 true true :c2-source-bytes :sha-256
+                true :utf-8 true true :c2-source-bytes :sha-256
                 :sha256-lowercase-hex])
           (if (= (get snapshot :byte-count) (count bytes))
-            (if (<= (count bytes) 1048576)
-              (if (c6-sh07-exception-sha256-id?
-                   (get snapshot :bytes-hash))
-                (c6-sh07-independent-exception-strict-utf8? bytes)
-                false)
+            (if (c6-sh07-exception-sha256-id?
+                 (get snapshot :bytes-hash))
+              (c6-sh07-independent-exception-strict-utf8? bytes)
               false)
             false)
           false))
@@ -4296,19 +4189,17 @@
     {:forms forms :bindings bindings
      :resolutions resolutions :aliases aliases}))
 
-(defn c6-sh07-independent-exception-vector-sha? [value maximum]
+(defn c6-sh07-independent-exception-vector-sha? [value]
   (if (vector? value)
-    (if (<= (count value) maximum)
-      (loop [remaining value observed #{}]
-        (if (= (count remaining) 0)
-          true
-          (let [candidate (first remaining)]
-            (if (c6-sh07-exception-sha256-id? candidate)
-              (if (contains? observed candidate)
-                false
-                (recur (rest remaining) (conj observed candidate)))
-              false))))
-      false)
+    (loop [remaining value observed #{}]
+      (if (= (count remaining) 0)
+        true
+        (let [candidate (first remaining)]
+          (if (c6-sh07-exception-sha256-id? candidate)
+            (if (contains? observed candidate)
+              false
+              (recur (rest remaining) (conj observed candidate)))
+            false))))
     false))
 
 (defn c6-sh07-independent-exception-span-valid? [span]
@@ -4332,21 +4223,19 @@
 
 (defn c6-sh07-independent-exception-origin-vector-shaped? [origins]
   (if (vector? origins)
-    (if (<= (count origins) 256)
-      (loop [remaining origins]
-        (if (= (count remaining) 0)
-          true
-          (let [origin (first remaining)]
-            (if (if (map? origin)
-                  (= (set (keys origin))
-                     #{:origin-id :kind :from-syntax-id :role}) false)
-              (if (c6-sh07-exception-sha256-id? (get origin :origin-id))
-                (if (c6-sh07-exception-sha256-id?
-                     (get origin :from-syntax-id))
-                  (recur (rest remaining)) false)
-                false)
-              false))))
-      false)
+    (loop [remaining origins]
+      (if (= (count remaining) 0)
+        true
+        (let [origin (first remaining)]
+          (if (if (map? origin)
+                (= (set (keys origin))
+                   #{:origin-id :kind :from-syntax-id :role}) false)
+            (if (c6-sh07-exception-sha256-id? (get origin :origin-id))
+              (if (c6-sh07-exception-sha256-id?
+                   (get origin :from-syntax-id))
+                (recur (rest remaining)) false)
+              false)
+            false))))
     false))
 
 (defn c6-sh07-independent-exception-form-shaped? [form]
@@ -4363,15 +4252,14 @@
             (if (if (= (get form :scope-id) nil) true
                     (c6-sh07-exception-sha256-id? (get form :scope-id)))
               (= [(c6-sh07-independent-exception-vector-sha?
-                   (get form :child-form-ids) 1024)
+                   (get form :child-form-ids))
                   (c6-sh07-independent-exception-span-valid?
                    (get form :source-span))
                   (c6-sh07-independent-exception-origin-vector-shaped?
                    (get form :origin-chain))
                   (c6-sh07-independent-exception-origin-vector-shaped?
                    (get form :generated-origin))
-                  (if (map? (get form :metadata))
-                    (<= (count (get form :metadata)) 256) false)]
+                  (map? (get form :metadata))]
                  [true true true true true])
               false)
             false)
@@ -4397,16 +4285,11 @@
            (get binding :definition-artifact-id))
           (if (= (get binding :scope-id) nil) true
               (c6-sh07-exception-sha256-id? (get binding :scope-id)))
-          (if (vector? (get binding :profile-set))
-            (<= (count (get binding :profile-set)) 128) false)
-          (if (vector? (get binding :target-set))
-            (<= (count (get binding :target-set)) 128) false)
-          (if (vector? (get binding :effects))
-            (<= (count (get binding :effects)) 128) false)
-          (if (vector? (get binding :capabilities))
-            (<= (count (get binding :capabilities)) 128) false)
-          (if (map? (get binding :semantic-span))
-            (<= (count (get binding :semantic-span)) 256) false)]
+          (vector? (get binding :profile-set))
+          (vector? (get binding :target-set))
+          (vector? (get binding :effects))
+          (vector? (get binding :capabilities))
+          (map? (get binding :semantic-span))]
          [true true true true true true true true true true])
       false)
     false))
@@ -4481,27 +4364,25 @@
                 (c6-sh07-exception-sha256-id?
                  (get fragment :content-id))
                 (c6-sh07-independent-exception-vector-sha?
-                 (get fragment :root-form-ids) 1024)
+                 (get fragment :root-form-ids))
                 (c6-sh07-independent-exception-vector-sha?
-                 (get fragment :form-ids) 65536)
+                 (get fragment :form-ids))
                 (c6-sh07-independent-exception-vector-sha?
-                 (get fragment :local-binding-ids) 2440)
+                 (get fragment :local-binding-ids))
                 (c6-sh07-independent-exception-vector-sha?
-                 (get fragment :external-binding-ids) 2440)
+                 (get fragment :external-binding-ids))
                 (c6-sh07-independent-exception-vector-sha?
-                 (get fragment :resolution-reference-syntax-ids) 65536)
+                 (get fragment :resolution-reference-syntax-ids))
                 (if (vector? (get fragment :alias-names))
-                  (if (<= (count (get fragment :alias-names)) 256)
-                    (loop [remaining (get fragment :alias-names)
-                           observed #{}]
-                      (if (= (count remaining) 0) true
-                          (let [name (first remaining)]
-                            (if (symbol? name)
-                              (if (contains? observed name) false
-                                  (recur (rest remaining)
-                                         (conj observed name)))
-                              false))))
-                    false)
+                  (loop [remaining (get fragment :alias-names)
+                         observed #{}]
+                    (if (= (count remaining) 0) true
+                        (let [name (first remaining)]
+                          (if (symbol? name)
+                            (if (contains? observed name) false
+                                (recur (rest remaining)
+                                       (conj observed name)))
+                            false))))
                   false)]
                [true true true true true true true true])
           (if (= (count (get fragment :root-form-ids)) 1)
@@ -4539,12 +4420,9 @@
   (if (map? module)
     (= [(set (keys module)) (get module :profile) (get module :target)
         (get module :source-revision-id)
-        (if (vector? (get module :effects))
-          (<= (count (get module :effects)) 128) false)
-        (if (vector? (get module :capabilities))
-          (<= (count (get module :capabilities)) 128) false)
-        (if (vector? (get module :exports))
-          (<= (count (get module :exports)) 1024) false)]
+        (vector? (get module :effects))
+        (vector? (get module :capabilities))
+        (vector? (get module :exports))]
        [#{:namespace :profile :target :safety :effects
           :capabilities :exports :source-revision-id}
         :meta :jvm (get lineage :source-revision-id) true true true])
@@ -4555,12 +4433,9 @@
   (if (map? step)
     (= [(set (keys step)) (get step :artifact) (get step :ordinal)
         (get step :profile) (get step :target)
-        (if (vector? (get step :capabilities))
-          (<= (count (get step :capabilities)) 128) false)
-        (if (vector? (get step :build-effects))
-          (<= (count (get step :build-effects)) 128) false)
-        (if (vector? (get step :diagnostics))
-          (<= (count (get step :diagnostics)) 256) false)]
+        (vector? (get step :capabilities))
+        (vector? (get step :build-effects))
+        (vector? (get step :diagnostics))]
        [#{:artifact :ordinal :macro :profile :target :step
           :capabilities :build-effects :diagnostics}
         :gravity/sh07-preserved-macro-expansion-step ordinal
@@ -4634,11 +4509,11 @@
               functions
               (get expectation :expected-introduced-fn-syntax-ids)]
           (if (= [(integer? (get expectation :expanded-defn-count))
-                  (c6-sh07-independent-exception-vector-sha? inputs 1024)
+                  (c6-sh07-independent-exception-vector-sha? inputs)
                   (c6-sh07-independent-exception-vector-sha?
-                   definitions 1024)
+                   definitions)
                   (c6-sh07-independent-exception-vector-sha?
-                   functions 1024)]
+                   functions)]
                  [true true true true])
             (= [(get expectation :expanded-defn-count)
                 (get expectation :source-revision-id)
@@ -4684,30 +4559,22 @@
 
 (defn c6-sh07-independent-exception-tree-id-set
   [indexes root-form-id]
-  (loop [frontier [[root-form-id 1]] observed #{} visited-count 0]
+  (loop [frontier [root-form-id] observed #{}]
     (if (= (count frontier) 0)
       observed
-      (if (> visited-count 65536)
-        #{}
-        (let [entry (first frontier)
-              form-id (first entry)
-              depth (first (rest entry))
-              form (get (get (get indexes :forms) :by-id) form-id)]
-          (if (> depth 256)
+      (let [form-id (first frontier)
+            form (get (get (get indexes :forms) :by-id) form-id)]
+        (if (map? form)
+          (if (contains? observed (get form :form-id))
             #{}
-            (if (map? form)
-              (if (contains? observed (get form :form-id))
-                #{}
-                (recur
-                 (loop [remaining (get form :child-form-ids)
-                        result (rest frontier)]
-                   (if (= (count remaining) 0) result
-                       (recur (rest remaining)
-                              (conj result
-                                    [(first remaining) (+ depth 1)]))))
-                 (conj observed (get form :form-id))
-                 (+ visited-count 1)))
-              #{})))))))
+            (recur
+             (loop [remaining (get form :child-form-ids)
+                    result (rest frontier)]
+               (if (= (count remaining) 0) result
+                   (recur (rest remaining)
+                          (conj result (first remaining)))))
+             (conj observed (get form :form-id))))
+          #{})))))
 
 (defn c6-sh07-independent-exception-ordered-form-ids [forms id-set]
   (loop [remaining forms result []]
@@ -4978,17 +4845,6 @@
         false)
       false)))
 
-(defn c6-sh07-independent-exception-edge-occurrences [forms]
-  (loop [remaining forms edges 0]
-    (if (= (count remaining) 0)
-      edges
-      (let [form (first remaining)
-            children (if (map? form) (get form :child-form-ids) nil)]
-        (if (vector? children)
-          (if (<= (+ edges (count children)) 65536)
-            (recur (rest remaining) (+ edges (count children))) 65537)
-          65537)))))
-
 (defn c6-sh07-independent-exception-request-collections-valid? [request]
   (= [(map? (get request :lineage))
       (map? (get request :module))
@@ -5028,18 +4884,9 @@
                  (get request :projection-binding))]
                [:gravity/sh07-authenticated-sh06-core-request 15
                 :sh07-b15-keyword-map-lookup true true])
-          (if (= [(<= (+ (count forms)
-                          (c6-sh07-independent-exception-edge-occurrences
-                           forms)) 65536)
-                  (> (count (get request :fragment-manifest)) 0)
-                  (<= (count (get request :fragment-manifest)) 1024)
-                  (<= (count (get request :binding-table)) 2440)
-                  (<= (count (get request :alias-table)) 256)
-                  (<= (count (get request :resolution-table)) 65536)
-                  (<= (count (get request :macro-expansion-trace)) 65536)
-                  (<= (count (get request :macro-origin-traces)) 1024)
+          (if (= [(> (count (get request :fragment-manifest)) 0)
                   (c6-sh07-independent-exception-vector-sha?
-                   (get request :top-level-form-ids) 1024)
+                   (get request :top-level-form-ids))
                   (get (get indexes :forms) :duplicate?)
                   (get (get indexes :bindings) :duplicate?)
                   (get (get indexes :resolutions) :duplicate?)
@@ -5049,9 +4896,7 @@
                    request)
                   (c6-sh07-independent-exception-fragment-products-valid?
                    request)]
-                 [true true true true true true true true true
-                  false false false false
-                  true true true])
+                 [true true false false false false true true true])
             (if (= (set (keys (get request :provenance)))
                    #{:actual-source-path})
               (string? (get (get request :provenance)
@@ -5199,7 +5044,7 @@
           (if (c6-sh07-independent-exception-membership-valid? carrier)
             (if (c6-sh07-independent-exception-request-domain-valid? request)
               (if (c6-sh07-independent-exception-origin-closure-valid? request)
-                {:status :accepted :census preflight}
+                {:status :accepted}
                 {:status :rejected :rule "C6-ORIGIN"
                  :reason :independent-origin-closure-invalid})
               {:status :rejected :rule "C6-VERIFY"
@@ -5456,7 +5301,6 @@
    :source-extension (get snapshot :source-extension)
    :source-kind (get snapshot :source-kind)
    :byte-count (get snapshot :byte-count)
-   :maximum-source-bytes (get snapshot :maximum-source-bytes)
    :bytes (get snapshot :bytes)
    :bytes-hash (get snapshot :bytes-hash)
    :text (get snapshot :text)

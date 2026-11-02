@@ -133,6 +133,30 @@
                   (assoc-in (tooling-requirements/view)
                             [:nonclaims 0] :accepted)))))
 
+(deftest current-manifest-transition-is-versioned-and-exact
+  (let [source-view (tooling-requirements/view)
+        transition tooling-requirements/current-manifest-source-transition
+        baseline (:baseline transition)
+        replay (assoc transition :applying baseline)
+        wrong-pair (assoc-in transition [:applying :tree] (:tree baseline))
+        wrong-body (assoc-in transition [:applying :sha256] (:sha256 baseline))
+        wrong-task-extension (assoc-in transition
+                                        [:task-source-bridge-extension :added-paths]
+                                        [])]
+    (is (= {:snapshot-provenance :git-commit-tree-blob-and-bytes-verified
+            :population :conserved
+            :interpretation :platform-generated-view-v2-plus-pr560-task-source-bridge-extension}
+           (select-keys
+            (tooling-requirements/validate-current-manifest-transition! source-view)
+            [:snapshot-provenance :population :interpretation])))
+    ;; A changed applying body, a mismatched commit/tree pair, and replay of the
+    ;; baseline identity must all fail closed even when the source-view digest
+    ;; remains frozen.
+    (doseq [mutated [wrong-body wrong-pair replay wrong-task-extension]]
+      (with-redefs [tooling-requirements/current-manifest-source-transition mutated]
+        (is (refuses? #(tooling-requirements/validate-current-manifest-transition!
+                        source-view)))))))
+
 (let [result (run-tests 'tooling-requirements-test)]
   (shutdown-agents)
   (when (pos? (+ (:fail result) (:error result)))

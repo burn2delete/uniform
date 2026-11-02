@@ -53,7 +53,7 @@
         trace [{:function :test :operation :sub :opcode :sub}]
         execute (fn [left right]
                   (try (call 'sh13-execute-operation
-                         [{} {:fn-id :test} operation {:left left :right right} 8 0 []])
+                         [{} {:fn-id :test} operation {:left left :right right} []])
                        (catch Exception error
                          {:exception (.getName (class error)) :message (.getMessage error)
                           :data (ex-data error)})))]
@@ -62,10 +62,10 @@
             expected (<= (bigint Long/MIN_VALUE) difference (bigint Long/MAX_VALUE))]
         (is (= expected (call 'sh13-sub-safe? [left right])) (str "guard " left " " right))))
     (doseq [[left right expected] returned-cases]
-      (is (= {:status :continue :value expected :fuel 7 :trace trace} (execute left right))
+      (is (= {:status :continue :value expected :trace trace} (execute left right))
           (str "operation " left " " right)))
     (doseq [[left right] overflowing-cases]
-      (is (= {:status :rejected :reason :integer-range :fuel 7 :trace trace} (execute left right))
+      (is (= {:status :rejected :reason :integer-range :trace trace} (execute left right))
           (str "overflow " left " " right)))))
 
 (deftest sh13-checked-i64-sub-original-producer-bridge

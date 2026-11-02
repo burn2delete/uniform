@@ -1,0 +1,247 @@
+{:kind :pr554-current-integration-receipt
+ :schema-version 1
+ :integration
+ {:base-commit "10aa681a502e65e5138bbe81ea971fa98420726c"
+  :base-tree "c708c556e8e6af244d4651783f6f42a61174c0a4"
+  :candidate-commit "f9c461e11d9d9b9d0e8bb41de035e3c32556c700"
+  :candidate-tree "18fdd0469e0e2499f39b306a6b323b684ae1b2e0"
+  :candidate-parents
+  ["d1147e8090676284342cbecddc7c868e45e4efa4"
+   "10aa681a502e65e5138bbe81ea971fa98420726c"]
+  :previous-integration-base "12480d592044cc667ba4908405b463b3de51a2e6"
+  :previous-integration-tree "ab4173148a9a2ffe64a7ac94e74289db0704080a"
+  :previous-composition
+  {:base-commit "12480d592044cc667ba4908405b463b3de51a2e6"
+   :base-tree "ab4173148a9a2ffe64a7ac94e74289db0704080a"
+   :candidate-commit "51b1de15095a67152b7ff8f5c1e004545d2d89f9"
+   :candidate-tree "a427d7eaa211ad5979f31cf2d14d718bdeacfd5e"
+   :receipt-commit "39d9dd8d080e8fdcaa4096ede55397efa4c12f2e"
+   :receipt-tree "163d069d87e37a9d9cdc77a485f878d7f05aaa77"}
+  :main-advance {:from-commit "12480d592044cc667ba4908405b463b3de51a2e6"
+                 :from-tree "ab4173148a9a2ffe64a7ac94e74289db0704080a"
+                 :to-commit "10aa681a502e65e5138bbe81ea971fa98420726c"
+                 :to-tree "c708c556e8e6af244d4651783f6f42a61174c0a4"
+                 :composition-commit "f9c461e11d9d9b9d0e8bb41de035e3c32556c700"
+                 :composition-tree "18fdd0469e0e2499f39b306a6b323b684ae1b2e0"
+                 :changed-path-count 8
+                 :changed-scope :mir-fact-and-envelope-source-and-tests-only
+                 :pr554-owned-paths-disjoint? true}
+  :source-view-comparator-renewed? false}
+ :source-history
+ {:original-pr-head "e7a93606858e543119f807130f1583f1b011b151"
+  :original-pr-tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8"
+  :authored-base "6276c94b0b753c888ef8fecc794bcc81245ea3b3"
+  :authored-base-tree "9f464ed0f03866bd4978e4213a488f3b1ae48683"
+  :ancestry-attachment-commit "139f7264cf4ba43979eb8e733ec8dc20473e21e2"
+  :ancestry-attachment-tree "036130b8747a7bba8a9c3e9368eaa3ee806a0264"
+  :ancestry-attachment-strategy :ours
+  :old-source-tree-imported? false}
+ :frozen-source-view
+ {:path "specs/requirement-reconciliation/pr554-frozen-source-view.edn"
+  :source-head "e7a93606858e543119f807130f1583f1b011b151"
+  :source-tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8"
+  :comparator-main "5dfe15c9fad14e5abebf23bf1e645bf9154a2e1e"
+  :comparator-tree "643afe5f3b00918fc3de76f2855294481a09b505"
+  :selected-entry-count 84
+  :role :historical-frozen-comparator-not-integration-base
+  :source-views-renewed? false}
+ :transition-repair
+ {:candidate-commit "873704ab629e62e9812d4f4adf33fdfb56c52b71"
+  :candidate-tree "659fbd58bbd95a680d3c68c61f43c6158fc15c58"
+  :parent-commit "1d3231a48dee4f17776893348e2b6179fe5407b5"
+  :parent-tree "88647726f0e080210fe4bd69c7d526701fcfabd9"
+  :review-state :proposed
+  :source-transition
+  {:kind :platform-task-authority-ledger-current-layout-v1
+   :parent-bridge-kind :platform-generated-view-kind
+   :parent-bridge-applying-ref "2a86a9f1fc56b1eceacf4ca29aac7c95a1a4792b"
+   :path "specs/platform-workflow/tasks.md"
+   :historical-source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd"
+   :historical-source-tree "abb83592fc9e5e81c0f041e59c67749dbb67b55c"
+   :historical-source-blob "0c5e17169840e1a5deee71e5733955ff0a41805a"
+   :baseline
+   {:ref "5dfe15c9fad14e5abebf23bf1e645bf9154a2e1e"
+    :tree "643afe5f3b00918fc3de76f2855294481a09b505"
+    :blob "0c5e17169840e1a5deee71e5733955ff0a41805a"
+    :sha256 "789f8482bf8212e68c978daaaa2487f39f66a46467385ba0b0350df82a78e39f"}
+   :applying
+   {:ref "2a86a9f1fc56b1eceacf4ca29aac7c95a1a4792b"
+    :tree "8a242945a690dcf4ae6a7b15ecc546c09179a80c"
+    :blob "054ee72c93246d88785ed29d82b549428a0d4e64"
+    :sha256 "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f"}
+   :task-ids ["hardware" "firmware" "kernel" "devices"]
+   :historical-routing-preserved? true
+   :navigation-layout-tolerated? true
+   :structural-authority-only? true
+   :arbitrary-task-criteria-rejected? true
+   :source-hash-renewal? false
+   :locator-provenance :historical-git-blob-and-utf8-span-verified
+   :snapshot-tree-identities-verified? true}
+  :guards
+  [:layout-only-preamble-accepted
+   :changed-body-rejected
+   :wrong-baseline-applying-pair-rejected
+   :replayed-row-rejected
+   :nonplatform-path-bypass-rejected
+   :mutated-file-digest-rejected
+   :mutated-source-commit-rejected
+   :mutated-byte-span-rejected
+   :mutated-line-bounds-rejected
+   :mutated-span-digest-rejected
+   :mutated-snapshot-reference-rejected]
+  :local-validation
+  {:acceptance-dependencies-test
+   {:command "clojure -M tools/acceptance_dependencies_test.clj"
+    :tests 18 :assertions 434 :failures 0 :errors 0}
+   :acceptance-dependencies-check
+   {:command "clojure -M tools/acceptance_dependencies.clj --check"
+    :exit 0 :result :pass}
+   :platform-source-transition-test
+   {:command "clojure -M tools/platform_source_transition_test.clj"
+    :tests 2 :assertions 6 :failures 0 :errors 0}
+   :platform-task-projection-test
+   {:command "clojure -M tools/platform_task_projection_test.clj"
+    :tests 5 :assertions 90 :failures 0 :errors 0}
+   :frozen-source-view-test
+   {:command "clojure -M tools/pr554_frozen_source_view_test.clj"
+    :tests 4 :assertions 48 :failures 0 :errors 0}
+   :requirement-reconciliation
+   {:command "clojure -M tools/requirement_reconciliation_test.clj"
+    :tests 31 :assertions 270 :failures 0 :errors 0
+    :log "/tmp/uniform-pr554-transition-reconciliation.log"}
+   :frozen-source-view-verification
+   {:verified 84 :entries 84 :result :pass}
+   :pinned-lint
+   {:version "clj-kondo-2025.10.23"
+    :errors 0 :warnings 0 :info 1 :result :pass}
+   :git-diff-check {:result :pass}}
+  :scope :historical-routing-and-structural-only}
+ :historical-hosted-nonpass
+ {:run-id "41502859336"
+  :job-id "125474750568"
+  :command "tools/acceptance_dependencies_test.clj"
+  :tests 18
+  :assertions 115
+  :failures 0
+  :errors 5
+  :diagnostic "Changed or ambiguous current task body: specs/platform-workflow/tasks.md"
+  :disposition :repaired-locally-not-accepted}
+ :current-main-composition
+ {:main-commit "10aa681a502e65e5138bbe81ea971fa98420726c"
+  :main-tree "c708c556e8e6af244d4651783f6f42a61174c0a4"
+  :candidate-commit "f9c461e11d9d9b9d0e8bb41de035e3c32556c700"
+  :candidate-tree "18fdd0469e0e2499f39b306a6b323b684ae1b2e0"
+  :candidate-parents
+  ["d1147e8090676284342cbecddc7c868e45e4efa4"
+   "10aa681a502e65e5138bbe81ea971fa98420726c"]
+  :base-before-main "12480d592044cc667ba4908405b463b3de51a2e6"
+  :base-before-main-tree "ab4173148a9a2ffe64a7ac94e74289db0704080a"
+  :frozen-comparator
+  {:commit "5dfe15c9fad14e5abebf23bf1e645bf9154a2e1e"
+   :tree "643afe5f3b00918fc3de76f2855294481a09b505"
+   :source-views-renewed? false}
+  :main-advance
+  {:from-commit "12480d592044cc667ba4908405b463b3de51a2e6"
+   :from-tree "ab4173148a9a2ffe64a7ac94e74289db0704080a"
+   :to-commit "10aa681a502e65e5138bbe81ea971fa98420726c"
+   :to-tree "c708c556e8e6af244d4651783f6f42a61174c0a4"
+   :changed-path-count 8
+   :changed-scope :mir-fact-and-envelope-source-and-tests-only
+   :pr554-owned-paths-disjoint? true
+   :source-views-renewed? false}
+  :lint-repair
+  {:commit "d1147e8090676284342cbecddc7c868e45e4efa4"
+   :tree "3f4892d75db19ea70922e69db3ea0321332fdc06"
+   :parent "14a8977c727789a971df94f10c5596d67ada6643"
+   :base "12480d592044cc667ba4908405b463b3de51a2e6"
+   :algorithm :warning-only-source-mapping
+   :nonwarning-source-loading? false
+   :errors-always-block? true
+   :infos-require-no-source-map? true
+   :focused-tests [35 341 0 0]
+   :changed-file-lint-256m
+   {:base "12480d592044cc667ba4908405b463b3de51a2e6"
+    :changed-clojure-edn-files 18
+    :exit 0
+    :blocking 0
+    :baseline-warnings 0
+    :heap "-J-Xmx256m"
+    :linter "clj-kondo-2025.10.23"}}
+  :pr554-validation
+  {:acceptance-dependencies-test [18 434 0 0]
+   :acceptance-dependencies-check {:exit 0 :result :pass}
+   :platform-source-transition [2 6 0 0]
+   :platform-task-projection [5 90 0 0]
+   :frozen-source-view [4 48 0 0]
+   :requirement-reconciliation [31 270 0 0]
+   :tooling-requirements-test [8 47 0 0]
+   :tooling-requirements-check
+   {:exit 0 :result :pass :documents 13 :occurrences 631 :facets 960
+    :requirements 65 :edits 200 :task-references 16}
+   :lint-repair-tests [35 341 0 0]
+   :changed-file-lint-256m {:exit 0 :blocking 0 :baseline-warnings 0}
+   :git-diff-check :pass}
+  :pr557-coupling
+  {:paths
+   ["specs/tools-workflow/current-source-view.edn"
+    "specs/tools-workflow/evidence.md"
+    "tools/requirement_sources.clj"
+    "tools/tooling_requirements.clj"
+    "tools/tooling_requirements_test.clj"]
+   :requirement-sources-import? true
+   :platform-task-source-transition-consumed? true
+   :source-view-inputs-independent? true
+   :source-view-remains-frozen? true
+   :checks
+   [{:command "clojure -M tools/tooling_requirements_test.clj"
+     :exit 0 :tests 8 :assertions 47 :failures 0 :errors 0}
+    {:command "clojure -M tools/tooling_requirements.clj --check"
+     :exit 0 :result :pass :documents 13 :occurrences 631 :facets 960
+     :requirements 65 :edits 200 :task-references 16}]
+   :historical-nonpass
+   {:expected-current-manifest-sha256
+    "aa51bfad176edcf7ed75109a68ea1a0bcbcb3eeeedd6311db256bf331ad01ef0"
+    :observed-current-manifest-sha256
+    "d24ed46e2de0c1672a1a37c0eeacb3340452dcf56ce1b511ecc678761909155b"
+    :cause-commit "5f6cfdcfd7e9eeee1fb13a1bfaf923f571f18065"
+    :diagnostic "Current manifest bytes drifted"
+    :disposition :repaired-by-authenticated-transition}
+   :manifest-transition
+   {:kind :tooling-current-manifest-platform-bridge-v1
+    :baseline
+    {:commit "6218e80e0238cbd071a8837193e7afb5f0b87869"
+     :tree "51a615a96828ecaff57824625bb062a9dd2c5f20"
+     :blob "2dc56539cf67ad1b0170b8fdffa251f7d8535885"
+     :sha256 "aa51bfad176edcf7ed75109a68ea1a0bcbcb3eeeedd6311db256bf331ad01ef0"}
+    :applying
+    {:commit "5f6cfdcfd7e9eeee1fb13a1bfaf923f571f18065"
+     :tree "b550c38ca740c30a5d1a0d90429d3e417eafa06a"
+     :blob "c3f22d33eae72b6a31a5b8d1d3c1dccdf7df18ba"
+     :sha256 "d24ed46e2de0c1672a1a37c0eeacb3340452dcf56ce1b511ecc678761909155b"}
+    :source-view-baseline-sha256
+    "aa51bfad176edcf7ed75109a68ea1a0bcbcb3eeeedd6311db256bf331ad01ef0"
+    :population :conserved
+    :snapshot-provenance :git-commit-tree-blob-and-bytes-verified
+    :interpretation :platform-generated-view-v2-source-bridge-only}
+   :disposition :authenticated-versioned-transition}
+  :scope :pr554-composition-and-independent-pr557-diagnostic}
+ :evidence
+ {:pinned-linter "clj-kondo-2025.10.23"
+  :changed-clojure-edn-file-count 18
+  :changed-file-lint :pass
+  :changed-file-lint-256m {:exit 0 :blocking 0 :baseline-warnings 0}
+  :lint-repair-tests [35 341 0 0]
+  :frozen-view-verification {:verified 84 :entries 84 :result :pass}
+  :focused-gates {:platform-projection [5 90]
+                  :source-transition [2 6]
+                  :requirement-reconciliation [31 270]
+                  :acceptance-dependencies [18 434]
+                  :tooling-requirements [8 47]}}
+ :nonclaims
+ [:not-source-hash-refresh
+  :not-current-source-view-renewal
+  :not-requirement-denominator
+  :not-task-acceptance
+  :not-product-implementation-acceptance
+  :not-release-or-self-hosting
+  :not-whole-pr-acceptance]}
