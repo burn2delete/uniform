@@ -48,6 +48,13 @@ math modes. Distributed and AI work retain durable/replay, schema, taint and
 policy boundaries with their domain owners. These obligations are not compiler
 work allowances; superseded fuel/input-size accounting remains removed.
 
+The [complete ownership-checker source criteria](plan.md#complete-ownership-checker-source-criteria)
+bind the whole C9 source to the existing ownership, safety, handoff and
+conformance tasks, retaining all seven inherited owner allocations and complete
+source occurrence conjunctions. Original task text/statuses and the broader
+L10/SAFE3/SAFE4/SAFE5/SAFE8 obligations remain. Source mapping is a current
+proposal; implementation and independent acceptance remain unassessed.
+
 The [foundation source criteria](plan.md#foundation-source-criteria) refine the
 existing task records with their original requirement identities, complete
 positive/refusal clauses and actual producer/consumer evidence. Task ownership,

@@ -23,6 +23,54 @@ Record exact source/fixture/consumer identities and passed, failed or unrun work
 preserve operation restrictions and separate author checks, independent
 acceptance, integration and the complete profile/provider matrix.
 
+## Complete ownership-checker source criteria
+
+Use the existing ownership, safety, handoff and conformance tasks for the whole
+[C9 contract](../../docs/phase-06-compiler-architecture/088-c9-ownership-lifetime-and-region-checker-design.md).
+The preserved all-240 census already contains 130 C9 facet identities, fifty
+source occurrences and seven owner allocations. Reuse those identities; its
+candidate task links and context classifications do not establish full predicate
+entailment. The current proposal binds each complete source occurrence to the
+four existing criterion blocks below, preserving the original task text and
+statuses. No standalone C9 independent review is present; current semantic
+review and implementation acceptance remain pending/unassessed.
+
+| Existing outcome | Actual implementation and decisive cases |
+| --- | --- |
+| Ownership/borrow/initialization/lifetime analysis | Derive [ownership and borrow graphs](../../docs/phase-06-compiler-architecture/088-c9-ownership-lifetime-and-region-checker-design.md#borrow-graph), moves/consumption, all lifetime classes, regions/generations, escapes and linear flow from real typed/effected Core. Persistent immutable sharing differs from owned mutable movement; no implicit repair copies or GC fallback. Permit disjoint range splitting only with proof; otherwise assume potential aliasing. Reject active-borrow moves/consumes and conflicting aliases. Preserve interval start/end/owner/allowed-escape/invalidation and all source/generated identities. |
+| Ownership analysis: region, resource and unsafe-reference products | Apply [L10](../../docs/phase-01-core-language/020-l10-memory-model-specification.md#ownership-and-borrowing), [SAFE3](../../docs/phase-02-safety/032-safe3-ownership-borrowing-and-lifetimes.md#escape-rules), [SAFE4](../../docs/phase-02-safety/033-safe4-region-and-arena-safety.md#escape-rules), [SAFE5](../../docs/phase-02-safety/034-safe5-linear-resource-safety.md#failure-and-cancellation) and [SAFE8](../../docs/phase-02-safety/037-safe8-concurrency-and-data-race-safety.md#ownership-transfer) at their actual selected interfaces. Cover every C9 escape destination, nested inner/outer lifetimes, arena reset invalidation, explicit destination ownership and all modeled terminal paths. The destination must own cleanup; audit references for manual lifetime/alias/resource handling are producer products, not safety approval. Reject leaks/double release/reuse/wrong-provider/invalid capture. |
+| Safe-code classification | Consume actual analysis products and apply [C9's runtime-check conditions](../../docs/phase-06-compiler-architecture/088-c9-ownership-lifetime-and-region-checker-design.md#runtime-checks) for borrow, region/arena generation, provider scope and terminal state. Each operation has an existing four-way safety outcome. Dynamic checks require actual value/provider state, profile/provider support, declared failure and explicit check records. Reject unavailable metadata/allocation/failure mechanisms. Runtime implements and executes the check; this task validates its required safety conditions. Preserve existing full safe-wrapper obligations. |
+| MIR/runtime handoff | Consume analysis and compose explicit function/task/actor/workflow/FFI/callback/tool/model transfers with source consumption, destination lifetime/provider and cleanup. Attach relevant ownership/lifetime/region/linear facts to allocation/load/store/call/spawn/send/receive/release/cleanup MIR operations, preserving checks/audits/provenance through actual consumers. Refuse lost/stale/reordered facts or unsupported transfers/checks. This task owns boundary composition; ownership analysis remains the sole state-transition producer. |
+| Profile-surface conformance | Exercise the complete [C9 conformance cases](../../docs/phase-06-compiler-architecture/088-c9-ownership-lifetime-and-region-checker-design.md#conformance-criteria), all [twelve diagnostic meanings and context fields](../../docs/phase-06-compiler-architecture/088-c9-ownership-lifetime-and-region-checker-design.md#diagnostics), generated-resource preservation and actual supported/unsupported check/failure cases. Conformance consumes the owning analysis/check/boundary products and supplies its fixtures/results to Release's existing harness; it does not create a second harness or infer whole-profile acceptance. |
+
+The seven preserved allocations retain their existing tasks: ownership move,
+borrow exclusivity, lifetime escape, unsafe lifetime and terminal flow remain
+with ownership analysis; generic runtime checks remain with safe-code
+classification; ownership-transfer composition remains with MIR/runtime handoff.
+The conformance task consumes those products. Original source facets sometimes
+attach broad inherited owner sets; the current per-occurrence conjunction joins
+are proposals and do not accept every attached owner or its other documents.
+
+The census's generic context fragments include semantic list preambles. Preserve
+their original kind and identity, and conjoin every substantive preamble/list/
+following condition within its complete source occurrence. Only headings and
+file provenance receive context-only credit. The artifact example describes
+required identities/facts and illustrates shape; its sample IDs, empty lists
+and state labels are not execution evidence or default support. Source byte
+conservation does not establish semantic entailment.
+
+Start focused analysis/check/refusal fixtures against explicit typed-Core,
+effects, provider/profile/grant and consumer interfaces. Types/Effects supply
+real input facts; Auth supplies grants; profile validation owns support rules;
+Runtime/Backends implement actual checks, cleanup and transfer behavior. Actual
+composed acceptance needs those products and surviving failures, not complete
+component releases or fresh migration evidence before ordinary editing. C9's
+hosted adapter is partial; later Gravity state/identity/runtime-borrow kernels
+must be assessed at their exact scope rather than discarded or promoted into
+whole ownership support. Keep physical/provider/alignment/type/index validity
+distinct from removed project accounting. Preserve all C7/C12/provider/native/
+callback/probe/migration/publication holds and do not run them for this plan.
+
 ## Foundation source criteria
 
 Three preserved clauses from the
