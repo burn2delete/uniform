@@ -147,6 +147,11 @@
                                                      [(assoc ordinary-row :producer-rule value) dse-row])))))
       (is (= :rejected (:status (compile-node (assoc mixed :call-facts
                                                      [(assoc ordinary-fact :dispatch value) dse-fact]))))))
+    (doseq [value [nil false 0 "ordinary" opaque :forged]]
+      (is (= :rejected (:status (compile-node (assoc mixed :ledger
+                                                     [ordinary-row (assoc dse-row :producer-rule value)])))))
+      (is (= :rejected (:status (compile-node (assoc mixed :call-facts
+                                                     [ordinary-fact (assoc dse-fact :dispatch value)]))))))
     (doseq [candidate
             [(assoc mixed :ledger [nil dse-row])
              (assoc mixed :call-facts [nil dse-fact])
@@ -159,6 +164,10 @@
              (update mixed :ledger conj (assoc-in dse-row [:lhs :core-node-id] :orphan))
              (update mixed :call-facts conj (assoc dse-fact :call-core-node-id :orphan))
              (assoc mixed :call-facts (array-map :wrong dse-fact :ordinary-call ordinary-fact))
+             (assoc mixed :ledger [ordinary-row
+                                   (assoc-in dse-row [:constraint-id-request :domain] :foreign)])
+             (assoc mixed :call-facts [ordinary-fact
+                                       (assoc-in dse-fact [:fact-id-request :domain] :foreign)])
              (assoc-in mixed [:nodes :call :evaluation :order] [])
              (assoc-in mixed [:forms :arg0 :parent-form-id] :stale)
              (assoc-in mixed [:bindings :ordering-binding :binding-class] :namespace)
