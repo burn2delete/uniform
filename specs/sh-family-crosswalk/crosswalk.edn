@@ -14615,9 +14615,9 @@
    :source-version-bridge
    "specs/sh-family-crosswalk/macro-runtime-source-version.edn"},
   :input-fingerprint
-  "26a68ae0f0c95d43466b0fc058968d71fb1d5910a1af59d709bac6f0da4aa223"},
+  "97208a8459357873deeda3d2a8ea8a1bf827ce63f04649a377e37eb15398af1f"},
  :implementation-readiness-source-version
- {:source-input-commit "a1c36bf6d78a063bfbec0b44d92339cedd2ce14f",
+ {:source-input-commit "8f4f2236509364ebba1d632e9ed6a8420003e487",
   :task-comparisons
   {:unchanged-body-count 121,
    :changed-bodies
@@ -14785,6 +14785,1799 @@
     "evolution/target-support-admission"],
    :removed-ids [],
    :checkbox-states-changed []},
+  :release-dependency-refinement
+  {:release-source-records
+   [{:id "testing/test8/human-review",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-agent-and-workflow-evaluations",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST8](../../docs/phase-14-testing-verification-and-conformance/197-test8-ai-and-workflow-evaluation-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 37293,
+       :end-byte 39751,
+       :start-line 174,
+       :end-line 180,
+       :sha256
+       "8d6215523bd324b10e17e58482aa6955b277041afd3ce0fdeca6b4c6f07bebe4"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 673,
+      :task-relative-byte-end 1156,
+      :sha256
+      "b59ef5f8cb63036d27ab2dd27424ce0e52063f6aadc6d468b2d4b0704c8aa98f"}}
+    {:id "testing/test8/metric-release",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-agent-and-workflow-evaluations",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST8](../../docs/phase-14-testing-verification-and-conformance/197-test8-ai-and-workflow-evaluation-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 37293,
+       :end-byte 39751,
+       :start-line 174,
+       :end-line 180,
+       :sha256
+       "8d6215523bd324b10e17e58482aa6955b277041afd3ce0fdeca6b4c6f07bebe4"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 1157,
+      :task-relative-byte-end 1702,
+      :sha256
+      "5812f20fbb736fbd074e3b0a4a93fe393b0c4ad4800c02e7670b393bed27ac03"}}
+    {:id "testing/test8/report",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-agent-and-workflow-evaluations",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST8](../../docs/phase-14-testing-verification-and-conformance/197-test8-ai-and-workflow-evaluation-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 37293,
+       :end-byte 39751,
+       :start-line 174,
+       :end-line 180,
+       :sha256
+       "8d6215523bd324b10e17e58482aa6955b277041afd3ce0fdeca6b4c6f07bebe4"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 1703,
+      :task-relative-byte-end 2284,
+      :sha256
+      "e8dbd64394ff65493c69a9c64b9e6e0b98d6e75591f0793364687499cfc59ed3"}}
+    {:id "testing/test2/cache-invalidation",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST2](../../docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 39753,
+       :end-byte 45454,
+       :start-line 182,
+       :end-line 188,
+       :sha256
+       "551177a2b0e469e75657bc5d119b1613c61568e329343eee5b3251edcb54b743"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 660,
+      :task-relative-byte-end 1278,
+      :sha256
+      "cedaf405cafc381fcba0cbb3aad02cb96ac554473d1b79cff1b96860664e4b15"}}
+    {:id "testing/test2/development-feedback",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST2](../../docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 39753,
+       :end-byte 45454,
+       :start-line 182,
+       :end-line 188,
+       :sha256
+       "551177a2b0e469e75657bc5d119b1613c61568e329343eee5b3251edcb54b743"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 1279,
+      :task-relative-byte-end 2087,
+      :sha256
+      "954866c305d262b754c1396ef3e5956c5178bfba5dc289967be2630dc46c5445"}}
+    {:id "testing/test2/diagnostic-match",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST2](../../docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 39753,
+       :end-byte 45454,
+       :start-line 182,
+       :end-line 188,
+       :sha256
+       "551177a2b0e469e75657bc5d119b1613c61568e329343eee5b3251edcb54b743"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 2088,
+      :task-relative-byte-end 2590,
+      :sha256
+      "806e5a9f3c43be17d0d46355795271e0cf7e901dffdb9823b1d1da9a1ec15ee8"}}
+    {:id "testing/test2/generated-reentry",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST2](../../docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 39753,
+       :end-byte 45454,
+       :start-line 182,
+       :end-line 188,
+       :sha256
+       "551177a2b0e469e75657bc5d119b1613c61568e329343eee5b3251edcb54b743"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 2591,
+      :task-relative-byte-end 3153,
+      :sha256
+      "800436f62c34791d8dea5194f2df7a23f2615c5c9a16ee1aff526179b248ee79"}}
+    {:id "testing/test2/optimization-soundness",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST2](../../docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 39753,
+       :end-byte 45454,
+       :start-line 182,
+       :end-line 188,
+       :sha256
+       "551177a2b0e469e75657bc5d119b1613c61568e329343eee5b3251edcb54b743"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 3154,
+      :task-relative-byte-end 3668,
+      :sha256
+      "08223403b3b908afc9443c7b5532c44752d7fd856661381995cdb863390c6b68"}}
+    {:id "testing/test2/plugin-boundaries",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST2](../../docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 39753,
+       :end-byte 45454,
+       :start-line 182,
+       :end-line 188,
+       :sha256
+       "551177a2b0e469e75657bc5d119b1613c61568e329343eee5b3251edcb54b743"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 3669,
+      :task-relative-byte-end 4200,
+      :sha256
+      "dc30828b5dd8f0a8099170a0b634abc8cb269429baaab659d917852438c78638"}}
+    {:id "testing/test2/report",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST2](../../docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 39753,
+       :end-byte 45454,
+       :start-line 182,
+       :end-line 188,
+       :sha256
+       "551177a2b0e469e75657bc5d119b1613c61568e329343eee5b3251edcb54b743"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 4201,
+      :task-relative-byte-end 4800,
+      :sha256
+      "76cd4d70b3535bf311c11d9db96cbdcbf47dd730d9d1a0a0a6a7f651c6785e79"}}
+    {:id "testing/test2/stage-preservation",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST2](../../docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 39753,
+       :end-byte 45454,
+       :start-line 182,
+       :end-line 188,
+       :sha256
+       "551177a2b0e469e75657bc5d119b1613c61568e329343eee5b3251edcb54b743"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 4801,
+      :task-relative-byte-end 5527,
+      :sha256
+      "74da256c4cb531bcabf0529a7ab3d264b6f571a77605220c4903f0a5d2e7ecb8"}}
+    {:id "testing/test10/backend-artifact",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST10](../../docs/phase-14-testing-verification-and-conformance/199-test10-differential-testing-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 45456,
+       :end-byte 49779,
+       :start-line 190,
+       :end-line 196,
+       :sha256
+       "a04fe57ac3daaf5cf002598c8ccf6cd6682080dfd5cda40833f2695f5fecb37c"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 678,
+      :task-relative-byte-end 1238,
+      :sha256
+      "3e33a27aa7bd80ff7da2523252effa7e2b50135d87e930881064e301e37bad3c"}}
+    {:id "testing/test10/context-divergence",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST10](../../docs/phase-14-testing-verification-and-conformance/199-test10-differential-testing-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 45456,
+       :end-byte 49779,
+       :start-line 190,
+       :end-line 196,
+       :sha256
+       "a04fe57ac3daaf5cf002598c8ccf6cd6682080dfd5cda40833f2695f5fecb37c"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 1239,
+      :task-relative-byte-end 1812,
+      :sha256
+      "70b455b49fdf806cfba9697622960b2182d8750e6d970b47786a28be763953bc"}}
+    {:id "testing/test10/numeric-mode",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST10](../../docs/phase-14-testing-verification-and-conformance/199-test10-differential-testing-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 45456,
+       :end-byte 49779,
+       :start-line 190,
+       :end-line 196,
+       :sha256
+       "a04fe57ac3daaf5cf002598c8ccf6cd6682080dfd5cda40833f2695f5fecb37c"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 1813,
+      :task-relative-byte-end 2331,
+      :sha256
+      "92bd18a24df8f15923452f2aac6d0e71e3ded9923e5c06b36bf84fde2ffa434f"}}
+    {:id "testing/test10/oracle-observables",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST10](../../docs/phase-14-testing-verification-and-conformance/199-test10-differential-testing-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 45456,
+       :end-byte 49779,
+       :start-line 190,
+       :end-line 196,
+       :sha256
+       "a04fe57ac3daaf5cf002598c8ccf6cd6682080dfd5cda40833f2695f5fecb37c"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 2332,
+      :task-relative-byte-end 3012,
+      :sha256
+      "d33f63b161679d61c4b69314938b6fe7b67a800ac247429e9400b9399ab0cde2"}}
+    {:id "testing/test10/recorded-nondeterminism",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST10](../../docs/phase-14-testing-verification-and-conformance/199-test10-differential-testing-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 45456,
+       :end-byte 49779,
+       :start-line 190,
+       :end-line 196,
+       :sha256
+       "a04fe57ac3daaf5cf002598c8ccf6cd6682080dfd5cda40833f2695f5fecb37c"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 3013,
+      :task-relative-byte-end 3571,
+      :sha256
+      "d8beb2c2639dd1441c658d1229470d3c5952585501d4cf432d79586ac2a564d2"}}
+    {:id "testing/test10/report",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST10](../../docs/phase-14-testing-verification-and-conformance/199-test10-differential-testing-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 45456,
+       :end-byte 49779,
+       :start-line 190,
+       :end-line 196,
+       :sha256
+       "a04fe57ac3daaf5cf002598c8ccf6cd6682080dfd5cda40833f2695f5fecb37c"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 3572,
+      :task-relative-byte-end 4149,
+      :sha256
+      "178b1550644c42b0f95e488b42f3220ad2f52eca11e295275599d8bfd3e65ab9"}}
+    {:id "testing/test11/formal-obligations",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-formal-evidence-checks",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST11](../../docs/phase-14-testing-verification-and-conformance/200-test11-formal-semantics-and-verification-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 49781,
+       :end-byte 52789,
+       :start-line 198,
+       :end-line 204,
+       :sha256
+       "ea0c2bf29a692e6e5e81c8393854a9e7cdfadd225cf079bbf3b811469b0f9777"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 654,
+      :task-relative-byte-end 1178,
+      :sha256
+      "6e3321cc8470dcb501990a3d341dc3a97696dd7786f5820a6a86cb6d663c7ff4"}}
+    {:id "testing/test11/pass-linkage",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-formal-evidence-checks",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST11](../../docs/phase-14-testing-verification-and-conformance/200-test11-formal-semantics-and-verification-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 49781,
+       :end-byte 52789,
+       :start-line 198,
+       :end-line 204,
+       :sha256
+       "ea0c2bf29a692e6e5e81c8393854a9e7cdfadd225cf079bbf3b811469b0f9777"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 1179,
+      :task-relative-byte-end 1644,
+      :sha256
+      "c6da2d707f2ea9289b18d83af1ed674875234cd6ee8d2c6d03a585557bf0b20f"}}
+    {:id "testing/test11/proof-identity",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-formal-evidence-checks",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST11](../../docs/phase-14-testing-verification-and-conformance/200-test11-formal-semantics-and-verification-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 49781,
+       :end-byte 52789,
+       :start-line 198,
+       :end-line 204,
+       :sha256
+       "ea0c2bf29a692e6e5e81c8393854a9e7cdfadd225cf079bbf3b811469b0f9777"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 1645,
+      :task-relative-byte-end 2223,
+      :sha256
+      "bc3c1bc7ff2fab47ba98fb3293b23ee091cd9ce84de947c4479a0a106fdee660"}}
+    {:id "testing/test11/report",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-formal-evidence-checks",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST11](../../docs/phase-14-testing-verification-and-conformance/200-test11-formal-semantics-and-verification-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 49781,
+       :end-byte 52789,
+       :start-line 198,
+       :end-line 204,
+       :sha256
+       "ea0c2bf29a692e6e5e81c8393854a9e7cdfadd225cf079bbf3b811469b0f9777"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 2224,
+      :task-relative-byte-end 2834,
+      :sha256
+      "3acee8c81838e1a7ea2e972b605e6e37e36ec0d510cee356be3fb5b4019fb4b9"}}
+    {:id "testing/test9/live-effect-policy",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST9](../../docs/phase-14-testing-verification-and-conformance/198-test9-fuzzing-and-property-testing-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 52791,
+       :end-byte 58385,
+       :start-line 206,
+       :end-line 212,
+       :sha256
+       "9d7d7069d0b7a571902cf6b934b5f6f5a6cd30e0b31139db109c718725ab16df"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 659,
+      :task-relative-byte-end 1280,
+      :sha256
+      "6c50ca6addbd5ce716d1ce8f45b8d4a9e7691b326494d581a11f86e80d2bca08"}}
+    {:id "testing/test9/minimize-regressions",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST9](../../docs/phase-14-testing-verification-and-conformance/198-test9-fuzzing-and-property-testing-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 52791,
+       :end-byte 58385,
+       :start-line 206,
+       :end-line 212,
+       :sha256
+       "9d7d7069d0b7a571902cf6b934b5f6f5a6cd30e0b31139db109c718725ab16df"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 1281,
+      :task-relative-byte-end 1828,
+      :sha256
+      "69ed388649198da2db46e1e6e66642641eae05e93f5856e434b43e97f56b1749"}}
+    {:id "testing/test9/mir-preservation",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST9](../../docs/phase-14-testing-verification-and-conformance/198-test9-fuzzing-and-property-testing-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 52791,
+       :end-byte 58385,
+       :start-line 206,
+       :end-line 212,
+       :sha256
+       "9d7d7069d0b7a571902cf6b934b5f6f5a6cd30e0b31139db109c718725ab16df"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 1829,
+      :task-relative-byte-end 2331,
+      :sha256
+      "27b98a4424cc5f032236a99276e225f0e44c10612fc82eafe68ae43022f7cb54"}}
+    {:id "testing/test9/property-oracle",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST9](../../docs/phase-14-testing-verification-and-conformance/198-test9-fuzzing-and-property-testing-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 52791,
+       :end-byte 58385,
+       :start-line 206,
+       :end-line 212,
+       :sha256
+       "9d7d7069d0b7a571902cf6b934b5f6f5a6cd30e0b31139db109c718725ab16df"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 2332,
+      :task-relative-byte-end 2928,
+      :sha256
+      "7974541ff7b67cadffce26d009ededb1fc882ccedc23ccab083a8d97710da08f"}}
+    {:id "testing/test9/replay-identity",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST9](../../docs/phase-14-testing-verification-and-conformance/198-test9-fuzzing-and-property-testing-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 52791,
+       :end-byte 58385,
+       :start-line 206,
+       :end-line 212,
+       :sha256
+       "9d7d7069d0b7a571902cf6b934b5f6f5a6cd30e0b31139db109c718725ab16df"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 2929,
+      :task-relative-byte-end 3539,
+      :sha256
+      "26a7467834f2fc7044f0cd6009cd70ade60a2bda08d8b7b2f24fc83ebf60cf7c"}}
+    {:id "testing/test9/report",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST9](../../docs/phase-14-testing-verification-and-conformance/198-test9-fuzzing-and-property-testing-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 52791,
+       :end-byte 58385,
+       :start-line 206,
+       :end-line 212,
+       :sha256
+       "9d7d7069d0b7a571902cf6b934b5f6f5a6cd30e0b31139db109c718725ab16df"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 3540,
+      :task-relative-byte-end 4142,
+      :sha256
+      "90e54dd0b2588becbe3ad0f7b79c4cca5c4f62cb3331224a41b8ec649d6d9542"}}
+    {:id "testing/test9/schema-canonicalization",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST9](../../docs/phase-14-testing-verification-and-conformance/198-test9-fuzzing-and-property-testing-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 52791,
+       :end-byte 58385,
+       :start-line 206,
+       :end-line 212,
+       :sha256
+       "9d7d7069d0b7a571902cf6b934b5f6f5a6cd30e0b31139db109c718725ab16df"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 4143,
+      :task-relative-byte-end 4677,
+      :sha256
+      "598e55dc7918e19aecc21ebd050ee56a7d3e936a73185033f658e49c1c9a7488"}}
+    {:id "testing/test9/valid-invalid",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST9](../../docs/phase-14-testing-verification-and-conformance/198-test9-fuzzing-and-property-testing-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 52791,
+       :end-byte 58385,
+       :start-line 206,
+       :end-line 212,
+       :sha256
+       "9d7d7069d0b7a571902cf6b934b5f6f5a6cd30e0b31139db109c718725ab16df"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 4678,
+      :task-relative-byte-end 5420,
+      :sha256
+      "01e89f5504571a38576adf76ebda1822acbfebbe90e6af8cd5f77003e01f2127"}}
+    {:id "testing/test1/portable-language",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST1](../../docs/phase-14-testing-verification-and-conformance/190-test1-language-conformance-test-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 58387,
+       :end-byte 63640,
+       :start-line 214,
+       :end-line 220,
+       :sha256
+       "18bb750d2ab7cad44d643b2fa67c60bb5c61c16bd2f74e98720a5e2efde39c69"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 665,
+      :task-relative-byte-end 1327,
+      :sha256
+      "646e563743a663668bb6e7b55f8c1c7b483cb707123fca85293d9ed7f1b98212"}}
+    {:id "testing/test1/profile-separation",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST1](../../docs/phase-14-testing-verification-and-conformance/190-test1-language-conformance-test-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 58387,
+       :end-byte 63640,
+       :start-line 214,
+       :end-line 220,
+       :sha256
+       "18bb750d2ab7cad44d643b2fa67c60bb5c61c16bd2f74e98720a5e2efde39c69"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 1328,
+      :task-relative-byte-end 1873,
+      :sha256
+      "a8fae91796f0b88ffa7ff23fd62edd1e4db3cc2c06fc4478724fe33efdb1abe9"}}
+    {:id "testing/test1/report",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST1](../../docs/phase-14-testing-verification-and-conformance/190-test1-language-conformance-test-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 58387,
+       :end-byte 63640,
+       :start-line 214,
+       :end-line 220,
+       :sha256
+       "18bb750d2ab7cad44d643b2fa67c60bb5c61c16bd2f74e98720a5e2efde39c69"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 1874,
+      :task-relative-byte-end 2578,
+      :sha256
+      "cd2ac9ee3882280f348da38a1a2d61080a9dae0ef1da991e94fd34afe0188be7"}}
+    {:id "testing/test1/syntax-origin",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST1](../../docs/phase-14-testing-verification-and-conformance/190-test1-language-conformance-test-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 58387,
+       :end-byte 63640,
+       :start-line 214,
+       :end-line 220,
+       :sha256
+       "18bb750d2ab7cad44d643b2fa67c60bb5c61c16bd2f74e98720a5e2efde39c69"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 2579,
+      :task-relative-byte-end 3105,
+      :sha256
+      "1941a92b44e8a75786d622466d6f55d5c5d2966023ddd1ff873d44e1a07200c1"}}
+    {:id "testing/test7/availability",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-library-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST7](../../docs/phase-14-testing-verification-and-conformance/196-test7-standard-library-test-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 63642,
+       :end-byte 68120,
+       :start-line 222,
+       :end-line 228,
+       :sha256
+       "290f29b392f82b8797ca86efac46acefa11a81c0131787935de679cd24c3b813"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 662,
+      :task-relative-byte-end 1183,
+      :sha256
+      "a3c72a498838419c12aab89d27fa0355633aa63e2334ed74807d1184ea368a04"}}
+    {:id "testing/test7/capability-denial",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-library-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST7](../../docs/phase-14-testing-verification-and-conformance/196-test7-standard-library-test-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 63642,
+       :end-byte 68120,
+       :start-line 222,
+       :end-line 228,
+       :sha256
+       "290f29b392f82b8797ca86efac46acefa11a81c0131787935de679cd24c3b813"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 1184,
+      :task-relative-byte-end 1746,
+      :sha256
+      "20a77541c5e1b4a09337d651ddf41c9477e7efa14d69e1079bb8c2ae43623fd9"}}
+    {:id "testing/test7/properties",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-library-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST7](../../docs/phase-14-testing-verification-and-conformance/196-test7-standard-library-test-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 63642,
+       :end-byte 68120,
+       :start-line 222,
+       :end-line 228,
+       :sha256
+       "290f29b392f82b8797ca86efac46acefa11a81c0131787935de679cd24c3b813"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 1747,
+      :task-relative-byte-end 2220,
+      :sha256
+      "0d4c6e0021b005c331ac645c8c589020d0da170b63d3584150a33b3bfc314b03"}}
+    {:id "testing/test7/public-api-coverage",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-library-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST7](../../docs/phase-14-testing-verification-and-conformance/196-test7-standard-library-test-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 63642,
+       :end-byte 68120,
+       :start-line 222,
+       :end-line 228,
+       :sha256
+       "290f29b392f82b8797ca86efac46acefa11a81c0131787935de679cd24c3b813"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 2221,
+      :task-relative-byte-end 2831,
+      :sha256
+      "e34e58a65cbb3591701738a43a06d31a83908ffc806931ea5bbbb523ddd8224a"}}
+    {:id "testing/test7/report",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-library-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST7](../../docs/phase-14-testing-verification-and-conformance/196-test7-standard-library-test-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 63642,
+       :end-byte 68120,
+       :start-line 222,
+       :end-line 228,
+       :sha256
+       "290f29b392f82b8797ca86efac46acefa11a81c0131787935de679cd24c3b813"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 2832,
+      :task-relative-byte-end 3367,
+      :sha256
+      "a65a923eab1e5f0b84ff9e0f4fefc75ff19ab7de4738d7de300aeb47e238b37b"}}
+    {:id "testing/test7/stability",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-library-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST7](../../docs/phase-14-testing-verification-and-conformance/196-test7-standard-library-test-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 63642,
+       :end-byte 68120,
+       :start-line 222,
+       :end-line 228,
+       :sha256
+       "290f29b392f82b8797ca86efac46acefa11a81c0131787935de679cd24c3b813"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 3368,
+      :task-relative-byte-end 3818,
+      :sha256
+      "156ce099d6c177c34dae95f6a55e37b0cd7cc993506c3966b42c8c4e2eee9187"}}
+    {:id "testing/test7/unsafe-wrappers",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-library-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST7](../../docs/phase-14-testing-verification-and-conformance/196-test7-standard-library-test-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 63642,
+       :end-byte 68120,
+       :start-line 222,
+       :end-line 228,
+       :sha256
+       "290f29b392f82b8797ca86efac46acefa11a81c0131787935de679cd24c3b813"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 3819,
+      :task-relative-byte-end 4304,
+      :sha256
+      "290b08dfdeba7872d974a6be86f1f3f4a354b047be78415ad87674b5b98d470b"}}
+    {:id "testing/test12/ai-costs",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-performance-regression-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST12](../../docs/phase-14-testing-verification-and-conformance/201-test12-performance-regression-test-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 68122,
+       :end-byte 71343,
+       :start-line 230,
+       :end-line 236,
+       :sha256
+       "be78b5607529ea317eb86ebf63e3bff40b8fe1778759f24770d766bf90c3f645"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 675,
+      :task-relative-byte-end 1291,
+      :sha256
+      "49ee9be9247b7e73842ed8c3bdd36a512faa0c9f36dba03fafbd4b59a3262943"}}
+    {:id "testing/test12/device-counters",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-performance-regression-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST12](../../docs/phase-14-testing-verification-and-conformance/201-test12-performance-regression-test-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 68122,
+       :end-byte 71343,
+       :start-line 230,
+       :end-line 236,
+       :sha256
+       "be78b5607529ea317eb86ebf63e3bff40b8fe1778759f24770d766bf90c3f645"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 1292,
+      :task-relative-byte-end 1819,
+      :sha256
+      "1957bcfea49e1b3f6dc607b73aeac5abe153ab210398e566aa3fd2bc3ab01876"}}
+    {:id "testing/test12/report",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-performance-regression-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST12](../../docs/phase-14-testing-verification-and-conformance/201-test12-performance-regression-test-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 68122,
+       :end-byte 71343,
+       :start-line 230,
+       :end-line 236,
+       :sha256
+       "be78b5607529ea317eb86ebf63e3bff40b8fe1778759f24770d766bf90c3f645"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 1820,
+      :task-relative-byte-end 2394,
+      :sha256
+      "543c5650f5c610a5da36da6f0261a515ffc2b2335e8975e9e32c896f09ade5a5"}}
+    {:id "testing/test12/semantic-safety-gate",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-performance-regression-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST12](../../docs/phase-14-testing-verification-and-conformance/201-test12-performance-regression-test-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 68122,
+       :end-byte 71343,
+       :start-line 230,
+       :end-line 236,
+       :sha256
+       "be78b5607529ea317eb86ebf63e3bff40b8fe1778759f24770d766bf90c3f645"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 2395,
+      :task-relative-byte-end 3047,
+      :sha256
+      "b94c651e4c5c8e1a5912b1390a518f1dffde714b1c27f199fcc03008016cd564"}}
+    {:id "testing/test4/allocation-runtime",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST4](../../docs/phase-14-testing-verification-and-conformance/193-test4-profile-compliance-test-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 71345,
+       :end-byte 75492,
+       :start-line 238,
+       :end-line 244,
+       :sha256
+       "015036322a7cc39d779dcc4d2985f0eabc6d9cba6ca8b2de09a318b7226b3acb"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 657,
+      :task-relative-byte-end 1244,
+      :sha256
+      "6f0f372f21e3e16acdc0bbcfc82135ef50e8285583e20769e718725e082147f7"}}
+    {:id "testing/test4/capability-legality",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST4](../../docs/phase-14-testing-verification-and-conformance/193-test4-profile-compliance-test-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 71345,
+       :end-byte 75492,
+       :start-line 238,
+       :end-line 244,
+       :sha256
+       "015036322a7cc39d779dcc4d2985f0eabc6d9cba6ca8b2de09a318b7226b3acb"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 1245,
+      :task-relative-byte-end 1692,
+      :sha256
+      "e95e082c64c8d73c5529c66f7b91cd92f717f9da338d3cfbc53d7426fa013d51"}}
+    {:id "testing/test4/compatibility",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST4](../../docs/phase-14-testing-verification-and-conformance/193-test4-profile-compliance-test-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 71345,
+       :end-byte 75492,
+       :start-line 238,
+       :end-line 244,
+       :sha256
+       "015036322a7cc39d779dcc4d2985f0eabc6d9cba6ca8b2de09a318b7226b3acb"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 1693,
+      :task-relative-byte-end 2183,
+      :sha256
+      "06bd275c51305d19c40199d6071c66dfb75add745407689129e3814057338a24"}}
+    {:id "testing/test4/delegation",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST4](../../docs/phase-14-testing-verification-and-conformance/193-test4-profile-compliance-test-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 71345,
+       :end-byte 75492,
+       :start-line 238,
+       :end-line 244,
+       :sha256
+       "015036322a7cc39d779dcc4d2985f0eabc6d9cba6ca8b2de09a318b7226b3acb"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 2184,
+      :task-relative-byte-end 2681,
+      :sha256
+      "9be23b3a354c9694e1ef6c517882536bb003bdb463249e67aca1237e7e666b92"}}
+    {:id "testing/test4/profile-legality",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST4](../../docs/phase-14-testing-verification-and-conformance/193-test4-profile-compliance-test-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 71345,
+       :end-byte 75492,
+       :start-line 238,
+       :end-line 244,
+       :sha256
+       "015036322a7cc39d779dcc4d2985f0eabc6d9cba6ca8b2de09a318b7226b3acb"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 2682,
+      :task-relative-byte-end 3411,
+      :sha256
+      "84351dbeb5b665c8ca366e66509c22452e7d5426866d2f8c573de44f6dadc3aa"}}
+    {:id "testing/test4/report",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST4](../../docs/phase-14-testing-verification-and-conformance/193-test4-profile-compliance-test-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 71345,
+       :end-byte 75492,
+       :start-line 238,
+       :end-line 244,
+       :sha256
+       "015036322a7cc39d779dcc4d2985f0eabc6d9cba6ca8b2de09a318b7226b3acb"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 3412,
+      :task-relative-byte-end 3973,
+      :sha256
+      "15971084a1283e8bbbb88fbbb6d71921984463646d2f51e36ee725a4e3d89701"}}
+    {:id "testing/test3/ai-ledger",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST3](../../docs/phase-14-testing-verification-and-conformance/192-test3-runtime-test-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 75494,
+       :end-byte 81238,
+       :start-line 246,
+       :end-line 252,
+       :sha256
+       "85511d988b1316b76b4a26e9da9ef7f6c2e55d38ce2602143db4b4943ba4c0c9"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 653,
+      :task-relative-byte-end 1179,
+      :sha256
+      "d72ea4fb8bf4f251523c672de9e081808a83d3dab43de2fc1764c7ce0ca4f440"}}
+    {:id "testing/test3/capability-denial",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST3](../../docs/phase-14-testing-verification-and-conformance/192-test3-runtime-test-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 75494,
+       :end-byte 81238,
+       :start-line 246,
+       :end-line 252,
+       :sha256
+       "85511d988b1316b76b4a26e9da9ef7f6c2e55d38ce2602143db4b4943ba4c0c9"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 1180,
+      :task-relative-byte-end 1709,
+      :sha256
+      "a963bbb97611f2ae1c086a746f9e0f61dcaa58d57d43ee4011bcf9d75a96551a"}}
+    {:id "testing/test3/concurrency",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST3](../../docs/phase-14-testing-verification-and-conformance/192-test3-runtime-test-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 75494,
+       :end-byte 81238,
+       :start-line 246,
+       :end-line 252,
+       :sha256
+       "85511d988b1316b76b4a26e9da9ef7f6c2e55d38ce2602143db4b4943ba4c0c9"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 1710,
+      :task-relative-byte-end 2255,
+      :sha256
+      "01c197c96dfce2abc93a637f583f537f3bb66b963862367dacddd9bff441ca0d"}}
+    {:id "testing/test3/family-coverage",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST3](../../docs/phase-14-testing-verification-and-conformance/192-test3-runtime-test-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 75494,
+       :end-byte 81238,
+       :start-line 246,
+       :end-line 252,
+       :sha256
+       "85511d988b1316b76b4a26e9da9ef7f6c2e55d38ce2602143db4b4943ba4c0c9"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 2256,
+      :task-relative-byte-end 2852,
+      :sha256
+      "8afb321e08f4be2d524ead0964a2b6760b859efe8b4523c2d386c6c92657fe74"}}
+    {:id "testing/test3/ffi-boundary",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST3](../../docs/phase-14-testing-verification-and-conformance/192-test3-runtime-test-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 75494,
+       :end-byte 81238,
+       :start-line 246,
+       :end-line 252,
+       :sha256
+       "85511d988b1316b76b4a26e9da9ef7f6c2e55d38ce2602143db4b4943ba4c0c9"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 2853,
+      :task-relative-byte-end 3387,
+      :sha256
+      "4486bd1281e59ab1555392973ff9c53815c970f448d80b92c39061bc553dde33"}}
+    {:id "testing/test3/memory-safety",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST3](../../docs/phase-14-testing-verification-and-conformance/192-test3-runtime-test-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 75494,
+       :end-byte 81238,
+       :start-line 246,
+       :end-line 252,
+       :sha256
+       "85511d988b1316b76b4a26e9da9ef7f6c2e55d38ce2602143db4b4943ba4c0c9"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 3388,
+      :task-relative-byte-end 3924,
+      :sha256
+      "dfd34304bd48eadd258accbd1c289a73dbc0fbbf2213069ec80277c98d3cfa65"}}
+    {:id "testing/test3/observability",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST3](../../docs/phase-14-testing-verification-and-conformance/192-test3-runtime-test-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 75494,
+       :end-byte 81238,
+       :start-line 246,
+       :end-line 252,
+       :sha256
+       "85511d988b1316b76b4a26e9da9ef7f6c2e55d38ce2602143db4b4943ba4c0c9"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 3925,
+      :task-relative-byte-end 4398,
+      :sha256
+      "bdc4842627f5651b25b8d7f29c59f4143d3661bca60ce39eb76eb4053a558f53"}}
+    {:id "testing/test3/replay",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST3](../../docs/phase-14-testing-verification-and-conformance/192-test3-runtime-test-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 75494,
+       :end-byte 81238,
+       :start-line 246,
+       :end-line 252,
+       :sha256
+       "85511d988b1316b76b4a26e9da9ef7f6c2e55d38ce2602143db4b4943ba4c0c9"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 4399,
+      :task-relative-byte-end 4958,
+      :sha256
+      "14bcf4fa83af62287fdded4c5908fe093e04e7aec2932c316dbe0b5954010ec0"}}
+    {:id "testing/test3/report",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST3](../../docs/phase-14-testing-verification-and-conformance/192-test3-runtime-test-strategy.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 75494,
+       :end-byte 81238,
+       :start-line 246,
+       :end-line 252,
+       :sha256
+       "85511d988b1316b76b4a26e9da9ef7f6c2e55d38ce2602143db4b4943ba4c0c9"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 4959,
+      :task-relative-byte-end 5570,
+      :sha256
+      "3b1027e7bfb297bc6a1d5d2da48c749d031458b958c8a0c20d67d2d20b17a210"}}
+    {:id "testing/test5/capability-bypass",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST5](../../docs/phase-14-testing-verification-and-conformance/194-test5-safety-conformance-test-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 81240,
+       :end-byte 85894,
+       :start-line 254,
+       :end-line 260,
+       :sha256
+       "50f51c2e4b1cd734a46d18d0a16e1edfa96aa9784f456c2e0c795a4214432308"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 657,
+      :task-relative-byte-end 1120,
+      :sha256
+      "1224019f4ee9e78f4eea57b88c6bddae3a4ad64302b4663b8ae5e2c1ae9002c8"}}
+    {:id "testing/test5/check-elision",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST5](../../docs/phase-14-testing-verification-and-conformance/194-test5-safety-conformance-test-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 81240,
+       :end-byte 85894,
+       :start-line 254,
+       :end-line 260,
+       :sha256
+       "50f51c2e4b1cd734a46d18d0a16e1edfa96aa9784f456c2e0c795a4214432308"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 1121,
+      :task-relative-byte-end 1612,
+      :sha256
+      "d47ddecf33cc5c7e8f0e8891201fc842584ad7a8e3a0aa2dd6b1e601f400e32a"}}
+    {:id "testing/test5/report",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST5](../../docs/phase-14-testing-verification-and-conformance/194-test5-safety-conformance-test-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 81240,
+       :end-byte 85894,
+       :start-line 254,
+       :end-line 260,
+       :sha256
+       "50f51c2e4b1cd734a46d18d0a16e1edfa96aa9784f456c2e0c795a4214432308"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 1613,
+      :task-relative-byte-end 2236,
+      :sha256
+      "d6f342fd9f98e029379b4cea53ef9ef862fee0494b96a7d0fa5f13a2070df133"}}
+    {:id "testing/test5/runtime-checks",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST5](../../docs/phase-14-testing-verification-and-conformance/194-test5-safety-conformance-test-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 81240,
+       :end-byte 85894,
+       :start-line 254,
+       :end-line 260,
+       :sha256
+       "50f51c2e4b1cd734a46d18d0a16e1edfa96aa9784f456c2e0c795a4214432308"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 2237,
+      :task-relative-byte-end 2755,
+      :sha256
+      "35edc9eebd104dc50908192b840208e2f5b8c1c44088dd5367302d998e446e64"}}
+    {:id "testing/test5/safe-outcomes",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST5](../../docs/phase-14-testing-verification-and-conformance/194-test5-safety-conformance-test-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 81240,
+       :end-byte 85894,
+       :start-line 254,
+       :end-line 260,
+       :sha256
+       "50f51c2e4b1cd734a46d18d0a16e1edfa96aa9784f456c2e0c795a4214432308"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 2756,
+      :task-relative-byte-end 3412,
+      :sha256
+      "dacecd230234ba8e71817beba9381b30bba5e66de03ff1ebd00a4f9eaa335462"}}
+    {:id "testing/test5/taint",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST5](../../docs/phase-14-testing-verification-and-conformance/194-test5-safety-conformance-test-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 81240,
+       :end-byte 85894,
+       :start-line 254,
+       :end-line 260,
+       :sha256
+       "50f51c2e4b1cd734a46d18d0a16e1edfa96aa9784f456c2e0c795a4214432308"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 3413,
+      :task-relative-byte-end 3925,
+      :sha256
+      "1ec3abe1f20244242758ead0df928f14768c41533c6f4457bf2153dceb18006b"}}
+    {:id "testing/test5/unsafe-audit",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST5](../../docs/phase-14-testing-verification-and-conformance/194-test5-safety-conformance-test-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 81240,
+       :end-byte 85894,
+       :start-line 254,
+       :end-line 260,
+       :sha256
+       "50f51c2e4b1cd734a46d18d0a16e1edfa96aa9784f456c2e0c795a4214432308"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 3926,
+      :task-relative-byte-end 4480,
+      :sha256
+      "f699e1cec129ec3d447b1559239ab1f33d2102e147562717b6b676debe68e7d0"}}
+    {:id "bootstrap/release-supply-chain",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-staged-compiler-validation",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST13](../../docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 85896,
+       :end-byte 90888,
+       :start-line 262,
+       :end-line 268,
+       :sha256
+       "de657d84993e1332296f00a25bfc896ba19edc09716bb9cc0222d4cbbae8b947"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 656,
+      :task-relative-byte-end 1321,
+      :sha256
+      "c6bd6948a56a34bb57ece445e1ac40bd4e80b4cf2fca8b1f822aed2a74b46f76"}}
+    {:id "bootstrap/trust-reduction",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-staged-compiler-validation",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST13](../../docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 85896,
+       :end-byte 90888,
+       :start-line 262,
+       :end-line 268,
+       :sha256
+       "de657d84993e1332296f00a25bfc896ba19edc09716bb9cc0222d4cbbae8b947"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 1322,
+      :task-relative-byte-end 1886,
+      :sha256
+      "e2de267435afa4af2f0e0dcd2f64cf15c44659e6a36509b7772d825151316073"}}
+    {:id "testing/test13/diagnostic-schema",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-staged-compiler-validation",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST13](../../docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 85896,
+       :end-byte 90888,
+       :start-line 262,
+       :end-line 268,
+       :sha256
+       "de657d84993e1332296f00a25bfc896ba19edc09716bb9cc0222d4cbbae8b947"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 1887,
+      :task-relative-byte-end 2405,
+      :sha256
+      "3eaa21208f71a5172296d6a69b5f075662654120def59a49051e882de258c63a"}}
+    {:id "testing/test13/rebuild-equivalence",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-staged-compiler-validation",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST13](../../docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 85896,
+       :end-byte 90888,
+       :start-line 262,
+       :end-line 268,
+       :sha256
+       "de657d84993e1332296f00a25bfc896ba19edc09716bb9cc0222d4cbbae8b947"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 2406,
+      :task-relative-byte-end 3020,
+      :sha256
+      "ec6597fdc68dd55d7a6a8c1b21b3768a57466d0eb3fd4bd1b638fe4618b3eb2c"}}
+    {:id "testing/test13/report",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-staged-compiler-validation",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST13](../../docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 85896,
+       :end-byte 90888,
+       :start-line 262,
+       :end-line 268,
+       :sha256
+       "de657d84993e1332296f00a25bfc896ba19edc09716bb9cc0222d4cbbae8b947"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 3021,
+      :task-relative-byte-end 3622,
+      :sha256
+      "ae41de8ea1b1b76ca94d15b80fc59b865967d677c5297667d15a5b1e4394ba4b"}}
+    {:id "testing/test13/stage-conformance",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-staged-compiler-validation",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST13](../../docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 85896,
+       :end-byte 90888,
+       :start-line 262,
+       :end-line 268,
+       :sha256
+       "de657d84993e1332296f00a25bfc896ba19edc09716bb9cc0222d4cbbae8b947"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 3623,
+      :task-relative-byte-end 4181,
+      :sha256
+      "82c16513f99ba259df1e53003574410de728b0260322162d6d6ac726c6029002"}}
+    {:id "testing/test13/trusting-trust",
+     :task-id
+     "release/remaining-tasks-and-evidence/execute-staged-compiler-validation",
+     :state :unassessed,
+     :declaration-kind :test-source-clause,
+     :evidence-baseline
+     "[TEST13](../../docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 85896,
+       :end-byte 90888,
+       :start-line 262,
+       :end-line 268,
+       :sha256
+       "de657d84993e1332296f00a25bfc896ba19edc09716bb9cc0222d4cbbae8b947"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 4182,
+      :task-relative-byte-end 4818,
+      :sha256
+      "626a76d5590a8e17395bebcea34413b1a5a9138a58bfa9e11ece022a529c3a70"}}
+    {:id "bootstrap/native-carrier-header",
+     :task-id
+     "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+     :state :unassessed,
+     :declaration-kind :bootstrap-criterion,
+     :evidence-baseline
+     "[Seed compiler contract](../../docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 90890,
+       :end-byte 97916,
+       :start-line 270,
+       :end-line 276,
+       :sha256
+       "ee83573983288ce10a6d898596408e92ad61d835fa9f42d983c641a403cd0f71"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 546,
+      :task-relative-byte-end 3564,
+      :sha256
+      "457ac369093277876351203e59e9f088505c181abfc271c605a4133ce11546d5"}}
+    {:id "bootstrap/native-reference-identity",
+     :task-id
+     "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+     :state :unassessed,
+     :declaration-kind :bootstrap-criterion,
+     :evidence-baseline
+     "[Seed compiler contract](../../docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 90890,
+       :end-byte 97916,
+       :start-line 270,
+       :end-line 276,
+       :sha256
+       "ee83573983288ce10a6d898596408e92ad61d835fa9f42d983c641a403cd0f71"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 3565,
+      :task-relative-byte-end 4528,
+      :sha256
+      "01b57d87fbb4689d16c56eef12775fd3766d4192dbaf7911bbcdb197ef8ce080"}}
+    {:id "bootstrap/native-symbol-units",
+     :task-id
+     "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+     :state :unassessed,
+     :declaration-kind :bootstrap-criterion,
+     :evidence-baseline
+     "[Seed compiler contract](../../docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 90890,
+       :end-byte 97916,
+       :start-line 270,
+       :end-line 276,
+       :sha256
+       "ee83573983288ce10a6d898596408e92ad61d835fa9f42d983c641a403cd0f71"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 4529,
+      :task-relative-byte-end 5730,
+      :sha256
+      "494bdba70982163c3ad45d18e3cf860b69003801d0e8257204f41e08ddee2f8d"}}
+    {:id "bootstrap/seed-subset",
+     :task-id
+     "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+     :state :unassessed,
+     :declaration-kind :bootstrap-criterion,
+     :evidence-baseline
+     "[Seed compiler contract](../../docs/phase-15-bootstrap-and-self-hosting/204-boot2-seed-compiler-design.md)",
+     :baseline-authority :navigation-not-semantic-entailment,
+     :source
+     {:task-source
+      {:path "specs/release-workflow/tasks.md",
+       :start-byte 90890,
+       :end-byte 97916,
+       :start-line 270,
+       :end-line 276,
+       :sha256
+       "ee83573983288ce10a6d898596408e92ad61d835fa9f42d983c641a403cd0f71"},
+      :source-commit "be099c84b68e17e171e67905de64c9053226a083",
+      :task-relative-byte-start 5731,
+      :task-relative-byte-end 7026,
+      :sha256
+      "3d0d348ac8f489e2f79a541cadd75855c39461a39de8fa362ac1d34581abb3ae"}}],
+   :stage-boundaries
+   [:actual-candidate-and-lineage
+    :raw-comparison
+    :suite-and-rebuild-results
+    :independent-intermediate-admission
+    :final-distribution
+    :independent-release],
+   :predecessor-readiness-successor
+   {:commit "ea2f6d76ef65caf94305f9044ff8c3461c7812dc",
+    :path
+    "specs/sh-family-crosswalk/implementation-readiness-source-version.edn",
+    :sha256
+    "e8600fcbf20600514c25618640c3d62ad2c989b0f356b70d9229ce75e878aa58",
+    :projection-path "specs/sh-family-crosswalk/crosswalk.edn",
+    :projection-sha256
+    "9d34fc389d246463ae04ac6815160ceaf16502645d38f1797b04d34010c75fb4",
+    :input-fingerprint
+    "26a68ae0f0c95d43466b0fc058968d71fb1d5910a1af59d709bac6f0da4aa223"},
+   :declared-consumers
+   ["automation"
+    "blockchain"
+    "crypto"
+    "formal"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"
+    "native"
+    "platform-product/adopt-application-contract"
+    "platform-product/adopt-hardware-contract"
+    "platform-product/adopt-kernel-contract"
+    "platform-product/adopt-physical-boundary"
+    "platform-product/distribute-product"
+    "platform-product/implement-applications"
+    "platform-product/implement-drivers"
+    "platform-product/implement-firmware"
+    "platform-product/implement-hardware"
+    "platform-product/implement-os"
+    "platform-product/integrate-execution"
+    "release/remaining-tasks-and-evidence/execute-agent-and-workflow-evaluations"
+    "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures"
+    "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures"
+    "release/remaining-tasks-and-evidence/execute-formal-evidence-checks"
+    "release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures"
+    "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures"
+    "release/remaining-tasks-and-evidence/execute-library-conformance-fixtures"
+    "release/remaining-tasks-and-evidence/execute-performance-regression-fixtures"
+    "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures"
+    "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures"
+    "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures"
+    "release/remaining-tasks-and-evidence/execute-staged-compiler-validation"
+    "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations"
+    "schema/checked-consumer-projection"
+    "schema/compatibility-and-migration"
+    "services"
+    "simulation"
+    "storage"
+    "visual"],
+   :declared-parent-consumers
+   ["math"
+    "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance"
+    "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom"
+    "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler"
+    "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate"
+    "release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution"],
+   :source-entailment :pending-independent-review,
+   :selected-result-joins 260,
+   :coarse-producer-cycles
+   [["math"
+     "math/certified-implementation-synthesis"
+     "math/eml-normalization-and-search"
+     "math/independent-proof-and-certificate-checking"
+     "math/interval-and-real-proof-production"
+     "math/symbolic-rule-and-trace-production"]
+    ["release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance"
+     "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom"
+     "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler"
+     "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures"
+     "release/remaining-tasks-and-evidence/execute-performance-regression-fixtures"
+     "release/remaining-tasks-and-evidence/execute-staged-compiler-validation"
+     "schema/checked-consumer-projection"
+     "schema/compatibility-and-migration"]],
+   :dependency-source
+   {:path "docs/acceptance-dependencies.md",
+    :before
+    {:commit "a1c36bf6d78a063bfbec0b44d92339cedd2ce14f",
+     :sha256
+     "15b02dc8f8bf7f9935fcd33149875f166cdb0f4753a043d7f1c47f24ba1b04ea"},
+    :after
+    {:commit "8f4f2236509364ebba1d632e9ed6a8420003e487",
+     :sha256
+     "dd88a83687baa0a8504e61a3b7703291ae5f3d8e802d0b40f52fe8e64a23e8f4"}},
+   :future-sh-and-full-language-joins :pending,
+   :unresolved-consumers [],
+   :task-bodies-and-task-source-pins :unchanged,
+   :implementation-acceptance :unassessed},
   :ai-parent-refinement
   {:source-input-commit "92b3917ec51e882338fc221bddde86310815221f",
    :profile-mapping-ids
@@ -20735,7 +22528,7 @@
   "f92591e9423b440c294b6aa560e015618686547c4719193cad449052a3ed02bc"},
  :source-digests
  {"docs/acceptance-dependencies.md"
-  "15b02dc8f8bf7f9935fcd33149875f166cdb0f4753a043d7f1c47f24ba1b04ea",
+  "dd88a83687baa0a8504e61a3b7703291ae5f3d8e802d0b40f52fe8e64a23e8f4",
   "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md"
   "1c879a874faa0b995c2ad5899bcbee9167d831d65203a5e6b38b2cda28599f91",
   "docs/artifacts/phase-06/reports/current-reader-fresh-syntax-handoff.md"
@@ -20940,7 +22733,7 @@
   "docs/phase-02-safety/043-safe14-supply-chain-safety.md"
   "697917447d70ba0797a096d9427d4706bf5515df",
   "docs/acceptance-dependencies.md"
-  "a1c36bf6d78a063bfbec0b44d92339cedd2ce14f",
+  "8f4f2236509364ebba1d632e9ed6a8420003e487",
   "specs/platform-workflow/tasks.md"
   "0876063f41e2ad3e13f3c332f4877daecb62b45d",
   "specs/backends-workflow/tasks.md"

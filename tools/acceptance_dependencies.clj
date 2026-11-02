@@ -460,6 +460,46 @@
      :limits [:literal-dependencies-not-all-prose :proof-method-selected-per-claim
               :output-facts-not-tasks :source-declarations-not-execution]}))
 
+(defn release-source-view [tasks snapshots]
+  (let [rows (vec
+               (mapcat
+                 (fn [task]
+                   (let [raw (source-raw (:source task) snapshots)
+                         baseline (second (re-find #"(?m)^Evidence baseline: (.+)$" raw))
+                         test-id (second (re-find #"\[TEST(\d+)\]" (or baseline "")))
+                         matcher (re-matcher #"(Source|Bootstrap criterion) ([a-z0-9/-]+):" raw)
+                         starts (loop [out []]
+                                  (if (.find matcher)
+                                    (recur (conj out {:id (.group matcher 2) :kind (.group matcher 1) :start (.start matcher)})) out))]
+                     (mapv
+                       (fn [row next-row]
+                         (let [tail (or (str/index-of raw " This producer supplies conformance evidence;" (:start row)) (count raw))
+                               end (or (:start next-row) tail)
+                               body (str/trimr (subs raw (:start row) end))
+                               end (+ (:start row) (count body))
+                               bootstrap? (= "Bootstrap criterion" (:kind row))
+                               allowed? (if bootstrap?
+                                          (and (str/ends-with? (:id task) "implement-declared-seed-compiler-and-native-observations")
+                                               (contains? #{"bootstrap/native-carrier-header" "bootstrap/native-reference-identity"
+                                                            "bootstrap/native-symbol-units" "bootstrap/seed-subset"} (:id row)))
+                                          (or (and test-id (str/starts-with? (:id row) (str "testing/test" test-id "/")))
+                                              (and (= "13" test-id) (contains? #{"bootstrap/release-supply-chain" "bootstrap/trust-reduction"} (:id row)))))]
+                           (require! (and allowed? baseline
+                                          (str/includes? body (if bootstrap? "Required outputs:" "Concrete acceptance:")))
+                                     "Malformed or misowned Release source criterion")
+                           {:id (:id row) :task-id (:id task) :state :unassessed
+                            :declaration-kind (if bootstrap? :bootstrap-criterion :test-source-clause)
+                            :evidence-baseline baseline :baseline-authority :navigation-not-semantic-entailment
+                            :source {:task-source (source-ref (:source task)) :source-commit (:source-commit task)
+                                     :task-relative-byte-start (alength (.getBytes (subs raw 0 (:start row)) "UTF-8"))
+                                     :task-relative-byte-end (alength (.getBytes (subs raw 0 end) "UTF-8"))
+                                     :sha256 (sha256 body)}})) starts (concat (rest starts) [nil])))) tasks))
+        _ (require! (= 77 (count rows) (count (set (map :id rows))))
+                    "Missing or duplicate preserved Release source criterion")]
+    {:authority :literal-resumed-task-criteria :criteria rows :implementation-acceptance :unassessed
+     :limits [:source-criteria-not-tasks :baseline-links-not-canonical-entailment
+              :runner-not-independent-admission :source-declarations-not-execution]}))
+
 (defn future-task-view [authorities current-tasks snapshots read-text]
   (let [future-tasks (vec (mapcat val authorities))
         future-map (into {} (map (juxt :id identity) future-tasks))
@@ -489,6 +529,7 @@
         declared (set/intersection all-declared (set (keys future-map)))
         unresolved (vec (sort (remove declared (keys future-map))))
         math (math-output-view all-tasks snapshots)
+        release (release-source-view (authorities "release-testing-proposals") snapshots)
         named-inputs (group-by (juxt :consumer-task :producer-task) (:cross-task-inputs math))
         output-graph (reduce (fn [graph {:keys [consumer start-results composition-results]}]
                                (assoc graph consumer (set (concat start-results composition-results))))
@@ -500,6 +541,8 @@
                     :named-math-output-inputs (vec (sort (set (map :producer-output (named-inputs [consumer producer])))))
                     :producer-source (source-ref (:source (all-tasks producer)))})
         nodes (merge
+                (into {} (for [row (:criteria release)]
+                           [(str "source-criterion:" (:id row)) (assoc row :scope :selected-acceptance-facet)]))
                 (into {} (for [row (:outputs math)]
                            [(str "output:" (:id row)) (assoc row :scope :selected-acceptance-facet)]))
                 (into {} (for [[id row] future-map]
@@ -518,6 +561,9 @@
                            [(:id row) (assoc (dissoc row :id) :state :unassessed :scope :selected-acceptance-facet
                                             :task-id (:producer row))])))
         edges (vec (concat
+                (for [row (:criteria release)]
+                  {:from (str "task:" (:task-id row) "/composition") :to (str "source-criterion:" (:id row))
+                   :kind :requires-source-criterion-execution-and-refusals :source (:source row)})
                 (for [row (:outputs math) input (:dependencies row)]
                   {:from (str "output:" (:id row)) :to (str "output:" input)
                    :kind :literal-math-output-prerequisite :source (:source row)})
@@ -546,6 +592,7 @@
                          :declared-parent-consumers (vec (sort (set/difference all-declared declared)))
                          :unresolved-consumers unresolved :routes routes
                          :math-outputs math
+                         :release-source-criteria release
                          :declared-output-adjacency output-graph :declared-output-cycles (cycles output-graph)
                          :authority :source-declarations-not-execution
                          :future-sh-and-full-language-joins :pending

@@ -357,16 +357,16 @@
         adoption "platform-product/adopt-physical-boundary"]
     (is (= 149 (count current)))
     (is (= 40 (:task-count review)))
-    (is (= 27 (count (:declared-consumers review))))
-    (is (= ["math"] (:declared-parent-consumers review)))
-    (is (= 13 (count (:unresolved-consumers review))))
+    (is (= 40 (count (:declared-consumers review))))
+    (is (= 6 (count (:declared-parent-consumers review))))
+    (is (empty? (:unresolved-consumers review)))
     (is (= :pending (:future-sh-and-full-language-joins review)))
     (is (= :unassessed (:implementation-acceptance review)))
-    (is (= [["math" "math/certified-implementation-synthesis" "math/eml-normalization-and-search"
-             "math/independent-proof-and-certificate-checking" "math/interval-and-real-proof-production"
-             "math/symbolic-rule-and-trace-production"]
-            ["schema/checked-consumer-projection" "schema/compatibility-and-migration"]]
-           (:declared-output-cycles review)))
+    (is (= [6 8] (mapv count (:declared-output-cycles review))))
+    (is (every? (set (second (:declared-output-cycles review)))
+                ["schema/checked-consumer-projection" "schema/compatibility-and-migration"
+                 "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler"
+                 "release/remaining-tasks-and-evidence/execute-staged-compiler-validation"]))
     (doseq [id (:unresolved-consumers review)]
       (is (= :dependency-review-pending (get-in frontier [(str "task:" id "/composition") :state])) id)
       (is (= :dependency-review-pending (get-in frontier [(str "task:" id "/implementation") :state])) id))
@@ -468,6 +468,60 @@
       (is (= :unassessed (:state node)))
       (is (some #(= [(str "result:" eml ":math") "output:math/efir-verification" :named-selected-producer-output]
                     [(:from %) (:to %) (:kind %)]) (:typed-edges result))))))
+
+(deftest release-source-criteria-and-staged-admission-remain-distinct
+  (let [source (edn/read-string (slurp dependencies/sh-crosswalk-path))
+        snapshots (:source-snapshots source)
+        rows (get-in source [:future-task-authorities "release-testing-proposals"])
+        view (dependencies/release-source-view rows snapshots)
+        criteria (:criteria view)
+        rewrite (fn [index f]
+                  (let [raw (f (dependencies/source-raw (:source (rows index)) snapshots))]
+                    (assoc-in rows [index :source] {:path "fixture" :raw raw :sha256 (dependencies/sha256 raw)})))]
+    (is (= 77 (count criteria) (count (set (map :id criteria)))))
+    (is (= 73 (count (filter #(= :test-source-clause (:declaration-kind %)) criteria))))
+    (is (= 4 (count (filter #(= :bootstrap-criterion (:declaration-kind %)) criteria))))
+    (is (= :unassessed (:implementation-acceptance view)))
+    (doseq [row criteria :let [s (:source row)
+                              bytes (.getBytes (dependencies/source-raw (:task-source s) snapshots) "UTF-8")
+                              body (String. (java.util.Arrays/copyOfRange bytes (int (:task-relative-byte-start s))
+                                                                         (int (:task-relative-byte-end s))) "UTF-8")]]
+      (is (= (:sha256 s) (dependencies/sha256 body)) (:id row))
+      (is (str/starts-with? body (str (if (= :test-source-clause (:declaration-kind row)) "Source " "Bootstrap criterion ")
+                                    (:id row) ":")))
+      (is (= :unassessed (:state row)))
+      (is (= :navigation-not-semantic-entailment (:baseline-authority row))))
+    (doseq [[from to] [["testing/test8/human-review" "testing/test99/human-review"]
+                       ["testing/test8/metric-release" "testing/test8/human-review"]
+                       ["Evidence baseline: [TEST8]" "Evidence baseline: [TEST7]"]
+                       ["Concrete acceptance: Execute grant" "Missing acceptance: Execute grant"]]]
+      (is (thrown? Exception (dependencies/release-source-view (rewrite 0 #(str/replace % from to)) snapshots)) from))
+    (is (thrown? Exception (dependencies/release-source-view (pop rows) snapshots)))
+    (is (thrown? Exception
+                 (dependencies/release-source-view
+                   (rewrite 12 #(str/replace % "Bootstrap criterion bootstrap/native-symbol-units:"
+                                              "Bootstrap criterion bootstrap/unknown-native:")) snapshots)))
+    (let [current (into {} (for [rs (vals (:task-authorities source)) row rs] [(:id row) row]))
+          result (dependencies/future-task-view (:future-task-authorities source) current snapshots slurp)
+          staged "release/remaining-tasks-and-evidence/execute-staged-compiler-validation"
+          comparison "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler"
+          edges (:typed-edges result)
+          pair? (fn [from to kind] (some #(= [from to kind] [(:from %) (:to %) (:kind %)]) edges))
+          missing-doc (str/replace (slurp dependencies/future-dependency-path)
+                        #"(?m)^\| `release/remaining-tasks-and-evidence/execute-language-conformance-fixtures` \|[^\n]*\n" "")
+          missing (dependencies/future-task-view (:future-task-authorities source) current snapshots
+                    #(if (= dependencies/future-dependency-path %) missing-doc (slurp %)))]
+      (is (pair? (str "task:" staged "/implementation") (str "task:" comparison "/interface") :declared-producer-interface))
+      (is (not (pair? (str "task:" staged "/implementation") (str "result:" staged ":" comparison) :adopted-product-contract)))
+      (is (pair? (str "task:" staged "/composition") (str "result:" staged ":" comparison) :actual-selected-producer-result))
+      (is (pair? (str "task:" comparison "/composition") (str "result:" comparison ":" staged) :actual-selected-producer-result))
+      (is (pair? (str "task:" staged "/composition") "source-criterion:testing/test13/stage-conformance"
+                 :requires-source-criterion-execution-and-refusals))
+      (is (= :unassessed (get-in result [:nodes (str "result:" staged ":" comparison) :state])))
+      (is (= ["release/remaining-tasks-and-evidence/execute-language-conformance-fixtures"]
+             (get-in missing [:dependency-review :unresolved-consumers])))
+      (is (= :pending (get-in missing [:nodes "task:release/remaining-tasks-and-evidence/execute-language-conformance-fixtures/implementation"
+                                      :dependency-review]))))))
 
 (let [result (run-tests 'acceptance-dependencies-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))

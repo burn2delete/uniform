@@ -2,6 +2,48 @@
 
 ## Current implementation-readiness source-version successor
 
+The Release dependency continuation binds declaration input
+`8f4f2236509364ebba1d632e9ed6a8420003e487`, preserving the complete
+Math/Schema bridge, projection and pending fingerprint at
+`ea2f6d76ef65caf94305f9044ff8c3461c7812dc`. Only the dependency document's
+applying pin advances. All 149 current records, forty future records, task-file
+pins, original SH/SH07 routes and scoped Reader receipts remain unchanged.
+
+All forty captured future consumers and six existing parent consumers now have
+declarations, with 260 selected producer-result joins. The thirteen Release
+records retain 77 exact literal TEST/BOOT criteria: 73 test clauses and four
+seed/native clauses. The checker preserves their full source spans, byte hashes,
+owners, declaration kinds and primary baseline navigation. Those links and
+source criteria do not prove canonical entailment or executable implementation.
+Each criterion and selected output stays execution/review-unassessed.
+
+Raw candidate construction and lineage, raw comparison, actual suite/rebuild
+results, independent intermediate admission, final distribution and independent
+release remain distinct boundaries within existing authorities. Coarse cycles
+remain for the six Math tasks and the eight Release/Schema consumers; the staged
+graph stays acyclic. Ordinary test development needs no completed final compiler
+or fresh migration admission. All final proof, required signing/custody, TCB,
+native sticky-denial, external-policy and held-execution obligations remain.
+
+Author validation passes: 31 crosswalk tests / 1,179 assertions; 22 dependency
+tests / 1,608 assertions; deterministic generation/check and original inventory;
+read-only dependency audit; canonical document/full-language structural checks;
+and language boundary (six tests / eleven assertions). Exact source reconstruction,
+malformed/unknown/duplicated/misowned criteria, missing declarations, stage-versus-
+admission edges and immutable checkpoint controls are included. Current mapping
+review remains pending at fingerprint
+`97208a8459357873deeda3d2a8ea8a1bf827ce63f04649a377e37eb15398af1f`.
+Focused conservation/navigation passes for 73 changed files, 67 Markdown files,
+2,656 local references, 139 original component routes, 48 historical suffixes
+and all 48 original task/evidence contents after stripping declared additions.
+Changed files are ASCII and whitespace checks pass.
+Full-language/SH finish-line joins, global source/facet/owner conjunctions,
+repartition, independent acceptance and integration remain pending. No compiler,
+native/C12/provider, device, migration, signing, publication or held operation
+was executed and no other chat was messaged.
+
+### Math/Schema dependency checkpoint
+
 The Math/Schema dependency continuation binds declaration input
 `a1c36bf6d78a063bfbec0b44d92339cedd2ce14f` and retains the complete bridge,
 projection and pending fingerprint at

@@ -897,3 +897,59 @@ current repartition and independent acceptance/integration remain pending.
 Reader's contract-coverage preparation increment remains first. No compiler,
 native/C12/provider, device, migration or held operation was executed, and no
 other chat was messaged. Reconciliation remains active.
+
+## Release suite dependency continuation
+
+The existing [suite and admission declarations](../docs/acceptance-dependencies.md#release-suite-comparison-and-admission-boundaries)
+now include all thirteen future Release producers and the five existing Release
+aggregates. All forty captured future tasks and six existing parents therefore
+have declared joins, with 260 selected producer results and no undeclared member
+of that captured population. This is declaration completeness, not semantic
+coverage, execution, implementation readiness acceptance or project completion.
+
+The Release source view preserves 77 literal criteria in those thirteen tasks:
+73 TEST clauses and four seed/native clauses, each with full task-relative UTF8
+span, hash, owning task, declaration kind and primary baseline navigation.
+Source-to-canonical semantic entailment remains unassessed; a baseline link is
+not that proof. Every clause connects to its existing task's composition and
+remains execution/review-unassessed. TEST6 stays with Backends. Native clauses
+retain narrow prior receipts and exact-class/no-callback/sticky-denial boundaries.
+
+Raw candidate/compiler lineage, raw comparison, suite/rebuild results, independent
+intermediate admission, final distribution and independent release decision are
+distinct outputs within the existing authorities. The stage-comparison aggregate
+retains intermediate admission, while TEST13 executes the required subset suites
+and checks. Source cycles remain visible: six Math tasks and eight Release/Schema
+consumers. Their staged graph is acyclic without requiring a completed final
+compiler or authoritative admission merely to develop focused tests. Final
+public binary, complete claimed conformance, actual rebuilds, four Clojure
+exclusions and required trust/governance/signing evidence remain real obligations.
+
+Source input `8f4f2236509364ebba1d632e9ed6a8420003e487` advances only the
+dependency document's applying version. The complete prior bridge/projection and
+pending fingerprint at `ea2f6d76ef65caf94305f9044ff8c3461c7812dc` are retained.
+All 149 current records, forty future records, task-file pins, original SH/SH07
+routes, source qualifications and scoped Reader receipts are unchanged. Mapping
+review remains pending at fingerprint
+`97208a8459357873deeda3d2a8ea8a1bf827ce63f04649a377e37eb15398af1f`.
+
+Validation passes: 31 crosswalk tests / 1,179 assertions; 22 dependency tests /
+1,608 assertions; deterministic crosswalk/original inventory and read-only audit;
+canonical document and full-language structural validators; language boundary
+(six tests / eleven assertions); and task/evidence conservation/navigation.
+The structural snapshot is still not current full-language execution evidence.
+Focused conservation/navigation passes for 73 changed files, 67 Markdown files,
+2,656 local references, 139 original component routes, 48 historical suffixes
+and all 48 original task/evidence contents after stripping declared additions.
+Changed files are ASCII and whitespace checks pass.
+Preliminary helper/test-form syntax errors were corrected before the passing
+runs and receive no validation credit. No compiler, native/C12/provider, device,
+migration, signing, publication or held operation was executed. No other chat
+was messaged.
+
+The remaining dependency work joins the existing 36 full-language tasks and
+final SH/Phase 18 outcomes to these selected component results. Global substantive
+source/facet/owner conjunctions, actual support/evidence assessment, unresolved
+material decisions, current repartition and required independent review/integration
+also remain open. Reader contract coverage remains the first implementation
+preparation increment. Reconciliation remains active.

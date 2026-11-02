@@ -970,20 +970,23 @@
     (is (= refinement (get-in view [:implementation-readiness-source-version :future-dependency-refinement])))))
 
 (deftest math-schema-dependency-successor-preserves-task-versions-and-output-identities
-  (let [bridge sh-crosswalk/readiness-source-version
+  (let [checkpoint (get-in sh-crosswalk/readiness-source-version [:release-dependency-refinement :predecessor-readiness-successor])
+        bridge (if checkpoint (edn/read-string (sh-crosswalk/git-source (:commit checkpoint) (:path checkpoint)))
+                   sh-crosswalk/readiness-source-version)
         refinement (:math-schema-dependency-refinement bridge)
         predecessor (:predecessor-readiness-successor refinement)
         previous-text (sh-crosswalk/git-source (:commit predecessor) (:path predecessor))
         previous (edn/read-string previous-text)
         previous-projection-text (sh-crosswalk/git-source (:commit predecessor) (:projection-path predecessor))
         previous-projection (edn/read-string previous-projection-text)
-        view (sh-crosswalk/build)
+        view (if checkpoint (edn/read-string (sh-crosswalk/git-source (:commit checkpoint) (:projection-path checkpoint)))
+                 (sh-crosswalk/build))
         current (into {} (for [rows (vals (:task-authorities view)) row rows] [(:id row) row]))
+        {:keys [path before after]} (:dependency-source refinement)
         dependency-view (acceptance-dependencies/future-task-view (:future-task-authorities view) current
-                                                                 (:source-snapshots view) slurp)
+                          (:source-snapshots view) #(if (= path %) (sh-crosswalk/git-source (:commit after) path) (slurp %)))
         review (:dependency-review dependency-view)
-        math (:math-outputs review)
-        {:keys [path before after]} (:dependency-source refinement)]
+        math (:math-outputs review)]
     (is (= (:sha256 predecessor) (sh-inventory/sha256 previous-text)))
     (is (= (:projection-sha256 predecessor) (sh-inventory/sha256 previous-projection-text)))
     (is (= (:input-fingerprint predecessor) (:input-fingerprint previous)))
@@ -1019,6 +1022,52 @@
     (is (= (:sh07-sequence previous-projection) (:sh07-sequence view)))
     (is (= (:accepted-current-scoped-evidence previous-projection) (:accepted-current-scoped-evidence view)))
     (is (= refinement (get-in view [:implementation-readiness-source-version :math-schema-dependency-refinement])))))
+
+(deftest release-dependency-successor-preserves-stage-and-task-authorities
+  (let [bridge sh-crosswalk/readiness-source-version
+        refinement (:release-dependency-refinement bridge)
+        previous (:predecessor-readiness-successor refinement)
+        previous-text (sh-crosswalk/git-source (:commit previous) (:path previous))
+        previous-bridge (edn/read-string previous-text)
+        previous-projection-text (sh-crosswalk/git-source (:commit previous) (:projection-path previous))
+        previous-projection (edn/read-string previous-projection-text)
+        view (sh-crosswalk/build)
+        current (into {} (for [rows (vals (:task-authorities view)) row rows] [(:id row) row]))
+        result (acceptance-dependencies/future-task-view (:future-task-authorities view) current (:source-snapshots view) slurp)
+        review (:dependency-review result)
+        records (get-in review [:release-source-criteria :criteria])
+        {:keys [path before after]} (:dependency-source refinement)]
+    (is (= (:sha256 previous) (sh-inventory/sha256 previous-text)))
+    (is (= (:projection-sha256 previous) (sh-inventory/sha256 previous-projection-text)))
+    (is (= (:input-fingerprint previous) (:input-fingerprint previous-bridge)))
+    (is (= (:task-comparisons previous-bridge) (:task-comparisons bridge)))
+    (is (= (:task-authorities previous-projection) (:task-authorities view)))
+    (is (= (:future-task-authorities previous-projection) (:future-task-authorities view)))
+    (is (= (dissoc (:applying-source-pins previous-bridge) path) (dissoc (:applying-source-pins bridge) path)))
+    (is (= (:sha256 before) (get-in previous-projection [:source-digests path])
+           (sh-inventory/sha256 (sh-crosswalk/git-source (:commit before) path))))
+    (is (= (:commit after) (get-in view [:applying-source-pins path])))
+    (is (= (:sha256 after) (get-in view [:source-digests path])
+           (sh-inventory/sha256 (sh-crosswalk/git-source (:commit after) path))))
+    (is (= 40 (count (:declared-consumers review)) (count (:declared-consumers refinement))))
+    (is (= 6 (count (:declared-parent-consumers review)) (count (:declared-parent-consumers refinement))))
+    (is (= [] (:unresolved-consumers review) (:unresolved-consumers refinement)))
+    (is (= 77 (count records) (count (:release-source-records refinement))))
+    (is (= (:release-source-records refinement)
+           (mapv #(update-in % [:source :task-source] dissoc :source-snapshot-ref) records)))
+    (is (= 260 (:selected-result-joins refinement)
+           (count (filter #(= :actual-selected-producer-result (:kind %)) (:typed-edges result)))))
+    (is (= (:coarse-producer-cycles refinement) (:declared-output-cycles review)))
+    (is (= [:actual-candidate-and-lineage :raw-comparison :suite-and-rebuild-results
+            :independent-intermediate-admission :final-distribution :independent-release]
+           (:stage-boundaries refinement)))
+    (is (= :pending-independent-review (:source-entailment refinement)))
+    (is (= :pending (:future-sh-and-full-language-joins refinement)))
+    (is (= :unassessed (:implementation-acceptance refinement)))
+    (is (= (mapv :task-references (:requirements previous-projection)) (mapv :task-references (:requirements view))))
+    (is (= (:sh07-sequence previous-projection) (:sh07-sequence view)))
+    (is (= (:accepted-current-scoped-evidence previous-projection) (:accepted-current-scoped-evidence view)))
+    (is (= refinement (get-in view [:implementation-readiness-source-version :release-dependency-refinement])))))
 
 (let [result (run-tests 'sh-crosswalk-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))
