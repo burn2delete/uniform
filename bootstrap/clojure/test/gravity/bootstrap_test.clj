@@ -14544,6 +14544,29 @@
     (is (= :complete (:egraph-status conformance)))
     (is (= :complete (:status conformance)))))
 
+(deftest math-proof-accepts-decreasing-measure-without-fuel
+  (let [artifact (bootstrap/math-proof-file-artifact
+                  (fixture "accepted/math-rewrite-decreasing-measure.gravity"))
+        termination (:termination-report artifact)
+        proof (:capability-based-proof artifact)]
+    (is (= :decreasing-measure (:strategy termination)))
+    (is (= :strictly-decreasing (:direction termination)))
+    (is (= :proof/operator-decrease (:proof-ref termination)))
+    (is (nil? (:fuel termination)))
+    (is (true? (:termination-bounded? proof)))))
+
+(deftest math-proof-still-rejects-unbounded-termination
+  (is (= "MATH9-TERMINATION"
+         (diagnostic-id
+          #(bootstrap/math-proof-file-artifact
+            (fixture "rejected/math-rewrite-termination.gravity"))))))
+
+(deftest math-proof-rejects-nonincreasing-measure-without-decrease-proof
+  (is (= "MATH9-TERMINATION"
+         (diagnostic-id
+          #(bootstrap/math-proof-file-artifact
+            (fixture "rejected/math-rewrite-nonincreasing-measure.gravity"))))))
+
 (deftest math-conformance-artifact-preserves-math10-11-contract
   (let [artifact (bootstrap/math-conformance-file-artifact
                   (fixture "accepted/math-conformance.gravity"))
