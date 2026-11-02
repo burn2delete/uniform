@@ -1,3 +1,5 @@
 {:config-paths ["../../../.clj-kondo"]
- :hooks {:analyze-call {gravity.c2-artifact-identity/definterposable hooks.c2/definterposable}}
+ :hooks {:analyze-call {gravity.c2-artifact-identity/definterposable hooks.c2/definterposable
+                        gravity.module-analysis/definterposable hooks.module-analysis/definterposable
+                        gravity.module-analysis/definterposable-private hooks.module-analysis/definterposable-private}}
  :linters {:ci/unsupported-interposable {:level :error}}}
