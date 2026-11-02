@@ -46,7 +46,7 @@
            'runtime-check-operation-id 'runtime-check-token-id 'runtime-check-source 'runtime-check-fact-id
            'validate-carrier! 'metadata-free? 'require-strict-structure! 'require!
            'pass-contract-record 'canonical-block-order 'operation-sequence 'path-prefix?
-           'block-keys 'operation-keys 'terminator-keys}
+           'block-keys 'operation-keys 'terminator-keys 'allowed-opcodes 'allowed-source-operations}
          (set (keys (ns-publics 'gravity.mir)))))
   (let [contract (:gravity/namespace-contract (meta #'mir/validate-cfg!))]
     (is (= (set (keys (:public-api contract)))
@@ -65,6 +65,39 @@
       (is (false? (:authenticates-inputs? contract)))
       (is (false? (:issues-verifier-certificates? contract)))
       (is (some #{:general-cfgs} (:unsupported contract))))))
+
+(deftest native-operation-vocabularies-match-real-emission-and-reject-corrupted-operations
+  (doseq [{:keys [source checked operations] emitted :mir} @products]
+    (doseq [operation operations]
+      (is (contains? mir/allowed-opcodes (:opcode operation)))
+      (is (contains? mir/allowed-source-operations (:source-operation operation))))
+    (is (map? (b/p15-s23-c11-mir-validate-operations! source checked emitted)))
+    (let [block-id (first (for [[id block] (get-in emitted [:functions (:entrypoint checked) :blocks])
+                               :when (seq (:instructions block))] id))]
+      (doseq [[field id] [[:opcode "C11-TARGET-LEAK"] [:source-operation "C11-MODULE"]]]
+        (let [changed (assoc-in emitted [:functions (:entrypoint checked) :blocks block-id :instructions 0 field]
+                                :llvm/add)
+              rejected (failure #(b/p15-s23-c11-mir-validate-operations! source checked changed))]
+          (is (= id (:id rejected)))
+          (is (= :checked-core-operation-parity (:missing-fact rejected)))))))
+  (is (not (contains? mir/allowed-opcodes :llvm/add)))
+  (is (not (contains? mir/allowed-source-operations :llvm/add))))
+
+(deftest native-operation-vocabulary-aliases-preserve-snapshots-and-call-time-values
+  (doseq [[stage legacy] [[#'mir/allowed-opcodes #'b/p15-s23-c11-mir-allowed-opcodes]
+                          [#'mir/allowed-source-operations #'b/p15-s23-c11-mir-allowed-source-operations]]]
+    (let [original (var-get legacy)]
+      (is (set? original))
+      (is (identical? (var-get stage) original))
+      (with-redefs-fn {stage #{}}
+        #(is (identical? original (var-get legacy))))))
+  (let [observed (atom nil) marker (Object.)]
+    (with-redefs [b/p15-s23-c11-mir-allowed-opcodes #{:changed-opcode}
+                  b/p15-s23-c11-mir-allowed-source-operations #{:changed-source-operation}
+                  mir/validate-operations! (fn [ports & _] (reset! observed ports) marker)]
+      (is (identical? marker (b/p15-s23-c11-mir-validate-operations! :source :core :mir)))
+      (is (= #{:changed-opcode} (:allowed-opcodes @observed)))
+      (is (= #{:changed-source-operation} (:allowed-source-operations @observed))))))
 
 (deftest native-block-operation-and-terminator-key-schemas-match-emission
   (doseq [{:keys [source checked envelope operation-products] emitted :mir} @products]
