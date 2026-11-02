@@ -586,10 +586,47 @@
     (is (= (:sha256 predecessor) (sh-inventory/sha256 prior-text)))
     (is (= (:review predecessor)
            (select-keys (:mapping-review prior) [:status :input-fingerprint :source-version-bridge])))
-    (is (= 135 (:unchanged-body-count comparisons)))
+    (is (= 134 (:unchanged-body-count comparisons)))
     (is (= (set (map :id (:changed-bodies comparisons))) changed))
-    (is (= 4 (count changed)))
-    (is (= 135 (count (remove changed (keys before)))))
+    (is (= 5 (count changed)))
+    (is (= 134 (count (remove changed (keys before)))))
+    (let [refinement (:math-parent-refinement bridge)
+          predecessor (:predecessor-readiness-successor refinement)
+          previous-text (sh-crosswalk/git-source (:commit predecessor) (:path predecessor))
+          previous (edn/read-string previous-text)
+          previous-projection (sh-crosswalk/git-source (:commit predecessor) (:projection-path predecessor))]
+      (is (= (:sha256 predecessor) (sh-inventory/sha256 previous-text)))
+      (is (= (:projection-sha256 predecessor) (sh-inventory/sha256 previous-projection)))
+      (is (= (:input-fingerprint predecessor) (:input-fingerprint previous)))
+      (is (= 135 (get-in previous [:task-comparisons :unchanged-body-count])))
+      (is (= 4 (count (get-in previous [:task-comparisons :changed-bodies]))))
+      (is (= (conj (set (map :id (get-in previous [:task-comparisons :changed-bodies]))) "math") changed))
+      (is (= 28 (count (:criterion-ids refinement))))
+      (is (= (set (:criterion-ids refinement))
+             (set (map second (re-seq #"(?m)^(?:Criterion|Decision criterion) `([^`]+)`"
+                                     (raw view (after "math")))))))
+      (is (= {:profile 3 :domain 2} (:reference-rebindings refinement)))
+      (is (= :pending-current-repartition-review (:checker-allocation refinement)))
+      (let [contexts (:published-source-contexts refinement)
+            text (apply str (map slurp [".specify/implementation-readiness.md"
+                                       "specs/build-workflow/plan.md"
+                                       "specs/domains-workflow/spec.md"
+                                       "specs/domains-workflow/plan.md"
+                                       "specs/domains-workflow/tasks.md"
+                                       "specs/evolution-workflow/evidence.md"]))]
+        (is (= 13 (count contexts)))
+        (is (= 12 (count (filter #(= :exact-file-bytes (:relation %)) contexts))))
+        (doseq [{:keys [path published-commit published-sha256 preserved-sha256 relation]} contexts]
+          (is (str/includes? text (str "https://github.com/burn2delete/uniform/blob/" published-commit "/" path)) path)
+          (if (= :exact-file-bytes relation)
+            (is (= published-sha256 preserved-sha256) path)
+            (do (is (= "specs/domains-workflow/tasks.md" path))
+                (is (= :published-predecessor-with-one-qualified-local-amendment relation))
+                (is (not= published-sha256 preserved-sha256)))))
+        (is (not (str/includes? text "https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/")))
+        (is (= :not-attempted (get-in refinement [:source-link-verification :aggregate-publication])))
+        (is (= "schema/checked-consumer-projection"
+               (get-in refinement [:source-link-verification :qualified-local-record])))))
     (is (every? #(= (:checked (before %)) (:checked (after %))) (keys before)))
     (is (= (set (:added-ids comparisons)) (set (remove (set (keys before)) (keys after)))))
     (is (= (set (:added-ids comparisons)) (set (get-in view [:stable-task-routing-keys "evolution"]))))

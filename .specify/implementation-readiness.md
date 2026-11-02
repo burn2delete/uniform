@@ -496,7 +496,7 @@ errors in the existing dependency controls; that published failure remains
 history rather than being erased or passed by weakening the guard.
 
 The [SH source-version successor](../specs/sh-family-crosswalk/implementation-readiness-source-version.edn)
-now binds the exact current task-file versions and resumed Governance authority
+first bound the exact task-file versions and resumed Governance authority
 through the existing Clojure generator. It records nineteen task-file versions,
 five navigation versions, four source-inspection locators and 27 explicit
 successor pin entries. All were checked against their local Git objects before
@@ -516,14 +516,48 @@ rollup labels its mapping review as historical rather than implying current
 acceptance. See [current SH evidence](../specs/sh-family-crosswalk/evidence.md#current-implementation-readiness-source-version-successor)
 for the commands, initial historical/live assertion failures and their correction.
 
-Crosswalk controls now pass 24 tests / 569 assertions, and dependency controls
-again pass 18 tests / 419 assertions. Original inventory and deterministic
-crosswalk checks pass. The source/tooling boundary check passed 6 tests /
-11 assertions. These checks do not establish substantive requirement entailment,
-execution, independent acceptance or release readiness.
+At that first checkpoint, crosswalk controls passed 24 tests / 569 assertions
+and dependency controls again passed 18 tests / 419 assertions. The failure and
+its exact source-version correction remain preserved as history.
+
+The Math parent continuation now resumes twenty operation/conformance criteria,
+six decision interfaces, two scientific/provider integrations, three profile
+interfaces and seven SAFE9 allocations. Its 28 literal criterion identities
+and all other body text are conserved except five source-context rebindings.
+The missing profile gap path is replaced by the actual preserved profile
+interface record; author checks verified 125 distinct attached profile spans,
+63 Domain spans, 36 retained Open role contexts and current byte equality of
+the eleven Math documents plus SAFE9. Local Math criterion dependencies now
+resolve to their existing parent/producer identities.
+
+The parent consumes independent verdicts from the existing checker task; the
+older parent checker allocation remains qualified for current repartition
+review. Numeric facts, Opt permissions, actual Lower materialization, Runtime
+invocation, STD5 callable APIs and actual conformance are separate interfaces.
+The selected artifact stages distinguish untrusted candidate construction
+from independently checked claims and verified use. SAFE9's checked/proven
+narrowing and named conversion classes both remain visible, without guessing a
+replacement policy or blocking independent checked/proven work.
+
+The existing SH bridge preserves its first readiness successor and binds the
+new Math task source: 134 original bodies remain identical and five Open bodies
+carry declared additions; the task keys, SH/SH07 routes and Reader receipts are
+unchanged. Published context links are byte-checked and their later local C6
+qualification is explicit. Thirteen additional Open Release Testing records in
+the preserved published source still need local resumption and exact consumer
+composition; their absence is not hidden behind the Math suite name.
+
+The current Math continuation passes 24 crosswalk tests / 616 assertions and
+18 dependency tests / 419 assertions. Deterministic projection, canonical
+document, full-language structural and language-boundary checks pass; the dated
+full-language snapshot remains non-authoritative. Focused conservation and
+navigation pass 71 changed files, 66 Markdown files, 2,515 local references,
+139 original component task routes and all original task/evidence contents
+after removing declared additions. These results do not confer current mapping
+acceptance, global source-facet entailment or implementation completion.
 
 No compiler/domain/provider execution, policy decision or independent review
-occurred. Remaining Math parent criteria,
+occurred. Current Math checker and Schema layout allocations,
 current source/facet conjunctions and parent allocations, full support breadth,
 consumer and SH composition
 remain required work in the existing reconciliation lineage.

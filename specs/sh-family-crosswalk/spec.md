@@ -7,6 +7,9 @@ The earlier review statements below retain their historical subjects. The new
 composition remains pending independent review, with every current whole-SH
 criterion unassessed. Governance adds task routes, not a compiler stage or SH
 milestone; the original acceptance and sequence populations remain unchanged.
+The same bridge now also binds the Math parent refinement, preserving the
+initial readiness successor as an immutable predecessor and leaving the
+independent checker allocation and future Release Testing composition explicit.
 
 Status: source-bound routing, dependency mapping, source-pin guard and bounded
 source-version bridge independently reviewed; owner task-boundary integration

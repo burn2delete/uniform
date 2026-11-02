@@ -19,25 +19,17 @@
    "evolution/security-review"
    "evolution/stabilization-decision"
    "evolution/target-support-admission"]},
- :source-input-commit "a9fc9b1c63c0eb344f29bb63d985f71e6c24af24",
+ :source-input-commit "86f194bc693b1eeb39593057284e3b47a713e6f7",
  :task-comparisons
- {:unchanged-body-count 135,
+ {:unchanged-body-count 134,
   :changed-bodies
-  [{:id "schema",
-    :path "specs/domains-workflow/tasks.md",
+  [{:id
+    "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+    :path "specs/build-workflow/tasks.md",
     :before-sha256
-    "1bd123b4c7d4a0e2bd4e5db7ea35139e20fea0e213fcdde01d410e14a9610491",
+    "7a7db16975f44a184adf011b3a81830c272cbe00dd5b707f0a375bbed65f6958",
     :after-sha256
-    "090ebddb1a52d1b6a31e836e5af5a2e2b1cb710420c77db2b2890e98fb709ac5",
-    :before-checked false,
-    :after-checked false}
-   {:id
-    "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
-    :path "specs/release-workflow/tasks.md",
-    :before-sha256
-    "6ed5c4fd6fb06f3b69f7d23d582da2a7f02c1c54e64355632c3e0583951ea7a8",
-    :after-sha256
-    "d68951f82d2460dffcaa81438b09ffccadf0cfea8c93dcbe8e7e114bb53f72ae",
+    "647eccb8560e766ebecabbd7ca9c5e2f6d26f3c08d46b87cd6cf7fe96672b946",
     :before-checked false,
     :after-checked false}
    {:id
@@ -49,13 +41,29 @@
     "497f2ff15a9d3f33b238f41ea6d9becc0337fcd6a925fa6e96dfb7207cd6eb3c",
     :before-checked false,
     :after-checked false}
-   {:id
-    "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
-    :path "specs/build-workflow/tasks.md",
+   {:id "math",
+    :path "specs/domains-workflow/tasks.md",
     :before-sha256
-    "7a7db16975f44a184adf011b3a81830c272cbe00dd5b707f0a375bbed65f6958",
+    "7f4f72add984a02d9bb62595383d740c1ae402a64b0eb6c052d2c8fce5195554",
     :after-sha256
-    "647eccb8560e766ebecabbd7ca9c5e2f6d26f3c08d46b87cd6cf7fe96672b946",
+    "fa09879e06c87968b8de7a63c915f95420b2df1292399e9b6ae10bdf18e7d638",
+    :before-checked false,
+    :after-checked false}
+   {:id
+    "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+    :path "specs/release-workflow/tasks.md",
+    :before-sha256
+    "6ed5c4fd6fb06f3b69f7d23d582da2a7f02c1c54e64355632c3e0583951ea7a8",
+    :after-sha256
+    "d68951f82d2460dffcaa81438b09ffccadf0cfea8c93dcbe8e7e114bb53f72ae",
+    :before-checked false,
+    :after-checked false}
+   {:id "schema",
+    :path "specs/domains-workflow/tasks.md",
+    :before-sha256
+    "1bd123b4c7d4a0e2bd4e5db7ea35139e20fea0e213fcdde01d410e14a9610491",
+    :after-sha256
+    "93eaf9c7b6d3371cbdb3af8d0fbf719e1084e5f3ef53b2a3115826cfc65363ac",
     :before-checked false,
     :after-checked false}],
   :added-ids
@@ -128,9 +136,9 @@
     :sha256
     "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4"},
    :after
-   {:commit "a9fc9b1c63c0eb344f29bb63d985f71e6c24af24",
+   {:commit "86f194bc693b1eeb39593057284e3b47a713e6f7",
     :sha256
-    "03ff39f97775b2e976a6ef98adef3a51e78bb8e8e0ed265b18880ecda2824126"},
+    "60b9547709c6a851cb6de91b246fe73425de0ab1ee91a0ea501c678e09ecb796"},
    :scope :task-file-version}
   {:path "specs/effects-workflow/tasks.md",
    :before
@@ -327,6 +335,174 @@
    :sha256
    "0ef7630d5e962068e47bfb85cd1028fd070b24656f0dd922148e72976ded84d2",
    :kind :source-inspection-not-execution}},
+ :math-parent-refinement
+ {:source-input-commit "86f194bc693b1eeb39593057284e3b47a713e6f7",
+  :task-id "math",
+  :criterion-ids
+  ["domain/numeric-provider-binding"
+   "domain/scientific-sine-integration"
+   "math/approximation-certificate-check"
+   "math/conformance-execution-report"
+   "math/conformance-oracle-adapter"
+   "math/conformance-suite-composition"
+   "math/efir-construction"
+   "math/efir-content-identity"
+   "math/efir-domain-inference"
+   "math/efir-guarded-normalization"
+   "math/efir-precision-attachment"
+   "math/efir-verification"
+   "math/elementary-execution-semantics"
+   "math/elementary-provider-selection"
+   "math/elementary-registration"
+   "math/elementary-subgraph-detection"
+   "math/floating-backend-eligibility"
+   "math/floating-mode-contract"
+   "math/floating-policy-resolution"
+   "math/floating-reproducibility-record"
+   "math/floating-transform-legality"
+   "math/numeric-conversion"
+   "math/numeric-family-type-check"
+   "math/numeric-mode-resolution"
+   "math/numeric-mode-transition"
+   "math/numeric-profile-matrix"
+   "math/rational-value-check"
+   "math/semantic-equality-proof-gate"],
+  :reference-rebindings {:profile 3, :domain 2},
+  :profile-context
+  {:path
+   "specs/requirement-reconciliation/profile-residual-interfaces.edn",
+   :sha256
+   "22ba3f689b81fd783d6854bc4c3b821e3ce2ad7eb73fb3ad1826c78ab374e027",
+   :published-commit "bc0a04f8e70de2be04b642aec357dcfe9a532a5c",
+   :scope :published-source-context-not-current-sh-authority},
+  :predecessor-readiness-successor
+  {:commit "d6ab8c4f7776fe32df6d9c725f72d579f28b54fd",
+   :path
+   "specs/sh-family-crosswalk/implementation-readiness-source-version.edn",
+   :sha256
+   "bfb492e660c3edcbef35bc26b4144281e538cdb31cd0fb43401b44368cd64b84",
+   :projection-path "specs/sh-family-crosswalk/crosswalk.edn",
+   :projection-sha256
+   "7821228f09d7e57cc1955781abc6b9779f08b4eb690d60fc54b6c9a306677805",
+   :input-fingerprint
+   "16d78e4406ac3b0ee25a8f9a5c70d8b77fedf366beb1607d1914e42a6a201aa3",
+   :review :pending-source-version-review},
+  :introduced-at "93463333a5bc621376cacf37ad5683ba3addf1d4",
+  :checker-allocation :pending-current-repartition-review,
+  :source-link-verification
+  {:observed-date "2026-11-01",
+   :repository "burn2delete/uniform",
+   :unavailable-aggregate "55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6",
+   :aggregate-publication :not-attempted,
+   :domain-task-records 23,
+   :unavailable-local-amendment
+   "ccbd88173689c253f2602937a35390b20996f6f7",
+   :github-response :no-commit-found-422,
+   :qualification
+   "GitHub confirmed the named published commits. Twelve files match the local aggregate bytes exactly. The published Domain task predecessor has one later local C6 consumer amendment; no predecessor review accepts that addition and no stopped handoff was retried.",
+   :qualified-local-record "schema/checked-consumer-projection",
+   :published-predecessor-identical-records 22},
+  :qualification
+  "Preserve all Math parent criterion text except five context reference rebindings. Independent verifier production uses the existing checker task; the older parent allocation remains qualified source context. Thirteen future Release Testing records remain explicit composition work.",
+  :implementation-acceptance :unassessed,
+  :published-source-contexts
+  [{:path "specs/compiler-api-workflow/spec.md",
+    :published-commit "ee356a65594a0db80c26f1aa1f82963cd37daa69",
+    :published-sha256
+    "c63a8f9c25a9ea8ad118e4533a90f3be8f00c7a7e5f0f2c0fcaa2ad5bb585f44",
+    :preserved-sha256
+    "c63a8f9c25a9ea8ad118e4533a90f3be8f00c7a7e5f0f2c0fcaa2ad5bb585f44",
+    :relation :exact-file-bytes}
+   {:path "specs/domains-workflow/spec.md",
+    :published-commit "19e1120301643581e6a8b55b933ec12643d0ba2f",
+    :published-sha256
+    "bdf6175bfed334db0ceb369efc13299e73676db8b18bf1d81e650615d3969b8a",
+    :preserved-sha256
+    "bdf6175bfed334db0ceb369efc13299e73676db8b18bf1d81e650615d3969b8a",
+    :relation :exact-file-bytes}
+   {:path "specs/domains-workflow/tasks.md",
+    :published-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+    :published-sha256
+    "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+    :preserved-sha256
+    "a5eea57e02d30f05ef5c287efc1d425b76ac46041270bc4a0e2212ecd6fec57f",
+    :relation
+    :published-predecessor-with-one-qualified-local-amendment}
+   {:path "specs/evolution-workflow/evidence.md",
+    :published-commit "53ebb7f4f0bc712b253436b8f53182b07e3399df",
+    :published-sha256
+    "e642c325e42cf690625acbf3444e37f27ae1a6f4c35a377f252746f82d970660",
+    :preserved-sha256
+    "e642c325e42cf690625acbf3444e37f27ae1a6f4c35a377f252746f82d970660",
+    :relation :exact-file-bytes}
+   {:path "specs/evolution-workflow/tasks.md",
+    :published-commit "46a58eddd4e412064c7a5d0898cc1e583e3dffcc",
+    :published-sha256
+    "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+    :preserved-sha256
+    "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+    :relation :exact-file-bytes}
+   {:path "specs/platform-workflow/spec.md",
+    :published-commit "764409ff7c81424f8677e81c70bd364927aca29f",
+    :published-sha256
+    "8586dd22c950027ef2ba3cdd478b1b85cfb3788ebe5db97f04fd9a40ff821bfc",
+    :preserved-sha256
+    "8586dd22c950027ef2ba3cdd478b1b85cfb3788ebe5db97f04fd9a40ff821bfc",
+    :relation :exact-file-bytes}
+   {:path "specs/release-workflow/tasks.md",
+    :published-commit "df11890b21f71d3f246cc47e9f63d866239a0d68",
+    :published-sha256
+    "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+    :preserved-sha256
+    "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+    :relation :exact-file-bytes}
+   {:path "specs/requirement-reconciliation/domain-gap-completion.edn",
+    :published-commit "19e1120301643581e6a8b55b933ec12643d0ba2f",
+    :published-sha256
+    "cbb47d98fc6120ecfc9a9145c8897151046a89feada36c98f5f820842e844d42",
+    :preserved-sha256
+    "cbb47d98fc6120ecfc9a9145c8897151046a89feada36c98f5f820842e844d42",
+    :relation :exact-file-bytes}
+   {:path
+    "specs/requirement-reconciliation/governance-core43-current-composition.edn",
+    :published-commit "53ebb7f4f0bc712b253436b8f53182b07e3399df",
+    :published-sha256
+    "31e305a915413ab8b56d7b54931754cc31c09ba067458a23600dd7b6698dedd1",
+    :preserved-sha256
+    "31e305a915413ab8b56d7b54931754cc31c09ba067458a23600dd7b6698dedd1",
+    :relation :exact-file-bytes}
+   {:path
+    "specs/requirement-reconciliation/governance14-qualified-current-applicability.edn",
+    :published-commit "fc9eeaf61a61726027261d954907fddf8bbffdbe",
+    :published-sha256
+    "4ab7af73f0b6c1d92bcfb4451f8220dc3da8aaf7c2560265a570e53d2afee1aa",
+    :preserved-sha256
+    "4ab7af73f0b6c1d92bcfb4451f8220dc3da8aaf7c2560265a570e53d2afee1aa",
+    :relation :exact-file-bytes}
+   {:path
+    "specs/requirement-reconciliation/math20-qualified-current-applicability.edn",
+    :published-commit "9640d60e5e5aeb7fb5d860fdfc0c19debb942c42",
+    :published-sha256
+    "7ee258273232ca3f5e5712f0e480f565363c103f190b74328f04013b8f5a125d",
+    :preserved-sha256
+    "7ee258273232ca3f5e5712f0e480f565363c103f190b74328f04013b8f5a125d",
+    :relation :exact-file-bytes}
+   {:path
+    "specs/requirement-reconciliation/profile-residual-interfaces.edn",
+    :published-commit "bc0a04f8e70de2be04b642aec357dcfe9a532a5c",
+    :published-sha256
+    "22ba3f689b81fd783d6854bc4c3b821e3ce2ad7eb73fb3ad1826c78ab374e027",
+    :preserved-sha256
+    "22ba3f689b81fd783d6854bc4c3b821e3ce2ad7eb73fb3ad1826c78ab374e027",
+    :relation :exact-file-bytes}
+   {:path
+    "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn",
+    :published-commit "65e0704bc180521c3393725b39c284995657a065",
+    :published-sha256
+    "3eaa14c04b39376d867b1deaffa770c3ac3dc12d056042bc27eb098f43669845",
+    :preserved-sha256
+    "3eaa14c04b39376d867b1deaffa770c3ac3dc12d056042bc27eb098f43669845",
+    :relation :exact-file-bytes}]},
  :source-criteria
  {:original-sh-criteria 180,
   :original-milestones 30,
@@ -355,7 +531,7 @@
    "4ee538fce884ae04d1dbaf22ea54d9aee0e32abbbb071272f7115baf9da141ad",
    :scope :retained-historical-ownership-not-current-authority}},
  :qualification
- "Bind exact task-file versions and the resumed Governance authority. Four Open task bodies add current proposed source/consumer criteria; all other captured task bodies and checkboxes are conserved. Governance is not a compiler pass or new SH milestone. Sixteen separate future Domains records remain outside the current SH task-key projection. Earlier source/routing/implementation receipts remain historical at their exact subjects; no independent acceptance, implementation or seedless credit is renewed.",
+ "Bind exact task-file versions and the resumed Governance authority. Five Open task bodies add current proposed source/consumer criteria; all other captured task bodies and checkboxes are conserved. Preserve the prior readiness successor at its immutable Git subject. Governance is not a compiler pass or new SH milestone. Sixteen separate future Domains records remain outside the current SH task-key projection. Earlier reviews and implementation receipts retain their exact subjects; no independent acceptance, implementation or seedless credit is renewed.",
  :applying-source-pins
  {"specs/release-workflow/tasks.md"
   "3e34a600c7e139abb0cf51673ef9175dae1b1eba",
@@ -400,7 +576,7 @@
   "specs/types-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9",
   "specs/domains-workflow/tasks.md"
-  "a9fc9b1c63c0eb344f29bb63d985f71e6c24af24",
+  "86f194bc693b1eeb39593057284e3b47a713e6f7",
   "docs/phase-02-safety/043-safe14-supply-chain-safety.md"
   "697917447d70ba0797a096d9427d4706bf5515df",
   "specs/backends-workflow/tasks.md"
@@ -412,4 +588,4 @@
   "specs/emit-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9"},
  :input-fingerprint
- "16d78e4406ac3b0ee25a8f9a5c70d8b77fedf366beb1607d1914e42a6a201aa3"}
+ "c75bc626cf7ea2bab8d81842b4577fa16bc3e099a5d3ed479dd22a36d550aab2"}

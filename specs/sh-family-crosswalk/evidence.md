@@ -2,6 +2,39 @@
 
 ## Current implementation-readiness source-version successor
 
+The Math parent continuation uses task-source input
+`86f194bc693b1eeb39593057284e3b47a713e6f7`, retaining the complete first readiness
+bridge/projection at `d6ab8c4f7776fe32df6d9c725f72d579f28b54fd`. Against the original
+139 captured bodies, 134 remain identical and five Open bodies have declared
+additions. No task ID, checkbox, original SH route or scoped Reader receipt
+changes. Math's 28 parent criterion identities are recorded explicitly; three
+profile and two Domain context references are rebound without changing the
+other criterion text. Source checks retained 36 Open role contexts, verified
+125 distinct profile and 63 Domain facet spans, and confirmed byte equality
+of all eleven Math documents and SAFE9.
+
+GitHub commit checks found the preserved aggregate and final local C6 amendment
+unavailable there. Thirteen published source contexts were checked: twelve
+files match the preserved bytes exactly, and the published Domain task source
+matches 22 of 23 task bodies. The later local difference is confined to the
+C6 conjunction in `schema/checked-consumer-projection`. Corrected links and
+that qualification are recorded in the bridge; citation metadata does not
+become current SH authority. No aggregate publication or stopped handoff was
+attempted. Independent checker reallocation, thirteen future Release Testing
+records and global source/facet composition remain pending.
+
+Current continuation checks passed: deterministic crosswalk generation/check,
+24 crosswalk tests / 616 assertions, 18 dependency tests / 419 assertions,
+canonical document validation, full-language structural validation and the
+language-boundary gate (6 tests / 11 assertions). Focused navigation/conservation
+passed for 71 changed files, 66 Markdown files, 2,515 local references and the
+48 original component task/evidence contents after removing declared additions.
+Math source checks preserve the five context rebindings, 28 local dependency
+references and all other parent body text. These are source/projection checks;
+no Math provider, proof engine, compiler or held integration was executed.
+
+### First readiness source-version checkpoint
+
 Source input: `a9fc9b1c63c0eb344f29bb63d985f71e6c24af24`. The
 [explicit bridge](implementation-readiness-source-version.edn) pins the entire
 predecessor projection and its pending review metadata. It records nineteen

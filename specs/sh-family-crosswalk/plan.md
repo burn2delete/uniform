@@ -35,6 +35,22 @@ mapping review pending for the exact successor fingerprint, even when those
 checks pass. Required independent acceptance and coordinator integration remain
 separate; no other chat is messaged under this goal.
 
+The Math parent continuation was introduced at
+`93463333a5bc621376cacf37ad5683ba3addf1d4`; its published-context correction binds
+source input `86f194bc6` in the same bridge. Its
+`math-parent-refinement` field preserves the entire first readiness bridge and
+projection at `d6ab8c4f7776fe32df6d9c725f72d579f28b54fd`. Only the Domains task
+file's current pin changes in this continuation; other per-file versions remain
+fixed. Against the original captured population, 134 bodies remain identical
+and five Open bodies now have declared additions. No task ID, checkbox, SH
+route or scoped Reader receipt changes. Math's 28 criterion identities and
+five reference rebindings are explicit; its checker allocation and thirteen
+future Release Testing routes retain their pending composition/review scope.
+The bridge also records verified published per-file source contexts. Twelve
+files are byte-identical to the local aggregate; the published Domain task
+predecessor has one later local C6 consumer amendment. That amendment remains
+explicitly qualified, and no aggregate publication or stopped handoff is retried.
+
 ## Ownership handoffs
 
 Canonical requirement owner `01a179ad-2198-7392-966a-1e3c31209027` supplied the
