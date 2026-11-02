@@ -9,7 +9,9 @@
             [gravity.c17-plugin :as c17]
             [gravity.c18-verification :as c18]
             [gravity.digest :as digest]
-            [gravity.pass-cache :as pass-cache])
+            [gravity.pass-cache :as pass-cache]
+            [gravity.pass-execution :as pass-execution]
+            [gravity.pass-execution.dag :as dag])
   (:import [java.nio.file Files LinkOption Path]
            [java.nio.file.attribute FileAttribute]))
 
@@ -228,6 +230,54 @@
                [(get-in result [:c17-cache-evidence :status])
                 (get-in result [:c18-cache-evidence :status])]))))))
 
+(deftest default-orchestration-composes-the-final-dag-once
+  (with-temporary-directory
+    (fn [directory]
+      (let [store (pass-cache/open-local-store directory)
+            calls (atom {:c15 0 :c16 0 :c17 0 :c18 0})
+            upstream (upstream-result store calls)
+            compose-calls (atom 0)
+            original-compose dag/compose-evidence-dag
+            result
+            (with-redefs
+             [dag/compose-evidence-dag
+              (fn [& args]
+                (swap! compose-calls inc)
+                (apply original-compose args))]
+              (cache/lookup-or-compute!
+               store upstream (downstream-context)
+               (downstream-operations calls)))]
+        ;; One call validates the supplied upstream root; one builds the final
+        ;; four-receipt DAG. The final root does not recompose it a third time.
+        (is (= 2 @compose-calls))
+        (is (= (:evidence-root-id result)
+               (get-in result [:evidence-dag :evidence-root-id])))))))
+
+(deftest interposed-composer-and-root-callbacks-remain-live
+  (with-temporary-directory
+    (fn [directory]
+      (let [store (pass-cache/open-local-store directory)
+            calls (atom {:c15 0 :c16 0 :c17 0 :c18 0})
+            upstream (upstream-result store calls)
+            observed (atom [])
+            original-compose pass-execution/compose-evidence-dag
+            original-root pass-execution/evidence-root]
+        (with-redefs
+         [pass-execution/compose-evidence-dag
+          (fn [& args]
+            (swap! observed conj :compose)
+            (apply original-compose args))
+          pass-execution/evidence-root
+          (fn [& args]
+            (swap! observed conj :root)
+            (apply original-root args))]
+          (cache/lookup-or-compute!
+           store upstream (downstream-context)
+           (downstream-operations calls)))
+        ;; The upstream boundary and the final interposed root are both
+        ;; validated; only the final composition is interposed once.
+        (is (= [:root :compose :root] @observed))))))
+
 (deftest public-stage-request-interposition-remains-live
   (with-temporary-directory
     (fn [directory]
@@ -260,9 +310,13 @@
       (let [store (pass-cache/open-local-store directory)
             calls (atom {:c15 0 :c16 0 :c17 0 :c18 0})
             upstream (upstream-result store calls)
-            invalid (assoc upstream :evidence-root-id (id :forged-root))]
-        (is (thrown? clojure.lang.ExceptionInfo
-                     (cache/c17-stage-request (downstream-context) invalid)))
+            invalid (assoc-in upstream [:evidence-dag :evidence-root-id]
+                              (id :forged-root))]
+        (try
+          (cache/c17-stage-request (downstream-context) invalid)
+          (is false "forged upstream DAG must be rejected")
+          (catch clojure.lang.ExceptionInfo error
+            (is (= "C16-STALE" (:id (ex-data error))))))
         (cache/lookup-or-compute!
          store upstream (downstream-context) (downstream-operations calls))
         (let [changed (assoc-in (downstream-context)

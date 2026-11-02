@@ -1,5 +1,22 @@
 (ns gravity.c15-c16-pass-cache.orchestration
-  "Adjacent C15/C16 cache execution over explicitly injected operations.")
+  "Adjacent C15/C16 cache execution over explicitly injected operations."
+  (:require [gravity.pass-execution :as pass-execution]))
+
+(def ^:private default-compose-evidence-dag
+  pass-execution/compose-evidence-dag)
+(def ^:private default-evidence-root
+  pass-execution/evidence-root)
+
+(defn- compose-evidence-dag-and-root
+  [compose-evidence-dag evidence-root receipts contracts]
+  (let [evidence-dag (compose-evidence-dag receipts contracts)]
+    ;; The default composer has just validated and canonicalized this DAG; do
+    ;; not add a spoofable validation marker to the public envelope.
+    [evidence-dag
+     (if (and (identical? compose-evidence-dag default-compose-evidence-dag)
+              (identical? evidence-root default-evidence-root))
+       (:evidence-root-id evidence-dag)
+       (evidence-root evidence-dag))]))
 
 (defn lookup-or-compute!
   [{:keys [validate-context! validate-operations! c15-stage-request
@@ -32,7 +49,9 @@
         receipts [(:producer-receipt c15-result)
                   (:producer-receipt c16-result)]
         contracts [c15-pass-contract c16-pass-contract]
-        evidence-dag (compose-evidence-dag receipts contracts)]
+        [evidence-dag evidence-root-id]
+        (compose-evidence-dag-and-root compose-evidence-dag evidence-root
+                                       receipts contracts)]
     {:artifact :gravity/c15-c16-pass-cache-result
      :schema-version 1
      :c15-artifact c15-artifact
@@ -44,7 +63,7 @@
      :c15-producer-receipt (first receipts)
      :c16-producer-receipt (second receipts)
      :evidence-dag evidence-dag
-     :evidence-root-id (evidence-root evidence-dag)
+     :evidence-root-id evidence-root-id
      :authority :none
      :release-authority? false
      :proof-authority? false
