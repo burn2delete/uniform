@@ -37,7 +37,7 @@
   "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
 
 (def ^:private accepted-fixtures
-  #{"source-syntax" "template-descriptor"})
+  #{"registered-literal-views" "source-syntax" "template-descriptor"})
 
 (def ^:private rejected-fixtures
   #{"capture-unintentional"
@@ -96,6 +96,54 @@
   [source-path]
   (java.nio.file.Files/readAllBytes (.toPath (io/file source-path))))
 
+(defn- source-text
+  [source-path]
+  (str (.decode
+        (doto (.newDecoder java.nio.charset.StandardCharsets/UTF_8)
+          (.onMalformedInput java.nio.charset.CodingErrorAction/REPORT)
+          (.onUnmappableCharacter java.nio.charset.CodingErrorAction/REPORT))
+        (java.nio.ByteBuffer/wrap (source-bytes source-path)))))
+
+(defn- selected-current-reader-path
+  []
+  (.getCanonicalPath
+   (io/file (path bootstrap/sh03-reader-source-relative-path))))
+
+(defn- selected-current-syntax-path
+  []
+  (.getCanonicalPath
+   (io/file (path syntax-source-relative-path))))
+
+(defn- selected-current-invocation
+  []
+  {:reader-source-path (selected-current-reader-path)
+   :authenticated-envelope-options {:source :development-current}
+   :syntax-source-selection
+   {:schema :gravity/sh04-development-syntax-selection-v1
+    :source-path (selected-current-syntax-path)}})
+
+(defn- selected-current-reader-authority
+  []
+  (var-get (ns-resolve 'gravity.bootstrap
+                       'sh03-reader-internal-product-authority)))
+
+(defn- current-c2-artifact
+  [source-path text]
+  (bootstrap/compiler-c2-reader-source-artifact
+   source-path text
+   (bootstrap/reader-project-context-for-source source-path)
+   nil nil (selected-current-reader-path)
+   {:reader-source-path (selected-current-reader-path)
+    :authenticated-envelope-options {:source :development-current}}))
+
+(defn- current-c3-artifact
+  [source-path text]
+  (bootstrap/compiler-c3-syntax-source-artifact
+   source-path text
+   (bootstrap/reader-project-context-for-source source-path)
+   nil nil (selected-current-reader-path)
+   (selected-current-invocation)))
+
 (defn- delete-tree!
   [tree]
   (when tree
@@ -104,13 +152,20 @@
 
 (defn- parsed-values
   [source-path]
-  (let [artifact (bootstrap/compiler-c2-reader-file-artifact source-path)]
+  ;; Controlled fixtures use the explicit selected-current source constructor.
+  ;; This is development-unadmitted C2 construction, not frozen file admission.
+  (let [artifact (current-c2-artifact source-path (source-text source-path))]
     (when-not (= :gravity/stage0-c2-reader-document-artifact
                  (:kind artifact))
       (throw (ex-info "SH-04 fixture did not pass the Gravity reader"
                       {:id "SH04-FIXTURE-READER"
                        :path source-path
                        :kind (:kind artifact)})))
+    (when-not (= :development-unadmitted
+                 (get-in artifact [:gravity-reader-boundary :authenticated-envelope
+                                   :source-rule :admission-status]))
+      (throw (ex-info "SH-04 fixture requires selected-current development construction"
+                      {:id "SH04-FIXTURE-READER-ADMISSION"})))
     (:parsed-semantic-values artifact)))
 
 (defn- fixture-value
@@ -162,10 +217,11 @@
   [extension]
   (let [source-path
         (fixture-path "accepted" "source-syntax" extension)]
-    {:path source-path
-     :bytes (source-bytes source-path)
-     :c2-artifact (bootstrap/compiler-c2-reader-file-artifact source-path)
-     :artifact (bootstrap/compiler-c3-syntax-file-artifact source-path)}))
+    (let [artifact (current-c3-artifact source-path (source-text source-path))]
+      {:path source-path
+       :bytes (source-bytes source-path)
+       :c2-artifact (:c2-reader-artifact artifact)
+       :artifact artifact})))
 
 (def ^:private public-gravity-artifact
   (delay (public-artifact ".gravity")))
@@ -455,6 +511,51 @@
    :version 1
    :invalidated-by [:macro-expansion]})
 
+(def ^:private graph-colliding-native-ids
+  ["sha256:00000000000000000000000000000000000000000000000000000000888bbfb1"
+   "sha256:00000000000000000000000000000000000000000000000000000000b387775b"])
+
+(defn- graph-membership-cases
+  [base cardinality]
+  (let [objects (mapv #(assoc base :syntax-id (stable-test-id :membership %))
+                      (range cardinality))
+        first-object (first objects)
+        last-object (peek objects)
+        first-id (:syntax-id first-object)
+        last-id (:syntax-id last-object)
+        last-index (dec cardinality)
+        collision-prefix
+        (mapv #(assoc base :syntax-id (stable-test-id :collision-prefix %))
+              (range 16))
+        colliding
+        (into collision-prefix
+              (map #(assoc base :syntax-id %) graph-colliding-native-ids))]
+    [[:valid objects :passed nil]
+     [:early-duplicate [first-object first-object] :failed :duplicate-syntax-id]
+     [:late-duplicate (conj objects first-object) :failed :duplicate-syntax-id]
+     [:late-shape (assoc-in objects [last-index :immutable?] false)
+      :failed :invalid-syntax-object]
+     [:late-unresolved (assoc-in objects [last-index :syntax-id] {:digest-ref 1})
+      :failed :unresolved-syntax-id]
+     [:forward-reference (assoc-in objects [0 :prior-syntax-ids] [last-id])
+      :failed :reference-not-prior]
+     [:self-reference (assoc-in objects [last-index :prior-syntax-ids] [last-id])
+      :failed :reference-not-prior]
+     [:prior-reference (assoc-in objects [last-index :prior-syntax-ids] [first-id])
+      :passed nil]
+     [:native-hash-collision colliding :passed nil]
+     [:native-hash-collision-duplicate
+      (conj colliding (nth colliding 16))
+      :failed :duplicate-syntax-id]]))
+
+(deftype GraphForeignReference [calls]
+  Object
+  (hashCode [_] (swap! calls update :hash inc) 7)
+  (equals [_ _] (swap! calls update :equals inc) false)
+  (toString [_] (swap! calls update :string inc) "foreign-reference")
+  clojure.lang.IMeta
+  (meta [_] (swap! calls update :meta inc) nil))
+
 (defn- generated-product!
   [base-build descriptor index]
   (let [base (:syntax base-build)
@@ -565,7 +666,7 @@
     (is (= :safe (get-in plan [:module :safety])))
     (is (= 'gravity.bootstrap.syntax
            (get-in plan [:module :module])))
-    (is (= "sha256:afcab42f39743e1609657e389ee478a79f8e98cabcc6fe331c2168106e584553"
+    (is (= (str "sha256:" (bootstrap/sha256-hex (slurp (path syntax-source-relative-path))))
            (get-in plan [:source :sha256])))))
 
 (deftest sh04-gravity-build-verify-and-serialize-are-stable-and-path-neutral
@@ -616,7 +717,7 @@
                         (:resolved-digests relocated-stream)])]
     (is (= #{:artifact :schema-version :status :syntax-template
              :reader-binding :reader-source-revision :ownership-product
-             :digest-requests :diagnostics :bounds :execution-boundary
+             :digest-requests :diagnostics :execution-boundary
              :containment}
            (set (keys raw))))
     (is (= :accepted (:status raw)))
@@ -963,7 +1064,7 @@
                      [:containment :downstream-artifacts-forbidden]))
           (str label)))))
 
-(deftest sh04-stream-v2-identity-is-bounded-and-order-sensitive-at-declared-capacity
+(deftest sh04-stream-v2-identity-is-order-sensitive-at-former-capacity
   (let [descriptor @accepted-descriptor
         product-id (fn [index]
                      (canonical-id {:domain :sh04-synthetic-product
@@ -1018,9 +1119,6 @@
         root-ids-2048
         (mapv #(get-in % [:syntax-object :syntax-id]) products-2048)
         baseline-2048 (preimage products-2048 root-ids-2048 2048)
-        baseline-2048-record
-        (bootstrap/p15-s23-c6c10-canonical-record
-         "<sh04-stream-v2-identity-test-2048>" baseline-2048)
         baseline-2048-digest
         (bootstrap/p15-s23-c6c10-canonical-digest
          "<sh04-stream-v2-identity-test-2048>" baseline-2048)
@@ -1073,15 +1171,6 @@
            (mapv :ordinal (mapcat :items chunks-2048))))
     (is (= root-ids-2048
            (mapv :id (mapcat :items root-chunks-2048))))
-    (let [{:keys [nodes maximum-depth maximum-width scalar-bytes
-                  maximum-scalar-bytes maximum-integer-bits]}
-          (:stats baseline-2048-record)]
-      (is (<= nodes 65536))
-      (is (<= maximum-depth 64))
-      (is (<= maximum-width 128))
-      (is (<= scalar-bytes (* 8 1024 1024)))
-      (is (<= maximum-scalar-bytes 65536))
-      (is (<= maximum-integer-bits 256)))
     (is (= baseline-2048-digest
            (bootstrap/p15-s23-c6c10-canonical-digest
             "<sh04-stream-v2-identity-test-2048>"
@@ -1196,7 +1285,7 @@
                        [:containment :downstream-artifacts-forbidden]))
             basename)))))
 
-(deftest sh04-graph-validation-is-bounded-and-fails-closed
+(deftest sh04-graph-validation-covers-complete-input-and-fails-closed
   (let [descriptor
         @accepted-descriptor
         base-build (build-and-resolve! descriptor)
@@ -1244,18 +1333,37 @@
             (assoc :syntax-id id-b)
             (assoc-in [:origin 0 :input-syntax-ids] [id-a])
             (assoc :prior-syntax-ids [id-a]))
+        fanout-ids (mapv :syntax-id (subvec syntaxes-2049 0 33))
+        fanout-node (-> (generated-object base 33 (first fanout-ids))
+                        (assoc-in [:origin 0 :input-syntax-ids] fanout-ids)
+                        (assoc :prior-syntax-ids fanout-ids))
+        fanout (conj (subvec syntaxes-2049 0 33) fanout-node)
         cases
         [[:exact-depth chain-64 :passed nil]
-         [:over-depth chain-65 :failed "C3-ORIGIN"]
+         [:over-depth chain-65 :passed nil]
          [:accepted-300 accepted-300 :passed nil]
          [:exact-nodes exact-nodes :passed nil]
-         [:over-nodes over-nodes :failed "C3-SHAPE"]
+         [:over-nodes over-nodes :passed nil]
+         [:late-malformed
+          (assoc over-nodes 2048 (assoc (last over-nodes) :immutable? false))
+          :failed "C3-SHAPE"]
+         [:late-duplicate (assoc over-nodes 2048 (first over-nodes))
+          :failed "C3-ID"]
+         [:late-dangling
+          (assoc chain-65 64
+                 (assoc (last chain-65) :prior-syntax-ids [dangling-id]))
+          :failed "C3-ORIGIN"]
          [:dangling [base dangling] :failed "C3-ORIGIN"]
          [:duplicate-id [base duplicate-id] :failed "C3-ID"]
          [:self-reference [self-reference] :failed "C3-ORIGIN"]
          [:unresolved-id [unresolved] :failed "C3-ID"]
-         [:two-node-cycle [cycle-a cycle-b] :failed "C3-ORIGIN"]]
-        bounds (invoke-syntax 'c3-bounds-record [])
+         [:two-node-cycle [cycle-a cycle-b] :failed "C3-ORIGIN"]
+         [:reference-fanout fanout :passed nil]
+         [:late-fanout-dangling
+          (assoc fanout 33
+                 (assoc-in fanout-node [:origin 0 :input-syntax-ids 32]
+                           dangling-id))
+          :failed "C3-ORIGIN"]]
         stream-300
         (invoke-syntax
          'c3-syntax-stream-build-template
@@ -1277,7 +1385,6 @@
           (:reader-binding descriptor)
           (:reader-source-revision descriptor)
           over-root-ids])]
-    (is (= 2048 (:maximum-syntax-objects bounds)))
     (doseq [[label objects expected-status expected-rule] cases]
       (let [invocation
             (captured-invocation 'c3-syntax-graph-verify-template [objects])
@@ -1300,24 +1407,42 @@
            (:object-count
             (invoke-syntax 'c3-syntax-graph-verify-template [exact-nodes]))))
     (doseq [[label result expected-status]
-            [[:stream-300 stream-300 :accepted]
-             [:stream-at-limit stream-at-limit :accepted]
-             [:stream-over-limit stream-over-limit :rejected]]]
+             [[:stream-300 stream-300 :accepted]
+              [:stream-at-limit stream-at-limit :accepted]
+              [:stream-over-limit stream-over-limit :accepted]]]
       (is (= expected-status (:status result)) (str label " " result))
       (is (= (= expected-status :rejected)
              (get-in result
                      [:containment :downstream-artifacts-forbidden]))
           (str label " " result)))
-    (is (= "C3-SHAPE" (result-rule stream-over-limit)))
-    (is (= :syntax-node-limit
-           (get-in stream-over-limit [:diagnostics 0 :facts :reason])))
+    (is (nil? (result-rule stream-over-limit)))
     (let [graph-over
           (invoke-syntax 'c3-syntax-graph-verify-template [over-nodes])]
-      (is (= "C3-SHAPE" (result-rule graph-over)))
-      (is (= :syntax-node-limit
-             (get-in graph-over [:diagnostics 0 :facts :reason]))))))
+      (is (= :passed (:status graph-over)))
+      (is (= 2049 (:object-count graph-over))))))
 
-(deftest sh04-width-bounds-accept-the-limit-and-reject-the-next-value
+(deftest sh04-graph-membership-preserves-validation-and-native-collision-equality
+  (let [base (:syntax (build-and-resolve! @accepted-descriptor))
+        [left right] graph-colliding-native-ids
+        collision-map (into clojure.lang.PersistentHashMap/EMPTY [[left 1] [right 2]])]
+    (is (not= left right))
+    (is (= (clojure.lang.Util/hasheq left) (clojure.lang.Util/hasheq right)))
+    (is (= [2 1 2] [(count collision-map) (get collision-map left) (get collision-map right)]))
+    (doseq [[label objects expected-status expected-reason] (graph-membership-cases base 16)]
+      (let [result (invoke-syntax 'c3-syntax-graph-verify-template [objects])]
+        (is (= expected-status (:status result)) (name label))
+        (is (= expected-reason (get-in result [:diagnostics 0 :facts :reason])) (name label))
+        (when (= expected-status :passed)
+          (is (= (count objects) (:object-count result)) (name label)))))
+    (doseq [field [:syntax-id :prior-syntax-ids]]
+      (let [calls (atom {:hash 0 :equals 0 :string 0 :meta 0})
+            foreign (GraphForeignReference. calls)
+            object (assoc base field (if (= field :syntax-id) foreign [foreign]))
+            result (captured-invocation 'c3-syntax-graph-verify-template [[object]])]
+        (is (or (:host-error result) (= :failed (get-in result [:result :status]))) (name field))
+        (is (= {:hash 0 :equals 0 :string 0 :meta 0} @calls) (name field))))))
+
+(deftest sh04-container-validation-covers-members-beyond-former-ceilings
   (let [descriptor
         @accepted-descriptor
         marks-64 (mapv #(keyword (str "mark-" %)) (range 64))
@@ -1334,36 +1459,99 @@
         origin (first (:origin descriptor))
         origins-32 (vec (repeat 32 origin))
         origins-33 (conj origins-32 origin)
+        scopes-65 (mapv #(keyword (str "scope-" %)) (range 65))
+        imports-65 (mapv #(symbol (str "library" %)) (range 65))
+        introduced-65 (mapv #(symbol (str "introduced" %)) (range 65))
+        renames-65 (into {} (map-indexed (fn [i target] [(symbol (str "from" i)) target]) introduced-65))
+        hygiene-wide (-> (:hygiene descriptor)
+                         (assoc :introduced-identifiers introduced-65 :renames renames-65))
+        invalidations-33 (mapv #(keyword (str "pass-" %)) (range 33))
+        generated-origin (-> origin
+                             (assoc :kind :generated
+                                    :span {:kind :generated :producer-id (get-in origin [:producer :identity]) :ordinal 0}
+                                    :generation-reason :container-validation
+                                    :input-syntax-ids [(stable-test-id :input 0)]
+                                    :build-effects (vec (repeat 33 :build/read))))
         cases
-        [[:marks-at-limit
+        [[:namespace-containers
+          (-> descriptor
+              (assoc-in [:namespace :imports] imports-65)
+              (assoc-in [:namespace :aliases] (zipmap imports-65 imports-65)))
+          :accepted nil]
+         [:late-duplicate-import
+          (assoc-in descriptor [:namespace :imports] (conj imports-65 (first imports-65)))
+          :rejected "C3-SHAPE"]
+         [:lexical-scopes
+          (assoc-in descriptor [:hygiene :lexical-scopes] scopes-65)
+          :accepted nil]
+         [:late-invalid-scope
+          (assoc-in descriptor [:hygiene :lexical-scopes] (conj scopes-65 nil))
+          :rejected "C3-HYGIENE"]
+         [:renames-and-introduced
+          (assoc descriptor :hygiene hygiene-wide)
+          :accepted nil]
+         [:late-invalid-introduced
+          (assoc descriptor :hygiene (update hygiene-wide :introduced-identifiers conj :invalid))
+          :rejected "C3-HYGIENE"]
+         [:late-invalid-rename
+          (assoc descriptor :hygiene (assoc-in hygiene-wide [:renames 'last] 'missing))
+          :rejected "C3-HYGIENE"]
+         [:origin-build-effects
+          (assoc descriptor :origin [origin generated-origin])
+          :accepted nil]
+         [:late-invalid-origin-effects
+          (assoc descriptor :origin [origin (assoc generated-origin :build-effects :invalid)])
+          :rejected "C3-ORIGIN"]
+         [:fact-invalidation
+          (assoc descriptor :facts [(assoc (fact-record 0) :invalidated-by invalidations-33)])
+          :accepted nil]
+         [:late-invalid-invalidation
+          (assoc descriptor :facts (conj facts-65 (assoc (fact-record 65) :invalidated-by :invalid)))
+          :rejected "C3-FACT-STALE"]
+         [:marks-at-limit
           (assoc-in descriptor [:hygiene :marks] marks-64)
           :accepted nil]
          [:marks-over-limit
           (assoc-in descriptor [:hygiene :marks] marks-65)
+          :accepted nil]
+         [:late-duplicate-mark
+          (assoc-in descriptor [:hygiene :marks] (conj marks-65 :mark-0))
           :rejected "C3-HYGIENE"]
          [:captures-at-limit
           (assoc-in descriptor [:hygiene :captures] captures-32)
           :accepted nil]
          [:captures-over-limit
           (assoc-in descriptor [:hygiene :captures] captures-33)
+          :accepted nil]
+         [:late-invalid-capture
+          (assoc-in descriptor [:hygiene :captures] (conj captures-33 {}))
           :rejected "C3-CAPTURE"]
          [:metadata-at-limit
           (assoc descriptor :metadata metadata-64)
           :accepted nil]
          [:metadata-over-limit
           (assoc descriptor :metadata metadata-65)
+          :accepted nil]
+         [:late-invalid-metadata-key
+          (assoc descriptor :metadata (assoc metadata-65 "invalid" 1))
           :rejected "C3-METADATA"]
          [:facts-at-limit
           (assoc descriptor :facts facts-64)
           :accepted nil]
          [:facts-over-limit
           (assoc descriptor :facts facts-65)
+          :accepted nil]
+         [:late-invalid-fact
+          (assoc descriptor :facts (conj facts-65 (assoc (fact-record 65) :version 2)))
           :rejected "C3-FACT-STALE"]
          [:origins-at-limit
           (assoc descriptor :origin origins-32)
           :accepted nil]
          [:origins-over-limit
           (assoc descriptor :origin origins-33)
+          :accepted nil]
+         [:late-invalid-origin
+          (assoc descriptor :origin (conj origins-33 {}))
           :rejected "C3-ORIGIN"]]]
     (doseq [[label candidate expected-status expected-rule] cases]
       (let [invocation
@@ -1376,6 +1564,24 @@
                (get-in result
                        [:containment :downstream-artifacts-forbidden]))
             (str label " " result))))))
+
+(deftest sh04-compatibility-facade-consumes-current-result-shape
+  (let [plan (compile-plan
+              (path "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity")
+              :jvm)
+        invoke (fn [name arguments]
+                 (bootstrap/p15-s23-stage2-runtime-execute-function
+                  {:engine :gravity-sh04-syntax-facade
+                   :compiler-artifact-plan? true}
+                  plan name arguments))
+        accepted (invoke-syntax 'c3-syntax-build-template [@accepted-descriptor])
+        rejected (invoke-syntax 'c3-syntax-build-template [{}])]
+    (doseq [result [accepted rejected]]
+      (is (true? (invoke 'c3-compatible-syntax-result? [result])))
+      (is (= :compatible (:status (invoke 'c3-package-syntax-result [result]))))
+      (is (false? (invoke 'c3-compatible-syntax-result? [(assoc result :bounds {})])))
+      (is (false? (invoke 'c3-compatible-syntax-result?
+                         [(dissoc result :reader-source-revision)]))))))
 
 (deftest sh04-public-c3-preserves-exact-spans-metadata-and-pair-identity
   (let [artifacts @public-artifacts]
@@ -1482,13 +1688,11 @@
         gravity-path "/sh04/exact-map/source.gravity"
         qst-path "/sh04/exact-map/source.qst"
         gravity-first
-        (bootstrap/compiler-c3-syntax-source-artifact
-         gravity-path source-text)
+        (current-c3-artifact gravity-path source-text)
         gravity-second
-        (bootstrap/compiler-c3-syntax-source-artifact
-         gravity-path source-text)
+        (current-c3-artifact gravity-path source-text)
         qst-artifact
-        (bootstrap/compiler-c3-syntax-source-artifact qst-path source-text)]
+        (current-c3-artifact qst-path source-text)]
     (doseq [[extension artifact]
             [[".gravity" gravity-first] [".qst" qst-artifact]]]
       (is (= :gravity/stage0-c3-syntax-object-artifact (:kind artifact))
@@ -1557,8 +1761,8 @@
             _ (spit source-b source-text)
             path-a (.getCanonicalPath source-a)
             path-b (.getCanonicalPath source-b)
-            artifact-a (bootstrap/compiler-c3-syntax-file-artifact path-a)
-            artifact-b (bootstrap/compiler-c3-syntax-file-artifact path-b)
+            artifact-a (current-c3-artifact path-a source-text)
+            artifact-b (current-c3-artifact path-b source-text)
             boundary-a (:gravity-syntax-boundary artifact-a)
             boundary-b (:gravity-syntax-boundary artifact-b)
             descriptor-a (:authenticated-envelope-descriptor boundary-a)
@@ -1704,7 +1908,7 @@
         authentic?
         (fn [candidate]
           (bootstrap/c3-syntax-stream-reader-products-authentic?
-           syntax-stream c2-artifact candidate))]
+           syntax-stream c2-artifact candidate (selected-current-invocation)))]
     (is (true? (authentic? boundary)))
     (is (false? (authentic? missing-binding)))
     (is (false? (authentic? substituted-binding)))
@@ -1725,8 +1929,9 @@
         (assoc-in descriptor [:actual-path-provenance :source-path]
                   (str source-path ".substituted"))
         substituted-envelope
-        (bootstrap/p15-s23-stage2-sh02-descriptor-envelope
-         :c3-syntax sealed-artifact-kind substituted-descriptor source-path)
+        (assoc (:authenticated-envelope boundary)
+               :semantic-envelope-id
+               (stable-test-id :descriptor-envelope-substitution 0))
         substituted-boundary
         (assoc boundary
                :authenticated-envelope-descriptor substituted-descriptor
@@ -1735,8 +1940,10 @@
         (assoc artifact :gravity-syntax-boundary substituted-boundary)
         authentic?
         (bootstrap/c3-syntax-stream-reader-products-authentic?
-         syntax-stream c2-artifact substituted-boundary)
-        proof (bootstrap/c3-syntax-capability-proof substituted-artifact)]
+         syntax-stream c2-artifact substituted-boundary
+         (selected-current-invocation))
+        proof (bootstrap/c3-syntax-capability-proof
+               substituted-artifact (selected-current-invocation))]
     (is (= :accepted (:status substituted-envelope)))
     (is (not= descriptor substituted-descriptor))
     (is (not= (:authenticated-envelope boundary) substituted-envelope))
@@ -1744,16 +1951,20 @@
     (is (= :failed (:status proof)))
     (is (false? (:reader-products-authentic? proof)))))
 
-(deftest sh04-p15-c3-requires-fresh-authenticated-sh03-c2-equality
+(deftest sh04-current-c3-requires-fresh-authenticated-sh03-c2-equality
   (let [source-path
         (fixture-path "accepted" "source-syntax" ".gravity")
         source-text "1"
         c2-artifact
-        (bootstrap/p15-s23-source-syntax-c2-artifact
-         source-path source-text)
+        (current-c2-artifact source-path source-text)
+        fresh-c2-artifact
+        (current-c2-artifact source-path source-text)
         c3-artifact
-        (bootstrap/p15-s23-source-syntax-c3-artifact
-         source-path c2-artifact)
+        (bootstrap/compiler-c3-syntax-source-artifact
+         source-path source-text
+         (bootstrap/reader-project-context-for-source source-path)
+         c2-artifact (selected-current-reader-authority) nil
+         (selected-current-invocation))
         original-envelope-id
         (get-in c2-artifact
                 [:gravity-reader-boundary :authenticated-envelope
@@ -1767,8 +1978,11 @@
                   alternate-envelope-id)
         diagnostic
         (try
-          (bootstrap/p15-s23-source-syntax-c3-artifact
-           source-path substituted)
+          (bootstrap/compiler-c3-syntax-source-artifact
+           source-path source-text
+           (bootstrap/reader-project-context-for-source source-path)
+           substituted (selected-current-reader-authority) nil
+           (selected-current-invocation))
           nil
           (catch InterruptedException interrupted
             (.interrupt (Thread/currentThread))
@@ -1778,6 +1992,7 @@
     (is (re-matches #"sha256:[0-9a-f]{64}" original-envelope-id))
     (is (re-matches #"sha256:[0-9a-f]{64}" alternate-envelope-id))
     (is (not= original-envelope-id alternate-envelope-id))
+    (is (= c2-artifact fresh-c2-artifact))
     (is (= c2-artifact
            (assoc-in substituted
                      [:gravity-reader-boundary :authenticated-envelope
@@ -1786,30 +2001,22 @@
     (is (= :gravity/stage0-c3-syntax-object-artifact (:kind c3-artifact)))
     (is (= :passed (get-in c3-artifact
                            [:syntax-verification-report :status])))
-    (is (= true
-           (get-in c3-artifact
-                   [:p15-compatibility-boundary
-                    :exact-precomputed-c2-consumed?])))
     (is (= (:artifact-id c2-artifact)
            (get-in c3-artifact
-                   [:p15-compatibility-boundary
-                    :supplied-c2-artifact-id])))
-    (is (= (:artifact-id c2-artifact)
-           (get-in c3-artifact
-                   [:p15-compatibility-boundary
-                    :authoritative-c2-artifact-id])))
-    (is (= "C3-FACT-STALE" (:id diagnostic)) diagnostic)
-    (is (= :c3-syntax-object (:diagnostic-family diagnostic)) diagnostic)
-    (is (= :syntax-object-model (:stage diagnostic)) diagnostic)
+                   [:c2-reader-artifact :artifact-id])))
+    (is (= "C11-VERIFY" (:id diagnostic)) diagnostic)
+    (is (= :c11-authenticated-mir (:stage diagnostic)) diagnostic)
+    (is (= :fresh-sh02-descriptor-envelope-reconstruction
+           (:missing-fact diagnostic))
+        diagnostic)
     (is (= source-path (get-in diagnostic [:source-span :source])) diagnostic)
-    (is (= [:fresh-authenticated-sh03-c2-artifact-equality]
-           (:missing-fields diagnostic))
-        diagnostic)))
+    (is (= :rejected (:fallback-status diagnostic)) diagnostic)))
 
 (deftest sh04-emitted-c3-provenance-alteration-invalidates-proof-not-identity
   (let [artifact (:artifact @public-gravity-artifact)
         qst-artifact (:artifact @public-qst-artifact)
-        original-proof (bootstrap/c3-syntax-capability-proof artifact)
+        original-proof (bootstrap/c3-syntax-capability-proof
+                        artifact (selected-current-invocation))
         sh03-authentication
         (get-in artifact [:c2-reader-artifact :sh03-reader-authentication])
         provenance
@@ -1824,10 +2031,6 @@
         concrete-envelope (:actual-sh03-authenticated-envelope provenance)
         concrete-envelope-descriptor
         (:actual-sh03-envelope-descriptor provenance)
-        concrete-envelope-verification
-        (bootstrap/p15-s23-stage2-sh02-descriptor-envelope-verify!
-         concrete-envelope :c2-reader :gravity/sh03-reader-products
-         concrete-envelope-descriptor (:path @public-gravity-artifact))
         alternate-envelope-id
         (stable-test-id :emitted-c3-lineage-alteration 0)
         altered
@@ -1839,7 +2042,8 @@
                        :reader-authentication-provenance
                        :actual-sh03-semantic-envelope-id]
                       alternate-envelope-id))
-        altered-proof (bootstrap/c3-syntax-capability-proof altered)
+        altered-proof (bootstrap/c3-syntax-capability-proof
+                       altered (selected-current-invocation))
         original-recomputed-id (bootstrap/c3-artifact-id artifact)
         altered-recomputed-id (bootstrap/c3-artifact-id altered)]
     (is (= :complete (:status original-proof)))
@@ -1850,7 +2054,9 @@
     (is (re-matches #"sha256:[0-9a-f]{64}" concrete-envelope-id))
     (is (not= concrete-envelope-id alternate-envelope-id))
     (is (= :accepted (:status concrete-envelope)))
-    (is (= :passed concrete-envelope-verification))
+    (is (= :c2-reader (:stage concrete-envelope)))
+    (is (= :gravity/sh03-reader-products
+           (get-in concrete-envelope [:sealed-artifact :artifact-kind])))
     (is (= concrete-envelope-id (:semantic-envelope-id concrete-envelope)))
     (is (= concrete-reader-result-id
            (:actual-sh03-reader-result-id provenance)))
@@ -1880,9 +2086,10 @@
 (deftest sh04-emitted-c3-rejects-cross-source-sh03-envelope-replacement
   (let [source-path
         (fixture-path "accepted" "source-syntax" ".gravity")
-        c2-b (bootstrap/compiler-c2-reader-source-artifact source-path "2")
-        c3-a (bootstrap/compiler-c3-syntax-source-artifact source-path "1")
-        original-proof (bootstrap/c3-syntax-capability-proof c3-a)
+        c2-b (current-c2-artifact source-path "2")
+        c3-a (current-c3-artifact source-path "1")
+        original-proof (bootstrap/c3-syntax-capability-proof
+                        c3-a (selected-current-invocation))
         boundary-b (:gravity-reader-boundary c2-b)
         envelope-b (:authenticated-envelope boundary-b)
         descriptor-b (:authenticated-envelope-descriptor boundary-b)
@@ -1912,7 +2119,8 @@
             (update-in [:gravity-syntax-boundary
                         :reader-authentication-provenance]
                        merge provenance-b))
-        replaced-proof (bootstrap/c3-syntax-capability-proof replaced)
+        replaced-proof (bootstrap/c3-syntax-capability-proof
+                        replaced (selected-current-invocation))
         original-recomputed-id (bootstrap/c3-artifact-id c3-a)
         replaced-recomputed-id (bootstrap/c3-artifact-id replaced)]
     (is (= :complete (:status original-proof)))
@@ -1957,9 +2165,11 @@
                   [:gravity-syntax-ownership-product
                    :syntax-ownership 0 :form-id]
                   :substituted-form)
-        ledger-proof (bootstrap/c3-syntax-capability-proof ledger-mutated)
+        ledger-proof (bootstrap/c3-syntax-capability-proof
+                      ledger-mutated (selected-current-invocation))
         ownership-proof
-        (bootstrap/c3-syntax-capability-proof ownership-mutated)]
+        (bootstrap/c3-syntax-capability-proof
+         ownership-mutated (selected-current-invocation))]
     (is (= :complete (:status valid-proof)))
     (is (true? (:gravity-authoritative-products-current? valid-proof)))
     (is (= boundary (:gravity-syntax-boundary ledger-mutated)))
