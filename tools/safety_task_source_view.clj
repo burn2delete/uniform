@@ -88,6 +88,42 @@
               (str "Task source hash drift: " (:path entry)))
     (validate-task-records! text entry)))
 
+(defn validate-versioned-task-source-transition! [view]
+  (let [transitions (get-in view [:current-source :versioned-task-source-transitions])
+        current-commit (get-in view [:current-source :commit])
+        current-tree (get-in view [:current-source :tree])
+        current-entries (into {} (map (juxt :path identity)
+                                      (get-in view [:current-source :task-sources])))]
+    (require! (= 1 (count transitions))
+              "Safety current-source transition population changed")
+    (doseq [{:keys [path from to changed-record-ids] :as transition} transitions]
+      (let [entry (get current-entries path)]
+        (require! entry (str "Safety transition has no current task source: " path))
+        (require! (= 5 (count changed-record-ids))
+                  (str "Safety Runtime transition criterion population changed: " path))
+        (verify-commit-tree! from)
+        (verify-commit-tree! to)
+        (require! (= (:commit to) current-commit)
+                  (str "Safety transition target commit is not current source: " path))
+        (require! (= (:tree to) current-tree)
+                  (str "Safety transition target tree is not current source: " path))
+        (require! (= (:sha256 to) (:sha256 entry))
+                  (str "Safety transition target hash is not current entry: " path))
+        (let [from-text (git-text (:commit from) path)
+              to-text (git-text (:commit to) path)]
+          (require! (= (:sha256 from) (sha256 from-text))
+                    (str "Safety transition source bytes drifted: " path))
+          (require! (= (:sha256 to) (sha256 to-text))
+                    (str "Safety transition target bytes drifted: " path))
+          (require! (not= from-text to-text)
+                    (str "Safety transition does not identify a source change: " path))
+          (require! (= to-text (slurp path))
+                    (str "Safety transition target is not the working source: " path)))))
+    {:count (count transitions)
+     :paths (mapv :path transitions)
+     :historical-intermediate :authenticated
+     :current-target :authenticated}))
+
 (defn unique-by! [rows key message]
   (require! (= (count rows) (count (set (map key rows)))) message))
 
@@ -126,6 +162,7 @@
         proposal-pin (get-in view [:historical-source :proposal])]
     (verify-commit-tree! proposal-pin)
     (verify-commit-tree! {:commit current-commit :tree (get-in view [:current-source :tree])})
+    (validate-versioned-task-source-transition! view)
     (require! (= 6 (count historical) (count base) (count current))
               "Safety task source population changed")
     (unique-by! historical :path "Duplicate historical safety task source")

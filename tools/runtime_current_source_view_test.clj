@@ -31,7 +31,7 @@
         current (slurp "specs/runtime-workflow/tasks.md")]
     (is (= "da3305176c678e513b9c41a85138099f84d9464d4a37ce03e6ac14c2cb3693e9"
            (view/sha256 historical)))
-    (is (= "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06"
+    (is (= "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c"
            (view/sha256 current)))
     (is (not= historical current))
     (is (= view/expected-task-ids

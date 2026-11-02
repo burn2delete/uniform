@@ -22,8 +22,10 @@
    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
    "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"])
 (def expected-current-task-source
-  {:path "specs/runtime-workflow/tasks.md"
-   :sha256 "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06"
+  {:commit "42c34ab55af0000dfaaf73d96d7ee09ec22c243e"
+   :tree "e8f1cc090800f9fcd9e81b7a5bcea32a88101526"
+   :path "specs/runtime-workflow/tasks.md"
+   :sha256 "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c"
    :marker "runtime-implementation-tasks"})
 (def expected-current-contracts
   [{:id :runtime-workflow-spec
@@ -153,8 +155,12 @@
         statuses (mapv :status rows)
         expected-statuses (:statuses reference)]
     (require! (= expected-current-task-source
-                 (select-keys reference [:path :sha256 :marker]))
+                 (select-keys reference [:commit :tree :path :sha256 :marker]))
               "Current Runtime task source identity changed")
+    (verify-identity! (select-keys reference [:commit :tree])
+                      "current Runtime task source")
+    (require! (= text (git-text (:commit reference) (:path reference)))
+              "Working Runtime task source differs from authenticated current source")
     (require! (= (:sha256 reference) (sha256 text))
               "Current Runtime task source bytes drifted")
     (require! (= expected-task-ids (:ordered-task-ids reference))
