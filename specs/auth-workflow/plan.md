@@ -25,8 +25,8 @@ A structurally valid manifest or supplied verdict does not close enforcement.
 
 ## Complete provider and capability source criteria
 
-This proposal reads complete L15, SAFE10 and R11 as joint contracts. Sixteen
-clauses refine fourteen existing tasks across Auth, Legality, Runtime, Expand,
+This proposal reads complete L15, SAFE10 and R11 as joint contracts. Seventeen
+clauses refine fifteen existing tasks across Auth, Legality, Runtime, Expand,
 Build and Stdlib. The source census retains 278 facets, 181 occurrences and
 twenty original owners; exact spans identify obligations, not semantic acceptance.
 Selected PKG6/R12 boundaries support the comparison but retain their broader
@@ -112,6 +112,11 @@ artifact store or signing/publication action is performed here. Model cost-limit
 wording remains visible as source context, while project work/call/token/fuel
 accounting remains removed. Real external account/billing restrictions, retention,
 evaluation, physical scopes and runtime failure semantics remain separate.
+
+Cache key construction, invalidation and reuse remain solely under the existing
+Build dependency-aware caching task. The provider criterion in Build
+reproducibility consumes that task's real outputs and owns repeated locked-build
+manifest/content comparisons. It does not implement a second cache.
 
 The finite allocation joins preserve sixteen byte witnesses for thirteen records:
 two profile74, seven safety107 (including the no-facet Runtime/Schema

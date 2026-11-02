@@ -4,7 +4,7 @@ Implementation scope added under the 2026-11-01 request. Capability and
 artifact-trust maintainers retain their current ownership. The historical
 transfer specification below establishes no new grant or trust acceptance.
 
-The [complete provider and capability source criteria](plan.md#complete-provider-and-capability-source-criteria) reconcile all L15/SAFE10/R11 source predicates within fourteen existing tasks. Provider selection, grant derivation, compiler legality, startup and actual action enforcement remain separate; finite reviews do not accept current whole-source composition or implementation.
+The [complete provider and capability source criteria](plan.md#complete-provider-and-capability-source-criteria) reconcile all L15/SAFE10/R11 source predicates within fifteen existing tasks. Provider selection, grant derivation, compiler legality, startup and actual action enforcement remain separate; finite reviews do not accept current whole-source composition or implementation.
 
 ## Behavior and interfaces
 

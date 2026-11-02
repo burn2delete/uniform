@@ -20,6 +20,8 @@ Refine only the selected existing task, keeping failed/unrun cases and exact
 input/output identities. Reviewable package mutation behavior, independent
 acceptance, integration and final seedless Build remain distinct.
 
+Cache key construction, invalidation and reuse stay with the existing dependency-aware caching task. The reproducibility task consumes its actual provider-bound decisions and performs repeat-build comparisons; the selected L15 criterion adds no second cache authority.
+
 ## Provider and capability source interface
 
 Use the [complete provider and capability source criteria](../auth-workflow/plan.md#complete-provider-and-capability-source-criteria). Graph execution uses actual provider/grant/gate products, records actual content-addressed or replay/audit outputs, and includes provider/policy identities in secret-safe lock/cache/rebuild evidence. A replay exception is no effect grant.
