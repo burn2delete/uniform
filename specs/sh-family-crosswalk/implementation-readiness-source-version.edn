@@ -19,9 +19,9 @@
    "evolution/security-review"
    "evolution/stabilization-decision"
    "evolution/target-support-admission"]},
- :source-input-commit "be099c84b68e17e171e67905de64c9053226a083",
+ :source-input-commit "deacbfd25ea22e501e8e08f54ff826eaa3d59353",
  :task-comparisons
- {:unchanged-body-count 130,
+ {:unchanged-body-count 126,
   :changed-bodies
   [{:id
     "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
@@ -41,12 +41,28 @@
     "497f2ff15a9d3f33b238f41ea6d9becc0337fcd6a925fa6e96dfb7207cd6eb3c",
     :before-checked false,
     :after-checked false}
+   {:id "gpu",
+    :path "specs/domains-workflow/tasks.md",
+    :before-sha256
+    "199625388d95a5fd135a9ec6e63094df6658a645b3ccfed345244016fd48c3a2",
+    :after-sha256
+    "4f3dd3a0f8f78c3fc7c96dc94c9b3ee3d8a60122bc98cd23e51eba5686a631a2",
+    :before-checked false,
+    :after-checked false}
    {:id "math",
     :path "specs/domains-workflow/tasks.md",
     :before-sha256
     "7f4f72add984a02d9bb62595383d740c1ae402a64b0eb6c052d2c8fce5195554",
     :after-sha256
     "25b2d6027cab1184464bc95fd5ffae24adeba9b2dfc7fd49d07aeda9ed7c5ad7",
+    :before-checked false,
+    :after-checked false}
+   {:id "query",
+    :path "specs/domains-workflow/tasks.md",
+    :before-sha256
+    "afe44dc4f5bb228ee11a15256d0a6898b5bd24b25d21c974dcf9d0db6b136c9b",
+    :after-sha256
+    "e21a4737675ff917f0412e7fdae0ace99cd55b1e52a872aa3fde19987071b4cd",
     :before-checked false,
     :after-checked false}
    {:id
@@ -100,6 +116,22 @@
     "1bd123b4c7d4a0e2bd4e5db7ea35139e20fea0e213fcdde01d410e14a9610491",
     :after-sha256
     "93eaf9c7b6d3371cbdb3af8d0fbf719e1084e5f3ef53b2a3115826cfc65363ac",
+    :before-checked false,
+    :after-checked false}
+   {:id "ui",
+    :path "specs/domains-workflow/tasks.md",
+    :before-sha256
+    "a2dd19a85e7c0ce7a7a336d6142f2d6d550a6c55e99c3c3d6dfb23910af44e18",
+    :after-sha256
+    "648f8820f0ad7f03abbd3b1e78d9f5817775a653045df6b264aa273c31a25359",
+    :before-checked false,
+    :after-checked false}
+   {:id "workflow",
+    :path "specs/domains-workflow/tasks.md",
+    :before-sha256
+    "fe1758f8bff9b955628481877afa5e92dc998f4582977d511842a11bd20605ae",
+    :after-sha256
+    "f4bf2ce3ea20b748459698a78ab62155cbe289eee197584ab701346145b1129c",
     :before-checked false,
     :after-checked false}],
   :added-ids
@@ -172,9 +204,9 @@
     :sha256
     "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4"},
    :after
-   {:commit "be099c84b68e17e171e67905de64c9053226a083",
+   {:commit "deacbfd25ea22e501e8e08f54ff826eaa3d59353",
     :sha256
-    "678a033784536b8b31e2e4536a15e5eb376ec654ca8f70a64463131b15ad571b"},
+    "0ee469e4821f20d50c41f2c033e1d039e298a84979b6d33d8d1f675b4989519b"},
    :scope :task-file-version}
   {:path "specs/effects-workflow/tasks.md",
    :before
@@ -681,6 +713,105 @@
    :source-version-bridge
    "specs/sh-family-crosswalk/resolution-runtime-composition-source-version.edn"}},
  :kind :implementation-readiness-task-source-version,
+ :domain-parent-refinement
+ {:source-input-commit "deacbfd25ea22e501e8e08f54ff826eaa3d59353",
+  :producer-consumer-allocation :pending-current-repartition-review,
+  :predecessor-readiness-successor
+  {:commit "4c24dd7825ef66efe88a3c525b7e4837a4b53bc9",
+   :path
+   "specs/sh-family-crosswalk/implementation-readiness-source-version.edn",
+   :sha256
+   "541806230a0bd8f0e833f7bcddfc599833ceb104883295498dfefe795124aa21",
+   :projection-path "specs/sh-family-crosswalk/crosswalk.edn",
+   :projection-sha256
+   "9ff76d10687a0007e85e5d9ac8b4a37089bd2ff5e2ef30d543973585bd97375f",
+   :input-fingerprint
+   "15de4049d86ad199cd6aede9029559a5132a3d51454bd2b0c61639c091523aa9",
+   :review :pending-source-version-review},
+  :source-inspection
+  {:retained-open-role-contexts 30,
+   :profile-bindings 5,
+   :profile-facet-references 163,
+   :parent-ids ["gpu" "query" "ui" "workflow"],
+   :distinct-profile-facets 156,
+   :context-rebindings {:profile 5, :domain 19},
+   :other-source-body-changes :none,
+   :canonical-documents-byte-equal 17,
+   :distinct-domain-facets 275,
+   :domain-criteria 19,
+   :implementation :unassessed,
+   :semantic-entailment :not-conferred,
+   :decision-criteria 2},
+  :source-body-changes :only-declared-context-rebindings,
+  :published-source
+  {:path "specs/domains-workflow/tasks.md",
+   :published-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+   :published-sha256
+   "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+   :scope :published-task-context-not-current-sh-authority},
+  :qualification
+  "Resume the four existing Query/Workflow/GPU/UI parent criteria without changing their identities or Open states. Preserve semantic admission, backend emission, actual Runtime invocation and callable library interfaces; keep query production/execution, CRDT checking/execution and browser/mobile evidence distinct. Current facet/owner entailment and repartition need independent review. No provider, target or adapter is adopted; no compiler, provider, device, native, C12 or held operation ran.",
+  :ai-parent :detailed-source-resumption-pending,
+  :parent-records
+  [{:id "gpu",
+    :marker "domains-gpu-parent",
+    :source-body-sha256
+    "1fd07557f767455b01222b253843e36d117faff2bf59d1127c75f4ae1780c8f5",
+    :current-body-sha256
+    "b3dcd5bf5d1276a7276e9009314e4c93e454a196b90753d4dfb6e37ddcf5a65e",
+    :criterion-ids
+    ["domain/gpu-dispatch"
+     "domain/gpu-kernel-validation"
+     "domain/gpu-reduction-integration"
+     "interface/domain/lower-accepted-gpu-kernel"],
+    :profile-mapping-ids
+    ["gpu/host-device-boundary"
+     "gpu/memory-synchronization"
+     "gpu/numeric-mode-contract"]}
+   {:id "query",
+    :marker "domains-query-parent",
+    :source-body-sha256
+    "827f3de868c022c3ab9ff57bf8fdeeb2e5266c25dda617fb492f762c5a28a91c",
+    :current-body-sha256
+    "d2d0053f354b0959e5eb981b7d562e2a72db2be8112eaf5524a0db7c80cabf4a",
+    :criterion-ids
+    ["domain/analytic-plan-lowering"
+     "domain/database-query-integration"
+     "domain/revenue-aggregate-integration"
+     "domain/streaming-materialization"],
+    :profile-mapping-ids []}
+   {:id "ui",
+    :marker "domains-ui-parent",
+    :source-body-sha256
+    "8bd1ba27c2a67a9f5d44d85da3340bbc8804c4af119bcbd6e13cbeec4506431e",
+    :current-body-sha256
+    "0e1a85b04c27026833273efcdd2e52684ffefceacb4cbadf87ae1d15b04ddf73",
+    :criterion-ids
+    ["domain/mobile-background-lifecycle"
+     "domain/mobile-offline-storage"
+     "domain/mobile-platform-adaptation"
+     "domain/mobile-secret-provider"
+     "domain/mobile-ticket-integration"
+     "domain/ui-rendering"
+     "domain/web-ticket-integration"],
+    :profile-mapping-ids []}
+   {:id "workflow",
+    :marker "domains-workflow-parent",
+    :source-body-sha256
+    "be2cdfcbcc6ef8149f1b0a35316fb6d1215fdb2bc9383cba8d2d076aeb4af2f4",
+    :current-body-sha256
+    "12a0b820ba0088bcdb5cf7c13a0169e45abc775aa95b0322fe7eb87f9930b4ee",
+    :criterion-ids
+    ["domain/coordination-classification"
+     "domain/crdt-convergence"
+     "domain/distributed-checkout-integration"
+     "domain/local-first-cart-integration"
+     "domain/local-first-sync"
+     "interface/domain/execute-crdt-merge-update"],
+    :profile-mapping-ids
+    ["distributed/durable-step-contract"
+     "distributed/message-state-boundary"]}],
+  :implementation-acceptance :unassessed},
  :retained-historical-source-inputs
  {"docs/self-hosting-slice-ownership.edn"
   {:commit "c8fd8e437ef921041b181e2f09ee1a37d716d357",
@@ -690,7 +821,7 @@
    "4ee538fce884ae04d1dbaf22ea54d9aee0e32abbbb071272f7115baf9da141ad",
    :scope :retained-historical-ownership-not-current-authority}},
  :qualification
- "Bind exact task-file versions and the resumed Governance authority. Nine Open task bodies carry current proposed criteria; all other captured bodies and checkboxes are conserved. Preserve the initial, Math and Release readiness predecessor subjects. Sixteen Domain and thirteen Release future records remain outside current SH task-key routing pending exact composition. Source resumption does not confer implementation, independent acceptance, release or seedless credit.",
+ "Bind exact current task versions, Governance routing and the resumed Math/Schema, Release and Query/Workflow/GPU/UI parent criteria. Thirteen Open original bodies carry declared additions; 126 bodies and all original checkboxes are conserved. Preserve every readiness predecessor subject. Sixteen Domain and thirteen Release future records retain pending SH composition. Global requirement entailment, current independent review and implementation acceptance remain unassessed.",
  :applying-source-pins
  {"specs/release-workflow/tasks.md"
   "be099c84b68e17e171e67905de64c9053226a083",
@@ -735,7 +866,7 @@
   "specs/types-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9",
   "specs/domains-workflow/tasks.md"
-  "be099c84b68e17e171e67905de64c9053226a083",
+  "deacbfd25ea22e501e8e08f54ff826eaa3d59353",
   "docs/phase-02-safety/043-safe14-supply-chain-safety.md"
   "697917447d70ba0797a096d9427d4706bf5515df",
   "specs/backends-workflow/tasks.md"
@@ -747,4 +878,4 @@
   "specs/emit-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9"},
  :input-fingerprint
- "15de4049d86ad199cd6aede9029559a5132a3d51454bd2b0c61639c091523aa9"}
+ "7977e6d2b1de5a281faaae0ceeb202946638f03dd8ab69d973b4ee4cd67b56c8"}

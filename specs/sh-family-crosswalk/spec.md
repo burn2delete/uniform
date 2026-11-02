@@ -14,6 +14,10 @@ The Release continuation preserves that Math checkpoint and binds the five
 aggregate refinements plus thirteen resumed future testing/seed records. The
 future records remain outside current SH routing pending exact composition;
 all current whole-criterion acceptance remains unassessed.
+The next continuation binds the four Query/Workflow/GPU/UI parent refinements,
+preserving that Release checkpoint. It retains the same task IDs and statuses
+and records only declared context-reference changes to their source bodies.
+Current producer/consumer repartition and the detailed AI parent remain open.
 
 Status: source-bound routing, dependency mapping, source-pin guard and bounded
 source-version bridge independently reviewed; owner task-boundary integration

@@ -2,6 +2,39 @@
 
 ## Current implementation-readiness source-version successor
 
+The Query/Workflow/GPU/UI continuation binds task-source input
+`deacbfd25ea22e501e8e08f54ff826eaa3d59353`, preserving the complete Release
+bridge and projection at `4c24dd7825ef66efe88a3c525b7e4837a4b53bc9`. Of the
+original 139 bodies, 126 are identical and thirteen Open bodies have declared
+additions. Current discovery remains 149 keys across 25 authorities; task IDs,
+checkboxes, original SH/SH07 routes and scoped Reader receipts are unchanged.
+
+The four complete source bodies match the published Domain predecessor before
+five profile-context and nineteen Domain-context reference repairs. They
+retain nineteen Domain clauses, five profile interfaces and two decision
+criteria. Author source checks verify 156 distinct profile facets (163 attached
+references), 275 Domain facets, 30 retained Open role contexts and byte equality
+of seventeen governing documents. These are source conservation checks, not
+full facet entailment, current repartition review or actual execution evidence.
+The current plan distinguishes semantic admission, backend emission, Runtime
+invocation and library APIs, including separate query production/execution,
+CRDT checking/execution and browser/mobile conformance. Detailed AI source
+resumption, current parent/consumer and future-task/SH composition remain open.
+No target/provider/adapter, policy acceptance or held execution is adopted.
+
+Observed continuation checks pass: deterministic generation/check, 26 crosswalk
+tests / 767 assertions, 18 dependency tests / 419 assertions, canonical document
+and full-language structural validators, and the language boundary gate
+(6 tests / 11 assertions). Focused navigation/conservation passes 71 changed
+files, 66 Markdown files, 2,576 local references, 139 original component routes,
+48 historical suffixes and all 48 original task/evidence contents after removing
+declared additions. Changed files are ASCII and `git diff --check` passes.
+The dated full-language snapshot remains non-authoritative. Mapping review
+remains pending at fingerprint
+`7977e6d2b1de5a281faaae0ceeb202946638f03dd8ab69d973b4ee4cd67b56c8`.
+
+### Release source-version checkpoint
+
 The Release continuation binds task-source input
 `be099c84b68e17e171e67905de64c9053226a083`, retaining the entire Math bridge
 and projection at `d2ecd9d9a14e619477bd17d2bf1d40e753e8377b`. Against the
@@ -28,8 +61,8 @@ boundary gate (6 tests / 11 assertions). Focused navigation/conservation passes
 component routes, 48 historical suffixes and all 48 original task/evidence
 contents after removing declared additions. Changed files are ASCII and
 `git diff --check` passes. Full-language snapshot figures remain dated,
-non-authoritative observations, not current execution results. Current mapping
-review is pending at fingerprint
+non-authoritative observations, not current execution results. At that
+checkpoint mapping review remained pending at fingerprint
 `15de4049d86ad199cd6aede9029559a5132a3d51454bd2b0c61639c091523aa9`.
 
 ### Math source-version checkpoint

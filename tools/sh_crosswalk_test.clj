@@ -586,10 +586,10 @@
     (is (= (:sha256 predecessor) (sh-inventory/sha256 prior-text)))
     (is (= (:review predecessor)
            (select-keys (:mapping-review prior) [:status :input-fingerprint :source-version-bridge])))
-    (is (= 130 (:unchanged-body-count comparisons)))
+    (is (= 126 (:unchanged-body-count comparisons)))
     (is (= (set (map :id (:changed-bodies comparisons))) changed))
-    (is (= 9 (count changed)))
-    (is (= 130 (count (remove changed (keys before)))))
+    (is (= 13 (count changed)))
+    (is (= 126 (count (remove changed (keys before)))))
     (let [refinement (:math-parent-refinement bridge)
           predecessor (:predecessor-readiness-successor refinement)
           previous-text (sh-crosswalk/git-source (:commit predecessor) (:path predecessor))
@@ -683,7 +683,9 @@
         future (blocks (second (re-find #"(?s)<!-- release-testing-proposals:start -->(.*?)<!-- release-testing-proposals:end -->" current)))
         aggregates (set (:aggregate-task-ids refinement))
         before-changed (set (map :id (get-in previous [:task-comparisons :changed-bodies])))
-        after-changed (set (map :id (get-in bridge [:task-comparisons :changed-bodies])))
+        release-checkpoint (get-in bridge [:domain-parent-refinement :predecessor-readiness-successor])
+        release-bridge (edn/read-string (sh-crosswalk/git-source (:commit release-checkpoint) (:path release-checkpoint)))
+        after-changed (set (map :id (get-in release-bridge [:task-comparisons :changed-bodies])))
         marker-by-suffix {"bind-each-claimed-component-to-exact-implementation-and-conformance" "release-parent-coverage"
                           "complete-stage-compatibilityequivalence-across-the-claimed-compiler" "release-parent-stage-comparison"
                           "produce-actual-self-hosted-compilerruntime-execution" "release-parent-self-hosting"
@@ -718,6 +720,53 @@
     (is (= :none (:source-body-changes refinement)))
     (is (= :unassessed (:implementation-acceptance refinement)))
     (is (= refinement (get-in (sh-crosswalk/source-view) [:implementation-readiness-source-version :release-testing-refinement])))))
+
+(deftest domain-parent-refinement-preserves-complete-source-bodies-and-role-boundaries
+  (let [bridge sh-crosswalk/readiness-source-version
+        refinement (:domain-parent-refinement bridge)
+        predecessor (:predecessor-readiness-successor refinement)
+        previous-text (sh-crosswalk/git-source (:commit predecessor) (:path predecessor))
+        previous (edn/read-string previous-text)
+        previous-projection (sh-crosswalk/git-source (:commit predecessor) (:projection-path predecessor))
+        {:keys [path published-commit published-sha256]} (:published-source refinement)
+        published (sh-crosswalk/git-source published-commit path)
+        current (slurp path)
+        parents (:parent-records refinement)
+        body (fn [text id]
+               (let [block (first (filter #(str/starts-with? % (str "- [ ] `" id "` "))
+                                          (str/split text #"(?m)(?=^- \[ \])")))]
+                 (str/trim (subs block (.indexOf block "Projected task block:")))))
+        before-changed (set (map :id (get-in previous [:task-comparisons :changed-bodies])))
+        after-changed (set (map :id (get-in bridge [:task-comparisons :changed-bodies])))]
+    (is (= (:sha256 predecessor) (sh-inventory/sha256 previous-text)))
+    (is (= (:projection-sha256 predecessor) (sh-inventory/sha256 previous-projection)))
+    (is (= (:input-fingerprint predecessor) (:input-fingerprint previous)))
+    (is (= 130 (get-in previous [:task-comparisons :unchanged-body-count])))
+    (is (= 9 (count before-changed)))
+    (is (= #{"query" "workflow" "gpu" "ui"} (set (map :id parents))))
+    (is (= after-changed (into before-changed (map :id parents))))
+    (is (= published-sha256 (sh-inventory/sha256 published)))
+    (doseq [{:keys [id marker source-body-sha256 current-body-sha256 criterion-ids profile-mapping-ids]} parents
+            :let [raw (body published id)
+                  region (second (re-find (re-pattern (str "(?s)<!-- " marker ":start -->(.*?)<!-- " marker ":end -->")) current))
+                  carried (second (re-find #"(?s)(Projected task block:\n.*?)\n\nHistorical projected paragraph \(unchanged\):" region))
+                  expected (-> raw
+                               (str/replace "specs/requirement-reconciliation/profile-system/gap-completion.edn"
+                                            "[the preserved profile-interface context](plan.md#query-workflow-gpu-and-ui-source-context)")
+                               (str/replace "specs/requirement-reconciliation/domain-gap-completion.edn"
+                                            "[the full preserved Domain context](#wider-integration-task-proposals)"))]]
+      (is (= source-body-sha256 (sh-inventory/sha256 raw)) id)
+      (is (= current-body-sha256 (sh-inventory/sha256 carried)) id)
+      (is (= expected carried) id)
+      (is (= criterion-ids (mapv second (re-seq #"(?m)^(?:Criterion|Decision criterion) `([^`]+)`" carried))) id)
+      (is (= profile-mapping-ids (mapv second (re-seq #"Criterion profile-gap/([^ ]+) \(Open\):" carried))) id))
+    (is (= 21 (reduce + (map #(count (:criterion-ids %)) parents))))
+    (is (= 5 (reduce + (map #(count (:profile-mapping-ids %)) parents))))
+    (is (= :only-declared-context-rebindings (:source-body-changes refinement)))
+    (is (= :pending-current-repartition-review (:producer-consumer-allocation refinement)))
+    (is (= :detailed-source-resumption-pending (:ai-parent refinement)))
+    (is (= :unassessed (:implementation-acceptance refinement)))
+    (is (= refinement (get-in (sh-crosswalk/source-view) [:implementation-readiness-source-version :domain-parent-refinement])))))
 
 (deftest readiness-successor-rejects-stale-review-pins-and-missing-source-routes
   (let [source (sh-crosswalk/source-view)

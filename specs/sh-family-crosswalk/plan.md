@@ -65,6 +65,20 @@ controls. Actual suite execution, comparison, intermediate admission and final
 release remain separate; TEST6 remains with Backends. Source conservation and
 author validation do not confer current source/composition review.
 
+The four-parent Domain continuation binds source input
+`deacbfd25ea22e501e8e08f54ff826eaa3d59353`. Its
+`domain-parent-refinement` field preserves the complete Release bridge and
+projection at `4c24dd7825ef66efe88a3c525b7e4837a4b53bc9`. Only the Domains
+task-file version advances; all other applying source pins stay fixed. Against
+the original 139 bodies, 126 are unchanged and thirteen Open bodies have
+declared additions. Query/Workflow/GPU/UI retain nineteen Domain clauses,
+five profile interfaces and two decision criteria. Only five profile-context
+and nineteen Domain-context references change; the complete other text and
+original short paragraphs are preserved. Record exact body/criterion/profile
+identities and source inspection qualifications, retaining current repartition
+review and detailed AI resumption as pending. No task key, checkbox, SH/SH07
+route, scoped Reader receipt or future-task inclusion changes.
+
 ## Ownership handoffs
 
 Canonical requirement owner `01a179ad-2198-7392-966a-1e3c31209027` supplied the

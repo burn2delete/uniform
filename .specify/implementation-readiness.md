@@ -629,3 +629,45 @@ and all 48 original task/evidence contents after stripping declared additions.
 Changed files are ASCII and `git diff --check` passes. These results establish
 the checked source/projection properties only; source/owner conjunctions,
 future-task composition, implementation and independent acceptance remain open.
+
+## Query, Workflow, GPU and UI parent continuation
+
+The existing four Open parents now resume complete preserved bodies in the
+[same Domain authority](../specs/domains-workflow/tasks.md#implementation-tasks),
+above their unchanged original paragraphs. Nineteen Domain clauses, five
+profile interfaces and two decision criteria retain their identities and all
+other text except five profile-context and nineteen Domain-context reference
+repairs. The [composition plan](../specs/domains-workflow/plan.md#query-workflow-gpu-and-ui-composition)
+separates checked domain IR, backend target emission, actual Runtime calls,
+callable library APIs and domain results. Query planning is separate from
+provider execution; CRDT law checking is separate from actual merge/update;
+typed kernel lowering is separate from code emission and device dispatch;
+browser and mobile conformance require distinct actual evidence.
+
+Source checks verify 156 distinct profile facets, 275 Domain facets, 30
+existing Open role contexts and seventeen byte-equal governing documents.
+The same older role identities remain qualified for current repartition
+review; broad source labels cannot authorize duplicate emitters or runtimes.
+The large AI parent still needs detailed A1-A11 source resumption and interface
+reconciliation. Finite query/cart/reduction/ticket examples do not establish
+the wider required support inventories or close their source entailment.
+
+The existing SH bridge binds source input
+`deacbfd25ea22e501e8e08f54ff826eaa3d59353`, preserving the complete Release
+bridge/projection at `4c24dd7825ef66efe88a3c525b7e4837a4b53bc9`. Against the
+original population, 126 task bodies remain identical and thirteen Open
+bodies carry declared additions. No task key/status, SH/SH07 route, scoped
+Reader receipt, future-task composition or accepted implementation changes.
+No provider/device/adapter adoption, compiler/C12/native/live-provider execution
+or other-chat messaging occurs in this source/planning continuation.
+
+Continuation checks pass: 26 crosswalk tests / 767 assertions, 18 dependency
+tests / 419 assertions, deterministic projection, canonical document and
+full-language structural validation, and the language boundary gate (6 tests /
+11 assertions). Focused conservation/navigation covers 71 changed files,
+66 Markdown files, 2,576 local references, 139 original component routes,
+48 historical suffixes and all 48 original task/evidence contents after
+removing declared additions. Changed files are ASCII and whitespace checks
+pass. Current independent review, global source/facet/owner conjunctions,
+remaining AI and cross-component refinement, wider support surfaces and
+future-task/SH composition are unfinished; no implementation is accepted here.
