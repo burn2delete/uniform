@@ -10,6 +10,7 @@ migration, release, self-hosting, or seed-retirement authority.
 ## Source identities
 
 - Current-main base: `bfc99d626ca31c9094573e03da751ee34da5084f`
+- Current-main base tree: `f6305181e0df2e841c15c752f3e1ee1260bdee17`
 - Original PR533 head preserved in ancestry: `770b24cec5f5afe21a3761e2ceeb8fe5090ab496`
 - Original PR533 tree: `b514bfecb860fcd7031564d69cbe3c7b4bc809f5`
 - Selective-port ancestry merge: `8926a1ac4b3eedf6ac660ad1f78e5cac0663da2d`
@@ -79,11 +80,12 @@ Effects semantic port. Their useful behavior remains owned as follows:
   `sh01_development_loop_wiring.clj` already provide the current Git process
   lifecycle hook; SH-01's `start-process`, `retain-owned-process!`,
   `process-result`, and `finalize-owned-process!` remain the custody API.
-- The exact PR533 combination of a public retained-Git result wrapper, strict
-  complete-UTF-8/truncation receipt, shared outer deadline across Git/child/
-  cleanup/publication, and suppressed-cleanup error preservation is not
-  exposed by those current public interfaces. That is a concrete SH-01/source
-  custody interface delta and remains pending; no duplicate controller or
+- Current SH-01 lifecycle hooks preserve the raw Process/token, source-drift
+  recheck, interruption and suppressed-cleanup behavior. The exact PR533
+  public retained-Git result wrapper is not copied. Strict complete-UTF-8 /
+  truncation receipt and one shared outer deadline across Git/child/cleanup/
+  publication are not exposed by the current public interfaces; that is the
+  concrete remaining SH-01/source-custody delta. No duplicate controller or
   PMK-specific exclusive-lease gate is introduced here.
 
 ## Validation and evidence limits
@@ -94,14 +96,42 @@ development feedback only. No native C compiler, restricted process route,
 broker admission, or remote operation was executed for this port.
 
 The two vector controls and the retained shape-control selector pass together
-with 39 assertions. The PMK composition selector remains held: the current
-main pinned C2 reader identity rejects the fixture before C5/C6/C7, and an
-attempt to select the supported current Reader route reaches SH-05's pinned
-macro-source requirement. Resolving that requires an SH-03/SH-05/SH-07 owner
-change; this port does not refresh those source identities or weaken the
-authentication boundary. The old 257-entry rejection in the neighboring
-import-table test was removed because the current predicate is shape-only; its
-type and collection-shape negatives remain.
+with 39 assertions. The PMK composition selector remains held at the first
+real downstream source boundary: its five-argument C5 invocation accepts the
+current Reader/macro selection, then SH07's construction path invokes the
+pinned C4 macro reader and rejects the current macro bytes with
+`C4-TRACE` / `:exact-pinned-macro-source` (expected 56488 bytes, observed
+54374, at `bootstrap/gravity/src/gravity/macro.gravity`). This is not the
+earlier C2 Reader identity failure and does not justify a synthetic product,
+an authentication bypass, or a source-owner refresh in this port. The exact
+remaining work is in `sh07-core-construction-dependencies` at
+`bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00897-sh07-core-construction-upstream-guard.clj`:
+its construction dependency map still calls the one-argument pinned C4 macro
+reader and does not propagate the explicit `:macro-source-mode` through the
+SH07 construction/verification path. The smallest owner repair is to thread
+the already authenticated current/pinned source mode through that path while
+leaving the default one-argument pinned behavior unchanged, then add a
+current-mode positive and pinned-mode negative replay control. No C6/C7 or
+public C8 PMK execution is claimed here.
+
+The retained-Git/source-custody behavior is already present in the actual
+current SH01 owner: `gravity.build.producer-git-observation` and its
+`*producer-git-lifecycle*` bookends use the canonical retained-process APIs,
+preserve raw Process/token identity, recheck source bindings before and after
+the selected C2 observation, and retain only non-authoritative observation
+facts. Those paths are present in current main through commits
+`e047157d7`/`e02d28e15`/`7a74f6e38` and are preserved by this candidate; the
+old PR533 `effects_retained_git` wrapper and PMK lease gate are not replayed.
+The remaining unique deadline delta is not yet incorporated: current
+`run-git-bytes!` has no shared monotonic operation clock, bounded capture
+receipt, or outer-deadline handoff from `run-selected!`. That interface is
+owned by SH01/source custody and remains a concrete pending delta rather than
+an ownership-only claim. No project-accounting or PMK-exclusive lease is
+reintroduced.
+
+The old 257-entry rejection in the neighboring import-table test was removed
+because the current predicate is shape-only; its type and collection-shape
+negatives remain.
 
 ## Acceptance criteria
 

@@ -27,6 +27,33 @@
   (let [{:keys [request typed verification] :as products} (fresh-type-products relative)]
     (assoc products :binding (seal-binding request typed verification))))
 
+(defn- fresh-current-products [relative]
+  ;; Use the existing five-argument C5 source boundary for this selector only.
+  ;; The C6 invocation deliberately keeps the SH03 reader map exact; macro
+  ;; source selection belongs to the C5/SH06 invocation and must not be smuggled
+  ;; through the SH07 reader options.
+  (let [source-path (path relative)
+        reader-path (path bootstrap/sh03-reader-source-relative-path)
+        c5-invocation {:reader-source-path reader-path
+                       :authenticated-envelope-options {:source :development-current}
+                       :macro-source-mode :development-current}
+        core-invocation (dissoc c5-invocation :macro-source-mode)
+        c5 (bootstrap/compiler-c5-resolution-source-artifact
+            source-path (slurp source-path :encoding "UTF-8")
+            {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+            reader-path c5-invocation)
+        artifact (bootstrap/sh07-core-from-resolution-artifact c5 core-invocation)
+        report (bootstrap/sh07-core-artifact-verification artifact core-invocation)
+        coordinator ((sh08-helper 'coordinator-verification) artifact report)
+        context ((sh08-helper 'b47-context) artifact report coordinator)
+        request {:canonical-core-artifact (:canonical-core-artifact context)
+                 :b47-context context
+                 :coordinator-verification coordinator}
+        typed (kernel-support/invoke-c7 'sh08-function-type-core-artifact [request])
+        verification (kernel-support/invoke-c7 'sh08-verify-function-type-result [request typed])]
+    {:c5 c5 :artifact artifact :report report :request request :typed typed
+     :verification verification :binding (seal-binding request typed verification)}))
+
 (defn- fresh-request [c5]
   (let [artifact (bootstrap/sh07-core-from-resolution-artifact c5)
         report (bootstrap/sh07-core-artifact-verification artifact)
@@ -3473,10 +3500,12 @@
 (deftest body-private-map-keys-authenticated-builder-composition
   ;; The PMK source pair must reach both the leaf Effects builder and the
   ;; public C8 forwarding boundary. This remains development evidence only.
-  ;; Current main's pinned C2/C4 identities hold this selector before products
-  ;; are built; do not substitute a synthetic product or refresh those owners.
+  ;; The five-argument C5 route now selects the current Reader/macro source,
+  ;; while SH07 still rejects the current macro bytes at its pinned C4
+  ;; replayability boundary. Keep this selector real and held at that exact
+  ;; owner boundary; do not substitute a synthetic product or refresh owners.
   (let [extensions [".gravity" ".qst"]
-        products (mapv #(fresh-products
+        products (mapv #(fresh-current-products
                          (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-private-map-keys" %))
                        extensions)
         results (mapv build-leaf products)]
