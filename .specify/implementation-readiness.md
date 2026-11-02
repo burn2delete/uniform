@@ -836,3 +836,64 @@ The first implementation preparation increment remains Reader's existing
 native, C12, provider, device, publication or held operation was executed by
 this continuation. No other chat was messaged. Reconciliation remains active;
 required independent acceptance and coordinator integration remain Open.
+
+## Math and Schema output dependency continuation
+
+The existing [dependency contract](../docs/acceptance-dependencies.md#math-output-dependencies-and-schema-staging)
+now records declared joins for all seven future Math/Schema consumers and the
+Math parent's independent-verdict boundary. Of forty future records, twenty-seven
+now have declarations and thirteen Release suite/seed records remain explicit
+dependency-review gaps. Eighty-five selected producer-result joins require exact
+actual outputs; they never require completing a broad producer task to develop
+an independent consumer. No result is promoted to execution or acceptance.
+
+The checker derives 48 existing Math output criteria directly from six existing
+task bodies, retaining complete criterion spans, canonical MATH identities,
+output declarations and external input contracts. All 67 literal prerequisites
+resolve to existing output owners; 28 cross task boundaries. Those output facts
+are not new tasks or a completion denominator. Selected results connect to
+their exact named output inputs rather than an invented whole-task alias.
+
+Two coarse cycles remain visible: the six Math parent/producer/checker tasks,
+and Schema's projection/compatibility pair. Verified EFIR and numeric facts feed
+untrusted candidates and recorded traces/partitions; an independent applicable
+proof or certificate verdict precedes proof-dependent promotion/use. A claim
+selects an allowed method instead of requiring every proof technique. Schema
+candidate generation precedes old/new compatibility checking; actual migration,
+handler, ABI, reload and release-evidence consumers require their checked inputs
+and actual effects. The full qualified C6 conjunction remains intact. The literal
+Math output graph and staged graph are acyclic; this does not prove all prose,
+foundation/profile/safety or target/provider dependencies are formalized.
+
+Source input `a1c36bf6d78a063bfbec0b44d92339cedd2ce14f` advances only the
+dependency document's applying version. The complete bridge/projection and
+pending fingerprint at `eca4d47087a39c9e807d93328b14e7f687dc479a` are retained.
+All 149 current task records, forty future records, task-file pins, original
+SH/SH07 routes and scoped Reader receipts are unchanged. Current mapping review
+remains pending at fingerprint
+`26a68ae0f0c95d43466b0fc058968d71fb1d5910a1af59d709bac6f0da4aa223`.
+
+Dependency controls pass with 21 tests / 957 assertions, including exact UTF8
+criterion reconstruction, known/unique owners and refusal of malformed, unknown
+or duplicated output declarations. Deterministic generation/check, original SH
+inventory and read-only dependency audit pass; canonical document, full-language
+structural and language-boundary checks pass. The crosswalk regression rejected
+mixed-format metadata; primitive input locators now remain in checkpoint
+metadata and payload references in the generated snapshot table. A preliminary
+dependency run against the preceding projection correctly rejected the changed
+document as stale. Neither failed preliminary run receives passing credit.
+
+Final crosswalk checks pass: 30 tests / 1,154 assertions. Focused conservation
+and navigation passes for 73 changed files, 67 Markdown files, 2,654 local
+references, 139 original component routes, 48 historical suffixes and all 48
+original task/evidence contents after stripping declared additions. Changed
+files are ASCII and whitespace checks pass. These author checks confer no
+independent acceptance, integration or implementation credit.
+
+The remaining thirteen Release joins need actual subject/oracle interfaces,
+stage comparison, intermediate admission and final release composition. Future
+SH/full-language finish-line links, global source/facet/owner conjunctions,
+current repartition and independent acceptance/integration remain pending.
+Reader's contract-coverage preparation increment remains first. No compiler,
+native/C12/provider, device, migration or held operation was executed, and no
+other chat was messaged. Reconciliation remains active.

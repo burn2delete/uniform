@@ -2,6 +2,55 @@
 
 ## Current implementation-readiness source-version successor
 
+The Math/Schema dependency continuation binds declaration input
+`a1c36bf6d78a063bfbec0b44d92339cedd2ce14f` and retains the complete bridge,
+projection and pending fingerprint at
+`eca4d47087a39c9e807d93328b14e7f687dc479a`. Only the dependency document's
+applying pin advances. All 149 current task records, forty future task records,
+task-file pins, original SH/SH07 routes and scoped Reader receipts are identical
+to that checkpoint. No task checkbox, implementation or acceptance is promoted.
+
+The existing dependency table now declares twenty-seven future consumers and
+the Math parent's independent-verdict consumer. Its exact-source Math output
+view retains 48 criterion spans, 67 literal prerequisites and 28 joins between
+their existing task authorities. Selected result nodes connect to their named
+output inputs. Coarse cycles remain visible for six Math producer/checker tasks
+and the two Schema projection/compatibility tasks; declared artifact staging
+separates untrusted construction, independent checking and actual use. The
+literal Math output graph and staged graph are acyclic, with every output still
+execution/review-unassessed. Literal edges do not prove full prose coverage.
+
+Applicable proof methods are selected per claim; this view does not require all
+methods for each claim. Schema generation, checked compatibility/migration,
+actual Runtime/STD10 consumers and Release decisions retain distinct roles,
+including the full qualified C6 conjunction. Thirteen Release suite/seed joins,
+future SH/full-language finish-line links, global source/facet/owner conjunctions,
+current repartition and independent acceptance remain pending. Source validation
+cannot replace proof replay, migration/handler execution or a release decision.
+
+Checkpoint metadata retains primitive input locators; payload references belong
+to the generated snapshot table. The crosswalk regression caught a mixed-format
+metadata attempt and it was corrected before publication. The earlier dependency
+run against the preceding projection also rejected the changed document as
+stale. Neither failed preliminary run receives passing credit. No compiler,
+native/C12/provider, device, migration, signing, publication or held operation
+was executed, and no other chat was messaged.
+
+Final author checks pass: 30 crosswalk tests / 1,154 assertions; 21 dependency
+tests / 957 assertions; deterministic crosswalk and original-inventory checks;
+read-only dependency audit; canonical document and full-language structural
+validators; language boundary (six tests / eleven assertions); and focused
+conservation/navigation (73 changed files, 67 Markdown files, 2,654 local
+references, 139 original component routes, 48 historical suffixes and all 48
+original task/evidence contents after stripping declared additions). Changed
+files are ASCII and whitespace checks pass. Current mapping review remains
+pending at fingerprint
+`26a68ae0f0c95d43466b0fc058968d71fb1d5910a1af59d709bac6f0da4aa223`.
+These checks establish source/graph integrity, not semantic or implementation
+acceptance. The full compiler suite and every held operation remain unrun.
+
+### Platform source-version checkpoint
+
 The Platform continuation binds task-source input
 `0876063f41e2ad3e13f3c332f4877daecb62b45d`, retaining the complete AI bridge
 and projection at `6bc6ee9c83861fe74af2770751e451f7671c16d5`. Its new explicit

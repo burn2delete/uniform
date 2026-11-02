@@ -349,18 +349,24 @@
         review (:dependency-review result)
         edges (:typed-edges result)
         nodes (:nodes result)
-        frontier (dependencies/advisory-frontier
-                   (merge (into {} (for [[id _] current]
-                                    [(str "task:" id "/interface") {:state :accepted :scope :declared-interface-only}]))
-                          nodes) edges {})
+        current-nodes (into {} (for [[id _] current facet ["interface" "implementation" "composition"]]
+                                 [(str "task:" id "/" facet)
+                                  {:state (if (= "interface" facet) :accepted :unassessed)}]))
+        frontier (dependencies/advisory-frontier (merge current-nodes nodes) edges {})
         hardware "platform-product/implement-hardware"
         adoption "platform-product/adopt-physical-boundary"]
     (is (= 149 (count current)))
     (is (= 40 (:task-count review)))
-    (is (= 20 (count (:declared-consumers review)) (count (:unresolved-consumers review))))
+    (is (= 27 (count (:declared-consumers review))))
+    (is (= ["math"] (:declared-parent-consumers review)))
+    (is (= 13 (count (:unresolved-consumers review))))
     (is (= :pending (:future-sh-and-full-language-joins review)))
     (is (= :unassessed (:implementation-acceptance review)))
-    (is (empty? (:declared-output-cycles review)))
+    (is (= [["math" "math/certified-implementation-synthesis" "math/eml-normalization-and-search"
+             "math/independent-proof-and-certificate-checking" "math/interval-and-real-proof-production"
+             "math/symbolic-rule-and-trace-production"]
+            ["schema/checked-consumer-projection" "schema/compatibility-and-migration"]]
+           (:declared-output-cycles review)))
     (doseq [id (:unresolved-consumers review)]
       (is (= :dependency-review-pending (get-in frontier [(str "task:" id "/composition") :state])) id)
       (is (= :dependency-review-pending (get-in frontier [(str "task:" id "/implementation") :state])) id))
@@ -371,12 +377,12 @@
                    :actual-selected-producer-result] [(:from %) (:to %) (:kind %)]) edges))
     (is (not-any? #(and (= "task:automation/implementation" (:from %))
                        (str/starts-with? (:to %) "result:")) edges))
-    (doseq [row (filter #(= :selected-acceptance-facet (:scope %)) (vals nodes))]
+    (doseq [row (filter :producer (vals nodes))]
       (is (= :unassessed (:state row)))
       (is (:producer-source row)))
     (is (empty? (dependencies/cycles
                   (dependencies/typed-adjacency
-                    (merge (into {} (for [[id _] current] [(str "task:" id "/interface") {}])) nodes) edges {}))))
+                    (merge current-nodes nodes) edges {}))))
     (let [path "specs/platform-workflow/tasks.md" text (slurp path)
           read-changed #(if (= path %) (str/replace text (str "`" hardware "`") "`platform-product/fabricated`") (slurp %))
           row (first (get future "platform-product-implementation-tasks"))
@@ -398,8 +404,70 @@
                     "| `platform-product/adopt-hardware-contract` | none | `platform-product/implement-hardware` |")
           with-backedge (dependencies/future-task-view future current snapshots
                           #(if (= doc %) changed (slurp %)))]
-      (is (= [["platform-product/adopt-hardware-contract" "platform-product/implement-hardware"]]
-             (get-in with-backedge [:dependency-review :declared-output-cycles]))))))
+      (is (some #(= ["platform-product/adopt-hardware-contract" "platform-product/implement-hardware"] %)
+                (get-in with-backedge [:dependency-review :declared-output-cycles]))))))
+
+(deftest math-output-joins-retain-exact-criterion-spans-and-independent-boundaries
+  (let [source (edn/read-string (slurp dependencies/sh-crosswalk-path))
+        tasks (into {} (for [rows (concat (vals (:task-authorities source)) (vals (:future-task-authorities source)))
+                            row rows] [(:id row) row]))
+        snapshots (:source-snapshots source)
+        view (dependencies/math-output-view tasks snapshots)
+        outputs (into {} (map (juxt :id identity) (:outputs view)))
+        rewrite (fn [task-id transform]
+                  (let [task (tasks task-id) raw (transform (dependencies/source-raw (:source task) snapshots))]
+                    (assoc-in tasks [task-id :source]
+                              {:path (:path task) :raw raw :sha256 (dependencies/sha256 raw)})))
+        eml "math/eml-normalization-and-search"]
+    (is (= 48 (count outputs)))
+    (is (= 67 (reduce + (map count (vals (:adjacency view))))))
+    (is (= 28 (count (:cross-task-inputs view))))
+    (is (empty? (:cycles view)))
+    (is (= :unassessed (:implementation-acceptance view)))
+    (doseq [row (:outputs view)
+            :let [locator (:source row)
+                  task-bytes (.getBytes (dependencies/source-raw (:task-source locator) snapshots) "UTF-8")
+                  criterion (String. (java.util.Arrays/copyOfRange task-bytes
+                                      (int (:task-relative-byte-start locator))
+                                      (int (:task-relative-byte-end locator))) "UTF-8")]]
+      (is (= (:sha256 locator) (dependencies/sha256 criterion)) (:id row))
+      (is (str/starts-with? criterion (str "Criterion `" (:id row) "` (" (:canonical-document row) "; Open).")))
+      (is (str/includes? criterion (str "Outputs: " (:output-declaration row))))
+      (is (str/includes? criterion (str "Dependencies: " (:dependency-declaration row) ". " (:external-input-contract row))))
+      (is (= :unassessed (:state row)))
+      (is (tasks (:task-id row))))
+    (is (= "math" (:task-id (outputs "math/efir-verification"))))
+    (is (= "math/independent-proof-and-certificate-checking"
+           (:task-id (outputs "math/eml-independent-trace-replay"))))
+    (is (= #{"math/eml-trace-production"} (get-in view [:adjacency "math/eml-independent-trace-replay"])))
+    (is (= #{"math/eml-construction"} (get-in view [:adjacency "math/eml-trace-production"])))
+    (is (= #{"math/semantic-equality-proof-gate" "math/efir-verification"}
+           (get-in view [:adjacency "math/eml-candidate-promotion"])))
+    (doseq [[from to] [["Dependencies: math/efir-verification." "Dependencies: math/missing-output."]
+                       ["Dependencies: math/eml-construction, math/eml-search-manifest."
+                        "Dependencies: math/eml-construction; math/eml-search-manifest."]
+                       ["math/semantic-equality-proof-gate, math/efir-verification."
+                        "math/semantic-equality-proof-gate, math/semantic-equality-proof-gate."]
+                       ["Criterion `math/eml-trace-production`" "Criterion `math/eml-construction`"]
+                       ["(MATH4; Open)." "(MATH99; Open)."]
+                       ["Outputs: Optional EML expression/DAG, EFIR node correspondence and semantic context."
+                        "Outputs:"]
+                       ["Outputs: Normalization trace" "Outputs: Duplicate declaration.\nOutputs: Normalization trace"]
+                       ["Dependencies: math/eml-construction. Types/Legality"
+                        "Dependencies: math/eml-construction. Types/Legality duplicate.\nDependencies: math/eml-construction. Types/Legality"]]]
+      (is (thrown? Exception (dependencies/math-output-view (rewrite eml #(str/replace % from to)) snapshots)) from))
+    (let [with-cycle (rewrite eml #(str/replace % "Dependencies: math/eml-construction. Types/Legality"
+                                               "Dependencies: math/eml-independent-trace-replay. Types/Legality"))]
+      (is (= [["math/eml-independent-trace-replay" "math/eml-trace-production"]]
+             (:cycles (dependencies/math-output-view with-cycle snapshots)))))
+    (let [current (into {} (for [rows (vals (:task-authorities source)) row rows] [(:id row) row]))
+          result (dependencies/future-task-view (:future-task-authorities source) current snapshots slurp)
+          node (get-in result [:nodes (str "result:" eml ":math")])]
+      (is (= ["math/efir-verification" "math/numeric-mode-resolution" "math/semantic-equality-proof-gate"]
+             (:named-math-output-inputs node)))
+      (is (= :unassessed (:state node)))
+      (is (some #(= [(str "result:" eml ":math") "output:math/efir-verification" :named-selected-producer-output]
+                    [(:from %) (:to %) (:kind %)]) (:typed-edges result))))))
 
 (let [result (run-tests 'acceptance-dependencies-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))

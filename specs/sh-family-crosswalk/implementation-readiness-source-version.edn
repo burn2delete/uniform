@@ -19,7 +19,7 @@
    "evolution/security-review"
    "evolution/stabilization-decision"
    "evolution/target-support-admission"]},
- :source-input-commit "a5533e0c3b80e2a23490008e73d95e1ef616baf9",
+ :source-input-commit "a1c36bf6d78a063bfbec0b44d92339cedd2ce14f",
  :task-comparisons
  {:unchanged-body-count 121,
   :changed-bodies
@@ -438,9 +438,9 @@
     "3487862f9c4c6bf19b71a4dd7052ec8e9e0b068ad594e5ea7567cd69f6c20eb6",
     :prior-explicit-applying-pin nil},
    :after
-   {:commit "a5533e0c3b80e2a23490008e73d95e1ef616baf9",
+   {:commit "a1c36bf6d78a063bfbec0b44d92339cedd2ce14f",
     :sha256
-    "cb8b99dbb9caa38a2d777536c429fd8793272cdaa91bd10fcf436c69054ecea6"},
+    "15b02dc8f8bf7f9935fcd33149875f166cdb0f4753a043d7f1c47f24ba1b04ea"},
    :scope :dependency-declaration-version}],
  :inspection-locators
  {"docs/phase-02-safety/043-safe14-supply-chain-safety.md"
@@ -972,6 +972,1078 @@
    "f16680ce6e29658f827e6a50a5bd13fd3c90241aeb01614e4465422c40533f8e",
    :source-version-bridge
    "specs/sh-family-crosswalk/resolution-runtime-composition-source-version.edn"}},
+ :math-schema-dependency-refinement
+ {:literal-output-prerequisites 67,
+  :literal-output-cycles [],
+  :per-claim-proof-method
+  :applicable-accepted-method-not-all-alternatives,
+  :predecessor-readiness-successor
+  {:commit "eca4d47087a39c9e807d93328b14e7f687dc479a",
+   :path
+   "specs/sh-family-crosswalk/implementation-readiness-source-version.edn",
+   :sha256
+   "10e199dd6ed3fd7dec84b619713ba0616fb46ec9e02ddca198c9f9a58363e6d5",
+   :projection-path "specs/sh-family-crosswalk/crosswalk.edn",
+   :projection-sha256
+   "2799ccaca10e335e86ba5995b877c47ffbfd9d9fba484f7501eaa5fdab477875",
+   :input-fingerprint
+   "8a02850a50b119e7b00346788ba87e360b79c2129d6ff7cd6828be75e24da996"},
+  :declared-consumers
+  ["automation"
+   "blockchain"
+   "crypto"
+   "formal"
+   "math/certified-implementation-synthesis"
+   "math/eml-normalization-and-search"
+   "math/independent-proof-and-certificate-checking"
+   "math/interval-and-real-proof-production"
+   "math/symbolic-rule-and-trace-production"
+   "native"
+   "platform-product/adopt-application-contract"
+   "platform-product/adopt-hardware-contract"
+   "platform-product/adopt-kernel-contract"
+   "platform-product/adopt-physical-boundary"
+   "platform-product/distribute-product"
+   "platform-product/implement-applications"
+   "platform-product/implement-drivers"
+   "platform-product/implement-firmware"
+   "platform-product/implement-hardware"
+   "platform-product/implement-os"
+   "platform-product/integrate-execution"
+   "schema/checked-consumer-projection"
+   "schema/compatibility-and-migration"
+   "services"
+   "simulation"
+   "storage"
+   "visual"],
+  :declared-parent-consumers ["math"],
+  :source-entailment :pending-independent-review,
+  :cross-task-output-prerequisites 28,
+  :coarse-producer-cycles
+  [["math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"]
+   ["schema/checked-consumer-projection"
+    "schema/compatibility-and-migration"]],
+  :task-bodies-and-source-pins :unchanged,
+  :dependency-source
+  {:path "docs/acceptance-dependencies.md",
+   :before
+   {:commit "a5533e0c3b80e2a23490008e73d95e1ef616baf9",
+    :sha256
+    "cb8b99dbb9caa38a2d777536c429fd8793272cdaa91bd10fcf436c69054ecea6"},
+   :after
+   {:commit "a1c36bf6d78a063bfbec0b44d92339cedd2ce14f",
+    :sha256
+    "15b02dc8f8bf7f9935fcd33149875f166cdb0f4753a043d7f1c47f24ba1b04ea"}},
+  :future-sh-and-full-language-joins :pending,
+  :unresolved-consumers
+  ["release/remaining-tasks-and-evidence/execute-agent-and-workflow-evaluations"
+   "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures"
+   "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures"
+   "release/remaining-tasks-and-evidence/execute-formal-evidence-checks"
+   "release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures"
+   "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures"
+   "release/remaining-tasks-and-evidence/execute-library-conformance-fixtures"
+   "release/remaining-tasks-and-evidence/execute-performance-regression-fixtures"
+   "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures"
+   "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures"
+   "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures"
+   "release/remaining-tasks-and-evidence/execute-staged-compiler-validation"
+   "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations"],
+  :math-output-records
+  [{:id "math/conformance-execution-report",
+    :task-id "math",
+    :canonical-document "MATH11",
+    :dependency-declaration
+    "math/conformance-suite-composition, math/conformance-oracle-adapter",
+    :output-declaration
+    "Per-fixture/profile/target results, checked artifact/replay transcripts, invalidation results and minimized failure records.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 591,
+      :end-byte 68590,
+      :start-line 14,
+      :end-line 365,
+      :sha256
+      "25b2d6027cab1184464bc95fd5ffae24adeba9b2dfc7fd49d07aeda9ed7c5ad7"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 13159,
+     :task-relative-byte-end 15078,
+     :sha256
+     "fd3eb70632988f371f16beb9fe0d77ec34e102f65ba9bbd0c1658465085d654f"}}
+   {:id "math/conformance-oracle-adapter",
+    :task-id "math",
+    :canonical-document "MATH11",
+    :dependency-declaration
+    "declared typed inputs, fixture/oracle policy or exact source contract; no preceding Math producer required",
+    :output-declaration
+    "Versioned reference-oracle manifest and checked fixture input/error/trust mapping.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 591,
+      :end-byte 68590,
+      :start-line 14,
+      :end-line 365,
+      :sha256
+      "25b2d6027cab1184464bc95fd5ffae24adeba9b2dfc7fd49d07aeda9ed7c5ad7"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 15079,
+     :task-relative-byte-end 16841,
+     :sha256
+     "acaa07283752add421daf07a59181bbc5a2d22ebb2f4b4ace7c6aabc9569b7e8"}}
+   {:id "math/conformance-suite-composition",
+    :task-id "math",
+    :canonical-document "MATH11",
+    :dependency-declaration
+    "declared typed inputs, fixture/oracle policy or exact source contract; no preceding Math producer required",
+    :output-declaration
+    "Content-addressed fixture corpus and MATH1-MATH10 profile/target/artifact/diagnostic/oracle matrix.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 591,
+      :end-byte 68590,
+      :start-line 14,
+      :end-line 365,
+      :sha256
+      "25b2d6027cab1184464bc95fd5ffae24adeba9b2dfc7fd49d07aeda9ed7c5ad7"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 16842,
+     :task-relative-byte-end 18693,
+     :sha256
+     "20e17597a2d559b4437f46812706131a5170e4e4c2c381faccd40e0672baf71b"}}
+   {:id "math/efir-content-identity",
+    :task-id "math",
+    :canonical-document "MATH3",
+    :dependency-declaration
+    "declared typed inputs, fixture/oracle policy or exact source contract; no preceding Math producer required",
+    :output-declaration
+    "Semantic EFIR content identity and serialization-order equivalence fixtures.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 591,
+      :end-byte 68590,
+      :start-line 14,
+      :end-line 365,
+      :sha256
+      "25b2d6027cab1184464bc95fd5ffae24adeba9b2dfc7fd49d07aeda9ed7c5ad7"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 18694,
+     :task-relative-byte-end 20383,
+     :sha256
+     "3bba7427451c38f0c6ade1759e5b3d71fbb7a575843127de208b61540ffad78f"}}
+   {:id "math/efir-domain-inference",
+    :task-id "math",
+    :canonical-document "MATH3",
+    :dependency-declaration "math/numeric-family-type-check",
+    :output-declaration
+    "Per-node domain/codomain environment with source and branch premises.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 591,
+      :end-byte 68590,
+      :start-line 14,
+      :end-line 365,
+      :sha256
+      "25b2d6027cab1184464bc95fd5ffae24adeba9b2dfc7fd49d07aeda9ed7c5ad7"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 20384,
+     :task-relative-byte-end 21995,
+     :sha256
+     "30fdc943f31703e92e6c189bf330bf9e7c632e0b9a943f55b7bb9893437b989c"}}
+   {:id "math/efir-guarded-normalization",
+    :task-id "math",
+    :canonical-document "MATH3",
+    :dependency-declaration
+    "math/efir-verification, math/semantic-equality-proof-gate",
+    :output-declaration
+    "Transformed EFIR with rule/premise records, semantic anchors and preserved/invalidated facts.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 591,
+      :end-byte 68590,
+      :start-line 14,
+      :end-line 365,
+      :sha256
+      "25b2d6027cab1184464bc95fd5ffae24adeba9b2dfc7fd49d07aeda9ed7c5ad7"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 21996,
+     :task-relative-byte-end 23657,
+     :sha256
+     "39f2db6807aea37ab3ac11a8dd9436500d1096a192e5bfdc900f0cbf2dd6e558"}}
+   {:id "math/efir-precision-attachment",
+    :task-id "math",
+    :canonical-document "MATH3",
+    :dependency-declaration "math/numeric-mode-resolution",
+    :output-declaration
+    "Per-operation and graph numeric-mode/precision annotations with inheritance origin.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 591,
+      :end-byte 68590,
+      :start-line 14,
+      :end-line 365,
+      :sha256
+      "25b2d6027cab1184464bc95fd5ffae24adeba9b2dfc7fd49d07aeda9ed7c5ad7"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 23658,
+     :task-relative-byte-end 25244,
+     :sha256
+     "7524336220cc62404c526ce2ee001deb6b895bef5f63dd53225301effcfd50fc"}}
+   {:id "math/efir-verification",
+    :task-id "math",
+    :canonical-document "MATH3",
+    :dependency-declaration
+    "math/efir-domain-inference, math/efir-precision-attachment",
+    :output-declaration
+    "EFIR verifier report with node/source/semantic-anchor/proof diagnostics.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 591,
+      :end-byte 68590,
+      :start-line 14,
+      :end-line 365,
+      :sha256
+      "25b2d6027cab1184464bc95fd5ffae24adeba9b2dfc7fd49d07aeda9ed7c5ad7"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 25245,
+     :task-relative-byte-end 26956,
+     :sha256
+     "29f12545d926e8f33782c61d828eedbf881839d2a867f88951dfa7098a81ad38"}}
+   {:id "math/elementary-registration",
+    :task-id "math",
+    :canonical-document "MATH2",
+    :dependency-declaration "math/numeric-family-type-check",
+    :output-declaration
+    "Elementary registry entry, EFIR anchor and declaration validation report.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 591,
+      :end-byte 68590,
+      :start-line 14,
+      :end-line 365,
+      :sha256
+      "25b2d6027cab1184464bc95fd5ffae24adeba9b2dfc7fd49d07aeda9ed7c5ad7"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 26957,
+     :task-relative-byte-end 28623,
+     :sha256
+     "e5414c55d388942bac0e106e3577c931bb5ea5804fd4bfedb45b056143d4b65a"}}
+   {:id "math/elementary-subgraph-detection",
+    :task-id "math",
+    :canonical-document "MATH3",
+    :dependency-declaration "math/elementary-registration",
+    :output-declaration
+    "Typed-core/MIR elementary subgraph report with source/generated-origin map.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 591,
+      :end-byte 68590,
+      :start-line 14,
+      :end-line 365,
+      :sha256
+      "25b2d6027cab1184464bc95fd5ffae24adeba9b2dfc7fd49d07aeda9ed7c5ad7"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 28624,
+     :task-relative-byte-end 30160,
+     :sha256
+     "b68688698313c52ea3191cf6912851ff26c5caf55ead3c308c94bc76082af626"}}
+   {:id "math/floating-backend-eligibility",
+    :task-id "math",
+    :canonical-document "MATH8",
+    :dependency-declaration "math/floating-policy-resolution",
+    :output-declaration
+    "Backend instruction/provider mapping, feature assumptions and explicit legal fallback/rejection.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 591,
+      :end-byte 68590,
+      :start-line 14,
+      :end-line 365,
+      :sha256
+      "25b2d6027cab1184464bc95fd5ffae24adeba9b2dfc7fd49d07aeda9ed7c5ad7"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 30161,
+     :task-relative-byte-end 31780,
+     :sha256
+     "476b5a977e427de01fddeaef432bfcb0892da72a7d2b9e11f2f1300b7fd1d300"}}
+   {:id "math/floating-policy-resolution",
+    :task-id "math",
+    :canonical-document "MATH8",
+    :dependency-declaration "math/numeric-mode-resolution",
+    :output-declaration
+    "Floating manifest and format/rounding/exception/status/determinism tables.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 591,
+      :end-byte 68590,
+      :start-line 14,
+      :end-line 365,
+      :sha256
+      "25b2d6027cab1184464bc95fd5ffae24adeba9b2dfc7fd49d07aeda9ed7c5ad7"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 31781,
+     :task-relative-byte-end 33428,
+     :sha256
+     "79a01ccdb63ece8df2ff269feb8c752944b03f2e3baabfa1af68c3d56c8b7615"}}
+   {:id "math/floating-reproducibility-record",
+    :task-id "math",
+    :canonical-document "MATH8",
+    :dependency-declaration
+    "math/floating-policy-resolution, math/conformance-oracle-adapter",
+    :output-declaration
+    "Scoped source/target/bitwise/provider reproducibility claim and supporting target fixtures.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 591,
+      :end-byte 68590,
+      :start-line 14,
+      :end-line 365,
+      :sha256
+      "25b2d6027cab1184464bc95fd5ffae24adeba9b2dfc7fd49d07aeda9ed7c5ad7"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 33429,
+     :task-relative-byte-end 35102,
+     :sha256
+     "4b7566edf61cb24a80a0ddc634101353f57307a8663ebca1a7942feb53e1aa3d"}}
+   {:id "math/floating-transform-legality",
+    :task-id "math",
+    :canonical-document "MATH8",
+    :dependency-declaration
+    "math/floating-policy-resolution, math/semantic-equality-proof-gate",
+    :output-declaration
+    "Transform decision with manifest, source span, proof/certificate/opt-in and selected instruction.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 591,
+      :end-byte 68590,
+      :start-line 14,
+      :end-line 365,
+      :sha256
+      "25b2d6027cab1184464bc95fd5ffae24adeba9b2dfc7fd49d07aeda9ed7c5ad7"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 35103,
+     :task-relative-byte-end 36804,
+     :sha256
+     "45f1a55e3a00ccf580749cf9396d32c9cbd75f1d408db10d62f148e4dcce19c1"}}
+   {:id "math/numeric-family-type-check",
+    :task-id "math",
+    :canonical-document "MATH1",
+    :dependency-declaration
+    "declared typed inputs, fixture/oracle policy or exact source contract; no preceding Math producer required",
+    :output-declaration
+    "Numeric type/family annotations and conversion diagnostics.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 591,
+      :end-byte 68590,
+      :start-line 14,
+      :end-line 365,
+      :sha256
+      "25b2d6027cab1184464bc95fd5ffae24adeba9b2dfc7fd49d07aeda9ed7c5ad7"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 36805,
+     :task-relative-byte-end 38540,
+     :sha256
+     "6bfb2cb47c8080cb2a2d8b5925b59fe8ea9bb0a9ae5a7769d21b35b77b114d4f"}}
+   {:id "math/numeric-mode-resolution",
+    :task-id "math",
+    :canonical-document "MATH7",
+    :dependency-declaration "math/numeric-family-type-check",
+    :output-declaration
+    "Numeric-mode environment, precision table and scope/generated-origin inheritance trace.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 591,
+      :end-byte 68590,
+      :start-line 14,
+      :end-line 365,
+      :sha256
+      "25b2d6027cab1184464bc95fd5ffae24adeba9b2dfc7fd49d07aeda9ed7c5ad7"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 38541,
+     :task-relative-byte-end 40380,
+     :sha256
+     "a11ddba5977c69208cb04d12a4e494e17173667045599ec808bb2222ac55e5e4"}}
+   {:id "math/numeric-mode-transition",
+    :task-id "math",
+    :canonical-document "MATH7",
+    :dependency-declaration "math/numeric-mode-resolution",
+    :output-declaration
+    "Mode transition classification, enclosing opt-in, evidence and downgrade diagnostic record.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 591,
+      :end-byte 68590,
+      :start-line 14,
+      :end-line 365,
+      :sha256
+      "25b2d6027cab1184464bc95fd5ffae24adeba9b2dfc7fd49d07aeda9ed7c5ad7"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 40381,
+     :task-relative-byte-end 42099,
+     :sha256
+     "8d738854c11c9d7b31aa5b52f6793004ecd9ecc4225e4d26529c56f803c9d5a0"}}
+   {:id "math/numeric-profile-matrix",
+    :task-id "math",
+    :canonical-document "MATH1",
+    :dependency-declaration "math/numeric-family-type-check",
+    :output-declaration
+    "Machine-readable family/mode/profile/target/provider support matrix.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 591,
+      :end-byte 68590,
+      :start-line 14,
+      :end-line 365,
+      :sha256
+      "25b2d6027cab1184464bc95fd5ffae24adeba9b2dfc7fd49d07aeda9ed7c5ad7"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 42100,
+     :task-relative-byte-end 43804,
+     :sha256
+     "e56a947ee9b46f577f68cd8f500aa02a5ec1e4a9faf667f0e86614831a24ca46"}}
+   {:id "math/rational-value-check",
+    :task-id "math",
+    :canonical-document "MATH1",
+    :dependency-declaration "math/numeric-family-type-check",
+    :output-declaration
+    "Checked rational construction and declared normalization/allocation effects.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 591,
+      :end-byte 68590,
+      :start-line 14,
+      :end-line 365,
+      :sha256
+      "25b2d6027cab1184464bc95fd5ffae24adeba9b2dfc7fd49d07aeda9ed7c5ad7"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 43805,
+     :task-relative-byte-end 45436,
+     :sha256
+     "fb6188feb2a5b412d726dc3e0e2bfe9579c66cfcfdad1dad9c12bb4343e35023"}}
+   {:id "math/semantic-equality-proof-gate",
+    :task-id "math",
+    :canonical-document "MATH1",
+    :dependency-declaration "math/numeric-mode-resolution",
+    :output-declaration
+    "Claim-to-proof/certificate acceptance decision over the declared domain.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 591,
+      :end-byte 68590,
+      :start-line 14,
+      :end-line 365,
+      :sha256
+      "25b2d6027cab1184464bc95fd5ffae24adeba9b2dfc7fd49d07aeda9ed7c5ad7"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 45437,
+     :task-relative-byte-end 47157,
+     :sha256
+     "ab46ebf27d4e09e2c41788543635e3bdf603ed6feefbb7c4adf7790c2e85c5d6"}}
+   {:id "math/approximation-certificate-production",
+    :task-id "math/certified-implementation-synthesis",
+    :canonical-document "MATH5",
+    :dependency-declaration
+    "math/efir-verification, math/interval-bound-ledger",
+    :output-declaration
+    "Certificate, target-assumption manifest, exceptional-path coverage and independent checker transcript references.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 347208,
+      :end-byte 358792,
+      :start-line 2657,
+      :end-line 2716,
+      :sha256
+      "92f7f81f218555f86406d36f45410577f2bfaa66e1c4bbf1c072d0b3afaa32de"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 2351,
+     :task-relative-byte-end 4340,
+     :sha256
+     "a7f44f59735e718da018396ad820e2466a343270cc389fea539a5efa8be087c3"}}
+   {:id "math/correctly-rounded-synthesis",
+    :task-id "math/certified-implementation-synthesis",
+    :canonical-document "MATH10",
+    :dependency-declaration
+    "math/efir-verification, math/numeric-mode-resolution, math/interval-bound-ledger",
+    :output-declaration
+    "Rounding-target manifest, accepted-result interval ledger, synthesis transcript, kernel digests and independent certificate.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 347208,
+      :end-byte 358792,
+      :start-line 2657,
+      :end-line 2716,
+      :sha256
+      "92f7f81f218555f86406d36f45410577f2bfaa66e1c4bbf1c072d0b3afaa32de"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 4341,
+     :task-relative-byte-end 6397,
+     :sha256
+     "830a74d09a75c0a7002db3f61e7e2a4b80b13d6f7d679b287ecf7d29c523e6ba"}}
+   {:id "math/fused-kernel-generation",
+    :task-id "math/certified-implementation-synthesis",
+    :canonical-document "MATH10",
+    :dependency-declaration
+    "math/efir-verification, math/floating-transform-legality",
+    :output-declaration
+    "Fused implementation candidate and whole-expression error/branch/domain evidence.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 347208,
+      :end-byte 358792,
+      :start-line 2657,
+      :end-line 2716,
+      :sha256
+      "92f7f81f218555f86406d36f45410577f2bfaa66e1c4bbf1c072d0b3afaa32de"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 6398,
+     :task-relative-byte-end 7995,
+     :sha256
+     "503c9b296b0161b9f8d539ba6f7aae729a2e9478ee9b06235304755fe4ce5767"}}
+   {:id "math/implementation-candidate-generation",
+    :task-id "math/certified-implementation-synthesis",
+    :canonical-document "MATH10",
+    :dependency-declaration
+    "math/efir-verification, math/numeric-mode-resolution",
+    :output-declaration
+    "Executable candidate set with EFIR/source/target/semantic contract and required proof references.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 347208,
+      :end-byte 358792,
+      :start-line 2657,
+      :end-line 2716,
+      :sha256
+      "92f7f81f218555f86406d36f45410577f2bfaa66e1c4bbf1c072d0b3afaa32de"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 7996,
+     :task-relative-byte-end 9724,
+     :sha256
+     "18fa604eb734bed94032edbee4c4d3108072251b00ac741b29f290ba0d6d74d3"}}
+   {:id "math/legal-implementation-ranking",
+    :task-id "math/certified-implementation-synthesis",
+    :canonical-document "MATH10",
+    :dependency-declaration
+    "math/implementation-candidate-generation, math/floating-backend-eligibility",
+    :output-declaration
+    "Semantic eligibility comparison, versioned runtime objective, replayable ranking/selection and fallback.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 347208,
+      :end-byte 358792,
+      :start-line 2657,
+      :end-line 2716,
+      :sha256
+      "92f7f81f218555f86406d36f45410577f2bfaa66e1c4bbf1c072d0b3afaa32de"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 9725,
+     :task-relative-byte-end 11584,
+     :sha256
+     "01237a21274aed2e732cd77ec2148741358d07ce1531a1151808a807d88d71c2"}}
+   {:id "math/eml-candidate-promotion",
+    :task-id "math/eml-normalization-and-search",
+    :canonical-document "MATH4",
+    :dependency-declaration
+    "math/semantic-equality-proof-gate, math/efir-verification",
+    :output-declaration
+    "Candidate lifecycle decision with accepted exact-proof or bounded-certificate reference.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 335527,
+      :end-byte 347206,
+      :start-line 2588,
+      :end-line 2655,
+      :sha256
+      "e8fc3b4ec5bba68d8dbd9985ba5d73f6954d8700d1327d66ca943e09e37726f7"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 1267,
+     :task-relative-byte-end 3007,
+     :sha256
+     "df42e746d9253489752c5981f46ac867d01337f9281a7c2a369ee405c993ba5e"}}
+   {:id "math/eml-candidate-search",
+    :task-id "math/eml-normalization-and-search",
+    :canonical-document "MATH4",
+    :dependency-declaration
+    "math/eml-construction, math/eml-search-manifest",
+    :output-declaration
+    "Ranked candidates, outstanding proof obligations, deterministic ties and rejection reasons.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 335527,
+      :end-byte 347206,
+      :start-line 2588,
+      :end-line 2655,
+      :sha256
+      "e8fc3b4ec5bba68d8dbd9985ba5d73f6954d8700d1327d66ca943e09e37726f7"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 3008,
+     :task-relative-byte-end 4800,
+     :sha256
+     "c3a0d5f4126608849159a5360445c204966451cb46ae5fdd7ee442048bd35cdf"}}
+   {:id "math/eml-construction",
+    :task-id "math/eml-normalization-and-search",
+    :canonical-document "MATH3",
+    :dependency-declaration "math/efir-verification",
+    :output-declaration
+    "Optional EML expression/DAG, EFIR node correspondence and semantic context.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 335527,
+      :end-byte 347206,
+      :start-line 2588,
+      :end-line 2655,
+      :sha256
+      "e8fc3b4ec5bba68d8dbd9985ba5d73f6954d8700d1327d66ca943e09e37726f7"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 4801,
+     :task-relative-byte-end 6498,
+     :sha256
+     "bb1da87e4ff2cde54851f9bdc8b8eeadbf0610f12e356da014a05ead2394ade5"}}
+   {:id "math/eml-guarded-normalization",
+    :task-id "math/eml-normalization-and-search",
+    :canonical-document "MATH4",
+    :dependency-declaration
+    "math/eml-construction, math/symbolic-rule-promotion",
+    :output-declaration
+    "Guarded normalized candidate with transported domain/branch facts and pending obligations.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 335527,
+      :end-byte 347206,
+      :start-line 2588,
+      :end-line 2655,
+      :sha256
+      "e8fc3b4ec5bba68d8dbd9985ba5d73f6954d8700d1327d66ca943e09e37726f7"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 6499,
+     :task-relative-byte-end 8259,
+     :sha256
+     "31d12d05cdc835152b04683ba195700884104974bc80dc892bff2efb377cd1ec"}}
+   {:id "math/eml-search-manifest",
+    :task-id "math/eml-normalization-and-search",
+    :canonical-document "MATH4",
+    :dependency-declaration "math/numeric-mode-resolution",
+    :output-declaration
+    "Build-bound search grammar/domain/objective/ranking/pruning/provider/target manifest.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 335527,
+      :end-byte 347206,
+      :start-line 2588,
+      :end-line 2655,
+      :sha256
+      "e8fc3b4ec5bba68d8dbd9985ba5d73f6954d8700d1327d66ca943e09e37726f7"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 8260,
+     :task-relative-byte-end 10014,
+     :sha256
+     "94da8622df6bf3f510f3f7a283293bea643c69e387882dde7fc7954f7b88aa80"}}
+   {:id "math/eml-trace-production",
+    :task-id "math/eml-normalization-and-search",
+    :canonical-document "MATH4",
+    :dependency-declaration "math/eml-construction",
+    :output-declaration
+    "Normalization trace with rule/premise/before-after/assumption/source/invalidation/proof entries.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 335527,
+      :end-byte 347206,
+      :start-line 2588,
+      :end-line 2655,
+      :sha256
+      "e8fc3b4ec5bba68d8dbd9985ba5d73f6954d8700d1327d66ca943e09e37726f7"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 10015,
+     :task-relative-byte-end 11679,
+     :sha256
+     "6829f01390b16816dc72f591bd00250b1c245ecd25d3d9c8b9ce28c8eef92cfe"}}
+   {:id "math/eml-independent-trace-replay",
+    :task-id "math/independent-proof-and-certificate-checking",
+    :canonical-document "MATH4",
+    :dependency-declaration "math/eml-trace-production",
+    :output-declaration
+    "Independent deterministic trace-check report bound to exact input and rule versions.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 383445,
+      :end-byte 391644,
+      :start-line 2866,
+      :end-line 2913,
+      :sha256
+      "ba8bc4e7ab2bbfd42b182655e684a5629d2e0d1f5153d81e469f1f8c8ca36bed"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 1883,
+     :task-relative-byte-end 3465,
+     :sha256
+     "434d893052822bac01c25354f74ed567a997131ba7533263f7a0d001deb52c58"}}
+   {:id "math/interval-partition-replay",
+    :task-id "math/independent-proof-and-certificate-checking",
+    :canonical-document "MATH6",
+    :dependency-declaration "math/interval-partition-production",
+    :output-declaration
+    "Independent deterministic partition/coverage replay report.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 383445,
+      :end-byte 391644,
+      :start-line 2866,
+      :end-line 2913,
+      :sha256
+      "ba8bc4e7ab2bbfd42b182655e684a5629d2e0d1f5153d81e469f1f8c8ca36bed"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 3466,
+     :task-relative-byte-end 4954,
+     :sha256
+     "a5646cc2236c1a9cd44a4f12715c858179996409b420ade39b7121d08b571167"}}
+   {:id "math/real-proof-provider-import",
+    :task-id "math/independent-proof-and-certificate-checking",
+    :canonical-document "MATH6",
+    :dependency-declaration
+    "math/interval-claim-production, math/interval-partition-replay",
+    :output-declaration
+    "Accepted-checker import report and SAFE15 proof reference.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 383445,
+      :end-byte 391644,
+      :start-line 2866,
+      :end-line 2913,
+      :sha256
+      "ba8bc4e7ab2bbfd42b182655e684a5629d2e0d1f5153d81e469f1f8c8ca36bed"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 4955,
+     :task-relative-byte-end 6610,
+     :sha256
+     "b8e2fe074acba0fc5be6044d75f0d61a55e7bdaf85e88fe23f506f062b68be66"}}
+   {:id "math/symbolic-independent-trace-replay",
+    :task-id "math/independent-proof-and-certificate-checking",
+    :canonical-document "MATH9",
+    :dependency-declaration "math/symbolic-trace-production",
+    :output-declaration
+    "Independent rule/edge/premise/identity replay and proof-status report.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 383445,
+      :end-byte 391644,
+      :start-line 2866,
+      :end-line 2913,
+      :sha256
+      "ba8bc4e7ab2bbfd42b182655e684a5629d2e0d1f5153d81e469f1f8c8ca36bed"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 6611,
+     :task-relative-byte-end 8199,
+     :sha256
+     "06bace4a1a5ebc58be69429793544e959bd7878397b057a3fb61adab11147827"}}
+   {:id "math/interval-bound-ledger",
+    :task-id "math/interval-and-real-proof-production",
+    :canonical-document "MATH6",
+    :dependency-declaration
+    "math/interval-claim-production, math/interval-domain-check",
+    :output-declaration
+    "Separate exact-real and floating-roundoff bound ledgers with method and invalidation conditions.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 358794,
+      :end-byte 370337,
+      :start-line 2718,
+      :end-line 2785,
+      :sha256
+      "4dd9a3200cda862add2e4e5a6bb634f38795787fc97d07f74235dc3c067be7de"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 1190,
+     :task-relative-byte-end 2916,
+     :sha256
+     "b81c3669917cb772640e90c2a1c78b7e211651913934d69a46e463295137369d"}}
+   {:id "math/interval-claim-production",
+    :task-id "math/interval-and-real-proof-production",
+    :canonical-document "MATH6",
+    :dependency-declaration
+    "math/efir-verification, math/numeric-mode-resolution",
+    :output-declaration
+    "Pending claim with exact EFIR/EML/input/domain/branch/mode/precision/property identity.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 358794,
+      :end-byte 370337,
+      :start-line 2718,
+      :end-line 2785,
+      :sha256
+      "4dd9a3200cda862add2e4e5a6bb634f38795787fc97d07f74235dc3c067be7de"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 2917,
+     :task-relative-byte-end 4572,
+     :sha256
+     "2a5eb68c947acf8f36c965434a0cc7cf6de28cac5119775532d278d269f756ae"}}
+   {:id "math/interval-domain-check",
+    :task-id "math/interval-and-real-proof-production",
+    :canonical-document "MATH6",
+    :dependency-declaration
+    "declared typed inputs, fixture/oracle policy or exact source contract; no preceding Math producer required",
+    :output-declaration
+    "Validated exact interval-domain map and bound provenance.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 358794,
+      :end-byte 370337,
+      :start-line 2718,
+      :end-line 2785,
+      :sha256
+      "4dd9a3200cda862add2e4e5a6bb634f38795787fc97d07f74235dc3c067be7de"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 4573,
+     :task-relative-byte-end 6264,
+     :sha256
+     "deea404ce2125115d0b736857a3b6fbc4bffb65ed1e63d0738c7b47b841dc47a"}}
+   {:id "math/interval-enclosure",
+    :task-id "math/interval-and-real-proof-production",
+    :canonical-document "MATH1",
+    :dependency-declaration
+    "math/interval-domain-check, math/numeric-mode-resolution",
+    :output-declaration
+    "Inclusion-preserving operation results and outward-rounding/nonzero/branch evidence.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 358794,
+      :end-byte 370337,
+      :start-line 2718,
+      :end-line 2785,
+      :sha256
+      "4dd9a3200cda862add2e4e5a6bb634f38795787fc97d07f74235dc3c067be7de"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 6265,
+     :task-relative-byte-end 8057,
+     :sha256
+     "5ed9c47e07f36244c5577baffa39a0197d3bbedb67b657dba13ac0b558abf33c"}}
+   {:id "math/interval-partition-production",
+    :task-id "math/interval-and-real-proof-production",
+    :canonical-document "MATH6",
+    :dependency-declaration
+    "math/interval-domain-check, math/interval-claim-production",
+    :output-declaration
+    "Domain partition tree, ordered split decisions/local assumptions/statuses and unresolved-cell report.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 358794,
+      :end-byte 370337,
+      :start-line 2718,
+      :end-line 2785,
+      :sha256
+      "4dd9a3200cda862add2e4e5a6bb634f38795787fc97d07f74235dc3c067be7de"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 8058,
+     :task-relative-byte-end 9762,
+     :sha256
+     "63b7db7fb33077a9d4c99fa312d874fb7cc903abe4d20725ce4cef73d9bb6902"}}
+   {:id "math/interval-residual-check-emission",
+    :task-id "math/interval-and-real-proof-production",
+    :canonical-document "MATH6",
+    :dependency-declaration
+    "math/interval-partition-replay, math/numeric-mode-resolution",
+    :output-declaration
+    "Unresolved-cell runtime predicates, check placement/failure policy and SAFE15 preservation record.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 358794,
+      :end-byte 370337,
+      :start-line 2718,
+      :end-line 2785,
+      :sha256
+      "4dd9a3200cda862add2e4e5a6bb634f38795787fc97d07f74235dc3c067be7de"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 9763,
+     :task-relative-byte-end 11543,
+     :sha256
+     "f71af660588dab0e885b5f1a085c7fba4dfc84a840000353c18700dab88dc838"}}
+   {:id "math/egraph-equality-saturation",
+    :task-id "math/symbolic-rule-and-trace-production",
+    :canonical-document "MATH9",
+    :dependency-declaration
+    "math/symbolic-rule-promotion, math/symbolic-guarded-rewrite",
+    :output-declaration
+    "Guarded equality edges, conservative e-class analyses and explanation report.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 370339,
+      :end-byte 383443,
+      :start-line 2787,
+      :end-line 2864,
+      :sha256
+      "9f80100cd7fc4c576370d7890536c8e6c26ac7a39360d6e1946b5efc2bd0de59"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 1154,
+     :task-relative-byte-end 2877,
+     :sha256
+     "9aa41d66895cf76735255d1ebcce65a4ab7834e1a261746aad83d2f1ee9656ae"}}
+   {:id "math/egraph-extraction",
+    :task-id "math/symbolic-rule-and-trace-production",
+    :canonical-document "MATH9",
+    :dependency-declaration
+    "math/egraph-equality-saturation, math/symbolic-independent-trace-replay",
+    :output-declaration
+    "Extracted representative, versioned runtime-cost model, tie policy and independent explanation replay.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 370339,
+      :end-byte 383443,
+      :start-line 2787,
+      :end-line 2864,
+      :sha256
+      "9f80100cd7fc4c576370d7890536c8e6c26ac7a39360d6e1946b5efc2bd0de59"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 2878,
+     :task-relative-byte-end 4774,
+     :sha256
+     "691a86c83bb4b567be9d202f8f004e52dac3a6e010479d90a3f283a0d02ad2b5"}}
+   {:id "math/symbolic-counterexample-production",
+    :task-id "math/symbolic-rule-and-trace-production",
+    :canonical-document "MATH9",
+    :dependency-declaration "math/symbolic-rule-registration",
+    :output-declaration
+    "Rejected rule/application and reproducible counterexample with original assumptions.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 370339,
+      :end-byte 383443,
+      :start-line 2787,
+      :end-line 2864,
+      :sha256
+      "9f80100cd7fc4c576370d7890536c8e6c26ac7a39360d6e1946b5efc2bd0de59"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 4775,
+     :task-relative-byte-end 6397,
+     :sha256
+     "be18ccf37658beba345aefec98d6121852e2f8ddb658a3bf46e1a1cfb3dcbf9e"}}
+   {:id "math/symbolic-guarded-rewrite",
+    :task-id "math/symbolic-rule-and-trace-production",
+    :canonical-document "MATH9",
+    :dependency-declaration
+    "math/symbolic-rule-promotion, math/semantic-equality-proof-gate",
+    :output-declaration
+    "Typed guarded rewrite result with explicit pending/discharged obligations and anchors.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 370339,
+      :end-byte 383443,
+      :start-line 2787,
+      :end-line 2864,
+      :sha256
+      "9f80100cd7fc4c576370d7890536c8e6c26ac7a39360d6e1946b5efc2bd0de59"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 6398,
+     :task-relative-byte-end 8068,
+     :sha256
+     "2b98d0039a183f4218a7e0b7ab52df772c52fdce864e705ab77362b4b61338f5"}}
+   {:id "math/symbolic-rule-promotion",
+    :task-id "math/symbolic-rule-and-trace-production",
+    :canonical-document "MATH9",
+    :dependency-declaration
+    "math/symbolic-rule-registration, math/semantic-equality-proof-gate",
+    :output-declaration
+    "Rule-state transition with exact proof or bounded-approximation certificate.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 370339,
+      :end-byte 383443,
+      :start-line 2787,
+      :end-line 2864,
+      :sha256
+      "9f80100cd7fc4c576370d7890536c8e6c26ac7a39360d6e1946b5efc2bd0de59"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 8069,
+     :task-relative-byte-end 9805,
+     :sha256
+     "a3f59dca39bcc2695a6a0dcfb5415f332363484dd9a1fceed6d2cd5afaf0e02a"}}
+   {:id "math/symbolic-rule-registration",
+    :task-id "math/symbolic-rule-and-trace-production",
+    :canonical-document "MATH9",
+    :dependency-declaration "math/efir-content-identity",
+    :output-declaration
+    "Versioned content-addressed rule artifact and package trust/source provenance.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 370339,
+      :end-byte 383443,
+      :start-line 2787,
+      :end-line 2864,
+      :sha256
+      "9f80100cd7fc4c576370d7890536c8e6c26ac7a39360d6e1946b5efc2bd0de59"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 9806,
+     :task-relative-byte-end 11479,
+     :sha256
+     "a2648599844e2b1e9cd117527c25862c7bacd4ea62398044aa82885df1772464"}}
+   {:id "math/symbolic-trace-production",
+    :task-id "math/symbolic-rule-and-trace-production",
+    :canonical-document "MATH9",
+    :dependency-declaration "math/symbolic-rule-registration",
+    :output-declaration
+    "Rewrite trace with before/after/rule/version/premises/evidence/origins/preserved-invalidated facts.",
+    :source
+    {:task-source
+     {:path "specs/domains-workflow/tasks.md",
+      :start-byte 370339,
+      :end-byte 383443,
+      :start-line 2787,
+      :end-line 2864,
+      :sha256
+      "9f80100cd7fc4c576370d7890536c8e6c26ac7a39360d6e1946b5efc2bd0de59"},
+     :source-commit "92b3917ec51e882338fc221bddde86310815221f",
+     :task-relative-byte-start 11480,
+     :task-relative-byte-end 13104,
+     :sha256
+     "17528eb1fbf7330ef3300e5546ab04443594c031c2dc119faa32ccd629f3fb05"}}],
+  :implementation-acceptance :unassessed},
  :kind :implementation-readiness-task-source-version,
  :domain-parent-refinement
  {:source-input-commit "deacbfd25ea22e501e8e08f54ff826eaa3d59353",
@@ -1780,7 +2852,7 @@
   "docs/phase-02-safety/043-safe14-supply-chain-safety.md"
   "697917447d70ba0797a096d9427d4706bf5515df",
   "docs/acceptance-dependencies.md"
-  "a5533e0c3b80e2a23490008e73d95e1ef616baf9",
+  "a1c36bf6d78a063bfbec0b44d92339cedd2ce14f",
   "specs/platform-workflow/tasks.md"
   "0876063f41e2ad3e13f3c332f4877daecb62b45d",
   "specs/backends-workflow/tasks.md"
@@ -1792,4 +2864,4 @@
   "specs/emit-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9"},
  :input-fingerprint
- "8a02850a50b119e7b00346788ba87e360b79c2129d6ff7cd6828be75e24da996"}
+ "26a68ae0f0c95d43466b0fc058968d71fb1d5910a1af59d709bac6f0da4aa223"}

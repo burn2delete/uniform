@@ -174,7 +174,7 @@
 
 (def future-dependency-path "docs/acceptance-dependencies.md")
 
-(defn future-dependency-routes [text task-ids future-ids]
+(defn future-dependency-routes [text task-ids consumer-ids]
   (let [marker "future-composition-dependencies"
         start (str "<!-- " marker ":start -->") end (str "<!-- " marker ":end -->")
         occurrences #(count (re-seq (re-pattern (java.util.regex.Pattern/quote %)) text))
@@ -200,7 +200,7 @@
                                        "Malformed future dependency row")
                            [consumer start-results results contract] (mapv str/trim (subvec (vec cells) 1 5))
                            consumers (ids consumer) starts (ids start-results) composition (ids results)]
-                       (require! (and (= 1 (count consumers)) (future-ids (first consumers))
+                       (require! (and (= 1 (count consumers)) (consumer-ids (first consumers))
                                       (not (str/blank? contract))
                                       (empty? (set/intersection (set starts) (set composition))))
                                  "Invalid future consumer/output declaration")
@@ -412,6 +412,54 @@
    ["release" 3 "cli" 5 nil]
    ["release" 3 "runtime" 2 nil]])
 
+(defn math-output-view [tasks snapshots]
+  (let [rows (vec
+               (for [[task-id task] (sort-by key tasks)
+                     :when (or (= "math" task-id) (str/starts-with? task-id "math/"))
+                     :let [raw (source-raw (:source task) snapshots)
+                           matcher (re-matcher #"(?ms)^Criterion `(math/[^`]+)` \((MATH\d+); Open\)\.\n.*?^Required future evidence: [^\n]*(?:\n|$)" raw)]
+                     row (loop [found []]
+                           (if (.find matcher)
+                             (let [body (.group matcher)
+                                   [_ inputs external] (re-find #"(?m)^Dependencies: (.+)\. (Types/Legality supplies .+)$" body)
+                                   output (second (re-find #"(?m)^Outputs: (.+)$" body))
+                                   roots "declared typed inputs, fixture/oracle policy or exact source contract; no preceding Math producer required"
+                                   dependencies (if (= roots inputs) [] (str/split (or inputs "") #", " -1))]
+                               (require! (and output external
+                                              (contains? (set (map #(str "MATH" %) (range 1 12))) (.group matcher 2))
+                                              (= 1 (count (re-seq #"(?m)^Dependencies:" body))
+                                                   (count (re-seq #"(?m)^Outputs:" body)))
+                                              (every? #(re-matches #"math/[a-z0-9-]+" %) dependencies)
+                                              (= (count dependencies) (count (set dependencies))))
+                                         "Malformed literal Math output dependency")
+                               (recur (conj found
+                                        {:id (.group matcher 1) :canonical-document (.group matcher 2)
+                                         :task-id task-id :state :unassessed :output-declaration output
+                                         :dependency-declaration inputs :external-input-contract external
+                                         :dependencies (vec dependencies)
+                                         :source {:task-source (source-ref (:source task))
+                                                  :source-commit (:source-commit task)
+                                                  :task-relative-byte-start (alength (.getBytes (subs raw 0 (.start matcher)) "UTF-8"))
+                                                  :task-relative-byte-end (alength (.getBytes (subs raw 0 (.end matcher)) "UTF-8"))
+                                                  :sha256 (sha256 body)}})))
+                             found))]
+                 row))
+        by-id (into {} (map (juxt :id identity) rows))
+        ;; This is the preserved source inventory, never a compiler allowance.
+        _ (require! (= 48 (count rows) (count by-id)) "Missing or duplicated preserved Math output")
+        _ (doseq [row rows input (:dependencies row)]
+            (require! (contains? by-id input) "Unknown literal Math output dependency"))
+        graph (into (sorted-map) (map (juxt :id #(set (:dependencies %))) rows))]
+    {:authority :literal-source-output-declarations :outputs rows :adjacency graph :cycles (cycles graph)
+     :cross-task-inputs
+     (vec (for [row rows input (:dependencies row) :let [producer (by-id input)]
+                :when (not= (:task-id row) (:task-id producer))]
+            {:consumer-task (:task-id row) :consumer-output (:id row)
+             :producer-task (:task-id producer) :producer-output input :source (:source row)}))
+     :implementation-acceptance :unassessed
+     :limits [:literal-dependencies-not-all-prose :proof-method-selected-per-claim
+              :output-facts-not-tasks :source-declarations-not-execution]}))
+
 (defn future-task-view [authorities current-tasks snapshots read-text]
   (let [future-tasks (vec (mapcat val authorities))
         future-map (into {} (map (juxt :id identity) future-tasks))
@@ -436,9 +484,12 @@
                 (require! (and (= id (:id row)) (= (:checked row) (not= " " checked)))
                           "Future task ID/status differs from authority"))))
         routes (future-dependency-routes (read-text future-dependency-path) (set (keys all-tasks))
-                                         (set (keys future-map)))
-        declared (set (map :consumer routes))
+                                         (set (keys all-tasks)))
+        all-declared (set (map :consumer routes))
+        declared (set/intersection all-declared (set (keys future-map)))
         unresolved (vec (sort (remove declared (keys future-map))))
+        math (math-output-view all-tasks snapshots)
+        named-inputs (group-by (juxt :consumer-task :producer-task) (:cross-task-inputs math))
         output-graph (reduce (fn [graph {:keys [consumer start-results composition-results]}]
                                (assoc graph consumer (set (concat start-results composition-results))))
                              (zipmap (keys all-tasks) (repeat #{})) routes)
@@ -446,8 +497,11 @@
                        producer (concat start-results composition-results)]
                    {:id (str "result:" consumer ":" producer) :consumer consumer :producer producer
                     :source source :selected-output-contract selected-output-contract
+                    :named-math-output-inputs (vec (sort (set (map :producer-output (named-inputs [consumer producer])))))
                     :producer-source (source-ref (:source (all-tasks producer)))})
         nodes (merge
+                (into {} (for [row (:outputs math)]
+                           [(str "output:" (:id row)) (assoc row :scope :selected-acceptance-facet)]))
                 (into {} (for [[id row] future-map]
                            [(str "task:" id "/interface")
                             {:state :accepted :scope :declared-interface-only :task-id id :component (:component row)}]))
@@ -464,6 +518,12 @@
                            [(:id row) (assoc (dissoc row :id) :state :unassessed :scope :selected-acceptance-facet
                                             :task-id (:producer row))])))
         edges (vec (concat
+                (for [row (:outputs math) input (:dependencies row)]
+                  {:from (str "output:" (:id row)) :to (str "output:" input)
+                   :kind :literal-math-output-prerequisite :source (:source row)})
+                (for [row selected input (:named-math-output-inputs row)]
+                  {:from (:id row) :to (str "output:" input)
+                   :kind :named-selected-producer-output :source (:source row)})
                 (for [[id row] future-map]
                   {:from (str "task:" id "/implementation") :to (str "task:" id "/interface")
                    :kind :declared-interface :source (source-ref (:source row))})
@@ -483,7 +543,9 @@
                                :kind :actual-selected-producer-result :source source}))) routes)))]
     {:nodes nodes :typed-edges edges
      :dependency-review {:task-count (count future-map) :declared-consumers (vec (sort declared))
+                         :declared-parent-consumers (vec (sort (set/difference all-declared declared)))
                          :unresolved-consumers unresolved :routes routes
+                         :math-outputs math
                          :declared-output-adjacency output-graph :declared-output-cycles (cycles output-graph)
                          :authority :source-declarations-not-execution
                          :future-sh-and-full-language-joins :pending
