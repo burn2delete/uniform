@@ -12654,7 +12654,7 @@
  :source-version-bridge
  {:path "specs/sh-family-crosswalk/source-version-bridge.edn",
   :sha256
-  "64238fc00b979d223586b75820183cdd40ae5c6cc5f6e3e9405c3b0bec2b9ae9"},
+  "05c7576d1cfb0f3b39ba3b91c5ae61fc89ea7c33716c0817d067760b1d2fc00f"},
  :mapping-review
  {:pr574-predecessor-review
   {:pkg5-source-review
@@ -16040,7 +16040,7 @@
   "runtime"
   [{:path "specs/runtime-workflow/tasks.md",
     :file-sha256
-    "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
+    "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/runtime-workflow/tasks.md",
@@ -16054,13 +16054,13 @@
      "7786392e851c24c2501d46b345faaef0b83ccfa1ce3e36bb7a0807dc3e75db81"},
     :owner-source "docs/component-roadmaps/runtime.md",
     :component "runtime",
-    :source-commit "894d28fc49cf67c98fb07f71e0fbe68578c2eef7",
+    :source-commit "42c34ab55af0000dfaaf73d96d7ee09ec22c243e",
     :id
     "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection",
     :checked false}
    {:path "specs/runtime-workflow/tasks.md",
     :file-sha256
-    "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
+    "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/runtime-workflow/tasks.md",
@@ -16074,58 +16074,58 @@
      "484d2a2da455306f87414415dd661deb645f48d1eab2b022d69d2b56aeb8ec72"},
     :owner-source "docs/component-roadmaps/runtime.md",
     :component "runtime",
-    :source-commit "894d28fc49cf67c98fb07f71e0fbe68578c2eef7",
+    :source-commit "42c34ab55af0000dfaaf73d96d7ee09ec22c243e",
     :id
     "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
     :checked false}
    {:path "specs/runtime-workflow/tasks.md",
     :file-sha256
-    "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
+    "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/runtime-workflow/tasks.md",
      :start-byte 3129,
-     :end-byte 4569,
+     :end-byte 5216,
      :start-line 32,
      :end-line 38,
      :sha256
-     "0521ed3c6f86962bea7bce7089b1d89c84f3b5d7af39758391b31ec232359ea8",
+     "55874c4eb5fa49b8f4c2f9b22f7aacc7965f326ed7aaf96583fee2ec488e5912",
      :source-snapshot-ref
-     "0521ed3c6f86962bea7bce7089b1d89c84f3b5d7af39758391b31ec232359ea8"},
+     "55874c4eb5fa49b8f4c2f9b22f7aacc7965f326ed7aaf96583fee2ec488e5912"},
     :owner-source "docs/component-roadmaps/runtime.md",
     :component "runtime",
-    :source-commit "894d28fc49cf67c98fb07f71e0fbe68578c2eef7",
+    :source-commit "42c34ab55af0000dfaaf73d96d7ee09ec22c243e",
     :id
     "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
     :checked false}
    {:path "specs/runtime-workflow/tasks.md",
     :file-sha256
-    "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
+    "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/runtime-workflow/tasks.md",
-     :start-byte 4571,
-     :end-byte 6824,
+     :start-byte 5218,
+     :end-byte 7991,
      :start-line 40,
      :end-line 46,
      :sha256
-     "e67e7b79d7d7a6cebfac63b607b803adbdf47ebe7d6eed0f7814e7d25452efea",
+     "ff28ee17bb69ab84019f34ae7bcaf4c5dafbff978a8a496e0cfdd568d3d75b39",
      :source-snapshot-ref
-     "e67e7b79d7d7a6cebfac63b607b803adbdf47ebe7d6eed0f7814e7d25452efea"},
+     "ff28ee17bb69ab84019f34ae7bcaf4c5dafbff978a8a496e0cfdd568d3d75b39"},
     :owner-source "docs/component-roadmaps/runtime.md",
     :component "runtime",
-    :source-commit "894d28fc49cf67c98fb07f71e0fbe68578c2eef7",
+    :source-commit "42c34ab55af0000dfaaf73d96d7ee09ec22c243e",
     :id
     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
     :checked false}
    {:path "specs/runtime-workflow/tasks.md",
     :file-sha256
-    "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
+    "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/runtime-workflow/tasks.md",
-     :start-byte 6826,
-     :end-byte 8350,
+     :start-byte 7993,
+     :end-byte 9517,
      :start-line 48,
      :end-line 54,
      :sha256
@@ -16134,7 +16134,7 @@
      "4b4b8c1de9bd4253ab800f1bd1c791967819f98e4f4c4f982168266aab074a4b"},
     :owner-source "docs/component-roadmaps/runtime.md",
     :component "runtime",
-    :source-commit "894d28fc49cf67c98fb07f71e0fbe68578c2eef7",
+    :source-commit "42c34ab55af0000dfaaf73d96d7ee09ec22c243e",
     :id
     "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
     :checked false}],
@@ -18004,7 +18004,7 @@
   "specs/auth-workflow/tasks.md"
   "9db81aa1c8ef183a9da8656a343a29fd9104b10e7130fd63ba4e52b75ce2b256",
   "specs/runtime-workflow/tasks.md"
-  "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06",
+  "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c",
   "docs/component-roadmaps/cli.md"
   "ca5ab6f3bed6fdee1ee66a6019a4078bae622a4451db33d35ffe8f57f4da1b3e",
   "docs/document-inventory.json"
@@ -18093,7 +18093,7 @@
   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
   "4325a9f46292472a7f984c5adfef81209874bb5c",
   "specs/runtime-workflow/tasks.md"
-  "894d28fc49cf67c98fb07f71e0fbe68578c2eef7",
+  "42c34ab55af0000dfaaf73d96d7ee09ec22c243e",
   "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
   "bffefedfada9e3312e68e0a28a69d71db459d0e2",
   "docs/self-hosting-slice-ownership.edn"
@@ -18144,6 +18144,8 @@
   "| SH07-C05 | SH-07.3 | sh-core | C03, C04 | Close `fn`, function values, captures and callable operators used by C01. Record parameter/body/capture bindings, latent body order and operator-before-arguments-once order. Cover lexical shadowing and nested functions. Reject invalid operator/function/capture structure; preserve later capture ownership and call-type obligations explicitly. |",
   "04c51359b6cc39b3ffb8b5c598a8c7fe0ae83f63c25f625639074fa2722e69e7"
   "1. **SH-29.1:** Deliver a real public `gravity` executable produced by the\n   accepted self-hosted path; bootstrap-hosted packaging/fallback cannot stand in.",
+  "55874c4eb5fa49b8f4c2f9b22f7aacc7965f326ed7aaf96583fee2ec488e5912"
+  "- [ ] `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries` Implement memory, concurrency and typed FFI boundaries\n\nStatus: Open\n\nEvidence baseline: [Runtime contracts](../../docs/phase-08-runtime-architecture/README.md)\n\nClosing evidence: Allocation, lifetime, transfer, race and foreign-failure conformance with explicit providers. R3/R5/R6/R10: allocation/deallocation/provider manifests, no-allocation and region/arena escape rejection, linear acquire/transfer/consume ledgers, device address-space/transfer/synchronization/lifetime checks, audited raw-memory wrappers, and agreement of retained checks with exact proof-elision records; atomics with target memory order/scope/alignment, structured task parent or explicit lifecycle owner, cancellation cleanup and failure propagation, actor/channel schemas with ordering/backpressure/transfer policy; FFI symbol/loading policy, ABI/layout conformance, null/handle/lifetime/ownership/error adapters and callbacks re-entering capability/taint/thread-affinity/scheduler checks. Reject mismatched providers, races, orphan tasks, unsupported atomics, schemaless messages, raw extern safe calls and invalid callback entry. Dependencies: ownership and Legality supply compile-time facts, Lower supplies target layouts, Auth supplies grants, and distributed execution supplies replay policy; runtime debug checks cannot substitute for compile-time safety. Execute the [SAFE2-SAFE8 contracts](../../docs/phase-02-safety/README.md): declared allocation and cleanup failures, partial initialization cleanup, region/arena generation and borrow checks, release through the correct allocator/provider, callback lifetime/thread/reentrancy/release and foreign error/exception/promise translation. Reject retained borrows, post-reset access, missing FFI declarations, unsupported atomics and unsynchronized mutable access; validate immutable sharing, lock cleanup, actor/channel transfer and declared backpressure/cancellation. Inspect actual checks and audit records, with no hidden GC or host-thread fallback.",
   "0521ed3c6f86962bea7bce7089b1d89c84f3b5d7af39758391b31ec232359ea8"
   "- [ ] `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries` Implement memory, concurrency and typed FFI boundaries\n\nStatus: Open\n\nEvidence baseline: [Runtime contracts](../../docs/phase-08-runtime-architecture/README.md)\n\nClosing evidence: Allocation, lifetime, transfer, race and foreign-failure conformance with explicit providers. R3/R5/R6/R10: allocation/deallocation/provider manifests, no-allocation and region/arena escape rejection, linear acquire/transfer/consume ledgers, device address-space/transfer/synchronization/lifetime checks, audited raw-memory wrappers, and agreement of retained checks with exact proof-elision records; atomics with target memory order/scope/alignment, structured task parent or explicit lifecycle owner, cancellation cleanup and failure propagation, actor/channel schemas with ordering/backpressure/transfer policy; FFI symbol/loading policy, ABI/layout conformance, null/handle/lifetime/ownership/error adapters and callbacks re-entering capability/taint/thread-affinity/scheduler checks. Reject mismatched providers, races, orphan tasks, unsupported atomics, schemaless messages, raw extern safe calls and invalid callback entry. Dependencies: ownership and Legality supply compile-time facts, Lower supplies target layouts, Auth supplies grants, and distributed execution supplies replay policy; runtime debug checks cannot substitute for compile-time safety.",
   "053a3b6922323d11710329f97a30e7da4024c54d171e0c4480ce25547388af8f"
@@ -18942,6 +18944,8 @@
   "| SH-00.6 | Exact committed six-file change and scoped integration record | E00-R, Git | S |",
   "e510ffef518b1a6b04b92f26675bff30e40db4c5f693f9e93b95c9fa18cc069c"
   "| SH-00.1 | Central `authenticated-binary-integer-comparisons-reach-gravity-b4-wasm`, typed MIR/op joins | E00-R/T | S |",
+  "ff28ee17bb69ab84019f34ae7bcaf4c5dafbff978a8a496e0cfdd568d3d75b39"
+  "- [ ] `runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution` Connect distributed/AI replay and interactive execution\n\nStatus: Open\n\nEvidence baseline: [Runtime contracts](../../docs/phase-08-runtime-architecture/README.md)\n\nClosing evidence: Recorded nondeterminism, replay equality, no undeclared duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; R7/R8 replay-required segments return recorded model/tool/retrieval/memory/review decisions or reject a missing record. R6 concurrency fixtures accept an authorized graph-declared replay-safe repetition where no R7/R8 recorded-output obligation applies; the declaration never grants authority or overrides those recorded-output obligations. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject undeclared repeated external calls, live nondeterministic calls in R7/R8 recorded-output segments even with a replay-safe graph declaration, repetitions without required authority, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal. Under [SAFE8/SAFE13](../../docs/phase-02-safety/README.md), retain signal/timer/retry/idempotency/compensation and tool failure records; exact replay consumes recorded model/tool outputs, while audit policy retains digests, schemas, decisions, review events and providers. None is allowed only in interactive or non-safe contexts; workflow and release claims require replay or audit. Execute retention/deletion and secret-tainted memory denial fixtures through the declared provider; prompt text never grants authority.",
   "e67e7b79d7d7a6cebfac63b607b803adbdf47ebe7d6eed0f7814e7d25452efea"
   "- [ ] `runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution` Connect distributed/AI replay and interactive execution\n\nStatus: Open\n\nEvidence baseline: [Runtime contracts](../../docs/phase-08-runtime-architecture/README.md)\n\nClosing evidence: Recorded nondeterminism, replay equality, no undeclared duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; R7/R8 replay-required segments return recorded model/tool/retrieval/memory/review decisions or reject a missing record. R6 concurrency fixtures accept an authorized graph-declared replay-safe repetition where no R7/R8 recorded-output obligation applies; the declaration never grants authority or overrides those recorded-output obligations. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject undeclared repeated external calls, live nondeterministic calls in R7/R8 recorded-output segments even with a replay-safe graph declaration, repetitions without required authority, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal.",
   "e72027e8febb7e7f5c9014835f2717d006ce664ce1fb091cc54b47f2efe3800a"
