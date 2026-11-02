@@ -236,6 +236,15 @@
  "45c126ec6370358245c666a2dda960a4f3d9666433f140552ade73dd52c486b5"}
 )
 (defn source-pin [path] (get applying-source-pins path baseline))
+(declare git-source)
+(defn pinned-source-text [path]
+  ;; The SH projection is a pinned historical view. A current task-ledger
+  ;; transition is authenticated separately by the source-view consumers; it
+  ;; must not silently rewrite historical crosswalk rows. The current
+  ;; explanatory dependency index is the one intentional live input.
+  (if (= path "docs/acceptance-dependencies.md")
+    (slurp path)
+    (git-source (source-pin path) path)))
 (def original-baseline "15a5499e97798621d270c36dd2546ce98ddd62a9")
 (def output-path "specs/sh-family-crosswalk/crosswalk.edn")
 (def rollup-path "specs/sh-family-crosswalk/rollup.md")
@@ -444,7 +453,7 @@
                      (recur (conj rows {:groups (mapv #(.group m %) (range 1 (inc (.groupCount m))))
                                         :source (sh-inventory/source-span path text (.start m) (.end m))})) rows))))
 (defn task-records [component]
-  (let [path (str "specs/" component "-workflow/tasks.md") text (slurp path)
+  (let [path (str "specs/" component "-workflow/tasks.md") text (pinned-source-text path)
         marker (str "<!-- " component "-implementation-tasks:")
         start (+ (.indexOf text (str marker "start -->")) (count (str marker "start -->")))
         end (.indexOf text (str marker "end -->"))
@@ -849,7 +858,7 @@
         :qualification "Implementation, integration and authoritative completion remain separate. Actual owning execution, rejection/preservation/composition, exact provenance/support/TCB and independently accepted stable revision are required only for the applicable claim. SH00-SH02 retain accepted baseline/process scope; no unconditional replay of unchanged evidence."})
      :component-owner-evidence
      (into (sorted-map)
-       (for [c components :let [path (str "docs/component-roadmaps/" c ".md") text (slurp path)
+       (for [c components :let [path (str "docs/component-roadmaps/" c ".md") text (pinned-source-text path)
                                 end (or (str/index-of text "\n## ") (count text))]]
          [c {:source (sh-inventory/source-span path text 0 end)
              :assignment :existing-reservations-preserved-not-inferred
@@ -857,7 +866,7 @@
      :global-requirement-owner "01a179ad-2198-7392-966a-1e3c31209027"
      :global-requirement-handoff {:sha256 "25be0fe3d53bf133b72f405d50d039ba3ab9fb186499036587ab72a860174954"
                                 :authority :join-proposals-only :accepted-denominator false}
-     :source-digests (into (sorted-map) (map (fn [p] [p (sh-inventory/sha256 (slurp p))]) sources))
+     :source-digests (into (sorted-map) (map (fn [p] [p (sh-inventory/sha256 (pinned-source-text p))]) sources))
      :stable-task-routing-keys stable-task-routing-keys
      :retained-native-history {:path "specs/sh-family-crosswalk/retained-native-evidence.edn"
                               :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/retained-native-evidence.edn"))
