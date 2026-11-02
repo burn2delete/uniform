@@ -1,0 +1,82 @@
+# Serialized Resolution CI current port receipt
+
+## Scope and identities
+
+This is a bounded current-source port of PR689's useful CI orchestration
+change. It separates the three Resolution checks into a serialized matrix pool
+while retaining the existing logical `resolution` stage and selector output.
+It does not claim hosted CI success, compiler acceptance, cost equivalence, or
+release readiness.
+
+Original authored candidate:
+
+- head: `353b4ebde35b8daa5d228ee94115f484e9a9b869`
+- tree: `40f0b8593453dda5ac1c3153f5c1f869c7423a98`
+- parent/base: `a83c40f83df460f4bc23c11dff1cf74301a4aa2a`
+- declared base tree: `843819afa2b8092d6617af3cba4288c4eb49cd5f`
+
+The current port starts from main `5dfe15c9fad14e5abebf23bf1e645bf9154a2e1e`,
+tree `643afe5f3b00918fc3de76f2855294481a09b505`. The implementation and test
+commit is `efb107cf852b4d9257aa9790ec8dfae410304ee1`, tree
+`beded35f401756e2b59dfb7e09f1c18ed6743cd7`. The receipt is a documentation-
+only successor.
+
+The branch preserves the coordinator's ancestry-only merge of the historical
+candidate, but the current tree ports only the useful scoped behavior. The old
+99-path stack is not replayed.
+
+## Original path accounting
+
+PR689 had exactly two unique authored paths:
+
+1. `.github/workflows/ci.yml`: added a dedicated Resolution matrix with
+   `resolution-pipeline`, `resolution-unmetered`, and
+   `resolution-invocation-selection`, serialized only with
+   `max-parallel: 1`, and made publication depend on that pool.
+2. `tools/ci/run.clj`: supplied the three actual mode commands and the
+   selection mapping needed to keep the logical `resolution` output/API.
+
+The current port preserves those two responsibilities against the current
+workflow. `tools/ci/run_test.clj` adds focused controls for the three complete
+and disjoint namespace commands, logical-to-actual selection mapping,
+selection failure/skip behavior, per-mode receipts, serialized-pool scope, and
+the publish dependency. This test path is a current repair control, not an
+unreplayed historical PR path.
+
+## Behavior preserved and changed
+
+- The selector still emits one logical `resolution` output. Actual matrix
+  modes map back to that logical stage for stage-closure skipping.
+- The existing combined `resolution` local command remains available for
+  compatibility. The workflow's three actual modes each run one namespace with
+  an independent 600-second child watchdog.
+- Only the new Resolution pool has `max-parallel: 1`; checks and leaves retain
+  their existing `max-parallel: 2`. No global cap or cost-equivalence claim is
+  introduced.
+- Failed, missing, or malformed selector output remains fail-closed: selected
+  jobs run, and unselected jobs retain explicit skipped receipts only after a
+  successful valid selector says the logical stage is unaffected.
+- Each actual Resolution matrix child has a fresh checkout, a mode-specific
+  summary/log/receipt namespace, provenance files, and an uploaded artifact.
+- Publication remains restricted to the existing manual source-publish rule
+  (`workflow_dispatch` on `refs/heads/main`) and now also requires the
+  Resolution pool through `needs`.
+
+## Focused evidence
+
+Observed locally from the current implementation commit:
+
+- `PATH=/tmp/acc08-controls-01a183dd/kondo-2025.10.23:$PATH clojure -J-Xmx512m -M tools/ci/run_test.clj`: 34 tests, 334 assertions, 0 failures, 0 errors.
+- Pinned changed-file lint for `tools/ci/run.clj` and
+  `tools/ci/run_test.clj`: 0 unchanged baseline warnings, 0 blocking
+  warnings/errors.
+- `git diff --check`: passed.
+
+The checks inspect command construction and workflow controls; they do not run
+the three heavy Resolution namespaces or claim hosted GitHub matrix execution.
+`actionlint` was not installed in this local environment, so workflow syntax
+was not independently actionlint-validated here. No GitHub write, push, or
+workflow dispatch was performed.
+
+No release, publication, compiler semantic, self-hosting, seed-retirement,
+resource-equivalence, billing, or roadmap completion authority is conferred.
