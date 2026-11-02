@@ -100,7 +100,24 @@ base and the two changed paths. It failed closed because the pinned executable
 run program `clj-kondo`). No warning or error result is claimed. Native,
 restricted, C5-heavy, C12, and unsupported host routes were not run.
 
-Independent acceptance and coordinator integration remain required. This
+## Current composition review
+
+The coordinator reran the three focused selectors on the composition with
+main `9b6f1169ad5fe1689c722f3975cde339b02a8087`: 3 tests / 81 assertions,
+0 failures and 0 errors. Boundary, document, roadmap, governance, and whitespace
+checks also passed. The available pinned clj-kondo 2025.10.23 executable was
+then used for changed-file lint: 65 baseline warnings, 0 blocking warnings or
+errors. Its receipts are retained under
+`/tmp/uniform-pr614-current-static-artifacts`.
+
+Independent review accepted the selective implementation and original-path
+accounting. Main subsequently advanced to
+`04b03d1d8138c934e4424be7e537764a1175a277` through an effect-checker quota
+removal in three C8/SH07/SH09 paths. The normal merge preserved all three
+PR614 port files exactly. This does not promote the historical C2 guard
+nonpass or grant broader compiler authority.
+
+Coordinator integration remains required. This
 receipt grants only the bounded C7 development evidence above; it does not
 close PR614 or claim the complete C7, source-authentication, or accounting
 removal workstream.
