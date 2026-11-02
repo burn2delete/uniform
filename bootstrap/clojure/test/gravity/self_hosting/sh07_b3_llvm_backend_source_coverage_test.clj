@@ -4,7 +4,6 @@
             [clojure.set :as set]
             [clojure.test :refer [deftest is testing]]
             [clojure.walk :as walk]
-            [gravity.backend.llvm :as llvm]
             [gravity.bootstrap :as bootstrap]
             [gravity.self-hosting.sh07-proof-census :as proof-census]))
 
@@ -401,75 +400,49 @@
                                             (repeat 5 block)))])))))
 
 (deftest sh07-b36-b3-emitted-lowering-accepts-former-ir-size-overflow
-  (let [operation-count 1800
-        block-id "entry"
-        operation-ids (mapv #(str "op-" %) (range operation-count))
-        operations (mapv (fn [operation-id]
-                           {:artifact :gravity/mir-operation
-                            :op-id operation-id
-                            :result operation-id
-                            :opcode :constant
-                            :source-operation :literal
-                            :operands []
-                            :constant-payload
-                            {:present? true
-                             :value (if (= operation-id (last operation-ids))
-                                      0
-                                      9223372036854775807)}
-                            :type :gravity/integer
-                            :block-id block-id})
-                         operation-ids)
+  ; This calls the source emitter at its post-validation block-label boundary;
+  ; the long source-owned label isolates IR construction from host I/O.
+  (let [block-id (apply str (repeat 70000 "b"))
+        operation-id "result"
+        operation {:artifact :gravity/mir-operation
+                   :op-id operation-id
+                   :result operation-id
+                   :opcode :constant
+                   :source-operation :literal
+                   :operands []
+                   :constant-payload {:present? true :value 0}
+                   :type :gravity/integer
+                   :block-id block-id}
         make-function
-        (fn [operation-sequence]
+        (fn []
           {:entry block-id
-           :blocks {block-id {:instructions operation-sequence
-                              :terminator
+           :blocks {block-id {:terminator
                               {:kind :return
-                               :operands [(get (last operation-sequence)
-                                               :op-id)]
+                               :operands [operation-id]
                                :successors []}}}})
-        mir {:module-id "large-ir-fixture"
-             :functions {'main (make-function operations)}
-             :source-core {:id "fixture-source-core"}
-             :pass-execution-record {:record-id "fixture-pass"}
-             :type-table {} :effect-table {} :safety-table {} :source-map {}}
-        native-operation-line
-        (fn [mir operation operation-sequence index labels]
-          (llvm/operation-line
-           llvm/value-reference llvm/constant-number
-           (atom llvm/forward-opcodes) (atom llvm/comparison-opcodes)
-           mir operation operation-sequence index labels))
-        native-lowering
-        (llvm/reconstructed-lowering
-         llvm/block-order llvm/operation-sequence llvm/block-labels
-         llvm/value-reference native-operation-line
-         #(llvm/evaluate-operations (atom llvm/forward-opcodes) %)
-         llvm/scalar-exit-code
-         (atom {:data-layout "e-m:e-p:64:64-i64:64-n8:16:32:64-S128"
-                :target-triple "x86_64-unknown-linux-gnu"})
-         (atom {:artifact :gravity/b3-bounded-llvm-x86_64-linux-policy})
-         mir)
-        small-operations
-        [(assoc (first operations)
-                :op-id "small"
-                :result "small"
-                :constant-payload {:present? true :value 255})]
+        function (make-function)
+        block-order [block-id]
+        operation-index {operation-id 0}
+        block-labels {block-id block-id}
+        lowering
+        (invoke 'b3-build-emitted-lowering
+                [{} function block-order [operation]
+                 operation-index block-labels])
         in-range
         (invoke 'b3-build-emitted-lowering
-                [{} (make-function small-operations) [block-id]
-                 small-operations {"small" 0} {block-id "entry"}])
-        out-of-range-operations
-        [(assoc (first operations)
-                :op-id "small"
-                :result "small"
-                :constant-payload {:present? true :value 256})]
+                [{} function block-order
+                 [(assoc operation :constant-payload
+                         {:present? true :value 255})]
+                 operation-index block-labels])
         rejected
         (invoke 'b3-build-emitted-lowering
-                [{} (make-function out-of-range-operations) [block-id]
-                 out-of-range-operations {"small" 0} {block-id "entry"}])]
-    (is (= :constructed-unverified (:status native-lowering)))
-    (is (> (count (:llvm-ir native-lowering)) 65536))
-    (is (= 0 (:expected-exit-code native-lowering)))
+                [{} function block-order
+                 [(assoc operation :constant-payload
+                         {:present? true :value 256})]
+                 operation-index block-labels])]
+    (is (= :constructed-unverified (:status lowering)))
+    (is (> (count (:llvm-ir lowering)) 65536))
+    (is (= 0 (:expected-exit-code lowering)))
     (is (= :constructed-unverified (:status in-range)))
     (is (= 255 (:expected-exit-code in-range)))
     (is (= :rejected (:status rejected)))
