@@ -154,6 +154,11 @@
   ([source-path source-text reader-source-path source-policy-version]
    (p15-s23-c6c10-private-ingress-products source-path source-text reader-source-path source-policy-version nil))
   ([source-path source-text reader-source-path source-policy-version selected-reader-binding]
+   (p15-s23-c6c10-private-ingress-products
+    source-path source-text reader-source-path source-policy-version
+    selected-reader-binding nil))
+  ([source-path source-text reader-source-path source-policy-version
+    selected-reader-binding selected-reader-invocation]
   (when-not (and (string? source-path)
                  (qst-or-gravity-source? source-path)
                  (string? source-text))
@@ -181,14 +186,15 @@
             *print-readably* true
             *print-namespace-maps* false]
     (let [;; Selection is host invocation context, never artifact authority.
-          invocation (when reader-source-path
-                       {:reader-source-path reader-source-path
-                        :authenticated-envelope-options {:source :development-current}})
+          invocation (or selected-reader-invocation
+                          (when reader-source-path
+                            {:reader-source-path reader-source-path
+                             :authenticated-envelope-options {:source :development-current}}))
           raw-front-end
           (p15-s23-stage2-c2-c3-front-end-products
            source-path source-text
            (reader-project-context-for-source source-path)
-           true reader-source-path)
+           true reader-source-path invocation)
           source-content-hash
           (get-in raw-front-end [:source-unit-record :bytes-hash])
           literal-authentication
