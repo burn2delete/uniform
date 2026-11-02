@@ -71,10 +71,11 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          # Selected and fail-closed jobs need the tested merge/base trees for
-          # path discovery and changed-file lint.  An unselected matrix job
-          # only records its checked-out tree and can use a single commit.
-          fetch-depth: ${{ needs.select.result == 'success' && needs.select.outputs.selection-valid == 'true' && needs.select.outputs[matrix.mode] == 'false' && 1 || 2 }}
+          # Selected and fail-closed compiler jobs retain full history because
+          # their suites materialize pinned historical git-show sources.  An
+          # unselected matrix job only records its checked-out tree and can
+          # use a single commit.
+          fetch-depth: ${{ needs.select.result == 'success' && needs.select.outputs.selection-valid == 'true' && needs.select.outputs[matrix.mode] == 'false' && 1 || 0 }}
           persist-credentials: false
       - uses: ./.github/actions/clojure
         if: ${{ always() && !cancelled() && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs[matrix.mode] != 'false') }}
@@ -157,10 +158,11 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          # Selected and fail-closed jobs need the tested merge/base trees for
-          # path discovery.  An unselected leaf job only records its checked-
-          # out tree and can use a single commit.
-          fetch-depth: ${{ needs.select.result == 'success' && needs.select.outputs.selection-valid == 'true' && needs.select.outputs[matrix.selection-key] == 'false' && 1 || 2 }}
+          # Selected and fail-closed leaf suites retain full history because
+          # their tests materialize pinned historical git-show sources.  An
+          # unselected leaf job only records its checked-out tree and can use
+          # a single commit.
+          fetch-depth: ${{ needs.select.result == 'success' && needs.select.outputs.selection-valid == 'true' && needs.select.outputs[matrix.selection-key] == 'false' && 1 || 0 }}
           persist-credentials: false
       - uses: ./.github/actions/clojure
         if: ${{ always() && !cancelled() && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs[matrix.selection-key] != 'false') }}

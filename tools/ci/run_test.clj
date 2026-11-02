@@ -363,10 +363,9 @@
     (is (str/includes? workflow "needs.select.outputs[matrix.mode] == 'false'"))
     (is (str/includes? workflow "CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}"))
     (is (str/includes? workflow "CI_BASE_SHA: ${{ github.event.before }}"))
-    (is (not (str/includes? workflow "fetch-depth: 0")))
     (is (str/includes? workflow "fetch-depth: 2"))
     (is (str/includes? workflow "fetch-depth: 10"))
-    (is (str/includes? workflow "&& 1 || 2"))
+    (is (str/includes? workflow "&& 1 || 0"))
     (is (= 4 (count (re-seq #"persist-credentials: false" workflow))))))
 
 (deftest stage-selection-follows-owned-downstream-closure
