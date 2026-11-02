@@ -1,6 +1,6 @@
 (ns gravity.p15-native-packet-binding.contract
-  (:import [java.nio.charset StandardCharsets]
-           [java.security MessageDigest]))
+  (:require [gravity.digest :as digest])
+  (:import [java.nio.charset StandardCharsets]))
 
 (def packet-limit 65536)
 (def instruction-limit 128)
@@ -17,9 +17,7 @@
   (.getBytes ^String value StandardCharsets/UTF_8))
 
 (defn sha256-bytes-hex [^bytes bytes]
-  (let [digest (.digest (doto (MessageDigest/getInstance "SHA-256")
-                          (.update bytes)))]
-    (apply str (map #(format "%02x" (bit-and (int %) 0xff)) digest))))
+  (digest/sha256-bytes-hex bytes))
 
 (defn sha256-text [text]
   (str "sha256:" (sha256-bytes-hex (utf8-bytes text))))

@@ -146,6 +146,14 @@
 (deftest namespace-contract-is-narrow-and-preserves-compatibility-arities
   (let [contract (:gravity/namespace-contract (meta #'reader/read-source-artifact))]
     (is (= #{'read-source-artifact 'decode-source-bytes 'read-source-text 'reject-source-path!} (set (keys (ns-publics 'gravity.reader)))))
+    (is (= (set (keys (:public-api contract)))
+           (set (keep (fn [[name operation]]
+                        (when (:gravity/namespace-contract (meta operation)) name))
+                      (ns-interns 'gravity.reader)))))
+    (is (every? #(= contract (:gravity/namespace-contract (meta %)))
+                (vals (ns-publics 'gravity.reader))))
+    (is (every? #(not (:private (meta %)))
+                (vals (ns-publics 'gravity.reader))))
     (is (empty? (ns-aliases 'gravity.reader)))
     (is (= :native-source-intake-diagnostics-and-stage0-reader-artifact-assembly (:contract-boundary contract)))
     (is (= ['clojure.core] (get-in contract [:dependency-direction :requires])))

@@ -1,6 +1,23 @@
 (ns gravity.c17-c18-pass-cache.orchestration
   "C17/C18 cache execution and four-pass evidence composition."
-  (:require [gravity.c17-c18-pass-cache.contract :as contract]))
+  (:require [gravity.c17-c18-pass-cache.contract :as contract]
+            [gravity.pass-execution :as pass-execution]))
+
+(def ^:private default-compose-evidence-dag
+  pass-execution/compose-evidence-dag)
+(def ^:private default-evidence-root
+  pass-execution/evidence-root)
+
+(defn- compose-evidence-dag-and-root
+  [compose-evidence-dag evidence-root receipts contracts]
+  (let [evidence-dag (compose-evidence-dag receipts contracts)]
+    ;; The default composer has just validated and canonicalized this DAG; do
+    ;; not add a spoofable validation marker to the public envelope.
+    [evidence-dag
+     (if (and (identical? compose-evidence-dag default-compose-evidence-dag)
+              (identical? evidence-root default-evidence-root))
+       (:evidence-root-id evidence-dag)
+       (evidence-root evidence-dag))]))
 
 (defn lookup-or-compute!
   [{:keys [validate-upstream! validate-context! validate-operations!
@@ -40,7 +57,9 @@
                        [c17-receipt (:producer-receipt c18-result)])
         contracts (into (vec (:contracts upstream-dag))
                         [contract/c17-pass-contract contract/c18-pass-contract])
-        evidence-dag (compose-evidence-dag receipts contracts)]
+        [evidence-dag evidence-root-id]
+        (compose-evidence-dag-and-root compose-evidence-dag evidence-root
+                                       receipts contracts)]
     {:artifact :gravity/c17-c18-pass-cache-result
      :schema-version 1
      :c17-artifact c17-artifact
@@ -50,7 +69,7 @@
      :c17-producer-receipt c17-receipt
      :c18-producer-receipt (:producer-receipt c18-result)
      :evidence-dag evidence-dag
-     :evidence-root-id (evidence-root evidence-dag)
+     :evidence-root-id evidence-root-id
      :authority :none
      :release-authority? false
      :proof-authority? false

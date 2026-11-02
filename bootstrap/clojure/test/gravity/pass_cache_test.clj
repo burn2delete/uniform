@@ -1,6 +1,11 @@
 (ns gravity.pass-cache-test
   (:require [clojure.test :refer [deftest is]]
             [gravity.pass-cache :as cache]
+            [gravity.pass-cache.canonical-decode :as canonical-decode]
+            [gravity.pass-cache.canonical-encode :as canonical-encode]
+            [gravity.pass-cache.entry-schema :as entry-schema]
+            [gravity.pass-cache.path-policy :as path-policy]
+            [gravity.pass-cache.policy :as policy]
             [gravity.pass-cache.receipt-validation :as receipt-validation])
   (:import [java.nio.file Files LinkOption Path StandardOpenOption]
            [java.util.concurrent TimeUnit]
@@ -127,7 +132,7 @@
   [^Path directory ^Path marker target-id barrier? hang? wait?]
   (let [ready-marker (.resolve directory "publication.ready")
         expression
-        (str "(require 'gravity.pass-cache 'gravity.pass-cache-test)"
+        (str "(require 'gravity.pass-cache 'gravity.pass-cache.policy 'gravity.pass-cache-test)"
              "(try (let [request (var-get (ns-resolve 'gravity.pass-cache-test 'request))"
              "      operations (var-get (ns-resolve 'gravity.pass-cache-test 'operations))"
              "      req "
@@ -153,7 +158,7 @@
              "             (produce r)))"
              "      result "
              (if hang?
-               (str "(with-redefs-fn {(ns-resolve 'gravity.pass-cache '*publication-hook*)"
+               (str "(with-redefs-fn {(ns-resolve 'gravity.pass-cache.policy '*publication-hook*)"
                     " (fn [] (java.nio.file.Files/write"
                     " (java.nio.file.Paths/get " (pr-str (str ready-marker))
                     " (make-array String 0)) (.getBytes \"ready\""
@@ -513,7 +518,7 @@
       (let [store (cache/open-local-store directory)
             req (request) key (cache/stage-cache-key req)
             hook-calls (atom 0)
-            hook-var (ns-resolve 'gravity.pass-cache '*publication-hook*)]
+            hook-var #'policy/*publication-hook*]
         (is (thrown?
              clojure.lang.ExceptionInfo
              (with-redefs-fn
@@ -583,10 +588,9 @@
                          (vec (.toArray paths)))
                        (with-open [paths (Files/list (:receipts store))]
                          (vec (.toArray paths))))
-            encode (var-get (ns-resolve 'gravity.pass-cache 'encoded-value))
-            entry-id-fn (var-get (ns-resolve 'gravity.pass-cache 'entry-id))
-            maximum-entry-bytes
-            (var-get (ns-resolve 'gravity.pass-cache 'maximum-entry-bytes))
+            encode canonical-decode/encoded-value
+            entry-id-fn receipt-validation/entry-id
+            maximum-entry-bytes policy/maximum-entry-bytes
             rewrite! (fn [entry]
                        (Files/write
                         entry-path (encode entry maximum-entry-bytes)
@@ -631,13 +635,11 @@
             ops (operations calls)
             store (cache/open-local-store directory)
             result (cache/lookup-or-compute! store key req ops)
-            encode (var-get (ns-resolve 'gravity.pass-cache 'encoded-value))
-            blob-id-fn (var-get (ns-resolve 'gravity.pass-cache 'blob-id))
-            entry-id-fn (var-get (ns-resolve 'gravity.pass-cache 'entry-id))
-            maximum-blob-bytes
-            (var-get (ns-resolve 'gravity.pass-cache 'maximum-blob-bytes))
-            maximum-entry-bytes
-            (var-get (ns-resolve 'gravity.pass-cache 'maximum-entry-bytes))
+            encode canonical-decode/encoded-value
+            blob-id-fn receipt-validation/blob-id
+            entry-id-fn receipt-validation/entry-id
+            maximum-blob-bytes policy/maximum-blob-bytes
+            maximum-entry-bytes policy/maximum-entry-bytes
             entry-path (.resolve ^Path (:entries store)
                                  (str (:cache-key-id key) ".edn"))
             good-blob-path (.resolve ^Path (:blobs store)
@@ -709,11 +711,10 @@
                                    (str (:cache-key-id key-a) ".edn"))
             entry-b-path (.resolve ^Path (:entries store)
                                    (str (:cache-key-id key-b) ".edn"))
-            entry-id-fn (var-get (ns-resolve 'gravity.pass-cache 'entry-id))
-            encode (var-get (ns-resolve 'gravity.pass-cache 'encoded-value))
-            maximum-entry-bytes
-            (var-get (ns-resolve 'gravity.pass-cache 'maximum-entry-bytes))
-            hook-var (ns-resolve 'gravity.pass-cache '*publication-hook*)
+            entry-id-fn receipt-validation/entry-id
+            encode canonical-decode/encoded-value
+            maximum-entry-bytes policy/maximum-entry-bytes
+            hook-var #'policy/*publication-hook*
             receipt-paths
             (fn []
               (with-open [paths (Files/list (:receipts store))]
@@ -771,7 +772,7 @@
       (let [store (cache/open-local-store directory)
             req (request) key (cache/stage-cache-key req)
             hook-calls (atom 0)
-            hook-var (ns-resolve 'gravity.pass-cache '*publication-hook*)]
+            hook-var #'policy/*publication-hook*]
         (is (thrown?
              clojure.lang.ExceptionInfo
              (with-redefs-fn
@@ -801,7 +802,7 @@
       (finally (delete-tree! directory)))))
 
 (deftest canonical-values-do-not-use-work-bounds-and-storage-limits-remain-explicit
-  (let [canonical-bytes (var-get (ns-resolve 'gravity.pass-cache 'canonical-bytes))
+  (let [canonical-bytes canonical-encode/canonical-bytes
         large-vector (vec (repeat 40000 "x"))
         deep-value (nth (iterate vector :leaf) 120)
         large-result (canonical-bytes large-vector)
@@ -818,7 +819,7 @@
                    (make-array java.nio.file.attribute.FileAttribute 0))]
     (try
       (let [store (cache/open-local-store directory)
-            blob-id-fn (var-get (ns-resolve 'gravity.pass-cache 'blob-id))
+            blob-id-fn receipt-validation/blob-id
             contents ["orphan-a" "orphan-b"]
             paths (mapv (fn [content]
                           (let [bytes (.getBytes content
@@ -827,7 +828,7 @@
                                                (str (blob-id-fn bytes) ".edn"))]
                             (private-write! path content)))
                         contents)
-            maximum-var (ns-resolve 'gravity.pass-cache 'maximum-blob-count)
+            maximum-var #'policy/maximum-blob-count
             original-maximum (var-get maximum-var)]
         (try
           (alter-var-root maximum-var (constantly 1))
@@ -869,11 +870,9 @@
       (let [calls (atom {}) req (request) key (cache/stage-cache-key req)
             store (cache/open-local-store directory)
             result (cache/lookup-or-compute! store key req (operations calls))
-            entry-id-fn (var-get (ns-resolve 'gravity.pass-cache 'entry-id))
-            validate-entry-fn
-            (var-get (ns-resolve 'gravity.pass-cache 'validate-entry-record!))
-            relative-name-fn
-            (var-get (ns-resolve 'gravity.pass-cache 'relative-name!))]
+            entry-id-fn receipt-validation/entry-id
+            validate-entry-fn entry-schema/validate-entry-record!
+            relative-name-fn path-policy/relative-name!]
         (doseq [field [:blob-id :producer-receipt-id]]
           (let [base (assoc (dissoc (:cache-entry result) :entry-id)
                             field "../escape")
@@ -1155,8 +1154,8 @@
       (let [calls (atom {}) req (request) key (cache/stage-cache-key req)
             store (cache/open-local-store directory)
             ops (operations calls)
-            count-var (ns-resolve 'gravity.pass-cache 'maximum-entry-count)
-            bytes-var (ns-resolve 'gravity.pass-cache 'maximum-store-bytes)
+            count-var #'policy/maximum-entry-count
+            bytes-var #'policy/maximum-store-bytes
             original-count (var-get count-var)
             original-bytes (var-get bytes-var)]
         (try
@@ -1225,11 +1224,11 @@
         (let [stage (.resolve ^Path (:staging store)
                               ".stage-00000000-0000-0000-0000-000000000000.tmp")]
           (private-write! stage "active")
-          (swap! (var-get (ns-resolve 'gravity.pass-cache 'active-staging))
+          (swap! policy/active-staging
                  conj (str stage))
           (let [reopened (cache/open-local-store directory)]
             (is (Files/exists stage (make-array LinkOption 0)))
-            (swap! (var-get (ns-resolve 'gravity.pass-cache 'active-staging))
+            (swap! policy/active-staging
                    disj (str stage))
             (is (map? reopened))))
         (let [fifo (.resolve ^Path (:entries store)
