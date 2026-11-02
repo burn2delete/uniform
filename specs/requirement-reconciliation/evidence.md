@@ -601,3 +601,40 @@ All 29,177 facets and 245 source views remain conserved. The complete audit and
 25 tests / 186 assertions pass; the independent whole-model denominator and
 current implementation acceptance remain unfinished. The component census stays
 at its separately pinned main source with 2 Accepted / 138 coarse outcomes.
+
+## PR445 current-main task-source reconciliation
+
+The PR445 candidate `b24b6500a39492be6d37b4dc8310ee0caeca23b3` (tree
+`4c08b0a18506673f31b048001cf4458f0f939703`) is based on current main
+`bfc99d626ca31c9094573e03da751ee34da5084f` (tree
+`f6305181e0df2e841c15c752f3e1ee1260bdee17`). The earlier focused and complete
+audits remain preserved as nonpasses in
+`pr445-current-source-audit.edn`; the prior first error was the Reader task
+source drift. The repaired source audit is recorded in
+`pr445-task-source-reconciliation.edn`.
+
+The repaired checker inventories 580 mismatching task/evidence references over
+15 ledgers. Each reference retains its historical hash and is checked against
+its historical Git ref; current bytes are independently checked against the
+current-main ref, tree and SHA-256. Ten ledgers are navigation-only wording
+changes. Compiler API's `pipeline`, `plugins` and `pass-evidence` records have
+appended current Foundation/Bootstrap/Decision criteria, and Reader's
+`lexical-products-and-origins-closure` and `extension-policy-closure` records
+have current status/development-evidence changes. These five record-level
+changes retain historical/current digests and do not upgrade requirement
+implementation acceptance.
+
+The five accounting/source bridges remain separate: L4 and C4 retain their
+cycle, host, termination and diagnostic obligations; STD3 projects only its
+six reviewed accounting regions while retaining physical validation,
+allocation, ownership, lifetime and mixed traversal/timing qualifications;
+Platform remains authority-layout-only; and AGENTS remains governance/
+preflight-binding-only. No bridge is treated as blanket quota equivalence or
+canonical adoption.
+
+The repaired focused suite passes 31 tests / 265 assertions and the complete
+source/evidence audit passes with 245 source documents, 19,962 occurrences and
+29,177 facets while denominator and overall rate remain withheld. Structural
+docs, roadmap, language-boundary and governance checks pass. No compiler
+replay, implementation acceptance, integration eligibility or whole-project
+denominator is claimed.
