@@ -42,6 +42,13 @@ safety and exported fact/equivalence contracts, and cannot redefine language
 meaning. Component/domain/provider owners implement those semantics; the API
 owns their declared registration, invocation and consumer boundaries.
 
+The [complete plugin and pass API source criteria](plan.md#complete-plugin-and-pass-api-source-criteria)
+bind the existing Plugin Host/Pipeline predicates to pre-load refusal, actual
+granted execution, registered verifiers and trace/cache/bootstrap consumers.
+All three historical criterion blocks already exist; preserve their text and
+statuses. Record models and supplied trust/verifier fields are partial evidence.
+Current independent review remains pending, and existing execution holds remain.
+
 The [complete compiler-verification source criteria](plan.md#complete-compiler-verification-source-criteria)
 restore C18's detailed records under the existing `pass-evidence` task. The
 existing pass-evidence and backend-conformance witnesses remain unchanged.

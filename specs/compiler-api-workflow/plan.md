@@ -21,6 +21,50 @@ artifacts and counterexamples without changing ownership, accepting pending
 source amendments, refreshing migration evidence or claiming whole-pass/release
 support from local checks.
 
+## Complete plugin and pass API source criteria
+
+Keep the existing `plugins` and `pipeline` predicates unchanged. The three
+existing/records/pipeline spans from the preserved
+`plugin-complete-current-facet-trace.edn` are already literal current task text;
+the retained [source review](review-inputs/plugin-source-review.edn) records
+108 facets, 45 occurrences, thirty semantic conjunctions and six owner joins.
+The trace at `726b04bbb4add5092074876522ced4792584ae30` has SHA-256
+`084a0a1d7cccff88074193da58788a06063c5ab86838d04cd16c916dd1874e57`.
+Its scoped PASS at `45fa1763` remains frozen to that source subject. Current
+planning entailment and implementation assessment do not inherit acceptance.
+
+| Boundary and owner | Implementation and acceptance route |
+| --- | --- |
+| Manifest before code; `plugins` | Parse the complete [C17 manifest](../../docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md#plugin-manifest), including package/API/compiler compatibility, trust, meta profile, effects, grants, passes, emitted artifacts and conformance fixtures. Resolve authentic package/trust/signature/policy inputs before initialization. Demonstrate accepted manifests and malformed, incompatible, rejected-trust or excessive-authority refusals with no initialization effects. Package identity, signature or audit approval alone grants no compiler capability. |
+| Context and sandbox; `plugins` | Enforce all sixteen [compiler scope families](../../docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md#compiler-capabilities) and artifact-kind/namespace/phase/package restrictions. Context facts are read-only without explicit write authority; `read-mir` never permits rewriting. Preserve all five [trust levels](../../docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md#sandbox-and-trust). Demonstrate actual sandboxed and trusted execution under granted authority, plus filesystem/network/process/environment/IR/model-tool/artifact-write denials and hermetic build-effect denial. Request fields or assigned sandbox results do not establish enforcement. |
+| Registered pass execution; `pipeline` with `plugins` | Use the same actual input/output/requires/preserves/invalidates/regenerates/proof-obligations/emits [pass contract](../../docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md#pass-api) for builtins and plugins. Pipeline owns stage ordering, facts and orchestration; plugins owns registration, versioned public access and grant enforcement. Consume actual stage artifacts and checkers; reject missing facts, illegal phases, hidden mutable state, undeclared effects and invalid output. Sample MIR/fusion/fact values are illustrative, not universal defaults. Unresolved pipeline ordering remains explicit. |
+| Facets and domain IR; `plugins` consumes their owners | Route [extensions](../../docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md#domain-and-facet-extensions) through L14 and C12 artifacts with schema, verifier, profiles, effects/grants, lowering, diagnostics and fixtures. Owning registries/checkers supply actual registration and callback results. Demonstrate acceptance, malformed registration, opaque/verifierless payload and failed-output refusal without accepting whole C12/L14 or bypassing their holds. |
+| Trace and cache; `plugins` produces, Build and Bootstrap consume | Bind actual plugin/pass/input/output/grants/build effects/decisions/diagnostics/verifier results in the [execution trace](../../docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md#execution-trace). Cache identity includes plugin package/version/manifest/grants/dependencies/replay. Demonstrate changed-identity invalidation and actual trace consumption by incremental cache and self-hosting comparison. Their owners retain reuse/comparison admission; emitting a trace alone proves neither. |
+| Diagnostics and evidence; `plugins` with Diag and `pass-evidence` | Preserve all ten [C17 diagnostic meanings](../../docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md#diagnostics) and plugin/package/version/pass/manifest-span-or-entry/requested-capability/trust/API/source-or-artifact/remediation context. Keep authentic fixtures, outputs, checker results and refusals for every [conformance criterion](../../docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md#conformance-criteria). Pass-evidence consumes execution-bound results under C18; assigned compatible/verified/passed records and fixture names cannot substitute for actual behavior. |
+
+Start local manifest/context/registration construction and negative fixtures
+against explicit package, grant, stage, registry and verifier interfaces. The
+stage0 adapter's C16-shaped input is not a universal prerequisite for ordinary
+plugin development. Composition needs the actual selected producer products,
+registered execution and output verifier results; cache and bootstrap acceptance
+need their actual consumers. Full dependency acceptance and fresh migration
+proof are not ordinary editing prerequisites. Existing plugin, callback,
+sandbox, C12/provider/checker, target and publication holds remain effective;
+this source plan authorizes no held execution.
+
+Preserve current partial code and narrow receipts. The hosted compatibility
+leaf constructs fixed manifests/grants/registration/output/trace records and
+checks their fields/statuses; its policy excludes loading, execution, sandbox,
+signature and authority ownership. The Gravity record model uses quoted
+constructors. The separate W5 leaf validates supplied requests and recomputes
+an identity-result record, with seed/JVM and non-authority boundaries. Its
+supplied verified-signature, sandbox and verifier fields do not establish a
+production loader, cryptographic verification, process isolation or arbitrary
+plugin execution. Assess actual applicable behavior at the selected increment;
+retain unsupported targets and missing execution evidence explicitly. No task
+status, implementation, release, self-hosting or integration credit follows
+from this review.
+
 ## Complete compiler-verification source criteria
 
 The preserved `c18-complete-current-facet-trace.edn` binds three criterion
