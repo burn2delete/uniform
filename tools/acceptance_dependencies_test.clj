@@ -358,7 +358,7 @@
     (is (= 149 (count current)))
     (is (= 40 (:task-count review)))
     (is (= 40 (count (:declared-consumers review))))
-    (is (= 7 (count (:declared-parent-consumers review))))
+    (is (= 11 (count (:declared-parent-consumers review))))
     (is (= dependencies/selected-parent-consumers (set (:required-parent-consumers review))))
     (let [text (slurp dependencies/future-dependency-path)
           removed (clojure.string/replace text #"(?m)^\| `domain-ir-boundaries` \|.*\n" "")
@@ -375,6 +375,24 @@
                       [(:from %) (:to %) (:kind %)]) edges)))
       (is (not-any? #(and (= "task:domain-ir-boundaries/implementation" (:from %))
                          (clojure.string/starts-with? (:to %) "result:")) edges)))
+    (let [c9 (set (filter #(clojure.string/starts-with? % "legality/") dependencies/selected-parent-consumers))
+          text (slurp dependencies/future-dependency-path)
+          removed (clojure.string/replace text #"(?m)^\| `legality/[^`]+` \|.*\n" "")
+          altered (dependencies/future-task-view future current snapshots
+                    #(if (= dependencies/future-dependency-path %) removed (slurp %)))
+          routes (filter #(c9 (:consumer %)) (:routes review))]
+      (is (= 4 (count c9) (count routes)))
+      (is (= c9 (set (get-in altered [:dependency-review :unresolved-consumers]))))
+      (is (= [4 5 6 12] (sort (map (comp count :composition-results) routes))))
+      (doseq [{:keys [consumer start-results composition-results]} routes]
+        (is (empty? start-results))
+        (doseq [producer composition-results]
+          (is (some #(= [(str "task:" consumer "/implementation") (str "task:" producer "/interface") :declared-producer-interface]
+                        [(:from %) (:to %) (:kind %)]) edges))
+          (is (some #(= [(str "task:" consumer "/composition") (str "result:" consumer ":" producer) :actual-selected-producer-result]
+                        [(:from %) (:to %) (:kind %)]) edges)))
+        (is (not-any? #(and (= (str "task:" consumer "/implementation") (:from %))
+                           (clojure.string/starts-with? (:to %) "result:")) edges))))
     (is (empty? (:unresolved-consumers review)))
     (is (= :pending (:future-sh-and-full-language-joins review)))
     (is (= :unassessed (:implementation-acceptance review)))

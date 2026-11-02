@@ -2231,3 +2231,85 @@ passes the unchanged equality checks. Initial scratch reader/test delimiters
 were corrected before successful capture/checks; failed preparation receives no
 passing credit. ASCII and whitespace checks pass. Source checks establish no
 compiler/provider/runtime execution or independent acceptance.
+
+## Ownership selected-result dependency continuation
+
+The [existing dependency table](../docs/acceptance-dependencies.md#future-task-construction-and-composition)
+now declares all four C9 consumer routes identified by the preceding source
+proposal, adding 27 selected producer-result joins. The [Legality order](../specs/legality-workflow/plan.md#ownership-producer-and-consumer-order)
+keeps their stages explicit. Existing task bodies, identities/statuses, C9 source
+facets/occurrences/owner allocations and the broader task obligations remain.
+These rows select C9 integration evidence within existing tasks; they do not
+claim complete P1-P13/C10/other-source dependency entailment for all Legality.
+
+Ownership analysis consumes five actual selected products: Types' typed-Core
+annotations, Effects' inferred facts, expanded profile rules, scoped Auth grants
+and the selected memory/concurrency/FFI provider contract. Those products precede
+C9 analysis. A real provider contract is distinct from actually executing an
+allocator or runtime borrow check. Safety classification consumes six selected
+products: ownership obligations, profile/grant rules, subject-bound checked
+proof/audit evidence, explicit runtime-family availability/refusals and the
+selected metadata/failure contract. It decides legal check/proof/rejection/
+unsafe conditions before affected MIR without confusing authority and safety.
+
+The handoff's twelve selected results cover analysis/dispositions, actual MIR
+construction/fact attachment/verification/admission, selected Opt verification/
+regeneration, Lower emission, memory/FFI and startup/cleanup behavior, owning
+Diag integration and Emit conformance. Ownership facts are available before
+MIR construction; final boundary evidence consumes those later results. It does
+not wait for its own final checkbox before any MIR can be built. Valid
+unoptimized verified MIR remains legal and usable by Lower. These task-level
+integration evidence requirements are not per-program legality or whole-component
+start gates. Held target/runtime/callback behavior remains unassessed rather
+than replaced with supplied success flags.
+
+C9 family conformance consumes four existing analysis/safety/handoff/profile
+products, with actual supported/unsupported tuples, raw positive/refused
+results and exact source/check/provider/diagnostic identities. Its fixtures and
+results feed Release's existing suite and independent admission; final Release
+completion is not a C9 prerequisite and no second harness is created. Ordinary
+fixture work can start against declared interfaces. Actual composed acceptance
+still needs real producer/consumer outputs, runtime failures where claimed and
+required independent review.
+
+All 47 earlier consumer-route meanings are preserved. The view now covers forty
+future consumers plus eleven current parent consumers with 300 selected-result
+joins. Missing C9 rows are reported as unresolved consumers by the existing
+checker. The existing six-task Math and eight-task Release/Schema coarse cycles
+remain exposed; their declarations are not execution or canonical entailment.
+No task or evidence status is promoted. The broader source/owner/interface
+reconciliation remains unfinished.
+
+Source `14e97dee9205ffd6e3d1d07bb1af00bfbb724676` changes only the dependency
+document and Legality spec/plan. Its dependency and plan inspection pins advance
+explicitly; all task-file pins and the 84-identical/55-amended original-body
+comparison remain unchanged. The source-version inventory retains 31 file
+records, 149 current keys, 25 authorities, forty future records, original
+SH/SH07 routing and three scoped Reader receipts. Predecessor `0b734b5d`
+preserves the complete prior metadata/projection/pending review and the C9
+source proposal unchanged. Current fingerprint:
+`6c8c36a240daf062c0d54823d6d6cbb252a374d3ccca6861db498ecb0a3e03aa`.
+
+C12's earlier controls now read their exact recorded dependency document and
+required-parent population instead of applying that frozen scope to later C9
+rows. New controls assess the current four C9 routes. This preserves historical
+subjects without renewing their acceptance; current source/dependency review,
+implementation assessment and global conjunctions remain pending/unassessed.
+No held C7/C12/compiler/provider/native/callback/probe/replay/migration/signing/
+private-store or product-publication operation runs, and no other chat is
+messaged. Reader contract coverage remains the first implementation preparation
+increment and whole-project readiness stays false.
+
+C9 dependency validation passes: 45 crosswalk tests / 6,071 assertions and 23
+dependency tests / 1,950 assertions, deterministic generation/check, read-only
+dependency audit, both document validators and the language boundary (six tests /
+eleven assertions). Controls preserve all 47 prior route meanings, exact task
+and source-review subjects, and test all four C9 routes, 27 new actual-result
+joins, interface-only construction and missing-route reporting. The existing
+coarse cycles remain exposed and the staged graph is acyclic. Conservation passes
+for 83 changed files, 77 Markdown files, 3,062 local references, 139 original
+routes, 48 historical spec/plan suffixes and all 48 original task/evidence
+contents. All changed files are ASCII and whitespace checks pass. Test reader
+delimiters were corrected before the successful checks; failed preparation
+receives no passing credit. No compiler/provider/runtime/target or held
+execution ran, and no current independent acceptance is claimed.

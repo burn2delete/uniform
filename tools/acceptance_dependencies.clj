@@ -176,6 +176,10 @@
 
 (def selected-parent-consumers
   #{"domain-ir-boundaries" "math"
+    "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
+    "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+    "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"
+    "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface"
     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance"
     "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom"
     "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler"
