@@ -59,3 +59,15 @@ governance pass. Final independent acceptance, own CI/artifacts, reconciliation
 against advanced current main and immediate clean integration preflight remain
 required. Neither source-control acceptance nor previous CI confers later-main
 or release/migration eligibility.
+
+## Five-slice metadata-main composition
+
+Fresh clean exact-58dec original record builders and the composed stage run in
+the same Runtime checkout, as recorded in
+[the shared evidence](c-compile-sequencing-evidence.md#five-slice-metadata-main-composition).
+Complete/raw hashes are
+339a203301ffbf0febf2f67de4f5442dc85ca1862183c874a4e81c330862fe89
+and 96e335e1d9d140f692fbe40e4aa6d48872f880ac3b29269d281f610c01695dab.
+All current source/plan/native fixture hashes and historical semantic/provenance
+preimages recompute. Twenty Types bodies remain exact; existing native fixture
+data and fixed record/status labels retain their non-authority boundaries.

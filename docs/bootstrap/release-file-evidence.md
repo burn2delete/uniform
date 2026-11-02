@@ -221,3 +221,11 @@ agree in the same Runtime checkout, as recorded in
 [the shared composition evidence](c-compile-sequencing-evidence.md#four-slice-macro-main-composition).
 Main's inventory suppliers and package observations remain exact. No
 package/archive/release builder or new package-observation test is executed.
+
+## Five-slice metadata-main composition
+
+Fresh clean exact-58dec and candidate file products, raw serialization and
+original digest-root lookup agree in the same Runtime checkout; see
+[the shared evidence](c-compile-sequencing-evidence.md#five-slice-metadata-main-composition).
+Main's suppliers and package observations are preserved. Missing-file reads
+still throw the host exception; the digest sentinel grants no verification.

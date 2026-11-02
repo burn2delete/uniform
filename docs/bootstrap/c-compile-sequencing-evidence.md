@@ -361,3 +361,32 @@ at /tmp/uniform-backend-release-b30-lint. Cold stage counts are 19/20/5/14
 without Bootstrap; docs, roadmap and governance pass. Exact final independent
 acceptance, new candidate-owned CI/artifacts and immediate clean current-main
 preflight remain required. All existing restrictions and nonclaims remain.
+
+## Five-slice metadata-main composition
+
+Declared base 58dec693a4de9ff1b125f524a4292465384e8dd1 has tree
+acada3b67ad3ce29c7524e9875e7a7404190809e. Source union
+0778ff8a5e1b592bb4c94310732caf5cd8646a47 has tree
+1e15257a3098e02d77ae5a6f800f81a6c1d85462. It normally composes the
+reviewed four-slice union, main's three metadata-attachment refactors and the
+reviewed Types records source 614630935623f59585b048c2e60379d2fd08066d.
+There are 19 owned paths; main's Macro/Resolution/Checked Core files remain
+byte-exact. Source PRs 775, 779, 786 and 788 remain history, without replay or
+duplicate integration credit.
+
+All five original before producers and the Release lookup execute clean exact
+58dec in the same Runtime checkout and exit before source restoration. Complete
+data and original serialization agree with all after products. Source, plan,
+file, native fixture and retained Core/provenance identities recompute without
+normalizing actual paths or fields. Historical Types inputs and the failed
+native schema/layout report retain their earlier non-authority boundaries.
+
+Backend tests pass 47/967, Types 12/349, selected Release 8/94, boundary
+47/1154 and seed printer 1/15. Nine complete production files are conserved;
+all 20 Types bodies match their original owners. Thirteen-path lint has zero
+warnings/blockers, archived at /tmp/uniform-backend-release-58d-lint. Cold stage
+counts are 19/20/5/20 without Bootstrap; docs, roadmap and governance pass.
+Final exact independent acceptance, new candidate-owned CI/artifacts and
+immediate clean current-main preflight remain required. Prior nine-job-green
+CI for 9b937e4 is stale-base history and supplies no eligibility here. All
+existing restricted-route and release/migration/self-hosting nonclaims remain.

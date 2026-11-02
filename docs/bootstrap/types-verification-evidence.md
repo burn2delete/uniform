@@ -76,3 +76,14 @@ The current C7 source/plan identities above remain; actual paths are retained.
 Both historical Core input sets, native views, source/provenance preimages,
 accepted primitive typing/replay and actual pending-constraint/tamper refusals
 remain complete. Native seed report failure is not promoted to type authority.
+
+## Five-slice metadata-main composition
+
+Fresh clean exact-58dec original verification and the composed stage produce
+equal complete/raw paired records; see
+[the shared evidence](c-compile-sequencing-evidence.md#five-slice-metadata-main-composition).
+The Runtime record hashes e9aa8ae256cdecca893b978da37fab9cb178e560b74270bd34f2c0e0b0420616
+and 6b449e0e4918c8aabcec149510cac6ad52740ab69e8b82469f0684ea293a6874
+remain unchanged. Current C7 compilation, retained historical Core inputs,
+pending-constraint refusal and rejected type-table replay remain distinct from
+canonical type authority or source admission.

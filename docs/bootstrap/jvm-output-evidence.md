@@ -260,3 +260,15 @@ Complete/raw hashes are
 and 2e7b661cf982262b0e2321595d13bf7b9757bea5dd581df43192cf98438f7ac1.
 Source/plan identity and five emitted hashes per spelling recompute; no actual
 path, mode, pin, native authority record or file field is normalized.
+
+## Five-slice metadata-main composition
+
+The fresh exact-58dec composition is recorded in
+[the shared evidence](c-compile-sequencing-evidence.md#five-slice-metadata-main-composition).
+Actual paired host directory is
+/var/folders/3y/hpny2h8j4jn2qwyxxrzm3hb00000gn/T/gravity-jvm-output-evidence-18139367169518934292.
+Complete/raw hashes are
+58d34b2af35d1beef96f2767dc4bc265113073c2cbc7e00095273274955a1145
+and 6a441c5b30b02c2871355c9ec19bb5f72ea66ff279a1be546681aad48a63dd18.
+Real Java/class/JAR execution, five byte hashes per spelling and existing
+source/path/integrity/CREATE_NEW refusals remain. No private JVM admission runs.
