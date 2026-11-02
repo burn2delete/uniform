@@ -54,3 +54,24 @@ task IDs, statuses, acceptance text and historical receipts retain their scope.
 
 - [D5](../../docs/phase-00-foundation-and-thesis/006-d5-language-replacement-strategy.md#requirements): Domain replacement claims require named incumbent slices, unsupported behavior, typed interop artifacts and accepted/rejected parity fixtures. A domain demo cannot establish whole-language replacement.
 - [L19](../../docs/phase-01-core-language/029-l19-language-interoperability-and-migration-specification.md#requirements): Schema-generated bindings and migration shims retain schema digests, error mappings, provenance and incumbent parity; this is not a blanket interop-support claim.
+
+## Phase-10 schema-family current port
+
+The source-qualified S1-S9 clauses and five finite Open criteria live in the
+sole editable `schema` task record above. They preserve schema identity,
+canonical encoding, provenance, taint, effects, capabilities, migration and
+artifact evidence requirements; they do not create another task population or
+claim implementation acceptance.
+
+The [25-decision allocation plan](../requirement-reconciliation/schema-family/decision-allocation-plan.edn)
+is retained as a bounded proposal. Its historical field operations are not
+applied to current task bytes: the current task predecessor changed. The
+read-only [current source-pair checker](../../tools/schema_phase10_current.clj)
+authenticates the original 25 decisions and 463 attached facets against the
+current requirement manifest, verifies 19 source-document hashes, and rejects
+ID/order/status/facet/task tampering. It records the exact historical/current
+refs and nonclaims in the [PR565 receipt](../requirement-reconciliation/schema-family/pr565-current-integration-receipt.edn).
+
+The historical proposal remains pending independent allocation review and
+canonical adoption. No denominator, accepted mapping count, roadmap credit,
+release claim or implementation completion follows from this current port.
