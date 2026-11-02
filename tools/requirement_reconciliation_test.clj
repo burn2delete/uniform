@@ -179,7 +179,9 @@
                      (:requirements manifest))]
     (is (= 19 (count bridges)))
     (is (= 780 (count (filter #(= (:sha256 %) (:historical-sha256 (get by-path (:path %)))) refs))))
-    (is (= #{:navigation-only :acceptance-boundary-extension :status-and-development-evidence}
+    (is (= #{:navigation-only :acceptance-boundary-extension
+             :family-criteria-preserved-plus-current-main-safety-criteria
+             :status-and-development-evidence}
            (set (map :change-class bridges))))
     (is (= :acceptance-boundary-extension
            (:change-class (get by-path "specs/stdlib-workflow/tasks.md"))))

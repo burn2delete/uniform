@@ -1,0 +1,121 @@
+{:kind :domain-current-source-view-receipt
+ :version 1
+ :authority :proposal-only
+ :scope-key "requirement-reconciliation/phase-09-domain-specific-computing-coverage"
+ :historical-port-base {:commit "12480d592044cc667ba4908405b463b3de51a2e6"
+                        :tree "ab4173148a9a2ffe64a7ac94e74289db0704080a"}
+ :review-base {:commit "38add2342719b91c6ef22f064fa813a16e9a97b3"
+               :tree "5e260f72a8455fc44bb39039b9e0ce5f2be0907c"}
+ :current-source-checkpoint
+ {:commit "19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b"
+  :tree "dc79967f4939df6790c3a16b0a71a71e81191f9e"
+  :parents ["b35a7004f20f8dab1ba7183fc1c591dc8df2da1c"
+            "a13e148ae5078faa94f69e86a911dbe2df378e29"]
+  :task-criteria-port :domains-family-and-current-main-composed-platform-prefix-composed-runtime-successor}
+ :main-composition {:commit "38add2342719b91c6ef22f064fa813a16e9a97b3"
+                    :tree "5e260f72a8455fc44bb39039b9e0ce5f2be0907c"}
+ :integration-base {:commit "f43e77992fe86b6dfb55df3516b27cfcdea7fa40"
+                    :tree "a0e433f9f185b651f6f5ebc54340a085a5cd6721"
+                    :role :latest-current-main-composition-base}
+ :source-checkpoint-qualification :historical-source-evidence-not-integration
+ :original-pr562-ancestry {:commit "2c3eac90b9736873ce7c439cdc9603b1e43249e5"
+                           :present-in-final-candidate true
+                           :tree-imported false}
+ :historical-pr562
+ {:commit "2c3eac90b9736873ce7c439cdc9603b1e43249e5"
+  :tree "3de79028eeaced10f00c6895f4f5cf446d7304f2"
+  :family-proposal-sha256
+  "e602ffada49d2aa154b896333a82d494adf9ebdf8410615c94e11c5cf643939c"
+  :gap-proposal-sha256
+  "cbb47d98fc6120ecfc9a9145c8897151046a89feada36c98f5f820842e844d42"
+  :family-source-commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3"
+  :family-source-tree "9f464ed0f03866bd4978e4213a488f3b1ae48683"
+  :gap-predecessor-commit "43598c5b87feb4d88928549bb20fc4089768718b"
+  :gap-predecessor-tree "b90613cc0344b4b4a8bde0ff1afc61153723becf"}
+ :source-view
+ {:path "specs/requirement-reconciliation/domain-current-source-view.edn"
+  :sha256 "f86ffa1b40c56ecf7d0016ea96a48f5ccd40b8cbce834a48335a6c93e747a529"
+  :checker-path "tools/domain_current_source_view.clj"
+  :checker-sha256
+  "200699746ad5b75408d624f0801520e8619162b42784ff5ce38d16569044e8e5"
+  :evidence-path "specs/requirement-reconciliation/domain-current-source-view.md"
+  :evidence-sha256
+  "eb80d8d4c5f7d3ff9808ecc0f861d18e8ca1e5ba96d12061c4d2d19c6745022f"}
+ :current-manifest-transition
+ {:path "contracts/requirement-reconciliation.edn"
+  :commit "19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b"
+  :tree "dc79967f4939df6790c3a16b0a71a71e81191f9e"
+  :sha256 "8948438410df7c5b6c2c547e48be16b3ff8b1033ec866fb1bec432e4e3c32007"
+  :domain-current-ref "24e7b5e5cd8bc42fa495997870605b596a380678"
+  :domain-current-tree "52a90b3d537f23b3f572ee65ff03edf827c1e29b"
+  :domain-current-sha256 "5378c2c7fba1bb49318fc6cda890c60c77bdbdc57dfe6f5ea42ea8aa23298943"
+  :runtime-current-ref "42c34ab55af0000dfaaf73d96d7ee09ec22c243e"
+  :runtime-current-tree "e8f1cc090800f9fcd9e81b7a5bcea32a88101526"
+  :runtime-current-sha256 "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c"
+  :runtime-changed-record-count 5
+  :change-class :family-criteria-preserved-plus-current-main-safety-criteria}
+ :counts {:source-documents 21
+          :source-occurrences 1533
+          :source-dispositions 777
+          :source-facets 1838
+          :family-units 139
+          :family-field-edits 64
+          :family-task-references 32
+          :gap-history 577
+          :gap-assigned 70
+          :gap-records 70
+          :gap-coverage-operations 70
+          :gap-task-amendments 15
+          :gap-new-task-proposals 9
+          :gap-unresolved 57
+          :current-task-source-files 6}
+ :validation
+ {:source-view-checker
+  {:command "clojure -M tools/domain_current_source_view.clj --check"
+   :exit 0
+   :controls 14
+   :result :pass}
+  :platform-projection
+  {:command "clojure -M tools/platform_task_projection.clj --check"
+   :exit 0 :result :pass}
+  :platform-projection-test
+  {:command "clojure -J-Xmx256m -M tools/platform_task_projection_test.clj"
+   :exit 0 :tests 5 :assertions 90 :result :pass}
+  :acceptance-dependencies-test
+  {:command "clojure -J-Xmx256m -M tools/acceptance_dependencies_test.clj"
+   :exit 0 :tests 18 :assertions 434 :result :pass}
+  :requirement-reconciliation-test
+  {:command "clojure -J-Xmx256m -M tools/requirement_reconciliation_test.clj"
+   :exit 0 :tests 31 :assertions 270 :result :pass}
+  :requirement-reconciliation-check
+  {:command "clojure -J-Xmx512m -M tools/requirement_reconciliation.clj --check"
+   :exit 0 :source-documents 245 :source-occurrences 19962
+   :source-facets 29177 :unresolved-source-occurrences 10095
+   :denominator-ready? false :result :pass}
+  :language-boundary
+  {:command "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test"
+   :exit 0 :tests 6 :assertions 11 :result :pass}
+  :canonical-documents
+  {:command "clojure -M tools/validate_gravity_docs.clj"
+   :exit 0 :documents 240 :phase-indexes 19 :result :pass}
+  :full-language-roadmap
+  {:command "clojure -M tools/validate_full_language_roadmap.clj"
+   :exit 0 :result :pass}
+  :diff-check {:command "git diff --check" :result :pass}}
+ :qualification
+ {:family-source-criteria :preserved-current-ledger
+  :gap-task-amendments :proposal-only
+  :gap-new-task-proposals :proposal-only
+  :implementation-acceptance :unassessed
+  :canonical-adoption :pending
+  :independent-review :pending}
+ :nonclaims [:canonical-adoption
+             :implementation-acceptance
+             :denominator
+             :aggregate-adoption
+             :domain-execution
+             :platform-product
+             :compiler-runtime-or-broker-execution
+             :release
+             :seed-retirement
+             :integration]}

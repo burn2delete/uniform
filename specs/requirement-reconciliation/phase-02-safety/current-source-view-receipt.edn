@@ -6,13 +6,20 @@
         :tree "9f464ed0f03866bd4978e4213a488f3b1ae48683"}
  :candidate {:commit "24c2b6f390cffdff87d0964cdd8dd533838aa333"
              :tree "402d4c4aa3c85c486da1072ba4ace52a645a046b"}
- :current-source {:commit "c6044c5eac93d358ca2bf8ff1351d83496767eb0"
-                  :tree "d1691576a3f09d21620e9a28a2a25bea37b080b3"}
+ :current-source {:commit "19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b"
+                  :tree "dc79967f4939df6790c3a16b0a71a71e81191f9e"}
+ :integration-base {:commit "f43e77992fe86b6dfb55df3516b27cfcdea7fa40"
+                    :tree "a0e433f9f185b651f6f5ebc54340a085a5cd6721"
+                    :role :latest-current-main-composition-base}
+ :source-checkpoint-qualification :historical-source-evidence-not-integration
+ :original-pr562-ancestry {:commit "2c3eac90b9736873ce7c439cdc9603b1e43249e5"
+                           :present-in-final-candidate true
+                           :tree-imported false}
  :artifacts
- {:source-view {:path "specs/requirement-reconciliation/phase-02-safety/current-source-view.edn"
-                :sha256 "c0b4a5e53649cedcd7fcb5bc498afe35fe4fcf50ae3e42813bd0a2738d6a782c"}
+  {:source-view {:path "specs/requirement-reconciliation/phase-02-safety/current-source-view.edn"
+                :sha256 "bce4de982ee35223ba20362ab38de5b4ae31ee24debc9636a6836d7e4bc0720e"}
   :checker {:path "tools/safety_task_source_view.clj"
-            :sha256 "e3214b5bbf5775ec225653613b8a1249aeb1bf9d6df02ba74e9221e1b507cf16"}}
+            :sha256 "6e5e9981becf27c80f0a34e832137abe6e083d2dec62af6895fb45737199063b"}}
  :conservation {:source-documents 16
                 :source-occurrences 1908
                 :source-dispositions 962
@@ -25,12 +32,28 @@
  :source-transition
  {:historical-candidate-task-bytes :preserved
   :current-main-composition :authenticated
-  :changed-task-sources [:auth :expand :legality]
-  :unchanged-task-sources [:build :domains :runtime]
+  :changed-task-sources [:auth :expand :legality :domains-composition :runtime-successor]
+  :unchanged-task-sources [:build]
+  :current-manifest-task-transition
+  {:path "contracts/requirement-reconciliation.edn"
+   :commit "19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b"
+   :tree "dc79967f4939df6790c3a16b0a71a71e81191f9e"
+   :sha256 "8948438410df7c5b6c2c547e48be16b3ff8b1033ec866fb1bec432e4e3c32007"
+   :domain-current-ref "24e7b5e5cd8bc42fa495997870605b596a380678"
+   :domain-current-tree "52a90b3d537f23b3f572ee65ff03edf827c1e29b"
+   :domain-current-sha256 "5378c2c7fba1bb49318fc6cda890c60c77bdbdc57dfe6f5ea42ea8aa23298943"
+   :runtime-current-ref "42c34ab55af0000dfaaf73d96d7ee09ec22c243e"
+   :runtime-current-tree "e8f1cc090800f9fcd9e81b7a5bcea32a88101526"
+   :runtime-current-sha256 "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c"
+   :runtime-changed-record-count 5
+   :change-class :family-criteria-preserved-plus-current-main-safety-criteria}
   :status-order-and-identity :verified}
  :controls {:positive :pass
             :proposal-hash-tamper :reject
             :current-source-pair-tamper :reject
+            :current-domain-manifest-transition-tamper :reject
+            :runtime-transition-forged-id-tamper :reject
+            :runtime-transition-duplicate-id-tamper :reject
             :task-order-tamper :reject
             :duplicate-task-id-tamper :reject
             :closed-task-tamper :reject

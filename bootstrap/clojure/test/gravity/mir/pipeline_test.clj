@@ -45,7 +45,9 @@
            'module-keys 'function-keys 'node-opcode 'node-facts 'node-operands
            'runtime-check-operation-id 'runtime-check-token-id 'runtime-check-source 'runtime-check-fact-id
            'validate-carrier! 'metadata-free? 'require-strict-structure! 'require!
-           'pass-contract-record 'canonical-block-order 'operation-sequence 'path-prefix?}
+           'pass-contract-record 'canonical-block-order 'operation-sequence 'path-prefix?
+           'block-keys 'operation-keys 'terminator-keys 'allowed-opcodes 'allowed-source-operations
+           'diagnostic-context 'diagnostic-rule-contract 'diagnostic-message 'throw-record!}
          (set (keys (ns-publics 'gravity.mir)))))
   (let [contract (:gravity/namespace-contract (meta #'mir/validate-cfg!))]
     (is (= (set (keys (:public-api contract)))
@@ -64,6 +66,195 @@
       (is (false? (:authenticates-inputs? contract)))
       (is (false? (:issues-verifier-certificates? contract)))
       (is (some #{:general-cfgs} (:unsupported contract))))))
+
+(deftest native-diagnostic-context-preserves-emitted-artifact-provenance
+  (doseq [{:keys [checked] emitted :mir} @products]
+    (let [actual (b/p15-s23-c11-mir-diagnostic-context checked {} emitted)]
+      (is (= actual (mir/diagnostic-context #'b/p15-s23-c11-mir-safe-diagnostic-scalar
+                                           checked {} emitted)))
+      (is (= (:artifact-id checked) (:checked-core-artifact-id actual)))
+      (is (= (:entrypoint checked) (:function-id actual)))
+      (is (= (get-in emitted [:control-flow-graph :entry]) (:block-id actual)))
+      (is (= (:profile checked) (:profile actual)))
+      (is (= (:source-target checked) (:source-target actual)))
+      (is (= (get-in checked [:target-request-metadata :requested-target])
+             (:requested-target actual)))
+      (is (= :wasm (:requested-target (b/p15-s23-c11-mir-diagnostic-context
+                                      checked {:requested-target :wasm} emitted)))))))
+
+(deftest native-diagnostic-context-normalizes-data-without-claiming-authority
+  (let [defaults (mir/diagnostic-context identity :not-map :not-map :not-map)]
+    (is (= {:requested-target :target-neutral :source-target :unknown :profile :hosted
+            :checked-core-artifact-id nil :module-id :not-applicable :function-id :not-applicable
+            :block-id :not-applicable :operation-id :not-applicable :source-operation :not-applicable
+            :syntax-id :not-applicable :origin-id :not-applicable :mir-id :not-applicable}
+           defaults)))
+  (let [core {:target-request-metadata {:requested-target :jvm}}
+        context #(mir/diagnostic-context identity core {:requested-target %} {})]
+    (is (= :jvm (:requested-target (context nil))))
+    (is (= :jvm (:requested-target (context false))))
+    (is (= :target-neutral (:requested-target (context "invalid but present")))))
+  (let [private-value (Object.)
+        context (mir/diagnostic-context #'b/p15-s23-c11-mir-safe-diagnostic-scalar
+                                        {:artifact-id private-value} {} {})]
+    (is (= :redacted (:checked-core-artifact-id context)))))
+
+(deftest native-diagnostic-context-preserves-scalar-port-order-and-exceptions
+  (let [core {:artifact-id :core :source-core-input {:module :module} :entrypoint :function}
+        artifact {:control-flow-graph {:entry :block} :mir-id :mir}
+        events (atom []) original b/p15-s23-c11-mir-diagnostic-context
+        marker (Object.) error (ex-info "scalar owner refusal" {})]
+    (with-redefs [b/p15-s23-c11-mir-safe-diagnostic-scalar
+                  (fn [value] (swap! events conj value) marker)]
+      (is (identical? marker (:mir-id (original core {} artifact)))))
+    (is (= [:block :module :mir :core :function] @events))
+    (reset! events [])
+    (is (identical? error
+                    (try (mir/diagnostic-context
+                          (fn [value] (swap! events conj value) (throw error)) core {} artifact)
+                         nil (catch clojure.lang.ExceptionInfo caught caught))))
+    (is (= [:block] @events))))
+
+(deftest native-diagnostic-context-wrapper-retains-the-live-scalar-var
+  (let [observed (atom nil) marker (Object.)]
+    (with-redefs [mir/diagnostic-context (fn [& args] (reset! observed args) marker)]
+      (is (identical? marker (b/p15-s23-c11-mir-diagnostic-context :core :context :artifact))))
+    (is (= [#'b/p15-s23-c11-mir-safe-diagnostic-scalar :core :context :artifact] (vec @observed)))
+    (is (identical? #'b/p15-s23-c11-mir-safe-diagnostic-scalar (first @observed)))))
+
+(deftest native-diagnostic-policy-preserves-real-refusals-and-wording-independent-ids
+  (doseq [{:keys [source checked] emitted :mir} @products]
+    (let [block-id (first (for [[id block] (get-in emitted [:functions (:entrypoint checked) :blocks])
+                               :when (seq (:instructions block))] id))
+          changed (assoc-in emitted [:functions (:entrypoint checked) :blocks block-id :instructions 0 :opcode]
+                            :llvm/add)
+          record (failure #(b/p15-s23-c11-mir-validate-operations! source checked changed))
+          rule (:rule record)
+          contract (b/p15-s23-c11-mir-diagnostic-rule-contract rule)
+          display-change (with-redefs [b/c11-mir-message (fn [_] "native display changed")]
+                           (failure #(b/p15-s23-c11-mir-validate-operations! source checked changed)))]
+      (is (= "C11-TARGET-LEAK" (:id record)))
+      (is (identical? contract
+                      (mir/diagnostic-rule-contract b/p15-s23-c11-mir-diagnostic-rule-contracts rule)))
+      (is (= (:message record) (mir/diagnostic-message b/c11-mir-diagnostic-ids #'b/c11-mir-message rule)))
+      (is (= record (failure #(mir/throw-record! #'b/p15-s23-c11-mir-diagnostic-message record))))
+      (is (= (:diagnostic-id record) (:diagnostic-id display-change)))
+      (is (= "native display changed" (:message display-change)))
+      (is (= (dissoc record :message) (dissoc display-change :message))))))
+
+(deftest native-diagnostic-rule-lookup-preserves-first-match-and-borrowed-records
+  (let [first-row {:rules #{"native-rule"} :marker :first}
+        second-row {:rules #{"native-rule" "other-rule"} :marker :second}
+        contracts [first-row second-row]]
+    (is (identical? first-row (mir/diagnostic-rule-contract contracts "native-rule")))
+    (is (identical? second-row (mir/diagnostic-rule-contract contracts "other-rule")))
+    (is (nil? (mir/diagnostic-rule-contract contracts "missing")))
+    (with-redefs [b/p15-s23-c11-mir-diagnostic-rule-contracts contracts]
+      (is (identical? first-row (b/p15-s23-c11-mir-diagnostic-rule-contract "native-rule"))))))
+
+(deftest native-diagnostic-message-selection-preserves-owner-calls-and-fallback
+  (let [calls (atom []) error (ex-info "native message failure" {})
+        message (fn [rule] (swap! calls conj rule) "selected native message")]
+    (is (= "selected native message" (mir/diagnostic-message ["native-rule"] message "native-rule")))
+    (is (= ["native-rule"] @calls))
+    (is (= "authenticated checked-core validation failed"
+           (mir/diagnostic-message ["native-rule"] message "foreign-rule")))
+    (is (= ["native-rule"] @calls))
+    (is (identical? error
+                    (try (mir/diagnostic-message ["native-rule"] (fn [_] (throw error)) "native-rule")
+                         nil (catch clojure.lang.ExceptionInfo e e))))
+    (with-redefs [b/c11-mir-diagnostic-ids ["native-rule"]
+                  b/c11-mir-message message]
+      (is (= "selected native message" (b/p15-s23-c11-mir-diagnostic-message "native-rule"))))))
+
+(deftest native-diagnostic-wrappers-retain-data-and-live-message-vars
+  (doseq [[stage wrapper args ports]
+          [[#'mir/diagnostic-rule-contract #'b/p15-s23-c11-mir-diagnostic-rule-contract [:rule]
+            [b/p15-s23-c11-mir-diagnostic-rule-contracts]]
+           [#'mir/diagnostic-message #'b/p15-s23-c11-mir-diagnostic-message [:rule]
+            [b/c11-mir-diagnostic-ids #'b/c11-mir-message]]
+           [#'mir/throw-record! #'b/p15-s23-c11-mir-throw-record! [:record]
+            [#'b/p15-s23-c11-mir-diagnostic-message]]]]
+    (let [observed (atom nil) marker (Object.)]
+      (with-redefs-fn {stage (fn [& supplied] (reset! observed supplied) marker)}
+        #(is (identical? marker (apply wrapper args))))
+      (is (= (concat ports args) @observed))
+      (is (every? true? (map identical? ports (take (count ports) @observed))))))
+  (let [error (ex-info "late native display" {})]
+    (with-redefs [b/p15-s23-c11-mir-diagnostic-message (fn [_] (throw error))]
+      (is (identical? error (try (mir/throw-record! #'b/p15-s23-c11-mir-diagnostic-message {:rule "native-rule"})
+                                nil (catch clojure.lang.ExceptionInfo e e)))))))
+
+(deftest native-operation-vocabularies-match-real-emission-and-reject-corrupted-operations
+  (doseq [{:keys [source checked operations] emitted :mir} @products]
+    (doseq [operation operations]
+      (is (contains? mir/allowed-opcodes (:opcode operation)))
+      (is (contains? mir/allowed-source-operations (:source-operation operation))))
+    (is (map? (b/p15-s23-c11-mir-validate-operations! source checked emitted)))
+    (let [block-id (first (for [[id block] (get-in emitted [:functions (:entrypoint checked) :blocks])
+                               :when (seq (:instructions block))] id))]
+      (doseq [[field id] [[:opcode "C11-TARGET-LEAK"] [:source-operation "C11-MODULE"]]]
+        (let [changed (assoc-in emitted [:functions (:entrypoint checked) :blocks block-id :instructions 0 field]
+                                :llvm/add)
+              rejected (failure #(b/p15-s23-c11-mir-validate-operations! source checked changed))]
+          (is (= id (:id rejected)))
+          (is (= :checked-core-operation-parity (:missing-fact rejected)))))))
+  (is (not (contains? mir/allowed-opcodes :llvm/add)))
+  (is (not (contains? mir/allowed-source-operations :llvm/add))))
+
+(deftest native-operation-vocabulary-aliases-preserve-snapshots-and-call-time-values
+  (doseq [[stage legacy] [[#'mir/allowed-opcodes #'b/p15-s23-c11-mir-allowed-opcodes]
+                          [#'mir/allowed-source-operations #'b/p15-s23-c11-mir-allowed-source-operations]]]
+    (let [original (var-get legacy)]
+      (is (set? original))
+      (is (identical? (var-get stage) original))
+      (with-redefs-fn {stage #{}}
+        #(is (identical? original (var-get legacy))))))
+  (let [observed (atom nil) marker (Object.)]
+    (with-redefs [b/p15-s23-c11-mir-allowed-opcodes #{:changed-opcode}
+                  b/p15-s23-c11-mir-allowed-source-operations #{:changed-source-operation}
+                  mir/validate-operations! (fn [ports & _] (reset! observed ports) marker)]
+      (is (identical? marker (b/p15-s23-c11-mir-validate-operations! :source :core :mir)))
+      (is (= #{:changed-opcode} (:allowed-opcodes @observed)))
+      (is (= #{:changed-source-operation} (:allowed-source-operations @observed))))))
+
+(deftest native-block-operation-and-terminator-key-schemas-match-emission
+  (doseq [{:keys [source checked envelope operation-products] emitted :mir} @products]
+    (let [blocks (get-in emitted [:functions (:entrypoint checked) :blocks])
+          block-id (first (for [[id block] blocks :when (seq (:instructions block))] id))
+          changed (assoc-in emitted [:functions (:entrypoint checked) :blocks block-id :extra] true)
+          rejected (failure #(b/p15-s23-c11-mir-validate-operations! source checked changed))]
+      (doseq [block (vals blocks)]
+        (is (= mir/block-keys (set (keys block))))
+        (is (= mir/terminator-keys (set (keys (:terminator block)))))
+        (doseq [operation (:instructions block)]
+          (is (= mir/operation-keys (set (keys operation))))))
+      (is (map? (b/p15-s23-c11-mir-validate-operations! source checked emitted)))
+      (is (map? (b/p15-s23-c11-mir-validate-cfg! source checked emitted envelope operation-products)))
+      (is (= "C11-BLOCK" (:id rejected)))
+      (is (= :well-formed-mir-block (:missing-fact rejected))))))
+
+(deftest native-key-schema-aliases-preserve-legacy-snapshot-and-call-time-behavior
+  (doseq [[stage legacy] [[#'mir/block-keys #'b/p15-s23-c11-mir-block-keys]
+                          [#'mir/operation-keys #'b/p15-s23-c11-mir-operation-keys]
+                          [#'mir/terminator-keys #'b/p15-s23-c11-mir-terminator-keys]]]
+    (let [original (var-get legacy)]
+      (is (set? original))
+      (is (identical? (var-get stage) original))
+      (with-redefs-fn {stage #{}}
+        #(is (identical? original (var-get legacy))))))
+  (let [observed (atom nil) marker (Object.)]
+    (with-redefs [b/p15-s23-c11-mir-block-keys #{:changed-block}
+                  b/p15-s23-c11-mir-operation-keys #{:changed-operation}
+                  mir/validate-operations! (fn [ports & _] (reset! observed ports) marker)]
+      (is (identical? marker (b/p15-s23-c11-mir-validate-operations! :source :core :mir)))
+      (is (= #{:changed-block} (:block-keys @observed)))
+      (is (= #{:changed-operation} (:operation-keys @observed)))))
+  (let [observed (atom nil) marker (Object.)]
+    (with-redefs [b/p15-s23-c11-mir-terminator-keys #{:changed-terminator}
+                  mir/validate-terminator! (fn [& args] (reset! observed args) marker)]
+      (is (identical? marker (b/p15-s23-c11-mir-validate-terminator! :source :core :block :expected)))
+      (is (= #{:changed-terminator} (second @observed))))))
 
 (deftest native-pass-and-order-records-match-real-emitted-mir
   (doseq [{:keys [source checked] emitted :mir} @products]

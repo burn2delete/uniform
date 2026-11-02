@@ -6,7 +6,7 @@
 (require '[sh-inventory] '[acceptance-dependencies])
 (def baseline "254a5b50ea5e2825c424248c9216802cc866c0fd")
 (def applying-source-pins
-  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/component-roadmaps/build.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "docs/component-roadmaps/compiler-api.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "docs/component-roadmaps/reader.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/self-hosting-slice-ownership.edn" "c8fd8e437ef921041b181e2f09ee1a37d716d357", "specs/build-workflow/tasks.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "specs/compiler-api-workflow/tasks.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "specs/reader-workflow/tasks.md" "2e0292c61603aad200df397e397e94e3c7d24818"})
+  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/component-roadmaps/build.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "docs/component-roadmaps/compiler-api.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "docs/component-roadmaps/reader.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/self-hosting-slice-ownership.edn" "c8fd8e437ef921041b181e2f09ee1a37d716d357", "specs/build-workflow/tasks.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "specs/compiler-api-workflow/tasks.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "specs/reader-workflow/tasks.md" "2e0292c61603aad200df397e397e94e3c7d24818", "specs/runtime-workflow/tasks.md" "42c34ab55af0000dfaaf73d96d7ee09ec22c243e"})
 (def pinned-evidence-hashes
   {"docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
  "6bf8d0fce1744526f500857eedfd03f11138ee4b0941c49ab787e5dacb5ba5d6",
@@ -236,16 +236,6 @@
  "45c126ec6370358245c666a2dda960a4f3d9666433f140552ade73dd52c486b5"}
 )
 (defn source-pin [path] (get applying-source-pins path baseline))
-(declare git-source)
-(defn pinned-source-text [path]
-  ;; The SH projection is a pinned historical view. A current task-ledger
-  ;; transition is authenticated separately by acceptance-dependencies; it
-  ;; must not silently rewrite historical crosswalk rows.
-  ;; The acceptance-dependencies document is a current explanatory index,
-  ;; already carried at the current main revision by the existing projection.
-  (if (= path "docs/acceptance-dependencies.md")
-    (slurp path)
-    (git-source (source-pin path) path)))
 (def original-baseline "15a5499e97798621d270c36dd2546ce98ddd62a9")
 (def output-path "specs/sh-family-crosswalk/crosswalk.edn")
 (def rollup-path "specs/sh-family-crosswalk/rollup.md")
@@ -454,7 +444,7 @@
                      (recur (conj rows {:groups (mapv #(.group m %) (range 1 (inc (.groupCount m))))
                                         :source (sh-inventory/source-span path text (.start m) (.end m))})) rows))))
 (defn task-records [component]
-  (let [path (str "specs/" component "-workflow/tasks.md") text (pinned-source-text path)
+  (let [path (str "specs/" component "-workflow/tasks.md") text (slurp path)
         marker (str "<!-- " component "-implementation-tasks:")
         start (+ (.indexOf text (str marker "start -->")) (count (str marker "start -->")))
         end (.indexOf text (str marker "end -->"))
@@ -714,7 +704,9 @@
 
 (def mapping-review
   (assoc resolution-main-predecessor-review
-         :input-fingerprint "68800351e24827ea244f6d718ee24f28c36e0606e1b1c6e2533d5c967b4f7530"
+         :historical-predecessor-input-fingerprint "f16680ce6e29658f827e6a50a5bd13fd3c90241aeb01614e4465422c40533f8e"
+         :predecessor-input-fingerprint "9a4a8c8219cfb90965396426e9544caa91c3307dcf1c67b0663d001eb2a7993a"
+         :input-fingerprint "4f4c7275e14284a2f0ce0528272b3e35e76fb54f9d0c3aeb82e3ba8da6b17bcd"
          :source-version-bridge "specs/sh-family-crosswalk/resolution-runtime-composition-source-version.edn"
          :stdlib-task-source-transition
          {:status :pending-source-version-review
@@ -857,7 +849,7 @@
         :qualification "Implementation, integration and authoritative completion remain separate. Actual owning execution, rejection/preservation/composition, exact provenance/support/TCB and independently accepted stable revision are required only for the applicable claim. SH00-SH02 retain accepted baseline/process scope; no unconditional replay of unchanged evidence."})
      :component-owner-evidence
      (into (sorted-map)
-       (for [c components :let [path (str "docs/component-roadmaps/" c ".md") text (pinned-source-text path)
+       (for [c components :let [path (str "docs/component-roadmaps/" c ".md") text (slurp path)
                                 end (or (str/index-of text "\n## ") (count text))]]
          [c {:source (sh-inventory/source-span path text 0 end)
              :assignment :existing-reservations-preserved-not-inferred
@@ -865,7 +857,7 @@
      :global-requirement-owner "01a179ad-2198-7392-966a-1e3c31209027"
      :global-requirement-handoff {:sha256 "25be0fe3d53bf133b72f405d50d039ba3ab9fb186499036587ab72a860174954"
                                 :authority :join-proposals-only :accepted-denominator false}
-     :source-digests (into (sorted-map) (map (fn [p] [p (sh-inventory/sha256 (pinned-source-text p))]) sources))
+     :source-digests (into (sorted-map) (map (fn [p] [p (sh-inventory/sha256 (slurp p))]) sources))
      :stable-task-routing-keys stable-task-routing-keys
      :retained-native-history {:path "specs/sh-family-crosswalk/retained-native-evidence.edn"
                               :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/retained-native-evidence.edn"))

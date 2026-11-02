@@ -16,14 +16,15 @@
     :task-interface-qualification :obligation})
 
 ;; The #557 source view deliberately retains its frozen current-manifest
-;; digest. Main later added one exact versioned Platform generated-view bridge,
-;; PR560 added five authenticated task-source bridge changes, and PR564 adds
-;; one Stdlib task-source bridge to that same manifest. Accept this named
-;; serial transition only when every immutable Git snapshot, complete bridge
-;; body, explicit task-bridge delta and source population agrees; a live hash
-;; refresh alone is never sufficient.
+;; digest. Main later added one exact versioned Platform generated-view bridge
+;; and PR560 adds five authenticated task-source bridge changes. PR562 then
+;; composes the Domain source with its preserved Workflow/UI criteria on a
+;; named successor checkpoint. Accept this named transition only when both immutable Git
+;; snapshots, the complete bridge body, the explicit task-bridge delta and
+;; every source population agree; a live hash refresh alone is never
+;; sufficient.
 (def current-manifest-source-transition
-  {:kind :tooling-current-manifest-platform-bridge-pr560-and-pr564-task-bridges-v2
+  {:kind :tooling-current-manifest-platform-bridge-and-pr560-task-bridges-v1
    :path manifest-path
    :source-view-baseline-sha256
    "aa51bfad176edcf7ed75109a68ea1a0bcbcb3eeeedd6311db256bf331ad01ef0"
@@ -33,15 +34,10 @@
     :blob "2dc56539cf67ad1b0170b8fdffa251f7d8535885"
     :sha256 "aa51bfad176edcf7ed75109a68ea1a0bcbcb3eeeedd6311db256bf331ad01ef0"}
    :applying
-   {:commit "802685cdd37ca9bae695c965cd3c4b3a8bb0060a"
-    :tree "a2362dd0d7d8ae2d1b0d6ace2f9df5eb3388c5f6"
-    :blob "b7d73e13401c7fad0d3acaeedcd4bf7dfe78d5fb"
-    :sha256 "699f091469c1bbd8158a2834048bb4b0053717820b00dc968e3f52f0c56012c4"}
-   :prior-application
-   {:commit "f4bb6ceb7e7d68fd9590938b1327edf7ace64fd4"
-    :tree "605a924d4f24a775301c5d545e75fb4c1a51210f"
-    :blob "a37f9c95b0e4534c89d1cf413b2ddbc9fadfe38c"
-    :sha256 "8a41f5aa638ec717b1321a02974e63c6afc8103f498ee5d7bfc5738ebb3ad21e"}
+   {:commit "c7bd27a6543add21a4b715ba9ed13deb67e8816e"
+    :tree "e783d6ccb3251e4af6c00edc47cb23de918b83fd"
+    :blob "c35f30b933d027a9fd7a2b2066bb1756fe4b005c"
+    :sha256 "88ae5e2254a3553321ab49c493cfa78339207d799fa4976068e2df871a4a281e"}
    :task-source-bridge-extension
    {:added-paths ["specs/runtime-workflow/tasks.md"
                   "specs/build-workflow/tasks.md"
@@ -50,14 +46,71 @@
                     "specs/legality-workflow/tasks.md"]
     :current-ref "8e6608856edcde2b57c33951839dfa9b79f2c503"
     :current-tree "23974efdf7c3fa19160a344f26084ebe051ef1a5"
-    :change-class :acceptance-boundary-extension}
-   :stdlib-task-bridge-extension
-   {:added-paths ["specs/stdlib-workflow/tasks.md"]
-    :updated-paths []
-    :current-ref "80d8a655cea00218799446986a976ca64043a1f8"
-    :current-tree "8c7e533bed9536a760254754e26dbb75db0b0f55"
-    :change-class :acceptance-boundary-extension}
-   :interpretation :platform-generated-view-v2-plus-pr560-and-pr564-task-source-bridge-extension})
+    :change-class :acceptance-boundary-extension
+    :successor-task-source-bridges
+    {"specs/domains-workflow/tasks.md"
+     {:current-ref "24e7b5e5cd8bc42fa495997870605b596a380678"
+      :current-tree "52a90b3d537f23b3f572ee65ff03edf827c1e29b"
+      :current-sha256 "5378c2c7fba1bb49318fc6cda890c60c77bdbdc57dfe6f5ea42ea8aa23298943"
+      :change-class :family-criteria-preserved-plus-current-main-safety-criteria}}}
+   :interpretation :platform-generated-view-v2-plus-pr560-task-source-bridge-extension-plus-pr562-domain-composition})
+
+(def pr561-current-manifest-source-transition
+  {:kind :tooling-current-manifest-pr561-runtime-successor-on-pr562-domain-v1
+   :path manifest-path
+   :source-view-baseline-sha256
+   "aa51bfad176edcf7ed75109a68ea1a0bcbcb3eeeedd6311db256bf331ad01ef0"
+   :baseline
+   {:commit "c7bd27a6543add21a4b715ba9ed13deb67e8816e"
+    :tree "e783d6ccb3251e4af6c00edc47cb23de918b83fd"
+    :blob "c35f30b933d027a9fd7a2b2066bb1756fe4b005c"
+    :sha256 "88ae5e2254a3553321ab49c493cfa78339207d799fa4976068e2df871a4a281e"}
+   :applying
+   {:commit "19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b"
+    :tree "dc79967f4939df6790c3a16b0a71a71e81191f9e"
+    :blob "4dd11c7af6868616b8bdd0c50c96a025c9e9e270"
+    :sha256 "8948438410df7c5b6c2c547e48be16b3ff8b1033ec866fb1bec432e4e3c32007"}
+   :runtime-task-source-successor
+   {:path "specs/runtime-workflow/tasks.md"
+    :from {:current-ref "8e6608856edcde2b57c33951839dfa9b79f2c503"
+           :current-tree "23974efdf7c3fa19160a344f26084ebe051ef1a5"
+           :current-sha256 "edbafd3d58f645d74e208eb428b7feb89f6dfd957899ce8c9136287026cbb9c4"}
+    :to {:current-ref "42c34ab55af0000dfaaf73d96d7ee09ec22c243e"
+         :current-tree "e8f1cc090800f9fcd9e81b7a5bcea32a88101526"
+         :current-sha256 "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c"}
+    :changed-record-count 5}
+   :interpretation :pr562-domain-composition-to-pr561-runtime-successor})
+
+(def expected-current-stdlib-task-bridge
+  {:path "specs/stdlib-workflow/tasks.md"
+   :marker "stdlib-implementation-tasks"
+   :historical-ref "254a5b50ea5e2825c424248c9216802cc866c0fd"
+   :historical-sha256 "69ac9a7163838c4cb297c94174d0b3061b0e7686f2378c45aa30e6320b6f6d94"
+   :current-ref "80d8a655cea00218799446986a976ca64043a1f8"
+   :current-tree "8c7e533bed9536a760254754e26dbb75db0b0f55"
+   :current-sha256 "9ac5d948a4df974051fe15adce874f6bf39074982991d8c6c80201a971142d57"
+   :change-class :acceptance-boundary-extension
+   :qualification "The current Stdlib task ledger retains the five historical task identities and adds source-specific closing criteria and evidence boundaries. This authenticated source transition preserves historical routing while explicitly conferring no implementation, library-release or requirement acceptance."})
+
+(def pr564-current-manifest-source-transition
+  {:kind :tooling-current-manifest-pr564-stdlib-successor-on-pr561-v1
+   :path manifest-path
+   :source-view-baseline-sha256
+   "aa51bfad176edcf7ed75109a68ea1a0bcbcb3eeeedd6311db256bf331ad01ef0"
+   :baseline
+   {:commit "19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b"
+    :tree "dc79967f4939df6790c3a16b0a71a71e81191f9e"
+    :blob "4dd11c7af6868616b8bdd0c50c96a025c9e9e270"
+    :sha256 "8948438410df7c5b6c2c547e48be16b3ff8b1033ec866fb1bec432e4e3c32007"}
+   ;; This identity is temporarily the PR562 applying snapshot. It is bound
+   ;; to the actual composition merge immediately after that merge is created.
+   :applying
+   {:commit "2bb86bb44edc4214cfb219b33e757689d282a1a5"
+    :tree "fe8c4ffeba1cc32193973ee2201812cc2bcd58fa"
+    :blob "4dd11c7af6868616b8bdd0c50c96a025c9e9e270"
+    :sha256 "8948438410df7c5b6c2c547e48be16b3ff8b1033ec866fb1bec432e4e3c32007"}
+   :stdlib-task-source-successor expected-current-stdlib-task-bridge
+   :interpretation :pr561-runtime-successor-to-pr564-stdlib-source-successor})
 
 (def historical-platform-bridge-kind
   :platform-task-authority-current-layout)
@@ -145,21 +198,9 @@
           :kind requirement-sources/platform-generated-view-kind)
    current-platform-bridge-extras))
 
-(def expected-current-stdlib-task-bridge
-  {:path "specs/stdlib-workflow/tasks.md"
-   :marker "stdlib-implementation-tasks"
-   :historical-ref "254a5b50ea5e2825c424248c9216802cc866c0fd"
-   :historical-sha256 "69ac9a7163838c4cb297c94174d0b3061b0e7686f2378c45aa30e6320b6f6d94"
-   :current-ref "80d8a655cea00218799446986a976ca64043a1f8"
-   :current-tree "8c7e533bed9536a760254754e26dbb75db0b0f55"
-   :current-sha256 "9ac5d948a4df974051fe15adce874f6bf39074982991d8c6c80201a971142d57"
-   :change-class :acceptance-boundary-extension
-   :qualification "The current Stdlib task ledger retains the five historical task identities and adds source-specific closing criteria and evidence boundaries. This authenticated source transition preserves historical routing while explicitly conferring no implementation, library-release or requirement acceptance."})
-
-(defn validate-current-manifest-transition! [source-view]
+(defn validate-known-current-manifest-transition! [source-view]
   (let [transition current-manifest-source-transition
         baseline (:baseline transition)
-        prior (:prior-application transition)
         applying (:applying transition)
         current (get-in source-view [:current-source :manifest])
         _ (require! (= (:path transition) (:path current))
@@ -167,57 +208,40 @@
         _ (require! (= (:source-view-baseline-sha256 transition) (:sha256 current))
                     "Frozen tooling source-view manifest identity changed")
         _ (verify-commit-tree! baseline)
-        _ (verify-commit-tree! prior)
         _ (verify-commit-tree! applying)
         baseline-text (git-text (:commit baseline) (:path transition))
-        prior-text (git-text (:commit prior) (:path transition))
         applying-text (git-text (:commit applying) (:path transition))
-        live-text (slurp (:path transition))
         _ (require! (= (:sha256 baseline) (sha256 baseline-text))
                     "Tooling transition baseline bytes drifted")
         _ (require! (= (:blob baseline) (git-blob (:commit baseline) (:path transition)))
                     "Tooling transition baseline blob drifted")
-        _ (require! (= (:sha256 prior) (sha256 prior-text))
-                    "Tooling transition prior applying bytes drifted")
-        _ (require! (= (:blob prior) (git-blob (:commit prior) (:path transition)))
-                    "Tooling transition prior applying blob drifted")
         _ (require! (= (:sha256 applying) (sha256 applying-text))
                     "Tooling transition applying bytes drifted")
         _ (require! (= (:blob applying) (git-blob (:commit applying) (:path transition)))
                     "Tooling transition applying blob drifted")
-        _ (require! (= applying-text live-text)
-                    "Current manifest is not the authenticated applying source")
         baseline-manifest (edn/read-string baseline-text)
-        prior-manifest (edn/read-string prior-text)
         applying-manifest (edn/read-string applying-text)
         baseline-platform (platform-bridge baseline-manifest)
-        prior-platform (platform-bridge prior-manifest)
         applying-platform (platform-bridge applying-manifest)
         expected-platform (expected-current-platform-bridge)
         extension (:task-source-bridge-extension transition)
-        stdlib-extension (:stdlib-task-bridge-extension transition)
         baseline-task-bridges (task-source-bridges baseline-manifest)
-        prior-task-bridges (task-source-bridges prior-manifest)
         applying-task-bridges (task-source-bridges applying-manifest)
         baseline-task-paths (set (keys baseline-task-bridges))
-        prior-task-paths (set (keys prior-task-bridges))
         applying-task-paths (set (keys applying-task-bridges))
         added-task-paths (set (:added-paths extension))
-        updated-task-paths (set (:updated-paths extension))]
+        updated-task-paths (set (:updated-paths extension))
+        successor-task-source-bridges (:successor-task-source-bridges extension)]
     (require! (= (manifest-population baseline-manifest)
-                 (manifest-population prior-manifest))
-              "PR560 manifest transition changed a required source population")
-    (require! (= (manifest-population prior-manifest)
                  (manifest-population applying-manifest))
-              "PR564 manifest transition changed a required source population")
+              "Tooling manifest transition changed a required source population")
     (require! (= historical-platform-bridge-kind (:kind baseline-platform))
               "Tooling manifest transition baseline is not the known Platform bridge")
     (require! (= (:document-id baseline-platform) (:document-id applying-platform))
               "Tooling Platform bridge document identity changed")
     (require! (= (:path baseline-platform) (:path applying-platform))
               "Tooling Platform bridge path changed")
-    (require! (and (= expected-platform prior-platform)
-                   (= prior-platform applying-platform))
+    (require! (= expected-platform applying-platform)
               "Tooling Platform bridge is not the authenticated v2 extension")
     (require! (and (= :acceptance-boundary-extension (:change-class extension))
                    (= "8e6608856edcde2b57c33951839dfa9b79f2c503"
@@ -226,53 +250,178 @@
                       (:current-tree extension)))
               "PR560 task-source bridge extension identity drifted")
     (require! (= added-task-paths
-                 (set/difference prior-task-paths baseline-task-paths))
+                 (set/difference applying-task-paths baseline-task-paths))
               "PR560 task-source bridge additions drifted")
-    (require! (empty? (set/difference baseline-task-paths prior-task-paths))
-              "PR560 task-source bridge was removed during the authenticated transition")
+    (require! (empty? (set/difference baseline-task-paths applying-task-paths))
+              "Task-source bridge was removed during the authenticated transition")
     (require! (set/subset? updated-task-paths baseline-task-paths)
               "PR560 task-source bridge update is not based on an existing bridge")
     (doseq [path (set/difference baseline-task-paths updated-task-paths)]
       (require! (= (get baseline-task-bridges path)
-                   (get prior-task-bridges path))
+                   (get applying-task-bridges path))
                 (str "Unauthenticated task-source bridge change: " path)))
     (doseq [path updated-task-paths]
-      (require! (and (contains? prior-task-bridges path)
-                     (contains? applying-task-bridges path)
+      (require! (and (contains? applying-task-bridges path)
                      (not= (get baseline-task-bridges path)
-                           (get prior-task-bridges path))
-                     (= (get prior-task-bridges path)
-                        (get applying-task-bridges path)))
+                           (get applying-task-bridges path)))
                 (str "Expected PR560 task-source bridge update is absent: " path)))
-    (require! (and (= :acceptance-boundary-extension (:change-class stdlib-extension))
-                   (= ["specs/stdlib-workflow/tasks.md"]
-                      (:added-paths stdlib-extension))
-                   (empty? (:updated-paths stdlib-extension))
-                   (= "80d8a655cea00218799446986a976ca64043a1f8"
-                      (:current-ref stdlib-extension))
-                   (= "8c7e533bed9536a760254754e26dbb75db0b0f55"
-                      (:current-tree stdlib-extension)))
-              "PR564 Stdlib task-source bridge extension identity drifted")
-    (require! (= #{"specs/stdlib-workflow/tasks.md"}
-                 (set/difference applying-task-paths prior-task-paths))
-              "PR564 task-source bridge additions drifted")
-    (require! (empty? (set/difference prior-task-paths applying-task-paths))
-              "PR564 task-source bridge was removed during the authenticated transition")
-    (doseq [path (set/difference prior-task-paths #{"specs/stdlib-workflow/tasks.md"})]
-      (require! (= (get prior-task-bridges path)
-                   (get applying-task-bridges path))
-                (str "Unauthenticated PR564 task-source bridge change: " path)))
-    (require! (= expected-current-stdlib-task-bridge
-                 (get applying-task-bridges "specs/stdlib-workflow/tasks.md"))
-              "PR564 Stdlib task-source bridge is not the authenticated extension")
+    (doseq [[path successor] successor-task-source-bridges]
+      (let [bridge (get applying-task-bridges path)]
+        (require! bridge
+                  (str "Authenticated successor task-source bridge is absent: " path))
+        (require! (= successor
+                     (select-keys bridge [:current-ref :current-tree
+                                          :current-sha256 :change-class]))
+                  (str "Authenticated successor task-source bridge drifted: " path))
+        (require! (= (:current-sha256 successor)
+                     (sha256 (git-text (:current-ref successor) path)))
+                  (str "Authenticated successor task source bytes drifted: " path))))
     {:kind (:kind transition)
      :path (:path transition)
      :baseline baseline
-     :prior-application prior
      :applying applying
      :snapshot-provenance :git-commit-tree-blob-and-bytes-verified
      :population :conserved
      :interpretation (:interpretation transition)}))
+
+(defn validate-pr561-current-manifest-transition! [source-view]
+  (let [transition pr561-current-manifest-source-transition
+        baseline (:baseline transition)
+        applying (:applying transition)
+        current (get-in source-view [:current-source :manifest])
+        path (:path transition)
+        baseline-text (git-text (:commit baseline) path)
+        applying-text (git-text (:commit applying) path)
+        baseline-manifest (edn/read-string baseline-text)
+        applying-manifest (edn/read-string applying-text)
+        baseline-task-bridges (task-source-bridges baseline-manifest)
+        applying-task-bridges (task-source-bridges applying-manifest)
+        baseline-runtime (get baseline-task-bridges (:path (:runtime-task-source-successor transition)))
+        applying-runtime (get applying-task-bridges (:path (:runtime-task-source-successor transition)))
+        runtime-transition (:runtime-task-source-successor transition)]
+    (require! (= path (:path current))
+              "Tooling successor manifest path changed")
+    (require! (= (:source-view-baseline-sha256 transition) (:sha256 current))
+              "Frozen tooling source-view manifest identity changed")
+    (verify-commit-tree! baseline)
+    (verify-commit-tree! applying)
+    (require! (= (:sha256 baseline) (sha256 baseline-text))
+              "Tooling successor baseline bytes drifted")
+    (require! (= (:blob baseline) (git-blob (:commit baseline) path))
+              "Tooling successor baseline blob drifted")
+    (require! (= (:sha256 applying) (sha256 applying-text))
+              "Tooling successor applying bytes drifted")
+    (require! (= (:blob applying) (git-blob (:commit applying) path))
+              "Tooling successor applying blob drifted")
+    (require! (= (manifest-population baseline-manifest)
+                 (manifest-population applying-manifest))
+              "Tooling successor changed a required source population")
+    (require! (= (set (keys baseline-task-bridges))
+                 (set (keys applying-task-bridges)))
+              "Tooling successor changed task-source bridge population")
+    (require! baseline-runtime
+              "Known PR560 Runtime bridge is missing from successor baseline")
+    (require! applying-runtime
+              "PR561 Runtime bridge is missing from successor manifest")
+    (require! (= (:from runtime-transition)
+                 (select-keys baseline-runtime [:current-ref :current-tree :current-sha256]))
+              "PR560 Runtime bridge predecessor identity drifted")
+    (require! (= (:to runtime-transition)
+                 (select-keys applying-runtime [:current-ref :current-tree :current-sha256]))
+              "PR561 Runtime bridge successor identity drifted")
+    (require! (= (:historical-ref baseline-runtime) (:historical-ref applying-runtime))
+              "Runtime historical source reference changed during successor")
+    (require! (= (:historical-sha256 baseline-runtime) (:historical-sha256 applying-runtime))
+              "Runtime historical source hash changed during successor")
+    (require! (= :acceptance-boundary-extension (:change-class applying-runtime))
+              "PR561 Runtime bridge change class drifted")
+    (require! (= (:changed-record-count runtime-transition)
+                 (count (:changed-records applying-runtime)))
+              "PR561 Runtime bridge criterion population drifted")
+    (doseq [path (set/difference (set (keys baseline-task-bridges))
+                                 #{(:path runtime-transition)})]
+      (require! (= (get baseline-task-bridges path)
+                   (get applying-task-bridges path))
+                (str "Unauthenticated task-source bridge change in PR561 successor: " path)))
+    {:kind (:kind transition)
+     :path path
+     :baseline baseline
+     :applying applying
+     :snapshot-provenance :git-commit-tree-blob-and-bytes-verified
+     :population :conserved
+     :runtime-task-source :authenticated-successor
+     :interpretation (:interpretation transition)}))
+
+(defn validate-pr564-current-manifest-transition! [source-view]
+  (let [transition pr564-current-manifest-source-transition
+        baseline (:baseline transition)
+        applying (:applying transition)
+        current (get-in source-view [:current-source :manifest])
+        path (:path transition)
+        baseline-text (git-text (:commit baseline) path)
+        applying-text (git-text (:commit applying) path)
+        live-text (slurp path)
+        baseline-manifest (edn/read-string baseline-text)
+        applying-manifest (edn/read-string applying-text)
+        baseline-task-bridges (task-source-bridges baseline-manifest)
+        applying-task-bridges (task-source-bridges applying-manifest)
+        stdlib-path (:path (:stdlib-task-source-successor transition))
+        expected-stdlib (:stdlib-task-source-successor transition)]
+    (require! (= path (:path current))
+              "Tooling PR564 manifest path changed")
+    (require! (= (:source-view-baseline-sha256 transition) (:sha256 current))
+              "Frozen tooling source-view manifest identity changed")
+    (verify-commit-tree! baseline)
+    (verify-commit-tree! applying)
+    (require! (= (:sha256 baseline) (sha256 baseline-text))
+              "Tooling PR564 baseline bytes drifted")
+    (require! (= (:blob baseline) (git-blob (:commit baseline) path))
+              "Tooling PR564 baseline blob drifted")
+    (require! (= (:sha256 applying) (sha256 applying-text))
+              "Tooling PR564 applying bytes drifted")
+    (require! (= (:blob applying) (git-blob (:commit applying) path))
+              "Tooling PR564 applying blob drifted")
+    (require! (= applying-text live-text)
+              "Current manifest is not the authenticated PR564 applying source")
+    (require! (= (manifest-population baseline-manifest)
+                 (manifest-population applying-manifest))
+              "Tooling PR564 successor changed a required source population")
+    (require! (= #{stdlib-path}
+                 (set/difference (set (keys applying-task-bridges))
+                                (set (keys baseline-task-bridges))))
+              "PR564 task-source bridge additions drifted")
+    (require! (empty? (set/difference (set (keys baseline-task-bridges))
+                                      (set (keys applying-task-bridges))))
+              "PR564 task-source bridge was removed during the authenticated transition")
+    (doseq [task-path (set/difference (set (keys baseline-task-bridges))
+                                      #{stdlib-path})]
+      (require! (= (get baseline-task-bridges task-path)
+                   (get applying-task-bridges task-path))
+                (str "Unauthenticated PR564 task-source bridge change: " task-path)))
+    (require! (= expected-stdlib (get applying-task-bridges stdlib-path))
+              "PR564 Stdlib task-source bridge is not the authenticated successor")
+    (verify-commit-tree! {:commit (:current-ref expected-stdlib)
+                          :tree (:current-tree expected-stdlib)})
+    (require! (= (:current-sha256 expected-stdlib)
+                 (sha256 (git-text (:current-ref expected-stdlib) stdlib-path)))
+              "PR564 Stdlib task source bytes drifted")
+    (require! (= "7a3643c34a3798cffcf4e7f4f539118d9ceec35f"
+                 (git-blob (:current-ref expected-stdlib) stdlib-path))
+              "PR564 Stdlib task source blob drifted")
+    {:kind (:kind transition)
+     :path path
+     :baseline baseline
+     :applying applying
+     :snapshot-provenance :git-commit-tree-blob-and-bytes-verified
+     :population :conserved
+     :stdlib-task-source :authenticated-successor
+     :interpretation (:interpretation transition)}))
+
+(defn validate-current-manifest-transition! [source-view]
+  (let [known (validate-known-current-manifest-transition! source-view)
+        successor (validate-pr561-current-manifest-transition! source-view)
+        stdlib-successor (validate-pr564-current-manifest-transition! source-view)]
+    (assoc known :successor successor :stdlib-successor stdlib-successor)))
 
 (declare view)
 
