@@ -100,3 +100,28 @@ Capture, whole-file reconstruction and identity checks are retained at
 /tmp/uniform-jvm-output-{capture,extract,verify}.clj. Independent acceptance,
 candidate-owned CI/artifacts and immediate exact-current-main clean preflight
 remain required. This source record grants no integration or release authority.
+
+## Current integration composition
+
+Main PR 776 removes macro expansion quotas and makes current-source execution
+explicit. Current base is e766928c0ef6bb5c5b70b7e8feeae11e7b9814be, tree
+54144b7b739ea81f8b029b3aec22f360720b1840. Source composition
+67c4d295d6545cd8a4cd8e854b9cd45ad5eeaa0e has tree
+0947abcd90852f0b921ad7e4fcba26f4548fa9c3. No JVM production or pipeline
+test file changes in this incoming main delta.
+
+A fresh before process executes exact clean main in this same Runtime checkout,
+without added baseline fixtures, and exits before restoring this extraction.
+Both complete after records and original serialization agree again. Source,
+plan and all five byte hashes recompute, with the same product digests recorded
+above. Actual paths, modes, versions and source spelling remain unchanged.
+Earlier records remain at /tmp/uniform-jvm-output-evidence-basea958-history.
+
+Fresh focused JVM tests pass 11/207; language/ownership 47/1154. Three-path
+contextual lint against this base has zero warnings and blockers; receipts
+are archived at /tmp/uniform-jvm-output-lint-maine766. Both complete production
+files reconstruct from this immutable base. Contract validators, renewed
+independent acceptance, candidate-owned CI/artifacts and immediate exact clean
+current-main preflight remain gates. Earlier 3e2faf06/basea958 acceptance and
+CI are historical and confer no current integration credit. All unsupported
+and restricted boundaries above remain in force.
