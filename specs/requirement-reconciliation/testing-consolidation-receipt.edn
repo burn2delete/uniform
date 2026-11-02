@@ -1,0 +1,30 @@
+{:kind :bounded-reconciliation-validation-receipt
+ :prior-checkpoint "22325cf4437599d97b79fccdd72172679e39e86f"
+ :integrated-main "4325a9f46292472a7f984c5adfef81209874bb5c"
+ :manifest-sha256 "f4c171820dfdadaf7e7b5a3f04a701a124adfffd6cbaf6b598c1b82098aae690"
+ :source-review-artifact-sha256 "5cf2f5240a2b41d3b81f4d4bd89d395d3d2dfa19d0c3e63ccdc9c660ca36e26a"
+ :source-conservation {:source-views 245 :occurrences 19962 :facets 29177 :source-byte-changes 0 :scope-changes 0}
+ :testing-consolidation {:review-records 104 :aliases-applied 25
+                         :archived-exact-semantic-records 25
+                         :prior-candidates 1256 :current-candidates 1231
+                         :all-task-and-historical-pointers-preserved true
+                         :route-and-inverse-membership-check :pass
+                         :receipt-sha256 "28903c03b7325404db398fe23bdffc91d05b18be63e5023e2c39b18a728c1146"
+                         :applied-independent-review :pending}
+ :predicate-corrections {:count 4
+                         :ids ["testing/test2/cache-invalidation"
+                               "testing/test2/generated-reentry"
+                               "testing/test5/unsafe-audit"
+                               "testing/test9/property-oracle"]
+                         :complete-predecessor-records-and-digests :retained
+                         :source-task-and-evidence-boundaries :unchanged
+                         :implementation-acceptance-changes 0
+                         :applied-independent-review :pending}
+ :validation [{:check :focused-tests :exit 0 :tests 25 :assertions 186 :failures 0 :errors 0
+               :stdout-sha256 "0aff5def1ae057d30cbd5980a467b9ae9ad6ae08c8638f312742695d7a634545"}
+              {:check :complete-source-and-evidence-audit :exit 0
+               :stdout-sha256 "2d26a78aaea0799d8f81ff73b0b74c7d9688b9f67bde469420e3e353a33eb81a"}]
+ :whole-project-denominator nil
+ :whole-project-rate nil
+ :limits [:not-independent-applied-model-approval :not-implementation-acceptance
+          :not-integration-approval :no-compiler-proof-replay :no-dashboard-write]}
