@@ -73,7 +73,7 @@ or downstream C13/C14/B1 product.
 The PR453 handoff now supplies genuine current-v2 producer evidence on the
 composed main: `v2-c11-public-construction-consumes-real-c6-artifact` ran as
 1 test with 9 assertions and zero failures or errors
-(`/tmp/uniform-pr552-v2-c11-public-after-main.log`). The live C6/C11 owner
+(`/tmp/uniform-pr552-v2-c11-public-after-832.log`). The live C6/C11 owner
 route therefore no longer has the earlier fixed-C6-pin blocker. The earlier
 5ecc final-main run that stopped before C11 construction is retained only as
 superseded-base history; this consumer does not renew that historical pin.
@@ -92,7 +92,8 @@ producer positive above ran separately with 1 test and 9 assertions, zero
 failures and zero errors. The bounded four-argument current-v2 selector
 control also passed with 1 test and 6 assertions; its downstream C13/C14/B1
 owner is deliberately stopped at an injected boundary, so it is not packet
-or backend acceptance evidence. The former 5ecc C6 mismatch log remains an
+or backend acceptance evidence
+(`/tmp/uniform-pr552-v2-c11-packet-selector-after-832.log`). The former 5ecc C6 mismatch log remains an
 immutable historical nonpass for that older base, not current acceptance
 status. The earlier 69d/4df genuine runs are superseded-base evidence only.
 The language-boundary gate,
