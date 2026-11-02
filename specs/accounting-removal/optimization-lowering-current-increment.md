@@ -192,3 +192,33 @@ release, nor roadmap completion. It is pinned to the `73df` merge parent;
 later main commits, including subsequent PR513 and root-version changes, are
 outside this frozen reconciliation and require a new coordinator composition
 if they overlap these paths.
+
+## Coordinator composition against current main
+
+The checked composition is `2ec2b55edc97d05cb6c8ac0b7278392858031c67`,
+tree `81214e69ea67aa897bd47fc01169d4f90cacdf1d`, with exact main parent
+`84a929dfa6661e7e4fa8ff16f58767b3652f31f7`, tree
+`5830bf0af9619447c0171a239f260281c9014f29`. Its other parent is the
+reconciled receipt commit `5163939b33ec99578fa934cc7acec5d93e562b46`.
+The normal merge preserves the later C6 version-routing, contained capture IO,
+and runtime owner-wrapper work. The three version-routing source components
+are byte-identical to this main parent.
+
+Fresh checks on this composition passed:
+
+| Check | Result | Receipt |
+| --- | --- | --- |
+| C6 contract and versioned source-binding controls | 3/49 and 10/55, zero failures/errors | `/tmp/uniform-pr370-84-c6.log` |
+| C11 policy and artifact DATA controls | 4/54 and 6/58, zero failures/errors | `/tmp/uniform-pr370-84-c11-policy.log`, `/tmp/uniform-pr370-84-c11-artifact.log` |
+| Canonical DATA, Reader, default dispatch, UTF-8 slicing and source spans | 70 tests / 2324 assertions, zero failures/errors | `/tmp/uniform-pr370-84-canonical-reader.log` |
+| Actual C13/C14/B1 development composition | 1 test / 21 assertions, zero failures/errors | `/tmp/uniform-pr370-84-development-composition.log` |
+| Pinned changed-file lint against this exact main parent | 3478 unchanged baseline warnings, zero blocking diagnostics | `/tmp/uniform-pr370-84-static-lint.log` |
+| Boundary, docs, roadmap, governance and whitespace | passed | `/tmp/uniform-pr370-84-boundary.log`, corresponding validator receipts |
+
+These checks complement the frozen 26/456 source-model and 79/6174 dynamic
+receipts above. The C6/C11 DATA controls still use their declared compiler and
+owner oracles; they do not establish source authentication. The canonical
+Reader development checks do not renew the canonical Reader admission pin.
+The documented canonical baseline blocks and historical C12 resource nonpass
+remain unchanged. No migration, native execution, release, self-hosting or
+whole-accounting completion claim is added.
