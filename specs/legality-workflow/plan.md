@@ -62,13 +62,66 @@ default permission, approved reviews, executable checks or real certificates.
 
 Start focused fixtures against declared producer interfaces. Types/Effects,
 Core/Expand, Auth trust/grants, Build dependency/certificate policy and selected
-Runtime/Domain contracts retain the current C9/C10 producer roles. The additional
-SAFE1 profile and SAFE6 review/package/tooling consumer routes remain explicit
-dependency-reconciliation work; the current selected C10 rows do not establish
-their whole-source order. Reviewers own actual unsafe approval, and package,
+Runtime/Domain contracts retain the current C9/C10 producer roles. The
+[root producer and consumer order](#root-safety-producer-and-consumer-order)
+now declares selected profile and specialist-review routes and extends shared
+classification/handoff/conformance routes. Full source/dependency entailment
+and independent review remain pending. Reviewers own actual unsafe approval, and package,
 release, runtime and tooling owners implement their own consumers. Preserve all
 actual holds and source-bound invalidation; no review, provider, native,
 callback, probe, replay, migration, signing or publication action runs here.
+
+## Root safety producer and consumer order
+
+The [existing selected-result table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition)
+adds the current profile task and the existing Evolution security-review task's
+distinct `governance/unsafe-audit-decision` output. Three shared C9/C10 routes
+gain selected root-safety inputs and consumer contracts. These declarations
+retain one task authority for each outcome; actual GOV9 specialist audit and
+GOV4 security decisions remain distinct even within their existing owner.
+
+1. Build supplies nonexecuting source/package/build configuration. Auth supplies
+   early validated provider declarations, Runtime versioned service/check/
+   failure descriptors, and Backend Interface target/ABI/layout support data.
+   Those descriptor products precede program-specific provider selection,
+   capability grants, service linkage and actual target emission. Core/Expand
+   and Types/Effects supply actual source/generated and typed/effected facts.
+   Profile validation derives availability or rejects unsupported machinery
+   before Auth operation grants, ownership/safety and affected MIR.
+2. Imports use verified already-built dependency packages Q and exact trust/
+   certificate/unsafe-summary inputs under caller policy. Current package P's
+   local candidate inventory, unsafe boundaries, wrapper obligations and
+   ownership/check/proof records can be derived before its final classification
+   or packaging. P's own published certificate is never its compiler input.
+3. The existing Evolution owner consumes the exact candidate and applicable
+   specialist evidence to produce the distinct GOV9 audit/revalidation decision.
+   Required or supplied reviews bind the actual source/island/wrapper/profile/
+   target/reviewer/evidence/expiry. Conditional GOV3/STD20 and GOV4 records keep
+   their scope. A generic security PASS is insufficient. Missing required review
+   may reject; audit-only records without an approval gate. A candidate is not
+   a fifth safety outcome and cannot enter MIR as accepted checked Core.
+4. Final policy-required unsafe eligibility consumes that actual decision;
+   ordinary safe, refused and audit-only cases follow their own policy. Later
+   target/optimizer/wrapper changes require actual audit revalidation where
+   applicable. Selected proof/negative/preservation evidence can be produced
+   independently; any candidate fixture execution still needs its existing
+   mode/profile/authority conditions and cannot claim stable safe acceptance.
+   Restricted or unavailable execution remains explicit unassessed work.
+5. P's actual compiler records feed its later Build safety/unsafe summaries and
+   provenance validation, language-server safety views and generated API/audit
+   documentation. These consumer results feed final handoff evidence; neither
+   publication/signing nor a whole Build/Tools result gates local construction.
+   Keep every island, safe-export/internal-only distinction and source-bound
+   stale/missing/wrong-scope refusal visible across those consumers.
+6. Existing family conformance composes the profile, analysis, classification
+   and handoff products and supplies fixtures/results to Release execution and
+   later independent admission. Final Release is not a reverse prerequisite.
+
+The coarse review/classification loop expresses different candidate and final
+products. The package loop similarly distinguishes imported Q inputs from P's
+later outputs. Do not replace those subjects with whole-task checkboxes or
+claim semantic order from staged acyclicity. All current review/execution holds
+remain; these rows confer no review, provider, target or publication authority.
 
 ## Complete safety-pipeline source criteria
 

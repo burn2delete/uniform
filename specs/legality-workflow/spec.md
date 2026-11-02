@@ -52,8 +52,11 @@ The [root safety and unsafe-audit criteria](plan.md#root-safety-and-unsafe-audit
 restore six finite reviewed SAFE1/SAFE6 predicates and bind the complete two
 root contracts to the four existing task owners. Mode/profile restrictions,
 unsafe review, safe wrappers, dependency policy and artifact preservation remain
-distinct obligations. Frozen review scopes are preserved; current whole-source
-and dependency entailment, review and implementation acceptance remain pending.
+distinct obligations. The [root dependency order](plan.md#root-safety-producer-and-consumer-order)
+separates early descriptors, imported evidence, candidate audit, required
+specialist decision, final classification and actual consumers. Frozen review
+scopes are preserved; full source/dependency entailment, independent review and
+implementation acceptance remain pending.
 
 The [complete safety-pipeline source criteria](plan.md#complete-safety-pipeline-source-criteria)
 bind the C10 coordinator's inventory, decisions, proof lifecycle and conformance
