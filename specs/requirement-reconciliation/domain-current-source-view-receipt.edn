@@ -1,0 +1,79 @@
+{:kind :domain-current-source-view-receipt
+ :version 1
+ :authority :proposal-only
+ :scope-key "requirement-reconciliation/phase-09-domain-specific-computing-coverage"
+ :review-base {:commit "12480d592044cc667ba4908405b463b3de51a2e6"
+               :tree "ab4173148a9a2ffe64a7ac94e74289db0704080a"}
+ :current-source-checkpoint
+ {:commit "db12333c03e448106c7b8607fc84aea9dfc13463"
+  :tree "2da5a46eb4fbc0fce547604a29b5305127513127"
+  :parent "12480d592044cc667ba4908405b463b3de51a2e6"
+  :task-criteria-port :domains-and-platform-only}
+ :historical-pr562
+ {:commit "2c3eac90b9736873ce7c439cdc9603b1e43249e5"
+  :tree "3de79028eeaced10f00c6895f4f5cf446d7304f2"
+  :family-proposal-sha256
+  "e602ffada49d2aa154b896333a82d494adf9ebdf8410615c94e11c5cf643939c"
+  :gap-proposal-sha256
+  "cbb47d98fc6120ecfc9a9145c8897151046a89feada36c98f5f820842e844d42"
+  :family-source-commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3"
+  :family-source-tree "9f464ed0f03866bd4978e4213a488f3b1ae48683"
+  :gap-predecessor-commit "43598c5b87feb4d88928549bb20fc4089768718b"
+  :gap-predecessor-tree "b90613cc0344b4b4a8bde0ff1afc61153723becf"}
+ :source-view
+ {:path "specs/requirement-reconciliation/domain-current-source-view.edn"
+  :sha256 "0d8e764df9c2605e3adcf679075638cf99eac4d93d6b54a0d220850ce9b86dda"
+  :checker-path "tools/domain_current_source_view.clj"
+  :checker-sha256
+  "abadd3393c0e1acc887f222225e0e49551ebc62f55ec49b0ac07f567bd919918"
+  :evidence-path "specs/requirement-reconciliation/domain-current-source-view.md"
+  :evidence-sha256
+  "987df7f96376633373fd0edaa0ba6aafa01535d0ec52313180526ad49fec0856"}
+ :counts {:source-documents 21
+          :source-occurrences 1533
+          :source-dispositions 777
+          :source-facets 1838
+          :family-units 139
+          :family-field-edits 64
+          :family-task-references 32
+          :gap-history 577
+          :gap-assigned 70
+          :gap-records 70
+          :gap-coverage-operations 70
+          :gap-task-amendments 15
+          :gap-new-task-proposals 9
+          :gap-unresolved 57
+          :current-task-source-files 6}
+ :validation
+ {:source-view-checker
+  {:command "clojure -M tools/domain_current_source_view.clj --check"
+   :exit 0
+   :controls 10
+   :result :pass}
+  :language-boundary
+  {:command "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test"
+   :exit 0 :tests 6 :assertions 11 :result :pass}
+  :canonical-documents
+  {:command "clojure -M tools/validate_gravity_docs.clj"
+   :exit 0 :documents 240 :phase-indexes 19 :result :pass}
+  :full-language-roadmap
+  {:command "clojure -M tools/validate_full_language_roadmap.clj"
+   :exit 0 :result :pass}
+  :diff-check {:command "git diff --check" :result :pass}}
+ :qualification
+ {:family-source-criteria :preserved-current-ledger
+  :gap-task-amendments :proposal-only
+  :gap-new-task-proposals :proposal-only
+  :implementation-acceptance :unassessed
+  :canonical-adoption :pending
+  :independent-review :pending}
+ :nonclaims [:canonical-adoption
+             :implementation-acceptance
+             :denominator
+             :aggregate-adoption
+             :domain-execution
+             :platform-product
+             :compiler-runtime-or-broker-execution
+             :release
+             :seed-retirement
+             :integration]}
