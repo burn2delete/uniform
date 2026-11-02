@@ -82,11 +82,14 @@ evidence. Raw process/token ownership and finalization-before-release ordering
 remain unchanged.
 
 These 42 tests / 1,566 assertions use fake owner/runner/lock/watchdog ports and
-inert filesystem fixtures. They do not load Bootstrap, call a genuine compiler
-or Reader, start a child, invoke Git, acquire a broker or lock, or run native
-C/host operations. Genuine selected C3 producer acceptance remains open and
-must be run only after the current PR512/PR544 owner composition supplies its
-validated source handoff.
+inert filesystem fixtures. The bounded acceptance controls do perform
+read-only current-source work: `source-closure-paths` enumerates tracked paths
+with `git ls-files`, and runner binding reads the current runner source bytes
+and signatures. They do not execute the selected Git lifecycle/child process,
+load Bootstrap, call a genuine compiler or Reader, acquire a broker or lock,
+or run native C/host operations. Genuine selected C3 producer acceptance
+remains open and must be run only after the current PR512/PR544 owner
+composition supplies its validated source handoff.
 
 ## Conformance and nonclaims
 
