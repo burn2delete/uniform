@@ -23,6 +23,53 @@ Record exact source/fixture/consumer identities and passed, failed or unrun work
 preserve operation restrictions and separate author checks, independent
 acceptance, integration and the complete profile/provider matrix.
 
+## Root safety and unsafe-audit source criteria
+
+Use the complete [SAFE1 root semantics](../../docs/phase-02-safety/030-safe1-safe-gravity-semantics.md)
+and [SAFE6 unsafe/audit contract](../../docs/phase-02-safety/035-safe6-unsafe-code-and-audit-model.md)
+with the four existing profile, classification, handoff and conformance tasks.
+The all-240 census supplies 71 SAFE1 and 62 SAFE6 facet identities, 123 source
+occurrences and thirteen original owner allocations. Preserve those identities
+and conjoin preambles, examples, lists and following conditions within their
+source sections; source conservation is distinct from semantic entailment.
+
+The preserved safety107 review contains six exact applicable allocations:
+SAFE1 mode-policy and profile-legality; SAFE6 dependency-policy,
+generated-unsafe, isolation and review-policy. Their literal criteria are
+restored under the same existing tasks, preserving the frozen positive,
+negative, output, dependency and nonclaim predicates. Review `6fb01a54` covers
+those finite source/task/context/dependency/refusal allocations; applicability
+`5cbcceae` explicitly excludes whole shared-facet/implementation acceptance and
+later-added predicates. This current restoration and whole-source proposal
+require their own review; no old receipt accepts the new source conjunctions.
+
+| Existing task | Required source products and decisive cases |
+| --- | --- |
+| Profile restrictions | Restore the exact SAFE1 profile criterion and require the real available proof/check/provider/runtime and profile-safety report. Portable Core, declared Hosted/Native services and constrained/hardware/distributed/AI policies determine actual accept/reject/narrow results, before lowering. Unavailable machinery refuses. |
+| Safety classification | Restore mode-policy plus four SAFE6 criteria. Enforce all [seven safety modes](../../docs/phase-02-safety/030-safe1-safe-gravity-semantics.md#safety-modes), four operation outcomes, weaker-dependency API eligibility, [all unsafe families](../../docs/phase-02-safety/035-safe6-unsafe-code-and-audit-model.md#unsafe-operations), complete metadata, safe-wrapper precondition/failure/cleanup and raw-authority protection. Audits remain visible even when permitted. Generated code binds requesting source and generator; safe and internal-only boundaries stay distinct. |
+| Safety classification: review and dependency decisions | Apply [forbidden/local/domain/certificate/audit-only policy](../../docs/phase-02-safety/035-safe6-unsafe-code-and-audit-model.md#review-policy) with actual source/island/reviewer/date/evidence/expiry and affected-source invalidation. Audit-only cannot establish safe eligibility. Inspect dependency counts/families/reviews/wrappers/profiles/authority/certificates and reject hidden exports or invalid caller policy. Auth, Build and reviewers retain their actual roles. |
+| MIR/runtime handoff | Preserve outcomes/checks/proofs/audits, mode/profile, dependency and generated-origin identities through real compiler, linked artifact, runtime, package, release and tooling consumers. Changed assumptions require valid preservation or invalidation/rechecking; no check erasure by assertion. Supply stable safety/audit/wrapper/review/dependency/certificate inputs and actual consumer/refusal evidence. |
+| Profile conformance | Exercise [SAFE1](../../docs/phase-02-safety/030-safe1-safe-gravity-semantics.md#conformance-criteria) and [SAFE6](../../docs/phase-02-safety/035-safe6-unsafe-code-and-audit-model.md#conformance-criteria) positives, failures and artifact inspections, all nineteen diagnostic meanings, generated-source context and mode/profile/dependency exceptions. Feed the existing SAFE15/SAFE16/Release consumers; a fixture verdict is distinct from an operation outcome and a source review is distinct from implementation acceptance. |
+
+The thirteen preserved allocations keep their actual tasks: profile-legality
+uses profile validation; preservation uses handoff; all other root outcome,
+runtime-check, artifact, unsafe-boundary, audit, wrapper, isolation, generated,
+review and dependency decisions use classification. Family conformance consumes
+their results. Full specialized SAFE2-SAFE5/SAFE7-SAFE16 and profile/provider
+semantics remain separate obligations, even when a root facet inherits their
+owners. Canonical examples establish shape and relationships rather than
+default permission, approved reviews, executable checks or real certificates.
+
+Start focused fixtures against declared producer interfaces. Types/Effects,
+Core/Expand, Auth trust/grants, Build dependency/certificate policy and selected
+Runtime/Domain contracts retain the current C9/C10 producer roles. The additional
+SAFE1 profile and SAFE6 review/package/tooling consumer routes remain explicit
+dependency-reconciliation work; the current selected C10 rows do not establish
+their whole-source order. Reviewers own actual unsafe approval, and package,
+release, runtime and tooling owners implement their own consumers. Preserve all
+actual holds and source-bound invalidation; no review, provider, native,
+callback, probe, replay, migration, signing or publication action runs here.
+
 ## Complete safety-pipeline source criteria
 
 Use the three existing safety-classification, MIR/runtime-handoff and

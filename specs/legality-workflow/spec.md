@@ -48,6 +48,13 @@ math modes. Distributed and AI work retain durable/replay, schema, taint and
 policy boundaries with their domain owners. These obligations are not compiler
 work allowances; superseded fuel/input-size accounting remains removed.
 
+The [root safety and unsafe-audit criteria](plan.md#root-safety-and-unsafe-audit-source-criteria)
+restore six finite reviewed SAFE1/SAFE6 predicates and bind the complete two
+root contracts to the four existing task owners. Mode/profile restrictions,
+unsafe review, safe wrappers, dependency policy and artifact preservation remain
+distinct obligations. Frozen review scopes are preserved; current whole-source
+and dependency entailment, review and implementation acceptance remain pending.
+
 The [complete safety-pipeline source criteria](plan.md#complete-safety-pipeline-source-criteria)
 bind the C10 coordinator's inventory, decisions, proof lifecycle and conformance
 to three existing tasks. All operation families and exact check/audit/origin
