@@ -65,6 +65,7 @@
                            (forms "00740-p15-s23-c11-mir-validate-effect-edge-placement.clj"))]
   (binding [*ns* owner]
     (eval '(declare p15-s23-c11-mir-expected-ingress-semantic))
+    (eval '(declare p15-s23-c6c10-source-binding!))
     (doseq [form selected] (eval form))))
 (defn call [name & args] (apply (ns-resolve owner name) args))
 (def core {:artifact-id "synthetic-core-id"})
