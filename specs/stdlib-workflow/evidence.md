@@ -154,3 +154,38 @@ bridge/source-drift assertions in files untouched by this repair. Those
 baseline failures are not counted as passing evidence and do not establish a
 current SH-wide acceptance result. No compiler, provider, runtime, library
 implementation, canonical-adoption or release claim is made by this receipt.
+
+### Current-main composition receipt
+
+The current-main composition was made by a normal merge. Its exact main parent
+is `2d0844f8f7f21321d920b9245341a2b98adc642e`, tree
+`c5f5941ca3db4ce38695f870276e1b345a323339`; the Stdlib branch parent is
+`63c9b1f101dc2f97c1883f35c51214b30e380668`. The resulting merge commit is
+`2dc31e2a1a20252f244e079ada9da74ff4934be2`, tree
+`02096b6b8f1f6f0b4d6801aa3087dfe24fa14338`. The worktree was clean at the
+final checks. All four original Stdlib paths remain in the result, and the
+manifest still has 19 authenticated task-source bridges with the Stdlib bridge
+at applying commit `80d8a655cea00218799446986a976ca64043a1f8`, tree
+`8c7e533bed9536a760254754e26dbb75db0b0f55`, and task-file SHA256
+`9ac5d948a4df974051fe15adce874f6bf39074982991d8c6c80201a971142d57`.
+The manifest blob remains `b7d73e13401c7fad0d3acaeedcd4bf7dfe78d5fb` with
+SHA256 `699f091469c1bbd8158a2834048bb4b0053717820b00dc968e3f52f0c56012c4`;
+the frozen historical and profile source-view identities were not refreshed.
+
+The actual current consumers passed on that composed tree. The Profile
+current-task-source checker ran with `clojure -J-Xmx2g -M
+specs/requirement-reconciliation/profile-system/profile_requirements.clj`:
+13 documents, 1,254 occurrences, 1,506 facets, 631 dispositions, 55 units,
+14 task-record amendments, 55 requirement-field edits and 27 unique task
+references, with all negative controls passing and implementation acceptance
+remaining unassessed. The Safety current-view consumer ran with
+`clojure -J-Xmx512m -M tools/safety_task_source_view.clj --check`: six
+historical/current task sources, 237 references, 18 interfaces and all eight
+positive/tamper controls passed; canonical adoption and implementation remain
+pending/unassessed. Shared consumers also passed tooling (8 tests / 51
+assertions), acceptance dependencies (19 / 441), requirement reconciliation
+(31 / 272), and Platform transition (2 / 6). Documentation (240 documents / 19
+indexes), full-language roadmap and the language boundary (6 / 11) passed.
+The six known untouched SH crosswalk/source-drift failures remain preserved as
+nonpasses. No implementation, provider, canonical-adoption, release or
+self-hosting claim is made.
