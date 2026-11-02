@@ -87,6 +87,7 @@ those old PRs were merged or that their full original scopes are complete.
 | Effects KSE selector | 1 test / 96 assertions, 0 failures, 0 errors |
 | Existing finite runtime equality control | 1 test / 104 assertions, 0 failures, 0 errors |
 | `git diff --check` | passed |
+| Pinned clj-kondo 2025.10.23 changed-file comparison | 65 unchanged baseline warnings, 0 blocking warnings/errors |
 
 The finite runtime selector exercises the existing main runtime provider; it
 does not establish a new DSE runtime implementation. The source/data and join
