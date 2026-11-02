@@ -25,6 +25,14 @@ kernel model, application inventory or fabricated product for that outcome.
 Use [the sole marked ledger](tasks.md#implementation-tasks), preserving four
 literal project keys, their full criteria/status and source-family refinements.
 
+The four current parents now carry their complete preserved proposed criteria:
+sixteen profile interfaces, eleven Domain operation/integration clauses and the
+realtime evidence obligation. Only source-context references are rebound; their
+other text and original short project paragraphs remain historical. Current
+source/facet and producer/consumer repartition remain pending independent
+review. General compiler checks, Lower/Emit/backend production and actual
+Runtime/device execution retain their existing authorities.
+
 | Existing key | Required behavior and distinguishing positive/negative evidence |
 | --- | --- |
 | `hardware` | Actual DOM1/P8/B9 finite state, fixed-width ports/registers/memories, clocks/resets, CDC and protocol/timing lowering into HDL. Exercise counter/FIFO/peripheral behavior, reset/backpressure/order and legal synchronizers; reject runtime constructs, missing widths, invalid truncation/control and unsafe CDC. Preserve real HDL/testbench/trace/source/proof artifacts and declared external synthesis boundaries. |
@@ -40,6 +48,17 @@ product owner supplies application inventory and executable criteria; hardware/
 product owner supplies physical deliverable, interfaces, bring-up and external
 dependency owners. Those are material decisions, not omissions that a compiler
 fixture or host adapter may resolve implicitly.
+
+The same scope now resumes the eleven existing
+[`platform-product/...` records](tasks.md#product-implementation-task-proposals)
+as explicit future tasks: four decision producers and seven implementation,
+integration and distribution outcomes. Their literal IDs, Open states, closing
+evidence and dependencies are unchanged from the published source. They remain
+outside the current four-key SH target projection pending exact composition.
+No new target, product, app inventory or physical deliverable is adopted by
+resumption. The [product plan](plan.md#product-decision-and-implementation-order)
+distinguishes enabling target conformance from actual Uniform-authored product
+programs and boot-to-application composition.
 
 After adoption, use that same authority to make the existing hardware, boot
 firmware, OS/isolation/services, drivers, applications, boot-to-application
