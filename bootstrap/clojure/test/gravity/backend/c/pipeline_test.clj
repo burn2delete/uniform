@@ -328,3 +328,38 @@
                   forbidden forbidden forbidden "unit.c" "unit-bin" "source.gravity" :unit-target true)
                 nil (catch clojure.lang.ExceptionInfo observed observed))))
     (is (= [[:staging "source.gravity" :unit-target]] @events))))
+
+(deftest failure-function-is-selected-before-cause-message
+  (let [events (atom [])
+        diagnostic-arguments (atom nil)
+        original-diagnostic (ex-info "original diagnostic" {:test :original})
+        late-diagnostic (ex-info "late diagnostic" {:test :late})
+        source "source.gravity"
+        target :native
+        cause (proxy [java.io.IOException] []
+                (getMessage []
+                  (swap! events conj :cause-message)
+                  (alter-var-root
+                   #'bootstrap/c-backend-fail!
+                   (constantly (fn [& _]
+                                 (swap! events conj :late-diagnostic)
+                                 (throw late-diagnostic))))
+                  "observed cause"))]
+    (with-redefs [bootstrap/c-backend-fail!
+                  (fn [& arguments]
+                    (reset! diagnostic-arguments arguments)
+                    (swap! events conj :original-diagnostic)
+                    (throw original-diagnostic))]
+      (let [result (try
+                     (c/run-compiler! nil (fn [& _] (Object.))
+                                      (fn [& _] (throw cause))
+                                      #'bootstrap/c-backend-fail!
+                                      (fn [& _] (swap! events conj :cleanup))
+                                      "target/probe.c" "target/probe" source target false)
+                     (catch Throwable error error))]
+        (is (identical? original-diagnostic result))
+        (is (= [:cause-message :original-diagnostic :cleanup] @events))
+        (is (= ["B2-DIALECT" "host C compiler is unavailable" source target nil
+                {:compiler "/usr/bin/cc" :cause-message "observed cause"
+                 :missing-fact :c11-compiler}]
+               (vec @diagnostic-arguments)))))))

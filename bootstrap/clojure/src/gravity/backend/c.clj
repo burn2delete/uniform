@@ -450,7 +450,7 @@
                 source-path target :compile))
        (let [result @compile-result]
          (when-not (zero? (:exit result))
-           (fail! "B2-DIALECT"
+           ((if (var? fail!) @fail! fail!) "B2-DIALECT"
                             "host C compiler rejected generated C11 source"
                             source-path target nil
                             {:compiler "/usr/bin/cc"
@@ -463,7 +463,7 @@
                  source-path target :runtime))
          (let [result @runtime-result]
            (when-not (zero? (:exit result))
-             (fail!
+             ((if (var? fail!) @fail! fail!)
               "B2-DIALECT"
               "generated C executable failed at runtime"
               source-path target nil
@@ -491,7 +491,7 @@
          (throw fatal))
        (catch Exception ex
          (reset! primary-failure ex)
-         (fail! "B2-DIALECT"
+         ((if (var? fail!) @fail! fail!) "B2-DIALECT"
                           "host C compiler is unavailable"
                           source-path target nil
                           {:compiler "/usr/bin/cc"
