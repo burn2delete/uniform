@@ -170,3 +170,57 @@ that run is not claimed as a pass and was stopped without retry.
 
 The source owner change is intentionally narrow: no native-C, C11, PMK
 admission, or migration evidence is inferred from these JVM observations.
+
+## Remaining current-caller audit and repair
+
+The composed candidate was re-audited from the clean pre-repair identity
+`d88c0e053eaa0c69c6831d665a7fff17df010a47` / tree
+`bc206cee028d920f8832c0012d4e2f0e768f420a`, based on main
+`69d21cb8aacd0be8e74cbf4c9ad8b12b84d244e8` / tree
+`1911689d59beb0d9771d5efc5fe29856177b470e`. The hosted C3 failures were not
+isolated to the three SH04 fixtures: every current-source C3/C5/Core caller
+was checked once and classified by downstream intent.
+
+The minimal owner repair now carries the validated
+`:gravity/sh04-development-syntax-selection-v1` selection through the
+remaining current paths. It covers SH04 lossless, handoff, and provenance;
+the SH07 current data, loop, quoted-reader, set-order, two-slot, local-callee,
+and construction-verification fixtures; the SH08 primitive source-to-Core
+fixture; the SH15 current C5 diagnostic producer; the SH07 proof-census
+current request; the SH07 B2 required-primitive current composition; the SH03
+small current source-to-Core composition; and the current parent-mutation
+resolution control. Current C5/Core paths also select
+`:macro-source-mode :development-current` when they consume Macro products.
+The two direct SH07 request/test adapters strip only that Macro key before
+calling the exact SH03 Reader-options callback; the full invocation continues
+through SH06 and the Macro owner. No pinned/default call or public option set
+was widened, and no admission hash was refreshed.
+
+The explicit refusal classifications remain part of the audit. The resolution
+Macro-isolation control selects Reader and Syntax but omits Macro and fails
+closed at `C4-TRACE`/`:exact-pinned-macro-source`; the separate Reader-only
+control omits both and fails closed at `C3-ID`/`:exact-pinned-syntax-source`.
+C2-only tests, routing-only spies, historical/default C5 callers, and the
+public `{:reader :development-current}` API contract remain unchanged; the
+public route does not silently infer Syntax or Macro source. Its downstream
+paired public fixtures therefore remain historical/refusal evidence rather
+than being relabeled as current full-source acceptance.
+
+Focused checks on the repaired worktree passed:
+
+- SH04 lossless/handoff/provenance: 1 test / 37, 518, and 99 assertions.
+- SH07 current data/loop/quote/set/multislot/local-callee: 1 test / 405,
+  133, 50, 179, 89, and 107 assertions; construction-verification focused
+  tamper/request controls: 1 test / 8 assertions each.
+- SH08 primitive current source-to-Core: 1 test / 532 assertions; SH15 C5
+  diagnostics: 1 test / 54 assertions; SH07 B2 current composition: 1 test /
+  191 assertions; parent-mutation resolution: 1 test / 20 assertions.
+- The two explicit source-choice refusals passed 2 tests / 4 assertions, and
+  public ingress option/default pinned controls passed 2 tests / 11 assertions.
+
+The SH03 adapter file also contains an unrelated pre-existing compile failure
+(`bootstrap/sh03-reader-result-maximum-nodes` is undefined at its existing
+line 1769); its newly audited current composition is syntactically preserved
+but is not claimed as executed. No native-C, PMK, resource-broker workaround,
+or restricted route was retried. The repaired candidate remains development
+evidence only and needs independent acceptance on its exact final tuple.

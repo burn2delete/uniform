@@ -259,6 +259,12 @@
 (deftest sh03-current-hex-definitions-compose-through-authenticated-core
   ;; A new two-function source subject, not whole-reader analysis or execution.
   (let [reader-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        syntax-path (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
+        invocation {:reader-source-path reader-path
+                    :authenticated-envelope-options {:source :development-current}
+                    :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                              :source-path syntax-path}
+                    :macro-source-mode :development-current}
         require! (fn [ok? phase]
                    (when-not ok?
                      (throw (ex-info "bounded hex source composition stopped" {:phase phase}))))
@@ -295,7 +301,7 @@
                            #(bootstrap/compiler-c5-resolution-source-artifact
                              source-path text
                              {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
-                             reader-path))
+                             reader-path invocation))
             expanded (:sh05-macro-artifact resolved)
             c3 (get-in expanded [:gravity-macro-boundary :authenticated-sh04-artifact])
             c2 (:c2-reader-artifact c3)
@@ -306,7 +312,7 @@
             trace (:macro-expansion-trace expanded)
             records (mapv (fn [form seed] (assoc seed :form form)) forms seeds)
             reference (bootstrap/macro-source-artifact-from-records source-path text records)
-            artifact (stage :gravity-core #(bootstrap/sh07-core-from-resolution-artifact resolved))
+            artifact (stage :gravity-core #(bootstrap/sh07-core-from-resolution-artifact resolved invocation))
             product (get-in artifact core-path)
             request (get-in artifact [:gravity-core-boundary :authenticated-core-request])
             _ (require! (and (<= (count (:nodes product)) 256)

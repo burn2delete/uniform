@@ -114,8 +114,12 @@
 (defn- current-source-core-data [family basename extension]
   (let [source (fixture-path family basename extension)
         reader (path bootstrap/sh03-reader-source-relative-path)
+        syntax (path bootstrap/sh04-syntax-source-relative-path)
         invocation {:reader-source-path bootstrap/sh03-reader-source-relative-path
-                    :authenticated-envelope-options {:source :development-current}}
+                    :authenticated-envelope-options {:source :development-current}
+                    :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                              :source-path syntax}
+                    :macro-source-mode :development-current}
         inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
         parent (bootstrap/compiler-c5-resolution-source-artifact
                 source (slurp source :encoding "UTF-8") inputs reader invocation)
