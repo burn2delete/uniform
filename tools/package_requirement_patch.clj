@@ -7,33 +7,76 @@
 (def input-ref "53ae6a403b20d15155bb5b04911fe7ac0092b921")
 (def artifact-path "specs/requirement-reconciliation/package-family.edn")
 (def manifest-hash "f4c171820dfdadaf7e7b5a3f04a701a124adfffd6cbaf6b598c1b82098aae690")
+(def input-projections
+  {:manifest {:path "specs/requirement-reconciliation/package-manifest-input.edn"
+              :sha256 "f06e1420c9952b9e8fc6932a642f015564740789bea363c190920f15d0c445a9"}
+   :source {:path "specs/requirement-reconciliation/package-source-input.edn"
+            :sha256 "98f9f3a659244fb629f4ac5ce0a715bb46eb6b29a8e0d015a15f0c854dfeac96"}})
+(def yank-receipt-path "specs/build-workflow/yank-interface.edn")
+(def yank-receipt-hash "997f631bea903044fa5f23aecc5794f74eeac81432a76dd4af6905537f9e3323")
 (defn require! [ok message] (when-not ok (throw (ex-info message {}))))
 (defn sha [s]
   (format "%064x" (BigInteger. 1 (.digest (java.security.MessageDigest/getInstance "SHA-256")
                                          (.getBytes ^String s "UTF-8")))))
-(defn git-text [ref path]
-  (let [r (shell/sh "git" "show" (str ref ":" path))]
-    (require! (zero? (:exit r)) (str "Missing immutable input: " ref ":" path)) (:out r)))
+(defn checked-text [{:keys [path sha256]}]
+  (let [raw (slurp path)]
+    (require! (= sha256 (sha raw)) (str "Wrong immutable input bytes: " path))
+    raw))
+(defn validate-source-identity! [{:keys [source-commit source-tree]}]
+  (doseq [id [source-commit source-tree]]
+    (require! (and (string? id) (re-matches #"[0-9a-f]{40}" id)) "Invalid Git source identity"))
+  (let [kind (shell/sh "git" "cat-file" "-t" source-commit)
+        tree (shell/sh "git" "rev-parse" "--verify" (str source-commit "^{tree}"))]
+    (require! (and (zero? (:exit kind)) (= "commit" (str/trim (:out kind))))
+              "Missing source commit")
+    (require! (and (zero? (:exit tree)) (= source-tree (str/trim (:out tree))))
+              "Source commit/tree mismatch")))
 (defn immutable-inputs []
-  (let [raw (git-text manifest-ref "contracts/requirement-reconciliation.edn")
-        input (git-text input-ref "specs/requirement-reconciliation/source-task-inputs.edn")]
-    (require! (= manifest-hash (sha raw)) "Wrong PR445 manifest")
-    (require! (= "423dd6ec37f6d8f461de4a24d325033902ccce3249187073b796065fa3ca5d94" (sha input))
-              "Wrong source/task snapshot")
-    [(edn/read-string raw) (edn/read-string input)]))
+  ;; These are declared, byte-pinned projections, not whole-manifest authority.
+  (let [manifest (:data (edn/read-string (checked-text (:manifest input-projections))))
+        input (:data (edn/read-string (checked-text (:source input-projections))))]
+    (validate-source-identity! input)
+    [manifest input]))
 
 (def sha256 sha)
-(defn occurrence-api []
-  ;; Evaluate only the exact documented API defn, not the tool's CLI or loaders.
-  (let [text (git-text "c0dc5790197a1bbd3a8aa285e5458c272d877220" "tools/requirement_reconciliation.clj")
-        forms (with-open [r (java.io.PushbackReader. (java.io.StringReader. text))]
-                (loop [out []]
-                  (let [form (read {:eof ::eof} r)]
-                    (if (= ::eof form) out (recur (conj out form))))))
-        api (first (filter #(and (seq? %) (= 'defn (first %)) (= 'source-occurrences (second %))) forms))]
-    (require! api "Pinned occurrence API absent")
-    (binding [*ns* (the-ns 'package-requirement-patch)] (eval api))
-    (ns-resolve 'package-requirement-patch 'source-occurrences)))
+;; The exact pure source-occurrences definition from c0dc5790 is included below.
+;; It needs only sha256, require!, and clojure.string; no historical code is loaded.
+(defn source-occurrences [document-id text]
+  (let [file-sha (sha256 text)
+        lines (remove empty? (re-seq #"[^\n]*\n|[^\n]+$" text))
+        groups (partition-by str/blank? lines)]
+    (loop [groups groups offset 0 line 1 headings [] fence nil result []]
+      (if-let [group (first groups)]
+        (let [raw (apply str group) size (alength (.getBytes raw "UTF-8"))
+              contexts
+              (loop [ls group n line hs headings fc fence out []]
+                (if-let [s (first ls)]
+                  (let [heading (re-find #"^(#{1,6}) (.+?)(?:\n)?$" s)
+                        hs (if (and heading (nil? fc))
+                             (conj (vec (take-while #(< (:level %) (count (second heading))) hs))
+                                   {:level (count (second heading)) :text (nth heading 2)}) hs)
+                        marker (second (re-find #"^\s*(`{3,}|~{3,})" s))
+                        before fc
+                        fc (cond (and marker (nil? fc)) marker
+                                 (and marker fc (= (first marker) (first fc))
+                                      (>= (count marker) (count fc))) nil :else fc)]
+                    (recur (next ls) (inc n) hs fc
+                           (conj out {:line n :headings hs :fence before
+                                      :fence-marker marker
+                                      :table-row? (str/starts-with? (str/triml s) "|")})))
+                  {:lines out :headings hs :fence fc}))
+              identity (str document-id "\u0000" file-sha "\u0000" offset ":" (+ offset size))
+              occurrence {:id (str document-id "/source/" (sha256 identity))
+                          :document-id document-id :source-sha256 file-sha
+                          :start-byte offset :end-byte (+ offset size)
+                          :start-line line :end-line (+ line (dec (count group)))
+                          :raw-sha256 (sha256 raw) :context (:lines contexts)
+                          :structural-kind (if (str/blank? raw) :layout :source-block)}]
+          (recur (next groups) (+ offset size) (+ line (count group))
+                 (:headings contexts) (:fence contexts) (conj result occurrence)))
+        (do (require! (= offset (alength (.getBytes ^String text "UTF-8"))) "Source span hole")
+            result)))))
+
 
 (def unresolved
   {"behavior/pkg1/project-entrypoint-resolution"
@@ -102,13 +145,14 @@
          (assoc-in m path after)))) manifest edits))
 
 (defn prepare [manifest inputs]
+  (validate-source-identity! inputs)
   (let [docs (filterv #(= "phase-12" (:source-family %)) (:original-documents inputs))
         doc-ids (set (map :id docs))
         facets (filterv #(doc-ids (:document-id %)) (:source-facets manifest))
         ids (set (mapcat :unit-ids facets))
         records (filterv #(ids (:id %)) (:requirements manifest))
         routing (into {} (for [[suffix rs] routes r rs] [(str "behavior/" r) (task-reference suffix)]))
-        prior (edn/read-string (slurp "specs/build-workflow/yank-interface.edn"))
+        prior (edn/read-string (checked-text {:path yank-receipt-path :sha256 yank-receipt-hash}))
         references (assoc routing yank-id (get-in prior [:after :task-reference]))
         edits (vec (mapcat
                     (fn [r] (when-let [reference (routing (:id r))]
@@ -122,6 +166,7 @@
      :scope-key "requirement-reconciliation/phase-12-build-package-and-artifact-system"
      :authority :proposal-only :source-baseline (:source-commit inputs) :source-tree (:source-tree inputs)
      :source-manifest {:ref manifest-ref :path "contracts/requirement-reconciliation.edn" :sha256 manifest-hash}
+     :input-projections input-projections
      :proposal-format {:ref manifest-ref :path ".specify/requirement-proposal-format.edn"
                        :sha256 "69ec49fb954ba66ce86621d5dfac3a4cb0b514b84915277b86944ae2ec857adc"}
      :proposed-plan-addendum {:path "specs/requirement-reconciliation/package-interfaces.md"
@@ -140,7 +185,7 @@
                      :historical-support (:historical-support r)
                      :atomicity (:atomicity r) :nonoverlap (:nonoverlap r) :current-acceptance :unassessed}) records)
      :consumed-interface {:id yank-id :receipt-path "specs/build-workflow/yank-interface.edn"
-                          :sha256 (sha (slurp "specs/build-workflow/yank-interface.edn"))
+                          :sha256 yank-receipt-hash
                           :application :already-integrated-task-interface-not-replayed
                           :qualification "Receipt applies to distinct preserved uncommitted manifest. Central owner composes its two fields against that exact before value; this patch does not duplicate it."}
      :equivalence-proposals
@@ -157,8 +202,7 @@
 
 (defn validate! [proposal manifest inputs]
   (require! (= proposal (prepare manifest inputs)) "Family drift, lost facet/condition, or altered semantic decision")
-  (let [api (occurrence-api)
-        occurrences (mapcat (fn [{:keys [id path]}] (api id (slurp path))) (:source-documents proposal))
+  (let [occurrences (mapcat (fn [{:keys [id path]}] (source-occurrences id (slurp path))) (:source-documents proposal))
         by-id (into {} (map (juxt :id identity) occurrences))
         nonlayout (set (map :id (filter #(= :source-block (:structural-kind %)) occurrences)))]
     (require! (= nonlayout (set (map :occurrence-id (:source-dispositions proposal))))
@@ -169,7 +213,8 @@
                   "Facet targets wrong source occurrence"))))
   (doseq [{:keys [id path original-sha256 current-sha256]} (:source-documents proposal)]
     (require! (= current-sha256 (sha (slurp path))) (str "Current source drift: " id))
-    (require! (= original-sha256 (sha (git-text (:original-source-commit inputs) path)))
+    ;; All twelve PKG sources are unchanged from the original source snapshot.
+    (require! (= original-sha256 (sha (slurp path)))
               (str "Original source drift: " id)))
   (doseq [facet (:source-facets proposal)]
     (let [doc (first (filter #(= (:id %) (:document-id facet)) (:source-documents proposal)))

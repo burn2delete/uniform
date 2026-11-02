@@ -15,13 +15,22 @@
   :path ".specify/requirement-proposal-format.edn",
   :sha256
   "69ec49fb954ba66ce86621d5dfac3a4cb0b514b84915277b86944ae2ec857adc"},
+ :input-projections
+ {:manifest
+  {:path "specs/requirement-reconciliation/package-manifest-input.edn",
+   :sha256
+   "f06e1420c9952b9e8fc6932a642f015564740789bea363c190920f15d0c445a9"},
+  :source
+  {:path "specs/requirement-reconciliation/package-source-input.edn",
+   :sha256
+   "98f9f3a659244fb629f4ac5ce0a715bb46eb6b29a8e0d015a15f0c854dfeac96"}},
  :proposed-plan-addendum
  {:path "specs/requirement-reconciliation/package-interfaces.md",
   :sha256
   "f861bf611d7cd080aaed6696333522f59432f5ae099fe0f8770f78e7e76dccfe",
   :destination "specs/build-workflow/plan.md",
   :destination-before-sha256
-  "b2ac46d33a43d9e2b1984185fafad1a57b74fdd0f6afb3d9fcb8ad5d3a9e247f",
+  "c31da30d896401e07fd756bb328c5b3b3789333a3276e78a53873ccd03ab246e",
   :state :central-adoption-pending},
  :authority :proposal-only,
  :source-tree "9f464ed0f03866bd4978e4213a488f3b1ae48683",

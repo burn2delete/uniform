@@ -1,0 +1,121 @@
+{:kind :gravity/read-only-package-source-projection,
+ :authority :historical-proposal-input-only,
+ :source
+ {:ref "53ae6a403b20d15155bb5b04911fe7ac0092b921",
+  :path "specs/requirement-reconciliation/source-task-inputs.edn",
+  :sha256
+  "423dd6ec37f6d8f461de4a24d325033902ccce3249187073b796065fa3ca5d94"},
+ :coverage :phase-12-documents-and-source-identities-only,
+ :data
+ {:source-commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3",
+  :source-tree "9f464ed0f03866bd4978e4213a488f3b1ae48683",
+  :original-source-commit "a1b991be499d50579a8b4366976c519ae8949224",
+  :original-documents
+  [{:id "PKG1",
+    :sequence 165N,
+    :path
+    "docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md",
+    :source-family "phase-12",
+    :original-sha256
+    "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd",
+    :current-sha256
+    "b88e8311b34da26a127bf3beb601f15c6137386818a31d6c01d74325a09faedd"}
+   {:id "PKG2",
+    :sequence 166N,
+    :path
+    "docs/phase-12-build-package-and-artifact-system/166-pkg2-build-system-architecture.md",
+    :source-family "phase-12",
+    :original-sha256
+    "0514e123045e234c3abb4d96b9ff92986d3d43e65d6306d59ed3c7d99e7c53d8",
+    :current-sha256
+    "0514e123045e234c3abb4d96b9ff92986d3d43e65d6306d59ed3c7d99e7c53d8"}
+   {:id "PKG3",
+    :sequence 167N,
+    :path
+    "docs/phase-12-build-package-and-artifact-system/167-pkg3-artifact-model-specification.md",
+    :source-family "phase-12",
+    :original-sha256
+    "fd6751abce2cac644e3659d1a2ad0e411bb79f42c252b17feab73ae660d93a9e",
+    :current-sha256
+    "fd6751abce2cac644e3659d1a2ad0e411bb79f42c252b17feab73ae660d93a9e"}
+   {:id "PKG4",
+    :sequence 168N,
+    :path
+    "docs/phase-12-build-package-and-artifact-system/168-pkg4-package-manager-specification.md",
+    :source-family "phase-12",
+    :original-sha256
+    "77f491fbb0803b8fb24e4da6df0af9b4233c38f66a3f1c56dbab2f3cdb8e2515",
+    :current-sha256
+    "77f491fbb0803b8fb24e4da6df0af9b4233c38f66a3f1c56dbab2f3cdb8e2515"}
+   {:id "PKG5",
+    :sequence 169N,
+    :path
+    "docs/phase-12-build-package-and-artifact-system/169-pkg5-dependency-resolution-specification.md",
+    :source-family "phase-12",
+    :original-sha256
+    "2fc55b3c00387a525fec352d9bb1c4d2f5ce5c94c9fc4cf1172e7940ac8962b6",
+    :current-sha256
+    "2fc55b3c00387a525fec352d9bb1c4d2f5ce5c94c9fc4cf1172e7940ac8962b6"}
+   {:id "PKG6",
+    :sequence 170N,
+    :path
+    "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+    :source-family "phase-12",
+    :original-sha256
+    "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3",
+    :current-sha256
+    "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3"}
+   {:id "PKG7",
+    :sequence 171N,
+    :path
+    "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+    :source-family "phase-12",
+    :original-sha256
+    "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933",
+    :current-sha256
+    "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933"}
+   {:id "PKG8",
+    :sequence 172N,
+    :path
+    "docs/phase-12-build-package-and-artifact-system/172-pkg8-package-safety-and-audit-metadata-specification.md",
+    :source-family "phase-12",
+    :original-sha256
+    "ebbd66e76c3db534b4cb5a750c81e9409e174512cfa10d69f7c3961dfdee26d3",
+    :current-sha256
+    "ebbd66e76c3db534b4cb5a750c81e9409e174512cfa10d69f7c3961dfdee26d3"}
+   {:id "PKG9",
+    :sequence 173N,
+    :path
+    "docs/phase-12-build-package-and-artifact-system/173-pkg9-private-registry-and-latent-package-space-design.md",
+    :source-family "phase-12",
+    :original-sha256
+    "d9166cf0f33c631b63c63258906c4f8f007ce3d05bae92a4567bb0d5560bd6a0",
+    :current-sha256
+    "d9166cf0f33c631b63c63258906c4f8f007ce3d05bae92a4567bb0d5560bd6a0"}
+   {:id "PKG10",
+    :sequence 174N,
+    :path
+    "docs/phase-12-build-package-and-artifact-system/174-pkg10-supply-chain-security-and-provenance-specification.md",
+    :source-family "phase-12",
+    :original-sha256
+    "6e63f5d8972b0d18b3f010af818a0eda8f785cb2ad3d9c0cf676f24ca35de225",
+    :current-sha256
+    "6e63f5d8972b0d18b3f010af818a0eda8f785cb2ad3d9c0cf676f24ca35de225"}
+   {:id "PKG11",
+    :sequence 175N,
+    :path
+    "docs/phase-12-build-package-and-artifact-system/175-pkg11-cross-compilation-and-target-matrix-specification.md",
+    :source-family "phase-12",
+    :original-sha256
+    "0806cef13ee841b47c3bd087ba142ca7ca35bfa3f578d9a976efbd1161359608",
+    :current-sha256
+    "0806cef13ee841b47c3bd087ba142ca7ca35bfa3f578d9a976efbd1161359608"}
+   {:id "PKG12",
+    :sequence 176N,
+    :path
+    "docs/phase-12-build-package-and-artifact-system/176-pkg12-artifact-signing-verification-and-sbom-specification.md",
+    :source-family "phase-12",
+    :original-sha256
+    "df81fdb35cb8ca798410f6cc99d467df918c4c2271141a83482a413a0810436c",
+    :current-sha256
+    "df81fdb35cb8ca798410f6cc99d467df918c4c2271141a83482a413a0810436c"}]}}

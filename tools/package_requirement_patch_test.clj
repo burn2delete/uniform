@@ -1,5 +1,6 @@
 (ns package-requirement-patch-test
   (:require [clojure.edn :as edn]
+            [clojure.java.shell :as shell]
             [clojure.test :refer [deftest is run-tests]]))
 
 (load-file "tools/package_requirement_patch.clj")
@@ -55,6 +56,49 @@
   ;; generic yank alias; its source context and central adjudication survive.
   (is (rejects? #(check (assoc-in proposal [:equivalence-proposals 2 :kind] :alias))))
   (is (rejects? #(check (assoc-in proposal [:units 0 :current-acceptance] :accepted)))))
+
+(deftest local-projections-preserve-the-declared-historical-slice
+  (let [projection (edn/read-string (slurp (get-in patch/input-projections [:manifest :path])))
+        ids (:global-requirement-ids manifest)]
+    (is (= :gravity/read-only-package-input-projection (:kind projection)))
+    (is (= :historical-proposal-input-only (:authority projection)))
+    (is (= :ids-only (get-in projection [:coverage :other-requirements])))
+    (is (= 1231 (count ids) (count (set ids))))
+    (is (= (set (get-in projection [:coverage :full-requirement-ids]))
+           (set (map :id (:requirements manifest)))))
+    (is (every? (set ids) (map :id (:requirements manifest)))))
+  (doseq [input (vals patch/input-projections)]
+    (let [original slurp]
+      (with-redefs [clojure.core/slurp
+                    (fn [path] (str (original path) (when (= path (:path input)) " ")))]
+        (is (rejects? patch/immutable-inputs))))))
+
+(deftest source-commit-tree-and-conserved-receipt-substitution-refuse
+  (doseq [changed [(assoc snapshot :source-commit "not-a-git-id")
+                   (assoc snapshot :source-commit (apply str (repeat 40 "0")))
+                   (assoc snapshot :source-commit (:source-tree snapshot))
+                   (assoc snapshot :source-tree (:source-commit snapshot))]]
+    (is (rejects? #(patch/prepare manifest changed))))
+  (let [original slurp]
+    (doseq [path [patch/yank-receipt-path
+                  (:path (first (:source-documents proposal)))]]
+      (with-redefs [clojure.core/slurp
+                    (fn [candidate] (str (original candidate) (when (= path candidate) " ")))]
+        (is (rejects? #(check proposal)))))))
+
+(deftest positive-check-needs-only-the-reachable-source-identity
+  (let [original shell/sh
+        allowed #{["git" "cat-file" "-t" (:source-commit snapshot)]
+                  ["git" "rev-parse" "--verify" (str (:source-commit snapshot) "^{tree}")]}
+        calls (atom [])]
+    (with-redefs [shell/sh (fn [& args]
+                            (swap! calls conj (vec args))
+                            (when-not (contains? allowed (vec args))
+                              (throw (ex-info "Historical Git object access is unavailable" {})))
+                            (apply original args))]
+      (let [[m s] (patch/immutable-inputs)]
+        (is (patch/validate! proposal m s))))
+    (is (= allowed (set @calls)))))
 
 (let [r (run-tests)]
   (shutdown-agents)
