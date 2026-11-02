@@ -60,3 +60,43 @@ the Clojure report remains at
 /var/folders/3y/hpny2h8j4jn2qwyxxrzm3hb00000gn/T/clojure-17511274505986293471.edn.
 The corrected script command explicitly supplies source/test paths without
 runner main options. This is a harness correction, not a compiler change.
+
+## Implemented composition and verification
+
+Source composition 7474996862229389e629bb84ee873a750b1996cc has tree
+e906d6f41c9cc2fcd6f3bdaa003eac6d2a50792d. One unchanged body and both
+complete production files reconstruct from the immutable initial base, with
+only the new name, two explicit operation parameters, compatibility forwarding
+and namespace contract additions. The Bootstrap manifest body is untouched.
+The original private output-tools caller still calls the compatibility API.
+
+The existing paired source/toolchain regression now invokes output preflight
+before writing Java files. Both fresh after products match the complete before
+products and original serialization. Source and plan identities recompute,
+as do all five actual artifact byte hashes. The source plan remains
+sha256:e84fc441ab8e778d23056b3f42b24e45bacfab2fb10019bed9a56d30e77af1d6.
+The .gravity product digest is
+752f3c72b9317a0120c1acccf6e418b4d8efdbb9bf8343a6037f23e7c02f4262;
+the .qst product digest is
+0ca0270b8093fcae5220b0b13c357a3a27854f92cfa6c00c2c49762f674fc600.
+No source field, actual root, tool version, mode or pin is normalized.
+
+Focused JVM checks pass 11 tests / 207 assertions, including real parent
+creation, all three path refusals, wrapper argument/opaque return forwarding,
+policy-before-host-path use, late diagnostic replacement and original failure
+identity. Language/ownership checks pass 47 / 1154. Contextual lint against
+exact a958fd45 covers three source/test paths with zero warnings and blockers;
+receipts are at /tmp/uniform-jvm-output-lint-maina958. A fresh JVM loads all
+20 public APIs without Bootstrap. Document validation passes 240 documents / 19
+indexes; roadmap and 185-workstream governance validation pass.
+
+The first focused namespace command selected the self-hosting runner, which
+does not own this backend namespace, and ran no test. Its report remains at
+/var/folders/3y/hpny2h8j4jn2qwyxxrzm3hb00000gn/T/clojure-15164431913801616330.edn.
+The documented development runner executes the backend's actual test namespace;
+the incorrect command receives no test credit. No admission guard was changed.
+
+Capture, whole-file reconstruction and identity checks are retained at
+/tmp/uniform-jvm-output-{capture,extract,verify}.clj. Independent acceptance,
+candidate-owned CI/artifacts and immediate exact-current-main clean preflight
+remain required. This source record grants no integration or release authority.
