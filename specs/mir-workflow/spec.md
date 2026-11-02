@@ -38,6 +38,12 @@ existing task criteria remain authoritative there.
 
 ## Starting work and completion
 
+The [complete MIR source criteria](plan.md#complete-mir-source-criteria) make
+construction, fact binding, effect order, verification, serialization and
+consumer admission explicit under the existing tasks. They preserve applicable
+foundation predicates and historical review exclusions; current independent
+and implementation acceptance remain pending.
+
 Explicit checked-Core/fact schemas and verified fixtures allow local work while
 upstream components mature. Integrated construction requires actual producer
 facts; downstream acceptance uses the real verifier and selected consumer.
