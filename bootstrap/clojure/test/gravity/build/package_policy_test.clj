@@ -1,22 +1,8 @@
 (ns gravity.build.package-policy-test
   (:require [clojure.edn :as edn]
             [clojure.test :refer [deftest is testing]]
-            [gravity.build.package-policy :as policy]))
-
-;; Synthetic facts are deliberately non-admitting, including :verified labels.
-(def record
-  {:package "gravity/http" :version "2.1.4" :registry :gravity-public
-   :content-hash "sha256:http-214" :provenance "prov:gravity-http"
-   :capabilities [:http/client] :safety :reviewed
-   :yank-status :active :revocation-status :clear
-   :signature-status :verified :provenance-status :verified})
-
-(def request
-  {:record record :locked-records [record] :mode :select
-   :registry :gravity-public :visibility :public :registry-grants {}
-   :requested-range "^2.1.0" :constraint-chain ["app -> gravity/http ^2.1.0"]
-   :profile :hosted :target :jvm-21
-   :policy {:id :release :yanked :reject :revoked :reject}})
+            [gravity.build.package-policy :as policy]
+            [gravity.build.package-policy-fixtures :refer [record request]]))
 
 (defn- historical [record]
   (assoc request :record record :locked-records [record]

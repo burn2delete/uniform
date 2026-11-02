@@ -2,10 +2,8 @@
   (:require [clojure.test :refer [deftest is]]
             [gravity.bootstrap :as b]
             [gravity.ownership :as ownership]
-            [gravity.self-hosting.sh10-ownership-transition-test]))
-
-(defn- helper [name]
-  (var-get (ns-resolve 'gravity.self-hosting.sh10-ownership-transition-test name)))
+            [gravity.self-hosting.sh10-ownership-transition-fixture-support
+             :as fixture-support]))
 
 (defn- node [id operation operands extra]
   {:node-id id :source-operation operation :operands operands
@@ -32,14 +30,18 @@
   ;; Current Gravity normalized-request kernels. No authenticated Core/C8
   ;; composition or native/provider grant is attempted by these fixtures.
   (doseq [extension [".gravity" ".qst"]]
-    (let [compile-plan (helper 'compile-plan)
-          invoke (helper 'invoke)
-          plan (compile-plan (str "bootstrap/clojure/fixtures/self-hosting/sh-10/accepted/ownership-transitions" extension))
-          bad-plan (compile-plan (str "bootstrap/clojure/fixtures/self-hosting/sh-10/rejected/invalid-ownership-transitions" extension))
-          request (invoke (delay plan) 'sh10-many-immutable-request [])
-          bad-request (invoke (delay bad-plan) 'sh10-use-after-move-request [])
-          result ((helper 'check) request)
-          rejection ((helper 'check) bad-request)]
+    (let [plan (fixture-support/compile-plan
+                (fixture-support/fixture-relative-path
+                 "accepted" "ownership-transitions" extension))
+          bad-plan (fixture-support/compile-plan
+                    (fixture-support/fixture-relative-path
+                     "rejected" "invalid-ownership-transitions" extension))
+          request (fixture-support/invoke (delay plan)
+                                          'sh10-many-immutable-request [])
+          bad-request (fixture-support/invoke (delay bad-plan)
+                                              'sh10-use-after-move-request [])
+          result (fixture-support/check request)
+          rejection (fixture-support/check bad-request)]
       (doseq [compiled [plan bad-plan]]
         (is (= :gravity/stage2-compiler-artifact-plan (:kind compiled)))
         (is (= (:plan-id compiled)
@@ -48,7 +50,10 @@
       (is (= :rejected (:status rejection)))
       (is (= "C9-USE-AFTER-MOVE" (get-in rejection [:diagnostics 0 :rule])))
       (is (= (:source-span request) (get-in result [:preserves :source-span])))
-      (is (= :passed (:status ((helper 'invoke-c9) 'sh10-verify-ownership-result [request result])))))))
+      (is (= :passed
+             (:status
+              (fixture-support/invoke-c9
+               'sh10-verify-ownership-result [request result])))))))
 
 (deftest forwarding-propagation-and-schema-retain-existing-semantics
   (let [source (node :allocated :str [] {:provider-id :gravity.reference/jvm-managed-allocator

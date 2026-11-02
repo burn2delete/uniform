@@ -31,6 +31,15 @@
            'map-entry 'fail-recur! 'nontail-value!
            'execute-generic-builtin-call-scoped 'execute-call-scoped}
          (set (keys (ns-publics 'gravity.runtime)))))
+  (let [contract (:gravity/namespace-contract (meta #'runtime/execute-plan))]
+    (is (= (set (keys (:public-api contract)))
+           (set (keep (fn [[name operation]]
+                        (when (:gravity/namespace-contract (meta operation)) name))
+                      (ns-interns 'gravity.runtime)))))
+    (is (every? #(= contract (:gravity/namespace-contract (meta %)))
+                (vals (ns-publics 'gravity.runtime))))
+    (is (every? #(not (:private (meta %)))
+                (vals (ns-publics 'gravity.runtime)))))
   (doseq [[name operation] (ns-publics 'gravity.runtime)]
     (let [contract (:gravity/namespace-contract (meta operation))]
       (is (= 'gravity.runtime (:namespace contract)))
