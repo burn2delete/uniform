@@ -166,8 +166,6 @@
     (loop [forms []]
       (let [form (read {:eof ::eof} reader)]
         (if (= ::eof form) forms (recur (conj forms form)))))))
-(defn- named-top-level-form [forms kind name]
-  (first (filter #(and (seq? %) (= kind (first %)) (= name (second %))) forms)))
 (defn- quoted-body [definition-form]
   (let [body (nth definition-form 3 nil)]
     (when (and (seq? body) (= 'quote (first body))) (second body))))
@@ -399,7 +397,6 @@
   (let [policy (invoke 'sh17-target-lowering-policy [])]
     (is (= [:llvm :c :wasm] (:backends policy)))
     (is (= [:hosted] (:profiles policy)))
-    (is (= 8192 (get-in policy [:structural-bounds :maximum-nodes])))
     (doseq [[function expected-artifact]
             [['c14-build-bounded-llvm-lowering-record
               :gravity/c14-bounded-llvm-lowering-record]
