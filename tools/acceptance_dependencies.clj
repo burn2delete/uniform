@@ -155,8 +155,8 @@
               parsed (mapv #(re-matches #"- \[[ xX]\] `([^\s`]+)`(?: .*)?" %) rows)
               ids (mapv second parsed)]
           ;; Preserve literal existing IDs, including backend-llvm. Naming is
-          ;; not ownership: each component's projector validates its own exact
-          ;; population; this read-only census must not invent a prefix policy.
+          ;; not ownership: this read-only census must not invent a prefix
+          ;; policy or become a second task authority.
           (require! (and (seq ids) (every? some? parsed)
                          (= (count ids) (count (set ids))))
                     (str "Missing, duplicate or malformed implementation IDs: " component))
@@ -203,13 +203,72 @@
 ;; crosswalk routes are incidence, not a second editable task/status graph.
 (def sh-crosswalk-path "specs/sh-family-crosswalk/crosswalk.edn")
 
-(defn source-bound! [{:keys [path start-byte end-byte sha256 raw]} read-text]
-  (let [text (read-text path) bytes (.getBytes text "UTF-8")]
-    (require! (and (integer? start-byte) (integer? end-byte)
-                   (<= 0 start-byte end-byte (alength bytes))) "Invalid source byte span")
-    (let [actual (String. (java.util.Arrays/copyOfRange bytes start-byte end-byte) "UTF-8")]
-      (require! (and (= raw actual) (= sha256 (acceptance-dependencies/sha256 actual)))
-                (str "Changed source span: " path)))))
+(defn navigation-source-path? [path]
+  ;; Component roadmaps and task-ledger preambles are navigation-only views of
+  ;; the exact task rows. Their captured digests stay in the crosswalk as
+  ;; historical provenance, but layout edits must not rebind SH acceptance
+  ;; history. Task rows and all other source-bound inputs remain exact below;
+  ;; the separately classified historical ownership map is not a current claim.
+  (or (str/starts-with? path "docs/component-roadmaps/")
+      (re-matches #"specs/[a-z-]+-workflow/tasks\.md" path)))
+
+(defn historical-sh-source-path? [path]
+  ;; This ownership map is a historical SH routing input. Its live entries may
+  ;; be retired without rebinding current task or acceptance authority; the
+  ;; caller records that drift as unassessed instead of treating it as current.
+  (= path "docs/self-hosting-slice-ownership.edn"))
+
+(defn source-raw
+  "Resolve a legacy inline source span or a normalized crosswalk snapshot.
+  Snapshot references are content-addressed and therefore fail closed on a
+  missing, substituted or internally inconsistent payload."
+  ([source] (source-raw source nil))
+  ([source snapshots]
+   (cond
+     (contains? source :raw)
+     (do
+       (require! (not (contains? source :source-snapshot-ref))
+                 "Source span contains both inline and referenced payloads")
+       (require! (string? (:raw source)) "Inline source span is not text")
+       (:raw source))
+
+     :else
+     (let [reference (:source-snapshot-ref source)
+           raw (get snapshots reference)]
+       (require! (and (string? reference) (string? raw)
+                      (= reference (sha256 raw)))
+                 "Missing or tampered source snapshot")
+       raw))))
+
+(defn source-bound!
+  ([source read-text] (source-bound! source nil read-text))
+  ([{:keys [path start-byte end-byte sha256] :as source} snapshots read-text]
+   (let [raw (source-raw source snapshots)
+         text (read-text path) bytes (.getBytes text "UTF-8")]
+     (require! (and (integer? start-byte) (integer? end-byte)
+                    (<= 0 start-byte end-byte (alength bytes))) "Invalid source byte span")
+     (let [actual (String. (java.util.Arrays/copyOfRange bytes start-byte end-byte) "UTF-8")]
+       (require! (and (= raw actual) (= sha256 (acceptance-dependencies/sha256 actual)))
+                 (str "Changed source span: " path))))))
+
+(defn current-task-body!
+  "Check a current task row's captured body without rebinding its history.
+  Task-ledger preambles are navigation layout, so their edits can shift a row;
+  the row itself must remain one unique exact captured byte sequence."
+  ([source read-text] (current-task-body! source nil read-text))
+  ([{:keys [path sha256] :as source} snapshots read-text]
+   (let [raw (source-raw source snapshots)
+         text (read-text path)
+        occurrence-count (loop [offset 0 occurrences 0]
+                           (let [found (.indexOf text raw offset)]
+                             (if (neg? found)
+                               occurrences
+                               (recur (+ found (max 1 (clojure.core/count raw)))
+                                      (inc occurrences)))))]
+     (require! (= sha256 (acceptance-dependencies/sha256 raw))
+               (str "Forged current task body digest: " path))
+     (require! (= 1 occurrence-count)
+               (str "Changed or ambiguous current task body: " path)))))
 
 (defn typed-adjacency [nodes edges condition-values]
   (let [ids (set (keys nodes))]
@@ -303,10 +362,13 @@
 
 (defn task-sh-view [crosswalk read-text]
   (let [requirements (:requirements crosswalk)
+        snapshots (:source-snapshots crosswalk)
+        source-text #(source-raw % snapshots)
         shared-rule (:shared-completion-rule crosswalk)
-        _ (source-bound! (:source shared-rule) read-text)
+        _ (source-bound! (:source shared-rule) snapshots read-text)
         _ (require! (and (= :sh03-and-later-uniform-completion (:id shared-rule))
-                         (str/starts-with? (get-in shared-rule [:source :raw]) "## Three boundaries and one shared completion rule"))
+                         (str/starts-with? (source-text (:source shared-rule))
+                                           "## Three boundaries and one shared completion rule"))
                     "Missing original shared completion rule")
         original-sh (milestone-graph (read-text milestone-path))
         _ (require-population! (set (for [n (range 30) r (range 1 7)] (format "SH-%02d.%d" n r)))
@@ -322,18 +384,18 @@
               (implementation-ids (read-text (str "specs/" component "-workflow/tasks.md")) component)
               (str component " live implementation task")))
         _ (doseq [row tasks]
-            (source-bound! (:source row) read-text)
-            (let [[_ checked id] (re-find #"^- \[([ xX])\] `([^`]+)`" (get-in row [:source :raw]))]
+            (current-task-body! (:source row) snapshots read-text)
+            (let [[_ checked id] (re-find #"^- \[([ xX])\] `([^`]+)`" (source-text (:source row)))]
               (require! (and (= id (:id row)) (= (:checked row) (not= " " checked)))
                         "Task status/ID differs from actual authority")
               (when (:checked row)
-                (require! (str/includes? (get-in row [:source :raw]) "Accepted;")
+                (require! (str/includes? (source-text (:source row)) "Accepted;")
                           "Checked task lacks explicit accepted status"))))
         _ (doseq [r requirements]
-            (source-bound! (:acceptance-source r) read-text)
-            (source-bound! (:context-source r) read-text)
+            (source-bound! (:acceptance-source r) snapshots read-text)
+            (source-bound! (:context-source r) snapshots read-text)
             (when-let [history (get-in r [:historical-completion :evidence-source])]
-              (source-bound! history read-text))
+              (source-bound! history snapshots read-text))
             (require! (= (set (:completion-prerequisites r)) (get original-sh (:milestone r)))
                       "SH criterion changed original completion prerequisites")
             (require! (= (:shared-completion-rule r)
@@ -343,7 +405,21 @@
                       "Unmapped SH criterion without explicit gap")
             (doseq [t (:task-references r)]
               (require! (= (:component t) (:component (task-map (:id t)))) "Unknown SH task owner/reference")))
-        _ (doseq [[path digest] (:source-digests crosswalk)]
+        historical-source-applicability
+        (into (sorted-map)
+              (for [[path digest] (:source-digests crosswalk)
+                    :when (historical-sh-source-path? path)]
+                [path (evidence-source-state
+                       {:path path
+                        :sha256 digest
+                        :source-commit (get-in crosswalk [:applying-source-pins path])
+                        :current-applicability :unassessed}
+                       read-text)]))
+        ;; Navigation snapshots and the explicitly historical ownership input
+        ;; report drift separately; current task/acceptance inputs stay exact.
+        _ (doseq [[path digest] (:source-digests crosswalk)
+                  :when (not (or (navigation-source-path? path)
+                                 (historical-sh-source-path? path)))]
             (require! (= digest (sha256 (read-text path))) (str "Stale SH input: " path)))
         ;; Contract declarations permit interface work; they do not attest an
         ;; implementation. Acceptance facets remain unknown without exact receipts.
@@ -367,9 +443,9 @@
         _ (require-population! (set (map #(format "SH07-C%02d" %) (range 1 19))) (map :id sequence) "SH07 sequence")
         _ (require! (= 18 (count sequence)) "Duplicate SH07 sequence row")
         _ (doseq [r sequence]
-            (source-bound! (:source r) read-text)
+            (source-bound! (:source r) snapshots read-text)
             (let [[_ id _ _ declaration] (re-matches #"\| (SH07-C\d{2}) \| ([^|]+) \| ([^|]+) \| ([^|]+) \| ([^\n]+)\|"
-                                                    (get-in r [:source :raw]))]
+                                                    (source-text (:source r)))]
               (require! (and (= id (:id r)) (= (str/trim declaration) (:dependency-declaration r)))
                         "SH07 sequence metadata differs from original source")))
         sequence-nodes (into {} (for [r sequence] [(:id r) {:state :unassessed :scope :original-implementation-sequence}]))
@@ -425,6 +501,7 @@
     {:schema-version 1 :authority :structural-only :nodes nodes :typed-edges edges
      :condition-values conditions
      :evidence-source-applicability evidence-applicability
+     :historical-source-applicability historical-source-applicability
      :mapping-ready? (every? #(= :owner-and-independent-reviewed (:coverage %)) requirements)
      :coverage-gaps (mapv :id (filter #(= :missing-task-authority (:coverage %)) requirements))
      :adjacency adjacency :cycles (cycles adjacency) :frontier (advisory-frontier nodes edges conditions)

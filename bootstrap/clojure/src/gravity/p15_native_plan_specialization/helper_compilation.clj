@@ -5,7 +5,7 @@
 (defn compile-gravity-c-emitter-helper!
   [request-source
    {:keys [source-loader helper-contract-fail! helper-source-relative
-           max-helper-source-bytes helper-source-content-hash helper-function
+           helper-source-content-hash helper-function
            helper-function-shape helper-contract helper-function-semantic-hash
            helper-contract-hash]}]
   (let [snapshot
@@ -40,13 +40,6 @@
              {:missing-fact :gravity-c-emitter-source-path
               :expected-relative-path helper-source-relative
               :observed-source-path (:source-path snapshot)}))
-        _ (when (> (:source-byte-count snapshot) max-helper-source-bytes)
-            (helper-contract-fail!
-             request-source
-             "Gravity C emitter helper source snapshot exceeds its bound"
-             {:maximum-helper-source-bytes max-helper-source-bytes
-              :observed-helper-source-bytes (:source-byte-count snapshot)
-              :missing-fact :bounded-helper-source-snapshot}))
         actual-source-content-hash
         (str "sha256:" (bootstrap/sha256-hex (:source-text snapshot)))]
     (when-not (= actual-source-content-hash

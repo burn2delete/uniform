@@ -26,7 +26,7 @@
                    (<= (count (:source source-span)) 4096)
                    (= :valid
                       (:status
-                       (p15-s23-closed-core-bounded-utf8-count
+                       (p15-s23-closed-core-diagnostic-utf8-count
                         (:source source-span) 16384))))
           (:source source-span))
         safe-span
@@ -85,7 +85,7 @@
        {:requested-target (when (keyword? requested-target)
                             requested-target)}
        {:missing-fact :bounded-checked-core-authority-source-path}))
-    (p15-s23-closed-core-source-request-bounds!
+    (p15-s23-closed-core-source-request-byte-count!
      source-path source-text requested-target)
     (when-not (p15-s23-checked-core-authority-small-map? policy-selector 8)
       (p15-s23-closed-core-fail!

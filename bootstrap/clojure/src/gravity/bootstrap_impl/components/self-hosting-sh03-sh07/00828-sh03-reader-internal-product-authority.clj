@@ -101,6 +101,7 @@
     (when-not
      (and (= :gravity/sh03-to-c2-reader-products-v2
              (:sh03-reader-adapter-contract products))
+          (not (contains? products :pure-extension-results))
           (= expected-binding (:sh03-reader-plan-binding products))
           (= :gravity/sh03-reader-result (:artifact raw-result))
           (= :accepted (:status raw-result))

@@ -368,7 +368,7 @@
            (error-id #(plan/validate-catalog cache))))))
 
 (deftest catalog-resource-bounds-reject-invalid-numeric-values
-  (doseq [key [:max-concurrency :timeout-ms :max-output-bytes :max-test-vars]
+  (doseq [key [:max-concurrency :timeout-ms :max-output-bytes]
           value invalid-positive-bound-values]
     (is (= "UEP-CATALOG-RESOURCE-BOUND"
            (error-id #(plan/validate-catalog
@@ -431,7 +431,7 @@
 (deftest plan-rejects-invalid-recomputed-resource-bounds
   (let [identity-of (deref (var gravity.self-hosting.unified-execution-plan/identity-of))
         p (plan/plan {:route-id "sh07-b8-regression" :lane :fast})]
-    (doseq [k [:timeout-ms :max-output-bytes :max-test-vars]
+    (doseq [k [:timeout-ms :max-output-bytes]
             value invalid-positive-bound-values]
       (let [altered (assoc-in p [:resource-policy k] value)
             altered (assoc altered :plan-id (identity-of (dissoc altered :plan-id)))]
@@ -461,7 +461,7 @@
            (set (keys receipt))))
     ;; The additive iteration declaration changes the complete catalog identity.
     ;; Selection metadata stays authenticated; no identity-input exclusion.
-    (is (= "sha256:c1f543003e1c90b41ca869bd03598bdc4900e618658b937b6581445215fd86d5"
+    (is (= "sha256:aadaa54e4cacd4ecdd31d1594c3da011f16fe2e115558056467abd23474b9afb"
            (:receipt-id receipt)))
     (is (= receipt (plan/verify-receipt p receipt)))))
 

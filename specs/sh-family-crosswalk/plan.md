@@ -30,7 +30,9 @@ contacted for projection compatibility; accepted inputs follow integration.
 
 Inventory/source conservation precedes source-bound routing. Owner review
 precedes task-authority changes. Dependency extension reuses the existing
-consumer-to-prerequisite graph helpers and preserves legacy output keys.
+consumer-to-prerequisite graph helpers; the current crosswalk normalizes
+repeated source payloads while its consumer retains a legacy inline-span reader
+for immutable historical projections.
 Focused source/graph mutation controls precede independent review/publication.
 The complete reconciliation remains open until owner integration and exact
 independent review have finished. This list is delivery sequencing, not another

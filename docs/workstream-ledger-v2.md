@@ -22,6 +22,14 @@ Active candidates are reservations, one file per candidate:
 contracts/workstream-active/<workstream-id>.json
 ```
 
+Here `terminal` describes immutable shard storage, not integration authority.
+The migration classifies every state outside the governance policy's
+`active_candidate_states` as immutable storage, including historical `held`
+records. Such a held record remains held and confers no integration credit.
+Composition verification reads that committed policy and preserves the
+historical shard bytes and index entries; it does not reclassify held work as
+integrated or admit changes to unrelated immutable records.
+
 The manifest index is sorted by stable workstream id. Each entry records the
 relative path, SHA-256, lifecycle state, invariant family, dependencies,
 terminal flag, and source ordinal. The ordinal reconstructs the historical v1
@@ -57,6 +65,13 @@ The v1 aggregate is retained as a migration source and audit reference, but
 normal governance validation reads the compact v2 manifest and its shards. The
 migration proof is a frozen snapshot: later terminal publications advance the
 manifest aggregate digest without rewriting the v1 source or its proof.
+
+The record's `candidate_commit` pins immutable source content. Later lifecycle
+metadata has its own complete commit/tree identity; it never embeds its own
+commit hash. The governed-composition preflight in
+[Workstream Governance](workstream-governance.md#immutable-source-and-later-lifecycle-metadata)
+binds both tuples and verifies the exact permitted shard/manifest delta. It does
+not exempt metadata from review or permit changes to source or unrelated rows.
 
 ## Validation
 

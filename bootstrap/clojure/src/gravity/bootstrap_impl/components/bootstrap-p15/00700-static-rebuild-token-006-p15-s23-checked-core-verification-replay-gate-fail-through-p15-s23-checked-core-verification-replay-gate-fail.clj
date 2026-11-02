@@ -33,7 +33,7 @@
         (if (and (string? cause-message)
                  (= :valid
                     (:status
-                     (p15-s23-closed-core-bounded-utf8-count
+                     (p15-s23-closed-core-diagnostic-utf8-count
                       cause-message 4096))))
           cause-message
           "unbounded-cause-redacted")
@@ -95,7 +95,7 @@
         (if (and (string? diagnostic-message)
                  (= :valid
                     (:status
-                     (p15-s23-closed-core-bounded-utf8-count
+                     (p15-s23-closed-core-diagnostic-utf8-count
                       diagnostic-message 4096))))
           diagnostic-message
           "unbounded-diagnostic-message-redacted")

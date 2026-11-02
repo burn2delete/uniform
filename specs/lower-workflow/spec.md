@@ -10,7 +10,7 @@ Make [tasks.md](tasks.md#implementation-tasks) the sole editable authority for
 the five existing Lower implementation outcomes. The
 [component roadmap](../../docs/component-roadmaps/lower.md) retains its selected
 release target, producer/admission requirements, accounting, compatibility and
-acceptance wording with a generated task table. Retain direct navigation to its
+acceptance wording with a direct task-ledger link. Retain direct navigation to its
 [release outcome](../../docs/component-roadmaps/lower.md#release-outcome) and
 [remaining work](../../docs/component-roadmaps/lower.md#current-evidence-and-remaining-work).
 The [C14 contract](../../docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md)
@@ -22,10 +22,10 @@ retain their exact mapped text and authority boundaries.
 ### US1 - Find one editable implementation task
 
 Preserve all five component/heading/title semantic IDs, lower/1 through lower/5
-display labels, exact evidence/status and concrete exit criteria. Generate the
-original three-column roadmap table from the marked ledger. Missing, duplicate
-or unknown IDs, title/ID disagreement, malformed records and stale views reject.
-There is no second editable implementation ledger or positional renumbering.
+display labels, exact evidence/status and concrete exit criteria in the sole
+task ledger. The roadmap links directly to those records. There is no second
+editable implementation ledger or
+positional renumbering.
 
 ### US2 - Separate workflow delivery from implementation acceptance
 
@@ -33,19 +33,17 @@ Keep the complete historical migration tasks file frozen outside the parsed
 implementation region. Its checkboxes do not indicate compiler completion. All
 five implementation outcomes remain Open and unchecked. Checking a task requires
 explicit Accepted; status and independently reviewed immutable owner evidence.
-The tool checks structural consistency, not semantic receipt validity. Workflow
+The ledger records status separately from semantic receipt validity. Workflow
 artifacts, metadata and assertion counts do not establish producer, lowering,
 emission or runtime acceptance.
 
 ## Scope and compatibility
 
-Seven files: Lower roadmap, four workflow artifacts and focused Clojure
-projector/test. Reuse the accepted shared parser and HTTPS-only policy unchanged;
-no Opt arrow allowance is carried into Lower. Preserve original table cells,
-complete task history, links and all roadmap wording outside additive task
-navigation. Preserve the entire reviewed Additional contract interfaces appendix
-byte-for-byte. Shared helpers, mapping artifacts, other packages, compiler/runtime
-implementation/tests and normative contracts remain unchanged.
+Own the Lower roadmap and four workflow artifacts. Preserve complete task history,
+links and all roadmap wording outside additive
+task navigation. Preserve the entire reviewed Additional contract interfaces
+appendix byte-for-byte. Shared helpers, mapping artifacts, other packages,
+compiler/runtime implementation/tests and normative contracts remain unchanged.
 
 ## Evidence and outcome ownership
 
@@ -66,6 +64,6 @@ self-hosting, seed retirement or whole-platform support.
 
 ## Implementation naming review
 
-`lower-task-projection` names the subsystem and behavior. Follow the
+`lower-workflow` and its component roadmap name the subsystem and behavior. Follow the
 [semantic naming rule](../../.specify/semantic-names.md); compatibility IDs,
 historical planning references and compiler source names remain unchanged.

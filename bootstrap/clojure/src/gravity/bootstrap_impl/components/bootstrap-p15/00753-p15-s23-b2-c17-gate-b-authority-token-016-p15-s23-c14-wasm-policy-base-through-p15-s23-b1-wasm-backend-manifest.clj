@@ -49,101 +49,9 @@
      :c11-verifier c11-verifier
      :c11-verifier-id (p15-s23-c11-mir-digest c11-verifier)}))
 
-(defn p15-s23-c14-wasm-expected-record [optimized policy]
-  (let [request
-        {:artifact :gravity/c14-internal-target-lowering-request
-         :schema-version 1 :status :accepted
-         :input
-         {:kind :gravity/mir :id (:semantic-id optimized)
-          :artifact-id (:artifact-id optimized)
-          :c11-artifact-id (:expected-c11-artifact-id policy)
-          :verified? true
-          :verifier-report (:c11-verifier policy)
-          :verifier-report-id (:c11-verifier-id policy)
-          :optimization-status :identity-pass-complete
-          :optimization-report
-          {:artifact-id (:artifact-id optimized)
-           :semantic-id (:semantic-id optimized)
-           :decision-id (get-in optimized [:decision-record :decision-id])
-           :verifier-result (get-in optimized [:verifier-replay :result])}
-          :domain-status :not-applicable}
-         :request-id (:request-id policy)
-         :profile (:profile policy)
-         :profile-contract (:profile-contract policy)
-         :target (:target policy)
-         :source-target-selection (:source-target-selection policy)
-         :abi (:abi policy) :runtime (:runtime policy)
-         :providers (:providers policy)
-         :effects (:effects policy) :capabilities (:capabilities policy)
-         :safety (:safety policy) :proofs (:proofs policy)
-         :contract-bindings (:contract-bindings policy)
-         :required-evidence (:required-evidence policy)
-         :source-map (:source-map policy)
-         :dependency-provenance (:dependencies policy)
-         :c13-optimization-status :identity-pass-complete
-         :domain-ir-status :not-applicable :fusion-status :not-run
-         :target-policy (:target-policy policy)
-         :proof-to-target-metadata (:proof-target-metadata policy)
-         :unsupported-feature-report
-         {:status :bounded-surface-only
-          :policy (:unsupported-surface policy)
-          :diagnostic "C14-UNSUPPORTED" :fallback-status :rejected}
-         :diagnostics []}
-        payload
-        {:artifact :gravity/c14-bounded-wasm-lowering-payload
-         :c11-artifact-id (:expected-c11-artifact-id policy)
-         :c13-artifact-id (:artifact-id optimized)
-         :c13-semantic-id (:semantic-id optimized)
-         :mir (:optimized-mir optimized)
-         :operation-order
-         (get-in optimized [:semantic-identity :operation-order])
-         :fact-bindings (:fact-bindings policy)}]
-    {:artifact :gravity/c14-bounded-wasm-lowering-record
-     :schema-version 1 :status :accepted
-     :request request :bounded-lowering-payload payload
-     :eligibility
-     {:artifact :gravity/c14-target-eligibility-report
-      :backend :gravity.backend/wasm
-      :profile (:profile policy) :target (:target policy)
-      :accepted? true :rejections [] :fallbacks []
-      :missing-features [] :required-providers (:providers policy)
-      :proof-assumptions []
-      :explainability-record
-      {:decision :accepted
-       :bounded-surface
-       :pure-scalar-forwarding-do-let-if-integer-comparisons
-       :unsupported-diagnostic "C14-UNSUPPORTED"
-       :no-hidden-runtime? true
-       :no-hidden-effect-or-capability? true}
-      :checks
-      [:profile-allows-backend
-       :target-supports-required-mir-families
-       :runtime-services-explicit :abi-represents-exports
-       :effects-have-authority-preserving-providers
-       :proof-assumptions-valid-for-target]}
-     :abi-layout
-     {:artifact :gravity/c14-abi-layout-record
-      :abi (:abi policy) :target (:target policy)
-      :type-facts (get-in policy [:fact-bindings :type])
-      :ownership-facts (get-in policy [:fact-bindings :ownership])
-      :safety-facts (get-in policy [:fact-bindings :safety])
-      :profile-contract (:profile-contract policy)
-      :source-map (:source-map policy)}
-     :runtime-provider
-     {:artifact :gravity/c14-runtime-provider-record
-      :runtime (:runtime policy) :providers (:providers policy)
-      :effects (:effects policy) :capabilities (:capabilities policy)}
-     :proof-target-metadata
-     {:artifact :gravity/c14-proof-target-metadata-map
-      :entries (get-in policy [:proof-target-metadata :entries])
-      :proofless-metadata-rejected?
-      (get-in policy [:proof-target-metadata
-                      :proofless-metadata-rejected?])
-      :proofs (:proofs policy)}
-     :dependency-provenance (:dependencies policy)
-     :diagnostics [] :semantic-authority :gravity-source
-     :execution-tcb :clojure-stage0-rule-runner
-     :clojure-seed-boundary? true :self-hosted? false}))
+(defn p15-s23-c14-wasm-expected-record
+  [optimized policy]
+  (gravity.lowering/wasm-record optimized policy))
 
 (defn p15-s23-c14-wasm-policy
   [c11-artifact checked-core c11-report c13-record c13-rule]
@@ -171,12 +79,8 @@
          candidate source-path binding p15-s23-c14-wasm-builder-function
          [c13-record policy] "C14-INPUT")
         expected (p15-s23-c14-wasm-expected-record c13-record policy)]
-    (p15-s23-c11-mir-require-strict-structure!
-     source-path expected raw :independent-c14-wasm-reconstruction)
-    (when-not (= expected raw)
-      (p15-s23-b4-wasm-fail!
-       "C14-MANIFEST" source-path raw
-       {:missing-fact :exact-c13-bound-c14-wasm-reconstruction}))
+    (gravity.lowering/assert-wasm-reconstruction!
+     #'p15-s23-c11-mir-require-strict-structure! #'p15-s23-b4-wasm-fail! source-path expected raw)
     (p15-s23-c13-c14-b1-seal-stage
      :gravity/c14-bounded-wasm-lowering-record raw
      (p15-s23-c13-c14-b1-source-rule

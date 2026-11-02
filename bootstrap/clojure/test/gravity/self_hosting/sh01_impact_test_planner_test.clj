@@ -6,6 +6,8 @@
             [gravity.self-hosting.sh01-component-test-dependencies
              :as component-dependencies]
             [gravity.self-hosting.sh01-impact-test-planner :as planner]
+            [gravity.self-hosting.sh01-development-loop-wiring :as wiring]
+            [gravity.self-hosting.sh01-development-test-cache :as cache]
             [gravity.self-hosting-test-runner :as runner])
   (:import [java.nio.file Files]
            [java.nio.file.attribute FileAttribute]))
@@ -309,8 +311,6 @@
               (assoc-in manifest-route [:dependency-closure :complete?] false)]
              ["wrong resource class"
               (assoc manifest-route :resource-class :normal)]
-             ["wrong maximum vars"
-              (assoc-in manifest-route [:bounds :max-test-vars] 1)]
              ["fresh execution mode"
               (assoc manifest-route :execution-mode :fresh-isolated-process)]
              ["authoritative ceiling"
@@ -484,6 +484,127 @@
       (is (false? (get-in shard [:test-policy :proof?])) relative)
       (is (nil? (:cache-closure shard)) relative)
       (is (false? (:authoritative? plan)) relative))))
+
+(deftest reader-dispatch-standalone-registration-is-exact-and-fresh
+  (let [path "bootstrap/clojure/test/gravity/reader/dispatch_test.clj"
+        namespace 'gravity.reader.dispatch-test
+        context (planner/planning-context)
+        entry (get-in context [:standalone-test-index :by-namespace namespace])
+        contract (component-dependencies/read-contract)
+        missing (update contract :standalone-tests
+                        #(vec (remove (fn [test] (= namespace (:namespace test))) %)))]
+    (is (= {:namespace namespace :slice "SH-03" :owner :sh-reader}
+           (get-in context [:ownership :standalone-test-owners path])))
+    (is (= "reader-dispatch" (:test-id entry) (:jvm-group entry)))
+    (is (= {:deterministic? true :performance? false :proof? false
+            :freshness-required? true} (:test-policy entry)))
+    (is (nil? (component-dependencies/reviewed-cache-closure namespace)))
+    (is (= [namespace] (:namespaces (runner/select-tests ["--namespace" (str namespace)]))))
+    (let [resources (vec (enumeration-seq (.getResources (.getContextClassLoader (Thread/currentThread))
+                                                        "gravity/reader/dispatch_test.clj")))]
+      (is (= 1 (count resources)))
+      (is (= (.getCanonicalFile (io/file path))
+             (.getCanonicalFile (io/file (.toURI (first resources)))))))
+    (let [plan (planner/build-plan {:changed-paths [path]})]
+      (is (= [namespace] (:namespaces plan)))
+      (is (= ["SH-03"] (:direct-slices plan)))
+      (let [shard (first (:shards plan))]
+        (is (= "reader-dispatch" (:component-id shard)))
+        (is (= :normal (:resource-class shard)))
+        (is (true? (get-in shard [:test-policy :freshness-required?])))
+        (is (nil? (:cache-closure shard))))
+      (is (false? (:authoritative? plan))))
+    (let [data (try (planner/planning-context
+                    {:component-dependencies (component-dependencies/dependency-index missing)})
+                   nil (catch clojure.lang.ExceptionInfo e (ex-data e)))]
+      (is (= "SH01-STANDALONE-TEST-CONTRACT" (:id data)))
+      (is (= [path] (:ownership-only-paths data)))
+      (is (empty? (:dependency-only-paths data))))))
+
+(deftest normal-reader-dispatch-registration-is-exact-and-fresh
+  (let [path "bootstrap/clojure/test/gravity/reader/normal_dispatch_test.clj"
+        namespace 'gravity.reader.normal-dispatch-test
+        context (planner/planning-context)
+        entry (get-in context [:standalone-test-index :by-namespace namespace])
+        plan (planner/build-plan {:changed-paths [path]})]
+    (is (= {:namespace namespace :slice "SH-03" :owner :sh-reader}
+           (get-in context [:ownership :standalone-test-owners path])))
+    (is (= "reader-normal-dispatch" (:test-id entry) (:jvm-group entry)))
+    (is (= {:deterministic? true :performance? false :proof? false :freshness-required? true}
+           (:test-policy entry)))
+    (is (= [namespace] (:namespaces plan)))
+    (is (= ["SH-03"] (:direct-slices plan)))
+    (is (= :normal (get-in plan [:shards 0 :resource-class])))
+    (is (nil? (component-dependencies/reviewed-cache-closure namespace)))
+    (is (= [namespace] (:namespaces (runner/select-tests ["--namespace" (str namespace)]))))
+    (let [resources (vec (enumeration-seq (.getResources (.getContextClassLoader (Thread/currentThread))
+                                                        "gravity/reader/normal_dispatch_test.clj")))]
+      (is (= 1 (count resources)))
+      (is (= (.getCanonicalFile (io/file path))
+             (.getCanonicalFile (io/file (.toURI (first resources)))))))))
+
+(deftest reader-dispatch-fresh-policy-retains-full-snapshot-inputs
+  ;; Pure snapshot/request construction in a temporary Git repository. No
+  ;; broker, cache operation, test producer or compiler is launched.
+  (let [root (.toRealPath (Files/createTempDirectory "gravity-reader-dispatch-inputs-"
+                                                    (make-array FileAttribute 0))
+                          (make-array java.nio.file.LinkOption 0))
+        plan (planner/build-plan {:changed-paths ["bootstrap/clojure/test/gravity/reader/dispatch_test.clj"]})
+        job (first (:shards plan))
+        paths ["bootstrap/clojure/src/gravity/reader/dispatch.clj"
+               "bootstrap/clojure/test/gravity/reader/dispatch_test.clj"
+               "bootstrap/clojure/fixtures/accepted/reader-extension-input.txt"
+               "contracts/stage0-incremental-test-dependencies.edn"
+               "docs/self-hosting-slice-ownership.edn" "deps.edn"]
+        request (fn [snapshot]
+                  (wiring/cache-request
+                   {:schema :gravity/sh01-development-loop-context-v1 :test-only? true
+                    :working-directory (str root) :cache-directory root :timeout-ms 1000
+                    :snapshot snapshot :runtime-tool-inputs [] :classpath-inputs []}
+                   plan job {}))]
+    (try
+      (run-process! root "git" "init" "-q")
+      (doseq [path paths]
+        (let [target (.resolve root path)]
+          (Files/createDirectories (.getParent target) (make-array FileAttribute 0))
+          (Files/copy (.toPath (io/file path)) target (make-array java.nio.file.CopyOption 0))))
+      (run-process! root "git" "add" ".")
+      (run-process! root "git" "-c" "user.name=Gravity" "-c" "user.email=gravity@example.invalid"
+                    "commit" "-qm" "actual Reader input bytes for snapshot fixture")
+      (let [snapshot (wiring/repository-snapshot root)
+            selected (request snapshot)]
+        (is (= (:repository-identity snapshot) (:repository-identity selected)))
+        (is (= ["repository/complete-production-closure-v1"]
+               (mapv :path (get-in selected [:dependencies :production-inputs]))))
+        (is (= ["repository/complete-transitive-closure-v1"]
+               (mapv :path (get-in selected [:dependencies :transitive-production-inputs]))))
+        (is (= ["repository/complete-fixture-contract-closure-v1"]
+               (mapv :path (get-in selected [:dependencies :fixture-contract-inputs]))))
+        (is (= :freshness-required-test
+               (:reason (try (cache/cache-key selected) nil
+                             (catch clojure.lang.ExceptionInfo e (ex-data e))))))
+        (doseq [path paths]
+          (let [file (.resolve root path) bytes (Files/readAllBytes file)
+                stamp (Files/getLastModifiedTime file (make-array java.nio.file.LinkOption 0))
+                changed (aclone bytes)]
+            (try
+              (aset-byte changed 0 (unchecked-byte (bit-xor 1 (aget bytes 0))))
+              (Files/write file changed (make-array java.nio.file.OpenOption 0))
+              (Files/setLastModifiedTime file stamp)
+              (is (not= (:repository-identity selected)
+                        (:repository-identity (request (wiring/repository-snapshot root)))) path)
+              (finally (Files/write file bytes (make-array java.nio.file.OpenOption 0))
+                       (Files/setLastModifiedTime file stamp)))))
+        (doseq [path ["bootstrap/clojure/src/gravity/reader/dispatch.cljc"
+                     "bootstrap/clojure/src/gravity/reader/dispatch__init.class"
+                     "bootstrap/clojure/src/data_readers.clj"]]
+          (let [file (.resolve root path)]
+            (try
+              (spit (str file) "snapshot-only shadow/resource fixture")
+              (is (not= (:repository-identity selected)
+                        (:repository-identity (request (wiring/repository-snapshot root)))) path)
+              (finally (Files/delete file))))))
+      (finally (delete-tree! root)))))
 
 (deftest runtime-module-read-catalog-preserves-owner-and-requires-guarded-execution
   (doseq [[path namespace]
@@ -660,6 +781,32 @@
                    [:by-test-path
                     "bootstrap/clojure/test/gravity/c11_mir_test.clj"
                     :cache-closure-valid?]))))))
+
+(deftest cache-closure-accepts-more-than-former-input-cap
+  (let [index (component-dependencies/dependency-index)
+        component (get-in index [:by-component-id "c11-mir"])
+        test-entry (get-in index
+                           [:by-test-path
+                            "bootstrap/clojure/test/gravity/c11_mir_test.clj"])
+        base (component-dependencies/reviewed-cache-closure
+              'gravity.c11-mir-test)
+        existing (set (map :path (:inputs base)))
+        fixture-inputs
+        (->> (file-seq (io/file "bootstrap/clojure/fixtures"))
+             (filter #(.isFile %))
+             (map #(.getPath %))
+             (map #(str/replace % "\\" "/"))
+             sort
+             (remove existing)
+             (take 97)
+             (mapv #(hash-map :role :fixture :path %)))
+        closure (update base :inputs into fixture-inputs)
+        valid? (deref (ns-resolve
+                       'gravity.self-hosting.sh01-component-test-dependencies
+                       'valid-cache-closure?))]
+    (is (= 97 (count fixture-inputs)))
+    (is (> (count (:inputs closure)) 96))
+    (is (true? (valid? component test-entry closure)))))
 
 (deftest exact-development-metadata-carries-only-validated-closure
   (let [index (component-dependencies/dependency-index)

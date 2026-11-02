@@ -1,0 +1,18 @@
+(ns build.metadata-checks
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata
+   {:package
+    {:compiled-gate
+     {:build-graphs
+      [{:artifact-id "build-graph:fixture"
+        :declared-effects #{:build/read-file}
+        :nodes [{:node-id :read :effects #{:build/read-file}}]}]
+      :reproducible-build-recipes
+      [{:artifact-id "recipe:fixture" :environment {:network :disabled}}]}}}))
+
+(defn main [] (println "build-metadata"))

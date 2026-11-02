@@ -1,5 +1,9 @@
 # Reader dispatch development evidence
 
+The next source increment is documented separately in
+[normal Reader dispatch seam](normal-dispatch-evidence.md); its injected fixture
+results do not establish authenticated Reader execution.
+
 Task: `reader/finite-remaining-work/extension-policy-closure` (open).
 Base: `abc4ed1c8bdb944c7aed949a0215f14579864311`.
 

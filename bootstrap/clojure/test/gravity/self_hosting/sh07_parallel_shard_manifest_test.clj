@@ -113,8 +113,7 @@
    :replaces? false
    :exhaustive? false
    :bounds {:timeout-ms 3600000
-            :max-output-bytes 262144
-            :max-test-vars 64}
+            :max-output-bytes 262144}
    :resource-class :memory-heavy
    :cache-policy {:mode :eligible
                   :key-inputs [:dependency-closure :source-bytes :fixture-bytes

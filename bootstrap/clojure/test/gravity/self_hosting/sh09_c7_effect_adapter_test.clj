@@ -1,50 +1,12 @@
 (ns gravity.self-hosting.sh09-c7-effect-adapter-test
-  (:require [clojure.java.io :as io]
-            [clojure.test :refer [deftest is testing]]
-            [gravity.bootstrap :as bootstrap]
-            [gravity.self-hosting.sh09-body-effect-test :as body-effects]))
+  (:require [clojure.test :refer [deftest is testing]]
+            [gravity.self-hosting.sh08-function-call-kernel-support :as kernel-support]))
 
-(defn- repository-root
-  []
-  (let [resource
-        (io/resource
-         "gravity/self_hosting/sh09_c7_effect_adapter_test.clj")]
-    (when-not resource
-      (throw
-       (ex-info
-        "SH-09 C7 adapter test source is not on the classpath"
-        {:id "SH09-C7-ADAPTER-TEST-SOURCE"})))
-    (loop [candidate (.getParent (.toPath (io/file (.toURI resource))))]
-      (cond
-        (nil? candidate)
-        (throw
-         (ex-info
-          "Repository root could not be located"
-          {:id "SH09-C7-ADAPTER-REPOSITORY-ROOT"}))
-
-        (.isFile (.toFile (.resolve candidate "deps.edn")))
-        candidate
-
-        :else
-        (recur (.getParent candidate))))))
-
-(def ^:private root (delay (repository-root)))
-
-(def ^:private source-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity")
-
-(defn- compile-plan
-  []
-  (body-effects/compile-c8-module-bundle (str (.resolve @root source-relative-path))))
-
-(def ^:private c8-plan (delay (compile-plan)))
+(def ^:private c8-plan kernel-support/c8-plan)
 
 (defn- invoke-c8
   [function arguments]
-  (bootstrap/p15-s23-stage2-runtime-execute-function
-   {:engine :gravity-sh09-c7-effect-adapter-test
-    :compiler-artifact-plan? true}
-   @c8-plan function arguments))
+  (kernel-support/invoke-c8 function arguments))
 
 (def ^:private sha-a
   "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
@@ -162,113 +124,11 @@
 
 (defn- function-typed-result
   [actual-path]
-  (let [module
-        {:namespace 'gravity.self-hosting.sh09.function-synthetic
-         :profile :meta :target :jvm
-         :effects [] :capabilities [] :safety :safe}
-        functions
-        [{:artifact :gravity/c7-function-type
-          :function-id sha-a
-          :function-core-node-id sha-b
-          :body-core-node-id sha-c
-          :latent-effects []
-          :capabilities []
-          :thrown-error-effects [:pending-sh09]
-          :profile :meta
-          :target :jvm
-          :source-span {:source "function.gravity"
-                        :start-byte 0 :end-byte 1}
-          :status :inferred}]
-        calls
-        [{:artifact :gravity/c7-call-type-fact
-          :fact-id-request
-          {:domain :gravity/sh08-call-type-fact-v1
-           :call-core-node-id sha-d
-           :callee-function-syntax-id sha-a
-           :argument-types [:gravity.type/bool]
-           :result-type :gravity.type/bool}
-          :call-core-node-id sha-d
-          :caller-function-syntax-id sha-a
-          :callee-function-syntax-id sha-a
-          :argument-types [:gravity.type/bool]
-          :result-type :gravity.type/bool
-          :evaluation-order :operator-then-arguments
-          :syntax-id sha-e
-          :source-span {:source "function.gravity"
-                        :start-byte 2 :end-byte 3}
-          :origin-chain []
-          :generated-origin []
-          :profile :meta
-          :target :jvm
-          :effects []
-          :capabilities []
-          :status :inferred}]
-        proof {:domain :gravity/sh08-authoritative-higher-order-proof-v1}
-        typed-core
-        {:artifact :gravity/typed-core
-         :core-input sha-e
-         :module module
-         :types {sha-d :gravity.type/bool}
-         :constraints []
-         :function-types functions
-         :local-bindings []
-         :calls calls
-         :diagnostics []
-         :higher-order-proof proof
-         :higher-order-call-facts []}
-        function-products
-        {:function-records []
-         :call-edges []
-         :recursion-components []
-         :lexical-bindings []}
-        identity
-        {:domain :gravity/sh08-authoritative-higher-order-type-v1
-         :sh07-shaped-artifact-id sha-e
-         :module module
-         :function-records (:function-records function-products)
-         :call-edges (:call-edges function-products)
-         :recursion-components (:recursion-components function-products)
-         :lexical-bindings (:lexical-bindings function-products)
-         :function-type-table functions
-         :local-binding-facts []
-         :call-type-facts calls
-         :constraint-ledger []
-         :type-table {sha-d :gravity.type/bool}
-         :convergence {:status :converged}
-         :pending [:records :unions]
-         :higher-order-proof proof}]
-    {:artifact :gravity/sh08-function-typed-core-template
-     :schema-version 3
-     :status :accepted
-     :scope :capture-free-higher-order-fixed-arity-one-hop
-     :authentication-status :host-resolved-b47-verification-boundary
-     :module module
-     :sh07-shaped-artifact-id sha-e
-     :function-products function-products
-     :function-type-table functions
-     :local-binding-facts []
-     :call-type-facts calls
-     :constraint-ledger []
-     :type-table {sha-d :gravity.type/bool}
-     :convergence {:status :converged}
-     :typed-core typed-core
-     :diagnostics []
-     :artifact-id-request identity
-     :identity-input identity
-     :identity-resolution :coordinator-digest-required
-     :provenance {:actual-source-path actual-path}
-     :pending [:records :unions]
-     :higher-order-proof proof
-     :higher-order-call-facts []}))
+  (kernel-support/function-typed-result actual-path))
 
 (defn- function-verification
   [typed]
-  {:artifact :gravity/sh08-function-type-verification
-   :status :passed
-   :checks [:coherent-b47-function-records
-            :path-neutral-identity-input]
-   :expected typed
-   :candidate typed})
+  (kernel-support/function-verification typed))
 
 (defn- build
   [typed verification]
@@ -347,7 +207,7 @@
     (is (= :rejected (:status (build typed (assoc verification :candidate raw)))))))
 
 (deftest sh09-c7-adapter-source-structure-and-policy-are-exact
-  (let [functions (:functions (body-effects/module-root-plan @c8-plan))
+  (let [functions (:functions (kernel-support/module-root-plan @c8-plan))
         policy
         (invoke-c8 'sh09-authenticated-sh08-adapter-policy [])]
     (is (= :gravity/stage2-compiler-artifact-module-bundle (:kind @c8-plan)))

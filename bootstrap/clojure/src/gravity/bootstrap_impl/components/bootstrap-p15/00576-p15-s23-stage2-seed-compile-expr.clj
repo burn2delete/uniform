@@ -117,12 +117,19 @@
         (p15-s23-stage2-module-compile-call emitter module locals form child-module)
 
         (contains? builtin-functions callee)
+        (do
+          (when (= 'build-read-declared-input callee)
+            (when-not (= 1 (count (rest form)))
+              (fail! "L2-BUILTIN-ARITY" "Build input call requires one argument"
+                     {:source-span {:source (:source-path module)} :function callee
+                      :expected-arity 1 :actual-arity (count (rest form))}))
+            (declared-reader-bridge/validate-call! module (count (rest form))))
         {:op (get-in emitter [:call-rules :builtin-op] :builtin-call)
          :function callee
          :args (mapv (fn [index argument]
                        (p15-s23-stage2-seed-compile-expr
                         emitter (child-module index) locals argument))
-                     (range 1 (count form)) (rest form))}
+                     (range 1 (count form)) (rest form))})
 
         (contains? (:function-table module) callee)
         {:op (get-in emitter [:call-rules :function-op] :function-call)
@@ -212,7 +219,7 @@
 
 (def p15-s23-stage2-compiler-artifact-builtins
   '#{symbol? keyword? char? number? list? seq? vector? map? set? string?
-     contains? even? set sort-by-pr-str vec quot subvec integer? boolean? keys bootstrap-symbol-utf16-unit-count bootstrap-native-carrier-header bootstrap-native-identical?
+     contains? even? set sort-by-pr-str vec quot subvec integer? boolean? keys hosted-native-data-preflight bootstrap-symbol-utf16-unit-count bootstrap-native-carrier-header bootstrap-native-identical?
      sh07-canonical-text-compare sh07-declared-digest-hash
      sh07-observe-utf8-byte-count
      sh07-b51-admitted-executable-carrier-validation?})

@@ -8,8 +8,6 @@ Current owners are not assigned by this proposal; Deus confirms existing
 reservations or assigns unowned service work before implementation.
 
 Implementation task authority: [Spec Kit service ledger](../../specs/tools-workflow/tasks.md#implementation-tasks).
-Edit the ledger and run `clojure -M tools/tools_task_projection.clj --write`;
-the twelve service rows below are generated.
 
 ## Purpose and scope
 
@@ -63,26 +61,7 @@ session or compiler test was executed for this roadmap.
 
 ## Finite service outcomes and remaining work
 
-<!-- tools-task-projection:start -->
-Every row is open. The concrete implementation tasks in each row close only
-with actual service execution and the listed yes/no evidence, not record flags.
-Specialist roles are accountability recommendations, not ownership transfers.
-
-| Named outcome / specialist role | Remaining implementation tasks | Yes/no closing evidence and governing contract |
-| --- | --- | --- |
-| Format / formatter maintainer | Implement deterministic layout/comment/metadata handling; implement check, diff and policy-controlled write; compare Reader outputs before/after | Reader output and semantic syntax identity preserved? Comments retained? Invalid input rejected? Generated-file policy respected? [Formatter](../phase-13-tooling-and-developer-experience/179-t3-formatter-specification.md) |
-| Lint / analysis-tool maintainer | Implement the contract rule classes against named compiler/manifest facts; add project-scoped baselines and rule explanations; implement checked fixes and structured export | Rule source/facts and applicability visible? Unsafe fixes rejected? Baseline/fail-on-new reproducible? [Linter](../phase-13-tooling-and-developer-experience/180-t4-linter-specification.md) |
-| Language Server / editor maintainer | Implement transport/document state and cancellation; connect diagnostics, hover, completion/navigation/tokens; implement checked rename/actions and formatter delegation | Incremental state converges to CLI checks? Visibility/profile rules preserved? Stale edits and unsafe rename rejected? [Language server](../phase-13-tooling-and-developer-experience/181-t5-language-server-protocol-design.md) |
-| Debug / debugger maintainer | Implement artifact-bound sessions, source breakpoints and state inspection; implement separately authorized mutation; connect target and replay adapters | Source maps resolve? Unavailable versus optimized-away values distinguished? Unauthorized mutation and secret inspection rejected? [Debugger](../phase-13-tooling-and-developer-experience/182-t6-debugger-design.md) |
-| REPL / interactive-runtime tooling maintainer | Implement explicit session state and contract commands; compile/check every evaluation; record redacted transcripts and replay policy for effects | Same legality as compiled code? Grant denial before effect? Load/inspect/evaluate run in actual session? [REPL](../phase-13-tooling-and-developer-experience/178-t2-repl-ux-specification.md) |
-| IR Explorer / compiler-tool maintainer | Expose actual stage artifacts and source edges; implement semantic-versus-format diff; show failed pass and preservation/proof records | Version/profile/target and artifact IDs present? Missing/stale stages shown honestly? Check-elision evidence visible? [IR inspector](../phase-13-tooling-and-developer-experience/186-t10-compiler-explorer-and-ir-inspector-design.md) |
-| Profile / performance-tool maintainer | Capture real supported target samples; bind environment and source/artifact identity; report overhead, comparisons and safety-check evidence | Samples measured rather than generated? Unavailable counters explicit? No unrelated grant or proofless elision? [Profiler](../phase-13-tooling-and-developer-experience/187-t11-profiler-and-performance-inspector-design.md) |
-| Docs / documentation-tool maintainer | Generate human/structured API docs from compiler facts; execute runnable examples; detect stale hashes and redact protected values | Signatures/effects/profiles match exports? Failing examples and stale docs rejected? [Documentation generator](../phase-13-tooling-and-developer-experience/183-t7-documentation-generator-design.md) |
-| Dev Server / development-session maintainer | Implement watcher-to-incremental updates; implement legal reload versus safe restart; expose artifact/status events and redacted sessions | Changes produce actual updated artifacts? Incompatible hot reload restarts? Grants remain explicit? [Dev server](../phase-13-tooling-and-developer-experience/184-t8-dev-server-design.md) |
-| Registry View / package-tool maintainer | Implement structured package search/detail and update diffs; expose signatures, SBOM and revocation; enforce private visibility | CLI/API package facts agree? Capability changes visible before install? Unauthorized package existence not disclosed? [Registry UX](../phase-13-tooling-and-developer-experience/185-t9-package-registry-ux-specification.md) |
-| Safety Explorer / safety-tool maintainer | Expose unsafe/grant/taint/FFI/proof graphs from actual evidence; implement source navigation and structured export | Requested/granted/denied/used authority distinguished? Missing evidence visible? Certificate/checker identities retained? [Safety audit](../phase-13-tooling-and-developer-experience/188-t12-safety-audit-explorer-design.md) |
-| AI Development / AI-tool maintainer | Use declared AI artifacts to propose schema-validated patches/tests; compile-check generated source; enforce human-review policy before write and retain provenance | Repository/tool-output instructions remain untrusted data? Unreviewed writes rejected? Applied change has model/prompt/tool/reviewer identity? [AI tooling](../phase-13-tooling-and-developer-experience/189-t13-ai-assisted-development-tooling-specification.md) |
-<!-- tools-task-projection:end -->
+Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/tools-workflow/tasks.md#implementation-tasks).
 
 ## Acceptance and integration
 

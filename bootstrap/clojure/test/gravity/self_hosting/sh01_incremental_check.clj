@@ -64,11 +64,15 @@
 
 (defn execute-check
   "Executes exactly the namespaces selected by an SH-01 development plan."
-  [plan]
+  ([plan]
+   (execute-check plan {}))
+  ([plan options]
   (let [explanation (invalidation-explanation plan)
         execution
         (if (seq (:namespaces plan))
-          (runner/execute-plan plan {:development-loop? true})
+          (runner/execute-plan
+           plan (merge {:development-loop? true}
+                       (select-keys options [:coordination-root])))
           {:schema :gravity/sh01-parallel-test-report-v1
            :plan-schema (:schema plan)
            :authority :non-authoritative
@@ -90,7 +94,7 @@
      :exit-code (:exit-code execution)
      :plan plan
      :invalidation-explanation explanation
-     :execution execution)))
+     :execution execution))))
 
 (defn run-check
   "Plans and runs the non-authoritative development work for changed paths."
@@ -108,22 +112,29 @@
 
 (defn- parse-arguments
   [arguments]
-  (let [arguments (vec arguments)]
-    (cond
-      (empty? arguments) {:base-ref nil}
-
-      (and (= 2 (count arguments))
-           (= "--base-ref" (first arguments))
-           (string? (second arguments))
-           (not (str/blank? (second arguments))))
-      {:base-ref (second arguments)}
-
-      :else
-      (throw
-       (ex-info
-        "incremental-check accepts only --base-ref REF"
-        {:id "SH01-INCREMENTAL-USAGE"
-         :arguments arguments})))))
+  (let [arguments (vec arguments)
+        usage! #(throw
+                 (ex-info
+                  "incremental-check accepts --base-ref REF and --coordination-root ABSOLUTE"
+                  {:id "SH01-INCREMENTAL-USAGE" :arguments arguments}))]
+    (loop [remaining arguments parsed {:base-ref nil} seen #{}]
+      (if (empty? remaining)
+        parsed
+        (let [[option value & tail] remaining
+              key (get {"--base-ref" :base-ref
+                        "--coordination-root" :coordination-root} option)]
+          (when-not (and key (not (contains? seen key))
+                         (string? value) (not (str/blank? value))
+                         (not (str/starts-with? value "--")))
+            (usage!))
+          (when (= key :coordination-root)
+            (when-not
+             (try
+               (let [path (.toPath (java.io.File. value))]
+                 (and (.isAbsolute path) (= value (str (.normalize path)))))
+               (catch java.nio.file.InvalidPathException _ false))
+              (usage!)))
+          (recur tail (assoc parsed key value) (conj seen key)))))))
 
 (defn- cleanup!
   []
@@ -137,12 +148,12 @@
   [& arguments]
   (let [result
         (try
-          (let [{:keys [base-ref]} (parse-arguments arguments)
+          (let [{:keys [base-ref] :as options} (parse-arguments arguments)
                 discovery (planner/change-discovery base-ref)
                 plan (build-check-plan (:changed-paths discovery) discovery)]
               (println "SH-01 incremental developer check: non-authoritative")
               (prn (invalidation-explanation plan))
-              (let [report (execute-check plan)]
+              (let [report (execute-check plan options)]
                 (prn report)
                 report))
           (catch clojure.lang.ExceptionInfo exception
