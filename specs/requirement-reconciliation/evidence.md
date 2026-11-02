@@ -604,21 +604,31 @@ at its separately pinned main source with 2 Accepted / 138 coarse outcomes.
 
 ## PR445 current-main task-source reconciliation
 
-The PR445 candidate `b24b6500a39492be6d37b4dc8310ee0caeca23b3` (tree
-`4c08b0a18506673f31b048001cf4458f0f939703`) is based on current main
+The PR445 source-audit checkpoint is
+`b24b6500a39492be6d37b4dc8310ee0caeca23b3` (tree
+`4c08b0a18506673f31b048001cf4458f0f939703`), based on current main
 `bfc99d626ca31c9094573e03da751ee34da5084f` (tree
-`f6305181e0df2e841c15c752f3e1ee1260bdee17`). The earlier focused and complete
-audits remain preserved as nonpasses in
+`f6305181e0df2e841c15c752f3e1ee1260bdee17`). The receipt-only follow-up
+`a87134ab65c8b967bd9c9d4c24b7d3418110ac80` and evidence-only follow-up
+`e56c64d9ff322a6d529a1e3439c0810fd4978987` are distinguished from that
+checkpoint; neither is the final integrity-pinned source checkpoint. The
+earlier focused and complete audits remain preserved as nonpasses in
 `pr445-current-source-audit.edn`; the prior first error was the Reader task
-source drift. The repaired source audit is recorded in
+source drift. The integrity-pinned source checkpoint is
+`9be580e0692ad92ee8e8139372cf04426f84de23` (tree
+`f5cf7b61d971772add8b2f33608c226898e66459`), with its receipt recorded in
 `pr445-task-source-reconciliation.edn`.
 
 The repaired checker inventories 580 mismatching task/evidence references over
 15 ledgers. Each reference retains its historical hash and is checked against
 its historical Git ref; current bytes are independently checked against the
 current-main ref, tree and SHA-256. Ten ledgers are navigation-only wording
-changes. Compiler API's `pipeline`, `plugins` and `pass-evidence` records have
-appended current Foundation/Bootstrap/Decision criteria, and Reader's
+changes. Three historically referenced Compiler API records (`pipeline`,
+`plugins` and `pass-evidence`) have appended current Foundation/Bootstrap/
+Decision criteria. Current main also contains the current-only
+`domain-ir-boundaries` Compiler API development-boundary record; it remains
+explicitly unassessed scope and is not attached to an older requirement.
+Reader's
 `lexical-products-and-origins-closure` and `extension-policy-closure` records
 have current status/development-evidence changes. These five record-level
 changes retain historical/current digests and do not upgrade requirement
@@ -632,9 +642,12 @@ Platform remains authority-layout-only; and AGENTS remains governance/
 preflight-binding-only. No bridge is treated as blanket quota equivalence or
 canonical adoption.
 
-The repaired focused suite passes 31 tests / 265 assertions and the complete
+The repaired focused suite passes 31 tests / 270 assertions and the complete
 source/evidence audit passes with 245 source documents, 19,962 occurrences and
-29,177 facets while denominator and overall rate remain withheld. Structural
-docs, roadmap, language-boundary and governance checks pass. No compiler
-replay, implementation acceptance, integration eligibility or whole-project
-denominator is claimed.
+29,177 facets while denominator and overall rate remain withheld. STD3 lineage
+metadata is pinned to trusted digest
+`a6780e4a2514b65d84d84f003b4eb582f5dd66866dc461915ebe72e40885cf7e`; paired
+tamper tests reject altered authority, rationale or fragment metadata even
+when a forged digest is recomputed. Structural docs, roadmap, language-
+boundary and governance checks pass. No compiler replay, implementation
+acceptance, integration eligibility or whole-project denominator is claimed.

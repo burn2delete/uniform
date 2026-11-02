@@ -1,8 +1,17 @@
 {:kind :pr445-task-source-reconciliation-receipt
- :candidate-commit "b24b6500a39492be6d37b4dc8310ee0caeca23b3"
- :candidate-tree "4c08b0a18506673f31b048001cf4458f0f939703"
- :candidate-parent "001ab92cdfe26f20fad4e276ea63db1f4658ebc3"
- :candidate-parent-tree "97273f40087d790497df10420a5208fb27a46a54"
+ :source-audit-checkpoint
+ {:commit "b24b6500a39492be6d37b4dc8310ee0caeca23b3"
+  :tree "4c08b0a18506673f31b048001cf4458f0f939703"
+  :parent "001ab92cdfe26f20fad4e276ea63db1f4658ebc3"
+  :parent-tree "97273f40087d790497df10420a5208fb27a46a54"
+  :status :pre-integrity-pin}
+ :candidate-commit "9be580e0692ad92ee8e8139372cf04426f84de23"
+ :candidate-tree "f5cf7b61d971772add8b2f33608c226898e66459"
+ :candidate-parent "e56c64d9ff322a6d529a1e3439c0810fd4978987"
+ :candidate-parent-tree "cd076c1dec64205cb4e43db268c564fc18f9f46a"
+ :follow-up-commits
+ [{:commit "a87134ab65c8b967bd9c9d4c24b7d3418110ac80" :kind :receipt-only}
+  {:commit "e56c64d9ff322a6d529a1e3439c0810fd4978987" :kind :evidence-only}]
  :historical-pr445-candidate
  {:commit "a9666d6af6470268c8764646bf19958b67c42698"
   :tree "c3de43a4ce66c6d8dec4d2c91b1e3585c0c99b03"
@@ -15,7 +24,7 @@
                    :historical-manifest-sha256
                    "504d566dfbc65247c8d6860eccbb6a47141b14d28774fc91a992a53625a2d28a"}
  :candidate-manifest-sha256
- "e8479d9b79d2b57974400fc5ab2db83ba548865542e9524eabfd1cec681a9717"
+ "aa51bfad176edcf7ed75109a68ea1a0bcbcb3eeeedd6311db256bf331ad01ef0"
  :task-source-audit
  {:current-ref "bfc99d626ca31c9094573e03da751ee34da5084f"
   :current-tree "f6305181e0df2e841c15c752f3e1ee1260bdee17"
@@ -45,7 +54,11 @@
    {:path "specs/compiler-api-workflow/tasks.md" :id "pass-evidence" :historical-record-sha256 "f1fe06b12d0a70265ac959d72951974a90503ceb00e239015e5931f698b6dc22" :current-record-sha256 "e0babcbbe2774655501d5789941dc10067d4cc5bd464fb2653191b7baa84063d"}
    {:path "specs/reader-workflow/tasks.md" :id "reader/finite-remaining-work/lexical-products-and-origins-closure" :historical-record-sha256 "e040e2ca28b78aea30993d1702dd39726c7d0b86548d72c6e450016718ee7a6c" :current-record-sha256 "611f1d594fb58fe5b2063a57c8b445f5d42bee3312e212255b693a3a778e7746"}
    {:path "specs/reader-workflow/tasks.md" :id "reader/finite-remaining-work/extension-policy-closure" :historical-record-sha256 "033a0d8caa3d5ef5e17d469ae3d9730f546dcfbade101149bfd500c5011747b0" :current-record-sha256 "bddef1c0be3c3580e69855ae2b0c3a4e23d4bd0362421d687e29cd09428d6439"}]
-  :qualification "Navigation-only changes preserve the old task records; the five changed records are retained as current source facts with historical records and current statuses separately authenticated. No changed criterion or status upgrades requirement implementation acceptance."}
+  :current-only-records
+  [{:path "specs/compiler-api-workflow/tasks.md" :id "domain-ir-boundaries"
+    :current-record-sha256 "114bda63e653e18999b7dd56542decbcc7c95f9b254ef04db5414b96be679b09"
+    :status "Open" :scope :unassessed-current-only-development-boundary}]
+  :qualification "Navigation-only changes preserve the old task records; the five changed records are retained as current source facts with historical records and current statuses separately authenticated. The current-only domain-ir-boundaries record is named and remains unassessed rather than being attached to an older requirement. No changed criterion or status upgrades requirement implementation acceptance."}
  :semantic-source-bridges
  [{:document-id "L4" :kind :l4-macro-expansion-semantic-projection :qualification :retained-cycle-host-diagnostic-semantics}
   {:document-id "C4" :kind :c4-macro-expansion-semantic-projection :qualification :retained-termination-host-diagnostic-semantics}
@@ -56,14 +69,15 @@
  {:focused-reconciliation-tests {:command "clojure -M tools/requirement_reconciliation_test.clj" :tests 30 :assertions 252 :failures 0 :errors 1 :error "Task/evidence source drift: specs/reader-workflow/tasks.md"}
   :complete-source-and-evidence-audit {:command "clojure -M tools/requirement_reconciliation.clj --check" :exit 1 :error "Task/evidence source drift: specs/reader-workflow/tasks.md"}}
  :current-validation
- {:focused-reconciliation-tests {:command "clojure -M tools/requirement_reconciliation_test.clj" :exit 0 :tests 31 :assertions 265 :failures 0 :errors 0}
+ {:focused-reconciliation-tests {:command "clojure -M tools/requirement_reconciliation_test.clj" :exit 0 :tests 31 :assertions 270 :failures 0 :errors 0}
   :complete-source-and-evidence-audit {:command "clojure -M tools/requirement_reconciliation.clj --check" :exit 0 :source-documents 245 :source-occurrences 19962 :source-facets 29177 :proposed-requirements 1231 :denominator-ready false :overall-rate nil}
   :canonical-documents {:command "clojure -M tools/validate_gravity_docs.clj" :exit 0 :documents 240 :phase-indexes 19}
   :full-language-roadmap {:command "clojure -M tools/validate_full_language_roadmap.clj" :exit 0 :authority :non-authoritative}
   :language-boundary {:command "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test" :exit 0 :tests 6 :assertions 11}
   :workstream-governance {:command "clojure -M tools/validate_workstream_governance.clj" :exit 0 :workstreams 185}
   :diff-check {:command "git diff --check" :exit 0}}
- :result :current-task-sources-reconciled
+ :std3-lineage-record-digest "a6780e4a2514b65d84d84f003b4eb582f5dd66866dc461915ebe72e40885cf7e"
+ :result :current-task-sources-reconciled-with-pinned-std3-lineage
  :nonclaims [:not-canonical-adoption
              :not-implementation-acceptance
              :not-integration-eligibility
