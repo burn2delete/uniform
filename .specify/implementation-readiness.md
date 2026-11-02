@@ -648,8 +648,8 @@ Source checks verify 156 distinct profile facets, 275 Domain facets, 30
 existing Open role contexts and seventeen byte-equal governing documents.
 The same older role identities remain qualified for current repartition
 review; broad source labels cannot authorize duplicate emitters or runtimes.
-The large AI parent still needs detailed A1-A11 source resumption and interface
-reconciliation. Finite query/cart/reduction/ticket examples do not establish
+At that checkpoint, detailed AI source resumption and interface reconciliation
+remained Open. Finite query/cart/reduction/ticket examples do not establish
 the wider required support inventories or close their source entailment.
 
 The existing SH bridge binds source input
@@ -668,6 +668,57 @@ full-language structural validation, and the language boundary gate (6 tests /
 66 Markdown files, 2,576 local references, 139 original component routes,
 48 historical suffixes and all 48 original task/evidence contents after
 removing declared additions. Changed files are ASCII and whitespace checks
-pass. Current independent review, global source/facet/owner conjunctions,
-remaining AI and cross-component refinement, wider support surfaces and
-future-task/SH composition are unfinished; no implementation is accepted here.
+pass. Those checks did not confer independent review or close global source/
+facet/owner conjunctions, the then-remaining AI refinement, wider support
+surfaces or future-task/SH composition; no implementation was accepted.
+
+## AI parent continuation
+
+The existing Open `ai` task now carries its complete proposed body in the
+[same Domain authority](../specs/domains-workflow/tasks.md#ai-parent-proposed-criteria).
+All 97 literal criteria, three profile interfaces, eight SAFE13 allocations,
+foundation/facet obligations and the D2 support-triage fixture are preserved.
+Only three profile-context and one Domain-context references change; the
+original short paragraph remains historical. The
+[AI composition plan](../specs/domains-workflow/plan.md#ai-parent-composition)
+distinguishes declaration/semantic admission and integrated results from the
+existing compiler/Schema/Auth/Workflow/Backend/Runtime/library/Release owners.
+No broad historical clause creates another implementation authority.
+
+The published Phase 11 proposal, AI residual interfaces and qualified receipt
+match the frozen aggregate bytes. Source checks verify 1,174 Phase 11 facets,
+916 distinct residual-interface facets, 95 distinct profile facets and 21
+Domain facets, plus 51 existing Open role contexts and 22 byte-equal governing
+documents. Nineteen TEST5/TEST8 predicates attached to AI remain in scope;
+they cannot be filtered away by an A1-A11-only review. The 110 source units,
+697 occurrences, 94 residual interfaces and 97 task clauses are different
+qualified views, not a new completion denominator or proof of entailment.
+
+The [mixed-source disposition](../specs/domains-workflow/plan.md#ai-mixed-accounting-source-disposition)
+addresses every retained one of the twenty-one mixed facets affecting nineteen
+units. Current accounting removal already governs synthetic project/compiler
+allowances. It does not retire adjacent schemas, grants, review, validation,
+refusal, replay, actual external spending/account, provider representability,
+source-program timeout/retry or real host conditions. The historical unresolved
+flags remain preserved; concrete code/contract cleanup and independent consumer
+review stay with their existing authorities, without a new accounting gate.
+
+The SH bridge binds source input `92b3917ec51e882338fc221bddde86310815221f`,
+preserving the full prior bridge/projection at
+`e751cddf4466be51ac071c53d177c35259d756b2`. It records 125 unchanged original
+bodies and fourteen changed Open bodies. No task ID/status, current SH/SH07
+route, scoped Reader receipt, future-task inclusion or accepted implementation
+changes. The prior pending-AI field remains an explicitly historical
+checkpoint, not a current missing-body claim. Source/facet/owner conjunctions,
+current producer/consumer and future-task/SH composition, complete support
+breadth and required independent review remain unfinished.
+
+AI continuation checks pass: 27 crosswalk tests / 823 assertions, 18 dependency
+tests / 419 assertions, deterministic projection, both document/roadmap
+validators and the language boundary gate (6 tests / 11 assertions). Focused
+navigation/conservation covers 71 changed files, 66 Markdown files, 2,593 local
+references, 139 original component routes, 48 historical suffixes and all 48
+original task/evidence contents after stripping declared additions. Changed
+files are ASCII and whitespace checks pass. This is source/projection evidence;
+no AI/domain/compiler/provider execution, policy acceptance or independent
+review is claimed.

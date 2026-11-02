@@ -738,7 +738,7 @@
          (select-keys readiness-predecessor-mapping-review
                       [:status :input-fingerprint :source-version-bridge])
          :qualification
-         "Exact task-source and Governance routing successor; thirteen Open original task bodies carry declared additions, including six Domain parents and five Release aggregates. Predecessor reviews retain their original subjects. Future Domain and Release records retain pending SH composition. Current source/routing, implementation and whole-SH acceptance remain pending."))
+         "Exact task-source and Governance routing successor; fourteen Open original task bodies carry declared additions, including all seven Domain parents and five Release aggregates. Predecessor reviews retain their original subjects. Future Domain and Release records retain pending SH composition. Current source/routing, implementation and whole-SH acceptance remain pending."))
 
 (defn source-view []
   (let [inventory (edn/read-string (slurp "specs/sh-family-crosswalk/original-inventory.edn"))
@@ -833,7 +833,8 @@
                   [:kind :status :source-input-commit :predecessor
                    :task-comparisons :source-criteria
                    :retained-historical-source-inputs :math-parent-refinement
-                   :release-testing-refinement :domain-parent-refinement])
+                   :release-testing-refinement :domain-parent-refinement
+                   :ai-parent-refinement])
      :pr574-macro-artifacts-composition
      {:path "specs/sh-family-crosswalk/pr574-macro-artifacts-composition.edn" :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/pr574-macro-artifacts-composition.edn"))}
      :pr574-composition-source-version

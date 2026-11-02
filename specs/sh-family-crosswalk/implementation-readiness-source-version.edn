@@ -19,11 +19,19 @@
    "evolution/security-review"
    "evolution/stabilization-decision"
    "evolution/target-support-admission"]},
- :source-input-commit "deacbfd25ea22e501e8e08f54ff826eaa3d59353",
+ :source-input-commit "92b3917ec51e882338fc221bddde86310815221f",
  :task-comparisons
- {:unchanged-body-count 126,
+ {:unchanged-body-count 125,
   :changed-bodies
-  [{:id
+  [{:id "ai",
+    :path "specs/domains-workflow/tasks.md",
+    :before-sha256
+    "259e56b5a3ef7013c0cac28b89961938f79dc91634affb6189f6fa4492dbdbeb",
+    :after-sha256
+    "2a53eb9ffee12850d7ff9f06ccf198a3b0bf8ac66f0549b62ab572d53eaeb2b9",
+    :before-checked false,
+    :after-checked false}
+   {:id
     "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
     :path "specs/build-workflow/tasks.md",
     :before-sha256
@@ -204,9 +212,9 @@
     :sha256
     "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4"},
    :after
-   {:commit "deacbfd25ea22e501e8e08f54ff826eaa3d59353",
+   {:commit "92b3917ec51e882338fc221bddde86310815221f",
     :sha256
-    "0ee469e4821f20d50c41f2c033e1d039e298a84979b6d33d8d1f675b4989519b"},
+    "664ae7028db79ac223795dfbe0cfdb3b429f7822fed86a15268c500ddd8bbd7c"},
    :scope :task-file-version}
   {:path "specs/effects-workflow/tasks.md",
    :before
@@ -403,6 +411,206 @@
    :sha256
    "0ef7630d5e962068e47bfb85cd1028fd070b24656f0dd922148e72976ded84d2",
    :kind :source-inspection-not-execution}},
+ :ai-parent-refinement
+ {:source-input-commit "92b3917ec51e882338fc221bddde86310815221f",
+  :profile-mapping-ids
+  ["ai/profile-tool-contract"
+   "ai/prompt-memory-boundary"
+   "ai/replay-evaluation-artifacts"],
+  :producer-consumer-allocation :pending-current-repartition-review,
+  :criterion-ids
+  ["behavior/a1/credential-source"
+   "behavior/a1/declaration-lowering"
+   "behavior/a1/deployment-eval-gate"
+   "behavior/a1/effect-exposure"
+   "behavior/a1/external-call-policy"
+   "behavior/a1/memory-write-policy"
+   "behavior/a1/model-call-contract"
+   "behavior/a1/output-admission"
+   "behavior/a1/prompt-authority"
+   "behavior/a1/replay-execution"
+   "behavior/a1/runtime-audit-ledger"
+   "behavior/a10/emergency-review-bypass"
+   "behavior/a10/payload-bound-review-gate"
+   "behavior/a10/review-audit-ledger"
+   "behavior/a10/review-declaration-artifact"
+   "behavior/a10/review-replay-policy"
+   "behavior/a10/typed-reviewer-evidence"
+   "behavior/a11/generated-source-trust"
+   "behavior/a11/incident-reconstruction"
+   "behavior/a11/privileged-defense-gate"
+   "behavior/a11/runtime-escalation-monitor"
+   "behavior/a11/secret-access-policy"
+   "behavior/a11/tool-authority-agreement"
+   "behavior/a11/untrusted-instruction-boundary"
+   "behavior/a2/credential-binding"
+   "behavior/a2/embedding-shape-admission"
+   "behavior/a2/external-spend-preflight"
+   "behavior/a2/failure-classification"
+   "behavior/a2/fallback-admission"
+   "behavior/a2/floating-identity-upgrade"
+   "behavior/a2/live-ci-policy"
+   "behavior/a2/provider-call-ledger"
+   "behavior/a2/provider-effect"
+   "behavior/a2/provider-handle"
+   "behavior/a2/provider-manifest"
+   "behavior/a2/provider-retention-admission"
+   "behavior/a2/replay-model-identity"
+   "behavior/a2/secret-and-no-store-isolation"
+   "behavior/a2/structured-mode-contract"
+   "behavior/a2/tool-mediation-contract"
+   "behavior/a3/input-schema-admission"
+   "behavior/a3/output-schema-admission"
+   "behavior/a3/partial-output-admission"
+   "behavior/a3/prompt-artifact"
+   "behavior/a3/prompt-evolution"
+   "behavior/a3/prompt-no-store"
+   "behavior/a3/refusal-routing"
+   "behavior/a3/render-identity"
+   "behavior/a3/repair-recording"
+   "behavior/a3/repair-termination-policy"
+   "behavior/a3/secret-to-provider-policy"
+   "behavior/a3/taint-propagation"
+   "behavior/a3/tool-visibility"
+   "behavior/a3/typed-output-admission"
+   "behavior/a4/foreign-error-normalization"
+   "behavior/a4/nonidempotent-retry"
+   "behavior/a4/privileged-tool-review"
+   "behavior/a4/tool-authority-agreement"
+   "behavior/a4/tool-effects"
+   "behavior/a4/tool-manifest"
+   "behavior/a4/tool-redaction"
+   "behavior/a4/tool-result-admission"
+   "behavior/a5/agent-eval-admission"
+   "behavior/a5/agent-external-call-policy"
+   "behavior/a5/agent-ledger-identity"
+   "behavior/a5/agent-manifest"
+   "behavior/a5/agent-memory-access"
+   "behavior/a5/agent-output-admission"
+   "behavior/a5/agent-tool-authority"
+   "behavior/a5/generated-code-reentry"
+   "behavior/a6/validated-branch-input"
+   "behavior/a6/workflow-retry-policy"
+   "behavior/a6/workflow-review-binding"
+   "behavior/a7/deletion-index-coherence"
+   "behavior/a7/embedding-authority"
+   "behavior/a7/memory-access-handles"
+   "behavior/a7/memory-manifest"
+   "behavior/a7/persistence-data-policy"
+   "behavior/a7/reembedding-lineage"
+   "behavior/a8/ai-policy-artifact"
+   "behavior/a8/authority-change-compatibility"
+   "behavior/a8/emergency-override-policy"
+   "behavior/a8/fallback-evidence-policy"
+   "behavior/a8/generated-code-admission"
+   "behavior/a8/output-and-instruction-boundary"
+   "behavior/a8/policy-composition"
+   "behavior/a8/policy-decision-ledger"
+   "behavior/a8/review-rule-enforcement"
+   "behavior/a9/changed-artifact-comparison"
+   "behavior/a9/eval-dataset-artifact"
+   "behavior/a9/eval-redaction"
+   "behavior/a9/live-eval-policy"
+   "behavior/a9/nondeterministic-eval-evidence"
+   "behavior/a9/safety-probe-coverage"
+   "domain/support-agent-integration"
+   "behavior/a1/generated-source-reentry"
+   "behavior/a1/profile-admission"],
+  :predecessor-readiness-successor
+  {:commit "e751cddf4466be51ac071c53d177c35259d756b2",
+   :path
+   "specs/sh-family-crosswalk/implementation-readiness-source-version.edn",
+   :sha256
+   "e3ec8cf64a7d04e90bc094c5d1aba84115fb3a339fffe3a7e82de3c84d802131",
+   :projection-path "specs/sh-family-crosswalk/crosswalk.edn",
+   :projection-sha256
+   "513eae40ce1a565c01d17858c04bb8ac97931593df1c544f84cf9511a8b150bc",
+   :input-fingerprint
+   "7977e6d2b1de5a281faaae0ceeb202946638f03dd8ab69d973b4ee4cd67b56c8",
+   :review :pending-source-version-review},
+  :current-accounting-policy
+  :applies-without-new-permission-or-accounting-gate,
+  :mixed-facet-ids
+  ["facet/ai-build-tools/a1/1359-1434"
+   "facet/ai-build-tools/a1/3203-3322"
+   "facet/ai-build-tools/a1/4147-4219"
+   "facet/ai-build-tools/a1/5555-5635"
+   "facet/ai-build-tools/a1/6342-6394"
+   "facet/ai-build-tools/a3/2135-2183"
+   "facet/ai-build-tools/a3/4296-4325"
+   "facet/ai-build-tools/a3/4903-4958"
+   "facet/ai-build-tools/a3/5995-6067"
+   "facet/ai-build-tools/a5/1194-1234"
+   "facet/ai-build-tools/a5/2443-2543"
+   "facet/ai-build-tools/a5/3838-3855"
+   "facet/ai-build-tools/a5/4127-4143"
+   "facet/ai-build-tools/a5/4493-4524"
+   "facet/ai-build-tools/a5/4524-4555"
+   "facet/ai-build-tools/a5/5281-5309"
+   "facet/ai-build-tools/a5/5523-5572"
+   "facet/ai-build-tools/a5/6150-6216"
+   "facet/ai-build-tools/a6/2017-2060"
+   "facet/ai-build-tools/a6/3615-3632"
+   "facet/ai-build-tools/a6/5111-5161"],
+  :source-inspection
+  {:retained-open-role-contexts 51,
+   :profile-bindings 3,
+   :profile-facet-references 103,
+   :phase11-occurrences 697,
+   :distinct-profile-facets 95,
+   :phase11-units 110,
+   :context-rebindings {:profile 3, :domain 1},
+   :other-source-body-changes :none,
+   :canonical-documents-byte-equal 22,
+   :literal-criterion-identities 97,
+   :phase11-facets 1174,
+   :residual-interfaces 94,
+   :residual-distinct-facets 916,
+   :domain-facets 21,
+   :implementation :unassessed,
+   :semantic-entailment :not-conferred,
+   :mixed-affected-units 19,
+   :mixed-facets 21},
+  :concrete-accounting-cleanup
+  :pending-owning-code-contract-and-consumer-review,
+  :source-body-changes :only-declared-context-rebindings,
+  :published-source
+  {:path "specs/domains-workflow/tasks.md",
+   :published-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+   :published-sha256
+   "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+   :scope :published-ai-task-body-context-not-current-sh-authority},
+  :historical-mixed-status :retained-qualified-open-context,
+  :qualification
+  "Resume the complete existing AI parent, preserving all 97 criteria, 3 profile interfaces, 8 SAFE13 allocations, foundation/facet obligations and D2 support-triage fixture. Repair only 4 source-context references. Keep declaration admission, general Schema/Auth/compiler checks, Workflow durability, backend emission, actual Runtime model/tool/memory calls, STD13 and Release Testing separate. Preserve all 21 mixed facets under current accounting removal with actual external spending/account, representability, semantic timeout/retry and real host controls. Historical unresolved flags are not an ordinary-development accounting prerequisite. Exact facet entailment and independent current repartition remain pending. No compiler/provider/tool/memory/live/native/C12/held execution or policy acceptance occurred.",
+  :current-body-sha256
+  "57b143dd2888b85a488fdceb49a26619cc9fd46ba6207b1cb2a8e9f81af989f3",
+  :source-body-sha256
+  "8c6ae1922095899ec8ab988c1dc8178a28fc071303a259e018e1633f5ffae5b3",
+  :implementation-acceptance :unassessed,
+  :published-source-contexts
+  [{:path "specs/requirement-reconciliation/phase-11-proposal.edn",
+    :published-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+    :published-sha256
+    "b5548d044300dd86824d19b795cccda68093996e701973f523c94f1f23106139",
+    :preserved-sha256
+    "b5548d044300dd86824d19b795cccda68093996e701973f523c94f1f23106139",
+    :relation :exact-file-bytes}
+   {:path
+    "specs/requirement-reconciliation/ai-residual-interfaces.edn",
+    :published-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+    :published-sha256
+    "cc057dc958f2cab315e528a4306ce83d6de86638d594404266c45525c46b7bb7",
+    :preserved-sha256
+    "cc057dc958f2cab315e528a4306ce83d6de86638d594404266c45525c46b7bb7",
+    :relation :exact-file-bytes}
+   {:path "specs/requirement-reconciliation/phase-11-evidence.md",
+    :published-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+    :published-sha256
+    "8eb344bd83064c4ab62325e733cafc286d426dbad7d07221b71ee53ec0137ed1",
+    :preserved-sha256
+    "8eb344bd83064c4ab62325e733cafc286d426dbad7d07221b71ee53ec0137ed1",
+    :relation :exact-file-bytes}]},
  :math-parent-refinement
  {:source-input-commit "86f194bc693b1eeb39593057284e3b47a713e6f7",
   :task-id "math",
@@ -821,7 +1029,7 @@
    "4ee538fce884ae04d1dbaf22ea54d9aee0e32abbbb071272f7115baf9da141ad",
    :scope :retained-historical-ownership-not-current-authority}},
  :qualification
- "Bind exact current task versions, Governance routing and the resumed Math/Schema, Release and Query/Workflow/GPU/UI parent criteria. Thirteen Open original bodies carry declared additions; 126 bodies and all original checkboxes are conserved. Preserve every readiness predecessor subject. Sixteen Domain and thirteen Release future records retain pending SH composition. Global requirement entailment, current independent review and implementation acceptance remain unassessed.",
+ "Bind exact task versions, Governance routing and all seven Domain parent refinements plus Release aggregates. Fourteen Open original bodies carry declared additions; 125 bodies and all original checkboxes are conserved. Preserve each readiness predecessor and its qualified review subject, including the earlier pending AI resumption field as history. Sixteen Domain and thirteen Release future records retain pending SH composition. Global source entailment, independent current review and implementation acceptance remain unassessed.",
  :applying-source-pins
  {"specs/release-workflow/tasks.md"
   "be099c84b68e17e171e67905de64c9053226a083",
@@ -866,7 +1074,7 @@
   "specs/types-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9",
   "specs/domains-workflow/tasks.md"
-  "deacbfd25ea22e501e8e08f54ff826eaa3d59353",
+  "92b3917ec51e882338fc221bddde86310815221f",
   "docs/phase-02-safety/043-safe14-supply-chain-safety.md"
   "697917447d70ba0797a096d9427d4706bf5515df",
   "specs/backends-workflow/tasks.md"
@@ -878,4 +1086,4 @@
   "specs/emit-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9"},
  :input-fingerprint
- "7977e6d2b1de5a281faaae0ceeb202946638f03dd8ab69d973b4ee4cd67b56c8"}
+ "8594d4f9e4b70b8999b8f83fbaa876f54f706f247b352e6a104fbe7d55378590"}

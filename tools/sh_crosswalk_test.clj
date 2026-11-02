@@ -586,10 +586,10 @@
     (is (= (:sha256 predecessor) (sh-inventory/sha256 prior-text)))
     (is (= (:review predecessor)
            (select-keys (:mapping-review prior) [:status :input-fingerprint :source-version-bridge])))
-    (is (= 126 (:unchanged-body-count comparisons)))
+    (is (= 125 (:unchanged-body-count comparisons)))
     (is (= (set (map :id (:changed-bodies comparisons))) changed))
-    (is (= 13 (count changed)))
-    (is (= 126 (count (remove changed (keys before)))))
+    (is (= 14 (count changed)))
+    (is (= 125 (count (remove changed (keys before)))))
     (let [refinement (:math-parent-refinement bridge)
           predecessor (:predecessor-readiness-successor refinement)
           previous-text (sh-crosswalk/git-source (:commit predecessor) (:path predecessor))
@@ -737,7 +737,9 @@
                                           (str/split text #"(?m)(?=^- \[ \])")))]
                  (str/trim (subs block (.indexOf block "Projected task block:")))))
         before-changed (set (map :id (get-in previous [:task-comparisons :changed-bodies])))
-        after-changed (set (map :id (get-in bridge [:task-comparisons :changed-bodies])))]
+        domain-checkpoint (get-in bridge [:ai-parent-refinement :predecessor-readiness-successor])
+        domain-bridge (edn/read-string (sh-crosswalk/git-source (:commit domain-checkpoint) (:path domain-checkpoint)))
+        after-changed (set (map :id (get-in domain-bridge [:task-comparisons :changed-bodies])))]
     (is (= (:sha256 predecessor) (sh-inventory/sha256 previous-text)))
     (is (= (:projection-sha256 predecessor) (sh-inventory/sha256 previous-projection)))
     (is (= (:input-fingerprint predecessor) (:input-fingerprint previous)))
@@ -767,6 +769,62 @@
     (is (= :detailed-source-resumption-pending (:ai-parent refinement)))
     (is (= :unassessed (:implementation-acceptance refinement)))
     (is (= refinement (get-in (sh-crosswalk/source-view) [:implementation-readiness-source-version :domain-parent-refinement])))))
+
+(deftest ai-parent-refinement-preserves-source-criteria-contexts-and-mixed-facets
+  (let [bridge sh-crosswalk/readiness-source-version
+        refinement (:ai-parent-refinement bridge)
+        predecessor (:predecessor-readiness-successor refinement)
+        previous-text (sh-crosswalk/git-source (:commit predecessor) (:path predecessor))
+        previous (edn/read-string previous-text)
+        previous-projection (sh-crosswalk/git-source (:commit predecessor) (:projection-path predecessor))
+        {:keys [path published-commit published-sha256]} (:published-source refinement)
+        published (sh-crosswalk/git-source published-commit path)
+        block (first (filter #(str/starts-with? % "- [ ] `ai` AI\n")
+                             (str/split published #"(?m)(?=^- \[ \])")))
+        raw (str/trim (subs block (.indexOf block "Projected task block:")))
+        current (slurp path)
+        region (second (re-find #"(?s)<!-- domains-ai-parent:start -->(.*?)<!-- domains-ai-parent:end -->" current))
+        carried (second (re-find #"(?s)(Projected task block:\n.*?)\n\nHistorical projected paragraph \(unchanged\):" region))
+        expected (-> raw
+                     (str/replace "specs/requirement-reconciliation/profile-system/gap-completion.edn"
+                                  "[the preserved profile-interface context](plan.md#ai-parent-source-context)")
+                     (str/replace "specs/requirement-reconciliation/domain-gap-completion.edn"
+                                  "[the full preserved Domain context](#wider-integration-task-proposals)"))
+        contexts (:published-source-contexts refinement)
+        proposal-context (first (filter #(= "specs/requirement-reconciliation/phase-11-proposal.edn" (:path %)) contexts))
+        proposal (edn/read-string (sh-crosswalk/git-source (:published-commit proposal-context) (:path proposal-context)))
+        plan (slurp "specs/domains-workflow/plan.md")
+        before-changed (set (map :id (get-in previous [:task-comparisons :changed-bodies])))
+        after-changed (set (map :id (get-in bridge [:task-comparisons :changed-bodies])))]
+    (is (= (:sha256 predecessor) (sh-inventory/sha256 previous-text)))
+    (is (= (:projection-sha256 predecessor) (sh-inventory/sha256 previous-projection)))
+    (is (= (:input-fingerprint predecessor) (:input-fingerprint previous)))
+    (is (= 126 (get-in previous [:task-comparisons :unchanged-body-count])))
+    (is (= 13 (count before-changed)))
+    (is (= after-changed (conj before-changed "ai")))
+    (is (= published-sha256 (sh-inventory/sha256 published)))
+    (is (= (:source-body-sha256 refinement) (sh-inventory/sha256 raw)))
+    (is (= (:current-body-sha256 refinement) (sh-inventory/sha256 carried)))
+    (is (= expected carried))
+    (is (= (:criterion-ids refinement) (mapv second (re-seq #"(?m)^Criterion `([^`]+)`" carried))))
+    (is (= 97 (count (:criterion-ids refinement)) (count (set (:criterion-ids refinement)))))
+    (is (= (:profile-mapping-ids refinement) (mapv second (re-seq #"Criterion profile-gap/([^ ]+) \(Open\):" carried))))
+    (is (= 3 (count contexts) (count (:profile-mapping-ids refinement))))
+    (doseq [{:keys [path published-commit published-sha256 preserved-sha256 relation]} contexts]
+      (is (= :exact-file-bytes relation))
+      (is (= published-sha256 preserved-sha256
+             (sh-inventory/sha256 (sh-crosswalk/git-source published-commit path))) path)
+      (is (str/includes? plan (str "https://github.com/burn2delete/uniform/blob/" published-commit "/" path)) path))
+    (is (= 21 (count (:mixed-facet-ids refinement))))
+    (is (= (set (:mixed-facet-ids refinement)) (set (:unresolved-facet-ids proposal))))
+    (doseq [id (:mixed-facet-ids refinement)]
+      (is (str/includes? plan (str "`" (str/replace id "facet/ai-build-tools/" "") "`")) id))
+    (is (= :retained-qualified-open-context (:historical-mixed-status refinement)))
+    (is (= :applies-without-new-permission-or-accounting-gate (:current-accounting-policy refinement)))
+    (is (= :pending-current-repartition-review (:producer-consumer-allocation refinement)))
+    (is (= :unassessed (:implementation-acceptance refinement)))
+    (is (= :not-conferred (get-in refinement [:source-inspection :semantic-entailment])))
+    (is (= refinement (get-in (sh-crosswalk/source-view) [:implementation-readiness-source-version :ai-parent-refinement])))))
 
 (deftest readiness-successor-rejects-stale-review-pins-and-missing-source-routes
   (let [source (sh-crosswalk/source-view)

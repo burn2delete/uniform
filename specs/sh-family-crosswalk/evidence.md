@@ -2,6 +2,48 @@
 
 ## Current implementation-readiness source-version successor
 
+The AI continuation binds task-source input
+`92b3917ec51e882338fc221bddde86310815221f`, preserving the complete four-parent
+bridge and projection at `e751cddf4466be51ac071c53d177c35259d756b2`. Of the
+original 139 bodies, 125 are identical and fourteen Open bodies carry declared
+additions. Current discovery remains 149 keys across 25 authorities; original
+task IDs/statuses, SH/SH07 routes and scoped Reader receipts are unchanged.
+
+The complete AI body retains 97 unique literal criteria, three profile
+interfaces, eight SAFE13 allocations, foundation/facet obligations and the D2
+support-triage fixture. Its only changes from the published body are three
+profile-context and one Domain-context reference repairs. Three published AI
+context files match the frozen aggregate bytes. Source checks verify 1,174
+Phase 11 facets, 916 distinct attached residual-interface facets (including
+nineteen TEST5/TEST8 predicates), 95 distinct profile facets (103 references),
+21 Domain facets, 51 retained Open role contexts and 22 byte-equal governing
+documents. The preserved 110 unit and 697 occurrence populations remain
+qualified source views; literal task clauses are not a semantic denominator.
+
+All twenty-one mixed facets and nineteen affected units remain visible under
+the current source-specific accounting disposition. Removed synthetic work
+allowances cannot become a new ordinary-development prerequisite; actual
+external billing/account, provider representability, semantic timeout/retry,
+schema/grant/review/replay and real host restrictions retain their meaning.
+The AI plan keeps general compiler/Schema/Auth checks, Workflow durability,
+backend emission, actual Runtime calls, STD13 and Release Testing distinct.
+Current source/owner conjunctions, concrete cleanup and independent repartition
+review remain unassessed. No live provider/tool/memory, compiler, native, C12,
+held operation or policy acceptance was executed for this continuation.
+
+Observed AI continuation checks pass: deterministic generation/check,
+27 crosswalk tests / 823 assertions, 18 dependency tests / 419 assertions,
+canonical document and full-language structural validators, and the language
+boundary gate (6 tests / 11 assertions). Focused navigation/conservation covers
+71 changed files, 66 Markdown files, 2,593 local references, 139 original
+component routes, 48 historical suffixes and all 48 original task/evidence
+contents after removing declared additions. Changed files are ASCII and
+`git diff --check` passes. The dated full-language snapshot remains
+non-authoritative; current mapping review remains pending at fingerprint
+`8594d4f9e4b70b8999b8f83fbaa876f54f706f247b352e6a104fbe7d55378590`.
+
+### Query, Workflow, GPU and UI source-version checkpoint
+
 The Query/Workflow/GPU/UI continuation binds task-source input
 `deacbfd25ea22e501e8e08f54ff826eaa3d59353`, preserving the complete Release
 bridge and projection at `4c24dd7825ef66efe88a3c525b7e4837a4b53bc9`. Of the

@@ -79,6 +79,27 @@ identities and source inspection qualifications, retaining current repartition
 review and detailed AI resumption as pending. No task key, checkbox, SH/SH07
 route, scoped Reader receipt or future-task inclusion changes.
 
+The AI continuation binds source input
+`92b3917ec51e882338fc221bddde86310815221f`. Its `ai-parent-refinement` field
+preserves the complete four-parent bridge and projection at
+`e751cddf4466be51ac071c53d177c35259d756b2`. That predecessor's pending AI
+resumption field remains its historical state, not the current work status.
+Only the Domains task-file pin advances. Against the original 139 bodies,
+125 are unchanged and fourteen Open bodies have declared additions. The same
+seven Domain keys now carry all preserved parent refinements; the sixteen
+Domain and thirteen Release future records stay outside current SH routing.
+
+Conserve all 97 AI criterion IDs, three profile mappings, eight SAFE13
+allocations, foundation/facet obligations and the D2 support-triage fixture.
+Check the complete body against its published source, permitting only three
+profile-context and one Domain-context reference repairs. Bind the three
+published AI context files by exact hash and preserve the twenty-one mixed
+facets, nineteen affected units and existing source qualifications. Current
+accounting removal applies without a new permission/accounting gate; concrete
+code/contract cleanup, source conjunctions and producer/consumer repartition
+remain pending their actual owning work and independent review. No source
+resumption or author disposition grants implementation or current acceptance.
+
 ## Ownership handoffs
 
 Canonical requirement owner `01a179ad-2198-7392-966a-1e3c31209027` supplied the
