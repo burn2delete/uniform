@@ -1188,8 +1188,8 @@
     (is (nil? (:unexpected-host-error data)))))
 
 (deftest sh03-digest-resolution-reuses-only-its-fresh-canonical-form
-  (let [validation-var (ns-resolve 'gravity.bootstrap 'sh03-reader-canonical-stream-validation!)
-        write-var (ns-resolve 'gravity.bootstrap 'sh03-reader-canonical-stream-write!)
+  (let [validation-var (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-streaming-validation!)
+        write-var (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-streaming-write!)
         hash-var (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-digest-validated-form)
         phase-var (ns-resolve 'gravity.bootstrap 'sh03-reader-resolve-digest-request-sequence!)
         original-validation (var-get validation-var) original-write (var-get write-var)
@@ -1284,7 +1284,7 @@
       (let [data (thrown-data #(bootstrap/sh03-reader-resolve-digest-requests! source candidate bytes))]
         (is (= "C2-HASH" (:id data)))
         (is (some #{missing} (:missing-fields data)))))
-    (let [hash-var (ns-resolve 'gravity.bootstrap 'sh03-reader-canonical-stream-digest)
+    (let [hash-var (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-streaming-digest)
           original (var-get hash-var) calls (atom 0) previous (atom nil)
           boundary (var-get (ns-resolve 'gravity.bootstrap 'sh03-reader-boundary-fail!))
           data (with-redefs-fn

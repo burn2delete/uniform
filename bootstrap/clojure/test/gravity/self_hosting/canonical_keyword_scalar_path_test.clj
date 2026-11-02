@@ -118,3 +118,68 @@
     (is (= 2 (.size active)))
     (is (true? (.get active marker)))
     (is (true? (.get active :x)))))
+
+(deftest resolved-value-digest-collisions-still-use-exact-canonical-identity
+  (let [unique (operation 'p15-s23-c6c10-unique-resolved-values!)
+        digest (operation 'p15-s23-c6c10-streaming-digest)
+        cases [[] [nil] [1 2 :a "a" [3] (list 4) 2/3 1.01M]
+               [[1] (list 1)] [1.0M 1.00M] [(int 1) (long 1) (bigint 1)]
+               [(array-map :a 1 :b 2) (array-map :b 2 :a 1)]
+               [1 1 2 2 3]]]
+    (doseq [values cases
+            missing [:collision-free-resolved-map-keys :collision-free-resolved-set-items]]
+      (let [canonical-count (count (distinct (mapv form values)))
+            host-count (count (distinct values))
+            expected (capture #(unique path missing values))
+            collided (with-redefs-fn {digest (constantly "forced-digest-collision")}
+                       #(capture (fn [] (unique path missing values))))]
+        (is (= expected collided))
+        (if (= canonical-count host-count (count values))
+          (is (= {:value values} collided))
+          (do
+            (is (= "C6-VERIFY" (get-in collided [:data :id])))
+            (is (= missing (get-in collided [:data :missing-fact])))
+            (is (= {:value-count (count values) :canonical-identity-count canonical-count
+                    :host-equality-count host-count :missing-fact missing}
+                   (get-in collided [:data :facts])))))))))
+
+(deftest distinct-digest-buckets-do-not-retain-normalized-value-trees
+  (let [values (mapv (fn [i] {:id i :body ["payload" (list :value i)]}) (range 100))
+        identity (operation 'p15-s23-c6c10-canonical-identity)]
+    (with-redefs-fn
+      {identity (fn [& _] (throw (ex-info "Unneeded full canonical identity" {:tripwire true})))}
+      #(is (identical? values (bootstrap/p15-s23-c6c10-unique-resolved-values!
+                              path :collision-free-resolved-map-keys values))))))
+
+(deftest all-values-validate-before-digest-and-uniqueness-comparisons
+  (let [digest (operation 'p15-s23-c6c10-streaming-digest)
+        calls (atom 0)]
+    (doseq [invalid [(with-meta [] {:unexpected true}) (Object.)
+                     (String. (char-array [(char 0xD800)]))]]
+      (let [values [:duplicate :duplicate invalid]
+            expected (capture #(mapv form values))
+            actual (with-redefs-fn
+                     {digest (fn [& _] (swap! calls inc) (throw (ex-info "Digest opened early" {})))}
+                     #(capture (fn [] (bootstrap/p15-s23-c6c10-unique-resolved-values!
+                                      path :collision-free-resolved-map-keys values))))]
+        (is (= expected actual))
+        (is (zero? @calls))))))
+
+(deftest resolved-values-preserve-deep-structured-inputs
+  (let [values [(nth (iterate vector :left) 1025) (nth (iterate vector :right) 1025)]]
+    (is (identical? values (bootstrap/p15-s23-c6c10-unique-resolved-values!
+                            path :collision-free-resolved-set-items values)))))
+
+(deftest digest-reference-resolution-retains-map-and-set-collision-diagnostics
+  (let [digest (str "sha256:" (apply str (repeat 64 "a")))
+        resolve #(bootstrap/p15-s23-c6c10-resolve-digest-references! path % 1 nil [digest])]
+    (doseq [[value missing] [[(array-map {:digest-ref 0} :reference digest :literal)
+                             :collision-free-resolved-map-keys]
+                            [(hash-set {:digest-ref 0} digest) :collision-free-resolved-set-items]]]
+      (let [result (capture #(resolve value))]
+        (is (= "C6-VERIFY" (get-in result [:data :id])))
+        (is (= missing (get-in result [:data :missing-fact])))
+        (is (= [2 1 1] ((juxt :value-count :canonical-identity-count :host-equality-count)
+                        (get-in result [:data :facts]))))))
+    (is (= {digest [:payload]} (resolve {{:digest-ref 0} [:payload]})))
+    (is (= #{digest} (resolve #{{:digest-ref 0}})))))

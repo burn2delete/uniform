@@ -57,21 +57,36 @@
 
 (defn p15-s23-c6c10-unique-resolved-values!
   [source-path missing-fact values]
-  (let [canonical-identities
-        (mapv #(p15-s23-c6c10-canonical-identity source-path %) values)]
-    ;; Canonical identity separates vector/list and every scalar type.  The
-    ;; second check is also required because Clojure maps and sets would merge
-    ;; certain canonically distinct but host-equal values during construction.
-    (when-not (and (= (count values)
-                      (count (distinct canonical-identities)))
-                   (= (count values)
-                      (count (distinct values))))
+  ;; Validate the entire input before hashing or comparing any member, as the
+  ;; original eager canonical-form pass did. No normalized trees are retained.
+  (doseq [value values]
+    (p15-s23-c6c10-streaming-validation! source-path value))
+  (let [canonical-count
+        (loop [remaining (seq values) buckets {} total 0]
+          (if-not remaining
+            total
+            (let [value (first remaining)
+                  digest (p15-s23-c6c10-streaming-digest source-path value)
+                  bucket (get buckets digest [])
+                  ;; Digests select buckets only. Exact forms distinguish real
+                  ;; hash collisions from duplicates, without retaining forms
+                  ;; for every value in the surrounding map or set.
+                  duplicate? (when (seq bucket)
+                               (let [form (p15-s23-c6c10-canonical-identity source-path value)]
+                                 (some #(= form (p15-s23-c6c10-canonical-identity source-path %)) bucket)))]
+              (recur (next remaining)
+                     (if duplicate? buckets (assoc buckets digest (conj bucket value)))
+                     (if duplicate? total (inc total))))))
+        host-count (count (distinct values))]
+    ;; Clojure would also merge host-equal but canonically distinct values
+    ;; (for example a vector and a list) during map/set construction.
+    (when-not (and (= (count values) canonical-count)
+                   (= (count values) host-count))
       (p15-s23-c6c10-host-fail!
        "C6-VERIFY" source-path missing-fact
        {:value-count (count values)
-        :canonical-identity-count
-        (count (distinct canonical-identities))
-        :host-equality-count (count (distinct values))})))
+        :canonical-identity-count canonical-count
+        :host-equality-count host-count})))
   values)
 
 (defn p15-s23-c6c10-resolve-digest-references!

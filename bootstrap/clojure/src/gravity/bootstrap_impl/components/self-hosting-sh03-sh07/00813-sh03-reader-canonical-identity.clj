@@ -34,7 +34,7 @@
   (p15-s23-c6c10-canonical-identity source-path value))
 
 (defn sh03-reader-canonical-digest [source-path value]
-  (sh03-reader-canonical-stream-digest source-path value))
+  (p15-s23-c6c10-streaming-digest source-path value))
 
 (defn- sh03-reader-resolve-digest-request-sequence!
   [source-path raw-result source-bytes]

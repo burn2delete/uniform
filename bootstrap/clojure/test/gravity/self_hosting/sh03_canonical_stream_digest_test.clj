@@ -19,9 +19,9 @@
 (defn- stream-record [value]
   ;; Internal capture for small differential fixtures; production never retains
   ;; canonical text. V/E are the same private functions used by the digest API.
-  (let [validated ((operation 'sh03-reader-canonical-stream-validation!) source-path value)
+  (let [validated ((operation 'p15-s23-c6c10-streaming-validation!) source-path value)
         writer (java.io.StringWriter.)
-        emitted ((operation 'sh03-reader-canonical-stream-write!) source-path value writer)]
+        emitted ((operation 'p15-s23-c6c10-streaming-write!) source-path value writer)]
     {:text (.toString writer) :validation validated :emission emitted}))
 
 (defn- check-compatible [value]
@@ -31,7 +31,7 @@
     (is (= (:text reference) (:text actual)))
     (is (= {:status :passed} (:validation actual) (:emission actual)))
     (is (= expected-digest
-           ((operation 'sh03-reader-canonical-stream-digest) source-path value)))
+           ((operation 'p15-s23-c6c10-streaming-digest) source-path value)))
     (is (= expected-digest (bootstrap/sh03-reader-canonical-digest source-path value)))))
 
 (deftest canonical-stream-supported-domain-bytes-and-hashes
@@ -70,7 +70,7 @@
                               ;; Capture the production writer while computing
                               ;; the real SHA-256, never a canned digest.
                               (digest/sha256-bytes-hex bytes))))]
-            ((operation 'sh03-reader-canonical-stream-digest) source-path value)))
+            ((operation 'p15-s23-c6c10-streaming-digest) source-path value)))
         expected (.getBytes ^String (:text reference) java.nio.charset.StandardCharsets/UTF_8)]
     (is (java.util.Arrays/equals ^bytes expected ^bytes @captured))
     (is (= (str "sha256:" (digest/sha256-bytes-hex expected)) actual))))
@@ -138,7 +138,7 @@
   (run-canonical-check
     #(with-redefs-fn
        {(ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-canonical-sort-key) (constantly "collision")
-        (ns-resolve 'gravity.bootstrap 'sh03-reader-canonical-stream-sort-key) (constantly "collision")}
+        (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-streaming-sort-key) (constantly "collision")}
        (fn []
          (doseq [[value missing] [[(array-map :a 1 :b 2) :unique-canonical-map-keys]
                                   [(array-map :a 1 :b (Object.)) :canonical-value-domain]
@@ -198,7 +198,7 @@
     (with-redefs [digest/sha256-output-hex (fn [_] (swap! opened inc) "unused")]
       (is (= :canonical-value-domain
              (:missing-fact (first-failure
-                             (fn [] ((operation 'sh03-reader-canonical-stream-digest)
+                             (fn [] ((operation 'p15-s23-c6c10-streaming-digest)
                                      source-path (Object.)))))))
       (is (zero? @opened))))
   (let [closed (atom 0)
@@ -207,7 +207,7 @@
     (with-redefs [digest/sha256-output-hex
                   (fn [producer] (producer output) (digest/sha256-bytes-hex (.toByteArray output)))]
       (is (= (str "sha256:" (digest/sha256-hex (:text (old-record {:a "value"}))))
-             ((operation 'sh03-reader-canonical-stream-digest) source-path {:a "value"}))))
+             ((operation 'p15-s23-c6c10-streaming-digest) source-path {:a "value"}))))
     (is (= 1 @closed)))
   (let [primary (ex-info "Primary output failure" {})
         secondary (ex-info "Secondary close failure" {})
@@ -215,10 +215,10 @@
         output (proxy [java.io.ByteArrayOutputStream] []
                  (close [] (swap! closed inc) (throw secondary)))
         thrown (with-redefs-fn
-                 {(ns-resolve 'gravity.bootstrap 'sh03-reader-canonical-stream-write!)
+                 {(ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-streaming-write!)
                   (fn [& _] (throw primary))
                   #'digest/sha256-output-hex (fn [producer] (producer output) "unreachable")}
-                 (fn [] (try ((operation 'sh03-reader-canonical-stream-digest) source-path 1)
+                 (fn [] (try ((operation 'p15-s23-c6c10-streaming-digest) source-path 1)
                              nil (catch Throwable error error))))]
     (is (identical? primary thrown))
     (is (= 1 @closed))
