@@ -1,23 +1,30 @@
 {:kind :pr554-current-integration-receipt
  :schema-version 1
  :integration
- {:base-commit "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950"
-  :base-tree "89cc8b44600590c8044359576063e90cb1d3d88f"
-  :candidate-commit "f83e53f5145cf711591b227a05f3b770fbec9427"
-  :candidate-tree "74d401189a04f4c4106a714720af7c74380b918b"
+ {:base-commit "12480d592044cc667ba4908405b463b3de51a2e6"
+  :base-tree "ab4173148a9a2ffe64a7ac94e74289db0704080a"
+  :candidate-commit "51b1de15095a67152b7ff8f5c1e004545d2d89f9"
+  :candidate-tree "a427d7eaa211ad5979f31cf2d14d718bdeacfd5e"
   :candidate-parents
-  ["40f4a2feade6d2b5c12ff0921b9fdd145b378f1b"
-   "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950"]
-  :previous-integration-base "69d21cb8aacd0be8e74cbf4c9ad8b12b84d244e8"
-  :previous-integration-tree "1911689d59beb0d9771d5efc5fe29856177b470e"
-  :main-advance {:from-commit "69d21cb8aacd0be8e74cbf4c9ad8b12b84d244e8"
-                 :from-tree "1911689d59beb0d9771d5efc5fe29856177b470e"
-                 :to-commit "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950"
-                 :to-tree "89cc8b44600590c8044359576063e90cb1d3d88f"
-                 :composition-commit "f83e53f5145cf711591b227a05f3b770fbec9427"
-                 :composition-tree "74d401189a04f4c4106a714720af7c74380b918b"
-                 :changed-path-count 14
-                 :changed-scope :implementation-source-and-tests-only
+  ["5791ca0a27676f09316e5651e143eabc623905bc"
+   "12480d592044cc667ba4908405b463b3de51a2e6"]
+  :previous-integration-base "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950"
+  :previous-integration-tree "89cc8b44600590c8044359576063e90cb1d3d88f"
+  :previous-composition
+  {:base-commit "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950"
+   :base-tree "89cc8b44600590c8044359576063e90cb1d3d88f"
+   :candidate-commit "f83e53f5145cf711591b227a05f3b770fbec9427"
+   :candidate-tree "74d401189a04f4c4106a714720af7c74380b918b"
+   :receipt-commit "5791ca0a27676f09316e5651e143eabc623905bc"
+   :receipt-tree "236c33294ac7e351cb95e731e64c491f96a0d7ce"}
+  :main-advance {:from-commit "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950"
+                 :from-tree "89cc8b44600590c8044359576063e90cb1d3d88f"
+                 :to-commit "12480d592044cc667ba4908405b463b3de51a2e6"
+                 :to-tree "ab4173148a9a2ffe64a7ac94e74289db0704080a"
+                 :composition-commit "51b1de15095a67152b7ff8f5c1e004545d2d89f9"
+                 :composition-tree "a427d7eaa211ad5979f31cf2d14d718bdeacfd5e"
+                 :changed-path-count 9
+                 :changed-scope :mir-accounting-source-and-tests-only
                  :pr554-owned-paths-disjoint? true}
   :source-view-comparator-renewed? false}
  :source-history
@@ -120,26 +127,26 @@
   :diagnostic "Changed or ambiguous current task body: specs/platform-workflow/tasks.md"
   :disposition :repaired-locally-not-accepted}
  :current-main-composition
- {:main-commit "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950"
-  :main-tree "89cc8b44600590c8044359576063e90cb1d3d88f"
-  :candidate-commit "f83e53f5145cf711591b227a05f3b770fbec9427"
-  :candidate-tree "74d401189a04f4c4106a714720af7c74380b918b"
+ {:main-commit "12480d592044cc667ba4908405b463b3de51a2e6"
+  :main-tree "ab4173148a9a2ffe64a7ac94e74289db0704080a"
+  :candidate-commit "51b1de15095a67152b7ff8f5c1e004545d2d89f9"
+  :candidate-tree "a427d7eaa211ad5979f31cf2d14d718bdeacfd5e"
   :candidate-parents
-  ["40f4a2feade6d2b5c12ff0921b9fdd145b378f1b"
-   "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950"]
-  :base-before-main "4df59ab107d5865e3afbf9173041cc9401227542"
-  :base-before-main-tree "d977cf8ca3de45e73920d6d6a5f5f59aca219527"
+  ["5791ca0a27676f09316e5651e143eabc623905bc"
+   "12480d592044cc667ba4908405b463b3de51a2e6"]
+  :base-before-main "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950"
+  :base-before-main-tree "89cc8b44600590c8044359576063e90cb1d3d88f"
   :frozen-comparator
   {:commit "5dfe15c9fad14e5abebf23bf1e645bf9154a2e1e"
    :tree "643afe5f3b00918fc3de76f2855294481a09b505"
    :source-views-renewed? false}
   :main-advance
-  {:from-commit "69d21cb8aacd0be8e74cbf4c9ad8b12b84d244e8"
-   :from-tree "1911689d59beb0d9771d5efc5fe29856177b470e"
-   :to-commit "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950"
-   :to-tree "89cc8b44600590c8044359576063e90cb1d3d88f"
-   :changed-path-count 14
-   :changed-scope :implementation-source-and-tests-only
+  {:from-commit "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950"
+   :from-tree "89cc8b44600590c8044359576063e90cb1d3d88f"
+   :to-commit "12480d592044cc667ba4908405b463b3de51a2e6"
+   :to-tree "ab4173148a9a2ffe64a7ac94e74289db0704080a"
+   :changed-path-count 9
+   :changed-scope :mir-accounting-source-and-tests-only
    :pr554-owned-paths-disjoint? true
    :source-views-renewed? false}
   :pr554-validation
