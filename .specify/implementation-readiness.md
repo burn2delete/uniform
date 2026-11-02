@@ -2120,3 +2120,114 @@ whitespace checks pass. Scratch reader delimiters and a missing namespace import
 were corrected before successful metadata capture; failed preparation receives
 no passing credit. No compiler/effect-handler/replay/provider/target or other
 held operation ran.
+
+## Complete ownership-checker source proposal
+
+Direct C9 review, with L10/SAFE3/SAFE4/SAFE5/SAFE8 at their selected interfaces,
+adds four criteria under the [existing Legality task authority](../specs/legality-workflow/tasks.md#implementation-tasks).
+The [ownership plan](../specs/legality-workflow/plan.md#complete-ownership-checker-source-criteria)
+now covers actual ownership/borrow/state-transition analysis, all lifetime and
+escape destinations, regions/arena reset invalidation, per-path linear cleanup,
+profile-legal dynamic checks, explicit boundary transfers and MIR preservation,
+complete conformance and all twelve diagnostic meanings/context fields. Original
+task text, statuses, profile rules and foundation criteria remain. No new task
+or competing analyzer is created. Ownership analysis supplies transition and
+audit-reference products; safety classification checks their actual conditions;
+handoff composes transfers and preserves facts; conformance consumes their
+fixtures/results while Release retains its harness/admission role.
+
+The preserved all-240 census at `55fed8d9`, SHA-256
+`579b7d209794d104e321507c71935949dda3ca4d6a4566c13eb457497db583d8`,
+already contains 130 C9 facets and fifty occurrences. Reuse these identities
+without importing its other rows or retrying its stopped aggregate handoff.
+The complete query identifies seven allocations: ownership move, borrow
+exclusivity, lifetime escape, unsafe lifetime and terminal flow retain ownership
+analysis; runtime checks retain safety classification; transfer composition
+retains MIR/runtime handoff. Their captured candidate/pending states and full
+attached-owner nonclaims remain explicit. There is no C9-specific scoped source
+review supplied by this proposal, and census conservation acceptance does not
+establish semantic entailment or current implementation.
+
+The source bindings preserve every complete occurrence, including list
+preambles, lists and qualifiers. The census labels 39 facets as generic context;
+23 are substantive preambles conjoined here with their conditions. Their original
+kind/disposition and IDs remain, while the current proposal assigns 114 facets
+to 34 complete semantic conjunctions and sixteen heading/provenance contexts.
+These are source classifications, not new independent requirement units or
+implementation credit. The ownership artifact example remains illustrative:
+its sample IDs, empty lists and state labels cannot establish support. Actual
+C9 source SHA-256 matches the census at
+`5cfe07027452c3e3d920c7f634c2ee00b7e8b7fd1f5ddd99a1490931ed7a0f79`.
+Full L10/SAFE3/SAFE4/SAFE5/SAFE8 and inherited attached-owner conjunctions remain
+unassessed rather than inheriting C9 source coverage.
+
+Source `91828060eeacbb77219d3d7b9ad7113fdca110fe` changes only the Legality
+spec/plan/tasks. Four bodies change, three newly amended originals: 84 of 139
+original bodies remain identical and 55 have declared additions. IDs/statuses,
+149 current keys, 25 authorities, forty future records, SH/SH07 routing and
+three scoped Reader receipts remain. Legality's task and plan pins advance;
+predecessor `7115d54d` preserves the exact prior metadata/projection/review, and
+C8's controls retain that checkpoint. Current fingerprint:
+`cc98c71b96ba6dd87c51127d5a717b13380dd40a1a69da335d6f7e2ce13f1c05`.
+No independent current acceptance is conferred.
+
+Static inspection identifies concrete partial code. The [hosted graph builder](../bootstrap/clojure/src/gravity/c9_ownership_checker/graphs.clj)
+assigns owner kinds by node index and emits fixed borrow/move/conflict records.
+The [lifecycle builder](../bootstrap/clojure/src/gravity/c9_ownership_checker/lifecycles.clj)
+emits fixed lifetime/escape/region/generation examples. The [resource builder](../bootstrap/clojure/src/gravity/c9_ownership_checker/resources.clj)
+emits fixed terminal paths, four transfer examples, profile-name-based check
+eligibility and audit-reference records. The [verifier](../bootstrap/clojure/src/gravity/c9_ownership_checker/verification.clj)
+checks presence, statuses, edge kinds, supplied terminal counts and diagnostic
+population; that is not actual all-path ownership analysis. The [hosted contract](../bootstrap/clojure/src/gravity/c9_ownership_checker/contract.clj)
+retains compatibility-only, incomplete-model and non-authority boundaries.
+
+The [Gravity C9 source](../bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity)
+contains quoted initial record constructors plus later actual event/state and
+identity-result recomputation. Selected policies/public entries preserve the
+owned-mutable/persistent-immutable scope and pending range splitting, regions,
+arenas, linear resources, boundary transfers, unsafe audits and MIR work. A later
+runtime-mutable-borrow analysis preserves the meta/JVM owned-value metadata,
+declared-error/forbidden-panic contract and exact scenario checks, while explicitly
+excluding real runtime-provider execution and retaining pending general checks,
+provider selection/execution, panic containment, digest trust and broader
+ownership work. No older pending list alone is used to erase that later code.
+Carrier/lifetime-coordinate limits retain the existing accounting-removal
+assessment; a local numeric-model label alone does not prove a required target
+format. Independently meaningful type/index/representation validity remains.
+This is selected static inspection, not a full helper audit or current run.
+The [2026-06-25 report](../docs/artifacts/phase-06/reports/p06-d088-c9-ownership-checker-report.md)
+retains its stage0 document scope; its historical tests were not rerun or promoted.
+
+The plan identifies concrete typed-Core/Effects, Auth/profile/provider, MIR,
+Runtime/Backend and Release inputs/consumers. Local fixtures can start against
+declared interfaces; actual composed acceptance requires those selected real
+products. The next dependency refinement must encode the four C9 consumer routes
+in the existing selected-result representation, including construction versus
+composition and the verified-analysis/MIR/runtime-check staging. The current
+273-join graph is unchanged by this source proposal and cannot prove those
+remaining interfaces formalized. This remaining work is explicit; whole-project
+readiness stays false.
+
+No held C7/C12/compiler/provider/native/callback/replay/probe/migration/signing/
+private-store or product-publication operation runs, and no other chat is
+messaged. Global substantive reconciliation, implementation evidence assessment
+and required independent review remain unfinished. Reader contract coverage
+remains the first implementation preparation increment.
+
+C9 validation passes: 44 crosswalk tests / 6,039 assertions; 23 dependency
+tests / 1,831 assertions; deterministic generation/check, read-only dependency
+audit, both document validators and the language boundary (six tests / eleven
+assertions). Controls bind 130 exact source spans, fifty whole occurrence joins,
+seven inherited allocations and four exact current clauses; missing occurrences,
+removed semantic facets or changed clause bytes fail conservation. All original
+IDs/statuses, the four changed task bodies, foundation criteria, remaining
+bodies, future records, SH/SH07 routing and scoped Reader receipts retain their
+dispositions. Conservation passes for 83 changed files, 77 Markdown files,
+3,058 local references, 139 original routes, 48 historical spec/plan suffixes
+and all 48 original task/evidence contents. The first conservation attempt
+failed because it removed a foundation block before the immediately following
+new C9 block; removing the new layer first restores exact prior delimiters and
+passes the unchanged equality checks. Initial scratch reader/test delimiters
+were corrected before successful capture/checks; failed preparation receives no
+passing credit. ASCII and whitespace checks pass. Source checks establish no
+compiler/provider/runtime execution or independent acceptance.
