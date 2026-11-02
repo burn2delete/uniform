@@ -146,13 +146,6 @@
     (is (= #{:meta} (:profiles policy)))
     (is (= #{:jvm} (:targets policy)))
     (is (= #{:build} (:phases policy)))
-    (is (= {:maximum-nodes 8192
-            :maximum-depth 32
-            :maximum-width 256
-            :maximum-scalars 7000
-            :maximum-scalar-units 32768
-            :maximum-collections 2048}
-           (:structural-bounds policy)))
     (is (contains? (:effects policy) :compiler/read-ir))
     (is (contains? (:effects policy) :build/read-file))
     (is (not-any? #{:authenticated-sh08-adapter} (:pending policy)))
@@ -222,7 +215,7 @@
               (invoke-c8
                'sh09-verify-effect-result [request result])))))))
 
-(deftest sh09-rejects-every-bounded-legality-gap-structurally
+(deftest sh09-rejects-every-legality-gap-with-stable-diagnostics
   (doseq [[function [rule reason denied-layer]] rejected-cases]
     (testing (str function)
       (let [gravity-request (request rejected-gravity-plan function)
@@ -306,13 +299,6 @@
         (is (= :malformed-normalized-effect-request
                (get-in result [:diagnostics 0 :reason])))))))
 
-(defn- nested-vector
-  [depth]
-  (loop [remaining depth value :leaf]
-    (if (zero? remaining)
-      value
-      (recur (dec remaining) [value]))))
-
 (deftest sh09-rejects-scope-authority-replay-and-slice-escapes
   (let [compiler-request
         (request accepted-gravity-plan 'sh09-compiler-read-request)
@@ -353,40 +339,21 @@
         (is (= rule (get-in result [:diagnostics 0 :rule])))
         (is (= reason (get-in result [:diagnostics 0 :reason])))))))
 
-(deftest sh09-rejects-each-structural-bound-before-recomputation
+(deftest sh09-accepts-requests-beyond-retired-input-quotas
   (let [request
-        (request accepted-gravity-plan 'sh09-compiler-read-request)
-        probes
-        [[(assoc request :padding
-                 (vec
-                  (concat
-                   (repeat 27 (vec (repeat 256 0)))
-                   (repeat 5 (vec (repeat 256 []))))))
-          :request-node-bound]
-         [(assoc request :padding (nested-vector 34))
-          :request-depth-bound]
-         [(assoc request :padding (vec (repeat 257 0)))
-          :request-width-bound]
-         [(assoc request :padding (apply str (repeat 32769 "x")))
-          :request-scalar-bound]
-         [(assoc request :padding
-                 (vec (repeat 28 (vec (repeat 251 0)))))
-          :request-scalar-count-bound]
-         [(assoc request :padding
-                 (vec (repeat 9 (vec (repeat 256 [])))))
-          :request-collection-bound]]]
-    (doseq [[probe reason] probes]
-      (let [result (check probe)]
-        (is (= :rejected (:status result)))
-        (is (= "C8-VERIFY" (get-in result [:diagnostics 0 :rule])))
-        (is (= reason (get-in result [:diagnostics 0 :reason])))
-        (is (nil? (get-in result [:identity-input :request])))))
-    (let [result (check request)
-          oversized-candidate
-          (assoc result :padding (vec (repeat 257 0)))
-          verification
-          (invoke-c8
-           'sh09-verify-effect-result [request oversized-candidate])]
-      (is (= :rejected (:status verification)))
-      (is (= :effect-result-structural-bound
-             (get-in verification [:diagnostics 0 :reason]))))))
+        (assoc
+         (request accepted-gravity-plan 'sh09-compiler-read-request)
+         :padding (vec (repeat 9000 0)))
+        qst-request
+        (assoc
+         (request accepted-qst-plan 'sh09-compiler-read-request)
+         :padding (vec (repeat 9000 0)))
+        result (check request)
+        qst-result (check qst-request)
+        verification
+        (invoke-c8 'sh09-verify-effect-result [request result])]
+    (is (= request qst-request))
+    (is (= result qst-result))
+    (is (= :accepted (:status result)))
+    (is (= request (get-in result [:identity-input :request])))
+    (is (= :passed (:status verification)))))
