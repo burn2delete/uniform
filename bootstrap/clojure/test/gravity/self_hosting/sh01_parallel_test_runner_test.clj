@@ -1204,7 +1204,8 @@
 
 (deftest runtime-module-read-owner-wrapper-is-required-before-scheduling
   (doseq [namespace ['gravity.self-hosting.runtime-module-reads-test
-                    'gravity.self-hosting.module-census-test]]
+                    'gravity.self-hosting.module-census-test
+                    'gravity.self-hosting.runtime-shape-test]]
     (let [starts (atom 0)]
       (doseq [impact-plan [{:namespaces [namespace]}
                           (plan [{:namespace namespace :slice "SH-19"
@@ -1231,7 +1232,9 @@
     (doseq [namespace ['gravity.self-hosting.runtime-module-reads-test
                       "gravity.self-hosting.runtime-module-reads-test"
                       'gravity.self-hosting.module-census-test
-                      "gravity.self-hosting.module-census-test"]
+                      "gravity.self-hosting.module-census-test"
+                      'gravity.self-hosting.runtime-shape-test
+                      "gravity.self-hosting.runtime-shape-test"]
             marker [nil :supported]]
       (let [job (cond-> {:namespace namespace :slice "SH-19" :resource-class :normal}
                   marker (assoc :execution marker))]
