@@ -14,6 +14,17 @@
 (defn- refuses? [f]
   (try (f) false (catch clojure.lang.ExceptionInfo _ true)))
 
+(deftest source-boundaries-retain-complete-unicode-and-byte-count-joins
+  (is (= {0 0 1 1 3 2 7 3 8 4}
+         (bootstrap/sh03-reader-source-scalar-boundaries!
+          "fixture.gravity" "A\u03bb\uD83D\uDE42Z" (bytes-of "A\u03bb\uD83D\uDE42Z"))))
+  (is (= {0 0} (bootstrap/sh03-reader-source-scalar-boundaries!
+                "fixture.gravity" "" (byte-array 0))))
+  (is (refuses? #(bootstrap/sh03-reader-source-scalar-boundaries!
+                 "fixture.gravity" "abc" (byte-array 0))))
+  (is (refuses? #(bootstrap/sh03-reader-source-scalar-boundaries!
+                 "fixture.gravity" "\u03bb" (bytes-of "x")))))
+
 (deftest slices-preserve-strict-unicode-and-do-not-copy-the-source-array
   (let [text "A\u03bb\uD83D\uDE42Z" bytes (bytes-of text)
         original (aclone bytes) boundaries {0 0 1 1 3 2 7 3 8 4}

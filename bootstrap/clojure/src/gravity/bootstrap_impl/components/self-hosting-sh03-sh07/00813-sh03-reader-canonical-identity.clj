@@ -213,7 +213,7 @@
    source-path raw (java.nio.ByteBuffer/wrap ^bytes bytes)))
 
 (defn sh03-reader-source-scalar-boundaries!
-  [source-path source-text source-bytes]
+  [source-path ^String source-text ^bytes source-bytes]
   (loop [utf16-index 0
          byte-index 0
          scalar-index 0
