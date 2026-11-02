@@ -79,3 +79,20 @@ independent result evidence, PR446's unknown registration, denied messages and
 operation-specific runtime holds are unchanged. No retry or replacement of
 those operations occurs. No PR552 completion, OWN-06 closure, v3 product
 acceptance, release, backend or self-hosting credit is claimed.
+
+## Current-main composition
+
+The five-file prerequisite composes onto main
+`32fe90b1e6a41df5a4083d0abe3917e0cb2643e1` without production changes.
+The historical dependency and PR-status observations above remain history.
+This increment still claims only source-binding/cache mechanism controls;
+current-source fresh construction and public C11 consumers are separate work.
+
+The affected C11 data harness initially failed to compile because it omitted
+the native view helper now called by actual carrier validation. The harness
+now loads that exact helper from its owner instead of substituting a stub.
+The C6 controls passed 3/49 and 10/55; affected C11 artifact/policy controls
+passed 6/58 and 4/54. Boundary, docs, roadmap, governance, pinned clj-kondo and
+whitespace checks passed. These controls retain their declared synthetic
+inputs and diagnostic/compiler oracles; genuine source authentication,
+fresh Core, Reader execution and Gravity replay are not established.

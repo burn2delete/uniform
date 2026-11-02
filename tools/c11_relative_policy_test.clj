@@ -45,6 +45,8 @@
 (evaluate "00588-p15-s23-stage2-native-carrier-header.clj"
           (named? '#{p15-s23-stage2-native-hashset-field p15-s23-stage2-native-hashset-field-once
                      p15-s23-stage2-native-arraymap-field p15-s23-stage2-native-arraymap-field-once}))
+(evaluate "00588-p15-s23-hosted-native-data.clj"
+          (named? '#{p15-s23-hosted-native-view-reason}))
 (evaluate "00700-static-rebuild-token-009-p15-s23-stage2-closed-checked-core-verify-through-p15-s23-trusted-carrier-vector-classes.clj"
           (named? '#{p15-s23-trusted-carrier-map-classes p15-s23-trusted-carrier-vector-classes}))
 (evaluate "00700-static-rebuild-token-010-p15-s23-trusted-carrier-set-classes-through-p15-s23-trusted-carrier-validation.clj" definition?)
