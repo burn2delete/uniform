@@ -111,7 +111,7 @@ Current-main reconciliation, broader checks, committed contextual lint,
 independent exact acceptance, own CI/artifacts and immediate clean preflight
 remain required. No native execution permission or roadmap credit is inferred.
 
-## Current-main composition and exact baseline
+## JS-integrated composition and exact baseline
 
 Current integration base is 634dde984b837e78a5353d4e2c25cead9e7318db,
 tree d821a84ea0337d23979b0cacd466a7e7a4add579, including the verified JS
@@ -139,3 +139,29 @@ uses this base and preserves both complete production files and all four type
 tags. Final contract checks, independent exact acceptance, own CI/artifact
 verification and immediate clean current-main preflight remain integration
 gates. Neither JVM nor JS slice acceptance or CI transfers to this candidate.
+
+## Current integration composition
+
+Main advanced through PR 446's retained native-DATA/module tests and related
+documentation. The current integration base is
+a958fd45c5bc2672fc0848be251722ec30e1a8a5, tree
+c9e23fe670827632abb4cf943a02063a3d3ad2fd. Source composition
+bac63469be83dd9c127d92da45edfa2db9030c56 has tree
+dea1579b712cfdfca8535ed695e1e49a5d2ac91c. All C production and test files
+are unchanged by this incoming main delta.
+
+Fresh before capture runs that exact clean main in this same Analysis
+checkout. Its process ends before restoring the extracted composition. Four
+complete data records AND original serialization agree again, with actual
+source/plan and C/header byte hashes recomputed. Earlier records are preserved
+at /tmp/uniform-c-compile-sequencing-evidence-base634-history. No native
+broker/toolchain or compiler-call body is probed; sequencing units remain
+anonymous-operation tests.
+
+Fresh backend tests pass 43/937 and language/ownership 47/1154. Contextual
+lint against this exact base covers three paths with zero warnings and zero
+blockers; receipts are archived at
+/tmp/uniform-c-compile-sequencing-lint-maina958. Source/type-tag reconstruction,
+contract validators, renewed independent exact acceptance, own CI/artifacts
+and immediate exact clean current-main preflight must bind this composition;
+the earlier 38e37680/base634 acceptance and CI are historical.
