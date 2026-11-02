@@ -1,0 +1,79 @@
+{:all-production :unchanged,
+ :original-base-test-bytes :still-identical-to-current-base,
+ :execution
+ {:reader-eval false, :Bootstrap-loaded false, :genuine-tests :UNRUN},
+ :candidate "a37b1b80115dfd7afb762da65523855d3ec6a313",
+ :historical-records :retain-original-base-meaning,
+ :generator-sha256
+ "6ca534c3ffbe1f00f8a428bd42a9bab4bd2a7945c527c6bc2e97fc339c0e951c",
+ :all-six-current-C7-and-two-helper-pins
+ :same-complete-files-as-reviewed,
+ :paths
+ [{:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :sha256
+   "03207474a0e691a2ba235ac8aefa0132abf0af4b81f7ae8554cac32ab3becd71",
+   :entry "100644 blob 751acad0b76bb79ae71acaa5293b47e3d4510be6"}
+  {:path "specs/accounting-removal/quote-fixture-controls-census.edn",
+   :sha256
+   "4309b9e2c7829af4898dd791b13c7c023d7bc266bbe68d37ea4e00dfcae2896a",
+   :entry "100644 blob 05feb23f02c419b8b138046679bf8f4b88be00cc"}
+  {:path "specs/accounting-removal/quote-fixture-controls.md",
+   :sha256
+   "93ec48ee6adf44c5017c4a1dcdf4381ab6084c7c24b89b1ae3dd211913f5030a",
+   :entry "100644 blob f3e4e4c55af93ea16da0efc6c53e3b542f880dc5"}],
+ :prior-review
+ {:candidate "f540ca1baba2d1a9080a9a600653ff34a7d73815",
+  :receipt-sha256
+  "4a0052ff98614444748977a35b87a44ba2481f0a2b4a3cb5e510eaaa706b1a6f",
+  :current-head-acceptance :not-inherited,
+  :sealed-count 15176,
+  :handoff-count 15177,
+  :discrepancy :preserved},
+ :inspect-preconditions
+ {"all-pass" true,
+  "base-resolved" true,
+  "candidate-identities-match" true,
+  "clean-worktree" true,
+  "named-branch" true,
+  "reconciliation-allowed" true},
+ :all-three-reviewed-file-bytes :identical,
+ :whole-tree
+ {:base-entries 10080,
+  :candidate-entries 10082,
+  :all-base-entries-except-one-reviewed-test :conserved,
+  :only-two-reviewed-record-additions true,
+  :exact-reviewed-overlay true},
+ :main-merge :UNRUN,
+ :kind :quote-fixture-clean-current-main-composition,
+ :parents
+ ["f540ca1baba2d1a9080a9a600653ff34a7d73815"
+  "c0053c47a171fb58d627ee4ef6d406ab86f752ab"],
+ :PR626-all-five-additions :conserved,
+ :integration-preflight :UNRUN,
+ :validation
+ {:language-boundary {:tests 6, :assertions 11, :fail 0, :error 0},
+  :docs :pass,
+  :roadmap :pass,
+  :whitespace :pass,
+  :lint
+  {:errors 0,
+   :warnings 71,
+   :before-after-complete-multisets :identical,
+   :new-findings 0,
+   :cache false,
+   :version "2025.10.23"}},
+ :base "c0053c47a171fb58d627ee4ef6d406ab86f752ab",
+ :current-composition-independent-review :pending,
+ :review-delivery
+ {:tool :send-message-to-thread,
+  :destination "01a18529-4c4f-79b1-94b3-d1132f06ed53",
+  :authorization :standing-user-finite-review-coordination,
+  :duplicate-readback :no-prior-a37b1b80-request-or-result,
+  :result :acknowledged,
+  :reviewer-readback :queued-after-active-distinct-PR636-review,
+  :actual-denied-or-uncertain-message-retry false},
+ :pr 634,
+ :current-head-CI :pending,
+ :owner :ACC-01,
+ :candidate-tree "74bac5000d6042e5b3330e28aee15f4fcae48b38"}

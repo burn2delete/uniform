@@ -1586,10 +1586,7 @@
   [validation
    (p15-s23-trusted-carrier-validation
     value
-    :default-only
-    1048576
-    256
-    4096)]
+    :default-only)]
   (when-not
    (= :passed (:status validation))
    (sh04-syntax-boundary-fail!
@@ -1599,12 +1596,7 @@
     carrier
     (select-keys
      validation
-     [:reason
-      :observed-nodes
-      :observed-depth
-      :maximum-nodes
-      :maximum-depth
-      :maximum-width])))
+     [:reason :class])))
   value))
 
 (defn
@@ -2159,10 +2151,7 @@
     carrier-validation
     (p15-s23-trusted-carrier-validation
      (sh04-syntax-strip-host-metadata c2-view)
-     :default-only
-     1048576
-     256
-     4096)]
+     :default-only)]
    (and
     (=
      #{:reader-source-revision
@@ -3960,56 +3949,11 @@
    (original))))
 
 (doseq
- [operation
-  [#'accept-result!
-   #'assemble-fresh-reader!
-   #'assemble-reader!
-   #'boundary-fail!
-   #'build
-   #'build-plan-binding!
-   #'current-plan-binding!
-   #'current-reader-identity-view
-   #'current-reader-product-binding
-   #'current-reader-revision-authentic?
-   #'descendant-form-ids
-   #'descriptor-reader-product-binding
-   #'empty-hygiene
-   #'envelope-descriptor
-   #'execute-plan!
-   #'form-index
-   #'generated-products!
-   #'index-roots-current?
-   #'literal-index
-   #'logical-source-stem
-   #'native-keyword-map?
-   #'plan-binding-cache
-   #'plan-identities
-   #'project-registered-literal-values
-   #'read-pinned-plan-source!
-   #'reader-artifact-view
-   #'reader-expansion-history
-   #'reader-expansions-current?
-   #'reader-products-authentic?
-   #'reader-semantic-binding
-   #'registered-literal-fail!
-   #'registered-literal-projection-authentic?
-   #'registered-literal-registry
-   #'require-result-carrier!
-   #'resolve-object-template!
-   #'resolve-plan-source-path
-   #'resolve-request-preimage!
-   #'resolve-stream-request-preimage!
-   #'resolve-stream-template!
-   #'resolve-template!
-   #'rich-object
-   #'semantic-source-id
-   #'semantic-span
-   #'source-descriptor
-   #'strip-host-metadata
-   #'verify]]
- ^{:line 103, :column 39}
- (alter-meta!
-  operation
-  assoc
-  :gravity/namespace-contract
-  namespace-contract))
+ [name (keys (:public-api namespace-contract))
+  :let [operation (get (ns-interns *ns*) name)]]
+  ^{:line 103, :column 39}
+  (alter-meta!
+   operation
+   assoc
+   :gravity/namespace-contract
+   namespace-contract))

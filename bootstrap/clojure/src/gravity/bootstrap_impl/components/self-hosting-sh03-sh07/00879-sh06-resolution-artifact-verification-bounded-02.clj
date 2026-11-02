@@ -7,9 +7,8 @@
    construction?
    :gravity.bootstrap/legacy))
  ([artifact construction? context]
-  (with-sh06-resolution-transport-bounds
-   (#'gravity.resolution/verify-current*
-    artifact
-    construction?
-    context
-    (resolution-stage-operations)))))
+  (#'gravity.resolution/verify-current*
+   artifact
+   construction?
+   context
+   (resolution-stage-operations))))

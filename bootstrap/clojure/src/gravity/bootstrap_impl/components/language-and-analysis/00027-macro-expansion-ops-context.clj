@@ -14,7 +14,6 @@
    :source-span source-span
    :sha256-hex sha256-hex
    :splice-key ::splice
-   :max-macro-expansion-depth max-macro-expansion-depth
    :builtin-macros builtin-macros
    :parse-param-list parse-param-list
    :expand-template-items expand-template-items

@@ -2,7 +2,6 @@
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.set :as set]
-            [clojure.string :as string]
             [clojure.test :refer [deftest is testing]]
             [clojure.walk :as walk]
             [gravity.bootstrap :as bootstrap]))
@@ -163,15 +162,9 @@
    :version 1
    :pass-order [:constant-fold :branch-simplify :dead-code-eliminate
                 :check-retention-or-elision]
-   :maximum-operations 128
    :integer-width-bits 64
    :minimum-i64 -9223372036854775808
    :maximum-i64 9223372036854775807
-   :maximum-identifier-units 256
-   :structural-bounds
-   {:maximum-nodes 8192 :maximum-depth 96 :maximum-width 1024
-    :maximum-collections 2048 :maximum-scalars 6144
-    :maximum-scalar-units 65536}
    :supported-opcodes #{:const :add :branch-if :branch :compute
                         :runtime-check :return}
    :elidable-check-classes #{:bounds}

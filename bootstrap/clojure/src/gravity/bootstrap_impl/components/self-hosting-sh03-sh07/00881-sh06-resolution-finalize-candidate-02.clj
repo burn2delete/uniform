@@ -47,7 +47,7 @@
   (when-not (and (map? inputs) (= #{:artifact :schema-version :module-artifacts} (set (keys inputs)))
                  (= :gravity/sh06-module-inputs (:artifact inputs)) (= 1 (:schema-version inputs))
                  (vector? (:module-artifacts inputs))
-                 (= :passed (:status (sh06-resolution-carrier-validation inputs sh06-resolution-artifact-bounds))))
+                 (= :passed (:status (sh06-resolution-carrier-validation inputs))))
     (sh06-resolution-boundary-fail! "C5-UNRESOLVED" source-path :ordinary-module-inputs inputs
                                   {:reason :malformed-module-inputs}))
   (mapv

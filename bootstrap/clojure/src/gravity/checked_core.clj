@@ -1379,7 +1379,7 @@
       :root-syntax-id root-syntax-id,
       :path path,
       :kind kind}))))
- (defn-
+(defn
   projected-source-mismatch
   [source target operations]
   (let
@@ -1661,7 +1661,7 @@
       :profile (:profile step)})
     (range)
     trace)))
- (defn-
+(defn
   source-occurrence-context
   [resolution-artifact syntaxes operations]
   (let
@@ -2258,7 +2258,7 @@
        (conj result {:name item, :path (conj parameter-path index)}))
       :else
       (recur (next remaining) (inc index) result))))))
- (defn-
+(defn
  lineage-with-semantic-trace
  [resolution-artifact semantic-trace operations]
  (let
@@ -2635,7 +2635,7 @@
     content-id
     :module-id
     (:sh06-semantic-projection-id lineage))))
- (defn-
+(defn
  request-from-verified-upstream
  [resolution-artifact upstream-verification operations]
  (let
@@ -5135,7 +5135,7 @@
   artifact
   [:gravity-core-boundary :canonical-core-artifact :identity-preimage]))
 
-(defn-
+(defn
  verification-report
  [artifact expected upstream-verification operations]
  (let
@@ -5327,87 +5327,17 @@
     :output :canonical-core,
     :owner :gravity.checked-core}}))
 
-(doseq
- [operation
-  [#'build-plan-binding!
-   #'current-plan-binding!
-   #'execute!
-   #'plan-identities
-   #'source-key
-   #'source-path
-   #'build-form-tree
-   #'children
-   #'decimal-descriptor
-   #'decimal-evidence
-   #'decimal-evidence-complete!
-   #'macro-trace
-   #'neutral-value
-   #'parameter-binding-paths
-   #'projected-form-id
-   #'projected-source-mismatch
-   #'projected-syntax-id
-   #'root-syntax-id
-   #'semantic-macro-trace
-   #'semantic-span
-   #'source-map-order
-   #'source-occurrence-context
-   #'source-path-from-resolution
-   #'value-kind
-   #'alias-name
-   #'binding-order
-   #'fragment-coverage
-   #'fragment-manifest
-   #'fragment-record
-   #'module-assembly-manifest
-   #'lineage
-   #'lineage-with-semantic-trace
-   #'projection-binding-input
-   #'authenticated-request
-   #'digest-reference-ordinal
-   #'request-from-verified-upstream
-   #'resolve-reference!
-   #'resolve-reference-vector!
-   #'semantic-binding
-   #'semantic-projection-id
-   #'semantic-resolution
-   #'semantic-var-reference
-   #'digest-requests
-   #'resolve-digest-preimage!
-   #'resolve-result
-   #'semantic-error-handler
-   #'semantic-error-transfer
-   #'semantic-identity-preimage
-   #'semantic-mutation
-   #'semantic-node
-   #'canonical-artifact
-   #'public-decimal-presentation
-   #'raise-diagnostic!
-   #'request-diagnostic!
-   #'request-preflight!
-   #'run-structural-request-for-test
-   #'run-request-for-test
-   #'error-transfers-coherent?
-   #'projection-diagnostic!
-   #'descendant-node-ids
-   #'handler-group-coherent?
-   #'error-handlers-coherent?
-   #'match-branch-tree
-   #'match-products-coherent?
-   #'match-guard-source
-   #'match-guard-valid?
-   #'match-pattern-graph-complete?
-   #'match-pattern-record-coherent?
-   #'match-clause
-   #'match-guard-source-valid?
-   #'match-group-coherent?
-   #'verification-checks
-   #'proof-from-checks
-   #'exact-comparison-value
-   #'artifact-identity-input
-   #'verification-report
-   #'artifact-base]]
- (alter-meta!
-  operation
-  assoc
-  :gravity/namespace-contract
-  namespace-contract)))
+(let [private-implementation (:private-implementation namespace-contract)
+      private-names (if (map? private-implementation)
+                      (keys private-implementation)
+                      private-implementation)]
+  (doseq
+   [name (concat (keys (:public-api namespace-contract)) private-names)
+    :let [operation (get (ns-interns *ns*) name)]]
+   (alter-meta!
+    operation
+    assoc
+    :gravity/namespace-contract
+    namespace-contract)
+   (when (some #{name} private-names)
+     (alter-meta! operation assoc :private true)))))

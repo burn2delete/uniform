@@ -183,7 +183,8 @@
                  (io/file "bootstrap/clojure/fixtures/self-hosting/sh-06/current-cohort-unmetered.qst"))
         reader (.getCanonicalPath (io/file "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
         invocation {:reader-source-path b/sh03-reader-source-relative-path
-                    :authenticated-envelope-options {:source :development-current}}
+                    :authenticated-envelope-options {:source :development-current}
+                    :macro-source-mode :development-current}
         artifact (b/compiler-c5-resolution-source-artifact
                    fixture (slurp fixture :encoding "UTF-8")
                    {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []} reader invocation)

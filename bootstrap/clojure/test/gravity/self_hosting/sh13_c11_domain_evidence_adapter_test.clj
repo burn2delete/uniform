@@ -129,7 +129,7 @@
                    "(subvec frontier 1 (count frontier))"))
     (is (not (.contains source-text "(subvec frontier 1)")))
     (is (= :accepted (:status representative-preflight)))
-    (is (= true (:nodes-exact? representative-preflight)))))
+    (is (not (contains? representative-preflight :nodes)))))
 
 (deftest sh13-c11-domain-evidence-input-admission
   (let [candidate (:candidate @prepared-c11)
@@ -447,10 +447,8 @@
             (invoke-c12 'sh13-verify-c11-domain-evidence
                         [candidate verification template resolution
                          tampered-bound]))))
-    (is (= :rejected (:status width-preflight)))
-    (is (= :carrier-vector-width (:reason width-preflight)))
-    (is (= :rejected (:status depth-preflight)))
-    (is (= :carrier-depth-bound (:reason depth-preflight)))
+    (is (= :accepted (:status width-preflight)))
+    (is (= :accepted (:status depth-preflight)))
     (is (= :rejected (:status cyclic-preflight)))
     (is (= :arbitrary-seq (:reason cyclic-preflight)))))
 

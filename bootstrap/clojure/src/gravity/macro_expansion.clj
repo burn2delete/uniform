@@ -43,8 +43,7 @@
    :local-macro-symbol default-local-macro-symbol
    :source-span default-source-span
    :sha256-hex digest/sha256-hex
-   :splice-key ::splice
-   :max-macro-expansion-depth 16})
+   :splice-key ::splice})
 
 ;; These private vars are bootstrap concurrency and dynamic-interposition seams.
 (def ^:private normalized-ops-context-token (Object.))
@@ -58,7 +57,7 @@
                      :operations ops})))
   (let [provided (or ops {})
         unexpected (set/difference (set (keys provided)) operation-keys)
-        scalar-keys #{:builtin-macros :max-macro-expansion-depth :splice-key}
+        scalar-keys #{:builtin-macros :splice-key}
         non-functions (->> (keys provided)
                            (remove scalar-keys)
                            (remove #(fn? (get provided %)))
@@ -66,10 +65,7 @@
     (when (or (seq unexpected)
               (seq non-functions)
               (and (contains? provided :builtin-macros)
-                   (not (map? (:builtin-macros provided))))
-              (and (contains? provided :max-macro-expansion-depth)
-                   (not (and (integer? (:max-macro-expansion-depth provided))
-                             (pos? (:max-macro-expansion-depth provided))))))
+                   (not (map? (:builtin-macros provided)))))
       (throw (ex-info "macro expansion operations are invalid"
                       {:id "STAGE0-MACRO-EXPANSION-OPERATIONS"
                        :accepted-operation-keys operation-keys
