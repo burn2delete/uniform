@@ -50507,7 +50507,16 @@
      :live-fragment-sha256
      "ffca258d344464aa30dd1107d91c940106f89a1d4858c18beb3ccc8f55ac15f6"}]}],
  :task-source-version-bridges
- [{:path "specs/auth-workflow/tasks.md",
+ [{:path "specs/stdlib-workflow/tasks.md",
+   :marker "stdlib-implementation-tasks",
+   :historical-ref "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :historical-sha256 "69ac9a7163838c4cb297c94174d0b3061b0e7686f2378c45aa30e6320b6f6d94",
+   :current-ref "80d8a655cea00218799446986a976ca64043a1f8",
+   :current-tree "8c7e533bed9536a760254754e26dbb75db0b0f55",
+   :current-sha256 "9ac5d948a4df974051fe15adce874f6bf39074982991d8c6c80201a971142d57",
+   :change-class :acceptance-boundary-extension,
+   :qualification "The current Stdlib task ledger retains the five historical task identities and adds source-specific closing criteria and evidence boundaries. This authenticated source transition preserves historical routing while explicitly conferring no implementation, library-release or requirement acceptance."}
+  {:path "specs/auth-workflow/tasks.md",
    :marker "auth-implementation-tasks",
    :historical-ref "d5d8e15c773929337e1d9646da4f32af2d461e17",
    :historical-sha256 "9db81aa1c8ef183a9da8656a343a29fd9104b10e7130fd63ba4e52b75ce2b256",

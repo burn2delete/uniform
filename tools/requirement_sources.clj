@@ -293,6 +293,33 @@
    :authority "PR554 task-ledger source transition, authenticated against the frozen SH task rows and the applying task-authority Git blob."
    :qualification "Only the four named Platform task rows transfer from the frozen historical SH source view to the applying PR554 task ledger. The applying row bytes, IDs, status, criteria and source-basis identities are exact; surrounding navigation layout may move. This bridge preserves historical SH routing and structural-only authority, confers no implementation or product acceptance, and does not authorize arbitrary task-criterion changes or source-hash renewal."})
 
+;; PR564 refines the five existing Stdlib task rows after the SH crosswalk's
+;; historical source snapshot.  Keep the old locator and the applying bytes as
+;; separate immutable Git identities; a changed task criterion is not a
+;; navigation-only edit and cannot silently rebind SH routing.
+(def stdlib-task-source-transition
+  {:kind :stdlib-task-authority-ledger-current-layout-v1
+   :document-id "stdlib-task-authority"
+   :path "specs/stdlib-workflow/tasks.md"
+   :baseline-ref "dbeda7c7dc9a7bb880baa90af1a89046828db327"
+   :applying-ref "80d8a655cea00218799446986a976ca64043a1f8"
+   :historical-source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd"
+   :historical-source-tree "abb83592fc9e5e81c0f041e59c67749dbb67b55c"
+   :baseline-tree "576075197b5b4e815b78bae7d949bfb5fe2d0437"
+   :applying-tree "8c7e533bed9536a760254754e26dbb75db0b0f55"
+   :baseline-sha256 "69ac9a7163838c4cb297c94174d0b3061b0e7686f2378c45aa30e6320b6f6d94"
+   :live-sha256 "9ac5d948a4df974051fe15adce874f6bf39074982991d8c6c80201a971142d57"
+   :baseline-blob "36551070cb5e0f44318df28f7673773fa0df6984"
+   :applying-blob "7a3643c34a3798cffcf4e7f4f539118d9ceec35f"
+   :task-ids ["stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
+              "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis"
+              "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis"
+              "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters"
+              "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"]
+   :review-state :proposed
+   :authority "PR564 Stdlib task-ledger source transition, authenticated against the frozen SH task rows and the applying task-authority Git blob."
+   :qualification "Only the five named Stdlib task rows transfer from the frozen historical SH source view to the applying task ledger. The applying row bytes, IDs, status, criteria and source-basis identities are exact; surrounding navigation layout may move. This bridge preserves historical SH routing and structural-only authority, confers no implementation or library-release acceptance, and does not authorize arbitrary task-criterion changes or source-hash renewal."})
+
 ;; These are the six reviewed source regions, not a text diff computed from the
 ;; checkout.  The exact baseline/live fragment hashes make an omitted hunk,
 ;; retained-semantic edit, or additional source mutation fail closed.
