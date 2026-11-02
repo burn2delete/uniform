@@ -14436,12 +14436,13 @@
     (is (= :proof/sigmoid-eml-equivalence (:proof candidate)))
     (is (= :read-verified-efir (:rule trace-step)))
     (is (true? (:deterministic? search)))
-    (is (true? (:bounded? search)))
+    (is (nil? (:fuel search)))
+    (is (nil? (:bounded? search)))
     (is (= :complete (:status proof)))
     (is (true? (:efir-input-verified? proof)))
     (is (true? (:semantic-facts-preserved? proof)))
     (is (true? (:trace-replayable? proof)))
-    (is (true? (:search-bounded-deterministic? proof)))
+    (is (true? (:search-deterministic-replayable? proof)))
     (is (true? (:candidate-promotion-proof-gated? proof)))
     (is (true? (:complex-intermediates-tracked? proof)))
     (is (true? (:eml-not-runtime-or-equality? proof)))
@@ -14452,6 +14453,16 @@
     (is (= :complete (:search-manifest-status conformance)))
     (is (= :complete (:candidate-lifecycle-status conformance)))
     (is (= :complete (:status conformance)))))
+
+(deftest eml-search-admission-does-not-require-project-work-budget
+  (let [artifact (bootstrap/eml-file-artifact
+                  (fixture "accepted/math-eml-no-work-budget.gravity"))]
+    (is (= :complete (get-in artifact [:capability-based-proof :status])))
+    (is (true? (get-in artifact
+                       [:capability-based-proof
+                        :search-deterministic-replayable?])))
+    (is (nil? (get-in artifact [:search-space-manifest :fuel])))
+    (is (nil? (get-in artifact [:search-space-manifest :bounded?])))))
 
 (deftest approximation-artifact-preserves-math5-contract
   (let [artifact (bootstrap/approximation-file-artifact

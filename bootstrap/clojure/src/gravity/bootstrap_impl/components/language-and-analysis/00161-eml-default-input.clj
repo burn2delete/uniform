@@ -69,13 +69,10 @@
    :domain {'x {:real [-8.0 8.0]}}
    :objective {:kind :equivalence-or-approximation
                :metric [:proof-cost :runtime-cost :error-bound]}
-   :fuel {:candidate-limit 20000
-          :time-ms 500}
    :ranking {:primary :proof-simplicity
              :secondary :estimated-runtime}
    :pruning-rules [:domain-empty :branch-mismatch :type-invalid]
    :deterministic? true
-   :bounded? true
    :tie-policy :stable-source-order
    :source-fingerprint "sha256:stage0-eml-sigmoid"})
 
@@ -149,7 +146,7 @@
            "MATH4-BRANCH" "EML branch policy is missing or incompatible"
            "MATH4-COMPLEX" "complex intermediates are not tracked or proven"
            "MATH4-TRACE" "EML normalization trace cannot replay"
-           "MATH4-SEARCH" "EML search manifest is unbounded or nondeterministic"
+           "MATH4-SEARCH" "EML search manifest is nondeterministic or incomplete"
            "MATH4-CANDIDATE" "EML candidate is used before proof acceptance"
            "MATH4-PROOF" "EML proof artifact is missing or rejected"
            "EML record is invalid")
@@ -213,15 +210,16 @@
                 (false? (:replayable? step)))
         (eml-fail! "MATH4-TRACE" source-path manifest step
                    {:remediation "Record rule id, premises, source span, and deterministic choices for every EML step."})))
+    ;; Search admission records the semantic search contract.  A caller may
+    ;; include host/resource fuel as evidence, but a project work budget is not
+    ;; required to admit an otherwise deterministic, replayable manifest.
     (when (or (not (perf-present? search-manifest))
               (not (true? (:deterministic? search-manifest)))
-              (not (true? (:bounded? search-manifest)))
               (not (perf-present? (:grammar search-manifest)))
-              (not (perf-present? (:fuel search-manifest)))
               (not (perf-present? (:ranking search-manifest)))
               (not (perf-present? (:tie-policy search-manifest))))
       (eml-fail! "MATH4-SEARCH" source-path manifest search-manifest
-                 {:remediation "Make EML search bounded, deterministic, and replayable."}))
+                 {:remediation "Make EML search deterministic and replayable, with grammar, ranking, and tie policy."}))
     (doseq [candidate (:candidates suite)]
       (when (and (:can-influence-lowering? candidate)
                  (not (contains? #{:proved :bounded} (:state candidate))))
