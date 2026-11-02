@@ -4,7 +4,31 @@
 (def
  ^{:private true} namespace-contract
  '{:public-api
-   {typed-core-verifier-report
+   {dynamic-boundary-records
+    {:arglists ([node-operator nodes module]),
+     :admission :none, :seed-compatibility-data-only? true,
+     :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
+    cast-records
+    {:arglists ([node-operator nodes]),
+     :admission :none, :seed-compatibility-data-only? true,
+     :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
+    generic-instantiations
+    {:arglists ([node-operator nodes]),
+     :admission :none, :seed-compatibility-data-only? true,
+     :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
+    protocol-dispatch-table
+    {:arglists ([node-operator nodes]),
+     :admission :none, :seed-compatibility-data-only? true,
+     :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
+    schema-links
+    {:arglists ([domain-boundaries]),
+     :admission :none, :seed-compatibility-data-only? true,
+     :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
+    layout-facts
+    {:arglists ([node-type nodes]),
+     :admission :none, :seed-compatibility-data-only? true,
+     :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
+    typed-core-verifier-report
     {:arglists ([nodes type-facts constraints functions dynamic cast generic dispatch schema layout]),
      :admission :none, :seed-compatibility-data-only? true,
      :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
@@ -99,7 +123,7 @@
      :grants-authority? false}},
    :dependency-direction
    {:requires [],
-    :consumed-by [gravity.c7-type-checker.inference gravity.c7-type-checker.verification gravity.bootstrap],
+    :consumed-by [gravity.c7-type-checker.inference gravity.c7-type-checker.verification gravity.c7-type-checker.evidence gravity.bootstrap],
     :forbids
     [gravity.bootstrap
      gravity.cli
@@ -132,7 +156,9 @@
     :explicit-compiler-and-runtime-operations
     :native-node-fact-constraint-and-evidence-records
     :diagnostic-catalog-and-native-verifier-report
-    :explicit-proof-projection-and-failure-operations],
+    :explicit-proof-projection-and-failure-operations
+    :native-domain-boundary-records
+    :explicit-node-operator-and-type-classifiers],
    :namespace gravity.types,
    :diagnostic-ownership
    {:stage [:hosted-report-construction :ordered-missing-field-decisions],
@@ -151,9 +177,11 @@
     :c7-replay-report-data
     :hosted-typed-core-verifier-report
     :legacy-type-capability-flag-projection
-    :ordered-c7-missing-field-refusal-or-complete-sentinel],
+    :ordered-c7-missing-field-refusal-or-complete-sentinel
+    :hosted-dynamic-cast-generic-dispatch-schema-layout-data],
    :contract-boundary :seed-type-products-and-current-gravity-runtime
-   :additional-contract-boundaries [:hosted-seed-verification-data-and-missing-field-checks]})
+   :additional-contract-boundaries [:hosted-seed-verification-data-and-missing-field-checks
+    :hosted-dynamic-cast-generic-dispatch-schema-and-layout-data]})
 
 (defn compile-plan [emitter source-path source-text operations]
   ((:compile-plan operations) emitter source-path source-text))
@@ -444,9 +472,126 @@
                     {:missing-fields [field]}))))
   :complete)
 
+(defn dynamic-boundary-records
+  [node-operator nodes module]
+  {:artifact :gravity/c7-dynamic-boundary-records
+   :records
+   (mapv (fn [node]
+           {:boundary-id (str "c7-dynamic-" (:node-id node))
+            :kind :dynamic-call
+            :source (:node-id node)
+            :input-type "Dynamic"
+            :result-type "Dynamic"
+            :profile (:profile node)
+            :target (:target node)
+            :runtime-checks [:runtime-type-known]
+            :effects #{:runtime/dynamic-dispatch}
+            :capabilities #{}
+            :accepted? (= :hosted (:profile module))
+            :diagnostics []})
+         (filter #(= 'dynamic/value (node-operator %)) nodes))
+   :status :complete})
+
+(defn cast-records
+  [node-operator nodes]
+  {:artifact :gravity/c7-cast-records
+   :records
+   (mapv (fn [node]
+           {:cast-id (str "c7-cast-" (:node-id node))
+            :kind :checked-dynamic-cast
+            :source-node (:node-id node)
+            :from "Dynamic"
+            :to "String"
+            :classification :runtime-checked
+            :runtime-check :type-tag-check
+            :unsafe-metadata (:unsafe-metadata node)
+            :source (:source node)
+            :status :checked})
+         (filter #(= 'dynamic/cast (node-operator %)) nodes))
+   :status :complete})
+
+(defn generic-instantiations
+  [node-operator nodes]
+  {:artifact :gravity/c7-generic-instantiation-table
+   :records
+   (mapv (fn [node]
+           {:instantiation-id (str "c7-generic-" (:node-id node))
+            :generic 'generic/id
+            :type-arguments ["T"]
+            :bounds ["Any"]
+            :source-node (:node-id node)
+            :profile (:profile node)
+            :target (:target node)
+            :status :solved})
+         (filter #(= 'generic/id (node-operator %)) nodes))
+   :status :complete})
+
+(defn protocol-dispatch-table
+  [node-operator nodes]
+  {:artifact :gravity/c7-protocol-dispatch-type-table
+   :records
+   (mapv (fn [node]
+           {:dispatch-id (str "c7-dispatch-" (:node-id node))
+            :protocol :Displayable
+            :method 'protocol/value
+            :receiver-type "String"
+            :dispatch :hosted-dynamic
+            :effects (:effects node)
+            :capabilities (:capabilities node)
+            :profile (:profile node)
+            :target (:target node)
+            :source-node (:node-id node)
+            :status :typed})
+         (filter #(= 'protocol/value (node-operator %)) nodes))
+   :status :complete})
+
+(defn schema-links
+  [domain-boundaries]
+  {:artifact :gravity/c7-schema-type-links
+   :records
+   (mapv (fn [boundary]
+           {:schema-type-id (str "c7-schema-"
+                                 (get-in boundary [:source :syntax-id]))
+            :schema :Packet
+            :source-schema (get-in boundary [:semantic-anchor :source-syntax])
+            :domain (:domain boundary)
+            :validation-boundary :schema-ir-verifier
+            :profile (:profile boundary)
+            :target (:target boundary)
+            :status :preserved})
+         (filter #(= :schema-ir (:domain %)) domain-boundaries))
+   :status :complete})
+
+(defn layout-facts
+  [node-type nodes]
+  {:artifact :gravity/c7-layout-facts
+   :records
+   (mapv (fn [node]
+           {:layout-id (str "c7-layout-" (:node-id node))
+            :core-node (:node-id node)
+            :type (node-type node)
+            :profile (:profile node)
+            :target (:target node)
+            :layout (case (:profile node)
+                      :hosted :managed
+                      :native :explicit-native-layout
+                      :firmware :fixed-layout
+                      :kernel :explicit-kernel-layout
+                      :hardware :synthesizable-layout
+                      :abstract)
+            :status :recorded})
+         nodes)
+   :status :complete})
+
 (doseq
  [operation
-  [#'typed-core-verifier-report
+  [#'dynamic-boundary-records
+   #'cast-records
+   #'generic-instantiations
+   #'protocol-dispatch-table
+   #'schema-links
+   #'layout-facts
+   #'typed-core-verifier-report
    #'type-capability-proof
    #'validate!
    #'compile-plan
