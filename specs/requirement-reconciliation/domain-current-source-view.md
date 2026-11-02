@@ -17,6 +17,10 @@ denominator, or claim implementation or product completion.
 - Current source-view checkpoint: `19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b`,
   tree `dc79967f4939df6790c3a16b0a71a71e81191f9e`, with parents
   `b35a7004f20f8dab1ba7183fc1c591dc8df2da1c` and `a13e148ae5078faa94f69e86a911dbe2df378e29`.
+- This checkpoint is historical source evidence, not an integration claim. The
+  latest current-main composition base for integration is
+  `f43e77992fe86b6dfb55df3516b27cfcdea7fa40`, tree
+  `a0e433f9f185b651f6f5ebc54340a085a5cd6721`, a descendant of `a13e148a`.
 - Historical PR562 candidate: `2c3eac90b9736873ce7c439cdc9603b1e43249e5`,
   tree `3de79028eeaced10f00c6895f4f5cf446d7304f2`.
 - Historical family source: `6276c94b0b753c888ef8fecc794bcc81245ea3b3`,

@@ -8,6 +8,13 @@
              :tree "402d4c4aa3c85c486da1072ba4ace52a645a046b"}
  :current-source {:commit "19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b"
                   :tree "dc79967f4939df6790c3a16b0a71a71e81191f9e"}
+ :integration-base {:commit "f43e77992fe86b6dfb55df3516b27cfcdea7fa40"
+                    :tree "a0e433f9f185b651f6f5ebc54340a085a5cd6721"
+                    :role :latest-current-main-composition-base}
+ :source-checkpoint-qualification :historical-source-evidence-not-integration
+ :original-pr562-ancestry {:commit "2c3eac90b9736873ce7c439cdc9603b1e43249e5"
+                           :present-in-final-candidate true
+                           :tree-imported false}
  :artifacts
   {:source-view {:path "specs/requirement-reconciliation/phase-02-safety/current-source-view.edn"
                 :sha256 "873bc755864d0bfa3779ac9a616b4c5756157cc8b9c627ee817f9564f6d0a927"}
