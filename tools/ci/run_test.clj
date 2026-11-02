@@ -239,8 +239,8 @@
            (lint/source-paths-for-warnings ["large.edn" "small.clj"] nil false
                                            [error warning info])))
     (with-redefs [lint/source-definitions (fn [_]
-                                           (swap! calls inc)
-                                           [])]
+                                            (swap! calls inc)
+                                            [])]
       (let [result (lint/classify [error] [error info] sources)]
         (is (= [error] (:blocking result)))
         (is (zero? @calls)))
