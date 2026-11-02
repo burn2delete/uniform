@@ -40,6 +40,29 @@ external actions or whole-governance prerequisites follow. Current source/task
 and affected receiver composition still need independent review; historical
 receipts and their source-qualified roles retain their original scope.
 
+## Foundation source criteria
+
+The existing reproducibility task now carries the preserved
+`gravity/artifact-graph-reproducibility` clause from the
+[foundation context](https://github.com/burn2delete/uniform/blob/df11890b21f71d3f246cc47e9f63d866239a0d68/specs/requirement-reconciliation/foundation-residual-interfaces.edn).
+[D1's connected reproducible graph](../../docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md#outputs-and-artifacts)
+and [PKG7's controlled inputs, manifests and content hashes](../../docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md#controlled-inputs)
+require more than equal filenames or a supplied rebuild flag. Compare actual
+source-to-stage-to-target dependency edges and content under the recorded
+source/project/lock/compiler/toolchain/pass/provider/policy/target/environment
+recipe. Compiler API's `pipeline` supplies actual stage/fact/origin products;
+Runtime supplies actual selected service/link/load evidence. Declared interfaces
+permit local development; actual products are required at composition.
+
+Exercise a repeated locked build, then omitted-edge/input, substituted
+compiler/provider and changed-output cases. Preserve comparison failures and
+explicit reviewed deltas without weakening canonical artifact identity or
+calling a nonreproducible artifact reproducible. Retain recipe, controlled-input
+and output digests, canonical graph comparison, exception classification,
+PKG7001-PKG7008 where applicable and original source/compiler/profile/target
+identities. Signing/publication remain separate existing operations. The task
+stays Open; the literal criterion does not accept the full source partition.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration

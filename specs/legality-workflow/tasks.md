@@ -19,6 +19,13 @@ Evidence baseline: [Profile contract](../../bootstrap/clojure/src/gravity/profil
 
 Closing evidence: Allowed profile matrix and hidden-allocation/reflection/effect rejection before lowering
 
+<!-- legality-foundation-profile-contract:start -->
+Apply the [foundation source criteria](plan.md#foundation-source-criteria) within this existing task. Status remains Open; implementation acceptance is unassessed.
+
+Foundation requirement gravity/profile-contract-declaration: Publish each claimed profile's permitted, rejected, checked and delegated behavior with backend/runtime/provider dependencies and required evidence; enforce the profile contract after expansion and before affected lowering. Refusals: Reject implicit hosted services, hidden effects or allocation, unavailable checks and a claimed profile relying solely on target/runtime refusal; effects and capability grants remain separately typed contracts. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection - Selected runtime/provider service contracts and actual link/load/service-use evidence; pipeline - Versioned stage contracts and actual compiler stage/fact/origin products.
+<!-- legality-foundation-profile-contract:end -->
+
+
 - [ ] `legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis` Complete ownership, borrow, initialization and lifetime analysis
 
 Status: Open
@@ -34,6 +41,15 @@ Status: Open
 Evidence baseline: [Safety contract](../../bootstrap/clojure/src/gravity/c10_safety_analysis/contract.clj)
 
 Closing evidence: Every dangerous operation classified and unclassified operations rejected
+
+<!-- legality-foundation-safe-api:start -->
+Apply the [foundation source criteria](plan.md#foundation-source-criteria) within this existing task. Status remains Open; implementation acceptance is unassessed.
+
+Foundation requirement gravity/safety-family-conformance: Exercise each claimed safety family on accepted safe programs, rejected illegal programs and explicit audited unsafe-island cases; retain the applicable proven-safe, runtime-checked, rejected or unsafe-island outcome, owning diagnostics and evidence. Refusals: Reject an unclassified dangerous operation, hidden unsafe path, stale proof/audit or missing actual runtime-check failure case; no fifth implicit outcome or undefined safe behavior is allowed. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection - Selected runtime/provider service contracts and actual link/load/service-use evidence; pass-evidence - Actual subject-bound checker/proof/certificate/audit/replay/test evidence and verdicts.
+
+Foundation requirement gravity/unsafe-island-safe-api-eligibility: Expose unsafe-backed functionality as a safe API only when the wrapper proves or checks every required precondition and cleanup obligation, with source-bound audit and actual boundary tests; preserve internal-only status as a separate permitted boundary. Refusals: Reject invalid state escaping into safe code, a missing wrapper test/audit, an unproved precondition or treating internal-only unsafe code as a safe exported API. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection - Selected runtime/provider service contracts and actual link/load/service-use evidence; legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks - Expanded source profile/effect/grant facts and checked/delegated/rejected legality products.
+<!-- legality-foundation-safe-api:end -->
+
 
 - [ ] `legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution` Preserve obligations into MIR and runtime execution
 

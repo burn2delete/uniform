@@ -23,6 +23,29 @@ Record exact source/fixture/consumer identities and passed, failed or unrun work
 preserve operation restrictions and separate author checks, independent
 acceptance, integration and the complete profile/provider matrix.
 
+## Foundation source criteria
+
+Three preserved clauses from the
+[foundation context](https://github.com/burn2delete/uniform/blob/df11890b21f71d3f246cc47e9f63d866239a0d68/specs/requirement-reconciliation/foundation-residual-interfaces.edn)
+now refine the existing profile and safe-code tasks. All remain Open and their
+source/facet conjunctions and implementation acceptance remain unassessed.
+
+| Existing requirement | Canonical conditions and existing outcome |
+| --- | --- |
+| `gravity/profile-contract-declaration` | Profile checking publishes permitted/rejected/checked/delegated behavior and exact runtime/provider/backend dependencies, then enforces expanded caller code under [D0 profiles](../../docs/phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md#profile-thesis) and [P1 validation order](../../docs/phase-03-profile-system/046-p1-profile-system-specification.md#validation-order). Keep effects and capabilities distinct and apply the narrowest source/profile/package/provider/deployment policy; backend/runtime availability cannot legalize rejected source. |
+| `gravity/safety-family-conformance` | Safe-code classification exercises each claimed family with proven-safe and runtime-checked positives, actual failure and rejected cases, and audited unsafe cases only where mode/profile/policy permits them under [D8](../../docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md#conformance-criteria) and [SAFE1](../../docs/phase-02-safety/030-safe1-safe-gravity-semantics.md#safety-outcome-model). Exactly one outcome applies per dangerous operation; a fixture's overall verdict cannot substitute for its operation records. |
+| `gravity/unsafe-island-safe-api-eligibility` | The same safe-code task checks each safe wrapper's full preconditions, invariant, failure and cleanup obligations with actual tests/proofs and source-bound audits under [D8 islands](../../docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md#unsafe-islands) and [SAFE6 wrappers](../../docs/phase-02-safety/035-safe6-unsafe-code-and-audit-model.md#safe-wrappers). Reject leaked invalid states/raw authority and stale/missing evidence; explicit internal-only unsafe code remains distinct from a safe public API. |
+
+Actual Types/Effects/source origins, Auth grants, Runtime service/check execution
+and Compiler API pass-evidence products supply the listed dependencies. Local
+fixture interfaces do not require entire producer completion. Composition must
+retain actual operation/profile/provider/check/proof/audit identities and
+positive/negative results through the relevant consumers. Safe modes continue
+to reject forbidden islands; an unsafe-island fixture is not permission to
+accept one in every mode. Preserve conditional review/certificate policy,
+generated origins and invalidation. Physical memory/timing/format requirements
+remain distinct from removed project work accounting and execution holds.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Legality task authority

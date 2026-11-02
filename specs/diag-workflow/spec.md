@@ -34,6 +34,12 @@ status and scoped receipts.
 | `close-textjsonredaction-and-explain-contracts` | Render text/JSON and explain/remediation/quick-fix views from the same canonical record with compatible rule IDs and policy-safe redaction markers. Retain localization support without wording-based semantic goldens. | Reject secret/private-value leakage, fabricated explain results and text/JSON fact disagreement. Assert rule/severity/span/roles/stage/profile/target/facts/remediation/redaction/order; wording improvements alone do not fail semantic goldens. |
 | `integrate-runtimebuildeditor-consumers-without-rule-drift` | Feed actual runtime/Build/CLI/editor/CI consumers the same diagnostic identity and facts on normal and failure paths, preserving allowed redaction and runtime event/artifact links. | Reject consumer suppression of blocking failures, missing schema/source links and unauthorized diagnostic publication. Actual producer-to-consumer execution is required beyond carrier or projection helpers. |
 
+The [foundation source criteria](plan.md#foundation-source-criteria) refine the
+existing task records with their original requirement identities, complete
+positive/refusal clauses and actual producer/consumer evidence. Task ownership,
+Open status and historical receipts remain unchanged; source mapping and
+implementation acceptance are still unassessed.
+
 ## Starting work and completion
 
 Canonical carrier and rendering fixtures permit local work while producer

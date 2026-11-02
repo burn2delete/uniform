@@ -22,6 +22,32 @@ the existing selected task. Distinguish compiler-service subset acceptance,
 wider families, independent review/integration and release; do not restore
 removed project accounting as a runtime admission requirement.
 
+## Foundation source criteria
+
+Four preserved clauses from the
+[foundation context](https://github.com/burn2delete/uniform/blob/df11890b21f71d3f246cc47e9f63d866239a0d68/specs/requirement-reconciliation/foundation-residual-interfaces.edn)
+now refine two existing Open tasks; their IDs and complete predicates stay in
+[tasks.md](tasks.md#implementation-tasks).
+
+| Existing requirement | Canonical conditions and existing outcome |
+| --- | --- |
+| `gravity/explicit-runtime-service-dependencies` | Under [D1 runtime selection](../../docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md#runtime-architecture), [R1 service classification](../../docs/phase-08-runtime-architecture/112-r1-runtime-architecture-overview.md#service-classification) and [R2 generated support](../../docs/phase-08-runtime-architecture/113-r2-no-runtime-execution-model.md#generated-support), family selection records actual linked/generated/delegated/external/forbidden services with provider/version, effects/grants and source dependency. Exercise real use and reject hidden services. |
+| `gravity/runtime-manifest-closure` | The same task closes that manifest transitively over real link/load/helper use and compares it with produced artifacts. Reject undeclared allocator/IO/reflection/dispatch/thread dependencies and unavailable no-runtime support. Generated or statically linked target support remains allowed only under its explicit R2 contract; `:runtime :none` is not an empty-service assertion. |
+| `gravity/interop-boundary-manifest` | The existing memory/concurrency/FFI task produces and consumes applicable ABI/layout/alignment/calling-convention/symbol, ownership/lifetime/transfer, null/error/callback/thread, schema/provider, effects/grants and provenance obligations under [D5 interop](../../docs/phase-00-foundation-and-thesis/006-d5-language-replacement-strategy.md#interop-rules) and [R10 bindings](../../docs/phase-08-runtime-architecture/121-r10-ffi-runtime-design.md#binding-and-adapter-model). Actual conversion/invocation, release and callback re-entry remain required where claimed. |
+| `gravity/interop-is-not-host-semantics` | The same FFI task normalizes admitted values, failures and callbacks through audited typed Gravity boundaries. [R4](../../docs/phase-08-runtime-architecture/115-r4-managed-runtime-design.md#requirements) preserves null/undefined, exception/promise, collection/equality/hash, resource, reflection/loading and source-map contracts. Reject unadapted host semantics, invalid ownership, wrong ABI/provider/schema or missing authority. |
+
+Consume actual Lower operation/provider/preservation outputs, source-schema
+validators and Legality's profile/check/wrapper facts as named in the clauses;
+declared interfaces allow local implementation before whole-component release.
+Record actual link/load inspection and execution, provider/compiler/profile/
+target/version, binding/handle/callback identities, source/generated locations,
+failure/cleanup and owning R1/R2/R4/R10 diagnostics. A successful manifest check
+does not establish an actual call or every delegated service. The separately
+preserved unresolved typed-host-delegation and foreign-symbol-resolution joins
+remain unassessed; these four foundation clauses cannot discharge their full
+source conjunctions by alias. All native/provider/callback holds and exact
+class rules remain in force; no operation is executed by this reconciliation.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Runtime workflow migration

@@ -48,6 +48,12 @@ math modes. Distributed and AI work retain durable/replay, schema, taint and
 policy boundaries with their domain owners. These obligations are not compiler
 work allowances; superseded fuel/input-size accounting remains removed.
 
+The [foundation source criteria](plan.md#foundation-source-criteria) refine the
+existing task records with their original requirement identities, complete
+positive/refusal clauses and actual producer/consumer evidence. Task ownership,
+Open status and historical receipts remain unchanged; source mapping and
+implementation acceptance are still unassessed.
+
 ## Starting work and completion
 
 Declared Core/effect/Auth/provider interfaces allow focused analysis work with

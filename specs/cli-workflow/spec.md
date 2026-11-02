@@ -40,6 +40,12 @@ scoped roots, taint-safe quoting, timeout/error mapping, dry-run/audit records a
 applicable human-review policy with their domain/runtime owners. Routing a
 command cannot grant deployment, shell, secret or publication authority.
 
+The [foundation source criteria](plan.md#foundation-source-criteria) refine the
+existing task records with their original requirement identities, complete
+positive/refusal clauses and actual producer/consumer evidence. Task ownership,
+Open status and historical receipts remain unchanged; source mapping and
+implementation acceptance are still unassessed.
+
 ## Starting work and completion
 
 Argument/schema fixtures and declared service interfaces allow local command

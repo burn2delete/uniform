@@ -44,6 +44,12 @@ downgrade the required level/track. Emit supplies real bytes and common artifact
 evidence; Build packages and consumes them without treating a manifest as
 execution or replacing the owning semantic checker.
 
+The [foundation source criteria](plan.md#foundation-source-criteria) refine the
+existing task records with their original requirement identities, complete
+positive/refusal clauses and actual producer/consumer evidence. Task ownership,
+Open status and historical receipts remain unchanged; source mapping and
+implementation acceptance are still unassessed.
+
 ## Starting work and completion
 
 Explicit manifest/graph/compiler/provider interfaces and pinned fixtures allow

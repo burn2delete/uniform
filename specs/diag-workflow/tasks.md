@@ -43,6 +43,13 @@ Evidence baseline: [Tooling contracts](../../docs/phase-13-tooling-and-developer
 
 Closing evidence: Same underlying diagnostic identity across public consumers and failure paths
 
+
+<!-- diag-foundation-runtime-checks:start -->
+Apply the [foundation source criteria](plan.md#foundation-source-criteria) within this existing task. Status remains Open; implementation acceptance is unassessed.
+
+Foundation requirement gravity/runtime-check-diagnostic-stability: Specify and exercise runtime checks with deterministic owning code, source/manifest span, profile/target, failed predicate and remediation; compare their structured results across optimization and supported runtime providers. Refusals: Reject missing or changed check attribution, raw host failure leakage and a check erased without surviving evidence; fixtures must trigger the actual check, not match only free text. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection - Selected runtime/provider service contracts and actual link/load/service-use evidence; legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries - Dangerous-operation outcomes, actual checks, proof references and audited wrapper boundaries.
+<!-- diag-foundation-runtime-checks:end -->
+
 <!-- diag-implementation-tasks:end -->
 
 ## Historical migration record (frozen)

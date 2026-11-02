@@ -43,6 +43,12 @@ on otherwise valid project work. Real provider/account billing, actual host
 restrictions, capability policy, schema validation, resource lifetime and
 declared target latency requirements remain separate.
 
+The [foundation source criteria](plan.md#foundation-source-criteria) refine the
+existing task records with their original requirement identities, complete
+positive/refusal clauses and actual producer/consumer evidence. Task ownership,
+Open status and historical receipts remain unchanged; source mapping and
+implementation acceptance are still unassessed.
+
 ## Starting work and completion
 
 Explicit service/ABI/provider interfaces and versioned fixtures permit local

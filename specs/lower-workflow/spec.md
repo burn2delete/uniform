@@ -43,6 +43,12 @@ volatile/MMIO and numeric modes cannot acquire poison/undefined behavior from
 target attributes or tool defaults. Backends own their concrete mappings; Auth
 owns grants and trust, and runtime owners supply actual service implementations.
 
+The [foundation source criteria](plan.md#foundation-source-criteria) refine the
+existing task records with their original requirement identities, complete
+positive/refusal clauses and actual producer/consumer evidence. Task ownership,
+Open status and historical receipts remain unchanged; source mapping and
+implementation acceptance are still unassessed.
+
 ## Starting work and completion
 
 Declared MIR/backend/runtime interfaces and verified fixtures permit local

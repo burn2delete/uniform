@@ -17,6 +17,28 @@ composition. Preserve exact diagnostic and compatibility IDs, private-data
 boundaries and failed/unrun evidence. Refine only the selected task; a successful
 rendering fixture does not establish all-stage integration or release.
 
+## Foundation source criteria
+
+The existing runtime/build/editor integration task now carries the preserved
+`gravity/runtime-check-diagnostic-stability` clause from the
+[foundation context](https://github.com/burn2delete/uniform/blob/df11890b21f71d3f246cc47e9f63d866239a0d68/specs/requirement-reconciliation/foundation-residual-interfaces.edn).
+[D9 requires testable diagnosed runtime checks](../../docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md#requirements);
+[C15](../../docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md#golden-fixtures)
+and [R12](../../docs/phase-08-runtime-architecture/123-r12-runtime-observability-and-diagnostics-design.md#requirements)
+govern the actual structured result, stable semantic identity, source/generated
+or manifest attribution, failed facts, remediation and redaction. Unavailable
+early-stage context stays explicit; no invented profile/target/span is required.
+
+Consume Legality's actual operation/check/proof/audit facts and Runtime's
+selected service and execution products. Trigger the actual failure before and
+after a relevant optimization and across each claimed supported provider;
+compare rule, failed predicate, locations, profile/target and remediation.
+Reject raw host-failure leakage, changed/missing attribution and erased checks
+without surviving evidence. Assert structured fields rather than only display
+text, and preserve actual check/event/artifact identities and permitted
+redaction. Runtime owns check execution, semantic owners own the rule and Diag
+owns common records/consumer consistency. The existing task remains Open.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Diagnostics task authority

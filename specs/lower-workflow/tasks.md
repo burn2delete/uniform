@@ -17,6 +17,15 @@ Current evidence/status: Open; partial source evidence above is not closure
 
 Done when (yes/no): Reject unverified/stale IR and incompatible profiles/features; expose explicit supported-operation and target matrices.
 
+<!-- lower-foundation-input-closure:start -->
+Apply the [foundation source criteria](plan.md#foundation-source-criteria) within this existing task. Status remains Open; implementation acceptance is unassessed.
+
+Foundation requirement gravity/multiversion-guard-manifest: For every dispatched backend variant emit target-feature guards, profile and numeric/safety constraints, fallback/rejection behavior and source-bound benchmark evidence; exercise each variant and guard failure. Refusals: Reject an unguarded unavailable instruction, widened profile, unjustified fast path, absent valid fallback or a benchmark from a different variant/target. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks - Expanded source profile/effect/grant facts and checked/delegated/rejected legality products; pass-evidence - Actual subject-bound checker/proof/certificate/audit/replay/test evidence and verdicts.
+
+Foundation requirement gravity/target-lowering-operation-contract: For every MIR/domain operation in the declared input closure emit its explicit accept/lower/delegate/reject disposition with target, profile, ABI/provider and preservation obligations, and consume that disposition at target emission. Refusals: Reject an uncovered operation, stale/unverified IR, unsupported feature or delegate that widens effects/authority or drops source/safety/proof facts; emit an owning unsupported-operation diagnostic. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products; runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection - Selected runtime/provider service contracts and actual link/load/service-use evidence; legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks - Expanded source profile/effect/grant facts and checked/delegated/rejected legality products.
+<!-- lower-foundation-input-closure:end -->
+
+
 - [ ] `lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout` lower/2: Derive ABI and layout
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -40,6 +49,13 @@ Done when (yes/no): Map semantic proofs to target metadata only when assumptions
 Current evidence/status: Open; partial source evidence above is not closure
 
 Done when (yes/no): Feed Emit accepted backend-ready inputs and rejected unsupported-feature cases for the selected staged Linux LLVM release candidate; keep hosted development evidence separate, without claiming every platform.
+
+
+<!-- lower-foundation-native-emission:start -->
+Apply the [foundation source criteria](plan.md#foundation-source-criteria) within this existing task. Status remains Open; implementation acceptance is unassessed.
+
+Foundation requirement gravity/native-target-artifact-emission: Emit a real C/LLVM native object or executable for D2's declared typed CLI slice from verified MIR, selected target ABI/runtime/provider records and complete source/compiler/artifact provenance; inspect and execute the claimed output where required by that slice. Refusals: Reject unchecked MIR, an unsupported operation/target, missing runtime/provider evidence and a metadata-only or nonnative output presented as the required native artifact. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products; lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs - Verified MIR/domain-operation disposition matrix and target/provider/preservation inputs; runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection - Selected runtime/provider service contracts and actual link/load/service-use evidence; build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix - Locked source/compiler/provider/target build graph and canonical rebuild comparison.
+<!-- lower-foundation-native-emission:end -->
 
 <!-- lower-implementation-tasks:end -->
 
