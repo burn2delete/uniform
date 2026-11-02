@@ -1,12 +1,31 @@
 (ns gravity.backend.jvm
-  "Internal Java source construction and plan rejection; no input admission."
+  "Internal Java source, toolchain and output operations; no input admission."
   (:require [clojure.string :as str]))
 
 (def ^:private namespace-contract
   (quote
 {:authenticates-inputs? false,
  :public-api
- {byte-array-source
+ {preflight-output!
+  {:arglists ([output-path-allowed? fail! output-path source-path]), :admission :none},
+ classfile-major {:arglists ([path]), :admission :none},
+ jar-record {:arglists ([jar-path]), :admission :none},
+ run-process!
+ {:arglists ([fail! command source-path diagnostic-id message]),
+  :admission :none},
+ stored-jar-entry!
+ {:arglists ([jar-output entry-name bytes]), :admission :none},
+ tool-version!
+ {:arglists ([run-process! fail! target-release command source-path]),
+  :admission :none},
+ validate-content-hashes!
+ {:arglists ([sha256-bytes-hex fail! source-path manifest paths]),
+  :admission :none},
+ write-file! {:arglists ([path content]), :admission :none},
+ write-jar!
+ {:arglists ([stored-jar-entry! main-class jar-path class-directory]),
+  :admission :none}
+ byte-array-source
   {:arglists ([name bytes indent]), :admission :none},
   instruction-source
   {:arglists
@@ -61,7 +80,15 @@
   :scalar-control-flow-data
   :partial-source-map
   :plan-rejection-adapter
-  :compatibility-var-interposition],
+  :compatibility-var-interposition
+  :existing-host-process-invocation
+  :tool-version-records
+  :create-new-utf8-file-output
+  :classfile-header-inspection
+  :deterministic-stored-jar-output
+  :jar-structure-inspection
+  :supplied-content-hash-comparison
+  :existing-output-path-and-parent-preflight],
  :dependency-direction
  {:requires [clojure.string],
   :consumed-by [gravity.bootstrap],
@@ -69,13 +96,13 @@
  :governing-contracts
  [D1 D2 D3 D6 D8 D9 C1 C14 C15 B1 B5 B13 B14 P4 TEST2],
  :unsupported
- [:untrusted-input-admission
+ [:filesystem-race-prevention
+  :output-name-reservation
+  :untrusted-input-admission
   :b1-mir-verification
   :full-source-map
-  :java-toolchain
-  :classfile-emission
-  :jar-publication
-  :execution
+  :artifact-publication-eligibility
+  :full-b13-manifest-verification
   :null-interop-reflection-exception-and-resource-policy
   :full-b5-conformance
   :gravity-b5-execution-parity
@@ -89,21 +116,36 @@
   :lexical-environment
   :source-text
   :output-prefix
-  :explicit-compatibility-operations],
+  :explicit-compatibility-operations
+  :caller-owned-commands-paths-and-class-bytes
+  :supplied-content-hashes
+  :late-target-data-vars
+  :late-output-path-policy-and-diagnostic-vars],
  :namespace gravity.backend.jvm,
  :diagnostic-ownership
- {:stage ["C14-UNSUPPORTED" :jvm-stage2-lowering-rule],
+ {:stage ["C14-INPUT" "C14-UNSUPPORTED" "B5-TARGET" "B13-HASH"
+           :jvm-stage2-lowering-rule :java21-target-toolchain
+           :jvm-target-process-completion :jvm-target-tool-acceptance
+           :content-hash-integrity
+           :output-path-containment :fresh-output-path :output-parent-directory],
   :existing-owner
-  [:scalar-validation :diagnostic-construction :input-admission]},
+  [:shared-output-path-policy :scalar-validation :diagnostic-construction :input-admission]},
  :artifact-outputs
  [:program-java-source
   :module-info-java-source
   :value-descriptor
   :partial-source-unit-map
   :output-path-data
-  :passed-or-existing-refusal],
+  :passed-or-existing-refusal
+  :process-stdout-octets-and-stderr
+  :tool-version-record
+  :utf8-file
+  :classfile-major
+  :deterministic-stored-jar
+  :jar-structure-record
+  :output-and-parent-file-objects],
  :issues-certificates? false,
- :contract-boundary :hosted-scalar-java-source-data}
+ :contract-boundary :internal-hosted-java-source-and-output}
 ))
 
 (defn validate-plan!
@@ -114,7 +156,7 @@
     (validate-runtime-plan! source-path target plan)
     (catch clojure.lang.ExceptionInfo ex
       (if (= "B2-UNSUPPORTED" (:id (ex-data ex)))
-        (fail!
+        ((if (var? fail!) @fail! fail!)
          "C14-UNSUPPORTED"
          "JVM backend cannot lower this stage2 instruction plan"
          source-path plan
@@ -307,5 +349,271 @@
    :provenance (str output-path "/provenance.edn")})
 
 
+(defn
+ run-process!
+ [fail! command source-path diagnostic-id message]
+ (let
+  [stdout-file
+   (java.io.File/createTempFile "gravity-jvm-out-" ".bin")
+   stderr-file
+   (java.io.File/createTempFile "gravity-jvm-err-" ".txt")]
+  (try
+   (let
+    [pb (ProcessBuilder. ^java.util.List (vec command))]
+    (.redirectOutput pb stdout-file)
+    (.redirectError pb stderr-file)
+    (let
+     [process
+      (.start pb)
+      finished?
+      (.waitFor
+       process
+       60000
+       java.util.concurrent.TimeUnit/MILLISECONDS)]
+     (when-not
+      finished?
+      (.destroyForcibly process)
+      (fail!
+       diagnostic-id
+       message
+       source-path
+       nil
+       {:command (vec command),
+        :missing-fact :jvm-target-process-completion}))
+     (let
+      [result
+       {:exit (.exitValue process),
+        :stdout-bytes
+        (vec
+         (map
+          (fn* [p1__154#] (bit-and (int p1__154#) 255))
+          (java.nio.file.Files/readAllBytes (.toPath stdout-file)))),
+        :stderr (if (.exists stderr-file) (slurp stderr-file) "")}]
+      (when-not
+       (zero? (:exit result))
+       (fail!
+        diagnostic-id
+        message
+        source-path
+        nil
+        {:command (vec command),
+         :process-result result,
+         :missing-fact :jvm-target-tool-acceptance}))
+      result)))
+   (catch clojure.lang.ExceptionInfo ex (throw ex))
+   (catch
+    Exception
+    ex
+    (fail!
+     "B5-TARGET"
+     "JVM target tool is unavailable"
+     source-path
+     nil
+     {:command (vec command),
+      :cause-message (.getMessage ex),
+      :missing-fact :java21-target-toolchain}))
+   (finally (.delete stdout-file) (.delete stderr-file)))))
+
+(defn
+ tool-version!
+ [run-process! fail! target-release command source-path]
+ (let
+  [result
+   (run-process!
+    [command "-version"]
+    source-path
+    "B5-TARGET"
+    "JVM target tool version check failed")
+   stdout
+   (String.
+    (byte-array (map byte (:stdout-bytes result)))
+    java.nio.charset.StandardCharsets/UTF_8)
+   output
+   (str/trim (str stdout "\n" (:stderr result)))
+   major
+   (some->
+    (re-find #"(?:version )?\"?([0-9]+)" output)
+    second
+    Long/parseLong)]
+  (when-not
+   (and major (>= major (deref target-release)))
+   (fail!
+    "B5-TARGET"
+    "JVM target tool cannot produce or run Java 21 artifacts"
+    source-path
+    nil
+    {:command command,
+     :observed-version output,
+     :required-major (deref target-release),
+     :missing-fact :java21-target-toolchain}))
+  {:command command, :version output, :major major}))
+
+(defn
+ write-file!
+ [path content]
+ (java.nio.file.Files/createDirectories
+  (.getParent path)
+  (make-array java.nio.file.attribute.FileAttribute 0))
+ (java.nio.file.Files/write
+  path
+  (.getBytes (str content) java.nio.charset.StandardCharsets/UTF_8)
+  (into-array
+   java.nio.file.OpenOption
+   [java.nio.file.StandardOpenOption/CREATE_NEW
+    java.nio.file.StandardOpenOption/WRITE])))
+
+(defn
+ stored-jar-entry!
+ [jar-output entry-name bytes]
+ (let
+  [crc
+   (java.util.zip.CRC32.)
+   entry
+   (java.util.jar.JarEntry. entry-name)]
+  (.update crc bytes)
+  (.setTime entry 0)
+  (.setMethod entry java.util.zip.ZipEntry/STORED)
+  (.setSize entry (alength bytes))
+  (.setCompressedSize entry (alength bytes))
+  (.setCrc entry (.getValue crc))
+  (.putNextEntry jar-output entry)
+  (.write jar-output bytes 0 (alength bytes))
+  (.closeEntry jar-output)))
+
+(defn
+ write-jar!
+ [stored-jar-entry! main-class jar-path class-directory]
+ (let
+  [manifest-bytes
+   (.getBytes
+    (str
+     "Manifest-Version: 1.0\r\n"
+     "Main-Class: "
+     (deref main-class)
+     "\r\n\r\n")
+    java.nio.charset.StandardCharsets/UTF_8)
+   entries
+   [["META-INF/MANIFEST.MF" manifest-bytes]
+    ["gravity/stage2/Program.class"
+     (java.nio.file.Files/readAllBytes
+      (.resolve class-directory "gravity/stage2/Program.class"))]
+    ["module-info.class"
+     (java.nio.file.Files/readAllBytes
+      (.resolve class-directory "module-info.class"))]]]
+  (with-open
+   [output
+    (java.util.jar.JarOutputStream.
+     (java.nio.file.Files/newOutputStream
+      jar-path
+      (into-array
+       java.nio.file.OpenOption
+       [java.nio.file.StandardOpenOption/CREATE_NEW
+        java.nio.file.StandardOpenOption/WRITE])))]
+   (doseq
+    [[entry-name bytes] entries]
+    (stored-jar-entry! output entry-name bytes)))))
+
+(defn
+ classfile-major
+ [path]
+ (let
+  [bytes (java.nio.file.Files/readAllBytes path)]
+  (when
+   (and
+    (>= (alength bytes) 8)
+    (=
+     [202 254 186 190]
+     (mapv
+      (fn* [p1__155#] (bit-and (int (aget bytes p1__155#)) 255))
+      (range 4))))
+   (+
+    (bit-shift-left (bit-and (int (aget bytes 6)) 255) 8)
+    (bit-and (int (aget bytes 7)) 255)))))
+
+(defn
+ jar-record
+ [jar-path]
+ (with-open
+  [jar (java.util.jar.JarFile. (.toFile jar-path))]
+  (let
+   [module-entry
+    (.getJarEntry jar "module-info.class")
+    module-name
+    (when
+     module-entry
+     (with-open
+      [input (.getInputStream jar module-entry)]
+      (.name (java.lang.module.ModuleDescriptor/read input))))]
+   {:entries
+    (->>
+     (enumeration-seq (.entries jar))
+     (map (fn* [p1__156#] (.getName ^java.util.jar.JarEntry p1__156#)))
+     sort
+     vec),
+    :main-class
+    (some->
+     jar
+     .getManifest
+     .getMainAttributes
+     (.getValue java.util.jar.Attributes$Name/MAIN_CLASS)),
+    :module-name module-name})))
+
+(defn
+ validate-content-hashes!
+ [sha256-bytes-hex fail! source-path manifest paths]
+ (doseq
+  [[kind expected] (:content-hashes manifest)]
+  (let
+   [path
+    (get paths kind)
+    actual
+    (when
+     (and path (.isFile (java.io.File. path)))
+     (str
+      "sha256:"
+      (sha256-bytes-hex
+       (java.nio.file.Files/readAllBytes
+        (.toPath (java.io.File. path))))))]
+   (when-not
+    (= expected actual)
+    (fail!
+     "B13-HASH"
+     "JVM emitted artifact content hash is stale or mismatched"
+     source-path
+     nil
+     {:artifact-kind kind,
+      :artifact-path path,
+      :expected-content-hash expected,
+      :actual-content-hash actual,
+      :missing-fact :content-hash-integrity}))))
+ :passed)
+
+(defn preflight-output!
+  [output-path-allowed? fail! output-path source-path]
+  (when-not (output-path-allowed? output-path)
+    (fail!
+     "C14-INPUT" "JVM artifact directory is outside declared roots"
+     source-path nil
+     {:output-path output-path :missing-fact :output-path-containment}))
+  (let [output (java.io.File. output-path)
+        parent (or (.getParentFile output) (java.io.File. "."))]
+    (when (.exists output)
+      (fail!
+       "C14-INPUT" "JVM backend requires a fresh artifact directory"
+       source-path nil
+       {:output-path output-path :missing-fact :fresh-output-path}))
+    (when (and (.exists parent) (not (.isDirectory parent)))
+      (fail!
+       "C14-INPUT" "JVM artifact parent is not a directory"
+       source-path nil
+       {:output-path output-path :output-parent (.getPath parent)
+        :missing-fact :output-parent-directory}))
+    (when (and (not (.exists parent)) (not (.mkdirs parent)))
+      (fail!
+       "C14-INPUT" "JVM artifact parent directory is unavailable"
+       source-path nil
+       {:output-path output-path :output-parent (.getPath parent)
+        :missing-fact :output-parent-directory}))
+    {:output output :parent parent}))
 (doseq [[_ operation] (ns-publics *ns*)]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

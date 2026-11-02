@@ -1,0 +1,185 @@
+{:merged-tree "d3d8c59a651ade262403eca2369de12c3d3848cb",
+ :nonclaims
+ [:whole-quote-or-inference-accounting-removal
+  :authenticated-source-or-private-inference
+  :genuine-C7-Effects-lowering-runtime-acceptance
+  :parent-stack-acceptance
+  :PR569-acceptance
+  :ACC01-or-PR502-closure
+  :release
+  :self-hosting
+  :seed-retirement],
+ :accepted-scope
+ {:source-cut-mode-argument-guards :preserved,
+  :appended-fixture-and-control-forms 5,
+  :production-functions 3,
+  :actual-quote-products :metered-and-unchanged,
+  :PR619-loop-retirement :preserved,
+  :stack-valid-data-helper :absent-uncalled,
+  :current-C7-definitions 1087,
+  :declared-paths 8,
+  :retired-field :quote-work-count,
+  :genuine-owner-tests :UNRUN},
+ :source-tree "d3d8c59a651ade262403eca2369de12c3d3848cb",
+ :state :integrated,
+ :merged-parent "a6f5b2f99e0076e2a790a9f99494c0312c896af1",
+ :CI
+ {:candidate "d4a82e686a3680db07f909b0969cd5a073734749",
+  :successes 7,
+  :configured-skips 2,
+  :all-completed true,
+  :main-CI :separate,
+  :genuine-kernel-evidence false},
+ :source-candidate "d4a82e686a3680db07f909b0969cd5a073734749",
+ :independent-source-review
+ {:metadata-DATA-negatives
+  {:cases 8, :all-refused true, :authoritative false},
+  :source-negative-controls
+  {:preserved-guard-removals 6,
+   :retired-schema-reintroductions 2,
+   :tree-corruptions 4,
+   :all-refused true},
+  :valid-data-helper :absent-uncalled,
+  :nonclaims
+  [:current-head-CI
+   :fresh-author-preflight
+   :integration
+   :APPROVE
+   :whole-ACC01
+   :PR502-closure],
+  :execution
+  {:reader-eval false,
+   :Bootstrap false,
+   :genuine-owner-tests :UNRUN,
+   :target-runtime :UNRUN},
+  :candidate "d4a82e686a3680db07f909b0969cd5a073734749",
+  :tests {:test 3, :pass 113, :fail 0, :error 0, :type :summary},
+  :generator-sha256
+  "14967e804395482f8f26dbfec707e7e0254442a2849c679f475e3a11d42fb55b",
+  :new-execution false,
+  :transaction
+  {:full-tree-entries 10073,
+   :intervening-paths-preserved
+   ("bootstrap/clojure/test/gravity/build/parent_producer_observation.clj"
+    "bootstrap/clojure/test/gravity/build/producer_evidence_test.clj"
+    "bootstrap/clojure/test/gravity/build/producer_git_observation.clj"
+    "bootstrap/clojure/test/gravity/build/producer_git_observation_test.clj"
+    "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring.clj"
+    "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+    "docs/verification-reuse.md"
+    "specs/accounting-removal/loop-accounting-main-census.edn"
+    "specs/accounting-removal/loop-accounting-main.md"),
+   :five-appended-forms :exact,
+   :C7-current-definitions 1087,
+   :eight-path-accounting
+   "Three production paths + three test paths containing five appended forms + two extraction records. Earlier PR618 source review concerned only three definition edits and five forms; extraction records account for the path count without importing parent-stack source.",
+   :historical-census-scope
+   "Census/MD are byte-identical extraction records for e047/46e8; their old whole-C7 hashes and 1088 remaining-definition count are not current-head claims. Current total1087/unchanged1086 and current blob hashes independently verified here.",
+   :unmodified-paths 10065,
+   :three-definition-byte-substitutions :exact,
+   :paths
+   {"bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj"
+    {:mode-blob "100644 blob 082c35dea01aca7ed992a2aea185eb181d0205f1",
+     :sha256
+     "f334b4d2e292456c5cd7586286e875d34bdc354729fcd030303d22dcf4bfda52"},
+    "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
+    {:mode-blob "100644 blob f9b292c86be54f83c3ee57b0ce0fdb69382937ef",
+     :sha256
+     "7c13569f22fe04f66ad3080b1ad57c738a2d56b41f869fe3a9ff6627dc764d6f"},
+    "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj"
+    {:mode-blob "100644 blob d3b04e184730a8fd132db86959f321370eeaccc3",
+     :sha256
+     "7b0797fcb989c3bdbe73433a4e1339336e5f6663f7f0849e44fce29ca85a2b94"},
+    "bootstrap/gravity/p15_s23/emitter.gravity"
+    {:mode-blob "100644 blob 5485494614d04f4b894296c18bb83f6de31d9092",
+     :sha256
+     "e49189aa370afcdf7c85a98d68cec02c3462e4f964285941e7f1dd956c5b68ae"},
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+    {:mode-blob "100644 blob 83c44ba431b26bf1e5647a735452867bf1c3c49d",
+     :sha256
+     "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64"},
+    "bootstrap/gravity/src/gravity/effects.gravity"
+    {:mode-blob "100644 blob 10b64fb3b3b3340f9ea6f22b5e7f2bf630fd8367",
+     :sha256
+     "a1d6d01540ec67ac3c8aad270f946dfcdc21a94664ee36b4aa8848a18c56f3e5"},
+    "specs/accounting-removal/cold-quote-main-census.edn"
+    {:mode-blob "100644 blob f226c6b5abfcf39e5464b4d58ac10626fc5349b4",
+     :sha256
+     "2ee1f50f45d9eb460ee816bd473c0541a4b4f381847f0b0c92ff00b1af7ccafc"},
+    "specs/accounting-removal/cold-quote-main.md"
+    {:mode-blob "100644 blob 20ed08101cd610cc240aa4ee8e2a7fda468e664e",
+     :sha256
+     "05b876c20589e794f925e3832ab1901239f828193614ed688e866c8cf30bf766"}}},
+  :scope
+  "Exact published source composition only; unchanged original review source rehashed. No parent-stack runtime or acceptance inherited.",
+  :all-eight-file-pins :verified,
+  :prior-receipt-sha256
+  "a939654e46b3d1b1b16b4294c5b4d67d65606827cf748568899c8a29e790ba3d",
+  :kind :verified-cold-final-source-composition,
+  :receipt-sha256
+  "912f8cdb87af20d2ff600ce290f07928f9fc0821e82fa88bccf89d0f77fc8dcb",
+  :verdict :PASS,
+  :quote-products :still-metered-unchanged,
+  :current-API-coherence
+  "Exact current-main production reconstruction changes only the three reviewed function spans. Every other helper/caller byte survives, including invoke-c7 [function arguments], Effects [function & args], helper resolution and source/type guards. The five copied forms are byte-identical to the reviewed forms and call only existing sh08-is-cold-evidence; no absent valid-data helper is called.",
+  :base "a6f5b2f99e0076e2a790a9f99494c0312c896af1",
+  :pr 628,
+  :owner :ACC-01,
+  :candidate-tree "d3d8c59a651ade262403eca2369de12c3d3848cb"},
+ :preservation
+ {:original-cache :untouched,
+  :reviewed-source-refs :retained,
+  :PR532-scope :unchanged,
+  :PR502 :open,
+  :denied-actions :not-retried},
+ :kind :verified-finite-cold-metadata-main-integration,
+ :merge-method :squash,
+ :generator
+ {:language :clojure,
+  :sha256
+  "c52872bb3f84ff2b190819e98c366406cc67546d8fcca2b318e48f36cedfe38d",
+  :preserved-locally true},
+ :integration-preflight
+ {:mode :integration,
+  :result :pass,
+  :read-only true,
+  :preconditions
+  {"all-pass" true,
+   "base-resolved" true,
+   "candidate-identities-match" true,
+   "clean-worktree" true,
+   "named-branch" true,
+   "reconciliation-allowed" true},
+  :observed-identities
+  {"expected-base" "a6f5b2f99e0076e2a790a9f99494c0312c896af1",
+   "expected-commit" "d4a82e686a3680db07f909b0969cd5a073734749",
+   "expected-tree" "d3d8c59a651ade262403eca2369de12c3d3848cb"},
+  :reconciliation
+  {"base-is-ancestor" true,
+   "candidate-is-ancestor" false,
+   "recommendation" "integrate_candidate",
+   "relation" "descendant",
+   "tree-equivalent" false},
+  :raw-report-sha256
+  "b5dcba808aece545b619106708b131649bcb4ca643a7303f2a8ffea3b6de597a",
+  :raw-report :preserved-locally},
+ :merged-commit "ce4f0f42774486ee7e0f8791f51e8f0e9b8898ea",
+ :fresh-main-readback
+ {:PR-state :closed,
+  :PR-merged true,
+  :base-branch "main",
+  :reachable-from-origin-main true,
+  :tree-identical-to-reviewed-candidate true,
+  :changed-paths
+  ["bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj"
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
+   "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj"
+   "bootstrap/gravity/p15_s23/emitter.gravity"
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+   "bootstrap/gravity/src/gravity/effects.gravity"
+   "specs/accounting-removal/cold-quote-main-census.edn"
+   "specs/accounting-removal/cold-quote-main.md"]},
+ :base "a6f5b2f99e0076e2a790a9f99494c0312c896af1",
+ :pr 628,
+ :owner :ACC-01}

@@ -4,10 +4,14 @@
             [gravity.c15-diagnostics :as c15]
             [gravity.c16-incremental :as c16]
             [gravity.c17-c18-pass-cache :as cache]
+            [gravity.c17-c18-pass-cache.upstream-boundary :as upstream-boundary]
+            [gravity.c17-c18-pass-cache.validation :as validation]
             [gravity.c17-plugin :as c17]
             [gravity.c18-verification :as c18]
             [gravity.digest :as digest]
-            [gravity.pass-cache :as pass-cache])
+            [gravity.pass-cache :as pass-cache]
+            [gravity.pass-execution :as pass-execution]
+            [gravity.pass-execution.dag :as dag])
   (:import [java.nio.file Files LinkOption Path]
            [java.nio.file.attribute FileAttribute]))
 
@@ -18,14 +22,17 @@
   (when (Files/exists root (make-array LinkOption 0))
     (with-open [paths (Files/walk root (make-array java.nio.file.FileVisitOption 0))]
       (doseq [path (reverse (sort-by #(.getNameCount ^Path %)
-                                    (vec (.toArray paths))))]
+                                     (vec (.toArray paths))))]
         (Files/deleteIfExists ^Path path)))))
 
-(defmacro with-temporary-directory [[binding] & body]
-  `(let [~binding (Files/createTempDirectory
+(defn- with-temporary-directory
+  [test-fn]
+  (let [directory (Files/createTempDirectory
                    "gravity-c17-c18-pass-cache-"
                    (make-array FileAttribute 0))]
-     (try ~@body (finally (delete-tree! ~binding)))))
+    (try
+      (test-fn directory)
+      (finally (delete-tree! directory)))))
 
 (def module
   {:module 'gravity.c17-c18-cache-test
@@ -154,74 +161,197 @@
     (is (nil? (find-ns 'gravity.bootstrap)))))
 
 (deftest real-c17-c18-store-hit-and-compose-four-pass-chain
-  (with-temporary-directory [directory]
-    (let [store (pass-cache/open-local-store directory)
-          calls (atom {:c15 0 :c16 0 :c17 0 :c18 0})
-          upstream (upstream-result store calls)
-          first-result
+  (with-temporary-directory
+    (fn [directory]
+      (let [store (pass-cache/open-local-store directory)
+            calls (atom {:c15 0 :c16 0 :c17 0 :c18 0})
+            upstream (upstream-result store calls)
+            first-result
+            (cache/lookup-or-compute!
+             store upstream (downstream-context) (downstream-operations calls))
+            second-result
+            (cache/lookup-or-compute!
+             store upstream (downstream-context) (downstream-operations calls))]
+        (is (= {:c15 1 :c16 1 :c17 1 :c18 1} @calls))
+        (is (= [:stored :stored]
+               [(get-in first-result [:c17-cache-evidence :status])
+                (get-in first-result [:c18-cache-evidence :status])]))
+        (is (= [:hit :hit]
+               [(get-in second-result [:c17-cache-evidence :status])
+                (get-in second-result [:c18-cache-evidence :status])]))
+        (is (= :gravity/stage0-c17-compiler-plugin-artifact
+               (get-in second-result [:c17-artifact :kind])))
+        (is (= :gravity/stage0-c18-compiler-verification-artifact
+               (get-in second-result [:c18-artifact :kind])))
+        (is (= 4 (count (get-in second-result [:evidence-dag :receipts]))))
+        (is (= 4 (count (get-in second-result [:evidence-dag :contracts]))))
+        (is (= 3 (count (get-in second-result [:evidence-dag :edges]))))
+        (is (= :none
+               (get-in second-result [:evidence-dag :authority :effective-level])))
+        (is (= (:evidence-root-id second-result)
+               (get-in second-result [:evidence-dag :evidence-root-id])))
+        (is (false? (:release-authority? second-result)))
+        (is (false? (:proof-authority? second-result)))))))
+
+(deftest default-orchestration-reuses-validated-boundaries-once
+  (with-temporary-directory
+    (fn [directory]
+      (let [store (pass-cache/open-local-store directory)
+            calls (atom {:c15 0 :c16 0 :c17 0 :c18 0})
+            upstream (upstream-result store calls)
+            observed (atom [])
+            original-upstream upstream-boundary/validate-upstream!
+            original-context validation/validate-context!
+            original-operations validation/validate-operations!
+            original-c17-receipt upstream-boundary/validate-c17-receipt!
+            result
+            (with-redefs
+             [upstream-boundary/validate-upstream!
+              (fn [& args]
+                (swap! observed conj :upstream)
+                (apply original-upstream args))
+              validation/validate-context!
+              (fn [value]
+                (swap! observed conj :context)
+                (original-context value))
+              validation/validate-operations!
+              (fn [value]
+                (swap! observed conj :operations)
+                (original-operations value))
+              upstream-boundary/validate-c17-receipt!
+              (fn [& args]
+                (swap! observed conj :c17-receipt)
+                (apply original-c17-receipt args))]
+              (cache/lookup-or-compute!
+               store upstream (downstream-context)
+               (downstream-operations calls)))]
+        (is (= [:upstream :context :operations :c17-receipt] @observed))
+        (is (= [:stored :stored]
+               [(get-in result [:c17-cache-evidence :status])
+                (get-in result [:c18-cache-evidence :status])]))))))
+
+(deftest default-orchestration-composes-the-final-dag-once
+  (with-temporary-directory
+    (fn [directory]
+      (let [store (pass-cache/open-local-store directory)
+            calls (atom {:c15 0 :c16 0 :c17 0 :c18 0})
+            upstream (upstream-result store calls)
+            compose-calls (atom 0)
+            original-compose dag/compose-evidence-dag
+            result
+            (with-redefs
+             [dag/compose-evidence-dag
+              (fn [& args]
+                (swap! compose-calls inc)
+                (apply original-compose args))]
+              (cache/lookup-or-compute!
+               store upstream (downstream-context)
+               (downstream-operations calls)))]
+        ;; One call validates the supplied upstream root; one builds the final
+        ;; four-receipt DAG. The final root does not recompose it a third time.
+        (is (= 2 @compose-calls))
+        (is (= (:evidence-root-id result)
+               (get-in result [:evidence-dag :evidence-root-id])))))))
+
+(deftest interposed-composer-and-root-callbacks-remain-live
+  (with-temporary-directory
+    (fn [directory]
+      (let [store (pass-cache/open-local-store directory)
+            calls (atom {:c15 0 :c16 0 :c17 0 :c18 0})
+            upstream (upstream-result store calls)
+            observed (atom [])
+            original-compose pass-execution/compose-evidence-dag
+            original-root pass-execution/evidence-root]
+        (with-redefs
+         [pass-execution/compose-evidence-dag
+          (fn [& args]
+            (swap! observed conj :compose)
+            (apply original-compose args))
+          pass-execution/evidence-root
+          (fn [& args]
+            (swap! observed conj :root)
+            (apply original-root args))]
           (cache/lookup-or-compute!
-           store upstream (downstream-context) (downstream-operations calls))
-          second-result
-          (cache/lookup-or-compute!
-           store upstream (downstream-context) (downstream-operations calls))]
-      (is (= {:c15 1 :c16 1 :c17 1 :c18 1} @calls))
-      (is (= [:stored :stored]
-             [(get-in first-result [:c17-cache-evidence :status])
-              (get-in first-result [:c18-cache-evidence :status])]))
-      (is (= [:hit :hit]
-             [(get-in second-result [:c17-cache-evidence :status])
-              (get-in second-result [:c18-cache-evidence :status])]))
-      (is (= :gravity/stage0-c17-compiler-plugin-artifact
-             (get-in second-result [:c17-artifact :kind])))
-      (is (= :gravity/stage0-c18-compiler-verification-artifact
-             (get-in second-result [:c18-artifact :kind])))
-      (is (= 4 (count (get-in second-result [:evidence-dag :receipts]))))
-      (is (= 4 (count (get-in second-result [:evidence-dag :contracts]))))
-      (is (= 3 (count (get-in second-result [:evidence-dag :edges]))))
-      (is (= :none
-             (get-in second-result [:evidence-dag :authority :effective-level])))
-      (is (= (:evidence-root-id second-result)
-             (get-in second-result [:evidence-dag :evidence-root-id])))
-      (is (false? (:release-authority? second-result)))
-      (is (false? (:proof-authority? second-result))))))
+           store upstream (downstream-context)
+           (downstream-operations calls)))
+        ;; The upstream boundary and the final interposed root are both
+        ;; validated; only the final composition is interposed once.
+        (is (= [:root :compose :root] @observed))))))
+
+(deftest public-stage-request-interposition-remains-live
+  (with-temporary-directory
+    (fn [directory]
+      (let [store (pass-cache/open-local-store directory)
+            calls (atom {:c15 0 :c16 0 :c17 0 :c18 0})
+            upstream (upstream-result store calls)
+            c17-original cache/c17-stage-request
+            c18-original cache/c18-stage-request
+            observed (atom [])
+            result
+            (with-redefs
+             [cache/c17-stage-request
+              (fn [context value]
+                (swap! observed conj :c17)
+                (c17-original context value))
+              cache/c18-stage-request
+              (fn [context receipt]
+                (swap! observed conj :c18)
+                (c18-original context receipt))]
+              (cache/lookup-or-compute!
+               store upstream (downstream-context)
+               (downstream-operations calls)))]
+        (is (= [:c17 :c18] @observed))
+        (is (= :gravity/stage0-c18-compiler-verification-artifact
+               (get-in result [:c18-artifact :kind])))))))
 
 (deftest upstream-root-and-current-validation-bindings-fail-closed
-  (with-temporary-directory [directory]
-    (let [store (pass-cache/open-local-store directory)
-          calls (atom {:c15 0 :c16 0 :c17 0 :c18 0})
-          upstream (upstream-result store calls)
-          invalid (assoc upstream :evidence-root-id (id :forged-root))]
-      (is (thrown? clojure.lang.ExceptionInfo
-                   (cache/c17-stage-request (downstream-context) invalid)))
-      (cache/lookup-or-compute!
-       store upstream (downstream-context) (downstream-operations calls))
-      (let [changed (assoc-in (downstream-context)
-                              [:validation-binding-ids :c17]
-                              (id :replacement-c17-validator))
-            result (cache/lookup-or-compute!
-                    store upstream changed (downstream-operations calls))]
-        (is (= :miss (get-in result [:c17-cache-evidence :status])))
-        (is (= :withheld
-               (get-in result [:c17-cache-evidence :cache-publication])))
-        (is (= {:c15 1 :c16 1 :c17 2 :c18 1} @calls))))))
+  (with-temporary-directory
+    (fn [directory]
+      (let [store (pass-cache/open-local-store directory)
+            calls (atom {:c15 0 :c16 0 :c17 0 :c18 0})
+            upstream (upstream-result store calls)
+            invalid (assoc-in upstream [:evidence-dag :evidence-root-id]
+                              (id :forged-root))]
+        (try
+          (cache/c17-stage-request (downstream-context) invalid)
+          (is false "forged upstream DAG must be rejected")
+          (catch clojure.lang.ExceptionInfo error
+            (is (= "C16-STALE" (:id (ex-data error))))))
+        (cache/lookup-or-compute!
+         store upstream (downstream-context) (downstream-operations calls))
+        (let [changed (assoc-in (downstream-context)
+                                [:validation-binding-ids :c17]
+                                (id :replacement-c17-validator))
+              result (cache/lookup-or-compute!
+                      store upstream changed (downstream-operations calls))]
+          (is (= :miss (get-in result [:c17-cache-evidence :status])))
+          (is (= :withheld
+                 (get-in result [:c17-cache-evidence :cache-publication])))
+          (is (= {:c15 1 :c16 1 :c17 2 :c18 1} @calls)))))))
 
 (deftest malformed-context-and-operations-are-rejected-before-execution
-  (with-temporary-directory [directory]
-    (let [store (pass-cache/open-local-store directory)
-          calls (atom {:c15 0 :c16 0 :c17 0 :c18 0})
-          upstream (upstream-result store calls)]
-      (doseq [invalid [(assoc (downstream-context) :unknown true)
-                       (dissoc (downstream-context) :profile-id)
-                       (assoc (downstream-context) :policy-ids
-                              (reverse (:policy-ids (downstream-context))))]]
+  (with-temporary-directory
+    (fn [directory]
+      (let [store (pass-cache/open-local-store directory)
+            calls (atom {:c15 0 :c16 0 :c17 0 :c18 0})
+            upstream (upstream-result store calls)]
+        (doseq [invalid [(assoc (downstream-context) :unknown true)
+                         (dissoc (downstream-context) :profile-id)
+                         (assoc (downstream-context) :policy-ids
+                                (reverse (:policy-ids (downstream-context))))]]
+          (is (thrown? clojure.lang.ExceptionInfo
+                       (cache/c17-stage-request invalid upstream))))
         (is (thrown? clojure.lang.ExceptionInfo
-                     (cache/c17-stage-request invalid upstream))))
-      (is (thrown? clojure.lang.ExceptionInfo
-                   (cache/c18-stage-request
-                    (downstream-context)
-                    {:output-artifact-id (id :forged-c17)
-                     :output-facts #{}})))
-      (is (thrown? clojure.lang.ExceptionInfo
-                   (cache/lookup-or-compute!
-                    store upstream (downstream-context)
-                    {:produce-c17! identity}))))))
+                     (cache/c18-stage-request
+                      (assoc (downstream-context) :unknown true)
+                      {:output-artifact-id (id :forged-c17)
+                       :output-facts #{}})))
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (cache/c18-stage-request
+                      (downstream-context)
+                      {:output-artifact-id (id :forged-c17)
+                       :output-facts #{}})))
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (cache/lookup-or-compute!
+                      store upstream (downstream-context)
+                      {:produce-c17! identity})))))))

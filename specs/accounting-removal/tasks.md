@@ -13,7 +13,7 @@ including implemented work whose required acceptance has not completed.
 | ACC-06 | C7 `lc-validate-types`, `lc-type-work`, construction helpers; Effects/emitter `lc/pl/lr-type-work` | ACC-02 release | Work/depth/width admission removed with complete nested type, Never, parity and late malformed/opaque validation |
 | ACC-07 | C7 `ft-effective-work-policy`, `ft-invalid-work-policy`, `ft-work-allowance`, `ft-infer-acyclic-with-context`, `ft-inference-round-bound`, `ft-infer-pass-products-prepared`, public work-policy entrypoints | ACC-02 release; ACC-01 call graph | Remove allowances/debits/reservations and policy API premises; preserve fixed-point/cycle/conflict semantics and genuine fresh result verification |
 | ACC-08 | C7 module products; Effects `body-analyze-module` and imports; emitter `typed-compile-node` | ACC-03/05/06/07 as interfaces require | Remove module/profile-validation work and cumulative pools coherently; genuine complete joins, typed emission, effects/capabilities and tamper rejection |
-| ACC-09 | Runtime `initializer-work`, Set domain/contains/insertion/equality/construction/conversion hooks, Vector/List domain/equality, `module-census`, `instruction-children`, `runtime-module-reads`; emitter callers | Module-read traversal merged in PR433; census/root-uniqueness and fresh guarded metadata composition merged in PR444 at `6b2e63b3`, exact reviewed tree `68609de1`; ACC-01 | Census allowance/shared initializer pool removal and its metadata integration are complete. Remaining initializer, collection and runtime-shape accounting, exhaustive dispositions and their actual owner acceptance stay open; preserve genuine runtime/source/type/uniqueness/constructor/callback/collision/Unicode checks |
+| ACC-09 | Runtime initializer validation, Set domain/contains/insertion/equality/construction/conversion hooks, Vector/List domain/equality, module census/reads; emitter callers | Module reads merged in PR433; census/root-uniqueness and guarded metadata composition merged in PR444 at `6b2e63b3`, reviewed tree `68609de1`. Initializer removal accepted at `22898a29`; its production code and hosted Native dependency are present in main `942dbdf8`. PR446 and PR450 retain distinct tests and historical evidence; ACC-01 | Exhaustive current-source dispositions, affected collection/type/runtime acceptance and whole-plan foreign ingress remain open. Preserve genuine source/type/uniqueness/constructor/callback/collision/Unicode checks; historical initializer results retain their original source and do not confer current whole-runtime acceptance |
 | ACC-10 | Existing MIR PR378/421 and Native PR383/parameter paths | Existing owners; shared codec resolution | Exact producer/consumer removal acceptance, genuine source replay and negative controls, independently reviewed current-main integration; helper passes alone insufficient |
 | ACC-11 | Existing PR370 optimization/lowering owners and consumers | Existing PR370 owner | Actual opt/lower composition, source/fact/profile/safety preservation, independent review and current-main integration |
 | ACC-12 | Accounting-only tests/docs/schema premises and final main reconciliation | Every other applicable ACC item | No current accounting requirement or orphan producer/consumer field, reviewed exhaustive dispositions, current-main regression/integration receipts and explicit restricted boundaries |
@@ -340,6 +340,19 @@ to merge the old tree wholesale. Existing PR450/454/462 retain their runtime
 implementation ownership and dependency holds.
 
 ## Finite pull-request completion checklists - 2026-10-27 12:39 MDT
+
+PR502 continuation at assessed main `6276c94b` is recorded in the
+[explicit preserved-path input](preserved-paths.md). It expands the canonical
+29-path table without replacing any ACC ID or historical receipt. Existing
+PMK, inferred-insertion, DSE and runtime owners cover only their named finite
+units. GIS3 entry/source products, iterative quoted data, native verifier arenas,
+nil/List joins, ordinary parameter choice, and remaining descriptor/schema and
+mixed-ledger controls still lack complete verified successor dispositions.
+Those are retained ACC-01/04/06/07/08/09/12/13 obligations. PR502 remains open;
+listing all paths is not terminal disposition of every unique delta.
+The current-main reconciliation attached to that input records the finite
+successors already merged without reopening their implementation tasks or
+converting the remaining held work into completed obligations.
 
 Accounting completion owns PR359, PR450, PR454 and PR462. Native owns the seven
 API files in PR446; verification reuse owns registration metadata. These are

@@ -1090,5 +1090,7 @@
       ((deref (get operations :execute-function-scoped)) runtime plan function args public-invocation-scope))))
 
 
-(doseq [operation [#'map-entry #'fail-recur! #'nontail-value! #'execute-generic-builtin-call-scoped #'execute-call-scoped #'executor-rule-record #'fail-call-arity! #'assert-min-arity! #'assert-exact-arity! #'assert-between-arity! #'assert-even-arity! #'hosted-unary-builtin #'execute-instruction-scoped #'execute-value-scoped #'bind-values #'execute-values-scoped #'execute-map-entries-scoped #'execute-instructions-scoped #'hosted-builtin #'hosted-add #'hosted-subtract #'hosted-multiply #'hosted-divide #'hosted-equal #'hosted-less-than #'hosted-greater-than #'hosted-less-than-or-equal #'hosted-greater-than-or-equal #'hosted-str #'fail-builtin-error! #'hosted-get #'execute-function-scoped #'execute-function #'artifact-invoke #'execute-plan]]
+(doseq
+ [name (keys (:public-api namespace-contract))
+  :let [operation (get (ns-interns *ns*) name)]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

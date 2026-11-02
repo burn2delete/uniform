@@ -1,0 +1,191 @@
+{:merged-tree "8e2f688ffcad861682c54571a07eee37517b9363",
+ :nonclaims
+ [:genuine-C7-Effects-lowering-runtime-acceptance
+  :whole-accounting-removal
+  :transitive-helper-equivalence
+  :historical-runtime-inheritance
+  :PR569-acceptance
+  :ACC01-or-PR502-closure
+  :release
+  :self-hosting
+  :seed-retirement],
+ :accepted-scope
+ {:all-other-current-main-test-bytes :preserved,
+  :vector-rest [:complete-List-validator-result :original-depth-192],
+  :List-prepend
+  [:depths-127-128-129
+   :descriptor-return-and-result-equality
+   :equally-deep-invalid-leaf],
+  :existing-width-and-late-invalid-controls :preserved,
+  :modified-test-definitions 2,
+  :production :unchanged,
+  :declared-paths 3,
+  :PR619-and-PR628 :preserved,
+  :genuine-owner-test-results :UNRUN},
+ :source-tree "8e2f688ffcad861682c54571a07eee37517b9363",
+ :state :integrated,
+ :merged-parent "ce4f0f42774486ee7e0f8791f51e8f0e9b8898ea",
+ :CI
+ {:candidate "9888a076ab9bddf7a0aaa9ed50c0c1ba33d5775e",
+  :successes 7,
+  :configured-skips 2,
+  :all-completed true,
+  :main-CI :separate,
+  :genuine-kernel-evidence false},
+ :source-candidate "9888a076ab9bddf7a0aaa9ed50c0c1ba33d5775e",
+ :independent-source-review
+ {:five-C7-pins-and-callers :verified,
+  :all-production :unchanged-from-current-main,
+  :nonclaims
+  [:current-head-CI
+   :fresh-integration-preflight
+   :merge
+   :APPROVE
+   :whole-ACC01
+   :PR502-closure],
+  :execution
+  {:reader-eval false,
+   :Bootstrap false,
+   :genuine-owner-helper-runtime :UNRUN,
+   :target-allocations :UNRUN},
+  :negative-controls
+  {:original-source-mutants
+   [{:name :constructor-selected-field,
+     :rejected true,
+     :failed-contracts [:constructor-complete]}
+    {:name :remove-depth192,
+     :rejected true,
+     :failed-contracts [:depth192]}
+    {:name :omit-depth129,
+     :rejected true,
+     :failed-contracts [:depths-and-descriptor :nested-invalid]}
+    {:name :omit-descriptor-return,
+     :rejected true,
+     :failed-contracts [:depths-and-descriptor]}
+    {:name :omit-nested-invalid,
+     :rejected true,
+     :failed-contracts [:nested-invalid]}
+    {:name :omit-width1025,
+     :rejected true,
+     :failed-contracts [:width1025]}
+    {:name :omit-late-invalid,
+     :rejected true,
+     :failed-contracts [:late-invalid]}],
+   :composition-corruptions
+   [:dropped-constructor
+    :dropped-depth192
+    :dropped-list-block
+    :dropped-current-main-tail
+    :production-rollback
+    :additional-path
+    :dropped-record
+    :test-mode-drift
+    :untouched-path-drift],
+   :all-rejected true},
+  :candidate "9888a076ab9bddf7a0aaa9ed50c0c1ba33d5775e",
+  :historical-records
+  "Census and MD are byte-identical original0f508ea8/70e95305 records. Their full-test/full-production hashes describe that original source pair, not this composed head. Current full-file/tree identities independently recorded here.",
+  :generator-sha256
+  "04c6cd3571b49102f954740328b2e011582c7508e31aacb319b35b10fd229ef9",
+  :new-execution false,
+  :paths
+  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
+   {:mode-blob "100644 blob fb54a75a6ef0aaab4d8f504f1ee0d748c3af0b0a",
+    :sha256
+    "48d3fcaa665f273361c098890ab1d326e51fd84eee4f588827cd020f6f698de1"},
+   "specs/accounting-removal/collection-result-controls-census.edn"
+   {:mode-blob "100644 blob d74ddf57c6bace0f9ff97ffbe9206aa1597ca656",
+    :sha256
+    "ded1116f2bc5afc51d2c4a239467c4d60e2905ed7fa97d3bea2e615e0f6ed47a"},
+   "specs/accounting-removal/collection-result-controls.md"
+   {:mode-blob "100644 blob 639e456154c38debf997c0a4472e69c11e9bcfc1",
+    :sha256
+    "2100e83462b7fefda04afdec5b494c292d0409735c7cc98a0f08954a1000cd38"}},
+  :pins-sha256
+  "0decd778a56dde827270ec8e96ef748cf1272976409dcae761245d0df491cdae",
+  :scope :independent-affected-current-main-SOURCE-DATA,
+  :prior-review
+  {:head "70e953057b840c0b6ace94d099d644ef9c7c139d",
+   :receipt-sha256
+   "c760842dcc553bd461e5de401c3e10e3f807811c69e356c8a1d8c5b214b23cb7",
+   :harness-sha256
+   "12495aed1c997cf3992405028d723a820e44725ece69b6fb9b4beeb419ae74f4",
+   :all-original-pins-reverified true,
+   :historical-runtime-inherited false},
+  :whole-tree
+  {:base-entries 10073,
+   :candidate-entries 10075,
+   :modified 1,
+   :added 2,
+   :untouched-base-entries 10072,
+   :complete-mode-and-blob-equation :exact},
+  :all-other-test-bytes :exact-reconstruction,
+  :PR619-deletion :preserved,
+  :kind :verified-collection-final-source-composition,
+  :receipt-sha256
+  "2e558cade7566fae9ffa9b7bdbfe56695baccf4672f4ef234af6a887553fb4b6",
+  :verdict :PASS,
+  :source-DATA-checks 94,
+  :base "ce4f0f42774486ee7e0f8791f51e8f0e9b8898ea",
+  :pr 632,
+  :PR628-tail
+  {:sha256
+   "2c33e8671af8ad20e01c5cdfd253d55bad5b872657c36420c43834e7c9ac1aa2",
+   :forms
+   [cold-metadata-input
+    cold-metadata-invalid-inputs
+    cold-quote-metadata-production-development-kernel],
+   :conserved true},
+  :owner :ACC-01,
+  :candidate-tree "8e2f688ffcad861682c54571a07eee37517b9363"},
+ :preservation
+ {:original-cache :untouched,
+  :reviewed-source-refs :retained,
+  :PR532-scope :unchanged,
+  :PR502 :open,
+  :denied-actions :not-retried},
+ :kind :verified-finite-collection-control-main-integration,
+ :merge-method :squash,
+ :generator
+ {:language :clojure,
+  :sha256
+  "09fb9161b30ddc0c42a901c9eb5009d638a09e5162c54497bf17e33a7afdf7f3",
+  :preserved-locally true},
+ :integration-preflight
+ {:mode :integration,
+  :result :pass,
+  :read-only true,
+  :preconditions
+  {"all-pass" true,
+   "base-resolved" true,
+   "candidate-identities-match" true,
+   "clean-worktree" true,
+   "named-branch" true,
+   "reconciliation-allowed" true},
+  :observed-identities
+  {"expected-base" "ce4f0f42774486ee7e0f8791f51e8f0e9b8898ea",
+   "expected-commit" "9888a076ab9bddf7a0aaa9ed50c0c1ba33d5775e",
+   "expected-tree" "8e2f688ffcad861682c54571a07eee37517b9363"},
+  :reconciliation
+  {"base-is-ancestor" true,
+   "candidate-is-ancestor" false,
+   "recommendation" "integrate_candidate",
+   "relation" "descendant",
+   "tree-equivalent" false},
+  :raw-report-sha256
+  "b6dc0faa5f9d9d1dfa9304027b702a26b2da9b93ffbf8cf1bfea92dcf6f9167b",
+  :raw-report :preserved-locally},
+ :merged-commit "2654d155322f7863dd087065f19000b43c877cbe",
+ :fresh-main-readback
+ {:PR-state :closed,
+  :PR-merged true,
+  :base-branch "main",
+  :reachable-from-origin-main true,
+  :tree-identical-to-reviewed-candidate true,
+  :changed-paths
+  ["bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
+   "specs/accounting-removal/collection-result-controls-census.edn"
+   "specs/accounting-removal/collection-result-controls.md"]},
+ :base "ce4f0f42774486ee7e0f8791f51e8f0e9b8898ea",
+ :pr 632,
+ :owner :ACC-01}

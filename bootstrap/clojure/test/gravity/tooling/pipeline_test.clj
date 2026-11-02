@@ -2,18 +2,17 @@
   (:require [clojure.test :refer [deftest is]]
             [gravity.bootstrap :as bootstrap]
             [gravity.tooling :as tooling]
-            [gravity.self-hosting.w5-tooling-conformance-verifier-test]))
-
-(defn- helper [name]
-  (var-get (ns-resolve 'gravity.self-hosting.w5-tooling-conformance-verifier-test name)))
+            [gravity.self-hosting.w5-tooling-conformance-fixture-support
+             :as fixture-support]))
 
 (defn- invoke [function arguments]
-  ((helper 'invoke) (helper 'engine-plan) function arguments))
+  (fixture-support/invoke fixture-support/engine-plan function arguments))
 
 (defn- original-request [extension]
-  ((helper 'request-at)
-   (helper (if (= extension ".gravity") 'accepted-gravity-plan 'accepted-qst-plan))
-   ((helper 'fixture-path) "accepted" "tooling-conformance" extension)
+  (fixture-support/request-at
+   (if (= extension ".gravity") fixture-support/accepted-gravity-plan
+       fixture-support/accepted-qst-plan)
+   (fixture-support/fixture-path "accepted" "tooling-conformance" extension)
    extension (if (= extension ".gravity") :gravity :qst)))
 
 (deftest explicit-contract-does-not-promote-coverage-labels
@@ -42,7 +41,9 @@
     (let [original (original-request extension)
           bound (tooling/execute-evidence invoke original)
           result (:result bound)
-          rejected-plan (helper (if (= extension ".gravity") 'rejected-gravity-plan 'rejected-qst-plan))]
+          rejected-plan (if (= extension ".gravity")
+                         fixture-support/rejected-gravity-plan
+                         fixture-support/rejected-qst-plan)]
       (is (= :accepted (:status result)))
       (is (= :incomplete (:completion-status result)))
       (is (= :blocked (get-in result [:verifier-gate :decision])))
@@ -53,7 +54,7 @@
       (doseq [[function rule] [['w5-tooling-conformance-invalid-source-request "W5-TC-SOURCE"]
                               ['w5-tooling-conformance-invalid-narrative-request "W5-TC-NARRATIVE"]
                               ['w5-tooling-conformance-invalid-source-span-missing-request "W5-TC-SOURCE"]]]
-        (let [request ((helper 'invoke) rejected-plan function [original])
+        (let [request (fixture-support/invoke rejected-plan function [original])
               rejected (tooling/execute-evidence invoke request)]
           (is (= :rejected (get-in rejected [:result :status])))
           (is (= rule (get-in rejected [:result :diagnostics 0 :rule])))
@@ -64,7 +65,7 @@
         result (tooling/check-evidence invoke original)
         forged (assoc result :completion-status :complete)
         refusal (tooling/verify-evidence invoke original forged)
-        alternate ((helper 'request-at) (helper 'accepted-gravity-plan)
+        alternate (fixture-support/request-at fixture-support/accepted-gravity-plan
                    "fixture/unbound-substitution.gravity" ".gravity" :gravity)
         alternate-result (tooling/check-evidence invoke alternate)]
     (is (= :rejected (:status refusal)))
@@ -77,7 +78,7 @@
 
 (deftest failed-fresh-verification-withholds-the-private-result
   (let [original (original-request ".gravity") calls (atom [])
-        alternate ((helper 'request-at) (helper 'accepted-gravity-plan)
+        alternate (fixture-support/request-at fixture-support/accepted-gravity-plan
                    "fixture/unbound-substitution.gravity" ".gravity" :gravity)
         candidate (tooling/check-evidence invoke alternate)
         refusal (tooling/verify-evidence invoke original candidate)
@@ -136,10 +137,11 @@
         (is (= [:old :new :new] @calls))))))
 
 (deftest missing-line-fixture-retains-every-other-map-entry
-  (doseq [plan [(helper 'rejected-gravity-plan) (helper 'rejected-qst-plan)]]
+  (doseq [plan [fixture-support/rejected-gravity-plan
+                fixture-support/rejected-qst-plan]]
     (let [span {:source-id :fixture/unbound :line 1 :column 1 :start-byte 0 :end-byte 8
                 :extra {:ai/human-review :required} :nil-value nil}
-          result ((helper 'invoke) plan 'tc-span-without-line [span])]
+      result (fixture-support/invoke plan 'tc-span-without-line [span])]
       (is (= (dissoc span :line) result))
       (is (contains? result :nil-value))
       (is (= :required (get-in result [:extra :ai/human-review]))))))

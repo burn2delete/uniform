@@ -61,25 +61,36 @@
   ^{:line 120, :column 6}
   ([artifact allow-missing-proof? invocation]
    ^{:line 121, :column 7}
+   (sh05-macro-artifact-verification*
+    artifact
+    allow-missing-proof?
+    invocation
+    :pinned))
+  ([artifact allow-missing-proof? invocation source-mode]
+   ^{:line 121, :column 7}
    (gravity.macro/verify
     artifact
     allow-missing-proof?
     invocation
+    source-mode
     ^{:line 121, :column 70}
     (macro-stage-operations))))
  (defn
   sh05-macro-artifact-verification
-  ([artifact] (sh05-macro-artifact-verification artifact nil))
+  ([artifact] (sh05-macro-artifact-verification artifact nil :pinned))
   ([artifact invocation]
+   (sh05-macro-artifact-verification artifact invocation :pinned))
+  ([artifact invocation source-mode]
    (when
     invocation
     (sh03-reader-authenticated-envelope-options
      (get-in artifact [:provenance :source-path])
      invocation))
-   (sh07-proof-transaction-report
-    :sh05
-    :final
-    {:verifier-root
+   (let [plan-binding (get-in artifact [:gravity-macro-boundary :plan-binding])]
+     (sh07-proof-transaction-report
+      :sh05
+      :final
+      {:verifier-root
      ^{:line 99, :column 4}
      (let
       [entries
@@ -133,26 +144,36 @@
      :report-schema-version 1,
      :invocation invocation,
      :check-catalog-domain :gravity/sh05-final-verification-checks,
-     :source-content-hash sh05-macro-expected-source-content-hash,
-     :plan-semantic-hash sh05-macro-expected-plan-semantic-hash,
-     :functions-semantic-hash
-     sh05-macro-expected-functions-semantic-hash}
-    artifact
-    (fn*
-     []
-     (sh05-macro-artifact-verification* artifact false invocation)))))
+       :source-content-hash
+       (or (:source-content-hash plan-binding)
+           sh05-macro-expected-source-content-hash),
+       :plan-semantic-hash
+       (or (:plan-semantic-hash plan-binding)
+           sh05-macro-expected-plan-semantic-hash),
+       :functions-semantic-hash
+       (or (:functions-semantic-hash plan-binding)
+           sh05-macro-expected-functions-semantic-hash)}
+      artifact
+      (fn*
+        []
+        (sh05-macro-artifact-verification*
+         artifact false invocation source-mode))))))
  (defn
   sh05-macro-capability-based-proof-for-construction
   ([artifact]
-   (sh05-macro-capability-based-proof-for-construction artifact nil))
+   (sh05-macro-capability-based-proof-for-construction artifact nil :pinned))
   ([artifact invocation]
+   (sh05-macro-capability-based-proof-for-construction
+    artifact invocation :pinned))
+  ([artifact invocation source-mode]
    (when
     invocation
     (sh03-reader-authenticated-envelope-options
      (get-in artifact [:provenance :source-path])
      invocation))
    (let
-    [report
+    [plan-binding (get-in artifact [:gravity-macro-boundary :plan-binding])
+     report
      (sh07-proof-transaction-report
       :sh05
       :construction
@@ -211,14 +232,20 @@
        :invocation invocation,
        :check-catalog-domain
        :gravity/sh05-construction-verification-checks,
-       :source-content-hash sh05-macro-expected-source-content-hash,
-       :plan-semantic-hash sh05-macro-expected-plan-semantic-hash,
+       :source-content-hash
+       (or (:source-content-hash plan-binding)
+           sh05-macro-expected-source-content-hash),
+       :plan-semantic-hash
+       (or (:plan-semantic-hash plan-binding)
+           sh05-macro-expected-plan-semantic-hash),
        :functions-semantic-hash
-       sh05-macro-expected-functions-semantic-hash}
+       (or (:functions-semantic-hash plan-binding)
+           sh05-macro-expected-functions-semantic-hash)}
       artifact
       (fn*
        []
-       (sh05-macro-artifact-verification* artifact true invocation)))
+       (sh05-macro-artifact-verification*
+        artifact true invocation source-mode)))
      checks
      (:checks report)]
     (assoc
@@ -231,11 +258,13 @@
      (:failed-checks report)))))
  (defn
   sh05-macro-capability-based-proof
-  ([artifact] (sh05-macro-capability-based-proof artifact nil))
+  ([artifact] (sh05-macro-capability-based-proof artifact nil :pinned))
   ([artifact invocation]
+   (sh05-macro-capability-based-proof artifact invocation :pinned))
+  ([artifact invocation source-mode]
    (let
     [report
-     (sh05-macro-artifact-verification artifact invocation)
+     (sh05-macro-artifact-verification artifact invocation source-mode)
      checks
      (:checks report)]
     (assoc

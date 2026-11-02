@@ -322,6 +322,52 @@
     (is (= [["whitespace" 30 ["git" "diff" "--check" base "HEAD"]]]
            (ci/docs-only-static-commands {:base base :kind :docs-only})))))
 
+(deftest shared-selection-preserves-full-and-docs-contract-modes
+  (let [full {:kind :full :reason :non-pull-request :paths []}
+        docs-only {:kind :docs-only :reason :known-documentation-only
+                   :paths ["README.md"]}
+        selected {:kind :selected :reason :affected-stage
+                  :modes #{"static" "contracts" "resolution"}}]
+    (is (= ["static=true"
+            "contracts=true"
+            "bootstrap=true"
+            "macro=true"
+            "resolution=true"
+            "checked-core-runtime=true"
+            "leaves-portable=true"
+            "leaves-darwin=true"
+            "darwin-unsupported=true"
+            "static-tools-required=true"
+            "selection-valid=true"]
+           (ci/selection-output-lines full)))
+    (is (= ["static=true"
+            "contracts=true"
+            "bootstrap=false"
+            "macro=false"
+            "resolution=false"
+            "checked-core-runtime=false"
+            "leaves-portable=false"
+            "leaves-darwin=false"
+            "darwin-unsupported=true"
+            "static-tools-required=false"
+            "selection-valid=true"]
+           (ci/selection-output-lines docs-only)))
+    (is (= "true" (last (str/split (nth (ci/selection-output-lines selected) 4) #"="))))
+    (is (= "true" (last (str/split (last (ci/selection-output-lines selected)) #"="))))))
+
+(deftest workflow-selector-fails-closed-for-missing-or-malformed-outputs
+  (let [workflow (slurp ".github/workflows/ci.yml")]
+    (is (str/includes? workflow "needs.select.outputs.selection-valid != 'true'"))
+    (is (str/includes? workflow "needs.select.outputs[matrix.mode] != 'false'"))
+    (is (str/includes? workflow "needs.select.outputs[matrix.selection-key] != 'false'"))
+    (is (str/includes? workflow "needs.select.outputs[matrix.mode] == 'false'"))
+    (is (str/includes? workflow "CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}"))
+    (is (str/includes? workflow "CI_BASE_SHA: ${{ github.event.before }}"))
+    (is (str/includes? workflow "fetch-depth: 2"))
+    (is (str/includes? workflow "fetch-depth: 10"))
+    (is (str/includes? workflow "&& 1 || 0"))
+    (is (= 4 (count (re-seq #"persist-credentials: false" workflow))))))
+
 (deftest stage-selection-follows-owned-downstream-closure
   (let [change (fn [path] {:old-mode "100644" :new-mode "100644"
                            :status "M" :path path})
@@ -478,6 +524,60 @@
       (is (thrown? Exception (ci/comparison-base "pull_request" stale-base pr-head parents))))
     (is (thrown? Exception (ci/comparison-base "pull_request" stale-base nil
                                                [current-main pr-head])))))
+
+(deftest shallow-pr-merge-retains-parents-diff-trees-and-base-blobs
+  (let [root (.toFile (java.nio.file.Files/createTempDirectory
+                       "uniform-ci-shallow-pr-"
+                       (make-array java.nio.file.attribute.FileAttribute 0)))
+        remote (io/file root "remote")
+        work (io/file root "work")
+        clone (io/file root "clone")]
+    (.mkdirs remote)
+    (.mkdirs work)
+    (.mkdirs clone)
+    (try
+      (git-fixture! remote ["init" "--bare" "-q"])
+      (initialize-git-fixture! work)
+      (git-fixture! work ["remote" "add" "origin" (.getPath remote)])
+      (write-fixture-file! work "seed.txt" "seed\n")
+      (let [seed (commit-fixture! work "seed")]
+        (write-fixture-file! work "base.txt" "base\n")
+        (let [base (commit-fixture! work "base")]
+          (git-fixture! work ["branch" "-M" "main"])
+          (git-fixture! work ["push" "-q" "origin" "main"])
+          (git-fixture! work ["switch" "-c" "feature"])
+          (write-fixture-file! work "feature.txt" "feature\n")
+          (let [feature (commit-fixture! work "feature")]
+            (git-fixture! work ["push" "-q" "origin" "feature"])
+            (git-fixture! work ["switch" "main"])
+            (git-fixture! work ["merge" "--no-ff" "--no-edit" "feature"])
+            (let [merge (str/trim (git-fixture! work ["rev-parse" "HEAD"]))]
+              (is (not= merge feature))
+              (git-fixture! work ["push" "-q" "origin" "main"])
+              (git-fixture! clone ["init" "-q"])
+              (git-fixture! clone ["remote" "add" "origin" (.getPath remote)])
+              (git-fixture! clone ["fetch" "-q" "--no-tags" "--depth=2" "origin"
+                                   "refs/heads/main:refs/remotes/origin/main"])
+              (git-fixture! clone ["checkout" "-q" "--detach" "refs/remotes/origin/main"])
+              (is (= merge (str/trim (git-fixture! clone ["rev-parse" "HEAD"]))))
+              (is (= "true\n" (git-fixture! clone ["rev-parse" "--is-shallow-repository"])))
+              (is (= [base feature]
+                     (vec (str/split (str/trim (git-fixture! clone
+                                                             ["show" "-s" "--format=%P" "HEAD"]))
+                                     #"\s+"))))
+              (let [changes (ci/parse-raw-diff
+                             (git-fixture! clone ["diff" "--raw" "--no-renames" "-z"
+                                                  base "HEAD"]))]
+                (is (= #{"feature.txt"} (set (map :path changes)))))
+              (is (= "base\n" (git-fixture! clone ["show" (str base ":base.txt")])))
+              (is (= "feature\n" (git-fixture! clone ["show" (str feature ":feature.txt")])))
+              ;; A pinned commit older than the direct merge parents is not
+              ;; available in this shallow checkout; jobs that need such pins
+              ;; must retain a full-history checkout.
+              (is (thrown? Exception
+                           (git-fixture! clone ["show" (str seed ":seed.txt")])))))))
+      (finally
+        (delete-fixture-tree! root)))))
 
 (deftest platform-leaves-partition-the-entire-strict-catalog
   (binding [*command-line-args* nil]

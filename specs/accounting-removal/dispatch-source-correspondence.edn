@@ -1,0 +1,673 @@
+{:inline-helper-proposals
+ [{:historical-helper p15-s23-typed-direct-call-compatibility,
+   :assessed-main-caller p15-s23-typed-compile-call,
+   :historical-caller-expression
+   (p15-s23-typed-direct-call-compatibility
+    context
+    call
+    edge
+    callee
+    arguments
+    types
+    parameters
+    budget),
+   :complete-body-sha256
+   "cd0c70eda98bebd9086c4bfb5a3d982b0f174078d98797b0fd6dc8261873a7dd",
+   :retired-helper-not-separately-ported true,
+   :exact-complete-body-occurrences 1,
+   :scope :body-only-not-whole-caller,
+   :candidate-contains-identical-complete-inline-body true,
+   :candidate-caller-equals-assessed-main true,
+   :historical-full-form-sha256
+   "71d4c4a3df5665181bd37bc24db6e9c619c4838cf1eeac6e4d40dbdd631f1f6f",
+   :assessed-main-caller-form-sha256
+   "2102aef6ba63e91e075e8bcc1f497ff793293a80965ed2d325f7939c2e9f27c3",
+   :parameters
+   [context call edge callee arguments types parameters budget],
+   :independent-disposition :pending}
+  {:historical-helper p15-s23-typed-direct-call-arguments,
+   :assessed-main-caller p15-s23-typed-compile-call,
+   :historical-caller-expression
+   (p15-s23-typed-direct-call-arguments
+    context
+    arguments
+    budget
+    charge
+    name),
+   :complete-body-sha256
+   "5febfe3e7f85c4bb77a158ba41120bc15acdc066ca92f7e2f9a4f2d2491e60e2",
+   :retired-helper-not-separately-ported true,
+   :exact-complete-body-occurrences 1,
+   :scope :body-only-not-whole-caller,
+   :candidate-contains-identical-complete-inline-body true,
+   :candidate-caller-equals-assessed-main true,
+   :historical-full-form-sha256
+   "72d95c706f2a83a64a64df32fe842bdd61cc12f0004fb8dcf7a9a8086cbbb713",
+   :assessed-main-caller-form-sha256
+   "2102aef6ba63e91e075e8bcc1f497ff793293a80965ed2d325f7939c2e9f27c3",
+   :parameters [context arguments budget charge name],
+   :independent-disposition :pending}],
+ :source-pins
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :inputs
+   [{:ref "6a4f87f013d0076b81aba9e0667650e70d28e635",
+     :sha256
+     "e5970116147c0acc0ee13e6b90d36b27fd9ca5342c658214b5c808d0f024b75e"}
+    {:ref "98c391a71c69b8086f15053319de123ee8cbf7fc",
+     :sha256
+     "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142"}
+    {:ref "f4c9fdcd5a3ca24be5b8e24a72ad9d908800796a",
+     :sha256
+     "901b55390c957c2eadeb68332a20647c8f12246dbf2a54f36e445897c03b4472"}
+    {:ref "ec085f5feb9f0f9719c6393e8b3f7d9b62d89eec",
+     :sha256
+     "901b55390c957c2eadeb68332a20647c8f12246dbf2a54f36e445897c03b4472"}]}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :inputs
+   [{:ref "6a4f87f013d0076b81aba9e0667650e70d28e635",
+     :sha256
+     "b2180d1ebe3e2df23bbd45ead8749b37e3405220ece0e3bb51a38ad9388c0802"}
+    {:ref "98c391a71c69b8086f15053319de123ee8cbf7fc",
+     :sha256
+     "11ab8e2cb4c74a30d5fd3fe48d86affe87966002f88815037a3253d9b4871f57"}
+    {:ref "f4c9fdcd5a3ca24be5b8e24a72ad9d908800796a",
+     :sha256
+     "55a290c199a24546fc983d133cd1f7a0f20800f658c6ab97f79dbcb2770ea5b5"}
+    {:ref "ec085f5feb9f0f9719c6393e8b3f7d9b62d89eec",
+     :sha256
+     "55a290c199a24546fc983d133cd1f7a0f20800f658c6ab97f79dbcb2770ea5b5"}]}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :inputs
+   [{:ref "6a4f87f013d0076b81aba9e0667650e70d28e635",
+     :sha256
+     "06f790a4c708d366acd6497256b57a0cafd3ff724d200f170962ca6e1a403eea"}
+    {:ref "98c391a71c69b8086f15053319de123ee8cbf7fc",
+     :sha256
+     "9ea39a7aa26fd53a3683091dd3bf49f3e0517d56e77b5a196c70261b55a43637"}
+    {:ref "f4c9fdcd5a3ca24be5b8e24a72ad9d908800796a",
+     :sha256
+     "0f507467aec793394827bc0fcc5a4b86de2b3662e8d3aac3898262df79b142a5"}
+    {:ref "ec085f5feb9f0f9719c6393e8b3f7d9b62d89eec",
+     :sha256
+     "0f507467aec793394827bc0fcc5a4b86de2b3662e8d3aac3898262df79b142a5"}]}],
+ :nonclaims
+ [:whole-function-equivalence
+  :semantic-reachability-from-source-call-path
+  :independent-acceptance
+  :genuine-compiler-or-runtime-execution
+  :fresh-main-composition
+  :DSE-launch-authority
+  :integration
+  :PR502-closure],
+ :method
+ {:reader-eval false,
+  :Bootstrap-loaded false,
+  :symbol-correspondences
+  {sh08-dse-call-fact types-set-equality-call-fact,
+   sh08-dse-constraint types-set-equality-constraint,
+   body-dse-call-fact effects-set-equality-call-fact,
+   body-dse-constraint effects-set-equality-constraint,
+   body-dse-call-valid? effects-set-equality-call-valid?,
+   p15-s23-typed-compile-checked-bare-set-equality
+   emit-set-equality-compile,
+   p15-s23-dse-entry? emit-set-equality-entry?},
+  :guards-arities-numbers-schema-values-not-normalized true,
+  :dispatch-unit-count 12},
+ :dispatch
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :candidate-same-as-reviewed-source true,
+   :unit [defn sh08-kse-call-fact],
+   :historical-identical-to-candidate-under-aliases true,
+   :historical-subject-bytes-normalized false,
+   :assessed-main-form-sha256
+   "80b0689098a1a07f2df34511b38dbab0bd98b31e5c9e94b4a98d576c41688023",
+   :historical-identical-to-main false,
+   :candidate-form-sha256
+   "b044550dac6b6268a94ab81e9c117a71aa73d996a5c89126ee66af77a8c499cd",
+   :historical-form-sha256
+   "806f4aad4eb4d4f0a99182ab60ad6bf0916b3255b668da63153400b8874f85c1"}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :candidate-same-as-reviewed-source true,
+   :unit [defn sh08-kse-constraint],
+   :historical-identical-to-candidate-under-aliases true,
+   :historical-subject-bytes-normalized false,
+   :assessed-main-form-sha256
+   "4fd37b67033befb06eafc97e43aaf37184587f38a0e6148ba1f82aa7727a6032",
+   :historical-identical-to-main false,
+   :candidate-form-sha256
+   "c3cd4b5533916ce57b611f052af57bde3196c6dd1260b440c665a6c21fdebb96",
+   :historical-form-sha256
+   "e3c1032fb6a785a730e8d7755e11bdd704f25f49bc30d3f6dc3570b7b941c495"}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :candidate-same-as-reviewed-source true,
+   :unit [defn sh08-tc-constraint],
+   :historical-identical-to-candidate-under-aliases true,
+   :historical-subject-bytes-normalized false,
+   :assessed-main-form-sha256
+   "e19e23e59b66dec2a2c7f3beeaf8632a726d5eaa3b150fa86793e391d78898d0",
+   :historical-identical-to-main false,
+   :candidate-form-sha256
+   "41b747e50764b5f1041a5d0c726fc8a3b3efc2519a7dd46c9b05302ca5cfc8d7",
+   :historical-form-sha256
+   "41b747e50764b5f1041a5d0c726fc8a3b3efc2519a7dd46c9b05302ca5cfc8d7"}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :candidate-same-as-reviewed-source true,
+   :unit [defn sh08-ft-call-facts-with-context],
+   :historical-identical-to-candidate-under-aliases true,
+   :historical-subject-bytes-normalized false,
+   :assessed-main-form-sha256
+   "9d12c408cc9ed3d05196c0b49315e29b371c5f40d39f738fceed3dfa38a40520",
+   :historical-identical-to-main false,
+   :candidate-form-sha256
+   "a950513ecc8e499998cdce812319b3952e45c6c31884c847f68f7d6cf81b823e",
+   :historical-form-sha256
+   "a950513ecc8e499998cdce812319b3952e45c6c31884c847f68f7d6cf81b823e"}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :candidate-same-as-reviewed-source true,
+   :unit [defn body-kse-call-fact],
+   :historical-identical-to-candidate-under-aliases false,
+   :historical-subject-bytes-normalized false,
+   :assessed-main-form-sha256
+   "ef5fa2f97bc1ab5ed7b65989b556901056f1069b53cf391204b25bf4728d03a8",
+   :historical-identical-to-main false,
+   :candidate-form-sha256
+   "fbe9b0b2c661aca9934a69207149a19b7accd2da119c9316eff6b0168a95d125",
+   :historical-form-sha256
+   "82f92c6bd16252f47c2b67df47ae3fc006cf6402fb8bc6825991e082e113b38b"}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :candidate-same-as-reviewed-source true,
+   :unit [defn body-kse-constraint],
+   :historical-identical-to-candidate-under-aliases false,
+   :historical-subject-bytes-normalized false,
+   :assessed-main-form-sha256
+   "d588cbebb7b98cc63bc4841413eba6c45dfd8e87130a6fe5dde7e195c1c5fa65",
+   :historical-identical-to-main false,
+   :candidate-form-sha256
+   "e18a299f38fdc09c71bf6efbafd89583fc7719ae8a8ae37cfcffef60b40a7669",
+   :historical-form-sha256
+   "259bc1a318b677ad78c141251e61c28800993986d02ced12ac1ecd4b81bc0179"}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :candidate-same-as-reviewed-source true,
+   :unit [defn body-kse-call-valid?],
+   :historical-identical-to-candidate-under-aliases false,
+   :historical-subject-bytes-normalized false,
+   :assessed-main-form-sha256
+   "7c160d5448604e5b273bd646a84c68aab796051bd0d49fa4b432b13f8c6ab602",
+   :historical-identical-to-main false,
+   :candidate-form-sha256
+   "7c160d5448604e5b273bd646a84c68aab796051bd0d49fa4b432b13f8c6ab602",
+   :historical-form-sha256
+   "41b3730bc0d302c0a172739bcf9189d3f9b6ebfbe20ead092a3bf9fad2c4c333"}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :candidate-same-as-reviewed-source true,
+   :unit [defn body-tc-constraint],
+   :historical-identical-to-candidate-under-aliases true,
+   :historical-subject-bytes-normalized false,
+   :assessed-main-form-sha256
+   "e689fe09a3d24eca0acf61bd970e7313eac1703e20c32bafe9475110877146f7",
+   :historical-identical-to-main false,
+   :candidate-form-sha256
+   "c5cb87ddf5f19a644786ebcaa6faa5dbf7b4446dcd5f85e4c0a816bf3ea8d685",
+   :historical-form-sha256
+   "c5cb87ddf5f19a644786ebcaa6faa5dbf7b4446dcd5f85e4c0a816bf3ea8d685"}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :candidate-same-as-reviewed-source true,
+   :unit [defn body-ae-call-valid?],
+   :historical-identical-to-candidate-under-aliases false,
+   :historical-subject-bytes-normalized false,
+   :assessed-main-form-sha256
+   "619a0352405423bc4d99c98675cc9ddff23fb4a9e51f2ffa113ec03c5253a95e",
+   :historical-identical-to-main false,
+   :candidate-form-sha256
+   "619a0352405423bc4d99c98675cc9ddff23fb4a9e51f2ffa113ec03c5253a95e",
+   :historical-form-sha256
+   "3d508ad631e6dfbd6fd3ebc6416b421605f4d9fc336b372878b81048a7d696cc"}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :candidate-same-as-reviewed-source true,
+   :unit [defn p15-s23-typed-compile-keyword-set-equality],
+   :historical-identical-to-candidate-under-aliases false,
+   :historical-subject-bytes-normalized false,
+   :assessed-main-form-sha256
+   "dfd8375aa80a53a3da089bffe4d36a2c10abb41e8836674aea9f50aa0b3f65f5",
+   :historical-identical-to-main false,
+   :candidate-form-sha256
+   "dfd8375aa80a53a3da089bffe4d36a2c10abb41e8836674aea9f50aa0b3f65f5",
+   :historical-form-sha256
+   "f994dad7f848ab840e90e6077835193c521077b5967269d3e40bcacba5641dcf"}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :candidate-same-as-reviewed-source true,
+   :unit [defn p15-s23-typed-compile-equality],
+   :historical-identical-to-candidate-under-aliases false,
+   :historical-subject-bytes-normalized false,
+   :assessed-main-form-sha256
+   "be430b9ae79e393a4fabf5afc9d89aabdd52db13bf571fc91ca3ab8bf9784578",
+   :historical-identical-to-main false,
+   :candidate-form-sha256
+   "be430b9ae79e393a4fabf5afc9d89aabdd52db13bf571fc91ca3ab8bf9784578",
+   :historical-form-sha256
+   "32423eb0112ca145abe8087c731ee14feae8a1e9656845e9db26a1b26bf89b11"}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :candidate-same-as-reviewed-source true,
+   :unit [defn p15-s23-typed-compile-call],
+   :historical-identical-to-candidate-under-aliases false,
+   :historical-subject-bytes-normalized false,
+   :assessed-main-form-sha256
+   "2102aef6ba63e91e075e8bcc1f497ff793293a80965ed2d325f7939c2e9f27c3",
+   :historical-identical-to-main false,
+   :candidate-form-sha256
+   "2102aef6ba63e91e075e8bcc1f497ff793293a80965ed2d325f7939c2e9f27c3",
+   :historical-form-sha256
+   "c9c8d1251afb6f34b2892447b75b67260e8edb8bdef5151599ea09c042c921be"}],
+ :source-call-paths
+ [{:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :root body-kse-call-valid?,
+   :target effects-set-equality-entry?,
+   :source-call-path
+   [body-kse-call-valid?
+    body-bka-call-valid?
+    effects-set-equality-entry?],
+   :semantic-reachability :not-established,
+   :functions
+   [{:name body-kse-call-valid?,
+     :complete-form-sha256
+     "7c160d5448604e5b273bd646a84c68aab796051bd0d49fa4b432b13f8c6ab602",
+     :identical-to-reviewed-source true}
+    {:name body-bka-call-valid?,
+     :complete-form-sha256
+     "3b6dfbeed7f843d032927ee30a40703596ff0abe83d0adf56029f0402d0d999a",
+     :identical-to-reviewed-source true}
+    {:name effects-set-equality-entry?,
+     :complete-form-sha256
+     "e930ec4116eec2b8d0cb1e8c1dc19fdc73f755bb7fcc65125f2b6d3c707c4ad8",
+     :identical-to-reviewed-source true}]}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :root body-kse-call-valid?,
+   :target effects-set-equality-call-valid?,
+   :source-call-path
+   [body-kse-call-valid?
+    body-bka-call-valid?
+    effects-set-equality-call-valid?],
+   :semantic-reachability :not-established,
+   :functions
+   [{:name body-kse-call-valid?,
+     :complete-form-sha256
+     "7c160d5448604e5b273bd646a84c68aab796051bd0d49fa4b432b13f8c6ab602",
+     :identical-to-reviewed-source true}
+    {:name body-bka-call-valid?,
+     :complete-form-sha256
+     "3b6dfbeed7f843d032927ee30a40703596ff0abe83d0adf56029f0402d0d999a",
+     :identical-to-reviewed-source true}
+    {:name effects-set-equality-call-valid?,
+     :complete-form-sha256
+     "592be6341964af5d003dbc3f0d2a9b799dd07dfbaef7335e556432bb98cb37f5",
+     :identical-to-reviewed-source true}]}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :root body-ae-call-valid?,
+   :target effects-set-equality-entry?,
+   :source-call-path
+   [body-ae-call-valid?
+    body-bka-call-valid?
+    effects-set-equality-entry?],
+   :semantic-reachability :not-established,
+   :functions
+   [{:name body-ae-call-valid?,
+     :complete-form-sha256
+     "619a0352405423bc4d99c98675cc9ddff23fb4a9e51f2ffa113ec03c5253a95e",
+     :identical-to-reviewed-source true}
+    {:name body-bka-call-valid?,
+     :complete-form-sha256
+     "3b6dfbeed7f843d032927ee30a40703596ff0abe83d0adf56029f0402d0d999a",
+     :identical-to-reviewed-source true}
+    {:name effects-set-equality-entry?,
+     :complete-form-sha256
+     "e930ec4116eec2b8d0cb1e8c1dc19fdc73f755bb7fcc65125f2b6d3c707c4ad8",
+     :identical-to-reviewed-source true}]}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :root body-ae-call-valid?,
+   :target effects-set-equality-call-valid?,
+   :source-call-path
+   [body-ae-call-valid?
+    body-bka-call-valid?
+    effects-set-equality-call-valid?],
+   :semantic-reachability :not-established,
+   :functions
+   [{:name body-ae-call-valid?,
+     :complete-form-sha256
+     "619a0352405423bc4d99c98675cc9ddff23fb4a9e51f2ffa113ec03c5253a95e",
+     :identical-to-reviewed-source true}
+    {:name body-bka-call-valid?,
+     :complete-form-sha256
+     "3b6dfbeed7f843d032927ee30a40703596ff0abe83d0adf56029f0402d0d999a",
+     :identical-to-reviewed-source true}
+    {:name effects-set-equality-call-valid?,
+     :complete-form-sha256
+     "592be6341964af5d003dbc3f0d2a9b799dd07dfbaef7335e556432bb98cb37f5",
+     :identical-to-reviewed-source true}]}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :root p15-s23-typed-compile-keyword-set-equality,
+   :target emit-set-equality-compile,
+   :source-call-path
+   [p15-s23-typed-compile-keyword-set-equality
+    p15-s23-typed-compile-bare-keyword-anchor-set-equality
+    emit-set-equality-compile],
+   :semantic-reachability :not-established,
+   :functions
+   [{:name p15-s23-typed-compile-keyword-set-equality,
+     :complete-form-sha256
+     "dfd8375aa80a53a3da089bffe4d36a2c10abb41e8836674aea9f50aa0b3f65f5",
+     :identical-to-reviewed-source true}
+    {:name p15-s23-typed-compile-bare-keyword-anchor-set-equality,
+     :complete-form-sha256
+     "487c658ad1184093ac09b1a59168670c6ea6a64de64388d4cbe73e2d8d13e3b8",
+     :identical-to-reviewed-source true}
+    {:name emit-set-equality-compile,
+     :complete-form-sha256
+     "0468a445f18caf43e7521028afa3247ec25998aa84e69d97d6d07ca821d5fcf1",
+     :identical-to-reviewed-source true}]}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :root p15-s23-typed-compile-equality,
+   :target emit-set-equality-compile,
+   :source-call-path
+   [p15-s23-typed-compile-equality
+    p15-s23-typed-compile-bare-keyword-anchor-set-equality
+    emit-set-equality-compile],
+   :semantic-reachability :not-established,
+   :functions
+   [{:name p15-s23-typed-compile-equality,
+     :complete-form-sha256
+     "be430b9ae79e393a4fabf5afc9d89aabdd52db13bf571fc91ca3ab8bf9784578",
+     :identical-to-reviewed-source true}
+    {:name p15-s23-typed-compile-bare-keyword-anchor-set-equality,
+     :complete-form-sha256
+     "487c658ad1184093ac09b1a59168670c6ea6a64de64388d4cbe73e2d8d13e3b8",
+     :identical-to-reviewed-source true}
+    {:name emit-set-equality-compile,
+     :complete-form-sha256
+     "0468a445f18caf43e7521028afa3247ec25998aa84e69d97d6d07ca821d5fcf1",
+     :identical-to-reviewed-source true}]}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :root p15-s23-typed-compile-call,
+   :target emit-set-equality-entry?,
+   :source-call-path
+   [p15-s23-typed-compile-call
+    p15-s23-bka-entry?
+    emit-set-equality-entry?],
+   :semantic-reachability :not-established,
+   :functions
+   [{:name p15-s23-typed-compile-call,
+     :complete-form-sha256
+     "2102aef6ba63e91e075e8bcc1f497ff793293a80965ed2d325f7939c2e9f27c3",
+     :identical-to-reviewed-source true}
+    {:name p15-s23-bka-entry?,
+     :complete-form-sha256
+     "c41e69b32a59e40e25f3b186c46cef8f29c5913330b82fc8f4d0d5390ddf5655",
+     :identical-to-reviewed-source true}
+    {:name emit-set-equality-entry?,
+     :complete-form-sha256
+     "5c6526df96fbdb9b0382c41a7c76dd7fb6e29faaeb643feb88d9e0f2fcb818c8",
+     :identical-to-reviewed-source true}]}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :root p15-s23-typed-compile-call,
+   :target emit-set-equality-compile,
+   :source-call-path
+   [p15-s23-typed-compile-call
+    p15-s23-typed-compile-bare-keyword-anchor-set-equality
+    emit-set-equality-compile],
+   :semantic-reachability :not-established,
+   :functions
+   [{:name p15-s23-typed-compile-call,
+     :complete-form-sha256
+     "2102aef6ba63e91e075e8bcc1f497ff793293a80965ed2d325f7939c2e9f27c3",
+     :identical-to-reviewed-source true}
+    {:name p15-s23-typed-compile-bare-keyword-anchor-set-equality,
+     :complete-form-sha256
+     "487c658ad1184093ac09b1a59168670c6ea6a64de64388d4cbe73e2d8d13e3b8",
+     :identical-to-reviewed-source true}
+    {:name emit-set-equality-compile,
+     :complete-form-sha256
+     "0468a445f18caf43e7521028afa3247ec25998aa84e69d97d6d07ca821d5fcf1",
+     :identical-to-reviewed-source true}]}],
+ :assessed-main "98c391a71c69b8086f15053319de123ee8cbf7fc",
+ :kind :preserved-dispatch-and-direct-call-correspondence,
+ :fallback-conservation
+ [{:historical-outer-then
+   (body-dse-call-valid? core facts bindings node call edge nodes),
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :complete-historical-else-equals-candidate-and-assessed-main true,
+   :unit [defn body-kse-call-valid?],
+   :explicit-additional-selector-difference nil,
+   :whole-historical-form-equality false,
+   :complete-form-equality-after-listed-transformations true,
+   :historical-outer-condition
+   (body-dse-entry?
+    node
+    call
+    nodes
+    bindings
+    (get facts :type-table)
+    (get core :module)),
+   :independent-disposition :pending}
+  {:historical-outer-then
+   (body-dse-call-valid? core facts bindings node call edge nodes),
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :complete-historical-else-equals-candidate-and-assessed-main false,
+   :unit [defn body-ae-call-valid?],
+   :explicit-additional-selector-difference
+   {:before
+    #{:gravity.type/applied-string-set-equality
+      :gravity.type/applied-checked-bare-set-equality
+      :gravity.type/applied-keyword-set-equality},
+    :after
+    #{:gravity.type/applied-string-set-equality
+      :gravity.type/applied-keyword-set-equality}},
+   :whole-historical-form-equality false,
+   :complete-form-equality-after-listed-transformations true,
+   :historical-outer-condition
+   (body-dse-entry?
+    node
+    call
+    nodes
+    bindings
+    (get facts :type-table)
+    (get core :module)),
+   :independent-disposition :pending}
+  {:historical-outer-then
+   (p15-s23-typed-compile-checked-bare-set-equality
+    context
+    node
+    budget),
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :complete-historical-else-equals-candidate-and-assessed-main true,
+   :unit [defn p15-s23-typed-compile-keyword-set-equality],
+   :explicit-additional-selector-difference nil,
+   :whole-historical-form-equality false,
+   :complete-form-equality-after-listed-transformations true,
+   :historical-outer-condition
+   (if
+    (if (map? context) (map? node) false)
+    (if
+     (if
+      (p15-s23-sse-ids? [(get node :node-id)] 1)
+      (p15-s23-typed-all
+       [(map? (get context :calls))
+        (map? (get context :core))
+        (map? (get context :types))
+        (map? (get context :bindings))
+        (map? (get context :nodes))])
+      false)
+     (p15-s23-dse-entry?
+      node
+      (get (get context :calls) (get node :node-id))
+      (get context :nodes)
+      (get context :bindings)
+      (get context :types)
+      (get (get context :core) :module))
+     false)
+    false),
+   :independent-disposition :pending}
+  {:historical-outer-then
+   (p15-s23-typed-compile-checked-bare-set-equality
+    context
+    node
+    budget),
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :complete-historical-else-equals-candidate-and-assessed-main true,
+   :unit [defn p15-s23-typed-compile-equality],
+   :explicit-additional-selector-difference nil,
+   :whole-historical-form-equality false,
+   :complete-form-equality-after-listed-transformations true,
+   :historical-outer-condition
+   (if
+    (if (map? context) (map? node) false)
+    (if
+     (if
+      (p15-s23-sse-ids? [(get node :node-id)] 1)
+      (p15-s23-typed-all
+       [(map? (get context :calls))
+        (map? (get context :core))
+        (map? (get context :types))
+        (map? (get context :bindings))
+        (map? (get context :nodes))])
+      false)
+     (p15-s23-dse-entry?
+      node
+      (get (get context :calls) (get node :node-id))
+      (get context :nodes)
+      (get context :bindings)
+      (get context :types)
+      (get (get context :core) :module))
+     false)
+    false),
+   :independent-disposition :pending}],
+ :generator
+ {:language :clojure,
+  :sha256
+  "c88d16ed5f891beee8be598a0d7e9056e57e659ca90182bbf2c0d7dccd753ad2",
+  :input-generator-sha256
+  "4fe26eca9e098c70c38cb9f7c2c6be88cfda95c1302fa58dbebce0435182b126",
+  :preserved-locally true},
+ :guard-differences
+ [{:unit [defn body-kse-call-fact],
+   :historical-guard
+   (if
+    (keyword? (get descriptor :kind))
+    (=
+     :gravity.type/applied-checked-bare-set-equality
+     (get descriptor :kind))
+    false),
+   :candidate-guard
+   (=
+    :gravity.type/applied-checked-bare-set-equality
+    (get descriptor :kind)),
+   :only-remaining-full-form-difference :listed-guard-expression,
+   :semantic-equivalence :not-claimed,
+   :independent-disposition :pending}
+  {:unit [defn body-kse-constraint],
+   :historical-guard
+   (if
+    (keyword? (get descriptor :kind))
+    (=
+     :gravity.type/applied-checked-bare-set-equality
+     (get descriptor :kind))
+    false),
+   :candidate-guard
+   (=
+    :gravity.type/applied-checked-bare-set-equality
+    (get descriptor :kind)),
+   :only-remaining-full-form-difference :listed-guard-expression,
+   :semantic-equivalence :not-claimed,
+   :independent-disposition :pending}],
+ :DSE-draft
+ {:pr 568,
+  :head "f4c9fdcd5a3ca24be5b8e24a72ad9d908800796a",
+  :source-reviewed-ref "ec085f5feb9f0f9719c6393e8b3f7d9b62d89eec",
+  :source-review-receipt-sha256
+  "8b2994e26a18580bdaac238cd5652118a74f0737bfc1d095b4f9a8edb9573328",
+  :census-path "specs/accounting-removal/set-equality-census.edn",
+  :unchanged-census-sha256
+  "a79d07696b301a041c22786410b56691c1ee17b950d11309b54fc247ca2e5827",
+  :review-authority :existing-source-only-not-this-correspondence,
+  :genuine-execution :UNRUN},
+ :caller-decomposition
+ {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+  :exact-inline-helper-substitutions
+  [p15-s23-typed-direct-call-compatibility
+   p15-s23-typed-direct-call-arguments],
+  :complete-form-equals-assessed-main-after-only-listed-transformations
+  true,
+  :old-route-then
+  (if
+   (p15-s23-dse-entry?
+    node
+    (get (get context :calls) (get node :node-id))
+    (get context :nodes)
+    (get context :bindings)
+    (get context :types)
+    (get (get context :core) :module))
+   (p15-s23-typed-compile-checked-bare-set-equality
+    context
+    node
+    budget)
+   (p15-s23-typed-compile-bare-keyword-anchor-set-equality
+    context
+    node
+    budget)),
+  :new-route-condition
+  (if
+   (if (map? context) (map? node) false)
+   (if
+    (if
+     (p15-s23-sse-ids? [(get node :node-id)] 1)
+     (p15-s23-typed-all
+      [(map? (get context :calls))
+       (map? (get context :core))
+       (map? (get context :types))
+       (map? (get context :bindings))
+       (map? (get context :nodes))])
+     false)
+    (if
+     (p15-s23-bka-entry?
+      node
+      (get (get context :calls) (get node :node-id))
+      (get context :nodes)
+      (get context :bindings)
+      (get context :types)
+      (get (get context :core) :module))
+     true
+     (if
+      (vector? (get node :children))
+      (if
+       (p15-s23-sse-ids? [(first (get node :children))] 1)
+       (let
+        [kind
+         (get
+          (get (get context :types) (first (get node :children)))
+          :kind)]
+        (if
+         (keyword? kind)
+         (=
+          :gravity.type/applied-bare-keyword-anchor-set-equality
+          kind)
+         false))
+       false)
+      false))
+    false)
+   false),
+  :whole-historical-form-equality false,
+  :function p15-s23-typed-compile-call,
+  :old-route-condition
+  (p15-s23-checked-set-equality-route? context node),
+  :new-route-then
+  (p15-s23-typed-compile-bare-keyword-anchor-set-equality
+   context
+   node
+   budget),
+  :independent-disposition :pending},
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01,
+ :independent-disposition :pending}

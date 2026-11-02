@@ -1,0 +1,155 @@
+{:nonclaims
+ [:helper-or-transitive-equivalence
+  :authenticated-source-admission
+  :Effects-emitter-runtime-composition
+  :genuine-kernel-acceptance
+  :ACC06-capture-acceptance
+  :whole-recursive-accounting-removal
+  :PR502-closure
+  :release
+  :self-hosting
+  :main-integration
+  :GitHub-APPROVE],
+ :candidate "47a0f75617aff8da5136e084b837b4f853190433",
+ :genuine-controls :UNRUN,
+ :checks
+ {:single-carrier-byte-replacement-verified true,
+  :all-production-bytes-preserved true,
+  :all-other-existing-blobs-and-modes-preserved 10068,
+  :tree "d9888ed279ddf2c99acbd3272bd6b74aa61fd051",
+  :PR623 :untouched,
+  :negative-controls
+  [{:refused true, :check :full-width-copy, :case :reduced-width}
+   {:refused true,
+    :check :zero-callback-conservation,
+    :case :removed-zero-callback-assertion}
+   {:refused true,
+    :check :prior-depth-conservation,
+    :case :lost-depth129}
+   {:refused true,
+    :check :immediate-pins-complete,
+    :case :omitted-immediate-dependency}
+   {:refused true,
+    :check :production-sha,
+    :case :forged-production-pin}
+   {:refused true,
+    :check :source-forms-not-identical,
+    :case :historical-equivalence-promotion}
+   {:case :reader-eval-payload,
+    :refused true,
+    :check :reader-eval-disabled}],
+  :candidate "47a0f75617aff8da5136e084b837b4f853190433",
+  :complete-historical-list-kernel-raw-identical true,
+  :genuine-controls :UNRUN,
+  :restored-span-sha256
+  "b22eb142c911747aa77f22062c5b24f2fc6c6ab5801b52d61b0cdcb0bab8bcfe",
+  :reader-eval false,
+  :historical-depth192-and-declared-wrapper-shapes-verified true,
+  :whole-transitive-helper-equivalence :not-conferred,
+  :Bootstrap-loaded false,
+  :immediate-source-pins 9,
+  :only-three-paths-changed true,
+  :all-other-test-bytes-preserved true,
+  :historical-differences 5,
+  :verdict :source-checks-pass,
+  :historically-absent-helpers 4,
+  :base "e047157d711652a5624012f0da7d6911ce086718",
+  :prior127-129-wide-late-invalid-controls-preserved true,
+  :historical "6a4f87f013d0076b81aba9e0667650e70d28e635"},
+ :scope
+ {:production-and-all-other-existing-blobs-modes :conserved,
+  :width 4097,
+  :prior-wide1025-and-late-invalid1024 :conserved,
+  :C7-pins :nine-immediate-only,
+  :historical-differences 5,
+  :all-other-test-bytes :conserved,
+  :single-Symbol-carrier-change :add-depth192,
+  :depth 192,
+  :historically-absent-helpers 4,
+  :late-invalid-index 4096,
+  :prior-depths [127 129],
+  :complete-historical-List-control :byte-identical-body-and-comments},
+ :source-inspection
+ {:List-control
+  "The exact historical body retains empty/scalar/wide4097/deep192/operandNever acceptance and late-invalid4096, nestedNever, odd Map member parity, extra field, cyclic map, opaque object and nested opaque rejections with the original empty callback assertion. The cyclic/opaque fixtures were read as source only, never instantiated or executed by this review.",
+  :Symbol-carrier
+  "The candidate equals the complete base file with exactly the census's one positive-sequence replacement plus the appended raw original List kernel. Current depths127/129, wide1025, late-invalid1024 and every other case/callback assertion are unchanged. Historical source contains the192 case.",
+  :preexisting-constructor-difference
+  "Historical Symbol nesting uses (fn [n value] ...) counting i upward; current main uses (fn [depth value] ...) counting remaining downward. Both explicitly build literal List wrappers with one child. PR622 preserves current construction and adds only its192-depth invocation. No full historical Symbol test-body restoration or constructor behavioral equivalence is claimed.",
+  :actual-dispatch
+  "The restored List body calls the existing invoke-c7 with sh08-lc-validate-types; every preexisting dispatch byte remains unchanged. No host substitute was introduced or evaluated.",
+  :nine-pins
+  "Independently parsed current/historical C7 source with read-eval disabled. The declared entrypoint plus immediate named C7 callees is exactly the nine pinned identities; all reproducible current/historical pr-str form hashes, historical-presence states and difference flags match. No transitive call-graph or native-intrinsic behavior was inferred.",
+  :five-differences
+  "Four native/ancestor helpers are absent from the historical source. Current sh08-lc-validate-types adds native argument ingress, native map/view guards and ancestry/cycle handling compared with the original-data historical implementation. The census correctly preserves that mismatch rather than claiming helper equivalence.",
+  :evidence-boundary
+  "C7 requires actual typed facts/diagnostics and downstream profile/safety checks; D9 distinguishes source artifacts from conformance execution and semantic equivalence. This review accepts only source restoration, exact conservation and explicit differences.",
+  :auxiliary-serialization-hashes
+  "The census's List :form-sha256 and Symbol before/after serialized-form hashes are not independently endorsed. Anonymous-function reading generates process-dependent symbols. Full raw List span and the entire-file replacement equation independently bind the complete source forms; no verdict relies on those auxiliary hashes."},
+ :current-main-integration :pending,
+ :author "01a183dd-7208-7d33-a336-7483fd90e358",
+ :consumption
+ :receipt-tree-six-file-and-nine-C7-pins-verified-no-kernel-executed,
+ :kind :verified-recursive-type-source-review-consumption,
+ :receipt-sha256
+ "6acc15a62eea2cbf0837bc8309c5935e2671ca1fa7482df81a2e8da93e82cfbd",
+ :next-owner-evidence
+ [:separately-authorized-genuine-controls
+  :authenticated-admission-and-downstream-composition
+  :distinct-current-main-CI-and-preflight],
+ :verdict :scoped-source-pass,
+ :generator
+ {:language :clojure,
+  :sha256
+  "aff5dde74bd2a25c53a90fff48d549af4d03df484550d979b3aa6049a6afc728",
+  :preserved-locally true},
+ :qualification
+ {:historical-List-kernel :raw-byte-exact,
+  :Symbol-depth192 :added-in-current-constructor-only,
+  :historical-Symbol-constructor-equivalence :not-claimed,
+  :auxiliary-reader-serialized-test-form-hashes
+  :not-independently-endorsed},
+ :reviewer "01a18529-4c4f-79b1-94b3-d1132f06ed53",
+ :validation
+ {:independent-method
+  :Git-objects-byte-conservation-reader-data-checks,
+  :source-checker-exit 0,
+  :reader-eval false,
+  :Bootstrap-loaded false,
+  :compiler-target-runtime-kernel-probe-execution :not-performed,
+  :genuine-controls :UNRUN,
+  :author-boundary-lint-doc-roadmap-claims :reported-not-rerun,
+  :CI-or-main-composition-preflight :not-performed},
+ :base "e047157d711652a5624012f0da7d6911ce086718",
+ :immutable-inputs
+ [{:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :commit "47a0f75617aff8da5136e084b837b4f853190433",
+   :sha256
+   "18224e4e291204b367f947c74a447d685a261bca4c72d820d726b72c1a454bd6"}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :commit "47a0f75617aff8da5136e084b837b4f853190433",
+   :sha256
+   "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142"}
+  {:path "specs/accounting-removal/recursive-type-controls-census.edn",
+   :commit "47a0f75617aff8da5136e084b837b4f853190433",
+   :sha256
+   "13e8e7f5a937e0567125021eaea0b2a0d0754391727390f735afc29ababa6755"}
+  {:path "specs/accounting-removal/recursive-type-controls.md",
+   :commit "47a0f75617aff8da5136e084b837b4f853190433",
+   :sha256
+   "e6749bb10704e06123d3015ea113a177daf0e7f4fd098a15523c6d2434949781"}
+  {:path
+   "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md",
+   :commit "47a0f75617aff8da5136e084b837b4f853190433",
+   :sha256
+   "6a8421c78a90a8bcc1185f3fe15517eb23f3007371eaa10c027b85de7f31a84a"}
+  {:path
+   "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+   :commit "47a0f75617aff8da5136e084b837b4f853190433",
+   :sha256
+   "9defd108707c5359377d11e95d18f751f2de72d8981a3789d905118419c2d56b"}],
+ :pr 622,
+ :owner :ACC-01,
+ :candidate-tree "d9888ed279ddf2c99acbd3272bd6b74aa61fd051"}

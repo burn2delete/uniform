@@ -5732,7 +5732,8 @@
           (is (= (positional [s]) (:return-actual-type returned)))
           (is (nil? (:return-conflict returned)))
           (is (= :sh08-homogeneous-list-return-v2 (get-in returned [:return-compatibility :version])))
-          (is (= 1 (count (:constraints result))))))
+          (is (= 1 (count (:constraints result))))
+          (is (not (contains? result :work-count)))))
       (let [inputs [(homogeneous-list-return-input (positional (vec (repeat 1024 s))) s 0)
                     (homogeneous-list-return-input (positional []) s 1)]
             core (assoc (:core (first inputs)) :nodes (vec (mapcat #(get-in % [:core :nodes]) inputs))
@@ -5750,6 +5751,30 @@
         (is (= 2 (count (:constraints updated))))
         (is (= :converged (:convergence-status inferred)) (pr-str (:diagnostics inferred)))
         (is (= [] (:diagnostics inferred)))))))
+
+(deftest list-return-updater-is-semantic-for-inactive-deferred-and-rejected-inputs
+  (let [input (homogeneous-list-return-input :gravity.type/unknown :gravity.type/string 0)
+        {:keys [record function nodes types forms]} input
+        functions {(:function-id function) function}
+        run #(invoke-c7 'sh08-ft-update-function-returns-with-context [%1 nodes types %2])
+        inactive (run {} (:context input))
+        deferred (run functions (:context input))
+        declared (get-in record [:signature :return])
+        malformed-context (assoc (:context input) :lookup-forms
+                                 (assoc-in forms [(:type-form-id declared) :parent-form-id] :forged))
+        rejected (invoke-c7 'sh08-ft-update-function-returns-with-context
+                           [functions nodes (assoc types (:body-core-node-id record) :gravity.type/never)
+                            malformed-context])]
+    (is (= {:status :accepted :function-types {} :constraints [] :diagnostics []} inactive))
+    (is (= :accepted (:status deferred)))
+    (is (= [] (:constraints deferred) (:diagnostics deferred)))
+    (is (nil? (get-in deferred [:function-types (:function-id function) :return-compatibility])))
+    (is (= :gravity.type/unknown
+           (get-in deferred [:function-types (:function-id function) :return-actual-type])))
+    (is (= :rejected (:status rejected)))
+    (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
+    (is (= :list-return-source-mismatch (get-in rejected [:diagnostics 0 :reason])))
+    (is (every? #(not (contains? % :work-count)) [inactive deferred rejected]))))
 
 (deftest sh08-homogeneous-list-parameter-development-kernel
   (let [s :gravity.type/string positional #(hash-map :kind :gravity.type/list :shape :literal :element-types %)
@@ -6572,6 +6597,16 @@
             inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
                        [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types context])]
         (is (= :accepted (:status result)) (pr-str (select-keys result [:status :reason])))
+        (is (not (contains? descriptor :operand-type-work)))
+        (doseq [obsolete [0 1]]
+          (let [forged (assoc descriptor :operand-type-work obsolete)
+                typed (assoc (:types input)
+                             (get-in input [:call :operator-node-id]) forged
+                             (get-in input [:node :node-id]) (:type result))
+                checked (invoke-c7 'sh08-st-inferred-call
+                          [core (:node input) (:call input) (:edge input) nodes bindings typed])]
+            (is (= :rejected (:status checked)))
+            (is (= :set-conversion-source-mismatch (:reason checked)))))
         (is (= (if invoked? :gravity.type/set :gravity.type/never) (:type result) (:return descriptor)))
         (is (= (if invoked? :normal :not-invoked) (:application descriptor)))
         (is (= (when invoked? (count (:element-types type))) (:input-element-count descriptor)))
@@ -6656,6 +6691,16 @@
             inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
                        [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types context])]
         (is (= :accepted (:status result)) (pr-str (select-keys result [:status :reason])))
+        (is (not (contains? descriptor :operand-type-work)))
+        (doseq [obsolete [0 1]]
+          (let [forged (assoc descriptor :operand-type-work obsolete)
+                typed (assoc (:types input)
+                             (get-in input [:call :operator-node-id]) forged
+                             (get-in input [:node :node-id]) (:type result))
+                checked (invoke-c7 'sh08-st-inferred-call
+                          [core (:node input) (:call input) (:edge input) nodes bindings typed])]
+            (is (= :rejected (:status checked)))
+            (is (= :set-conversion-source-mismatch (:reason checked)))))
         (is (= (if invoked? :gravity.type/set :gravity.type/never) (:type result) (:return descriptor)))
         (is (= (if invoked? :normal :not-invoked) (:application descriptor)))
         (is (= (when invoked? (count (:element-types type))) (:input-element-count descriptor)))
@@ -9044,6 +9089,14 @@
     (is (= :deferred (:status cold)))
     (is (= :accepted (:status warm) (:status view) (:status fresh)))
     (is (= (:descriptor fresh) (:descriptor warm)))
+    (let [large-prior (into prior (map (fn [i] [(keyword "pmk-inference" (str i)) :gravity.type/keyword])
+                                      (range 11000)))
+          malformed (step early [:not-a-type-table] prepared)]
+      (is (= warm (step early large-prior prepared)))
+      (is (= ["C7-VERIFY" :private-map-keys-source-mismatch
+              :valid-current-and-prior-inference-type-tables :malformed-inference-type-table]
+             ((juxt :rule :reason :expected :actual) malformed)))
+      (is (not (contains? malformed :work-count))))
     (is (= warm (step early prior prepared)))
     (doseq [bad [:gravity.type/string :gravity.type/vector {:kind :gravity.type/not-a-type}]]
     (is (= :rejected (:status (step (assoc early :input-0 bad) prior prepared)))))
@@ -9090,6 +9143,68 @@
     (is (= :deferred (:status (step {:input :gravity.type/map} (assoc types :unused-0 :gravity.type/unknown)))))))
 
 
+
+(deftest sh08-private-map-keys-preparation-semantic-cells
+  (let [current {:known :gravity.type/string :unknown :gravity.type/unknown :nil-value nil}
+        prior {:known :gravity.type/integer :unknown :gravity.type/keyword :nil-value :gravity.type/bool}
+        extra (into {} (map (fn [i] [(keyword "pmk-prior" (str i)) :gravity.type/keyword]) (range 11000)))
+        large (into prior extra)
+        view (invoke-c7 'sh08-pmk-type-view [current large])
+        expected (invoke-c7 'sh08-pe-type-view [current large])
+        callbacks (atom [])
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (ex-info "PMK preparation hash" {})))
+                 (equals [_] (swap! callbacks conj :equals) (throw (ex-info "PMK preparation equals" {})))
+                 (toString [] (swap! callbacks conj :format) (throw (ex-info "PMK preparation format" {}))))]
+    (is (= {:status :accepted :types expected} view))
+    (is (= :gravity.type/string (get-in view [:types :known])))
+    (is (= :gravity.type/keyword (get-in view [:types :unknown])))
+    (let [tail (last (keys large))
+          bad (assoc large tail opaque)
+          order (vec (keys bad))]
+      (is (= tail (last order)))
+      (is (= (dec (count bad)) (count (take-while #(not= tail %) order))))
+      (is (= {:status :rejected :reason :private-map-keys-source-mismatch}
+             (invoke-c7 'sh08-pmk-type-view [current bad])))
+      (is (empty? @callbacks)))
+    (doseq [[types previous] [[[] large] [current []]
+                              [current (assoc large :late-invalid opaque)]
+                              [current (assoc large 42 :gravity.type/keyword)]]]
+      (is (= {:status :rejected :reason :private-map-keys-source-mismatch}
+             (invoke-c7 'sh08-pmk-type-view [types previous])))
+      (is (empty? @callbacks)))
+    (let [forms [{:form-id :first} {:form-id :second}]
+          indexed (invoke-c7 'sh08-pmk-index-forms [forms])]
+      (is (= {:status :accepted :forms {:first (first forms) :second (second forms)}} indexed))
+      (is (= indexed (invoke-c7 'sh08-pmk-index-forms [(:forms indexed)])))
+      (doseq [bad [(conj forms opaque) (conj forms {:form-id opaque})
+                   (conj forms (first forms)) nil]]
+        (is (= {:status :rejected :reason :private-map-keys-source-mismatch}
+               (invoke-c7 'sh08-pmk-index-forms [bad])))
+        (is (empty? @callbacks))))))
+
+
+(deftest sh08-private-map-keys-preparation-call-constraint-consumer
+  (let [{:keys [core node call edge nodes bindings types forms binding-types functions]}
+        (private-map-keys-typed-input)
+        context {:ordering-core core :ordering-bindings bindings :association-forms forms}
+        join (fn [source]
+               (invoke-c7 'sh08-ft-call-constraints-with-context
+                 [[call] [edge] nodes types binding-types functions (assoc context :association-forms source)]))
+        source (vec (vals forms))
+        accepted (join source)
+        raw (invoke-c7 'sh08-pmk-check-with-forms [core node call edge nodes bindings types source])]
+    (is (= :accepted (:status raw)))
+    (is (= {:binding-types binding-types :constraints [] :diagnostics []} accepted))
+    (is (not (contains? raw :work-count)))
+    (is (not (contains? accepted :compatibility-work-count)))
+    (doseq [bad [(conj source (first source)) (conj source {:form-id 42})]]
+      (let [result (join bad)]
+        (is (= [{:call call :rule "C7-VERIFY" :reason :private-map-keys-source-mismatch
+                 :expected :fresh-private-map-key-domain-application :actual :mismatched-application}]
+               (:diagnostics result)))
+        (is (= binding-types (:binding-types result)))
+        (is (= [] (:constraints result)))))))
 
 (deftest sh08-private-map-keys-fixtures-file-parity-development-kernel
   (doseq [[disposition name] [["accepted" "local-runtime-private-map-keys"]
@@ -12204,7 +12319,8 @@
              [core node nodes types (assoc-in bindings [(refs :then) :binding-id] :forged) forms]
              [core node nodes types bindings (assoc-in forms [(fids :operator) :value] 'other/if)]
              [core node nodes types bindings (assoc-in forms [(fids :then) :parent-form-id] :sibling)]
-             [core node nodes types bindings (assoc-in forms [(fids :if) :child-form-ids] [])]]]
+             [core node nodes types bindings (assoc-in forms [(fids :if) :child-form-ids] [])]
+             [core node nodes types bindings (assoc-in forms [(fids :if) :child-form-ids] :uncountable)]]]
       (let [changed (derive changed-core changed-node changed-nodes changed-types changed-bindings changed-forms)]
         (is (= :rejected (:status changed)))
         (is (= :list-if-join-source-mismatch (:reason changed)))))
@@ -12249,6 +12365,12 @@
             (let [types (assoc unknown-types (nids :then) left (nids :else) right)]
               (is (= [:deferred expected]
                      ((juxt :status :type) (invoke-c7 'sh08-ij-step [node types context])))))))
+        (let [later (assoc node :node-id :deferred-if
+                          :children [:missing-condition (nids :then) (nids :else)])
+              result (invoke-c7 'sh08-ft-infer-pass-with-context
+                               [(conj (:nodes core) later) [] [] [] [] {} binding-types context])]
+          (is (= [] (:diagnostics result)))
+          (is (= :gravity.type/unknown (get-in result [:type-table :deferred-if]))))
         (let [functions {:owner {:function-id :owner :body-core-node-id (nids :if) :return :gravity.type/unknown}}
               updated (invoke-c7 'sh08-ft-update-function-returns [functions nodes (:type-table result)])]
           (is (= homogeneous (get-in updated [:owner :return])))
@@ -12308,6 +12430,12 @@
         (is (= :accepted (:status result)))
         (is (= 1025 (get-in result [:branch-compatibility 0 :checked-member-count])))
         (is (= result (join large same))))
+      (let [members (vec (repeat 4097 s)) large (finite members)
+            result (join large same)]
+        (is (= :accepted (:status result)))
+        (is (= 4097 (get-in result [:branch-compatibility 0 :checked-member-count])))
+        (is (= :not-applicable
+               (:status (join (finite (assoc members 4096 :gravity.type/keyword)) same)))))
       (is (= :gravity.type/unknown
              (invoke-c7 'sh08-ft-normal-return-type [:alternatives [left same] :gravity.type/unknown])))
       (is (= :gravity.type/unknown
@@ -16481,6 +16609,32 @@
     (is (= :rejected (:status (invoke-c7 'sh08-syin-inferred-call [core node call edge nodes bindings (assoc established :operator old :call :gravity.type/set)]))))
     (is (= :rejected (:status (invoke-c7 'sh08-syin-inferred-call [core node call edge nodes bindings (assoc-in established [:operator :version] :sh08-symbol-set-insertion-v1)]))))
     (is (= :gravity.type/unknown (invoke-c7 'sh08-ft-loop-kernel-normal-join [[finite carrier]])))))
+(deftest sh08-insertion-inferred-call-ignores-unrelated-function-count
+  ;; Normalized helper inputs only; this is not authenticated Core admission.
+  (let [unrelated (mapv (fn [i] {:function-syntax-id (keyword (str "unrelated-" i))
+                                 :function-core-node-id (keyword (str "unrelated-node-" i))})
+                        (range 65471))
+        owner {:function-syntax-id :owner :function-core-node-id :owner-node}]
+    (doseq [[element checker] [[:gravity.type/string 'sh08-ssin-inferred-call]
+                               [:gravity.type/keyword 'sh08-ksin-inferred-call]
+                               [:gravity.type/symbol 'sh08-syin-inferred-call]]]
+      (let [receiver {:kind :gravity.type/set :shape :literal :element-types [element]}
+            {:keys [core node call edge nodes bindings types forms]} (list-prepend-input receiver element)
+            node (assoc-in node [:evaluation :owner-function-syntax-id] :owner)
+            edge (assoc edge :caller-function-syntax-id :owner :caller-function-core-node-id :owner-node)
+            nodes (assoc nodes :call node)
+            core (assoc core :function-records [owner] :call-edges [edge]
+                        :nodes (mapv #(if (= :call (:node-id %)) node %) (:nodes core)))
+            derived (invoke-c7 'sh08-pl-derive [core node call edge nodes bindings types forms])
+            established (assoc types :operator (:descriptor derived) :call (:type derived))
+            expanded (assoc core :function-records (into [owner] unrelated))
+            result (invoke-c7 checker [expanded node call edge nodes bindings established])
+            bad (assoc-in established [:operator :operation] 'forged)]
+        (is (= :accepted (:status derived)))
+        (is (= {:status :accepted} result))
+        (is (not (contains? result :work-count)))
+        (is (= :rejected (:status (invoke-c7 checker [expanded node call edge nodes bindings bad]))))))))
+
 (deftest sh08-symbol-set-carrier-contains-development-kernel
   (let [finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
         k :gravity.type/symbol carrier (:result-type (invoke-c7 (quote sh08-syin-validate-types) [[(finite []) k]]))
@@ -19177,7 +19331,11 @@
         expected {:mode :entries :cut cut :source-argument-call-node-ids []}]
     (is (= expected cold))
     (doseq [variant (cold-metadata-invalid-inputs input)]
-      (is (= expected (invoke-c7 'sh08-is-cold-evidence [variant]))))))
+      ;; The producer projects semantic fields; Effects/lowering own refusal
+      ;; of forged metadata. It must not silently repair substituted fields.
+      (is (= {:mode (:mode variant) :cut (:cut variant)
+              :source-argument-call-node-ids (:source-argument-call-node-ids variant)}
+             (invoke-c7 'sh08-is-cold-evidence [variant]))))))
 
 (deftest record-union-descriptor-rows-have-no-count-quota
   ;; Normalized descriptor DATA exercises the owning closed-family checker.
@@ -20847,14 +21005,25 @@
                 [core types functions bindings direct source-forms])
         scoped (invoke-c7 'sh08-tc-scope-with-types [core (:throws direct) types])
         owners (invoke-c7 'sh08-th-owners [core])
-        accepted (check)]
+        accepted (check)
+        many-forms (into source-forms
+                         (map (fn [i] {:form-id (keyword "pmk-extra" (str i))
+                                       :syntax-id (keyword "pmk-extra-syntax" (str i))
+                                       :kind :keyword :value :unused :child-form-ids []}) (range 22000)))
+        indexed (invoke-c7 'sh08-pmk-index-forms [many-forms])
+        wide (invoke-c7 'sh08-tc-products-with-source-forms [core types functions bindings direct many-forms])]
     (is (= :accepted (:status result) (:status scoped) (:status owners)))
     (is (true? (:active? scoped)))
     (is (= :accepted (:status accepted)) (pr-str (select-keys accepted [:status :diagnostics])))
     (is (= [] (get-in accepted [:throws :helper-form])))
+    (is (= :accepted (:status indexed)))
+    (is (= (count many-forms) (count (:forms indexed))))
+    (is (= accepted wide))
     (doseq [candidate [nil
                        (apply list source-forms)
                        (conj source-forms (first source-forms))
+                       (conj source-forms {:form-id :malformed})
+                       (conj many-forms {:form-id 42})
                        (mapv
                          (fn [form]
                            (if (= :helper-parameters (:form-id form))

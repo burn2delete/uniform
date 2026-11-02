@@ -96,7 +96,7 @@
                    :self-hosted-authority
                    :release-authority]}
    :dependency-direction
-   {:requires ['clojure.core 'clojure.string 'java.security.MessageDigest]
+   {:requires ['clojure.core 'clojure.string 'gravity.digest]
     :forbids ['gravity.bootstrap 'gravity.diagnostics]}
    :bootstrap-hosted? true
    :compatibility-only? true
