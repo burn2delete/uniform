@@ -586,10 +586,10 @@
     (is (= (:sha256 predecessor) (sh-inventory/sha256 prior-text)))
     (is (= (:review predecessor)
            (select-keys (:mapping-review prior) [:status :input-fingerprint :source-version-bridge])))
-    (is (= 134 (:unchanged-body-count comparisons)))
+    (is (= 130 (:unchanged-body-count comparisons)))
     (is (= (set (map :id (:changed-bodies comparisons))) changed))
-    (is (= 5 (count changed)))
-    (is (= 134 (count (remove changed (keys before)))))
+    (is (= 9 (count changed)))
+    (is (= 130 (count (remove changed (keys before)))))
     (let [refinement (:math-parent-refinement bridge)
           predecessor (:predecessor-readiness-successor refinement)
           previous-text (sh-crosswalk/git-source (:commit predecessor) (:path predecessor))
@@ -600,7 +600,10 @@
       (is (= (:input-fingerprint predecessor) (:input-fingerprint previous)))
       (is (= 135 (get-in previous [:task-comparisons :unchanged-body-count])))
       (is (= 4 (count (get-in previous [:task-comparisons :changed-bodies]))))
-      (is (= (conj (set (map :id (get-in previous [:task-comparisons :changed-bodies]))) "math") changed))
+      (let [math-predecessor (get-in bridge [:release-testing-refinement :predecessor-readiness-successor])
+            math-bridge (edn/read-string (sh-crosswalk/git-source (:commit math-predecessor) (:path math-predecessor)))]
+        (is (= (conj (set (map :id (get-in previous [:task-comparisons :changed-bodies]))) "math")
+               (set (map :id (get-in math-bridge [:task-comparisons :changed-bodies]))))))
       (is (= 28 (count (:criterion-ids refinement))))
       (is (= (set (:criterion-ids refinement))
              (set (map second (re-seq #"(?m)^(?:Criterion|Decision criterion) `([^`]+)`"
@@ -660,6 +663,61 @@
     (is (= 180 (count (:requirements view))))
     (is (= 18 (count (:sh07-sequence view))))
     (is (every? #(= :unassessed (:accepted-current-requirement %)) (:requirements view)))))
+
+(deftest release-refinement-preserves-source-producers-and-aggregate-clauses
+  (let [bridge sh-crosswalk/readiness-source-version
+        refinement (:release-testing-refinement bridge)
+        predecessor (:predecessor-readiness-successor refinement)
+        previous-text (sh-crosswalk/git-source (:commit predecessor) (:path predecessor))
+        previous (edn/read-string previous-text)
+        previous-projection (sh-crosswalk/git-source (:commit predecessor) (:projection-path predecessor))
+        {:keys [path published-commit published-sha256]} (:published-source refinement)
+        published (sh-crosswalk/git-source published-commit path)
+        current (slurp path)
+        blocks (fn [text]
+                 (into {} (for [body (str/split text #"(?m)(?=^- \[ \])")
+                                :let [id (second (re-find #"^- \[ \] `([^`]+)`" body))]
+                                :when id]
+                            [id (str/trim body)])))
+        source (blocks (first (str/split published #"<!-- release-implementation-tasks:end -->" 2)))
+        future (blocks (second (re-find #"(?s)<!-- release-testing-proposals:start -->(.*?)<!-- release-testing-proposals:end -->" current)))
+        aggregates (set (:aggregate-task-ids refinement))
+        before-changed (set (map :id (get-in previous [:task-comparisons :changed-bodies])))
+        after-changed (set (map :id (get-in bridge [:task-comparisons :changed-bodies])))
+        marker-by-suffix {"bind-each-claimed-component-to-exact-implementation-and-conformance" "release-parent-coverage"
+                          "complete-stage-compatibilityequivalence-across-the-claimed-compiler" "release-parent-stage-comparison"
+                          "produce-actual-self-hosted-compilerruntime-execution" "release-parent-self-hosting"
+                          "build-reproducible-signed-distributions-with-provenancesbom" "release-parent-reproducibility"
+                          "obtain-independent-acceptance-for-the-exact-release-candidate" "release-parent-acceptance"}]
+    (is (= (:sha256 predecessor) (sh-inventory/sha256 previous-text)))
+    (is (= (:projection-sha256 predecessor) (sh-inventory/sha256 previous-projection)))
+    (is (= (:input-fingerprint predecessor) (:input-fingerprint previous)))
+    (is (= 134 (get-in previous [:task-comparisons :unchanged-body-count])))
+    (is (= 5 (count before-changed)))
+    (is (= after-changed (into before-changed aggregates)))
+    (is (= published-sha256 (sh-inventory/sha256 published)))
+    (is (= 18 (count source)))
+    (is (= 13 (count future) (count (:future-records refinement))))
+    (is (= 5 (count aggregates) (count (:aggregate-clauses refinement))))
+    (is (= (set (keys source)) (into aggregates (keys future))))
+    (is (= aggregates (set (sh-crosswalk/stable-task-routing-keys "release"))))
+    (is (= (set (keys future)) (set (map :id (:future-records refinement)))))
+    (doseq [{:keys [id body-sha256 status]} (:future-records refinement)]
+      (is (= (source id) (future id)) id)
+      (is (= body-sha256 (sh-inventory/sha256 (future id))) id)
+      (is (= :open status))
+      (is (str/includes? (future id) "Status: Open") id))
+    (doseq [{:keys [id closing-evidence-sha256]} (:aggregate-clauses refinement)
+            :let [clause (second (re-find #"(?m)^Closing evidence: ([^\n]+)$" (source id)))
+                  marker (marker-by-suffix (last (str/split id #"/")))
+                  addition (second (re-find (re-pattern (str "(?s)<!-- " marker ":start -->(.*?)<!-- " marker ":end -->")) current))]]
+      (is (contains? aggregates id))
+      (is (= closing-evidence-sha256 (sh-inventory/sha256 clause)) id)
+      (is (= clause (last (remove str/blank? (str/split-lines addition)))) id))
+    (is (= :pending-independent-current-review (:future-sh-composition refinement)))
+    (is (= :none (:source-body-changes refinement)))
+    (is (= :unassessed (:implementation-acceptance refinement)))
+    (is (= refinement (get-in (sh-crosswalk/source-view) [:implementation-readiness-source-version :release-testing-refinement])))))
 
 (deftest readiness-successor-rejects-stale-review-pins-and-missing-source-routes
   (let [source (sh-crosswalk/source-view)

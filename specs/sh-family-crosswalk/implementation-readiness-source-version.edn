@@ -19,9 +19,9 @@
    "evolution/security-review"
    "evolution/stabilization-decision"
    "evolution/target-support-admission"]},
- :source-input-commit "86f194bc693b1eeb39593057284e3b47a713e6f7",
+ :source-input-commit "be099c84b68e17e171e67905de64c9053226a083",
  :task-comparisons
- {:unchanged-body-count 134,
+ {:unchanged-body-count 130,
   :changed-bodies
   [{:id
     "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
@@ -46,7 +46,7 @@
     :before-sha256
     "7f4f72add984a02d9bb62595383d740c1ae402a64b0eb6c052d2c8fce5195554",
     :after-sha256
-    "fa09879e06c87968b8de7a63c915f95420b2df1292399e9b6ae10bdf18e7d638",
+    "25b2d6027cab1184464bc95fd5ffae24adeba9b2dfc7fd49d07aeda9ed7c5ad7",
     :before-checked false,
     :after-checked false}
    {:id
@@ -55,7 +55,43 @@
     :before-sha256
     "6ed5c4fd6fb06f3b69f7d23d582da2a7f02c1c54e64355632c3e0583951ea7a8",
     :after-sha256
-    "d68951f82d2460dffcaa81438b09ffccadf0cfea8c93dcbe8e7e114bb53f72ae",
+    "3b54049409be55acdf68f84b803b83172bf21a977813951b02ea1e0740e81610",
+    :before-checked false,
+    :after-checked false}
+   {:id
+    "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom",
+    :path "specs/release-workflow/tasks.md",
+    :before-sha256
+    "5132659c7d4bb35fb72aa2e6950d6cfdf549894582fcd4dae3c34c59e2804ca1",
+    :after-sha256
+    "1a59fb8f89f2403412bd7e82a1d72c6d0554ca0b5ce17c5932a72370b754acc1",
+    :before-checked false,
+    :after-checked false}
+   {:id
+    "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+    :path "specs/release-workflow/tasks.md",
+    :before-sha256
+    "12da0fa1f7de6661bf5ce5b132f58fa1e395ed9e9d482829d7a01b3f09d4796c",
+    :after-sha256
+    "71ea5ea6051eac5021a64cbdf5d77cbc9a1f298d8cb88ed7ae52d38532709f6a",
+    :before-checked false,
+    :after-checked false}
+   {:id
+    "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate",
+    :path "specs/release-workflow/tasks.md",
+    :before-sha256
+    "fa9466202da42b861fb850dd2ba669b5175ee6db47e3c4cd6a2635ea1495791d",
+    :after-sha256
+    "d003e741b9f46869a647de38e28d2c1daa1c992d8afe4c876bc0bf2a68e64539",
+    :before-checked false,
+    :after-checked false}
+   {:id
+    "release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution",
+    :path "specs/release-workflow/tasks.md",
+    :before-sha256
+    "ae4d6a913a262ccf365ad6e93b5f810f689a3f6f82703013235318f9a4ccb1b3",
+    :after-sha256
+    "d650f548865ff04bdd28a7ab76b7c8c0b156266f232a76e15e1c5ad597d1d34e",
     :before-checked false,
     :after-checked false}
    {:id "schema",
@@ -136,9 +172,9 @@
     :sha256
     "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4"},
    :after
-   {:commit "86f194bc693b1eeb39593057284e3b47a713e6f7",
+   {:commit "be099c84b68e17e171e67905de64c9053226a083",
     :sha256
-    "60b9547709c6a851cb6de91b246fe73425de0ab1ee91a0ea501c678e09ecb796"},
+    "678a033784536b8b31e2e4536a15e5eb376ec654ca8f70a64463131b15ad571b"},
    :scope :task-file-version}
   {:path "specs/effects-workflow/tasks.md",
    :before
@@ -226,9 +262,9 @@
     :sha256
     "fc53749a4bdd702bf2fa459dec56839a74b030af24856b580c5e4dac88a14d2a"},
    :after
-   {:commit "3e34a600c7e139abb0cf51673ef9175dae1b1eba",
+   {:commit "be099c84b68e17e171e67905de64c9053226a083",
     :sha256
-    "b69596d5877efcb89bed17e6e5872d35acfcd9caf15b24ab124a51c964e0ae1d"},
+    "47076089f754f4525d41d7ac05860a1141e88d3b92c0592b471f38b4ff299373"},
    :scope :task-file-version}
   {:path "specs/resolve-workflow/tasks.md",
    :before
@@ -509,6 +545,129 @@
   :original-sh07-sequence 18,
   :changed-source-criteria [],
   :changed-original-routes []},
+ :release-testing-refinement
+ {:retained-open-source-role-contexts 104,
+  :source-input-commit "be099c84b68e17e171e67905de64c9053226a083",
+  :future-sh-composition :pending-independent-current-review,
+  :predecessor-readiness-successor
+  {:commit "d2ecd9d9a14e619477bd17d2bf1d40e753e8377b",
+   :path
+   "specs/sh-family-crosswalk/implementation-readiness-source-version.edn",
+   :sha256
+   "efa60c73ec1c707f1fb19bf788382b57c3cd1e083ff8bf11f73832312ab4d796",
+   :projection-path "specs/sh-family-crosswalk/crosswalk.edn",
+   :projection-sha256
+   "ace27ca9bf08488f2264b123d21d2c5dda79561a425e5abfdbd816c515931c96",
+   :input-fingerprint
+   "c75bc626cf7ea2bab8d81842b4577fa16bc3e099a5d3ed479dd22a36d550aab2",
+   :review :pending-source-version-review},
+  :named-source-identities 105,
+  :canonical-source-documents-byte-equal
+  {:testing 13, :bootstrap 8, :foundation 10, :phase18-extension 2},
+  :source-body-changes :none,
+  :aggregate-task-ids
+  ["release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance"
+   "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom"
+   "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler"
+   "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate"
+   "release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution"],
+  :published-source
+  {:path "specs/release-workflow/tasks.md",
+   :published-commit "df11890b21f71d3f246cc47e9f63d866239a0d68",
+   :published-sha256
+   "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+   :scope :published-task-context-not-current-sh-authority},
+  :future-records
+  [{:id
+    "release/remaining-tasks-and-evidence/execute-agent-and-workflow-evaluations",
+    :body-sha256
+    "8d6215523bd324b10e17e58482aa6955b277041afd3ce0fdeca6b4c6f07bebe4",
+    :status :open}
+   {:id
+    "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures",
+    :body-sha256
+    "551177a2b0e469e75657bc5d119b1613c61568e329343eee5b3251edcb54b743",
+    :status :open}
+   {:id
+    "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures",
+    :body-sha256
+    "a04fe57ac3daaf5cf002598c8ccf6cd6682080dfd5cda40833f2695f5fecb37c",
+    :status :open}
+   {:id
+    "release/remaining-tasks-and-evidence/execute-formal-evidence-checks",
+    :body-sha256
+    "ea0c2bf29a692e6e5e81c8393854a9e7cdfadd225cf079bbf3b811469b0f9777",
+    :status :open}
+   {:id
+    "release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures",
+    :body-sha256
+    "9d7d7069d0b7a571902cf6b934b5f6f5a6cd30e0b31139db109c718725ab16df",
+    :status :open}
+   {:id
+    "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures",
+    :body-sha256
+    "18bb750d2ab7cad44d643b2fa67c60bb5c61c16bd2f74e98720a5e2efde39c69",
+    :status :open}
+   {:id
+    "release/remaining-tasks-and-evidence/execute-library-conformance-fixtures",
+    :body-sha256
+    "290f29b392f82b8797ca86efac46acefa11a81c0131787935de679cd24c3b813",
+    :status :open}
+   {:id
+    "release/remaining-tasks-and-evidence/execute-performance-regression-fixtures",
+    :body-sha256
+    "be78b5607529ea317eb86ebf63e3bff40b8fe1778759f24770d766bf90c3f645",
+    :status :open}
+   {:id
+    "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures",
+    :body-sha256
+    "015036322a7cc39d779dcc4d2985f0eabc6d9cba6ca8b2de09a318b7226b3acb",
+    :status :open}
+   {:id
+    "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures",
+    :body-sha256
+    "85511d988b1316b76b4a26e9da9ef7f6c2e55d38ce2602143db4b4943ba4c0c9",
+    :status :open}
+   {:id
+    "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures",
+    :body-sha256
+    "50f51c2e4b1cd734a46d18d0a16e1edfa96aa9784f456c2e0c795a4214432308",
+    :status :open}
+   {:id
+    "release/remaining-tasks-and-evidence/execute-staged-compiler-validation",
+    :body-sha256
+    "de657d84993e1332296f00a25bfc896ba19edc09716bb9cc0222d4cbbae8b947",
+    :status :open}
+   {:id
+    "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+    :body-sha256
+    "ee83573983288ce10a6d898596408e92ad61d835fa9f42d983c641a403cd0f71",
+    :status :open}],
+  :aggregate-clauses
+  [{:id
+    "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+    :closing-evidence-sha256
+    "b91e1b007b52e8ce8012d2be98f275a1bad749804f51a107dc620291bea423df"}
+   {:id
+    "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom",
+    :closing-evidence-sha256
+    "03419f68d16cbeabb51c3432224deca3b6cdaff1f12054e4aaf9f97ee0305da4"}
+   {:id
+    "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+    :closing-evidence-sha256
+    "7322efe3633bff09eaf8b3b7f040733561abe3d11e58e7ed320bc631b151a7e5"}
+   {:id
+    "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate",
+    :closing-evidence-sha256
+    "b74a419b9c8857fb3e3d2002ef1ca66d1cefedab072869748d1912cff5c3e51b"}
+   {:id
+    "release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution",
+    :closing-evidence-sha256
+    "bbaf44a3ad25c263e7c8006952b96aa8dcd187d5977d242c4432322008bbe134"}],
+  :qualification
+  "Resume thirteen existing test/seed producers and the detailed criteria of the five aggregate Release tasks. Keep actual evidence production, stage comparison, intermediate admission and final release separate. Existing native receipts retain their original scopes. TEST6 remains with Backends. Budget/resource labels concern real external billing or host/platform restrictions, not compiler work quotas. No suite, native observation, held operation or release decision ran.",
+  :math-consumer-context :future-release-testing-records-now-resumed,
+  :implementation-acceptance :unassessed},
  :status :pending-independent-source-version-and-composition-review,
  :predecessor
  {:commit "a9fc9b1c63c0eb344f29bb63d985f71e6c24af24",
@@ -531,10 +690,10 @@
    "4ee538fce884ae04d1dbaf22ea54d9aee0e32abbbb071272f7115baf9da141ad",
    :scope :retained-historical-ownership-not-current-authority}},
  :qualification
- "Bind exact task-file versions and the resumed Governance authority. Five Open task bodies add current proposed source/consumer criteria; all other captured task bodies and checkboxes are conserved. Preserve the prior readiness successor at its immutable Git subject. Governance is not a compiler pass or new SH milestone. Sixteen separate future Domains records remain outside the current SH task-key projection. Earlier reviews and implementation receipts retain their exact subjects; no independent acceptance, implementation or seedless credit is renewed.",
+ "Bind exact task-file versions and the resumed Governance authority. Nine Open task bodies carry current proposed criteria; all other captured bodies and checkboxes are conserved. Preserve the initial, Math and Release readiness predecessor subjects. Sixteen Domain and thirteen Release future records remain outside current SH task-key routing pending exact composition. Source resumption does not confer implementation, independent acceptance, release or seedless credit.",
  :applying-source-pins
  {"specs/release-workflow/tasks.md"
-  "3e34a600c7e139abb0cf51673ef9175dae1b1eba",
+  "be099c84b68e17e171e67905de64c9053226a083",
   "docs/component-roadmaps/build.md"
   "69831d09bc2007844265968b265c493cf064bdf9",
   "docs/component-roadmaps/README.md"
@@ -576,7 +735,7 @@
   "specs/types-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9",
   "specs/domains-workflow/tasks.md"
-  "86f194bc693b1eeb39593057284e3b47a713e6f7",
+  "be099c84b68e17e171e67905de64c9053226a083",
   "docs/phase-02-safety/043-safe14-supply-chain-safety.md"
   "697917447d70ba0797a096d9427d4706bf5515df",
   "specs/backends-workflow/tasks.md"
@@ -588,4 +747,4 @@
   "specs/emit-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9"},
  :input-fingerprint
- "c75bc626cf7ea2bab8d81842b4577fa16bc3e099a5d3ed479dd22a36d550aab2"}
+ "15de4049d86ad199cd6aede9029559a5132a3d51454bd2b0c61639c091523aa9"}

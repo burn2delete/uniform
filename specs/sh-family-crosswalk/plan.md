@@ -51,6 +51,20 @@ files are byte-identical to the local aggregate; the published Domain task
 predecessor has one later local C6 consumer amendment. That amendment remains
 explicitly qualified, and no aggregate publication or stopped handoff is retried.
 
+The Release continuation binds source input
+`be099c84b68e17e171e67905de64c9053226a083` in the same bridge. Its
+`release-testing-refinement` field preserves the complete Math bridge and
+projection at `d2ecd9d9a14e619477bd17d2bf1d40e753e8377b`, including its pending
+review fingerprint. Only Release and Domains task-file versions advance.
+Against the original population, 130 bodies remain identical and nine Open
+bodies have declared additions. The thirteen future Release testing/seed
+records retain exact published bodies and remain outside current SH routing,
+as do the sixteen future Domain records. Check the five complete aggregate
+clauses, exact future-body hashes and unchanged routes/receipts with the existing
+controls. Actual suite execution, comparison, intermediate admission and final
+release remain separate; TEST6 remains with Backends. Source conservation and
+author validation do not confer current source/composition review.
+
 ## Ownership handoffs
 
 Canonical requirement owner `01a179ad-2198-7392-966a-1e3c31209027` supplied the

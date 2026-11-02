@@ -10,6 +10,10 @@ milestone; the original acceptance and sequence populations remain unchanged.
 The same bridge now also binds the Math parent refinement, preserving the
 initial readiness successor as an immutable predecessor and leaving the
 independent checker allocation and future Release Testing composition explicit.
+The Release continuation preserves that Math checkpoint and binds the five
+aggregate refinements plus thirteen resumed future testing/seed records. The
+future records remain outside current SH routing pending exact composition;
+all current whole-criterion acceptance remains unassessed.
 
 Status: source-bound routing, dependency mapping, source-pin guard and bounded
 source-version bridge independently reviewed; owner task-boundary integration

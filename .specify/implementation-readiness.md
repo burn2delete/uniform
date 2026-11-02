@@ -16,6 +16,32 @@ requirement-to-task entailment, concrete producer/consumer interfaces,
 implementation planning detail and evidence applicability, not simply the
 number of files.
 
+## Comparison of the two specification sets
+
+The canonical set is organized into eighteen design phases containing 240
+documents; Phase 18 adds a separate release extension. The current branch has
+33 feature `spec.md` files under `specs/`: 24 architectural component workflows,
+the resumed Governance and Evolution workflow, and eight other bounded or
+supporting features. These populations describe different units of scope.
+There is no expected one-to-one document/spec relationship.
+
+| Aspect | Canonical contracts | Current Spec Kit reconciliation |
+| --- | --- | --- |
+| Authority | Defines Gravity semantics, required surfaces, artifacts and conformance. | Organizes implementation work against those contracts; cannot replace them. |
+| Organization | Foundation, language, safety, profiles, performance, math, compiler, backends, runtimes, domains, schemas, AI, packages, tools, testing, bootstrap, libraries and governance. | Component outcomes and bounded changes, with existing task authorities and dependency projections. |
+| Behavioral detail | Specifies required behavior and evidence regardless of current implementation. | All 24 component packages now have behavior/planning entries above preserved workflow-transfer records. Broad parent outcomes still need finer source/task and interface reconciliation. |
+| Coverage | All substantive requirements remain in scope, including wider support surfaces and final seedless release. | All 240 documents are linked, but global requirement conjunctions and owner/task entailment remain unassessed. Link coverage is not semantic coverage. |
+| Previously missing routes | Includes governance, wider domain operations, conformance execution and seed/release obligations. | Resumes ten Governance records, sixteen future Domain records and thirteen future Release testing/seed records in their existing authorities. Future-task/SH composition remains pending. |
+| Evidence | Requires actual accepted/rejected behavior, applicable proofs, provenance and claim-specific conformance. | Preserves narrow accepted receipts and distinguishes Open, partial, unassessed, held and future work. Source/projection checks cannot establish implementation or acceptance. |
+| Changed policy | Some retained text still contains superseded work/fuel/quota requirements. | Applies the current accounting-removal decision explicitly while preserving semantic validation, real host restrictions and external billing. |
+| Finish line | Full required language/platform scope plus applicable self-hosting, trust and release obligations. | Dependency navigation reaches those outcomes, but detailed global reconciliation and required independent review are unfinished. The first selected increment is Reader contract coverage below. |
+
+The principal remaining difference is executable precision: every required
+operation and cross-component conjunction must resolve to one owning task,
+concrete interfaces, real positive/negative evidence and a valid dependency
+route. The current component entries and resumed records make that work
+visible; they do not yet establish complete implementation readiness.
+
 ## Existing authority and preserved work
 
 The [canonical inventory](../docs/document-inventory.json) retains all 240
@@ -539,7 +565,7 @@ from independently checked claims and verified use. SAFE9's checked/proven
 narrowing and named conversion classes both remain visible, without guessing a
 replacement policy or blocking independent checked/proven work.
 
-The existing SH bridge preserves its first readiness successor and binds the
+At the Math checkpoint, the existing SH bridge preserved its first readiness successor and bound the
 new Math task source: 134 original bodies remain identical and five Open bodies
 carry declared additions; the task keys, SH/SH07 routes and Reader receipts are
 unchanged. Published context links are byte-checked and their later local C6
@@ -547,7 +573,7 @@ qualification is explicit. Thirteen additional Open Release Testing records in
 the preserved published source still need local resumption and exact consumer
 composition; their absence is not hidden behind the Math suite name.
 
-The current Math continuation passes 24 crosswalk tests / 616 assertions and
+The Math checkpoint passed 24 crosswalk tests / 616 assertions and
 18 dependency tests / 419 assertions. Deterministic projection, canonical
 document, full-language structural and language-boundary checks pass; the dated
 full-language snapshot remains non-authoritative. Focused conservation and
@@ -561,3 +587,45 @@ occurred. Current Math checker and Schema layout allocations,
 current source/facet conjunctions and parent allocations, full support breadth,
 consumer and SH composition
 remain required work in the existing reconciliation lineage.
+
+## Release testing and aggregate continuation
+
+The [Release specification](../specs/release-workflow/spec.md) and
+[plan](../specs/release-workflow/plan.md#testing-seed-and-aggregate-source-composition)
+now resume the thirteen existing Open testing/seed producer records and the
+full source criteria of the five existing aggregate tasks. All eighteen source
+records retain their literal identities; the thirteen future records reproduce
+their published source bodies exactly. The five aggregate additions preserve
+their complete closing criteria alongside the original task text and governance
+consumer. Removing only declared additions restores the original authority.
+
+Actual suite production, stage comparison, intermediate admission and final
+release are distinct. TEST6 execution stays with Backends; Math and other
+semantic owners supply applicable fixture/oracle interfaces, while Release
+owns actual suite execution and result consumption. Prior native/seed receipts
+retain their narrow scopes. Real external-provider costs and host/platform
+exceptions do not reinstate compiler work or input quotas.
+
+Source checks conserve 104 existing Open role contexts and 105 named source
+identities. The thirteen TEST, eight BOOT and ten foundation documents, plus
+both Phase 18 navigation/roadmap files, match the preserved source bytes.
+This is source conservation, not global requirement entailment or conformance.
+
+The existing SH source-version bridge now binds task-source input
+`be099c84b68e17e171e67905de64c9053226a083`, preserving the complete Math bridge
+and projection at `d2ecd9d9a14e619477bd17d2bf1d40e753e8377b`. Against the
+original 139 bodies, 130 remain identical and nine Open bodies carry declared
+additions. The current 149 routing keys, original SH/SH07 routes and three
+scoped Reader receipts are unchanged. Sixteen Domain and thirteen Release
+future records remain outside that projection pending exact composition; they
+are visible tasks, not accepted SH credit or another completion denominator.
+
+Release continuation checks pass: 25 crosswalk tests / 716 assertions,
+18 dependency tests / 419 assertions, deterministic projection, both document/
+roadmap validators and the language-boundary gate (6 tests / 11 assertions).
+Focused navigation/conservation covers 71 changed files, 66 Markdown files,
+2,540 local references, 139 original component routes, 48 historical suffixes
+and all 48 original task/evidence contents after stripping declared additions.
+Changed files are ASCII and `git diff --check` passes. These results establish
+the checked source/projection properties only; source/owner conjunctions,
+future-task composition, implementation and independent acceptance remain open.

@@ -2,6 +2,38 @@
 
 ## Current implementation-readiness source-version successor
 
+The Release continuation binds task-source input
+`be099c84b68e17e171e67905de64c9053226a083`, retaining the entire Math bridge
+and projection at `d2ecd9d9a14e619477bd17d2bf1d40e753e8377b`. Against the
+original 139 bodies, 130 remain identical and nine Open bodies have declared
+additions. Five Release aggregate clauses and thirteen future testing/seed
+records retain their complete published source criteria. The future records
+stay outside the unchanged five Release SH keys, pending current composition.
+Current task discovery remains 149 keys across 25 authorities. Original SH
+criteria, routes, checkboxes and scoped Reader receipts are conserved.
+
+Source checks retain 104 Open role contexts, 105 named source identities and
+byte equality of thirteen TEST, eight BOOT, ten foundation documents and the
+two Phase 18 extension files. TEST6 execution remains with Backends. Actual
+suite production, comparison, intermediate admission and final release are
+distinct. No test suite, native observation, policy decision or held operation
+ran as part of these source checks. Current source/routing review, broader
+source/facet conjunctions and implementation acceptance remain pending.
+
+Observed Release continuation checks pass: deterministic generation/check,
+25 crosswalk tests / 716 assertions, 18 dependency tests / 419 assertions,
+canonical document and full-language structural validators, and the language
+boundary gate (6 tests / 11 assertions). Focused navigation/conservation passes
+71 changed files, 66 Markdown files, 2,540 local references, 139 original
+component routes, 48 historical suffixes and all 48 original task/evidence
+contents after removing declared additions. Changed files are ASCII and
+`git diff --check` passes. Full-language snapshot figures remain dated,
+non-authoritative observations, not current execution results. Current mapping
+review is pending at fingerprint
+`15de4049d86ad199cd6aede9029559a5132a3d51454bd2b0c61639c091523aa9`.
+
+### Math source-version checkpoint
+
 The Math parent continuation uses task-source input
 `86f194bc693b1eeb39593057284e3b47a713e6f7`, retaining the complete first readiness
 bridge/projection at `d6ab8c4f7776fe32df6d9c725f72d579f28b54fd`. Against the original
@@ -23,7 +55,7 @@ become current SH authority. No aggregate publication or stopped handoff was
 attempted. Independent checker reallocation, thirteen future Release Testing
 records and global source/facet composition remain pending.
 
-Current continuation checks passed: deterministic crosswalk generation/check,
+Math checkpoint checks passed: deterministic crosswalk generation/check,
 24 crosswalk tests / 616 assertions, 18 dependency tests / 419 assertions,
 canonical document validation, full-language structural validation and the
 language-boundary gate (6 tests / 11 assertions). Focused navigation/conservation
