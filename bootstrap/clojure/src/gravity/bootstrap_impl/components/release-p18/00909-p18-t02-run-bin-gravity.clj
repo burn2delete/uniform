@@ -106,13 +106,14 @@
 
 (defn p18-t02-packaged-jvm-cli-artifact!
   []
-  (p18-t02-build-packaged-jvm-cli!)
-  (let [jar-entries (p18-t02-jar-entries)
+  (let [inventory (p18-t02-source-inventory)
+        _ (p18-t02-build-packaged-jvm-cli! inventory)
+        jar-entries (p18-t02-jar-entries)
         jar-file-entries (p18-t02-jar-file-entries)
         jar-source-report
-        (p18-t02-jar-source-inventory-report jar-entries)
+        (p18-t02-jar-source-inventory-report inventory jar-entries)
         jar-inventory-report
-        (p18-t02-jar-inventory-report jar-file-entries)
+        (p18-t02-jar-inventory-report inventory jar-file-entries)
         jar-entry-frequencies (:entry-frequencies jar-source-report)
         expected-source-entries (:expected jar-source-report)
         jar-hash (p18-file-sha256 p18-t02-jar-path)
@@ -120,12 +121,13 @@
         package-manifest (p18-t02-package-manifest jar-hash)
         artifact-manifest (p18-t02-artifact-manifest package-manifest jar-hash)
         reproducible-record
-        (p18-t02-reproducible-build-record package-manifest jar-hash)
+        (p18-t02-reproducible-build-record
+         package-manifest jar-hash inventory)
         provenance-record
         (p18-t02-provenance-record package-manifest dependency-record
-                                   reproducible-record jar-hash)
+                                   reproducible-record jar-hash inventory)
         sbom-record (p18-t02-sbom-record package-manifest dependency-record
-                                         provenance-record)
+                                         provenance-record inventory)
         signing-record (p18-t02-signing-record artifact-manifest
                                                provenance-record sbom-record)
         command-parity
@@ -217,7 +219,7 @@
          :jar-content-hash jar-hash
          :jar-entries jar-entries
          :jar-file-entries jar-file-entries
-         :packaged-source-inventory p18-t02-source-inventory
+         :packaged-source-inventory inventory
          :packaged-source-entries expected-source-entries
          :command-boundary
          {:public-command "bin/gravity"

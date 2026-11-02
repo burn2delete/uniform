@@ -72,7 +72,7 @@
    {:namespace 'gravity.c2-pass-cache-test
     :path "bootstrap/clojure/test/gravity/c2_pass_cache_test.clj"
     :selectors
-    ["gravity.c2-pass-cache-test/canonical-semantic-key-is-bounded-type-sensitive-and-path-scoped"
+    ["gravity.c2-pass-cache-test/canonical-semantic-key-is-type-sensitive-and-path-scoped"
      "gravity.c2-pass-cache-test/bounded-source-snapshot-rejects-size-links-and-traversal"
      "gravity.c2-pass-cache-test/generic-v2-adapter-preserves-c2-results-and-ignores-v1"
      "gravity.c2-pass-cache-test/generic-v2-adapter-binds-current-c2-producer-policy"

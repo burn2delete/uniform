@@ -7,11 +7,10 @@
             [gravity.pass-execution.validation :as validation]))
 
 (defn validate-pass-contract!
-  "Validate one exact, bounded C1/C16/C18 pass contract."
+  "Validate one exact C1/C16/C18 pass contract."
   [contract]
   (binding [diagnostics/*diagnostic-context*
             (merge diagnostics/*diagnostic-context* {:pass (:pass contract)})]
-    (canonical/preflight-canonical! contract)
     (validation/exact-map! contract config/pass-contract-fields
                            "C1-PASS-CONTRACT" :contract)
     (when-not (keyword? (:pass contract))
