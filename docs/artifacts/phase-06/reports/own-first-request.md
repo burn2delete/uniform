@@ -128,20 +128,23 @@ into genuine acceptance.
 
 ## Validation and history
 
-Eleven new source-only/fake-port tests and 94 assertions pass; together with
+Thirteen new source-only/fake-port tests and 107 assertions pass; together with
 the current parent controller's 25 tests and 556 assertions, the two focused
-namespaces pass 36 tests and 650 assertions. The checks verify current source
+namespaces pass 38 tests and 663 assertions. The checks verify current source
 hashes and runner/broker arities, historical/current source separation,
 broker arities/raw handles, separate canonical dispatch, exact argv/CWD before
 launch, retained-token and raw-handle capture before supervision, capture-key
-and time mapping, interruption identity, fatal finalizer identity, output write
-ordering/no retry, refusal without parent acceptance, exactly-once unknown
-finalization, and request/command drift before resolution. The namespace
-fixture intentionally preloads `gravity.bootstrap` and compares BEFORE/AFTER
-sets, rejecting only new loads; it does not launch a child or acquire a broker
-lease. These checks do not prove a genuine owner operation, admission,
-descendant completeness, or operational profile adoption. Independent affected
-source/method review remains a separate obligation.
+and time mapping, interruption identity including cyclic-cause traversal,
+preloaded operational broker/runner namespace refusal before require/Var
+resolution, fatal finalizer identity, output write ordering/no retry, refusal
+without parent acceptance, exactly-once unknown finalization, and
+request/command drift before resolution. The namespace fixture intentionally
+preloads `gravity.bootstrap` and compares BEFORE/AFTER sets, while the
+operational-namespace fixture restores any newly created test namespaces after
+refusal; neither launches a child or acquires a broker lease. These checks do
+not prove a genuine owner operation, admission, descendant completeness, or
+operational profile adoption. Independent affected source/method review
+remains a separate obligation.
 
 During preparation, one mistaken command entered the development runner CLI:
 `clojure -J-Xmx256m -M:dev-test -e ''`. It exited 2 with
