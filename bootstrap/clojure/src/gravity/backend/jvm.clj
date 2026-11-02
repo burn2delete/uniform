@@ -156,7 +156,7 @@
     (validate-runtime-plan! source-path target plan)
     (catch clojure.lang.ExceptionInfo ex
       (if (= "B2-UNSUPPORTED" (:id (ex-data ex)))
-        (fail!
+        ((if (var? fail!) @fail! fail!)
          "C14-UNSUPPORTED"
          "JVM backend cannot lower this stage2 instruction plan"
          source-path plan

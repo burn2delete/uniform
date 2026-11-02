@@ -455,3 +455,39 @@
               [:diagnostic "C14-INPUT" "JVM artifact directory is outside declared roots"
                source nil {:output-path output :missing-fact :output-path-containment}]]
              @calls)))))
+
+(deftest diagnostic-function-selection-follows-classification-and-precedes-data
+  (doseq [[replace-at expected] [[1 :replacement] [2 :original]]]
+    (let [events (atom [])
+          arguments (atom nil)
+          original-diagnostic (ex-info "original diagnostic" {:test :original})
+          replacement-diagnostic (ex-info "replacement diagnostic" {:test :replacement})]
+      (with-local-vars [failure nil]
+        (var-set failure (fn [& args]
+                          (reset! arguments (vec args))
+                          (swap! events conj :original)
+                          (throw original-diagnostic)))
+        (let [calls (atom 0)
+              cause (proxy [clojure.lang.ExceptionInfo]
+                      ["unsupported" {:id "B2-UNSUPPORTED"}]
+                      (getData []
+                        (let [n (swap! calls inc)]
+                          (swap! events conj [:data n])
+                          (when (= n replace-at)
+                            (var-set failure
+                                     (fn [& args]
+                                       (reset! arguments (vec args))
+                                       (swap! events conj :replacement)
+                                       (throw replacement-diagnostic))))
+                          {:id "B2-UNSUPPORTED" :unsupported-op :opaque-op})))
+              result (try
+                       (jvm/validate-plan! (fn [& _] (throw cause)) failure
+                                           :jvm "source.gravity" {})
+                       (catch Throwable error error))]
+          (is (identical? (if (= :original expected) original-diagnostic replacement-diagnostic)
+                          result))
+          (is (= [[:data 1] [:data 2] expected] @events))
+          (is (= ["C14-UNSUPPORTED" "JVM backend cannot lower this stage2 instruction plan"
+                  "source.gravity" {} {:unsupported-op :opaque-op
+                                       :missing-fact :jvm-stage2-lowering-rule}]
+                 @arguments)))))))
