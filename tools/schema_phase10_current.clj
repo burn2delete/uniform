@@ -14,7 +14,7 @@
 (def historical-task-source
   "86747916c4c876d707a1548113409fb939d854c9")
 (def current-source
-  "585298b5faa75a307c5b06be19a0aebb8b09168c")
+  "2d0844f8f7f21321d920b9245341a2b98adc642e")
 (def proposal-path
   "specs/requirement-reconciliation/schema-family/decision-allocation.edn")
 (def manifest-path "contracts/requirement-reconciliation.edn")
@@ -25,15 +25,24 @@
 (def historical-task-tree
   "e3f5bb1c91e3ad59ddb64fceef4eccdb07b9960b")
 (def current-manifest-sha
-  "d24ed46e2de0c1672a1a37c0eeacb3340452dcf56ce1b511ecc678761909155b")
+  "8a41f5aa638ec717b1321a02974e63c6afc8103f498ee5d7bfc5738ebb3ad21e")
 (def current-task-sha
-  "2da36f34fb68a1f56c8a45eadb5488503135897c728d30e4f0816469037f7873")
+  "ffbab8d449a74517497b0365b53ae41f767a55ac64134fb65b4f0256dcdf3341")
 (def current-plan-sha
   "a6b52ae5da734e54335bfc43fa0c150dab9f07c25160ea5f7575f117828e9a1f")
 (def current-source-tree "5b62819e511bfc7e6b5eba0527d8c9b5883c5572")
 (def current-source-git-tree
-  "2c7faed87df1a204b6acb49bf6e07c5679dc9776")
+  "c5f5941ca3db4ce38695f870276e1b345a323339")
 (def current-source-baseline "a1b991be499d50579a8b4366976c519ae8949224")
+(def previous-current-source
+  "585298b5faa75a307c5b06be19a0aebb8b09168c")
+(def previous-current-manifest-sha
+  "d24ed46e2de0c1672a1a37c0eeacb3340452dcf56ce1b511ecc678761909155b")
+(def expected-current-task-bridge-count 18)
+(def expected-new-task-bridge-paths
+  #{"specs/runtime-workflow/tasks.md"
+    "specs/build-workflow/tasks.md"
+    "specs/domains-workflow/tasks.md"})
 (def expected-facet-count 463)
 (def expected-facet-digest
   "9daedb26fb3bbee1ce9994d0cbec96cb8803f9428632cdb1a2f61d208850dcf1")
@@ -119,7 +128,7 @@
               "actual positive products and negative diagnostics"]}
    {:join :hosted-runtime-source-map
     :path "specs/runtime-workflow/tasks.md"
-    :sha256 "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972"
+    :sha256 "edbafd3d58f645d74e208eb428b7feb89f6dfd957899ce8c9136287026cbb9c4"
     :markers ["Closing evidence: Denial at actual service hook, redacted diagnostics and source-map preservation"]}])
 
 (def current-join-task-specs
@@ -166,6 +175,23 @@
     :markers ["| types-schema-static-projection |" "types/current-evidence-and-remaining-work/types2-check-declared-abstractions"]}
    {:join :api-client-openapi
     :markers ["| api-client-openapi |" "OpenAPI document" "diagnostic identities"]}])
+
+(def current-owner-task-specs
+  [{:owner :types2-schema-static-projection
+    :path "specs/types-workflow/tasks.md"
+    :sha256 "be4ab3523fcc9532a8f3dc7e36309843b5727cdb9bd5fea2ff8ba08faf07f946"
+    :markers ["Schema-static-projection boundary"
+              "exact S1 expanded typed/versioned schema manifest"
+              "accepted\nand rejected source-to-type parity fixtures"
+              "Retain exact source/compiler/profile/target and"]}
+   {:owner :runtime-hosted-source-map
+    :path "specs/runtime-workflow/tasks.md"
+    :sha256 "644170d21c9015a96da5d3569739f186698933d81abd0e565f372b369f25fde5"
+    :markers ["Hosted source-map boundary"
+              "actual hosted runtime failure plus emitted source/generated-origin"
+              "runtime version, host symbol and lowered artifact"
+              "conditional-unavailable"
+              "P4-SOURCEMAP"]}])
 
 (defn require! [condition message]
   (when-not condition
@@ -230,6 +256,30 @@
           (source-join-entry! spec (git-text current-source (:path spec))))
         source-join-specs))
 
+(defn manifest-transition! []
+  (let [previous-text (git-text previous-current-source manifest-path)
+        previous (edn/read-string previous-text)
+        current-bridges (:task-source-version-bridges current-manifest)
+        previous-bridges (:task-source-version-bridges previous)
+        current-paths (set (map :path current-bridges))]
+    (require! (= previous-current-manifest-sha (sha256 previous-text))
+              "Previous current manifest transition input changed")
+    (require! (= (:source-tree previous) (:source-tree current-manifest))
+              "Manifest transition changed the authenticated source tree")
+    (require! (= (:source-baseline previous) (:source-baseline current-manifest))
+              "Manifest transition changed the authenticated source baseline")
+    (require! (= expected-current-task-bridge-count (count current-bridges))
+              "Current task-source bridge population changed")
+    (require! (set/subset? expected-new-task-bridge-paths current-paths)
+              "Known current task-source bridge transition is incomplete")
+    {:from previous-current-source
+     :to current-source
+     :manifest-sha256 [previous-current-manifest-sha current-manifest-sha]
+     :task-source-bridges [(count previous-bridges) (count current-bridges)]
+     :new-task-source-paths (vec (sort expected-new-task-bridge-paths))
+     :source-tree-unchanged true
+     :source-baseline-unchanged true}))
+
 (defn task-joins! [text]
   (doseq [{:keys [join markers]} current-join-task-specs]
     (text-markers! text markers (str "Current task source join " join)))
@@ -243,6 +293,18 @@
     (text-markers! text markers (str "Current plan source join " join)))
   {:joins (count current-join-plan-specs)
    :markers (reduce + (map #(count (:markers %)) current-join-plan-specs))})
+
+(defn owner-task-entry! [spec text]
+  (let [{:keys [owner path markers] expected-sha :sha256} spec]
+    (require! (= expected-sha (sha256 text))
+              (str "Current owner task bytes changed " owner " " path))
+    (text-markers! text markers (str "Current owner task " owner))
+    {:owner owner :path path :sha256 expected-sha :markers (count markers)}))
+
+(defn owner-tasks! []
+  (mapv (fn [spec]
+          (owner-task-entry! spec (slurp (:path spec))))
+        current-owner-task-specs))
 
 (defn source-pair!
   ([] (source-pair! historical-proposal))
@@ -430,6 +492,16 @@
                                        "forged-current-plan-marker"))))
                current-join-plan-specs)
               "Current plan source-join tamper control accepted")
+    (require! (every?
+               (fn [spec]
+                 (let [text (slurp (:path spec))
+                       marker (first (:markers spec))]
+                   (catches?
+                    #(owner-task-entry!
+                      spec
+                      (str/replace-first text marker "forged-owner-task-marker")))))
+               current-owner-task-specs)
+              "Current owner-task source-join tamper control accepted")
     (doseq [[ref expected-sha expected-tree message]
             [[(apply str (repeat 40 "0")) historical-task-sha historical-task-tree
               "Historical task ref tamper control accepted"]
@@ -446,14 +518,17 @@
     (+ (count bad) 3 1 3
        (count source-join-specs)
        (count current-join-task-specs)
-       (count current-join-plan-specs))))
+       (count current-join-plan-specs)
+       (count current-owner-task-specs))))
 
 (when (= ["--check"] (vec *command-line-args*))
   (let [source-summary (source-pair!)
         source-join-summary (source-joins!)
+        manifest-transition-summary (manifest-transition!)
         proposal-summary (proposal! historical-proposal)
         task-summary (task! current-task-text)
         plan-summary (plan! current-plan-text)
+        owner-task-summary (owner-tasks!)
         negative-controls (negative-controls! historical-proposal
                                                source-summary
                                                source-join-summary)]
@@ -467,9 +542,11 @@
           :current-task-sha256 current-task-sha
           :source-pair source-summary
           :source-joins source-join-summary
+          :manifest-transition manifest-transition-summary
           :proposal proposal-summary
           :task task-summary
           :plan plan-summary
+          :owner-tasks owner-task-summary
           :task-transition :historical-field-operations-held
           :negative-controls negative-controls
           :implementation-acceptance :unassessed

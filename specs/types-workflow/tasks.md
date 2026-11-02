@@ -29,6 +29,21 @@ Current evidence/status: Open; partial source evidence above is not closure
 
 Done when (yes/no): Validate generics, protocols/dispatch, records and schema-derived types against their declarations and resolved identities.
 
+Schema-static-projection boundary (Open; part of this existing Types2 task):
+consume the exact S1 expanded typed/versioned schema manifest with its source
+identity, refinement and constraint facts. Produce a static projection artifact
+for records, unions, optional/reference, recursive and refined types; preserve
+resolved names, schema identity and constraints, and compare declared and
+generated legality against the same manifest. Closing evidence requires accepted
+and rejected source-to-type parity fixtures plus explicit target-representation
+limitations. Reject a mismatched or stale schema identity, dropped nullability/
+refinement/variant constraint, or unrepresentable schema family without an
+explicit policy/rejection; schema normalization or validator generation alone is
+not the static type artifact. Retain exact source/compiler/profile/target and
+applicable provider/checker identities, source spans and stable diagnostics.
+This remains implementation-unassessed and does not add a task or acceptance
+status.
+
 - [ ] `types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit` types/3: Make dynamic boundaries explicit
 
 Current evidence/status: Open; partial source evidence above is not closure
