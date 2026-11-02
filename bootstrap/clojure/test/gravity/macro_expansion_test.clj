@@ -161,6 +161,31 @@
             "L4-GENERATED-PROFILE"]
            (mapv first @failures)))))
 
+(deftest finite-metadata-progress-is-not-a-recursive-cycle
+  (let [call (fn [remaining]
+               (list 'countdown (with-meta 'value {:remaining remaining})))
+        macro {:identity 'example/countdown
+               :version "1"
+               :macro-namespace 'example
+               :kind :built-in
+               :build-effects #{}
+               :required-build-capabilities #{}
+               :hygiene-policy :hygienic
+               :expander (fn [[argument] _]
+                           (let [remaining (:remaining (meta argument))]
+                             (if (pos? remaining)
+                               (call (dec remaining))
+                               :finished)))}
+        trace (atom [])
+        result (binding [*print-length* 1 *print-level* 1]
+                 (macro-expansion/expand-syntax-object
+                  {'countdown macro}
+                  {:profile :hosted :metadata {}}
+                  (syntax "metadata-progress" (call 3) 7)
+                  trace 0))]
+    (is (= :finished (:form result)))
+    (is (= 4 (count @trace)))))
+
 (deftest safety-cycle-and-provenance-rejections-remain-exact
   (let [span {:source "macro.gravity" :form-index 4}
         effect :build/env
@@ -207,6 +232,15 @@
                  (syntax "recursive" '(again) 5)
                  (atom [])
                  0))
+        mutual-cycle (fail-data
+                      #(macro-expansion/expand-syntax-object
+                        {'left (assoc recursive-macro
+                                      :expander (fn [_ _] '(right)))
+                         'right (assoc recursive-macro
+                                       :expander (fn [_ _] '(left)))}
+                        {:profile :hosted :metadata {}}
+                        (syntax "mutual-recursive" '(left) 5)
+                        (atom []) 0))
         finite-length 40
         finite-registry
         (into {}
@@ -260,6 +294,8 @@
     (is (= "L4-GENERATED-UNSAFE" (:id generated-unsafe)))
     (is (= "L4-EXPANSION-DEPTH" (:id cycle)))
     (is (= :recursive-expansion-cycle (:reason cycle)))
+    (is (= "L4-EXPANSION-DEPTH" (:id mutual-cycle)))
+    (is (= :recursive-expansion-cycle (:reason mutual-cycle)))
     (is (= :finished (:form finite)))
     (is (= finite-length (count @finite-trace)))
     (is (= (dec finite-length) (:depth (last @finite-trace))))
