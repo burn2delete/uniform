@@ -4,6 +4,8 @@
             [gravity.c15-diagnostics :as c15]
             [gravity.c16-incremental :as c16]
             [gravity.c17-c18-pass-cache :as cache]
+            [gravity.c17-c18-pass-cache.upstream-boundary :as upstream-boundary]
+            [gravity.c17-c18-pass-cache.validation :as validation]
             [gravity.c17-plugin :as c17]
             [gravity.c18-verification :as c18]
             [gravity.digest :as digest]
@@ -18,7 +20,7 @@
   (when (Files/exists root (make-array LinkOption 0))
     (with-open [paths (Files/walk root (make-array java.nio.file.FileVisitOption 0))]
       (doseq [path (reverse (sort-by #(.getNameCount ^Path %)
-                                    (vec (.toArray paths))))]
+                                     (vec (.toArray paths))))]
         (Files/deleteIfExists ^Path path)))))
 
 (defmacro with-temporary-directory [[binding] & body]
@@ -185,6 +187,67 @@
       (is (false? (:release-authority? second-result)))
       (is (false? (:proof-authority? second-result))))))
 
+(deftest default-orchestration-reuses-validated-boundaries-once
+  (with-temporary-directory [directory]
+    (let [store (pass-cache/open-local-store directory)
+          calls (atom {:c15 0 :c16 0 :c17 0 :c18 0})
+          upstream (upstream-result store calls)
+          observed (atom [])
+          original-upstream upstream-boundary/validate-upstream!
+          original-context validation/validate-context!
+          original-operations validation/validate-operations!
+          original-c17-receipt upstream-boundary/validate-c17-receipt!
+          result
+          (with-redefs
+           [upstream-boundary/validate-upstream!
+            (fn [& args]
+              (swap! observed conj :upstream)
+              (apply original-upstream args))
+            validation/validate-context!
+            (fn [value]
+              (swap! observed conj :context)
+              (original-context value))
+            validation/validate-operations!
+            (fn [value]
+              (swap! observed conj :operations)
+              (original-operations value))
+            upstream-boundary/validate-c17-receipt!
+            (fn [& args]
+              (swap! observed conj :c17-receipt)
+              (apply original-c17-receipt args))]
+            (cache/lookup-or-compute!
+             store upstream (downstream-context)
+             (downstream-operations calls)))]
+      (is (= [:upstream :context :operations :c17-receipt] @observed))
+      (is (= [:stored :stored]
+             [(get-in result [:c17-cache-evidence :status])
+              (get-in result [:c18-cache-evidence :status])])))))
+
+(deftest public-stage-request-interposition-remains-live
+  (with-temporary-directory [directory]
+    (let [store (pass-cache/open-local-store directory)
+          calls (atom {:c15 0 :c16 0 :c17 0 :c18 0})
+          upstream (upstream-result store calls)
+          c17-original cache/c17-stage-request
+          c18-original cache/c18-stage-request
+          observed (atom [])
+          result
+          (with-redefs
+           [cache/c17-stage-request
+            (fn [context value]
+              (swap! observed conj :c17)
+              (c17-original context value))
+            cache/c18-stage-request
+            (fn [context receipt]
+              (swap! observed conj :c18)
+              (c18-original context receipt))]
+            (cache/lookup-or-compute!
+             store upstream (downstream-context)
+             (downstream-operations calls)))]
+      (is (= [:c17 :c18] @observed))
+      (is (= :gravity/stage0-c18-compiler-verification-artifact
+             (get-in result [:c18-artifact :kind]))))))
+
 (deftest upstream-root-and-current-validation-bindings-fail-closed
   (with-temporary-directory [directory]
     (let [store (pass-cache/open-local-store directory)
@@ -216,6 +279,11 @@
                               (reverse (:policy-ids (downstream-context))))]]
         (is (thrown? clojure.lang.ExceptionInfo
                      (cache/c17-stage-request invalid upstream))))
+      (is (thrown? clojure.lang.ExceptionInfo
+                   (cache/c18-stage-request
+                    (assoc (downstream-context) :unknown true)
+                    {:output-artifact-id (id :forged-c17)
+                     :output-facts #{}})))
       (is (thrown? clojure.lang.ExceptionInfo
                    (cache/c18-stage-request
                     (downstream-context)
