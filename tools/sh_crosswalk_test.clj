@@ -72,6 +72,31 @@
     (is (= #{["pinned" "tasks.md"] ["pinned" "test.clj"]} @reads))
     (is (thrown? Exception (sh-crosswalk/validate-pinned-sources! record (fn [_ _] "changed source"))))))
 
+(deftest applying-pins-preserve-current-and-historical-version-digests
+  (let [path "plan.md" old-text "historical plan" current-text "current plan"
+        old {:path path :source-commit "old" :sha256 (sh-inventory/sha256 old-text)}
+        current {:path path :source-commit "current" :sha256 (sh-inventory/sha256 current-text)}
+        texts {["old" path] old-text ["current" path] current-text}]
+    (doseq [locators [[old current] [current old] [old]]
+            :let [seen (atom #{})
+                  fixture {:applying-source-pins {path "current"}
+                           :source-digests {path (:sha256 current)} :locators locators}]]
+      (is (nil? (sh-crosswalk/validate-pinned-sources! fixture
+                  (fn [commit p] (swap! seen conj [commit p]) (texts [commit p])))))
+      (is (= #{["old" path] ["current" path]} @seen)))
+    (doseq [locators [[old current] [current old]]]
+      (is (nil? (sh-crosswalk/validate-pinned-sources!
+                  {:applying-source-pins {path "current"} :locators locators}
+                  (fn [commit p] (texts [commit p]))))))
+    (doseq [fixture [{:applying-source-pins {path "current"} :locators [old]}
+                    {:applying-source-pins {path "current"} :source-digests {path "stale"} :locators [old]}
+                    {:applying-source-pins {path "current"} :source-digests {path (:sha256 current)}
+                     :locators [(assoc old :sha256 "tampered")]}
+                    {:applying-source-pins {path "current"} :source-digests {path (:sha256 current)}
+                     :locators [old (assoc current :sha256 "tampered")]}]]
+      (is (thrown? Exception (sh-crosswalk/validate-pinned-sources! fixture
+                              (fn [commit p] (texts [commit p]))))))))
+
 (deftest every-explicit-applying-pin-fails-before-either-output-write
   (let [paths (vec (keys sh-crosswalk/applying-source-pins))
         text "pinned source" digest (sh-inventory/sha256 text)
@@ -2841,17 +2866,19 @@
     (is (= r (get-in view [:implementation-readiness-source-version :memory-model-dependency-refinement])))))
 
 (deftest source-effects-bind-complete-predicates-and-six-existing-interpreters
-  (let [bridge sh-crosswalk/readiness-source-version r (:source-effects-refinement bridge)
+  (let [checkpoint (get-in sh-crosswalk/readiness-source-version [:source-effects-dependency-refinement :predecessor-readiness-successor])
+        bridge (if checkpoint (edn/read-string (sh-crosswalk/git-source (:commit checkpoint) (:path checkpoint))) sh-crosswalk/readiness-source-version) r (:source-effects-refinement bridge)
         previous (:predecessor-readiness-successor r)
         old-text (sh-crosswalk/git-source (:commit previous) (:path previous)) old (edn/read-string old-text)
         projection-text (sh-crosswalk/git-source (:commit previous) (:projection-path previous)) prior (edn/read-string projection-text)
-        view (sh-crosswalk/build)
+        view (if checkpoint (edn/read-string (sh-crosswalk/git-source (:commit checkpoint) (:projection-path checkpoint))) (sh-crosswalk/build))
+        read-text (if checkpoint #(sh-crosswalk/git-source (:commit checkpoint) %) slurp)
         rows (fn [v] (into {} (for [rs (vals (:task-authorities v)) row rs] [(:id row) row])))
         before (rows prior) after (rows view)
         raw (fn [v row] (acceptance-dependencies/source-raw (:source row) (:source-snapshots v)))
         changed (set (for [[id row] before :when (not= (raw prior row) (raw view (after id)))] id))
         read-span (fn [t span] (String. (.getBytes t "UTF-8") (int (:start-byte span)) (int (- (:end-byte span) (:start-byte span))) "UTF-8"))
-        source (slurp "docs/phase-01-core-language/016-l6-effect-system-specification.md")
+        source (read-text "docs/phase-01-core-language/016-l6-effect-system-specification.md")
         facets (:source-facets r) cases (:occurrence-cases r) sections (:section-conjunctions r)
         criteria (:criteria r) finite (:finite-criteria r)
         criterion-keys (set (concat (map :key criteria) (map :key finite)))
@@ -2883,18 +2910,18 @@
     (is (= 6 (count (:task-sources r))))
     (is (= 8 (count (:plan-sources r))))
     (is (= 1 (count (:specification-sources r))))
-    (doseq [record (:task-sources r) :let [p (:path record) text (slurp p)
+    (doseq [record (:task-sources r) :let [p (:path record) text (read-text p)
             markers (for [[k marker] (:markers r) :when (= p (get-in (first (filter #(= k (:key %)) criteria)) [:current-witness :path]))] marker)
             stripped (reduce #(str/replace %1 (re-pattern (str "(?s)\n<!-- " %2 ":start -->.*?<!-- " %2 ":end -->\n\n")) "") text markers)]]
       (is (= stripped (sh-crosswalk/git-source (:commit previous) p)))
       (is (= (get-in record [:after :sha256]) (sh-inventory/sha256 text)))
       (is (= (get-in record [:before :sha256]) (sh-inventory/sha256 (sh-crosswalk/git-source (get-in record [:before :commit]) p)))))
-    (doseq [record (concat (:plan-sources r) (:specification-sources r)) :let [p (:path record) a (:after record) text (slurp p)]]
+    (doseq [record (concat (:plan-sources r) (:specification-sources r)) :let [p (:path record) a (:after record) text (read-text p)]]
       (is (= (:sha256 a) (sh-inventory/sha256 text)))
       (is (= text (sh-crosswalk/git-source (:commit a) p)))
       (is (= (:commit a) (get-in bridge [:applying-source-pins p])))
       (is (= a (get-in bridge [:inspection-locators p]))))
-    (doseq [record (concat criteria finite) :let [w (:current-witness record) text (slurp (:path w)) span (:source-span w) clause (read-span text span)]]
+    (doseq [record (concat criteria finite) :let [w (:current-witness record) text (read-text (:path w)) span (:source-span w) clause (read-span text span)]]
       (is (= (:sha256 w) (sh-inventory/sha256 text)))
       (is (= (:sha256 span) (sh-inventory/sha256 clause)))
       (is (str/includes? (raw view (after (:task-id record))) clause)))
@@ -2902,7 +2929,7 @@
     (is (= {:restored-exact-finite-predicate 7 :preserved-existing-exact-finite-predicate 2} (frequencies (map :disposition finite))))
     (is (= #{:profile74} (set (map :frozen-review finite))))
     (doseq [record finite :let [w (:historical-witness record) text (sh-crosswalk/git-source (:source-commit w) (:path w))
-                              historical (read-span text w) current (read-span (slurp (:path record)) (get-in record [:current-witness :source-span]))]]
+                              historical (read-span text w) current (read-span (read-text (:path record)) (get-in record [:current-witness :source-span]))]]
       (is (= (:sha256 w) (:file-sha256 w) (sh-inventory/sha256 text)))
       (is (= (:raw-sha256 w) (sh-inventory/sha256 historical) (sh-inventory/sha256 current)))
       (is (= :pending (:current-composition record)))
@@ -2956,7 +2983,7 @@
     (is (= :explicit-source-owner-resolution-before-live-hermetic-environment-claim (get-in r [:hermetic-source-qualification :resolution])))
     (is (= :no-ordinary-development-gate (get-in r [:hermetic-source-qualification :construction])))
     (doseq [{:keys [path source-commit sha256]} (:supporting-canonical-sources r)]
-      (is (= sha256 (sh-inventory/sha256 (slurp path)) (sh-inventory/sha256 (sh-crosswalk/git-source source-commit path)))))
+      (is (= sha256 (sh-inventory/sha256 (read-text path)) (sh-inventory/sha256 (sh-crosswalk/git-source source-commit path)))))
     (is (= 55 (count (:baseline-effect-labels r)) (count (set (:baseline-effect-labels r)))))
     (let [family-text (subs source (.indexOf source "## Effect Families\n") (.indexOf source "## Effect Algebra\n"))]
       (is (= (:baseline-effect-labels r) (mapv second (re-seq #"(?m)^- `(:[^`]+)`" family-text)))))
@@ -2976,6 +3003,252 @@
     (is (= :pending (:independent-current-review r)))
     (is (= :unassessed (:implementation-acceptance r) (:global-source-conjunctions r)))
     (is (= r (get-in view [:implementation-readiness-source-version :source-effects-refinement])))))
+
+
+(deftest source-effect-dependencies-preserve-program-and-result-stages
+  (let [bridge sh-crosswalk/readiness-source-version r (:source-effects-dependency-refinement bridge)
+        previous (:predecessor-readiness-successor r)
+        old-text (sh-crosswalk/git-source (:commit previous) (:path previous)) old (edn/read-string old-text)
+        projection-text (sh-crosswalk/git-source (:commit previous) (:projection-path previous)) prior (edn/read-string projection-text)
+        view (sh-crosswalk/build)
+        read-text slurp
+        tasks (into {} (for [rs (vals (:task-authorities view)) row rs] [(:id row) row]))
+        result (acceptance-dependencies/future-task-view (:future-task-authorities view) tasks (:source-snapshots view) read-text (:required-parent-consumers r))
+        review (:dependency-review result) consumers (set (:consumer-task-ids r))
+        selected (filterv #(consumers (:consumer %)) (:routes review))
+        ids (set (concat (keys tasks) (map :id (mapcat val (:future-task-authorities view)))))
+        dep (:dependency-source r)
+        old-routes (acceptance-dependencies/future-dependency-routes (sh-crosswalk/git-source (:commit previous) (:path dep)) ids ids)
+        old-map (into {} (map (juxt :consumer identity) old-routes))
+        meaning #(select-keys % [:consumer :start-results :composition-results :selected-output-contract])
+        added {"ai"
+ ["types/current-evidence-and-remaining-work/types5-integrate-typed-core"
+  "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"
+  "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation"
+  "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+  "schema"
+  "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"],
+ "auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
+ [],
+ "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+ ["types/current-evidence-and-remaining-work/types5-integrate-typed-core"
+  "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects"
+  "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects"
+  "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+  "auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
+  "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution"
+  "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"],
+ "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects"
+ ["types/current-evidence-and-remaining-work/types5-integrate-typed-core"
+  "core/current-evidence-and-remaining-work/core4-verify-and-serialize"
+  "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"],
+ "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects"
+ ["effects/current-evidence-and-remaining-work/effects1-infer-direct-effects"
+  "types/current-evidence-and-remaining-work/types5-integrate-typed-core"
+  "core/current-evidence-and-remaining-work/core4-verify-and-serialize"
+  "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"],
+ "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"
+ ["types/current-evidence-and-remaining-work/types1-solve-core-constraints"
+  "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
+  "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"],
+ "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation"
+ ["effects/current-evidence-and-remaining-work/effects1-infer-direct-effects"
+  "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects"
+  "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"
+  "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects"
+  "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+  "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"
+  "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
+  "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+  "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis"],
+ "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers"
+ ["effects/current-evidence-and-remaining-work/effects1-infer-direct-effects"
+  "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects"
+  "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"
+  "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation"
+  "types/current-evidence-and-remaining-work/types5-integrate-typed-core"
+  "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+  "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
+  "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"
+  "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"
+  "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
+  "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+  "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis"
+  "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality"
+  "opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate"
+  "lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins"
+  "workflow"
+  "ai"],
+ "evolution/change-review"
+ ["effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers"
+  "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+  "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+  "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis"],
+ "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+ ["syntax/current-evidence-and-remaining-work/syntax5-integrate-consumers"
+  "types/current-evidence-and-remaining-work/types5-integrate-typed-core"
+  "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"
+  "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects"
+  "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+  "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks"
+  "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution"
+  "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"],
+ "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects"
+ ["types/current-evidence-and-remaining-work/types5-integrate-typed-core"
+  "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"
+  "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation"
+  "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+  "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks"
+  "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+  "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution"
+  "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
+  "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"],
+ "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
+ ["effects/current-evidence-and-remaining-work/effects1-infer-direct-effects"
+  "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects"
+  "core/current-evidence-and-remaining-work/core4-verify-and-serialize"],
+ "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+ [],
+ "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures"
+ ["effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers"
+  "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis"],
+ "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures"
+ ["effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers"
+  "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis"],
+ "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures"
+ ["effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers"
+  "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis"],
+ "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+ ["types/current-evidence-and-remaining-work/types5-integrate-typed-core"
+  "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"
+  "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation"
+  "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+  "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks"
+  "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
+  "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"
+  "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
+  "schema"
+  "workflow"
+  "ai"],
+ "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"
+ ["types/current-evidence-and-remaining-work/types5-integrate-typed-core"
+  "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"
+  "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation"
+  "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+  "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
+  "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
+  "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"],
+ "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
+ ["types/current-evidence-and-remaining-work/types5-integrate-typed-core"
+  "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"
+  "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation"
+  "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"],
+ "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis"
+ ["types/current-evidence-and-remaining-work/types5-integrate-typed-core"
+  "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"
+  "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation"
+  "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+  "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
+  "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"
+  "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
+  "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"],
+ "workflow"
+ ["types/current-evidence-and-remaining-work/types5-integrate-typed-core"
+  "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"
+  "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation"
+  "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+  "schema"
+  "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"
+  "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
+  "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"]}
+        expected (into {} (for [[id inputs] added] [id (set (concat (:composition-results (old-map id)) inputs))]))
+        complete? (fn [rows] (= expected (into {} (map (juxt :consumer (comp set :composition-results)) rows))))]
+    (is (= (:sha256 previous) (sh-inventory/sha256 old-text)))
+    (is (= (:projection-sha256 previous) (sh-inventory/sha256 projection-text)))
+    (doseq [k [:task-authorities :future-task-authorities :sh07-sequence :accepted-current-scoped-evidence]] (is (= (k prior) (k view)) k))
+    (is (= (mapv :task-references (:requirements prior)) (mapv :task-references (:requirements view))))
+    (doseq [k [:source-effects-refinement :memory-model-dependency-refinement :source-input-commit :task-comparisons :memory-model-refinement :memory-refinement :memory-dependency-refinement
+               :root-safety-refinement :root-safety-dependency-refinement :ownership-refinement :ownership-dependency-refinement :safety-refinement :safety-dependency-refinement]]
+      (is (= (k old) (k bridge)) k))
+    (is (= 32 (count (:source-files bridge))))
+    (is (= 149 (count tasks)))
+    (is (= 25 (count (:task-authorities view))))
+    (is (= 75 (get-in bridge [:task-comparisons :unchanged-body-count])))
+    (is (= 64 (count (get-in bridge [:task-comparisons :changed-bodies]))))
+    (is (= [] (:changed-task-ids r) (:new-task-identities r)))
+    (is (= 21 (count consumers) (count selected)))
+    (is (= 12 (count (:new-consumer-task-ids r))))
+    (is (= (set (:new-consumer-task-ids r)) (clojure.set/difference consumers (set (keys old-map)))))
+    (is (= added (:added-composition-inputs r)))
+    (is (complete? selected))
+    (doseq [[id inputs] expected]
+      (is (not (complete? (remove #(= id (:consumer %)) selected))))
+      (doseq [input inputs]
+        (is (not (complete? (mapv #(if (= id (:consumer %)) (update % :composition-results (fn [xs] (vec (remove #{input} xs)))) %) selected))))))
+    (is (= 73 (count (:routes review))))
+    (is (= (:routes r) (mapv #(update % :source dissoc :raw) selected)))
+    (is (= 9 (count (:predecessor-selected-routes r))))
+    (is (= 74 (:preserved-prior-input-joins r) (reduce + (map (comp count :composition-results) (:predecessor-selected-routes r)))))
+    (is (= 191 (:selected-consumer-result-joins r) (reduce + (map (comp count :composition-results) selected))))
+    (is (= 117 (:new-selected-producer-result-joins r) (reduce + (map count (vals added)))))
+    (is (= 52 (:preserved-consumer-route-count r)))
+    (is (= (into {} (map (juxt :consumer meaning) (remove #(consumers (:consumer %)) old-routes)))
+           (into {} (map (juxt :consumer meaning) (remove #(consumers (:consumer %)) (:routes review))))))
+    (doseq [row selected :let [id (:consumer row) before (old-map id)]]
+      (is (empty? (:start-results row)))
+      (when before
+        (is (every? (set (:composition-results row)) (:composition-results before)))
+        (is (str/starts-with? (:selected-output-contract row) (:selected-output-contract before))))
+      (let [text (read-text (:path dep))
+            pattern (re-pattern (str "(?m)^\\| `" (java.util.regex.Pattern/quote id) "` \\|[^\\n]*\\n"))
+            without (str/replace text pattern "")
+            missing (acceptance-dependencies/future-task-view (:future-task-authorities view) tasks (:source-snapshots view)
+                      #(if (= % (:path dep)) without (read-text %)) (:required-parent-consumers r))]
+        (is (= 1 (count (re-seq pattern text))))
+        (is (= [id] (get-in missing [:dependency-review :unresolved-consumers]))))
+      (doseq [input (:composition-results row)]
+        (is (some #(= [(str "task:" id "/implementation") (str "task:" input "/interface") :declared-producer-interface]
+                       [(:from %) (:to %) (:kind %)]) (:typed-edges result)))
+        (is (some #(= [(str "task:" id "/composition") (str "result:" id ":" input) :actual-selected-producer-result]
+                       [(:from %) (:to %) (:kind %)]) (:typed-edges result)))
+        (is (= :unassessed (get-in result [:nodes (str "result:" id ":" input) :state])))))
+    (is (= 526 (:all-selected-result-joins r) (count (filter #(= :actual-selected-producer-result (:kind %)) (:typed-edges result)))))
+    (is (= 33 (count (:declared-parent-consumers r)) (count (:required-parent-consumers r)) (count (:declared-parent-consumers review))))
+    (is (= 40 (count (:declared-future-consumers r))))
+    (is (= [] (:unresolved-consumers r) (:unresolved-consumers review)))
+    (is (= [29 8] (mapv count (:coarse-producer-cycles r)) (mapv count (:declared-output-cycles review))))
+    (let [old-deps (:dependency-review (acceptance-dependencies/future-task-view (:future-task-authorities prior) tasks (:source-snapshots prior)
+                      #(sh-crosswalk/git-source (:commit previous) %)
+                      (:required-parent-consumers (:memory-model-dependency-refinement old))))
+          prior-cycles (:declared-output-cycles old-deps)
+          inferred "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects"
+          expected-main (set (concat (first prior-cycles) (second prior-cycles) (remove #{inferred} (:new-consumer-task-ids r))))]
+      (is (= [2 16 8] (mapv count prior-cycles)))
+      (is (= expected-main (set (first (:coarse-producer-cycles r)))))
+      (is (= (set (nth prior-cycles 2)) (set (second (:coarse-producer-cycles r)))))
+      (is (not (contains? expected-main inferred))))
+    (is (= 29 (count (:staged-result-subjects r)) (count (set (map :result (:staged-result-subjects r))))))
+    (doseq [s (:staged-result-subjects r)]
+      (is (= (:result s) (str "result:" (:consumer s) ":" (:producer s))))
+      (is (contains? (expected (:consumer s)) (:producer s))))
+    (is (= :applicable-action-stable-change-and-memory-safety-reviews-separately-supplied-not-checker-or-service-output (:external-review-input r)))
+    (is (= :exact-L6-L12-premises-and-recorded-environment-wording-issue-no-generic-grant-exception (:hermetic-policy r)))
+    (is (= :actual-checked-program-P-before-invocation-generated-caller-Q-checked-afterward-no-circular-declaration (:macro-subject-identity r)))
+    (is (= [:derived-action-facts-with-legality-pending :checked-Core-after-applicable-checks :later-actual-owner-example-results] (:effect-interface-subjects r)))
+    (is (= 11 (count (:plan-sources r))))
+    (doseq [record (concat [dep (:dependency-tool-source r)] (:plan-sources r))
+            :let [p (:path record) after (:after record) before (:before record) text (read-text p)]]
+      (is (= (:sha256 after) (sh-inventory/sha256 text)))
+      (is (= text (sh-crosswalk/git-source (:commit after) p)))
+      (is (= (:sha256 before) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit before) p)))))
+    (is (= 15 (count (:canonical-sources r))))
+    (doseq [{:keys [path source-commit sha256]} (:canonical-sources r)]
+      (is (= sha256 (sh-inventory/sha256 (slurp path)) (sh-inventory/sha256 (sh-crosswalk/git-source source-commit path)))))
+    (is (= :declared-interfaces-no-whole-component-or-final-suite-start-gate (:ordinary-construction r)))
+    (is (= :valid-unoptimized-verified-MIR-remains-legal-no-task-completion-gate (:program-legality r)))
+    (is (= :pending (:independent-current-review r)))
+    (is (= :unassessed (:implementation-acceptance r) (:global-source-conjunctions r)))
+    (is (= r (get-in view [:implementation-readiness-source-version :source-effects-dependency-refinement])))))
 
 
 (let [result (run-tests 'sh-crosswalk-test)]

@@ -888,7 +888,7 @@
                    :release-testing-refinement :domain-parent-refinement
                    :ai-parent-refinement :platform-refinement :future-dependency-refinement
                    :math-schema-dependency-refinement :release-dependency-refinement :finish-line-refinement
-                   :foundation-tools-refinement :foundation-owner-refinement :c15-refinement :mir-refinement :lower-refinement :opt-refinement :verification-refinement :incremental-refinement :plugin-refinement :domain-ir-refinement :effects-refinement :ownership-refinement :ownership-dependency-refinement :safety-refinement :safety-dependency-refinement :root-safety-refinement :root-safety-dependency-refinement :memory-refinement :memory-dependency-refinement :memory-model-refinement :memory-model-dependency-refinement :source-effects-refinement])
+                   :foundation-tools-refinement :foundation-owner-refinement :c15-refinement :mir-refinement :lower-refinement :opt-refinement :verification-refinement :incremental-refinement :plugin-refinement :domain-ir-refinement :effects-refinement :ownership-refinement :ownership-dependency-refinement :safety-refinement :safety-dependency-refinement :root-safety-refinement :root-safety-dependency-refinement :memory-refinement :memory-dependency-refinement :memory-model-refinement :memory-model-dependency-refinement :source-effects-refinement :source-effects-dependency-refinement])
      :pr574-macro-artifacts-composition
      {:path "specs/sh-family-crosswalk/pr574-macro-artifacts-composition.edn" :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/pr574-macro-artifacts-composition.edn"))}
      :pr574-composition-source-version
@@ -1148,10 +1148,12 @@
                    [(:source-commit m) (:path m) (:sha256 m)])
         task-files (for [rows (concat (vals (:task-authorities result)) (vals (:future-task-authorities result))) row rows]
                      [(:source-commit row) (:path row) (:file-sha256 row)])
-        digests (into (or (:source-digests result) {})
-                      (map (fn [[_ path digest]] [path digest]) (concat locators task-files)))
+        digests (into {}
+                      (map (fn [[commit path digest]] [[commit path] digest])
+                           (concat locators task-files)))
         explicit-pins (for [[path commit] (:applying-source-pins result)
-                            :let [digest (get digests path)]]
+                            :let [digest (or (get (:source-digests result) path)
+                                             (get digests [commit path]))]]
                         (do (when-not digest
                               (throw (ex-info "Explicit applying pin lacks a whole-file digest" {:path path})))
                             [commit path digest]))]
