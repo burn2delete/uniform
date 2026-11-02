@@ -25,9 +25,12 @@
         forms (get-in c3 [:c2-reader-artifact :parsed-semantic-values])
         module (bootstrap/parse-module source forms)
         syntax (second (bootstrap/sh05-source-syntax-stream c3))
-        request (bootstrap/sh05-default-macro-request source c3 module syntax (second forms))]
+        binding (bootstrap/sh05-macro-current-binding!
+                 source invocation :development-current)
+        request (bootstrap/sh05-default-macro-request source c3 module syntax
+                                                     (second forms) invocation binding)]
     {:source source :invocation invocation :c3 c3 :request request
-     :binding (bootstrap/sh05-macro-current-binding! source)})))
+     :binding binding})))
 (def ^:private gravity-context (delay (context ".gravity")))
 (def ^:private qst-context (delay (context ".qst")))
 
@@ -45,7 +48,9 @@
          (:plan-binding (expected/macro-preimage artifact))))
   (is (= ((:input (operations)) :c4-macro-governing-document) (:governing-document artifact)))
   (is (= {:artifact :gravity/sh05-macro-environment
-          :macros [{:name 'defn :version ((:input (operations)) :sh05-macro-version) :phase :macro-expansion}]
+          :macros [{:name 'defn
+                    :version (get-in binding [:public-function-hashes 'sh05-expand-macro-template])
+                    :phase :macro-expansion}]
           :status :complete}
          (:macro-environment artifact)))
   (is (= (:artifact-id c3)
@@ -73,14 +78,18 @@
         (mapv (fn [ctx]
                 (let [{:keys [source c3 request binding invocation]} @ctx
                       run (macro/expand source binding request (operations))
-                      artifact (bootstrap/sh05-macro-artifact-from-c3-artifact source c3 invocation)]
+                      artifact (bootstrap/sh05-macro-artifact-from-c3-artifact
+                                source c3 invocation :development-current)]
+                  (is (= :development-unadmitted (:revision-status binding)))
+                  (is (= :development-current (:source-authority binding)))
                   (is (= run (bootstrap/sh05-run-macro-request! source binding request)))
                   (is (= :passed (get-in run [:template-verification :status])))
                   (is (= :passed (get-in run [:resolved-verification :status])))
                   (is (= '[(def add-one (fn [x] (+ x 1)))] (:expanded-forms artifact)))
                   (is (= source (get-in artifact [:provenance :source-path])))
                   (is (seq (get-in artifact [:macro-expansion-trace 0 :generated-origin])))
-                  (is (= :passed (:status (bootstrap/sh05-macro-artifact-verification artifact invocation))))
+                  (is (= :passed (:status (bootstrap/sh05-macro-artifact-verification
+                                           artifact invocation :development-current))))
                   (assert-parent-lineage artifact c3 binding)
                   artifact))
               [gravity-context qst-context])]
@@ -100,6 +109,8 @@
         ops (operations)
         input (:input ops)
         changed-binding (assoc binding :function-count -1)]
+    (is (= "C4-TRACE"
+           (:id (ex-data (caught #(macro/read-pinned-plan-source! source ops))))))
     (is (= "C4-TRACE" (:id (ex-data (caught #(macro/current-plan-binding!
                                                source (assoc ops :input
                                                              (fn [key]
@@ -156,7 +167,9 @@
 
 (defn- artifact-context [extension]
   (let [{:keys [source c3 invocation] :as ctx} (context extension "defn-multiple")]
-    (assoc ctx :artifact (macro/assemble source c3 false invocation (operations)))))
+    (assoc ctx :artifact
+           (macro/assemble source c3 false invocation (operations)
+                           :development-current))))
 (def ^:private multi-gravity (delay (artifact-context ".gravity")))
 (def ^:private multi-qst (delay (artifact-context ".qst")))
 (defn- private-var [name] (or (ns-resolve 'gravity.bootstrap name)
@@ -174,10 +187,13 @@
   (doseq [ctx [multi-gravity multi-qst]]
     (let [{:keys [source c3 invocation artifact binding]} @ctx
           ops (operations)
-          report (macro/verify artifact false invocation ops)]
+          report (macro/verify artifact false invocation :development-current ops)]
       (is (= :passed (:status report)))
-      (is (= report (bootstrap/sh05-macro-artifact-verification artifact invocation)))
-      (is (= artifact (bootstrap/sh05-macro-artifact-from-c3-artifact source c3 invocation)))
+      (is (= report (bootstrap/sh05-macro-artifact-verification
+                     artifact invocation :development-current)))
+      (is (= artifact
+             (bootstrap/sh05-macro-artifact-from-c3-artifact
+              source c3 invocation :development-current)))
       (is (= 2 (:expanded-defn-count artifact)))
       (is (= '[(def add-one (fn [x] (+ x 1))) (def double-value (fn [x] (+ x x)))]
              (:expanded-forms artifact)))
@@ -205,12 +221,21 @@
                    (assoc-in artifact [:expanded-syntax-stream 1 :origin] [])
                    (assoc-in artifact [:macro-environment :macros 0 :version] "forged")
                    (assoc-in artifact [:gravity-macro-boundary :plan-binding :self-hosted?] true)
+                   (assoc-in artifact [:gravity-macro-boundary :plan-binding :source-mode] :pinned)
+                   (assoc-in artifact [:gravity-macro-boundary :plan-binding :revision-status] :pinned)
+                   (assoc-in artifact [:gravity-macro-boundary :plan-binding :source-authority]
+                             :pinned-gravity-source)
+                   (assoc-in artifact [:execution-boundary :macro-source-mode] :pinned)
+                   (assoc-in artifact [:execution-boundary :macro-revision-status] :pinned)
+                   (assoc-in artifact [:execution-boundary :macro-source-authority]
+                             :pinned-gravity-source)
                    (assoc-in artifact [:capability-based-proof :status] :forged)]
         path-drift (assoc-in artifact [:provenance :source-path] "different-source.gravity")]
     (with-report-context
       (fn [_]
         (doseq [changed (conj mutations path-drift)]
-          (let [report (bootstrap/sh05-macro-artifact-verification changed invocation)]
+          (let [report (bootstrap/sh05-macro-artifact-verification
+                        changed invocation :development-current)]
             (is (= :failed (:status report)))
             (is (seq (:failed-checks report)))))))
     (is (= (:artifact-id artifact) (macro/artifact-id path-drift (operations))))
@@ -218,19 +243,49 @@
            (macro/path-neutral-value {:ordinary {:digest-ref 0} :metadata {:doc "kept"}
                                       :actual-source-path "/physical"} (operations))))))
 
+(deftest current-binding-does-not-reuse-an-interposed-builder
+  (let [calls (atom 0)
+        source {:source-path "current-macro.gravity"
+                :source-byte-count 7
+                :source-content-hash "sha256:current"}
+        binding (assoc source
+                       :revision-status :development-unadmitted
+                       :source-authority :development-current)
+        ops (assoc (operations)
+                   :sh05-macro-read-pinned-source! (fn [& _] source)
+                   :sh05-macro-build-binding!
+                   (fn [& _] (swap! calls inc) binding))]
+    (is (= binding (macro/current-plan-binding!
+                    "current-macro.gravity" ops :development-current)))
+    (is (= binding (macro/current-plan-binding!
+                    "current-macro.gravity" ops :development-current)))
+    (is (= 2 @calls))))
+
+(deftest unknown-macro-source-mode-is-rejected-before-assembly
+  (let [{:keys [source c3 invocation]} @gravity-context
+        error (caught #(bootstrap/sh05-macro-artifact-from-c3-artifact
+                        source c3 invocation :unknown-macro-source-mode))]
+    (is (= "C4-TRACE" (:id (ex-data error))))
+    (is (= [:known-macro-source-mode]
+           (:missing-fields (ex-data error))))))
+
 (defn- assert-interposition-misses [interpose]
   (let [{:keys [artifact invocation]} @multi-gravity]
     (with-report-context
       (fn [ctx]
-        (is (= :passed (:status (bootstrap/sh05-macro-artifact-verification artifact invocation))))
-        (is (= :passed (:status (bootstrap/sh05-macro-artifact-verification artifact invocation))))
+        (is (= :passed (:status (bootstrap/sh05-macro-artifact-verification
+                                 artifact invocation :development-current))))
+        (is (= :passed (:status (bootstrap/sh05-macro-artifact-verification
+                                 artifact invocation :development-current))))
         (is (= 1 (get-in @ctx [:executions :sh05])))
         (is (= 1 (get-in @ctx [:reuses :sh05])))
         (interpose #(dotimes [_ 2]
-                      (is (= :passed (:status (bootstrap/sh05-macro-artifact-verification artifact invocation))))))
+                      (is (= :passed (:status (bootstrap/sh05-macro-artifact-verification
+                                               artifact invocation :development-current))))))
         (is (= 3 (get-in @ctx [:executions :sh05])))
         (is (= 1 (get-in @ctx [:reuses :sh05])))
-        (is (= :passed (:status (bootstrap/sh05-macro-artifact-verification artifact invocation))))
+        (is (= :passed (:status (bootstrap/sh05-macro-artifact-verification
+                                 artifact invocation :development-current))))
         (is (= 2 (get-in @ctx [:reuses :sh05])))))))
 
 (deftest receipt-reuse-requires-current-stage-and-seed-operations
@@ -291,9 +346,11 @@
                (bootstrap/sh07-core-file-proof-transaction
                 source
                 (fn [_]
-                  (bootstrap/sh05-macro-artifact-verification artifact invocation)
+                  (bootstrap/sh05-macro-artifact-verification
+                   artifact invocation :development-current)
                   (with-redefs [bootstrap/sh05-macro-gravity-verifier-report (fn [& _] (throw interrupt))]
-                    (bootstrap/sh05-macro-artifact-verification artifact invocation))))))
+                    (bootstrap/sh05-macro-artifact-verification
+                     artifact invocation :development-current))))))
           (catch InterruptedException error [error (.isInterrupted (Thread/currentThread))])
           (finally (Thread/interrupted)))]
     (is (identical? interrupt (first observed)))
