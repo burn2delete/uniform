@@ -1148,7 +1148,7 @@ regeneration refusal were corrected before these passing checks; they receive
 no passing credit. No compiler/native/provider/C12/device, migration, signing,
 publication or held operation ran, and no other chat was messaged.
 
-The next source-conjunction review is the preserved complete C15 trace at
+The next source-conjunction review selected at that checkpoint was the preserved complete C15 trace at
 `916f020c064991fd308550e4e934c0b4443f6d6b`: its seven exact criterion witness
 spans were read and hash-verified against Git. Six are absent literally from
 the current Diag records; the TEST2 diagnostic-match witness is already present
@@ -1161,3 +1161,108 @@ reviewer contact follows. The goal stays active, with substantive global
 coverage, evidence assessment, decisions and independent review/integration
 unfinished. Reader contract coverage remains the first implementation
 preparation increment.
+
+## Complete diagnostic source-conjunction proposal
+
+The complete C15 document, TEST2 and their phase navigation were read directly.
+The preserved C15 trace's 54 occurrences, including 38 semantic conjunctions
+and sixteen heading/provenance contexts, were checked against the canonical
+conditions and seven existing criterion roles. Six exact witness clauses now
+extend the existing Diag record, identity and view tasks. The seventh,
+`testing/test2/diagnostic-match`, was already present in the existing Release
+compiler-preservation task and is unchanged. No task or source identity is added.
+
+The [complete diagnostic planning entry](../specs/diag-workflow/plan.md#complete-diagnostic-source-criteria)
+now makes C15's full conditions explicit: actual structured records; all
+severity/lifecycle, location, fact/remediation and stream cases; phase-available
+metadata; resolved identity and deterministic ordering; shared public consumer
+views; useful redaction with authorized internal audit preservation; all nine
+diagnostic-system code/predicate associations; and actual semantic golden and
+producer/consumer evidence. It retains the thirteen selected D0-D4/D7 diagnostic
+predicates without granting Diag authority over their owning legality rules,
+architecture decisions or release admission. Declared schema/fixture inputs
+allow local work, while actual stage products and resolved records gate actual
+composition/public views. An unresolved/private construction record is not a
+public diagnostic. No full-component prerequisite is invented.
+
+The existing source identities are bound to current canonical byte spans:
+133 C15 facets (117 semantic and sixteen context), thirteen foundation diagnostic
+facets, all 54 occurrence/case identities and five original owner joins. Each
+required criterion role points to an exact current task witness; conjunctions
+remain conjunctions rather than interchangeable aliases. Seven canonical file
+identities are shared by these bindings. All current span and whole-file hashes
+match their preserved source inputs. The 133 C15 spans cover every nonwhitespace
+byte of the current document; that conservation observation supports the manual
+review but does not itself prove semantic entailment. Twenty unrelated attached
+foundation facets keep their explicit other-producer/scope-join disposition and
+current source locations, with no diagnostic coverage inferred.
+
+The trace SHA-256 remains
+`4cdf3ab199fe1f860f72c9a048290da27ac587515ecf0aa2ee52eb3b5118f034`.
+The earlier independent receipt at frozen candidate `3f14a02e`, task source
+`916f020c`, and its qualified later adoption retain exact scopes and exclusions.
+Source/predicate bytes and the seven selected criterion witnesses are preserved;
+that historical PASS is not transferred into current independent acceptance.
+The current C15 entailment is an author-assessed unchanged-predicate proposal,
+with independent current review pending and implementation unassessed. The
+tested GitHub trace reference returned Not Found, and the known published
+`df11890b` snapshot lacks that context locally. No replacement unavailable link,
+aggregate publication or stopped public-contract-cluster handoff is attempted.
+Current canonical sections and task witnesses are available in this branch.
+
+Source `d37ba8da837f6dfdf0cc0e185729ce80d0aa1ae5` advances only the Diag task
+and plan inputs, preserving the complete prior bridge/projection and pending
+review at `8f57927f`. Of 139 original task bodies, 107 remain identical and
+32 have declared additions. All original statuses, 149 current task keys,
+forty future records, SH/SH07 routes and scoped Reader receipts are conserved.
+The source-version record retains its thirty file records, with separate
+inspection and canonical diagnostic-source bindings. Current mapping review
+remains pending at
+`751b31b539cc33ba6c3d7e2ac5d7bd511de31f67b399d17eb518490eaf779fa6`.
+
+Static implementation inspection used the unchanged source at `8f57927f`.
+The [Clojure carrier](../bootstrap/clojure/src/gravity/diagnostics.clj) already
+contains construction, stable-ID and private source-binding orchestration;
+its declared unsupported surface excludes canonical C15 conformance and public
+projection. The [Gravity implementation](../bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity)
+contains private field validation/construction, resolved-record checks and a
+finite ASCII text renderer with explicit nonclaims. These are existing partial
+source implementations, not work to discard or automatically redo. The same
+file's `verify-c15-diagnostic-stream` returns quoted declarative data, and the
+[stage0 projection](../bootstrap/clojure/src/gravity/c15_diagnostics/projection.clj)
+constructs several complete/passed/matched records directly. Their labels alone
+cannot prove actual stream verification, consumer rendering, redaction or
+golden execution. The inspected [bootstrap CLI presentation](../bootstrap/clojure/src/gravity/cli/diagnostic_presentation.clj)
+prints a selected EDN view rather than establishing every T1/C15 consumer.
+The [2026-06-25 stage0 report](../docs/artifacts/phase-06/reports/p06-d094-c15-diagnostics-report.md)
+retains its stated document-coverage boundary and narrower release/self-hosting
+nonclaims; its reported tests were not rerun or promoted to current acceptance.
+Current execution/applicability of these implementations remains unassessed.
+
+Validation passes: 35 crosswalk tests / 2,335 assertions, 23 dependency tests /
+1,774 assertions, deterministic write/check, read-only dependency audit,
+canonical document/full-language structural validators and the language
+boundary (six tests / eleven assertions). Source controls verify all seven
+criterion witnesses and 166 selected/residual source spans, preserve owner and
+receipt scopes, and detect a removed semantic C15 facet. Initial helper/test
+syntax corrections receive no passing credit. No actual compiler, native,
+provider/C12/device, migration, signing, private-store or publication operation
+ran, and no other chat was messaged. The goal remains active; current independent
+review, global substantive coverage, implementation evidence assessment and
+integration are unfinished. Reader contract coverage remains the first
+implementation preparation increment.
+
+Final conservation/navigation passes for 79 changed files, 73 Markdown files,
+2,820 local references, 139 original component routes, 48 preserved spec/plan
+suffixes and all 48 original task/evidence contents after stripping declared
+additions. Changed files are ASCII, whitespace checks pass, the staged graph
+remains acyclic and mapping readiness remains false.
+
+The next reconciliation source is C11's preserved complete MIR trace at
+`bcb98c1c377cbdc79ed1e23a6814727a8f16254e`. A preliminary witness check
+hash-verifies six existing criterion spans for construction, facts, ordering,
+verification, serialization and consumption; none is literal current MIR task
+text. Their 134 C11 facets, fourteen foundation MIR predicates, 36 semantic
+conjunction cases and seventy retained unrelated foundation facets require
+direct canonical and current-owner review before amendments or source credit.
+This observation creates no new MIR task, source acceptance or execution route.
