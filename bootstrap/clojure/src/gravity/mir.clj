@@ -1,30 +1,197 @@
 (ns gravity.mir
-  "Native seed C11 control-flow and use-dominance algorithms.")
+  "Native seed C11 fact tables, control-flow and use-dominance algorithms.")
 
 (def ^:private namespace-contract
   '{:namespace gravity.mir
     :contract-boundary :native-seed-c11-control-flow-and-dominance
     :governing-contracts [D1 D2 D3 D8 D9 C1 C6 C7 C8 C9 C10 C11 C15 BOOT8 TEST2]
     :public-api
-    {validate-terminator! {:arglists ([require! terminator-keys source-path checked-core block expected]) :admission :none}
+    {runtime-check-fact-record {:arglists ([fact-id operation-id token-id checked-core node fact-kind]) :admission :none
+       :native-data-only? true :authenticates-inputs? false :issues-verifier-certificates? false}
+     add-runtime-check-facts {:arglists ([fact-id fact-record checked-core fact-kind table]) :admission :none
+       :native-data-only? true :authenticates-inputs? false :issues-verifier-certificates? false}
+     reindex-fact-table {:arglists ([nodes table id-key suffix]) :admission :none
+       :native-data-only? true :authenticates-inputs? false :issues-verifier-certificates? false}
+     profile-target-table {:arglists ([checked-core]) :admission :none
+       :native-data-only? true :authenticates-inputs? false :issues-verifier-certificates? false}
+     capability-proof-table {:arglists ([checked-core]) :admission :none
+       :native-data-only? true :authenticates-inputs? false :issues-verifier-certificates? false}
+     safety-proof-table {:arglists ([checked-core]) :admission :none
+       :native-data-only? true :authenticates-inputs? false :issues-verifier-certificates? false}
+     validate-terminator! {:arglists ([require! terminator-keys source-path checked-core block expected]) :admission :none}
      validate-cfg! {:arglists ([require! validate-terminator! source-path checked-core mir envelope operation-products]) :admission :none}
      valid-dominance-edge? {:arglists ([edge blocks operation-by-id definitions position-by-id join]
                                       [edge blocks operation-by-id definitions position-by-id join parameter]) :admission :none}
      valid-terminator-use? {:arglists ([use blocks operation-by-id position-by-id]) :admission :none}}
-    :artifact-inputs [:explicit-require-and-terminator-operations :terminator-key-schema
+    :artifact-inputs [:native-checked-core-node-fact-and-proof-data
+                      :explicit-runtime-check-id-and-fact-record-operations
+                      :explicit-require-and-terminator-operations :terminator-key-schema
                       :checked-core-and-mir-data :expected-envelope-and-operation-products
                       :definitions :operation-positions :join-and-parameter-data]
-    :artifact-outputs [:cfg-entry-exit-and-conditional-count :native-rule-outcome :dominance-and-use-predicates]
+    :artifact-outputs [:native-runtime-check-facts :id-indexed-fact-and-proof-tables
+                       :cfg-entry-exit-and-conditional-count :native-rule-outcome :dominance-and-use-predicates]
     :diagnostic-ownership {:stage [C11-BLOCK :terminating-pure-control-transfer :canonical-cfg-structure]
-                           :existing-caller [C11-DOMINANCE :predicate-refusal]
+                           :existing-caller [C11-TYPE C11-EFFECT C11-SAFETY C11-MODULE C11-VERIFY
+                                             :fact-table-equality-and-admission C11-DOMINANCE :predicate-refusal]
                            :supplied-require-operation [:diagnostic-construction :throwing]}
     :dependency-direction {:requires [] :consumed-by [gravity.bootstrap]
                            :forbids [gravity.bootstrap gravity.c11-mir gravity.cli gravity.release]}
     :supported-cfg-families [:single-entry-return :single-conditional-diamond]
     :authenticates-inputs? false :issues-verifier-certificates? false
-    :unsupported [:untrusted-native-ingress :callback-authentication :full-c11-verification
+    :unsupported [:proof-authentication :runtime-check-legality :untrusted-native-ingress :callback-authentication :full-c11-verification
                   :general-cfgs :loops :matches :exceptions :source-admission :b1-admission
                   :backend-or-native-execution :migration :release :self-hosting :seed-retirement]})
+
+
+
+
+(defn runtime-check-fact-record
+  [fact-id operation-id token-id checked-core node fact-kind]
+  (let [node-id (:node-id node)
+        check (get-in node [:safety :check])
+        fact-id (fact-id check fact-kind)
+        check-op-id (operation-id check)
+        token-id (token-id check)
+        origin-id (get-in node [:source :origin-id])
+        profile (:profile node)]
+    (case fact-kind
+      :type
+      {:fact-id fact-id
+       :core-node-id node-id
+       :mir-operation-id check-op-id
+       :type-id :gravity/runtime-check-token
+       :type :gravity/runtime-check-token
+       :producer-rule :runtime-check-token
+       :dependencies []
+       :source-origin-id origin-id
+       :profile profile
+       :source-target (:source-target checked-core)
+       :constraints []
+       :derived? true}
+
+      :effect
+      {:fact-id fact-id
+       :core-node-id node-id
+       :mir-operation-id check-op-id
+       :direct #{}
+       :latent #{}
+       :transitive #{}
+       :residual #{}
+       :ordering :sequence
+       :non-dce? true
+       :source-origin-id origin-id
+       :profile profile
+       :source-target (:source-target checked-core)
+       :derived? true}
+
+      :capability
+      {:fact-id fact-id
+       :core-node-id node-id
+       :mir-operation-id check-op-id
+       :required #{}
+       :granted #{}
+       :capability-proof-ids [(:capability-proof-id check)]
+       :authority-id (:authority-record-id check)
+       :source-origin-id origin-id
+       :profile profile
+       :source-target (:source-target checked-core)
+       :derived? true}
+
+      :ownership
+      {:fact-id fact-id
+       :core-node-id node-id
+       :mir-operation-id check-op-id
+       :value-id token-id
+       :role :runtime-check-token
+       :storage :compiler-generated-token
+       :model :non-resource-control-token
+       :shareability :single-guard-use
+       :mutation :forbidden
+       :source-origin-id origin-id
+       :profile profile
+       :source-target (:source-target checked-core)
+       :derived? true}
+
+      :safety
+      {:outcome-id fact-id
+       :artifact :gravity/safety-outcome
+       :operation check-op-id
+       :guarded-operation-id node-id
+       :kind :runtime-check
+       :profile profile
+       :target (:source-target checked-core)
+       :outcome :runtime-checked
+       :runtime-check (:check-id check)
+       :proof :not-applicable
+       :failure-behavior (:failure check)
+       :source-origin-id origin-id
+       :derived? true}
+
+      :profile-target
+      {:fact-id fact-id
+       :core-node-id node-id
+       :mir-operation-id check-op-id
+       :profile-fact (get (:profile-facts checked-core) node-id)
+       :profile profile
+       :source-target (:source-target checked-core)
+       :target-request
+       (get-in checked-core [:target-request-metadata :requested-target])
+       :derived? true})))
+
+(defn add-runtime-check-facts
+  [fact-id fact-record checked-core fact-kind table]
+  (reduce
+   (fn [result node]
+     (if-let [check (get-in node [:safety :check])]
+       (assoc result
+              (fact-id check fact-kind)
+              (fact-record
+               checked-core node fact-kind))
+       result))
+   table
+   (:core-nodes checked-core)))
+
+(defn reindex-fact-table
+  [nodes table id-key suffix]
+  (into (sorted-map)
+        (map (fn [node]
+               (let [node-id (:node-id node)
+                     record (get table node-id)
+                     fact-id (or (get record id-key)
+                                 (str node-id suffix))]
+                 [fact-id (assoc record id-key fact-id)])))
+        nodes))
+
+(defn profile-target-table
+  [checked-core]
+  (into (sorted-map)
+        (map (fn [node]
+               (let [node-id (:node-id node)
+                     fact-id (str node-id ":profile-target-fact")]
+                 [fact-id
+                  {:fact-id fact-id
+                   :core-node-id node-id
+                   :profile-fact (get (:profile-facts checked-core) node-id)
+                   :profile (:profile node)
+                   :source-target (:source-target checked-core)
+                   :target-request
+                   (get-in checked-core
+                           [:target-request-metadata :requested-target])}])))
+        (:core-nodes checked-core)))
+
+(defn capability-proof-table
+  [checked-core]
+  (into (sorted-map)
+        (map (juxt :proof-id identity))
+        (:capability-proof-records checked-core)))
+
+(defn safety-proof-table
+  [checked-core]
+  (into (sorted-map)
+        (keep (fn [node]
+                (when-let [proof-id (get-in node [:safety :proof :proof-id])]
+                  [proof-id (get-in node [:safety :proof])])) )
+        (:core-nodes checked-core)))
 
 
 (defn validate-terminator!
