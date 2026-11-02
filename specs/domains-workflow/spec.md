@@ -82,9 +82,20 @@ Domain-context references change. The [composition plan](plan.md#query-workflow-
 separates domain admission/lowering, backend emission, Runtime invocation and
 actual domain conformance; the older broad role allocations remain qualified
 for current repartition review. Browser and mobile evidence remain separate,
-as do CRDT law checking and actual merge/update execution. The larger AI parent
-still needs its detailed source resumption and producer/consumer reconciliation;
-the existing AI entry and short task do not discharge all A1-A11 criteria.
+as do CRDT law checking and actual merge/update execution.
+
+The Open `ai` parent now resumes its complete proposed source body: ninety-seven
+literal criteria (including the later generated-source/profile refinements),
+three profile interfaces, eight SAFE13 allocations, foundation/facet obligations
+and the D2 support-triage fixture. Only three profile-context and one Domain-
+context references change; other text and the original paragraph are preserved.
+The [AI composition plan](plan.md#ai-parent-composition) separates declaration
+admission and domain results from the existing Schema/Auth/compiler/Workflow/
+Backend/Runtime/library/Release producers and consumers. Its
+[mixed-source disposition](plan.md#ai-mixed-accounting-source-disposition)
+keeps all twenty-one qualified facets and unaffected predicates visible under
+current accounting removal. Source resumption and author disposition do not
+confer current facet entailment, independent repartition review or execution.
 
 Their source obligations include actual DOM5 vector/native execution with
 proof-gated optimization and differential benchmarks; DOM8 service routes,

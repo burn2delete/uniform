@@ -575,6 +575,1604 @@ provider boundary for storage rather than a hidden database choice.
 
 Status: Open
 
+<!-- domains-ai-parent:start -->
+### AI parent proposed criteria
+
+Current refinement of the same Open `ai` task. Owner role: AI maintainer;
+no verified individual or reserved implementation path is assigned here. Resume
+the complete proposed body from
+[the published reconciliation](https://github.com/burn2delete/uniform/blob/2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc/specs/domains-workflow/tasks.md#implementation-tasks).
+Its ninety-seven literal criteria, three profile interfaces, eight SAFE13
+allocations, foundation/facet obligations and D2 support-triage fixture remain
+Open. Only three profile-context and one Domain-context references change;
+all other proposed body text and the original short paragraph are preserved.
+
+The [current composition plan](plan.md#ai-parent-composition) separates AI
+declaration/semantic admission and integrated domain results from Schema
+validation, Auth decisions, ordinary generated-code compiler re-entry, Workflow
+durability, backend emission, actual Runtime provider/tool/memory calls, STD13
+facades and Release Testing execution. The repeated source criteria retain
+their producer/consumer qualifications; they do not create duplicate services,
+checkers, emitters or independent implementation task authorities.
+
+The four historical mixed-clause qualifications remain visible in the source
+body. Current AGENTS accounting removal already governs synthetic compiler/
+project allowances; the [source-specific policy disposition](plan.md#ai-mixed-accounting-source-disposition)
+identifies the twenty-one retained mixed facets and their unaffected authority,
+validation, external-spend/account, representability and actual host semantics.
+Do not add a replacement call/repair/retry quota, retire a whole mixed paragraph,
+or require a new accounting proof before ordinary development. Concrete
+consumer classification and current independent source/repartition review
+remain Open; no live provider call or policy/implementation acceptance occurs.
+
+Projected task block:
+Outcome: the declared AI workflow executes through schema, capability, taint
+and human-review boundaries. Remaining tasks, all open: implement declaration
+lowering; connect model/tool/memory providers with explicit policies; implement
+structured-output and taint validation; connect human review and replay;
+execute evaluations plus prompt-injection, missing-review, cross-tenant and
+unvalidated-output rejection fixtures.
+
+Source acceptance for A1-A11 remains open. A1: lower all declared AI forms
+through syntax, typed core and legal profiles into linked manifests, preserving
+source/macro origins, every AI effect, explicit replay modes and runtime audit
+records. Reject ambient credentials, hidden adapter effects, missing model or
+schema identities, generated source bypassing the normal compiler pipeline,
+and privileged deployments without review policy or required evaluation evidence.
+
+A2: normalize provider/model declarations, including adapter, endpoint, modes,
+version/tokenizer, schema enforcement, retention and credential requirements.
+Require a provider handle in addition to the effect; network access alone is
+insufficient. Check embedding dimensions, CI live-call allowance, fallback
+mode/schema/retention/evaluation compatibility and floating-identity upgrades.
+Record reproducibility parameters, response/refusal/validation state, typed
+failure classes, drift and retry/fallback decisions. Pinned audit replay rejects
+identity mismatch. Secret/no-store bodies stay out of prompts, memory, datasets
+and ledgers; retain permitted hashes, validation facts and observed cost/latency.
+Preserve real external spending/account preflight before issuing paid calls.
+
+A3: emit typed prompt schemas, tool visibility, authority/taint maps, render
+hashes and compatibility policy. Validate format/schema, canonicalization,
+per-field taint and intended use before typed output admission. Reject arbitrary
+model-selected schemas, illegal partial outputs, undeclared tools and breaking
+output changes mislabeled compatible. Refusals follow a typed branch; repair
+policy and attempts are recorded. Secret-to-provider flow requires explicit
+policy; no-store responses retain only permitted hashes and facts.
+The inherited prompt-authority bridge retains approved sanitizer OR approved
+delimiter policy without promoting data to instruction authority or clearing
+source/taint, grant, secret or review obligations.
+
+A4-A5: emit tool and agent manifests with complete dependencies and separate
+memory read/write modes. Tool declaration, agent toolset, package/deployment
+grant, scoped runtime handle and policy must all agree. Plans and model text
+grant no authority. Validate tool and agent results, expose implementation
+effects, normalize foreign errors, redact logs and model-facing descriptions,
+and record agent identity on every invocation event. Privileged tools require
+review policy; non-idempotent retries/replay require declared idempotency or
+compensation. Generated agent source re-enters compiler validation.
+
+A6: consume the Workflow task's typed graph, state/event-log schemas, durable
+transitions and replay records. Preserve node effects, capabilities, idempotency,
+review payload binding, retry/compensation and lowering metadata. Validate
+branch inputs and typed/effect-checked compensation. Record or forbid model,
+tool, memory, random, clock and external IO nondeterminism; reject unsafe repeated
+side effects, changed review payloads and incompatible graph/state/log evolution
+without migration. Replay fixtures reuse the actual recorded decisions.
+
+A7: emit memory item/metadata schemas, provenance, partitions, retention,
+redaction, indexing, embedding and replay policies. Enforce separate scoped
+read/write and embedding capabilities. Reject invalid writes, unauthorized
+protected-data embedding/persistence, implicit cross-tenant sharing, retrieved
+instruction authority, incompatible index reuse and fresh retrieval where a
+recorded result is required. Record query/result ids, scores, embedding identity
+and old/new embedding lineage. Deletion/redaction must remove stale retrievable
+entries and update indexes and ledgers.
+
+A8: compile explicit production policy and deterministic layered decisions with
+deny precedence. Later policies cannot silently broaden authority. Record action
+identity, effects/capabilities, data/taint, review, eval and replay facts and the
+resulting rule/decision. Reject cyclic policy, unsafe fallback, unvalidated output
+or generated code and protected-data logging. Authority-broadening changes need
+compatibility/security review; emergency overrides are explicit, scoped,
+time-bound and auditable, with no new capability implied.
+
+A9: produce versioned dataset/schema/provenance/split artifacts and eval reports
+bound to every behavior-changing subject/model/prompt/tool/memory/policy/runtime
+identity. Record changed artifacts, metric direction/threshold/aggregation and
+confidence/sample or variance rules, seeds/traces, redacted samples or hashes,
+probe results and release decisions. Required safety probes cover injection,
+tool misuse, denial, schema failure, refusal and protected-data leakage. Reject
+absent/stale/incompatible release evidence, name-similarity fallback, missing
+probes or thresholds and unauthorized live-provider evaluation; preserve real
+credentials, provider spend/account policy and report-signing requirements.
+
+A10: compile typed review declarations with action, actor/role, displayed evidence
+and evidence hash, payload hash, timestamp, expiry, revocation, denial/timeout,
+replay and emergency rules. Block required actions until matching valid review;
+reject absent records, wrong roles, changed payloads, expiry or revocation.
+Display enough typed evidence for the decision, follow denial as a workflow
+outcome, and reuse recorded decisions only under the declared replay policy.
+Audit requests and lifecycle transitions with redaction and permitted hashes.
+
+A11: keep user/web/file/package/retrieved/tool/model content in its declared
+data authority, preserving taint back into model context. Data cannot grant
+tools or change policy. Reject instruction promotion, unauthorized secret flow,
+unvalidated tool output and generated source, and privileged releases without
+defense probes. Monitor escalation, override and exposure attempts; incident
+bundles reconstruct prompt, taint, tool, memory, policy and workflow decisions
+without exposing protected raw content. Each source's diagnostic identifiers
+and contextual fields and its positive/negative conformance fixtures are part
+of acceptance, not separate implementation tasks.
+
+The exact mixed A1/A3/A5/A6 call-count, repair-attempt and retry-accounting
+clauses remain unresolved in the bounded family proposal; they cannot receive
+acceptance by linking this task. Remove synthetic project/compiler work quotas
+under current accounting policy while preserving real external billing/account
+limits, semantic representability and actual host restrictions. Do not silently
+supersede a mixed source clause or invent a replacement work allowance.
+
+Yes/no acceptance: does untrusted output
+remain data? Are actions denied without grants/review? Are evaluations bound to
+exact prompt/model/tool identities? Integration: Schema/Auth, Workflow/Runtime,
+Stdlib AI. Decision owner: AI maintainer; recommendation: provider-independent
+artifacts and explicit model identity, never a vendor SDK side path.
+
+SAFE13 acceptance: inspect model/provider/version, input/output schemas, nondeterminism, real external cost, retention, safety and replay records. Preserve structured prompt roles and provenance; reject untrusted grant/policy changes, privileged concatenation without approved sanitization/delimiting, and unvalidated tool arguments. Distinguish read-only/write/destructive/external/privileged tools; explicit grants and required human/policy decisions bind action/diff, reviewer, time and result before invocation. Generated code carries model/prompt origins and passes ordinary compiler/package checks before execution. Memory remains tainted absent trust metadata and enforces retention/redaction/privacy/deletion and secret policy. Check exact/audit replay and idempotent side effects through Runtime; prompt comments are not review decisions.
+
+P10 profile interface: keep model admission/execution, tool schema/grant/review admission, generated-program compiler validation, prompt-role/taint checks, memory retention/deletion/privacy and secret-sink gates distinct. Emit prompt/model/provider/tool/policy/review/input/output/error/retry/generated-code digests and replay records. An evaluation hook emits separately identified results and grants no action authority. Reject prompt policy escalation, unvalidated outputs, missing applicable review, ungranted destructive tools and unauthorized secret disclosure. Provider billing limits remain external; no compiler work quota is introduced. Runtime model/tool/memory and Schema/Auth/generated-code APIs supply interface facts.
+
+Foundation requirement gravity/ai-tool-schema-policy-record: Execute a declared model/tool/memory interaction with typed request and response schemas, separately checked effects and grants, output validation, tool/review policy and a redacted attributable decision record naming provider/model/tool/memory identities. Refusals: Reject schema-invalid output, an ungranted tool, crossed memory authority and model text attempting to supply review authority before any protected effect. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): schema - Versioned source schema, generated validators/codecs and parity artifacts; legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks - Expanded source profile/effect/grant facts and checked/delegated/rejected legality products.
+
+Historical-gap criterion interfaces (all Open). The stable labels below
+reuse inherited source behavior IDs; they add no implementation task IDs.
+Each requires its complete original source-context facets, including the
+retained negative conditions, diagnostics and conditional consumer roles.
+
+Criterion `behavior/a1/credential-source` (Open; implementation unassessed).
+Required behavior: Reject ambient provider credentials embedded in AI source.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing linked AI program manifests, source/macro origins, typed/effect output and replay/audit records.
+Negative control: Reject a provider credential literal embedded in source before declaration admission.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a1/declaration-lowering` (Open; implementation unassessed).
+Required behavior: Compile declared AI forms from syntax objects to typed declarations and an AI program manifest preserving source/macro origins and declared cross-artifact edges.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing linked AI program manifests, source/macro origins, typed/effect output and replay/audit records.
+Negative control: Reject an AI declaration whose emitted manifest loses source/macro origin or a required dependency edge.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a1/deployment-eval-gate` (Open; implementation unassessed).
+Required behavior: Require production agent deployment to name its required evaluation evidence and carry accepted report references.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing linked AI program manifests, source/macro origins, typed/effect output and replay/audit records.
+Negative control: Reject production promotion when a required evaluation report is absent or has a different subject identity.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a1/effect-exposure` (Open; implementation unassessed).
+Required behavior: Expose every AI operation as its declared nonpure effect in typed/effect output and emitted manifests, including hidden provider tool effects.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing linked AI program manifests, source/macro origins, typed/effect output and replay/audit records.
+Negative control: Reject a provider adapter whose implementation performs an undeclared tool effect.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a1/external-call-policy` (Open; implementation unassessed).
+Required behavior: Resolve and enforce the source-specific model-call budget/timeout policy, preserving actual external provider spend and controls while excluding removed synthetic compiler accounting.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing linked AI program manifests, source/macro origins, typed/effect output and replay/audit records.
+Negative control: Deny an actual paid call before issuance when its external spending policy is exceeded; do not refuse a legal mock call merely for synthetic call-count exhaustion.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Semantic work still Open: produce an exact mixed-clause disposition distinguishing removed synthetic call/repair/retry accounting from actual external spend/account policy, semantic representability and real host restrictions. Preserve unaffected schema, taint, authority, refusal and replay conditions; reject blanket paragraph retirement and renamed work allowances.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a1/memory-write-policy` (Open; implementation unassessed).
+Required behavior: Require AI memory writes to carry retention, redaction, tenant partition and source provenance policy.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing linked AI program manifests, source/macro origins, typed/effect output and replay/audit records.
+Negative control: Reject a write missing retention, redaction, tenant or source-provenance policy.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a1/model-call-contract` (Open; implementation unassessed).
+Required behavior: Require a model call's model/provider identity, input/output schema and replay policy before admitting it; retain the source-specific budget requirement for interpretation.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing linked AI program manifests, source/macro origins, typed/effect output and replay/audit records.
+Negative control: Reject a call missing provider/model identity, input/output schema or explicit replay mode.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a1/output-admission` (Open; implementation unassessed).
+Required behavior: Keep model output tainted until declared schema validation succeeds; explicitly unstructured text cannot drive a trusted tool action.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing linked AI program manifests, source/macro origins, typed/effect output and replay/audit records.
+Negative control: Reject a raw or explicitly unstructured response used to drive a trusted tool action.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a1/prompt-authority` (Open; implementation unassessed).
+Required behavior: Prevent untrusted retrieved, user or tool data from acquiring system/developer instruction authority.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing linked AI program manifests, source/macro origins, typed/effect output and replay/audit records.
+Negative control: Reject retrieved/user/tool data promoted to developer or system instruction authority.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a1/replay-execution` (Open; implementation unassessed).
+Required behavior: Require explicit replay modes in distributed/workflow AI contexts and emit/reuse nondeterministic step records instead of issuing undeclared live effects during replay.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing linked AI program manifests, source/macro origins, typed/effect output and replay/audit records.
+Negative control: Reject a fresh provider or tool side effect substituted for a required recorded replay result.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a1/runtime-audit-ledger` (Open; implementation unassessed).
+Required behavior: Emit model/tool/memory/review/refusal/repair/denial/replay execution ledgers, retaining canonical hashes where raw data cannot be stored.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing linked AI program manifests, source/macro origins, typed/effect output and replay/audit records.
+Negative control: Reject an invocation audit bundle missing a model/tool/memory/review/denial/replay event or a required permitted hash.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a10/emergency-review-bypass` (Open; implementation unassessed).
+Required behavior: Permit review bypass only under the declared emergency policy and retain scoped actor/reason/action records; bypass does not create capabilities.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing typed review/action/evidence artifacts and payload/actor/role/policy-bound lifecycle and replay records.
+Negative control: Reject bypass without declared scoped emergency policy, actor/reason/action audit or the independent capability grant.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a10/payload-bound-review-gate` (Open; implementation unassessed).
+Required behavior: Execute a human-review-required action only under the matching actor/role/action/payload/policy review record with its evidence hash, while it is unexpired and unrevoked; reject absent records, changed payloads, insufficient roles and missing evidence hashes. Denial remains a typed workflow outcome.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing typed review/action/evidence artifacts and payload/actor/role/policy-bound lifecycle and replay records.
+Negative control: Reject absent, expired, revoked, wrong-role or changed-payload review, and follow the typed denial branch.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a10/review-audit-ledger` (Open; implementation unassessed).
+Required behavior: Record review requests, decisions and lifecycle transitions with protected payload redaction and canonical hashes.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing typed review/action/evidence artifacts and payload/actor/role/policy-bound lifecycle and replay records.
+Negative control: Reject a review lifecycle record with missing actor/payload/evidence hash or protected raw data.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a10/review-declaration-artifact` (Open; implementation unassessed).
+Required behavior: Compile the typed human-review declaration with action schema, role/principal, displayed evidence, payload hash, lifecycle, replay and emergency policy.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing typed review/action/evidence artifacts and payload/actor/role/policy-bound lifecycle and replay records.
+Negative control: Reject a review declaration missing action/evidence schema, role, lifecycle, replay or emergency binding.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a10/review-replay-policy` (Open; implementation unassessed).
+Required behavior: During replay reuse a valid recorded review decision unless the declared replay mode requires a live human decision.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing typed review/action/evidence artifacts and payload/actor/role/policy-bound lifecycle and replay records.
+Negative control: Reject live review in a mode requiring recorded review, or recorded reuse with changed payload/policy.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a10/typed-reviewer-evidence` (Open; implementation unassessed).
+Required behavior: Display enough typed action evidence through the UI/API for the reviewer to understand what is being authorized.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing typed review/action/evidence artifacts and payload/actor/role/policy-bound lifecycle and replay records.
+Negative control: Reject an action API/UI that conceals the typed payload, evidence hash or action consequences from the reviewer.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a11/generated-source-trust` (Open; implementation unassessed).
+Required behavior: Treat model-generated source as untrusted until the ordinary compiler validation and required review complete.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing authority/taint/tool-authorization artifacts, defense probe results and reconstructable redacted incident records.
+Negative control: Reject execution of generated source before ordinary reader, macro, type, effect, profile and safety validation.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a11/incident-reconstruction` (Open; implementation unassessed).
+Required behavior: Emit sufficient prompt/model/tool/policy/retrieval/review/result lineage to reconstruct a malicious or denied action without leaking protected raw data.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing authority/taint/tool-authorization artifacts, defense probe results and reconstructable redacted incident records.
+Negative control: Reject an incident bundle with an unjoinable prompt/tool/memory/policy/workflow decision or leaked protected body.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a11/privileged-defense-gate` (Open; implementation unassessed).
+Required behavior: Require privileged AI releases to pass applicable prompt-injection, unauthorized-tool, secret and policy-bypass defense probes.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing authority/taint/tool-authorization artifacts, defense probe results and reconstructable redacted incident records.
+Negative control: Reject privileged promotion with missing, stale or failing injection/tool-escalation/exfiltration/policy-bypass probes.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a11/runtime-escalation-monitor` (Open; implementation unassessed).
+Required behavior: Record denied tool escalation, policy override attempts and protected-data exposure attempts in runtime monitoring records.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing authority/taint/tool-authorization artifacts, defense probe results and reconstructable redacted incident records.
+Negative control: Reject an audit result that omits denied escalation, policy override or protected-data exposure attempts.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a11/secret-access-policy` (Open; implementation unassessed).
+Required behavior: Permit secret access only under explicit scoped policy and reject protected-data exfiltration through prompts, tools, memory or logs.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing authority/taint/tool-authorization artifacts, defense probe results and reconstructable redacted incident records.
+Negative control: Reject secret exfiltration via prompt, tool, memory or log without explicit scoped policy and grant.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a11/tool-authority-agreement` (Open; implementation unassessed).
+Required behavior: Deny a model-requested tool action unless tool declaration, agent toolset, deployment grants and runtime capability handle all agree.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing authority/taint/tool-authorization artifacts, defense probe results and reconstructable redacted incident records.
+Negative control: Reject a requested tool if declaration, agent toolset, package/deployment grant, scoped runtime handle or policy disagrees.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a11/untrusted-instruction-boundary` (Open; implementation unassessed).
+Required behavior: Keep repository/web/retrieved/tool/model text in its declared untrusted data role and prevent instruction or policy override.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing authority/taint/tool-authorization artifacts, defense probe results and reconstructable redacted incident records.
+Negative control: Reject repository/web/file/package/retrieved/tool/model data that changes instructions, grants or policy.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a2/credential-binding` (Open; implementation unassessed).
+Required behavior: Load provider credentials from a declared secret source and reject missing or unsafe credential bindings.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing provider/model artifacts and typed request/response, validation, failure, fallback, replay, spend and redaction records.
+Negative control: Reject missing or ambient credential binding and any credential value copied into a forbidden artifact.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a2/embedding-shape-admission` (Open; implementation unassessed).
+Required behavior: Reject an embedding provider whose vector dimension differs from the consuming memory manifest.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing provider/model artifacts and typed request/response, validation, failure, fallback, replay, spend and redaction records.
+Negative control: Reject embedding output whose vector dimension differs from the consuming memory manifest.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a2/external-spend-preflight` (Open; implementation unassessed).
+Required behavior: Deny an actual live provider call before issuance when its known external spending limit is already exceeded; retain max-cost-usd and observed cost metadata.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing provider/model artifacts and typed request/response, validation, failure, fallback, replay, spend and redaction records.
+Negative control: Reject known-over-limit external spend before a live request, retaining max-cost policy and observed cost facts.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a2/failure-classification` (Open; implementation unassessed).
+Required behavior: Classify provider failures as retryable, permanent, spending/policy denied or schema invalid so callers observe the declared failure contract.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing provider/model artifacts and typed request/response, validation, failure, fallback, replay, spend and redaction records.
+Negative control: Reject provider failures collapsed into untyped exceptions instead of retryable/permanent/spend-denied/policy-denied/schema-invalid results.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a2/fallback-admission` (Open; implementation unassessed).
+Required behavior: Admit a fallback only if requested mode, schema guarantee, retention/data policy and applicable evaluation gate remain satisfied; preserve external spending policy.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing provider/model artifacts and typed request/response, validation, failure, fallback, replay, spend and redaction records.
+Negative control: Reject fallback that changes mode/schema/retention/data/spend policy or lacks the applicable comparison evaluation.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a2/floating-identity-upgrade` (Open; implementation unassessed).
+Required behavior: Accept a floating provider/model identity upgrade only under an agent/workflow evaluation gate covering that new identity.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing provider/model artifacts and typed request/response, validation, failure, fallback, replay, spend and redaction records.
+Negative control: Reject floating model upgrades not covered by the agent/workflow evaluation gate for the new identity.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a2/live-ci-policy` (Open; implementation unassessed).
+Required behavior: Reject live provider calls in CI unless package/build policy explicitly permits them.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing provider/model artifacts and typed request/response, validation, failure, fallback, replay, spend and redaction records.
+Negative control: Reject a live CI provider request without explicit package/build allowance.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a2/provider-call-ledger` (Open; implementation unassessed).
+Required behavior: Emit request/response, retry/fallback, drift, redaction and validation records with the required source/agent/prompt/schema/tools/handle/parameter/result identities and observed usage/cost/latency.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing provider/model artifacts and typed request/response, validation, failure, fallback, replay, spend and redaction records.
+Negative control: Reject call records missing source/agent/prompt/schema/tool/handle/parameter/response/refusal/validation/usage/redaction identities.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a2/provider-effect` (Open; implementation unassessed).
+Required behavior: Require :ai/model-call or :ai/embedding for an actual provider operation.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing provider/model artifacts and typed request/response, validation, failure, fallback, replay, spend and redaction records.
+Negative control: Reject inference or embedding without its declared AI effect.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a2/provider-handle` (Open; implementation unassessed).
+Required behavior: Reject a provider call without the provider capability handle even when network access is granted.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing provider/model artifacts and typed request/response, validation, failure, fallback, replay, spend and redaction records.
+Negative control: Reject a model call with network access but no scoped provider capability handle.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a2/provider-manifest` (Open; implementation unassessed).
+Required behavior: Normalize provider/model declarations from package, deployment or local-profile inputs into one compiler-visible package artifact with the declared adapter, endpoint, modes, representability, schema, safety and retention contract.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing provider/model artifacts and typed request/response, validation, failure, fallback, replay, spend and redaction records.
+Negative control: Reject a normalized provider/model artifact missing adapter, endpoint, mode, version, schema, safety or retention requirements.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a2/provider-retention-admission` (Open; implementation unassessed).
+Required behavior: Reject provider use when its data retention behavior conflicts with the active no-retention policy.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing provider/model artifacts and typed request/response, validation, failure, fallback, replay, spend and redaction records.
+Negative control: Reject a retaining provider under a no-retention policy.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a2/replay-model-identity` (Open; implementation unassessed).
+Required behavior: Record the complete provider/model/version/endpoint/adapter/tokenizer/output/safety-retention identity; audit-sensitive pinned replay rejects any mismatch or undeclared reproducibility-affecting request parameter.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing provider/model artifacts and typed request/response, validation, failure, fallback, replay, spend and redaction records.
+Negative control: Reject pinned replay after model/version/endpoint/adapter/tokenizer/output/safety-retention drift or undeclared reproducibility parameters.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a2/secret-and-no-store-isolation` (Open; implementation unassessed).
+Required behavior: Prevent provider credentials and no-store data from leaking into prompt/log/memory/eval/replay records and omit forbidden raw request/response bodies while preserving canonical hashes and validation facts.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing provider/model artifacts and typed request/response, validation, failure, fallback, replay, spend and redaction records.
+Negative control: Reject credentials/no-store bodies entering prompt/log/memory/eval/replay records; retain only policy-permitted hashes and validation facts.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a2/structured-mode-contract` (Open; implementation unassessed).
+Required behavior: Declare and honor whether structured-output guarantees come from provider enforcement, runtime validation or both; reject unsupported modes and report validation failures against that mode.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing provider/model artifacts and typed request/response, validation, failure, fallback, replay, spend and redaction records.
+Negative control: Reject unsupported output mode or a response admitted without the declared provider/runtime validation guarantees.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a2/tool-mediation-contract` (Open; implementation unassessed).
+Required behavior: Declare provider-native, Gravity-mediated or runtime-adapted tool execution and expose its effects instead of hiding tool authority in the adapter.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing provider/model artifacts and typed request/response, validation, failure, fallback, replay, spend and redaction records.
+Negative control: Reject provider-native or adapted tool execution whose mediation mode, effects or authority are hidden.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a3/input-schema-admission` (Open; implementation unassessed).
+Required behavior: Reject an agent/workflow prompt without its declared input schema.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing typed prompt/schema/authority/taint artifacts, actual render hashes and validation/refusal/repair results.
+Negative control: Reject an agent/workflow prompt without its declared input schema.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a3/output-schema-admission` (Open; implementation unassessed).
+Required behavior: Reject a response consumed by trusted code without its declared output schema, and prevent the model from choosing an arbitrary output schema identity.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing typed prompt/schema/authority/taint artifacts, actual render hashes and validation/refusal/repair results.
+Negative control: Reject trusted code consuming a response with no declared output schema or a model-selected arbitrary schema.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a3/partial-output-admission` (Open; implementation unassessed).
+Required behavior: Reject partial output unless the chosen output schema explicitly defines a legal partial state.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing typed prompt/schema/authority/taint artifacts, actual render hashes and validation/refusal/repair results.
+Negative control: Reject partial output unless the declared schema admits that partial state.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a3/prompt-artifact` (Open; implementation unassessed).
+Required behavior: Compile a syntax-derived typed prompt artifact with declared input/output-or-unstructured schema, authority/taint/tool/provider/validation/compatibility references rather than treating it as an arbitrary string.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing typed prompt/schema/authority/taint artifacts, actual render hashes and validation/refusal/repair results.
+Negative control: Reject a prompt treated as an arbitrary string without source/schema/authority/taint/tool/provider/validation/compatibility identities.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a3/prompt-evolution` (Open; implementation unassessed).
+Required behavior: Classify prompt evolution as additive, breaking or eval-required, rejecting a compatibility claim that changes output meaning.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing typed prompt/schema/authority/taint artifacts, actual render hashes and validation/refusal/repair results.
+Negative control: Reject a compatibility claim that changes output meaning without the required breaking/evaluation disposition.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a3/prompt-no-store` (Open; implementation unassessed).
+Required behavior: Reject storing response bodies in an active no-store context while preserving permitted validation/hash records.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing typed prompt/schema/authority/taint artifacts, actual render hashes and validation/refusal/repair results.
+Negative control: Reject raw response-body storage in a no-store context.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a3/refusal-routing` (Open; implementation unassessed).
+Required behavior: Represent provider refusal in the output type or declared workflow branch and follow that branch.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing typed prompt/schema/authority/taint artifacts, actual render hashes and validation/refusal/repair results.
+Negative control: Reject provider refusal treated as success instead of its declared output type or workflow branch.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a3/render-identity` (Open; implementation unassessed).
+Required behavior: Record the prompt artifact hash and actual rendered-input hash for each rendered prompt.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing typed prompt/schema/authority/taint artifacts, actual render hashes and validation/refusal/repair results.
+Negative control: Reject rendering records whose prompt artifact hash or actual rendered-input hash is missing or substituted.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a3/repair-recording` (Open; implementation unassessed).
+Required behavior: Permit repair only under declared repair policy and record each attempt and final validation outcome; validation failure can branch only to declared repair/retry/review/failure handling.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing typed prompt/schema/authority/taint artifacts, actual render hashes and validation/refusal/repair results.
+Negative control: Reject repair outside declared policy, an unrecorded attempt or validation failure escaping its typed retry/review/failure branch.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a3/repair-termination-policy` (Open; implementation unassessed).
+Required behavior: Resolve the source-specific maximum repair attempt rule and reject illegal repair loops without inventing a replacement synthetic compiler work quota.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing typed prompt/schema/authority/taint artifacts, actual render hashes and validation/refusal/repair results.
+Negative control: Reject a mixed-clause disposition that removes validation/refusal/data policy with synthetic attempt accounting, or substitutes a renamed compiler quota.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Semantic work still Open: produce an exact mixed-clause disposition distinguishing removed synthetic call/repair/retry accounting from actual external spend/account policy, semantic representability and real host restrictions. Preserve unaffected schema, taint, authority, refusal and replay conditions; reject blanket paragraph retirement and renamed work allowances.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a3/secret-to-provider-policy` (Open; implementation unassessed).
+Required behavior: Reject secrets in rendered prompts except when the policy explicitly permits that secret-to-provider flow.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing typed prompt/schema/authority/taint artifacts, actual render hashes and validation/refusal/repair results.
+Negative control: Reject rendered secrets without an explicit secret-to-provider policy.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a3/taint-propagation` (Open; implementation unassessed).
+Required behavior: Carry interpolated-value taint through rendering and per-field output validation until the policy for intended use is satisfied.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing typed prompt/schema/authority/taint artifacts, actual render hashes and validation/refusal/repair results.
+Negative control: Reject interpolated-value or output-field taint disappearing before intended-use policy validation.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a3/tool-visibility` (Open; implementation unassessed).
+Required behavior: Expose only prompt-declared tool schemas under the declared tool-call policy; reject undeclared tool exposure.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing typed prompt/schema/authority/taint artifacts, actual render hashes and validation/refusal/repair results.
+Negative control: Reject exposing tools not declared by the prompt toolset/policy.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a3/typed-output-admission` (Open; implementation unassessed).
+Required behavior: Validate tainted provider output by declared format/schema, required canonicalization, per-field taint and intended-use data policy before converting it to a typed core value or allowing tools/workflow/generated-source use.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing typed prompt/schema/authority/taint artifacts, actual render hashes and validation/refusal/repair results.
+Negative control: Reject conversion to typed core, workflow branch, tool argument or generated-source input before format/schema/canonicalization/taint/use-policy validation.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a4/foreign-error-normalization` (Open; implementation unassessed).
+Required behavior: Convert foreign implementation failures to the declared typed tool error contract.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing tool artifacts and schema/effect/handle/policy/review/typed-error/redaction invocation records.
+Negative control: Reject foreign exceptions escaping the declared typed tool result contract.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a4/nonidempotent-retry` (Open; implementation unassessed).
+Required behavior: Do not retry or replay a non-idempotent effect without its declared idempotency/compensation contract.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing tool artifacts and schema/effect/handle/policy/review/typed-error/redaction invocation records.
+Negative control: Reject a non-idempotent retry/replay without its declared idempotency or compensation contract.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a4/privileged-tool-review` (Open; implementation unassessed).
+Required behavior: Stop privileged tool actions until the declared human-review policy is satisfied without treating review as capability creation.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing tool artifacts and schema/effect/handle/policy/review/typed-error/redaction invocation records.
+Negative control: Reject privileged execution before required review, or treating review as a new capability grant.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a4/tool-authority-agreement` (Open; implementation unassessed).
+Required behavior: Authorize a tool call only when declaration, package/deployment grant, agent toolset and scoped runtime implementation handle agree.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing tool artifacts and schema/effect/handle/policy/review/typed-error/redaction invocation records.
+Negative control: Reject a requested tool if declaration, agent toolset, package/deployment grant, scoped runtime handle or policy disagrees.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a4/tool-effects` (Open; implementation unassessed).
+Required behavior: Expose every implementation effect at the tool boundary; hidden effectful adapter behavior is rejected.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing tool artifacts and schema/effect/handle/policy/review/typed-error/redaction invocation records.
+Negative control: Reject any effect performed by a tool implementation but absent from its declaration.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a4/tool-manifest` (Open; implementation unassessed).
+Required behavior: Compile typed tool declarations with declared input/output schemas and public model-facing descriptions that expose neither secret values nor implementation handles.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing tool artifacts and schema/effect/handle/policy/review/typed-error/redaction invocation records.
+Negative control: Reject a tool with missing input/output schemas or a model-visible description exposing credentials, internal policy or implementation handles.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a4/tool-redaction` (Open; implementation unassessed).
+Required behavior: Emit tool call and failure records with declared redaction, preserving auditable identities without leaking secrets.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing tool artifacts and schema/effect/handle/policy/review/typed-error/redaction invocation records.
+Negative control: Reject tool success/failure ledgers leaking secret/private/no-store fields or omitting required audit identities.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a4/tool-result-admission` (Open; implementation unassessed).
+Required behavior: Validate tool results before they become trusted program values or downstream action inputs.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing tool artifacts and schema/effect/handle/policy/review/typed-error/redaction invocation records.
+Negative control: Reject an unvalidated tool result entering an agent/workflow or trusted downstream sink.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a5/agent-eval-admission` (Open; implementation unassessed).
+Required behavior: Require production agent deployment to bind the applicable passing evaluation evidence.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing agent dependency manifests and identity-linked model/tool/memory/review/output-validation events.
+Negative control: Reject production deployment without passing evidence for its release class and exact agent dependencies.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a5/agent-external-call-policy` (Open; implementation unassessed).
+Required behavior: Interpret and enforce the specific agent call/retry/wall-time/token/spend policy without substituting removed synthetic compiler accounting for actual external controls.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing agent dependency manifests and identity-linked model/tool/memory/review/output-validation events.
+Negative control: Reject a source disposition that keeps synthetic agent call/retry work allowances or removes actual external spend/account, effect or authority policy.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Semantic work still Open: produce an exact mixed-clause disposition distinguishing removed synthetic call/repair/retry accounting from actual external spend/account policy, semantic representability and real host restrictions. Preserve unaffected schema, taint, authority, refusal and replay conditions; reject blanket paragraph retirement and renamed work allowances.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a5/agent-ledger-identity` (Open; implementation unassessed).
+Required behavior: Bind every agent execution ledger to the exact agent artifact and dependency identities for reconstruction and replay.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing agent dependency manifests and identity-linked model/tool/memory/review/output-validation events.
+Negative control: Reject any model/tool/memory/review/workflow ledger event not bound to its agent artifact and dependency identities.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a5/agent-manifest` (Open; implementation unassessed).
+Required behavior: Compile the agent's complete model/prompt/tool/memory/policy/eval/workflow dependencies into its normalized artifact and reject incomplete bindings.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing agent dependency manifests and identity-linked model/tool/memory/review/output-validation events.
+Negative control: Reject an agent missing a declared model, prompt, tool, memory, policy, evaluation or workflow dependency.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a5/agent-memory-access` (Open; implementation unassessed).
+Required behavior: Require distinct declared read/write memory access modes and matching runtime authority.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing agent dependency manifests and identity-linked model/tool/memory/review/output-validation events.
+Negative control: Reject a memory write through an agent's read-only binding or a missing separate write capability.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a5/agent-output-admission` (Open; implementation unassessed).
+Required behavior: Validate agent output before a typed consumer or tool action may use it.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing agent dependency manifests and identity-linked model/tool/memory/review/output-validation events.
+Negative control: Reject an unvalidated agent result used as typed data or tool input.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a5/agent-tool-authority` (Open; implementation unassessed).
+Required behavior: Constrain tool use to the intersection of the agent-declared toolset and actual grants; neither a model plan nor an agent declaration enlarges authority.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing agent dependency manifests and identity-linked model/tool/memory/review/output-validation events.
+Negative control: Reject a plan or declaration used to enlarge the intersection of declared toolset and actual grants.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a5/generated-code-reentry` (Open; implementation unassessed).
+Required behavior: Send agent-generated source through the ordinary compiler checks before use.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing agent dependency manifests and identity-linked model/tool/memory/review/output-validation events.
+Negative control: Reject agent-generated source used without normal compiler validation and preserved generated origin.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a6/validated-branch-input` (Open; implementation unassessed).
+Required behavior: Allow workflow branches only on validated typed values, never raw model output.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing typed graph/state/event-log artifacts with branch, compensation, review-payload, replay and retry transition evidence.
+Negative control: Reject a workflow branch selected from raw, unvalidated model output.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a6/workflow-retry-policy` (Open; implementation unassessed).
+Required behavior: Preserve the declared retry policy and records while resolving any source-specific accounting clause separately.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing typed graph/state/event-log artifacts with branch, compensation, review-payload, replay and retry transition evidence.
+Negative control: Reject a retry that loses its declared replay/idempotency/compensation record or turns removed accounting into a new compiler allowance.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Semantic work still Open: produce an exact mixed-clause disposition distinguishing removed synthetic call/repair/retry accounting from actual external spend/account policy, semantic representability and real host restrictions. Preserve unaffected schema, taint, authority, refusal and replay conditions; reject blanket paragraph retirement and renamed work allowances.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a6/workflow-review-binding` (Open; implementation unassessed).
+Required behavior: Bind workflow human-review decisions to the exact executed payload and declared review/replay policy.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing typed graph/state/event-log artifacts with branch, compensation, review-payload, replay and retry transition evidence.
+Negative control: Reject workflow review reuse after payload change or outside the declared review/replay policy.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a7/deletion-index-coherence` (Open; implementation unassessed).
+Required behavior: Apply memory deletion to stored items, index state and the required audit ledger consistently.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing memory/schema/embedding/partition/retention artifacts and access, deletion, index and re-embedding lineage evidence.
+Negative control: Reject deletion/redaction that leaves a retrievable stale item or inconsistent index/ledger.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a7/embedding-authority` (Open; implementation unassessed).
+Required behavior: Require actual embedding-provider authority and a dimension-compatible embedding contract.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing memory/schema/embedding/partition/retention artifacts and access, deletion, index and re-embedding lineage evidence.
+Negative control: Reject embedding without the actual provider grant or with an incompatible dimension contract.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a7/memory-access-handles` (Open; implementation unassessed).
+Required behavior: Require the distinct read and write handles for the requested memory operation; declarations do not supply ambient access.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing memory/schema/embedding/partition/retention artifacts and access, deletion, index and re-embedding lineage evidence.
+Negative control: Reject a read/write using a missing or wrong-mode scoped memory handle.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a7/memory-manifest` (Open; implementation unassessed).
+Required behavior: Compile a typed memory store/item schema with provenance, partition, retention, index and embedding identity.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing memory/schema/embedding/partition/retention artifacts and access, deletion, index and re-embedding lineage evidence.
+Negative control: Reject a memory artifact missing item/metadata schema, provenance, partition, retention, indexing, embedding or replay policy.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a7/persistence-data-policy` (Open; implementation unassessed).
+Required behavior: Reject protected-data persistence that violates retention, redaction, deletion or permitted data-class policy.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing memory/schema/embedding/partition/retention artifacts and access, deletion, index and re-embedding lineage evidence.
+Negative control: Reject protected-data embedding/persistence contrary to data-class, retention, redaction or deletion policy.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a7/reembedding-lineage` (Open; implementation unassessed).
+Required behavior: Record old/new embedding and source identities when re-embedding; incompatible dimensions cannot reuse an index silently.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing memory/schema/embedding/partition/retention artifacts and access, deletion, index and re-embedding lineage evidence.
+Negative control: Reject re-embedding without source-item hash and old/new embedding identities, or silent incompatible-index reuse.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a8/ai-policy-artifact` (Open; implementation unassessed).
+Required behavior: Compile an explicit production AI policy binding and preserve its input/output domains and decision rules.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing deterministic policy artifacts and explained allow/deny/review/validation/eval decisions with scoped audit records.
+Negative control: Reject production AI policy without its explicit normalized input/output domains and rules.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a8/authority-change-compatibility` (Open; implementation unassessed).
+Required behavior: Treat policy changes that broaden authority as security/compatibility changes requiring the declared review, rather than harmless metadata edits.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing deterministic policy artifacts and explained allow/deny/review/validation/eval decisions with scoped audit records.
+Negative control: Reject authority-broadening policy changes released without compatibility and security review.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a8/emergency-override-policy` (Open; implementation unassessed).
+Required behavior: Allow only explicitly scoped/time-bound emergency policy overrides and retain the actor, reason and action audit trail.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing deterministic policy artifacts and explained allow/deny/review/validation/eval decisions with scoped audit records.
+Negative control: Reject unscoped, expired, unlogged or unauditable emergency policy override.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a8/fallback-evidence-policy` (Open; implementation unassessed).
+Required behavior: Deny model/tool fallback when its policy or applicable evidence requirements are not met.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing deterministic policy artifacts and explained allow/deny/review/validation/eval decisions with scoped audit records.
+Negative control: Reject a fallback missing required safety/retention/schema/spend policy or applicable evaluation evidence.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a8/generated-code-admission` (Open; implementation unassessed).
+Required behavior: Require ordinary compiler validation of AI-generated source before policy permits its use.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing deterministic policy artifacts and explained allow/deny/review/validation/eval decisions with scoped audit records.
+Negative control: Reject generated code executed, published or used as a dependency before ordinary compiler validation and required tests.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a8/output-and-instruction-boundary` (Open; implementation unassessed).
+Required behavior: Keep model/tool/retrieved output tainted data until permitted validation; data cannot change instructions or grant authority.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing deterministic policy artifacts and explained allow/deny/review/validation/eval decisions with scoped audit records.
+Negative control: Reject tainted model/tool/retrieved data becoming trusted instructions or authority without its permitted validation boundary.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a8/policy-composition` (Open; implementation unassessed).
+Required behavior: Compose policy layers deterministically with deny precedence; a later layer may narrow but cannot silently broaden authority.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing deterministic policy artifacts and explained allow/deny/review/validation/eval decisions with scoped audit records.
+Negative control: Reject cyclic/nondeterministic policy, an allow overriding an equal/narrower deny, or silent authority broadening by a later layer.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a8/policy-decision-ledger` (Open; implementation unassessed).
+Required behavior: Record each AI action's policy inputs, decision, rule and artifact identity so approval or denial can be reconstructed.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing deterministic policy artifacts and explained allow/deny/review/validation/eval decisions with scoped audit records.
+Negative control: Reject an action record missing principal/agent/effect/grant/data/taint/review/eval/replay facts, rule or decision.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a8/review-rule-enforcement` (Open; implementation unassessed).
+Required behavior: Apply typed human-review role/payload/expiry/revocation/replay rules to the action covered by the policy.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing deterministic policy artifacts and explained allow/deny/review/validation/eval decisions with scoped audit records.
+Negative control: Reject a policy decision authorizing the wrong action/role/payload or expired/revoked review.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a9/changed-artifact-comparison` (Open; implementation unassessed).
+Required behavior: Report which model/prompt/tool/policy artifacts changed and the compared evaluation result identities, not an unscoped aggregate score.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing subject/dataset/metric/probe/variance-bound evaluation reports and redacted promotion or refusal evidence.
+Negative control: Reject evaluation comparisons that omit a changed model/prompt/tool/memory/policy artifact or result identity.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a9/eval-dataset-artifact` (Open; implementation unassessed).
+Required behavior: Version datasets with schema, provenance and split identities so consumed evaluation input is reproducible and attributable.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing subject/dataset/metric/probe/variance-bound evaluation reports and redacted promotion or refusal evidence.
+Negative control: Reject datasets without schema, version, provenance or split identities.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a9/eval-redaction` (Open; implementation unassessed).
+Required behavior: Redact protected data from evaluation datasets/reports while retaining the permitted hashes and provenance needed to reproduce the claim.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing subject/dataset/metric/probe/variance-bound evaluation reports and redacted promotion or refusal evidence.
+Negative control: Reject evaluation samples or reports storing protected raw data contrary to policy.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a9/live-eval-policy` (Open; implementation unassessed).
+Required behavior: Permit live provider evaluation only under explicit credentials, real external spending/account and retention/data policy; recorded/mocked evaluation is identified as such.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing subject/dataset/metric/probe/variance-bound evaluation reports and redacted promotion or refusal evidence.
+Negative control: Reject live evaluation without explicit credentials and actual external spend/account/retention policy, or a mock result mislabeled live evidence.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a9/nondeterministic-eval-evidence` (Open; implementation unassessed).
+Required behavior: Declare seeds, trace reuse or repeat/variance evidence for nondeterministic evaluation instead of claiming exact replay from uncontrolled live results.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing subject/dataset/metric/probe/variance-bound evaluation reports and redacted promotion or refusal evidence.
+Negative control: Reject a nondeterministic evaluation claiming reproducibility without seeds, trace reuse or declared repeat/variance evidence.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion `behavior/a9/safety-probe-coverage` (Open; implementation unassessed).
+Required behavior: Run context-relevant safety probes covering prompt injection, tool misuse, policy denial, schema failure, refusal handling and protected-data leakage. Required release evaluation fails closed for missing, stale or incompatible evidence.
+Acceptance output: a valid source-bound fixture exercises this behavior
+under its declared profile, schema, capability, data and replay policy,
+producing subject/dataset/metric/probe/variance-bound evaluation reports and redacted promotion or refusal evidence.
+Negative control: Reject a release safety claim without matching injection/tool-misuse/denial/schema/refusal/leakage probes and compatible evidence.
+Evidence required: accepted/rejected fixture inputs and exact expected
+typed values or refusal, stable diagnostic and contextual fields, artifact
+identities and source/policy hashes. Record producer and consumer results
+separately; generated metadata alone cannot prove execution.
+Dependencies: the existing Schema and Workflow interfaces, typed/effect
+and profile legality, scoped Runtime/Auth enforcement, and this source's
+declared provider/consumer contracts. All source qualifications in the
+A1-A11 acceptance contract above also apply to this criterion.
+
+Criterion profile-gap/ai/profile-tool-contract (Open): Input: AI model/tool declaration, provider policy, typed arguments, caller/deployment grants, side-effect class and applicable review record. Accept: Admit and execute the declared model request through its provider; validate tool input/output schemas and side-effect/review policy before a tool action; re-enter ordinary macro/type/effect/capability/safety/package/profile checking before generated Gravity code can execute. Review approval never manufactures a missing capability. Reject: Missing provider/effect/policy, tool schema or grant; write/destructive/shell/deployment/package/secret action without applicable review; raw memory/FFI in agent logic; generated code executed before compiler validation. Required outputs: Agent/model/tool manifests, schema validation result, effect/grant/review decisions and generated-code validation/provenance record. The mixed original cost/token/call predicates require a source-specific billing-versus-removed-accounting decision; retain that Open policy outcome and all adjacent authority restrictions. Dependencies: schema, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime, expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs interface facts, not whole-task completion. Exact source predicates and frozen evidence: [the preserved profile-interface context](plan.md#ai-parent-source-context), mapping ai/profile-tool-contract; all attached contextual and negative predicates remain required. No implementation acceptance is inferred. Criterion profile-gap/ai/prompt-memory-boundary (Open): Input: Prompt messages with roles/provenance and retrieved/tool/memory/model values carrying trust, taint, retention/deletion/privacy and secret policy. Accept: Preserve each source-visible role and origin; validate model output for the particular sink before trusting it; enforce memory retention/deletion/privacy and trust on reads/writes; permit secret-bearing prompt/tool/provider/log disclosure only through explicit matching policy. Reject: Retrieved or tool content overriding privileged policy, unvalidated model output at a trusted sink, stale/deleted or cross-policy memory access, and unauthorized secret disclosure. Required outputs: Prompt provenance/role record, sink validation and taint result, memory policy/lifecycle evidence, redacted secret-policy denial diagnostics. Dependencies: runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime interface facts, not whole-task completion. Exact source predicates and frozen evidence: [the preserved profile-interface context](plan.md#ai-parent-source-context), mapping ai/prompt-memory-boundary; all attached contextual and negative predicates remain required. No implementation acceptance is inferred. Criterion profile-gap/ai/replay-evaluation-artifacts (Open): Input: Agent execution with model/provider/prompt/tool/policy identities, review decisions, retry/error state and selected audit/replay mode. Accept: Emit the execution ledger with prompt/message and generated-code digests, tool inputs/outputs, review/policy/nondeterminism/error/retry records; replay required operations from matching records. Expose an evaluation hook that produces separately identified fixtures/results without granting authority. Reject: Replay/audit-required execution missing required records, digest or identity substitution, or evaluation results used to bypass capability/safety/review checks. Required outputs: Model/tool call trace, replay/audit log schema and records, generated-code digest, independently identified evaluation result. Dependencies: workflow, runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution interface facts, not whole-task completion. Exact source predicates and frozen evidence: [the preserved profile-interface context](plan.md#ai-parent-source-context), mapping ai/replay-evaluation-artifacts; all attached contextual and negative predicates remain required. No implementation acceptance is inferred.
+
+Criterion `domain/support-agent-integration`: Execute and evaluate declared support triage with prompt provenance, structured-output/taint, durable graph/replay, tool policy and required refund/review transitions. Accepted fixture: Run support triage with prompt provenance, structured validated outputs, retrieval trust, durable replay, tool policy and explicit refund human-review transition. Negative fixture: Reject prompt policy escalation, unvalidated output, missing tool grant or write tool without required review. Required evidence: agent/tool/prompt/memory/review graph, eval and replay reports; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in [the full preserved Domain context](#wider-integration-task-proposals). Dependencies consume schema, workflow outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.
+
+Source-qualified acceptance: Source obligation `language/facet/emit-agent-plan`: Emit an agent facet's prompt/tool/model/evaluation/trace/guardrail artifacts with explicit model/tool effects and capabilities. Accept: Compile an explicitly activated agent facet into prompt artifacts, tool schemas, model-call declarations, evaluation hooks, trace requirements and guardrail checks; retain model/tool effects and capabilities without hidden runtime privilege. The SupportAgent example is an artifact-generation fixture, not authorization for live calls. Reject: Reject missing prompt/tool/model/evaluation/trace/guardrail products, inactive/unsupported facet use or authority inferred from prompt text. Required outputs: Versioned source-bound agent artifact bundle and accepted fixture plus missing-product/effect/grant rejection diagnostics. Dependencies consume versioned facts/receipts from expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs, effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime; they do not require blanket component completion. Implementation status remains Open.
+
+Allocation interface/safety/safe13/generated-code (Open). Role: domains owning producer or consuming-boundary checker. Input: agent model/prompt/tool/memory action with schemas, roles, grants, review and replay policy. Required positive predicate: Before execution validate AI code with ordinary macro/type/effect/capability/memory/profile/unsafe/package checks and required review, retaining model/prompt/generated origins. Positive output witness: Generated origins, normal pass re-entry and required package/policy review verdict before execution. Concrete negative case: AI-generated edits execute before ordinary compiler/package checks or omit model/prompt provenance and required unsafe/dependency review. Required refusal: this counterexample must not be accepted as ordinary safe behavior; retain only the governing proven-safe/runtime-checked/rejected/explicit-audited-unsafe alternatives and actual mode/profile exceptions. Evidence: inspect these actual output records and owning diagnostic IDs/source or generated-origin spans; record failed/unavailable/unrun cases, never turn a source fixture or manifest flag into execution acceptance. Dependencies: runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution supplies Source-qualified provider/runtime/domain safety result and exact consuming-boundary evidence; auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks supplies Source-qualified provider/runtime/domain safety result and exact consuming-boundary evidence; legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries supplies Source-qualified provider/runtime/domain safety result and exact consuming-boundary evidence; no whole-component completion prerequisite. Whole shared-facet entailment and implementation acceptance are not conferred.
+
+Allocation interface/safety/safe13/human-review (Open). Role: domains owning producer or consuming-boundary checker. Input: agent model/prompt/tool/memory action with schemas, roles, grants, review and replay policy. Required positive predicate: Represent gated human/policy decisions as first-class review effects and records bound to requested action/diff/authority/reviewer/time/decision; prompt comments do not satisfy review gates. Positive output witness: First-class review effect bound to requested action/diff, authority, reviewer/policy, timestamp and decision. Concrete negative case: A prompt comment or mismatched/expired action review is substituted for the required human/policy gate. Required refusal: this counterexample must not be accepted as ordinary safe behavior; retain only the governing proven-safe/runtime-checked/rejected/explicit-audited-unsafe alternatives and actual mode/profile exceptions. Evidence: inspect these actual output records and owning diagnostic IDs/source or generated-origin spans; record failed/unavailable/unrun cases, never turn a source fixture or manifest flag into execution acceptance. Dependencies: runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution supplies Source-qualified provider/runtime/domain safety result and exact consuming-boundary evidence; auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks supplies Source-qualified provider/runtime/domain safety result and exact consuming-boundary evidence; legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries supplies Source-qualified provider/runtime/domain safety result and exact consuming-boundary evidence; no whole-component completion prerequisite. Whole shared-facet entailment and implementation acceptance are not conferred.
+
+Allocation interface/safety/safe13/memory-policy (Open). Role: domains owning producer or consuming-boundary checker. Input: agent model/prompt/tool/memory action with schemas, roles, grants, review and replay policy. Required positive predicate: Treat agent memory as tainted without trust metadata and enforce retention/redaction/privacy/deletion plus secret capabilities and explicit exposure policy. Positive output witness: Memory taint/trust, read/write retention/redaction/privacy/deletion and secret capability decisions. Concrete negative case: Untrusted or secret memory is exposed to ordinary prompts/tools without trust, retention, privacy, deletion and export policy. Required refusal: this counterexample must not be accepted as ordinary safe behavior; retain only the governing proven-safe/runtime-checked/rejected/explicit-audited-unsafe alternatives and actual mode/profile exceptions. Evidence: inspect these actual output records and owning diagnostic IDs/source or generated-origin spans; record failed/unavailable/unrun cases, never turn a source fixture or manifest flag into execution acceptance. Dependencies: runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution supplies Source-qualified provider/runtime/domain safety result and exact consuming-boundary evidence; auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks supplies Source-qualified provider/runtime/domain safety result and exact consuming-boundary evidence; legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries supplies Source-qualified provider/runtime/domain safety result and exact consuming-boundary evidence; no whole-component completion prerequisite. Whole shared-facet entailment and implementation acceptance are not conferred.
+
+Allocation interface/safety/safe13/model-call-policy (Open). Role: domains owning producer or consuming-boundary checker. Input: agent model/prompt/tool/memory action with schemas, roles, grants, review and replay policy. Required positive predicate: Record model effects, provider/model/version, schemas, provenance, nondeterminism, availability, actual external cost, retention, safety and replay policy; convenience APIs cannot hide authority/nondeterminism. Positive output witness: Model/provider/version, prompt digest, schemas, availability, nondeterminism, external spend, retention/safety/replay trace. Concrete negative case: A convenience model call hides effects/provider/version/schema/nondeterminism or real external cost/retention/replay policy. Required refusal: this counterexample must not be accepted as ordinary safe behavior; retain only the governing proven-safe/runtime-checked/rejected/explicit-audited-unsafe alternatives and actual mode/profile exceptions. Evidence: inspect these actual output records and owning diagnostic IDs/source or generated-origin spans; record failed/unavailable/unrun cases, never turn a source fixture or manifest flag into execution acceptance. Dependencies: runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution supplies Source-qualified provider/runtime/domain safety result and exact consuming-boundary evidence; auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks supplies Source-qualified provider/runtime/domain safety result and exact consuming-boundary evidence; legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries supplies Source-qualified provider/runtime/domain safety result and exact consuming-boundary evidence; no whole-component completion prerequisite. Whole shared-facet entailment and implementation acceptance are not conferred.
+
+Allocation interface/safety/safe13/prompt-authority (Open). Role: domains owning producer or consuming-boundary checker. Input: agent model/prompt/tool/memory action with schemas, roles, grants, review and replay policy. Required positive predicate: Preserve prompt roles/source and prevent untrusted content changing grants or privileged instructions, allowing privileged concatenation only under approved sanitization/delimiter policy. Positive output witness: Structured roles/source provenance and approved sanitization/delimiter or denial decision. Concrete negative case: Retrieved/tool/memory text changes tool grants, secret/review policy or privileged instructions through unsafe concatenation. Required refusal: this counterexample must not be accepted as ordinary safe behavior; retain only the governing proven-safe/runtime-checked/rejected/explicit-audited-unsafe alternatives and actual mode/profile exceptions. Evidence: inspect these actual output records and owning diagnostic IDs/source or generated-origin spans; record failed/unavailable/unrun cases, never turn a source fixture or manifest flag into execution acceptance. Dependencies: runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution supplies Source-qualified provider/runtime/domain safety result and exact consuming-boundary evidence; auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks supplies Source-qualified provider/runtime/domain safety result and exact consuming-boundary evidence; legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries supplies Source-qualified provider/runtime/domain safety result and exact consuming-boundary evidence; no whole-component completion prerequisite. Whole shared-facet entailment and implementation acceptance are not conferred.
+
+Allocation interface/safety/safe13/replay (Open). Role: domains owning producer or consuming-boundary checker. Input: agent model/prompt/tool/memory action with schemas, roles, grants, review and replay policy. Required positive predicate: Emit exact output replay or audit digest/schema/decision/review/provider records according to policy, allowing none only in interactive/non-safe contexts and requiring audit/replay for workflow/releases and side-effect retries/failure/idempotency. Positive output witness: Exact output replay or declared audit digests/schemas/decisions/reviews/providers, retry/failure/idempotency records. Concrete negative case: A workflow/release uses no replay/audit policy or retries a tool effect without recorded outputs, failures and idempotency policy. Required refusal: this counterexample must not be accepted as ordinary safe behavior; retain only the governing proven-safe/runtime-checked/rejected/explicit-audited-unsafe alternatives and actual mode/profile exceptions. Evidence: inspect these actual output records and owning diagnostic IDs/source or generated-origin spans; record failed/unavailable/unrun cases, never turn a source fixture or manifest flag into execution acceptance. Dependencies: runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution supplies Source-qualified provider/runtime/domain safety result and exact consuming-boundary evidence; auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks supplies Source-qualified provider/runtime/domain safety result and exact consuming-boundary evidence; legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries supplies Source-qualified provider/runtime/domain safety result and exact consuming-boundary evidence; no whole-component completion prerequisite. Whole shared-facet entailment and implementation acceptance are not conferred.
+
+Allocation interface/safety/safe13/sink-validation (Open). Role: domains owning producer or consuming-boundary checker. Input: agent model/prompt/tool/memory action with schemas, roles, grants, review and replay policy. Required positive predicate: Keep model/retrieval/user/tool output tainted until sink-specific parsing, validation, authorization, structured shell checks, URL grants, role controls and secret redaction succeed. Positive output witness: Sink-specific taint validation and authorization before action, with prompt-role preservation. Concrete negative case: Model/retrieval/tool/user output reaches shell/URL/code/log sinks without parsing, schema/structured argument validation, grants or secret redaction. Required refusal: this counterexample must not be accepted as ordinary safe behavior; retain only the governing proven-safe/runtime-checked/rejected/explicit-audited-unsafe alternatives and actual mode/profile exceptions. Evidence: inspect these actual output records and owning diagnostic IDs/source or generated-origin spans; record failed/unavailable/unrun cases, never turn a source fixture or manifest flag into execution acceptance. Dependencies: runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution supplies Source-qualified provider/runtime/domain safety result and exact consuming-boundary evidence; auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks supplies Source-qualified provider/runtime/domain safety result and exact consuming-boundary evidence; legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries supplies Source-qualified provider/runtime/domain safety result and exact consuming-boundary evidence; no whole-component completion prerequisite. Whole shared-facet entailment and implementation acceptance are not conferred.
+
+Allocation interface/safety/safe13/tool-grants (Open). Role: domains owning producer or consuming-boundary checker. Input: agent model/prompt/tool/memory action with schemas, roles, grants, review and replay policy. Required positive predicate: Validate tool schemas and enforce explicit capabilities and side-effect class; default safe policy grants read-only tools while sensitive tools require explicit grants and review policy. Positive output witness: Tool identity/schema/effect/capability/side-effect class and actual pre-invocation policy decision. Concrete negative case: A write/destructive/shell/network/secret/deployment/code tool is invoked as if read-only or with unvalidated schema/absent grants. Required refusal: this counterexample must not be accepted as ordinary safe behavior; retain only the governing proven-safe/runtime-checked/rejected/explicit-audited-unsafe alternatives and actual mode/profile exceptions. Evidence: inspect these actual output records and owning diagnostic IDs/source or generated-origin spans; record failed/unavailable/unrun cases, never turn a source fixture or manifest flag into execution acceptance. Dependencies: runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution supplies Source-qualified provider/runtime/domain safety result and exact consuming-boundary evidence; auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks supplies Source-qualified provider/runtime/domain safety result and exact consuming-boundary evidence; legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries supplies Source-qualified provider/runtime/domain safety result and exact consuming-boundary evidence; no whole-component completion prerequisite. Whole shared-facet entailment and implementation acceptance are not conferred.
+
+Criterion `behavior/a1/generated-source-reentry` (Open; implementation unassessed). Input: source-bound behavior/a1/generated-source-reentry request and its declared profile/target/policy facts. Accept: Re-enter generated source through the ordinary reader, macro, type, effect, profile and safety pipeline before use. Reject: Reject generated source used before reader, macro, type, effect, profile and safety validation, including a model-produced artifact admitted through a provider-only path. Required output: Checked generated-source stage manifest with reader/macro/type/effect/profile/safety verdicts, preserved origins and source-mapped diagnostics. Preserve the source facets, conditional rules, diagnostic context and dependencies pinned in this per-ID proposal. Dependencies consume actual outputs, not whole-task completion.
+
+Criterion `behavior/a1/profile-admission` (Open; implementation unassessed). Input: source-bound behavior/a1/profile-admission request and its declared profile/target/policy facts. Accept: Reject AI constructs outside :ai, :distributed, :hosted or an explicitly legal bridged profile. Reject: Reject an AI construct in an unbridged profile outside :ai, :distributed or :hosted; a backend or runtime adapter cannot legalize it. Required output: Compile-time AI profile legality report naming the selected profile and explicit bridge, with accepted and rejected expanded-form fixtures. Preserve the source facets, conditional rules, diagnostic context and dependencies pinned in this per-ID proposal. Dependencies consume actual outputs, not whole-task completion.
+
+D2 support-triage fixture refinement (Open; existing domain/support-agent-integration): Compile the Milestone6 positive fixture through ordinary Gravity source, macro/type/effect/capability/profile/safety and artifact checks, then execute its declared support-triage workflow with one model-call step, one schema-validated tool step, one human-review step and one durable replay record binding those steps to the same source-bound fixture. Preserve the detailed typed event/log records required by Workflow and the selected replay contract; these fixture members are not a work allowance or a cap on required internal records. Required outputs: Actual source/compiler/profile/provider identities, agent manifest, prompt artifact, tool schema, workflow graph, replay-log schema and durable record, model/tool schema-validation and review decisions, evaluation and record-versus-replay results. Show the actual corresponding operation/event for every required member; fixture counts or supplied success flags alone are not evidence. The AI task owns this integrated support-triage result; Schema, Workflow, Auth and compiler owners retain their actual validation, durability, replay, grants and ordinary-pipeline products. Refuse: A missing required model/tool/review/durable-replay member, an SDK-only side path, tool use without capability, unvalidated model output, prompt-injected authority escalation, replay-sensitive current-time access without an event record, or an agent-memory write outside its granted namespace. Retain stable source-mapped diagnostics, failed inputs and linked negative records for each refusal. Dependencies consume the actual Schema validation, Workflow typed graph/event/replay, Auth grant and ordinary compiler-legality artifacts; no whole-component completion prerequisite is introduced. This is a required future fixture and product contract; implementation acceptance remains Open and no live operation or stage/milestone completion is claimed.
+
+Historical projected paragraph (unchanged):
+<!-- domains-ai-parent:end -->
+
 Projected task block:
 Outcome: the declared AI workflow executes through schema, capability, taint
 and human-review boundaries. Remaining tasks, all open: implement declaration

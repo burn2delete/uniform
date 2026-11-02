@@ -56,6 +56,152 @@ component acceptance and coordinator integration pending until their exact
 evidence is present. Whole-domain, full-language, self-hosted and release claims
 remain governed by their separate existing outcomes.
 
+## AI parent composition
+
+Select the existing Open `ai` task and one literal criterion in its
+[parent refinement](tasks.md#ai-parent-proposed-criteria). Read the complete
+[A1-A11 contracts](../../docs/phase-11-ai-and-agentic-programming/README.md),
+P10, SAFE13, DOM18, R8, STD13 and TEST8, plus the owning schema, grant,
+generated-code and durable-workflow contracts. Ninety-seven source criteria,
+three profile interfaces, eight SAFE13 allocations, the foundation/facet
+obligations and D2 support-triage fixture retain their full source conditions.
+They are clauses in the same task, not new implementation tasks or a count of
+accepted features. Accountable AI maintainer remains unassigned to a person.
+
+The AI parent owns AI declaration normalization/admission, AI-specific typed
+semantic and policy artifacts, domain interfaces and composed AI results. It
+consumes actual general compiler, Schema, Auth, Workflow, Backend, Runtime,
+library and test products. The per-ID source clauses below retain their
+conditional producer/consumer roles; broad wording does not authorize a second
+general validator, capability system, workflow engine or provider runtime.
+
+| Selected source family | Domain product and decisive cases | Existing owning boundary |
+| --- | --- | --- |
+| A1 declaration and profile admission | Compile model/provider/prompt/tool/agent/workflow/memory/policy/eval/review forms to linked typed declarations and an AI program manifest with source/macro origins, all AI effects, legal profile/bridge, schema and dependency identities. Reject ambient source credentials, hidden adapter effects, missing edges and privileged production deployment without policy/evals. | Expand/Core/Types/Effects/Legality perform ordinary analysis; AI consumes their products and emits AI semantics. Backend artifact emission is separate. L14 agent-facet products are a declaration fixture, never permission for live calls. |
+| A2 model/provider admission and invocation | Normalize adapter/endpoint/model/version/tokenizer/mode/schema/retention/credential requirements; retain full request/result/failure/fallback/drift/usage/redaction identities. Reject network-only authority, incompatible embedding dimension/mode/retention, pinned replay drift and floating upgrades without matching evals. | Runtime owns the actual provider/embedding call and typed failure; Auth supplies scoped provider grants and secret policy, Schema validates outputs, and AI consumes the exact results. Package/build policy controls live CI; a declared provider or supplied response is not a live call. |
+| A3 prompt rendering and output admission | Emit syntax-derived prompt/schema/role/taint/tool/provider/compatibility policy, actual prompt and rendered-input hashes, per-field validation/refusal/repair records. Reject arbitrary model-selected schemas, invalid partial output, hidden tools, secret/no-store leakage and changed meaning labeled compatible. | Schema supplies intended-sink validators and canonicalization, Runtime renders/receives/records actual values, and the AI consumer admits typed results only after those checks. Preserve the approved sanitizer OR delimiter alternative without promoting data to instruction authority or erasing taint/grant/review obligations. |
+| A4-A5 tools and agents | Emit complete typed tool/agent dependency, effect, toolset, memory-mode, policy, review and eval contracts. Exercise declaration/agent/deployment/handle/policy agreement, result validation, typed foreign failure, idempotent retry/compensation and exact agent attribution. Reject plans used as authority, out-of-toolset requests, read-only memory writes and hidden implementation effects. | Auth owns grant intersection and Runtime owns actual tool/provider/adapter calls. STD13 exposes the callable facade. An agent declaration or required review record cannot create a missing grant. |
+| A6 durable AI workflow | Consume typed graph/state/log/transition records; preserve node effects, grants, idempotency, replay, review payload, migration and typed compensation. Exercise first-run/replay and denial/failure paths; reject raw branch values, repeated effects, unrecorded nondeterminism, changed payload reuse and incompatible in-flight migration. | The existing `workflow` task owns durable semantics, `backend-workflow` owns deployable graph emission, and Runtime owns scheduling/persistence/replay. AI specializes and composes model/tool/memory/review nodes without implementing a second durable engine. |
+| A7 memory and retrieval | Emit item/metadata/provenance/partition/retention/index/embedding/replay contracts. Execute scoped read/write/embedding, replay result IDs/scores/embedding identity, re-embedding old/new lineage and deletion/redaction index coherence. Reject cross-tenant access without sharing policy, protected persistence, stale dimension/schema reuse and fresh retrieval during recorded replay. | Runtime and its declared store/embedding providers perform actual mutations and retrieval; Schema/Auth supply validation and independent read/write grants. Memory remains data authority even when project-owned. A successful mock store does not establish an external provider's deletion behavior. |
+| A8 policy and A10 human review | Produce deterministic layered decisions with deny precedence and typed action/role/evidence/payload/expiry/revocation/denial/timeout/replay rules. Execute grant/deny/expired/revoked/changed-payload cases and scoped emergency audit; show sufficient typed evidence at the actual review UI/API. | Auth and Runtime enforce the actual protected action. Workflow records review lifecycle events; UI/Tools provide their own adapter surfaces. Review/evaluation outputs never manufacture capabilities. Authority-broadening changes consume the existing Governance security/compatibility decisions. |
+| A9 evaluation and release consumption | Emit dataset schema/version/provenance/split and metric direction/threshold/aggregation/confidence-or-variance contracts, exact subject/model/prompt/tool/memory/policy/runtime identities and changed-artifact comparisons. Reject stale/missing/incompatible reports, missing safety probes, name-only fallback and unauthorized live evals. | AI supplies subject/fixture/oracle/report interfaces. Release's existing `execute-agent-and-workflow-evaluations` task actually runs the required suite; release/policy consumers assess matching reports. Signing applies when governing policy requires it. A hook, sample score or manifest does not prove a run. |
+| A11 defenses and incident reconstruction | Preserve data-authority roles and taint across user/web/file/package/retrieved/tool/model inputs. Exercise schema/grant/review/secret denials and generated-source trust, record escalation/override/exposure attempts and reconstruct incidents from joined redacted ledgers. | Actual compiler re-entry, Auth and Runtime sinks enforce the checks; the domain verifies composed results. Privileged release consumes matching defense probes. Prompt instructions and tool descriptions cannot change authority. |
+
+For generated code, require actual ordinary reader/expansion/type/effect/profile/
+safety/package products and model/prompt/generated origins before execution,
+publication or dependency use. This consumes the existing generated-program
+compiler route; it does not fork a permissive AI compiler. Structural artifact
+checking precedes candidate use and can develop independently of a live model.
+
+The D2 Milestone 6 fixture compiles ordinary support-triage source and executes
+the required model-call, validated tool, human-review and durable-replay members
+under the same source identity. These members are minimum fixture obligations,
+not work allowances or maximum record counts. Preserve DOM18 retrieval/refund
+policy and TEST8 first-run/replay, grant/deny/expiry/revocation/payload-change,
+injection/misuse/schema/refusal/leakage cases. The domain owns the integrated
+result; each producer retains its actual schema/grant/durability/runtime work.
+An SDK-only path or a bundle of supplied success flags does not satisfy D2.
+
+Start from declared typed interfaces and deterministic source/validation/recorded
+fixtures without requiring whole components, final bootstrap admission or
+production release first. Label mock, recorded and live results accurately.
+Actual provider/tool/memory and composed durable acceptance requires real
+applicable execution with its authorized credentials and policies. Held C12,
+native, provider, publication and other denied operations remain held.
+
+Existing [AI artifact assembly](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00337-ai-agentic-source-artifact.clj)
+and [phase-11 validation](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/platform-phases/00336-p11-ai-validate.clj)
+assemble fixed records and check metadata/status predicates. The
+[compiled-tooling validator](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00541-validate-stage0-compiled-ai-tooling.clj)
+also consumes supplied validation records. These are inspection leads, not
+general A1-A11 execution or eval evidence. Trace the selected real caller and
+place positive/negative fixtures beside its owning tests; retain actual source,
+compiler, profile, target, provider, schema, policy, artifact and result IDs,
+raw diagnostics, redaction and explicitly failed/absent/unrun paths.
+
+### AI parent source context
+
+The complete parent body matches the published Domain task predecessor before
+three profile-context and one Domain-context reference repair. The three
+`ai/profile-tool-contract`, `ai/prompt-memory-boundary` and
+`ai/replay-evaluation-artifacts` mappings use the existing
+[profile-interface record](https://github.com/burn2delete/uniform/blob/bc0a04f8e70de2be04b642aec357dcfe9a532a5c/specs/requirement-reconciliation/profile-residual-interfaces.edn),
+SHA-256 `22ba3f689b81fd783d6854bc4c3b821e3ce2ad7eb73fb3ad1826c78ab374e027`.
+The support-agent clause uses the full seventy-record Domain context linked
+in the task preamble, not the local one-record excerpt.
+
+Three published context files match the frozen local aggregate exactly:
+
+- [Phase 11 proposal](https://github.com/burn2delete/uniform/blob/2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc/specs/requirement-reconciliation/phase-11-proposal.edn), SHA-256 `b5548d044300dd86824d19b795cccda68093996e701973f523c94f1f23106139`.
+- [AI residual interfaces](https://github.com/burn2delete/uniform/blob/2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc/specs/requirement-reconciliation/ai-residual-interfaces.edn), SHA-256 `cc057dc958f2cab315e528a4306ce83d6de86638d594404266c45525c46b7bb7`.
+- [Qualified source receipt](https://github.com/burn2delete/uniform/blob/2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc/specs/requirement-reconciliation/phase-11-evidence.md), SHA-256 `8eb344bd83064c4ab62325e733cafc286d426dbad7d07221b71ee53ec0137ed1`.
+
+The first preserves eleven source documents, 697 occurrences, 1,174 facets,
+110 inherited unit identities and twenty-one mixed facets affecting nineteen
+units. The second preserves 94 historical-gap interfaces; the current task
+also has two later explicit generated-source/profile clauses and the Domain
+support-agent criterion. These are qualified views, not interchangeable units
+or a new denominator. Its 94 mappings attach 916 distinct source facets,
+including nineteen TEST5/TEST8 safety/evaluation facets outside A1-A11; those
+conditions remain required rather than being filtered to the Phase 11 files.
+Fifty-one existing Open role contexts name the AI parent;
+other producers/consumers retain their own roles. Source-facet conjunctions,
+current repartition and independent review remain unassessed, including the
+qualified sanitizer/delimiter and mixed-clause history. Published citation
+metadata is not current source/implementation acceptance.
+
+### AI mixed accounting source disposition
+
+Current AGENTS removes synthetic project/compiler allowances and their enforcing
+contracts/tests. It preserves actual external billing/account policy, provider
+representability, semantic checks and actual host restrictions. The historical
+proposal's unresolved flags do not reopen that user decision or create an
+accounting prerequisite for ordinary work. Retain real service timeout,
+cancellation, idempotency, retry/failure and source-program control-flow
+semantics; a compiler work counter is not a substitute for them. Observed
+call/token/cost/latency facts remain attributable observations, not work debits.
+
+The table addresses every retained mixed facet. IDs omit only the common
+`facet/ai-build-tools/` prefix. These are current source-grounded dispositions
+for the four existing policy criteria, not new tasks or independent acceptance.
+For a numeric condition retained at an actual consumer, identify its concrete
+provider/account/format/semantic/host requirement; do not retain an arbitrary
+work ceiling under a new name. The existing
+[accounting-removal authority](../accounting-removal/spec.md) owns that cleanup.
+
+| Exact facet suffix | Current remove/retain interpretation |
+| --- | --- |
+| `a1/1359-1434` | Retain agent composition and meaningful external-policy metadata; a synthetic work allowance is not a required dependency. |
+| `a1/3203-3322` | Retain model/provider identity, effects/grants, schemas and replay. Interpret cost/account/provider terms at their actual boundary; no generic compiler budget proof. |
+| `a1/4147-4219` | Remove synthetic model-call-count refusal. Preserve actual provider spending/account controls and declared service timeout/cancellation, without imposing compiler fuel. |
+| `a1/5555-5635` | Retain toolset, memory and policy manifest links plus applicable external-policy metadata; remove work-debit requirements. |
+| `a1/6342-6394` | Example model/tool counts do not establish global admission quotas. Preserve the fixture's tools, review, schemas and replay, plus actual external policy where used. |
+| `a3/2135-2183` | Retain repair policy, each attempt record and final validation. Remove a synthetic maximum-attempt prerequisite; actual provider/account and declared failure/control semantics stay explicit. |
+| `a3/4296-4325` | The example repair maximum is not a compiler-wide allowance. Preserve refusal routing, tool visibility, authority partitions and chosen source-program repair behavior. |
+| `a3/4903-4958` | Do not reject otherwise legal repair merely because no synthetic attempt count exists; retain typed failure/refusal, validation and applicable real service/host constraints. |
+| `a3/5995-6067` | Preserve observed repair records and final validation evidence; a counter cutoff alone is not conformance. |
+| `a5/1194-1234` | Preserve the declared toolset and grant intersection; remove synthetic tool-work allowance. Actual external-account policy requires its own concrete meaning. |
+| `a5/2443-2543` | Remove synthetic model/tool/retry/time/token work ceilings; preserve real provider cost/account and representability terms, semantic timeout/cancellation and actual host controls. |
+| `a5/3838-3855` | Policy artifact carries retained real terms, not a renamed project work policy. |
+| `a5/4127-4143` | Keep actual provider usage/cost observations and attribution; remove producer/caller debits or reservations. |
+| `a5/4493-4524` | Model-call example count is not a global work allowance; retain adjacent agent/model/prompt/output/eval/memory/grant conditions and actual external spending policy. |
+| `a5/4524-4555` | Tool-call example count is not a global work allowance; retain the toolset, per-action authority, review and side-effect contract. |
+| `a5/5281-5309` | Remove blanket refusal for absent/unbounded synthetic work budgets. Real external-account, provider or host restrictions remain independently applicable. |
+| `a5/5523-5572` | Do not emit A5006 solely for removed work allowance omission/exhaustion. Preserve stable applicable diagnostics for real external-policy failure with its actual subject. |
+| `a5/6150-6216` | Replace budget-only termination expectations with valid behavior beyond removed counters and genuine negative provider/account/semantic cases. Do not claim an arbitrary cutoff proves safety. |
+| `a6/2017-2060` | Remove synthetic retry debits; preserve retry/idempotency/compensation, recorded outcomes and actual external-spend observations. Replay cannot reissue paid or non-idempotent effects without the governing contract. |
+| `a6/3615-3632` | Keep required actual provider usage/cost/replay records; no compiler work ledger or fabricated zero-accounting substitute. |
+| `a6/5111-5161` | Do not emit A6008 for removed compiler work overflow; retain applicable actual external-account/service failures without losing workflow source/node/replay context. |
+
+Exercise legal mock/recorded cases beyond retired synthetic counters and equally
+late invalid schema/grant/review/replay cases. Separately test known-over-limit
+actual provider spend denial before issuance without making an unauthorized
+paid request. Keep provider context/dimension/format legality and real host
+termination distinct. The current accounting policy applies now; concrete
+code/contract cleanup, the mixed-facet conjunction and independent affected
+consumer review remain Open in their existing authorities. No whole mixed
+paragraph or its nineteen affected units is silently retired or accepted.
+
 ## Query, Workflow, GPU and UI composition
 
 Select one exact criterion in the existing Open `query`, `workflow`, `gpu` or
@@ -63,8 +209,8 @@ Select one exact criterion in the existing Open `query`, `workflow`, `gpu` or
 unchanged historical paragraphs. Nineteen Domain clauses, five profile
 interfaces and two decision criteria preserve their source identities. These
 are refinements of the same four authorities, not new tasks or accepted domains.
-The AI parent's much larger A1-A11 source criteria remain separate unfinished
-resumption work; do not infer them from Workflow's AI integration interface.
+The AI parent's detailed source criteria are now resumed separately above;
+Workflow's AI integration interface does not discharge them.
 
 Read the complete selected DOM6/7/9/10/11/13 contracts and P9/P11 where
 applicable, using the [Domain phase index](../../docs/phase-09-domain-specific-computing-coverage/README.md).
