@@ -1,14 +1,11 @@
+(def ^:private p15-s23-runtime-call-operations
+  {:authorize-external-link #'p15-s23-sh07-b51-runtime-authorize-external-link
+   :execute-values-scoped #'p15-s23-stage2-runtime-execute-values-scoped
+   :execute-external-machine #'p15-s23-sh07-b51-runtime-execute-external-machine
+   :execute-function-scoped #'p15-s23-stage2-runtime-execute-function-scoped})
+
 (defn- p15-s23-stage2-runtime-execute-call-scoped [runtime plan env instruction public-invocation-scope]
-  (let [function (:function instruction)
-        external-authority
-        (when (contains? instruction :external-link)
-          (p15-s23-sh07-b51-runtime-authorize-external-link runtime plan instruction))
-        args (p15-s23-stage2-runtime-execute-values-scoped
-              runtime plan env (:args instruction) :recur-inside-function-argument public-invocation-scope)]
-    (if external-authority
-      (p15-s23-sh07-b51-runtime-execute-external-machine
-       runtime plan instruction external-authority args public-invocation-scope)
-      (p15-s23-stage2-runtime-execute-function-scoped runtime plan function args public-invocation-scope))))
+  (gravity.runtime/execute-call-scoped runtime plan env instruction public-invocation-scope p15-s23-runtime-call-operations))
 
 (defn- p15-s23-stage2-module-scope? [scope]
   (= :gravity/stage2-module-invocation (:kind scope)))

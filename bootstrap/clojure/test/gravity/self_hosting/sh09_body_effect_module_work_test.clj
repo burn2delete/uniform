@@ -2,12 +2,10 @@
   "Semantic producer-module traversal and child-result propagation."
   (:require [clojure.test :refer [deftest is]]
             [gravity.bootstrap]
-            [gravity.self-hosting.sh08-function-call-type-test]
-            [gravity.self-hosting.sh09-body-effect-test]))
+            [gravity.self-hosting.sh08-function-call-kernel-support :as kernel-support]))
 
 (defn- effect [function arguments]
-  (apply (var-get (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf))
-         function arguments))
+  (apply kernel-support/leaf function arguments))
 
 (def ^:private module-stage-order
   '[body-ma-context body-va-context body-ae-context body-nt-context body-vp-context
@@ -140,11 +138,10 @@
     (is (zero? @realizations))))
 
 (defn- normalized-atomic-producer-entry [ordinal]
-  (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
-        invoke (var-get (ns-resolve upstream 'invoke-c7))
-        base ((var-get (ns-resolve upstream 'atomic-equality-input))
+  (let [invoke kernel-support/invoke-c7
+        base (kernel-support/atomic-equality-input
               [:gravity.type/string :gravity.type/string])
-        sha (var-get (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'sha))
+        sha kernel-support/sha
         ids (zipmap (keys (:nodes base)) (map sha (range (+ 7000 (* 16 ordinal)) (+ 7010 (* 16 ordinal)))))
         nodes (mapv (fn [node]
                       (-> node (update :node-id ids) (update :children #(mapv ids %))
