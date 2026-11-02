@@ -27,6 +27,31 @@
   (let [{:keys [request typed verification] :as products} (fresh-type-products relative)]
     (assoc products :binding (seal-binding request typed verification))))
 
+(defn- fresh-current-products [relative]
+  ;; Use the existing five-argument C5 source boundary for this selector only.
+  ;; SH07 carries the authenticated Macro mode through construction while
+  ;; stripping it at the exact SH03 Reader boundary.
+  (let [source-path (path relative)
+        reader-path (path bootstrap/sh03-reader-source-relative-path)
+        c5-invocation {:reader-source-path reader-path
+                       :authenticated-envelope-options {:source :development-current}
+                       :macro-source-mode :development-current}
+        c5 (bootstrap/compiler-c5-resolution-source-artifact
+            source-path (slurp source-path :encoding "UTF-8")
+            {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+            reader-path c5-invocation)
+        artifact (bootstrap/sh07-core-from-resolution-artifact c5 c5-invocation)
+        report (bootstrap/sh07-core-artifact-verification artifact c5-invocation)
+        coordinator ((sh08-helper 'coordinator-verification) artifact report)
+        context ((sh08-helper 'b47-context) artifact report coordinator)
+        request {:canonical-core-artifact (:canonical-core-artifact context)
+                 :b47-context context
+                 :coordinator-verification coordinator}
+        typed (kernel-support/invoke-c7 'sh08-function-type-core-artifact [request])
+        verification (kernel-support/invoke-c7 'sh08-verify-function-type-result [request typed])]
+    {:c5 c5 :artifact artifact :report report :request request :typed typed
+     :verification verification :binding (seal-binding request typed verification)}))
+
 (defn- fresh-request [c5]
   (let [artifact (bootstrap/sh07-core-from-resolution-artifact c5)
         report (bootstrap/sh07-core-artifact-verification artifact)
@@ -3460,7 +3485,7 @@
 (deftest body-effect-import-bounds-development-kernel
   (is (true? (leaf 'body-import-tables-valid? {:module-type-producers [] :imported-function-types []})))
   (doseq [field [:module-type-producers :imported-function-types]
-          malformed [7 nil {} [7] [nil] (vec (repeat 257 {}))]]
+          malformed [7 nil {} [7] [nil]]]
     (is (false? (leaf 'body-import-tables-valid?
                      (assoc {:module-type-producers [] :imported-function-types []} field malformed)))))
   (let [entry {:request {:canonical-core-artifact {:nodes []}} :facts {:function-type-table []}}]
@@ -3469,6 +3494,90 @@
     (is (false? (leaf 'body-module-vectors-valid? {:nodes []} {:function-type-table nil} [])))
     (is (false? (leaf 'body-module-vectors-valid? {:nodes []} {:function-type-table []}
                       [(assoc-in entry [:request :canonical-core-artifact :nodes] nil)])))))
+
+(deftest body-private-map-keys-authenticated-builder-composition
+  ;; The PMK source pair must reach both the leaf Effects builder and the
+  ;; public C8 forwarding boundary. This remains development evidence only.
+  ;; The five-argument C5 route now selects the current Reader/macro source,
+  ;; while SH07 still rejects the current macro bytes at its pinned C4
+  ;; replayability boundary. Keep this selector real and held at that exact
+  ;; owner boundary; do not substitute a synthetic product or refresh owners.
+  (let [extensions [".gravity" ".qst"]
+        products (mapv #(fresh-current-products
+                         (str "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-private-map-keys" %))
+                       extensions)
+        results (mapv build-leaf products)]
+    (doseq [[extension products result]
+            (map vector extensions products results)]
+      (let [{:keys [typed verification binding request]} products
+            facts (:identity-input typed)
+            calls (filter #(= :direct-private-map-keys (:dispatch %)) (:call-type-facts facts))]
+        (is (= :accepted (:status typed) (:status result))
+            (str extension " " (pr-str (:diagnostics result))))
+        (is (= :passed (:status verification)))
+        (is (= 1 (count calls)))
+        (is (= request (get-in binding [:digest-resolution :preimage :request])))
+        (is (= :passed (:status (leaf 'verify-body-effect-result typed verification binding result))))
+        (let [call (first calls)
+              record (get-in result [:effect-graph :nodes (:call-core-node-id call)])]
+          (is (= #{:memory/allocate} (:direct record)))
+          (is (= :sh09-private-map-keys-allocation-v1
+                 (get-in record [:allocation :rule-version]))))
+        (let [wrong-binding (assoc-in binding [:digest-resolution :preimage :request] {})
+              rejected (leaf 'build-body-effect-result typed verification wrong-binding)]
+          (is (= :rejected (:status rejected)))
+          (is (= "C8-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
+          (is (= :untrusted-sh08-body-effect-input
+                 (get-in rejected [:diagnostics 0 :reason]))))))
+    (is (= (:identity-input (first results)) (:identity-input (second results))))
+    (when-not (every? #(and (= :accepted (:status (:typed %)))
+                            (= :passed (:status (:verification %)))) products)
+      (throw (ex-info "PMK products failed before public C8 composition" {})))
+    (let [bundle (compile-c8-module-bundle
+                  (path "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"))
+          invoke (fn [function args]
+                   (bootstrap/p15-s23-stage2-runtime-execute-function
+                    {:engine :body-effect-pmk-public-composition} bundle function args))]
+      (doseq [[extension products result]
+              (map vector extensions products results)]
+        (let [{:keys [typed verification binding]} products
+              actual (invoke 'sh09-build-authenticated-body-effect-result
+                             [typed verification binding])
+              checked (invoke 'sh09-verify-authenticated-body-effect-result
+                              [typed verification binding actual])
+              wrong-binding (assoc-in binding [:digest-resolution :preimage :request] {})
+              rejected (invoke 'sh09-build-authenticated-body-effect-result
+                               [typed verification wrong-binding])]
+          (is (= result actual) extension)
+          (is (= :accepted (:status actual)) extension)
+          (is (= :passed (:status checked)) extension)
+          (is (= :rejected (:status rejected)) extension)
+          (is (= "C8-VERIFY" (get-in rejected [:diagnostics 0 :rule])) extension)
+          (is (= :untrusted-sh08-body-effect-input
+                 (get-in rejected [:diagnostics 0 :reason])) extension))))))
+
+(deftest body-module-vectors-have-no-cumulative-quota
+  (let [entry {:request {:canonical-core-artifact {:nodes [{}]}}
+               :facts {:function-type-table [{}]}}]
+    (is (true? (leaf 'body-module-vectors-valid?
+                    {:nodes (vec (repeat 65537 {}))} {:function-type-table []} [])))
+    (is (true? (leaf 'body-module-vectors-valid?
+                    {:nodes []} {:function-type-table (vec (repeat 257 {}))} [])))
+    (is (true? (leaf 'body-module-vectors-valid?
+                    {:nodes (vec (repeat 65536 {}))}
+                    {:function-type-table (vec (repeat 256 {}))} [entry])))))
+
+(deftest body-module-vectors-check-caller-and-every-producer
+  (let [core {:nodes []} facts {:function-type-table []}
+        prefix (vec (repeat 300 {:request {:canonical-core-artifact core}
+                                 :facts facts}))]
+    (is (true? (leaf 'body-module-vectors-valid? core facts prefix)))
+    (doseq [bad [nil 7 {} '() '(1)] field [:nodes :functions]]
+      (let [bad-core (if (= field :nodes) {:nodes bad} core)
+            bad-facts (if (= field :functions) {:function-type-table bad} facts)
+            entry {:request {:canonical-core-artifact bad-core} :facts bad-facts}]
+        (is (false? (leaf 'body-module-vectors-valid? bad-core bad-facts prefix)))
+        (is (false? (leaf 'body-module-vectors-valid? core facts (conj prefix entry))))))))
 
 (deftest body-effect-foreign-summary-development-kernel
   (let [coordinate {:binding-id (sha 50) :producer-sh06-artifact-id (sha 60)
