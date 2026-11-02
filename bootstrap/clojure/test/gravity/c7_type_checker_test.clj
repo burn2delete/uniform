@@ -2,6 +2,7 @@
   (:require [clojure.test :refer [deftest is testing]]
             [gravity.c7-type-checker :as c7]
             [gravity.c7-type-checker.inference :as compatibility]
+            [gravity.c7-type-checker.evidence :as record-compatibility]
             [gravity.c7-type-checker.verification :as verification]
             [gravity.types :as types]))
 
@@ -175,7 +176,7 @@
   (let [contract (:gravity/namespace-contract (meta #'types/type-fact))
         publics (ns-publics 'gravity.types)]
     (is (= :seed-type-products-and-current-gravity-runtime (:contract-boundary contract)))
-    (is (= 14 (count publics)))
+    (is (= 20 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (doseq [[name api] (:public-api contract)]
       (is (= (:arglists api) (:arglists (meta (publics name)))))
@@ -187,7 +188,7 @@
       (is (false? (:proves-canonical-types? api)))
       (is (false? (:grants-authority? api))))
     (is (= [] (get-in contract [:dependency-direction :requires])))
-    (is (= '[gravity.c7-type-checker.inference gravity.c7-type-checker.verification gravity.bootstrap]
+    (is (= '[gravity.c7-type-checker.inference gravity.c7-type-checker.verification gravity.c7-type-checker.evidence gravity.bootstrap]
            (get-in contract [:dependency-direction :consumed-by])))
     (is (false? (:legacy-status-labels-authoritative? contract)))
     (is (not (contains? (ns-aliases 'gravity.types) 'gravity.bootstrap)))
@@ -264,6 +265,16 @@
     (is (= "C7-VERIFY" (:id (ex-data error))))
     (is (= [:constraints-solved?] (:missing-fields (ex-data error))))
     (is (= "C7" (:document-id (ex-data error))))
+    (let [layout-report (apply types/typed-core-verifier-report
+                               (assoc-in arguments [9 :records 0 :status] :pending))
+          layout-error (try (c7/c7-type-validate!
+                             "c7-test.gravity"
+                             (assoc artifact :typed-core-verifier-report layout-report))
+                            nil
+                            (catch clojure.lang.ExceptionInfo error error))]
+      (is (false? (:layout-facts-recorded? layout-report)))
+      (is (= "C7-LAYOUT" (:id (ex-data layout-error))))
+      (is (= [:layout-facts-recorded?] (:missing-fields (ex-data layout-error)))))
     (let [missing-origin (update-in arguments [0 0 :source] dissoc :syntax-id)
           report (apply types/typed-core-verifier-report missing-origin)]
       (is (= :failed (:status report)))
@@ -326,3 +337,52 @@
             (c7/c7-type-capability-proof artifact)))))
   (is (= :complete
          (verification/validate! (constantly {}) (fn [& _]) nil nil))))
+
+(deftest types-stage-records-retain-source-unsafe-and-callback-data
+  (let [source {:syntax-id :syntax :span {:source "native.gravity" :form-index 3}
+                :origin-chain [:source] :generated-origin {:from :macro}}
+        unsafe {:unsafe-island :island :ai/human-review :required}
+        value (assoc (node 12 :call {:operator 'dynamic/cast})
+                     :source source :unsafe-metadata unsafe)
+        events (atom [])
+        operator (fn [actual] (swap! events conj actual)
+                   (get-in actual [:children :operator]))
+        cast (first (:records (types/cast-records operator [value])))
+        boundary (first (:records (types/dynamic-boundary-records
+                                    (constantly 'dynamic/value) [value] {:profile :native})))
+        schema (first (:records (types/schema-links
+                                 [{:source source :semantic-anchor {:source-syntax :schema}
+                                   :domain :schema-ir :profile :hosted :target :jvm}])))
+        layout (first (:records (types/layout-facts (constantly :caller-type)
+                                                   [(assoc value :profile :unknown)])))]
+    (is (= [value] @events))
+    (is (identical? value (first @events)))
+    (is (identical? source (:source cast)))
+    (is (identical? unsafe (:unsafe-metadata cast)))
+    (is (= (:node-id value) (:source-node cast) (:source boundary) (:core-node layout)))
+    (is (false? (:accepted? boundary)))
+    (is (= :schema (:source-schema schema)))
+    (is (= :schema-ir (:domain schema)))
+    ;; These legacy labels record caller data; they prove no native layout.
+    (is (= :abstract (:layout layout)))
+    (is (= :recorded (:status layout)))
+    (is (= :caller-type (:type layout)))
+    (is (= [] (:records (types/cast-records (constantly :unknown) [value]))))
+    (is (= [] (:records (types/schema-links [{:domain :other}])))))
+  (is (= 1 (count (:records
+                    (c7/with-operations {:c7-node-operator (constantly 'dynamic/cast)}
+                      #(c7/c7-cast-records [(node 3 :call {:operator 'dynamic/value})])))))))
+
+(deftest types-stage-record-entry-points-remain-interposable
+  (doseq [[name arity] [['dynamic-boundary-records 3] ['cast-records 2]
+                       ['generic-instantiations 2] ['protocol-dispatch-table 2]
+                       ['schema-links 1] ['layout-facts 2]]]
+    (let [arguments (vec (repeatedly arity #(Object.)))
+          stage-var (ns-resolve 'gravity.types name)
+          wrapper (ns-resolve 'gravity.c7-type-checker.evidence name)
+          observed (atom nil) marker (Object.)]
+      (with-redefs-fn {stage-var (fn [& values] (reset! observed values) marker)}
+        #(is (identical? marker (apply wrapper arguments))))
+      (is (= arity (count @observed)))
+      (is (every? true? (map identical? arguments @observed)))))
+  (is (= [] (:records (record-compatibility/schema-links [])))))
