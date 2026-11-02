@@ -2585,7 +2585,7 @@ Source-only commit `a83fbe75396e7f6b186f14f7241c3d33476b9659` extends the
 [existing selected-result table](../docs/acceptance-dependencies.md#future-task-construction-and-composition)
 and [root safety order](../specs/legality-workflow/plan.md#root-safety-producer-and-consumer-order).
 Two existing consumers gain explicit routes: the Legality profile task and
-Evolution's [security-review task](../specs/evolution-workflow/tasks.md#implementation-tasks)
+Evolution's [security-review task](../specs/evolution-workflow/tasks.md)
 and its distinct `governance/unsafe-audit-decision` output.
 Three existing classification/handoff/conformance routes are extended. No task
 body, status, identity, frozen source criterion, original receipt or independent
@@ -2662,3 +2662,7 @@ changed files, 77 Markdown files, 3,103 local references, 139 original routes,
 ASCII and whitespace checks pass. No compiler, specialist review, proof checker,
 provider/runtime/target, signing/publication or held action ran; no current
 independent acceptance is claimed.
+
+The final navigation check rejected an assumed Evolution heading anchor. The
+reference now uses the actual task file; the corrected complete check passes.
+The failed preparation is not passing evidence.
