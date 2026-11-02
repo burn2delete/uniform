@@ -23,6 +23,62 @@ Record exact source/fixture/consumer identities and passed, failed or unrun work
 preserve operation restrictions and separate author checks, independent
 acceptance, integration and the complete profile/provider matrix.
 
+## Complete safety-pipeline source criteria
+
+Use the three existing safety-classification, MIR/runtime-handoff and
+profile-conformance tasks for the complete
+[C10 coordinator contract](../../docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md).
+The preserved all-240 census contains 122 C10 facet identities, 47 source
+occurrences and six owner allocations. Retain those identities and their
+pending full-predicate dispositions. The four current criterion blocks refine
+three existing Open tasks; inventory and decisions share the classification
+owner rather than introducing another task ledger. No C10-specific independent
+semantic review is supplied by this proposal.
+
+| Existing task / criterion | Implementation boundary and decisive cases |
+| --- | --- |
+| Safety classification / inventory | Derive all [operation families](../../docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md#operation-inventory) from actual typed/effected Core, with profile, target, grants, ownership and origins. Run specialized analyses before the affected MIR construction. Reject missing inventory/facts, duplicate/conflicting/missing outcomes and unknown operations. Set equality alone cannot establish exactly one outcome. |
+| Safety classification / decisions | Apply [SAFE1](../../docs/phase-02-safety/030-safe1-safe-gravity-semantics.md#safety-outcome-model) per operation. Bind every check to its real condition, guarding location, facts/effects, profile-legal failure and invalidation. Emit every applicable [proof obligation](../../docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md#proof-obligations), full unsafe audit, taint/capability report and generated-source diagnostics. Refuse missing or stale proof, illegal checks, forbidden unsafe and unsupported imports/foreign/numeric/tool claims. |
+| MIR/runtime handoff / preservation | Preserve the exact analysis products through actual consumers. [SAFE15](../../docs/phase-02-safety/044-safe15-safety-proof-and-certificate-model.md#check-erasure) and [PERF10](../../docs/phase-04-performance-model/068-perf10-performance-safety-check-elision-rules.md#dominance-and-invalidation) govern proof validity, dominance, residual checks and restoration/rejection. Policy checks require equivalent policy evidence. Opt owns transformations; this task composes their surviving safety evidence with MIR, lowering, runtime and diagnostics. |
+| Profile conformance / cases and artifacts | Exercise all [C10 conformance cases](../../docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md#conformance-criteria), ten diagnostic meanings and complete context. Inspect actual checks/proofs/audits/origins and optimization/backend preservation. Supply family fixtures/results to existing [SAFE16](../../docs/phase-02-safety/045-safe16-safety-conformance-test-plan.md#fixture-format)/Release consumers, keeping fixture verdicts distinct from per-operation safety outcomes. |
+
+The six existing allocations remain: SAFE1 outcomes, runtime checks and safety
+artifact plus C10 unsafe extraction and generated origins use classification;
+C10 proof lifecycle uses handoff. Conformance consumes their products. Broad
+inherited owner attachments are preserved as candidate joins, not accepted
+full-owner predicates. Source list preambles, lists, examples and following
+qualifiers are conjoined within their source sections; only headings and file
+provenance receive context-only credit. Artifact samples define required shape
+and relationships, not default operation IDs, support or execution evidence.
+
+C10 coordinates SAFE2-SAFE14; it does not replace their specialized analyzers.
+Types/Effects supply real facts, Auth supplies actual grants and scope, C9
+supplies ownership/lifetime/region/resource results, and the profile task
+validates supported mechanisms and failure behavior. Runtime supplies declared
+provider/check/failure contracts and owns actual execution. Compiler API owns
+subject-bound proof checking; Build/Package owns imported certificate and
+dependency trust; source/generated producers retain origin/taint identities.
+Domain/model/tool owners retain their policy implementations. Classification
+may start on declared interfaces with focused fixtures; composed acceptance
+requires the selected actual producer results. Whole components, final Release
+or fresh authoritative migration are not ordinary construction prerequisites.
+
+Ownership's selected dependency rows below retain their C9 scope. Extending
+those shared safety/handoff/conformance rows to the additional C10 producers is
+explicit remaining dependency reconciliation; their presence does not establish
+all C10, SAFE1-SAFE16, PERF10 or broader profile dependencies. Preserve every
+actual native/provider/callback/probe/replay/migration/private-store/signing/
+publication hold. Ordinary source/plan review does not authorize those actions.
+
+The hosted adapter emits fixed inventory/outcome/proof/audit examples and checks
+set equality, field presence and assigned states. It is a partial compatibility
+surface, not complete analysis. Later Gravity code contains normalized numeric
+classification and scoped authenticated persistent-read and numeric adapters;
+assess those exact kernels and their retained seed/digest/operation-identity
+boundaries separately. Structural input quotas remain removed requirements;
+actual integer width/representability, authentication, type and index legality
+remain required. This planning slice executes none of those compiler paths.
+
 ## Complete ownership-checker source criteria
 
 Use the existing ownership, safety, handoff and conformance tasks for the whole

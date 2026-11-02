@@ -48,6 +48,14 @@ math modes. Distributed and AI work retain durable/replay, schema, taint and
 policy boundaries with their domain owners. These obligations are not compiler
 work allowances; superseded fuel/input-size accounting remains removed.
 
+The [complete safety-pipeline source criteria](plan.md#complete-safety-pipeline-source-criteria)
+bind the C10 coordinator's inventory, decisions, proof lifecycle and conformance
+to three existing tasks. All operation families and exact check/audit/origin
+records remain required; duplicate or conflicting outcomes cannot pass as an
+exactly-one classification. Source joins are current proposals, specialized
+SAFE analyses keep their owners, and additional C10 dependency reconciliation,
+independent review and implementation acceptance remain pending.
+
 The [complete ownership-checker source criteria](plan.md#complete-ownership-checker-source-criteria)
 bind the whole C9 source to the existing ownership, safety, handoff and
 conformance tasks, retaining all seven inherited owner allocations and complete
