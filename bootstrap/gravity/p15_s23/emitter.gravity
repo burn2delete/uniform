@@ -7658,23 +7658,17 @@
    {:status :rejected, :reason :private-map-keys-entry-domain-required})))
 
 (defn p15-s23-pmk-acyclic [core root]
-  (let [edges (get core :call-edges) maximum (+ 1 (count (get core :function-records)))]
-    (loop
-   [pass 0 reached #{root}]
-   (if
-    (> pass maximum)
-    {:status :rejected, :reason :private-map-keys-entry-domain-required}
-    (let
-     [next (loop [remaining edges out reached]
-                       (if (= 0 (count remaining)) out
-                         (let [edge (first remaining) caller (get edge :caller-function-syntax-id) callee (get edge :callee-function-syntax-id)]
-                           (if (if (= nil callee) false (contains? reached caller))
-                             (if (= root callee) nil (recur (rest remaining) (conj out callee)))
-                             (recur (rest remaining) out)))))]
-     (if
-      (= nil next)
-      {:status :rejected, :reason :private-map-keys-entry-domain-required}
-      (if (= next reached) {:status :accepted} (recur (+ pass 1) next))))))))
+  (let [edges (get core :call-edges)]
+    (loop [reached #{root}]
+      (let [next (loop [remaining edges out reached]
+                   (if (= 0 (count remaining)) out
+                     (let [edge (first remaining) caller (get edge :caller-function-syntax-id) callee (get edge :callee-function-syntax-id)]
+                       (if (if (= nil callee) false (contains? reached caller))
+                         (if (= root callee) nil (recur (rest remaining) (conj out callee)))
+                         (recur (rest remaining) out)))))]
+        (if (= nil next) {:status :rejected :reason :private-map-keys-entry-domain-required}
+          (if (= next reached) {:status :accepted}
+            (recur next)))))))
 
 (defn p15-s23-pmk-metadata-work [proof]
   ; Structural and first-order checks. Owning reconstruction checks closed field domains.
