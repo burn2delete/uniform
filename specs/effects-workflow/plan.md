@@ -37,6 +37,104 @@ Use the [source memory-model dependency order](../legality-workflow/plan.md#sour
 
 Current selected source/dependency review and implementation acceptance remain pending/unassessed. No actual provider, device, review or publication operation is performed here; all current restrictions and sole task authorities remain.
 
+## Complete source effect and handler criteria
+
+Read complete [L6](../../docs/phase-01-core-language/016-l6-effect-system-specification.md)
+with the Core Language phase and the existing C8, typed-Core, capability,
+captured-resource, runtime, library, test and stable-change interfaces. The
+preserved census has 133 L6 facets and 87 occurrences under sixteen original
+owners. Its identities and source spans are conservation evidence; full source
+conjunctions and current owner/task entailment need independent review.
+
+L6 defines concrete semantic actions and their registry, algebra, handlers,
+legality, build/replay policy, artifacts and all thirteen diagnostic meanings.
+It is broader than the frozen C8 source review. Retain every section's preamble,
+list, example, following condition and conformance/refusal clause. The network
+registry example illustrates required fields; it does not admit every action
+under that profile or grant a capability. `:pure` is the empty effect set unless
+an explicit marker is needed. Unsafe code exposes concrete effects and separate
+safety facts; a generic unsafe label cannot erase behavior.
+
+| Existing owner/task | Required operation and decisive evidence |
+| --- | --- |
+| Effects1 | Derive actual registered action facts after expansion and sufficient typed call facts; exercise pure and every baseline effect family, with unknown/hidden-action refusals. |
+| Effects2 | Compute ordered sequential, conditional, function/call, try/handler and match summaries. Preserve conservative branch legality, build/generated domains, latent activation and handled/escaping projections; reject false erasure and omitted residuals. |
+| Effects3 | Check all registered-label coverage, actual request/response/resume/body-result types, profile/form/mode, residual effects, grants, captured-state transfer and replay premises before MIR. Derive the combined decision from actual owning facts, not supplied safe flags. |
+| Effects4 | Produce effect-interface and replay/build records from actual inference/checker products. Emit stable typed record/consume obligations and invalidation; actual interpreter results remain with Runtime/Stdlib. |
+| Effects5 | Compose the real environment, latent/namespace/module summaries, build/replay/handled logs, capability/profile/continuation/legality reports, MIR annotations, diagnostics and fixtures with actual downstream consumers. Retain all thirteen L6 diagnostic meanings and source spans. |
+| Auth grants | Check separately mapped effect allowances and capability grants under the narrowest applicable source/profile/package/build/deployment/runtime/provider/safety contract. Record live/mock/fixture/replay/scheduler/tool scope and refuse ambient or widened authority. |
+| Expand3 | Enforce granted compile-time/build actions and record actual performed/denied work with phase/input/output/replay identities. Auth supplies grants; Effects supplies inference; Build packages the records. A listed grant is not an executed action. |
+| Legality ownership | Derive actual linear/borrow/raw/interrupt/lock/FFI captured-state lifetime, transfer and cloning facts for the combined handler check. This is the resource-fact producer, not another handler interpreter. |
+| Runtime memory/concurrency | Execute actual async suspend/await/wakeup/cancel/timeout and generator yield/send/completion/close under checked handler, grant, capture and selected service contracts; preserve real cleanup and unsafe-resume refusals. |
+| Runtime cleanup | Execute actual typed resumable-error resume/abort/finalization and cleanup ordering; consume legal continuation/resource interfaces rather than waiting for its own final teardown result. |
+| Runtime distributed/AI | Execute actual schema-typed tool calls and workflow record/replay with event/step/tool/handler identity, applicable review and no ambient authority. Domain Workflow/AI own graph/policy products and consume this service. |
+| Stdlib testing API | Execute identified typed fixture/fake/mock/golden/replay handlers and setup/body/teardown under the active target profile plus explicit harness grants; preserve original labels, expected diagnostics and no-live-authority evidence. Release owns its actual harness execution and independent admission remains separate. |
+| Evolution change-review, unchanged | Register a new stable label/handler/resume/replay semantic form with profile, capability, ordering, diagnostic, artifact and affected-consumer dispositions. This conditional stable-use decision is not an ordinary implementation prerequisite. |
+
+Types' existing constraint task supplies actual handler request/response/resume/
+result solutions. Effects3 consumes them along with Auth grants and Legality
+capture facts, then publishes checked label/handler/continuation obligations.
+The existing Types task authority and C7 publication restriction are preserved;
+no C7 source-family adoption, solver implementation or held execution is added.
+Core's existing observable evaluation-order producer supplies actual ordered
+control/source products. Effects4's original interface allocation and Effects5's
+later composition remain distinct roles, not duplicate task authorities.
+
+Continuation defaults are typed and affine: at most one resume or cancellation.
+Multi-shot requires an explicit mode, a cloning-permitted profile and actual
+replay-safe captured-state proof. Exercise all completed/cancelled/finalized/
+closed reuse refusals, forbidden execution-context transfer, invalid linear/
+borrow/raw/interrupt/lock/FFI capture and unapproved artifact serialization.
+Handling removes an escaping label only after every L6 premise passes; the
+original handled label, identity, residuals and authority record survive.
+`:effects` does not grant handling authority and `:handles` does not grant a
+capability. Delegation preserves escaping labels and required authority.
+
+Record mode performs only admitted work and appends typed records. Replay
+consumes the matching recorded output without repeating time/random/network/
+database/model/tool/human-review/workflow/scheduler actions, except an explicit
+profile-defined deterministic replay operation. Stable event IDs and payloads
+are required; missing, mismatched, reordered and extra records are L6 errors.
+Retain the existing R6 qualification only outside stricter R7/R8 recorded-output
+segments. This source plan neither authorizes live calls nor reruns held replay.
+
+Nine finite profile74 predicates retain the frozen review/applicability/receipt
+already recorded with the source-memory proposal. Restore seven missing exact
+predicates under their existing candidate tasks; the exact record/replay and
+Evolution registration predicates already present remain unchanged. The review
+covers those finite source/role/dependency/witness predicates only. It accepts
+neither complete L6 conjunctions, these twelve clauses, current composition nor
+implementation. Six formerly empty task-reference fields for interpretation and
+the registration field use their existing concrete candidate links; no new
+runtime, test, governance owner or task identity is created.
+
+L6's two retained budget-policy facets receive the current accounting-removal
+disposition. Do not reinstate project work/token/call/fuel budgets or quota-only
+input refusals. Preserve schema/type/arity/representation, semantic timeout/
+retry/failure behavior, real host restrictions, external provider/account billing
+and independently required review policy. Existing accounting-removal owns the
+canonical cleanup; source provenance and the unaffected clauses remain visible.
+
+Static inspection finds real hosted label/identity/profile/fixture-grant/coverage
+checks, followed by generic `EffectRequest`/`EffectResponse`, abort mode and
+assigned affine/replay statuses. Those checks do not demonstrate actual typed
+six-class interpretation or continuation lifecycle execution. The hosted effect
+graph copies declared function effects and lists granted build effects; its
+complete label is not inference or performed-work evidence. The later Gravity
+normalized effect kernel retains its actual bounded operation/identity checks;
+its source explicitly leaves transitive inference and handler analysis for later
+integration. The dated stage0 L6 receipt is historical and excludes production
+runtime replay/backend/package/self-hosting itself. Current full L6 execution
+and independent acceptance remain unassessed.
+
+Use explicit typed-Core/registry/handler/grant/capture/service interfaces for
+local development, then actual selected producer/consumer values and refused
+cases for composition. The dependency table retains its current 409 joins;
+complete L6-specific producer/consumer reconciliation remains pending. No whole
+component release or migration fingerprint is an ordinary editing prerequisite.
+All actual compiler/provider/native/callback/plugin/probe/replay/migration/
+review/signing/publication holds remain; no such action runs in this proposal.
+
 ## Complete effect-checker source criteria
 
 Restore the five complete C8 criteria under the existing five task IDs, retaining

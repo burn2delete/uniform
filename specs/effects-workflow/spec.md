@@ -23,6 +23,8 @@ authority, and a capability does not establish inferred effects.
 
 The [complete source memory-model and provider criteria](../legality-workflow/plan.md#complete-source-memory-model-and-provider-criteria) join complete L10/L18 behavior to existing Core, Effects, Auth, Legality, Runtime, library and conditional source-change roles. Preserve the eight frozen finite predicates without granting whole-source or current acceptance. Actual allocation/release/transfer and source-bound provider/checker/consumer evidence remain required; task status and authority do not change.
 
+The [complete source effect and handler criteria](plan.md#complete-source-effect-and-handler-criteria) add full L6 source obligations within twelve existing tasks and retain nine exact finite predicates under their original candidate links. Types supplies handler constraints, Auth grants authority, Legality derives capture facts, Effects checks combined legality, and Runtime/Stdlib perform actual interpretation. Existing Evolution owns conditional stable registration. Frozen C8/profile source reviews do not accept full L6 or current execution.
+
 ## Existing implementation routes and acceptance
 
 The [sole marked ledger](tasks.md#implementation-tasks) retains

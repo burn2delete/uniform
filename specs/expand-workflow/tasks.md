@@ -35,6 +35,16 @@ Status: Open; partial source evidence above is not closure
 
 Concrete exit evidence: Require declared grants, redacted logs and replay inputs for effectful expansion; reject ambient host effects and unreplayable hermetic expansion.
 
+<!-- source-effects-build:start -->
+
+Apply the [complete source effect and handler criteria](../effects-workflow/plan.md#complete-source-effect-and-handler-criteria) within this existing task. Status remains Open; frozen finite source review does not accept whole L6 or current implementation.
+
+Decision criterion interface/language/effects/authorize-and-record-build-effect: Authorize build/compile-time effects against hermetic package/provider/deployment policy and record each granted effect with input/output/replay identity. Reject: Reject undeclared filesystem/environment/network/shell/model/tool authority, runtime grants reused in meta context and missing required replay records. Required outputs: Build-effect grant/deny log and hermetic input/replay artifact with positive/negative phase-authority fixtures.
+
+L6 actual build-effect boundary criterion (Open): Enforce and record the requested effects of reader extensions, macros, compiler plugins, code generators, dependency/package resolution and build scripts under their actual phase and hermetic policy. Hermetic builds deny environment reads, undeclared files, network, shell/process, model/tool calls and non-lockfile fetching absent the governing explicit grant; normalizing a request or listing a grant is not evidence of a performed effect. Preserve macro build behavior separately from emitted runtime or compile-time behavior, including an effectful macro producing pure code and pure generation producing effectful code. Emit actual authorized/denied phase/input/output/provider records and replay/hermetic identities and reject ambient or hidden work. Auth supplies grants, Effects supplies real inferred summaries, Build packages the log; this task owns compile-time boundary enforcement rather than another grant issuer or package executor. No held compiler/plugin/probe/provider action is performed by this source proposal.
+<!-- source-effects-build:end -->
+
+
 - [ ] `expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination` expand/4: Validate reuse and termination
 
 Status: Open; partial source evidence above is not closure

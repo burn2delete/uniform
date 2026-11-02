@@ -23,6 +23,12 @@ publication restriction and existing writer reservations explicit. Refine only
 the same authoritative task and record exact scoped evidence, unrun work and
 independent review/integration separately; do not issue a competing checklist.
 
+## Source effects and typed-handler interface
+
+Use the [complete source effect and handler criteria](../effects-workflow/plan.md#complete-source-effect-and-handler-criteria) with the existing task authority. The existing types1 constraint task supplies actual registered-handler request/response/resume/body-result type solutions and mismatch diagnostics for Effects3. This selected L6 interface does not adopt the pending C7 source proposal or change its publication restriction, task identity or implementation status.
+
+The frozen finite review is qualified to its exact source predicates; complete L6/current source entailment, independent review and implementation acceptance remain pending. Preserve every actual held operation.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Types task authority

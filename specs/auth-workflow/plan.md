@@ -23,6 +23,12 @@ the selected authoritative task. Record exact passed, failed and unrun evidence,
 residual host/trust assumptions, independent review and integration separately.
 A structurally valid manifest or supplied verdict does not close enforcement.
 
+## Source effects and typed-handler interface
+
+Use the [complete source effect and handler criteria](../effects-workflow/plan.md#complete-source-effect-and-handler-criteria) with the existing task authority. The existing grant task checks interpreted-effect and handler-implementation authority separately, including live/fixture/mock/replay/scheduler/tool scope, the narrowest allowance and no ambient widening. Effects owns inferred behavior and final combined handler legality.
+
+The frozen finite review is qualified to its exact source predicates; complete L6/current source entailment, independent review and implementation acceptance remain pending. Preserve every actual held operation.
+
 ## Source memory-model and provider interface
 
 Use the [complete source memory-model and provider criteria](../legality-workflow/plan.md#complete-source-memory-model-and-provider-criteria) with the existing task authority.

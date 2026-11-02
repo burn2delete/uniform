@@ -30,6 +30,14 @@ Apply the [complete effect-checker source criteria](plan.md#complete-effect-chec
 C8 computation/domain criterion compiler/c8/effect-computation compiler/c8/effect-domains (Open): Compute actual typed-core expression, function, namespace, module and macro-output direct/latent/transitive/build/replay/residual effects under L6; every operation beyond pure construction has effect facts or a diagnostic. Preserve concrete registered labels, thrown-error effects and source/generated identities rather than inferring behavior from declarations or backend/runtime behavior. Maintain distinct reader-extension/macro/compile-time/plugin/probe/generator build effects, emitted-program runtime effects and dependency-resolution/artifact-generation package/build effects. A build-effectful macro can emit pure code and a pure macro can emit runtime effects; neither domain substitutes for the other. Required outputs: source-bound effect graph with module/node identity, direct/latent/transitive/ordering/source facts, function declared/inferred/latent/throws table, namespace declared/inferred and module summaries, build log and residual report. Positive fixtures compute real operation and both macro-domain combinations; reject missing facts, unknown unregistered labels and hidden runtime/build effects with C8-UNKNOWN/BUILD/VERIFY. Preserve runtime checks, dynamic dispatch, fallback-provider calls, residual capability checks and replay logging remaining after proof/specialization, rather than treating a declaration or empty placeholder as inference.
 <!-- effects-canonical-computation:end -->
 
+<!-- source-effects-direct:start -->
+
+Apply the [complete source effect and handler criteria](plan.md#complete-source-effect-and-handler-criteria) within this existing task. Status remains Open; frozen finite source review does not accept whole L6 or current implementation.
+
+L6 source action/registry criterion (Open): Infer concrete actions from real expressions, functions, expanded macros, packages, build steps, runtime services and tool calls once typed call facts exist. Preserve every baseline registered effect family, stable label and required ordering/authority/profile/artifact meaning; use the empty effect set for pure behavior unless an explicit marker is needed. Unsafe islands retain concrete raw/MMIO/FFI/interrupt/IR-write effects plus their separate safety mode/outcome, never a generic unsafe label. Declarations are allowances rather than inferred bodies. Reject unknown/unregistered actions, hidden generated/runtime/build behavior and label-only or capability-derived inference. Required evidence: actual operation-to-effect derivations, pure and all source-family positive/refusal fixtures, registry/source/generated identities and complete effect facts at expression/function/namespace/module/package/macro/artifact boundaries. Stable semantic extensions retain the existing Evolution registration decision; inference does not create that authority.
+<!-- source-effects-direct:end -->
+
+
 - [ ] `effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects` effects/2: Propagate latent effects
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -42,6 +50,14 @@ Apply the [complete effect-checker source criteria](plan.md#complete-effect-chec
 
 C8 propagation criterion (Open): Derive function latent and transitive effects from actual resolved typed call/closure/dispatch/recursive edges, not by copying declared allowances. Preserve ordered evaluation and conservative branch alternatives under L6; every branch contributes to legality even when alternatives remain distinct for optimization. Function/namespace/module summaries distinguish declared, inferred and thrown-error effects; calls consume actual latent effects. Preserve L6 escaping versus handled labels, handler identity/residual effects and separately checked handler type/profile/capability/continuation/replay facts; handling does not erase original labels or grant authority. Required outputs: actual graph/fixed-point derivation, latent/throws and namespace/module tables and positive/rejected higher-order, recursive, dispatch, branch and generated-code fixtures. Reject underreported reachability, missing call/type facts, hidden handler residuals or declaration-only summaries before checked-core handoff. Recompute or invalidate affected summaries when actual calls, types, declarations or governing semantic inputs change; a structurally present graph is not evidence of sound propagation.
 <!-- effects-canonical-propagation:end -->
+
+<!-- source-effects-algebra:start -->
+
+Apply the [complete source effect and handler criteria](plan.md#complete-source-effect-and-handler-criteria) within this existing task. Status remains Open; frozen finite source review does not accept whole L6 or current implementation.
+
+L6 source algebra/handled-projection criterion (Open): Derive ordered do/let/argument/sequential composition, condition plus branch alternatives, function latent effects and call activation, try body/handler/error effects, and match scrutinee/guard/selected-branch effects from actual typed Core. Enforce the conservative branch union even when retaining alternatives for optimization. Keep macro execution build effects separate from generated runtime or compile-time effects. For a typed occurrence preserve label, request/response types, resume/replay mode, handler identity, residual effects and required handler capabilities. Emit both escaping and handled projections. Remove a label from escaping only after the actual handler/profile/type/coverage/authority/continuation/replay conditions pass; preserve its handled record and original label for audit, policy, replay, optimization and tests. Unhandled or delegated labels escape unchanged with their authority requirements. Refuse false erasure, omitted branch/guard/handler effects, missing latent call edges or a declaration substituted for inference; retain derivation and accepted/refused source/generated fixtures.
+<!-- source-effects-algebra:end -->
+
 
 - [ ] `effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering` effects/3: Check legality and ordering
 
@@ -64,6 +80,14 @@ L10/L18 memory regime and allocation effect criterion (Open): Infer and expose a
 <!-- effects-canonical-memory-model-effects-policy:end -->
 
 
+<!-- source-effects-handlers:start -->
+
+Apply the [complete source effect and handler criteria](plan.md#complete-source-effect-and-handler-criteria) within this existing task. Status remains Open; frozen finite source review does not accept whole L6 or current implementation.
+
+L6 typed-handler and continuation criterion (Open): Consume actual Types request/response/resume/body-result solutions, registered-label coverage, active profile/target/runtime handler/resume support, inferred handler residual actions, Auth grants and Legality captured-resource facts before permitting interpretation or escaping-label removal. A declaration's effects allowance grants no handling authority; handles grants no capability. Check both interpreted-effect and handler-implementation authority, reject forbidden labels/forms/modes, ambient authority and any namespace/package/build/deployment/runtime/provider widening. Continuations are typed and affine by default: at most one resume or cancellation. Explicit multi-shot needs a cloning-permitted profile and actual replay-safe captured-state proof. Reject resume after completion/cancellation/panic finalization/generator close, forbidden thread/scheduler/actor/workflow-step/target transfer, unsafe linear/borrow/raw/interrupt/lock/FFI capture, repeated external effects and serialization without an approved profile representation. Emit real typed-handler/profile/capability/continuation/replay reports and all accepted/refused premises before MIR. This task checks combined legality; Types, Auth and Legality retain their own fact production and Runtime owns interpretation.
+<!-- source-effects-handlers:end -->
+
+
 - [ ] `effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation` effects/4: Record replay and invalidation
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -79,6 +103,14 @@ Decision criterion interface/language/effects/record-or-replay-nondeterminism: I
 C8 replay/audit criterion compiler/c8/replay-audit (Open): Emit source-bound replay/audit obligations for time, randomness, external IO, external database reads, workflow events, model calls, tool calls, :ai/human-review and scheduler-sensitive operations, including distributed/AI effects. Actual workflow/AI/runtime/test consumers satisfy those obligations; a profile forbidding replay gaps rejects missing records before target lowering. Keep build/runtime/package domains distinct and enforce actual hermetic build grants, refusing ungranted build actions without performing them during this source reconciliation. Preserve the existing record-versus-replay criterion and its qualified R6/R7/R8 scope. Required outputs: build-effect log, replay-effect requirements and residual replay obligations, invalidation records and actual accepted/refused nondeterminism/hermetic fixtures. Reject hidden macro runtime effects, absent required replay/audit records, unreplayable hermetic behavior and ungranted build effects with C8-BUILD/REPLAY; obligation names or supplied success flags cannot replace actual recorded consumer evidence.
 <!-- effects-canonical-replay:end -->
 
+<!-- source-effects-records:start -->
+
+Apply the [complete source effect and handler criteria](plan.md#complete-source-effect-and-handler-criteria) within this existing task. Status remains Open; frozen finite source review does not accept whole L6 or current implementation.
+
+L6 source effect-interface and replay criterion (Open): Produce and preserve the effect environment, latent table, namespace/module summaries, build/replay logs, handled-effect table, handler capability/profile report, continuation/replay report, legality report, MIR annotations, diagnostics and conformance fixtures with their actual producer identities. Effects1/2/3 derive action/summary/legality facts; this task records build/replay/interface obligations and Effects5 composes the current products. Keep record-mode admitted live action plus typed append distinct from replay-mode matching-record consumption without repeated time/random/network/database/model/tool/human-review/workflow/scheduler effects. Only the active profile's explicit deterministic replay operation is an exception; retain the qualified R6 case outside stricter R7/R8 recorded-output segments. Stable event IDs and typed payloads are required. Missing, mismatched, reordered or extra records are owning L6 errors. Filesystem/external-content and scheduler nondeterminism remain visible. Emit obligations and invalidation now; actual Runtime/domain/test record/replay results remain separate, never supplied by a declaration or assigned log status.
+<!-- source-effects-records:end -->
+
+
 - [ ] `effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers` effects/5: Integrate checked-core consumers
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -93,6 +125,14 @@ Criterion behavior/pkg6/derived-capability-manifest: accept Derive deterministic
 
 C8 checked-core/artifact criterion (Open): Pass actual current effect graph, latent/throws tables, namespace/module summaries, capability proof, build log, replay obligations, ordering constraints, residual report and diagnostics to checked-core/profile/capability/safety validation and MIR; preserve effect annotations through actual MIR/optimizer/runtime/tool consumers. Consume actual C7 typed calls, L6 effect and L15 grant contracts, L9 throws, L12 build/hermetic policy, active profiles and runtime/package/provider/deployment artifacts. Required outputs: versioned source-bound products and actual positive/negative producer-consumer fixtures proving direct/latent/transitive/build/residual computation, function/namespace declarations, profile rejection, capability acceptance/refusal, hermetic rejection, replay emission, all order families and MIR preservation. Validate artifacts and reject malformed/stale or missing semantic facts with C8-VERIFY rather than accepting graph/schema presence alone. Retain all nine diagnostic meanings C8-UNDECLARED/PROFILE/CAPABILITY/BUILD/REPLAY/ORDER/RUNTIME/UNKNOWN/VERIFY and core-node/span/generated-origin/function/namespace/effect/capability/profile/target/provider/grant/remediation context for every failure class. These are future execution requirements, not current compiler/runtime/replay/probe results or independent acceptance.
 <!-- effects-canonical-handoff:end -->
+
+<!-- source-effects-conformance:start -->
+
+Apply the [complete source effect and handler criteria](plan.md#complete-source-effect-and-handler-criteria) within this existing task. Status remains Open; frozen finite source review does not accept whole L6 or current implementation.
+
+L6 complete source/consumer conformance criterion (Open): Compose real inferred and checked products through profile/Auth/safety and MIR, preserving labels, direct/latent and escaping/handled distinctions, handler identity, residuals, ordered effects and actual source/generated/registry/profile/grant/runtime/target identities through optimization/lowering. Exercise all source conformance families and six actual handler classes: async suspend/await/resume/cancel/timeout; generator yield/send/completion/close; resumable-error resume/abort/cleanup; stable-ID workflow record/replay; schema-typed tool calls with applicable authority/review; and identified profile-gated fixture interpretation without hidden live effects. Include each denied allowance/authority/profile, unknown label, hidden build action, invalid continuation and missing/mismatched/reordered/extra replay case. Retain all thirteen diagnostic meanings: L6-EFFECT-UNDECLARED/PROFILE/CAPABILITY/ORDER/UNKNOWN, L6-BUILD-EFFECT, L6-REPLAY-EFFECT and L6-HANDLER-TYPE/PROFILE/CAPABILITY/CONTINUATION/REPLAY/COVERAGE. Preserve real typed artifacts, accepted/refused values/traces and diagnostic codes/spans, then feed the existing Release language/profile/runtime suites. One seed record, handler form, mock or target cannot establish complete L6 or whole-component acceptance.
+<!-- source-effects-conformance:end -->
+
 
 <!-- effects-implementation-tasks:end -->
 

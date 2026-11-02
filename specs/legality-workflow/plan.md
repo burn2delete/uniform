@@ -23,6 +23,12 @@ Record exact source/fixture/consumer identities and passed, failed or unrun work
 preserve operation restrictions and separate author checks, independent
 acceptance, integration and the complete profile/provider matrix.
 
+## Source effects and typed-handler interface
+
+Use the [complete source effect and handler criteria](../effects-workflow/plan.md#complete-source-effect-and-handler-criteria) with the existing task authority. The existing ownership task derives actual linear/borrow/raw/interrupt/lock/FFI captured-state lifetime, transfer and cloning facts. Effects3 consumes those facts for combined handler/continuation legality; Runtime executes the admitted interpretation.
+
+The frozen finite review is qualified to its exact source predicates; complete L6/current source entailment, independent review and implementation acceptance remain pending. Preserve every actual held operation.
+
 ## Complete source memory-model and provider criteria
 
 Read complete [L10 memory semantics](../../docs/phase-01-core-language/020-l10-memory-model-specification.md)

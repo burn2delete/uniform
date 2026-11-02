@@ -22,6 +22,12 @@ the existing selected task. Distinguish compiler-service subset acceptance,
 wider families, independent review/integration and release; do not restore
 removed project accounting as a runtime admission requirement.
 
+## Source effects and typed-handler interface
+
+Use the [complete source effect and handler criteria](../effects-workflow/plan.md#complete-source-effect-and-handler-criteria) with the existing task authority. Use the existing cleanup task for typed resumable-error execution, memory/concurrency for async/generator execution and distributed/AI for workflow/tool interpretation. Consume checked handler/grant/capture/service products and produce actual values/cleanup/replay traces; no second interpreter authority is added.
+
+The frozen finite review is qualified to its exact source predicates; complete L6/current source entailment, independent review and implementation acceptance remain pending. Preserve every actual held operation.
+
 ## Source memory-model and provider interface
 
 Use the [complete source memory-model and provider criteria](../legality-workflow/plan.md#complete-source-memory-model-and-provider-criteria) with the existing task authority.

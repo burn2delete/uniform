@@ -264,6 +264,14 @@ L10/L18 source memory validity criterion (Open): Derive actual initialized/unini
 <!-- legality-canonical-memory-model-memory-analysis:end -->
 
 
+<!-- source-effects-captures:start -->
+
+Apply the [complete source effect and handler criteria](../effects-workflow/plan.md#complete-source-effect-and-handler-criteria) within this existing task. Status remains Open; frozen finite source review does not accept whole L6 or current implementation.
+
+L6 captured-state producer criterion (Open): Derive the captured state and actual linear-resource, borrow/lifetime, raw-pointer, interrupt-state, lock and FFI-frame obligations at each suspension/resume/cancel/clone/transfer/serialization boundary. Supply profile-specific valid transfer or replay-safe cloning facts only from the actual typed/effected control, lifetime/resource/provider facts and approved representation. Reject invalid capture or escape, use after completion/finalization/close, unsafe transfer and duplicated affine resource use; unavailable facts cannot become a supplied safe flag. Emit capture/lifetime/transfer/cleanup proof or refusal facts for Effects3's combined handler/continuation legality and actual Runtime execution, preserving ownership of those later decisions. This selected L6 interface does not accept full concurrency, continuation implementation or a denied native/callback operation.
+<!-- source-effects-captures:end -->
+
+
 - [ ] `legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries` Complete safe-code classification and taint/unsafe boundaries
 
 Status: Open

@@ -25,6 +25,12 @@ an explicit unfinished acceptance boundary. Record evidence in the existing
 package and update only its authoritative task; do not create a parallel
 implementation checklist. Independent review and integration remain separate.
 
+## Source effects and typed-handler interface
+
+Use the [complete source effect and handler criteria](../effects-workflow/plan.md#complete-source-effect-and-handler-criteria) with the existing task authority. The existing expand3 task owns actual compile-time boundary enforcement and input/output/phase/replay records. Auth issues grants, Effects infers behavior and Build packages the logs; listed grants do not prove performed work.
+
+The frozen finite review is qualified to its exact source predicates; complete L6/current source entailment, independent review and implementation acceptance remain pending. Preserve every actual held operation.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Expand task authority

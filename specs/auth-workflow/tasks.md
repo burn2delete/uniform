@@ -35,6 +35,14 @@ Evidence baseline: [Authority implementation](../../bootstrap/clojure/src/gravit
 
 Closing evidence: Real allowed operation and denied widening/revoked/wrong-phase operations
 
+<!-- source-effects-authority:start -->
+
+Apply the [complete source effect and handler criteria](../effects-workflow/plan.md#complete-source-effect-and-handler-criteria) within this existing task. Status remains Open; frozen finite source review does not accept whole L6 or current implementation.
+
+L6 handler/effect authority criterion (Open): Consume actual inferred required effects and registered capability mappings; validate effect allowances and capability grants as distinct checks. The narrowest applicable function/namespace/profile/package/build/deployment/runtime/provider/safety contract governs, without package resolution, runtime selection or macro expansion widening it. Bind live, fixture/mock, replay-read/write, scheduler, tool and interpreted-effect plus handler-implementation authority to actual scope/principal/phase/provider/lifetime evidence. A fixture can replace live network behavior only with its original handled label, explicit fixture capability, fixture identity and absence of live authority recorded; missing capability may be an explicit expected diagnostic, never silently hidden. Reject ambient secrets/filesystem/network/database/model/tool/workflow/scheduler/shell authority and runtime grants reused for build interpretation. Return real grant/deny and revocation/lifetime products for the Effects owner, keeping authority evidence separate from type/safety proof and actual execution.
+<!-- source-effects-authority:end -->
+
+
 - [ ] `auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks` Bind compiler decisions to runtime/build enforcement hooks
 
 Status: Open

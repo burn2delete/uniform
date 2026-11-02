@@ -53,6 +53,12 @@ Use the [source memory-model dependency order](../legality-workflow/plan.md#sour
 
 Current selected source/dependency review and implementation acceptance remain pending/unassessed. No actual provider, device, review or publication operation is performed here; all current restrictions and sole task authorities remain.
 
+## Source effects and typed-handler interface
+
+Use the [complete source effect and handler criteria](../effects-workflow/plan.md#complete-source-effect-and-handler-criteria) with the existing task authority. The exact existing stable effect/handler/resume/replay registration criterion stays under change-review. It consumes the affected checker/grant/runtime/consumer evidence for a scoped stable-use decision; ordinary unchanged-contract implementation gains no review gate.
+
+The frozen finite review is qualified to its exact source predicates; complete L6/current source entailment, independent review and implementation acceptance remain pending. Preserve every actual held operation.
+
 ## Exact artifact scope and evidence
 
 The resumed `tasks.md` bytes are identical to the preserved source identified
