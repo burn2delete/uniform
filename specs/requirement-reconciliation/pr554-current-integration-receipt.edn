@@ -1,11 +1,19 @@
 {:kind :pr554-current-integration-receipt
  :schema-version 1
  :integration
- {:base-commit "43dbdd419c643df42454db42c2cf1b75dea0e292"
-  :base-tree "d48baf6d2dfc99ae94f5438a7e6f729d8b8db7b8"
-  :candidate-commit "c2d72cdd44f6032fb9f520d8cf523b76396f6177"
-  :candidate-tree "25dce9cdf84f27cf4f9df0844dc0fe13b95dcbee"
-  :candidate-parent "139f7264cf4ba43979eb8e733ec8dc20473e21e2"
+ {:base-commit "4df59ab107d5865e3afbf9173041cc9401227542"
+  :base-tree "d977cf8ca3de45e73920d6d6a5f5f59aca219527"
+  :candidate-commit "9f2f401802c504816c66dd1250a0760a0c22a7f3"
+  :candidate-tree "eb1bd4f06d44f7a7d6bec3bfbbb05c0db41f034e"
+  :candidate-parent "9621fea9a3b3fad8af00ff75c2e2c4e110415464"
+  :previous-integration-base "43dbdd419c643df42454db42c2cf1b75dea0e292"
+  :previous-integration-tree "d48baf6d2dfc99ae94f5438a7e6f729d8b8db7b8"
+  :main-advance {:from-commit "43dbdd419c643df42454db42c2cf1b75dea0e292"
+                 :from-tree "d48baf6d2dfc99ae94f5438a7e6f729d8b8db7b8"
+                 :to-commit "4df59ab107d5865e3afbf9173041cc9401227542"
+                 :to-tree "d977cf8ca3de45e73920d6d6a5f5f59aca219527"
+                 :composition-commit "9f2f401802c504816c66dd1250a0760a0c22a7f3"
+                 :composition-tree "eb1bd4f06d44f7a7d6bec3bfbbb05c0db41f034e"}
   :source-view-comparator-renewed? false}
  :source-history
  {:original-pr-head "e7a93606858e543119f807130f1583f1b011b151"
