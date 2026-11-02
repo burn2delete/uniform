@@ -110,3 +110,32 @@ these harness repairs.
 Current-main reconciliation, broader checks, committed contextual lint,
 independent exact acceptance, own CI/artifacts and immediate clean preflight
 remain required. No native execution permission or roadmap credit is inferred.
+
+## Current-main composition and exact baseline
+
+Current integration base is 634dde984b837e78a5353d4e2c25cead9e7318db,
+tree d821a84ea0337d23979b0cacd466a7e7a4add579, including the verified JS
+slice. Source composition 725a1ba9f6d42e98df732929b4f6a9a4f9932306 has
+tree b562de4e686b78c0d7cae188768b34035dd2c01f. Its normal main merge
+preserves both C and JS namespace rows without conflict. No JS implementation
+is part of this C diff.
+
+The fresh native-data baseline executes the exact clean main commit/tree above
+in this same Analysis checkout, using the existing C test helpers and the
+ordinary fixed-seed Gravity kernel. No fixtures or admission records are added
+to the baseline. Its process exits before switching back to the extracted
+composition. Four complete data records and their original serializations
+still agree, with source/plan and both actual file hashes recomputed. Earlier
+records remain at
+/tmp/uniform-c-compile-sequencing-evidence-basef23-history. No native broker,
+compiler-call body, process, staging handle or toolchain is invoked by either
+capture. Anonymous stage units remain separate from source/data evidence.
+
+Fresh affected backend tests pass 43/937, language/ownership 47/1154.
+Committed contextual lint against this exact base covers three changed Clojure
+paths with zero warnings and zero blockers; receipts are archived at
+/tmp/uniform-c-compile-sequencing-lint-main634. Immutable source verification
+uses this base and preserves both complete production files and all four type
+tags. Final contract checks, independent exact acceptance, own CI/artifact
+verification and immediate clean current-main preflight remain integration
+gates. Neither JVM nor JS slice acceptance or CI transfers to this candidate.
