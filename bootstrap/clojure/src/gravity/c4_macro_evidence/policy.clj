@@ -3,7 +3,7 @@
   (:require [gravity.digest :as digest]))
 
 (def operation-keys
-  #{:sha256-hex :artifact-id-of :max-macro-expansion-depth})
+  #{:sha256-hex :artifact-id-of})
 
 (def namespace-contract
   {:namespace 'gravity.c4-macro-evidence
@@ -65,8 +65,7 @@
 (def default-operations
   {:sha256-hex digest/sha256-hex
    :artifact-id-of (fn [value]
-                     (str "sha256:" (digest/sha256-hex (pr-str value))))
-   :max-macro-expansion-depth 16})
+                     (str "sha256:" (digest/sha256-hex (pr-str value))))})
 
 (defn operations [overrides]
   (when-not (map? overrides)
@@ -81,9 +80,4 @@
       (when-not (fn? (get merged key))
         (throw (ex-info "C4 macro evidence function operation is invalid"
                         {:operation key :value (get merged key)}))))
-    (when-not (and (integer? (:max-macro-expansion-depth merged))
-                   (pos? (:max-macro-expansion-depth merged)))
-      (throw (ex-info "C4 macro expansion depth must be a positive integer"
-                      {:operation :max-macro-expansion-depth
-                       :value (:max-macro-expansion-depth merged)})))
     merged))

@@ -60,17 +60,30 @@
 (defn- sh06-resolution-reader-invocation []
   (:reader-invocation *sh06-resolution-operation-binding*))
 
-(defn- sh06-resolution-with-reader-invocation [source-path invocation operation]
-  (when (some? invocation)
-    (sh03-reader-authenticated-envelope-options source-path invocation))
-  (let [current (sh06-resolution-current-binding! source-path)]
-    (binding [*sh06-resolution-operation-binding* (assoc current :reader-invocation invocation)]
-      (operation))))
+(defn- sh06-resolution-with-reader-invocation
+  [source-path invocation operation]
+  (let [macro-source-mode (if (and (map? invocation)
+                                   (contains? invocation :macro-source-mode))
+                            (:macro-source-mode invocation)
+                            :pinned)
+        reader-invocation (if (map? invocation)
+                            (dissoc invocation :macro-source-mode)
+                            invocation)]
+    (when (some? reader-invocation)
+      (sh03-reader-authenticated-envelope-options source-path reader-invocation))
+    (let [current (sh06-resolution-current-binding! source-path)]
+      (binding [*sh06-resolution-operation-binding*
+                (assoc current
+                       :reader-invocation reader-invocation
+                       :macro-source-mode macro-source-mode)]
+        (operation)))))
 
 (defn- sh06-resolution-verify-sh05 [artifact]
-  (if-let [invocation (sh06-resolution-reader-invocation)]
-    (sh05-macro-artifact-verification artifact invocation)
-    (sh05-macro-artifact-verification artifact)))
+  (let [invocation (sh06-resolution-reader-invocation)
+        macro-source-mode (or (:macro-source-mode *sh06-resolution-operation-binding*) :pinned)]
+    (if invocation
+      (sh05-macro-artifact-verification artifact invocation macro-source-mode)
+      (sh05-macro-artifact-verification artifact nil macro-source-mode))))
 
 (defn- sh06-resolution-validate-c3! [source-path artifact]
   (if-let [invocation (sh06-resolution-reader-invocation)]
