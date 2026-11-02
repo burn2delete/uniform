@@ -1,0 +1,808 @@
+{:reviewer-checker-rerun :not-performed-no-reproduction-claim,
+ :tree "07aac1029260b39406a9d5f5b12dcded7cdae3f9",
+ :nonclaims
+ [:no-arithmetic-or-number-object-identity-proof
+  :no-termination-exception-native-transitive-or-runtime-proof
+  :no-outer-quota-width-carrier-retention-approval
+  :no-blanket-keyword-absence
+  :no-whole-predicate-accounting-removal
+  :no-whole569-or-ACC01-or-PR502-closure
+  :no-production-or-shared-write
+  :no-APPROVE-or-probe
+  :no-old-e7DSE-heldPolicy14-Metadata-fixedwidth-OWN-review-retry-or-substitute],
+ :execution
+ {:read-eval false,
+  :target-helper-Gravity-Bootstrap-compiler-runtime :UNRUN},
+ :consumer-verification
+ :receipt-checker-tree-inputs-twenty-two-form-equations-helper-and-policy-pins,
+ :consumer-source-sha256
+ "3516f687b3cfe7bc226a45693dfac0e2a20124bd272100271575327df7a46da5",
+ :parent "ecfdf63f775285f91be93898a69442ec8a5b3f54",
+ :candidate "b1b638230231ad5c871cf0ac6e1dbdadf0e51030",
+ :reviewer-thread "01a18528-c7af-75c1-a399-5eb23dbbe8e4",
+ :independent-controls
+ [{:unit [defn sh08-mapp-derive],
+   :case :restore-remnant-0,
+   :refused true}
+  {:unit [defn sh08-mapp-derive],
+   :case :restore-remnant-1,
+   :refused true}
+  {:unit [defn sh08-mapp-derive],
+   :case :restore-remnant-2,
+   :refused true}
+  {:unit [defn sh08-mapp-derive], :case :arity, :refused true}
+  {:unit [defn sh08-mapp-derive], :case :source-builder, :refused true}
+  {:unit [defn sh08-mapp-derive],
+   :case :semantic-diagnostic,
+   :refused true}
+  {:unit [defn sh08-mapp-derive],
+   :case :integer-representation,
+   :refused true}
+  {:unit [defn sh08-mapp-derive],
+   :case :shadowed-validator,
+   :refused true}
+  {:unit [defn sh08-mapp-derive],
+   :case :coherent-lost-validator,
+   :refused true}
+  {:unit [defn sh08-mapp-inferred-call],
+   :case :restore-remnant-0,
+   :refused true}
+  {:unit [defn sh08-mapp-inferred-call],
+   :case :restore-remnant-1,
+   :refused true}
+  {:unit [defn sh08-mapp-inferred-call], :case :arity, :refused true}
+  {:unit [defn sh08-mapp-inferred-call],
+   :case :source-builder,
+   :refused true}
+  {:unit [defn sh08-mapp-inferred-call],
+   :case :semantic-diagnostic,
+   :refused true}
+  {:unit [defn sh08-mapp-inferred-call],
+   :case :integer-representation,
+   :refused true}
+  {:unit [defn sh08-mapp-inferred-call],
+   :case :shadowed-validator,
+   :refused true}
+  {:unit [defn sh08-mapp-inferred-call],
+   :case :coherent-lost-validator,
+   :refused true}
+  {:unit [defn sh08-setp-derive],
+   :case :restore-remnant-0,
+   :refused true}
+  {:unit [defn sh08-setp-derive],
+   :case :restore-remnant-1,
+   :refused true}
+  {:unit [defn sh08-setp-derive],
+   :case :restore-remnant-2,
+   :refused true}
+  {:unit [defn sh08-setp-derive], :case :arity, :refused true}
+  {:unit [defn sh08-setp-derive], :case :source-builder, :refused true}
+  {:unit [defn sh08-setp-derive],
+   :case :semantic-diagnostic,
+   :refused true}
+  {:unit [defn sh08-setp-derive],
+   :case :integer-representation,
+   :refused true}
+  {:unit [defn sh08-setp-derive],
+   :case :shadowed-validator,
+   :refused true}
+  {:unit [defn sh08-setp-derive],
+   :case :coherent-lost-validator,
+   :refused true}
+  {:unit [defn sh08-setp-inferred-call],
+   :case :restore-remnant-0,
+   :refused true}
+  {:unit [defn sh08-setp-inferred-call],
+   :case :restore-remnant-1,
+   :refused true}
+  {:unit [defn sh08-setp-inferred-call], :case :arity, :refused true}
+  {:unit [defn sh08-setp-inferred-call],
+   :case :source-builder,
+   :refused true}
+  {:unit [defn sh08-setp-inferred-call],
+   :case :semantic-diagnostic,
+   :refused true}
+  {:unit [defn sh08-setp-inferred-call],
+   :case :integer-representation,
+   :refused true}
+  {:unit [defn sh08-setp-inferred-call],
+   :case :shadowed-validator,
+   :refused true}
+  {:unit [defn sh08-setp-inferred-call],
+   :case :coherent-lost-validator,
+   :refused true}
+  {:unit [defn sh08-listp-derive],
+   :case :restore-remnant-0,
+   :refused true}
+  {:unit [defn sh08-listp-derive],
+   :case :restore-remnant-1,
+   :refused true}
+  {:unit [defn sh08-listp-derive],
+   :case :restore-remnant-2,
+   :refused true}
+  {:unit [defn sh08-listp-derive], :case :arity, :refused true}
+  {:unit [defn sh08-listp-derive],
+   :case :source-builder,
+   :refused true}
+  {:unit [defn sh08-listp-derive],
+   :case :semantic-diagnostic,
+   :refused true}
+  {:unit [defn sh08-listp-derive],
+   :case :integer-representation,
+   :refused true}
+  {:unit [defn sh08-listp-derive],
+   :case :shadowed-validator,
+   :refused true}
+  {:unit [defn sh08-listp-derive],
+   :case :coherent-lost-validator,
+   :refused true}
+  {:unit [defn sh08-listp-inferred-call],
+   :case :restore-remnant-0,
+   :refused true}
+  {:unit [defn sh08-listp-inferred-call],
+   :case :restore-remnant-1,
+   :refused true}
+  {:unit [defn sh08-listp-inferred-call], :case :arity, :refused true}
+  {:unit [defn sh08-listp-inferred-call],
+   :case :source-builder,
+   :refused true}
+  {:unit [defn sh08-listp-inferred-call],
+   :case :semantic-diagnostic,
+   :refused true}
+  {:unit [defn sh08-listp-inferred-call],
+   :case :integer-representation,
+   :refused true}
+  {:unit [defn sh08-listp-inferred-call],
+   :case :shadowed-validator,
+   :refused true}
+  {:unit [defn sh08-listp-inferred-call],
+   :case :coherent-lost-validator,
+   :refused true}
+  {:unit [defn sh08-symp-derive],
+   :case :restore-remnant-0,
+   :refused true}
+  {:unit [defn sh08-symp-derive],
+   :case :restore-remnant-1,
+   :refused true}
+  {:unit [defn sh08-symp-derive],
+   :case :restore-remnant-2,
+   :refused true}
+  {:unit [defn sh08-symp-derive], :case :arity, :refused true}
+  {:unit [defn sh08-symp-derive], :case :source-builder, :refused true}
+  {:unit [defn sh08-symp-derive],
+   :case :semantic-diagnostic,
+   :refused true}
+  {:unit [defn sh08-symp-derive],
+   :case :integer-representation,
+   :refused true}
+  {:unit [defn sh08-symp-derive],
+   :case :shadowed-validator,
+   :refused true}
+  {:unit [defn sh08-symp-derive],
+   :case :coherent-lost-validator,
+   :refused true}
+  {:unit [defn sh08-symp-inferred-call],
+   :case :restore-remnant-0,
+   :refused true}
+  {:unit [defn sh08-symp-inferred-call],
+   :case :restore-remnant-1,
+   :refused true}
+  {:unit [defn sh08-symp-inferred-call], :case :arity, :refused true}
+  {:unit [defn sh08-symp-inferred-call],
+   :case :source-builder,
+   :refused true}
+  {:unit [defn sh08-symp-inferred-call],
+   :case :semantic-diagnostic,
+   :refused true}
+  {:unit [defn sh08-symp-inferred-call],
+   :case :integer-representation,
+   :refused true}
+  {:unit [defn sh08-symp-inferred-call],
+   :case :shadowed-validator,
+   :refused true}
+  {:unit [defn sh08-symp-inferred-call],
+   :case :coherent-lost-validator,
+   :refused true}
+  {:unit [defn sh08-boolp-derive],
+   :case :restore-remnant-0,
+   :refused true}
+  {:unit [defn sh08-boolp-derive],
+   :case :restore-remnant-1,
+   :refused true}
+  {:unit [defn sh08-boolp-derive],
+   :case :restore-remnant-2,
+   :refused true}
+  {:unit [defn sh08-boolp-derive], :case :arity, :refused true}
+  {:unit [defn sh08-boolp-derive],
+   :case :source-builder,
+   :refused true}
+  {:unit [defn sh08-boolp-derive],
+   :case :semantic-diagnostic,
+   :refused true}
+  {:unit [defn sh08-boolp-derive],
+   :case :integer-representation,
+   :refused true}
+  {:unit [defn sh08-boolp-derive],
+   :case :shadowed-validator,
+   :refused true}
+  {:unit [defn sh08-boolp-derive],
+   :case :coherent-lost-validator,
+   :refused true}
+  {:unit [defn sh08-boolp-inferred-call],
+   :case :restore-remnant-0,
+   :refused true}
+  {:unit [defn sh08-boolp-inferred-call],
+   :case :restore-remnant-1,
+   :refused true}
+  {:unit [defn sh08-boolp-inferred-call], :case :arity, :refused true}
+  {:unit [defn sh08-boolp-inferred-call],
+   :case :source-builder,
+   :refused true}
+  {:unit [defn sh08-boolp-inferred-call],
+   :case :semantic-diagnostic,
+   :refused true}
+  {:unit [defn sh08-boolp-inferred-call],
+   :case :integer-representation,
+   :refused true}
+  {:unit [defn sh08-boolp-inferred-call],
+   :case :shadowed-validator,
+   :refused true}
+  {:unit [defn sh08-boolp-inferred-call],
+   :case :coherent-lost-validator,
+   :refused true}
+  {:unit [defn sh08-chp-derive],
+   :case :restore-remnant-0,
+   :refused true}
+  {:unit [defn sh08-chp-derive],
+   :case :restore-remnant-1,
+   :refused true}
+  {:unit [defn sh08-chp-derive],
+   :case :restore-remnant-2,
+   :refused true}
+  {:unit [defn sh08-chp-derive], :case :arity, :refused true}
+  {:unit [defn sh08-chp-derive], :case :source-builder, :refused true}
+  {:unit [defn sh08-chp-derive],
+   :case :semantic-diagnostic,
+   :refused true}
+  {:unit [defn sh08-chp-derive],
+   :case :integer-representation,
+   :refused true}
+  {:unit [defn sh08-chp-derive],
+   :case :shadowed-validator,
+   :refused true}
+  {:unit [defn sh08-chp-derive],
+   :case :coherent-lost-validator,
+   :refused true}
+  {:unit [defn sh08-chp-inferred-call],
+   :case :restore-remnant-0,
+   :refused true}
+  {:unit [defn sh08-chp-inferred-call],
+   :case :restore-remnant-1,
+   :refused true}
+  {:unit [defn sh08-chp-inferred-call], :case :arity, :refused true}
+  {:unit [defn sh08-chp-inferred-call],
+   :case :source-builder,
+   :refused true}
+  {:unit [defn sh08-chp-inferred-call],
+   :case :semantic-diagnostic,
+   :refused true}
+  {:unit [defn sh08-chp-inferred-call],
+   :case :integer-representation,
+   :refused true}
+  {:unit [defn sh08-chp-inferred-call],
+   :case :shadowed-validator,
+   :refused true}
+  {:unit [defn sh08-chp-inferred-call],
+   :case :coherent-lost-validator,
+   :refused true}
+  {:unit [defn sh08-nilp-derive],
+   :case :restore-remnant-0,
+   :refused true}
+  {:unit [defn sh08-nilp-derive],
+   :case :restore-remnant-1,
+   :refused true}
+  {:unit [defn sh08-nilp-derive],
+   :case :restore-remnant-2,
+   :refused true}
+  {:unit [defn sh08-nilp-derive], :case :arity, :refused true}
+  {:unit [defn sh08-nilp-derive], :case :source-builder, :refused true}
+  {:unit [defn sh08-nilp-derive],
+   :case :semantic-diagnostic,
+   :refused true}
+  {:unit [defn sh08-nilp-derive],
+   :case :integer-representation,
+   :refused true}
+  {:unit [defn sh08-nilp-derive],
+   :case :shadowed-validator,
+   :refused true}
+  {:unit [defn sh08-nilp-derive],
+   :case :coherent-lost-validator,
+   :refused true}
+  {:unit [defn sh08-nilp-inferred-call],
+   :case :restore-remnant-0,
+   :refused true}
+  {:unit [defn sh08-nilp-inferred-call],
+   :case :restore-remnant-1,
+   :refused true}
+  {:unit [defn sh08-nilp-inferred-call], :case :arity, :refused true}
+  {:unit [defn sh08-nilp-inferred-call],
+   :case :source-builder,
+   :refused true}
+  {:unit [defn sh08-nilp-inferred-call],
+   :case :semantic-diagnostic,
+   :refused true}
+  {:unit [defn sh08-nilp-inferred-call],
+   :case :integer-representation,
+   :refused true}
+  {:unit [defn sh08-nilp-inferred-call],
+   :case :shadowed-validator,
+   :refused true}
+  {:unit [defn sh08-nilp-inferred-call],
+   :case :coherent-lost-validator,
+   :refused true}
+  {:unit [defn sh08-kp-derive],
+   :case :restore-remnant-0,
+   :refused true}
+  {:unit [defn sh08-kp-derive],
+   :case :restore-remnant-1,
+   :refused true}
+  {:unit [defn sh08-kp-derive],
+   :case :restore-remnant-2,
+   :refused true}
+  {:unit [defn sh08-kp-derive], :case :arity, :refused true}
+  {:unit [defn sh08-kp-derive], :case :source-builder, :refused true}
+  {:unit [defn sh08-kp-derive],
+   :case :semantic-diagnostic,
+   :refused true}
+  {:unit [defn sh08-kp-derive],
+   :case :integer-representation,
+   :refused true}
+  {:unit [defn sh08-kp-derive],
+   :case :shadowed-validator,
+   :refused true}
+  {:unit [defn sh08-kp-derive],
+   :case :coherent-lost-validator,
+   :refused true}
+  {:unit [defn sh08-kp-inferred-call],
+   :case :restore-remnant-0,
+   :refused true}
+  {:unit [defn sh08-kp-inferred-call],
+   :case :restore-remnant-1,
+   :refused true}
+  {:unit [defn sh08-kp-inferred-call], :case :arity, :refused true}
+  {:unit [defn sh08-kp-inferred-call],
+   :case :source-builder,
+   :refused true}
+  {:unit [defn sh08-kp-inferred-call],
+   :case :semantic-diagnostic,
+   :refused true}
+  {:unit [defn sh08-kp-inferred-call],
+   :case :integer-representation,
+   :refused true}
+  {:unit [defn sh08-kp-inferred-call],
+   :case :shadowed-validator,
+   :refused true}
+  {:unit [defn sh08-kp-inferred-call],
+   :case :coherent-lost-validator,
+   :refused true}
+  {:unit [defn sh08-strp-derive],
+   :case :restore-remnant-0,
+   :refused true}
+  {:unit [defn sh08-strp-derive],
+   :case :restore-remnant-1,
+   :refused true}
+  {:unit [defn sh08-strp-derive],
+   :case :restore-remnant-2,
+   :refused true}
+  {:unit [defn sh08-strp-derive], :case :arity, :refused true}
+  {:unit [defn sh08-strp-derive], :case :source-builder, :refused true}
+  {:unit [defn sh08-strp-derive],
+   :case :semantic-diagnostic,
+   :refused true}
+  {:unit [defn sh08-strp-derive],
+   :case :integer-representation,
+   :refused true}
+  {:unit [defn sh08-strp-derive],
+   :case :shadowed-validator,
+   :refused true}
+  {:unit [defn sh08-strp-derive],
+   :case :coherent-lost-validator,
+   :refused true}
+  {:unit [defn sh08-strp-inferred-call],
+   :case :restore-remnant-0,
+   :refused true}
+  {:unit [defn sh08-strp-inferred-call],
+   :case :restore-remnant-1,
+   :refused true}
+  {:unit [defn sh08-strp-inferred-call], :case :arity, :refused true}
+  {:unit [defn sh08-strp-inferred-call],
+   :case :source-builder,
+   :refused true}
+  {:unit [defn sh08-strp-inferred-call],
+   :case :semantic-diagnostic,
+   :refused true}
+  {:unit [defn sh08-strp-inferred-call],
+   :case :integer-representation,
+   :refused true}
+  {:unit [defn sh08-strp-inferred-call],
+   :case :shadowed-validator,
+   :refused true}
+  {:unit [defn sh08-strp-inferred-call],
+   :case :coherent-lost-validator,
+   :refused true}
+  {:unit [defn sh08-ip-derive],
+   :case :restore-remnant-0,
+   :refused true}
+  {:unit [defn sh08-ip-derive],
+   :case :restore-remnant-1,
+   :refused true}
+  {:unit [defn sh08-ip-derive],
+   :case :restore-remnant-2,
+   :refused true}
+  {:unit [defn sh08-ip-derive], :case :arity, :refused true}
+  {:unit [defn sh08-ip-derive], :case :source-builder, :refused true}
+  {:unit [defn sh08-ip-derive],
+   :case :semantic-diagnostic,
+   :refused true}
+  {:unit [defn sh08-ip-derive],
+   :case :integer-representation,
+   :refused true}
+  {:unit [defn sh08-ip-derive],
+   :case :shadowed-validator,
+   :refused true}
+  {:unit [defn sh08-ip-derive],
+   :case :coherent-lost-validator,
+   :refused true}
+  {:unit [defn sh08-ip-inferred-call],
+   :case :restore-remnant-0,
+   :refused true}
+  {:unit [defn sh08-ip-inferred-call],
+   :case :restore-remnant-1,
+   :refused true}
+  {:unit [defn sh08-ip-inferred-call], :case :arity, :refused true}
+  {:unit [defn sh08-ip-inferred-call],
+   :case :source-builder,
+   :refused true}
+  {:unit [defn sh08-ip-inferred-call],
+   :case :semantic-diagnostic,
+   :refused true}
+  {:unit [defn sh08-ip-inferred-call],
+   :case :integer-representation,
+   :refused true}
+  {:unit [defn sh08-ip-inferred-call],
+   :case :shadowed-validator,
+   :refused true}
+  {:unit [defn sh08-ip-inferred-call],
+   :case :coherent-lost-validator,
+   :refused true}
+  {:unit [defn sh08-vp-derive],
+   :case :restore-remnant-0,
+   :refused true}
+  {:unit [defn sh08-vp-derive],
+   :case :restore-remnant-1,
+   :refused true}
+  {:unit [defn sh08-vp-derive],
+   :case :restore-remnant-2,
+   :refused true}
+  {:unit [defn sh08-vp-derive], :case :arity, :refused true}
+  {:unit [defn sh08-vp-derive], :case :source-builder, :refused true}
+  {:unit [defn sh08-vp-derive],
+   :case :semantic-diagnostic,
+   :refused true}
+  {:unit [defn sh08-vp-derive],
+   :case :integer-representation,
+   :refused true}
+  {:unit [defn sh08-vp-derive],
+   :case :shadowed-validator,
+   :refused true}
+  {:unit [defn sh08-vp-derive],
+   :case :coherent-lost-validator,
+   :refused true}
+  {:unit [defn sh08-vp-inferred-call],
+   :case :restore-remnant-0,
+   :refused true}
+  {:unit [defn sh08-vp-inferred-call],
+   :case :restore-remnant-1,
+   :refused true}
+  {:unit [defn sh08-vp-inferred-call], :case :arity, :refused true}
+  {:unit [defn sh08-vp-inferred-call],
+   :case :source-builder,
+   :refused true}
+  {:unit [defn sh08-vp-inferred-call],
+   :case :semantic-diagnostic,
+   :refused true}
+  {:unit [defn sh08-vp-inferred-call],
+   :case :integer-representation,
+   :refused true}
+  {:unit [defn sh08-vp-inferred-call],
+   :case :shadowed-validator,
+   :refused true}
+  {:unit [defn sh08-vp-inferred-call],
+   :case :coherent-lost-validator,
+   :refused true}],
+ :source-distinction
+ {:evidence-vs-parent :byte-identical,
+  :evidence-vs-assessed-whole-C7 :different,
+  :all22-selected-callers
+  :identical-across-evidence-and-assessed-source},
+ :reproduction
+ {:path "/tmp/predicate-caller-independent-review.clj",
+  :sha256
+  "6596ca9b0d68c587270d23562bf94e6298761a851925b188392452035e7aa918"},
+ :assumptions
+ [:pinned-unrebound-source-and-bindings
+  :L2-lexical-call-control-semantics
+  :normal-return-overapproximation],
+ :delivery :private-receipt-for-supported-helper-readback,
+ :scope :22-original-C7-predicate-callers-only,
+ :disposition
+ :accept-rejecting-restoration-of-exact55-accounting-remnants,
+ :classification
+ "Every derive has exactly three and every inferred-call exactly two classified accounting deltas. Complete reconstruction preserves every other argument, constant, source builder, validator call and semantic reason. The exact55 remnants are zero-charge bookkeeping and LC-normal-result work-limit diagnostic alternatives excluded by the pinned conservative two-helper return envelope. Current removal policy rejects restoring those55 only. Outer caller budgets, widths, refusal reasons and work fields remain visibly unresolved; they are neither accepted nor erased by this disposition.",
+ :rows
+ [{:unit [defn sh08-mapp-derive],
+   :family "map",
+   :role "derive",
+   :delta-count 3,
+   :historical-sha256
+   "f8c33297669c456c87be5fbed43c2fdfff9752327e88f08cb94b4e6c57dc4351",
+   :current-sha256
+   "c2a16dd916eefea9a0747978927d902a7f3749b59702f85ab2aa0505fc7d7024",
+   :classification
+   :reject-restoration-of-enumerated-accounting-remnants-only}
+  {:unit [defn sh08-mapp-inferred-call],
+   :family "map",
+   :role "inferred-call",
+   :delta-count 2,
+   :historical-sha256
+   "5dfac41e6fcd0cb035683a432b40c18012caf1bbbb6a44f125ed2987fddb3a09",
+   :current-sha256
+   "814d4bd80dc27e96aad885a05bebf96fc9fbccfb4c0fe693b266b9cf4bb61180",
+   :classification
+   :reject-restoration-of-enumerated-accounting-remnants-only}
+  {:unit [defn sh08-setp-derive],
+   :family "set",
+   :role "derive",
+   :delta-count 3,
+   :historical-sha256
+   "d22275f478351b0bafdc5499e35c36a6ed2ac4d2b09dcf8ffa62ec9e73966d7a",
+   :current-sha256
+   "6554aefc2dd6eaa4b66a1b248f3afdcf8c87baa6a6e331f33d76f4bc133800e5",
+   :classification
+   :reject-restoration-of-enumerated-accounting-remnants-only}
+  {:unit [defn sh08-setp-inferred-call],
+   :family "set",
+   :role "inferred-call",
+   :delta-count 2,
+   :historical-sha256
+   "a3017c1170a5e74b507d3cd7b382bccfe139fecaa9e9152e4ff3edf52ae06170",
+   :current-sha256
+   "6a0f6772618f66ac01219b0f55695d2fd771c9ff59cbe47f01bb3820506062ce",
+   :classification
+   :reject-restoration-of-enumerated-accounting-remnants-only}
+  {:unit [defn sh08-listp-derive],
+   :family "list",
+   :role "derive",
+   :delta-count 3,
+   :historical-sha256
+   "4092f702fe8a24c1db4fffb7630606d9c579de6e38cfeacc5f3bf17cd87f02f3",
+   :current-sha256
+   "dd532ec506b347c9b7f417b5a72010c4980975ab645c6ff7d613e73193383118",
+   :classification
+   :reject-restoration-of-enumerated-accounting-remnants-only}
+  {:unit [defn sh08-listp-inferred-call],
+   :family "list",
+   :role "inferred-call",
+   :delta-count 2,
+   :historical-sha256
+   "bbe738718b994883eb662e8ff33df53293a689fcec1953df22f200c8817d8652",
+   :current-sha256
+   "1d90aec83c38b8e267a68de2bae5fe893288cb51bea50f14464f813ab3076ba4",
+   :classification
+   :reject-restoration-of-enumerated-accounting-remnants-only}
+  {:unit [defn sh08-symp-derive],
+   :family "symbol",
+   :role "derive",
+   :delta-count 3,
+   :historical-sha256
+   "865c290bbe6cec2d2eb80c225ca9701d7ffbccd2c45132a4eeec4067a1298a88",
+   :current-sha256
+   "83bdf98a1705feef8de8d287511c0e76043e7708745199635eed2968da5e5680",
+   :classification
+   :reject-restoration-of-enumerated-accounting-remnants-only}
+  {:unit [defn sh08-symp-inferred-call],
+   :family "symbol",
+   :role "inferred-call",
+   :delta-count 2,
+   :historical-sha256
+   "88d63ea7efc192f22d025d42a89c40d7a94d599c843a116e79640402de1551b9",
+   :current-sha256
+   "f3f4457faf38e8f442c719633cb2ce925193e1ccb842ca6eccf2d4f0c3455b6d",
+   :classification
+   :reject-restoration-of-enumerated-accounting-remnants-only}
+  {:unit [defn sh08-boolp-derive],
+   :family "boolean",
+   :role "derive",
+   :delta-count 3,
+   :historical-sha256
+   "162f8b5cdeb81bd1dc8759407a1839e0aba9e7771f150c484bfe83ae1598efe7",
+   :current-sha256
+   "08c4f64c3a17bf6a23891eabe39d7f787bc739845baec5e1f1e157b3729c6fc3",
+   :classification
+   :reject-restoration-of-enumerated-accounting-remnants-only}
+  {:unit [defn sh08-boolp-inferred-call],
+   :family "boolean",
+   :role "inferred-call",
+   :delta-count 2,
+   :historical-sha256
+   "201142841430174a6db1bd99047ae79d643631909f071136f436b289493f5640",
+   :current-sha256
+   "eddb6872ceaf8d3a024bd84cd7bc7d8500e97a0d85043efc9441a4e47122ab5b",
+   :classification
+   :reject-restoration-of-enumerated-accounting-remnants-only}
+  {:unit [defn sh08-chp-derive],
+   :family "character",
+   :role "derive",
+   :delta-count 3,
+   :historical-sha256
+   "acf2d051deef0ad3a4107b9ea5efc787252703d6b677aa754e5ab007ade3bf50",
+   :current-sha256
+   "da21ab6e6a22899284019b3d27b002f54be9314dbd36ac8a33d115c2f0229f84",
+   :classification
+   :reject-restoration-of-enumerated-accounting-remnants-only}
+  {:unit [defn sh08-chp-inferred-call],
+   :family "character",
+   :role "inferred-call",
+   :delta-count 2,
+   :historical-sha256
+   "3d539aef7b301e431cae3aa4c93c08c32053426c1497928e691d458cb7a0c12e",
+   :current-sha256
+   "c3140197c72d3a4f4fe77716aa400c14c974c53219c0a4592cf20af64f15aace",
+   :classification
+   :reject-restoration-of-enumerated-accounting-remnants-only}
+  {:unit [defn sh08-nilp-derive],
+   :family "nil",
+   :role "derive",
+   :delta-count 3,
+   :historical-sha256
+   "f78650618443a4ce2ea1208f69393b52254196e4d1729bf23efac83c41f28ddf",
+   :current-sha256
+   "7a6e72891bdfac1d3fb2ab41b3c79b47c7976dfc0450a64d0f0591463b7d038d",
+   :classification
+   :reject-restoration-of-enumerated-accounting-remnants-only}
+  {:unit [defn sh08-nilp-inferred-call],
+   :family "nil",
+   :role "inferred-call",
+   :delta-count 2,
+   :historical-sha256
+   "210384777b72678225646d7c298395c04b51439006fdf84e6bc229eccb7d3bc3",
+   :current-sha256
+   "509d1ed7670c22a9491651db777c806659ccd57abea8ed5eb99194846846e3e3",
+   :classification
+   :reject-restoration-of-enumerated-accounting-remnants-only}
+  {:unit [defn sh08-kp-derive],
+   :family "keyword",
+   :role "derive",
+   :delta-count 3,
+   :historical-sha256
+   "55573f333d43fca7e94a2c2213079361c9840f2bcc1d9a70267eb751baecde87",
+   :current-sha256
+   "6fda37b594b4401cca1ac9dc2a4387864b370fbc7e17169c71026f4eb45bf74e",
+   :classification
+   :reject-restoration-of-enumerated-accounting-remnants-only}
+  {:unit [defn sh08-kp-inferred-call],
+   :family "keyword",
+   :role "inferred-call",
+   :delta-count 2,
+   :historical-sha256
+   "11a13e98690cb45436cd2a1996dcd4f696c3d05d40c56b4e2b8a86c620275f1d",
+   :current-sha256
+   "a39fb7d0db8392eaf6bc41d1267a55c1d52072a2a18a52aa5a6375374d325264",
+   :classification
+   :reject-restoration-of-enumerated-accounting-remnants-only}
+  {:unit [defn sh08-strp-derive],
+   :family "string",
+   :role "derive",
+   :delta-count 3,
+   :historical-sha256
+   "a4c390a5b1975c60df9fd5cf535cddc7631bf3f032281424d093433b0eebfbfb",
+   :current-sha256
+   "a40e50be829e3f0d646a72a66565556599bac17ae977237205290343521479cc",
+   :classification
+   :reject-restoration-of-enumerated-accounting-remnants-only}
+  {:unit [defn sh08-strp-inferred-call],
+   :family "string",
+   :role "inferred-call",
+   :delta-count 2,
+   :historical-sha256
+   "a0ef5702ae9cfdb0b54e0312dcc990b8c75c5e1772f01add92c9a56ecd5d9091",
+   :current-sha256
+   "d1a5ec475a09a1a058e289dccfe420ea0462001fbbe23c140477a51489884976",
+   :classification
+   :reject-restoration-of-enumerated-accounting-remnants-only}
+  {:unit [defn sh08-ip-derive],
+   :family "integer",
+   :role "derive",
+   :delta-count 3,
+   :historical-sha256
+   "fe45e9aeae5beffcb5ce30431c6b1fd415fbe4f8e902ae86ba8c8543f6782c14",
+   :current-sha256
+   "4825914307246cbf775727d4763c0745043a9e0b279096d64ddaa45ee9a4b230",
+   :classification
+   :reject-restoration-of-enumerated-accounting-remnants-only}
+  {:unit [defn sh08-ip-inferred-call],
+   :family "integer",
+   :role "inferred-call",
+   :delta-count 2,
+   :historical-sha256
+   "080fd7e723f1ccb5389a43eb9f0b8e6ee3f2388c15607e75170ce9f660be8492",
+   :current-sha256
+   "e8071823a49d799016505c61d3d3c64ac623a536fe298efb79957b07543a4114",
+   :classification
+   :reject-restoration-of-enumerated-accounting-remnants-only}
+  {:unit [defn sh08-vp-derive],
+   :family "vector",
+   :role "derive",
+   :delta-count 3,
+   :historical-sha256
+   "60e4b115500a1f158dc0cbbb24ac1133b76a5b92341b8499079158589586c3e1",
+   :current-sha256
+   "c9610f66c81efb445498c55e00beecf99a22798ce2fd4c1120b0d32bf88cab47",
+   :classification
+   :reject-restoration-of-enumerated-accounting-remnants-only}
+  {:unit [defn sh08-vp-inferred-call],
+   :family "vector",
+   :role "inferred-call",
+   :delta-count 2,
+   :historical-sha256
+   "15531b81a85a5d43684cfaabfedc6226c66729b2d454aff0baa6a979006b389d",
+   :current-sha256
+   "5af143f98daf7a3fdd195a936bef7b572144dc90f487a3696894e3ed363a3f87",
+   :classification
+   :reject-restoration-of-enumerated-accounting-remnants-only}],
+ :intake
+ {:fresh-author-and-helper-readbacks :checked,
+  :duplicate-exact-review :none-observed,
+  :authorship-conflict false},
+ :kind :predicate-caller-independent-classification-consumption,
+ :receipt-sha256
+ "f29b9851934699293de651ca8552e5fdc833f5d2024b28d4d48fe6b0e2678ba0",
+ :positive-checks 2914,
+ :source-checks 3928,
+ :reused-evidence
+ {:receipt "/tmp/validator-envelope-independent-classification.edn",
+  :complete-assessed-source-and-policy :unchanged,
+  :four-previous-callers :not-reused-as-new-decisions,
+  :scope :unchanged-two-helper-normal-return-envelope-only,
+  :source-envelope-sha256
+  "084a90ba845d88bf4ffa909a5483fde14f919de6a53d3d25d79f6c660680de5a",
+  :root-work-count-return :absent,
+  :six-semantic-reasons :retained,
+  :sha256
+  "5b7b28a3881386b00333f989711d173fdeca9a4a766046e3f4ab6ae9d65c467c",
+  :normal-work-limit-reason :absent},
+ :whole-PR569-acceptance :not-conferred,
+ :author-checker
+ {:path "/tmp/acc01-predicate-caller-remnants.clj",
+  :sha256
+  "2a369f2b1bdaeee6ea46f61b5ef248863e8f8de3bf47372a8cf5dfe9cd23d38e",
+  :mode :inspected-hashed-only,
+  :writer-executed false,
+  :reported110-controls :not-used-as-independent-proof},
+ :canonical-disposition-adoption :not-performed,
+ :current-main-source-applicability
+ {:commit "b1d590cc7edda61c81a53eeccbf879d7e4d2bcbf",
+  :whole-C7-equals-assessed-source true,
+  :selected-callers :unchanged},
+ :input-hashes
+ {"specs/accounting-removal/predicate-caller-remnants.edn"
+  "30630e8e80469727512cbbc476fb2f86ab70685e485bac6a8b218b6992e786e7",
+  "specs/accounting-removal/preserved-source-inventory.edn"
+  "ab1bba9f55312be5cd7c84d2628f54dbd2fe3e23f625764df0a9b757fb4828a0",
+  :historical-C7
+  "e5970116147c0acc0ee13e6b90d36b27fd9ca5342c658214b5c808d0f024b75e",
+  :assessed-C7
+  "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+  :evidence-C7
+  "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142"},
+ :owner :ACC-01}

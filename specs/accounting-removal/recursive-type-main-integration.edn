@@ -1,0 +1,676 @@
+{:integration-mode-preflight
+ {:sha256
+  "325b659c013fc163b88d6ad32e54176d933e786b9f5a9c2e9b231ae092ca59a5",
+  :preconditions
+  {"all-pass" true,
+   "base-resolved" true,
+   "candidate-identities-match" true,
+   "clean-worktree" true,
+   "named-branch" true,
+   "reconciliation-allowed" true},
+  :observed-identities
+  {"expected-base" "8300c415628d2110cd703824a059e06476f4e1e0",
+   "expected-commit" "a51a03473c068568b71ca78f75cecd6cdbe8aacb",
+   "expected-tree" "7c4c2733de6675701e2bd19b59b5dc10f7e9d82c"},
+  :exact-full-tuple true,
+  :no-cleanup-or-exclusion true},
+ :remote-merge
+ {:source-ref :retained,
+  :merged true,
+  :tree "7c4c2733de6675701e2bd19b59b5dc10f7e9d82c",
+  :GitHub-APPROVE false,
+  :parent "8300c415628d2110cd703824a059e06476f4e1e0",
+  :method :squash,
+  :base-branch "main",
+  :state :closed,
+  :unresolved-review-threads [],
+  :administrator-bypass false,
+  :formal-reviews [],
+  :expected-head "a51a03473c068568b71ca78f75cecd6cdbe8aacb",
+  :commit "b1d590cc7edda61c81a53eeccbf879d7e4d2bcbf"},
+ :nonclaims
+ [:genuine-owner-acceptance
+  :historical-helper-or-constructor-equivalence
+  :transitive-semantic-proof
+  :authenticated-admission
+  :downstream-runtime-composition
+  :whole-accounting-removal
+  :whole-ACC01
+  :PR502-closure
+  :release
+  :self-hosting],
+ :execution
+ {:genuine-owner-kernels :UNRUN,
+  :native-runtime-helper-projection :UNRUN,
+  :Bootstrap-loaded false},
+ :source-hashes
+ {:current-test
+  "5209e1ce7a0f900bcb38f4f3da0f6318d0ec312077818c7ed45864cc9de3f8b0",
+  :base-test
+  "d6464313d475da679ff9cf1b723c13a78972c83b42320974e8c698199ee8fb65",
+  :original-test
+  "18224e4e291204b367f947c74a447d685a261bca4c72d820d726b72c1a454bd6",
+  :List-suffix
+  "31417693bb9bf07c87b3ef94d43ae5382b829eaa8d7a2c37b1a761c699d796fc",
+  :current-C7
+  "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+  :original-C7
+  "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142"},
+ :integration-base "8300c415628d2110cd703824a059e06476f4e1e0",
+ :candidate "a51a03473c068568b71ca78f75cecd6cdbe8aacb",
+ :generator-sha256
+ "1a8b5fbe7a4160af0fa9951c0edc2a07d6d4bf58dc22c68d272a375d19b95f7b",
+ :source-obligations
+ {:List-late-invalid 4096,
+  :Symbol-added-depth 192,
+  :Symbol-prior-depths [127 129],
+  :cyclic-opaque-nestedNever-oddMap-extraField-zeroCallback-controls
+  :source-retained-unexecuted,
+  :List-width 4097,
+  :List-depth 192,
+  :Symbol-wide 1025,
+  :all-assertion-forms 38,
+  :Symbol-late-invalid 1024},
+ :owner-pins
+ {:exact-immediate-current-targets
+  #{sh08-lc-native-view?
+    sh08-lc-ancestor?
+    sh08-hl-type?
+    sh08-ss-type?
+    sh08-lc-native-arguments
+    sh08-lc-validate-types
+    sh08-ni-type?
+    sh08-syc-type?
+    sh08-lc-native-map?},
+  :semantic-or-transitive-equivalence :unproven,
+  :differences
+  [{:name sh08-lc-ancestor?,
+    :current
+    (defn
+     sh08-lc-ancestor?
+     [value ancestors]
+     (loop
+      [index 0]
+      (if
+       (= index (count ancestors))
+       false
+       (if
+        (bootstrap-native-identical? value (get ancestors index))
+        true
+        (recur (+ index 1)))))),
+    :historical nil,
+    :historical-state :absent,
+    :equivalence :unassessed}
+   {:name sh08-lc-native-arguments,
+    :current
+    (defn
+     sh08-lc-native-arguments
+     [arguments]
+     (let
+      [header
+       (bootstrap-native-carrier-header arguments)
+       kind
+       (get header 0)]
+      (if
+       (contains? #{:empty-list :nil} kind)
+       {:status :accepted, :arguments []}
+       (if
+        (contains? #{:subvector :vector} kind)
+        (if
+         (sh08-lc-native-view? arguments)
+         {:status :accepted, :arguments arguments}
+         {:status :rejected, :reason :unsupported-arguments})
+        (if
+         (= :list-node kind)
+         (loop
+          [current arguments ancestors [] out []]
+          (if
+           (sh08-lc-ancestor? current ancestors)
+           {:status :rejected, :reason :cyclic-arguments}
+           (let
+            [node
+             (bootstrap-native-carrier-header current)
+             tag
+             (get node 0)]
+            (if
+             (contains? #{:empty-list :nil} tag)
+             {:status :accepted, :arguments out}
+             (if
+              (= :list-node tag)
+              (let
+               [next
+                (get node 5)
+                extent
+                (get node 2)
+                next-ancestors
+                (conj ancestors current)]
+               (if
+                (sh08-lc-ancestor? next next-ancestors)
+                {:status :rejected, :reason :cyclic-arguments}
+                (let
+                 [next-header
+                  (bootstrap-native-carrier-header next)
+                  coherent?
+                  (if
+                   (= extent nil)
+                   true
+                   (if
+                    (> extent 0)
+                    (if
+                     (= extent 1)
+                     (contains?
+                      #{:empty-list :nil}
+                      (get next-header 0))
+                     (if
+                      (= :list-node (get next-header 0))
+                      (= (- extent 1) (get next-header 2))
+                      false))
+                    false))]
+                 (if
+                  coherent?
+                  (recur next next-ancestors (conj out (get node 4)))
+                  {:status :rejected,
+                   :reason :unsupported-arguments}))))
+              {:status :rejected, :reason :unsupported-arguments})))))
+         {:status :rejected, :reason :unsupported-arguments}))))),
+    :historical nil,
+    :historical-state :absent,
+    :equivalence :unassessed}
+   {:name sh08-lc-native-map?,
+    :current
+    (defn
+     sh08-lc-native-map?
+     [value]
+     (let
+      [header
+       (bootstrap-native-carrier-header value)
+       kind
+       (get header 0)]
+      (if
+       (if
+        (= :map kind)
+        true
+        (if
+         (= :tree-map kind)
+         (= :default-comparator (get header 4))
+         false))
+       (if
+        (>= (get header 2) 0)
+        (if
+         (<= (get header 2) 3)
+         (loop
+          [fields (keys value)]
+          (if
+           (= 0 (count fields))
+           true
+           (if (keyword? (first fields)) (recur (rest fields)) false)))
+         false)
+        false)
+       false))),
+    :historical nil,
+    :historical-state :absent,
+    :equivalence :unassessed}
+   {:name sh08-lc-native-view?,
+    :current
+    (defn
+     sh08-lc-native-view?
+     [value]
+     (loop
+      [current value ancestors []]
+      (if
+       (sh08-lc-ancestor? current ancestors)
+       false
+       (let
+        [header
+         (bootstrap-native-carrier-header current)
+         kind
+         (get header 0)]
+        (if
+         (= :vector kind)
+         (>= (get header 2) 0)
+         (if
+          (= :subvector kind)
+          (let
+           [extent
+            (get header 2)
+            start
+            (get header 5)
+            backing
+            (get header 4)
+            backing-header
+            (bootstrap-native-carrier-header backing)]
+           (if
+            (contains? #{:subvector :vector} (get backing-header 0))
+            (if
+             (if
+              (>= start 0)
+              (if
+               (>= extent 0)
+               (if
+                (>= (get backing-header 2) 0)
+                (<= (+ start extent) (get backing-header 2))
+                false)
+               false)
+              false)
+             (recur backing (conj ancestors current))
+             false)
+            false))
+          false)))))),
+    :historical nil,
+    :historical-state :absent,
+    :equivalence :unassessed}
+   {:name sh08-lc-validate-types,
+    :current
+    (defn
+     sh08-lc-validate-types
+     [arguments]
+     (let
+      [ingress (sh08-lc-native-arguments arguments)]
+      (if
+       (= :accepted (get ingress :status))
+       (let
+        [arguments (get ingress :arguments)]
+        (loop
+         [pending
+          (loop
+           [remaining arguments out []]
+           (if
+            (= 0 (count remaining))
+            out
+            (recur
+             (rest remaining)
+             (conj
+              out
+              {:type (first remaining),
+               :ancestors [],
+               :operand? true}))))]
+         (if
+          (= 0 (count pending))
+          {:status :accepted}
+          (let
+           [frame
+            (get pending (- (count pending) 1))
+            type
+            (get frame :type)
+            ancestors
+            (get frame :ancestors)
+            tail
+            (subvec pending 0 (- (count pending) 1))]
+           (if
+            (if
+             (keyword? type)
+             (contains?
+              #{:gravity.type/i16
+                :gravity.type/f32
+                :gravity.type/bool
+                :gravity.type/u64
+                :gravity.type/f64
+                :gravity.type/u16
+                :gravity.type/map
+                :gravity.type/set
+                :gravity.type/decimal
+                :gravity.type/integer
+                :gravity.type/symbol
+                :gravity.type/nil
+                :gravity.type/i8
+                :gravity.type/i32
+                :gravity.type/u8
+                :gravity.type/character
+                :gravity.type/i64
+                :gravity.type/list
+                :gravity.type/string
+                :gravity.type/vector
+                :gravity.type/keyword
+                :gravity.type/ratio
+                :gravity.type/u32}
+              type)
+             false)
+            (recur tail)
+            (if
+             (= :gravity.type/never type)
+             (if
+              (get frame :operand?)
+              (recur tail)
+              {:status :rejected, :reason :nested-never})
+             (if
+              (sh08-lc-native-map? type)
+              (if
+               (sh08-lc-ancestor? type ancestors)
+               {:status :rejected, :reason :cyclic-type}
+               (let
+                [kind
+                 (get type :kind)
+                 members?
+                 (= :gravity.type/map kind)
+                 homogeneous?
+                 (if
+                  (sh08-ss-type? type)
+                  true
+                  (if
+                   (sh08-syc-type? type)
+                   true
+                   (if
+                    (keyword? (get type :element-type))
+                    (sh08-hl-type? type)
+                    false)))
+                 nil-bearing?
+                 (if
+                  (keyword? (get type :value-type))
+                  (sh08-ni-type? type)
+                  false)
+                 children
+                 (if
+                  nil-bearing?
+                  [(get type :value-type)]
+                  (if
+                   homogeneous?
+                   [(get type :element-type)]
+                   (get
+                    type
+                    (if members? :member-types :element-types))))
+                 valid?
+                 (if
+                  nil-bearing?
+                  true
+                  (if
+                   homogeneous?
+                   true
+                   (if
+                    (if
+                     (keyword? kind)
+                     (contains?
+                      #{:gravity.type/map
+                        :gravity.type/set
+                        :gravity.type/list
+                        :gravity.type/vector}
+                      kind)
+                     false)
+                    (if
+                     (=
+                      (if
+                       members?
+                       #{:kind :member-types :shape}
+                       #{:kind :shape :element-types})
+                      (set (keys type)))
+                     (if
+                      (= :literal (get type :shape))
+                      (if
+                       (sh08-lc-native-view? children)
+                       (if
+                        members?
+                        (loop
+                         [remaining children]
+                         (if
+                          (= 0 (count remaining))
+                          true
+                          (if
+                           (= 1 (count remaining))
+                           false
+                           (recur (rest (rest remaining))))))
+                        true)
+                       false)
+                      false)
+                     false)
+                    false)))
+                 next-ancestors
+                 (conj ancestors type)]
+                (if
+                 valid?
+                 (recur
+                  (loop
+                   [remaining children out tail]
+                   (if
+                    (= 0 (count remaining))
+                    out
+                    (recur
+                     (rest remaining)
+                     (conj
+                      out
+                      {:type (first remaining),
+                       :ancestors next-ancestors,
+                       :operand? false})))))
+                 {:status :rejected, :reason :malformed-type})))
+              {:status :rejected, :reason :unsupported-type})))))))
+       ingress))),
+    :historical
+    (defn
+     sh08-lc-validate-types
+     [arguments]
+     (let
+      [carrier (sh08-vf-original-data arguments)]
+      (if
+       (= :accepted (get carrier :status))
+       (loop
+        [pending
+         (loop
+          [remaining arguments out []]
+          (if
+           (= 0 (count remaining))
+           out
+           (recur
+            (rest remaining)
+            (conj out {:type (first remaining), :operand? true}))))]
+        (if
+         (= 0 (count pending))
+         {:status :accepted}
+         (let
+          [frame
+           (get pending (- (count pending) 1))
+           type
+           (get frame :type)
+           tail
+           (subvec pending 0 (- (count pending) 1))]
+          (if
+           (if
+            (keyword? type)
+            (contains?
+             #{:gravity.type/i16
+               :gravity.type/f32
+               :gravity.type/bool
+               :gravity.type/u64
+               :gravity.type/f64
+               :gravity.type/u16
+               :gravity.type/map
+               :gravity.type/set
+               :gravity.type/decimal
+               :gravity.type/integer
+               :gravity.type/symbol
+               :gravity.type/nil
+               :gravity.type/i8
+               :gravity.type/i32
+               :gravity.type/u8
+               :gravity.type/character
+               :gravity.type/i64
+               :gravity.type/list
+               :gravity.type/string
+               :gravity.type/vector
+               :gravity.type/keyword
+               :gravity.type/ratio
+               :gravity.type/u32}
+             type)
+            false)
+           (recur tail)
+           (if
+            (= :gravity.type/never type)
+            (if
+             (get frame :operand?)
+             (recur tail)
+             {:status :rejected, :reason :nested-never})
+            (if
+             (if
+              (map? type)
+              (loop
+               [fields (keys type)]
+               (if
+                (= 0 (count fields))
+                true
+                (if
+                 (keyword? (first fields))
+                 (recur (rest fields))
+                 false)))
+              false)
+             (let
+              [kind
+               (get type :kind)
+               members?
+               (= :gravity.type/map kind)
+               homogeneous?
+               (if
+                (sh08-ss-type? type)
+                true
+                (if
+                 (sh08-syc-type? type)
+                 true
+                 (if
+                  (keyword? (get type :element-type))
+                  (sh08-hl-type? type)
+                  false)))
+               nil-bearing?
+               (if
+                (keyword? (get type :value-type))
+                (sh08-ni-type? type)
+                false)
+               children
+               (if
+                nil-bearing?
+                [(get type :value-type)]
+                (if
+                 homogeneous?
+                 [(get type :element-type)]
+                 (get
+                  type
+                  (if members? :member-types :element-types))))
+               valid?
+               (if
+                nil-bearing?
+                true
+                (if
+                 homogeneous?
+                 true
+                 (if
+                  (if
+                   (keyword? kind)
+                   (contains?
+                    #{:gravity.type/map
+                      :gravity.type/set
+                      :gravity.type/list
+                      :gravity.type/vector}
+                    kind)
+                   false)
+                  (if
+                   (=
+                    (if
+                     members?
+                     #{:kind :member-types :shape}
+                     #{:kind :shape :element-types})
+                    (set (keys type)))
+                   (if
+                    (= :literal (get type :shape))
+                    (if
+                     (vector? children)
+                     (if
+                      members?
+                      (loop
+                       [remaining children]
+                       (if
+                        (= 0 (count remaining))
+                        true
+                        (if
+                         (= 1 (count remaining))
+                         false
+                         (recur (rest (rest remaining))))))
+                      true)
+                     false)
+                    false)
+                   false)
+                  false)))]
+              (if
+               valid?
+               (recur
+                (loop
+                 [remaining children out tail]
+                 (if
+                  (= 0 (count remaining))
+                  out
+                  (recur
+                   (rest remaining)
+                   (conj
+                    out
+                    {:type (first remaining), :operand? false})))))
+               {:status :rejected, :reason :malformed-type}))
+             {:status :rejected, :reason :unsupported-type}))))))
+       carrier))),
+    :historical-state :present,
+    :equivalence :unassessed}],
+  :historically-absent 4,
+  :historical-differences 5,
+  :current-forms-and-arguments-match-original true,
+  :count 9,
+  :entry sh08-lc-validate-types,
+  :details-sha256
+  "6b3fcccf68ad719527ea1bae717df56afa6f2fe59a884dabe8d96b29b8c77cfe"},
+ :fresh-readback
+ {:GitHub-merged-and-closed true,
+  :merge-parent-matches-base true,
+  :candidate-and-merged-tree-identical true,
+  :main-reachable true,
+  :observed-main "b1d590cc7edda61c81a53eeccbf879d7e4d2bcbf"},
+ :qualifications
+ {:census-old-C7-and-test-hashes :historical-only,
+  :auxiliary-serialized-List-Symbol-hashes :not-independent-evidence,
+  :current-down-counter-Symbol-constructor :preserved,
+  :historical-up-counter-constructor-equivalence :not-certified,
+  :source-form-numbers-names-quota-schema-arity-normalization :none,
+  :only-reader-generated-host-local-symbols-normalized-for-form-comparison
+  true},
+ :CI
+ {:head "a51a03473c068568b71ca78f75cecd6cdbe8aacb",
+  :run 41001963738,
+  :successes 7,
+  :configured-skips 2,
+  :all-completed true},
+ :assertion-form-count 38,
+ :accepted-composition
+ {:base-entries 10089,
+  :candidate-entries 10091,
+  :full-tree-path-object-mode-equation true,
+  :all-base-paths-conserved-except-exact-Symbol-edit-and-List-append
+  true,
+  :two-records-byte-identical-to-original true,
+  :all-production-unchanged-from-base true,
+  :current-quote-collection-reader-predicate-RecordUnion-additions-retained
+  true},
+ :preservation
+ {:original-cache :untouched,
+  :source-refs :retained,
+  :original-29-path-inventory :unchanged,
+  :PR532-scope :unchanged,
+  :PR502 :open,
+  :PR623-and-ACC06-capture :untouched},
+ :kind :recursive-type-finite-main-integration,
+ :independent-review
+ {:receipt-sha256
+  "fc19c57032fd4f6c21c7628d0659ba3a1edd902d237cb1b1ac7ea0bef46b6e2d",
+  :scope :exact-source-DATA-composition,
+  :verdict :scoped-source-pass,
+  :findings [],
+  :checks 10698,
+  :corruption-refusals 117,
+  :original-controls-reexecuted 7,
+  :consumer-reproduction :byte-identical-receipt},
+ :pr 622,
+ :List-raw-span-sha256
+ "b22eb142c911747aa77f22062c5b24f2fc6c6ab5801b52d61b0cdcb0bab8bcfe",
+ :Symbol-single-replacement
+ {:before "[value [(nest 127 carrier) (nest 129 carrier) wide]]",
+  :after
+  "[value [(nest 127 carrier) (nest 129 carrier) (nest 192 carrier) wide]]",
+  :one-occurrence true},
+ :owner :ACC-01,
+ :dispatch-adapters
+ {:host-source-symbol-inventory 14,
+  :direct-bootstrap-adapters 3,
+  :all-inspected-forms-unchanged true,
+  :resolved-or-transitive-callgraph-proof false,
+  :executed false},
+ :candidate-tree "7c4c2733de6675701e2bd19b59b5dc10f7e9d82c"}

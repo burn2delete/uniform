@@ -1,0 +1,164 @@
+{:foreign-checker-rerun false,
+ :observed-CI
+ {:source :frozen-json-at-intake-ref,
+  :sha256
+  "c9be8473c997d3fc66ac44c744c6525a47ec6f10841188b01e232448895d280d",
+  :exact-head true,
+  :completed 9,
+  :success 7,
+  :configured-skips 2,
+  :rerun false,
+  :genuine-credit false},
+ :tree "b2fd8edc5444f46c588a5db66e6881b72b3f1e33",
+ :nonclaims
+ [:whole-constructor-equivalence
+  :retained-accounting-endorsement
+  :whole-ACC01-PR502-closure
+  :source-authentication
+  :release
+  :self-hosting
+  :current-main-applicability
+  :parent-stack-acceptance
+  :genuine-execution],
+ :artifact-caveats
+ [{:constraint
+   "Do not treat EDN-reader payload equality as evidence of this code form; the exact source literal was independently pinned. No form was evaluated.",
+   :path "specs/accounting-removal/verifier-fixtures-census.edn",
+   :printed-text
+   "(assoc-in produced [:module :namespace] 'forged.module)",
+   :source-literal-read-with-eval-disabled true,
+   :field [:test-correspondence :fresh-verified-candidate-mutations 5],
+   :disposition
+   :informational-source-excerpt-not-roundtrippable-as-identical-EDN-form,
+   :clojure-edn-reader :apostrophe-prefixed-symbol,
+   :kind :quoted-source-data-reader-distinction,
+   :clojure-reader :quote-form,
+   :literal-test-source-correct true}],
+ :consumer-verification
+ :frozen-intake-tree-fixtures-test-equations-source-contracts-checker-four-artifacts-and-caveat,
+ :production-correspondence
+ {:independently-enumerated-complete-forms 30,
+  :historical-exact 28,
+  :non-equivalent 2,
+  :explicit-non-equivalence
+  [{:name
+    sh08-ft-function-type-core-artifact-with-imports-and-allowance,
+    :historical-key :ordinary-work-count,
+    :candidate-key :work-count,
+    :places
+    [:handler-product-allowance-arithmetic
+     :direct-throw-allowance-arithmetic],
+    :qualification
+    "Complete-form equation preserves these accounting reads as actual differences; no semantic/whole-constructor equivalence or accounting-removal acceptance."}
+   {:name sh08-function-type-core-artifact-with-allowance,
+    :historical-reason :imported-type-result-carrier-invalid,
+    :candidate-reason :imported-type-result-carrier-limit,
+    :qualification
+    "Actual imported-carrier diagnostic difference; preflight remains metered and unaccepted in native/semantic scope."}]},
+ :consumer-source-sha256
+ "6513b1efde0b4fce2f4f718d290592dc0251409e27b20be630f637efe5b25523",
+ :candidate "b786b464a67e33af2b75bfcf90a87619b71774c3",
+ :execution-limits
+ {:Bootstrap :UNRUN,
+  :source-authentication :UNRUN,
+  :actual-source-Core-C7-public-verifier :UNRUN,
+  :CI-rerun false,
+  :companion-typed-or-runtime-composition :UNRUN,
+  :actual-helper-load-or-execution false,
+  :current-main-composition-and-integration :UNRUN,
+  :publication-or-APPROVE false,
+  :native-runtime-provider-callback-metadata-cycle :UNRUN},
+ :tests
+ {:full-results
+  [:successful-constructor-result-equals-ordinary-result
+   :malformed-core-result-equals-repeated-result
+   :produced-equals-fresh-expected-and-candidate],
+  :syntactic-counts-are-execution-counts false,
+  :qualified-substitution-fields
+  [:test-name :fixture-basename :definition-name :lookup-key],
+  :qualified
+  :complete-form-equation-with-exactly-four-recorded-substitutions,
+  :diagnostics
+  [:rejected-status
+   :exact-reason
+   :nonempty-diagnostics
+   :C7-VERIFY-rule],
+  :malformed-core-cases
+  [:nil-core :invalid-artifact-tag :duplicate-node],
+  :ordinary :complete-historical-form-equation,
+  :fresh-verifier :complete-inspected-literal-equation,
+  :shared-parent-identical-helpers
+  [fixture-path
+   function-work-policy-current-resolution
+   function-work-policy-current-source
+   invoke-c7],
+  :candidate-mutations-per-fixture 8,
+  :ordered-syntactic-assertion-counts [13 13 9],
+  :candidate-mutations
+  [:schema-version
+   :status
+   :typed-core-types
+   :constraint-ledger
+   :function-return-type
+   :module-namespace
+   :identity-constraint-ledger
+   :unknown-field],
+  :helper
+  :complete-historical-body-with-preserved-directory-and-default-basename-plus-explicit-basename-arity,
+  :fixtures-per-control 2},
+ :genuine :UNRUN,
+ :single-parent "d58d61c4a83f09ebd3c742a3cc13b9d000244759",
+ :conservation
+ {:exact-added-definitions 4,
+  :equal-extension-pairs 2,
+  :fixture-semantic-execution :UNRUN,
+  :original-fixture-inventory
+  :four-paths-historical-byte-pins-verified,
+  :all-other-paths-identical true,
+  :entire-parent-test-byte-prefix-identical true,
+  :all-parent-top-level-forms-identical true,
+  :fixtures 4,
+  :complete-mode-blob-overlay 7,
+  :production-file-parent-identical true},
+ :historical-source "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :parent-PR598-qualification
+ {:status :unresolved-preserved-and-sealed,
+  :known-question
+  :six-lost-full-result-comparisons-require-independent-disposition,
+  :parent-acceptance-inherited false,
+  :repair-attempted false,
+  :review-substituted false},
+ :result :PASS-qualified-exact-source-test-adaptation-only,
+ :assessed-main
+ {:ref "e3d990e9c6594f140a85397fd8e16a80078a4f10",
+  :meaning :historical-provenance-only,
+  :current-main-claim false},
+ :kind :verifier-fixtures-qualified-source-review-consumption,
+ :receipt-sha256
+ "c6504417ad646c89e261e7871d26cd012b47a5783b088cf6eafe2a3662161f23",
+ :validation
+ {:private-harness-preparation-corrections
+  [:delimiter-corrected
+   :source-form-versus-EDN-quote-reading-distinguished],
+  :reader-eval false,
+  :coherently-rehashed-refusal-controls 92,
+  :control-families
+  [:thirty-production-return-corruptions
+   :all-thirty-five-assertion-weakenings
+   :eight-mutation-omissions
+   :two-fixture-case-omissions
+   :five-full-result-comparison-weakenings
+   :helper-directory-and-basename
+   :four-rehashed-fixture-content-corruptions
+   :two-false-historical-equivalence-claims
+   :qualified-key
+   :overlay-mode
+   :overlay-extra-path
+   :duplicate-definition],
+  :source-data-checks 903,
+  :candidate-failures-inferred-from-harness-preparation false,
+  :author-checker-executed false,
+  :project-namespaces-loaded false,
+  :original-validator-or-porter-executed false},
+ :owner :ACC-01,
+ :whole-ACC01-PR502 :incomplete}
