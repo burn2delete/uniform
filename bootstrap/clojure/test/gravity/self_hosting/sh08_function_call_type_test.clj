@@ -12299,7 +12299,8 @@
              [core node nodes types (assoc-in bindings [(refs :then) :binding-id] :forged) forms]
              [core node nodes types bindings (assoc-in forms [(fids :operator) :value] 'other/if)]
              [core node nodes types bindings (assoc-in forms [(fids :then) :parent-form-id] :sibling)]
-             [core node nodes types bindings (assoc-in forms [(fids :if) :child-form-ids] [])]]]
+             [core node nodes types bindings (assoc-in forms [(fids :if) :child-form-ids] [])]
+             [core node nodes types bindings (assoc-in forms [(fids :if) :child-form-ids] :uncountable)]]]
       (let [changed (derive changed-core changed-node changed-nodes changed-types changed-bindings changed-forms)]
         (is (= :rejected (:status changed)))
         (is (= :list-if-join-source-mismatch (:reason changed)))))
@@ -12344,6 +12345,12 @@
             (let [types (assoc unknown-types (nids :then) left (nids :else) right)]
               (is (= [:deferred expected]
                      ((juxt :status :type) (invoke-c7 'sh08-ij-step [node types context])))))))
+        (let [later (assoc node :node-id :deferred-if
+                          :children [:missing-condition (nids :then) (nids :else)])
+              result (invoke-c7 'sh08-ft-infer-pass-with-context
+                               [(conj (:nodes core) later) [] [] [] [] {} binding-types context])]
+          (is (= [] (:diagnostics result)))
+          (is (= :gravity.type/unknown (get-in result [:type-table :deferred-if]))))
         (let [functions {:owner {:function-id :owner :body-core-node-id (nids :if) :return :gravity.type/unknown}}
               updated (invoke-c7 'sh08-ft-update-function-returns [functions nodes (:type-table result)])]
           (is (= homogeneous (get-in updated [:owner :return])))
@@ -12403,6 +12410,12 @@
         (is (= :accepted (:status result)))
         (is (= 1025 (get-in result [:branch-compatibility 0 :checked-member-count])))
         (is (= result (join large same))))
+      (let [members (vec (repeat 4097 s)) large (finite members)
+            result (join large same)]
+        (is (= :accepted (:status result)))
+        (is (= 4097 (get-in result [:branch-compatibility 0 :checked-member-count])))
+        (is (= :not-applicable
+               (:status (join (finite (assoc members 4096 :gravity.type/keyword)) same)))))
       (is (= :gravity.type/unknown
              (invoke-c7 'sh08-ft-normal-return-type [:alternatives [left same] :gravity.type/unknown])))
       (is (= :gravity.type/unknown

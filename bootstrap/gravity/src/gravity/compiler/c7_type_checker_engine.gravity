@@ -3302,7 +3302,7 @@
                            (= (get function :definition-name) (get binding :name))
                            (= [:namespace :function (get (get core :module) :namespace)]
                               [(get binding :binding-class) (get binding :kind) (get binding :namespace)])
-                           (= :list (get form :kind)) (vector? ids) (= 4 (count ids))
+                           (= :list (get form :kind)) (vector? ids) (if (vector? ids) (= 4 (count ids)) false)
                            (= :symbol (get operator :kind)) (= 'if (get operator :value))
                            (= (get form :form-id) (get operator :parent-form-id))
                            (= (sh08-lr-source form) (get node :source))
