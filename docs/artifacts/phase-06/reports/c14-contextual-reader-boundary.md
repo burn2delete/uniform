@@ -56,6 +56,22 @@ retains that stronger obligation; it receives no credit without execution.
 
 ## Actual disposition and owners
 
+The current diagnostic repair follows the C14 catalog: it records the carried
+checked-Core artifact identity as `:input-artifact-id`, the existing literal-Bool
+scope as the MIR anchor, and distinguishes target `:jvm` from backend
+`:gravity.backend/jvm`. Missing-feature, proof and provider expectations are
+explicit. Stale C13 and target-substitution errors retain independently verified
+original MIR provenance. A failed specialization retains it only when the
+original C11 check independently passes; malformed or unauthenticated inputs
+receive no artifact, span or origin identity.
+
+The focused diagnostic test extracts the unchanged helper body from the actual
+source, narrows only its unused imports/exports, and executes that leaf through
+the development runtime. This is supplied-DATA helper coverage, not the
+three-module consumer, C5 acceptance or fresh MIR authentication. The contextual
+selector also asserts the canonical fields and provenance, but its complete
+execution remains required by the unchecked checklist above.
+
 The retained original 120-second contextual run timed out during full C11 C5
 dependency construction, before C14 execution. Subsequent full-source diagnostics
 at their separately recorded identities did not establish complete C5 acceptance.

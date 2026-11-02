@@ -16,9 +16,17 @@
     {:artifact :gravity/sh17-target-lowering-result :schema-version 1
      :status :rejected :input-status input-status
      :diagnostics [{:diagnostic-id diagnostic :stage :target-lowering :reason reason
+                    :input-artifact-id (get before :source-core)
+                    :mir-operation-or-domain-anchor
+                    (if (= before nil) :not-applicable :original-zero-arity-literal-bool-diamond)
                     :checked-core-artifact-id (get before :source-core)
                     :mir-module-id (get before :module-id)
                     :profile (get before :profile) :target-request (get before :target-request)
+                    :target (get before :target-request) :backend :gravity.backend/jvm
+                    :missing-feature reason
+                    :proof-expected :fresh-original-and-specialized-c11-verification
+                    :provider-expected (if (= diagnostic "C14-INPUT")
+                                         :not-applicable :jvm-b5-target-lowering-contract)
                     :source-span (get source :span) :source-origin-id (get source :origin-id)
                     :origin-chain (if (= before nil) [] (get source :generated-origin))
                     :fallback-status :none
@@ -56,11 +64,13 @@
                                       (get after :source-target) (get after :target-request))
                             (c14-literal-bool-boundary-result
                              "C14-UNSUPPORTED" :jvm-b5-target-lowering-contract :scoped-valid before)
-                            (c14-literal-bool-boundary-result "C14-INPUT" :substituted-target-request :rejected nil))
-                          (c14-literal-bool-boundary-result "C14-INPUT" :stale-c13-result :rejected nil))
-                        (c14-literal-bool-boundary-result "C14-INPUT" :invalid-c13-specialization :rejected nil))
+                            (c14-literal-bool-boundary-result "C14-INPUT" :substituted-target-request :rejected before))
+                          (c14-literal-bool-boundary-result "C14-INPUT" :stale-c13-result :rejected before))
+                        (c14-literal-bool-boundary-result "C14-INPUT" :invalid-c13-specialization :rejected before))
                       (c14-literal-bool-boundary-result "C14-INPUT" :invalid-original-mir :rejected nil)))
-                  (c14-literal-bool-boundary-result "C14-INPUT" :invalid-specialization-relation :rejected nil)))
+                  (c14-literal-bool-boundary-result
+                   "C14-INPUT" :invalid-specialization-relation :rejected
+                   (if (= :passed (get (c11/sh12-verify-branch-join-mir core before) :status)) before nil))))
               (c14-literal-bool-boundary-result "C14-INPUT" :invalid-c13-result :rejected nil)))
           (c14-literal-bool-boundary-result "C14-INPUT" :invalid-context-fields :rejected nil))
         (c14-literal-bool-boundary-result "C14-INPUT" :invalid-context :rejected nil))

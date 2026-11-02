@@ -41,6 +41,49 @@
    {:engine :sh17-literal-bool-input-boundary-development :compiler-artifact-plan? true}
    @bundle function arguments))
 (defn- lower [context] (invoke 'c14-build-literal-bool-contextual-lowering [context]))
+(def ^:private required-diagnostic-fields
+  [:input-artifact-id :mir-operation-or-domain-anchor :source-span :origin-chain
+   :profile :target :backend :missing-feature :proof-expected :provider-expected
+   :fallback-status :remediation])
+
+(deftest contextual-diagnostic-helper-preserves-canonical-fields
+  ;; Actual source-plan helper execution on supplied DATA only. This does not
+  ;; authenticate MIR or execute the contextual C5/dependency consumer.
+  (let [source (path c14-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source :jvm))
+        forms (mapv :form (bootstrap/read-source-form-records source (slurp source)))
+        helper (first (filter #(and (= 'defn (first %))
+                                     (= 'c14-literal-bool-boundary-result (second %))) forms))
+        header (apply list (map #(if (and (seq? %) (= :exports (first %)))
+                                  '(:exports [c14-literal-bool-boundary-result]) %)
+                                (remove #(and (seq? %) (= :requires (first %))) (first forms))))
+        ;; The body is unchanged; only this leaf's unused imports and exports
+        ;; are narrowed. The full contextual bundle above remains mandatory.
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan
+              emitter (str source "#diagnostic-leaf") (str (pr-str header) "\n" (pr-str helper)))
+        origin [{:kind :source :source-id :fixture}]
+        span {:source-id :fixture :start 0 :end 1}
+        before {:source-core "fixture-core" :module-id 'fixture :profile :hosted :target-request :jvm
+                :functions {'main {:source {:span span :origin-id :fixture :generated-origin origin}}}}
+        run (fn [code reason mir]
+              (bootstrap/p15-s23-stage2-runtime-execute-function
+               {:engine :sh17-contextual-diagnostic-development :compiler-artifact-plan? true}
+               plan 'c14-literal-bool-boundary-result [code reason :rejected mir]))]
+    (doseq [code ["C14-INPUT" "C14-UNSUPPORTED"]]
+      (let [diagnostic (first (:diagnostics (run code :fixture-reason before)))]
+        (is (every? #(contains? diagnostic %) required-diagnostic-fields))
+        (is (= ["fixture-core" :original-zero-arity-literal-bool-diamond 'fixture :hosted :jvm
+                :gravity.backend/jvm span origin :fixture-reason]
+               ((juxt :input-artifact-id :mir-operation-or-domain-anchor :mir-module-id :profile :target
+                      :backend :source-span :origin-chain :missing-feature) diagnostic)))
+        (is (= (if (= code "C14-INPUT") :not-applicable :jvm-b5-target-lowering-contract)
+               (:provider-expected diagnostic)))))
+    (let [diagnostic (first (:diagnostics (run "C14-INPUT" :invalid-context nil)))]
+      (is (every? #(contains? diagnostic %) required-diagnostic-fields))
+      (is (= [nil :not-applicable nil nil nil []]
+             ((juxt :input-artifact-id :mir-operation-or-domain-anchor :profile :target :source-span
+                    :origin-chain) diagnostic))))))
+
 (defn- products [condition extension]
   (let [start (System/nanoTime)
         {:keys [core mir] :as pair}
@@ -89,7 +132,10 @@
     (is (= ["C14-UNSUPPORTED"] (mapv :diagnostic-id (:diagnostics result))))
     (is (= [:jvm-b5-target-lowering-contract] (mapv :reason (:diagnostics result))))
     (is (= (:artifact-id (:checked-core context))
-           (get-in result [:diagnostics 0 :checked-core-artifact-id])))
+           (get-in result [:diagnostics 0 :input-artifact-id])))
+    (is (every? #(contains? (first (:diagnostics result)) %) required-diagnostic-fields))
+    (is (= [:jvm :gravity.backend/jvm]
+           ((juxt :target :backend) (first (:diagnostics result)))))
     (is (= [true false] ((juxt :clojure-seed-boundary? :self-hosted?) result)))
     (is (every? (set (:nonclaims result)) [:backend-admission :artifact-emission :optimized-execution]))
     (is (not-any? #(contains? result %) [:emitted-artifact :target-program :authority :artifact-id])))))
@@ -106,7 +152,9 @@
      (is (= ["C14-INPUT"] (mapv :diagnostic-id (:diagnostics result))))
      (when reason
        (is (= [reason] (mapv :reason (:diagnostics result)))))
-     (is (not-any? #(contains? result %) [:emitted-artifact :target-program :authority :artifact-id])))))
+     (is (every? #(contains? (first (:diagnostics result)) %) required-diagnostic-fields))
+     (is (not-any? #(contains? result %) [:emitted-artifact :target-program :authority :artifact-id]))
+     result)))
 
 (deftest sh17-contextual-module-validates-original-and-rejects-substitution
   ;; Minimal affected-integration control: one real source producer, followed
@@ -114,16 +162,21 @@
   ;; invalidation, target and source-binding mutations.
   (check-valid "true" "gravity")
   (let [context (:context @(get cases ["true" "gravity"]))]
-    (rejected-input (assoc-in context [:c13-result :invalidation-ledger :proofs-invalidated]
-                             [:substituted-proof])
-                    :stale-c13-result)
+    (let [result (rejected-input (assoc-in context [:c13-result :invalidation-ledger :proofs-invalidated]
+                                         [:substituted-proof]) :stale-c13-result)]
+      (is (= (get-in context [:before-mir :source-core]) (get-in result [:diagnostics 0 :input-artifact-id])))
+      (is (= (get-in context [:before-mir :functions 'main :source :span])
+             (get-in result [:diagnostics 0 :source-span]))))
     ;; Keep the authentic Core present: a malformed Core would mask this edge.
-    (rejected-input (assoc context :target-request :llvm)
-                    :substituted-target-request)
+    (let [result (rejected-input (assoc context :target-request :llvm) :substituted-target-request)]
+      (is (= (get-in context [:before-mir :source-core]) (get-in result [:diagnostics 0 :input-artifact-id])))
+      (is (= :jvm (get-in result [:diagnostics 0 :target]))))
     (let [substituted-hash "sha256:0000000000000000000000000000000000000000000000000000000000000000"]
       (is (not= substituted-hash (get-in context [:checked-core :source-content-hash])))
-      (rejected-input (assoc-in context [:checked-core :source-content-hash] substituted-hash)
-                      :invalid-specialization-relation))))
+      (let [result (rejected-input (assoc-in context [:checked-core :source-content-hash] substituted-hash)
+                                   :invalid-specialization-relation)]
+        (is (= [nil nil []] ((juxt :input-artifact-id :source-span :origin-chain)
+                             (first (:diagnostics result)))))))))
 
 (deftest sh17-input-boundary-rejects-malformed-and-unbound-contexts
   (let [context (:context @(get cases ["true" "gravity"]))]
