@@ -41,6 +41,21 @@ record pending makes the existing verifier fail and produces C7-LAYOUT for
 layout-facts-recorded?, without a diagnostic override. Complete before inputs,
 products and refusal payloads are retained in /tmp/uniform-types-records-evidence.
 
-After comparison, final conservation/regression/boundary checks, independent
-acceptance, own CI/artifacts, main composition and immediate clean integration
-preflight remain required at this initial draft snapshot.
+The after producer executes source f5a6f07ba0e201306d65a542535eb6ba9cb4da38,
+tree 1978812a3d09efb32d5e1407b92483f990ff0100. Both complete data and original
+serialization equal the before products. Record hashes are
+6e401ebb55c390290ed9ce55cc77039082cec7c10d6828162c7ed82f1f166582
+and d7caba6d052ac929c6084c3176fe10dc993e30838110a15bd2cac896b52200be.
+Current C7 source, executable-plan and native fixture-artifact hashes recompute,
+as do both retained semantic/provenance preimages. The native fixture artifact
+id is sha256:3924c556d3de55ac5cdab6253a3d2754203b7b4e6abdc98986fea9c4fa235a0e;
+this deterministic test identity is not canonical source authority.
+
+Whole-file reconstruction preserves six bodies and both production files.
+Focused C7 tests pass 12/349, language/ownership passes 47/1154, and cold loading
+exposes 20 public APIs without Bootstrap. Three-path contextual lint has zero
+warnings/blockers, archived at /tmp/uniform-types-records-lint; docs, roadmap and
+governance pass. Final independent acceptance, own CI/artifacts, reconciliation
+against advanced current main and immediate clean integration preflight remain
+required. Neither source-control acceptance nor previous CI confers later-main
+or release/migration eligibility.
