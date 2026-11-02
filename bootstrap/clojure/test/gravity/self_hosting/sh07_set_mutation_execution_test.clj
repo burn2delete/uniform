@@ -167,6 +167,44 @@
            :mutations mutations
            :store store)))
 
+(defn- long-identifier-request [extension]
+  (let [request (fixture-request "accepted" extension)
+        long-id (fn [prefix]
+                  (str prefix (apply str (repeat 257 "x"))))
+        ids (into {}
+                  (map (fn [value] [value (long-id value)])
+                       ["node/literal" "node/inner-set" "node/outer-set"
+                        "syntax/literal" "syntax/inner-set" "syntax/outer-set"
+                        "binding/inner" "binding/outer"]))
+        remap (fn [value] (get ids value value))
+        remap-node
+        (fn [node]
+          (let [node (update node :node-id remap)
+                node (update node :children #(mapv remap %))
+                node (update-in node [:source :syntax-id] remap)]
+            (if (= :set! (:core-form node))
+              (-> node
+                  (update-in [:attributes :target-binding-id] remap)
+                  (update-in [:evaluation :order]
+                             (fn [order]
+                               (mapv #(update % :core-node-id remap)
+                                     order))))
+              node)))
+        remap-mutation
+        (fn [mutation]
+          (-> mutation
+              (update :core-node-id remap)
+              (update :value-core-node-id remap)
+              (update :target-binding-id remap)
+              (update :evaluated-children #(mapv remap %))))
+        remap-store
+        (fn [entry] (update entry :binding-id remap))]
+    (-> request
+        (update :root-node-id remap)
+        (update :nodes #(mapv remap-node %))
+        (update :mutations #(mapv remap-mutation %))
+        (update :store #(mapv remap-store %)))))
+
 (defn- l2-execute [verified]
   (invoke @l2-plan 'execute-l2-set-mutation [verified]))
 
@@ -383,6 +421,31 @@
     (is (= 7
            (get (store-values result) "binding/deep-32")))))
 
+(deftest sh07-set-mutation-accepts-long-authenticated-identifiers
+  (let [request (long-identifier-request ".gravity")
+        verified (c6-verify request)
+        result (l2-execute verified)]
+    (is (every? #(> (count %) 256)
+                (concat [(:root-node-id request)]
+                        (map :node-id (:nodes request))
+                        (map #(get-in % [:source :syntax-id]) (:nodes request))
+                        (map :core-node-id (:mutations request))
+                        (map :target-binding-id (:mutations request))
+                        (map :binding-id (:store request)))))
+    (is (= :accepted (:status verified)))
+    (is (= :accepted (:status result)))
+    (is (= :unit (:value result)))))
+
+(deftest sh07-set-mutation-rejects-empty-and-nonstring-identifiers
+  (let [request (fixture-request "accepted" ".gravity")]
+    (doseq [[name malformed]
+            [[:empty (assoc request :root-node-id "")]
+             [:nonstring (assoc request :root-node-id 7)]]]
+      (testing (str name)
+        (let [result (c6-verify malformed)]
+          (is (= :rejected (:status result)))
+          (is (= :execution-request-shape
+                 (get-in result [:diagnostics 0 :facts :reason]))))))))
 (deftest sh07-set-mutation-present-nil-literal-remains-a-value
   (doseq [extension extensions]
     (let [request

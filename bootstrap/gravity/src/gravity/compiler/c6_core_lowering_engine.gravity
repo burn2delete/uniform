@@ -223,9 +223,7 @@
 
 (defn c6-set-execution-id? [value]
   (if (string? value)
-    (if (> (count value) 0)
-      (<= (count value) 256)
-      false)
+    (> (count value) 0)
     false))
 
 (defn c6-set-execution-find [values key-name expected]
