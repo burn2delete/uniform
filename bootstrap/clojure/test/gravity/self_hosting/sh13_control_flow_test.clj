@@ -222,6 +222,26 @@
     (is (= :verify (invoke-engine 'sh13-module-error
                                   [(assoc-in large (conj path :operations 512 :allowed-callees) #{})])))))
 
+(deftest sh13-preserves-unbounded-provenance-and-path-metadata
+  (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+    (let [base (module plan 'sh13-branch-module)
+          origin-entry {:kind :source :source-id :gravity.compiler/sh13-fixture}
+          long-origin (vec (repeat 17 origin-entry))
+          long-path (str "/checkout/" (apply str (repeat 4081 "p")) ".gravity")
+          long-origin-module (assoc base :origin-chain long-origin)
+          long-path-module (assoc base :actual-source-path long-path)
+          malformed-origin (assoc-in long-origin-module [:origin-chain 16 :source-id] nil)
+          malformed-path (assoc long-path-module :actual-source-path 42)
+          empty-path (assoc base :actual-source-path "")]
+      (is (> (count long-path) 4096))
+      (is (nil? (invoke-engine 'sh13-module-error [long-origin-module])))
+      (is (= :accepted (:status (run long-origin-module [true]))))
+      (is (nil? (invoke-engine 'sh13-module-error [long-path-module])))
+      (is (= :accepted (:status (run long-path-module [true]))))
+      (is (= :origin (invoke-engine 'sh13-module-error [malformed-origin])))
+      (is (= :module (invoke-engine 'sh13-module-error [malformed-path])))
+      (is (= :module (invoke-engine 'sh13-module-error [empty-path]))))))
+
 (deftest sh13-executes-direct-recursion-without-a-depth-quota
   (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
     (let [module (module plan 'sh13-factorial-module)

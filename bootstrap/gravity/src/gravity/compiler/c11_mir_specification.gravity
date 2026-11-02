@@ -9271,9 +9271,7 @@
 (defn sh13-origin-chain-valid? [origin-chain]
   (if (vector? origin-chain)
     (if (> (count origin-chain) 0)
-      (if (<= (count origin-chain) 16)
-        (sh13-origin-entries-valid? origin-chain 0)
-        false)
+      (sh13-origin-entries-valid? origin-chain 0)
       false)
     false))
 
@@ -9991,19 +9989,17 @@
                       (if (sh13-mir-verifier-report-valid? module)
                         (if (string? (get module :actual-source-path))
                           (if (> (count (get module :actual-source-path)) 0)
-                            (if (<= (count (get module :actual-source-path)) 4096)
-                              (if (sh13-present?
-                                   (sh13-function module (get module :entry-function)))
-                                (if (sh13-source-span-valid? (get module :source-span))
-                                  (if (sh13-origin-chain-valid? (get module :origin-chain))
-                                    (let [error (sh13-functions-error module (get module :functions) 0)]
-                                      (if (= nil error)
-                                        (sh13-signature-types-error (get module :functions) 0)
-                                        error))
-                                    :origin)
+                            (if (sh13-present?
+                                 (sh13-function module (get module :entry-function)))
+                              (if (sh13-source-span-valid? (get module :source-span))
+                                (if (sh13-origin-chain-valid? (get module :origin-chain))
+                                  (let [error (sh13-functions-error module (get module :functions) 0)]
+                                    (if (= nil error)
+                                      (sh13-signature-types-error (get module :functions) 0)
+                                      error))
                                   :origin)
-                                :verify)
-                              :module)
+                                :origin)
+                              :verify)
                             :module)
                           :module)
                         :verify)
