@@ -63,23 +63,14 @@ The marked [implementation region](tasks.md#implementation-tasks) is the sole
 editable task authority. Preserve all five component/heading/title-slug IDs,
 titles, Open statuses, evidence baselines, closing criteria and historical
 migration records. The [roadmap](../../docs/component-roadmaps/legality.md#remaining-tasks-and-evidence)
-is generated; its [acceptance](../../docs/component-roadmaps/legality.md#acceptance-and-integration)
+links directly to the sole task ledger; its [acceptance](../../docs/component-roadmaps/legality.md#acceptance-and-integration)
 and [release outcome](../../docs/component-roadmaps/legality.md#release-outcome)
 remain unchanged.
 
-The shared pure parser accepts optional record keys and a field validator; its
-default shape and HTTPS-only policy remain unchanged for all six existing
-wrappers. Legality adds a separate evidence-baseline field and explicit status.
-The component wrapper owns relative-link validation and target-based rebasing;
-there is no duplicate link catalog. Resolve paths against the fixed source
-document, reject paths escaping the repository, require existing files and reject
-symlink escapes. Rebase to the fixed destination document only for rendering.
-Fragments, queries, encoded paths, images, reference links and arbitrary schemes
-are unsupported. HTTPS validation keeps the accepted common grammar.
-
-The original all-open three-column table is byte-identical at transfer. Later
-non-Open statuses produce an explicit Status column. No checkbox alone grants
-acceptance. Historical checkboxes remain outside the parsed region.
+The ledger retains each task's evidence baseline, closing criteria, status and
+historical migration boundary. No duplicate link catalog or generated table is
+maintained. No checkbox alone grants acceptance; historical checkboxes remain
+outside the implementation records.
 
 Types and Effects feed profile legality; Auth validates grants from intermediate
 facts; ownership and safety consume them before MIR. This transfer changes none
@@ -90,25 +81,15 @@ of those dependencies and introduces no whole-component completion cycle.
 Run from repository root:
 
 ```bash
-clojure -J-Xmx512m -M tools/legality_task_projection.clj --write
-clojure -J-Xmx512m -M tools/legality_task_projection.clj --check
-clojure -J-Xmx512m -M tools/legality_task_projection_test.clj
-clojure -J-Xmx512m -M tools/task_projection_test.clj
 clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
 clojure -J-Xmx512m -M tools/validate_gravity_docs.clj
 clojure -J-Xmx512m -M tools/validate_full_language_roadmap.clj
 ```
 
-Run the six unchanged component suites and compare their accepted compatibility
-cases. Compare original/current table bytes, all five derived IDs, all five
-actual evidence targets and the entire historical tasks suffix. Validate ASCII
-and file/heading links across five affected Markdown documents, including all
-retained plan contract links. Test malformed/missing/duplicate IDs and markers,
-status disagreement, stale views, bad links, escaping symlinks and extra CLI
-arguments. Subprocess fixtures must prove valid writes touch only the fixed
-roadmap and invalid writes leave it unchanged. Run whitespace and clean
-exact-base/head/tree integration preflight. Record actual evidence separately
-from review and integration; no compiler semantic suites are required here.
+Check the five workflow documents for ASCII and local links. Run the language
+boundary and document validators; these checks do not establish implementation
+acceptance. Preserve the entire historical tasks suffix and record actual
+evidence separately from review and integration.
 
 ## Delivery and remaining work
 

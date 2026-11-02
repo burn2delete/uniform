@@ -81,3 +81,127 @@ current SH-01 acceptance was performed for this documentation/tooling change.
 The independent review found stale three-record authority introductions in the
 ledger and roadmap. The successor corrects both to four records, preserves
 the original three task blocks, and adds checks for those authority statements.
+
+## Finite plugin and domain source composition
+
+Base: `70dcb2220701529dbb02bd2317a822eb3ac72fed`, tree
+`0d8e95c8451cf2bcf74ad70c353b10cac5f665c1`. Source extraction commit:
+`f25e6f571e610587da8142f5b0fc33e7806d440e`. The task authority, generated
+roadmap, projector and projector tests match the corresponding files in source
+context `8ba98ee7683d7f87a431b7b6d273b06fd5d1a144` exactly: four files,
+190 insertions and ten deletions. All four prior main outcomes retain their
+full predicate bodies as exact prefixes and their Open statuses. The existing
+canonical domain-IR record becomes the fifth local outcome. No global count,
+implementation acceptance or other component source is imported.
+
+The composition record authenticates frozen C17 receipt
+`2e1b2332cbacfa337ba927492388f7300ec6c974bb1d33869fe025c38caebac7`
+and C12 receipt
+`efb092ac18943a411e01c3763f0a4d7f184e006d7de30e02d0468dae979065e6`
+through immutable Git objects, with six exact current raw criterion witnesses.
+Both earlier source scopes remain conditional captured evidence; independent
+review of this new main composition is pending. No reviewer checker runs.
+
+Observed source conservation controls pass four tests/78 assertions; projection
+tests pass five tests/77 assertions. Controls include coherent first-sentence
+removals with recalculated full-file/raw hashes and byte ranges, forged pins,
+wrong scope promotion, unchanged prior main outcomes and absence of copied
+reconciliation/bootstrap/lifecycle payloads. These check source identity and
+claim ceilings, not compiler/domain/plugin semantics. SH regeneration caught
+the new artifact pinned to its preceding source commit and wrote no outputs;
+the artifact must be committed before its reference uses that commit. No denied
+operation is retried or routed through this source extraction.
+
+The source artifact was committed before SH pinning, and regeneration then
+passed with its actual artifact commit. The finite package archives exact
+copies of both sealed review receipts and their two reviewed task-file versions.
+Its runnable source checks use those local bytes and exact current predicates;
+the larger reconciliation branch and its global snapshots are not live test
+dependencies. Earlier qualified adoption references remain immutable history,
+with no renewed acceptance of this new main composition.
+
+The archive-only successor `e47364b6` initially failed one source-control
+assertion: the C12 sealed receipt uses the literal exclusion
+`:final-count-denominator`, while C17 uses `:final-count-or-denominator`.
+The test now checks each cohort's exact recorded label without renaming the
+receipt or broadening its ceiling. All four tests/78 assertions then pass.
+The two task-file archives use `.txt` because they preserve captured bytes and
+relative links as evidence, rather than live Markdown navigation.
+
+The full-dependency check found the retained Pass Evidence criterion's literal
+reference to `specs/requirement-reconciliation/domain-gap-completion.edn`.
+The original is a 3.8 MB, 70-record historical family artifact. The finite
+package retains only the one `domain/mir-pass-integration` record and all ten
+of its authentic DOM17 source-facet witnesses at that required path. All
+before/after coverage fields remain captured history. The excerpt is source
+context only, not a new current owner disposition, whole DOM17/C18 acceptance
+or global database import. Existing criterion text and all six reviewed current
+predicate bodies remain byte-exact. Its two named task dependencies resolve to
+the existing Pipeline and Opt task authorities. No producer or checker executes.
+
+The completed source package passes six tests/122 assertions, including all
+six current predicate bodies, both frozen receipt hashes, local reviewed-source
+archives, exact four prior main outcomes, all ten DOM17 source-coordinate/raw
+hash checks, the one selected dependency record, missing-facet controls,
+mode/blob conservation and unchanged normative inputs. One scratch delimiter
+was corrected before its all-form evaluation; no source write occurred from
+that malformed preparation. Earlier archive-test and source-pin failures remain
+recorded above rather than relabelled as passing attempts.
+
+Affected checks pass: Compiler API projection 5/77; SH 12/157; language boundary
+6/11; document validator 240 documents/19 indexes; full-language roadmap;
+unchanged workstream governance (185 records); whitespace. The repository's
+source-only CI projection mode passes all 53 child commands. Changed-file CI
+lint reports three unchanged baseline warnings and zero blocking warnings or
+errors; the new test has no findings. These are local source checks, not a
+GitHub check result, bootstrap/catalog/leaf run, compiler proof or integration
+acceptance. The captured CI logs are preserved outside the clean checkout in
+`/tmp/finite-domain-ci-pass1`. Actual CI bootstrap/leaf/Darwin/probe modes and
+all held operations remain unrun by this preparation.
+
+Final source controls pass seven tests/126 assertions. The added control binds
+the SH composition pointer to the live artifact bytes and the immutable commit
+that actually contains them; its scope remains pending independent review and
+grants no implementation credit. Pin preparation was adjusted for the one-line
+serialized definition before writing the final reference. SH regeneration and
+checks then pass, including 12 tests/157 assertions and unchanged Reader/source
+history. The fresh changed-file CI lint includes all changed Clojure files and
+the four relevant EDN files; it again reports three unchanged baseline warnings
+and zero blocking warnings/errors. That captured output is preserved at
+`/tmp/finite-domain-ci-pass3`; the preceding successful lint is retained at
+`/tmp/finite-domain-ci-pass2`. No captured attempt is overwritten.
+
+This finite candidate remains pending one independent affected-composition
+review, governed admission and fresh exact-head CI/integration checks afterward.
+The existing source pin commits must remain available to the projection checker;
+an integration strategy that changes ancestry requires rechecking those pins.
+Only the coordinator may route acceptance and integrate the exact reviewed
+composition. No final global denominator, whole C1/C18/DOM17, source runtime,
+release, self-hosting or seed-retirement acceptance is conferred.
+
+Main advanced to `787637b9ae780a7cfef7ca5763611882a8f2b629`, tree
+`10296896f7c605b16b25cdf2981c23d0519b996c`, during preparation. Its four
+Resolver fixture/test paths are disjoint from this package. The private-branch
+merge `55b2f836c0ff45e8bf04309fe1b919b9460881ac` retains both the source-pin
+commits and the already committed main update; it does not integrate main.
+Every owned source mode/blob remains identical to the preceding candidate
+before refreshing the declared base in the composition record. Normative
+inputs remain exact. The incoming Resolver artifacts retain their main
+disposition and have not been executed or admitted by these source checks.
+The declared review base is now that exact `787637b9` commit, with independent
+affected-composition review and fresh exact-head CI/integration checks pending.
+
+Documentation commit `16404713` was staged while the base-record writer was
+finishing, so the completed base record is committed separately. No validation
+of that partial documentation-only commit is claimed. Final checks wait for
+writer completion and use the complete record and its actual immutable pin.
+
+Complete-tree checks against the declared `787637b9` base pass: source controls
+7 tests/126 assertions; SH 12/157 and generated comparison; boundary 6/11;
+both document validators; whitespace. Fresh changed-file CI lint against that
+base includes all eight relevant Clojure/EDN paths and reports three unchanged
+baseline warnings with zero blocking findings. Its complete captured logs are
+at `/tmp/finite-domain-ci-current-main`. The 53-command source-only projection
+CI observation above retains its earlier subject; it is not relabelled as
+fresh exact-head GitHub CI. Current exact-head CI remains required after the
+independent affected-composition review and before coordinator integration.

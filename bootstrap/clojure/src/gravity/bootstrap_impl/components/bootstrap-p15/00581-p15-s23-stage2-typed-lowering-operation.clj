@@ -2,23 +2,19 @@
 ;; and current Gravity lowering owns all typed/source/definition joins. The raw
 ;; internal kernels consume explicit DATA, not a cryptographic authority token.
 (defn- p15-s23-stage2-typed-lowering-operation
-  [operation emitter module definitions typed-input options caller-policy?]
+  [operation emitter module definitions typed-input]
   (let [lowering-path (p15-s23-stage2-compiler-artifact-source-path)
         gravity-root (.getParentFile (.getParentFile (java.io.File. lowering-path)))
         c7-path (.getPath (java.io.File. gravity-root "src/gravity/compiler/c7_type_checker_engine.gravity"))
         lowering-text (read-gravity-source-text lowering-path)
         c7-text (read-gravity-source-text c7-path)
-        c7-plan (p15-s23-stage2-compiler-artifact-plan emitter c7-path c7-text)
+        type-operations {:compile-plan #'p15-s23-stage2-compiler-artifact-plan
+                         :execute-function #'p15-s23-stage2-runtime-execute-function}
+        c7-plan (gravity.types/compile-plan emitter c7-path c7-text type-operations)
         lowering-plan (p15-s23-stage2-compiler-artifact-plan emitter lowering-path lowering-text)
         runner {:engine :current-gravity-typed-lowering-orchestration}
-        fresh-report (if caller-policy?
-                       (:verification
-                        (p15-s23-stage2-runtime-execute-function
-                         runner c7-plan 'sh08-verify-function-type-result-with-work-policy
-                         [(:request typed-input) (:typed typed-input) options]))
-                       (p15-s23-stage2-runtime-execute-function
-                        runner c7-plan 'sh08-verify-function-type-result
-                        [(:request typed-input) (:typed typed-input)]))
+        fresh-report (gravity.types/verify-function-result
+                      runner c7-plan (:request typed-input) (:typed typed-input) type-operations)
         reader (get-in typed-input [:request :b47-context :authenticated-wrapper :sh06-resolution-artifact
                                     :sh05-macro-artifact :gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact])
         source-path (get-in reader [:source-unit-record :path])

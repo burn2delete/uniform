@@ -802,4 +802,33 @@
     :acceptance-predicate-unchanged true,
     :raw-unchanged true}],
   :predecessor-bridge-commit
-  "8291463214306d4a1e0541b9d8fd8ecb4b0b2750"}}
+  "8291463214306d4a1e0541b9d8fd8ecb4b0b2750"}
+ :native-v2-ownership-successor
+ {:source-commit "1dc2471f87f2d0915e9dd003bf420254759ee031",
+ :candidate "dced564a20c175b95dcb919459c3e673a4ca7ade",
+ :source-files
+ [{:path "docs/self-hosting-slice-ownership.edn",
+   :before
+   {:commit "4d96671dcd5c649e6be1d8b8d3dcd6e7da8cfeb7",
+    :sha256
+    "7b08322372e708f4c27b19d82865e1e1af6b44e423e4af6dbb8a65a19d4bae97"},
+   :after
+   {:commit "1dc2471f87f2d0915e9dd003bf420254759ee031",
+    :sha256
+     "652dfa0eb3ab6852f64e67e02541ab57aeb4eca064608a3813a5bc5ea2b84e79"}}],
+ :historical-v2-source-tuple
+ {:core "0e7e30e1",
+  :mir "c41d9e03",
+  :reader "a74e3d1d",
+  :emitter "be4ba460",
+  :expression "23d49699"},
+ :evidence-reuse
+ "Original v2 receipts retain original physical inputs and execution identities. This metadata bridge does not establish conservation of the current execution closure or new semantic execution.",
+ :scope
+ "Paired source-interface-header source/test ownership and standalone namespace registration from PR453, adopted as the pure selector prerequisite with all current main owners. Stable task IDs, predicates and historical review records remain unchanged.",
+ :acceptance :source-conservation-only,
+ :status :pending-independent-source-version-review,
+ :kind :native-v2-ownership-source-version-bridge,
+ :incoming-main "60f59d225b03338eb30cdc22850838ecebd07303",
+ :latest-source-and-v3-admission false}
+}

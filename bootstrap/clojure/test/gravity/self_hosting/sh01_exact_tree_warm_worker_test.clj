@@ -19,7 +19,7 @@
 
 (def exact-args
   ["--namespace" "gravity.c2-pass-cache-test"
-   "--exact" "canonical-semantic-key-is-bounded-type-sensitive-and-path-scoped"])
+   "--exact" "canonical-semantic-key-is-type-sensitive-and-path-scoped"])
 
 (def cached-route-ids
   ["sh07-cached-accepted" "sh07-cached-contract" "sh07-cached-identity"
@@ -76,7 +76,7 @@
     :authoritative? false
     :selection {:namespaces ["gravity.c2-pass-cache-test"]
                 :test-vars
-                ["gravity.c2-pass-cache-test/canonical-semantic-key-is-bounded-type-sensitive-and-path-scoped"]
+                ["gravity.c2-pass-cache-test/canonical-semantic-key-is-type-sensitive-and-path-scoped"]
                 :fail-fast? false}
     :summary summary
     :outcome outcome

@@ -3,8 +3,6 @@
 (def ^:private cache-schema-version 1)
 (def ^:private canonicalizer-version 1)
 (def ^:private cache-stage :c2-reader)
-(def ^:private maximum-canonical-depth 640)
-(def ^:private maximum-canonical-nodes 524288)
 (def ^:private maximum-encoded-bytes (* 32 1024 1024))
 (def ^:private maximum-entry-bytes (* 4 1024 1024))
 (def ^:private maximum-blob-bytes maximum-encoded-bytes)
@@ -185,8 +183,8 @@
 (declare encode-value)
 
 (defn- encode-children
-  [values state depth options]
-  (mapv #(encode-value % state (inc depth) options) values))
+  [values options]
+  (mapv #(encode-value % options) values))
 
 (defn- canonical-node-text
   [node]

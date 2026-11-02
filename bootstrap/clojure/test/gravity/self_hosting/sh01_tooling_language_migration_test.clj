@@ -99,3 +99,13 @@
 (deftest roadmap-validator-preserves-positive-and-negative-fixtures
   (is (= {:accepted 1 :rejected 1} (roadmap/self-test)))
   (is (map? (roadmap/validate-current))))
+
+(deftest roadmap-validator-reports-dated-coverage-snapshot
+  (let [{:keys [coverage-snapshot]} (roadmap/validate-current)]
+    (is (= "2026-08-08" (:generated-on coverage-snapshot)))
+    (is (true? (:completion-admission-disabled? coverage-snapshot)))
+    (is (= 240 (:normative-documents coverage-snapshot)))
+    (is (= 0 (:reported-complete-documents coverage-snapshot)))
+    (is (= {:passing 74 :total 198} (:accepted coverage-snapshot)))
+    (is (= {:feature-specific 664 :total 1720}
+           (:rejected coverage-snapshot)))))

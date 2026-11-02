@@ -30,19 +30,6 @@
               visited (inc visited)
               op (when (map? instruction) (:op instruction))
               observed-operation-set (conj observed-operation-set op)]
-          (when (or
-                  (> depth p15-s23-closed-runtime-max-depth)
-                  (> visited p15-s23-closed-runtime-max-nodes))
-            (p15-s23-stage2-runtime-executor-fail!
-              "P15S23X002"
-              source-path
-              instruction
-              {:target requested-target,
-               :missing-fact :closed-plan-bounds,
-               :maximum-depth p15-s23-closed-runtime-max-depth,
-               :maximum-nodes p15-s23-closed-runtime-max-nodes,
-               :observed-depth depth,
-               :observed-nodes visited}))
           (when-not (and
                       (map? instruction)
                       (contains? p15-s23-closed-runtime-operations op))
@@ -71,6 +58,4 @@
          :entrypoint entrypoint,
          :operation-set p15-s23-closed-runtime-operations,
          :observed-operation-set observed-operation-set,
-         :node-count visited,
-         :maximum-depth p15-s23-closed-runtime-max-depth,
-         :maximum-nodes p15-s23-closed-runtime-max-nodes}))))
+         :node-count visited}))))

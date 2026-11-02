@@ -1,0 +1,104 @@
+{:path
+ "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+ :nonclaims
+ [:whole-test-file-incorporation
+  :accounting-removal-completion
+  :genuine-C7-acceptance
+  :authenticated-source-composition
+  :Effects-emitter-runtime
+  :main-integration
+  :PR502-closure
+  :release
+  :self-hosting],
+ :execution
+ {:genuine-tests :UNRUN, :Bootstrap-loaded false, :reader-eval false},
+ :production
+ {:path
+  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+  :sha256
+  "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142",
+  :unchanged true,
+  :definitions
+  [{:name sh08-lc-validate-types,
+    :arguments [arguments],
+    :form-sha256
+    "c7016b2411e4b2559154c26b8473326ae8faeb256cf81081395cf1231c495a59"}
+   {:name sh08-lq-derive,
+    :arguments [core node call edge nodes bindings types forms budget],
+    :form-sha256
+    "de1734096d2276bd9a185418202ebe4a38454fe0cf4f422c413aff2bcf106428"}
+   {:name sh08-vrest-inferred-call,
+    :arguments [core node call edge nodes bindings types budget],
+    :form-sha256
+    "6b23ad0a56b9bc94ef1bc2385f4b28d282ac844883cc40105f4d5bfd435364a1"}
+   {:name sh08-pl-derive,
+    :arguments [core node call edge nodes bindings types forms budget],
+    :form-sha256
+    "80ceb90398321506519b4294a539605e3815732a0b8c9ac9cfc2ca886d3eb1d7"}
+   {:name sh08-pl-inferred-call-valid?,
+    :arguments [core node call edge nodes bindings types],
+    :form-sha256
+    "5fce7f00dbc6e72ef5d607046d8814c6ec3e7705c7a2c75f26263d2c668cb112"}]},
+ :base-file-sha256
+ "5cce988f440520052ae9379634c82c5f5dd60a8e9f71a55d56c74e133aa53443",
+ :candidate-file-sha256
+ "11c44352795c0f3c98a9d8bdc0a1f2af460068f49aa5d8ad5c5d49c0b3d07fb8",
+ :kind :preserved-collection-result-controls,
+ :edits
+ [{:test sh08-vector-rest-cold-and-budget-development-kernel,
+   :before-sha256
+   "d6d66f707cf114c14050317e6f9bea2e8819fdcaec2bb14123c10de604090dc9",
+   :after-sha256
+   "8dcd338b37a1f96904396431a60c7fb2ac4d9f1fe39c8e08d0eba104e76ba694",
+   :constructor-result-check
+   "        (is (= {:status :accepted} (invoke-c7 'sh08-lc-validate-types [[(:type result)]])))\n",
+   :historical-depth-192-check
+   "      (is (= :accepted (:status (derive (vector-rest-input (nested 192)) 65536))))\n",
+   :current-depth-128-129-and-width-1025-and-late-invalid
+   :all-conserved,
+   :old-separate-width-1025-assertion
+   :covered-by-existing-stronger-case-table}
+  {:test sh08-list-prepend-development-kernel,
+   :before-sha256
+   "3ba7db481e0d0c529e8acf82d3876c7f14b36a2b14b7d7fb3ee30da212d055bb",
+   :after-sha256
+   "5b3b43a3dad2127149ac980a7d1e08a4bcca60b224df46064b14a8beb9683dd2",
+   :only-replaced-block
+   {:before
+    "    (let [nested #(nth (iterate (fn [type] {:kind :gravity.type/vector :shape :literal :element-types [type]}) k) %)]\n      (is (= :accepted (:status (list-prepend-derived (list-prepend-input (positional []) (nested 127))))))\n      (let [value (nested 128) result (list-prepend-derived (list-prepend-input (positional []) value))]\n        (is (= :accepted (:status result)))\n        (is (= (positional [value]) (:type result) (get-in result [:descriptor :result-type])))))\n",
+    :after
+    "    (let [nested (fn [leaf depth]\n                   (nth (iterate (fn [type] {:kind :gravity.type/vector :shape :literal :element-types [type]}) leaf) depth))]\n      ;; The canonical C7 validator already checks complete finite type DATA\n      ;; without a depth allowance. Consumer helper limits are a separate scope.\n      (doseq [depth [127 128 129]]\n        (let [value (nested k depth)\n              result (list-prepend-derived (list-prepend-input (positional []) value))]\n          (is (= :accepted (:status result)))\n          (is (= (positional [value]) (:type result) (get-in result [:descriptor :return])\n                 (get-in result [:descriptor :result-type]))))\n        (is (= :list-prepend-operand-type-required\n               (:reason (list-prepend-derived (list-prepend-input (positional []) (nested :gravity.type/unknown depth))))))))\n"},
+   :original-complete-block :byte-identical,
+   :positive-and-invalid-leaf-depths [127 128 129],
+   :descriptor-return-and-result-type :both-asserted,
+   :other-current-cases-and-all-mutations :conserved}],
+ :generator
+ {:language :clojure,
+  :sha256
+  "8f2aa423a6795ef6ade9321a4cb71b9e5fb433b1312a9de521ee9cd3ff339d42",
+  :preserved-locally true},
+ :all-other-test-forms-and-bytes :unchanged,
+ :base-tree "d4ad40960422765ac7123731d15ec4211248dd41",
+ :validation
+ {:source-only :pass,
+  :language-boundary {:tests 6, :assertions 11, :fail 0, :error 0},
+  :docs :pass,
+  :roadmap :pass,
+  :lint
+  {:version "clj-kondo v2025.10.23",
+   :base {:error 0, :warning 71, :info 0, :type :summary, :files 1},
+   :candidate
+   {:error 0, :warning 71, :info 0, :type :summary, :files 1},
+   :complete-finding-multisets :identical-except-positions,
+   :new-findings 0,
+   :canonical-CI-gate :separate,
+   :config-sha256
+   "a876e184594beb5f9b485a92ed480ba75c4f582eb941fdcb0eb5f2ae7dd8b317",
+   :policy-or-baseline-change false},
+  :generator-sha256
+  "cd45cb1ed914d3970a92a7b3d3e15ebabfb3d156546180c62ec7e15761eb56cd"},
+ :base "0f508ea87b75ce0718000d11d588c191c2123838",
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :existing-accounting-and-outer-interfaces
+ :unchanged-separate-removal-obligations,
+ :owner :ACC-01}

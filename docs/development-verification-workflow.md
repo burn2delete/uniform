@@ -8,6 +8,10 @@ semantic implementation, affected integration validation, and explicit
 authoritative migration. Workstream governance and preflight govern admission;
 they are not prerequisites for ordinary focused development feedback.
 
+The concise workflow is in [development-verification.md](development-verification.md).
+Detailed historical runner notes and measurements remain in the linked
+[reference archive](development-verification-reference.md).
+
 Project accounting is removed: no work-unit allowance, debit/reservation ledger,
 cost proof, capacity-oracle input quota or budget-exhaustion test is an
 implementation or admission requirement. Remove the corresponding mechanisms

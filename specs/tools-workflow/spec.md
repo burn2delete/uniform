@@ -9,7 +9,7 @@ Input revision: `017b541d678c6acb93eb5e843b1eda5a66babc32`.
 
 The canonical twelve service outcomes: formatter, linter, language server, debugger, REPL, IR explorer, profiler, documentation generator, development server, registry view, safety explorer and AI development tooling.
 
-Adopt a four-artifact Spec Kit workflow around the [canonical component roadmap](../../docs/component-roadmaps/tools.md). Language rules stay in their retained contracts; implementation service records are edited only in [tasks.md](tasks.md#implementation-tasks), with checked generated roadmap views. This is workflow migration, not a rewrite of normative specifications or a new implementation result.
+Adopt a four-artifact Spec Kit workflow around the [canonical component roadmap](../../docs/component-roadmaps/tools.md). Language rules stay in their retained contracts; implementation service records are edited only in [tasks.md](tasks.md#implementation-tasks), with direct roadmap links to the task ledger. This is workflow migration, not a rewrite of normative specifications or a new implementation result.
 
 [Inventory](../../docs/document-inventory.json) entries routed for this component are listed below as reviewable navigation, not proof of semantic conformance or exclusive ownership. The routing proposal must be reconciled centrally; cross-component links are legitimate.
 
@@ -43,7 +43,7 @@ A reader sees preparation, independent review and integration separately in task
 
 ## Scope and compatibility
 
-Own `specs/tools-workflow/{spec.md,plan.md,tasks.md,evidence.md}`, the generated service region in `docs/component-roadmaps/tools.md` and `tools/tools_task_projection{,_test}.clj`. No compiler/runtime source, existing contract, shared helper, historical pilot, protocol ID or permission changes. No Specify CLI execution or automatic discovery is claimed.
+Own `specs/tools-workflow/{spec.md,plan.md,tasks.md,evidence.md}`. No compiler/runtime source, existing contract, shared helper, historical pilot, protocol ID or permission changes. No Specify CLI execution or automatic discovery is claimed.
 
 ## Evidence and outcome ownership
 

@@ -59,8 +59,7 @@
    :c6-evaluation-order-records c6-evaluation-order-records
    :c6-core-verifier-report c6-core-verifier-report
    :c6-rule-invalidation-record c6-rule-invalidation-record
-   :c6-lowering-capability-proof c6-lowering-capability-proof
-   :c6-lowering-validate! c6-lowering-validate!}]
+   :c6-lowering-capability-proof c6-lowering-capability-proof}]
     ;; Only the untouched original pair denotes forwarding, not custom work.
     (if (and (identical? (first c6-default-flatten-functions) c6-flatten-core)
              (identical? (second c6-default-flatten-functions) c6-core-child-nodes))

@@ -356,9 +356,9 @@
     (is (= :gravity/sh07-b48-call-arity-policy (:artifact policy)))
     (is (= :gravity/sh07-b47-canonical-core-v16
            (:input-domain policy)))
-    (is (= 4096 (:maximum-functions policy)))
-    (is (= 65536 (:maximum-calls policy)))
-    (is (= 1024 (:maximum-arguments policy)))
+    (is (not (contains? policy :maximum-functions)))
+    (is (not (contains? policy :maximum-calls)))
+    (is (not (contains? policy :maximum-arguments)))
     (is (= :bounded-linear-indexes (:index-strategy policy)))
     (is (= :pending-nonlocal (:nonlocal-classification policy)))
     (is (= :host-validated-b47-report-and-opaque-provenance-digest
@@ -384,6 +384,95 @@
                                         "/rejected/" basename ".gravity"))))
            (seq (source-bytes (path (str fixture-root
                                         "/rejected/" basename ".qst")))))))
+
+(deftest sh07-b48-wide-argument-records-preserve-arity-shape
+  (let [call {:core-node-id "b48-call"
+              :operator-node-id "b48-operator"
+              :operator-binding-id "b48-binding"
+              :argument-node-ids ["b48-argument"]
+              :ordered-evaluation-node-ids ["b48-operator" "b48-argument"]
+              :evaluation-order :operator-then-arguments
+              :result-policy :call-result}
+        edge {:ordinal 0
+              :call-core-node-id "b48-call"
+              :caller-function-syntax-id nil
+              :caller-function-core-node-id nil
+              :callee-binding-id "b48-binding"
+              :callee-definition-syntax-id nil
+              :callee-function-syntax-id nil
+              :callee-function-core-node-id nil
+              :argument-core-node-ids ["b48-argument"]
+              :ordered-evaluation-node-ids ["b48-operator" "b48-argument"]
+              :evaluation-order :operator-then-arguments
+              :classification :nonlocal-or-nonfunction}
+        function {:ordinal 0
+                  :function-core-node-id "b48-function-core"
+                  :function-form-id "b48-function-form"
+                  :function-syntax-id "b48-function-syntax"
+                  :body-core-node-id "b48-body"
+                  :parameter-binding-ids ["b48-argument"]
+                  :fixed-arity 1
+                  :definition-kind :anonymous
+                  :definition-binding-id nil
+                  :definition-core-node-id nil
+                  :definition-name nil}
+        arguments (vec (map #(str "b48-wide-" %) (range 1025)))
+        ordered (vec (cons (:operator-node-id call) arguments))
+        wide-call (assoc call
+                         :argument-node-ids arguments
+                         :ordered-evaluation-node-ids ordered)
+        wide-edge (assoc edge
+                         :argument-core-node-ids arguments
+                         :ordered-evaluation-node-ids ordered)
+        wide-function (assoc function
+                             :fixed-arity (count arguments)
+                             :parameter-binding-ids arguments)
+        local-edge (assoc wide-edge
+                          :classification :local-function
+                          :callee-function-syntax-id
+                          (:function-syntax-id wide-function)
+                          :callee-function-core-node-id
+                          (:function-core-node-id wide-function))
+        wide-outcome
+        (invoke engine-plan 'sh07-b48-call-results-from
+                [[wide-call] [local-edge]
+                 {(:function-syntax-id wide-function) wide-function}
+                 {} 0 []])
+        narrow-target (assoc wide-function
+                             :fixed-arity 1024
+                             :parameter-binding-ids (vec (take 1024 arguments)))
+        too-many-outcome
+        (invoke engine-plan 'sh07-b48-call-results-from
+                [[wide-call] [local-edge]
+                 {(:function-syntax-id narrow-target) narrow-target}
+                 {} 0 []])
+        long-id (apply str (repeat 257 "i"))
+        long-path (apply str (repeat 4097 "p"))
+        wide-binding-carrier
+        (vec (map #(hash-map :binding-id (str "b48-binding-" %))
+                  (range 2441)))
+        truncated-call
+        (assoc wide-call
+               :ordered-evaluation-node-ids (vec (butlast ordered)))]
+    (is (true? (invoke engine-plan 'sh07-b48-id? [long-id])))
+    (is (true? (invoke engine-plan 'sh07-b48-nonempty-string? [long-path])))
+    (is (true?
+         (invoke engine-plan 'sh07-b48-index-carrier-valid?
+                 [wide-binding-carrier :binding-id])))
+    (is (true?
+         (invoke engine-plan 'sh07-b48-function-record-valid?
+                 [wide-function])))
+    (is (true?
+         (invoke engine-plan 'sh07-b48-call-record-valid?
+                 [wide-call])))
+    (is (true?
+         (invoke engine-plan 'sh07-b48-edge-record-valid?
+                 [wide-edge])))
+    (is (= :accepted (:status wide-outcome)))
+    (is (= :too-many-arguments (:reason too-many-outcome)))
+    (is (false?
+         (invoke engine-plan 'sh07-b48-call-record-valid?
+                 [truncated-call])))))
 
 (deftest sh07-b48-authenticated-builder-aligns-with-engine-validators
   (doseq [extension [".gravity" ".qst"]
@@ -518,7 +607,7 @@
                    :remediation]]
       (is (contains? (first (:diagnostics failed-verification)) field)))))
 
-(deftest sh07-b48-rejects-malformed-products-stale-identity-and-bounds
+(deftest sh07-b48-rejects-malformed-products-and-stale-identity
   (let [request (b48-request ".gravity")
         stale (assoc-in request [:identity-input :source-unit-id]
                         "sha256:stale-b48-identity")
@@ -565,12 +654,6 @@
                                     (:function-records request)
                                     (:calls request)
                                     edges))
-        oversized
-        (let [calls (vec (repeat 65537 (first (:calls request))))
-              edges (vec (repeat 65537 (first (:call-edges request))))]
-          (update-request-products request
-                                    (:function-records request)
-                                    calls edges))
         stale-result
         (invoke engine-plan 'sh07-b48-build-call-arity-result [stale])
         altered-lineage-result
@@ -600,17 +683,14 @@
         (invoke engine-plan 'sh07-b48-build-call-arity-result [duplicate])
         altered-target-result
         (invoke engine-plan 'sh07-b48-build-call-arity-result
-                [altered-target])
-        oversized-result
-        (invoke engine-plan 'sh07-b48-build-call-arity-result [oversized])]
-    (is (= (vec (repeat 12 :rejected))
+                [altered-target])]
+    (is (= (vec (repeat 11 :rejected))
            (mapv :status
                  [stale-result altered-lineage-result
                   altered-context-result altered-receipt-result
                   empty-receipt-result stripped-request-result
                   altered-coordinator-result altered-provenance-result
-                  missing-result duplicate-result altered-target-result
-                  oversized-result])))
+                  missing-result duplicate-result altered-target-result])))
     (is (= "B48-IDENTITY" (diagnostic-id stale-result)))
     (is (= "B48-LINEAGE" (diagnostic-id altered-lineage-result)))
     (is (= "B48-LINEAGE" (diagnostic-id altered-context-result)))
@@ -631,11 +711,8 @@
     (is (= "B48-SCHEMA" (diagnostic-id missing-result)))
     (is (= "B48-PRODUCT" (diagnostic-id duplicate-result)))
     (is (= "B48-LINEAGE" (diagnostic-id altered-target-result)))
-    (is (= "B48-BOUND" (diagnostic-id oversized-result)))
     (is (= :malformed-function-products
            (diagnostic-reason duplicate-result)))
-    (is (= :call-record-bound
-           (diagnostic-reason oversized-result)))
     (is (= :failed
            (:status
             (invoke engine-plan 'sh07-b48-verify-call-arity-result
@@ -652,7 +729,7 @@
       (is (nil? (:throwable safe)))))
     )
 
-(deftest sh07-b48-index-carriers-are-bounded-and-exactly-once
+(deftest sh07-b48-index-carriers-are-exactly-once
   (let [record {:binding-id "sha256:b48-binding"}
         node {:node-id "sha256:b48-node"}
         request (b48-request ".gravity")
@@ -671,25 +748,19 @@
                    conj definition)
         duplicate-node
         (update-in context [:canonical-core-artifact :nodes]
-                   conj core-node)
-        oversized-binding
-        (assoc-in context [:authenticated-core-request :binding-table]
-                  (vec (repeat 2441 binding)))]
+                   conj core-node)]
     (is (true?
          (invoke engine-plan 'sh07-b48-index-carrier-valid?
-                 [[record] :binding-id 1])))
+                 [[record] :binding-id])))
     (is (false?
          (invoke engine-plan 'sh07-b48-index-carrier-valid?
-                 [[record record] :binding-id 2])))
+                 [[record record] :binding-id])))
     (is (false?
          (invoke engine-plan 'sh07-b48-index-carrier-valid?
-                 [[record record] :binding-id 1])))
+                 [[node node] :node-id])))
     (is (false?
          (invoke engine-plan 'sh07-b48-index-carrier-valid?
-                 [[node node] :node-id 2])))
-    (is (false?
-         (invoke engine-plan 'sh07-b48-index-carrier-valid?
-                 [[{}] :binding-id 1])))
+                 [[{}] :binding-id])))
     (is (= :malformed-binding-index-carrier
            (:reason
             (invoke engine-plan 'sh07-b48-index-carriers-preflight
@@ -701,11 +772,7 @@
     (is (= :malformed-node-index-carrier
            (:reason
             (invoke engine-plan 'sh07-b48-index-carriers-preflight
-                    [duplicate-node]))))
-    (is (= :binding-table-bound
-           (:reason
-            (invoke engine-plan 'sh07-b48-index-carriers-preflight
-                    [oversized-binding]))))))
+                    [duplicate-node]))))))
 
 (deftest sh07-b48-coordinated-upstream-rewrite-cannot-self-assert-passage
   (let [request (b48-request ".gravity")

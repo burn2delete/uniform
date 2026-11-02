@@ -39,20 +39,12 @@ exclusive ownership or semantic conformance acceptance.
 Move the five canonical rows to the marked
 [implementation region](tasks.md#implementation-tasks), preserving component/
 heading/title IDs, titles, Open statuses, evidence baselines and closing
-criteria. The [roadmap table](../../docs/component-roadmaps/auth.md#remaining-tasks-and-evidence)
-is generated. Preserve the entire historical tasks file as a frozen suffix;
-migration checkboxes do not indicate implementation completion. The original
-all-open table remains byte-identical. Later status updates expose an explicit
-Status column and require checkbox/Accepted; consistency.
+criteria. The roadmap links directly to the sole task ledger. Preserve the entire historical tasks file as a frozen suffix;
+migration checkboxes do not indicate implementation completion. Preserve all
+five task records and their status/criteria/history; later status updates remain
+explicit in the ledger and require checkbox/Accepted; consistency.
 
-Scope is ten files: Auth roadmap, four workflow artifacts, Auth wrapper/test,
-`tools/task_projection_links.clj`, and Legality wrapper/test adjustments. Extract
-Legality's accepted path validation, target rebasing and existing-file/symlink
-containment into the shared helper. Legality's public arities, constants,
-diagnostics, records, table bytes and fixed-path CLI behavior remain unchanged.
-Its existing test only adds the helper to isolated fixture copies. The pure
-shared parser and six HTTPS-only wrappers are unchanged. No registry, discovery,
-CLI dispatch or write operation is added to the link helper.
+Scope is the Auth roadmap and four workflow artifacts.
 
 Three bootstrap links keep their spelling. Runtime-enforcement and provider
 contract links use ../../docs/ in the ledger and project back to ../phase-...
@@ -65,34 +57,21 @@ Early artifact authentication remains independently callable from source/
 artifact identity and trust policy. Capability analysis follows Types, Effects
 and profile legality, then supplies ownership/safety and MIR. Build/Release
 retain signing and custody. Effects, signatures and manifests do not grant
-authority; hosted compatibility projections do not close these outcomes.
+authority; hosted compatibility views do not close these outcomes.
 
 ## Validation and evidence
 
 Run from repository root:
 
 ```bash
-clojure -J-Xmx512m -M tools/auth_task_projection.clj --write
-clojure -J-Xmx512m -M tools/auth_task_projection.clj --check
-clojure -J-Xmx512m -M tools/auth_task_projection_test.clj
-clojure -J-Xmx512m -M tools/legality_task_projection_test.clj
-clojure -J-Xmx512m -M tools/task_projection_test.clj
 clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
 clojure -J-Xmx512m -M tools/validate_gravity_docs.clj
 clojure -J-Xmx512m -M tools/validate_full_language_roadmap.clj
 ```
 
-Compare accepted Legality records, full table/project bytes, diagnostic cases
-and CLI effects before/after extraction; run the six unchanged component
-suites and compatibility cases. For Auth compare original table bytes, five
-semantic IDs including runtimebuild, all cell text and actual evidence targets,
-complete historical suffix and all 18 retained contract lines. Check the five
-Markdown documents for ASCII and file/heading links, including negative missing
-file/heading cases. Test malformed/duplicate IDs and markers, checkbox/status
-disagreement, stale projections, bad links, missing/escaping paths and symlinks.
-Subprocess controls prove read-only checks, fixed roadmap writes, rejected extra
-arguments and a non-dispatching helper. Run whitespace and clean exact-base/
-head/tree integration preflight. Compiler semantic suites are outside scope.
+Check the five Markdown documents for ASCII and file/heading links, including
+missing-file/heading cases. Run whitespace and clean exact-base/head/tree
+integration preflight. Compiler semantic suites are outside scope.
 
 ## Delivery and remaining work
 
@@ -103,7 +82,6 @@ repository gates. All five implementation outcomes remain open.
 
 ## Names, callers and compatibility
 
-`auth-task-projection` and `task-projection-links` name their behavior. Existing
 compiler APIs, runtime/authentication policies, schemas, diagnostics and wire
 identities remain unchanged. No legacy rename or compiler source/test edit is
 part of this task-authority migration.

@@ -4,8 +4,6 @@
         candidate-evidence
         (semantic-mid-current-seed-candidate-evidence
          formal-artifact source-evidence)
-        final-proof-input-evidence
-        (semantic-mid-current-seed-final-proof-input source-evidence)
         final-seed-retirement-evidence
         (semantic-mid-current-seed-final-evidence)
         final-seed-retirement-complete?
@@ -41,7 +39,6 @@
 (doseq [helper '[semantic-mid-current-seed-evidence
                  semantic-mid-assoc-present-evidence
                  semantic-mid-current-seed-candidate-evidence
-                 semantic-mid-current-seed-final-proof-input
                  semantic-mid-current-seed-final-evidence
                  semantic-mid-current-seed-final-complete?]]
   (ns-unmap *ns* helper))

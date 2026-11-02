@@ -9,7 +9,7 @@ Follow the retained contracts linked in spec.md and [constitution](../../.specif
 
 ## Canonical task source
 
-Edit the five records and complete selected-command scope only in [tasks.md](tasks.md#implementation-tasks). These original roadmap sections are generated views with unchanged outcome/acceptance boundaries:
+Edit the five records and complete selected-command scope only in [tasks.md](tasks.md#implementation-tasks). These original roadmap sections link to the ledger and retain unchanged outcome/acceptance boundaries:
 
 - [remaining tasks and evidence](../../docs/component-roadmaps/cli.md#remaining-tasks-and-evidence)
 - [selected compiler cli outcome](../../docs/component-roadmaps/cli.md#selected-compiler-cli-outcome)
@@ -20,7 +20,6 @@ Edit the five records and complete selected-command scope only in [tasks.md](tas
 2. `plan.md`: canonical task anchors, interfaces and dependency boundaries.
 3. `tasks.md`: five implementation records, the original selected-command scope and the entire unchanged historical migration file, clearly separated.
 4. `evidence.md`: observed checks and implementation nonclaims.
-5. `tools/cli_task_projection{,_test}.clj`: checked table/scope projection and focused controls. Local file-plus-heading handling preserves existing scoped links; shared helpers remain unchanged.
 
 Central migration inventory/schema is owned separately. This package does not write shared indexes or transfer implementation ownership.
 

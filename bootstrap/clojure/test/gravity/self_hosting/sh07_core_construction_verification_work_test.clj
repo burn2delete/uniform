@@ -260,3 +260,35 @@
           (is (identical? error caught))
           (when (instance? InterruptedException error)
             (is interrupted?)))))))
+
+(deftest operation-roots-distinguish-local-execution-bindings
+  ;; Native Var observations only; no owner/admission evidence is constructed.
+  (let [roots (implementation 'sh07-core-construction-roots)
+        execution (implementation '*sh07-core-execution-binding*)
+        before (get (into {} (roots)) execution)]
+    (with-bindings {execution ::captured-plan}
+      (is (identical? before (get (into {} (roots)) execution)))
+      (with-redefs-fn {execution ::replaced-root}
+        #(is (= ::replaced-root (get (into {} (roots)) execution)))))
+    (is (identical? before (get (into {} (roots)) execution)))))
+
+(deftest construction-root-guard-preserves-local-binding-and-root-refusals
+  ;; Existing explicit guard-unit models, never authenticated owner acceptance.
+  (let [execution (implementation '*sh07-core-execution-binding*)
+        check (implementation 'sh07-core-construction-check!)
+        construct (implementation 'sh07-core-with-fresh-construction)]
+    (with-guard-model
+      (fn [_]
+        (is (= ::constructed
+               (construct {} (fn [facts]
+                               (with-bindings {execution ::captured-plan}
+                                 (check facts))
+                               ::constructed))))
+        (with-bindings {execution ::captured-plan}
+          (let [error
+                (thrown #(construct {}
+                            (fn [facts]
+                              (with-redefs-fn {execution ::replaced-root}
+                                (fn [] (check facts))))))]
+            (is (= ["C6-VERIFY" :construction-dependency-drift]
+                   ((juxt :id :reason) (ex-data error))))))))))

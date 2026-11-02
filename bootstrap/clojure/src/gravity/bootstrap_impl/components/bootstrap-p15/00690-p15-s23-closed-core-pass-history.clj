@@ -164,8 +164,6 @@
              (set/union all dependency-edges sequence-edges guard-edges)))
          #{} nodes)
         event-edges (vec (sort-by pr-str edges))
-        maximum-edge-count (* 6 (count nodes))
-        edges-bounded? (<= (count event-edges) maximum-edge-count)
         edges-monotone?
         (every? #(< (get ordering-index (:before %))
                      (get ordering-index (:after %)))
@@ -180,9 +178,7 @@
      :topological-core-order-with-guarded-control-flow-partial-order
      :exclusive-branch-total-order? false
      :runtime-sequence-claimed? false
-     :maximum-edge-count maximum-edge-count
      :edge-count (count event-edges)
-     :edge-count-bounded? edges-bounded?
      :all-edges-monotone? edges-monotone?
-     :status (if (and edges-monotone? edges-bounded?)
+     :status (if edges-monotone?
                :complete :failed)}))
