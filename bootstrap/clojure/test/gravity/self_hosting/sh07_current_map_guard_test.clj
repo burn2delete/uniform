@@ -1,7 +1,7 @@
 (ns gravity.self-hosting.sh07-current-map-guard-test
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
-            [clojure.test :refer [deftest is]]
+            [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as b]))
 
 (defn- root []
@@ -15,6 +15,100 @@
     (when-not (= 1 (count selected))
       (throw (ex-info "Expected one source-bound record" {:count (count selected)})))
     (first selected)))
+
+(defn- private-var
+  [symbol]
+  (or (ns-resolve 'gravity.bootstrap symbol)
+      (throw (ex-info "Required SH07 construction guard is absent"
+                      {:id "SH07-MACRO-SOURCE-GUARD-ABSENT"
+                       :symbol symbol}))))
+
+(defn- failure-data
+  [operation]
+  (try
+    (operation)
+    nil
+    (catch clojure.lang.ExceptionInfo exception
+      (ex-data exception))))
+
+(deftest macro-source-mode-is-bound-to-authenticated-sh05-product
+  (let [source-mode (var-get (private-var 'sh07-core-construction-macro-source-mode))
+        reader-invocation (var-get (private-var 'sh07-core-construction-reader-invocation))
+        current-artifact
+        {:provenance {:source-path "current.gravity"}
+         :gravity-resolution-boundary
+         {:plan-binding {:macro-source-mode :development-current}}
+         :sh05-macro-artifact
+         {:gravity-macro-boundary
+          {:plan-binding {:source-mode :development-current
+                          :revision-status :development-unadmitted
+                          :source-authority :development-current}}}}
+        pinned-artifact
+        {:provenance {:source-path "pinned.gravity"}
+         :gravity-resolution-boundary {:plan-binding {}}
+         :sh05-macro-artifact {:gravity-macro-boundary {:plan-binding {}}}}
+        current-invocation
+        {:reader-source-path "reader.gravity"
+         :authenticated-envelope-options {:source :development-current}
+         :macro-source-mode :development-current}
+        reader-only
+        (dissoc current-invocation :macro-source-mode)]
+    (testing "authenticated current Macro mode is accepted"
+      (is (= :development-current
+             (source-mode current-artifact current-invocation))))
+    (testing "Reader receives only its exact authenticated invocation"
+      (is (= reader-only (reader-invocation current-invocation))))
+    (testing "legacy pinned construction keeps its default"
+      (is (= :pinned (source-mode pinned-artifact nil)))
+      (is (= :pinned (source-mode pinned-artifact reader-only))))
+    (testing "a pinned caller cannot downgrade a current authenticated product"
+      (is (= :macro-source-mode-mismatch
+             (:reason (failure-data #(source-mode current-artifact reader-only))))))
+    (testing "source and mode tampering fail closed"
+      (is (= :authenticated-macro-source-binding-drift
+             (:reason
+              (failure-data
+               #(source-mode
+                 (assoc-in current-artifact
+                           [:sh05-macro-artifact :gravity-macro-boundary
+                            :plan-binding :source-mode]
+                           :pinned)
+                 current-invocation)))))
+      (is (= :requested-macro-source-mode
+             (:reason
+              (failure-data
+               #(source-mode
+                 current-artifact
+                 (assoc current-invocation :macro-source-mode :untrusted)))))))))
+
+(deftest construction-uses-the-authenticated-macro-binding
+  (let [macro-binding (var-get (private-var 'sh07-core-construction-macro-binding))
+        current-binding-var (private-var 'sh05-macro-current-binding!)
+        calls (atom [])
+        artifact
+        {:provenance {:source-path "current.gravity"}
+         :gravity-resolution-boundary
+         {:plan-binding {:macro-source-mode :development-current}}
+         :sh05-macro-artifact
+         {:gravity-macro-boundary
+          {:plan-binding {:source-mode :development-current
+                          :revision-status :development-unadmitted
+                          :source-authority :development-current}}}}
+        invocation {:reader-source-path "reader.gravity"
+                    :authenticated-envelope-options {:source :development-current}
+                    :macro-source-mode :development-current}
+        binding {:source-mode :development-current
+                 :revision-status :development-unadmitted
+                 :source-authority :development-current
+                 :source-path "current.gravity"}]
+    (is (= binding
+           (with-redefs-fn
+             {current-binding-var
+              (fn [source-path received-invocation source-mode]
+                (swap! calls conj [source-path received-invocation source-mode])
+                binding)}
+             #(macro-binding artifact "current.gravity" invocation))))
+    (is (= [["current.gravity" invocation :development-current]] @calls))))
 
 (deftest current-map-guard-source-to-core-and-branch-substitution-replay
   ;; Original text is an extraction check; SOURCE4 authenticates this fixture.
