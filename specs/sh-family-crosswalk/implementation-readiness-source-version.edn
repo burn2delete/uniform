@@ -255,11 +255,11 @@
   "specs/opt-workflow/plan.md"
   "d0489478bcf66691b3d678de96ced913d23f8e871aa18912cffbd3ef37d9f5ee",
   "specs/legality-workflow/plan.md"
-  "15ba7270e09cf779f4b562f71a0e851782e2f56e89cfe500499f6fe00e381e5a",
+  "d2436bfb0fe2246d7a275240e6bb8105268f2aef801c6f1cec2e37738d10becb",
   "docs/phase-02-safety/043-safe14-supply-chain-safety.md"
   "403faf1d18dab790276e8c5072ca42821e9754856127b73e72eef52ceb28a1f5",
   "docs/acceptance-dependencies.md"
-  "074371c5d1769e02c69655d6b2007b53460fdb4ebeb10a4d6f21d24d3c18923c",
+  "2963dfdc59d26fc96d62b642cadca9a74e739465a98a3729fd361349e61ec201",
   "specs/lower-workflow/tasks.md"
   "e247c41b764a858ae789b22297b076dff9be97ff74e38d70e1c4d15ec83a8ffa"},
  :stable-task-routing-additions
@@ -11430,9 +11430,9 @@
     "3487862f9c4c6bf19b71a4dd7052ec8e9e0b068ad594e5ea7567cd69f6c20eb6",
     :prior-explicit-applying-pin nil},
    :after
-   {:commit "14e97dee9205ffd6e3d1d07bb1af00bfbb724676",
+   {:commit "e656b8e5c5c47966da8d781bc31d5b0c3bbfbd62",
     :sha256
-    "074371c5d1769e02c69655d6b2007b53460fdb4ebeb10a4d6f21d24d3c18923c"},
+    "2963dfdc59d26fc96d62b642cadca9a74e739465a98a3729fd361349e61ec201"},
    :scope :dependency-declaration-version}
   {:path "docs/component-roadmaps/README.md",
    :before
@@ -11785,9 +11785,9 @@
    "d0489478bcf66691b3d678de96ced913d23f8e871aa18912cffbd3ef37d9f5ee",
    :kind :source-inspection-not-execution},
   "specs/legality-workflow/plan.md"
-  {:commit "4d3de0d4fe0eb43e5874e2988dbf03113755cd5b",
+  {:commit "e656b8e5c5c47966da8d781bc31d5b0c3bbfbd62",
    :sha256
-   "15ba7270e09cf779f4b562f71a0e851782e2f56e89cfe500499f6fe00e381e5a",
+   "d2436bfb0fe2246d7a275240e6bb8105268f2aef801c6f1cec2e37738d10becb",
    :kind :source-inspection-not-execution},
   "docs/phase-02-safety/043-safe14-supply-chain-safety.md"
   {:commit "697917447d70ba0797a096d9427d4706bf5515df",
@@ -30117,6 +30117,302 @@
      :sha256
      "17528eb1fbf7330ef3300e5546ab04443594c031c2dc119faa32ccd629f3fb05"}}],
   :implementation-acceptance :unassessed},
+ :safety-dependency-refinement
+ {:preserved-consumer-route-count 48,
+  :new-task-identities [],
+  :routes
+  [{:consumer
+    "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+    :start-results [],
+    :composition-results
+    ["legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+     "pass-evidence"
+     "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
+     "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
+     "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses"
+     "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core"
+     "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers"
+     "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"
+     "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records"
+     "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"
+     "math"
+     "math/independent-proof-and-certificate-checking"
+     "ai"
+     "workflow"],
+    :selected-output-contract
+    "C9-selected actual ownership obligations, profile/provider check availability and explicit unsupported cases, grants, subject-bound checked proof/audit evidence and declared dynamic-check metadata/failure contract. Classify each operation before affected MIR; authority, ownership validity and safety proof stay distinct. This task decides legal check/proof/rejection/unsafe conditions; actual provider check/failure execution is separate evidence consumed by final boundary/conformance results. Additional C10-selected inputs are the real Core operation/control-flow and generated-origin/unsafe/taint products, actual type/effect solutions, exact artifact/trust decisions, package digest/schema/compiler/profile/target/certificate validation and build-effect/import provenance, numeric/EFIR/mode contracts and independently checked applicable math claims, plus admitted model/tool/schema/taint/review and workflow replay/idempotency policy products. Numeric proof checking applies when such a proof is claimed; the operation can instead retain a legal check or reject. Domain policy contracts are available before actual model/tool/workflow execution; a producer's whole result or final publication is not a classification prerequisite. Specialized SAFE analyzers remain with their existing owners; grants, verified imported evidence and safe-wrapper audit approval remain distinct from supplied labels.",
+    :source
+    {:path "docs/acceptance-dependencies.md",
+     :sha256
+     "2963dfdc59d26fc96d62b642cadca9a74e739465a98a3729fd361349e61ec201",
+     :declaration
+     "| `legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries` | none | `legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis`, `legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks`, `auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`, `pass-evidence`, `runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection`, `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries`, `core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses`, `expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs`, `types/current-evidence-and-remaining-work/types5-integrate-typed-core`, `effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers`, `auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity`, `build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records`, `build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects`, `math`, `math/independent-proof-and-certificate-checking`, `ai`, `workflow` | C9-selected actual ownership obligations, profile/provider check availability and explicit unsupported cases, grants, subject-bound checked proof/audit evidence and declared dynamic-check metadata/failure contract. Classify each operation before affected MIR; authority, ownership validity and safety proof stay distinct. This task decides legal check/proof/rejection/unsafe conditions; actual provider check/failure execution is separate evidence consumed by final boundary/conformance results. Additional C10-selected inputs are the real Core operation/control-flow and generated-origin/unsafe/taint products, actual type/effect solutions, exact artifact/trust decisions, package digest/schema/compiler/profile/target/certificate validation and build-effect/import provenance, numeric/EFIR/mode contracts and independently checked applicable math claims, plus admitted model/tool/schema/taint/review and workflow replay/idempotency policy products. Numeric proof checking applies when such a proof is claimed; the operation can instead retain a legal check or reject. Domain policy contracts are available before actual model/tool/workflow execution; a producer's whole result or final publication is not a classification prerequisite. Specialized SAFE analyzers remain with their existing owners; grants, verified imported evidence and safe-wrapper audit approval remain distinct from supplied labels. |"}}
+   {:consumer
+    "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution",
+    :start-results [],
+    :composition-results
+    ["legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
+     "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+     "mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir"
+     "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables"
+     "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality"
+     "mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption"
+     "opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate"
+     "lower/current-evidence-and-remaining-work/lower5-integrate-target-emission"
+     "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
+     "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"
+     "diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift"
+     "emit/current-evidence-and-remaining-work/emit4-establish-conformance"
+     "opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors"
+     "lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins"
+     "pass-evidence"
+     "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"
+     "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks"
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+     "emit/current-evidence-and-remaining-work/emit3-bind-provenance-to-bytes"
+     "workflow"
+     "ai"],
+    :selected-output-contract
+    "C9-selected source consumption/destination cleanup transfers, constructed and fact-annotated MIR, actual verification/admission, selected post-mutation preservation/regeneration, target/emitted behavior, actual runtime transfer/check/cleanup/failure and owning diagnostic/context results. Analysis products precede MIR construction; this task's final boundary evidence consumes the downstream results. Valid unoptimized MIR remains legal before Opt; these are task integration evidence requirements, not per-program legality or whole-component start gates. Held target/runtime/callback operations stay unassessed rather than substituted with supplied success flags. Additional C10-selected products are exact-condition/dominating proof or residual-check protection, Lower/backend assumption and source preservation, actually checked certificates and invalidation decisions, authenticated artifact trust, real capability enforcement hooks, distributed/AI provider check/failure/review/replay boundaries, emitted-byte/check/proof identity and applicable AI/workflow policy preservation results. Classification and facts precede construction; actual changed-function optimization checks, target/provider execution and boundary refusals are final composition evidence when those mechanisms are claimed. This consumer does not implement or grant those producer operations, require optimized MIR for a valid unoptimized program, or infer universal proof authority from one method.",
+    :source
+    {:path "docs/acceptance-dependencies.md",
+     :sha256
+     "2963dfdc59d26fc96d62b642cadca9a74e739465a98a3729fd361349e61ec201",
+     :declaration
+     "| `legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution` | none | `legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis`, `legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries`, `mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir`, `mir/current-evidence-and-remaining-work/mir2-attach-fact-tables`, `mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality`, `mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption`, `opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate`, `lower/current-evidence-and-remaining-work/lower5-integrate-target-emission`, `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries`, `runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup`, `diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift`, `emit/current-evidence-and-remaining-work/emit4-establish-conformance`, `opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors`, `lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins`, `pass-evidence`, `auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity`, `auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks`, `runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution`, `emit/current-evidence-and-remaining-work/emit3-bind-provenance-to-bytes`, `workflow`, `ai` | C9-selected source consumption/destination cleanup transfers, constructed and fact-annotated MIR, actual verification/admission, selected post-mutation preservation/regeneration, target/emitted behavior, actual runtime transfer/check/cleanup/failure and owning diagnostic/context results. Analysis products precede MIR construction; this task's final boundary evidence consumes the downstream results. Valid unoptimized MIR remains legal before Opt; these are task integration evidence requirements, not per-program legality or whole-component start gates. Held target/runtime/callback operations stay unassessed rather than substituted with supplied success flags. Additional C10-selected products are exact-condition/dominating proof or residual-check protection, Lower/backend assumption and source preservation, actually checked certificates and invalidation decisions, authenticated artifact trust, real capability enforcement hooks, distributed/AI provider check/failure/review/replay boundaries, emitted-byte/check/proof identity and applicable AI/workflow policy preservation results. Classification and facts precede construction; actual changed-function optimization checks, target/provider execution and boundary refusals are final composition evidence when those mechanisms are claimed. This consumer does not implement or grant those producer operations, require optimized MIR for a valid unoptimized program, or infer universal proof authority from one method. |"}}
+   {:consumer
+    "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface",
+    :start-results [],
+    :composition-results
+    ["legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
+     "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+     "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"],
+    :selected-output-contract
+    "C9-selected actual analysis/check/transfer/MIR/runtime positive and negative results, profile/target/provider identities, all ownership diagnostics and generated origins, including supported runtime failures and unavailable-check refusals. Compose the complete family fixtures/results from those products and feed Release's existing suite and independent admission; final Release completion is not a C9 prerequisite. Additional C10-selected classification and handoff results cover every inventory family, exact one-outcome/duplicate/missing controls, proof/check/audit/policy failures, generated-source diagnostics, retained/erased/residual checks and source-bound SAFE15/SAFE16 artifact inspections. Feed existing Release execution and later independent admission; do not require their final completion first. These selected C9/C10 routes do not establish complete P1-P13, specialized SAFE1-SAFE16/PERF10 or other Legality-source dependency entailment.",
+    :source
+    {:path "docs/acceptance-dependencies.md",
+     :sha256
+     "2963dfdc59d26fc96d62b642cadca9a74e739465a98a3729fd361349e61ec201",
+     :declaration
+     "| `legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface` | none | `legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis`, `legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries`, `legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution`, `legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks` | C9-selected actual analysis/check/transfer/MIR/runtime positive and negative results, profile/target/provider identities, all ownership diagnostics and generated origins, including supported runtime failures and unavailable-check refusals. Compose the complete family fixtures/results from those products and feed Release's existing suite and independent admission; final Release completion is not a C9 prerequisite. Additional C10-selected classification and handoff results cover every inventory family, exact one-outcome/duplicate/missing controls, proof/check/audit/policy failures, generated-source diagnostics, retained/erased/residual checks and source-bound SAFE15/SAFE16 artifact inspections. Feed existing Release execution and later independent admission; do not require their final completion first. These selected C9/C10 routes do not establish complete P1-P13, specialized SAFE1-SAFE16/PERF10 or other Legality-source dependency entailment. |"}}],
+  :C10-source-binding
+  {:refinement :safety-refinement,
+   :source-commit "4d3de0d4fe0eb43e5874e2988dbf03113755cd5b",
+   :authority :current-source-proposal-not-independent-acceptance},
+  :changed-prior-route-meanings
+  ["legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface"
+   "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+   "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"],
+  :selected-consumer-result-joins 42,
+  :predecessor-readiness-successor
+  {:commit "32b0c03327b74e362ac1e6d4d378e6c0b6c113b8",
+   :path
+   "specs/sh-family-crosswalk/implementation-readiness-source-version.edn",
+   :sha256
+   "5b3fb6c2a367698daeffb60f20eccd133e9c873533d4330611f242d18356d0c4",
+   :projection-path "specs/sh-family-crosswalk/crosswalk.edn",
+   :projection-sha256
+   "442c5d9f77de29008b2860ba8315df52be5b80df15695b49d1d15c4b3f12df86",
+   :input-fingerprint
+   "e5b755fbae65bb72ce6a160710a4f992e0684a3f09c238ab605e30ee9ae498b8"},
+  :preserved-C9-input-joins 22,
+  :plan-source
+  {:path "specs/legality-workflow/plan.md",
+   :before
+   {:commit "4d3de0d4fe0eb43e5874e2988dbf03113755cd5b",
+    :sha256
+    "15ba7270e09cf779f4b562f71a0e851782e2f56e89cfe500499f6fe00e381e5a",
+    :kind :source-inspection-not-execution},
+   :after
+   {:commit "e656b8e5c5c47966da8d781bc31d5b0c3bbfbd62",
+    :sha256
+    "d2436bfb0fe2246d7a275240e6bb8105268f2aef801c6f1cec2e37738d10becb",
+    :kind :source-inspection-not-execution}},
+  :coarse-cycle-resolution
+  :candidate-and-policy-contract-production-then-independent-claim-checking-then-downstream-application-before-whole-family-integration,
+  :declared-parent-consumers
+  ["domain-ir-boundaries"
+   "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface"
+   "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
+   "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+   "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"
+   "math"
+   "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance"
+   "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom"
+   "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler"
+   "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate"
+   "release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution"],
+  :source-entailment :author-proposal-pending-independent-review,
+  :coarse-producer-cycles
+  [["formal"
+    "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+    "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"
+    "math"
+    "math/certified-implementation-synthesis"
+    "math/eml-normalization-and-search"
+    "math/independent-proof-and-certificate-checking"
+    "math/interval-and-real-proof-production"
+    "math/symbolic-rule-and-trace-production"]
+   ["release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance"
+    "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom"
+    "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler"
+    "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures"
+    "release/remaining-tasks-and-evidence/execute-performance-regression-fixtures"
+    "release/remaining-tasks-and-evidence/execute-staged-compiler-validation"
+    "schema/checked-consumer-projection"
+    "schema/compatibility-and-migration"]],
+  :independent-current-review :pending,
+  :dependency-source
+  {:path "docs/acceptance-dependencies.md",
+   :before
+   {:commit "14e97dee9205ffd6e3d1d07bb1af00bfbb724676",
+    :sha256
+    "074371c5d1769e02c69655d6b2007b53460fdb4ebeb10a4d6f21d24d3c18923c"},
+   :after
+   {:commit "e656b8e5c5c47966da8d781bc31d5b0c3bbfbd62",
+    :sha256
+    "2963dfdc59d26fc96d62b642cadca9a74e739465a98a3729fd361349e61ec201"}},
+  :consumer-route-scope
+  :selected-C9-and-C10-contracts-not-whole-Legality-or-SAFE-family-entailment,
+  :source-commit "e656b8e5c5c47966da8d781bc31d5b0c3bbfbd62",
+  :declared-future-consumers
+  ["automation"
+   "blockchain"
+   "crypto"
+   "formal"
+   "math/certified-implementation-synthesis"
+   "math/eml-normalization-and-search"
+   "math/independent-proof-and-certificate-checking"
+   "math/interval-and-real-proof-production"
+   "math/symbolic-rule-and-trace-production"
+   "native"
+   "platform-product/adopt-application-contract"
+   "platform-product/adopt-hardware-contract"
+   "platform-product/adopt-kernel-contract"
+   "platform-product/adopt-physical-boundary"
+   "platform-product/distribute-product"
+   "platform-product/implement-applications"
+   "platform-product/implement-drivers"
+   "platform-product/implement-firmware"
+   "platform-product/implement-hardware"
+   "platform-product/implement-os"
+   "platform-product/integrate-execution"
+   "release/remaining-tasks-and-evidence/execute-agent-and-workflow-evaluations"
+   "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures"
+   "release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures"
+   "release/remaining-tasks-and-evidence/execute-formal-evidence-checks"
+   "release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures"
+   "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures"
+   "release/remaining-tasks-and-evidence/execute-library-conformance-fixtures"
+   "release/remaining-tasks-and-evidence/execute-performance-regression-fixtures"
+   "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures"
+   "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures"
+   "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures"
+   "release/remaining-tasks-and-evidence/execute-staged-compiler-validation"
+   "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations"
+   "schema/checked-consumer-projection"
+   "schema/compatibility-and-migration"
+   "services"
+   "simulation"
+   "storage"
+   "visual"],
+  :changed-task-ids [],
+  :unresolved-consumers [],
+  :kind :C10-selected-producer-consumer-dependency-proposal,
+  :predecessor-C9-routes
+  [{:consumer
+    "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+    :start-results [],
+    :composition-results
+    ["legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+     "pass-evidence"
+     "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
+     "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"],
+    :selected-output-contract
+    "C9-selected actual ownership obligations, profile/provider check availability and explicit unsupported cases, grants, subject-bound checked proof/audit evidence and declared dynamic-check metadata/failure contract. Classify each operation before affected MIR; authority, ownership validity and safety proof stay distinct. This task decides legal check/proof/rejection/unsafe conditions; actual provider check/failure execution is separate evidence consumed by final boundary/conformance results.",
+    :source
+    {:path "docs/acceptance-dependencies.md",
+     :sha256
+     "074371c5d1769e02c69655d6b2007b53460fdb4ebeb10a4d6f21d24d3c18923c",
+     :declaration
+     "| `legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries` | none | `legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis`, `legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks`, `auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`, `pass-evidence`, `runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection`, `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries` | C9-selected actual ownership obligations, profile/provider check availability and explicit unsupported cases, grants, subject-bound checked proof/audit evidence and declared dynamic-check metadata/failure contract. Classify each operation before affected MIR; authority, ownership validity and safety proof stay distinct. This task decides legal check/proof/rejection/unsafe conditions; actual provider check/failure execution is separate evidence consumed by final boundary/conformance results. |"}}
+   {:consumer
+    "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution",
+    :start-results [],
+    :composition-results
+    ["legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
+     "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+     "mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir"
+     "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables"
+     "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality"
+     "mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption"
+     "opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate"
+     "lower/current-evidence-and-remaining-work/lower5-integrate-target-emission"
+     "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
+     "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"
+     "diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift"
+     "emit/current-evidence-and-remaining-work/emit4-establish-conformance"],
+    :selected-output-contract
+    "C9-selected source consumption/destination cleanup transfers, constructed and fact-annotated MIR, actual verification/admission, selected post-mutation preservation/regeneration, target/emitted behavior, actual runtime transfer/check/cleanup/failure and owning diagnostic/context results. Analysis products precede MIR construction; this task's final boundary evidence consumes the downstream results. Valid unoptimized MIR remains legal before Opt; these are task integration evidence requirements, not per-program legality or whole-component start gates. Held target/runtime/callback operations stay unassessed rather than substituted with supplied success flags.",
+    :source
+    {:path "docs/acceptance-dependencies.md",
+     :sha256
+     "074371c5d1769e02c69655d6b2007b53460fdb4ebeb10a4d6f21d24d3c18923c",
+     :declaration
+     "| `legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution` | none | `legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis`, `legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries`, `mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir`, `mir/current-evidence-and-remaining-work/mir2-attach-fact-tables`, `mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality`, `mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption`, `opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate`, `lower/current-evidence-and-remaining-work/lower5-integrate-target-emission`, `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries`, `runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup`, `diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift`, `emit/current-evidence-and-remaining-work/emit4-establish-conformance` | C9-selected source consumption/destination cleanup transfers, constructed and fact-annotated MIR, actual verification/admission, selected post-mutation preservation/regeneration, target/emitted behavior, actual runtime transfer/check/cleanup/failure and owning diagnostic/context results. Analysis products precede MIR construction; this task's final boundary evidence consumes the downstream results. Valid unoptimized MIR remains legal before Opt; these are task integration evidence requirements, not per-program legality or whole-component start gates. Held target/runtime/callback operations stay unassessed rather than substituted with supplied success flags. |"}}
+   {:consumer
+    "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface",
+    :start-results [],
+    :composition-results
+    ["legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
+     "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+     "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"
+     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"],
+    :selected-output-contract
+    "C9-selected actual analysis/check/transfer/MIR/runtime positive and negative results, profile/target/provider identities, all ownership diagnostics and generated origins, including supported runtime failures and unavailable-check refusals. Compose the complete family fixtures/results from those products and feed Release's existing suite and independent admission; final Release completion is not a C9 prerequisite. This row does not claim complete P1-P13, C10 or other Legality-source dependency entailment.",
+    :source
+    {:path "docs/acceptance-dependencies.md",
+     :sha256
+     "074371c5d1769e02c69655d6b2007b53460fdb4ebeb10a4d6f21d24d3c18923c",
+     :declaration
+     "| `legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface` | none | `legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis`, `legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries`, `legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution`, `legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks` | C9-selected actual analysis/check/transfer/MIR/runtime positive and negative results, profile/target/provider identities, all ownership diagnostics and generated origins, including supported runtime failures and unavailable-check refusals. Compose the complete family fixtures/results from those products and feed Release's existing suite and independent admission; final Release completion is not a C9 prerequisite. This row does not claim complete P1-P13, C10 or other Legality-source dependency entailment. |"}}],
+  :staging
+  [:actual-Core-origins-type-effect-ownership-profile-grant-trust-and-selected-family-contracts
+   :exact-specialized-operation-classification-before-affected-MIR
+   :actual-selected-proof-check-preservation-and-provider-boundary-results
+   :family-fixtures-artifacts-to-existing-Release-and-independent-admission],
+  :ordinary-construction
+  :declared-interfaces-no-adopted-result-prerequisites,
+  :program-legality
+  :valid-unoptimized-verified-MIR-remains-legal-no-task-completion-gate,
+  :global-source-conjunctions :unassessed,
+  :qualification
+  "Extend three existing C9 consumer declarations for selected C10 products, preserving all 22 C9 input joins and their positive contracts, while keeping 48 unrelated route meanings exact. Add 20 selected result joins with no task/body/status changes or adopted-result construction gates. Numeric proof methods apply to actual claimed conditions; retaining a legal check or refusing remains valid. Contract/policy production precedes actual external execution, and final consumer composition needs real subject-bound preservation/failure/refusal artifacts where claimed. The expanded coarse math/formal/safety cycle remains visible; staged acyclicity is not semantic acceptance. All actual holds and pending independent review remain.",
+  :required-parent-consumers
+  ["domain-ir-boundaries"
+   "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface"
+   "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
+   "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+   "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"
+   "math"
+   "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance"
+   "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom"
+   "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler"
+   "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate"
+   "release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution"],
+  :all-selected-result-joins 320,
+  :new-selected-producer-result-joins 20,
+  :consumer-task-ids
+  ["legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface"
+   "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+   "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"],
+  :implementation-acceptance :unassessed},
  :kind :implementation-readiness-task-source-version,
  :domain-parent-refinement
  {:source-input-commit "deacbfd25ea22e501e8e08f54ff826eaa3d59353",
@@ -30949,13 +31245,13 @@
   "specs/types-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9",
   "specs/legality-workflow/plan.md"
-  "4d3de0d4fe0eb43e5874e2988dbf03113755cd5b",
+  "e656b8e5c5c47966da8d781bc31d5b0c3bbfbd62",
   "specs/domains-workflow/tasks.md"
   "92b3917ec51e882338fc221bddde86310815221f",
   "docs/phase-02-safety/043-safe14-supply-chain-safety.md"
   "697917447d70ba0797a096d9427d4706bf5515df",
   "docs/acceptance-dependencies.md"
-  "14e97dee9205ffd6e3d1d07bb1af00bfbb724676",
+  "e656b8e5c5c47966da8d781bc31d5b0c3bbfbd62",
   "specs/platform-workflow/tasks.md"
   "0876063f41e2ad3e13f3c332f4877daecb62b45d",
   "specs/backends-workflow/tasks.md"
@@ -36526,4 +36822,4 @@
   :newly-amended-original-task-ids [],
   :implementation-acceptance :unassessed},
  :input-fingerprint
- "e5b755fbae65bb72ce6a160710a4f992e0684a3f09c238ab605e30ee9ae498b8"}
+ "f3e215386fb76feef635b766a184908a19a443c0c4727ee1dd92acca5b543ae6"}

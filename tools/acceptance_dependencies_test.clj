@@ -383,7 +383,7 @@
           routes (filter #(c9 (:consumer %)) (:routes review))]
       (is (= 4 (count c9) (count routes)))
       (is (= c9 (set (get-in altered [:dependency-review :unresolved-consumers]))))
-      (is (= [4 5 6 12] (sort (map (comp count :composition-results) routes))))
+      (is (= [4 5 17 21] (sort (map (comp count :composition-results) routes))))
       (doseq [{:keys [consumer start-results composition-results]} routes]
         (is (empty? start-results))
         (doseq [producer composition-results]
@@ -396,7 +396,11 @@
     (is (empty? (:unresolved-consumers review)))
     (is (= :pending (:future-sh-and-full-language-joins review)))
     (is (= :unassessed (:implementation-acceptance review)))
-    (is (= [6 8] (mapv count (:declared-output-cycles review))))
+    (is (= [9 8] (mapv count (:declared-output-cycles review))))
+    (is (every? (set (first (:declared-output-cycles review)))
+                ["formal" "math/independent-proof-and-certificate-checking"
+                 "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+                 "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"]))
     (is (every? (set (second (:declared-output-cycles review)))
                 ["schema/checked-consumer-projection" "schema/compatibility-and-migration"
                  "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler"

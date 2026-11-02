@@ -2403,3 +2403,77 @@ read the previous projection before generation finished and refused stale plan
 inputs; the post-generation checks above pass. No failed preparation receives
 passing credit. Full compiler/semantic/provider/runtime/target suites and held
 actions were not run; no current independent acceptance is claimed.
+
+## Safety coordinator dependency refinement
+
+Source-only commit `e656b8e5c5c47966da8d781bc31d5b0c3bbfbd62` extends the
+[existing selected-result table](../docs/acceptance-dependencies.md#future-task-construction-and-composition)
+and [Legality order](../specs/legality-workflow/plan.md#safety-producer-and-consumer-order)
+for the three current C10 consumers. Classification, handoff and conformance
+retain their exact task IDs, bodies and Open statuses. All 22 C9 input joins
+for those three routes and their substantive contracts survive; the C9-only
+scope qualification is explicitly extended. The other 48 route meanings,
+including C9 ownership analysis, remain unchanged.
+
+Twenty added actual-result joins name real Core/generated-origin/type/effect
+facts; artifact trust, package/certificate/import and build-effect provenance;
+selected numeric/EFIR/mode semantics and independent math checking; AI/tool/
+taint/review and Workflow policy products; Opt protection and Lower assumption
+preservation; checked pass evidence and actual Auth enforcement/trust; Runtime
+distributed/AI policy behavior; and emitted-byte/check/proof identity. The
+classification route has seventeen result inputs and handoff twenty-one;
+conformance retains four. These 42 selected inputs include the prior 22.
+
+Contract and policy production precede actual external execution. Exact proofs
+are consumed for the claims that require them; absent proof can yield a legal
+retained check or refusal. Every named broad producer supplies the selected
+output, not its whole-component completion. No adopted product result is a
+construction prerequisite. Actual runtime/target checks, failures and surviving
+review/replay records remain required for composition where those mechanisms
+are claimed. Valid unoptimized verified MIR remains usable without final Opt or
+handoff completion. Family conformance feeds existing Release execution and
+later independent admission; it does not create a reverse final-release gate
+or second harness.
+
+The coarse math SCC expands from six to nine records: Math, its five proof/
+search/synthesis tasks, Formal and the two safety classification/handoff tasks.
+The eight-record Release/Schema SCC remains. Both are exposed. Declared
+interfaces, candidate/policy production, independent exact-claim checking and
+downstream application precede final family integration; selected proof methods
+are applicable alternatives, not a universal all-method prerequisite. The
+staged projection's acyclicity cannot prove the full semantic order by itself;
+current source/dependency entailment and actual composition remain unassessed.
+
+Metadata `:safety-dependency-refinement` preserves predecessor `32b0c033`, its
+projection/fingerprint and complete C10/C9 source proposals. The task-body
+comparison, 31 source-file records, 149 current keys, 25 authorities, forty
+future records, SH/SH07 routes and three Reader receipts remain unchanged.
+Only actual dependency and Legality plan inspection pins advance; task pins and
+source-input commit `4d3de0d4` remain. The view now has 320 selected-result joins
+for forty future consumers and eleven current parents, with no unresolved
+consumer declaration. Fingerprint:
+`f3e215386fb76feef635b766a184908a19a443c0c4727ee1dd92acca5b543ae6`.
+
+This is a current author dependency proposal for selected C9/C10 contracts.
+Complete specialized SAFE1-SAFE16, PERF10, profile and other attached-owner
+conjunctions, global reconciliation and required independent review remain
+unfinished. Preserve every actual compiler/provider/native/C7/C12/callback/
+probe/replay/migration/private-store/signing/publication restriction. No held
+operation runs and no other chat is messaged. Reader contract coverage remains
+the first implementation preparation increment; implementation, acceptance,
+integration, release and seed retirement receive no completion credit.
+
+C10 dependency validation passes: 47 crosswalk tests / 6,873 assertions and 23
+dependency tests / 2,031 assertions, deterministic generation/check, read-only
+dependency audit, both document validators and the language boundary (six tests /
+eleven assertions). Controls preserve all task bodies and source-review subjects,
+all 22 original selected C9 inputs and 48 unaffected route meanings; verify the
+twenty added joins, interface-only construction and actual-result composition;
+and report the three removed consumer declarations as unresolved. The expanded
+nine-record and unchanged eight-record coarse cycles remain exposed, with the
+staged graph acyclic. Conservation passes for 83 changed files, 77 Markdown
+files, 3,082 local references, 139 original routes, 48 historical spec/plan
+suffixes and all 48 original task/evidence contents. ASCII and whitespace checks
+pass. Scratch reader delimiters were corrected before the successful checks;
+failed preparation receives no credit. No compiler, proof checker, target,
+provider/runtime or held execution ran and no independent acceptance is claimed.
