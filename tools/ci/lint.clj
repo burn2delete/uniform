@@ -137,20 +137,26 @@
             (assoc finding :row mapped-start :end-row mapped-end)))))))
 
 (defn classify [baseline current sources]
-  (let [sources (into {}
-                      (map (fn [[filename source]]
-                             [filename (assoc source
-                                              :before-definitions
-                                              (source-definitions (:before source))
-                                              :after-definitions
-                                              (source-definitions (:after source)))])
-                           sources))]
+  (let [warning-files (set (keep (fn [finding]
+                                   (when (= :warning (:level finding))
+                                     (:filename finding)))
+                                 current))
+        sources (into {}
+                      (for [[filename source] sources
+                            :when (warning-files filename)]
+                        [filename (assoc source
+                                         :before-definitions
+                                         (source-definitions (:before source))
+                                         :after-definitions
+                                         (source-definitions (:after source)))]))]
     (loop [findings current available (frequencies baseline) existing [] blocking []]
       (if-let [finding (first findings)]
-        (let [source (get sources (:filename finding))
-              mapped (or (mapped-warning finding source)
-                         (moved-definition-warning finding source))
-              matched? (pos? (get available mapped 0))]
+        (let [warning? (= :warning (:level finding))
+              source (when warning? (get sources (:filename finding)))
+              mapped (when warning?
+                       (or (mapped-warning finding source)
+                           (moved-definition-warning finding source)))
+              matched? (and warning? (pos? (get available mapped 0)))]
           (recur (next findings) (if matched? (update available mapped dec) available)
                  (cond-> existing matched? (conj finding))
                  (cond-> blocking (and (not matched?) (#{:warning :error} (:level finding))) (conj finding))))
@@ -180,6 +186,17 @@
                                  (#{:info :warning :error} (:level %))) (:findings result)))
       (throw (ex-info "Malformed or out-of-scope lint output" {:path (str path)})))
     (mapv #(update % :filename rename) (:findings result))))
+
+(defn source-paths-for-warnings
+  "Select only current warning filenames for source/definition mapping.
+  Errors always block and informational findings never need source mapping."
+  [paths current-plan whole-context? findings]
+  (let [candidates (distinct (concat paths (when whole-context? (:paths current-plan))))
+        warnings (set (keep (fn [finding]
+                              (when (= :warning (:level finding))
+                                (:filename finding)))
+                            findings))]
+    (vec (filter warnings candidates))))
 
 (defn run-comparison! [execute! output base paths]
   (let [root (io/file output "lint-base")
@@ -284,7 +301,7 @@
         current (into (normal "lint-current" (remove context-paths paths))
                       (contextual "lint-context-current" current-plan
                                   (if whole-context? context-paths (set paths))))
-        source-paths (vec (distinct (concat paths (when whole-context? (:paths current-plan)))))
+        source-paths (source-paths-for-warnings paths current-plan whole-context? current)
         sources (into {}
                       (for [[index path] (map-indexed vector source-paths)
                             :let [before (if-let [bytes (get-in base-plan [:inputs path])]
