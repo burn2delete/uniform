@@ -9,10 +9,10 @@
   bytes-sha256 {:arglists ([bytes]), :admission :none},
   file-sha256 {:arglists ([bytes-sha256-var file-bytes-var path]), :admission :none},
   jar-source-inventory-report
-  {:arglists ([packaged-source-entries-var jar-entries]),
+  {:arglists ([packaged-source-entries-supplier jar-entries]),
    :admission :none},
   jar-inventory-report
-  {:arglists ([expected-jar-file-entries-var jar-file-entries]),
+  {:arglists ([expected-jar-file-entries-supplier jar-file-entries]),
    :admission :none}},
  :supported
  [:canonical-source-entry-order
@@ -47,7 +47,7 @@
   :self-hosting
   :seed-retirement],
  :artifact-inputs
- [:observed-native-entry-names :late-expected-inventory-owner-var
+ [:observed-native-entry-names :late-expected-inventory-supplier
   :caller-owned-path-or-byte-array :late-byte-and-file-digest-owner-vars],
  :namespace gravity.release,
  :diagnostic-ownership
@@ -67,8 +67,8 @@
  :additional-contract-boundaries [:observed-file-bytes-and-digests]})
 
 (defn jar-source-inventory-report
-  [packaged-source-entries-var jar-entries]
-  (let [expected (vec (sort (map :jar-entry ((deref packaged-source-entries-var)))))
+  [packaged-source-entries-supplier jar-entries]
+  (let [expected (vec (sort (map :jar-entry (packaged-source-entries-supplier))))
         observed (filterv #(and (string? %)
                                 (or (str/ends-with? % ".clj")
                                     (str/ends-with? % ".cljc")
@@ -85,8 +85,8 @@
      :entry-frequencies entry-frequencies}))
 
 (defn jar-inventory-report
-  [expected-jar-file-entries-var jar-file-entries]
-  (let [expected ((deref expected-jar-file-entries-var))
+  [expected-jar-file-entries-supplier jar-file-entries]
+  (let [expected (expected-jar-file-entries-supplier)
         string-entries? (every? string? jar-file-entries)
         observed (if string-entries?
                    (vec (sort jar-file-entries))
