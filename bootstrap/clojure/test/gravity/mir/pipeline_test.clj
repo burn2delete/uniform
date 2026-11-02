@@ -39,7 +39,7 @@
            'profile-target-table 'capability-proof-table 'safety-proof-table
            'downstream-ids 'expected-block-operation-ids 'expected-data-flow 'expected-uses
            'expected-terminator-uses 'expected-terminator-value-uses 'expected-value
-           'expected-runtime-check-value}
+           'expected-runtime-check-value 'validate-effect-edge-placement! 'validate-data-flow!}
          (set (keys (ns-publics 'gravity.mir)))))
   (let [contract (:gravity/namespace-contract (meta #'mir/validate-cfg!))]
     (is (= (set (keys (:public-api contract)))
@@ -217,6 +217,94 @@
     (with-redefs [b/p15-s23-c11-mir-expected-value (fn [& args] (reset! observed args) :five-arguments)]
       (is (= :five-arguments (original :node :flow :uses :operation)))
       (is (= [:node :flow :uses :operation nil] @observed)))))
+
+(defn- flow-operations []
+  (into {} (for [key [:require! :entry-parameter! :expected-data-flow :expected-terminator-uses
+                      :runtime-check-token-id :runtime-check-operation-id :expected-value
+                      :expected-runtime-check-value :runtime-check-source
+                      :valid-dominance-edge? :valid-terminator-use?]]
+             [key (ns-resolve 'gravity.bootstrap (symbol (str "p15-s23-c11-mir-" (name key))))])))
+
+(deftest native-data-flow-rules-accept-emitted-mir-and-refuse-changed-tables
+  (doseq [{:keys [source checked operations by-id operation-products] emitted :mir} @products]
+    (let [inputs (assoc operation-products :operation-by-id by-id :operations operations)
+          actual (mir/validate-data-flow! (flow-operations) source checked emitted inputs)]
+      (is (= {:edge-count 4 :terminator-use-count 4 :definition-count 5 :value-count 5} actual))
+      (is (= actual (b/p15-s23-c11-mir-validate-data-flow! source checked emitted inputs)))
+      (doseq [[changed rule missing]
+              [[(assoc-in emitted [:data-flow-graph :edges 0 :from] "not-defined")
+                "C11-DOMINANCE" :exact-checked-core-data-flow]
+               [(assoc-in emitted [:data-flow-graph :terminator-uses] [])
+                "C11-DOMINANCE" :exact-terminator-use-sites]
+               [(assoc-in emitted [:data-flow-graph :definitions] {})
+                "C11-DOMINANCE" :exact-ssa-definition-table]
+               [(assoc-in emitted [:data-flow-graph :values] {})
+                "C11-TYPE" :exact-ssa-value-table]
+               [(assoc emitted :source-map {}) "C11-ORIGIN" :exact-checked-core-source-map]]]
+        (let [error (failure #(mir/validate-data-flow! (flow-operations) source checked changed inputs))]
+          (is (= rule (:id error)))
+          (is (= missing (:missing-fact error)))))
+      (let [changed (assoc-in inputs [:operations 0 :effects] #{:memory/raw})
+            error (failure #(mir/validate-data-flow! (flow-operations) source checked emitted changed))]
+        (is (= "C11-EFFECT" (:id error)))
+        (is (= :direct-effectful-operation-boundary (:missing-fact error)))))))
+
+(deftest native-effect-placement-checks-dominance-join-pairs-and-instruction-order
+  ;; These event-edge variants are supplied geometry data. The original
+  ;; Gravity fixture has a pure graph and no effect-event edges; these calls
+  ;; confer no effect legality or MIR admission.
+  (doseq [{:keys [source by-id operation-products] emitted :mir} @products]
+    (let [inputs (assoc operation-products :operation-by-id by-id)
+          edges (mapv (fn [edge] {:before (:from edge) :after (:consumer-id edge)})
+                      (get-in emitted [:data-flow-graph :edges]))
+          supplied (assoc emitted :effect-order-graph {:event-edges edges})]
+      (is (= :passed (mir/validate-effect-edge-placement! #'b/p15-s23-c11-mir-require! source emitted inputs)))
+      (is (= :passed (mir/validate-effect-edge-placement! #'b/p15-s23-c11-mir-require! source supplied inputs)))
+      (doseq [edge edges]
+        (let [changed (assoc-in supplied [:effect-order-graph :event-edges]
+                                [{:before (:after edge) :after (:before edge)}])
+              error (failure #(mir/validate-effect-edge-placement!
+                                #'b/p15-s23-c11-mir-require! source changed inputs))]
+          (is (= "C11-EFFECT" (:id error)))
+          (is (= :effect-edge-cfg-placement-and-order (:missing-fact error)))))
+      (let [changed (assoc-in supplied [:effect-order-graph :event-edges 0 :before] "not-defined")]
+        (is (= "C11-EFFECT"
+               (:id (failure #(mir/validate-effect-edge-placement!
+                                #'b/p15-s23-c11-mir-require! source changed inputs)))))))))
+
+(deftest native-flow-rules-preserve-port-order-refusal-and-wrapper-identities
+  (let [{:keys [source checked operations by-id operation-products] emitted :mir} (first @products)
+        inputs (assoc operation-products :operation-by-id by-id :operations operations)
+        events (atom []) owner (flow-operations)
+        observe (fn [key]
+                  (fn [& args] (swap! events conj key) (apply (get owner key) args)))
+        supplied (merge owner (into {} (map #(vector % (observe %))
+                                           [:entry-parameter! :expected-data-flow :expected-terminator-uses
+                                            :expected-value])))
+        error (ex-info "owner require failure" {:kind :owner})
+        caught (try
+                 (mir/validate-data-flow!
+                  (assoc supplied :require! (fn [& _] (swap! events conj :require!) (throw error)))
+                  source checked emitted inputs)
+                 nil (catch clojure.lang.ExceptionInfo e e))]
+    (is (identical? error caught))
+    (is (= (vec (concat [:entry-parameter! :expected-data-flow :expected-terminator-uses]
+                        (repeat (count (:core-nodes checked)) :expected-value) [:require!])) @events))
+    (let [observed (atom []) original @(get owner :expected-data-flow)]
+      (with-redefs [b/p15-s23-c11-mir-expected-data-flow
+                    (fn [& args] (swap! observed conj args) (apply original args))]
+        (is (= 4 (:edge-count (mir/validate-data-flow! owner source checked emitted inputs)))))
+      (is (= [[(:nodes inputs) (:operation-by-id inputs)]] @observed))))
+  (let [arguments (vec (repeatedly 4 #(Object.))) marker (Object.) observed (atom nil)]
+    (with-redefs [mir/validate-data-flow! (fn [& args] (reset! observed args) marker)]
+      (is (identical? marker (apply b/p15-s23-c11-mir-validate-data-flow! arguments))))
+    (is (= (flow-operations) (first @observed)))
+    (is (every? true? (map identical? arguments (rest @observed)))))
+  (let [arguments (vec (repeatedly 3 #(Object.))) marker (Object.) observed (atom nil)]
+    (with-redefs [mir/validate-effect-edge-placement! (fn [& args] (reset! observed args) marker)]
+      (is (identical? marker (apply b/p15-s23-c11-mir-validate-effect-edge-placement! arguments))))
+    (is (identical? #'b/p15-s23-c11-mir-require! (first @observed)))
+    (is (every? true? (map identical? arguments (rest @observed))))))
 
 (deftest paired-gravity-fixture-emits-mir-and-keeps-native-rule-results
   ;; Actual Gravity fixture/builder execution on normalized data. The fixture's

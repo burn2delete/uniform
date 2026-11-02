@@ -1,12 +1,19 @@
 (ns gravity.mir
-  "Native seed C11 fact/use records, control-flow and use-dominance algorithms.")
+  "Native seed C11 records and control/data-flow validation rules.")
 
 (def ^:private namespace-contract
   '{:namespace gravity.mir
     :contract-boundary :native-seed-c11-control-flow-and-dominance
     :governing-contracts [D1 D2 D3 D8 D9 C1 C6 C7 C8 C9 C10 C11 C15 BOOT8 TEST2]
     :public-api
-    {downstream-ids {:arglists ([outside-nodes if-id]) :admission :none
+    {validate-effect-edge-placement!
+     {:arglists ([require! source-path mir operation-products]) :admission :none
+      :native-data-only? true :authenticates-inputs? false :issues-verifier-certificates? false}
+     validate-data-flow!
+     {:arglists ([operations source-path checked-core mir operation-products]) :admission :none
+      :operation-inputs [:require! :entry-parameter! :expected-data-flow :expected-terminator-uses :runtime-check-token-id :runtime-check-operation-id :expected-value :expected-runtime-check-value :runtime-check-source :valid-dominance-edge? :valid-terminator-use?]
+      :native-data-only? true :authenticates-inputs? false :issues-verifier-certificates? false}
+     downstream-ids {:arglists ([outside-nodes if-id]) :admission :none
        :native-data-only? true :authenticates-inputs? false :issues-verifier-certificates? false}
      expected-block-operation-ids {:arglists ([entry-parameter! runtime-check-operation-id path-prefix? checked-core]) :admission :none
        :native-data-only? true :authenticates-inputs? false :issues-verifier-certificates? false}
@@ -39,17 +46,22 @@
      valid-dominance-edge? {:arglists ([edge blocks operation-by-id definitions position-by-id join]
                                       [edge blocks operation-by-id definitions position-by-id join parameter]) :admission :none}
      valid-terminator-use? {:arglists ([use blocks operation-by-id position-by-id]) :admission :none}}
-    :artifact-inputs [:native-node-path-operand-and-operation-data
+    :artifact-inputs [:explicit-native-data-flow-rule-operations
+                      :native-block-operation-position-definition-use-and-source-tables
+                      :native-node-path-operand-and-operation-data
                       :explicit-parameter-opcode-id-source-and-use-operations
                       :native-checked-core-node-fact-and-proof-data
                       :explicit-runtime-check-id-and-fact-record-operations
                       :explicit-require-and-terminator-operations :terminator-key-schema
                       :checked-core-and-mir-data :expected-envelope-and-operation-products
                       :definitions :operation-positions :join-and-parameter-data]
-    :artifact-outputs [:native-block-placement-data :native-use-definition-and-value-records
+    :artifact-outputs [:native-data-flow-counts :native-effect-placement-result
+                       :native-block-placement-data :native-use-definition-and-value-records
                        :native-runtime-check-facts :id-indexed-fact-and-proof-tables
                        :cfg-entry-exit-and-conditional-count :native-rule-outcome :dominance-and-use-predicates]
-    :diagnostic-ownership {:stage [:native-use-and-placement-reference-records C11-BLOCK :terminating-pure-control-transfer :canonical-cfg-structure]
+    :diagnostic-ownership {:stage [:native-data-flow-equality-and-dominance :native-effect-edge-placement
+                                  C11-DOMINANCE C11-TYPE C11-ORIGIN C11-EFFECT
+                                  :native-use-and-placement-reference-records C11-BLOCK :terminating-pure-control-transfer :canonical-cfg-structure]
                            :existing-caller [C11-TYPE C11-EFFECT C11-SAFETY C11-MODULE C11-VERIFY
                                              :fact-table-equality-and-admission C11-DOMINANCE :predicate-refusal]
                            :supplied-require-operation [:diagnostic-construction :throwing]}
@@ -64,6 +76,177 @@
 
 
 
+
+
+
+
+(defn validate-effect-edge-placement!
+  [require! source-path mir operation-products]
+  (let [blocks (:blocks operation-products)
+        operation-by-id (:operation-by-id operation-products)
+        join (get-in mir [:control-flow-graph :join])
+        position-by-id
+        (into {}
+              (mapcat
+               (fn [[_ block]]
+                 (map-indexed (fn [index operation]
+                                [(:op-id operation) index])
+                              (:instructions block))))
+              blocks)]
+    (doseq [edge (get-in mir [:effect-order-graph :event-edges])]
+      (let [before-operation (get operation-by-id (:before edge))
+            after-operation (get operation-by-id (:after edge))
+            before-block (:block-id before-operation)
+            after-block (:block-id after-operation)
+            same-block? (= before-block after-block)
+            same-block-order?
+            (and same-block?
+                 (< (get position-by-id (:before edge) Long/MAX_VALUE)
+                    (get position-by-id (:after edge) Long/MIN_VALUE)))
+            dominates?
+            (and (not same-block?)
+                 (contains? (set (:dominators (get blocks after-block)))
+                            before-block))
+            exact-join-pair?
+            (and (= after-block (:block-id join))
+                 (= (:after edge) (:value-id join))
+                 (some #(= {:predecessor before-block
+                            :value (:before edge)}
+                           %)
+                       (:incoming join)))
+            branch-to-post-join?
+            (and (= after-block (:block-id join))
+                 (contains? (set (map :predecessor (:incoming join)))
+                            before-block)
+                 (< (get position-by-id (:value-id join) Long/MAX_VALUE)
+                    (get position-by-id (:after edge) Long/MIN_VALUE)))]
+        (require!
+         (and (map? before-operation)
+              (map? after-operation)
+              (or same-block-order? dominates? exact-join-pair?
+                  branch-to-post-join?))
+         "C11-EFFECT" source-path after-operation
+         :effect-edge-cfg-placement-and-order)))
+    :passed))
+
+(defn validate-data-flow!
+  [operations source-path checked-core mir operation-products]
+  (let [{:keys [require! entry-parameter! expected-data-flow expected-terminator-uses runtime-check-token-id runtime-check-operation-id expected-value expected-runtime-check-value runtime-check-source valid-dominance-edge? valid-terminator-use?]} operations]
+  (let [parameter (entry-parameter! source-path checked-core)
+        nodes (:nodes operation-products)
+        operations (:operations operation-products)
+        operation-by-id (:operation-by-id operation-products)
+        blocks (:blocks operation-products)
+        join (get-in mir [:control-flow-graph :join])
+        position-by-id
+        (into {}
+              (mapcat
+               (fn [[_ block]]
+                 (map-indexed (fn [index operation]
+                                [(:op-id operation) index])
+                              (:instructions block))))
+              blocks)
+        data-flow (get-in mir [:data-flow-graph :edges])
+        terminator-uses (get-in mir [:data-flow-graph :terminator-uses])
+        expected-data-flow
+        (expected-data-flow nodes operation-by-id)
+        expected-terminator-uses
+        (expected-terminator-uses checked-core)
+        expected-definitions
+        (into
+         {}
+         (mapcat
+          (fn [node]
+            (let [node-id (:node-id node)
+                  block-id (:block-id (get operation-by-id node-id))
+                  check (get-in node [:safety :check])]
+              (cond->
+               [[node-id (or (when (= node-id (:id parameter)) (:definition parameter)) {:value-id node-id
+                          :operation-id node-id
+                          :block-id block-id})]]
+                check
+                (conj
+                 [(runtime-check-token-id check)
+                  {:value-id
+                   (runtime-check-token-id check)
+                   :operation-id
+                   (runtime-check-operation-id check)
+                   :block-id block-id}]))))
+          nodes))
+        expected-values
+        (into
+         {}
+         (mapcat
+          (fn [node]
+            (let [node-id (:node-id node)
+                  check (get-in node [:safety :check])]
+              (cond->
+               [[node-id
+                 (expected-value
+                  node expected-data-flow expected-terminator-uses
+                  (get operation-by-id node-id) (when (= node-id (:id parameter)) parameter))]]
+                check
+                (conj
+                 [(runtime-check-token-id check)
+                  (expected-runtime-check-value
+                   node expected-data-flow
+                   (get operation-by-id
+                        (runtime-check-operation-id
+                         check)))]))))
+          nodes))
+        expected-source-map
+        (into
+         {}
+         (mapcat
+          (fn [node]
+            (if-let [check (get-in node [:safety :check])]
+              [[(:node-id node) (:source node)]
+               [(runtime-check-operation-id check)
+                (runtime-check-source node)]]
+              [[(:node-id node) (:source node)]]))
+          nodes))]
+    (require!
+     (and (vector? data-flow)
+          (= expected-data-flow data-flow))
+     "C11-DOMINANCE" source-path mir :exact-checked-core-data-flow)
+    (require!
+     (every? #(valid-dominance-edge?
+               % blocks operation-by-id expected-definitions
+               position-by-id join parameter)
+             data-flow)
+     "C11-DOMINANCE" source-path mir :definition-dominates-use)
+    (require!
+     (and (vector? terminator-uses)
+          (= expected-terminator-uses terminator-uses))
+     "C11-DOMINANCE" source-path mir :exact-terminator-use-sites)
+    (require!
+     (every? #(valid-terminator-use?
+               % blocks operation-by-id position-by-id)
+             terminator-uses)
+     "C11-DOMINANCE" source-path mir
+     :terminator-definition-dominance-and-order)
+    (require!
+     (= expected-definitions
+        (get-in mir [:data-flow-graph :definitions]))
+     "C11-DOMINANCE" source-path mir :exact-ssa-definition-table)
+    (require!
+     (= expected-values (get-in mir [:data-flow-graph :values]))
+     "C11-TYPE" source-path mir :exact-ssa-value-table)
+    (require!
+     (= expected-source-map (:source-map mir))
+     "C11-ORIGIN" source-path mir :exact-checked-core-source-map)
+    (require!
+     (every? (fn [operation]
+               (let [direct-effects (:effects operation)
+                     source-operation (:source-operation operation)]
+                 (or (empty? direct-effects)
+                     (contains? #{:str :println} source-operation))))
+             operations)
+     "C11-EFFECT" source-path mir :direct-effectful-operation-boundary)
+    {:edge-count (count data-flow)
+     :terminator-use-count (count terminator-uses)
+     :definition-count (count expected-definitions)
+     :value-count (count expected-values)})))
 
 
 (defn downstream-ids
