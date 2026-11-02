@@ -1,0 +1,275 @@
+{:parent-tree "f97d45e232e67cb3097b7c7fc54cd7e447202de5",
+ :parent "df1688b26123247e2c20eaf218ebcf7592481b15",
+ :candidate "be2e6ec71e49c191463b78be7ba97e275ccaa66c",
+ :payment-test-disposition
+ {:exact-output-and-selected-row-fact-checks-preserved true,
+  :raw-sha256
+  "6c1d5513eeaf3b17121f4317899420702fc7023c860bb1f34277f07848bd2824",
+  :name mixed-ledger-preserves-exact-payment-and-local-limit,
+  :governing-source
+  "docs/development-verification.md#remove-project-cost-and-budget-mechanisms",
+  :assertion-count 7,
+  :independent-completion-assertion-index 4,
+  :completion-preserved-in-positive true,
+  :new-accounting-replacement false,
+  :governing-source-file-sha256
+  "f17d952b42d760fab2e34e8e6487953993efe20da6105194a9c14e8df96e9f03",
+  :positive-case-covers-original-arrangement true,
+  :original-assertion-source-forms
+  [(is
+    (=
+     8
+     (-
+      (:work-count row-result)
+      (:work-count (row-census context [dse-row] descriptor 65536)))))
+   (is
+    (=
+     6
+     (-
+      (:work-count fact-result)
+      (:work-count
+       (fact-census context [dse-fact] descriptor 65536)))))
+   (is
+    (=
+     result
+     (function context entries descriptor (:work-count result))))
+   (is
+    (=
+     :loop-type-work-limit
+     (:reason
+      (function
+       context
+       entries
+       descriptor
+       (dec (:work-count result))))))
+   (is (= :complete (:status result)))
+   (is (= result (compile-node candidate (:work-count result))))
+   (is
+    (=
+     :typed-lowering-work-limit
+     (get-in
+      (compile-node candidate (dec (:work-count result)))
+      [:facts :reason])))],
+  :other-six-assertions
+  :retired-work-charge-or-exact-one-short-allowance-interfaces},
+ :blocking-findings [],
+ :remaining
+ "Actual dependency/main extraction, affected current source composition, applicable CI and coordinator integration remain separate. Genuine DSE launch denial remains stopped; this receipt authorizes no selector, helper kernel, allocation or relay.",
+ :independent-controls
+ {:source-data-assertions 13888,
+  :inert-corruptions 37,
+  :all-refused true,
+  :Bootstrap-loaded false,
+  :target-allocations :none,
+  :genuine-tests :UNRUN},
+ :full-parent-conservation
+ {:paths 10055,
+  :blob-and-mode-identities :all-unchanged,
+  :only-added-paths
+  ["bootstrap/clojure/test/gravity/types/set_equality_joins_test.clj"
+   "specs/accounting-removal/set-equality-joins-census.edn"
+   "specs/accounting-removal/set-equality-joins.md"],
+  :PR631-tests-and-source-records :unchanged,
+  :production-existing-tests-models-fixtures-and-denied-selector
+  :unchanged},
+ :verified-artifacts
+ {"bootstrap/clojure/test/gravity/types/set_equality_joins_test.clj"
+  "23a463a32be97259b910756cc1b47fec29719156f24c76be853c532258237af4",
+  "specs/accounting-removal/set-equality-joins-census.edn"
+  "91061d74b87e20ac8e12f982164b7117078c2fa3b7bd9787251250df665b4830",
+  "specs/accounting-removal/set-equality-joins.md"
+  "a019735041335dd49397f4399d85b29e617f0ced261e56ebb186785ccc0e5133"},
+ :main-extraction :separate-dependency-gate,
+ :integration :pending-coordinator,
+ :CI
+ {:candidate "be2e6ec71e49c191463b78be7ba97e275ccaa66c",
+  :successes 7,
+  :configured-skips 2,
+  :genuine-kernel-evidence false},
+ :count-qualification
+ {:sealed-receipt 13888,
+  :handoff-message 13889,
+  :credited-count :sealed-receipt,
+  :additional-assertion :not-inferred,
+  :handoff-discrepancy :preserved-not-silently-normalized},
+ :consumption
+ {:receipt-tree-parent-three-artifacts-three-dependency-files-eleven-forms
+  :verified,
+  :new-execution false,
+  :reviewer-or-owner-message-sent false},
+ :kind :verified-DSE-joins-source-review-consumption,
+ :receipt-sha256
+ "10f27bf6268713b341bc0b5a3e06c2c58419f4e25f20e31cb70da72331a30559",
+ :verdict :pass-in-exact-source-data-scope,
+ :genuine-tests :UNRUN,
+ :DSE-denied-launch :STOPPED-not-retried,
+ :generator
+ {:language :clojure,
+  :sha256
+  "f83ad8dfd7537a9bd901a0521e6de3a300484e501d67a464dbe12d0576a21935",
+  :preserved-locally true},
+ :limits
+ [:genuine-C7-Effects-lowering-runtime-acceptance
+  :authenticated-source
+  :PR568-parent-acceptance
+  :PR631-or-PR633-main-extraction
+  :current-head-CI-acceptance
+  :PR502-closure
+  :whole-ACC01
+  :release
+  :self-hosting
+  :coordinator-integration],
+ :source-correspondence
+ {:original-helper-file-sha256
+  "b6fb83b6c740bf0fc8aa65b0748aceebb26c1c0845b7eb2ceaaae757d07ee2f5",
+  :entire-restored-file
+  :exact-raw-reconstruction-from-original-minus-payment-plus15-declared-adaptations-and-copied-original-helper,
+  :all15-original-forgery-bodies :identical,
+  :original-helper-raw-sha256
+  "60b196ef9ef6b0d65555327b049c4232d71cd8e003a97793b15401157a64efc0",
+  :raw-adaptations
+  [{:before
+    "gravity.self-hosting.sh01-checked-bare-set-equality-mixed-ledger-test",
+    :after "gravity.types.set-equality-joins-test",
+    :occurrences 1,
+    :assessment :semantic-namespace-rename}
+   {:before "sh08-dse-derive",
+    :after "types-set-equality-derive",
+    :occurrences 1,
+    :assessment :current-DSE-API-rename}
+   {:before "sh08-dse-constraint",
+    :after "types-set-equality-constraint",
+    :occurrences 2,
+    :assessment :current-DSE-API-rename}
+   {:before "sh08-dse-call-fact",
+    :after "types-set-equality-call-fact",
+    :occurrences 2,
+    :assessment :current-DSE-API-rename}
+   {:before "types (:forms input) 65536)",
+    :after "types (:forms input))",
+    :occurrences 1,
+    :assessment :remove-retired-local-call-allowance}
+   {:before "[context ledger descriptor budget]",
+    :after "[context ledger descriptor]",
+    :occurrences 1,
+    :assessment :remove-retired-local-census-allowance}
+   {:before "p15-s23-dse-row-census",
+    :after "emit-set-equality-row-census",
+    :occurrences 1,
+    :assessment :current-DSE-API-rename}
+   {:before ":call descriptor budget))",
+    :after ":call descriptor))",
+    :occurrences 1,
+    :assessment :remove-retired-local-census-allowance}
+   {:before "[context facts descriptor budget]",
+    :after "[context facts descriptor]",
+    :occurrences 1,
+    :assessment :remove-retired-local-census-allowance}
+   {:before "p15-s23-dse-fact-census",
+    :after "emit-set-equality-fact-census",
+    :occurrences 1,
+    :assessment :current-DSE-API-rename}
+   {:before "{:call descriptor} :call budget))",
+    :after "{:call descriptor} :call))",
+    :occurrences 1,
+    :assessment :remove-retired-local-census-allowance}
+   {:before "(row-census candidate rows descriptor 65536)",
+    :after "(row-census candidate rows descriptor)",
+    :occurrences 1,
+    :assessment :remove-retired-local-call-allowance}
+   {:before "(fact-census candidate facts descriptor 65536)",
+    :after "(fact-census candidate facts descriptor)",
+    :occurrences 1,
+    :assessment :remove-retired-local-call-allowance}
+   {:before "[:status :reason :work-count]",
+    :after "[:status :reason]",
+    :occurrences 2,
+    :assessment :diagnostic-only-retired-telemetry}
+   {:before "((helper 'checked-dual-bare-set-forgeries) descriptor)",
+    :after "(descriptor-forgeries descriptor)",
+    :occurrences 1,
+    :assessment :local-identical-forgery-helper}],
+  :semantic-tests 2,
+  :historical-original-file-sha256
+  "cca4115ba6b831d776850ae2b1ac5b11b06dad59c87cbaf2406d072303a8048a",
+  :source-hash-algorithm
+  "Exact raw UTF8 SHA256 plus reader-form comparison with only reader-generated local gensyms normalized; source files never evaluated.",
+  :original-helper-parameters-and-complete-body
+  :identical-name-only-change,
+  :all18-original-is-forms :identical,
+  :assertion-form-counts
+  {actual-c7-ordinary-rows-compose-with-dse-in-both-orders 13,
+   malformed-and-forged-dse-joins-remain-rejected 5}},
+ :pr 633,
+ :parent-acceptance :not-conferred,
+ :dependencies
+ {:files 3,
+  :definitions 11,
+  :all-file-hashes-arguments-and-form-hashes-verified true,
+  :details
+  [{:path
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+    :sha256
+    "901b55390c957c2eadeb68332a20647c8f12246dbf2a54f36e445897c03b4472",
+    :definitions
+    [{:name types-set-equality-derive,
+      :arguments [core node call edge nodes bindings types forms],
+      :form-sha256
+      "3a162e0429b1755b4b5dbf6ea0055859b981dcb87cdff936bd1360b3a4cc1f94"}
+     {:name types-set-equality-constraint,
+      :arguments [descriptor],
+      :form-sha256
+      "681ebe8d3726a4e733474d1f8c2c81b7d0b02ba49092b91325adf206ca0a7bfb"}
+     {:name types-set-equality-call-fact,
+      :arguments [descriptor module],
+      :form-sha256
+      "65178758f38a80aeaf6aebd31d2ba49368f39b090cfa379c5ce6d18dff0a1563"}
+     {:name sh08-ft-call-constraints,
+      :arguments
+      [calls edges nodes type-table binding-types function-types],
+      :form-sha256
+      "dd5eff305a0f7828d62dfea56d537464f5656a4937bc8847112b4e9f3e10aaef"}
+     {:name sh08-ft-call-facts,
+      :arguments [calls edges nodes type-table function-types module],
+      :form-sha256
+      "a60cb7ae54ec93c7e8df10f6350f8e27a0eaf212b662a7ec45405588f00577b2"}]}
+   {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+    :sha256
+    "0f507467aec793394827bc0fcc5a4b86de2b3662e8d3aac3898262df79b142a5",
+    :definitions
+    [{:name emit-set-equality-row-census,
+      :arguments
+      [core ledger nodes bindings types calls edges target descriptor],
+      :form-sha256
+      "67b90e728bc46bf23f5d88d10b588ff226ed9e2c6f2ed6280f1b494e677cdab5"}
+     {:name emit-set-equality-fact-census,
+      :arguments [facts module descriptors target],
+      :form-sha256
+      "77e94dd26dfc3d3b48e67dc5d6e5b7cd4982f76fe4a2c5982ae32a6dbfc4d88d"}
+     {:name p15-s23-typed-compile-node,
+      :arguments [context id budget],
+      :form-sha256
+      "6b4abe4ef88ab87ac793e090c0c9843f934eeeb5262e73056d9530d23c334a40"}
+     {:name emit-set-equality-compile,
+      :arguments [context node budget],
+      :form-sha256
+      "0468a445f18caf43e7521028afa3247ec25998aa84e69d97d6d07ca821d5fcf1"}]}
+   {:path
+    "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+    :sha256
+    "5cce988f440520052ae9379634c82c5f5dd60a8e9f71a55d56c74e133aa53443",
+    :definitions
+    [{:name invoke-c7,
+      :arguments [function arguments],
+      :form-sha256
+      "a239a912a4d78b26ce7ddddb823152bddd50d73ce2af1f10890f8f35e6900a17"}
+     {:name atomic-equality-input,
+      :arguments [argument-types],
+      :form-sha256
+      "2ecb53fe23bf6c98e2c34e4ebd470e470adc8f5d180bb7634fff1acec95c63ac"}]}],
+  :generator-sha256
+  "4f6d30d9af6b71274b8a0d953c54eb99b476482b531190ad6d524d828426b5d0",
+  :current-API-arities :verified-only,
+  :transitive-helper-or-parent-semantic-acceptance :not-inferred},
+ :owner :ACC-01,
+ :candidate-tree "4f29bfc324bd15a567ebbfe1cc8d4bdbc14bcee9"}
