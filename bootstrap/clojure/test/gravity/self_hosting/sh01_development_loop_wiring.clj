@@ -237,6 +237,12 @@
           (let [writer-finished? (try
                                    (join-input-writer! writer)
                                    (catch Throwable error
+                                     (let [cleanup-errors (stop-input-writer!
+                                                           writer @raw controller)]
+                                       (doseq [cleanup-error cleanup-errors]
+                                         (when-not (identical? cleanup-error error)
+                                           (.addSuppressed ^Throwable error
+                                                           cleanup-error))))
                                      (reset! primary error)
                                      (throw error)))
                 writer-error-before-abort @(:error writer)

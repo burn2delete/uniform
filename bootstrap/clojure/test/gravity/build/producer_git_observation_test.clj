@@ -7,7 +7,7 @@
             [gravity.self-hosting.sh01-parallel-test-runner :as runner]
             [gravity.process-supervision :as process-supervision]
             [gravity.self-hosting-test-runner :as child-runner])
-  (:import [java.io ByteArrayInputStream ByteArrayOutputStream]
+  (:import [java.io ByteArrayInputStream ByteArrayOutputStream OutputStream]
            [java.nio.charset StandardCharsets]))
 
 (defn- wiring-var [name]
@@ -230,6 +230,48 @@
            (get-in outcome [:data :id])))
     (is (some? (:writer-error @(first @records))))
     (is (= 1 (count (filter #{:finalize} @events))))))
+
+(deftest interrupted-input-writer-join-aborts-before-finalization
+  (let [events (atom []) records (atom []) token (Object.)
+        entered (java.util.concurrent.CountDownLatch. 1)
+        released (java.util.concurrent.CountDownLatch. 1)
+        stdin (proxy [OutputStream] []
+                (write
+                  ([_bytes]
+                   (.countDown entered)
+                   (.await released 5 java.util.concurrent.TimeUnit/SECONDS))
+                  ([_bytes _offset _length]
+                   (.countDown entered)
+                   (.await released 5 java.util.concurrent.TimeUnit/SECONDS)))
+                (close [] (.countDown released)))
+        process (proxy [Process] []
+                  (getOutputStream [] stdin)
+                  (getInputStream [] (ByteArrayInputStream. (byte-array 0)))
+                  (getErrorStream [] (ByteArrayInputStream. (byte-array 0)))
+                  (waitFor [] 0)
+                  (exitValue [] 0)
+                  (destroy [] nil)
+                  (destroyForcibly [] nil))
+        result (complete-controller-result "status\n")
+        ports (assoc (ports token events {})
+                     :process-controller
+                     {:start (fn [_ _] process)
+                      :result (fn [_ _ _]
+                                (.await entered 1 java.util.concurrent.TimeUnit/SECONDS)
+                                (.interrupt (Thread/currentThread))
+                                result)
+                      :abort (fn [_] (swap! events conj :abort))})
+        lifecycle (git/lifecycle {:root temporary-root} records ports)
+        outcome (try
+                  (with-bindings {(wiring-var '*producer-git-lifecycle*) lifecycle}
+                    (outcome #((var-get (wiring-var 'run-git-bytes!))
+                               temporary-root ["status"]
+                               (.getBytes "identity\u0000input" "UTF-8"))))
+                  (finally (Thread/interrupted)))]
+    (is (instance? InterruptedException (:error outcome)))
+    (is (some #{:abort} @events))
+    (is (= 1 (count (filter #{:finalize} @events))))
+    (is (.await released 1 java.util.concurrent.TimeUnit/SECONDS))))
 
 (deftest actual-controller-drains-output-while-large-input-is-written
   (let [input (byte-array
