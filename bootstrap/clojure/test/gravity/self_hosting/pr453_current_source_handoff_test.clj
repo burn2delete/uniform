@@ -127,18 +127,82 @@
       (finally
         (java.nio.file.Files/deleteIfExists (.toPath (java.io.File. path)))))))
 
-(deftest v2-current-expression-owner-produces-a-real-binding
-  (let [source-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
-        rule (bootstrap/c-backend-stage2-plan-emitter-source-rule!
+(deftest v2-current-expression-owner-fixed-route-remains-fail-closed
+  (let [rule (bootstrap/c-backend-stage2-plan-emitter-source-rule!
               "<pr453-expression-binding-probe>" :jvm)
-        binding (bootstrap/p15-s23-stage2-compiler-artifact-binding!
-                 (:emitter rule) "<pr453-expression-binding-probe>" :jvm 2)
+        data (failure-data
+              #(bootstrap/p15-s23-stage2-compiler-artifact-binding!
+                (:emitter rule) "<pr453-expression-binding-probe>" :jvm 2))]
+    ;; The historical v2 record is deliberately not rewritten when the
+    ;; current emitter advances.  The public owner has a separate
+    ;; development-current route below.
+    (is (= "P15S23Q002" (:id data)))
+    (is (= :current-expression-source-regular-file (:missing-fact data)))))
+
+(deftest v2-current-expression-owner-derives-development-source
+  (let [owner-var (ns-resolve
+                   'gravity.bootstrap
+                   'p15-s23-stage2-current-expression-development-binding!)
+        source-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        binding (@owner-var "<pr453-development-expression-binding-probe>")
         contract c6-source-contract/current-expression-program]
+    (is (= :complete (:status binding)))
     (is (= 2 (:source-contract-version binding)))
-    (is (= (:source-content-hash contract) (:source-content-hash binding)))
-    (is (= (:semantic-hash contract) (:semantic-hash binding)))
-    (is (= (:function-count contract) (:function-count binding)))
-    (is (= source-path (:source-path binding)))))
+    (is (= :development-current (:source-mode binding)))
+    (is (= source-path (:source-path binding)))
+    (is (not= (:source-content-hash contract)
+              (:source-content-hash binding)))
+    (is (= (:source-content-hash binding)
+           (get-in binding [:plan :source :sha256])))
+    (is (= (get-in binding [:plan :plan-id])
+           (get-in binding [:source-program :plan-id])))
+    (is (= (:functions-semantic-hash binding)
+           (get-in binding [:source-program :functions-semantic-hash])))
+    (is (= (:function-count binding)
+           (get-in binding [:source-program :function-count])))))
+
+(deftest development-expression-owner-rejects-abi-drift
+  (let [owner-var (ns-resolve
+                   'gravity.bootstrap
+                   'p15-s23-stage2-current-expression-development-binding!)
+        plan-var (ns-resolve
+                  'gravity.bootstrap
+                  'p15-s23-stage2-compiler-artifact-plan)
+        original-plan @plan-var
+        data
+        (failure-data
+         #(with-redefs-fn
+            {plan-var
+             (fn [& args]
+               (update-in (apply original-plan args)
+                          [:functions 'p15-s23-compile-expr :arity]
+                          inc))}
+            (fn [] (@owner-var "<pr453-development-expression-abi-probe>"))))]
+    (is (= "P15S23Q002" (:id data)))
+    (is (= :current-expression-function-shape (:missing-fact data)))))
+
+(deftest development-expression-owner-rejects-source-drift
+  (let [owner-var (ns-resolve
+                   'gravity.bootstrap
+                   'p15-s23-stage2-current-expression-development-binding!)
+        snapshot-var (ns-resolve
+                      'gravity.bootstrap
+                      'p15-s23-stage2-current-expression-development-source-snapshot!)
+        original-snapshot @snapshot-var
+        calls (atom 0)
+        data
+        (failure-data
+         #(with-redefs-fn
+            {snapshot-var
+             (fn [path]
+               (let [snapshot (original-snapshot path)]
+                 (if (= 2 (swap! calls inc))
+                   (assoc snapshot :path (str (:path snapshot) ".drift"))
+                   snapshot)))}
+            (fn [] (@owner-var "<pr453-development-expression-drift-probe>"))))]
+    (is (= "P15S23Q002" (:id data)))
+    (is (= :stable-current-expression-source-compilation
+           (:missing-fact data)))))
 
 (deftest v2-c6-public-construction-consumes-current-source-provenance
   (let [path (temp-source-path)
@@ -162,6 +226,8 @@
                (:admission-status report)))
         (is (= :gravity/c6-reader-owner-metadata-projection
                (get-in report [:source-policy-receipt :projection-contract :artifact])))
+        (is (= :development-current
+               (get-in report [:source-policy-receipt :expression-binding :source-mode])))
         (is (= :passed (:status report))))
       (finally
         (java.nio.file.Files/deleteIfExists (.toPath (java.io.File. path)))))))

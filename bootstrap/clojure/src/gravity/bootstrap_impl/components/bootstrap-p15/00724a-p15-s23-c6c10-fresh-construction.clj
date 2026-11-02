@@ -35,8 +35,8 @@
                 (select-keys (get-in reader [:c6-source-snapshot :after])
                              [:source-byte-count :source-content-hash])})))
         expression (when (= 2 version)
-                     (let [rule (c-backend-stage2-plan-emitter-source-rule! source-path :jvm)]
-                       (p15-s23-stage2-compiler-artifact-binding! (:emitter rule) source-path :jvm 2)))
+                     (p15-s23-stage2-current-expression-development-binding!
+                      source-path))
         ingress
         (if (= 2 version)
           (binding [*p15-s23-stage2-compiler-artifact-binding* expression]
