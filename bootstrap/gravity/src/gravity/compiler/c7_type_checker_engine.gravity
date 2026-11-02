@@ -11287,7 +11287,8 @@
       (let [view (sh08-pmk-type-view types (get context :prior-type-table {}))]
         (if (= :accepted (get view :status))
           (sh08-lq-derive core node call edge nodes bindings (get view :types) (get context :association-forms))
-          (sh08-sm-failure "C7-VERIFY" (get view :reason) nil :current-request-inference-types nil)))
+          (sh08-sm-failure "C7-VERIFY" (get view :reason) nil
+            :valid-current-and-prior-inference-type-tables :malformed-inference-type-table)))
       (sh08-lq-derive core node call edge nodes bindings types (get context :association-forms)))))
 
 (defn sh08-sc-binding? [binding module]
