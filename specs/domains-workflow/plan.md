@@ -122,6 +122,67 @@ into a whole-task alias or let one HTTP test discharge the multi-consumer C6
 conjunction. Current parent-criterion and cross-component joins remain explicit
 remaining composition work.
 
+## Math parent composition
+
+Select the existing Open `math` task and one exact resumed criterion in its
+[parent refinement](tasks.md#math-parent-proposed-criteria). The twenty detailed
+operation/conformance clauses, six decision interfaces, two scientific/provider
+integrations, three profile interfaces and seven SAFE9 allocations retain their
+preserved identities and source scope. The original short paragraph remains
+historical. The source-context repair replaces three missing profile-context
+paths and two references to the full Domain context; it changes no other
+criterion text or Open status.
+
+Read all eleven [Math contracts](../../docs/phase-05-mathematical-and-elementary-function-system/README.md),
+[SAFE9](../../docs/phase-02-safety/038-safe9-numeric-safety.md) and the selected
+profile/proof/backend/library contracts for the declared behavior. Resolve
+actual implementation paths through the stage ownership table and selected
+call graph. Domain validators, quoted descriptors and declared provider names
+are inspection leads; they do not implement numeric execution or proof replay.
+
+| Selected boundary | Start inputs and actual products | Required composition and refusal |
+| --- | --- | --- |
+| Numeric family, profile and mode | Explicit source/destination families, profile/target, allocation, conversion and mode policy become checked numeric facts, a concrete support matrix and origin-bearing mode/precision/transition records. Rational admission checks its denominator and normalization effects. | Types consumes the numeric facts through its existing interface. Reject implicit narrowing, hidden rounding/precision loss, undeclared allocation and unsupported families. Preserve generated-code inheritance and require explicit authorized weakening; no whole Types completion is a start prerequisite. |
+| Elementary and EFIR semantics | Typed source operations and the elementary registry become detected subgraphs and an actual EFIR graph with domain/codomain, branch, mode/precision and source/generated/MIR anchors, content identity and a verifier report. | Verify graph links/arity and semantic facts; reject lost anchors, stale assumptions, bare untyped syntax, tree-identity equality and EFIR offered directly as executable backend code. Runtime representation is not forced to be an EML tree. |
+| Proof-dependent equality and transforms | Exact expression/domain/mode claims plus independently checked certificates/traces become admission or refusal decisions for guarded EFIR normalization and floating transformations. | The existing independent-checker task produces the verdict. Parent gates consume it; Opt applies only authorized transforms and preserves or invalidates facts. Reject unproved rewrites, missing domain coverage, self-certified synthesis, unsupported trust and stale branch/rounding/target evidence; restore checks or reprove after invalidation. |
+| Target and provider eligibility | Resolved numeric/floating policy, current proof facts and declared target/provider features become chosen/rejected numeric candidates, legal fallback and reproducibility scope. | Lower owns actual target instruction/layout/provider materialization. It must implement the same selected numeric contract rather than silently substitute a weaker one. Reject hidden fast-math/flush/status changes, unsupported rounding and fastest-but-ineligible candidates before ranking. |
+| Actual numeric execution | The eligible provider, exact version/flags, STD5 API boundary and actual input become numeric results, exceptional/domain diagnostics and execution provenance. | Runtime owns foreign/provider invocation; STD5 owns the callable facade. Compare real domain/branch/NaN/infinity/signed-zero/conversion cases with independent references or accepted error bounds. A manifest, type declaration or available library symbol is insufficient. |
+| Conformance | The fixture/profile/target matrix, independent oracle contract and checked producer artifacts become actual per-fixture results, parsed evidence/replay transcripts and minimized failures. | Run positive, negative, boundary, adversarial, generated-origin and invalidation cases. Reject absent artifacts, wrong diagnostics, stale subjects and unavailable combinations reported as passes. Math results feed actual Release Testing execution and exact component conformance acceptance. |
+
+The apparent proof/checking cycle is resolved at the artifact boundary: parse
+and check the input graph's structure and semantic premises before constructing
+an untrusted candidate or proof claim; independently check that exact claim
+before a verified consumer may use it. A checker cannot assume the conclusion
+it is checking, and candidate construction does not accept transformed EFIR.
+Target-specific candidate generation may use declared interfaces before final
+selection; actual lowered assumptions must match the checked certificate before
+use. These are the existing producer/checker/consumer contracts, not a new
+completion gate or a requirement to finish whole components first.
+
+The older `interface/math/approximation-certificate-check` allocation still
+names the parent as checker. Current implementation uses the already resumed
+`math/independent-proof-and-certificate-checking` authority for that producer,
+while the parent requires its exact verdict. Preserve the older allocation and
+criterion body as source context pending current repartition review; do not
+implement two verifiers or let a parent assertion replace independent checking.
+The same distinction applies to Math numeric policy versus general Types,
+Opt pass execution, Lower materialization and Runtime invocation.
+
+The preserved Release authority contains thirteen additional Open Testing
+records not yet resumed locally. Its language, differential, formal, library
+and performance fixture execution records are required consumers of Math's
+suite/oracle/results. Their immutable source link in the parent is an explicit
+future task route; it is not an implemented local runner. Resume those records
+and reconcile their exact interfaces before claiming complete project testing.
+
+SAFE9 requires checked/proven narrowing and also names wrapping/saturating
+conversion classes; MATH1 requires explicit legal conversion semantics. Retain
+both requirements and their exact mode/profile/proof treatment in the selected
+increment. The inherited qualification is visible for contract/allocation
+review rather than silently selecting a new policy. Independent checked/proven
+numeric work can proceed. All restricted C12/provider/execution transactions
+remain with their existing owners; this reconciliation runs none of them.
+
 ## Schema parent composition
 
 The existing Open `schema` task now resumes its four preserved parent criteria

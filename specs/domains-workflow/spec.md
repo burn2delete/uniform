@@ -63,6 +63,17 @@ stays with Lower; the older parent allocation for explicit binary-layout
 production is preserved as a specific pending repartition issue, not a second
 accepted producer. See the [parent composition plan](plan.md#schema-parent-composition).
 
+The Open `math` parent now resumes twenty operation/conformance criteria, six
+decision interfaces, two scientific/provider integrations, three profile
+interfaces and seven SAFE9 allocations from the same preserved source. Its
+five stale context references are rebound to the actual profile-interface
+record and complete Domain context. Independent checker production stays with
+the existing checker task; the older parent checker allocation is retained for
+current repartition review. Types, Opt, Lower, Runtime, STD5 and future Release
+Testing consumers retain their distinct outcomes. See
+[Math parent composition](plan.md#math-parent-composition); none of these
+criteria establishes execution or source-facet acceptance.
+
 Their source obligations include actual DOM5 vector/native execution with
 proof-gated optimization and differential benchmarks; DOM8 service routes,
 workers, typed API/config, denied IO and redacted observability; DOM10 page/WAL
