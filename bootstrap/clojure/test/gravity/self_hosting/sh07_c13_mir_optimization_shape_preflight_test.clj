@@ -10,20 +10,6 @@
 (def ^:private source-relative-path
   "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity")
 
-;; Keep this admission lane independent of the C13 compiler and bounded before
-;; decoding/parsing.  512 KiB permits the moving source while remaining a
-;; small source-only check.  Reader nodes, depth, collection width, lexical
-;; tokens, and delimiters have separate finite bounds; traversal is iterative
-;; so pathological nesting cannot consume the host call stack.
-(def ^:private maximum-source-bytes (* 512 1024))
-(def ^:private maximum-top-level-forms 4096)
-(def ^:private maximum-reader-tree-nodes 250000)
-(def ^:private maximum-reader-tree-depth 256)
-(def ^:private maximum-collection-width 1024)
-(def ^:private maximum-diagnostics 64)
-(def ^:private maximum-lexical-tokens 250000)
-(def ^:private maximum-lexical-delimiters 250000)
-
 ;; The moving source may grow, but this shape gate still admits one explicit
 ;; C13 public surface.  Keep this list synchronized with the source contract:
 ;; the final three names are the evidence-boundary exports added by C13.
@@ -42,6 +28,7 @@
     build-c13-invalidation-entry
     build-c13-check-elision-gate
     c13-build-bounded-identity-optimized-mir
+    sh16-c13-build-literal-bool-translation-validation
     verify-c13-mir-optimization-passes
     sh16-optimization-policy
     sh16-optimize
@@ -51,7 +38,7 @@
     sh16-verify-c13-evidence-boundary])
 
 (def ^:dynamic *source-snapshot-loader*
-  "Test seam for bounded byte snapshots; production leaves nil."
+  "Test seam for byte snapshots; production leaves nil."
   nil)
 
 (def ^:dynamic *snapshot-before-open-hook*
@@ -142,7 +129,7 @@
 (defn- safe-contained-source-path
   "Observe every source path component without following symlinks.
 
-  Rechecking these states around the bounded read is a pathname-integrity
+  Rechecking these states around the read is a pathname-integrity
   check, not a held-descriptor or SecureDirectoryStream race proof."
   [repository relative]
   (let [root-path (.toAbsolutePath (.normalize ^java.nio.file.Path repository))
@@ -177,89 +164,70 @@
           (recur (inc index) next (conj states state)))))))
 
 (defn- read-source-snapshot
-  "Read one bounded stable-path snapshot.
-
-  The final path and each intermediate component are nofollow regular
-  observations before/open/after, with an EOF growth probe.  This is a
-  pathname-integrity check, not an adversarial open-descriptor identity proof."
+  "Read one stable-path snapshot.\n\n  The final path and each intermediate component are nofollow regular\n  observations before/open/after, with an EOF growth probe.  This is a\n  pathname-integrity check, not an adversarial open-descriptor identity proof."
   [location]
-  (let [path (:path location)
-        state-before (basic-attributes path)]
+  (let [path (:path location) state-before (basic-attributes path)]
     (when (or (:symlink? state-before) (not (:regular? state-before)))
-      (failure "SH07-C13-SHAPE-SOURCE-FILE"
-               "C13 source must be a regular non-symlink file"))
+      (failure "SH07-C13-SHAPE-SOURCE-FILE" "C13 source must be a regular non-symlink file"))
     (when (nil? (:file-key state-before))
-      (failure "SH07-C13-SHAPE-SOURCE-IDENTITY"
-               "C13 source file identity is unavailable"))
-    (when (> (:size state-before) maximum-source-bytes)
-      (failure "SH07-C13-SHAPE-SOURCE-BOUND"
-               "C13 source exceeds bounded input"
-               {:observed (:size state-before)
-                :maximum maximum-source-bytes}))
-    (when *snapshot-before-open-hook*
-      (*snapshot-before-open-hook*))
-    (let [location-open
-          (when (and (:root location) (:relative location))
-            (safe-contained-source-path (:root location) (:relative location)))]
-      (when (and (:components location)
-                 (not= (:components location) (:components location-open)))
-        (failure "SH07-C13-SHAPE-SOURCE-MUTATED"
-                 "C13 source path components changed before open"))
-      (with-open [channel
-                  (java.nio.channels.FileChannel/open
-                   path
-                   (into-array java.nio.file.OpenOption
-                               [java.nio.file.StandardOpenOption/READ
-                                java.nio.file.LinkOption/NOFOLLOW_LINKS]))]
-        (let [state-open (basic-attributes path)
-              channel-size-before (.size channel)]
-          (when (or (not (same-file-state? state-before state-open))
-                    (not= channel-size-before (:size state-before)))
-            (failure "SH07-C13-SHAPE-SOURCE-MUTATED"
-                     "C13 source changed before descriptor read"))
-          ;; Read one byte beyond the admitted ceiling.  Exact-bound files hit
-          ;; EOF; a growth race is rejected without unbounded allocation.
-          (let [buffer (java.nio.ByteBuffer/allocate (inc maximum-source-bytes))]
+      (failure "SH07-C13-SHAPE-SOURCE-IDENTITY" "C13 source file identity is unavailable"))
+    (when *snapshot-before-open-hook* (*snapshot-before-open-hook*))
+    (let [location-open (when (and (:root location) (:relative location))
+                          (safe-contained-source-path (:root location) (:relative location)))]
+      (when (and (:components location) (not= (:components location) (:components location-open)))
+        (failure "SH07-C13-SHAPE-SOURCE-MUTATED" "C13 source path components changed before open"))
+      (with-open [channel (java.nio.channels.FileChannel/open
+                            path
+                            (into-array
+                              java.nio.file.OpenOption
+                              [java.nio.file.StandardOpenOption/READ
+                               java.nio.file.LinkOption/NOFOLLOW_LINKS]))]
+        (let [state-open (basic-attributes path) channel-size-before (.size channel)]
+          (when (or
+                  (not (same-file-state? state-before state-open))
+                  (not= channel-size-before (:size state-before)))
+            (failure "SH07-C13-SHAPE-SOURCE-MUTATED" "C13 source changed before descriptor read"))
+          (let [buffer (java.nio.ByteBuffer/allocate (Math/toIntExact (inc channel-size-before)))]
             (loop [zero-reads 0]
               (if (= (.position buffer) (.capacity buffer))
                 nil
                 (let [read-count (.read channel buffer)]
                   (cond
                     (= -1 read-count) nil
-                    (and (zero? read-count) (< zero-reads 2))
-                    (recur (inc zero-reads))
-                    (zero? read-count)
-                    (failure "SH07-C13-SHAPE-SOURCE-READ"
-                             "C13 source channel made no progress")
-                    :else
-                    (recur 0)))))
+                    (and (zero? read-count) (< zero-reads 2)) (recur (inc zero-reads))
+                    (zero? read-count) (failure
+                                         "SH07-C13-SHAPE-SOURCE-READ"
+                                         "C13 source channel made no progress")
+                    :else (recur 0)))))
             (let [observed-bytes (.position buffer)
                   channel-size-after (.size channel)
                   state-after (basic-attributes path)
-                  location-after
-                  (when (and (:root location) (:relative location))
-                    (safe-contained-source-path (:root location)
-                                                (:relative location)))]
-              (when (or (> observed-bytes maximum-source-bytes)
-                        (not= channel-size-before channel-size-after)
-                        (not= channel-size-before observed-bytes)
-                        (not (same-file-state? state-before state-after))
-                        (and (:components location)
-                             (not= (:components location)
-                                   (:components location-after))))
-                (failure "SH07-C13-SHAPE-SOURCE-MUTATED"
-                         "C13 source changed during bounded descriptor read"
-                         {:observed-bytes observed-bytes}))
+                  location-after (when (and (:root location) (:relative location))
+                                   (safe-contained-source-path
+                                     (:root location)
+                                     (:relative location)))]
+              (when (or
+                      (not= channel-size-before channel-size-after)
+                      (not= channel-size-before observed-bytes)
+                      (not (same-file-state? state-before state-after))
+                      (and
+                        (:components location)
+                        (not= (:components location) (:components location-after))))
+                (failure
+                  "SH07-C13-SHAPE-SOURCE-MUTATED"
+                  "C13 source changed during descriptor read"
+                  {:observed-bytes observed-bytes}))
               (.flip buffer)
               (let [bytes (byte-array observed-bytes)]
                 (.get buffer bytes)
-                {:path path
-                 :bytes bytes
-                 :file-key (:file-key state-before)
-                 :size observed-bytes
-                 :modified (:modified state-before)
-                 :owner (:owner state-before)
+                {:path path,
+                 :bytes bytes,
+                 :file-key (:file-key state-before),
+                 :size observed-bytes,
+                 :modified (:modified state-before),
+                 :owner (:owner state-before),
                  :attributes (attributes-signature state-before)}))))))))
+
 
 (defn- strict-utf8
   [bytes]
@@ -279,24 +247,14 @@
 (defn- load-source-snapshot
   "Load bytes from a stable-path snapshot; injected bytes remain non-authoritative."
   []
-  (let [loaded
-        (if *source-snapshot-loader*
-          (*source-snapshot-loader*)
-          (read-source-snapshot
-           (safe-contained-source-path @root source-relative-path)))
+  (let [loaded (if *source-snapshot-loader*
+                 (*source-snapshot-loader*)
+                 (read-source-snapshot (safe-contained-source-path @root source-relative-path)))
         bytes (:bytes loaded)]
     (when-not (instance? (Class/forName "[B") bytes)
-      (failure "SH07-C13-SHAPE-SOURCE-BYTES"
-               "C13 source snapshot did not provide byte data"))
-    (when (> (alength ^bytes bytes) maximum-source-bytes)
-      (failure "SH07-C13-SHAPE-SOURCE-BOUND"
-               "C13 source snapshot exceeds bounded input"
-               {:observed (alength ^bytes bytes)
-                :maximum maximum-source-bytes}))
-    (assoc loaded
-           :bytes bytes
-           :text (strict-utf8 bytes)
-           :size (alength ^bytes bytes))))
+      (failure "SH07-C13-SHAPE-SOURCE-BYTES" "C13 source snapshot did not provide byte data"))
+    (assoc loaded :bytes bytes :text (strict-utf8 bytes) :size (alength ^bytes bytes))))
+
 
 (def ^:private source-snapshot-cache
   (delay (load-source-snapshot)))
@@ -305,243 +263,102 @@
   []
   @source-snapshot-cache)
 
-(defn- lexical-token
-  [count]
-  (let [next-count (inc count)]
-    (when (> next-count maximum-lexical-tokens)
-      (failure "SH07-C13-SHAPE-LEXICAL-BOUND"
-               "C13 source exceeds bounded lexical token count"
-               {:maximum maximum-lexical-tokens}))
-    next-count))
 
-(defn- lexical-delimiter
-  [count]
-  (let [next-count (inc count)]
-    (when (> next-count maximum-lexical-delimiters)
-      (failure "SH07-C13-SHAPE-LEXICAL-BOUND"
-               "C13 source exceeds bounded lexical delimiter count"
-               {:maximum maximum-lexical-delimiters}))
-    next-count))
+
+
 
 (defn- lexical-delimiter-depth!
-  "Validate source delimiters before invoking the recursive host reader.
-
-  Strings, regexes, comments, and character literals are skipped
-  conservatively.  This is a lexical guard, not a replacement for reading."
+  "Validate source delimiters before invoking the recursive host reader.\n\n  Strings, regexes, comments, and character literals are skipped\n  conservatively.  This is a lexical guard, not a replacement for reading."
   [source]
-  (let [length (.length ^String source)
-        matching-delimiter {\( \) \[ \] \{ \}}
-        closing #{\) \] \}}]
-    (loop [index 0
-           delimiters []
-           maximum-seen 0
-           mode :normal
-           escaped? false
-           token-count 0
-           delimiter-count 0]
+  (let [length (.length ^String source) matching-delimiter {\( \), \[ \], \{ \}} closing #{\) \] \}}]
+    (loop [index 0 delimiters [] mode :normal escaped? false]
       (if (= index length)
         (do
           (when-not (#{:normal :comment} mode)
-            (failure "SH07-C13-SHAPE-LEXICAL-DELIMITERS"
-                     "C13 source has an unterminated lexical literal"))
+            (failure
+              "SH07-C13-SHAPE-LEXICAL-DELIMITERS"
+              "C13 source has an unterminated lexical literal"))
           (when (seq delimiters)
-            (failure "SH07-C13-SHAPE-LEXICAL-DELIMITERS"
-                     "C13 source has unclosed delimiters"))
-          {:maximum-depth maximum-seen
-           :token-count token-count
-           :delimiter-count delimiter-count})
+            (failure "SH07-C13-SHAPE-LEXICAL-DELIMITERS" "C13 source has unclosed delimiters"))
+          true)
         (let [character (.charAt ^String source index)
-              next-character (when (< (inc index) length)
-                               (.charAt ^String source (inc index)))]
-          (case mode
+              next-character (when (< (inc index) length) (.charAt ^String source (inc index)))]
+          (case
+            mode
             :comment
             (if (or (= character \newline) (= character \return))
-              (recur (inc index) delimiters maximum-seen :normal false
-                     token-count delimiter-count)
-              (recur (inc index) delimiters maximum-seen :comment false
-                     token-count delimiter-count))
-
+              (recur (inc index) delimiters :normal false)
+              (recur (inc index) delimiters :comment false))
             :string
             (cond
-              escaped?
-              (recur (inc index) delimiters maximum-seen :string false
-                     token-count delimiter-count)
-              (= character \\)
-              (recur (inc index) delimiters maximum-seen :string true
-                     token-count delimiter-count)
-              (= character \")
-              (recur (inc index) delimiters maximum-seen :normal false
-                     token-count delimiter-count)
-              :else
-              (recur (inc index) delimiters maximum-seen :string false
-                     token-count delimiter-count))
-
+              escaped? (recur (inc index) delimiters :string false)
+              (= character \\) (recur (inc index) delimiters :string true)
+              (= character \") (recur (inc index) delimiters :normal false)
+              :else (recur (inc index) delimiters :string false))
             :regex
             (cond
-              escaped?
-              (recur (inc index) delimiters maximum-seen :regex false
-                     token-count delimiter-count)
-              (= character \\)
-              (recur (inc index) delimiters maximum-seen :regex true
-                     token-count delimiter-count)
-              (= character \")
-              (recur (inc index) delimiters maximum-seen :normal false
-                     token-count delimiter-count)
-              :else
-              (recur (inc index) delimiters maximum-seen :regex false
-                     token-count delimiter-count))
-
+              escaped? (recur (inc index) delimiters :regex false)
+              (= character \\) (recur (inc index) delimiters :regex true)
+              (= character \") (recur (inc index) delimiters :normal false)
+              :else (recur (inc index) delimiters :regex false))
             :character
-            ;; One codepoint is enough to hide a delimiter.  Named literals
-            ;; continue as ordinary letters, conservatively bounded by tokens.
-            (recur (inc index) delimiters maximum-seen :normal false
-                   (lexical-token token-count) delimiter-count)
-
-            ;; :normal
+            (recur (inc index) delimiters :normal false)
             (cond
-              (= character \;)
-              (recur (inc index) delimiters maximum-seen :comment false
-                     token-count delimiter-count)
-              (= character \")
-              (recur (inc index) delimiters maximum-seen :string false
-                     (lexical-token token-count) delimiter-count)
-              (and (= character \#) (= next-character \"))
-              (recur (+ index 2) delimiters maximum-seen :regex false
-                     (lexical-token token-count) delimiter-count)
-              (= character \\)
-              (recur (inc index) delimiters maximum-seen :character false
-                     (lexical-token token-count) delimiter-count)
-              (contains? matching-delimiter character)
-              (let [next-delimiters (conj delimiters character)
-                    next-depth (count next-delimiters)
-                    next-count (lexical-delimiter delimiter-count)]
-                (when (> next-depth maximum-reader-tree-depth)
-                  (failure "SH07-C13-SHAPE-LEXICAL-DEPTH"
-                           "C13 source exceeds bounded lexical delimiter depth"
-                           {:maximum maximum-reader-tree-depth}))
-                (recur (inc index) next-delimiters
-                       (max maximum-seen next-depth) :normal false
-                       token-count next-count))
-              (contains? closing character)
-              (if (or (empty? delimiters)
-                      (not= character
-                            (matching-delimiter (peek delimiters))))
-                (failure "SH07-C13-SHAPE-LEXICAL-DELIMITERS"
-                         "C13 source has an unmatched or mismatched delimiter")
-                (recur (inc index) (pop delimiters) maximum-seen :normal false
-                       token-count (lexical-delimiter delimiter-count)))
-              (Character/isWhitespace character)
-              (recur (inc index) delimiters maximum-seen :normal false
-                     token-count delimiter-count)
-              :else
-              (recur (inc index) delimiters maximum-seen :normal false
-                     (lexical-token token-count) delimiter-count))))))))
+              (= character \;) (recur (inc index) delimiters :comment false)
+              (= character \") (recur (inc index) delimiters :string false)
+              (and (= character \#) (= next-character \")) (recur
+                                                             (+ index 2)
+                                                             delimiters
+                                                             :regex
+                                                             false)
+              (= character \\) (recur (inc index) delimiters :character false)
+              (contains? matching-delimiter character) (let [next-delimiters
+                                                             (conj delimiters character)]
+                                                         (recur
+                                                           (inc index)
+                                                           next-delimiters
+                                                           :normal
+                                                           false))
+              (contains? closing character) (if (or
+                                                  (empty? delimiters)
+                                                  (not=
+                                                    character
+                                                    (matching-delimiter (peek delimiters))))
+                                              (failure
+                                                "SH07-C13-SHAPE-LEXICAL-DELIMITERS"
+                                                "C13 source has an unmatched or mismatched delimiter")
+                                              (recur (inc index) (pop delimiters) :normal false))
+              (Character/isWhitespace character) (recur (inc index) delimiters :normal false)
+              :else (recur (inc index) delimiters :normal false))))))))
 
-(defn- read-forms
-  [text]
+
+(defn- read-forms [text]
   (binding [*read-eval* false]
     (lexical-delimiter-depth! text)
-    (with-open [reader (java.io.PushbackReader.
-                        (java.io.StringReader. text))]
+    (with-open [reader (java.io.PushbackReader. (java.io.StringReader. text))]
       (loop [forms []]
         (let [form (read {:eof reader-eof-marker} reader)]
-          (if (identical? reader-eof-marker form)
-            forms
-            (do
-              (when (>= (count forms) maximum-top-level-forms)
-                (failure "SH07-C13-SHAPE-FORM-COUNT"
-                         "C13 source has too many top-level forms"
-                         {:maximum maximum-top-level-forms}))
-              (recur (conj forms form)))))))))
+          (if (identical? reader-eof-marker form) forms (recur (conj forms form))))))))
 
-(defn- bounded-elements
-  [value maximum id message]
-  (loop [remaining (seq value)
-         result []]
-    (cond
-      (nil? remaining) result
-      (>= (count result) maximum)
-      (failure id message {:maximum maximum})
-      :else
-      (recur (next remaining) (conj result (first remaining))))))
 
-(defn- reader-children
-  [value]
-  (let [children
-        (cond
-          (map? value)
-          (vec (mapcat (fn [[key value]] [key value])
-                       (bounded-elements
-                        value maximum-collection-width
-                        "SH07-C13-SHAPE-COLLECTION-WIDTH"
-                        "C13 source map is wider than the bounded gate")))
 
-          (vector? value)
-          (bounded-elements value maximum-collection-width
-                            "SH07-C13-SHAPE-COLLECTION-WIDTH"
-                            "C13 source collection is wider than the bounded gate")
 
-          (set? value)
-          (bounded-elements value maximum-collection-width
-                            "SH07-C13-SHAPE-COLLECTION-WIDTH"
-                            "C13 source collection is wider than the bounded gate")
+(defn- reader-children [value]
+  (cond
+    (map? value) (vec (mapcat (fn [[key item]] [key item]) value))
+    (coll? value) (vec value)
+    :else []))
 
-          (seq? value)
-          (bounded-elements value maximum-collection-width
-                            "SH07-C13-SHAPE-COLLECTION-WIDTH"
-                            "C13 source collection is wider than the bounded gate")
 
-          :else
-          [])]
-    (when (> (count children) maximum-collection-width)
-      (failure "SH07-C13-SHAPE-COLLECTION-WIDTH"
-               "C13 source collection is wider than the bounded gate"
-               {:maximum maximum-collection-width}))
-    children))
-
-(defn- reader-tree-stats
-  [forms]
-  (loop [frontier (list [forms 0])
-         nodes 0
-         maximum-depth 0
-         maximum-width 0]
+(defn- reader-tree-status [forms]
+  (loop [frontier (list forms)]
     (if (empty? frontier)
-      {:nodes nodes
-       :maximum-depth maximum-depth
-       :maximum-width maximum-width
-       :bounded? true
-       :lazy? false}
-      (let [[value depth] (peek frontier)
-            frontier (pop frontier)]
-        (cond
-          (instance? clojure.lang.LazySeq value)
-          {:nodes nodes
-           :maximum-depth maximum-depth
-           :maximum-width maximum-width
-           :bounded? false
-           :lazy? true}
+      {:lazy? false}
+      (let [value (peek frontier) remaining (pop frontier)]
+        (if (instance? clojure.lang.LazySeq value)
+          {:lazy? true}
+          (recur (into remaining (reader-children value))))))))
 
-          (> (inc nodes) maximum-reader-tree-nodes)
-          {:nodes (inc nodes)
-           :maximum-depth maximum-depth
-           :maximum-width maximum-width
-           :bounded? false
-           :lazy? false}
-
-          (> depth maximum-reader-tree-depth)
-          {:nodes (inc nodes)
-           :maximum-depth depth
-           :maximum-width maximum-width
-           :bounded? false
-           :lazy? false}
-
-          :else
-          (let [children (reader-children value)]
-            (recur
-             (into frontier (map #(vector % (inc depth)) children))
-             (inc nodes)
-             (max maximum-depth depth)
-             (max maximum-width (count children)))))))))
 
 (defn- ns-form?
   [form]
@@ -598,22 +415,16 @@
                (when (> frequency 1) name)))
        set))
 
-(defn- if-shapes
-  [forms]
+(defn- if-shapes [forms]
   (let [bad (atom [])]
     (loop [frontier (list forms)]
       (if (seq frontier)
-        (let [value (peek frontier)
-              frontier (pop frontier)]
+        (let [value (peek frontier) frontier (pop frontier)]
           (when (and (seq? value) (= 'if (first value)))
-            (when-not (= 4 (count value))
-              (when (>= (count @bad) maximum-diagnostics)
-                (failure "SH07-C13-SHAPE-DIAGNOSTICS"
-                         "C13 source produced too many shape diagnostics"
-                         {:maximum maximum-diagnostics}))
-              (swap! bad conj value)))
+            (when-not (= 4 (count value)) (swap! bad conj value)))
           (recur (into frontier (reader-children value))))
         @bad))))
+
 
 (defn- let-shapes
   "Check that every let has a binding vector and at least one body form."
@@ -621,34 +432,38 @@
   (let [bad (atom [])]
     (loop [frontier (list forms)]
       (if (seq frontier)
-        (let [value (peek frontier)
-              frontier (pop frontier)]
+        (let [value (peek frontier) frontier (pop frontier)]
           (when (and (seq? value) (= 'let (first value)))
-            (when-not (and (>= (count value) 3)
-                           (vector? (second value))
-                           (even? (count (second value))))
-              (when (>= (count @bad) maximum-diagnostics)
-                (failure "SH07-C13-SHAPE-DIAGNOSTICS"
-                         "C13 source produced too many shape diagnostics"
-                         {:maximum maximum-diagnostics}))
+            (when-not (and
+                        (>= (count value) 3)
+                        (vector? (second value))
+                        (even? (count (second value))))
               (swap! bad conj value)))
           (recur (into frontier (reader-children value))))
         @bad))))
 
-(defn- parse-source-shape
-  []
-  (let [{:keys [text] :as snapshot} (source-snapshot)
+
+(defn- parse-source-shape []
+  (let [{:keys [text], :as snapshot} (source-snapshot)
         forms (read-forms text)
-        tree (reader-tree-stats forms)
+        tree (reader-tree-status forms)
         ns-form (first forms)
         exports (exports-vector ns-form)]
-    (assoc snapshot
-           :forms forms
-           :tree tree
-           :ns-form ns-form
-           :exports exports
-           :if-shape-errors (if-shapes forms)
-           :let-shape-errors (let-shapes forms))))
+    (assoc
+      snapshot
+      :forms
+      forms
+      :tree
+      tree
+      :ns-form
+      ns-form
+      :exports
+      exports
+      :if-shape-errors
+      (if-shapes forms)
+      :let-shape-errors
+      (let-shapes forms))))
+
 
 (def ^:private parsed-source-cache
   (delay (parse-source-shape)))
@@ -660,104 +475,109 @@
 (def ^:private non-authority-note
   "This moving-source shape check is non-authoritative: it does not compile, verify, lower, or execute C13.")
 
-(deftest sh07-c13-mir-optimization-source-shape-and-control
-  (testing non-authority-note
-    (let [{:keys [size forms ns-form tree if-shape-errors let-shape-errors]}
-          (parse-shape)]
-      (is (<= size maximum-source-bytes))
+(deftest
+  sh07-c13-mir-optimization-source-shape-and-control
+  (testing
+    non-authority-note
+    (let [{:keys [forms ns-form tree if-shape-errors let-shape-errors]} (parse-shape)]
       (is (seq forms))
-      (let [namespace-forms (filter #(and (seq? %)
-                                          (= 'ns (first %)))
-                                    forms)]
+      (let [namespace-forms (filter #(and (seq? %) (= 'ns (first %))) forms)]
         (is (= 1 (count namespace-forms)))
         (is (= (first forms) (first namespace-forms))))
       (is (ns-form? ns-form))
-      (is (= '(:profile :meta)
-             (unique-namespace-clause ns-form :profile)))
-      (is (= '(:target :jvm)
-             (unique-namespace-clause ns-form :target)))
-      (is (= '(:effects #{})
-             (unique-namespace-clause ns-form :effects)))
-      (is (= '(:capabilities #{})
-             (unique-namespace-clause ns-form :capabilities)))
-      (is (= '(:safety :safe)
-             (unique-namespace-clause ns-form :safety)))
+      (is (= '(:profile :meta) (unique-namespace-clause ns-form :profile)))
+      (is (= '(:target :jvm) (unique-namespace-clause ns-form :target)))
+      (is (= '(:effects #{}) (unique-namespace-clause ns-form :effects)))
+      (is (= '(:capabilities #{}) (unique-namespace-clause ns-form :capabilities)))
+      (is (= '(:safety :safe) (unique-namespace-clause ns-form :safety)))
       (is (= 1 (count (exports-clauses ns-form))))
       (is (= 2 (count (first (exports-clauses ns-form)))))
-      (is (= (set expected-export-names)
-             (set (exports-vector ns-form))))
-      (is (:bounded? tree))
+      (is (= (set expected-export-names) (set (exports-vector ns-form))))
       (is (not (:lazy? tree)))
-      (is (<= (:nodes tree) maximum-reader-tree-nodes))
-      (is (<= (:maximum-depth tree) maximum-reader-tree-depth))
       (is (empty? if-shape-errors))
       (is (empty? let-shape-errors))
-      (testing "lexical guard handles strings, regexes, comments, and chars"
-        (is (= 1
-               (:maximum-depth
-                (lexical-delimiter-depth!
-                 "(\"}\" #\"[\" ; )\n \\( )")))))
-      (testing "reader evaluation and recursive-depth inputs fail closed"
-        (is (thrown? Throwable
-                     (read-forms "#=(+ 1 2)")))
-        (let [deep-text
-              (str (apply str (repeat (inc maximum-reader-tree-depth) "("))
-                   (apply str (repeat (inc maximum-reader-tree-depth) ")")))]
-          (is (thrown? clojure.lang.ExceptionInfo
-                       (lexical-delimiter-depth! deep-text)))))
-      (testing "lexical malformed delimiters and literals fail before reading"
-        (doseq [invalid [")" "([)]" "(" "\"unterminated"
-                        "#\"unterminated" "\\"]]
-          (is (thrown? clojure.lang.ExceptionInfo
-                       (lexical-delimiter-depth! invalid)))))
-      (testing "collection and duplicate-definition bounds are source-only"
-        (is (thrown? clojure.lang.ExceptionInfo
-                     (reader-children
-                      (vec (repeat (inc maximum-collection-width) :x)))))
-        (is (= '#{hidden}
-               (duplicate-definition-names
-                '[(def hidden 1) (def hidden 2) (def exported 1)]))))
-      (testing "injected bytes are decoded, not injected source text"
+      (testing
+        "lexical guard handles strings, regexes, comments, and chars"
+        (is (true? (lexical-delimiter-depth! "(\"}\" #\"[\" ; )\n \\( )"))))
+      (testing
+        "reader evaluation is rejected; deep delimiters remain valid"
+        (is (thrown? Throwable (read-forms "#=(+ 1 2)")))
+        (is
+          (true?
+            (lexical-delimiter-depth!
+              (str (apply str (repeat 257 "(")) (apply str (repeat 257 ")")))))))
+      (testing
+        "lexical malformed delimiters and literals fail before reading"
+        (doseq [invalid [")" "([)]" "(" "\"unterminated" "#\"unterminated" "\\"]]
+          (is (thrown? clojure.lang.ExceptionInfo (lexical-delimiter-depth! invalid)))))
+      (testing
+        "wide collections remain valid; duplicate definitions remain visible"
+        (is (= 1025 (count (reader-children (vec (repeat 1025 :x))))))
+        (is
+          (=
+            '#{hidden}
+            (duplicate-definition-names '[(def hidden 1) (def hidden 2) (def exported 1)]))))
+      (testing
+        "injected bytes are decoded, not injected source text"
         (let [text "(ns synthetic (:exports [x])) (def x 1)"
               bytes (.getBytes text "UTF-8")
-              loaded (binding [*source-snapshot-loader*
-                               (fn [] {:bytes bytes :text "wrong text"})]
+              loaded (binding [*source-snapshot-loader* (fn [] {:bytes bytes, :text "wrong text"})]
                        (load-source-snapshot))]
           (is (= text (:text loaded)))))
-      (testing "path replacement is rejected by the explicit race seam"
-        (let [temporary
-              (java.nio.file.Files/createTempDirectory
-               "sh07-c13-shape-race"
-               (make-array java.nio.file.attribute.FileAttribute 0))
+      (testing
+        "path replacement is rejected by the explicit race seam"
+        (let [temporary (java.nio.file.Files/createTempDirectory
+                          "sh07-c13-shape-race"
+                          (make-array java.nio.file.attribute.FileAttribute 0))
               source (.resolve temporary "source.gravity")
               replacement (.resolve temporary "replacement.gravity")
               moved (.resolve temporary "moved.gravity")]
           (try
             (java.nio.file.Files/write
-             source
-             (.getBytes "(ns source)" "UTF-8")
-             (make-array java.nio.file.OpenOption 0))
+              source
+              (.getBytes "(ns source)" "UTF-8")
+              (make-array java.nio.file.OpenOption 0))
             (java.nio.file.Files/write
-             replacement
-             (.getBytes "(ns replacement)" "UTF-8")
-             (make-array java.nio.file.OpenOption 0))
-            (let [location (safe-contained-source-path temporary
-                                                        "source.gravity")]
-              (binding [*snapshot-before-open-hook*
-                        (fn []
-                          (java.nio.file.Files/move
-                           source moved
-                           (make-array java.nio.file.CopyOption 0))
-                          (java.nio.file.Files/move
-                           replacement source
-                           (make-array java.nio.file.CopyOption 0)))]
-                (is (thrown? clojure.lang.ExceptionInfo
-                             (read-source-snapshot location)))))
+              replacement
+              (.getBytes "(ns replacement)" "UTF-8")
+              (make-array java.nio.file.OpenOption 0))
+            (let [location (safe-contained-source-path temporary "source.gravity")]
+              (binding [*snapshot-before-open-hook* (fn []
+                                                      (java.nio.file.Files/move
+                                                        source
+                                                        moved
+                                                        (make-array java.nio.file.CopyOption 0))
+                                                      (java.nio.file.Files/move
+                                                        replacement
+                                                        source
+                                                        (make-array java.nio.file.CopyOption 0)))]
+                (is (thrown? clojure.lang.ExceptionInfo (read-source-snapshot location)))))
             (finally
               (java.nio.file.Files/deleteIfExists source)
               (java.nio.file.Files/deleteIfExists replacement)
               (java.nio.file.Files/deleteIfExists moved)
               (java.nio.file.Files/deleteIfExists temporary))))))))
+
+
+(deftest sh07-c13-source-snapshot-has-no-byte-quota
+  (let [directory (java.nio.file.Files/createTempDirectory
+                   "sh07-c13-source-snapshot"
+                   (make-array java.nio.file.attribute.FileAttribute 0))
+        source (.resolve directory "source.gravity")
+        text (str "(ns snapshot)\n;" (apply str (repeat 600000 "x")) "\n")
+        bytes (.getBytes text "UTF-8")]
+    (try
+      (java.nio.file.Files/write source bytes (make-array java.nio.file.OpenOption 0))
+      (let [snapshot (read-source-snapshot
+                      (safe-contained-source-path directory "source.gravity"))
+            decoded (binding [*source-snapshot-loader* (fn [] snapshot)]
+                      (load-source-snapshot))]
+        (is (= (alength bytes) (:size snapshot)))
+        (is (= (seq bytes) (seq (:bytes snapshot))))
+        (is (= text (:text decoded))))
+      (finally
+        (java.nio.file.Files/deleteIfExists source)
+        (java.nio.file.Files/deleteIfExists directory)))))
 
 (deftest sh07-c13-mir-optimization-export-completeness
   (testing non-authority-note

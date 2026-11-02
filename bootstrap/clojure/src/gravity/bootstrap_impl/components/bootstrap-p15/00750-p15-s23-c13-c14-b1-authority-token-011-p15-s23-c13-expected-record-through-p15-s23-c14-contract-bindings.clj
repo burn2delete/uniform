@@ -35,7 +35,6 @@
     :effect-ordering-policy :unchanged
     :safety-policy :unchanged
     :domain-policy :unchanged
-    :maximum-operation-count p15-s23-b3-llvm-max-bridge-operations
     :emits [:decision-record :invalidation-ledger
             :residual-check-report :verifier-replay]}
    :decision-record
@@ -91,7 +90,6 @@
     :fact-bindings (:fact-bindings evidence)
     :operation-order (:operation-order evidence)
     :operation-count (count (:operation-order evidence))
-    :maximum-operation-count p15-s23-b3-llvm-max-bridge-operations
     :effect-order-graph (:effect-order-graph evidence)
     :unchanged? true}
    :target-instruction-selection :forbidden
@@ -179,7 +177,6 @@
 (defn p15-s23-c14-target-policy
   []
   {:scope :bounded-pure-scalar-forwarding-do-let-if-integer-comparisons
-   :maximum-operation-count p15-s23-b3-llvm-max-bridge-operations
    :whole-c14? false :whole-b1? false :whole-b3? false
    :public? false :release? false :self-hosted? false})
 

@@ -1,0 +1,77 @@
+(ns gravity.compiler.c14-literal-bool-contextual-lowering
+  (:profile :meta)
+  (:target :jvm)
+  (:requires [gravity.compiler.c11-mir-specification :as c11]
+             [gravity.compiler.c13-mir-optimization-passes :as c13])
+  (:exports [c14-build-literal-bool-contextual-lowering])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+; Additive contextual input boundary. This never emits or admits a backend
+; artifact. Supplied passed DATA is insufficient: C11 executes independently
+; on the actual Core/before/after tuple, then C13 rederives the complete record.
+(defn c14-literal-bool-boundary-result [diagnostic reason input-status before]
+  (let [source (get (get (get before :functions) 'main) :source)]
+    {:artifact :gravity/sh17-target-lowering-result :schema-version 1
+     :status :rejected :input-status input-status
+     :diagnostics [{:diagnostic-id diagnostic :stage :target-lowering :reason reason
+                    :input-artifact-id (get before :source-core)
+                    :mir-operation-or-domain-anchor
+                    (if (= before nil) :not-applicable :original-zero-arity-literal-bool-diamond)
+                    :checked-core-artifact-id (get before :source-core)
+                    :mir-module-id (get before :module-id)
+                    :profile (get before :profile) :target-request (get before :target-request)
+                    :target (get before :target-request) :backend :gravity.backend/jvm
+                    :missing-feature reason
+                    :proof-expected :fresh-original-and-specialized-c11-verification
+                    :provider-expected (if (= diagnostic "C14-INPUT")
+                                         :not-applicable :jvm-b5-target-lowering-contract)
+                    :source-span (get source :span) :source-origin-id (get source :origin-id)
+                    :origin-chain (if (= before nil) [] (get source :generated-origin))
+                    :fallback-status :none
+                    :remediation (if (= diagnostic "C14-INPUT")
+                                   :provide-fresh-bound-literal-bool-context
+                                   :provide-verified-jvm-abi-runtime-and-provider-contract)}]
+     :pending [:public-optimized-mir-admission :jvm-b5-target-lowering-contract]
+     :clojure-seed-boundary? true :self-hosted? false
+     :nonclaims [:generic-mir-admission :backend-admission :artifact-emission
+                 :optimized-execution :migration :release :self-hosted?]}))
+
+(defn c14-build-literal-bool-contextual-lowering [context]
+  (let [bounded (c11/sh12-authenticated-c10-mir-carrier-preflight context)]
+    (if (= :accepted (get bounded :status))
+      (if (map? context)
+        (if (= #{:checked-core :before-mir :c13-result :target-request} (set (keys context)))
+          (let [core (get context :checked-core) before (get context :before-mir)
+                result (get context :c13-result)]
+            (if (map? result)
+              (let [after (get result :candidate-mir)
+                    post (c11/sh12-verify-literal-bool-branch-specialization core before after)]
+                (if (= :passed (get post :status))
+                  (let [original (c11/sh12-verify-branch-join-mir core before)
+                        expected (c13/sh16-c13-build-literal-bool-translation-validation
+                                   before {:verification-class :original-c11-reconstruction
+                                           :reconstructed-mir before :reconstruction-report original}
+                                   after post)]
+                    (if (= :passed (get original :status))
+                      (if (= :passed (get expected :translation-validation-status))
+                        (if (= expected result)
+                          (if (= :jvm (get context :target-request)
+                                      (get core :source-target)
+                                      (get (get core :target-request-metadata) :requested-target)
+                                      (get before :source-target) (get before :target-request)
+                                      (get after :source-target) (get after :target-request))
+                            (c14-literal-bool-boundary-result
+                             "C14-UNSUPPORTED" :jvm-b5-target-lowering-contract :scoped-valid before)
+                            (c14-literal-bool-boundary-result "C14-INPUT" :substituted-target-request :rejected before))
+                          (c14-literal-bool-boundary-result "C14-INPUT" :stale-c13-result :rejected before))
+                        (c14-literal-bool-boundary-result "C14-INPUT" :invalid-c13-specialization :rejected before))
+                      (c14-literal-bool-boundary-result "C14-INPUT" :invalid-original-mir :rejected nil)))
+                  (c14-literal-bool-boundary-result
+                   "C14-INPUT" :invalid-specialization-relation :rejected
+                   (if (= :passed (get (c11/sh12-verify-branch-join-mir core before) :status)) before nil))))
+              (c14-literal-bool-boundary-result "C14-INPUT" :invalid-c13-result :rejected nil)))
+          (c14-literal-bool-boundary-result "C14-INPUT" :invalid-context-fields :rejected nil))
+        (c14-literal-bool-boundary-result "C14-INPUT" :invalid-context :rejected nil))
+      (c14-literal-bool-boundary-result "C14-INPUT" :context-structural-bound :rejected nil))))

@@ -27,9 +27,10 @@
   "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 122488)
+(def ^:private expected-source-byte-count
+  121694)
 (def ^:private expected-source-revision-id
-  "sha256:63811e04d496ca3e0d49f6d4effac2ff892b7510c02708ff14a1ece014d53217")
+  "sha256:5760a2a2b0bfa787840660c4d2845284e6a1c4e6c1ad1390dc2905f7bb36b64d")
 (def ^:private expected-plan-semantic-id
   "sha256:2c0420eb7695ec26174a1a4f469e3c17412f76211ceb53f9ac8de796381c9886")
 (def ^:private expected-functions-semantic-id
@@ -58,24 +59,23 @@
      b2-proof-to-c-assumption-record b2-build-accepted-hosted-c17
      b2-build-bounded-hosted-c17})
 (def ^:private expected-contract-value-hashes
-  {'b2-c-backend-contract
-   "sha256:35e6263e91b47d58cccae0bd094111ab14bd58c0d799601ea2f04795b4cdc8e0"
-   'b2-dialect-contract
-   "sha256:570ce6798bfbdc0bd80338fbeafe5016e6fb54c056b059d6d8ac399cc0e98c9e"
-   'b2-safe-c-subset-contract
-   "sha256:e0b3e4ce9b6cc9209f28e658450c91c0c2a2fbc2c8334746df18f13f19d11d91"
-   'b2-abi-layout-contract
-   "sha256:4e8f342760f9fa2a11cac23c4671fa920ba9d1f0e50c83f7b2bfd1cd89026810"
-   'b2-pointer-memory-contract
-   "sha256:1df2c56879861183cc15b5bcfc26df8890eb25389ee466ded8394bca404e9e74"
-   'b2-numeric-lowering-contract
-   "sha256:51f38ab7af7ea71ff683cef57c8189df6185e97971cdc8306710ce2608c67a7f"
-   'b2-runtime-helper-contract
-   "sha256:a232c341f261d14db25b7fe40f139be038d87d1f6ffb7e18e9f254654a1f32dd"
-   'b2-artifact-manifest-contract
-   "sha256:287aba3278b164d74f0a4aff629fb299fdfd8d62d22130fb761f929063946c9d"
-   'b2-diagnostic-catalog
-   "sha256:0e472af4d19bb8b947c921019506f310599d5f1bc381364953f54ba36ec5f126"})
+  '{b2-abi-layout-contract
+   "sha256:4e8f342760f9fa2a11cac23c4671fa920ba9d1f0e50c83f7b2bfd1cd89026810",
+   b2-artifact-manifest-contract
+   "sha256:287aba3278b164d74f0a4aff629fb299fdfd8d62d22130fb761f929063946c9d",
+   b2-c-backend-contract
+   "sha256:35e6263e91b47d58cccae0bd094111ab14bd58c0d799601ea2f04795b4cdc8e0",
+   b2-diagnostic-catalog
+   "sha256:0e472af4d19bb8b947c921019506f310599d5f1bc381364953f54ba36ec5f126",
+   b2-dialect-contract "sha256:570ce6798bfbdc0bd80338fbeafe5016e6fb54c056b059d6d8ac399cc0e98c9e",
+   b2-numeric-lowering-contract
+   "sha256:51f38ab7af7ea71ff683cef57c8189df6185e97971cdc8306710ce2608c67a7f",
+   b2-pointer-memory-contract
+   "sha256:1df2c56879861183cc15b5bcfc26df8890eb25389ee466ded8394bca404e9e74",
+   b2-runtime-helper-contract
+   "sha256:a232c341f261d14db25b7fe40f139be038d87d1f6ffb7e18e9f254654a1f32dd",
+   b2-safe-c-subset-contract
+   "sha256:e0b3e4ce9b6cc9209f28e658450c91c0c2a2fbc2c8334746df18f13f19d11d91"})
 (def ^:private expected-diagnostic-ids
   ["B2-DIALECT" "B2-UB" "B2-ABI" "B2-POINTER" "B2-NUMERIC"
    "B2-RUNTIME" "B2-FFI" "B2-MMIO" "B2-MANIFEST"])
@@ -254,15 +254,17 @@
     (is (= expected-diagnostic-ids
            (mapv :id (get-in (nth (get by-name 'b2-diagnostic-catalog) 2)
                              [:diagnostics]))))
-    (is (= 441 (count if-calls)))
-    (is (= {4 441} (frequencies (map count if-calls))))
+    (is (= 433 (count if-calls)))
+    (is (= {4 433} (frequencies (map count if-calls))))
     (is (= expected-source-byte-count
            (alength (source-bytes (path b2-relative-path)))))
     (is (= expected-source-revision-id
            (sha256-id (source-bytes (path b2-relative-path)))))
-    (is (= expected-source-byte-count
+    ;; Authenticated bridge pins remain historical and fail closed. Current
+    ;; static source coverage above does not renew source admission.
+    (is (= 122488
            bootstrap/p15-s23-b2-c17-source-byte-count))
-    (is (= expected-source-revision-id
+    (is (= "sha256:63811e04d496ca3e0d49f6d4effac2ff892b7510c02708ff14a1ece014d53217"
            bootstrap/p15-s23-b2-c17-expected-source-content-hash))
     (is (= expected-plan-semantic-id
            bootstrap/p15-s23-b2-c17-expected-plan-semantic-hash))
@@ -339,6 +341,40 @@
     (is (= "B1-INPUT" (:diagnostic rejected)))
     (is (= :exact-sealed-b1-c-packet (:missing-fact rejected)))
     (is (nil? (:operation-id rejected)))))
+
+(deftest sh07-b38-b2-identifiers-forwarding-and-origin-chains-have-no-size-quota
+  (let [id (apply str (repeat 1025 "x"))
+        function {:artifact :gravity/mir-function :fn-id id :name 'main :params []
+                  :returns :gravity/integer :latent-effects #{} :capabilities #{}
+                  :blocks {id {}} :entry id :source {} :facts {} :provenance {}}
+        block {:artifact :gravity/mir-block :block-id id :arguments [] :instructions []
+               :terminator {} :predecessors [] :successors [] :dominators []
+               :data-flow {:module-data-flow-graph-reference true} :source {}}
+        position {:line 1 :column 1 :column-unit :unicode-scalar :char 0 :byte 0}
+        origin {:input-origin-id zero-id :kind :compiler-generated
+                :producer :gravity/c6-c10-checked-core-pipeline :role :test}
+        source {:span {:start position :end position :byte-start 0 :byte-end 0 :file zero-id}
+                :origin-id zero-id :generated? true :generated-origin (vec (repeat 17 origin))
+                :enclosing-syntax-origin-id zero-id}
+        facts (zipmap [:type-fact-id :effect-fact-id :capability-fact-id :capability-proof-ids
+                       :ownership-fact-id :safety-outcome-id :safety-proof-id :profile-target-fact-id
+                       :runtime-check-id :proof-certificate-ids :failure-behavior :source-origin-id]
+                      (repeat nil))
+        operation {:artifact :gravity/mir-operation :op-id id :result id :opcode :constant
+                   :source-operation :literal :operands [] :result-kind :value
+                   :constant-payload {:present? true :value 1} :type :gravity/integer
+                   :effects #{} :capabilities #{} :ordering :none :source source :profile :hosted
+                   :facts facts :domain-anchor nil :block-id id :verifier-status :passed}]
+    (is (true? (invoke 'b2-function-valid? [function])))
+    (is (true? (invoke 'b2-block-valid? [block id])))
+    (is (true? (invoke 'b2-operation-envelope-valid? [operation])))
+    (is (true? (invoke 'b2-forwarded-arity-valid? [:sequence (vec (repeat 129 id))])))
+    (is (false? (invoke 'b2-forwarded-arity-valid? [:sequence []])))
+    (is (false? (invoke 'b2-forwarded-arity-valid? [:local [id id]])))
+    (is (false? (invoke 'b2-function-valid? [(assoc function :entry "missing")])) )
+    (is (false? (invoke 'b2-operation-envelope-valid?
+                       [(assoc operation :source (assoc-in source [:generated-origin 16 :producer] :unknown))])))
+    (is (false? (invoke 'b2-operation-envelope-valid? [(assoc operation :op-id 1)])))))
 
 (deftest sh07-b38-b2-claim-boundary-remains-explicit
   (let [definitions (filter #(and (seq? %) (#{'def 'defn} (first %)))

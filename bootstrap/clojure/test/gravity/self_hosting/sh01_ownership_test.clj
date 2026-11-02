@@ -169,7 +169,7 @@
       (is (= :master-coordinator (:integration-owner record)))
       (is (= expected-slice-ids slice-ids))
       (is (= actual-gravity-modules declared-gravity-modules))
-      (is (= 70 (count actual-gravity-modules)))
+      (is (= 71 (count actual-gravity-modules)))
       (is (= (set/difference (stage0-test-paths) support-paths auxiliary-paths)
              actual-stage0-tests))
       (is (= all-direct-stage0-tests
@@ -177,7 +177,7 @@
       (is (empty? (set/intersection actual-stage0-tests support-paths)))
       (is (= (+ 110 (count direct-helper-paths)) (count actual-stage0-paths)))
       (is (= actual-stage0-paths declared-stage0-paths))
-      (is (= (+ 205 (count helper-paths)) (count module-owners)))
+      (is (= (+ 206 (count helper-paths)) (count module-owners)))
       (is (every? keyword? (vals module-owners))))
     (testing "coordinator support paths stay reserved outside paired Stage0"
       (is (= 16 (count support-paths)))

@@ -256,6 +256,7 @@
   "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity" :sh-mir
   "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity" :sh-domain-ir
   "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity" :sh-optimization
+  "bootstrap/gravity/src/gravity/compiler/c14_literal_bool_contextual_lowering.gravity" :master-coordinator
   "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity" :master-coordinator
   "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity" :master-coordinator
   "bootstrap/gravity/src/gravity/compiler/c16_incremental_compilation_design.gravity" :sh-incremental
