@@ -283,3 +283,24 @@ Nine-path contextual lint has zero warnings and blockers, archived at
 package/archive and release restrictions remain. Renewed exact independent
 acceptance, new candidate-owned CI/artifacts and immediate clean current-main
 preflight remain required. Earlier source/base acceptance and CI do not transfer.
+
+## Declared supplier-main snapshot
+
+The declared base for this snapshot is
+67a7261c9ba941d20e31cc003b3b1271bfbea49f, tree
+b2cd6e8fe7befab893d5d5bc5f6448666e12fc0a. Source
+8ebf43808972c2994b91321d2f09a754e6a745cd, tree
+de9d790ef133574f8f61eea75d2f97d2acb3b53f, retains the C correction,
+reconciles main's direct inventory suppliers and corrects the JVM exception-data
+diagnostic lookup. The other evidence documents record both changes precisely.
+
+Fresh before processes run exact clean supplier-main in this same Runtime
+checkout and finish before restoring the source. All three complete/raw product
+sets, source/plan/byte hashes and the Release lookup probe agree. C++ native,
+broker/Gate, private authority, default pinned Reader and package/archive/release
+routes remain unrun. Backend tests pass 47/967, eight selected Release tests
+8/94 and boundary 47/1154. Nine-path lint has zero warnings/blockers; receipts
+are at /tmp/uniform-backend-release-67a-lint. Six production files reconstruct,
+including the explicit equivalent C and JVM diagnostic function retrieval.
+Later main changes must be composed and reviewed before integration; this
+snapshot does not claim latest-main eligibility or transfer earlier CI.

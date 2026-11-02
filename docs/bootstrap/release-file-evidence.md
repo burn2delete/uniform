@@ -182,3 +182,22 @@ Nine-path contextual lint has zero warnings and blockers, archived at
 package/archive and release restrictions remain. Renewed exact independent
 acceptance, new candidate-owned CI/artifacts and immediate clean current-main
 preflight remain required. Earlier source/base acceptance and CI do not transfer.
+
+## Inventory supplier integration
+
+Main 67a7261c9ba941d20e31cc003b3b1271bfbea49f, tree
+b2cd6e8fe7befab893d5d5bc5f6448666e12fc0a, replaces atom-wrapped inventory
+suppliers with direct suppliers. The merge conflict in gravity.release is
+resolved by reconstructing the complete stage from that main plus this slice's
+three file helpers. Main's supplier arglists, direct invocation, wrapper behavior
+and new refusal tests are preserved. Component00906 is byte-identical to main.
+The namespace contract's exact input vector adds the file/path and digest-Var
+inputs required by the new helpers; its test checks all four inputs. The shared
+map distinguishes inventory suppliers from file/digest Vars. This is an explicit
+contract extension, not a weakened inventory check.
+
+Eight selected data/file tests pass 8/94: the prior seven use the renamed
+expected-inventory-suppliers-are-called-at-invocation selector, plus the incoming
+inventory-specific-wrappers-preserve-report-refusals test. Package/archive/release
+builder tests remain unrun. Whole-file reconstruction follows main's supplier
+implementation and all file products and lookup behavior still agree.

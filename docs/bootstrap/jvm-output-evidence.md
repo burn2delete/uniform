@@ -208,3 +208,29 @@ Nine-path contextual lint has zero warnings and blockers, archived at
 package/archive and release restrictions remain. Renewed exact independent
 acceptance, new candidate-owned CI/artifacts and immediate clean current-main
 preflight remain required. Earlier source/base acceptance and CI do not transfer.
+
+## Exception-data callee-order correction
+
+Independent review found a second concrete lookup-order regression in the
+already extracted validate-plan! adapter. ExceptionInfo.getData is called for
+classification and again while constructing diagnostic arguments. An override
+that changes the failure Var on the second read caused the stage to select the
+replacement function, unlike the original named-call evaluation order.
+
+The Bootstrap-free probe at /tmp/uniform-jvm-diagnostic-data-probe.clj requires
+only gravity.backend.jvm and anonymous rejecting/failure callbacks. Before the
+fix it selects :replacement and fails; afterward it selects :original. No
+Bootstrap, file, process, factory or authority operation runs. The pre-extraction
+source at f2bfea387b60077a64e0dcbf2573c6afad0126e9, component00772 lines
+48-63, is inspected as source. An inline reference reproduces only its named
+callee evaluation shape; the original Bootstrap function is not executed.
+The coordinator's probe independently exercises the actual stage. Two initial
+probe reader errors are retained in the reader-nonpass logs, followed by the
+real semantic nonpass in /tmp/uniform-jvm-diagnostic-data-before.log.
+
+Source 8ebf43808972c2994b91321d2f09a754e6a745cd, tree
+de9d790ef133574f8f61eea75d2f97d2acb3b53f, selects the Var/function at the
+one C14 diagnostic call site before argument evaluation. A new regression checks
+replacement during the first classification read remains visible, while
+replacement during the second argument-data read cannot change the selected
+callee. JVM tests pass 12/213 and complete product/hash equality remains.
