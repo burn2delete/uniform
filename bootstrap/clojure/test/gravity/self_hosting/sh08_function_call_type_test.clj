@@ -5732,7 +5732,8 @@
           (is (= (positional [s]) (:return-actual-type returned)))
           (is (nil? (:return-conflict returned)))
           (is (= :sh08-homogeneous-list-return-v2 (get-in returned [:return-compatibility :version])))
-          (is (= 1 (count (:constraints result))))))
+          (is (= 1 (count (:constraints result))))
+          (is (not (contains? result :work-count)))))
       (let [inputs [(homogeneous-list-return-input (positional (vec (repeat 1024 s))) s 0)
                     (homogeneous-list-return-input (positional []) s 1)]
             core (assoc (:core (first inputs)) :nodes (vec (mapcat #(get-in % [:core :nodes]) inputs))
@@ -5750,6 +5751,30 @@
         (is (= 2 (count (:constraints updated))))
         (is (= :converged (:convergence-status inferred)) (pr-str (:diagnostics inferred)))
         (is (= [] (:diagnostics inferred)))))))
+
+(deftest list-return-updater-is-semantic-for-inactive-deferred-and-rejected-inputs
+  (let [input (homogeneous-list-return-input :gravity.type/unknown :gravity.type/string 0)
+        {:keys [record function nodes types forms]} input
+        functions {(:function-id function) function}
+        run #(invoke-c7 'sh08-ft-update-function-returns-with-context [%1 nodes types %2])
+        inactive (run {} (:context input))
+        deferred (run functions (:context input))
+        declared (get-in record [:signature :return])
+        malformed-context (assoc (:context input) :lookup-forms
+                                 (assoc-in forms [(:type-form-id declared) :parent-form-id] :forged))
+        rejected (invoke-c7 'sh08-ft-update-function-returns-with-context
+                           [functions nodes (assoc types (:body-core-node-id record) :gravity.type/never)
+                            malformed-context])]
+    (is (= {:status :accepted :function-types {} :constraints [] :diagnostics []} inactive))
+    (is (= :accepted (:status deferred)))
+    (is (= [] (:constraints deferred) (:diagnostics deferred)))
+    (is (nil? (get-in deferred [:function-types (:function-id function) :return-compatibility])))
+    (is (= :gravity.type/unknown
+           (get-in deferred [:function-types (:function-id function) :return-actual-type])))
+    (is (= :rejected (:status rejected)))
+    (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
+    (is (= :list-return-source-mismatch (get-in rejected [:diagnostics 0 :reason])))
+    (is (every? #(not (contains? % :work-count)) [inactive deferred rejected]))))
 
 (deftest sh08-homogeneous-list-parameter-development-kernel
   (let [s :gravity.type/string positional #(hash-map :kind :gravity.type/list :shape :literal :element-types %)
