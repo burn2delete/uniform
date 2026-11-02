@@ -99,13 +99,51 @@
   :manifest-transition [15 18 0]
   :candidate-manifest-transition [18 18 0]
   :negative-controls 35
-  :profile-consumer {:command "clojure -J-Xmx2g -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\" \"tools\"]}' -M -e '(load-file \"tools/profile_pass_execution_sort.clj\")'"
+  :profile-consumer {:command "clojure -J-Xmx2g -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\" \"tools\"]}' -M -e '(load-file \"specs/requirement-reconciliation/profile-system/profile_requirements.clj\")'"
                     :source-commit "5a93ad9804cc7344cc57f3ecb9293ed3dae58595"
                     :source-tree "3c28db82c4b751252c2fc8f37e754d5af01cc001"
                     :max-heap 2147483648
-                    :rows [0 64]
-                    :instrumented-equal [true true]
+                    :profile-counts {:documents 13
+                                     :occurrences 1254
+                                     :facets 1506
+                                     :dispositions 631
+                                     :units 55
+                                     :task-record-amendments 14
+                                     :requirement-field-edits 55
+                                     :unique-task-references 27}
+                    :current-bridge-count 13
+                    :negative-controls 16
+                    :manifest-transition
+                    {:pr560-task-source-bridges [15 18]
+                     :pr565-task-source-bridges [18 18]
+                     :pr565-changed-paths ["specs/domains-workflow/tasks.md"
+                                           "specs/runtime-workflow/tasks.md"
+                                           "specs/types-workflow/tasks.md"]
+                     :pr565-manifest-sha256 "f104336a99da819d7a24f89ddcd7e48311b4def36fc45bc28d56444558828316"
+                     :pr565-manifest-commit "3210bcb514464416d6715569a8c5732bd7da201c"
+                     :pr565-manifest-tree "994886350a5238ea5f9ba9a9be21f4f69c501550"}
                     :result :pass}
+  :tooling-consumer {:command "clojure -M tools/tooling_requirements_test.clj"
+                     :tests 8
+                     :assertions 53
+                     :failures 0
+                     :errors 0
+                     :result :pass}
+  :safety-consumer {:command "clojure -M tools/safety_task_source_view.clj --check"
+                    :controls 8
+                    :task-references 237
+                    :unique-task-interfaces 18
+                    :failures 0
+                    :errors 0
+                    :result :pass}
+  :reconciliation-consumer {:command "clojure -J-Xmx2g -M tools/requirement_reconciliation.clj --check"
+                            :source-documents 245
+                            :source-occurrences 19962
+                            :source-facets 29177
+                            :unresolved-source-occurrences 10095
+                            :denominator-ready false
+                            :manifest-sha256 "f104336a99da819d7a24f89ddcd7e48311b4def36fc45bc28d56444558828316"
+                            :result :pass}
   :result :pass
   :native-runtime-compiler-execution :not-run}
  :repair-history
@@ -128,7 +166,12 @@
   :post-repair-checks {:candidate-head "67b9f60e66c72f95186a70fca365a971f126f78d"
                        :candidate-tree "d06acc4617240e97f48b122ff7aa86d995a0624e"
                        :negative-controls 13
-                       :result :pass}}
+                       :result :pass}
+  :profile-consumer-correction
+  {:prior-command "clojure -J-Xmx2g -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\" \"tools\"]}' -M -e '(load-file \"tools/profile_pass_execution_sort.clj\")'"
+   :prior-result :not-profile-requirements-consumer
+   :current-command :recorded-under-checks-profile-consumer
+   :current-result :actual-profile-requirements-check}}
  :original-path-accounting
  [{:path "docs/component-roadmaps/domains.md"
    :disposition :historical-retained
