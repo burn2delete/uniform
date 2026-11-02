@@ -25,6 +25,12 @@ signing custody and writer reservations; record failed/unrun work explicitly.
 Independent review and coordinator integration remain separate from author
 validation, and final product acceptance does not close wider language scope.
 
+## Provider and capability dependency interface
+
+Use the [provider and capability producer and consumer order](../auth-workflow/plan.md#provider-and-capability-producer-and-consumer-order) and existing selected-result table. Each existing suite consumes actual owner/compiler/provider/startup/action/cache/replacement products and executes its own subject/oracle. Neither source definitions, owner examples nor assigned passed flags establish that harness result or authorize held actions.
+
+Task authorities and frozen review subjects stay unchanged. Selected interfaces remain proposed; current independent acceptance and implementation are unassessed. Preserve all actual restrictions.
+
 ## Provider and capability source interface
 
 Use the [complete provider and capability source criteria](../auth-workflow/plan.md#complete-provider-and-capability-source-criteria). Consume actual checker/gate/startup/provider/API and owner-example results, then execute the existing language/compiler/runtime/profile/safety/library suites with exact subjects/oracles. Recorded conformance is not a harness run.

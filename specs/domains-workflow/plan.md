@@ -56,6 +56,12 @@ component acceptance and coordinator integration pending until their exact
 evidence is present. Whole-domain, full-language, self-hosted and release claims
 remain governed by their separate existing outcomes.
 
+## Provider and capability dependency interface
+
+Use the [provider and capability producer and consumer order](../auth-workflow/plan.md#provider-and-capability-producer-and-consumer-order) and existing selected-result table. Early EFIR/numeric/provider contracts and applicable proof products precede compatible replacement selection; real safe math implementation and operation results precede Auth replacement conformance and independently run suites. This neither makes all pure arithmetic effectful nor permits experimental providers.
+
+Task authorities and frozen review subjects stay unchanged. Selected interfaces remain proposed; current independent acceptance and implementation are unassessed. Preserve all actual restrictions.
+
 ## Provider and capability source interface
 
 Use the [complete provider and capability source criteria](../auth-workflow/plan.md#complete-provider-and-capability-source-criteria). The existing Math owner supplies actual original/replacement function semantics and required proof/check results for L15's safe math-provider example. Auth checks selection/contracts; it does not implement math or accept a proof label.

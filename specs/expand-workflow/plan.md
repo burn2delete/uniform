@@ -25,6 +25,12 @@ an explicit unfinished acceptance boundary. Record evidence in the existing
 package and update only its authoritative task; do not create a parallel
 implementation checklist. Independent review and integration remain separate.
 
+## Provider and capability dependency interface
+
+Use the [provider and capability producer and consumer order](../auth-workflow/plan.md#provider-and-capability-producer-and-consumer-order) and existing selected-result table. Consume actual compatible provider/trust/build-grant/gate and exact L6/L12 hermetic/replay premises before macro P action; later generated Q and replay/denial results remain separate. A replay exception is no grant or hermetic waiver.
+
+Task authorities and frozen review subjects stay unchanged. Selected interfaces remain proposed; current independent acceptance and implementation are unassessed. Preserve all actual restrictions.
+
 ## Provider and capability source interface
 
 Use the [complete provider and capability source criteria](../auth-workflow/plan.md#complete-provider-and-capability-source-criteria). The existing compile-time gate checks actual build-phase provider authority, replay/isolation and exact hermetic premises before invocation. Program P's admission remains distinct from checking generated Q afterward.

@@ -23,6 +23,12 @@ reused unchanged evidence, unrun boundaries and stable diagnostic ownership.
 implementation checklist. Independent acceptance, migration and integration
 remain separate from ordinary development and structural validation.
 
+## Provider and capability dependency interface
+
+Use the [provider and capability producer and consumer order](../auth-workflow/plan.md#provider-and-capability-producer-and-consumer-order) and existing selected-result table. Candidate Core and solved facts precede actual authority/profile/provider/trust/safety decisions; checked Core follows them. Later execution is no premise for forming an early checked operation.
+
+Task authorities and frozen review subjects stay unchanged. Selected interfaces remain proposed; current independent acceptance and implementation are unassessed. Preserve all actual restrictions.
+
 ## Concurrency dependency interface
 
 Use the [concurrency producer and consumer order](../legality-workflow/plan.md#concurrency-producer-and-consumer-order) and existing selected-result table. Core3 consumes early actual library/source definitions before desugaring; Core5 exports checked Core only after actual type/effect/profile/grant/safety facts. Candidate and checked products remain distinct.

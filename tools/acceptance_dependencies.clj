@@ -176,6 +176,14 @@
 
 (def selected-parent-consumers
   #{"domain-ir-boundaries" "math"
+    "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"
+    "auth/remaining-tasks-and-evidence/publish-conformance-and-remaining-trust-assumptions"
+    "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"
+    "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"
+    "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix"
+    "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution"
+    "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records"
+    "types/current-evidence-and-remaining-work/types5-integrate-typed-core"
     "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses"
     "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
     "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"

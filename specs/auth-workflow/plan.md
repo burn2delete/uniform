@@ -23,6 +23,58 @@ the selected authoritative task. Record exact passed, failed and unrun evidence,
 residual host/trust assumptions, independent review and integration separately.
 A structurally valid manifest or supplied verdict does not close enforcement.
 
+## Provider and capability producer and consumer order
+
+The [existing selected-result table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition)
+now gives 31 selected consumers concrete L15/SAFE10/R11 interface detail: eight
+existing parents gain routes and 23 existing routes gain selected detail. All
+prior inputs and sixty unaffected route meanings remain. The 136 new joins yield
+834 selected producer-result joins across 91 routes: 51 current parents and the
+same forty future records. No task body, identity, status or evidence disposition
+changes. These are proposed interfaces, not implementation acceptance.
+
+The coarse graph exposes groups of 48 and eight nodes. The larger group adds the
+eight newly routed parents to its previous forty members; the second group stays
+unchanged. These task-level cycles require the distinct products below, preserving
+all earlier source, memory, safety, concurrency and L6/L12 stages. A task's broad
+completion checkbox cannot stand in for all its different inputs and outputs.
+
+| Boundary | Earlier product | Later actual consumer/result |
+| --- | --- | --- |
+| Declarations and selection | Real versioned provider/capability/type/schema and truthful runtime support contracts | Profile/policy/trust compatibility and deterministic source, package, workspace, profile-default, target-default selection |
+| Configuration and grants | Normalized source/project/lock/package/dependency requests and denials, source effect requirements and invocation/provider scopes | Actual eight-layer intersection and operation-specific scope/phase/lifetime/attenuation/revocation decisions; normalization issues no grants |
+| Imported trust and output provenance | Actual already-built Q content/manifests/evidence, declared trust policy and the Build verifier's applicable signature/attestation/revocation decision | Auth verifies Q before its use; current P execution and safety/capability results precede P's own emitted provenance/SBOM and any separately authorized signing |
+| Candidate and checked compiler facts | Candidate Core and solved capability types/inferred effects with unresolved legality explicit | Actual grant/provider/profile/isolation/trust/safety decisions, then checked Core and preserved MIR/target obligations |
+| Gate and action | Real typed action/caller/callee requirements, actual grants and available isolation; installed phase-scoped sink gate | Actual Build/Expand/Runtime allowed/refused action, delegation/revocation/deployment-narrowing and redacted audit trace |
+| Runtime support and startup | Declared compatible services, real selected primitive implementation/link/load and installed checks | Actual provider presence/version/scope/contract/profile/target/safety/audit validation before user code, or declared compatible fallback/refusal |
+| Compile-time use and replay | Checked macro/build P, actual build grants/gates, exact L6/L12 hermetic premises and replay contract | Actual action/input/output/provider records, generated Q checking and no-repeat replay; a recorded non-replayability exception waives no grant or hermetic condition |
+| Cache and reproducibility | Actual stage/action outputs plus exact source/compiler/provider/version/grant/policy/replay inputs | The existing cache task constructs keys and revalidates reuse; the reproducibility task consumes those results and compares actual repeated locked builds |
+| Library and replacement | Real typed API/provider/EFIR/numeric/resource contracts and applicable checked proof products | Actual safe Math replacement plus memory or IO implementation and usable operation/failure/cleanup results over permitted selected services |
+| Owner cases and suites | Actual selection/grant/trust/compiler/gate/startup/action/cache/replacement products | Auth and Legality owner cases, then each independently executed Release harness with its own source/profile/target subject and oracle |
+
+Earlier definitions and selected primitive implementations allow ordinary local
+construction. A later trace cannot authorize its own first action, and P's output
+cannot be the imported evidence needed to authorize P. Trust, signatures,
+capability requests, review-request tokens, manifests and supplied safe/scope
+flags cannot replace real decisions, grants, review or action enforcement.
+Types supplies capability facts; Effects derives action requirements; Auth owns
+selection/grants/trust/gates; Runtime/Expand/Build execute their own selected
+actions; Math/Stdlib implement replacements. The cache owner remains unique.
+
+Selected schema definitions precede actual validators/codecs where used; full
+schema migration and final suites are not generic construction prerequisites.
+Preserve exact source/compiler/profile/target/provider/grant/policy/evidence
+identities and invalidate changed assumptions. Secrets stay out of public keys,
+generated code, diagnostics and artifacts; a digest label does not prove redaction.
+Required review is separately supplied for its exact subject. All C7/C12,
+provider/plugin/probe/native/callback/device/replay/private-store/signing/product
+publication restrictions remain. No project accounting, review renewal, stopped
+handoff transfer, aggregate publication or held execution occurs here.
+
+Complete interface entailment, global source conjunctions, current implementation
+and independent acceptance remain pending or unassessed. The selected-result
+graph exposes dependencies; it does not prove these stages semantically complete.
+
 ## Complete provider and capability source criteria
 
 This proposal reads complete L15, SAFE10 and R11 as joint contracts. Seventeen
@@ -148,9 +200,9 @@ provider, runtime, native, device, plugin, probe or replay operation runs here.
 Completion needs actual source-to-checked compiler/gate/startup/provider/API and
 redacted result products, positive/refusal fixtures, real replacement/isolation/
 revocation cases and applicable independent review. Existing Release suites run
-their own exact matrices and oracles. The current dependency table retains 698
-joins and 83 routes; complete provider/capability-specific result staging remains
-pending. Whole-source/current review, all-project entailment and implementation
+their own exact matrices and oracles. The [provider and capability producer and consumer order](#provider-and-capability-producer-and-consumer-order)
+now declares selected result joins and stages in the existing table. Their
+complete interface entailment and independent current review remain pending. Whole-source/current review, all-project entailment and implementation
 acceptance remain pending. Keep all current C7/C12/native/callback/provider/device/
 private-store/replay/signing/publication holds and the stopped handoff untouched.
 

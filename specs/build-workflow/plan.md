@@ -22,6 +22,12 @@ acceptance, integration and final seedless Build remain distinct.
 
 Cache key construction, invalidation and reuse stay with the existing dependency-aware caching task. The reproducibility task consumes its actual provider-bound decisions and performs repeat-build comparisons; the selected L15 criterion adds no second cache authority.
 
+## Provider and capability dependency interface
+
+Use the [provider and capability producer and consumer order](../auth-workflow/plan.md#provider-and-capability-producer-and-consumer-order) and existing selected-result table. Normalize requests before actual grants; verify imported Q before use; execute the typed graph through installed gates. The existing cache owner alone constructs/revalidates keys; reproducibility consumes its results. Current P provenance follows P execution and comparisons.
+
+Task authorities and frozen review subjects stay unchanged. Selected interfaces remain proposed; current independent acceptance and implementation are unassessed. Preserve all actual restrictions.
+
 ## Provider and capability source interface
 
 Use the [complete provider and capability source criteria](../auth-workflow/plan.md#complete-provider-and-capability-source-criteria). Graph execution uses actual provider/grant/gate products, records actual content-addressed or replay/audit outputs, and includes provider/policy identities in secret-safe lock/cache/rebuild evidence. A replay exception is no effect grant.

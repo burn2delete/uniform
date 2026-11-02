@@ -22,6 +22,12 @@ the existing selected task. Distinguish compiler-service subset acceptance,
 wider families, independent review/integration and release; do not restore
 removed project accounting as a runtime admission requirement.
 
+## Provider and capability dependency interface
+
+Use the [provider and capability producer and consumer order](../auth-workflow/plan.md#provider-and-capability-producer-and-consumer-order) and existing selected-result table. Expose truthful support and actual selected primitives first, validate provider presence/version/scope/contracts before user code, then enforce actual actions and redacted audit. Gate installation precedes actions; their traces do not authorize themselves.
+
+Task authorities and frozen review subjects stay unchanged. Selected interfaces remain proposed; current independent acceptance and implementation are unassessed. Preserve all actual restrictions.
+
 ## Provider and capability source interface
 
 Use the [complete provider and capability source criteria](../auth-workflow/plan.md#complete-provider-and-capability-source-criteria). Use Runtime2 for actual pre-user-code provider initialization/fallback, Runtime5 for action/handle/revocation/observation checks, and Runtime4 for real workflow/AI consumers. A manifest or a grant table is not execution.

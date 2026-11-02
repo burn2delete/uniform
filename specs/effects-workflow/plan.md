@@ -23,6 +23,12 @@ provider/replay operations. Refine the existing authoritative task only, record
 exact passed/failed/unrun evidence and retain separate independent acceptance,
 integration and wider-runtime/handler completion boundaries.
 
+## Provider and capability dependency interface
+
+Use the [provider and capability producer and consumer order](../auth-workflow/plan.md#provider-and-capability-producer-and-consumer-order) and existing selected-result table. Derive actual direct/latent action requirements and separate build/runtime effects before grants and checking. Pure capability transport need not perform its later effect, and imported trust never erases that effect.
+
+Task authorities and frozen review subjects stay unchanged. Selected interfaces remain proposed; current independent acceptance and implementation are unassessed. Preserve all actual restrictions.
+
 ## Provider and capability source interface
 
 Use the [complete provider and capability source criteria](../auth-workflow/plan.md#complete-provider-and-capability-source-criteria). Keep concrete actions and required capabilities distinct via the actual registered mapping; checked effect allowances do not issue grants. Capability-value transport alone does not perform its later provider operation.
