@@ -1,4 +1,4 @@
-(ns gravity.bootstrap-seed-printer-test
+(ns gravity.self-hosting.seed-readable-printer-test
   (:require [clojure.string :as str]
             [clojure.test :refer [deftest is]]
             [gravity.bootstrap :as bootstrap]))
