@@ -129,11 +129,13 @@
     :clojure-adapter-residual? true :self-hosted? false
     :plan-binding (zipmap [:artifact :status :semantic-authority :compiled-by :executed-by
                           :generic-bridge-residual? :self-hosted? :source-language :source-byte-count
-                          :source-content-hash :plan-semantic-hash :functions-semantic-hash
+                          :source-content-hash :source-mode :revision-status :source-authority
+                          :plan-semantic-hash :functions-semantic-hash
                           :function-count :function-names-hash :function-shapes-hash
                           :public-function-hashes :public-function-shapes]
                          [:plan :complete :gravity :seed :runner true false :gravity 12
-                          "source-A" "plan-A" "functions-A" 1 "names-A" "shapes-A" {} {}])
+                          "source-A" :development-current :development-unadmitted :development-current
+                          "plan-A" "functions-A" 1 "names-A" "shapes-A" {} {}])
     :expansion-runs
     (mapv (fn [n]
             {:raw-template-result {:artifact :template :schema-version 1 :status :accepted}
@@ -142,7 +144,7 @@
              :resolved-expansion {:artifact :expansion :schema-version 1 :artifact-id (str "result-" n)
                                   :status :accepted :macro 'defn :macro-version "one" :input-syntax-id (str "input-" n)
                                   :output-syntax-id (str "output-" n) :semantic-binding {:source "logical"}
-                                  :profile :meta :target :jvm :phase :macro-expansion :bounds {}
+                                  :profile :meta :target :jvm :phase :macro-expansion
                                   :macro-expansion-trace [{:trace-replay-id (str "replay-" n)}]}
              :template-verification {:status :passed} :resolved-verification {:status :passed}})
           (range 18))}})
@@ -156,6 +158,12 @@
     (is (= (expected/macro-id artifact) (expected/macro-hash (project artifact))))
     (is (= [16 2] (mapv :item-count (:expansion-run-chunks preimage))))
     (is (= [0 16] (mapv :start-ordinal (:expansion-run-chunks preimage))))
+    (doseq [field [:source-mode :revision-status :source-authority]]
+      (let [changed (assoc-in artifact [:gravity-macro-boundary :plan-binding field] ::changed)]
+        (is (not= preimage (project changed))
+            (str "plan-binding identity includes " field))
+        (is (not= (expected/macro-id artifact) (expected/macro-id changed))
+            (str "artifact identity includes " field))))
     (doseq [field (keys preimage) action [:drop :alter]]
       (let [mutated ((macro-projector (changed-map-field form field action)) artifact)]
         (is (not= preimage mutated) (str "complete Macro equation catches " action " " field))
@@ -178,7 +186,7 @@
               action [:drop :alter]]
         (is (not= preimage ((macro-projector form {:summary (changed-map-field summary field action)}) artifact))))
       (doseq [field [:artifact :schema-version :artifact-id :status :macro :macro-version
-                     :input-syntax-id :output-syntax-id :semantic-binding :profile :target :phase :bounds
+                     :input-syntax-id :output-syntax-id :semantic-binding :profile :target :phase
                      :ordinal :purpose]]
         (let [mutant (walk/postwalk
                       (fn [x] (if (and (seq? x) (= 'select-keys (first x)) (vector? (nth x 2 nil)))

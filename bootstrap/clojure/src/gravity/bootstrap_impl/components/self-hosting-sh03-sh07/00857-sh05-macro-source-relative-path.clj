@@ -60,6 +60,7 @@
  sh05-macro-sh02-descriptor
  sh05-macro-source-artifact
  sh05-macro-source-relative-path
+ sh03-reader-strict-source-text!
  sh05-macro-trace-id
  sh05-macro-trace-identity-input
  sh05-macro-version
@@ -84,6 +85,7 @@
  sh05-macro-expected-plan-semantic-hash
  sh05-macro-expected-source-byte-count
  sh05-macro-expected-source-content-hash
+ sh05-macro-build-binding!
  sh05-macro-pinned-plan-identities
  sh05-macro-plan-identities
  sh05-macro-public-function-hashes
@@ -121,6 +123,7 @@
   :sh05-expanded-form #'sh05-expanded-form,
   :sh05-macro-trace-id #'sh05-macro-trace-id,
   :sh05-macro-current-binding! #'sh05-macro-current-binding!,
+  :sh05-macro-build-binding! #'sh05-macro-build-binding!,
   :p15-s23-stage2-compiler-artifact-semantic-input
   #'p15-s23-stage2-compiler-artifact-semantic-input,
   :sh05-macro-resolve-digests! #'sh05-macro-resolve-digests!,
@@ -188,6 +191,7 @@
   #'c-backend-stage2-plan-emitter-source-rule!,
   :sh05-semantic-component-id #'sh05-semantic-component-id,
   :sh05-macro-read-pinned-source! #'sh05-macro-read-pinned-source!,
+  :sh03-reader-strict-source-text! #'sh03-reader-strict-source-text!,
   :sh05-expanded-graph-valid? #'sh05-expanded-graph-valid?,
   :sh05-run-macro-request! #'sh05-run-macro-request!,
   :p15-s23-stage2-compiler-artifact-source-path
@@ -332,11 +336,17 @@
 
 (defn
  sh05-macro-read-pinned-source!
- [request-source]
- (gravity.macro/read-pinned-plan-source!
-  request-source
-  ^{:line 112, :column 65}
-  (macro-stage-operations)))
+ ([request-source]
+  (gravity.macro/read-pinned-plan-source!
+   request-source
+   ^{:line 112, :column 65}
+   (macro-stage-operations)))
+ ([request-source source-mode]
+  (gravity.macro/read-pinned-plan-source!
+   request-source
+   ^{:line 112, :column 65}
+   (macro-stage-operations)
+   source-mode)))
 
 (defn-
  sh05-macro-compute-plan-identities
@@ -358,11 +368,17 @@
 
 (defn
  sh05-macro-build-binding!
- [request-source]
- (gravity.macro/build-plan-binding!
-  request-source
-  ^{:line 112, :column 65}
-  (macro-stage-operations)))
+ ([request-source]
+  (gravity.macro/build-plan-binding!
+   request-source
+   ^{:line 112, :column 65}
+   (macro-stage-operations)))
+ ([request-source source-mode]
+  (gravity.macro/build-plan-binding!
+   request-source
+   ^{:line 112, :column 65}
+   (macro-stage-operations)
+   source-mode)))
 
 (def
  ^{:private true} sh05-macro-cached-binding
@@ -370,8 +386,20 @@
 
 (defn
  sh05-macro-current-binding!
- [request-source]
- (gravity.macro/current-plan-binding!
-  request-source
-  ^{:line 112, :column 65}
-  (macro-stage-operations)))
+ ([request-source]
+  (gravity.macro/current-plan-binding!
+   request-source
+   ^{:line 112, :column 65}
+   (macro-stage-operations)))
+ ([request-source _invocation]
+  (gravity.macro/current-plan-binding!
+   request-source
+   ^{:line 112, :column 65}
+   (macro-stage-operations)
+   :pinned))
+ ([request-source _invocation source-mode]
+  (gravity.macro/current-plan-binding!
+   request-source
+   ^{:line 112, :column 65}
+   (macro-stage-operations)
+   source-mode)))

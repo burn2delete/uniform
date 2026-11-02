@@ -68,8 +68,7 @@
     (is (= (c4-macro-evidence/c4-macro-safety-report trace declarations)
            (bootstrap/c4-macro-safety-report trace declarations)))
     (with-redefs [bootstrap/sha256-hex (constantly "interposed-hash")
-                  bootstrap/c4-artifact-id (constantly "artifact:interposed")
-                  bootstrap/max-macro-expansion-depth 41]
+                  bootstrap/c4-artifact-id (constantly "artifact:interposed")]
       (is (= ["sha256:interposed-hash"]
              (:dependency-hashes
               (bootstrap/c4-macro-environment macro-artifact))))
@@ -82,10 +81,9 @@
              (:macro-environment
               (bootstrap/c4-expansion-input
                module c3-artifact macro-artifact))))
-      (is (= 41
-             (get-in (bootstrap/c4-expansion-input
-                      module c3-artifact macro-artifact)
-                     [:limits :depth]))))))
+      (is (= {:timeout-ms 5000}
+             (:host-safeguards (bootstrap/c4-expansion-input
+                                module c3-artifact macro-artifact)))))))
 
 (deftest macro-expansion-compatibility-wrappers-preserve-output-and-interposition
   (let [path (fixture "accepted/macro-expansion.gravity")

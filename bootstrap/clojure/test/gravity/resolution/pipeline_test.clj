@@ -16,7 +16,8 @@
   (.getCanonicalPath (io/file "bootstrap/clojure/fixtures/self-hosting/sh-06/current-cohort-unmetered.gravity")))
 (def ^:private invocation
   {:reader-source-path b/sh03-reader-source-relative-path
-   :authenticated-envelope-options {:source :development-current}})
+   :authenticated-envelope-options {:source :development-current}
+   :macro-source-mode :development-current})
 (def ^:private real-artifact
   (delay
     (b/compiler-c5-resolution-source-artifact
@@ -654,6 +655,16 @@
                          [:sh06-resolution-expected-source-content-hash "sha256:forged"]]]
       (let [changed (assoc pinned-ops :input (fn [key] (if (= key field) bad ((:input pinned-ops) key))))]
         (is (= "C5-UNRESOLVED" (:id (ex-data (caught #(resolution/read-pinned-source! source changed))))))))))
+
+(deftest reader-selection-does-not-implicitly-select-current-macro-source
+  (let [reader-only (dissoc invocation :macro-source-mode)
+        error (caught #(b/compiler-c5-resolution-source-artifact
+                        source (slurp source :encoding "UTF-8")
+                        {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+                        (.getCanonicalPath (io/file b/sh03-reader-source-relative-path))
+                        reader-only))]
+    (is (= "C4-TRACE" (:id (ex-data error))))
+    (is (= [:exact-pinned-macro-source] (:missing-fields (ex-data error))))))
 
 (deftest plan-substitutions-and-cache-drift-fail-closed
   (let [binding (real-binding) plan (:plan binding) ops (operations)
