@@ -5,7 +5,9 @@
             [gravity.c15-diagnostics :as c15]
             [gravity.c16-incremental :as c16]
             [gravity.digest :as digest]
-            [gravity.pass-cache :as pass-cache])
+            [gravity.pass-cache :as pass-cache]
+            [gravity.pass-execution :as pass-execution]
+            [gravity.pass-execution.dag :as dag])
   (:import [java.nio.file Files LinkOption Path]
            [java.nio.file.attribute FileAttribute]))
 
@@ -250,6 +252,57 @@
         (is (= [:stored :stored]
                [(get-in result [:c15-cache-evidence :status])
                 (get-in result [:c16-cache-evidence :status])]))))))
+
+(deftest default-orchestration-composes-the-dag-once
+  (with-temporary-directory
+    (fn [directory]
+      (let [calls (atom {:c15 0 :c16 0})
+            compose-calls (atom 0)
+            original-compose dag/compose-evidence-dag
+            result
+            (with-redefs
+             [dag/compose-evidence-dag
+              (fn [& args]
+                (swap! compose-calls inc)
+                (apply original-compose args))]
+              (cache/lookup-or-compute!
+               (pass-cache/open-local-store directory)
+               (context) (operations calls)))]
+        (is (= 1 @compose-calls))
+        (is (= (:evidence-root-id result)
+               (get-in result [:evidence-dag :evidence-root-id])))))))
+
+(deftest interposed-composer-and-root-callbacks-remain-live
+  (with-temporary-directory
+    (fn [directory]
+      (let [calls (atom {:c15 0 :c16 0})
+            observed (atom [])
+            original-compose pass-execution/compose-evidence-dag
+            original-root pass-execution/evidence-root]
+        (with-redefs
+         [pass-execution/compose-evidence-dag
+          (fn [& args]
+            (swap! observed conj :compose)
+            (apply original-compose args))
+          pass-execution/evidence-root
+          (fn [& args]
+            (swap! observed conj :root)
+            (apply original-root args))]
+          (cache/lookup-or-compute!
+           (pass-cache/open-local-store directory)
+           (context) (operations calls)))
+        (is (= [:compose :root] @observed))))))
+
+(deftest public-evidence-root-still-rejects-forged-dag
+  (with-temporary-directory
+    (fn [directory]
+      (let [result (cache/lookup-or-compute!
+                    (pass-cache/open-local-store directory)
+                    (context) (operations (atom {:c15 0 :c16 0})))
+            forged (assoc (:evidence-dag result)
+                          :evidence-root-id (id :forged-root))]
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (pass-execution/evidence-root forged)))))))
 
 (deftest public-stage-request-interposition-remains-live
   (with-temporary-directory
