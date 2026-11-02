@@ -429,7 +429,7 @@
 
 (def ^{:private true} macro-operation-owner (ThreadLocal.))
 (def ^{:private true, :dynamic true} *macro-operation-context* nil)
-(declare build-plan-binding! build-plan-binding-from-source!)
+(declare build-plan-binding!)
 
 (defn-
  valid-macro-operation-context?
@@ -458,9 +458,6 @@
    (concat
     operations
     [(clojure.lang.MapEntry/create
-      ::build-plan-binding-from-source!
-      #'build-plan-binding-from-source!)
-     (clojure.lang.MapEntry/create
       ::build-plan-binding!
       #'build-plan-binding!)]))))
 
@@ -790,9 +787,11 @@
    pinned-identities
    (sh05-macro-compute-plan-identities plan))))
 
-(defn-
- build-plan-binding-from-source!
- [request-source operations source-mode supplied-source]
+(defn
+ build-plan-binding!
+ ([request-source operations]
+  (build-plan-binding! request-source operations :pinned))
+ ([request-source operations source-mode]
  (when-not
   (contains? #{:pinned :development-current} source-mode)
   ((.valAt ^clojure.lang.ILookup operations :sh05-macro-boundary-fail!)
@@ -830,8 +829,7 @@
    development-current?
    (= :development-current source-mode)
    source
-   (or supplied-source
-       (sh05-macro-read-pinned-source! request-source source-mode))
+   (sh05-macro-read-pinned-source! request-source source-mode)
    emitter
    (:emitter
     (c-backend-stage2-plan-emitter-source-rule!
@@ -909,15 +907,7 @@
      :executed-by :clojure-stage2-generic-rule-runner,
      :generic-bridge-residual? true,
      :self-hosted? false,
-     :plan plan}))))
-
-(defn
- build-plan-binding!
- ([request-source operations]
-  (build-plan-binding! request-source operations :pinned))
- ([request-source operations source-mode]
-  (build-plan-binding-from-source!
-   request-source operations source-mode nil)))
+     :plan plan})))))
 
 (defn
  current-plan-binding!
@@ -1008,7 +998,7 @@
       (or
        cached-binding
        (if (= :development-current source-mode)
-        (sh05-macro-build-binding! request-source source-mode fresh-before)
+        (sh05-macro-build-binding! request-source source-mode)
         @(input :sh05-macro-cached-binding)))
       fresh-after
       (if (and (= :development-current source-mode)

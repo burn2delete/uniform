@@ -388,10 +388,10 @@
                               :development-current))]
           (is (= [:current-macro-operation-interposition]
                  (:missing-fields (ex-data error)))))
-        (let [helper-var (ns-resolve 'gravity.macro
-                                     'build-plan-binding-from-source!)
+        (let [builder-var (ns-resolve 'gravity.macro
+                                      'build-plan-binding!)
               error (with-redefs-fn
-                      {helper-var (fn [& _] binding)}
+                      {builder-var (fn [& _] binding)}
                       (fn []
                         (caught #(macro/current-plan-binding!
                                   (:source-path source)
@@ -433,6 +433,29 @@
     (is (= [:current-macro-operation-context]
            (:missing-fields (ex-data error))))
     (is (zero? @calls))))
+
+(deftest macro-builders-have-no-supplied-source-route
+  (let [forged-source {:source-path "forged/macro.gravity"
+                       :source-text "(forged)"
+                       :source-byte-count 9
+                       :source-content-hash "sha256:forged"}
+        adapter (ns-resolve 'gravity.bootstrap 'sh05-macro-build-binding!)
+        builder (ns-resolve 'gravity.macro 'build-plan-binding!)
+        private-builder (ns-resolve 'gravity.macro
+                                    'build-plan-binding-from-source!)
+        arity-errors
+        (mapv (fn [[operation args]]
+                (try
+                  (apply operation args)
+                  nil
+                  (catch clojure.lang.ArityException error
+                    error)))
+              [[adapter ["<forged>" :development-current forged-source]]
+               [builder ["<forged>" {} :development-current forged-source]]])]
+    (is (some? adapter))
+    (is (some? builder))
+    (is (nil? private-builder))
+    (is (every? #(instance? clojure.lang.ArityException %) arity-errors))))
 
 (deftest unknown-macro-source-mode-is-rejected-before-assembly
   (let [{:keys [source c3 invocation]} @gravity-context
