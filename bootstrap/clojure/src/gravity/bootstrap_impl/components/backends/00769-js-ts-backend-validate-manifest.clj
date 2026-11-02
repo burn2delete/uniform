@@ -202,44 +202,4 @@
 
 (defn js-ts-backend-run-node-process!
   [arguments source-path diagnostic-id message]
-  (let [stdout-file (java.io.File/createTempFile "gravity-js-node-out-" ".bin")
-        stderr-file (java.io.File/createTempFile "gravity-js-node-err-" ".txt")
-        pb (ProcessBuilder. ^java.util.List (into ["node"] arguments))]
-    (try
-      (.redirectOutput pb stdout-file)
-      (.redirectError pb stderr-file)
-      (let [process (.start pb)
-            finished? (.waitFor process 60000
-                                java.util.concurrent.TimeUnit/MILLISECONDS)]
-        (when-not finished?
-          (.destroyForcibly process)
-          (js-ts-backend-fail!
-           diagnostic-id message source-path nil
-           {:node-command (into ["node"] arguments)
-            :missing-fact :node-process-completion}))
-        (let [result {:exit (.exitValue process)
-                      :stdout-bytes
-                      (vec (map #(bit-and (int %) 0xff)
-                                (java.nio.file.Files/readAllBytes
-                                 (.toPath stdout-file))))
-                      :stderr (if (.exists stderr-file)
-                                (slurp stderr-file) "")}]
-          (when-not (zero? (:exit result))
-            (js-ts-backend-fail!
-             diagnostic-id message source-path nil
-             {:node-command (into ["node"] arguments)
-              :node-result result
-              :missing-fact :node20-esm-acceptance}))
-          result))
-      (catch clojure.lang.ExceptionInfo ex
-        (throw ex))
-      (catch Exception ex
-        (js-ts-backend-fail!
-         "B6-TARGET" "Node 20 runtime is unavailable"
-         source-path nil
-         {:runtime js-ts-backend-runtime
-          :cause-message (.getMessage ex)
-          :missing-fact :node20-runtime}))
-      (finally
-        (.delete stdout-file)
-        (.delete stderr-file)))))
+  (gravity.backend.js/run-node-process! #'js-ts-backend-fail! #'js-ts-backend-runtime arguments source-path diagnostic-id message))
