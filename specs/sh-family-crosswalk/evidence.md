@@ -2,6 +2,47 @@
 
 ## Current implementation-readiness source-version successor
 
+The finish-line continuation binds declaration input
+`0c85be0f758272dfc81d91fb5ae4db6fa4a5ccec`, preserving the complete bridge,
+projection and pending fingerprint at
+`08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d`. The unchanged full-language
+gap map is newly pinned in this crosswalk at that predecessor; the existing
+read-only audit already read it. Other task-file/source pins remain fixed except
+the dependency document's explicit successor. There are now 27 version records:
+twenty task files, five navigation files and the two dependency/full-language
+inputs. Every current/future task body, status, SH/SH07 route and scoped Reader
+receipt remains unchanged.
+
+The projection preserves 56 complete source records: 36 full-language task
+blocks, seven Phase18 task sections, SH21-SH29, the existing P15/Phase18 terminal
+gates and the original completion/staging contracts. Fifty-five declaration rows
+join 54 existing consumers to 425 selected component outputs and existing Spec
+Kit owners. Original FL36 staged prerequisites and task proofs remain intact.
+The final full-language root reaches all original FL/P18 acceptances and the
+separate SH29 boundary. SH29 cannot reach the broader full-language/Phase18
+final gate and retains its first declared seedless subset stop. Conditional
+Platform Product adoption remains unknown and conservative. Historical checked
+audits/hosted packages retain recorded scope; every current proof is unassessed.
+
+Author checks pass: 32 crosswalk tests / 1,266 assertions; 23 dependency tests /
+1,774 assertions; deterministic generation/check and original inventory;
+read-only audit; canonical document/full-language structural checks; and language
+boundary (six tests / eleven assertions). Controls include exact source/status
+and population binding, unknown/missing/duplicate routes, final reachability,
+all original stage edges, acyclicity and conditional-edge behavior. Mapping
+review remains pending at fingerprint
+`a969db9ecb4565f71217702129ae9822fcb85136c5f99014843d355f3280f412`.
+Conservation/navigation passes for 73 changed files, 67 Markdown files, 2,658
+local references, 139 original component routes, 48 historical suffixes and
+all 48 original task/evidence contents after stripping declared additions.
+Changed files are ASCII and whitespace checks pass.
+Source/task entailment, full requirement conjunctions, actual support/evidence,
+material decisions, independent review and integration remain unassessed. No
+compiler/native/C12/provider/device/migration/signing/publication or held
+operation was executed; no other chat was messaged.
+
+### Release dependency checkpoint
+
 The Release dependency continuation binds declaration input
 `8f4f2236509364ebba1d632e9ed6a8420003e487`, preserving the complete
 Math/Schema bridge, projection and pending fingerprint at

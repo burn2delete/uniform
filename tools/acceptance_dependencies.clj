@@ -598,6 +598,127 @@
                          :future-sh-and-full-language-joins :pending
                          :implementation-acceptance :unassessed}}))
 
+(defn finish-line-routes [text task-ids consumers]
+  (let [start "<!-- finish-line-dependencies:start -->" end "<!-- finish-line-dependencies:end -->"
+        occurrences #(count (re-seq (re-pattern (java.util.regex.Pattern/quote %)) text))
+        _ (require! (and (= 1 (occurrences start) (occurrences end)) (< (.indexOf text start) (.indexOf text end)))
+                    "Malformed finish-line dependency region")
+        lines (vec (remove str/blank? (str/split-lines (subs text (+ (.indexOf text start) (count start)) (.indexOf text end)))))
+        _ (require! (= ["| Consumer | Selected producers | Condition | Required result contract |" "| --- | --- | --- | --- |"]
+                       (vec (take 2 lines))) "Unknown finish-line dependency syntax")
+        rows (mapv (fn [line]
+                     (let [cells (str/split line #"\|" -1)
+                           _ (require! (and (= 6 (count cells)) (= "" (first cells) (last cells))) "Malformed finish-line row")
+                           [consumer producers condition contract] (mapv str/trim (subvec (vec cells) 1 5))
+                           id (second (re-matches #"`([^\s`]+)`" consumer))
+                           inputs (dependency-list producers #"`([^\s`]+)`" false)]
+                       (require! (and (consumers id) (every? task-ids inputs)
+                                      (#{"always" "platform-product-adopted"} condition) (not (str/blank? contract)))
+                                 "Unknown finish-line consumer, producer or condition")
+                       {:consumer id :producers (vec (sort inputs))
+                        :condition (when-not (= "always" condition) (keyword condition)) :result-contract contract
+                        :source {:path future-dependency-path :sha256 (sha256 text) :declaration line}})) (drop 2 lines))]
+    (require! (= (count rows) (count (set (map (juxt :consumer :condition) rows)))) "Duplicate finish-line declaration")
+    (require-population! consumers (map :consumer rows) "finish-line consumer")
+    rows))
+
+(defn finish-line-view [sources tasks snapshots read-text]
+  (let [by-id (into {} (map (juxt :id identity) sources))
+        fl-ids full-language-task-ids
+        p18-ids (set (map #(format "P18-T%02d" %) (range 7)))
+        terminal-sh (set (map #(format "SH-%02d" %) (range 21 30)))
+        gates #{"P15-S23" "final-phase-18-completion-gate"}
+        contexts #{"full-language-completion-rule" "full-language-staging-contract"}
+        consumers (set/union fl-ids p18-ids terminal-sh gates)
+        _ (require! (= 56 (count sources) (count by-id)) "Changed finish-line source population")
+        _ (require-population! (set/union consumers contexts) (keys by-id) "finish-line source")
+        _ (doseq [row sources
+                  :let [id (:id row) kind (cond (fl-ids id) :full-language-task (p18-ids id) :phase18-task
+                                                             (terminal-sh id) :self-hosting-milestone (gates id) :existing-terminal-gate
+                                                             (= id "full-language-completion-rule") :shared-proof-contract
+                                                             :else :shared-stage-contract)
+                        path (cond (terminal-sh id) milestone-path
+                                   (or (p18-ids id) (= id "final-phase-18-completion-gate"))
+                                   "docs/phase-18-binary-distribution-and-seedless-release/IMPLEMENTATION-ROADMAP.md"
+                                   :else roadmap-path)]]
+            (require! (= [kind path] [(:kind row) (:path row)]) "Misowned finish-line source")
+            (source-bound! (:source row) snapshots read-text)
+            (let [raw (source-raw (:source row) snapshots)
+                  status (or (second (re-find #"(?m)^Status: ([^\n]+)" raw))
+                             (when-let [[_ checked] (re-find #"^- \[([ xX])\]" raw)]
+                               (if (= " " checked) "open" "checked-at-recorded-scope"))
+                             "source-declared-only")]
+              (require! (= status (:recorded-status row)) "Changed recorded finish-line status")))
+        _ (doseq [[path rows] (group-by :path sources)]
+            (require! (every? #(= (:sha256 %) (sha256 (read-text path))) rows) "Stale finish-line source file"))
+        routes (finish-line-routes (read-text future-dependency-path) (set (keys tasks)) consumers)
+        graph (full-language-graph (read-text roadmap-path))
+        _ (require-population! fl-ids (keys graph) "full-language dependency")
+        staged (merge (staged-graph graph) (staged-graph (zipmap p18-ids (repeat #{}))))
+        stage-node (fn [id facet] (str id "/" facet))
+        nodes (merge
+                (into {} (for [id (set/union fl-ids p18-ids) facet ["interface" "implementation" "composition" "acceptance"]]
+                           [(stage-node id facet) {:state (if (= facet "interface") :accepted :unassessed)
+                                                  :scope (case facet "interface" :declared-interface-only
+                                                                                "implementation" :roadmap-task-implementation
+                                                                                "composition" :actual-selected-producer-consumer
+                                                                                :current-acceptance)
+                                                  :task-id id :recorded-status (:recorded-status (by-id id))
+                                                  :source (source-ref (:source (by-id id)))}]))
+                (into {} (for [id (set/union gates contexts)]
+                           [id {:state (if (= id "full-language-staging-contract") :accepted :unassessed)
+                                :scope (if (= id "full-language-staging-contract") :declared-interface-only :uniform-completion-gate)
+                                :source (source-ref (:source (by-id id)))}]))
+                (into {} (for [id (set/union fl-ids p18-ids)]
+                           [(str "proof:" id) {:state :unassessed :scope :uniform-completion-gate
+                                               :source (source-ref (:source (by-id id)))}]))
+                (into {} (for [{:keys [consumer producers condition result-contract source]} routes producer producers]
+                           [(str "finish-result:" consumer ":" producer ":" (or (some-> condition name) "always"))
+                            {:state :unassessed :scope :selected-acceptance-facet :consumer consumer :task-id producer
+                             :condition condition :result-contract result-contract :source source
+                             :producer-source (source-ref (:source (tasks producer)))
+                             :spec-kit-owner (str/replace (:path (tasks producer)) #"tasks\.md$" "spec.md")}])) )
+        edges (vec (concat
+                (for [[from inputs] staged to inputs]
+                  {:from from :to to :kind :original-roadmap-stage-prerequisite
+                   :source (source-ref (:source (by-id (first (str/split from #"/")))) )})
+                (for [id (set/union fl-ids p18-ids)]
+                  {:from (stage-node id "acceptance") :to (str "proof:" id) :kind :complete-original-task-proof
+                   :source (source-ref (:source (by-id id)))})
+                (for [id fl-ids]
+                  {:from (stage-node id "acceptance") :to "full-language-completion-rule" :kind :original-full-language-completion-rule
+                   :source (source-ref (:source (by-id "full-language-completion-rule")))})
+                (mapcat (fn [{:keys [consumer producers condition source]}]
+                          (concat
+                            (when (or (fl-ids consumer) (p18-ids consumer))
+                              (for [producer producers]
+                                {:from (stage-node consumer "implementation") :to (str "task:" producer "/interface")
+                                 :kind :declared-producer-interface :condition condition :source source}))
+                            (for [producer producers]
+                              {:from (if (or (fl-ids consumer) (p18-ids consumer)) (stage-node consumer "composition") consumer)
+                               :to (str "finish-result:" consumer ":" producer ":" (or (some-> condition name) "always"))
+                               :kind :actual-finish-line-producer-result :condition condition :source source}))) routes)
+                (for [id ["FL-P15-T01" "FL-P15-T02" "FL-P15-T03"]]
+                  {:from "P15-S23" :to (stage-node id "acceptance") :kind :complete-seed-retirement-conjunction
+                   :source (source-ref (:source (by-id "P15-S23")))})
+                (for [id ["P18-T03" "P18-T05" "P18-T06"]]
+                  {:from (stage-node id "acceptance") :to "P15-S23" :kind :actual-p15-retirement-before-final-claim
+                   :source (source-ref (:source (by-id id)))})
+                (for [to (cons "P15-S23" (map #(stage-node % "acceptance") (sort p18-ids)))]
+                  {:from "final-phase-18-completion-gate" :to to :kind :original-phase18-final-conjunction
+                   :source (source-ref (:source (by-id "final-phase-18-completion-gate")))})
+                (for [to (concat (map #(stage-node % "acceptance") (sort (disj fl-ids "FL-P18-T02")))
+                                 ["SH-29" "final-phase-18-completion-gate"])]
+                  {:from "FL-P18-T02/acceptance" :to to :kind :complete-project-finish-line-conjunction
+                   :source (source-ref (:source (by-id "FL-P18-T02")))})))]
+    {:nodes nodes :typed-edges edges :condition-values {:platform-product-adopted :unknown}
+     :summary {:authority :source-declarations-not-acceptance :sources sources :routes routes
+               :full-language-tasks (vec (sort fl-ids)) :phase18-tasks (vec (sort p18-ids))
+               :terminal-sh-milestones (vec (sort terminal-sh)) :existing-terminal-gates (vec (sort gates))
+               :final-root "FL-P18-T02/acceptance" :source-entailment :unassessed :implementation-acceptance :unassessed
+               :limits [:original-task-authorities-retained :historical-status-not-current-execution
+                        :first-seedless-release-not-full-language :selected-results-not-whole-task-start-gates]}}))
+
 (defn task-sh-view [crosswalk read-text]
   (let [requirements (:requirements crosswalk)
         snapshots (:source-snapshots crosswalk)
@@ -630,6 +751,8 @@
                 (require! (str/includes? (source-text (:source row)) "Accepted;")
                           "Checked task lacks explicit accepted status"))))
         future (future-task-view (:future-task-authorities crosswalk) task-map snapshots read-text)
+        finish (finish-line-view (:finish-line-sources crosswalk)
+                 (into task-map (for [rows (vals (:future-task-authorities crosswalk)) row rows] [(:id row) row])) snapshots read-text)
         _ (doseq [r requirements]
             (source-bound! (:acceptance-source r) snapshots read-text)
             (source-bound! (:context-source r) snapshots read-text)
@@ -693,14 +816,14 @@
                                        {:state :unassessed :scope :actual-selected-producer-consumer :task-id id}]))
         shared-gate-nodes (into {} (for [n (range 3 30)] [(format "uniform-gate:SH-%02d" n)
                                       {:state :unassessed :scope :uniform-completion-gate :rule (:id shared-rule)}]))
-        nodes (merge interface-nodes implementation-nodes criterion-nodes milestone-nodes facet-nodes sequence-nodes composition-nodes shared-gate-nodes (:nodes future))
+        nodes (merge interface-nodes implementation-nodes criterion-nodes milestone-nodes facet-nodes sequence-nodes composition-nodes shared-gate-nodes (:nodes future) (:nodes finish))
         evidence-applicability (mapv #(evidence-source-state % read-text)
                                     (sort-by (juxt :path :source-commit :sha256)
                                       (distinct (mapcat :evidence-source-locators requirements))))
-        conditions {:optimization-requested :unknown :runtime-service-required :unknown
+        conditions (merge {:optimization-requested :unknown :runtime-service-required :unknown
                     :compiler-artifacts-consumed :unknown :build-command-selected :unknown
-                    :execution-command-selected :unknown :stable-candidate-selection :unknown}
-        edges (vec (concat (:typed-edges future)
+                    :execution-command-selected :unknown :stable-candidate-selection :unknown} (:condition-values finish))
+        edges (vec (concat (:typed-edges future) (:typed-edges finish)
           [{:from "SH-07" :to "SH07-C18" :kind :single-milestone-completion-decision
             :source (source-ref (:source (last sequence)))}]
           (for [n (range 3 30)]
@@ -739,6 +862,7 @@
     (require! (empty? (cycles adjacency)) "SH/task current acceptance cycle")
     {:schema-version 1 :authority :structural-only :nodes nodes :typed-edges edges
      :future-task-dependencies (:dependency-review future)
+     :finish-line-composition (:summary finish)
      :condition-values conditions
      :evidence-source-applicability evidence-applicability
      :historical-source-applicability historical-source-applicability

@@ -483,6 +483,38 @@
         row (first (filter #(= id (:id %)) (tasks component)))]
     (when-not row (throw (ex-info "Unknown task route" {:component component :selector selector})))
     (select-keys row [:id :component :path])))
+
+(defn finish-line-sources []
+  (let [full "docs/full-language-implementation-gap-map.md"
+        phase "docs/phase-18-binary-distribution-and-seedless-release/IMPLEMENTATION-ROADMAP.md"
+        paths [full phase sh-inventory/plan-path]
+        digests (into {} (map (fn [path] [path (sh-inventory/sha256 (slurp path))]) paths))
+        row (fn [id kind match]
+              (let [source (:source match) path (:path source)]
+                {:id id :kind kind :path path :source-commit (source-pin path)
+                 :sha256 (digests path) :source source
+                 :recorded-status (or (second (re-find #"(?m)^Status: ([^\n]+)" (:raw source)))
+                                      (when-let [[_ checked] (re-find #"^- \[([ xX])\]" (:raw source))]
+                                        (if (= " " checked) "open" "checked-at-recorded-scope"))
+                                      "source-declared-only")}))
+        fl (mapv #(row (nth (:groups %) 1) :full-language-task %)
+                 (span-matches full #"(?ms)^- \[([ xX])\] `(FL-P\d{2}-T\d{2})` [^\n]*\n.*?(?=^- \[[ xX]\] `FL-|^## |\z)"))
+        p18 (mapv #(row (first (:groups %)) :phase18-task %)
+                  (span-matches phase #"(?ms)^### (P18-T0[0-6]) - [^\n]*\n.*?(?=^### P18-|^## |\z)"))
+        sh (mapv #(row (first (:groups %)) :self-hosting-milestone %)
+                 (span-matches sh-inventory/plan-path #"(?ms)^## (SH-2[1-9]) - [^\n]*\n.*?(?=^## |\z)"))
+        contexts (mapv (fn [[path id kind pattern]]
+                         (let [matches (span-matches path pattern)]
+                           (when-not (= 1 (count matches)) (throw (ex-info "Missing finish-line source boundary" {:id id})))
+                           (row id kind (first matches))))
+                       [[full "full-language-completion-rule" :shared-proof-contract #"(?ms)^## Completion Rule\n.*?(?=^## |\z)"]
+                        [full "full-language-staging-contract" :shared-stage-contract #"(?ms)^### Dependency stages and finite acceptance\n.*?(?=^## |\z)"]
+                        [full "P15-S23" :existing-terminal-gate #"(?ms)^P15 has one named terminal gate, `P15-S23`.*?(?=^- \[[ xX]\] `FL-|^## |\z)"]
+                        [phase "final-phase-18-completion-gate" :existing-terminal-gate #"(?ms)^## Final Phase 18 Completion Gate\n.*?(?=^## |\z)"]])]
+    (acceptance-dependencies/require-population! acceptance-dependencies/full-language-task-ids (map :id fl) "finish-line full-language task")
+    (when-not (= [36 7 9 4] (mapv count [fl p18 sh contexts]))
+      (throw (ex-info "Changed finish-line source population" {})))
+    (vec (concat fl p18 sh contexts))))
 (defn review-fingerprint [result]
   (sh-inventory/sha256
     (pr-str [(dissoc result :requirements :source-digests :source-snapshots)
@@ -753,6 +785,7 @@
             (throw (ex-info "Original source changed; retain lineage before rebinding" {})))
         components (mapv second (re-seq #"(?m)^\| [^|\n]+ / `([a-z-]+)` \|" (slurp "docs/component-roadmaps/README.md")))
         tasks (into (sorted-map) (map (fn [c] [c (task-records c)]) components))
+        finish-sources (finish-line-sources)
         future-tasks (into (sorted-map)
                            (for [[component region expected] acceptance-dependencies/future-task-regions
                                  :let [rows (task-records component region)]]
@@ -789,6 +822,7 @@
                                     "docs/self-hosting-slice-backlog.md" "docs/self-hosting-current-migration-cohort.md"
                                     "docs/self-hosting-slice-ownership.edn" "docs/document-inventory.json"
                                     "docs/acceptance-dependencies.md" "docs/component-roadmaps/README.md"
+                                    "docs/full-language-implementation-gap-map.md"
                                     "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
                                     "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md"
                                     "docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md"
@@ -853,7 +887,7 @@
                    :retained-historical-source-inputs :math-parent-refinement
                    :release-testing-refinement :domain-parent-refinement
                    :ai-parent-refinement :platform-refinement :future-dependency-refinement
-                   :math-schema-dependency-refinement :release-dependency-refinement])
+                   :math-schema-dependency-refinement :release-dependency-refinement :finish-line-refinement])
      :pr574-macro-artifacts-composition
      {:path "specs/sh-family-crosswalk/pr574-macro-artifacts-composition.edn" :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/pr574-macro-artifacts-composition.edn"))}
      :pr574-composition-source-version
@@ -957,7 +991,7 @@
        :disposition :preserve-mixed-source-with-existing-supersession-qualification
        :global-equivalence-owner "01a179ad-2198-7392-966a-1e3c31209027"
        :qualification "Original raw wording and historical checks remain provenance. Existing current direction retires project work/capacity-only refusals; it does not retire malformed/cyclic/tampered/stale rejection, intrinsic type/Unicode/index/arity/target constraints, semantic resource ownership, actual broker/heap/watchdog/capture/platform controls or external provider spending limits. OOM/timeout remains a resource failure. This SH view makes no new global facet/equivalence adjudication."}]
-     :task-authorities tasks :future-task-authorities future-tasks :requirements requirements
+     :task-authorities tasks :future-task-authorities future-tasks :finish-line-sources finish-sources :requirements requirements
      :sh07-sequence (mapv (fn [{:keys [groups source]}]
                             {:id (nth groups 0) :requirement-scope (str/trim (nth groups 1))
                              :accountability (str/trim (nth groups 2))

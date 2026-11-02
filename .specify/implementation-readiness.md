@@ -31,7 +31,7 @@ There is no expected one-to-one document/spec relationship.
 | Organization | Foundation, language, safety, profiles, performance, math, compiler, backends, runtimes, domains, schemas, AI, packages, tools, testing, bootstrap, libraries and governance. | Component outcomes and bounded changes, with existing task authorities and dependency projections. |
 | Behavioral detail | Specifies required behavior and evidence regardless of current implementation. | All 24 component packages now have behavior/planning entries above preserved workflow-transfer records. Broad parent outcomes still need finer source/task and interface reconciliation. |
 | Coverage | All substantive requirements remain in scope, including wider support surfaces and final seedless release. | All 240 documents are linked, but global requirement conjunctions and owner/task entailment remain unassessed. Link coverage is not semantic coverage. |
-| Previously missing routes | Includes governance, wider domain operations, conformance execution and seed/release obligations, alongside the existing separate Platform Product extension. | Resumes ten Governance records, sixteen future Domain records, thirteen future Release testing/seed records and eleven future Platform Product records in their existing authorities. Future-task/SH composition remains pending. |
+| Previously missing routes | Includes governance, wider domain operations, conformance execution and seed/release obligations, alongside the existing separate Platform Product extension. | Resumes ten Governance records and forty future Domain/Release/Product records in their existing authorities. Source-bound declarations now connect them to full-language/SH/Phase18 outcomes; entailment and acceptance remain pending. |
 | Evidence | Requires actual accepted/rejected behavior, applicable proofs, provenance and claim-specific conformance. | Preserves narrow accepted receipts and distinguishes Open, partial, unassessed, held and future work. Source/projection checks cannot establish implementation or acceptance. |
 | Changed policy | Some retained text still contains superseded work/fuel/quota requirements. | Applies the current accounting-removal decision explicitly while preserving semantic validation, real host restrictions and external billing. |
 | Finish line | Full required language/platform scope plus applicable self-hosting, trust and release obligations. | Dependency navigation reaches those outcomes, but detailed global reconciliation and required independent review are unfinished. The first selected increment is Reader contract coverage below. |
@@ -953,3 +953,61 @@ source/facet/owner conjunctions, actual support/evidence assessment, unresolved
 material decisions, current repartition and required independent review/integration
 also remain open. Reader contract coverage remains the first implementation
 preparation increment. Reconciliation remains active.
+
+## Full-language and release finish-line continuation
+
+The existing [finish-line declarations](../docs/acceptance-dependencies.md#full-language-and-release-finish-line-joins)
+now bind the full-language, self-hosting and separate Phase18 outcome layers to
+selected actual component products and existing Spec Kit owners. Fifty-six
+complete source records preserve the 36 full-language task blocks, seven Phase18
+task sections, SH21-SH29, existing P15/Phase18 terminal gates and original global
+completion/staging contracts. Fifty-five rows connect 54 existing consumers to
+425 selected producer results; these are declarations, not new tasks, accepted
+requirements or another completion denominator.
+
+All original FL36 staged prerequisites survive. Construction consumes declared
+interfaces, composition requires actual implementations/selected results, and
+acceptance retains complete source proof and global completion rules. The final
+full-language evidence root reaches every original FL/P18 acceptance plus the
+SH29 boundary. SH29 cannot reach the broader full-language/Phase18 final gate:
+it still closes only its first declared seedless bootstrap subset, without
+claiming 240/240 language coverage. Candidate/runner/comparison products precede
+the final proof decisions; no final-checkbox construction cycle is introduced.
+P15 and applicable Phase18 acceptance require their genuine retirement evidence.
+
+Product implementation results are conditional on its material adoption boundary,
+currently unknown. The conservative edge stays visible; disabling it removes
+only those Product edges and preserves generic domain/target work. Historical
+checked audits and hosted wrapper/package receipts retain recorded scope without
+becoming current execution or seedless acceptance. The original task statuses,
+149 current task records, forty future records, SH/SH07 routes and scoped Reader
+receipts remain unchanged. Both the combined staged graph and the final-root
+reachability controls pass, with mapping readiness still false.
+
+Source input `0c85be0f758272dfc81d91fb5ae4db6fa4a5ccec` advances the
+dependency declarations. The full bridge/projection and pending fingerprint at
+`08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d` are retained. The unchanged
+full-language gap map gains an explicit crosswalk pin at that predecessor;
+the earlier audit already read that source. Other applying pins stay fixed.
+The version record now contains twenty task files, five navigation files and
+the dependency/full-language inputs. Current mapping review remains pending at
+`a969db9ecb4565f71217702129ae9822fcb85136c5f99014843d355f3280f412`.
+
+Validation passes: 32 crosswalk tests / 1,266 assertions; 23 dependency tests /
+1,774 assertions; deterministic crosswalk/original inventory; read-only audit;
+canonical document/full-language structural validators; language boundary
+(six tests / eleven assertions); and conservation/navigation. Preliminary helper
+and test-form syntax errors were corrected before the passing runs and receive
+no validation credit. No compiler, native/C12/provider/device, migration, signing,
+publication or held operation was executed. No other chat was messaged.
+Conservation/navigation passes for 73 changed files, 67 Markdown files, 2,658
+local references, 139 original component routes, 48 historical suffixes and
+all 48 original task/evidence contents after stripping declared additions.
+Changed files are ASCII and whitespace checks pass.
+
+The dependency declaration sequence now reaches the required finish-line layers.
+Remaining reconciliation work is substantive source/task and full-conjunction
+entailment across the 240 contracts and extensions, current implementation/support
+evidence assessment, material decisions and independent review/integration. The
+declarations do not prove that semantic coverage. Reader contract coverage remains
+the first implementation preparation increment. Reconciliation remains active.

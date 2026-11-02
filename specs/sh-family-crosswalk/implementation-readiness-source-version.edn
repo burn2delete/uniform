@@ -19,7 +19,7 @@
    "evolution/security-review"
    "evolution/stabilization-decision"
    "evolution/target-support-admission"]},
- :source-input-commit "8f4f2236509364ebba1d632e9ed6a8420003e487",
+ :source-input-commit "0c85be0f758272dfc81d91fb5ae4db6fa4a5ccec",
  :task-comparisons
  {:unchanged-body-count 121,
   :changed-bodies
@@ -2231,10 +2231,17 @@
     "3487862f9c4c6bf19b71a4dd7052ec8e9e0b068ad594e5ea7567cd69f6c20eb6",
     :prior-explicit-applying-pin nil},
    :after
-   {:commit "8f4f2236509364ebba1d632e9ed6a8420003e487",
+   {:commit "0c85be0f758272dfc81d91fb5ae4db6fa4a5ccec",
     :sha256
-    "dd88a83687baa0a8504e61a3b7703291ae5f3d8e802d0b40f52fe8e64a23e8f4"},
-   :scope :dependency-declaration-version}],
+    "3cffa07b7066eca0e0bdc58862171e1d064002d2c8e77e711a98d857c2e733ae"},
+   :scope :dependency-declaration-version}
+  {:path "docs/full-language-implementation-gap-map.md",
+   :before {:source-version-state :not-previously-projected},
+   :after
+   {:commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac"},
+   :scope :full-language-source-version}],
  :inspection-locators
  {"docs/phase-02-safety/043-safe14-supply-chain-safety.md"
   {:commit "697917447d70ba0797a096d9427d4706bf5515df",
@@ -4622,6 +4629,8 @@
   "69831d09bc2007844265968b265c493cf064bdf9",
   "docs/component-roadmaps/compiler-api.md"
   "69831d09bc2007844265968b265c493cf064bdf9",
+  "docs/full-language-implementation-gap-map.md"
+  "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
   "specs/expand-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9",
   "docs/phase-05-mathematical-and-elementary-function-system/README.md"
@@ -4645,7 +4654,7 @@
   "docs/phase-02-safety/043-safe14-supply-chain-safety.md"
   "697917447d70ba0797a096d9427d4706bf5515df",
   "docs/acceptance-dependencies.md"
-  "8f4f2236509364ebba1d632e9ed6a8420003e487",
+  "0c85be0f758272dfc81d91fb5ae4db6fa4a5ccec",
   "specs/platform-workflow/tasks.md"
   "0876063f41e2ad3e13f3c332f4877daecb62b45d",
   "specs/backends-workflow/tasks.md"
@@ -4656,5 +4665,892 @@
   "69831d09bc2007844265968b265c493cf064bdf9",
   "specs/emit-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9"},
+ :finish-line-refinement
+ {:full-project-finish-line :declared-execution-unassessed,
+  :new-full-language-source
+  {:path "docs/full-language-implementation-gap-map.md",
+   :before {:source-version-state :not-previously-projected},
+   :after
+   {:commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac"}},
+  :predecessor-readiness-successor
+  {:commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+   :path
+   "specs/sh-family-crosswalk/implementation-readiness-source-version.edn",
+   :sha256
+   "f67c903791ec85241218af02d88869e3845d5f5d71a0d2d37fb2a89091327b4b",
+   :projection-path "specs/sh-family-crosswalk/crosswalk.edn",
+   :projection-sha256
+   "f7e1e3d0a97fc221601bde3b3ccdae788a160276f7a345b9bf61b0f6f85f8946",
+   :input-fingerprint
+   "97208a8459357873deeda3d2a8ea8a1bf827ce63f04649a377e37eb15398af1f"},
+  :original-full-language-stage-edges :preserved,
+  :source-entailment :unassessed,
+  :selected-results 425,
+  :dependency-source
+  {:path "docs/acceptance-dependencies.md",
+   :before
+   {:commit "8f4f2236509364ebba1d632e9ed6a8420003e487",
+    :sha256
+    "dd88a83687baa0a8504e61a3b7703291ae5f3d8e802d0b40f52fe8e64a23e8f4"},
+   :after
+   {:commit "0c85be0f758272dfc81d91fb5ae4db6fa4a5ccec",
+    :sha256
+    "3cffa07b7066eca0e0bdc58862171e1d064002d2c8e77e711a98d857c2e733ae"}},
+  :consumers
+  ["FL-P00-T00"
+   "FL-P00-T01"
+   "FL-P00-T02"
+   "FL-P01-T01"
+   "FL-P01-T02"
+   "FL-P01-T03"
+   "FL-P02-T01"
+   "FL-P02-T02"
+   "FL-P03-T01"
+   "FL-P03-T02"
+   "FL-P04-T01"
+   "FL-P04-T02"
+   "FL-P05-T01"
+   "FL-P05-T02"
+   "FL-P06-T01"
+   "FL-P06-T02"
+   "FL-P06-T03"
+   "FL-P07-T01"
+   "FL-P07-T02"
+   "FL-P08-T01"
+   "FL-P08-T02"
+   "FL-P09-T01"
+   "FL-P10-T01"
+   "FL-P11-T01"
+   "FL-P12-T01"
+   "FL-P13-T01"
+   "FL-P13-T02"
+   "FL-P14-T01"
+   "FL-P14-T02"
+   "FL-P15-T01"
+   "FL-P15-T02"
+   "FL-P15-T03"
+   "FL-P16-T01"
+   "FL-P17-T01"
+   "FL-P18-T01"
+   "FL-P18-T02"
+   "P15-S23"
+   "P18-T00"
+   "P18-T01"
+   "P18-T02"
+   "P18-T03"
+   "P18-T04"
+   "P18-T05"
+   "P18-T06"
+   "SH-21"
+   "SH-22"
+   "SH-23"
+   "SH-24"
+   "SH-25"
+   "SH-26"
+   "SH-27"
+   "SH-28"
+   "SH-29"
+   "final-phase-18-completion-gate"],
+  :source-records
+  [{:id "FL-P00-T00",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "checked-at-recorded-scope",
+    :source-span
+    {:start-byte 16840,
+     :end-byte 17408,
+     :start-line 286,
+     :end-line 296,
+     :sha256
+     "773b985833c62d6a54e4683bb4e996323056e41ff749645b96971f5f7b7b1865"}}
+   {:id "FL-P00-T01",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "checked-at-recorded-scope",
+    :source-span
+    {:start-byte 17408,
+     :end-byte 18143,
+     :start-line 297,
+     :end-line 309,
+     :sha256
+     "4e4c4b9215d4fb4084be74308a386d38076fabb4496d0a7af85e5c72e739c3cf"}}
+   {:id "FL-P00-T02",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "checked-at-recorded-scope",
+    :source-span
+    {:start-byte 18143,
+     :end-byte 18826,
+     :start-line 310,
+     :end-line 323,
+     :sha256
+     "67443c5224185b9d967b8c80d4bc2b15f8d186b2d16dd72195fdee343ed74a4b"}}
+   {:id "FL-P01-T01",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 18942,
+     :end-byte 19830,
+     :start-line 332,
+     :end-line 349,
+     :sha256
+     "54610469967cc96023e27f94e3495fb1ea661826103eae15cab16e2b205dc7b7"}}
+   {:id "FL-P01-T02",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 19830,
+     :end-byte 20788,
+     :start-line 350,
+     :end-line 366,
+     :sha256
+     "d9f366e7c800d0eace3c5c513b2a2b3f06fbab404ab0496b4c26220a46db5847"}}
+   {:id "FL-P01-T03",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 20788,
+     :end-byte 21611,
+     :start-line 367,
+     :end-line 382,
+     :sha256
+     "b7ca268105a0e89dfdbc5b146dd4cd762106d2987b63f4b355a97c131c900f6f"}}
+   {:id "FL-P02-T01",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 21719,
+     :end-byte 22192,
+     :start-line 391,
+     :end-line 400,
+     :sha256
+     "e650a26d514cca2f6017d2cfab9edfb102d48d1f8eb1d10d6fd7efcc70b08bac"}}
+   {:id "FL-P02-T02",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 22192,
+     :end-byte 22884,
+     :start-line 401,
+     :end-line 412,
+     :sha256
+     "e0c616ac7930146dafd1c1032a4073f7aa83add9a877ce60ed25998387b9fc82"}}
+   {:id "FL-P03-T01",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 23015,
+     :end-byte 23552,
+     :start-line 421,
+     :end-line 431,
+     :sha256
+     "584b09e94b44fac1005d2bda09d46b920ec1f763b80ecb11a7e05877df302154"}}
+   {:id "FL-P03-T02",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 23552,
+     :end-byte 23972,
+     :start-line 432,
+     :end-line 441,
+     :sha256
+     "416119e584ad63d01d4898786bb2af3bbbcbd638ead604bfa84f55fb43b05605"}}
+   {:id "FL-P04-T01",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 24137,
+     :end-byte 24684,
+     :start-line 450,
+     :end-line 459,
+     :sha256
+     "e5e4bdd3127d83c9c87aa7134d16268cb6db3169fa213c4df03e4f7965943dc3"}}
+   {:id "FL-P04-T02",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 24684,
+     :end-byte 25051,
+     :start-line 460,
+     :end-line 468,
+     :sha256
+     "d4558f892269fa17e8e63b447ff424970362cf7b460f9c4c68d3a32aad2750f8"}}
+   {:id "FL-P05-T01",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 25237,
+     :end-byte 25755,
+     :start-line 477,
+     :end-line 487,
+     :sha256
+     "1755b54975da908682873c8bb016243c56c918670a73ac48ce32d4db0aae790c"}}
+   {:id "FL-P05-T02",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 25755,
+     :end-byte 26299,
+     :start-line 488,
+     :end-line 498,
+     :sha256
+     "c5e01d12c93c4355d21fcec1f2f27abb276d9bc3708be595dd524f0a6bda3547"}}
+   {:id "FL-P06-T01",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 26461,
+     :end-byte 27234,
+     :start-line 507,
+     :end-line 520,
+     :sha256
+     "6b3bf3a9d78f618674897b75f831b79b6406ee221dcec7e616a02e75ebfcc3d8"}}
+   {:id "FL-P06-T02",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 27234,
+     :end-byte 27759,
+     :start-line 521,
+     :end-line 530,
+     :sha256
+     "b63aff97db2cc9dc6e687a91109ba492e7547d28edcede404d4b3b7d8b03d717"}}
+   {:id "FL-P06-T03",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 27759,
+     :end-byte 28321,
+     :start-line 531,
+     :end-line 542,
+     :sha256
+     "28b4c96cf9cfbc4e0921b73d95eb900dc09c10c8bd64a7256d6756781bc63285"}}
+   {:id "FL-P07-T01",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 28459,
+     :end-byte 28909,
+     :start-line 551,
+     :end-line 560,
+     :sha256
+     "e0fdb2cc34adb50b0bab7382bfbe500f13b6fcc85bdbe71f9a0e9dd6fba0e3a4"}}
+   {:id "FL-P07-T02",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 28909,
+     :end-byte 29385,
+     :start-line 561,
+     :end-line 570,
+     :sha256
+     "e1157da9ac493f12b507439bc31018c928fc3116c0f8d84e2cb3fa1617ccfcaa"}}
+   {:id "FL-P08-T01",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 29534,
+     :end-byte 30156,
+     :start-line 579,
+     :end-line 590,
+     :sha256
+     "f2dd06e4461f0288a18732201a17ac3b614d2645dacc293316005fa23c8303ca"}}
+   {:id "FL-P08-T02",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 30156,
+     :end-byte 30498,
+     :start-line 591,
+     :end-line 598,
+     :sha256
+     "7d7070f805d56f45dc366b4bbb6bbbe1f7d218a7301027f410a500d0119a99cb"}}
+   {:id "FL-P09-T01",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 30659,
+     :end-byte 31225,
+     :start-line 607,
+     :end-line 618,
+     :sha256
+     "26ed727f8fef623a1d1db90aa54971037c2c2975439569ab6c7abb5f9acc750b"}}
+   {:id "FL-P10-T01",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 31403,
+     :end-byte 32094,
+     :start-line 627,
+     :end-line 639,
+     :sha256
+     "ada218040f02d5038e1eb15f9a5caa1f5c8e4ddfa0bf0657c62084111b945921"}}
+   {:id "FL-P11-T01",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 32270,
+     :end-byte 33003,
+     :start-line 648,
+     :end-line 661,
+     :sha256
+     "2a3b70d1710152934dc1fb17cb1c61819f501145f07c050174ad2f7f14653ed4"}}
+   {:id "FL-P12-T01",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 33186,
+     :end-byte 33964,
+     :start-line 670,
+     :end-line 683,
+     :sha256
+     "14748858b5d3d05f9c9b28533e34e9328489c49de55e7add925c3278faf86e33"}}
+   {:id "FL-P13-T01",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 34134,
+     :end-byte 34991,
+     :start-line 692,
+     :end-line 705,
+     :sha256
+     "0732b907f45118625b918234f762f36e8c6b286047ddcde00b0fe0ee4497184f"}}
+   {:id "FL-P13-T02",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 34991,
+     :end-byte 35520,
+     :start-line 706,
+     :end-line 715,
+     :sha256
+     "5c3c7fa56827d5cf8ba5a4610dc14883de83a7dd379ed79575010bc9e687eee9"}}
+   {:id "FL-P14-T01",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 35692,
+     :end-byte 36270,
+     :start-line 724,
+     :end-line 734,
+     :sha256
+     "b355b8715230a87d0ea03e9f240cc28f851676a42fc0bfd63d93fe10e29ad69f"}}
+   {:id "FL-P14-T02",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 36270,
+     :end-byte 36622,
+     :start-line 735,
+     :end-line 743,
+     :sha256
+     "3628bdb55c9cc4fff4b452216d1ce59685d9c20804b2cf2531fc25bcbd19673a"}}
+   {:id "FL-P15-T01",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 37573,
+     :end-byte 38009,
+     :start-line 766,
+     :end-line 774,
+     :sha256
+     "6583e7e85cf12060e5986c16db6b73479eb963346e2925a9a904249f003ab982"}}
+   {:id "FL-P15-T02",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 38009,
+     :end-byte 38524,
+     :start-line 775,
+     :end-line 784,
+     :sha256
+     "312550ca112924c16e8b4e118136be0f572516e2383ae99f45352918b7eba7fe"}}
+   {:id "FL-P15-T03",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 38524,
+     :end-byte 39012,
+     :start-line 785,
+     :end-line 794,
+     :sha256
+     "eeb5f9c6364f5b51ac1764e71b4497b739068ac07ff0537efade483d7b86288a"}}
+   {:id "FL-P16-T01",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 39199,
+     :end-byte 39773,
+     :start-line 804,
+     :end-line 814,
+     :sha256
+     "3207fbf8bbcebacc18ab0353c4e3804dfba80e718c1c345ca063c97aad1e580a"}}
+   {:id "FL-P17-T01",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 39942,
+     :end-byte 40544,
+     :start-line 823,
+     :end-line 834,
+     :sha256
+     "485360373ea8c26d1977c2021bc92cc730791048eb33a9fde0bb293b6957c30a"}}
+   {:id "FL-P18-T01",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 40789,
+     :end-byte 41539,
+     :start-line 844,
+     :end-line 856,
+     :sha256
+     "00c80b4f8be857c92305f8348814e3dc33fbe15740bebe620541cb727381f218"}}
+   {:id "FL-P18-T02",
+    :kind :full-language-task,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "open",
+    :source-span
+    {:start-byte 41539,
+     :end-byte 42651,
+     :start-line 857,
+     :end-line 877,
+     :sha256
+     "b2762b996c7953ccfb1cfa59c2c6ed07eae643eb8b0fe3d3fa2721fd070c7672"}}
+   {:id "P18-T00",
+    :kind :phase18-task,
+    :path
+    "docs/phase-18-binary-distribution-and-seedless-release/IMPLEMENTATION-ROADMAP.md",
+    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "a4659aaa03fafe5f99d711a48d4dec62721716d0ae7aa435c9d387c2dcdf2e57",
+    :recorded-status "complete",
+    :source-span
+    {:start-byte 7767,
+     :end-byte 9764,
+     :start-line 129,
+     :end-line 169,
+     :sha256
+     "148b8a4c51d36d1dd72155f53742d5a0f3eca849fea304d3a7e656bce75a7bc9"}}
+   {:id "P18-T01",
+    :kind :phase18-task,
+    :path
+    "docs/phase-18-binary-distribution-and-seedless-release/IMPLEMENTATION-ROADMAP.md",
+    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "a4659aaa03fafe5f99d711a48d4dec62721716d0ae7aa435c9d387c2dcdf2e57",
+    :recorded-status "complete",
+    :source-span
+    {:start-byte 9764,
+     :end-byte 11505,
+     :start-line 170,
+     :end-line 204,
+     :sha256
+     "295572bc2b08a5c71271e00805176a1b1964bdb6875c9d3ecd8847148cf4a0a1"}}
+   {:id "P18-T02",
+    :kind :phase18-task,
+    :path
+    "docs/phase-18-binary-distribution-and-seedless-release/IMPLEMENTATION-ROADMAP.md",
+    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "a4659aaa03fafe5f99d711a48d4dec62721716d0ae7aa435c9d387c2dcdf2e57",
+    :recorded-status "complete",
+    :source-span
+    {:start-byte 11505,
+     :end-byte 13151,
+     :start-line 205,
+     :end-line 237,
+     :sha256
+     "55e8cfb86167ee7ec5355b03792e4487bb94f95f3cf93c7f91aacfef2c8f6aa3"}}
+   {:id "P18-T03",
+    :kind :phase18-task,
+    :path
+    "docs/phase-18-binary-distribution-and-seedless-release/IMPLEMENTATION-ROADMAP.md",
+    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "a4659aaa03fafe5f99d711a48d4dec62721716d0ae7aa435c9d387c2dcdf2e57",
+    :recorded-status "incomplete",
+    :source-span
+    {:start-byte 13151,
+     :end-byte 15742,
+     :start-line 238,
+     :end-line 284,
+     :sha256
+     "10c527b7b981fbfa3950cf1f2ae6b57ed9ef81f3baea32ab09838cc449928e84"}}
+   {:id "P18-T04",
+    :kind :phase18-task,
+    :path
+    "docs/phase-18-binary-distribution-and-seedless-release/IMPLEMENTATION-ROADMAP.md",
+    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "a4659aaa03fafe5f99d711a48d4dec62721716d0ae7aa435c9d387c2dcdf2e57",
+    :recorded-status "complete",
+    :source-span
+    {:start-byte 15742,
+     :end-byte 18639,
+     :start-line 285,
+     :end-line 340,
+     :sha256
+     "88727bb9d53658dd801a6282f52f8a1305bdc306a2f91516fa113a87e59fd782"}}
+   {:id "P18-T05",
+    :kind :phase18-task,
+    :path
+    "docs/phase-18-binary-distribution-and-seedless-release/IMPLEMENTATION-ROADMAP.md",
+    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "a4659aaa03fafe5f99d711a48d4dec62721716d0ae7aa435c9d387c2dcdf2e57",
+    :recorded-status "incomplete",
+    :source-span
+    {:start-byte 18639,
+     :end-byte 20859,
+     :start-line 341,
+     :end-line 383,
+     :sha256
+     "5183417a780c82796fdaaf9589c467aa27ffa9a8ef8af2b5aecab4d51b57c426"}}
+   {:id "P18-T06",
+    :kind :phase18-task,
+    :path
+    "docs/phase-18-binary-distribution-and-seedless-release/IMPLEMENTATION-ROADMAP.md",
+    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "a4659aaa03fafe5f99d711a48d4dec62721716d0ae7aa435c9d387c2dcdf2e57",
+    :recorded-status
+    "incomplete; blocked on P15 final seed-retirement proof",
+    :source-span
+    {:start-byte 20859,
+     :end-byte 22930,
+     :start-line 384,
+     :end-line 422,
+     :sha256
+     "3e3d9a3b693ddfb68107114404eaa744da7a17f94c53767895312b63d1522b20"}}
+   {:id "SH-21",
+    :kind :self-hosting-milestone,
+    :path "docs/self-hosting-milestone-completion-plan.md",
+    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "c625b50f3331e4692804392834a12dc4f0845b449786a69fd1b53b15febde188",
+    :recorded-status "source-declared-only",
+    :source-span
+    {:start-byte 44842,
+     :end-byte 46259,
+     :start-line 738,
+     :end-line 761,
+     :sha256
+     "cd5dc405e7ae01c88589939c9585b0184ffaea23deeb9904c954e76ae4c1f109"}}
+   {:id "SH-22",
+    :kind :self-hosting-milestone,
+    :path "docs/self-hosting-milestone-completion-plan.md",
+    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "c625b50f3331e4692804392834a12dc4f0845b449786a69fd1b53b15febde188",
+    :recorded-status "source-declared-only",
+    :source-span
+    {:start-byte 46259,
+     :end-byte 47721,
+     :start-line 762,
+     :end-line 786,
+     :sha256
+     "aa1ac830fb8a41ae23400ef20b06aa06d3d5996eb7f1ef7d6d13d30066aeac13"}}
+   {:id "SH-23",
+    :kind :self-hosting-milestone,
+    :path "docs/self-hosting-milestone-completion-plan.md",
+    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "c625b50f3331e4692804392834a12dc4f0845b449786a69fd1b53b15febde188",
+    :recorded-status "source-declared-only",
+    :source-span
+    {:start-byte 47721,
+     :end-byte 49242,
+     :start-line 787,
+     :end-line 811,
+     :sha256
+     "9847afafad3c95b09a8df46cd726fd1e3e831c1cf640b5d39458e431d262554e"}}
+   {:id "SH-24",
+    :kind :self-hosting-milestone,
+    :path "docs/self-hosting-milestone-completion-plan.md",
+    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "c625b50f3331e4692804392834a12dc4f0845b449786a69fd1b53b15febde188",
+    :recorded-status "source-declared-only",
+    :source-span
+    {:start-byte 49242,
+     :end-byte 50763,
+     :start-line 812,
+     :end-line 836,
+     :sha256
+     "192a98f1f2243bae51ee57e2cced3f36a6de7626333ea989b7cf931243bf1c1a"}}
+   {:id "SH-25",
+    :kind :self-hosting-milestone,
+    :path "docs/self-hosting-milestone-completion-plan.md",
+    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "c625b50f3331e4692804392834a12dc4f0845b449786a69fd1b53b15febde188",
+    :recorded-status "source-declared-only",
+    :source-span
+    {:start-byte 50763,
+     :end-byte 52248,
+     :start-line 837,
+     :end-line 860,
+     :sha256
+     "cbc2a629dec51197806356050d4d8f6a0975b629a8f18766aea90e21a1c2bad4"}}
+   {:id "SH-26",
+    :kind :self-hosting-milestone,
+    :path "docs/self-hosting-milestone-completion-plan.md",
+    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "c625b50f3331e4692804392834a12dc4f0845b449786a69fd1b53b15febde188",
+    :recorded-status "source-declared-only",
+    :source-span
+    {:start-byte 52248,
+     :end-byte 53865,
+     :start-line 861,
+     :end-line 886,
+     :sha256
+     "c411affe633199069c2fdf74da4b37f75ed0e2a4d95911ace39ad21ad3b0a863"}}
+   {:id "SH-27",
+    :kind :self-hosting-milestone,
+    :path "docs/self-hosting-milestone-completion-plan.md",
+    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "c625b50f3331e4692804392834a12dc4f0845b449786a69fd1b53b15febde188",
+    :recorded-status "source-declared-only",
+    :source-span
+    {:start-byte 53865,
+     :end-byte 55278,
+     :start-line 887,
+     :end-line 910,
+     :sha256
+     "9760460cba75c529e28e442939e90260436a29ce62afe4f41752ce9c0d652d7e"}}
+   {:id "SH-28",
+    :kind :self-hosting-milestone,
+    :path "docs/self-hosting-milestone-completion-plan.md",
+    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "c625b50f3331e4692804392834a12dc4f0845b449786a69fd1b53b15febde188",
+    :recorded-status "source-declared-only",
+    :source-span
+    {:start-byte 55278,
+     :end-byte 56782,
+     :start-line 911,
+     :end-line 935,
+     :sha256
+     "7f8947b34b52cfb7502a1af1b78dcdd212c86cabfaddd932b31cbd05adee523d"}}
+   {:id "SH-29",
+    :kind :self-hosting-milestone,
+    :path "docs/self-hosting-milestone-completion-plan.md",
+    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "c625b50f3331e4692804392834a12dc4f0845b449786a69fd1b53b15febde188",
+    :recorded-status "source-declared-only",
+    :source-span
+    {:start-byte 56782,
+     :end-byte 58941,
+     :start-line 936,
+     :end-line 968,
+     :sha256
+     "ff26569e14594bd3f26b7d5530a24ed93cb4a35986bfb83ab446cf3eb0d2dc40"}}
+   {:id "full-language-completion-rule",
+    :kind :shared-proof-contract,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "source-declared-only",
+    :source-span
+    {:start-byte 2095,
+     :end-byte 3310,
+     :start-line 43,
+     :end-line 65,
+     :sha256
+     "b01b57928b9454e577ae95c85ac14077056c339ea168e9b971306117c06c37b1"}}
+   {:id "full-language-staging-contract",
+    :kind :shared-stage-contract,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "source-declared-only",
+    :source-span
+    {:start-byte 11978,
+     :end-byte 16715,
+     :start-line 214,
+     :end-line 277,
+     :sha256
+     "e6bff9108f4aad8c4594afe2e8c8b96fc55679df8d591db1a303ee43b101eb25"}}
+   {:id "P15-S23",
+    :kind :existing-terminal-gate,
+    :path "docs/full-language-implementation-gap-map.md",
+    :source-commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
+    :sha256
+    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    :recorded-status "source-declared-only",
+    :source-span
+    {:start-byte 36822,
+     :end-byte 37573,
+     :start-line 751,
+     :end-line 765,
+     :sha256
+     "814ad76c78d93c0ae5199ee56d4e2a818d744ba13ed2d186692ad50006666c86"}}
+   {:id "final-phase-18-completion-gate",
+    :kind :existing-terminal-gate,
+    :path
+    "docs/phase-18-binary-distribution-and-seedless-release/IMPLEMENTATION-ROADMAP.md",
+    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "a4659aaa03fafe5f99d711a48d4dec62721716d0ae7aa435c9d387c2dcdf2e57",
+    :recorded-status "incomplete; final public release is blocked.",
+    :source-span
+    {:start-byte 22930,
+     :end-byte 24200,
+     :start-line 423,
+     :end-line 450,
+     :sha256
+     "03d52ed3ea8e34883642de4554245d5b79125b614dc3c813d4f4ae9eca50369a"}}],
+  :declaration-rows 55,
+  :independent-review :pending,
+  :platform-product-adoption :unknown,
+  :first-seedless-stop :unchanged-not-240-document-completion,
+  :implementation-acceptance :unassessed},
  :input-fingerprint
- "97208a8459357873deeda3d2a8ea8a1bf827ce63f04649a377e37eb15398af1f"}
+ "a969db9ecb4565f71217702129ae9822fcb85136c5f99014843d355f3280f412"}

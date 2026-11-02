@@ -523,5 +523,59 @@
       (is (= :pending (get-in missing [:nodes "task:release/remaining-tasks-and-evidence/execute-language-conformance-fixtures/implementation"
                                       :dependency-review]))))))
 
+(deftest finish-line-retains-original-stages-proof-roots-and-first-release-scope
+  (let [p (edn/read-string (slurp dependencies/sh-crosswalk-path))
+        sources (:finish-line-sources p)
+        tasks (into {} (for [rs (concat (vals (:task-authorities p)) (vals (:future-task-authorities p))) r rs] [(:id r) r]))
+        v (dependencies/finish-line-view sources tasks (:source-snapshots p) slurp)
+        base (merge (into {} (for [id (keys tasks)] [(str "task:" id "/interface") {:state :accepted}]))
+                    (into {} (for [n (range 30)] [(format "SH-%02d" n) {:state :unassessed}])) )
+        nodes (merge base (:nodes v)) edges (:typed-edges v)
+        graph (dependencies/typed-adjacency nodes edges (:condition-values v))
+        final (dependencies/reachable graph "FL-P18-T02/acceptance")
+        original (dependencies/staged-graph (dependencies/full-language-graph (slurp dependencies/roadmap-path)))
+        projected (set (for [e edges :when (and (= :original-roadmap-stage-prerequisite (:kind e))
+                                               (str/starts-with? (:from e) "FL-"))] [(:from e) (:to e)]))]
+    (is (= 56 (count sources)))
+    (is (= 55 (count (get-in v [:summary :routes]))))
+    (is (= 54 (count (set (map :consumer (get-in v [:summary :routes]))))))
+    (is (= (set (for [[from inputs] original to inputs] [from to])) projected))
+    (is (empty? (dependencies/cycles graph)))
+    (doseq [id dependencies/full-language-task-ids] (is (final (str id "/acceptance")) id))
+    (doseq [n (range 7)] (is (final (format "P18-T%02d/acceptance" n))))
+    (is (every? final ["P15-S23" "final-phase-18-completion-gate" "SH-29"]))
+    (is (not ((dependencies/reachable graph "SH-29") "FL-P18-T02/acceptance")))
+    (is (not ((dependencies/reachable graph "SH-29") "final-phase-18-completion-gate")))
+    (is (= :unassessed (get-in nodes ["FL-P00-T00/acceptance" :state])))
+    (is (= "checked-at-recorded-scope" (get-in nodes ["FL-P00-T00/acceptance" :recorded-status])))
+    (is (= :unassessed (get-in nodes ["P18-T02/acceptance" :state])))
+    (is (= "complete" (get-in nodes ["P18-T02/acceptance" :recorded-status])))
+    (doseq [row sources]
+      (is (nil? (dependencies/source-bound! (:source row) (:source-snapshots p) slurp)) (:id row)))
+    (let [conditional (filter #(= :platform-product-adopted (:condition %)) edges)
+          disabled (dependencies/typed-adjacency nodes edges {:platform-product-adopted false})
+          frontier (dependencies/advisory-frontier nodes edges (:condition-values v))]
+      (is (= 22 (count conditional)))
+      (is (= :unknown-condition (get-in frontier ["FL-P09-T01/implementation" :state])))
+      (doseq [e conditional]
+        (is ((graph (:from e)) (:to e)))
+        (is (not ((disabled (:from e)) (:to e)))))
+      (is (seq (disabled "FL-P09-T01/composition"))))
+    (is (thrown? Exception (dependencies/finish-line-view (pop sources) tasks (:source-snapshots p) slurp)))
+    (is (thrown? Exception (dependencies/finish-line-view
+                            (assoc-in sources [0 :recorded-status] "accepted-now") tasks (:source-snapshots p) slurp)))
+    (is (thrown? Exception (dependencies/finish-line-view sources tasks (:source-snapshots p)
+                            #(if (= % dependencies/roadmap-path) (str (slurp %) "\nChanged contract.\n") (slurp %)))))
+    (let [text (slurp dependencies/future-dependency-path)
+          ids (set (keys tasks)) consumers (set (map :consumer (get-in v [:summary :routes])))
+          parse #(dependencies/finish-line-routes % ids consumers)]
+      (doseq [[from to] [["| `FL-P00-T00` |" "| `FL-P99-T99` |"]
+                         ["| always | Existing bounded public-surface" "| invented-condition | Existing bounded public-surface"]
+                         ["`FL-P00-T00` | `" "`FL-P00-T00` | `missing-task`, `"]]]
+        (is (thrown? Exception (parse (str/replace text from to))) to))
+      (is (thrown? Exception (parse (str/replace text #"(?m)^\| `SH-29` \|[^\n]*\n" ""))))
+      (is (thrown? Exception (parse (str/replace text "<!-- finish-line-dependencies:end -->"
+                                 "| `SH-29` | `pipeline` | always | Duplicate. |\n<!-- finish-line-dependencies:end -->")))))))
+
 (let [result (run-tests 'acceptance-dependencies-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))
