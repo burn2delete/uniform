@@ -1586,10 +1586,7 @@
   [validation
    (p15-s23-trusted-carrier-validation
     value
-    :default-only
-    1048576
-    256
-    4096)]
+    :default-only)]
   (when-not
    (= :passed (:status validation))
    (sh04-syntax-boundary-fail!
@@ -1599,12 +1596,7 @@
     carrier
     (select-keys
      validation
-     [:reason
-      :observed-nodes
-      :observed-depth
-      :maximum-nodes
-      :maximum-depth
-      :maximum-width])))
+     [:reason :class])))
   value))
 
 (defn
@@ -2159,10 +2151,7 @@
     carrier-validation
     (p15-s23-trusted-carrier-validation
      (sh04-syntax-strip-host-metadata c2-view)
-     :default-only
-     1048576
-     256
-     4096)]
+     :default-only)]
    (and
     (=
      #{:reader-source-revision
