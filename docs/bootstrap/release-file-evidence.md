@@ -157,3 +157,23 @@ and unrun boundaries remain. The C evidence retains the real stage-unit failure
 and correction. The corrected exact union needs renewed independent acceptance,
 its own CI/artifacts and immediate clean current-main preflight; old acceptance
 and green CI for 90bfa54c do not transfer.
+
+## Current regression-main composition
+
+Current base is c8a67ad6f6eda914a60f883a45d2de2a77ce00b3, tree
+7cf36b5ebaef9125ab62776dbfa2ac8b6f26c681. Source composition
+ea3d5633daf3d20257f841d10d9f317dfd6954de, tree
+6f98308755fa38e301d1df534d14917eb88b5080, includes the C diagnostic-order
+correction and the incoming SH-08 test-only change. Release and JVM code remain
+unchanged by that correction and by main.
+
+All original before processes freshly run exact clean c8 main in this same
+Runtime checkout and finish before source restoration. Complete/raw Release
+products, actual source/plan/file hashes and the original/new lookup probe all
+agree. Prior Runtime32 records remain at
+/tmp/uniform-release-files-evidence-runtime32-history. Backend tests pass 46/961,
+the same seven allowed Release selectors 7/83, boundary 47/1154 and nine-path
+lint has zero warnings/blockers. Six complete production files reconstruct.
+All package/archive/release/native restrictions remain. New exact independent
+acceptance, candidate-owned CI/artifacts and immediate clean current-main
+preflight remain gates; no old acceptance or CI transfer is claimed.

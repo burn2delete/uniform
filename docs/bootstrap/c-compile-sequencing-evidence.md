@@ -258,3 +258,26 @@ invalidated by this defect and cannot establish corrected-candidate eligibility.
 New exact independent review, candidate-owned CI/artifacts and immediate clean
 current-main preflight remain mandatory. The native C body, broker, process,
 toolchain, Gates, default pinned Reader and release routes remain unrun.
+
+## Current regression-main composition
+
+Current base is c8a67ad6f6eda914a60f883a45d2de2a77ce00b3, tree
+7cf36b5ebaef9125ab62776dbfa2ac8b6f26c681. Main PR 526 changes only the
+SH-08 function-call type regression file. Source composition
+ea3d5633daf3d20257f841d10d9f317dfd6954de has tree
+6f98308755fa38e301d1df534d14917eb88b5080, retaining the diagnostic-order
+correction above. No incoming C/JVM/Release implementation changes occur.
+
+Fresh original before captures for all three slices run exact clean c8 main
+in this same Runtime checkout, without added fixtures, and exit before restoring
+the corrected source. Complete after records and original serializations all
+agree; source/plan/file hashes and the Release lookup probe recompute. Earlier
+records remain in the respective base32/runtime32 history directories.
+
+Fresh backend tests pass 46/961, selected Release tests 7/83 and boundary
+47/1154. All six production files reconstruct against c8, with the explicit
+equivalent diagnostic callee retrieval and original C type tags preserved.
+Nine-path contextual lint has zero warnings and blockers, archived at
+/tmp/uniform-backend-release-c8-lint. Renewed exact independent acceptance,
+new candidate-owned CI/artifacts and immediate clean current-main preflight
+remain required. Old source/base acceptance and CI do not transfer.

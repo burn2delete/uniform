@@ -183,3 +183,16 @@ Release tests 7/83, boundary 47/1154 and nine-path lint has zero blockers.
 The C evidence records the retained adversarial nonpass and correction. The
 corrected exact union requires renewed review and its own CI/artifact/preflight
 gates; prior 90bfa54c checks and acceptance do not transfer.
+
+## Current regression-main composition
+
+Base c8a67ad6f6eda914a60f883a45d2de2a77ce00b3, tree
+7cf36b5ebaef9125ab62776dbfa2ac8b6f26c681, adds only SH-08 regression
+coverage. Source ea3d5633daf3d20257f841d10d9f317dfd6954de, tree
+6f98308755fa38e301d1df534d14917eb88b5080, retains the C diagnostic-order
+correction. Fresh exact-clean-main Runtime before processes finish before source
+restoration; all complete/raw JVM products and source/plan/five hashes agree.
+The full three-slice checks pass 46/961 backends, 7/83 selected Release and
+47/1154 boundary, with six-file reconstruction and nine-path zero-blocker lint.
+Current C evidence records the shared context and retained nonpasses. New exact
+review, own CI/artifacts and immediate clean current-main preflight are mandatory.
