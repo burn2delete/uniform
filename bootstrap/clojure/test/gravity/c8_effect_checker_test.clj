@@ -5,6 +5,7 @@
             [gravity.c8-effect-checker.verification :as report-compatibility]
             [gravity.c8-effect-checker.evidence :as record-compatibility]
             [gravity.c8-effect-checker.artifact :as artifact-compatibility]
+            [gravity.c8-effect-checker.catalog :as catalog-compatibility]
             [gravity.effects :as effects]))
 
 (def module
@@ -55,6 +56,9 @@
     (is (= :hosted-seed-effect-data-and-native-reports (:contract-boundary contract)))
     (is (= #{'fact-direct-effects 'effectful-facts 'effect-graph
              'native-verifier-report 'native-capability-proof 'validate-native-report!
+             'native-diagnostic-ids 'native-governing-document 'native-rejected-designs
+             'native-override-diagnostics 'native-known-effects 'native-effect-capability
+             'native-replay-sensitive-effects 'native-effect-message
              'native-source-overrides 'native-diagnostic-fail! 'validate-native-overrides! 'native-diagnostics
              'assemble-source-artifact 'legality-records 'capability-proof-records 'build-effect-log
              'replay-requirements 'ordering-constraints 'residual-effect-report} (set (keys publics))))
@@ -68,7 +72,7 @@
       (is (false? (:proves-effect-legality? api)))
       (is (false? (:grants-authority? api))))
     (is (= '[clojure.set] (get-in contract [:dependency-direction :requires])))
-    (is (= '[gravity.c8-effect-checker.facts gravity.c8-effect-checker.verification gravity.c8-effect-checker.evidence gravity.c8-effect-checker.artifact gravity.c8-effect-checker.diagnostics]
+    (is (= '[gravity.c8-effect-checker.facts gravity.c8-effect-checker.verification gravity.c8-effect-checker.evidence gravity.c8-effect-checker.artifact gravity.c8-effect-checker.diagnostics gravity.c8-effect-checker.catalog]
            (get-in contract [:dependency-direction :consumed-by])))
     (is (false? (:legacy-status-labels-authoritative? contract)))
     (is (false? (:legacy-build-grants-prove-performed-effects? contract)))
@@ -174,6 +178,49 @@
         #(is (identical? marker (apply wrapper arguments))))
       (is (= arity (count @observed)))
       (is (every? true? (map identical? arguments @observed))))))
+
+(deftest effects-stage-catalog-defaults-preserve-alias-identity
+  (doseq [[old stage-name]
+          [['diagnostic-ids 'native-diagnostic-ids]
+           ['governing-document 'native-governing-document]
+           ['rejected-designs 'native-rejected-designs]
+           ['override-diagnostics 'native-override-diagnostics]
+           ['known-effects 'native-known-effects]
+           ['effect-capability 'native-effect-capability]
+           ['replay-sensitive-effects 'native-replay-sensitive-effects]]]
+    (let [stage (ns-resolve 'gravity.effects stage-name)
+          old-var (ns-resolve 'gravity.c8-effect-checker.catalog old)]
+      (is (identical? @stage @old-var))
+      (is (= :data (get-in (:gravity/namespace-contract (meta stage)) [:public-api stage-name :api-kind])))))
+  (is (identical? effects/native-diagnostic-ids catalog-compatibility/diagnostic-ids))
+  (is (= effects/native-diagnostic-ids (mapv :diagnostic effects/native-rejected-designs)))
+  (is (contains? effects/native-known-effects :ai/human-review))
+  (is (= :ai/human-review (get effects/native-effect-capability :ai/human-review))))
+
+(deftest effects-stage-message-lookup-preserves-wording-and-interposition
+  (doseq [[id message] [["C8-UNDECLARED" "inferred effects exceed the declared effect allowance"]
+                        ["C8-UNKNOWN" "effect name is unregistered"]
+                        ["C8-VERIFY" "effect verifier rejected the artifact"]
+                        [nil "Effect checking failed"]
+                        [:unknown "Effect checking failed"]]]
+    (is (= message (effects/native-effect-message id)))
+    (is (= message (catalog-compatibility/effect-message id))))
+  (let [input (Object.) marker (Object.) observed (atom nil)]
+    (with-redefs [effects/native-effect-message (fn [id] (reset! observed id) marker)]
+      (is (identical? marker (catalog-compatibility/effect-message input))))
+    (is (identical? input @observed))))
+
+(deftest effects-stage-catalog-rejects-an-actual-unregistered-effect
+  (let [unknown :unregistered/effect
+        supplied (assoc (operations (update module :effects conj unknown))
+                        :compiler-c7-type-source-artifact
+                        (fn [_ _] (update-in c7-artifact [:type-facts 0 :effects] conj unknown)))
+        result (try (c8/with-operations supplied
+                      #(c8/compiler-c8-effect-source-artifact "c8-test.gravity" "ignored"))
+                    (catch clojure.lang.ExceptionInfo error error))]
+    (is (instance? clojure.lang.ExceptionInfo result))
+    (is (= "C8-VERIFY" (:id (ex-data result))))
+    (is (= [:verifier-passed?] (:missing-fields (ex-data result))))))
 
 (deftest effects-stage-native-failure-preserves-owner-order-and-exceptions
   (doseq [stop [nil :message :span :failure]]

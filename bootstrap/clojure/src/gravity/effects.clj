@@ -8,6 +8,30 @@
     :governing-contracts [D1 D2 D3 D8 D9 L6 L15 C1 C7 C8 C15 BOOT8 TEST2]
     :public-api
     {
+     native-diagnostic-ids
+     {:api-kind :data :arglists nil :admission :none :seed-compatibility-data-only? true
+      :authenticates-inputs? false :proves-effect-legality? false :grants-authority? false}
+     native-governing-document
+     {:api-kind :data :arglists nil :admission :none :seed-compatibility-data-only? true
+      :authenticates-inputs? false :proves-effect-legality? false :grants-authority? false}
+     native-rejected-designs
+     {:api-kind :data :arglists nil :admission :none :seed-compatibility-data-only? true
+      :authenticates-inputs? false :proves-effect-legality? false :grants-authority? false}
+     native-override-diagnostics
+     {:api-kind :data :arglists nil :admission :none :seed-compatibility-data-only? true
+      :authenticates-inputs? false :proves-effect-legality? false :grants-authority? false}
+     native-known-effects
+     {:api-kind :data :arglists nil :admission :none :seed-compatibility-data-only? true
+      :authenticates-inputs? false :proves-effect-legality? false :grants-authority? false}
+     native-effect-capability
+     {:api-kind :data :arglists nil :admission :none :seed-compatibility-data-only? true
+      :authenticates-inputs? false :proves-effect-legality? false :grants-authority? false}
+     native-replay-sensitive-effects
+     {:api-kind :data :arglists nil :admission :none :seed-compatibility-data-only? true
+      :authenticates-inputs? false :proves-effect-legality? false :grants-authority? false}
+     native-effect-message
+     {:api-kind :function :arglists ([id]) :admission :none :seed-compatibility-data-only? true
+      :authenticates-inputs? false :proves-effect-legality? false :grants-authority? false}
      native-source-overrides
      {:arglists ([module]) :admission :none :seed-compatibility-data-only? true
       :authenticates-inputs? false :proves-effect-legality? false :grants-authority? false}
@@ -61,21 +85,121 @@
       :admission :none :seed-compatibility-data-only? true
       :authenticates-inputs? false :proves-effect-legality? false :grants-authority? false}}
     :dependency-direction
-    {:requires [clojure.set] :consumed-by [gravity.c8-effect-checker.facts gravity.c8-effect-checker.verification gravity.c8-effect-checker.evidence gravity.c8-effect-checker.artifact gravity.c8-effect-checker.diagnostics]
+    {:requires [clojure.set] :consumed-by [gravity.c8-effect-checker.facts gravity.c8-effect-checker.verification gravity.c8-effect-checker.evidence gravity.c8-effect-checker.artifact gravity.c8-effect-checker.diagnostics gravity.c8-effect-checker.catalog]
      :forbids [gravity.bootstrap gravity.cli gravity.release gravity.c8-effect-checker]}
     :artifact-inputs [:native-diagnostic-subject-extra-and-catalog-data :explicit-message-span-and-failure-callbacks :source-path-and-text-with-explicit-owner-operations :explicit-effect-capability-catalog :native-seed-type-facts :native-function-records :native-module-declarations
                       :explicit-classifier-and-selection-callbacks :replay-sensitive-effect-catalog :native-effect-catalog-and-diagnostic-ids :native-legality-capability-build-replay-ordering-residual-and-diagnostic-records :trusted-projection-and-failure-callbacks]
-    :artifact-outputs [:native-override-data :owner-failure-return-or-exception :native-fixture-diagnostic-registry :hosted-seed-effect-artifact-and-borrowed-owner-identity :native-legality-capability-build-replay-ordering-and-residual-records :seed-direct-effect-sets :lazy-seed-effectful-fact-view :seed-effect-graph-data :native-verifier-report :legacy-capability-projection :complete-marker-or-native-report-refusal]
+    :artifact-outputs [:native-catalog-defaults-and-message-text :native-override-data :owner-failure-return-or-exception :native-fixture-diagnostic-registry :hosted-seed-effect-artifact-and-borrowed-owner-identity :native-legality-capability-build-replay-ordering-and-residual-records :seed-direct-effect-sets :lazy-seed-effectful-fact-view :seed-effect-graph-data :native-verifier-report :legacy-capability-projection :complete-marker-or-native-report-refusal]
     :diagnostic-ownership
-    {:projection [:native-payload-fields :fixture-override-selection :fixture-registry-data]
+    {:projection [:native-catalog-defaults :native-message-text :native-payload-fields :fixture-override-selection :fixture-registry-data]
      :stage [C8-VERIFY C8-UNDECLARED C8-PROFILE C8-CAPABILITY C8-BUILD C8-REPLAY C8-ORDER C8-RUNTIME] :upstream [:type-function-and-source-data]
      :existing-c8-owner [:effect-rules :legality :capabilities :replay :ordering :source-admission-and-diagnostic-publication]}
     :legacy-status-labels-authoritative? false
     :legacy-build-grants-prove-performed-effects? false
-    :unsupported [:canonical-c15-diagnostic-schema :diagnostic-identity-binding :redaction-and-safe-publication :native-ingress-authentication :callback-validation :canonical-c8-legality
+    :unsupported [:canonical-effect-registration :canonical-c15-diagnostic-schema :diagnostic-identity-binding :redaction-and-safe-publication :native-ingress-authentication :callback-validation :canonical-c8-legality
                   :pure-native-graph-ordering-gap :canonical-diagnostic-coverage :untrusted-report-authentication :call-effect-fixed-point :latent-body-inference :handlers-and-continuations
                   :performed-build-effects :package-deployment-provider-authority :profile-and-safety-legality
                   :canonical-full-source-pipeline :authority-admission :migration :release :self-hosting :seed-retirement]})
+
+(def native-diagnostic-ids
+  ["C8-UNDECLARED"
+   "C8-PROFILE"
+   "C8-CAPABILITY"
+   "C8-BUILD"
+   "C8-REPLAY"
+   "C8-ORDER"
+   "C8-RUNTIME"
+   "C8-UNKNOWN"
+   "C8-VERIFY"])
+
+(def native-governing-document
+  "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md")
+
+(def native-rejected-designs
+  [{:diagnostic "C8-UNDECLARED"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c8-undeclared.gravity"
+    :rejected-design :inferred-effect-outside-declaration}
+   {:diagnostic "C8-PROFILE"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c8-profile.gravity"
+    :rejected-design :profile-rejects-effect}
+   {:diagnostic "C8-CAPABILITY"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c8-capability.gravity"
+    :rejected-design :missing-capability-grant}
+   {:diagnostic "C8-BUILD"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c8-build.gravity"
+    :rejected-design :ungranted-build-effect}
+   {:diagnostic "C8-REPLAY"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c8-replay.gravity"
+    :rejected-design :replay-sensitive-effect-without-obligation}
+   {:diagnostic "C8-ORDER"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c8-order.gravity"
+    :rejected-design :missing-effect-ordering}
+   {:diagnostic "C8-RUNTIME"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c8-runtime.gravity"
+    :rejected-design :no-runtime-provider-support}
+   {:diagnostic "C8-UNKNOWN"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c8-unknown.gravity"
+    :rejected-design :unregistered-effect-name}
+   {:diagnostic "C8-VERIFY"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c8-verify.gravity"
+    :rejected-design :malformed-effect-artifact}])
+
+(def native-override-diagnostics
+  {:undeclared "C8-UNDECLARED"
+   :profile "C8-PROFILE"
+   :capability "C8-CAPABILITY"
+   :build "C8-BUILD"
+   :replay "C8-REPLAY"
+   :order "C8-ORDER"
+   :runtime "C8-RUNTIME"
+   :unknown "C8-UNKNOWN"
+   :verify "C8-VERIFY"})
+
+(def native-known-effects
+  #{:io/write :io/read :filesystem/read :filesystem/write :network/http
+    :database/read :database/write :time/read :random/read
+    :runtime/dynamic-dispatch :error/throw :memory/raw :ffi/call
+    :workflow/event :workflow/replay :ai/model-call :ai/tool-call
+    :ai/human-review :build/read-file :build/write-artifact
+    :build/network :build/exec :build/model-call :build/tool-call})
+
+(def native-effect-capability
+  {:io/write :io/stdout
+   :filesystem/read :fs/read
+   :filesystem/write :fs/write
+   :network/http :http/client
+   :database/read :db/read
+   :database/write :db/write
+   :memory/raw :memory/raw
+   :ffi/call :ffi/call
+   :workflow/event :workflow/event
+   :ai/model-call :model/call
+   :ai/tool-call :tool/invoke
+   :ai/human-review :ai/human-review
+   :build/read-file :fs/read
+   :build/write-artifact :artifact/write
+   :build/network :http/client
+   :build/exec :process/exec
+   :build/model-call :model/call
+   :build/tool-call :tool/invoke})
+
+(def native-replay-sensitive-effects
+  #{:time/read :random/read :network/http :database/read :workflow/event
+    :workflow/replay :ai/model-call :ai/tool-call :ai/human-review
+    :runtime/dynamic-dispatch})
+
+(defn native-effect-message [id]
+  (case id
+    "C8-UNDECLARED" "inferred effects exceed the declared effect allowance"
+    "C8-PROFILE" "active profile rejects the inferred effect"
+    "C8-CAPABILITY" "effect lacks a required capability grant"
+    "C8-BUILD" "build effect lacks a build grant"
+    "C8-REPLAY" "replay-sensitive effect lacks replay or audit obligation"
+    "C8-ORDER" "effect ordering constraints are missing"
+    "C8-RUNTIME" "no legal runtime or provider supports the effect"
+    "C8-UNKNOWN" "effect name is unregistered"
+    "C8-VERIFY" "effect verifier rejected the artifact"
+    "Effect checking failed"))
 
 (defn fact-direct-effects [fact]
   (set/union (set (:effects fact))
@@ -477,5 +601,5 @@
                       {:missing-fields [field]}))))
   :complete)
 
-(doseq [operation [#'native-source-overrides #'native-diagnostic-fail! #'validate-native-overrides! #'native-diagnostics #'assemble-source-artifact #'legality-records #'capability-proof-records #'build-effect-log #'replay-requirements #'ordering-constraints #'residual-effect-report #'native-verifier-report #'native-capability-proof #'validate-native-report! #'fact-direct-effects #'effectful-facts #'effect-graph]]
+(doseq [operation [#'native-diagnostic-ids #'native-governing-document #'native-rejected-designs #'native-override-diagnostics #'native-known-effects #'native-effect-capability #'native-replay-sensitive-effects #'native-effect-message #'native-source-overrides #'native-diagnostic-fail! #'validate-native-overrides! #'native-diagnostics #'assemble-source-artifact #'legality-records #'capability-proof-records #'build-effect-log #'replay-requirements #'ordering-constraints #'residual-effect-report #'native-verifier-report #'native-capability-proof #'validate-native-report! #'fact-direct-effects #'effectful-facts #'effect-graph]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))
