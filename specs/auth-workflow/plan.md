@@ -33,9 +33,10 @@ prior inputs and sixty unaffected route meanings remain. The 136 new joins yield
 same forty future records. No task body, identity, status or evidence disposition
 changes. These are proposed interfaces, not implementation acceptance.
 
-The coarse graph exposes groups of 48 and eight nodes. The larger group adds the
-eight newly routed parents to its previous forty members; the second group stays
-unchanged. These task-level cycles require the distinct products below, preserving
+The coarse graph exposes groups of 48 and eight nodes. The larger group adds seven
+newly routed parents and the existing direct effect-inference owner to its previous
+forty members; Auth's later conformance consumer stays outside that group. The
+second group stays unchanged. These task-level cycles require the products below, preserving
 all earlier source, memory, safety, concurrency and L6/L12 stages. A task's broad
 completion checkbox cannot stand in for all its different inputs and outputs.
 
@@ -44,7 +45,7 @@ completion checkbox cannot stand in for all its different inputs and outputs.
 | Declarations and selection | Real versioned provider/capability/type/schema and truthful runtime support contracts | Profile/policy/trust compatibility and deterministic source, package, workspace, profile-default, target-default selection |
 | Configuration and grants | Normalized source/project/lock/package/dependency requests and denials, source effect requirements and invocation/provider scopes | Actual eight-layer intersection and operation-specific scope/phase/lifetime/attenuation/revocation decisions; normalization issues no grants |
 | Imported trust and output provenance | Actual already-built Q content/manifests/evidence, declared trust policy and the Build verifier's applicable signature/attestation/revocation decision | Auth verifies Q before its use; current P execution and safety/capability results precede P's own emitted provenance/SBOM and any separately authorized signing |
-| Candidate and checked compiler facts | Candidate Core and solved capability types/inferred effects with unresolved legality explicit | Actual grant/provider/profile/isolation/trust/safety decisions, then checked Core and preserved MIR/target obligations |
+| Candidate and checked compiler facts | Candidate Core and early solved capability type facts before direct effect inference; unresolved legality stays explicit | Actual inferred effects and grant/provider/profile/isolation/trust/safety decisions, then checked Core and preserved MIR/target obligations |
 | Gate and action | Real typed action/caller/callee requirements, actual grants and available isolation; installed phase-scoped sink gate | Actual Build/Expand/Runtime allowed/refused action, delegation/revocation/deployment-narrowing and redacted audit trace |
 | Runtime support and startup | Declared compatible services, real selected primitive implementation/link/load and installed checks | Actual provider presence/version/scope/contract/profile/target/safety/audit validation before user code, or declared compatible fallback/refusal |
 | Compile-time use and replay | Checked macro/build P, actual build grants/gates, exact L6/L12 hermetic premises and replay contract | Actual action/input/output/provider records, generated Q checking and no-repeat replay; a recorded non-replayability exception waives no grant or hermetic condition |
