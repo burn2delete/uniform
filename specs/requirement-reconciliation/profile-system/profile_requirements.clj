@@ -2,7 +2,9 @@
   "Current-source qualification for the original profile proposals. No compiler launch or canonical write."
   (:require [clojure.edn :as edn]
             [clojure.java.shell :as shell]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [requirement-sources :as requirement-sources]
+            [tooling-requirements :as tooling-requirements]))
 
 (def source-view-path "specs/requirement-reconciliation/profile-system/current-source-view.edn")
 (def proposal-path "specs/requirement-reconciliation/profile-system/proposal.edn")
@@ -23,6 +25,12 @@
   (let [{:keys [exit out]} (shell/sh "git" "show" (str ref ":" path))]
     (require! (zero? exit) (str "Pinned Git source unavailable: " ref ":" path))
     out))
+
+(defn git-blob [ref path]
+  (let [{:keys [exit out]} (shell/sh "git" "rev-parse" (str ref ":" path))]
+    (require! (and (zero? exit) (re-matches #"[0-9a-f]{40}" (str/trim out)))
+              (str "Pinned Git blob unavailable: " ref ":" path))
+    (str/trim out)))
 
 (defn git-kind! [commit]
   (let [{:keys [exit out]} (shell/sh "git" "cat-file" "-t" commit)]
@@ -100,6 +108,50 @@
         body (subs text (+ (.indexOf text start) (count start)) (.indexOf text end))]
     (mapv #(vec (rest %))
           (re-seq #"(?m)^- \[([ x])\] `([^`]+)` " body))))
+
+(defn validate-platform-task-transition!
+  ([v]
+   (validate-platform-task-transition! v requirement-sources/platform-task-source-transition))
+  ([v transition]
+   (let [path (:path transition)
+         source (first (filter #(= path (:path %))
+                               (get-in v [:current-source :task-sources])))
+         baseline-ref (:baseline-ref transition)
+         applying-ref (:applying-ref transition)
+         baseline-text (git-text baseline-ref path)
+         applying-text (git-text applying-ref path)
+         live-text (slurp path)]
+     (require! (= transition requirement-sources/platform-task-source-transition)
+               "Platform task transition identity or qualification changed")
+     (require! source "Profile source-view does not pin the Platform task source")
+     (require! (= (:sha256 source) (:baseline-sha256 transition))
+               "Frozen profile Platform task source identity changed")
+     (verify-commit-tree! {:commit baseline-ref :tree (:baseline-tree transition)})
+     (verify-commit-tree! {:commit applying-ref :tree (:applying-tree transition)})
+     (require! (= (:baseline-sha256 transition) (sha256 baseline-text))
+               "Platform task transition baseline bytes drifted")
+     (require! (= (:baseline-blob transition) (git-blob baseline-ref path))
+               "Platform task transition baseline blob drifted")
+     (require! (= (:live-sha256 transition) (sha256 applying-text))
+               "Platform task transition applying bytes drifted")
+     (require! (= (:applying-blob transition) (git-blob applying-ref path))
+               "Platform task transition applying blob drifted")
+     (require! (= applying-text live-text)
+               "Current Platform task source is not the authenticated applying source")
+     (doseq [id (:task-ids transition)]
+       (task-record baseline-text "platform-implementation-tasks" id)
+       (task-open! applying-text "platform-implementation-tasks" id))
+     {:kind (:kind transition)
+      :path path
+      :task-ids (:task-ids transition)
+      :baseline {:ref baseline-ref :tree (:baseline-tree transition)
+                 :blob (:baseline-blob transition)
+                 :sha256 (:baseline-sha256 transition)}
+      :applying {:ref applying-ref :tree (:applying-tree transition)
+                 :blob (:applying-blob transition)
+                 :sha256 (:live-sha256 transition)}
+      :snapshot-provenance :git-commit-tree-blob-and-bytes-verified
+      :authority :historical-routing-and-structural-only})))
 
 (defn apply-field [rows {:keys [collection id field-path before-present? before after]}]
   (require! (= :requirements collection) "Unexpected requirement edit collection")
@@ -479,16 +531,15 @@
         (when (and artifact-sha256 (not historical-sha256))
           (require! (= artifact-sha256 (sha256 (slurp path)))
                     (str "Local profile artifact drift: " path))))))
-  (let [current (family-manifest-view manifest-current)
+  (let [manifest-transition (tooling-requirements/validate-current-manifest-transition! v)
+        platform-task-transition (validate-platform-task-transition! v)
+        current (family-manifest-view manifest-current)
         historical (family-manifest-view manifest-old)
         current-docs (mapv #(select-keys % [:id :path :sha256])
                            (source-documents manifest-current))
         source-docs (get-in v [:current-source :documents])
         refs (mapcat #(concat (:task-references %) (:dependencies %)) (:units proposal))
         edits (:task-edits proposal)]
-    (require! (= (get-in v [:current-source :manifest :sha256])
-                 (sha256 (slurp (get-in v [:current-source :manifest :path]))))
-              "Current profile manifest drift")
     (require! (= source-docs current-docs) "Current profile document population changed")
     (doseq [{:keys [path] :as source-doc} source-docs]
       (require! (= (:sha256 source-doc) (sha256 (slurp path)))
@@ -504,9 +555,17 @@
     (require! (= (:aliases historical) (:aliases current))
               "Current profile alias context changed")
     (doseq [{:keys [path marker] :as source-doc} (get-in v [:current-source :task-sources])]
-      (require! (= (:sha256 source-doc) (sha256 (slurp path))) (str "Current task source drift: " path))
+      (let [text (slurp path)
+            digest (sha256 text)]
+        (if (= path (:path platform-task-transition))
+          (require! (and (= (:sha256 source-doc)
+                            (get-in platform-task-transition [:baseline :sha256]))
+                         (= digest (get-in platform-task-transition [:applying :sha256])))
+                    (str "Current Platform task transition drift: " path))
+          (require! (= (:sha256 source-doc) digest)
+                    (str "Current task source drift: " path))))
       (require! (= 1 (count (re-seq (re-pattern (str "<!-- " marker ":start -->"))
-                                 (slurp path))))
+                                    (slurp path))))
                 (str "Current task marker drift: " path)))
     (doseq [reference (concat refs (map #(select-keys % [:path :id :marker]) edits))
             :let [source (first (filter #(= (:path %) (:path reference))
@@ -534,6 +593,8 @@
     {:documents (count (:documents current)) :facets (count (:facets current))
      :dispositions (count (:dispositions current)) :requirements (count (:requirements current))
      :current-task-sources (count (get-in v [:current-source :task-sources]))
+     :manifest-transition manifest-transition
+     :platform-task-transition platform-task-transition
      :unique-task-references (count (set (map :id refs)))}))
 
 (defn reject! [label thunk]
@@ -577,6 +638,14 @@
                                                   (:dependencies %)) (:units proposal)))
         negatives [(reject! :current-manifest-drift
                             #(validate-source (assoc-in v [:current-source :manifest :sha256] "wrong")))
+                   (reject! :manifest-transition-baseline
+                            #(tooling-requirements/validate-current-manifest-transition!
+                              (assoc-in v [:current-source :manifest :path] "wrong")))
+                   (reject! :platform-task-transition-identity
+                            #(validate-platform-task-transition!
+                              v
+                              (assoc-in requirement-sources/platform-task-source-transition
+                                        [:applying :live-sha256] "wrong")))
                    (reject! :reordered-current-docs
                             #(validate-source (update-in v [:current-source :documents] reverse)))
                    (reject! :current-task-status
@@ -613,7 +682,7 @@
                                                  (get-in v [:expected :decision-row-order-sha256])))
                    (reject! :accounting-enforcement
                             #(accounting-safe! (assoc-in proposal [:task-edits 0 :addition]
-                                                        "Enforce compiler work quota.")))]
+                                                         "Enforce compiler work quota.")))]
         result {:kind :profile-current-source-controls
                 :authority :proposal-only
                 :base (:base v)
