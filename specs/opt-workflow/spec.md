@@ -12,7 +12,8 @@ under C13, D6, SAFE15 and the complete applicable PERF1-PERF10 rules in the
 declared pass contracts, profile/target/features/providers, proofs, numeric
 modes and applicable benchmark/PGO/tuning inputs produce optimized verified
 MIR, deterministic pass/decision records, invalidation/regeneration evidence,
-residual-check/cost reports and diagnostics consumed by Lower and tooling.
+residual-check and observable-operation reports, and diagnostics consumed by
+Lower and tooling.
 
 Optimization starts from safe semantics. Performance ranks legal candidates;
 measurements cannot justify lost semantics or check removal. Required safety,
@@ -41,6 +42,13 @@ independent checker evidence with its math owner. Approximation or throughput
 alone cannot silently weaken that contract. PERF9 latency obligations concern
 actual declared target paths; removed project work accounting does not remove
 those semantics or establish zero-cost/performance support.
+
+The [complete optimization source criteria](plan.md#complete-optimization-source-criteria)
+restore the preserved C13 conjunctions under the same five task owners. Basic
+constant/branch/dead-code/common-expression implementations remain with task 1;
+task 2 consumes them for full family coverage and owns the remaining structural
+transforms. Current source review and implementation acceptance remain pending;
+historical source review does not transfer to this head.
 
 ## Starting work and completion
 
