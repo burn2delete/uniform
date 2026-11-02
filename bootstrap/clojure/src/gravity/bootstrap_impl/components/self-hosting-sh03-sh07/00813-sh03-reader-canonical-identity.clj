@@ -40,7 +40,7 @@
   (p15-s23-c6c10-canonical-identity source-path value))
 
 (defn sh03-reader-canonical-digest [source-path value]
-  (sh03-reader-canonical-stream-digest source-path value))
+  (p15-s23-c6c10-streaming-digest source-path value))
 
 (defn- sh03-reader-resolve-digest-request-sequence!
   [source-path raw-result source-bytes]
@@ -199,22 +199,27 @@
               :authenticated-envelope-options {:source :development-current}})
            :plan-binding (dissoc binding :plan)))))
 
-(defn sh03-reader-decode-raw-bytes!
-  [source-path raw bytes]
+(defn- sh03-reader-decode-buffer!
+  [source-path raw buffer]
   (try
     (str
      (.decode
       (doto (.newDecoder java.nio.charset.StandardCharsets/UTF_8)
         (.onMalformedInput java.nio.charset.CodingErrorAction/REPORT)
         (.onUnmappableCharacter java.nio.charset.CodingErrorAction/REPORT))
-      (java.nio.ByteBuffer/wrap bytes)))
+      buffer))
     (catch java.nio.charset.CharacterCodingException error
       (sh03-reader-boundary-fail!
        source-path :valid-sh03-reader-raw-utf8 raw
        {:cause-message (.getMessage error)}))))
 
+(defn sh03-reader-decode-raw-bytes!
+  [source-path raw bytes]
+  (sh03-reader-decode-buffer!
+   source-path raw (java.nio.ByteBuffer/wrap ^bytes bytes)))
+
 (defn sh03-reader-source-scalar-boundaries!
-  [source-path source-text source-bytes]
+  [source-path ^String source-text ^bytes source-bytes]
   (loop [utf16-index 0
          byte-index 0
          scalar-index 0

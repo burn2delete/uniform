@@ -1,6 +1,8 @@
 (ns gravity.pass-execution-test
   (:require [clojure.test :refer [deftest is testing]]
-            [gravity.pass-execution :as execution]))
+            [gravity.pass-execution :as execution]
+            [gravity.pass-execution.contract :as contract]
+            [gravity.pass-execution.receipt-validation :as receipt-validation]))
 
 (defn- sha
   [character]
@@ -653,6 +655,46 @@
            (diagnostic-id #(execution/evidence-root
                             (assoc-in dag-a [:authority :effective-level]
                                       :non-authoritative)))))))
+
+(deftest evidence-dag-reuses-local-contract-identities
+  (let [first-contract (pass-contract :resolve 10 #{:parsed} #{:parsed}
+                                      #{:resolved})
+        first-receipt (:receipt (execute first-contract [(:input-a ids)]
+                                         #{:parsed} (:output-a ids)))
+        second-contract (pass-contract :lower 20 #{:parsed :resolved}
+                                       #{:parsed :resolved} #{:lowered})
+        second-receipt (:receipt
+                        (execute second-contract [(:output-a ids)]
+                                 (:output-facts first-receipt) (:output-b ids)))
+        validations (atom 0)
+        identities (atom 0)
+        receipt-validations (atom 0)
+        original-validation contract/validate-pass-contract!
+        original-identity contract/pass-contract-id
+        original-receipt-validation
+        receipt-validation/validate-receipt-structure!
+        dag
+        (with-redefs
+         [contract/validate-pass-contract!
+          (fn [value]
+            (swap! validations inc)
+            (original-validation value))
+          contract/pass-contract-id
+          (fn [value]
+            (swap! identities inc)
+            (original-identity value))
+          receipt-validation/validate-receipt-structure!
+          (fn [& args]
+            (swap! receipt-validations inc)
+            (apply original-receipt-validation args))]
+          (execution/compose-evidence-dag
+           [second-receipt first-receipt]
+           [second-contract first-contract]))]
+    (is (= 2 @validations))
+    (is (= 2 @identities))
+    (is (= 2 @receipt-validations))
+    (is (= (:evidence-root-id dag)
+           (execution/evidence-root dag)))))
 
 (deftest evidence-dag-rejects-invalid-compositions
   (let [plain-a (pass-contract :a 10)

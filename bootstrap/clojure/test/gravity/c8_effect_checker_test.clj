@@ -3,6 +3,9 @@
             [gravity.c8-effect-checker :as c8]
             [gravity.c8-effect-checker.facts :as compatibility]
             [gravity.c8-effect-checker.verification :as report-compatibility]
+            [gravity.c8-effect-checker.evidence :as record-compatibility]
+            [gravity.c8-effect-checker.artifact :as artifact-compatibility]
+            [gravity.c8-effect-checker.catalog :as catalog-compatibility]
             [gravity.effects :as effects]))
 
 (def module
@@ -50,9 +53,15 @@
 (deftest effects-stage-contract-preserves-the-native-data-boundary
   (let [contract (:gravity/namespace-contract (meta #'effects/effect-graph))
         publics (ns-publics 'gravity.effects)]
-    (is (= :hosted-seed-effect-graph-data-and-native-reports (:contract-boundary contract)))
+    (is (= :hosted-seed-effect-data-and-native-reports (:contract-boundary contract)))
     (is (= #{'fact-direct-effects 'effectful-facts 'effect-graph
-             'native-verifier-report 'native-capability-proof 'validate-native-report!} (set (keys publics))))
+             'native-verifier-report 'native-capability-proof 'validate-native-report!
+             'native-diagnostic-ids 'native-governing-document 'native-rejected-designs
+             'native-override-diagnostics 'native-known-effects 'native-effect-capability
+             'native-replay-sensitive-effects 'native-effect-message
+             'native-source-overrides 'native-diagnostic-fail! 'validate-native-overrides! 'native-diagnostics
+             'assemble-source-artifact 'legality-records 'capability-proof-records 'build-effect-log
+             'replay-requirements 'ordering-constraints 'residual-effect-report} (set (keys publics))))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (doseq [[name api] (:public-api contract)]
       (is (= (:arglists api) (:arglists (meta (publics name)))))
@@ -63,7 +72,7 @@
       (is (false? (:proves-effect-legality? api)))
       (is (false? (:grants-authority? api))))
     (is (= '[clojure.set] (get-in contract [:dependency-direction :requires])))
-    (is (= '[gravity.c8-effect-checker.facts gravity.c8-effect-checker.verification]
+    (is (= '[gravity.c8-effect-checker.facts gravity.c8-effect-checker.verification gravity.c8-effect-checker.evidence gravity.c8-effect-checker.artifact gravity.c8-effect-checker.diagnostics gravity.c8-effect-checker.catalog]
            (get-in contract [:dependency-direction :consumed-by])))
     (is (false? (:legacy-status-labels-authoritative? contract)))
     (is (false? (:legacy-build-grants-prove-performed-effects? contract)))
@@ -133,6 +142,217 @@
     (doseq [[name spec] c8/public-api :when (:arglists spec)]
       (is (= (:arglists spec) (:arglists (meta (get publics name))))))
     (is (nil? (find-ns 'gravity.bootstrap)))))
+
+(deftest effects-stage-record-wrappers-preserve-argument-identity
+  (doseq [[operation arity] [['legality-records 3] ['capability-proof-records 3]
+                             ['build-effect-log 2] ['replay-requirements 1]
+                             ['ordering-constraints 1] ['residual-effect-report 1]]]
+    (let [arguments (vec (repeatedly arity #(Object.)))
+          marker (Object.) observed (atom nil)
+          stage (ns-resolve 'gravity.effects operation)
+          wrapper (ns-resolve 'gravity.c8-effect-checker.evidence operation)]
+      (with-redefs-fn {stage (fn [& values] (reset! observed values) marker)}
+        #(is (identical? marker (apply wrapper arguments))))
+      (is (= arity (count @observed)))
+      (is (every? true? (map identical? arguments @observed))))))
+
+(deftest effects-stage-assembly-wrapper-preserves-argument-identity
+  (let [ops (Object.) source (Object.) text (Object.) marker (Object.) observed (atom nil)]
+    (with-redefs [effects/assemble-source-artifact
+                  (fn [& values] (reset! observed values) marker)]
+      (is (identical? marker (artifact-compatibility/source-artifact ops source text))))
+    (is (= 3 (count @observed)))
+    (is (every? true? (map identical? [ops source text] @observed)))))
+
+(deftest effects-stage-diagnostic-wrappers-preserve-port-identity
+  (doseq [[old stage-name arity]
+          [['source-overrides 'native-source-overrides 1]
+           ['fail! 'native-diagnostic-fail! 8]
+           ['validate-overrides! 'validate-native-overrides! 7]
+           ['effect-diagnostics 'native-diagnostics 6]]]
+    (let [arguments (vec (repeatedly arity #(Object.)))
+          observed (atom nil) marker (Object.)
+          stage (ns-resolve 'gravity.effects stage-name)
+          wrapper (ns-resolve 'gravity.c8-effect-checker.diagnostics old)]
+      (with-redefs-fn {stage (fn [& values] (reset! observed values) marker)}
+        #(is (identical? marker (apply wrapper arguments))))
+      (is (= arity (count @observed)))
+      (is (every? true? (map identical? arguments @observed))))))
+
+(deftest effects-stage-catalog-defaults-preserve-alias-identity
+  (doseq [[old stage-name]
+          [['diagnostic-ids 'native-diagnostic-ids]
+           ['governing-document 'native-governing-document]
+           ['rejected-designs 'native-rejected-designs]
+           ['override-diagnostics 'native-override-diagnostics]
+           ['known-effects 'native-known-effects]
+           ['effect-capability 'native-effect-capability]
+           ['replay-sensitive-effects 'native-replay-sensitive-effects]]]
+    (let [stage (ns-resolve 'gravity.effects stage-name)
+          old-var (ns-resolve 'gravity.c8-effect-checker.catalog old)]
+      (is (identical? @stage @old-var))
+      (is (= :data (get-in (:gravity/namespace-contract (meta stage)) [:public-api stage-name :api-kind])))))
+  (is (identical? effects/native-diagnostic-ids catalog-compatibility/diagnostic-ids))
+  (is (= effects/native-diagnostic-ids (mapv :diagnostic effects/native-rejected-designs)))
+  (is (contains? effects/native-known-effects :ai/human-review))
+  (is (= :ai/human-review (get effects/native-effect-capability :ai/human-review))))
+
+(deftest effects-stage-message-lookup-preserves-wording-and-interposition
+  (doseq [[id message] [["C8-UNDECLARED" "inferred effects exceed the declared effect allowance"]
+                        ["C8-UNKNOWN" "effect name is unregistered"]
+                        ["C8-VERIFY" "effect verifier rejected the artifact"]
+                        [nil "Effect checking failed"]
+                        [:unknown "Effect checking failed"]]]
+    (is (= message (effects/native-effect-message id)))
+    (is (= message (catalog-compatibility/effect-message id))))
+  (let [input (Object.) marker (Object.) observed (atom nil)]
+    (with-redefs [effects/native-effect-message (fn [id] (reset! observed id) marker)]
+      (is (identical? marker (catalog-compatibility/effect-message input))))
+    (is (identical? input @observed))))
+
+(deftest effects-stage-catalog-rejects-an-actual-unregistered-effect
+  (let [unknown :unregistered/effect
+        supplied (assoc (operations (update module :effects conj unknown))
+                        :compiler-c7-type-source-artifact
+                        (fn [_ _] (update-in c7-artifact [:type-facts 0 :effects] conj unknown)))
+        result (try (c8/with-operations supplied
+                      #(c8/compiler-c8-effect-source-artifact "c8-test.gravity" "ignored"))
+                    (catch clojure.lang.ExceptionInfo error error))]
+    (is (instance? clojure.lang.ExceptionInfo result))
+    (is (= "C8-VERIFY" (:id (ex-data result))))
+    (is (= [:verifier-passed?] (:missing-fields (ex-data result))))))
+
+(deftest effects-stage-native-failure-preserves-owner-order-and-exceptions
+  (doseq [stop [nil :message :span :failure]]
+    (let [events (atom []) marker (Object.)
+          error (ex-info "owner failure" {:marker marker})
+          observe (fn [event result]
+                    (fn [& _]
+                      (swap! events conj event)
+                      (when (= stop event) (throw error)) result))
+          result (try (effects/native-diagnostic-fail!
+                        (observe :failure marker) (observe :message "owner text")
+                        (observe :span {:source "native.gravity"}) "C8 contract"
+                        "C8-CAPABILITY" "native.gravity" {} {})
+                      (catch clojure.lang.ExceptionInfo failure failure))]
+      (is (= (case stop :message [:message] :span [:message :span]
+                   [:message :span :failure]) @events))
+      (is (identical? (if stop error marker) result)))))
+
+(deftest effects-stage-diagnostics-preserve-source-fields-and-eager-fallback
+  (let [span (Object.) origin (Object.) extra {:effect :owner/extra}
+        payload (atom nil) span-calls (atom [])
+        source-span (fn [& values] (swap! span-calls conj values) :fallback)
+        result (effects/native-diagnostic-fail!
+                 (fn [id message data] (reset! payload [id message data]) :owner-return)
+                 (constantly "owner text") source-span "C8 contract"
+                 "C8-CAPABILITY" "native.gravity"
+                 {:source {:span span :origin-chain origin} :core-node "node"}
+                 extra)]
+    (is (= :owner-return result))
+    (is (empty? @span-calls))
+    (is (= ["C8-CAPABILITY" "owner text"] (subvec @payload 0 2)))
+    (is (identical? span (get-in @payload [2 :source-span])))
+    (is (identical? origin (get-in @payload [2 :generated-origin-chain])))
+    (is (= :owner/extra (get-in @payload [2 :effect])))
+    (is (= "node" (get-in @payload [2 :core-node-id])))
+    (is (contains? (nth @payload 2) :profile))
+    (is (nil? (get-in @payload [2 :profile])))
+    (is (nil? (get-in @payload [2 :target])))
+    (let [ids ["C8-CAPABILITY"]
+          registry (effects/native-diagnostics source-span ids
+                     [{:diagnostic "C8-CAPABILITY" :fixture :negative}]
+                     {} "native.gravity" [{:core-node "node" :source {:span span :origin-chain origin}}])]
+      ;; The existing get-in default is evaluated even when the fact has a span.
+      (is (= [["native.gravity" 0]] @span-calls))
+      (is (identical? ids (:required-diagnostic-ids registry)))
+      (is (identical? span (get-in registry [:diagnostics 0 :source-span])))
+      (is (identical? origin (get-in registry [:diagnostics 0 :generated-origin-chain]))))))
+
+(deftest effects-stage-native-overrides-retain-data-and-owner-refusal
+  (is (= {} (effects/native-source-overrides {})))
+  (doseq [value [nil false (Object.)]]
+    (is (identical? value (effects/native-source-overrides
+                           {:metadata {:compiler {:c8-effect-check value}}}))))
+  (let [failure (ex-info "owner refusal" {}) calls (atom [])
+        fail (fn [& values] (swap! calls conj values) (throw failure))
+        result (try (effects/validate-native-overrides!
+                      fail (fn [path index] {:source path :form-index index})
+                      {:capability "C8-CAPABILITY"} {:capability :io/stdout}
+                      "native.gravity" module {:fail :capability})
+                    (catch clojure.lang.ExceptionInfo error error))]
+    (is (identical? failure result))
+    (is (= 1 (count @calls)))
+    (is (= ["C8-CAPABILITY" "native.gravity"] (vec (take 2 (first @calls)))))
+    (is (= {:missing-fields [:capability]} (last (first @calls))))))
+
+(deftest effects-stage-assembly-preserves-sequencing-and-refusal-barriers
+  (doseq [stop [nil :overrides :validate]]
+    (let [events (atom []) failure (ex-info "owner refusal" {:marker (Object.)})
+          supplied (into {} (for [[key operation] (operations)]
+                              [key (fn [& values]
+                                     (swap! events conj key)
+                                     (apply operation values))]))
+          supplied (assoc supplied
+                          :c8-effect-validate-overrides!
+                          (fn [& values]
+                            (swap! events conj :overrides)
+                            (when (= :overrides stop) (throw failure))
+                            (apply c8/c8-effect-validate-overrides! values))
+                          :c8-effect-validate!
+                          (fn [& values]
+                            (swap! events conj :validate)
+                            (when (= :validate stop) (throw failure))
+                            (apply c8/c8-effect-validate! values))
+                          :c8-effect-capability-proof
+                          (fn [& values]
+                            (swap! events conj :proof)
+                            (apply c8/c8-effect-capability-proof values)))
+          result (try (c8/with-operations supplied
+                        #(c8/compiler-c8-effect-source-artifact "c8-test.gravity" "ignored"))
+                      (catch clojure.lang.ExceptionInfo error error))]
+      (is (= (case stop
+               :overrides [:read-source-form-records :validate-ns-syntax! :parse-module :overrides]
+               :validate [:read-source-form-records :validate-ns-syntax! :parse-module :overrides
+                          :compiler-c7-type-source-artifact :validate]
+               [:read-source-form-records :validate-ns-syntax! :parse-module :overrides
+                :compiler-c7-type-source-artifact :validate :proof :proof])
+             @events))
+      (if stop
+        (is (identical? failure result))
+        (do (is (= :passed (get-in result [:effect-verifier-report :status])))
+            (is (re-matches #"sha256:[0-9a-f]{64}" (:artifact-id result))))))))
+
+(deftest effects-stage-records-preserve-labels-order-and-legacy-nonclaims
+  (let [effect-capability {:io/write :io/stdout :memory/raw :memory/raw}
+        module {:module 'records.test :profile :hosted :target :jvm
+                :effects #{:io/write} :capabilities #{:io/stdout}
+                :metadata {:build-grants #{:build/network :build/env}}}
+        graph {:namespace {:inferred #{:memory/raw :io/write :error/throw}}
+               :replay-required #{:time/read :random/read}
+               :nodes (array-map "z" {:direct #{:io/write} :ordering :sequence}
+                                 "pure" {:direct #{} :ordering :pure}
+                                 "a" {:direct #{:memory/raw} :ordering :sequence})}
+        legality (effects/legality-records effect-capability module graph)
+        proofs (effects/capability-proof-records effect-capability module graph)
+        build (effects/build-effect-log effect-capability module)]
+    (is (= [:error/throw :io/write :memory/raw] (mapv :effect (:records legality))))
+    (is (= [#{} #{:io/stdout} #{}] (mapv :granted-capabilities (:records legality))))
+    ;; These legacy accepted labels do not establish the missing declaration or grant.
+    (is (false? (get-in legality [:records 2 :allowed-by :namespace])))
+    (is (= [:accepted :accepted :accepted] (mapv :result (:records legality))))
+    (is (= [:accepted :accepted :rejected] (mapv :status (:records proofs))))
+    (is (= :stage0/raw (get-in proofs [:records 2 :grant :grant/id])))
+    (is (= [:build/env :build/network] (mapv :effect (:records build))))
+    (is (every? :granted? (:records build)))
+    (is (= ["c8-replay-read" "c8-replay-read"]
+           (mapv :record-id (:records (effects/replay-requirements graph)))))
+    (is (= [:random/read :time/read]
+           (mapv :effect (:records (effects/replay-requirements graph)))))
+    (is (= ["z" "a"] (mapv :core-node (:records (effects/ordering-constraints graph)))))
+    (is (= [:error/throw :memory/raw]
+           (mapv :effect (:records (effects/residual-effect-report graph)))))
+    (is (= legality (record-compatibility/legality-records effect-capability module graph)))))
 
 (deftest operation-map-is-validated-and-preserves-nested-interposition
   (doseq [operations [nil

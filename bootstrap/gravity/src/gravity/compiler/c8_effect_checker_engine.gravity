@@ -261,7 +261,7 @@
                       :residual-effects
                       :artifact-provenance]}))
 
-; SH-09 begins with a deliberately bounded legality kernel. It consumes one
+; SH-09 begins with a deliberately narrow legality kernel. It consumes one
 ; normalized typed operation at a time. Transitive inference, handler analysis,
 ; and general authenticated SH-08 adaptation remain later integration work.
 ; The adapter below admits one closed authenticated :compiler/read-ir call
@@ -382,13 +382,6 @@
      :build/env :build/network :build/exec
      :build/time :build/random
      :build/model-call :build/tool-call}
-   :structural-bounds
-   {:maximum-nodes 8192
-    :maximum-depth 32
-    :maximum-width 256
-    :maximum-scalars 7000
-    :maximum-scalar-units 32768
-    :maximum-collections 2048}
    :authorities [:source-declaration
                  :profile
                  :package
@@ -449,20 +442,6 @@
    :policy-version 2}
    :pending (get (sh09-effect-policy) :pending)})
 
-(defn sh09-bounds-rejected [request preflight]
-  {:artifact :gravity/sh09-effect-legality-result
-   :status :rejected
-   :request-id (get request :request-id)
-   :diagnostics
-   [(sh09-diagnostic
-     request "C8-VERIFY" (get preflight :reason)
-     :structural-bounds :supply-a-bounded-normalized-request)]
-   :identity-input
-   {:request-id (get request :request-id)
-    :policy-version 2
-    :structural-preflight preflight}
-   :pending (get (sh09-effect-policy) :pending)})
-
 (defn sh09-not [value]
   (if value false true))
 
@@ -517,109 +496,6 @@
           false))
       false)
     false))
-
-(defn sh09-aggregate? [value]
-  (if (map? value)
-    true
-    (if (vector? value)
-      true
-      (if (set? value)
-        true
-        (seq? value)))))
-
-(defn sh09-aggregate-width [value]
-  (if (map? value)
-    (* 2 (count value))
-    (count value)))
-
-(defn sh09-aggregate-components [value]
-  (if (map? value)
-    (loop [remaining (keys value) result []]
-      (if (= (count remaining) 0)
-        result
-        (recur
-         (rest remaining)
-         (conj
-          (conj result (first remaining))
-          (get value (first remaining))))))
-    (vec value)))
-
-(defn sh09-max [left right]
-  (if (> left right) left right))
-
-(defn sh09-structural-preflight [value]
-  (let [bounds (get (sh09-effect-policy) :structural-bounds)
-        maximum-nodes (get bounds :maximum-nodes)
-        maximum-depth (get bounds :maximum-depth)
-        maximum-width (get bounds :maximum-width)
-        maximum-scalars (get bounds :maximum-scalars)
-        maximum-scalar-units (get bounds :maximum-scalar-units)
-        maximum-collections (get bounds :maximum-collections)]
-    (loop [frontier [[value 0]]
-           nodes 0
-           scalars 0
-           scalar-units 0
-           collections 0
-           observed-depth 0
-           observed-width 0]
-      (if (= (count frontier) 0)
-        {:status :accepted
-         :nodes nodes
-         :scalars scalars
-         :scalar-units scalar-units
-         :collections collections
-         :maximum-depth observed-depth
-         :maximum-width observed-width}
-        (let [entry (first frontier)
-              current (first entry)
-              depth (second entry)
-              next-nodes (+ nodes 1)]
-          (if (> next-nodes maximum-nodes)
-            {:status :rejected :reason :request-node-bound}
-            (if (> depth maximum-depth)
-              {:status :rejected :reason :request-depth-bound}
-              (if (sh09-aggregate? current)
-                (let [width (sh09-aggregate-width current)
-                      next-collections (+ collections 1)]
-                  (if (> width maximum-width)
-                    {:status :rejected :reason :request-width-bound}
-                    (if (> next-collections maximum-collections)
-                      {:status :rejected :reason :request-collection-bound}
-                      (let [components
-                            (sh09-aggregate-components current)
-                            next-frontier
-                            (loop [remaining components
-                                   result (rest frontier)]
-                              (if (= (count remaining) 0)
-                                result
-                                (recur
-                                 (rest remaining)
-                                 (conj
-                                  result
-                                  [(first remaining) (+ depth 1)]))))]
-                        (recur
-                         next-frontier
-                         next-nodes
-                         scalars
-                         scalar-units
-                         next-collections
-                         (sh09-max observed-depth depth)
-                         (sh09-max observed-width width))))))
-                (let [next-scalars (+ scalars 1)
-                      next-scalar-units
-                      (+ scalar-units (count (vec (str current))))]
-                  (if (> next-scalars maximum-scalars)
-                    {:status :rejected :reason :request-scalar-count-bound}
-                    (if (> next-scalar-units maximum-scalar-units)
-                      {:status :rejected :reason :request-scalar-bound}
-                      (recur
-                       (rest frontier)
-                       next-nodes
-                       next-scalars
-                       next-scalar-units
-                       collections
-                       (sh09-max observed-depth depth)
-                       observed-width))))))))))))
 
 (defn sh09-authority-collections-valid? [request]
   (if (set? (get request :declared-effects))
@@ -851,10 +727,7 @@
      :pending (get (sh09-effect-policy) :pending)}))
 
 (defn sh09-check-effect-request [request]
-  (let [preflight (sh09-structural-preflight request)]
-   (if (= :rejected (get preflight :status))
-    (sh09-bounds-rejected request preflight)
-    (if (sh09-not (sh09-valid-request-shape? request))
+  (if (sh09-not (sh09-valid-request-shape? request))
     (sh09-rejected
      request "C8-VERIFY" :malformed-normalized-effect-request
      :request-shape :provide-complete-normalized-operation-facts)
@@ -1079,7 +952,7 @@
                              request "C8-VERIFY"
                              :unexpected-replay-record
                              :request-shape
-                             :remove-replay-data-from-deterministic-effect)))))))))))))))))))))))))))
+                             :remove-replay-data-from-deterministic-effect)))))))))))))))))))))))))
 
 (defn sh09-authenticated-sh08-adapter-policy []
   {:artifact :gravity/sh09-authenticated-sh08-adapter-policy
@@ -2616,28 +2489,9 @@
 
 (defn sh09-build-authenticated-compiler-read-effect-result
   [typed verification binding context]
-  (let [binding-preflight
-        (sh09-structural-preflight
-         {:artifact (get binding :artifact)
-          :schema-version (get binding :schema-version)
-          :boundary (get binding :boundary)
-          :status (get binding :status)
-          :digest
-          (get (get binding :digest-resolution) :digest)})
-        context-preflight (sh09-structural-preflight context)]
-    (if (= :rejected (get binding-preflight :status))
-      {:artifact :gravity/sh09-authenticated-effected-core-template
-       :schema-version 1
-       :status :rejected
-       :scope :declared-compiler-read-call-effect
-       :diagnostics
-       [(sh09-adapter-compiler-read-diagnostic
-         typed (get binding-preflight :reason))]
-       :pending
-       (get (sh09-authenticated-compiler-read-policy) :pending)}
-      (if (sh09-not
-           (sh09-adapter-compiler-read-binding-valid?
-            typed verification binding))
+  (if (sh09-not
+       (sh09-adapter-compiler-read-binding-valid?
+        typed verification binding))
         {:artifact :gravity/sh09-authenticated-effected-core-template
          :schema-version 1
          :status :rejected
@@ -2647,9 +2501,9 @@
            typed :untrusted-sh08-function-binding)]
          :pending
          (get (sh09-authenticated-compiler-read-policy) :pending)}
-        (if (sh09-not
-             (sh09-adapter-compiler-read-upstream-valid?
-              typed verification binding))
+    (if (sh09-not
+         (sh09-adapter-compiler-read-upstream-valid?
+          typed verification binding))
           {:artifact :gravity/sh09-authenticated-effected-core-template
            :schema-version 1
            :status :rejected
@@ -2659,18 +2513,8 @@
              typed :untrusted-sh08-compiler-read-carrier)]
            :pending
            (get (sh09-authenticated-compiler-read-policy) :pending)}
-          (if (= :rejected (get context-preflight :status))
-            {:artifact :gravity/sh09-authenticated-effected-core-template
-             :schema-version 1
-             :status :rejected
-             :scope :declared-compiler-read-call-effect
-             :diagnostics
-             [(sh09-adapter-compiler-read-diagnostic
-               typed (get context-preflight :reason))]
-             :pending
-             (get (sh09-authenticated-compiler-read-policy) :pending)}
-            (if (sh09-not
-                 (sh09-adapter-compiler-read-context-valid? typed context))
+      (if (sh09-not
+           (sh09-adapter-compiler-read-context-valid? typed context))
               {:artifact :gravity/sh09-authenticated-effected-core-template
                :schema-version 1
                :status :rejected
@@ -2680,9 +2524,9 @@
                  typed :malformed-compiler-read-authority-context)]
                :pending
                (get (sh09-authenticated-compiler-read-policy) :pending)}
-              (let [request
-                    (sh09-adapter-compiler-read-request typed context)
-                    legality (sh09-check-effect-request request)]
+        (let [request
+              (sh09-adapter-compiler-read-request typed context)
+              legality (sh09-check-effect-request request)]
                 (if (= :accepted (get legality :status))
                   (let [fact (first (get typed :call-type-facts))
                         effect-set #{:compiler/read-ir}
@@ -2780,7 +2624,7 @@
                    :diagnostics (get legality :diagnostics)
                    :pending
                    (get (sh09-authenticated-compiler-read-policy)
-                        :pending)})))))))))
+                        :pending)}))))))
 
 (defn sh09-verify-authenticated-compiler-read-effect-result
   [typed verification binding context candidate]
@@ -2985,32 +2829,19 @@
      :candidate candidate}))
 
 (defn sh09-verify-effect-result [request candidate]
-  (let [request-preflight (sh09-structural-preflight request)
-        candidate-preflight (sh09-structural-preflight candidate)]
-    (if
-     (sh09-and
-      (= :accepted (get request-preflight :status))
-      (= :accepted (get candidate-preflight :status)))
-     (if (= candidate (sh09-check-effect-request request))
-       {:artifact :gravity/sh09-effect-result-verification
-        :status :passed
-        :request-id (get request :request-id)
-        :checks [:complete-recomputation
-                 :policy-identity
-                 :diagnostic-identity
-                 :capability-proof-identity
-                 :source-lineage-identity]}
-       {:artifact :gravity/sh09-effect-result-verification
-        :status :rejected
-        :request-id (get request :request-id)
-        :diagnostics
-        [(sh09-diagnostic
-          request "C8-VERIFY" :effect-result-substitution
-          :result-identity :recompute-from-the-normalized-request)]})
+  (if (= candidate (sh09-check-effect-request request))
+    {:artifact :gravity/sh09-effect-result-verification
+     :status :passed
+     :request-id (get request :request-id)
+     :checks [:complete-recomputation
+              :policy-identity
+              :diagnostic-identity
+              :capability-proof-identity
+              :source-lineage-identity]}
      {:artifact :gravity/sh09-effect-result-verification
       :status :rejected
       :request-id (get request :request-id)
       :diagnostics
       [(sh09-diagnostic
-        request "C8-VERIFY" :effect-result-structural-bound
-        :structural-bounds :supply-a-bounded-result-candidate)]})))
+        request "C8-VERIFY" :effect-result-substitution
+        :result-identity :recompute-from-the-normalized-request)]}))

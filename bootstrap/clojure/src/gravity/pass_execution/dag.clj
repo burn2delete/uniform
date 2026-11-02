@@ -51,10 +51,14 @@
                  (vector? contracts) (seq contracts))
     (diagnostics/fail! "D1-ARTIFACT-GAP"
                        "receipts and contracts must be nonempty vectors" {}))
-  (doseq [pass-contract contracts]
-    (contract/validate-pass-contract! pass-contract))
-  (let [contracts-by-id
-        (into {} (map (juxt contract/pass-contract-id identity) contracts))]
+  (contract/with-validated-contract-identities
+   contracts
+   (fn [contract-identities]
+     (let [contracts-by-id
+           (into {}
+                 (map (fn [{:keys [id contract]}]
+                        [id contract])
+                      contract-identities))]
     (when-not (= (count contracts) (count contracts-by-id))
       (diagnostics/fail! "C1-PASS-CONTRACT"
                          "pass contracts contain duplicate identities" {}))
@@ -212,8 +216,9 @@
                                  (:receipt-id receipt)]))
                      vec)
                 ordered-contracts
-                (->> contracts
-                     (sort-by (juxt :order contract/pass-contract-id)) vec)
+                (->> contract-identities
+                     (sort-by (juxt (comp :order :contract) :id))
+                     (mapv :contract))
                 effective-level
                 (validation/weakest-authority
                  (mapv #(get-in % [:authority :effective-level]) receipts))
@@ -235,4 +240,4 @@
                   :aggregate-authoritative? false}}]
             (assoc dag-base :evidence-root-id
                    (canonical/content-id :gravity/pass-evidence-dag-v1
-                                         (dag-id-projection dag-base)))))))))
+                                         (dag-id-projection dag-base)))))))))))

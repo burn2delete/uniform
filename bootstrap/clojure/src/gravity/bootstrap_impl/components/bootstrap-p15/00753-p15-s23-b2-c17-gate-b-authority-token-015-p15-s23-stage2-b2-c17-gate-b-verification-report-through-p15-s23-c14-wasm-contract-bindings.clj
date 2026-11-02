@@ -160,7 +160,6 @@
 
 (defn p15-s23-c14-wasm-target-policy []
   {:scope :bounded-pure-scalar-forwarding-do-let-if-integer-comparisons
-   :maximum-operation-count 127
    :target-kind :core-module
    :whole-c14? false :whole-b1? false :whole-b4? false
    :public? false :release? false :self-hosted? false})

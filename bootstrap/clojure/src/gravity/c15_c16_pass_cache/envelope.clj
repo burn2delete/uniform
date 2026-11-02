@@ -1,6 +1,6 @@
 (ns gravity.c15-c16-pass-cache.envelope
   "Bounded cache envelopes and generic stage-operation adapters."
-  (:require [clojure.edn :as edn]
+  (:require [gravity.pass-cache.envelope-codec :as codec]
             [gravity.c15-c16-pass-cache.validation :as validation]))
 
 (def ^:private maximum-envelope-characters (* 8 1024 1024))
@@ -8,70 +8,47 @@
 (def ^:private envelope-fields
   #{:artifact :schema-version :stage :artifact-id :payload-edn})
 
+(defn- codec-options
+  []
+  {:artifact-tag :gravity/c15-c16-pass-cache-envelope
+   :envelope-fields envelope-fields
+   :maximum-envelope-characters maximum-envelope-characters
+   :require-sha256! validation/require-sha256!
+   :sha256-id? validation/sha256-id?
+   :fail! validation/fail!
+   :label "C15/C16"})
+
 (defn encode!
   [stage artifact operations]
-  (let [artifact-id ((:artifact-id-of operations) artifact)
-        _ (validation/require-sha256! :artifact-id artifact-id)
-        payload (pr-str artifact)]
-    (when (> (count payload) maximum-envelope-characters)
-      (validation/fail!
-       "C16-ENTRY" "C15/C16 artifact envelope exceeds its local bound"
-       {:stage stage
-        :maximum-characters maximum-envelope-characters}))
-    {:artifact :gravity/c15-c16-pass-cache-envelope
-     :schema-version 1
-     :stage stage
-     :artifact-id artifact-id
-     :payload-edn payload}))
+  (codec/encode! stage artifact operations (codec-options)))
 
 (defn decode!
   [stage envelope validate operations]
-  (when-not (and (map? envelope)
-                 (= envelope-fields (set (keys envelope)))
-                 (= :gravity/c15-c16-pass-cache-envelope
-                    (:artifact envelope))
-                 (= 1 (:schema-version envelope))
-                 (= stage (:stage envelope))
-                 (validation/sha256-id? (:artifact-id envelope))
-                 (string? (:payload-edn envelope))
-                 (<= (count (:payload-edn envelope))
-                     maximum-envelope-characters))
-    (validation/fail! "C16-ENTRY" "C15/C16 cache envelope is malformed"
-                      {:stage stage}))
-  (let [artifact
-        (try
-          (edn/read-string
-           {:readers {}
-            :default
-            (fn [tag _]
-              (validation/fail!
-               "C16-ENTRY" "C15/C16 cache envelope contains an unknown tag"
-               {:stage stage :tag tag}))}
-           (:payload-edn envelope))
-          (catch clojure.lang.ExceptionInfo error
-            (throw error))
-          (catch Throwable error
-            (validation/fail!
-             "C16-ENTRY" "C15/C16 cache envelope EDN is malformed"
-             {:stage stage
-              :host-error (.getName (class error))})))
-        observed ((:artifact-id-of operations) artifact)]
-    (when-not (= observed (:artifact-id envelope))
-      (validation/fail! "C16-STALE"
-                        "C15/C16 envelope artifact identity is stale"
-                        {:stage stage
-                         :expected (:artifact-id envelope)
-                         :observed observed}))
-    (validate artifact)
-    artifact))
+  (codec/decode! stage envelope validate operations (codec-options)))
+
+(def ^:private decoded-handoff-context-key
+  :gravity.pass-cache/decoded-artifact-handoff)
+
+(defn- decoded-handoff
+  [context]
+  (get (meta context) decoded-handoff-context-key))
 
 (defn stage-cache-operations
   [context stage produce validate operations]
   {:produce! (fn [_] (encode! stage (produce) operations))
    :validate-output!
    (fn [envelope _ _]
-     (decode! stage envelope validate operations)
-     envelope)
+     (let [artifact (decode! stage envelope validate operations)]
+       ;; The handoff is invocation-local and is populated only after the
+       ;; complete envelope identity and artifact validation above succeeds.
+       (when-let [decoded-handoff (decoded-handoff context)]
+         (swap! decoded-handoff assoc stage
+                {:stage stage
+                 :envelope envelope
+                 :artifact artifact
+                 :validator validate
+                 :operations operations}))
+       envelope))
    :artifact-id-of
    (fn [envelope]
      (validation/require-sha256! :artifact-id (:artifact-id envelope)))
