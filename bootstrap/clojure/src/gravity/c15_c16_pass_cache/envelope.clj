@@ -1,6 +1,7 @@
 (ns gravity.c15-c16-pass-cache.envelope
   "Bounded cache envelopes and generic stage-operation adapters."
   (:require [gravity.pass-cache.envelope-codec :as codec]
+            [gravity.pass-cache.receipt-validation :as receipt-validation]
             [gravity.c15-c16-pass-cache.validation :as validation]))
 
 (def ^:private maximum-envelope-characters (* 8 1024 1024))
@@ -50,8 +51,7 @@
                  :operations operations}))
        envelope))
    :artifact-id-of
-   (fn [envelope]
-     (validation/require-sha256! :artifact-id (:artifact-id envelope)))
+   receipt-validation/envelope-artifact-id
    :validation-binding-id (get-in context [:validation-binding-ids stage])
    :verifier-reports (fn [& _] [])
    :evidence-records

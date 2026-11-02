@@ -80,6 +80,15 @@
              :else (content-id :gravity/pass-cache-artifact-v2 artifact))]
     (require-sha256! :artifact-id id)))
 
+(defn envelope-artifact-id
+  "Return the content id carried by a validated cache envelope.
+
+  Cache adapters use this named, pure operation so receipt validation can
+  retain its result for the immediately following derived-entry checks.
+  Replaced or wrapped operations continue through the ordinary callback path."
+  [artifact]
+  (require-sha256! :artifact-id (:artifact-id artifact)))
+
 (defn validate-artifact!
   [operations artifact context]
   (case (:validation-role context)
@@ -165,7 +174,9 @@
     (when-not (= id (:output-artifact-id receipt))
       (fail! "C16-STALE" "artifact identity differs from producer receipt"
              {:observed id :expected (:output-artifact-id receipt)}))
-    artifact))
+    (if (:retain-artifact-id? context)
+      {:artifact artifact :artifact-id id}
+      artifact)))
 
 (defn entry-id
   [entry]

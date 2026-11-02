@@ -66,10 +66,14 @@
                      (fail! "C16-STALE" "artifact blob identity is stale" {}))
                  artifact (decode-canonical-bytes artifact-bytes
                                                    maximum-blob-bytes)
-                 artifact (validate-artifact-against-receipt!
-                           key artifact receipt validation-ops
-                           {:entry entry :key key})
-                 artifact-id (artifact-id-of validation-ops artifact)
+                 {:keys [artifact artifact-id]}
+                 (validate-artifact-against-receipt!
+                  key artifact receipt validation-ops
+                  {:entry entry :key key :retain-artifact-id? true})
+                 artifact-id (if (identical? (:artifact-id-of validation-ops)
+                                             envelope-artifact-id)
+                               artifact-id
+                               (artifact-id-of validation-ops artifact))
                  _ (validate-entry-derived!
                     key entry receipt artifact-id validation-ops)
                  reuse (build-reuse-receipt key entry artifact receipt
