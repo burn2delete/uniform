@@ -1,0 +1,43 @@
+{:kind :pr554-current-integration-receipt
+ :schema-version 1
+ :integration
+ {:base-commit "43dbdd419c643df42454db42c2cf1b75dea0e292"
+  :base-tree "d48baf6d2dfc99ae94f5438a7e6f729d8b8db7b8"
+  :candidate-commit "c2d72cdd44f6032fb9f520d8cf523b76396f6177"
+  :candidate-tree "25dce9cdf84f27cf4f9df0844dc0fe13b95dcbee"
+  :candidate-parent "139f7264cf4ba43979eb8e733ec8dc20473e21e2"
+  :source-view-comparator-renewed? false}
+ :source-history
+ {:original-pr-head "e7a93606858e543119f807130f1583f1b011b151"
+  :original-pr-tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8"
+  :authored-base "6276c94b0b753c888ef8fecc794bcc81245ea3b3"
+  :authored-base-tree "9f464ed0f03866bd4978e4213a488f3b1ae48683"
+  :ancestry-attachment-commit "139f7264cf4ba43979eb8e733ec8dc20473e21e2"
+  :ancestry-attachment-tree "036130b8747a7bba8a9c3e9368eaa3ee806a0264"
+  :ancestry-attachment-strategy :ours
+  :old-source-tree-imported? false}
+ :frozen-source-view
+ {:path "specs/requirement-reconciliation/pr554-frozen-source-view.edn"
+  :source-head "e7a93606858e543119f807130f1583f1b011b151"
+  :source-tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8"
+  :comparator-main "5dfe15c9fad14e5abebf23bf1e645bf9154a2e1e"
+  :comparator-tree "643afe5f3b00918fc3de76f2855294481a09b505"
+  :selected-entry-count 84
+  :role :historical-frozen-comparator-not-integration-base
+  :source-views-renewed? false}
+ :evidence
+ {:pinned-linter "clj-kondo-2025.10.23"
+  :changed-clojure-edn-file-count 11
+  :changed-file-lint :pass
+  :frozen-view-verification {:verified 84 :entries 84 :result :pass}
+  :focused-gates {:platform-projection [5 90]
+                  :source-transition [2 6]
+                  :requirement-reconciliation [31 270]}}
+ :nonclaims
+ [:not-source-hash-refresh
+  :not-current-source-view-renewal
+  :not-requirement-denominator
+  :not-task-acceptance
+  :not-product-implementation-acceptance
+  :not-release-or-self-hosting
+  :not-whole-pr-acceptance]}
