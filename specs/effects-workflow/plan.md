@@ -166,7 +166,9 @@ status, owner, evidence receipt or ordinary construction permission changes.
    requirements and actual source/phase/principal/package/build/deployment
    configuration. Effects and capabilities remain separate sets; handling or a
    fixture never widens authority. Runtime1 support descriptors are not actual
-   linking, action execution or conformance results.
+   linking, action execution or conformance results. Existing Profile/Auth
+   consumers of Effects5 use its earlier actual derived-action projection with
+   legality still pending; checked Core/MIR export follows the applicable checks.
 4. Legality derives actual selected capture/lifetime/resource/transfer/cloning
    premises from current verified Core, type, early inferred action, profile,
    provider and grant facts before the combined handler decision. Effects3
