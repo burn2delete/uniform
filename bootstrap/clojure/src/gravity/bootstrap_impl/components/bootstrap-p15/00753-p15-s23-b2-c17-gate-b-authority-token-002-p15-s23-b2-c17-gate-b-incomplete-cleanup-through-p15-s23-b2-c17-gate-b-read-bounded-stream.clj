@@ -3,7 +3,7 @@
 (defn- p15-s23-b2-c17-gate-b-incomplete-cleanup!
   [source-path primary cleanup-error]
   (let [data
-        (p15-s23-backend-trusted-exception-data primary 65536 128)
+        (p15-s23-backend-trusted-exception-data primary 65536)
         primary-rule
         (if (and (map? data)
                  (contains? p15-s23-c-backend-diagnostic-rules

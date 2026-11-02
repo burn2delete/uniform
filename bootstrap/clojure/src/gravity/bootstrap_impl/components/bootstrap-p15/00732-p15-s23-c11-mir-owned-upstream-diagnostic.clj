@@ -4,8 +4,7 @@
   [candidate]
   (let [data
         (p15-s23-trusted-diagnostic-data
-         candidate p15-s23-c11-mir-max-final-artifact-carrier-nodes
-         p15-s23-c11-mir-max-carrier-depth)
+         candidate p15-s23-c11-mir-max-final-artifact-carrier-nodes)
         rule (:id data)
         contract (p15-s23-c11-mir-diagnostic-rule-contract rule)]
     (and (map? data)
@@ -40,8 +39,7 @@
   [source-path boundary exception]
   (let [data
         (p15-s23-backend-trusted-exception-data
-         exception p15-s23-c11-mir-max-final-artifact-carrier-nodes
-         p15-s23-c11-mir-max-carrier-depth)]
+         exception p15-s23-c11-mir-max-final-artifact-carrier-nodes)]
     (if (p15-s23-c11-mir-owned-upstream-diagnostic? data)
       (let [rule (:id data)
             contract (p15-s23-c11-mir-diagnostic-rule-contract rule)
