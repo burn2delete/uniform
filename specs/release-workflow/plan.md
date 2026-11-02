@@ -158,6 +158,26 @@ conjunctions remain pending. This planning work runs no compiler, native probe,
 provider, migration, signing or publication operation and assigns no new person
 or permission to an existing role.
 
+## Full-language and terminal release navigation
+
+The existing
+[finish-line declarations](../../docs/acceptance-dependencies.md#full-language-and-release-finish-line-joins)
+now connect full-language tasks, original SH21-SH29 and the separate Phase18
+tasks/gates to selected component results. Use their complete source blocks and
+proof rules; neither the high-level roadmap nor this plan is a second editable
+component implementation ledger. Existing early audit/wrapper/package receipts
+retain their original scope without becoming final public seedless evidence.
+
+Build actual candidate/runner/comparison/provenance products before final proof
+decisions. P15-S23 and applicable final Phase18 claims require genuine retirement;
+full-language final evidence retains the broader accepted task conjunction and
+the first supported seedless boundary. SH29 does not require all 240 language
+documents merely to close its declared first-release scope. The full project's
+broader language/target support remains required separately. Conditional Platform
+Product adoption does not choose an ISA, OS, application inventory or physical
+delivery boundary. Structural reachability establishes no executed command,
+accepted source conjunction or independent release decision.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Release workflow migration

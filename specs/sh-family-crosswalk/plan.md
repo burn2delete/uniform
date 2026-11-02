@@ -278,3 +278,29 @@ unchanged task/SH populations, exposed cycles and the advisory/unassessed
 frontier. Preserve earlier checkpoint tests against frozen source versions.
 Global source conjunctions, final SH/full-language joins and independent review
 remain separate required work after this declaration increment.
+
+## Full-language and release finish-line continuation
+
+Capture the unchanged 36 full-language task blocks, seven Phase18 task sections,
+SH21-SH29 sections, existing P15-S23/Phase18 final gates and the original global
+completion/staging contracts. Retain complete UTF8 spans, source pins, statuses
+and proof text. Add the full-language gap map as an explicitly versioned input;
+do not infer its applying version from the old global default. Other task-file
+pins, statuses, SH incidence and scoped receipts remain unchanged.
+
+Use the existing dependency contract's 54-consumer declarations (55 rows with
+conditional Platform Product scope) to link selected actual component outputs
+and existing Spec Kit owners. Preserve every original FL36 staged edge and
+complete proof obligation. P15/P18 final acceptance joins do not block candidate
+construction; the final full-language proof retains every earlier task acceptance,
+the existing Phase18 gate and SH29. Keep SH29's first declared seedless release
+stop independent of broader 240-document language completion. Product adoption
+is unknown and its conservative conditional edge stays visible.
+
+Test source/status/population integrity, exact span reconstruction, malformed/
+unknown/duplicated/missing declarations, all original staged edges, final-root
+reachability, acyclicity and conditional frontier behavior. Historical audit and
+hosted packaging status cannot become current acceptance. Freeze prior source
+checkpoint tests at their recorded versions. Source/task entailment, actual
+support/evidence, material decisions and independent review/integration remain
+required beyond this structural declaration increment.

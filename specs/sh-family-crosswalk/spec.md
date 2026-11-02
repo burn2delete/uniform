@@ -36,6 +36,12 @@ source criteria. Raw stage results, suite execution, independent intermediate
 admission and final release remain separate. All forty captured future tasks
 have declarations; source entailment, final finish-line composition and actual
 execution/acceptance remain pending.
+The finish-line continuation connects the existing FL36, seven Phase18 tasks,
+SH21-SH29 and P15/Phase18 terminal source gates to selected component outputs.
+Original scopes, proof rules and historical status remain source-bound. SH29
+still closes its declared first seedless subset; the full-language final proof
+also requires the broader task and Phase18 conjunctions. Conditional Product
+adoption stays unknown, and no graph route establishes execution or acceptance.
 
 Status: source-bound routing, dependency mapping, source-pin guard and bounded
 source-version bridge independently reviewed; owner task-boundary integration
