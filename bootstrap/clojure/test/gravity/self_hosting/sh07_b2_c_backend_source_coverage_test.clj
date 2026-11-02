@@ -283,8 +283,8 @@
         (frequencies (map #(if (symbol? (nth % 2 nil)) :reference :computed)
                           dynamic))
         builder (get by-name 'b2-build-bounded-hosted-c17)]
-    (is (= 842 (count gets)))
-    (is (= 792 (count (filter #(keyword? (nth % 2 nil)) gets))))
+    (is (= 836 (count gets)))
+    (is (= 786 (count (filter #(keyword? (nth % 2 nil)) gets))))
     (is (= 50 (count dynamic)))
     (is (= {:reference 21 :computed 29} dynamic-kinds))
     (doseq [symbol '[b2-b1-c-packet-structurally-valid?

@@ -285,8 +285,8 @@
         llvm (get by-name 'b1-build-bounded-llvm-authenticated-packet)
         c (get by-name 'b1-build-bounded-c-authenticated-packet)
         wasm (get by-name 'b1-build-bounded-wasm-authenticated-packet)]
-    (is (= 1082 (count gets)))
-    (is (= 1074 (count (filter #(keyword? (nth % 2 nil)) gets))))
+    (is (= 1085 (count gets)))
+    (is (= 1077 (count (filter #(keyword? (nth % 2 nil)) gets))))
     (is (= 8 (count dynamic)))
     (is (= {:reference 4 :call 4}
            (frequencies (map #(if (symbol? (nth % 2)) :reference :call)

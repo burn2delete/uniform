@@ -1387,9 +1387,11 @@
             {:artifact :gravity/c13-bounded-identity-optimized-mir :schema-version 1 :status :rejected
              :diagnostic "C13-VERIFY" :missing-fact :fresh-c11-verifier-and-fact-closure :diagnostics ["C13-VERIFY"]}))) base))))
 
-; Private SH-16 development kernel. This is not exported or admitted to the
-; public optimizer/lowerer. Original C11 reconstruction remains input evidence;
-; a shared fresh post-pass verifier and proof replay are still required.
+; SH-16 exports are development-only kernels, not admission to the public
+; optimizer/lowerer. Raw development calls require finite DATA. The checked
+; owner rejects cyclic or untrusted carriers before C13/C14 composition.
+; Original C11 reconstruction remains input evidence; a shared fresh
+; post-pass verifier and proof replay are still required.
 (defn sh16-c13-branch-operation-valid? [mir operation]
   (if (map? operation)
     (let [facts (get operation :facts) source (get operation :source)

@@ -456,7 +456,6 @@
 (deftest sh07-b34-sh17-rejected-families-are-structured
   (let [base (sh17-request :llvm "/checkout-a")
         cases [[(assoc base :unexpected true) :invalid-normalized-request]
-               [(assoc base :backend :unknown) :invalid-normalized-request]
                [(assoc-in base [:c11-revision :function-count] 138)
                 :invalid-normalized-request]
                [(assoc-in base [:mir :verified?] false)
@@ -468,6 +467,10 @@
         (is (= :rejected (:status result)))
         (is (= "C14-INPUT" (get-in result [:diagnostics 0 :diagnostic-id])))
         (is (= expected-reason (get-in result [:diagnostics 0 :reason])))))
+    (let [result (invoke 'sh17-build-target-lowering [(assoc base :backend :unknown)])]
+      (is (= :rejected (:status result)))
+      (is (= "C14-TARGET" (get-in result [:diagnostics 0 :diagnostic-id])))
+      (is (= :target-contract-mismatch (get-in result [:diagnostics 0 :reason]))))
     (let [result (invoke 'sh17-build-target-lowering [base])
           changed (assoc result :backend :wasm)
           verification (invoke 'sh17-verify-target-lowering [base changed])]
