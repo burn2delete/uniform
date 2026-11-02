@@ -69,7 +69,7 @@
    {:path "specs/legality-workflow/tasks.md" :sha256 "937ed9cf0a8a7272559564344141fff0f1e3db34c9deef4106ab3ca958354f9e"}
    {:path "specs/runtime-workflow/tasks.md" :sha256 "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972"}]}
  :current-source
- 
+
  {:commit "19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b"
   :tree "dc79967f4939df6790c3a16b0a71a71e81191f9e"
   :domain-task-source-transition
@@ -112,7 +112,7 @@
      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
      "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"]
     :qualification "Versioned current-source bridge from the authenticated PR560 Runtime source to the PR561 current task composition. Historical safety source and all non-Runtime current pins remain unchanged; this source transition confers no implementation or safety acceptance."}]
- 
+
   :task-sources
   [{:path "specs/auth-workflow/tasks.md"
     :marker "auth-implementation-tasks"

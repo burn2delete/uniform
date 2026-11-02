@@ -17,7 +17,7 @@
                            :tree-imported false}
  :artifacts
   {:source-view {:path "specs/requirement-reconciliation/phase-02-safety/current-source-view.edn"
-                :sha256 "873bc755864d0bfa3779ac9a616b4c5756157cc8b9c627ee817f9564f6d0a927"}
+                :sha256 "bce4de982ee35223ba20362ab38de5b4ae31ee24debc9636a6836d7e4bc0720e"}
   :checker {:path "tools/safety_task_source_view.clj"
             :sha256 "6e5e9981becf27c80f0a34e832137abe6e083d2dec62af6895fb45737199063b"}}
  :conservation {:source-documents 16
