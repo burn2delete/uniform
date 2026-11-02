@@ -2012,7 +2012,6 @@
              "define ccc i32 @main() {\n"
              (b3-blocks-text block-records "")
              "}\n")]
-        (if (<= (count ir) 65536)
           {:artifact :gravity/b3-bounded-llvm-x86_64-linux-lowering
            :schema-version 1
            :status :constructed-unverified
@@ -2068,8 +2067,7 @@
                     :public? false
                     :release? false
                     :self-hosted? false
-                    :whole-b3? false}}
-          (b3-rejected "B1-UNSUPPORTED" :bounded-llvm-ir-bytes {})))
+                    :whole-b3? false}})
       (b3-rejected "B1-UNSUPPORTED" :bounded-process-exit-code {}))))
 
 (defn b3-build-validated-operations

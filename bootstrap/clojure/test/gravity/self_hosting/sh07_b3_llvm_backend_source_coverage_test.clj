@@ -4,6 +4,7 @@
             [clojure.set :as set]
             [clojure.test :refer [deftest is testing]]
             [clojure.walk :as walk]
+            [gravity.backend.llvm :as llvm]
             [gravity.bootstrap :as bootstrap]
             [gravity.self-hosting.sh07-proof-census :as proof-census]))
 
@@ -27,9 +28,9 @@
   "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 91138)
+(def ^:private expected-source-byte-count 91036)
 (def ^:private expected-source-revision-id
-  "sha256:d2d38a3be4e371a1c1d974ffc652299a55fe5caa95a754ab279573550caa915f")
+  "sha256:0432a4368cb4cbb694c3193dfa5bbb9e2bef2fc2a3ec5091fd8a95b5e665d9fe")
 (def ^:private expected-sh06-semantic-projection-id
   "sha256:2190dea530d73d9abdff5b64df3eada3992c03583ab6498fc0c783b3f971a732")
 (def ^:private expected-coverage
@@ -293,12 +294,14 @@
     (is (= expected-diagnostic-ids
            (mapv :id (get-in (nth (get by-name 'b3-diagnostic-catalog) 2)
                              [:diagnostics]))))
-    (is (= 362 (count if-calls)))
+    (is (= 361 (count if-calls)))
     (is (every? #(= 4 (count %)) if-calls))
     (is (= expected-source-byte-count
            (alength (source-bytes (path b3-relative-path)))))
     (is (= expected-source-revision-id
-           (sha256-id (source-bytes (path b3-relative-path)))))))
+           (sha256-id (source-bytes (path b3-relative-path)))))
+    (is (not (re-find #":bounded-llvm-ir-bytes"
+                      (slurp (path b3-relative-path)))))))
 
 (deftest sh07-b36-b3-static-lookups-and-lowering-boundaries-are-exact
   (let [definitions (filter #(and (seq? %) (#{'def 'defn} (first %)))
@@ -397,6 +400,81 @@
                            :blocks (zipmap (map #(str id %) (range 5))
                                             (repeat 5 block)))])))))
 
+(deftest sh07-b36-b3-emitted-lowering-accepts-former-ir-size-overflow
+  (let [operation-count 1800
+        block-id "entry"
+        operation-ids (mapv #(str "op-" %) (range operation-count))
+        operations (mapv (fn [operation-id]
+                           {:artifact :gravity/mir-operation
+                            :op-id operation-id
+                            :result operation-id
+                            :opcode :constant
+                            :source-operation :literal
+                            :operands []
+                            :constant-payload
+                            {:present? true
+                             :value (if (= operation-id (last operation-ids))
+                                      0
+                                      9223372036854775807)}
+                            :type :gravity/integer
+                            :block-id block-id})
+                         operation-ids)
+        make-function
+        (fn [operation-sequence]
+          {:entry block-id
+           :blocks {block-id {:instructions operation-sequence
+                              :terminator
+                              {:kind :return
+                               :operands [(get (last operation-sequence)
+                                               :op-id)]
+                               :successors []}}}})
+        mir {:module-id "large-ir-fixture"
+             :functions {'main (make-function operations)}
+             :source-core {:id "fixture-source-core"}
+             :pass-execution-record {:record-id "fixture-pass"}
+             :type-table {} :effect-table {} :safety-table {} :source-map {}}
+        native-operation-line
+        (fn [mir operation operation-sequence index labels]
+          (llvm/operation-line
+           llvm/value-reference llvm/constant-number
+           (atom llvm/forward-opcodes) (atom llvm/comparison-opcodes)
+           mir operation operation-sequence index labels))
+        native-lowering
+        (llvm/reconstructed-lowering
+         llvm/block-order llvm/operation-sequence llvm/block-labels
+         llvm/value-reference native-operation-line
+         #(llvm/evaluate-operations (atom llvm/forward-opcodes) %)
+         llvm/scalar-exit-code
+         (atom {:data-layout "e-m:e-p:64:64-i64:64-n8:16:32:64-S128"
+                :target-triple "x86_64-unknown-linux-gnu"})
+         (atom {:artifact :gravity/b3-bounded-llvm-x86_64-linux-policy})
+         mir)
+        small-operations
+        [(assoc (first operations)
+                :op-id "small"
+                :result "small"
+                :constant-payload {:present? true :value 255})]
+        in-range
+        (invoke 'b3-build-emitted-lowering
+                [{} (make-function small-operations) [block-id]
+                 small-operations {"small" 0} {block-id "entry"}])
+        out-of-range-operations
+        [(assoc (first operations)
+                :op-id "small"
+                :result "small"
+                :constant-payload {:present? true :value 256})]
+        rejected
+        (invoke 'b3-build-emitted-lowering
+                [{} (make-function out-of-range-operations) [block-id]
+                 out-of-range-operations {"small" 0} {block-id "entry"}])]
+    (is (= :constructed-unverified (:status native-lowering)))
+    (is (> (count (:llvm-ir native-lowering)) 65536))
+    (is (= 0 (:expected-exit-code native-lowering)))
+    (is (= :constructed-unverified (:status in-range)))
+    (is (= 255 (:expected-exit-code in-range)))
+    (is (= :rejected (:status rejected)))
+    (is (= :bounded-process-exit-code (:missing-fact rejected)))))
+
 (deftest sh07-b36-b3-claim-boundary-remains-explicit
   (let [forms (source-forms)
         by-name (into {} (map (juxt second identity) (rest forms)))
@@ -489,7 +567,6 @@
       (is (= :gravity/b3-bounded-llvm-x86_64-linux-lowering
              (:artifact lowering)))
       (is (string? (:llvm-ir lowering)))
-      (is (<= (count (:llvm-ir lowering)) 65536))
       (is (= [] (:diagnostics lowering)))
       (is (false? (:self-hosted? lowering)))
       (is (= :validated-candidate-for-bounded-internal-slice
