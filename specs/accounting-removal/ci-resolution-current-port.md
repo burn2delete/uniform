@@ -122,3 +122,9 @@ two changed Clojure files. Commit
 diff. `git diff -w` confirms no non-whitespace source change. This observation
 does not turn pending Resolution jobs into execution evidence or claim a
 locally available formatter.
+
+The coordinator subsequently located the cached cljfmt 0.13.4 Clojure
+artifact and ran its `cljfmt.main check tools/ci` entry point with the same
+pinned version. It exited 0: all source files formatted correctly. This is
+the local formatting receipt for the corrected source; no formatter setting
+or source-lint policy was changed.
