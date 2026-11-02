@@ -87,10 +87,10 @@
               :cause-message (.getMessage error)}))))
 
 (defn- source-snapshot!
-  "Read through the existing no-follow, bounded, double-snapshot primitive."
+  "Read through the existing no-follow, double-snapshot primitive."
   [source-path]
   (try
-    (c2-pass-cache/bounded-source-snapshot! source-path)
+    (c2-pass-cache/source-snapshot! source-path)
     (catch clojure.lang.ExceptionInfo error
       ;; Keep the C2 diagnostic id and facts intact.  Add only an orchestration
       ;; breadcrumb so callers can route the failure through a plan receipt.

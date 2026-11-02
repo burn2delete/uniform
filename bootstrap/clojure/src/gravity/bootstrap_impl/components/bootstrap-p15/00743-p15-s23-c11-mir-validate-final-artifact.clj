@@ -17,9 +17,7 @@
      source-path :checked-core-context context checked-core-sorted-policy)
     (p15-s23-c11-mir-v2-source-family! source-path checked-core version)
     (p15-s23-c11-mir-bounded-value!
-     source-path :authenticated-c11-mir-artifact artifact
-     p15-s23-c11-mir-max-final-artifact-carrier-nodes
-     p15-s23-c11-mir-max-carrier-depth)
+     source-path :authenticated-c11-mir-artifact artifact)
     (binding [*p15-s23-c11-mir-diagnostic-context*
               (p15-s23-c11-mir-diagnostic-context
                checked-core context artifact)]
