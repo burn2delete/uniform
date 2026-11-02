@@ -167,9 +167,14 @@ proposal SHA256 is
 Its 128 field operations, 64 proposed bindings, five unresolved interfaces
 and all unassessed implementation states are conserved.
 
-Local preparation, checking and six tests / 40 assertions passed. Added
+Composed with main `32fe90b1e6a41df5a4083d0abe3917e0cb2643e1`, tree
+`b95a59281e71f741a91e6d93275fd055f8b6c962`. Local preparation, checking
+and seven tests / 42 assertions passed. Added
 controls refuse altered projection bytes, malformed/missing/noncommit source
 identities, wrong source trees, altered PKG source and altered PKG5 receipt.
+The positive checker also passes with every Git command except verification
+of that reachable historical source commit/tree explicitly refused by its
+test fixture.
 Documentation, roadmap, language-boundary and workstream validators passed.
 Fresh-clone reproduction, exact-head CI and independent review are separate
 remaining gates. No package implementation, canonical proposal adoption,
