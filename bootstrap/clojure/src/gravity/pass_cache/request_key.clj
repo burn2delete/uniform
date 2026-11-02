@@ -9,6 +9,9 @@
             [gravity.pass-execution :as pass-execution]
             [gravity.pass-execution.contract :as pass-contract]))
 
+(def ^:private default-pass-contract-validator
+  pass-execution/validate-pass-contract!)
+
 (defn pass-request-fields
   [request]
   (when-not (map? request)
@@ -28,11 +31,12 @@
   (let [request (pass-request-fields request)
         contract (:contract request)]
     (validate-stage-request-shape! request)
-    ;; `key-preimage` establishes the contract identity once for this
-    ;; invocation.  Keep the public validator call for standalone callers and
-    ;; for injected validation, while avoiding a second underlying validation
-    ;; when that invocation-local identity is already present.
-    (when-not (pass-contract/validated-pass-contract-identity contract)
+    ;; The fast path establishes a canonical identity before this second
+    ;; projection.  A redefined facade validator deliberately falls back to
+    ;; the ordinary callback path and must not inherit that context.
+    (when (or (not (pass-contract/validated-pass-contract-identity contract))
+              (not (identical? pass-execution/validate-pass-contract!
+                               default-pass-contract-validator)))
       (pass-execution/validate-pass-contract! contract))
     (when-not (= (:stage request) (:pass contract))
       (fail! "D1-PIPELINE-ORDER" "request stage differs from pass contract"
@@ -97,39 +101,47 @@
                          (:authority-ceiling contract))
     request))
 
+(defn- build-key-preimage
+  [request]
+  (let [contract (:contract request)
+        contract-id (pass-execution/pass-contract-id contract)]
+    {:artifact :gravity/compiler-pass-cache-key
+     :schema-version schema-version
+     :canonicalizer-version canonicalizer-version
+     :stage (:stage request)
+     :pass-contract-id contract-id
+     :contract contract
+     :producer-binding-id (:producer-binding-id request)
+     :input-artifact-ids (:input-artifact-ids request)
+     :input-facts (:input-facts request)
+     :external-root-inputs (:external-root-inputs request)
+     :semantic-bindings (:semantic-bindings request)
+     :dependency-graph-id (:dependency-graph-id request)
+     :build-effect-replay-id (:build-effect-replay-id request)
+     :profile-id (:profile-id request)
+     :target-id (:target-id request)
+     :policy-ids (:policy-ids request)
+     :diagnostic-schema-id
+     (get-in request [:semantic-bindings :diagnostic-schema-id])
+     :diagnostic-stream-id (:diagnostic-stream-id request)
+     :provenance (:provenance request)
+     :authority (:authority request)}))
+
 (defn key-preimage
   [request]
-  (let [request (pass-request-fields request)
-        _ (validate-stage-request-shape! request)
-        contract (:contract request)]
-    (pass-contract/with-validated-contract-identities
-      [contract]
-      pass-execution/validate-pass-contract!
-      (fn [_]
-        (let [request (validate-stage-request! request)
-              contract (:contract request)
-              contract-id (pass-execution/pass-contract-id contract)]
-          {:artifact :gravity/compiler-pass-cache-key
-           :schema-version schema-version
-           :canonicalizer-version canonicalizer-version
-           :stage (:stage request)
-           :pass-contract-id contract-id
-           :contract contract
-           :producer-binding-id (:producer-binding-id request)
-           :input-artifact-ids (:input-artifact-ids request)
-           :input-facts (:input-facts request)
-           :external-root-inputs (:external-root-inputs request)
-           :semantic-bindings (:semantic-bindings request)
-           :dependency-graph-id (:dependency-graph-id request)
-           :build-effect-replay-id (:build-effect-replay-id request)
-           :profile-id (:profile-id request)
-           :target-id (:target-id request)
-           :policy-ids (:policy-ids request)
-           :diagnostic-schema-id
-           (get-in request [:semantic-bindings :diagnostic-schema-id])
-           :diagnostic-stream-id (:diagnostic-stream-id request)
-           :provenance (:provenance request)
-           :authority (:authority request)})))))
+  (let [request (pass-request-fields request)]
+    (if (identical? pass-execution/validate-pass-contract!
+                    default-pass-contract-validator)
+      (do
+        ;; Preserve the original diagnostic order before entering the context.
+        (validate-stage-request-shape! request)
+        (pass-contract/with-validated-contract-identities
+          [(:contract request)]
+          (fn [_]
+            (build-key-preimage (validate-stage-request! request)))))
+      ;; Preserve injected validator and ID hooks exactly as standalone callers
+      ;; observe them; the default ID path remains the canonical safety check.
+      (build-key-preimage (validate-stage-request! request)))))
 
 (defn request-from-key
   [key]

@@ -28,6 +28,17 @@
       (cache/stage-cache-key (request-fixture)))
     (is (= 1 @calls))))
 
+(deftest redefined-validator-keeps-canonical-id-check
+  (let [request (assoc-in (request-fixture) [:contract :unknown] true)
+        failure (with-redefs [pass-execution/validate-pass-contract!
+                              (fn [_] nil)]
+                  (try
+                    (cache/stage-cache-key request)
+                    nil
+                    (catch clojure.lang.ExceptionInfo error
+                      error)))]
+    (is (= "C1-PASS-CONTRACT" (:id (ex-data failure))))))
+
 (deftest standalone-stage-validation-still-runs-validator
   (let [calls (atom 0)
         validate-stage-request!
@@ -42,14 +53,19 @@
     (is (= 1 @calls))))
 
 (deftest stage-cache-key-retains-contract-id-interposition
-  (let [calls (atom 0)
-        original pass-execution/pass-contract-id]
+  (let [calls (atom [])
+        original pass-execution/pass-contract-id
+        original-validator pass-execution/validate-pass-contract!]
     (with-redefs [pass-execution/pass-contract-id
                   (fn [value]
-                    (swap! calls inc)
+                    (swap! calls conj :id)
                     (original value))]
-      (cache/stage-cache-key (request-fixture)))
-    (is (= 1 @calls))))
+      (with-redefs [pass-execution/validate-pass-contract!
+                    (fn [value]
+                      (swap! calls conj :validate)
+                      (original-validator value))]
+        (cache/stage-cache-key (request-fixture))))
+    (is (= [:validate :id] @calls))))
 
 (deftest invalid-contract-is-still-rejected
   (let [request (assoc-in (request-fixture) [:contract :unknown] true)
