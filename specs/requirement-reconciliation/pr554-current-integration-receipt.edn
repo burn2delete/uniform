@@ -161,7 +161,7 @@
    :focused-tests [35 341 0 0]
    :changed-file-lint-256m
    {:base "12480d592044cc667ba4908405b463b3de51a2e6"
-    :changed-clojure-edn-files 20
+    :changed-clojure-edn-files 18
     :exit 0
     :blocking 0
     :baseline-warnings 0
@@ -227,7 +227,7 @@
   :scope :pr554-composition-and-independent-pr557-diagnostic}
  :evidence
  {:pinned-linter "clj-kondo-2025.10.23"
-  :changed-clojure-edn-file-count 20
+  :changed-clojure-edn-file-count 18
   :changed-file-lint :pass
   :changed-file-lint-256m {:exit 0 :blocking 0 :baseline-warnings 0}
   :lint-repair-tests [35 341 0 0]
