@@ -14,9 +14,9 @@
   :task-criteria-port :domains-family-and-current-main-composed-platform-prefix-composed-runtime-successor}
  :main-composition {:commit "38add2342719b91c6ef22f064fa813a16e9a97b3"
                     :tree "5e260f72a8455fc44bb39039b9e0ce5f2be0907c"}
- :integration-base {:commit "f43e77992fe86b6dfb55df3516b27cfcdea7fa40"
-                    :tree "a0e433f9f185b651f6f5ebc54340a085a5cd6721"
-                    :role :latest-current-main-composition-base}
+ :integration-base {:commit "97445f364d938004618f2ac13d4d4c6e1ca32946"
+                    :tree "bde2ef38e3ff53c9a61a88b9ea2ff5d2be1a7bc2"
+                    :role :current-main-composition-checkpoint}
  :source-checkpoint-qualification :historical-source-evidence-not-integration
  :original-pr562-ancestry {:commit "2c3eac90b9736873ce7c439cdc9603b1e43249e5"
                            :present-in-final-candidate true
@@ -37,10 +37,10 @@
   :sha256 "f86ffa1b40c56ecf7d0016ea96a48f5ccd40b8cbce834a48335a6c93e747a529"
   :checker-path "tools/domain_current_source_view.clj"
   :checker-sha256
-  "200699746ad5b75408d624f0801520e8619162b42784ff5ce38d16569044e8e5"
+  "d0e3ac50609469fd5217ad8d6c7a07b5c9c6128d42ab94f64d6bb75e0dea0647"
   :evidence-path "specs/requirement-reconciliation/domain-current-source-view.md"
   :evidence-sha256
-  "eb80d8d4c5f7d3ff9808ecc0f861d18e8ca1e5ba96d12061c4d2d19c6745022f"}
+  "bee7e00ce45f471c2375f001464a253845282e8518c38074dc74f1a517715f75"}
  :current-manifest-transition
  {:path "contracts/requirement-reconciliation.edn"
   :commit "19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b"
