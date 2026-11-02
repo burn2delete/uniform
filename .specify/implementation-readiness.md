@@ -2874,3 +2874,112 @@ and all 48 original task/evidence contents after declared additions are removed.
 ASCII and whitespace checks pass. These checks establish source/projection
 consistency at their stated scope; they do not prove semantic completeness,
 compiler/provider execution, independent acceptance or integration.
+
+## Source memory-model and alternative-provider continuation
+
+Source-only commit `49203aec9ce332aec454ac7c8646a0bdc44ad73f` adds eleven
+whole-source criteria under eleven existing tasks across Core, Effects, Auth,
+Legality, Runtime and Stdlib. Six specifications and six plans now navigate the
+[complete L10/L18 source criteria](../specs/legality-workflow/plan.md#complete-source-memory-model-and-provider-criteria).
+No task identity, status, runtime policy, canonical source or historical receipt
+changes. The existing Evolution weakening-review predicate remains unchanged.
+
+Complete L10 and L18 were read directly with the Core Language phase and owning
+compiler/provider/runtime/library contracts. Preserve L10's twelve source
+regimes separately from L18's seventeen provider families, nine declared safety
+contracts, replaceable implementations and invariant safe guarantees. Source
+criteria cover defined Core outcomes and actual scoped-resource lowering;
+allocation/memory/volatile/atomic effects and policy; full provider declarations,
+compatible deterministic selection and enforcing mechanisms; all applicable
+profile/storage boundaries; derived initialization/borrow/region/linear/forget
+facts; raw/MMIO/foreign safe-wrapper rules; actual allocation/release/transfer;
+proof and artifact preservation; and all 21 diagnostic meanings and complete
+conformance outputs. Types, effect declarations, authority, selected provider,
+checked safety facts, actual runtime service and library API remain distinct.
+
+The preserved census contributes 226 exact facets (101 L10, 125 L18), 143
+occurrences (69/74) and thirteen original owner IDs. Original kinds remain
+173 semantic and 53 context. Current conjunction roles retain 181 substantive
+facets across 104 occurrences and 45 heading/provenance facets; eight generic
+context facets are meaningful section conditions. Thirty-five whole section
+joins preserve preambles, lists, examples and following clauses. Full source
+byte conservation is separate from independent semantic entailment.
+
+Seven profile74 finite predicates retain source `45fc1420`, review subject
+`c21258a8`, applicability `5326078f` and receipt
+`4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d`.
+Six exact clauses were missing and are restored under their actual frozen task
+links. The existing exact Evolution criterion remains present. One separately
+reviewed safe-wrapper clause is restored from `46a58edd`, preserving bootstrap25
+candidate `cd1f8ce1` / tree `4b6970ab`, applicability `60aa422f` and receipt
+`df871924b21a5b6be51534132de1d7482c9684688987e3f9ba2943a07ab837ed`.
+Both task-source commits were verified available on GitHub; nonancestry was not
+treated as unavailability. The two reviews cover only their eight frozen finite
+source/role/dependency/witness predicates. They confer no full-facet, new-clause,
+current composition, implementation, later granularity or whole-project credit.
+No new archive or adoption of the unavailable aggregate is introduced.
+
+Three empty old task-reference fields already have concrete candidate links:
+Stdlib's resource task owns public allocation, Runtime's memory task owns actual
+release/transfer, and Evolution change-review owns conditional stable weakening
+adoption. Core's old broad linear-flow allocation retains structured lowering
+while Legality owns the actual finite flow check. Specialized raw/MMIO facts
+remain with ownership analysis and final boundary classification with C10.
+The thirteen original identities and captured resolution states remain visible;
+no second allocator, analyzer, library facade or review authority is created.
+A weakened stable guarantee requires actual safety review and downstream fixture
+updates; ordinary semantic development gains no routine approval prerequisite.
+
+Static inspection of the alternative-memory and provider recorders shows
+argument-projected/defaulted declarations, deterministic/safe/passed flags,
+layout/check/release records and assigned no-leak/double-release/conformance
+outcomes. The minimal native memory artifact constructs manifests and assigns
+completed service/allocation/device/check states; it does not execute those
+providers. These inspected sources are partial recording/validation evidence,
+not actual allocation, release, transfer or provider-conformance evidence.
+Earlier Gravity ownership/state/runtime-borrow kernels retain their own actual
+scope and residuals rather than being dismissed or promoted by these findings.
+
+Metadata `:memory-model-refinement` preserves predecessor `019b0489`, its entire
+projection/fingerprint, the prior Memory source/dependency records and every
+earlier source-family qualification. It binds eleven current clauses, eight
+exact finite witnesses, the two canonical sources, 226 spans, 143 occurrences,
+35 section joins and thirteen owners. Six task-file and six plan pins advance;
+three previously unpinned planning entries gain exact inspection identities.
+The existing Stdlib task file gains a source-version record with its original
+before identity, bringing file records to 32. Four newly amended original tasks
+bring the original-body disposition to 80 identical / 59 amended; all 149 current
+keys across 25 authorities, forty future records, SH/SH07 routes and three narrow
+Reader receipts remain. Previous Memory controls now use their exact recorded
+checkpoint; current global controls check the new disposition.
+
+The current 349 dependency joins retain their selected scopes. Complete L10/L18
+cross-component producer/consumer detail and current independent review remain
+pending, along with wider SAFE/profile/provider/runtime/library conjunctions,
+global reconciliation and implementation acceptance. Actual storage, alignment,
+representation, provider/profile allocation and failure/timing rules survive;
+compiler work/input quotas stay removed. All actual execution/review/migration/
+publication restrictions remain. Reader contract coverage is still the first
+implementation preparation increment; no other chat is messaged and no compiler,
+provider, native, foreign, callback, device, plugin, probe, replay, migration,
+review, signing or product-publication operation runs here.
+
+Current input fingerprint:
+`f533b2b34ec88dea5602bc49e8faf7f27c2645353e3e69ea04b05e9a29016ec6`.
+
+Final validation: SH generation/read-only comparison and dependency audit pass;
+52 crosswalk tests / 12,173 assertions and 23 dependency tests / 2,153 assertions
+pass with zero failures/errors. The initial crosswalk run found that the older
+C8 test paired its frozen projection with live Effects task bytes. Its task
+reader now uses the same recorded checkpoint; the current source-memory-model
+test independently checks all six changed task files, six plan pins, eleven
+clauses, eight finite predicates, thirteen owner joins and complete source
+conservation. The failed earlier run receives no passing credit. Missing source
+occurrence, section condition and unknown-criterion controls retain refusals.
+Canonical documents (240 / 19 phase indexes), the dated full-language structural
+validator and the language boundary (six tests / eleven assertions) pass.
+Conservation/navigation passes for 86 changed files, 80 Markdown files, 3,186
+local references, 139 original routes, 48 historical specification/plan suffixes
+and all 48 original task/evidence contents after declared additions are removed.
+ASCII and whitespace checks pass. These are source/planning/tooling checks,
+not compiler/provider execution, independent semantic acceptance or integration.
