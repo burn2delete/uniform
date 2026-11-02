@@ -4,9 +4,12 @@
   ([request-source requested-target]
    (p15-s23-c11-mir-source-binding! request-source requested-target 1))
   ([request-source requested-target version]
+   (p15-s23-c11-mir-source-binding!
+    request-source requested-target version nil))
+  ([request-source requested-target version source-mode]
   (try
     (p15-s23-c11-mir-source-binding!*
-     request-source requested-target version)
+     request-source requested-target version source-mode)
     (catch InterruptedException interrupted
       (.interrupt (Thread/currentThread))
       (throw interrupted))

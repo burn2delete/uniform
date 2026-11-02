@@ -112,7 +112,9 @@
 ;; These helpers validate/project DATA. They never authenticate a supplied
 ;; report. Only the lexical public constructor/verifier calls the fresh C6
 ;; owner; standalone final-artifact validation is relative to checked Core.
-(declare p15-s23-c11-mir-expected-ingress-semantic p15-s23-c11-ingress-source-path)
+(declare p15-s23-c11-mir-expected-ingress-semantic
+         p15-s23-c11-ingress-source-path
+         p15-s23-c6c10-source-binding!)
 
 (def p15-s23-c11-core-policy-keys
   #{:source-interface :source-policy-binding-id :admission-status
@@ -124,7 +126,8 @@
     :owner-metadata-content-id :projection-contract})
 (def p15-s23-c11-core-program-projection-keys
   [:source-contract-version :source-byte-count :source-content-hash
-   :plan-semantic-hash :functions-semantic-hash :builder-semantic-hash :verifier-semantic-hash])
+   :plan-semantic-hash :functions-semantic-hash :builder-semantic-hash :verifier-semantic-hash
+   :source-mode])
 
 (def p15-s23-c11-core-projection-contract
   {:artifact :gravity/c6-reader-owner-metadata-projection :schema-version 1
@@ -144,12 +147,19 @@
     (p15-s23-c11-mir-require-trusted-carrier! path :current-core-policy-data policy :reject)
     (let [receipt (:source-policy-receipt policy)
         compiler (:compiler-program policy)
-        contract (p15-s23-c6c10-source-program-contract version)
+        current-source? (= :development-current (:source-mode compiler))
+        contract (if current-source?
+                   (p15-s23-c6c10-source-binding!
+                    path version :development-current)
+                   (p15-s23-c6c10-source-program-contract version))
         header {:interface :gravity/c6-c10 :version version}
         program-keys (cond-> p15-s23-c11-core-program-projection-keys
                        (= 3 version) (conj :semantic-family))
-        expected-program (assoc (select-keys contract (rest program-keys))
-                                :source-contract-version version)
+        expected-program (cond->
+                          (assoc (select-keys contract (rest program-keys))
+                                 :source-contract-version version)
+                           current-source?
+                           (assoc :source-mode :development-current))
         envelope (:authenticated-envelope receipt)
         expression (:expression-binding receipt)
         expression-contract c6-source-contract/current-expression-program]

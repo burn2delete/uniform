@@ -28,13 +28,81 @@
 (deftest v2-current-c6-source-owner-produces-a-real-binding
   (let [path (temp-source-path)]
     (try
-      (let [binding (bootstrap/p15-s23-c6c10-source-binding! path 2)
-            contract c6-source-contract/current-compiler-program]
+      (let [binding (bootstrap/p15-s23-c6c10-source-binding!
+                     path 2 :development-current)
+            abi c6-source-contract/current-compiler-program-abi
+            current-program (:source-program binding)]
         (is (= 2 (:source-contract-version binding)))
+        (is (= :development-current (:source-mode binding)))
         (is (= :complete (:status binding)))
-        (is (= (:source-byte-count contract) (:source-byte-count binding)))
-        (is (= (:source-content-hash contract) (:source-content-hash binding)))
-        (is (= (:required-functions contract) (:function-shapes binding))))
+        (is (= (:source-relative-path abi)
+               (:source-relative-path current-program)))
+        (is (= (:required-functions abi) (:function-shapes binding)))
+        (is (= (:source-byte-count current-program)
+               (:source-byte-count binding)))
+        (is (= (:source-content-hash current-program)
+               (:source-content-hash binding))))
+      (finally
+        (java.nio.file.Files/deleteIfExists (.toPath (java.io.File. path)))))))
+
+(deftest current-source-owner-rejects-unsupported-version-at-public-entry
+  (let [path (temp-source-path)
+        compile-var (ns-resolve 'gravity.bootstrap
+                                'p15-s23-c6c10-compile-source-binding)]
+    (try
+      (let [data (failure-data
+                  #(@compile-var path 3 :development-current))]
+        (is (= "C6-VERIFY" (:id data)))
+        (is (= :explicit-current-source-selection (:missing-fact data))))
+      (finally
+        (java.nio.file.Files/deleteIfExists (.toPath (java.io.File. path)))))))
+
+(deftest current-c11-owner-rejects-unsupported-version-before-source-resolution
+  (let [resolutions (atom 0)
+        resolver-var (ns-resolve 'gravity.bootstrap
+                                'p15-s23-c11-mir-resolve-source-path)
+        data (failure-data
+              (fn [] (with-redefs-fn
+                 {resolver-var (fn [] (swap! resolutions inc) "unreachable.gravity")}
+                 #(bootstrap/p15-s23-c11-mir-source-binding!
+                   "pr453-c11-unsupported-current.gravity" :jvm 3
+                   :development-current))))]
+    (is (= "C11-VERIFY" (:id data)))
+    (is (= :explicit-current-source-selection (:missing-fact data)))
+    (is (zero? @resolutions))))
+
+(deftest current-c6-owner-rejects-reader-source-drift-before-builder
+  (let [path (temp-source-path)
+        source-path (bootstrap/p15-s23-c6c10-resolve-source-path)
+        canonical-source-path (.getCanonicalPath (java.io.File. source-path))
+        source-bytes (java.nio.file.Files/size (.toPath (java.io.File. source-path)))
+        source-binding-var (ns-resolve 'gravity.bootstrap
+                                       'p15-s23-c6c10-source-binding!)
+        reader-var (ns-resolve 'gravity.bootstrap
+                               'p15-s23-c6c10-current-reader-program!)]
+    (try
+      (let [fake-binding {:status :complete
+                          :source-path source-path
+                          :source-byte-count source-bytes
+                          :source-content-hash "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
+            drifted-snapshot {:canonical-source-path canonical-source-path
+                              :source-byte-count source-bytes
+                              :source-content-hash "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}
+            data
+            (failure-data
+             (fn [] (with-redefs-fn
+                {source-binding-var (fn [& _] fake-binding)
+                 reader-var (fn [& _]
+                              {:binding {}
+                               :invocation {:reader-source-path source-path}
+                               :c6-source-snapshot {:before drifted-snapshot
+                                                    :after drifted-snapshot}})}
+                #(bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+                  (bootstrap/p15-s23-stage2-gravity-checked-core-context
+                   path (source-text) :jvm)
+                  {:interface :gravity/c6-c10 :version 2}))))]
+        (is (= "C6-VERIFY" (:id data)))
+        (is (= :stable-current-c6-source-binding (:missing-fact data))))
       (finally
         (java.nio.file.Files/deleteIfExists (.toPath (java.io.File. path)))))))
 
@@ -207,16 +275,21 @@
       (is (= expected (:reason data)))
       (is (= "C11-VERIFY" (:id data))))))
 
-(deftest v2-c11-contract-binds-the-current-source-bytes
-  (let [contract c11-source-contract/v2-source-contract
+(deftest v2-c11-current-source-owner-binds-live-source-bytes
+  (let [contract c11-source-contract/v2-current-source-contract-abi
         path (bootstrap/p15-s23-c11-mir-resolve-source-path)
         bytes (java.nio.file.Files/readAllBytes
-               (.toPath (java.io.File. path)))]
+               (.toPath (java.io.File. path)))
+        binding (bootstrap/p15-s23-c11-mir-source-binding!
+                 "pr453-c11-current-source.gravity" :jvm 2 :development-current)]
     (is (= :gravity/c11-mir (:interface contract)))
     (is (= 2 (:version contract)))
-    (is (= (:source-byte-count contract) (alength bytes)))
-    (is (= (:source-content-hash contract)
-           (str "sha256:" (bootstrap/sha256-bytes-hex bytes))))))
+    (is (= :development-current (:source-mode binding)))
+    (is (= (alength bytes) (:source-byte-count binding)))
+    (is (= (str "sha256:" (bootstrap/sha256-bytes-hex bytes))
+           (:source-content-hash binding)))
+    (is (= (:source-relative-path contract)
+           (get-in binding [:source-program :source-relative-path])))))
 
 (deftest wrong-v2-reader-policy-is-rejected-before-c2-production
   (let [calls (atom 0)
