@@ -25,7 +25,17 @@
                        [:summary :counts :facets])))
   (is (= 70 (get-in (first (filter #(= "specs/requirement-reconciliation/domain-gap-completion.edn"
                                       (:path %)) (:entries frozen)))
-                    [:summary :counts :records]))))
+                    [:summary :counts :records])))
+  (is (= #{"specs/requirement-reconciliation/source-dispositions.edn"
+           "specs/requirement-reconciliation/task-baseline.edn"}
+         (set (map :path (:historical-manifest-inputs frozen)))))
+  (is (= {:original-documents 240 :extension-sources 5
+          :source-facets 29177 :source-dispositions 10096 :requirements 1231}
+         (get-in frozen [:current-canonical-comparison :counts])))
+  (is (false? (get-in frozen [:current-canonical-comparison :state :denominator-ready?])))
+  (is (= :absent (:current-main-state (first (filter #(= "specs/requirement-reconciliation/task-baseline.edn"
+                                                         (:path %))
+                                                   (:historical-manifest-inputs frozen)))))))
 
 (deftest historical-view-has-explicit-boundaries
   (is (contains? (set (:nonclaims frozen)) :not-current-canonical-source))

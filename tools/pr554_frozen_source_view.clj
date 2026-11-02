@@ -206,6 +206,38 @@
     :value "The provisional task census is preserved as an immutable observation, never as a current denominator."
     :current-disposition :provisional-observation-only}])
 
+(defn historical-manifest-inputs [entries]
+  (->> entries
+       (filter #(contains? #{"specs/requirement-reconciliation/source-dispositions.edn"
+                             "specs/requirement-reconciliation/task-baseline.edn"}
+                           (:path %)))
+       (mapv (fn [{:keys [path source current-main]}]
+               {:path path
+                :source-ref source-head
+                :source-sha256 (:sha256 source)
+                :source-tree source-tree
+                :current-main-state (:state current-main)
+                :disposition :historical-input-only
+                :canonical-manifest-effect :none
+                :replay-policy :read-only-git-bytes-only}))))
+
+(defn current-canonical-comparison []
+  (let [path "contracts/requirement-reconciliation.edn"
+        text (git-show current-main path)
+        manifest (edn/read-string text)]
+    {:manifest {:path path :ref current-main :tree current-main-tree
+                :sha256 (sha256 text) :blob (git-blob-id text)
+                :bytes (alength (.getBytes ^String text "UTF-8"))}
+     :counts {:original-documents (count (:original-documents manifest))
+              :extension-sources (count (:extension-sources manifest))
+              :source-facets (count (:source-facets manifest))
+              :source-dispositions (count (:source-dispositions manifest))
+              :requirements (count (:requirements manifest))}
+     :state {:scope-state (:scope-state manifest)
+             :implementation-acceptance (:implementation-acceptance manifest)
+             :denominator-ready? false}
+     :qualification "Current manifest bytes are the current reconciliation authority. This comparison does not adopt any PR554 historical receipt, task census, source decision, or mapping snapshot."}))
+
 (defn build []
   (require! (= source-tree (git-tree source-head)) "PR554 source tree identity changed")
   (require! (= authored-base-tree (git-tree authored-base)) "PR554 authored-base tree identity changed")
@@ -220,6 +252,8 @@
      :selected-entry-count (count entries)
      :families (frequencies (map :family entries))
      :value-map (value-map entries)
+     :historical-manifest-inputs (historical-manifest-inputs entries)
+     :current-canonical-comparison (current-canonical-comparison)
      :entries entries
      :reproduction
      {:write "clojure -M tools/pr554_frozen_source_view.clj --write"

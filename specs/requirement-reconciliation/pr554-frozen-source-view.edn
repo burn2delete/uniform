@@ -1,4 +1,25 @@
-{:comparison
+{:current-canonical-comparison
+ {:manifest
+  {:path "contracts/requirement-reconciliation.edn",
+   :ref "5dfe15c9fad14e5abebf23bf1e645bf9154a2e1e",
+   :tree "643afe5f3b00918fc3de76f2855294481a09b505",
+   :sha256
+   "aa51bfad176edcf7ed75109a68ea1a0bcbcb3eeeedd6311db256bf331ad01ef0",
+   :blob "2dc56539cf67ad1b0170b8fdffa251f7d8535885",
+   :bytes 44970910},
+  :counts
+  {:original-documents 240,
+   :extension-sources 5,
+   :source-facets 29177,
+   :source-dispositions 10096,
+   :requirements 1231},
+  :state
+  {:scope-state :open,
+   :implementation-acceptance nil,
+   :denominator-ready? false},
+  :qualification
+  "Current manifest bytes are the current reconciliation authority. This comparison does not adopt any PR554 historical receipt, task census, source decision, or mapping snapshot."},
+ :comparison
  {:current-main "5dfe15c9fad14e5abebf23bf1e645bf9154a2e1e",
   :current-main-tree "643afe5f3b00918fc3de76f2855294481a09b505"},
  :nonclaims
@@ -2076,6 +2097,25 @@
     :bytes 2767},
    :summary {:kind :non-edn-source, :format "clj"},
    :current-main {:state :absent}}],
+ :historical-manifest-inputs
+ [{:path "specs/requirement-reconciliation/source-dispositions.edn",
+   :source-ref "e7a93606858e543119f807130f1583f1b011b151",
+   :source-sha256
+   "0b5ef8028bb286b04b9437c4824b704dd6087097ea0b04ec4d08011089bb5fd5",
+   :source-tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+   :current-main-state :absent,
+   :disposition :historical-input-only,
+   :canonical-manifest-effect :none,
+   :replay-policy :read-only-git-bytes-only}
+  {:path "specs/requirement-reconciliation/task-baseline.edn",
+   :source-ref "e7a93606858e543119f807130f1583f1b011b151",
+   :source-sha256
+   "614d677fb15137c3a6122412cb3b6b137a2ec2cc767120ade4be0dd0cf908528",
+   :source-tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+   :current-main-state :absent,
+   :disposition :historical-input-only,
+   :canonical-manifest-effect :none,
+   :replay-policy :read-only-git-bytes-only}],
  :authority :historical-source-view-and-reproducibility-index-only,
  :reproduction
  {:write "clojure -M tools/pr554_frozen_source_view.clj --write",
