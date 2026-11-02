@@ -23,6 +23,12 @@ provider/replay operations. Refine the existing authoritative task only, record
 exact passed/failed/unrun evidence and retain separate independent acceptance,
 integration and wider-runtime/handler completion boundaries.
 
+## Complete compile-time evaluation interface
+
+Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). Infer actual compile-time P effects independently from generated Q runtime effects, preserving all thirteen L12 build/compiler families and real phase/action identities. The recorded L6/L12 environment premise remains unresolved; grants alone waive neither contract.
+
+Current source/interface entailment and implementation acceptance remain pending; preserve existing task authority, frozen reviews and every actual restriction.
+
 ## Provider and capability dependency interface
 
 Use the [provider and capability producer and consumer order](../auth-workflow/plan.md#provider-and-capability-producer-and-consumer-order) and existing selected-result table. Derive actual direct/latent action requirements and separate build/runtime effects before grants and checking. Pure capability transport need not perform its later effect, and imported trust never erases that effect.

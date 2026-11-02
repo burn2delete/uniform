@@ -56,6 +56,12 @@ component acceptance and coordinator integration pending until their exact
 evidence is present. Whole-domain, full-language, self-hosted and release claims
 remain governed by their separate existing outcomes.
 
+## Complete compile-time evaluation interface
+
+Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). Selected schema loading and generated protocol/serialization/layout products require real declared input/effect/provider and normal generated validation. This interface does not accept full schema/domain sources or authorize a held live service.
+
+Current source/interface entailment and implementation acceptance remain pending; preserve existing task authority, frozen reviews and every actual restriction.
+
 ## Provider and capability dependency interface
 
 Use the [provider and capability producer and consumer order](../auth-workflow/plan.md#provider-and-capability-producer-and-consumer-order) and existing selected-result table. Early EFIR/numeric/provider contracts and applicable proof products precede compatible replacement selection; real safe math implementation and operation results precede Auth replacement conformance and independently run suites. This neither makes all pure arithmetic effectful nor permits experimental providers.

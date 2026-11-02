@@ -22,6 +22,12 @@ the Core-representation ordering qualification and all source/provider holds.
 duplicate the task ledger. Record scoped results, unchanged evidence reuse and
 remaining boundaries; independent acceptance and integration stay separate.
 
+## Complete compile-time evaluation interface
+
+Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). Supply actual namespace/import/alias/profile/package and binding/public-name facts, preserving declared replacement rules and generated origins. Keep the existing D1/C1/C5/C6 order decision explicit instead of treating a schedule label as resolution.
+
+Current source/interface entailment and implementation acceptance remain pending; preserve existing task authority, frozen reviews and every actual restriction.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Resolve task authority

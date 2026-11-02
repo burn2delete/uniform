@@ -25,6 +25,114 @@ an explicit unfinished acceptance boundary. Record evidence in the existing
 package and update only its authoritative task; do not create a parallel
 implementation checklist. Independent review and integration remain separate.
 
+## Complete compile-time evaluation source criteria
+
+Complete L12 is a joint contract for the existing evaluator, compiler and build
+owners. Fifteen clauses refine twelve existing tasks in four authorities. The
+source census preserves 131 facets, 89 occurrences and eight original owners;
+byte coverage is identity/conservation evidence, not semantic acceptance. Three
+missing profile74 criterion witnesses return to their already allocated tasks;
+two existing exact predicates remain in place. All finite reviews stay frozen.
+
+| Existing owner | Required real result |
+| --- | --- |
+| Expand1 evaluator | Computed compile-time/defconst values, eligible pure or explicitly authorized execution, stable target representations and actual phase/capture refusals |
+| Expand2 origins | Immutable source/generated syntax, hygiene/public-name rules and full generator/input/span/phase/package/version/effect/output chain |
+| Expand3 action and record | Installed build-phase enforcement before action, authentic ordered evaluation/constants/action/replay/diagnostic products for each namespace |
+| Expand4 reuse consumer | Actual Build cache result and current trace-policy legality before consuming the value; no independent cache implementation |
+| Expand5 generated programs | Ordinary validation of actual generated declarations/protocols/serialization/layout/tests/proofs, source equivalence and complete owner cases |
+| Build graph | Nine ordered observable phase products and immutable earlier artifacts, preserving source and generated origins |
+| Build cache | Sole key/entry/invalidation/revalidation authority for all ten L12 input groups and actual cached values/traces |
+| Build reproducibility | Actual repeated hermetic typed-core byte comparison; native metadata exceptions require marked fields and target acceptance |
+| Build artifact packaging | Persist actual evaluator records in the typed graph; policy-required archival/shipping/signing remain distinct operations |
+| Auth grants and secrets | Actual narrow build authority and secret/export policy with destination-specific redaction/refusal results |
+| Compiler API pipeline/plugins | Real versioned pass boundaries, semantic legality, available isolation and verifier/invalidation products before affected consumers |
+
+Pure evaluation covers arithmetic with declared overflow, data and syntax,
+explicitly compile-time-callable pure functions, finite total matching and fixed
+target/profile predicates/layout queries. Stable representation is about the
+actual value and target artifact, not a type-name prefix. Hosted objects, open
+handles, mutable cells, threads, ambient-state closures, runtime captures and
+unrecorded foreign references do not become constants. Runtime fallback requires
+explicit source permission and legal resulting runtime effects.
+
+Check available definitions and phase, actual types/effects/allocation/captures
+and declared target dependence before evaluation. Native FFI is not implicitly
+callable; a permitted binding needs its version/ABI/input/output/failure/replay
+provider contract. Generated Q is checked normally after checked compile-time P
+runs. Later stages inspect immutable earlier artifacts; memoization retains
+original spans and origins. Keep the existing D1/C1/C5/C6 representation-order
+decision with the architecture owner. Candidate facts are not checked Core, and
+assigned phase labels or an invented stage cannot resolve that source decision.
+
+All thirteen L12 build/compiler effects need real request/package/namespace/
+provider/grant and input/output/tool/digest/replay identity. Build grants do not
+authorize runtime use; generated runtime effects remain independently checked.
+In required hermetic modes, apply declared file/environment value policy,
+configured replayable provider or pinned network/shell/model/tool result,
+recorded clock/random values or seeds, declared target manifests and generated
+input hashes. The L6 environment-read denial versus L12 declared-key premise
+remains an explicit Build/Expand source-policy decision before acceptance of that
+live behavior. A grant or recorded non-replayability exception waives none of
+these premises. Identical declared semantic inputs require identical typed Core;
+native metadata exceptions cannot weaken that equality.
+
+Actual cache reuse needs every source/span/macro/extension/function/lock/grant/
+file/environment/profile/target/compiler/facet/replay input and a still-legal
+trace. Stricter policy may invalidate a matching entry; looser policy never
+legalizes creation-time hidden effects. Build alone constructs and invalidates
+the cache, Expand consumes its actual result, and reproducibility compares
+repeated builds. Ordered namespace records need actual computed values and
+performed/refused actions, not output-type digests or assigned passed/reuse flags.
+
+Preserve all nine explicit profile cases: core, hosted, native, kernel, firmware,
+hardware, distributed, AI and meta. Hosted permission stays auditable under real
+grants; native specialization uses declared target facts; constrained profiles
+reject unmodeled hosted dependencies; distributed retains workflow/schema/retry/
+external-service/replay records; AI retains model/prompt/input/output/retention/
+review identity; meta cannot bypass legality. Workflow forms remain facets and
+targets within distributed, not an added profile dimension.
+
+Five source facets contain superseded accounting: three fuel/totality-admission/
+fuel-diagnostic occurrences and two model/tool cost references. Preserve their
+source bytes with explicit dispositions. No fuel limit, L12-FUEL refusal, generic
+renamed bound or mandatory replacement totality proof gates useful evaluation.
+Independently claimed totality evidence, actual phase/cycle/semantic failures,
+target-format constraints and physical process/watchdog safeguards remain
+distinct. Model/tool identity/input/output/retention/review and real external
+account/billing obligations survive project-accounting removal.
+
+Secrets stay out of generated source, diagnostics, stable public keys and public
+provenance. An explicitly accepting private store has its own policy boundary;
+it is no public-output waiver or authorization to access that store here. Nine
+active L12 diagnostics retain phase/profile/target/span/origin/effect/grant and
+remediation. The tenth, L12-FUEL, is explicitly retired accounting. Test actual
+evaluation, schema loading and generated protocol implementation, ordinary
+generated validation, phase/representation/hidden-effect/secret refusals and
+cache/rebuild drift with authentic products. Release suites run their own exact
+subjects afterward. Held cases remain visible and unassessed.
+
+Static inspection finds actual hosted effect/input/target/replay-membership
+refusals and a stable-type allowlist, while selected record builders derive
+digests from operator/type descriptions and assign generated-check/replay/reuse
+statuses. The hosted macro path really expands templates with declared-versus-
+granted and selected hygiene/profile/unsafe checks, while retaining removed
+depth accounting. Gravity's macro owner implements a declared defn subset and
+explicitly excludes general user-defmacro/type/effect coverage; its C4 facade
+denies authoritative-result credit. These narrower results are not whole L12
+evaluation, target constant encoding, policy-validated cache reuse or hermetic
+reproduction. Existing fuel/depth refusals remain visible accounting cleanup
+under the existing owner, not new acceptance criteria. No compiler runs here.
+
+The existing selected-result table retains 834 joins across 91 routes. Complete
+L12 producer/consumer dependency reconciliation remains a separate required
+source/interface review. No second roadmap or task/status authority is added.
+Current whole-source/interface review, implementation acceptance and global
+conjunctions remain pending or unassessed. Preserve C7/C12, paired/provider/
+plugin/probe/native/callback/device/replay/migration/private-store/signing/product
+publication holds, finite reviews and the stopped handoff. This source proposal
+grants no execution, new review consumption, integration or release authority.
+
 ## Provider and capability dependency interface
 
 Use the [provider and capability producer and consumer order](../auth-workflow/plan.md#provider-and-capability-producer-and-consumer-order) and existing selected-result table. Consume actual compatible provider/trust/build-grant/gate and exact L6/L12 hermetic/replay premises before macro P action; later generated Q and replay/denial results remain separate. A replay exception is no grant or hermetic waiver.

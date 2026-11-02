@@ -17,6 +17,12 @@ composition. Preserve exact diagnostic and compatibility IDs, private-data
 boundaries and failed/unrun evidence. Refine only the selected task; a successful
 rendering fixture does not establish all-stage integration or release.
 
+## Complete compile-time evaluation interface
+
+Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). Preserve nine active L12 meanings and actual phase/profile/target/span/origin/effect/grant/remediation, keeping secrets out. Historical L12-FUEL is retired accounting, not a replacement resource bound or mandatory totality gate.
+
+Current source/interface entailment and implementation acceptance remain pending; preserve existing task authority, frozen reviews and every actual restriction.
+
 ## Provider and capability source interface
 
 Use the [complete provider and capability source criteria](../auth-workflow/plan.md#complete-provider-and-capability-source-criteria). Consume the original eleven L15, ten SAFE10 and ten R11 meanings with actual denial-policy/provider/grant/action/source context and secret-safe remediation; nearest valid choices remain conditional and cannot reveal secrets.

@@ -23,6 +23,12 @@ Record exact source/fixture/consumer identities and passed, failed or unrun work
 preserve operation restrictions and separate author checks, independent
 acceptance, integration and the complete profile/provider matrix.
 
+## Complete compile-time evaluation interface
+
+Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). Check actual compile-time allocation/capture/profile/capability/memory/concurrency/safety legality and validate generated Q normally. Meta/hosted services do not bypass these decisions or grant authority.
+
+Current source/interface entailment and implementation acceptance remain pending; preserve existing task authority, frozen reviews and every actual restriction.
+
 ## Provider and capability dependency interface
 
 Use the [provider and capability producer and consumer order](../auth-workflow/plan.md#provider-and-capability-producer-and-consumer-order) and existing selected-result table. Consume real grants, compatible provider/isolation/trust and type/effect facts before the four-outcome decision, then preserve obligations through actual target/action results. Trusted labels and runtime permission cannot repair static illegality.

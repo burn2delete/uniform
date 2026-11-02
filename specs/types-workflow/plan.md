@@ -23,6 +23,12 @@ publication restriction and existing writer reservations explicit. Refine only
 the same authoritative task and record exact scoped evidence, unrun work and
 independent review/integration separately; do not issue a competing checklist.
 
+## Complete compile-time evaluation interface
+
+Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). Supply actual checkable expression/capability/phase/constant type and target/layout facts before the selected evaluation. Generated Q typechecking follows generation; this interface does not adopt full C7 or change its publication hold.
+
+Current source/interface entailment and implementation acceptance remain pending; preserve existing task authority, frozen reviews and every actual restriction.
+
 ## Provider and capability dependency interface
 
 Use the [provider and capability producer and consumer order](../auth-workflow/plan.md#provider-and-capability-producer-and-consumer-order) and existing selected-result table. Provide actual capability/provider/scope/phase/lifetime/thread-safety/revocation type facts before combined legality; a capability type is not an issued grant. This selected interface does not adopt full C7 or change its hold.

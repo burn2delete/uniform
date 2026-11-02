@@ -25,6 +25,12 @@ signing custody and writer reservations; record failed/unrun work explicitly.
 Independent review and coordinator integration remain separate from author
 validation, and final product acceptance does not close wider language scope.
 
+## Complete compile-time evaluation interface
+
+Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). Consume actual evaluator/generated/compiler/cache/hermetic results and execute each applicable existing suite on its own exact subject and oracle. Owner examples, records and finite historical review are not independently run conformance.
+
+Current source/interface entailment and implementation acceptance remain pending; preserve existing task authority, frozen reviews and every actual restriction.
+
 ## Provider and capability dependency interface
 
 Use the [provider and capability producer and consumer order](../auth-workflow/plan.md#provider-and-capability-producer-and-consumer-order) and existing selected-result table. Each existing suite consumes actual owner/compiler/provider/startup/action/cache/replacement products and executes its own subject/oracle. Neither source definitions, owner examples nor assigned passed flags establish that harness result or authorize held actions.

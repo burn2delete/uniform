@@ -23,6 +23,12 @@ reused unchanged evidence, unrun boundaries and stable diagnostic ownership.
 implementation checklist. Independent acceptance, migration and integration
 remain separate from ordinary development and structural validation.
 
+## Complete compile-time evaluation interface
+
+Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). Supply real candidate/Core value and target-representation contracts, preserving actual generated origins and checked facts. Computed constants and generated forms still require ordinary validation; a type name or declared constant table is insufficient.
+
+Current source/interface entailment and implementation acceptance remain pending; preserve existing task authority, frozen reviews and every actual restriction.
+
 ## Provider and capability dependency interface
 
 Use the [provider and capability producer and consumer order](../auth-workflow/plan.md#provider-and-capability-producer-and-consumer-order) and existing selected-result table. Candidate Core and solved facts precede actual authority/profile/provider/trust/safety decisions; checked Core follows them. Later execution is no premise for forming an early checked operation.

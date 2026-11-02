@@ -24,6 +24,12 @@ checklist. Preserve all ownership reservations and actual runtime restrictions.
 Independent semantic acceptance and coordinator integration stay separate from
 local checks, and full Syntax release remains bounded by the component outcome.
 
+## Complete compile-time evaluation interface
+
+Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). Supply verified immutable syntax/lexical context/metadata/spans and retain original/generated chains through phase-specific products; actual returned graphs and binding/hygiene validation remain required.
+
+Current source/interface entailment and implementation acceptance remain pending; preserve existing task authority, frozen reviews and every actual restriction.
+
 ## Historical task-authority-transfer plan
 
 # Plan: Syntax task authority and roadmap navigation

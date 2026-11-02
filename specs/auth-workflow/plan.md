@@ -23,6 +23,12 @@ the selected authoritative task. Record exact passed, failed and unrun evidence,
 residual host/trust assumptions, independent review and integration separately.
 A structurally valid manifest or supplied verdict does not close enforcement.
 
+## Complete compile-time evaluation interface
+
+Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). Supply actual narrow build grants/provider contracts and secret/export policy. Requests or signed lockfiles do not mint wider authority, private-store acceptance does not waive public redaction, and Build/Expand own the actual destination records.
+
+Current source/interface entailment and implementation acceptance remain pending; preserve existing task authority, frozen reviews and every actual restriction.
+
 ## Provider and capability producer and consumer order
 
 The [existing selected-result table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition)

@@ -66,6 +66,18 @@ Complete build provider execution criterion (Open): Execute the declared typed b
 <!-- authority-source-build:end -->
 
 
+<!-- compile-time-source-phases:start -->
+
+Apply the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria) within this existing task. Status remains Open; finite reviewed source is not current whole-source or implementation acceptance.
+
+Preserved finite predicate conjunctions:
+
+Source obligation `language/compiletime/preserve-phase-artifacts`: Schedule compile-time stages in the declared semantic order and prevent later stages or memoization from mutating earlier artifacts or losing original source/generated provenance. Accept: Schedule reading, namespace loading, expansion, name/type/effect analysis, profile/capability validation, constant evaluation, extension execution, revalidated typed-core lowering and target preparation in L12 order. Later stages may inspect immutable prior artifacts; normalization and memoization retain original spans and generated-origin chains. Reject: Reject an out-of-order dependency, unauthorized extension/target preparation, mutation of a prior artifact or loss of original/generated diagnostic provenance. Required outputs: Ordered compile-time event graph, immutable before/after artifact digests, authorization decisions and source/generated-origin diagnostic fixtures. Dependencies consume versioned facts/receipts from expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs, types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts, effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering; they do not require blanket component completion. Implementation status remains Open.
+
+Complete L12 phase-artifact criterion (Open): Schedule and record actual reading, namespace loading, macro expansion, name/type/effect analysis, profile/capability validation, constant evaluation, authorized extension execution, revalidated checked-core lowering and target preparation with their exact observable products and invalidation. Checked macro/extension program P and early candidate/type/layout facts must be available before the relevant execution, while generated caller Q is checked afterward. Later phases inspect immutable earlier artifacts; normalization/memoization retains original spans and generated-origin chains and produces new identities rather than mutating prior ones. Preserve the existing D1/C1/C5/C6 ordering decision as unresolved under its current architecture owner instead of inventing a new pipeline. Build owns graph scheduling and immutable products, the compiler API owns pass semantics/observable boundaries, and semantic owners supply actual decisions. Reject illegal order, missing facts, unauthorized target/extension work and lost or mutated provenance with real before/after artifacts.
+<!-- compile-time-source-phases:end -->
+
+
 - [ ] `build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation` Implement dependency-aware caching and invalidation
 
 Status: Open
@@ -94,6 +106,14 @@ Apply the [complete provider and capability source criteria](../auth-workflow/pl
 
 Complete provider cache producer criterion (Open): Construct actual stage-appropriate cache identities using the selected provider id/version/scope/contract/trust/policy and compile-time input/output/replay facts required by that producer, excluding secret values under the stable public cache-key policy. On a relevant provider, policy or recorded-input change, invalidate the affected entry and downstream dependencies, then actually revalidate or recompute rather than accepting a stale hit. Emit field-sensitive keys, invalidation/reuse/rebuild decisions and refused stale, mismatched, non-replayable or secret-leaking cases. This existing dependency-aware caching task owns key construction, reuse and invalidation; the reproducibility task consumes those actual products for repeated locked-build comparisons.
 <!-- authority-source-cache-producer:end -->
+
+
+<!-- compile-time-source-cache:start -->
+
+Apply the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria) within this existing task. Status remains Open; finite reviewed source is not current whole-source or implementation acceptance.
+
+Complete L12 cache producer criterion (Open): The existing Build cache task alone constructs actual compile-time keys and persistent entries from all ten L12 input groups, authentic computed values/traces and source/compiler/macro/function/extension/facet/profile/target/grant/policy/replay identities. Compare actual current-policy legality before reuse, invalidate stricter-policy or changed-input entries and never bless creation-time hidden effects after policy relaxation. Preserve secret-safe environment digest/presence handling without putting secret values in stable public keys. Perform actual revalidation/recomputation and produce clean-versus-reused/refused evaluation/typed-core products, not cache-policy=strict or reuse-allowed metadata alone. Expand consumes these results; this task does not become a second evaluator, grant issuer or repeated-build owner.
+<!-- compile-time-source-cache:end -->
 
 
 - [ ] `build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records` Produce and verify package/provenance/signing records
@@ -140,6 +160,14 @@ Actual publication and signing retain their authority boundaries. All existing
 task IDs and Open statuses remain; no package operation was executed here.
 <!-- build-governance-package:end -->
 
+<!-- compile-time-source-artifact:start -->
+
+Apply the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria) within this existing task. Status remains Open; finite reviewed source is not current whole-source or implementation acceptance.
+
+Complete L12 evaluation-record packaging criterion (Open): Consume the evaluator's real namespace trace/constants/generated-origin/build-action/replay/cache/diagnostic products and persist their exact source/compiler/profile/target/grant/provider/input/output identities in the typed build artifact graph. Release output ships or archives the complete record according to package policy; safety-critical signing applies only when that policy requires it and remains separately authorized. Verify actual canonical/schema/content/provenance links and secret-safe public versus explicitly permitted private records before consumption. A manifest listing record kinds is not archival, signature evidence, execution or reproduction; current P records follow P evaluation, while preexisting imported Q evidence is verified before Q use. Preserve private-store/signing/publication holds.
+<!-- compile-time-source-artifact:end -->
+
+
 - [ ] `build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix` Close reproducibility and target matrix
 
 Status: Open
@@ -167,6 +195,14 @@ Apply the [complete provider and capability source criteria](../auth-workflow/pl
 
 Complete provider reproducibility/cache consumer criterion (Open): Consume the existing dependency-aware cache task's actual provider-bound key, invalidation, reuse and rebuild-node products in repeated locked-build comparisons. That task remains the sole owner of cache key construction and invalidation; this existing reproducibility task owns recorded recipe and actual canonical manifest/content comparisons across the claimed targets. Preserve selected provider id/version/scope/contract/trust/policy and compile-time input/output/replay identities in the consumed recipe/results, excluding secret values and enforcing the stable public cache-key secret policy. Changed provider/version/policy/contract or recorded inputs must be visible in the consumed cache decisions and recipe, preventing a stale reproducibility claim. A recorded replay exception alone grants no effect authority. Produce actual repeat-build comparisons and refused stale, mismatched, non-replayable or secret-leaking claims with source/build/compiler/provider identities; key-shaped metadata or a completed status is not reproducibility evidence.
 <!-- authority-source-cache:end -->
+
+
+<!-- compile-time-source-hermetic:start -->
+
+Apply the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria) within this existing task. Status remains Open; finite reviewed source is not current whole-source or implementation acceptance.
+
+Complete L12 hermetic reproduction criterion (Open): In required release/conformance/reproducible-publication/safety-critical modes, repeat actual builds from identical source, compiler version, lockfile, target manifest, grants and declared inputs/replay records and compare byte-identical typed Core. Reject undeclared filesystem input; environment reads require the exact declared-key/explicit-value-policy premise subject to the retained L6/L12 wording decision. Network/shell/model/tool use requires configured replayable provider or pinned result, clock/random requires recorded values or deterministic seed, probes use declared target manifests, and generated forms include input content hashes. A grant, replay exception or generic reproducible flag proves none of these premises. Native-object metadata variation needs an explicitly marked nonsemantic field and actual target-conformance acceptance; never relax typed-core equality. Consume actual cache results without implementing another cache, and retain unavailable/held cases, source-policy resolution and actual target evidence separately from signing/publication authority.
+<!-- compile-time-source-hermetic:end -->
 
 
 <!-- build-implementation-tasks:end -->

@@ -21,6 +21,12 @@ artifacts and counterexamples without changing ownership, accepting pending
 source amendments, refreshing migration evidence or claiming whole-pass/release
 support from local checks.
 
+## Complete compile-time evaluation interface
+
+Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). Expose actual L12 phase/pass boundaries and authorized extension products with preserved/verifier/invalidated facts. Keep checked compile-time P separate from generated caller Q and retain the existing governing-source ordering decision.
+
+Current source/interface entailment and implementation acceptance remain pending; preserve existing task authority, frozen reviews and every actual restriction.
+
 ## Complete domain IR source criteria
 
 The existing `domain-ir-boundaries` and `pass-evidence` tasks already contain

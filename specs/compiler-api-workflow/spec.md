@@ -5,6 +5,8 @@ to the preserved source-reconciliation candidate. Existing semantic owners,
 literal task criteria and pending review scopes remain unchanged. The original
 specification/composition text below is retained in full.
 
+The [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria) reconcile L12 expression evaluation, stable constants, ordered immutable phases, generated validation, actual build effects, policy-checked reuse and hermetic typed-core reproduction within existing tasks. Historical finite source review does not accept current whole-source composition or implementation.
+
 ## Behavior and interfaces
 
 Implement [the Compiler API outcomes](../../docs/component-roadmaps/compiler-api.md#release-outcome)

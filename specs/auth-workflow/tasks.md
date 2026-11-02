@@ -97,6 +97,14 @@ Complete capability secret/phase criterion (Open): Keep build secret authority s
 <!-- authority-source-secrets:end -->
 
 
+<!-- compile-time-source-secrets:start -->
+
+Apply the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria) within this existing task. Status remains Open; finite reviewed source is not current whole-source or implementation acceptance.
+
+Complete L12 secret boundary criterion (Open): Derive and enforce actual effect/scope/principal/grant/provider and secret read/export policy for compile-time use separately from runtime authority. Secret values must not enter generated source, diagnostics, stable public cache keys or public provenance. Only permitted key/name/presence/redaction metadata may be public; a private artifact may contain secret material only when its store explicitly accepts it under the actual governing policy. That exception is no public-output waiver or authorization to access a private store here. Consume actual destination-specific redaction/refusal results from evaluator/Build/diagnostic owners instead of supplied no-leak flags, retaining all other model/tool identity/input/output/retention/review predicates while project cost/fuel accounting stays removed and external billing restrictions remain separate.
+<!-- compile-time-source-secrets:end -->
+
+
 - [ ] `auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks` Bind compiler decisions to runtime/build enforcement hooks
 
 Status: Open

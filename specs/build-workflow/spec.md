@@ -4,6 +4,8 @@ Implementation scope added under the 2026-11-01 request. Existing build/package,
 trust, policy and release owners retain their boundaries. Historical workflow
 migration below establishes no resolver, graph execution or package acceptance.
 
+The [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria) reconcile L12 expression evaluation, stable constants, ordered immutable phases, generated validation, actual build effects, policy-checked reuse and hermetic typed-core reproduction within existing tasks. Historical finite source review does not accept current whole-source composition or implementation.
+
 ## Behavior and interfaces
 
 Implement [the Build outcome](../../docs/component-roadmaps/build.md#release-outcome)

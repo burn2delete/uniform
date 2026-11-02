@@ -22,6 +22,12 @@ cases, residual host/provider boundaries and actual manifest/stability changes.
 Preserve reserved writers and held live operations. Separate reachable compiler
 support, wider module/profile completion, independent acceptance and release.
 
+## Complete compile-time evaluation interface
+
+Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). Only actually available, eligible compile-time-callable pure functions can supply the claimed constant example; real value/overflow/representation and phase facts remain required. An export declaration or host convenience is not the implementation.
+
+Current source/interface entailment and implementation acceptance remain pending; preserve existing task authority, frozen reviews and every actual restriction.
+
 ## Provider and capability dependency interface
 
 Use the [provider and capability producer and consumer order](../auth-workflow/plan.md#provider-and-capability-producer-and-consumer-order) and existing selected-result table. Actual typed capability-value/declared-ambient contracts precede compiler use; usable APIs and safe memory or IO replacement consume real implemented services, grants/gates and selected startup. Owner cases precede independent library suites.

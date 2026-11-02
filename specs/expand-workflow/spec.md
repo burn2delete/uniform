@@ -4,6 +4,8 @@ Implementation scope added under the 2026-11-01 project-wide request. Existing
 Expand maintainers retain ownership. The original workflow-transfer record
 follows unchanged; completing that transfer does not implement macro expansion.
 
+The [complete compile-time evaluation source criteria](plan.md#complete-compile-time-evaluation-source-criteria) reconcile L12 expression evaluation, stable constants, ordered immutable phases, generated validation, actual build effects, policy-checked reuse and hermetic typed-core reproduction within existing tasks. Historical finite source review does not accept current whole-source composition or implementation.
+
 ## Behavior and interfaces
 
 Implement [the Expand outcome](../../docs/component-roadmaps/expand.md#release-outcome)
