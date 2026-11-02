@@ -125,3 +125,29 @@ This receipt grants the finite C3 development evidence above. It grants no
 canonical admission, C12, large-Wasm, native-C, migration, release,
 self-hosting, or seed-retirement authority. Integration requires independent
 acceptance of the exact candidate and an immediate clean integration preflight.
+
+## SH07 construction handoff for explicit current Syntax
+
+The post-composition caller audit found one remaining owner-boundary omission.
+SH09's current Reader/Macro fixture and the SH07 current Map-guard fixture now
+carry the validated `:gravity/sh04-development-syntax-selection-v1` selection.
+The SH07 construction guard correspondingly reads the selected current Syntax
+bytes and binding when that selection is present, and keeps the historical
+pinned Syntax read and binding when it is absent. The Macro mode remains a
+separate authenticated assertion; the current Map-guard fixture explicitly
+selects current Reader, Syntax, and Macro because its source route is current.
+No default call was silently converted, and no admission pin or hash was
+refreshed.
+
+The first attempt with current Syntax and the old pinned Macro default failed
+closed at C4 with `:exact-pinned-macro-source`; this was retained as the
+incompatible mixed-source observation. After the owner fix and explicit full
+current selection, the real Map-guard-to-Core branch replay passed 1 test / 131
+assertions, including hostile branch replay rejection. The independent SH07
+Macro-mode/source controls passed 2 tests / 9 assertions. The SH09 private
+Map-key paired current-source test was started once, but reached a host JVM
+resource boundary at about 10 minutes and 3.66 GB RSS before a terminal result;
+that run is not claimed as a pass and was stopped without retry.
+
+The source owner change is intentionally narrow: no native-C, C11, PMK
+admission, or migration evidence is inferred from these JVM observations.
