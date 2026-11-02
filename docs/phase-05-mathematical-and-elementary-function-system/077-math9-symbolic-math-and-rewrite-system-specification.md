@@ -74,7 +74,7 @@ proof status, and invalidation rules match the expression being transformed.
    :proof {:kind :symbolic
            :checker :gravity.rewrite/check
            :status :proved}
-   :termination {:measure :operator-count
+   :termination {:measure :tan-occurrence-count
                  :direction :strictly-decreasing}}
   (tan x)
   (/ (sin x) (cos x)))
