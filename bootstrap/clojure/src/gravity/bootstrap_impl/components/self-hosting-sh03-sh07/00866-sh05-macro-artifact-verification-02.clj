@@ -25,7 +25,16 @@
    legacy?
    invocation
    ^{:line 148, :column 101}
-   (macro-stage-operations))))
+   (macro-stage-operations)))
+ ([source-path c3-artifact legacy? invocation source-mode]
+  (gravity.macro/assemble
+   source-path
+   c3-artifact
+   legacy?
+   invocation
+   ^{:line 148, :column 101}
+   (macro-stage-operations)
+   source-mode)))
 
 (defn sh05-macro-artifact-from-c3-artifact
   ([c3-artifact]
@@ -35,7 +44,10 @@
   ([source-path c3-artifact]
    (sh05-macro-artifact-from-c3-artifact source-path c3-artifact nil))
   ([source-path c3-artifact invocation]
-   (sh05-macro-artifact-from-c3-artifact* source-path c3-artifact false invocation)))
+   (sh05-macro-artifact-from-c3-artifact* source-path c3-artifact false invocation))
+  ([source-path c3-artifact invocation source-mode]
+   (sh05-macro-artifact-from-c3-artifact*
+    source-path c3-artifact false invocation source-mode)))
 
 (defn sh05-macro-source-artifact
   [source-path source-text]

@@ -27,7 +27,7 @@ recorded, and replayable.
   and safety checks as handwritten code.
 - Macros that can generate unsafe islands must declare that behavior and emit
   `SAFE6` metadata.
-- Expansion must stop with deterministic diagnostics on recursion, size, phase,
+- Expansion must stop with deterministic diagnostics on recursion, phase,
   hygiene, or safety violations.
 
 ## Dependencies
