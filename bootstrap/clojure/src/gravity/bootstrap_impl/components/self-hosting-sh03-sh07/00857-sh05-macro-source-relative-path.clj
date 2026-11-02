@@ -378,13 +378,7 @@
    request-source
    ^{:line 112, :column 65}
    (macro-stage-operations)
-   source-mode))
- ([request-source source-mode source]
-  ((ns-resolve 'gravity.macro 'build-plan-binding-from-source!)
-   request-source
-   (macro-stage-operations)
-   source-mode
-   source)))
+   source-mode)))
 
 (def
  ^{:private true} sh05-macro-cached-binding
