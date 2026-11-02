@@ -92,27 +92,20 @@
 
 (defn- immutable-post-reader-edn!
   [source-path value]
-  (let [node-count (volatile! 0)
-        scalar-bytes (volatile! 0)]
-    (letfn [(reject! [reason current]
-              (throw
-               (ex-info
-                "B50 carrier is outside the bounded immutable post-reader EDN domain"
-                {:id "SH07-B50-POST-READER-DOMAIN"
-                 :artifact :gravity/sh07-core-diagnostic
-                 :rule "C6-VERIFY"
-                 :reason reason
-                 :fail-closed true
-                 :source-path source-path
-                 :value-class (some-> current class .getName)})))
-            (convert [current depth]
-              (vswap! node-count inc)
-              (when (> @node-count 8388608)
-                (reject! :carrier-node-bound current))
-              (when (> depth 256)
-                (reject! :carrier-depth-bound current))
-              (let [class-name (some-> current class .getName)]
-                (cond
+  (letfn [(reject! [reason current]
+            (throw
+             (ex-info
+              "B50 carrier is outside the immutable post-reader EDN domain"
+              {:id "SH07-B50-POST-READER-DOMAIN"
+               :artifact :gravity/sh07-core-diagnostic
+               :rule "C6-VERIFY"
+               :reason reason
+               :fail-closed true
+               :source-path source-path
+               :value-class (some-> current class .getName)})))
+          (convert [current]
+            (let [class-name (some-> current class .getName)]
+              (cond
                 (or
                  (contains? #{"clojure.lang.PersistentArrayMap"
                               "clojure.lang.PersistentHashMap"}
@@ -121,26 +114,15 @@
                   (= "clojure.lang.PersistentTreeMap" class-name)
                   (= "clojure.lang.RT$DefaultComparator"
                      (some-> current .comparator class .getName))))
-                (do
-                  (when (> (* 2 (count current)) 65536)
-                    (reject! :carrier-width-bound current))
-                  (when (> (+ @node-count (* 2 (count current))) 8388608)
-                    (reject! :carrier-node-bound current))
-                  (into {}
-                        (map (fn [[key child]]
-                               [(convert key (inc depth))
-                                (convert child (inc depth))]))
-                        current))
+                (into {}
+                      (map (fn [[key child]]
+                             [(convert key) (convert child)]))
+                      current)
 
                 (contains? #{"clojure.lang.PersistentVector"
                              "clojure.lang.APersistentVector$SubVector"}
                            class-name)
-                (do
-                  (when (> (count current) 65536)
-                    (reject! :carrier-width-bound current))
-                  (when (> (+ @node-count (count current)) 8388608)
-                    (reject! :carrier-node-bound current))
-                  (mapv #(convert % (inc depth)) current))
+                (mapv convert current)
 
                 (or
                  (= "clojure.lang.PersistentHashSet" class-name)
@@ -148,43 +130,23 @@
                   (= "clojure.lang.PersistentTreeSet" class-name)
                   (= "clojure.lang.RT$DefaultComparator"
                      (some-> current .comparator class .getName))))
-                (do
-                  (when (> (count current) 65536)
-                    (reject! :carrier-width-bound current))
-                  (when (> (+ @node-count (count current)) 8388608)
-                    (reject! :carrier-node-bound current))
-                  (into #{} (map #(convert % (inc depth))) current))
+                (into #{} (map convert) current)
 
                 (contains? #{"clojure.lang.PersistentList"
                              "clojure.lang.PersistentList$EmptyList"}
                            class-name)
-                (do
-                  (when (> (count current) 65536)
-                    (reject! :carrier-width-bound current))
-                  (when (> (+ @node-count (count current)) 8388608)
-                    (reject! :carrier-node-bound current))
-                  (apply list (map #(convert % (inc depth)) current)))
+                (apply list (map convert current))
 
                 (symbol? current)
-                (let [next-scalar-bytes
-                      (+ @scalar-bytes (* 4 (count (str current))))]
-                  (when (> next-scalar-bytes 268435456)
-                    (reject! :carrier-scalar-byte-bound current))
-                  (vreset! scalar-bytes next-scalar-bytes)
-                  (with-meta current nil))
+                (with-meta current nil)
 
                 (or (nil? current) (boolean? current) (integer? current)
                     (string? current) (keyword? current))
-                (let [next-scalar-bytes
-                      (+ @scalar-bytes (* 4 (count (str current))))]
-                  (when (> next-scalar-bytes 268435456)
-                    (reject! :carrier-scalar-byte-bound current))
-                  (vreset! scalar-bytes next-scalar-bytes)
-                  current)
+                current
 
                 :else
                 (reject! :carrier-value-domain-invalid current))))]
-      (convert value 0))))
+    (convert value)))
 
 (defn- snapshot-and-carrier
   ([source-path] (snapshot-and-carrier source-path nil))
@@ -213,10 +175,9 @@
           :source-extension (bootstrap/gravity-source-extension canonical-path)
           :source-kind (bootstrap/gravity-source-kind canonical-path)
           :byte-count (count immutable-bytes)
-          :maximum-source-bytes 1048576
-         :bytes immutable-bytes
-         :bytes-hash bytes-hash
-         :text text
+          :bytes immutable-bytes
+          :bytes-hash bytes-hash
+          :text text
           :encoding :utf-8
           :single-read? true
           :nofollow-final-component? true
@@ -227,8 +188,8 @@
          {:root-path (:project-root-path project)
           :manifest-relative-path "deps.edn"
           :manifest-byte-count (alength manifest-bytes)
-         :manifest-bytes-hash
-         (str "sha256:" (bootstrap/sha256-bytes-hex manifest-bytes))
+          :manifest-bytes-hash
+          (str "sha256:" (bootstrap/sha256-bytes-hex manifest-bytes))
           :project-root-id (:project-root-id project)}
          membership
          {:normalized-root-path (:project-root-path project)
@@ -271,10 +232,6 @@
    :digest-requests requests
    :resolved-digests digests})
 
-(defn- raw-call-phase [phase carrier template requests digests]
-  (invoke 'c6-sh07-authenticated-exception-entrypoint
-          [(entry-request phase carrier template requests digests)]))
-
 (defn- call-phase [phase carrier template requests digests]
   (let [request
         (immutable-post-reader-edn!
@@ -284,13 +241,10 @@
         (invoke 'c6-sh07-authenticated-exception-entrypoint [request])]
     (immutable-post-reader-edn! source-path result)))
 
-(def ^:private maximum-source-bytes 1048576)
-
 (defn- resolver-raw-u8-bytes! [source-path values]
-  (when-not (and (vector? values)
-                 (<= (count values) maximum-source-bytes))
+  (when-not (vector? values)
     (throw
-     (ex-info "B50 raw digest preimage is outside the bounded byte domain"
+     (ex-info "B50 raw digest preimage is outside the byte domain"
               {:id "SH07-B50-RAW-BYTE-DOMAIN"
                :source-path source-path})))
   (let [result (byte-array (count values))]
@@ -306,10 +260,9 @@
     result))
 
 (defn- resolver-strict-utf8-bytes! [source-path text]
-  (when-not (and (string? text)
-                 (<= (.length ^String text) maximum-source-bytes))
+  (when-not (string? text)
     (throw
-     (ex-info "B50 text digest preimage is outside the bounded text domain"
+     (ex-info "B50 text digest preimage is outside the text domain"
               {:id "SH07-B50-UTF8-ENCODING"
                :source-path source-path})))
   (try
@@ -318,16 +271,10 @@
             (.onMalformedInput java.nio.charset.CodingErrorAction/REPORT)
             (.onUnmappableCharacter java.nio.charset.CodingErrorAction/REPORT))
           buffer (.encode encoder (java.nio.CharBuffer/wrap ^String text))
-          byte-count (.remaining buffer)]
-      (when (> byte-count maximum-source-bytes)
-        (throw
-         (ex-info "B50 UTF-8 digest preimage exceeds its byte bound"
-                  {:id "SH07-B50-UTF8-ENCODING"
-                   :source-path source-path
-                   :byte-count byte-count})))
-      (let [result (byte-array byte-count)]
-        (.get buffer result)
-        result))
+          byte-count (.remaining buffer)
+          result (byte-array byte-count)]
+      (.get buffer result)
+      result)
     (catch java.nio.charset.CharacterCodingException _
       (throw
        (ex-info "B50 text digest preimage is not strict UTF-8 encodable"
@@ -1012,7 +959,7 @@
           :carrier
           (replace-nested-sh05-report
            carrier #(update-in % [:gravity-verifiers :template
-                                   :verified-run-count] inc))
+                                  :verified-run-count] inc))
           :rule "C6-VERIFY"}
          {:name :report-source-path
           :carrier (assoc-in carrier
@@ -1160,19 +1107,19 @@
               (get-in carrier [:source-snapshot :canonical-path])
               rewritten))))))
 
-(deftest sh07-b50-gravity-preflights-enforce-finite-post-reader-domain
+(deftest sh07-b50-gravity-preflights-enforce-post-reader-domain
   (let [accepted-values
         [nil false true -1 0 1 "" "text" :keyword 'symbol
          {} [] #{} (list) (list 1 2)]
         rejected-values
-        [(fn [] :not-edn) (byte-array 0) (Object.)]
+        [(fn [] :not-edn) (byte-array 0) (Object.) (map identity [1])]
         preflights
         ['c6-sh07-exception-carrier-preflight
          'c6-sh07-independent-exception-carrier-preflight]]
     (doseq [preflight preflights
             value accepted-values]
       (is (= :accepted (:status (invoke preflight [value])))
-          (str preflight " accepts bounded immutable EDN class "
+          (str preflight " accepts immutable EDN class "
                (some-> value class .getName))))
     (doseq [preflight preflights
             value rejected-values]
@@ -1180,19 +1127,38 @@
         (is (= :rejected (:status result)))
         (is (= :carrier-value-domain-invalid (:reason result)))))))
 
-(deftest sh07-b50-carrier-census-failures-use-verification-diagnostics
-  (let [too-deep (nth (iterate vector nil) 257)
-        too-wide (vec (range 65537))
-        admissions
-        ['c6-sh07-exception-carrier-admission
-         'c6-sh07-independent-exception-carrier-admission]]
-    (doseq [admission admissions
-            [value reason] [[too-deep :carrier-depth-bound]
-                            [too-wide :carrier-width-bound]]]
-      (let [result (invoke admission [value])]
-        (is (= :rejected (:status result)))
-        (is (= "C6-VERIFY" (:rule result)))
-        (is (= reason (:reason result)))))))
+(deftest sh07-b50-large-domain-values-survive-retired-input-allowances
+  (let [large-bytes (vec (repeat 1048577 65))
+        digest (str "sha256:" (apply str (repeat 64 "0")))
+        snapshot
+        {:artifact :gravity/sh07-source-snapshot
+         :schema-version 1
+         :canonical-path "/workspace/exception-error-exit.gravity"
+         :project-root-path "/workspace"
+         :project-relative-path "exception-error-exit.gravity"
+         :source-extension ".gravity"
+         :source-kind :gravity-branded-source
+         :byte-count (count large-bytes)
+         :bytes large-bytes
+         :bytes-hash digest
+         :text "A"
+         :encoding :utf-8
+         :single-read? true
+         :nofollow-final-component? true
+         :bytes-hash-domain :c2-source-bytes
+         :bytes-hash-algorithm :sha-256
+         :bytes-hash-encoding :sha256-lowercase-hex}
+        large-values
+        [(vec (repeat 65537 0))
+         (nth (iterate vector nil) 257)]]
+    (doseq [preflight
+            ['c6-sh07-exception-carrier-preflight
+             'c6-sh07-independent-exception-carrier-preflight]
+            value large-values]
+      (is (= :accepted (:status (invoke preflight [value])))))
+    (is (true? (invoke 'c6-sh07-exception-snapshot-shape? [snapshot])))
+    (is (true? (invoke 'c6-sh07-independent-exception-snapshot-valid?
+                       [snapshot])))))
 
 (deftest sh07-b50-outer-first-verification-diagnostic-wins-with-source-provenance
   (let [carrier (get @accepted-carriers ".gravity")
@@ -1485,13 +1451,13 @@
         honest-resolver resolve-digests
         forged-id (str "sha256:" (apply str (repeat 64 "a")))]
     (with-redefs
-      [resolve-digests
-       (fn [source-path requests]
-         (reduce
-          (fn [digests ordinal]
-            (assoc-in digests [ordinal :digest] forged-id))
-          (honest-resolver source-path requests)
-          (range 4 10)))]
+     [resolve-digests
+      (fn [source-path requests]
+        (reduce
+         (fn [digests ordinal]
+           (assoc-in digests [ordinal :digest] forged-id))
+         (honest-resolver source-path requests)
+         (range 4 10)))]
       (let [run (execute-carrier carrier)
             diagnostic (first-diagnostic (:verified run))]
         (is (= :accepted (get-in run [:resolved :status])))
