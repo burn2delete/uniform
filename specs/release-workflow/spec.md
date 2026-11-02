@@ -32,6 +32,16 @@ Use [the sole marked ledger](tasks.md#implementation-tasks) under
 `release/remaining-tasks-and-evidence/`. Preserve its five existing records,
 source-family refinements, status and evidence boundaries.
 
+The five aggregate records now carry the preserved detailed source criteria
+from the published Release proposal. Thirteen additional Open producer records
+are resumed in [the same task authority](tasks.md#testing-and-seed-conformance-task-proposals)
+as explicit future tasks. They execute language/compiler/runtime/profile/safety/
+library/AI-workflow/fuzz/differential/formal/performance/staged conformance and
+the declared seed/native observations. TEST6 backend execution stays with
+Backends. This gives actual result production a route distinct from comparison,
+intermediate admission and final release consumption; no test run or acceptance
+is established by resuming the records.
+
 | Existing suffix | Required accepted behavior | Required rejection and evidence |
 | --- | --- | --- |
 | `bind-each-claimed-component-to-exact-implementation-and-conformance` | Bind the full claimed source/component/dependency closure and each required operation to actual implementations, accepted/rejected programs, producer/consumer composition and exact conformance. Consume the existing governance evidence interfaces with their policy owners. | Reject omitted/replaced components, fixture-only inventories, hidden dependencies, unsupported profile/target claims, missing review/lifecycle evidence and source/fixture mismatch. Accepted narrow modules or historical stage counters cannot close the whole compiler or 240-document language surface. |
@@ -49,6 +59,16 @@ P15-S23/P18-T03/T05/T06 evidence stays incomplete until those actual conditions
 hold; do not promote early packaged JVM or fail-closed wrapper receipts.
 
 ## Starting work, composition and complete-project scope
+
+Testing consumes actual source/compiler/fixture/profile/target and applicable
+runtime/backend/provider/oracle identities. It produces executed positive and
+negative results, expected/actual artifacts and owning diagnostics, reproducible
+failure cases and invalidation records. A supplied pass flag, report schema or
+fixture catalogue cannot replace execution. Keep portable and profile-specific
+results separate, validate proof/checker subjects independently, and apply
+semantic/safety gates before accepting performance. TEST8 budget artifacts refer
+to real external-provider policy and costs; TEST9 resource exceptions refer to
+actual host/platform restrictions, never removed compiler input/work quotas.
 
 Ordinary component development uses explicit interfaces and focused real
 fixtures without first completing authoritative migration or final release.

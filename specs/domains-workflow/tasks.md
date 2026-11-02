@@ -49,9 +49,10 @@ Math owns its fixture/oracle contract and actual focused domain results.
 Whole-language, differential, formal, library and performance execution also
 requires the existing future Release Testing records in
 [the preserved Release authority](https://github.com/burn2delete/uniform/blob/df11890b21f71d3f246cc47e9f63d866239a0d68/specs/release-workflow/tasks.md).
-Those thirteen additional records have not yet been resumed in this checkout;
-they are explicit remaining composition work, not an implemented local runner
-or a reason to mark the Math conformance clause complete.
+Those thirteen additional records are now resumed as future tasks in
+[Release's sole authority](../release-workflow/tasks.md#testing-and-seed-conformance-task-proposals).
+Their implementation, precise consumer composition and independent acceptance
+remain Open; they do not establish an implemented runner or Math conformance.
 
 SAFE9's checked/proven narrowing requirement and its named wrapping/saturating
 conversion classes must both survive. The preserved qualification requires

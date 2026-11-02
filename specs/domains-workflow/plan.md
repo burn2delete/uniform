@@ -177,12 +177,13 @@ implement two verifiers or let a parent assertion replace independent checking.
 The same distinction applies to Math numeric policy versus general Types,
 Opt pass execution, Lower materialization and Runtime invocation.
 
-The preserved Release authority contains thirteen additional Open Testing
-records not yet resumed locally. Its language, differential, formal, library
+The preserved Release authority's thirteen additional Open Testing records are
+now resumed as [future tasks locally](../release-workflow/tasks.md#testing-and-seed-conformance-task-proposals).
+Its language, differential, formal, library
 and performance fixture execution records are required consumers of Math's
 suite/oracle/results. Their immutable source link in the parent is an explicit
-future task route; it is not an implemented local runner. Resume those records
-and reconcile their exact interfaces before claiming complete project testing.
+future task route; it is not an implemented local runner. Reconcile their exact
+interfaces and execute the required cases before claiming complete project testing.
 
 SAFE9 requires checked/proven narrowing and also names wrapping/saturating
 conversion classes; MATH1 requires explicit legal conversion semantics. Retain
