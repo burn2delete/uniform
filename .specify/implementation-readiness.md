@@ -2983,3 +2983,78 @@ local references, 139 original routes, 48 historical specification/plan suffixes
 and all 48 original task/evidence contents after declared additions are removed.
 ASCII and whitespace checks pass. These are source/planning/tooling checks,
 not compiler/provider execution, independent semantic acceptance or integration.
+
+## Source memory-model dependency continuation
+
+Source `4bb6dfd4c7f82be9c1d8acc1fcb396fbd916b6c2` extends the
+[existing dependency table](../docs/acceptance-dependencies.md#future-task-construction-and-composition)
+and [selected source memory order](../specs/legality-workflow/plan.md#source-memory-model-dependency-order).
+Eight existing consumers gain selected routes: Core1/Core3, Effects3, Auth
+provider declaration/selection, Runtime memory, Stdlib resource APIs, Devices,
+and Evolution change-review. The five Legality routes retain all 69 prior
+inputs and gain four inputs. The eight new rows add 56 inputs, for 60 additions,
+129 inputs across these thirteen selected routes and 409 joins globally.
+All 48 unaffected route meanings remain. There are 61 declared routes: forty
+future consumers and 21 existing parents; no declaration is unresolved.
+
+Three coarse cycles remain visible: Auth/Profile (two records), memory/source/
+service and the existing Math/Formal/Safety/review composition (sixteen), and
+the unchanged Release/Schema composition (eight). Their staged products differ:
+source/macro definitions precede compiled API results; provider declarations
+precede Profile compatibility and later selection; inferred effects precede
+grant-dependent ordering; actual device contracts precede memory-service use
+and later device evidence. Runtime service/failure contracts precede memory
+execution, while final handoff and conformance consume actual results afterward.
+C7 typed layout remains an analysis input; later target layout/provider changes
+require preservation or invalidation/reanalysis. Core/Resolve representation
+ordering remains an explicit source decision, not resolved by this table.
+
+Only stable adoption of a weakened memory guarantee consumes the unchanged
+Evolution criterion's affected results and a separately supplied independent
+safety-review receipt. Compiler outputs and self-audit cannot supply that review.
+GOV9's unsafe-audit disposition does not become generic safety-change approval.
+Ordinary development under existing semantics gains no new prerequisite.
+Devices' selected memory interface does not adopt a platform or accept all DOM4.
+
+Metadata `:memory-model-dependency-refinement` preserves predecessor `e9448bda`,
+its complete projection/fingerprint, the source-memory proposal, frozen finite
+reviews and all earlier source/dependency refinements. It binds the dependency
+table/tool source, eight plan witnesses, thirteen selected routes and eleven
+consumer-specific staged result subjects. Source-file records remain 32;
+all 149 keys across 25 authorities, forty future records, 80 identical / 59
+amended original bodies, statuses, SH/SH07 routes and scoped Reader receipts
+remain unchanged. Historical controls read their recorded subjects; current
+controls check the new matrix and missing-route/input refusals.
+
+This is a source/planning proposal. Global semantic entailment, current
+independent review and implementation acceptance remain pending/unassessed.
+No compiler/provider/native/device/review/migration/signing/publication
+operation runs, no other chat is messaged, and all actual holds remain.
+Reader contract coverage remains the exact first implementation increment.
+
+Current source input fingerprint:
+`ebc2cd318d336e2a8fb1a588daff29670d7ff4b162a0bdfc323b50e159aee053`.
+
+The initial dependency tests refused the stale generated SH plan pins; after
+regeneration, all 23 dependency tests / 2,282 assertions pass. The initial new
+crosswalk negative control tried to remove a raw payload already omitted by
+normalization. It now removes exactly one matching source row and verifies the
+missing-consumer refusal; its focused run passes 697 assertions. The full
+initial run reported 53 tests / 12,366 assertions, zero failures and that one
+error, and receives no passing credit. A fresh source-fingerprint capture also
+replaced a failed shell-heredoc invocation; the successful capture verifies all
+current pins against local Git and reproduces the same fingerprint.
+
+Final validation: SH generation/read-only comparison and the read-only dependency
+audit pass. The corrected full crosswalk run passes 53 tests / 12,882 assertions;
+the final dependency run passes 23 tests / 2,282 assertions, with zero failures
+or errors. The focused missing-source-row test passes all 697 assertions.
+Canonical-document validation passes for 240 documents and nineteen phase
+indexes; full-language structural validation passes with its dated snapshot
+explicitly non-authoritative. Language boundary: six tests / eleven assertions
+pass. Conservation/navigation passes for 86 changed files, 80 Markdown files,
+3,196 local references, 139 original task routes, 48 historical spec/plan suffixes
+and all 48 original task/evidence contents after declared additions are removed.
+ASCII and whitespace checks pass. These results establish source/projection
+consistency and preservation; global source entailment, actual implementation,
+current independent acceptance and integration remain unassessed/pending.
