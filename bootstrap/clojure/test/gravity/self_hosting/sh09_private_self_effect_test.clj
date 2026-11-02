@@ -2,7 +2,7 @@
   "Focused private-self value and declared-effect semantics.
 
   These six kernels retain the original SH-09 assertions and tamper negatives,
-  but depend only on shared fixture support plus the recursive C7 fixture
+  but depend only on shared fixture support plus the normalized C7 fixture
   provider.  The large SH-08/SH-09 test namespaces are not loaded by this
   namespace.  The six historical selector names are now discovered in this
   namespace; the old SH-09 namespace keeps only compatibility aliases for
@@ -21,6 +21,7 @@
 
 (def ^:private monolithic-namespaces
   #{'gravity.self-hosting.sh08-function-call-type-test
+    'gravity.self-hosting.sh08-recursive-function-type-test
     'gravity.self-hosting.sh09-body-effect-test})
 
 (deftest focused-private-self-load-isolation-development-check

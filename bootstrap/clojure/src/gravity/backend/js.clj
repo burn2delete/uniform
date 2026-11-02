@@ -1,12 +1,29 @@
 (ns gravity.backend.js
-  "Internal ESM source and package data; no input admission or instruction legality."
+  "Internal ESM source, process and file output; no input admission or instruction legality."
   (:require [clojure.string :as str]))
 
 (def ^:private namespace-contract
   (quote
 {:authenticates-inputs? false,
  :public-api
- {bytes-source {:arglists ([name bytes indent]), :admission :none},
+ {delete-tree! {:arglists ([path]), :admission :none},
+ node-version!
+ {:arglists ([run-node-process! fail! source-path]), :admission :none},
+ run-node-process!
+ {:arglists
+  ([fail! runtime arguments source-path diagnostic-id message]),
+  :admission :none},
+ stage-files!
+ {:arglists
+  ([output-path-allowed?
+    fail!
+    delete-tree!
+    output-path
+    paths
+    contents
+    source-path]),
+  :admission :none}
+ bytes-source {:arglists ([name bytes indent]), :admission :none},
   canonical-target
   {:arglists ([target-aliases target-kind target]), :admission :none},
   declaration-source {:kind :constant, :admission :none},
@@ -62,7 +79,11 @@
   :package-data
   :target-aliases
   :plan-shape-adapter
-  :compatibility-var-interposition],
+  :compatibility-var-interposition
+  :existing-node-process-invocation
+  :existing-node20-version-rule
+  :host-tree-cleanup
+  :staged-utf8-artifact-publication],
  :dependency-direction
  {:requires [clojure.string],
   :consumed-by [gravity.bootstrap],
@@ -73,7 +94,8 @@
  [:untrusted-input-admission
   :instruction-legality
   :full-source-map
-  :node-execution
+  :canonical-node20-target-admission
+  :compiled-gravity-js-source-provenance
   :typescript-checking
   :exported-api-declarations
   :general-numeric-computation
@@ -91,16 +113,26 @@
   :lexical-environment
   :source-text
   :output-prefix
-  :explicit-compatibility-operations],
+  :explicit-compatibility-operations
+  :caller-owned-node-arguments
+  :caller-owned-output-paths-and-contents
+  :late-runtime-data-var],
  :namespace gravity.backend.js,
  :diagnostic-ownership
- {:stage ["C14-INPUT" :source-path-and-plan-shape],
+ {:stage ["C14-INPUT" "B6-TARGET" "B6-MANIFEST"
+           :source-path-and-plan-shape :node20-runtime
+           :node-process-completion :node20-esm-acceptance
+           :output-path-containment :fresh-output-path
+           :artifact-directory-containment :output-parent-directory
+           :output-staging-directory :executable-module-permission
+           :atomic-artifact-directory-commit],
   :existing-owner
   [:scalar-legality
    :input-admission
    :manifest-authentication
    :diagnostic-construction
-   :runtime-policy]},
+   :runtime-manifest-and-provider-policy
+   :output-root-policy]},
  :artifact-outputs
  [:esm-source
   :empty-export-declaration
@@ -109,9 +141,14 @@
   :value-descriptor
   :output-path-data
   :canonical-target-or-original
-  :passed-shape-or-existing-refusal],
+  :passed-or-existing-refusal
+  :node-stdout-octets-and-stderr
+  :observed-node-version
+  :published-utf8-files
+  :opaque-publication-path
+  :host-tree-cleanup],
  :issues-certificates? false,
- :contract-boundary :hosted-esm-source-and-package-data}
+ :contract-boundary :internal-hosted-esm-source-and-output}
 ))
 
 (defn canonical-target
@@ -354,5 +391,163 @@
    :provenance (str output-path "/provenance.edn")})
 
 
+(defn run-node-process!
+  [fail! runtime arguments source-path diagnostic-id message]
+  (let [stdout-file (java.io.File/createTempFile "gravity-js-node-out-" ".bin")
+        stderr-file (java.io.File/createTempFile "gravity-js-node-err-" ".txt")
+        pb (ProcessBuilder. ^java.util.List (into ["node"] arguments))]
+    (try
+      (.redirectOutput pb stdout-file)
+      (.redirectError pb stderr-file)
+      (let [process (.start pb)
+            finished? (.waitFor process 60000
+                                java.util.concurrent.TimeUnit/MILLISECONDS)]
+        (when-not finished?
+          (.destroyForcibly process)
+          (fail!
+           diagnostic-id message source-path nil
+           {:node-command (into ["node"] arguments)
+            :missing-fact :node-process-completion}))
+        (let [result {:exit (.exitValue process)
+                      :stdout-bytes
+                      (vec (map #(bit-and (int %) 0xff)
+                                (java.nio.file.Files/readAllBytes
+                                 (.toPath stdout-file))))
+                      :stderr (if (.exists stderr-file)
+                                (slurp stderr-file) "")}]
+          (when-not (zero? (:exit result))
+            (fail!
+             diagnostic-id message source-path nil
+             {:node-command (into ["node"] arguments)
+              :node-result result
+              :missing-fact :node20-esm-acceptance}))
+          result))
+      (catch clojure.lang.ExceptionInfo ex
+        (throw ex))
+      (catch Exception ex
+        (fail!
+         "B6-TARGET" "Node 20 runtime is unavailable"
+         source-path nil
+         {:runtime (deref runtime)
+          :cause-message (.getMessage ex)
+          :missing-fact :node20-runtime}))
+      (finally
+        (.delete stdout-file)
+        (.delete stderr-file)))))
+(defn node-version!
+  [run-node-process! fail! source-path]
+  (let [result (run-node-process!
+                ["--version"] source-path "B6-TARGET"
+                "Node runtime version check failed")
+        version (str/trim
+                 (String. (byte-array (map byte (:stdout-bytes result)))
+                          java.nio.charset.StandardCharsets/UTF_8))]
+    (when-not (re-matches #"v20(?:\..*)?" version)
+      (fail!
+       "B6-TARGET" "JS/TS backend requires Node 20"
+       source-path nil
+       {:observed-node-version version
+        :required-node-version "20.x"
+        :missing-fact :node20-runtime}))
+    version))
+
+(defn delete-tree!
+  [path]
+  (when (and path (.exists (.toFile path)))
+    (doseq [file (reverse (file-seq (.toFile path)))]
+      (.delete file))))
+
+(defn stage-files!
+  [output-path-allowed? fail! delete-tree! output-path paths contents source-path]
+  (when-not (output-path-allowed? output-path)
+    (fail!
+     "C14-INPUT" "JS/TS artifact directory is outside declared roots"
+     source-path nil
+     {:output-path output-path
+      :missing-fact :output-path-containment}))
+  (let [output-directory (java.io.File. output-path)
+        expected-parent (.getCanonicalPath output-directory)]
+    (when (.exists output-directory)
+      (fail!
+       "C14-INPUT" "JS/TS backend requires a fresh artifact directory"
+       source-path nil
+       {:output-path output-path
+        :missing-fact :fresh-output-path}))
+    (doseq [[kind path] paths]
+      (when-not (= expected-parent
+                   (.getCanonicalPath (.getParentFile (java.io.File. path))))
+        (fail!
+         "C14-INPUT" "JS/TS sidecar escaped its artifact directory"
+         source-path nil
+         {:output-kind kind :output-path path
+          :missing-fact :artifact-directory-containment})))
+    (let [parent-file (or (.getParentFile output-directory)
+                          (java.io.File. "."))]
+      (when (and (.exists parent-file) (not (.isDirectory parent-file)))
+        (fail!
+         "C14-INPUT" "JS/TS artifact parent is not a directory"
+         source-path nil
+         {:output-path output-path
+          :output-parent (.getPath parent-file)
+          :missing-fact :output-parent-directory}))
+      (when (and (not (.exists parent-file))
+                 (not (.mkdirs parent-file)))
+        (fail!
+         "C14-INPUT" "JS/TS artifact parent directory is unavailable"
+         source-path nil
+         {:output-path output-path
+          :output-parent (.getPath parent-file)
+          :missing-fact :output-parent-directory}))
+      (let [stage-directory
+            (try
+              (java.nio.file.Files/createTempDirectory
+               (.toPath parent-file)
+               ".gravity-js-ts-stage-"
+               (make-array java.nio.file.attribute.FileAttribute 0))
+              (catch Exception ex
+                (fail!
+                 "C14-INPUT"
+                 "JS/TS staging directory could not be created"
+                 source-path nil
+                 {:output-path output-path
+                  :output-parent (.getPath parent-file)
+                  :cause-message (.getMessage ex)
+                  :missing-fact :output-staging-directory})))]
+        (try
+        (doseq [[kind value] contents]
+          (let [target-name (.getName (java.io.File. (get paths kind)))
+                staged-path (.resolve stage-directory target-name)]
+            (java.nio.file.Files/write
+             staged-path
+             (.getBytes (str value)
+                        java.nio.charset.StandardCharsets/UTF_8)
+             (into-array java.nio.file.OpenOption
+                          [java.nio.file.StandardOpenOption/CREATE_NEW
+                           java.nio.file.StandardOpenOption/WRITE]))))
+        (let [staged-javascript
+              (.toFile
+               (.resolve stage-directory
+                         (.getName (java.io.File. (:javascript paths)))))]
+          (when-not (.setExecutable staged-javascript true false)
+            (fail!
+             "B6-MANIFEST"
+             "staged JS/TS entrypoint could not be made executable"
+             source-path nil
+             {:missing-fact :executable-module-permission})))
+        (try
+          (java.nio.file.Files/move
+           stage-directory
+           (.toPath output-directory)
+           (into-array java.nio.file.CopyOption
+                       [java.nio.file.StandardCopyOption/ATOMIC_MOVE]))
+          (catch Exception ex
+            (fail!
+             "B6-MANIFEST"
+             "JS/TS artifact directory could not be atomically committed"
+             source-path nil
+             {:cause-message (.getMessage ex)
+              :missing-fact :atomic-artifact-directory-commit})))
+          (finally
+            (delete-tree! stage-directory)))))))
 (doseq [[_ operation] (ns-publics *ns*)]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

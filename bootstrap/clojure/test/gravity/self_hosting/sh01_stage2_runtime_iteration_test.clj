@@ -22247,7 +22247,7 @@
 (deftest direct-three-argument-assoc-evaluates-left-to-right-once
   (let [execute-value
         (ns-resolve 'gravity.bootstrap
-                    'p15-s23-stage2-runtime-execute-value)
+                    'p15-s23-stage2-runtime-execute-value-scoped)
         seen (atom [])
         instruction
         {:op :builtin-call
@@ -22256,7 +22256,8 @@
         result
         (with-redefs-fn
           {execute-value
-           (fn [_runtime _plan _env argument reason]
+           (fn [_runtime _plan _env argument reason public-invocation-scope]
+             (is (nil? public-invocation-scope))
              (swap! seen conj [(:value argument) reason])
              (case (:value argument)
                :collection {}
@@ -22277,14 +22278,15 @@
            [2 [:collection :key :value]]]]
     (let [execute-value
           (ns-resolve 'gravity.bootstrap
-                      'p15-s23-stage2-runtime-execute-value)
+                      'p15-s23-stage2-runtime-execute-value-scoped)
           labels [:collection :key :value]
           seen (atom [])
           marker (nth labels position)
           observed
           (with-redefs-fn
             {execute-value
-             (fn [_runtime _plan _env argument _reason]
+             (fn [_runtime _plan _env argument _reason public-invocation-scope]
+               (is (nil? public-invocation-scope))
                (let [label (:value argument)]
                  (swap! seen conj label)
                  (if (= marker label)

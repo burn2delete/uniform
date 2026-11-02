@@ -36,11 +36,16 @@
 
 (defn packaged-command
   [& arguments]
-  (vec (concat [(or (java-executable) "java") "-cp"
+  ;; The frozen Java Main remains in the package for historical/bin
+  ;; compatibility. The current package alias starts the existing lightweight
+  ;; Clojure launcher so help/version do not enter gravity.bootstrap.
+  (vec (concat [(or (java-executable) "java")
+                "-Dgravity.packaged.jvm.cli=true"
+                "-cp"
                 (str packaged-jar-path
                      java.io.File/pathSeparator
                      (runtime-classpath))
-                "gravity.cli.Main"]
+                "clojure.main" "-m" "gravity.cli.launcher"]
                arguments)))
 
 (defn packaged-jar-present?

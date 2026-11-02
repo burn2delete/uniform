@@ -111,7 +111,11 @@
    :path path
    :jar-entry (subs path (inc (count p18-t02-source-root)))})
 
-(def p18-t02-source-inventory
+(defn p18-t02-source-inventory
+  "Discover the exact production source inventory for one package operation.
+  This must remain an operation-time function: requiring the bootstrap must not
+  walk the production source tree or retain a cross-operation snapshot."
+  []
   (vec
    (concat
     [{:role :launcher :path p18-t02-launcher-source
