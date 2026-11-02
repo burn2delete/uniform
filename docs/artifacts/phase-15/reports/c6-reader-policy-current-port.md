@@ -15,19 +15,19 @@ binding implementation from the old PR branch.
 
 ## Whole-path accounting
 
-- `00702-p15-s23-c6c10-host-fail.clj`: PR597 adds an explicit source-contract
-  require. Current main already loads that namespace before the P15 component
-  stream through the existing bootstrap component loader; no semantic change
-  is needed.
-- `00719-p15-s23-c6c10-record-compiled-binding-metric.clj`: the PR version
-  removes current-source support and restores only pinned reads. Replaying it
-  would regress the current `:development-current` C6 owner. It is rejected
-  as stale implementation, while the historical source-binding behavior is
-  retained in current main.
-- `00720-p15-s23-c6c10-compiled-binding-cache-key.clj`: the PR version has
-  the same regression: it removes current-source cache identity and current
-  binding validation. Current main keeps the reviewed versioned/current split.
-  No old implementation is replayed.
+- `00702-p15-s23-c6c10-host-fail.clj`: PR597 adds the
+  `p15-s23-c6c10-source-program-version` helper. It does not add a require.
+  Current main has the helper in the current source-contract owner; no second
+  copy is needed.
+- `00719-p15-s23-c6c10-record-compiled-binding-metric.clj`: the PR adds
+  version-aware source snapshot and binding-input selection. Its authored blob
+  is superseded by the newer current-main versioned/current implementation;
+  replaying that old blob would overwrite later owner integration. The useful
+  versioned-source intent is retained by current main.
+- `00720-p15-s23-c6c10-compiled-binding-cache-key.clj`: the PR adds versioned
+  cache-key, compilation, and binding-validity fields. It is likewise
+  superseded by the newer current-main versioned/current implementation and is
+  not replayed over it.
 - `00723-p15-s23-c6c10-seal-digest-request-result.clj`: the PR's 267 lines of
   Reader policy, envelope-join, native-header, metadata projection, and
   expression-owner helpers are already present on current main in the split
@@ -83,8 +83,34 @@ The control run passed:
 ```text
 clojure -J-Xmx256m -M tools/c6_reader_policy_test.clj
 relative policy: 4 tests / 54 assertions / 0 failures / 0 errors
-reader policy: 6 tests / 39 assertions / 0 failures / 0 errors
+reader policy: 6 tests / 40 assertions / 0 failures / 0 errors
 ```
+
+The port intentionally does not claim the original test's 25 additional
+assertions verbatim. Their disposition is explicit:
+
+- 6 old assertions were the v3 Reader-positive loop and the per-version
+  `:admission-status` nonclaim. Current public C6 construction is v2-only;
+  `bootstrap/clojure/test/gravity/self_hosting/pr453_current_source_handoff_test.clj:207-265`
+  covers the current v2 C6/C11 producer joins, while v3 remains an explicit
+  nonclaim.
+- 7 old assertions were exact private-helper unsupported-version diagnostics,
+  their source-owner no-callback checks, and the private v1 envelope-arity
+  refusal. Current public route diagnostics and no-construction checks are
+  covered at
+  `bootstrap/clojure/test/gravity/self_hosting/pr453_current_source_handoff_test.clj:352-380`;
+  fixed C6 contract diagnostics and callback refusal are covered at
+  `tools/c6_contract_data_test.clj:63-76`. The current public API has no v1
+  envelope route to restore.
+- 11 old assertions were v3 projection, direct C11-policy invocation, and
+  versioned envelope-argument checks. Current strict Core v2/v3 relative-data,
+  mutation, identity, and comparator-free-carrier controls remain in
+  `tools/c11_relative_policy_test.clj:131-200`; current public v2 behavior is
+  covered by the handoff test cited above. No v3 public construction claim is
+  made.
+- 1 final foreign-callback assertion is retained directly in the ported
+  header/metadata test; the test now asserts `(zero? @callbacks)` after the
+  successful unconsumed-source-form case.
 
 The relative-policy harness required a five-line compatibility repair in
 `tools/c11_relative_policy_test.clj`: current `00727` refers to the actual
@@ -101,11 +127,11 @@ prove C3/C11 admission.
 ## Decision and nonclaims
 
 Accept the narrow current-main port as test/report conservation for PR597.
-Do not replay the original `00719`/`00720` implementation, because it would
-remove current-source authentication and cache identity already required by
-current main. The production helper semantics are credited to the current
-main `#552` composition; this candidate adds only the missing current-owner
-mechanism controls and evidence.
+Do not replay the original `00719`/`00720` blobs, because doing so would
+overwrite the newer current-source authentication and cache identity already
+integrated on current main. The production helper semantics are credited to
+the current main `#552` composition; this candidate adds only the missing
+current-owner mechanism controls and evidence.
 
 This increment claims no fresh source authority, C6/C11 migration, v3 public
 construction, C13/C14/B1 completion, native-C execution, release, self-hosting,

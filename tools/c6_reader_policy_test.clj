@@ -242,7 +242,8 @@
         (is (empty? @envelope-calls))
         (is (= :passed (:envelope-verification (receipt (assoc-in (products)
                                                                   [:raw :unused-source-forms]
-                                                                  foreign)))))))))
+                                                                  foreign)))))
+        (is (zero? @callbacks))))))
 
 (let [result (run-tests 'c6-reader-policy-test)]
   (assert (nil? (find-ns 'gravity.bootstrap)))
