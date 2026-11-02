@@ -586,10 +586,10 @@
     (is (= (:sha256 predecessor) (sh-inventory/sha256 prior-text)))
     (is (= (:review predecessor)
            (select-keys (:mapping-review prior) [:status :input-fingerprint :source-version-bridge])))
-    (is (= 99 (:unchanged-body-count comparisons)))
+    (is (= 94 (:unchanged-body-count comparisons)))
     (is (= (set (map :id (:changed-bodies comparisons))) changed))
-    (is (= 40 (count changed)))
-    (is (= 99 (count (remove changed (keys before)))))
+    (is (= 45 (count changed)))
+    (is (= 94 (count (remove changed (keys before)))))
     (let [refinement (:math-parent-refinement bridge)
           predecessor (:predecessor-readiness-successor refinement)
           previous-text (sh-crosswalk/git-source (:commit predecessor) (:path predecessor))
@@ -1399,12 +1399,16 @@
     (is (= refinement (get-in view [:implementation-readiness-source-version :mir-refinement])))))
 
 (deftest lowering-source-successor-preserves-boundary-and-proof-conditions
-  (let [bridge sh-crosswalk/readiness-source-version
+  (let [checkpoint (get-in sh-crosswalk/readiness-source-version [:opt-refinement :predecessor-readiness-successor])
+        bridge (if checkpoint (edn/read-string (sh-crosswalk/git-source (:commit checkpoint) (:path checkpoint)))
+                   sh-crosswalk/readiness-source-version)
         refinement (:lower-refinement bridge)
         previous (:predecessor-readiness-successor refinement)
         old-text (sh-crosswalk/git-source (:commit previous) (:path previous))
         old-projection-text (sh-crosswalk/git-source (:commit previous) (:projection-path previous))
-        prior (edn/read-string old-projection-text) view (sh-crosswalk/build)
+        prior (edn/read-string old-projection-text)
+        view (if checkpoint (edn/read-string (sh-crosswalk/git-source (:commit checkpoint) (:projection-path checkpoint)))
+                 (sh-crosswalk/build))
         task-map (fn [v] (into {} (for [rs (vals (:task-authorities v)) r rs] [(:id r) r])))
         before (task-map prior) after (task-map view)
         raw (fn [v r] (acceptance-dependencies/source-raw (:source r) (:source-snapshots v)))
@@ -1474,6 +1478,96 @@
     (is (= :pending (:independent-current-review refinement)))
     (is (= :unassessed (:implementation-acceptance refinement) (:global-source-conjunctions refinement)))
     (is (= refinement (get-in view [:implementation-readiness-source-version :lower-refinement])))))
+
+(deftest optimization-source-successor-preserves-pass-ownership-and-evidence-boundaries
+  (let [bridge sh-crosswalk/readiness-source-version
+        refinement (:opt-refinement bridge)
+        previous (:predecessor-readiness-successor refinement)
+        old-text (sh-crosswalk/git-source (:commit previous) (:path previous))
+        old-projection-text (sh-crosswalk/git-source (:commit previous) (:projection-path previous))
+        prior (edn/read-string old-projection-text) view (sh-crosswalk/build)
+        task-map (fn [v] (into {} (for [rs (vals (:task-authorities v)) r rs] [(:id r) r])))
+        before (task-map prior) after (task-map view)
+        raw (fn [v r] (acceptance-dependencies/source-raw (:source r) (:source-snapshots v)))
+        changed (set (for [[id r] before :when (not= (raw prior r) (raw view (after id)))] id))
+        records (:criteria refinement) criterion-keys (set (map :key records))
+        criteria (into {} (map (juxt :key identity) records))
+        text (slurp "specs/opt-workflow/tasks.md")
+        restored (reduce (fn [body marker]
+                           (str/replace body (re-pattern (str "(?s)\n<!-- " marker ":start -->.*?<!-- " marker ":end -->\n\n")) ""))
+                         text (vals (:markers refinement)))
+        source-text (memoize slurp)
+        read-span (fn [body span] (String. (.getBytes body "UTF-8") (int (:start-byte span))
+                                          (int (- (:end-byte span) (:start-byte span))) "UTF-8"))
+        facets (:source-facets refinement)
+        uncovered (fn [rows]
+                    (let [body (source-text "docs/phase-06-compiler-architecture/092-c13-mir-optimization-passes-design.md")
+                          bytes (.getBytes body "UTF-8") covered (java.util.BitSet. (alength bytes))]
+                      (doseq [row rows :let [span (:source-span row)]] (.set covered (int (:start-byte span)) (int (:end-byte span))))
+                      (filterv #(and (> (bit-and 255 (aget bytes %)) 32) (not (.get covered %))) (range (alength bytes)))))]
+    (is (= (:sha256 previous) (sh-inventory/sha256 old-text)))
+    (is (= (:projection-sha256 previous) (sh-inventory/sha256 old-projection-text)))
+    (is (= (:input-fingerprint previous) (:input-fingerprint (edn/read-string old-text))))
+    (is (= (set (keys before)) (set (keys after))))
+    (is (= 5 (count changed) (count records)))
+    (is (= changed (set (:changed-task-ids refinement))))
+    (is (= #{:contracts :families :checks :verification :pipeline} criterion-keys))
+    (is (= [] (:new-task-identities refinement)))
+    (is (= restored (sh-crosswalk/git-source (:commit previous) "specs/opt-workflow/tasks.md")))
+    (is (= (:future-task-authorities prior) (:future-task-authorities view)))
+    (is (= (mapv :task-references (:requirements prior)) (mapv :task-references (:requirements view))))
+    (is (= (:sh07-sequence prior) (:sh07-sequence view)))
+    (is (= (:accepted-current-scoped-evidence prior) (:accepted-current-scoped-evidence view)))
+    (doseq [[id row] before]
+      (is (= (select-keys row [:id :checked :status]) (select-keys (after id) [:id :checked :status])) id))
+    (doseq [{:keys [key task-id historical-witness current-witness]} records
+            :let [body (source-text (:path current-witness)) span (:source-span current-witness) clause (read-span body span)]]
+      (is (= (:raw-sha256 historical-witness) (:sha256 span) (sh-inventory/sha256 clause)) key)
+      (is (= (:sha256 current-witness) (sh-inventory/sha256 body)))
+      (is (= 1 (count (re-seq (re-pattern (java.util.regex.Pattern/quote clause)) (raw view (after task-id))))) key))
+    (is (= 120 (count facets) (count (set (map :id facets)))))
+    (is (= {"C13" 120} (frequencies (map :document-id facets))))
+    (is (= {:retained-hierarchy-or-provenance-context 15 :complete-source-predicate-conjunction 105}
+           (frequencies (map :role facets))))
+    (is (= 47 (count (:occurrence-cases refinement))))
+    (is (= 32 (count (filter #(= :complete-source-predicate-conjunction (:role %)) (vals (:occurrence-cases refinement))))))
+    (doseq [row (concat facets (vals (:occurrence-cases refinement)))]
+      (is (every? criterion-keys (:criterion-keys row))))
+    (doseq [row facets :let [body (source-text (:source-path row)) span (:source-span row)]]
+      (is (= (:sha256 span) (sh-inventory/sha256 (read-span body span))) (:id row)))
+    (is (empty? (uncovered facets)))
+    (let [removed (:id (first (filter #(= :complete-source-predicate-conjunction (:role %)) facets)))]
+      (is (seq (uncovered (remove #(= removed (:id %)) facets)))))
+    (is (= 4 (count (:owner-joins refinement))))
+    (doseq [[p root] (:canonical-sources refinement)]
+      (is (= (:sha256 root) (sh-inventory/sha256 (source-text p))
+             (get-in refinement [:historical-canonical-sources p :file-sha256]))))
+    (is (= (:task-id (criteria :contracts)) (get-in refinement [:owner-boundaries :basic-pass-producer])))
+    (is (= (:task-id (criteria :families)) (get-in refinement [:owner-boundaries :family-coverage-consumer])))
+    (is (not= (get-in refinement [:owner-boundaries :basic-pass-producer])
+              (get-in refinement [:owner-boundaries :family-coverage-consumer])))
+    (is (= :consume-actual-basic-pass-products-without-duplicate-implementation (get-in refinement [:owner-boundaries :composition])))
+    (is (str/includes? (raw view (after (:task-id (criteria :families)))) "Ownership clarification: consume the actual constant-fold/branch/dead-code/common-expression implementations owned by opt1-execute-pass-contracts."))
+    (is (= (:task-id (criteria :verification)) (get-in refinement [:verification-applicability :consumer])))
+    (is (= "pass-evidence" (get-in refinement [:verification-applicability :producer])))
+    (is (= :per-affected-function-translation-validation-or-stronger-mechanized-pass-proof
+           (get-in refinement [:verification-applicability :required])))
+    (is (= :affected-function-evidence-not-whole-C18-acceptance (get-in refinement [:verification-applicability :scope])))
+    (is (str/includes? (raw view (after (:task-id (criteria :verification)))) "Current C18 application:"))
+    (let [source (get-in refinement [:verification-applicability :source])]
+      (is (= (:sha256 source) (sh-inventory/sha256 (source-text (:path source))))))
+    (let [path "specs/opt-workflow/plan.md"]
+      (is (= (sh-inventory/sha256 (source-text path)) (get-in bridge [:inspection-locators path :sha256])
+             (get-in bridge [:additional-pinned-evidence-hashes path]))))
+    (is (= :PASS-exact-frozen-C13-source-criterion-conjunctions (get-in refinement [:historical-review :verdict])))
+    (is (= :none (get-in refinement [:historical-review :later-heads :acceptance])))
+    (is (= :not-transferred (get-in refinement [:historical-review :current-acceptance])))
+    (is (some #{:whole-task-completion} (get-in refinement [:historical-review :nonclaims])))
+    (is (some #{:held-Metadata372-Policy14-fixed-width-OWN-ACC08-clearance} (get-in refinement [:historical-review :nonclaims])))
+    (is (= :author-assessed-preserved-predicates-with-explicit-owner-joins (:source-entailment refinement)))
+    (is (= :pending (:independent-current-review refinement)))
+    (is (= :unassessed (:implementation-acceptance refinement) (:global-source-conjunctions refinement)))
+    (is (= refinement (get-in view [:implementation-readiness-source-version :opt-refinement])))))
 
 (let [result (run-tests 'sh-crosswalk-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))

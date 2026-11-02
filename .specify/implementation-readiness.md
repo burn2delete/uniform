@@ -1449,7 +1449,8 @@ signing, private-store or product-publication operation ran; no other chat was
 messaged. Independent current review, global substantive reconciliation and
 implementation evidence assessment remain unfinished. The goal remains active.
 
-The next source review is C13. Its canonical document and current Opt tasks
+At that checkpoint, the next source review was C13. Its canonical document and
+current Opt tasks
 were read; five preserved criterion spans at
 `ded6c1d2eede7985e078af57ed53fa367645436a` hash-verify but are not literal
 current Opt task text. The trace SHA-256 is
@@ -1457,3 +1458,135 @@ current Opt task text. The trace SHA-256 is
 Its 120 facets, 47 occurrences and 32 semantic conjunctions still require
 complete predicate/current-owner review before amendments or source credit.
 Reader contract coverage remains the first implementation preparation increment.
+
+## Complete optimization source review
+
+Direct C13 review, with the governing PERF10 check-elision boundary, restores
+five exact preserved criteria under the existing [Opt tasks](../specs/opt-workflow/tasks.md#implementation-tasks).
+The [Opt plan](../specs/opt-workflow/plan.md#complete-optimization-source-criteria)
+specifies actual pre/post contract checks, all eighteen pass families, current
+proof/check/anchor preservation, conservative invalidation/regeneration,
+post-pass verification and reproducible changed/unchanged decisions. All ten
+C13 diagnostic meanings and complete pass/decision/input-output-MIR/source/
+changed-operation/fact/proof/profile/target/remediation context remain.
+Structural verification and high-risk semantic evidence are separate; an
+applicable listed evidence method is required, with nonsemantic conformance
+acceptance limited to nonsemantic differences. Benchmarks select legal variants
+and cannot prove correctness or justify erased checks.
+
+Direct C18 review adds the affected-function applicability condition before
+final binding: behavior-relevant MIR changes require per-function translation
+validation or a stronger mechanized pass proof covering the change. The task
+records exact input/output/function/result/effect/safety identities and consumes
+the actual risk/evidence/checker products from Compiler API's existing
+pass-evidence owner. Structural success, generic differential fixtures and
+nonsemantic conformance cannot replace that scope. Failed validation retains
+the prior valid artifact and counterexamples. C18 is pinned as this additional
+canonical input, not credited as fully reconciled or implemented.
+
+The existing basic-pass task already owns constant folding, branch
+simplification, dead-code and common-expression implementation. The preserved
+full-family clause also lists those families under the structural task. An
+explicit current ownership clarification makes the structural task consume
+those actual implementations and own the remaining structural transforms and
+full-family coverage. Proof/check legality, verifier/regeneration and pipeline
+integration keep their existing owners; no duplicate basic implementation or
+task authority is created. The original five clause spans are unchanged, while
+this current owner-join interpretation is an author proposal pending review.
+The current Opt spec's ambiguous residual-check/cost-report wording is replaced
+with residual-check and observable-operation evidence, preserving actual PERF2
+equivalent-form/residual-work obligations without mandatory project accounting.
+
+The source binding retains 120 C13 facets (105 semantic and fifteen context),
+47 occurrence cases including 32 semantic conjunctions and four original owner
+joins. Every source span and the canonical whole-file hash match their preserved
+inputs. The spans cover every nonwhitespace document byte; this is source
+conservation, not semantic or implementation acceptance. Trace SHA-256 is
+`84d36992e56fd44bb12e471be51e38a9dd7b8c26ad5845ff0a6a763fecd26b99`,
+with historical criterion source `ded6c1d2eede7985e078af57ed53fa367645436a`.
+The old source PASS retains candidate `b9e72428`, its exact five-role/120-facet
+scope, later-head nonacceptance and all held-operation exclusions. It is not
+transferred here. Current entailment is an author-assessed preserved-predicate
+proposal with explicit owner joins; independent current review is pending and
+implementation/global conjunctions remain unassessed. The tested historical
+GitHub trace reference returned Not Found; current canonical/task witnesses are
+used without a dead link, aggregate publication or stopped-handoff retry.
+
+Source `20da5357256917698cd8804c6c09be89c60cdf78` advances Opt task/plan
+inputs from predecessor `84ecafa9`, preserving its complete metadata/projection
+and pending review. Of 139 original bodies, 94 remain identical and 45 have
+declared additions. All original IDs/statuses, 149 current task keys, forty
+future records, SH/SH07 routes and three scoped Reader receipts remain
+conserved. The thirty source-version file records remain, with a separate new
+Opt plan inspection locator. Local verified-MIR/proof/Lower fixture interfaces
+permit development; actual producer/verifier/checker/consumer products gate
+composition. Valid verified unoptimized MIR remains usable by Lower without
+requiring every optional optimization or whole-component completion.
+The intermediate local source `e320b466` restored the five clauses before direct
+C18 review added the affected-function qualification. It remains history rather
+than a separate current acceptance or a published final source binding.
+
+Current mapping review remains pending at fingerprint
+`25fd3a8f93eb5f288aa156aa7b3bd259b86717f7356869e3ecc4e38569e86214`.
+The current task and plan witnesses include the C18 qualification and explicit
+basic-pass producer/consumer boundary; historical acceptance is not transferred.
+
+Static inspection of selected unchanged files identifies partial work to
+preserve and labels that cannot supply conformance. The [Clojure adapter](../bootstrap/clojure/src/gravity/c13_optimization/artifact.clj)
+constructs hosted stage0 records from injected C12/contract/decision operations.
+Its [projection](../bootstrap/clojure/src/gravity/c13_optimization/projection.clj)
+directly assigns passed post-pass reports and accepted proof/elision/effect
+records; the [validator](../bootstrap/clojure/src/gravity/c13_optimization/validation.clj)
+largely checks fields, counts and statuses. These do not establish actual
+verifier/checker invocation, semantic transformations or safe elision. Its
+[declared policy](../bootstrap/clojure/src/gravity/c13_optimization/policy.clj)
+disclaims canonical optimization, proof/elision, domain, target and release
+authority. This adapter's C12-shaped input is not a universal prerequisite for
+ordinary verified-MIR optimization.
+
+Selected [Gravity source](../bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity)
+contains a quoted generic verification declaration, bounded identity/equality
+paths and a private literal-Bool branch rewrite with explicit constructed-
+unverified/not-admitted results and pending verifier/proof/C18 work. The SH16
+path has actual validation/construction and candidate reconstruction comparison,
+while its policy retains authentication, complete MIR adaptation, remaining
+proof replay, whole-function validation and structured diagnostic gaps. These
+are selected static observations, not a whole-source audit or current execution
+receipts. Legacy operation/input allowances and residual-cost declarations stay
+visible under [accounting removal](../specs/accounting-removal/spec.md), not
+renewed conformance gates; signed integer representability remains meaningful.
+The [2026-06-25 report](../docs/artifacts/phase-06/reports/p06-d092-c13-optimization-report.md)
+retains its historical stage0 document boundary, residual-cost observation and
+target/backend/release/self-hosting exclusions. Its reported tests were not
+rerun or promoted to current acceptance.
+
+The next full source review is C18. Direct canonical reading already qualified
+the affected-function C13 boundary. Its preserved complete trace at
+`984f1e74f98905f53b4b20c63b8f76d2a948dae3` has SHA-256
+`a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d`.
+Three old criterion witnesses hash-verify: the existing pass-evidence clause
+and backend-conformance clause are already literal current task text, while
+the detailed records clause under pass-evidence is absent. Preserve the two
+existing witnesses; review the records gap, 101 facets, 45 occurrences,
+thirty semantic conjunctions and actual owner joins before amendments or
+whole-C18 source credit. No new task, independent acceptance or execution
+authority follows from this preliminary observation.
+
+Final C13 validation passes: 38 crosswalk tests / 4,052 assertions, 23 dependency
+tests / 1,774 assertions, deterministic generation/check, read-only dependency
+audit, canonical document/full-language structural validators and the language
+boundary (six tests / eleven assertions). Source controls preserve the five
+criterion witnesses, all 120 spans, original review exclusions, explicit basic-
+pass ownership and C18 applicability without execution credit; removing a
+semantic facet leaves a detected coverage gap. Conservation/navigation passes
+for 81 changed files, 75 Markdown files, 2,911 local references, 139 original
+routes, 48 historical spec/plan suffixes and all 48 original task/evidence
+contents after stripping declared additions. All changed files are ASCII and
+whitespace checks pass.
+
+No actual compiler/native/provider/C12/device/migration, proof-checker, signing,
+private-store or product-publication operation ran, and no other chat was
+messaged. Current independent review, global substantive reconciliation and
+implementation evidence assessment remain unfinished; mapping readiness stays
+false and the goal remains active. Reader contract coverage remains the first
+implementation preparation increment.
