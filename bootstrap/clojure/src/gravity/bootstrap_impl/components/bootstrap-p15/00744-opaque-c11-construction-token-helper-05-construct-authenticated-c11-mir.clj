@@ -12,7 +12,8 @@
          {:missing-fact :opaque-c11-constructor-entry}))
       (let [source-path (:source-path context)
             binding (p15-s23-c11-mir-source-binding!
-                     source-path (:requested-target context) version)
+                     source-path (:requested-target context) version
+                     (when (= 2 version) :development-current))
             constructed
             (invoke-pinned-c11-builder!
              checked-core context binding :authoritative-build token)

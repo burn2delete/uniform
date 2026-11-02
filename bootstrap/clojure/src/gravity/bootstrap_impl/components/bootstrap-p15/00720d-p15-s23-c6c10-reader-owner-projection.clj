@@ -106,7 +106,8 @@
     (assoc (select-keys binding
              [:artifact :status :source-path :source-content-hash :semantic-hash
               :artifact-hash :generic-bridge-residual? :clojure-seed-boundary?
-              :self-hosted? :source-contract-version :functions-semantic-hash :function-count])
+              :self-hosted? :source-contract-version :source-mode :source-program
+              :functions-semantic-hash :function-count])
            :functions-content-id (owner-id :export-shapes (:functions binding))
            :declared-plan-compiler-labels-content-id
            (owner-id :declared-plan-compiler-labels (:declared-plan-compiler-labels binding))

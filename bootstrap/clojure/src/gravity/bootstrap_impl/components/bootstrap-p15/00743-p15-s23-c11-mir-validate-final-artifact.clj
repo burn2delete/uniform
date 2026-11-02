@@ -1,5 +1,30 @@
 
 
+(defn- p15-s23-c11-mir-current-source-rule-valid?
+  [source-rule]
+  (let [abi c11-source-contract/v2-current-source-contract-abi
+        identities [:source-content-hash :plan-semantic-hash
+                    :functions-semantic-hash :builder-semantic-hash
+                    :verifier-semantic-hash]]
+    (and (map? source-rule)
+         (= :gravity/c11-pinned-source-rule (:artifact source-rule))
+         (= :gravity-source (:owner source-rule))
+         (= :development-current (:source-mode source-rule))
+         (= (:source-relative-path abi) (:source-relative-path source-rule))
+         (= {:interface :gravity/c11-mir :version 2}
+            (:source-interface source-rule))
+         (= (:builder-function abi) (:builder-function source-rule))
+         (= (:verifier-function abi) (:verifier-function source-rule))
+         (= (:required-functions abi) (:function-shapes source-rule))
+         (pos-int? (:source-byte-count source-rule))
+         (every? #(and (string? (get source-rule %))
+                       (re-matches #"sha256:[0-9a-f]{64}" (get source-rule %)))
+                 identities)
+         (= :clojure-stage0-seed (:compiled-by source-rule))
+         (= :clojure-stage0-rule-runner (:executed-by source-rule))
+         (true? (:clojure-seed-boundary? source-rule))
+         (false? (:self-hosted? source-rule)))))
+
 (defn p15-s23-c11-mir-validate-final-artifact!
   ([artifact checked-core context]
    (p15-s23-c11-mir-validate-final-artifact! artifact checked-core context 1))
@@ -111,16 +136,19 @@
      source-path (p15-s23-c11-mir-scope-record version) (:scope artifact)
      :type-sensitive-partial-c11-scope)
     (p15-s23-c11-mir-require!
-     (= (p15-s23-c11-mir-source-rule-record
-         (p15-s23-c11-mir-contract-binding version))
-        (:source-rule artifact))
+     (if (= :development-current (get-in artifact [:source-rule :source-mode]))
+       (p15-s23-c11-mir-current-source-rule-valid? (:source-rule artifact))
+       (= (p15-s23-c11-mir-source-rule-record
+           (p15-s23-c11-mir-contract-binding version))
+          (:source-rule artifact)))
      "C11-VERIFY" source-path artifact :pinned-c11-source-rule-record)
-    (p15-s23-c11-mir-require-strict-structure!
-     source-path
-     (p15-s23-c11-mir-source-rule-record
-      (p15-s23-c11-mir-contract-binding version))
-     (:source-rule artifact)
-     :type-sensitive-pinned-c11-source-rule)
+    (when-not (= :development-current (get-in artifact [:source-rule :source-mode]))
+      (p15-s23-c11-mir-require-strict-structure!
+       source-path
+       (p15-s23-c11-mir-source-rule-record
+        (p15-s23-c11-mir-contract-binding version))
+       (:source-rule artifact)
+       :type-sensitive-pinned-c11-source-rule))
     (p15-s23-c11-mir-require!
      (= (p15-s23-c11-mir-expected-provenance
          checked-core context (p15-s23-c11-mir-resolve-source-path))

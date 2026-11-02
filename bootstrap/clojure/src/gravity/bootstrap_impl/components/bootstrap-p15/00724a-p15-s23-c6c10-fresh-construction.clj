@@ -1,16 +1,42 @@
 (require '[gravity.checked-core.bool-branch-join :as bool-branch-join]
          '[gravity.c6-c10.source-interface :as c6-source-interface])
 
+(defn- p15-s23-c6c10-current-source-snapshot-matches-binding?
+  [source-binding source-snapshot]
+  (and (= (:source-byte-count source-binding)
+          (:source-byte-count source-snapshot))
+       (= (:source-content-hash source-binding)
+          (:source-content-hash source-snapshot))
+       (= (p15-s23-c6c10-canonical-file-path
+           (:source-path source-binding))
+          (:canonical-source-path source-snapshot))))
+
 (defn- p15-s23-c6c10-fresh-construction
   ([context] (p15-s23-c6c10-fresh-construction context 1))
   ([context version]
   (let [context (p15-s23-c6c10-validate-public-context! context)
         source-path (:source-path context)
-        source-binding (p15-s23-c6c10-source-binding! source-path version)
+        source-binding (p15-s23-c6c10-source-binding!
+                        source-path version
+                        (when (= 2 version) :development-current))
         reader (when (= 2 version) (p15-s23-c6c10-current-reader-program! source-path))
+        _ (when (= 2 version)
+            (when-not
+             (and (p15-s23-c6c10-current-source-snapshot-matches-binding?
+                   source-binding (get-in reader [:c6-source-snapshot :before]))
+                  (p15-s23-c6c10-current-source-snapshot-matches-binding?
+                   source-binding (get-in reader [:c6-source-snapshot :after])))
+              (p15-s23-c6c10-host-fail!
+               "C6-VERIFY" source-path
+               :stable-current-c6-source-binding
+               {:source-binding
+                (select-keys source-binding [:source-byte-count :source-content-hash])
+                :reader-snapshot
+                (select-keys (get-in reader [:c6-source-snapshot :after])
+                             [:source-byte-count :source-content-hash])})))
         expression (when (= 2 version)
-                     (let [rule (c-backend-stage2-plan-emitter-source-rule! source-path :jvm)]
-                       (p15-s23-stage2-compiler-artifact-binding! (:emitter rule) source-path :jvm 2)))
+                     (p15-s23-stage2-current-expression-development-binding!
+                      source-path))
         ingress
         (if (= 2 version)
           (binding [*p15-s23-stage2-compiler-artifact-binding* expression]
@@ -18,6 +44,21 @@
              source-path (:source-text context) (get-in reader [:invocation :reader-source-path]) 2
              (dissoc (:binding reader) :plan)))
           (p15-s23-c6c10-private-ingress-products source-path (:source-text context)))
+        current-source-before-builder
+        (when (= 2 version)
+          (p15-s23-c6c10-read-current-source-snapshot! source-path))
+        _ (when (= 2 version)
+            (when-not
+             (p15-s23-c6c10-current-source-snapshot-matches-binding?
+              source-binding current-source-before-builder)
+              (p15-s23-c6c10-host-fail!
+               "C6-VERIFY" source-path
+               :stable-current-c6-source-before-builder
+               {:source-binding
+                (select-keys source-binding [:source-byte-count :source-content-hash])
+                :current-source-snapshot
+                (select-keys current-source-before-builder
+                             [:source-byte-count :source-content-hash])})))
         envelope
         (p15-s23-c6c10-private-builder-envelope
          source-path ingress source-binding)
@@ -34,6 +75,22 @@
     (let [gravity-verification
           (p15-s23-c6c10-gravity-replay-verification!
            source-path source-binding envelope raw-result)
+          current-source-after-verification
+          (when (= 2 version)
+            (p15-s23-c6c10-read-current-source-snapshot! source-path))
+          _
+          (when (= 2 version)
+            (when-not
+             (p15-s23-c6c10-current-source-snapshot-matches-binding?
+              source-binding current-source-after-verification)
+              (p15-s23-c6c10-host-fail!
+               "C6-VERIFY" source-path
+               :stable-current-c6-source-after-verification
+               {:source-binding
+                (select-keys source-binding [:source-byte-count :source-content-hash])
+                :current-source-snapshot
+                (select-keys current-source-after-verification
+                             [:source-byte-count :source-content-hash])})))
           artifact
           (p15-s23-c6c10-public-artifact
            context source-binding ingress sealed-result)]
