@@ -3406,3 +3406,92 @@ routes, 48 historical spec/plan suffixes and all 48 original task/evidence conte
 after declared additions are removed. ASCII and whitespace checks pass. The dated
 roadmap snapshot is not fresh execution evidence. No compiler/provider/target/
 release suite or independent review is claimed from these checks.
+
+## Concurrency producer and consumer dependency continuation
+
+The [concurrency producer and consumer order](../specs/legality-workflow/plan.md#concurrency-producer-and-consumer-order)
+now reconciles selected L11/SAFE8/R6 inputs through the existing dependency
+authority. Ten existing parent consumers gain routes: checked Core integration,
+Runtime selection and observability, Lower proof preservation, GPU/HDL emission,
+Auth operation gates, MIR verification, and Hardware/GPU source consumers.
+Twenty-three existing routes gain selected concurrency detail, including the
+seven existing language/compiler/runtime/profile/safety/library/agent suites.
+No implementation task, status, authority or accepted evidence changes.
+
+The selected consumers retain all 235 prior input joins and fifty other route
+meanings remain unchanged. There are 172 additional selected producer-result
+joins, yielding 698 across 83 routes, with 43 current parents and the same forty
+future records. All remain execution/acceptance-unassessed. The detailed source
+criteria still bind 238 L11/SAFE8/R6 facets; these dependency counts are different
+units and neither set is an implementation completion denominator.
+
+The coarse cycles now have forty and eight nodes. The larger group retains the
+old 29 members and adds the ten newly routed parents plus the existing Domain IR
+boundary owner. The eight-node group and Domain IR route meaning are unchanged.
+Forty-five selected or preserved-context result subjects distinguish actual source
+definitions, candidate facts with legality pending, checked decisions, selected
+primitive implementations, emitted artifacts, later program/source results,
+independently executed harnesses and separately supplied review evidence.
+These stage contracts expose an executable direction; their source-interface
+entailment and current independent acceptance remain proposed, not proven by
+graph structure alone.
+
+The material order is now explicit:
+
+- Core consumes real early library definitions and expanded structure; actual
+  analyses precede checked Core, MIR verification and later target preservation.
+- Truthful provider/runtime support precedes compatibility and grants. Gate APIs
+  and capability schemas precede grants; actual scoped gate installation precedes
+  action use. Later action traces cannot supply their own prior authorization.
+- Selected cleanup/event and record/read/append interfaces precede task/message/
+  cancellation/replay use. Actual primitive implementations, per-program traces
+  and final Runtime-family conformance remain distinct results.
+- Hardware/GPU source declarations precede profile checks; checked definitions
+  and actual domain IR entry/verifier/exit products precede target emission.
+  Emitted HDL precedes claimed simulation, and emitted GPU artifacts precede
+  claimed launch and actual device/reference comparison. Current C12 and target/
+  physical/provider holds remain unchanged.
+- Owner examples and actual API/service products precede the existing Release
+  harness runs. Definitions, manifests, passed flags and a host-only mock do not
+  demonstrate those executions or independent acceptance.
+
+Schema shapes and selected validators/codecs are consumed where the claimed
+message boundary uses them; this does not require all Schema migration before
+local typed messages. No-runtime hardware receives no invented scheduler.
+Valid unoptimized verified MIR remains legal, and affected optimization facts
+must be revalidated only where used. Detached non-static-borrow capture remains
+forbidden despite lifecycle ownership. Preserve exact atomic defaults/order/
+scope/fence support, preventive synchronization, hardware-policy CDC waivers,
+strict R7/R8 recorded-output segments, privacy/redaction and actual review needs.
+Project accounting remains removed; physical capacity, runtime timeout/retry and
+actual external billing constraints survive.
+
+The task/plan/spec source subject remains
+`480b2ebed8199ed1489b7f5bf871883e6a191403`. The dependency/plan/tool source subject is
+`15c5a0a64d782c9b592648dc77726dd0837ac74a`, and the applying traceability fingerprint is
+`837c2544f81d26e9701e4e21b46cf49b98f397a902607a387411b3ee663280ce`.
+All 149 current keys, 25 authorities, original 71-identical/68-amended body
+accounting, forty future bodies and every prior source/dependency refinement are
+preserved. Fourteen plans gain navigation; thirty canonical source locators bind
+selected boundary context rather than whole-document acceptance. The preceding
+concurrency-source regression remains bound to its exact pre-dependency subject;
+no historical review hash or receipt is refreshed.
+
+Whole-project substantive entailment, source-interface review and independent
+acceptance remain unfinished. The first implementation increment remains the
+Reader contract-coverage task. No chat is messaged, reviewer woken, held action
+run or transferred, preserved aggregate published, stopped handoff retried,
+implementation credited or main integration performed.
+
+Final validation passes: 58 crosswalk tests with 19,841 assertions; 23 dependency
+tests with 2,921 assertions; pinned crosswalk and dependency projection checks;
+240-document/19-index structural validation; the separate full-language roadmap
+structural check; and six language-boundary tests with eleven assertions.
+Conservation/navigation covers 88 changed files, 82 Markdown files, 3,332 local
+references, 139 original routes, 48 historical spec/plan suffixes and all 48
+original task/evidence contents after declared additions are removed. ASCII and
+whitespace checks pass. The first dependency run failed only the prior five
+Legality-route size expectation; its corrected vector matches the individual
+producer matrix and final suite. Dated roadmap counts are not current execution
+evidence. No compiler/provider/physical-target/release suite or independent review
+is claimed from these source/traceability checks.
