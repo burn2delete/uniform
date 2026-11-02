@@ -126,6 +126,25 @@ canonical admission, C12, large-Wasm, native-C, migration, release,
 self-hosting, or seed-retirement authority. Integration requires independent
 acceptance of the exact candidate and an immediate clean integration preflight.
 
+## Final composition on the latest main snapshot
+
+After the source handoff repair, the candidate was normally composed with the
+latest main tooling-only merge `69d21cb8aacd0be8e74cbf4c9ad8b12b84d244e8`
+(tree `1911689d59beb0d9771d5efc5fe29856177b470e`, parent
+`f2ec11752875fb1d15d7fd00fd343139cf0b96e5`). The resulting clean composition
+is commit `693aa44ecd1f09dd7e0216ade69a66719ff84345`, tree
+`219a4f829de8d0a11fd6b27d9a6c37f7f153e711`, with parents
+`2b04ccda3f331d73f88b440b3fb939cdda8002c9` and
+`69d21cb8aacd0be8e74cbf4c9ad8b12b84d244e8`. The four incoming tooling
+proposal/checker/receipt paths contain no compiler source inputs and were
+conserved as a normal merge; their own checks remain separately attributable.
+
+The strict changed-file lint receipt for the PR512 source/test repair used the
+pinned clj-kondo 2025.10.23 binary and exact base
+`ad5387166ad7ed30a93799a66c6697e4b6ef64d8`: 73 inherited baseline warnings,
+zero blocking warnings/errors. The later tooling-only merge did not alter any
+of those source/test paths. Worktree identity after composition is clean.
+
 ## SH07 construction handoff for explicit current Syntax
 
 The post-composition caller audit found one remaining owner-boundary omission.
