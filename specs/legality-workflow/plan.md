@@ -63,10 +63,10 @@ may start on declared interfaces with focused fixtures; composed acceptance
 requires the selected actual producer results. Whole components, final Release
 or fresh authoritative migration are not ordinary construction prerequisites.
 
-Ownership's selected dependency rows below retain their C9 scope. Extending
-those shared safety/handoff/conformance rows to the additional C10 producers is
-explicit remaining dependency reconciliation; their presence does not establish
-all C10, SAFE1-SAFE16, PERF10 or broader profile dependencies. Preserve every
+The [safety producer and consumer order](#safety-producer-and-consumer-order)
+extends the three shared dependency rows with selected C10 products while
+retaining every C9 producer. These are current dependency proposals, not full
+C10, SAFE1-SAFE16, PERF10 or broader profile entailment. Preserve every
 actual native/provider/callback/probe/replay/migration/private-store/signing/
 publication hold. Ordinary source/plan review does not authorize those actions.
 
@@ -78,6 +78,54 @@ assess those exact kernels and their retained seed/digest/operation-identity
 boundaries separately. Structural input quotas remain removed requirements;
 actual integer width/representability, authentication, type and index legality
 remain required. This planning slice executes none of those compiler paths.
+
+## Safety producer and consumer order
+
+The [existing selected-result table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition)
+extends three current consumers with twenty C10 producer-result joins. No
+adopted result is needed to start their ordinary construction. Existing task
+bodies, source criteria and statuses stay unchanged; the table adds selected
+composition inputs rather than another implementation ledger.
+
+1. Core and Expand supply actual operations, control flow, generated origins,
+   taint and unsafe declarations; Types/Effects supply their real facts.
+   Ownership/profile/Auth and selected Runtime contracts retain their C9 roles.
+   Auth trust and Build/Package supply exact content/certificate/authority/
+   build-effect validation. Math supplies applicable numeric/EFIR/mode semantics
+   and independently checked selected claims. AI/Workflow supply admitted tool,
+   schema, taint, review, idempotency and replay policy products. These are
+   producer contract/analysis results before executing external calls. Local
+   analysis fixtures may reject absent evidence or retain a legal check; they
+   need neither final package publication nor all producer components complete.
+2. The classification task derives the actual inventory and per-operation
+   disposition using the selected specialized analyses, trust and policy.
+   Construction against declared interfaces is distinct from a claim that
+   actual upstream products were composed. A proof-dependent static decision
+   consumes the actual checked subject; proof production or a method label
+   cannot check itself. Safe wrappers, grants and certificate trust remain
+   separate obligations. Unavailable machinery produces an explicit refusal.
+3. Handoff composes these facts with actual MIR construction/attachment/
+   verification, Opt check protection and regeneration, Lower proof/assumption
+   preservation, Runtime failure/cleanup and distributed/AI policy execution,
+   Auth enforcement/trust, Emit byte provenance and Diag reporting. Policy
+   records precede execution; actual retained checks, failures, review/replay
+   preservation and changed-function proof results are required where claimed.
+   Valid unoptimized verified MIR remains usable; this integration task's final
+   checkbox never becomes a per-program construction or lowering gate.
+4. Conformance consumes the existing analysis/classification/handoff/profile
+   products for complete selected C9/C10 family cases and artifact inspection.
+   Its results feed existing Release execution and independent admission.
+   Neither final Release nor a second harness is a prerequisite for fixtures.
+
+The coarse producer view can expose mutual dependencies between math proof
+checking, formal/safety preservation and complete family composition. Resolve
+selected work with declared interfaces, concrete candidate proof production,
+independent checking and downstream application in that order; broader family
+integration consumes the resulting records later. Applicable proof methods and
+policy products are selected by the actual operation, not an all-method or
+whole-parent completion gate. Keep unresolved real interface conflicts visible;
+an acyclic staged projection alone does not prove semantic executability.
+All execution holds and the requirement for current independent review remain.
 
 ## Complete ownership-checker source criteria
 

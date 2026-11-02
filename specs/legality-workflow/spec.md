@@ -53,8 +53,10 @@ bind the C10 coordinator's inventory, decisions, proof lifecycle and conformance
 to three existing tasks. All operation families and exact check/audit/origin
 records remain required; duplicate or conflicting outcomes cannot pass as an
 exactly-one classification. Source joins are current proposals, specialized
-SAFE analyses keep their owners, and additional C10 dependency reconciliation,
-independent review and implementation acceptance remain pending.
+SAFE analyses keep their owners. The [selected C10 dependency order](plan.md#safety-producer-and-consumer-order)
+extends the existing routes with actual upstream and downstream results;
+full source/dependency entailment, independent review and implementation
+acceptance remain pending.
 
 The [complete ownership-checker source criteria](plan.md#complete-ownership-checker-source-criteria)
 bind the whole C9 source to the existing ownership, safety, handoff and
