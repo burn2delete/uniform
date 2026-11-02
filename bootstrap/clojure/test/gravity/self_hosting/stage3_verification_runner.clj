@@ -310,7 +310,7 @@
    'gravity.self-hosting.sh07-b1-backend-interface-source-coverage-test/sh07-b35-b1-source-contracts-and-static-shape-are-exact
    'gravity.self-hosting.sh07-b2-c-backend-source-coverage-test/sh07-b38-b2-source-contracts-and-static-shape-are-exact
    'gravity.self-hosting.sh07-b4-wasm-backend-source-coverage-test/sh07-b37-b4-source-contracts-and-static-shape-are-exact
-   'gravity.bootstrap-test/authenticated-c13-c14-b1-source-plans-are-pinned-and-bounded
+   'gravity.bootstrap-test/development-c13-c14-b1-source-plan-shapes-and-operation-order
    'gravity.bootstrap-test/authenticated-llvm-source-and-toolchain-records-are-pinned
    'gravity.self-hosting.sh17-c13-c14-b1-linux-llvm-backend-continuity-test/sh17-linux-llvm-static-candidate-is-nonclaiming
    'gravity.self-hosting.sh17-c13-c14-b1-linux-llvm-backend-continuity-test/sh17-linux-llvm-authenticated-continuity-when-enabled

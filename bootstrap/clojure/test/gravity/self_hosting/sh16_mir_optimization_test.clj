@@ -1774,10 +1774,11 @@
 
 
 (deftest sh16-validates-complete-carriers-without-quotas
-  (let [wide (vec (range 1025))
-        late-opaque (assoc wide 1024 (Object.))]
-    (doseq [carrier [(nested-vector 120 nil) wide
-                     (apply str (repeat 4097 "x"))]]
+  (let [many (vec (repeat 17 (vec (range 600))))
+        late-opaque (assoc-in many [16 599] (Object.))]
+    (doseq [carrier [(nested-vector 120 nil) (vec (range 1025))
+                     many (vec (repeat 2050 []))
+                     (apply str (repeat 65537 "x"))]]
       (is (= {:status :accepted}
              (invoke-engine 'sh16-structural-preflight [carrier]))))
     (is (= {:status :rejected :reason :structure-scalar-type-or-range}
@@ -1789,12 +1790,22 @@
       (is (= :passed (:status (invoke-engine 'sh16-verify [subject result])))))))
 
 (deftest sh16-validates-evidence-and-operation-identities-without-quotas
-  (let [carrier (vec (range 1025))]
+  ;; The evidence boundary formerly capped depth at 256. Both an accepted
+  ;; leaf and an invalid leaf beyond that point must actually be visited.
+  (let [deep (nested-vector 300 :leaf)
+        opaque (nested-vector 300 (Object.))]
+    (is (= {:status :accepted}
+           (invoke-engine 'sh16-c13-evidence-preflight [deep])))
+    (is (true? (invoke-engine 'c13-reconstruction-bounded? [deep])))
+    (is (= {:status :rejected :reason :carrier-scalar}
+           (invoke-engine 'sh16-c13-evidence-preflight [opaque])))
+    (is (false? (invoke-engine 'c13-reconstruction-bounded? [opaque]))))
+  (let [carrier (vec (repeat 65 (vec (range 512))))]
     (is (= {:status :accepted}
            (invoke-engine 'sh16-c13-evidence-preflight [carrier])))
     (is (= {:status :rejected :reason :carrier-scalar}
            (invoke-engine 'sh16-c13-evidence-preflight
-                          [(assoc carrier 1024 (Object.))]))))
+                          [(assoc-in carrier [64 511] (Object.))]))))
   (let [base (request accepted-gravity-plan 'sh16-no-change-request)
         constant (first (:operations base))
         constants (mapv (fn [index]
@@ -1809,16 +1820,6 @@
     (is (= :verify
            (invoke-engine 'sh16-request-error
                           [(update subject :operations conj (first constants))])))))
-
-(deftest sh16-keeps-semantic-report-checks-independent-of-retired-accounting-labels
-  (let [semantic [:fresh-original-mir-verification :complete-after-equality]
-        checks #(invoke-engine 'c13-semantic-report-checks [%])]
-    (is (= semantic (checks semantic)))
-    (is (= semantic (checks (into [:bounded-input-carriers] semantic))))
-    (is (= semantic (checks (conj semantic :bounded-c11-input-carriers))))
-    (is (not= semantic (checks (conj semantic :unknown-semantic-check))))
-    (is (not= semantic (checks (vec (reverse semantic)))))
-    (is (nil? (checks (apply list semantic))))))
 
 (deftest sh16-structural-preflight-rejects-opaque-map-components-without-callbacks
   ;; Built-in persistent maps only; custom Map iteration can run host callbacks.
@@ -1855,6 +1856,21 @@
            (invoke-engine 'sh16-structural-preflight [deep-request])))
     (is (= :rejected (:status (optimize deep-request))))
     (is (= :rejected (:status (invoke-engine 'sh16-verify [base deep-candidate]))))
+    ;; Sequence carriers and non-i64 source offsets remain illegal through
+    ;; the optimizer and verifier, independently of removed size quotas.
+    (doseq [[candidate reason]
+            [[(assoc base :operations (iterate vector nil)) :structure-sequence-carrier]
+             [(assoc-in base [:source-span :end] 9223372036854775808N)
+              :structure-scalar-type-or-range]]]
+      (let [result (optimize candidate)]
+        (is (= :rejected (:status result)))
+        (is (= "C13-CONTRACT" (get-in result [:diagnostics 0 :rule])))
+        (is (= reason (get-in result [:diagnostics 0 :structural-preflight :reason])))))
+    (let [result (invoke-engine 'sh16-verify [base (iterate vector nil)])]
+      (is (= :rejected (:status result)))
+      (is (= "C13-VERIFY" (get-in result [:diagnostics 0 :rule])))
+      (is (= :structure-sequence-carrier
+             (get-in result [:diagnostics 0 :structural-preflight :reason]))))
     (doseq [carrier [(iterate vector nil) 9223372036854775808N]]
       (is (= :rejected (:status (invoke-engine 'sh16-structural-preflight [carrier])))))))
 
