@@ -9,7 +9,10 @@ The frozen historical PR453 head is `2ff60a40eab7427f7a6bd9e0099e57654bb45bbc`
 `942dbdf8fed7b3ee6e7370a0bfb0780a92158ace`. This repair is based on current
 main `4ba30149b6a0c3a3c8aa56dd8783a83829e76085` (tree
 `2ccf9b46650c581d8b66c99ac0f5813c87fbe5da`); the coordinator must bind the
-final candidate commit and tree during integration preflight.
+final candidate commit and tree during integration preflight. The repair branch
+then normal-merged current main `88131ab85dadf1a7d81eba46c097af1b117be606`
+(tree `8b39b5943cca532022c8f845d6a783180268cf92`) before the C11 consumer
+extension below.
 
 The increment supplies only the explicit public C6/C11 interface version 2
 route. It uses the existing source contracts, Reader owner, expression owner,
@@ -81,17 +84,19 @@ report. No authored implementation path is silently repinned or discarded.
 
 The focused real-source producer/consumer and negative controls pass:
 
-- `gravity.self-hosting.pr453-current-source-handoff-test`: 8 tests,
-  39 assertions.
+- `gravity.self-hosting.pr453-current-source-handoff-test`: 10 tests,
+  52 assertions.
 - `gravity.self-hosting.sh01-native-unmetered-helpers-test`: 25 tests,
   304 assertions.
 - `gravity.self-hosting.sh01-language-boundary-test`: 6 tests, 11 assertions.
 - `git diff --check`: passed before this report was added.
 
 The focused handoff test covers actual C6, Reader, expression and C11 source
-bytes, a fresh v2 C6 artifact/report, wrong interface/version headers before
-construction, and wrong Reader policy before C2 production. It does not claim
-that a declared oracle is a compiler result.
+bytes, a fresh v2 C6 artifact/report, a real v2 C11 construction and
+contextual verification report consuming that C6 artifact, wrong
+interface/version headers before construction, wrong Reader policy before C2
+production, and forged Core/source-context rejection before C11 source
+construction. It does not claim that a declared oracle is a compiler result.
 
 The existing legacy v1 C6 binding test fails closed with
 `C6-VERIFY :pinned-gravity-c6-c10-source-bytes` because the current file is

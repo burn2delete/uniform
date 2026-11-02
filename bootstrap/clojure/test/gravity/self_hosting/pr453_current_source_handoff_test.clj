@@ -18,6 +18,13 @@
        "(:exports [main]))\n"
        "(defn main [] (if true false true))\n"))
 
+(defn- failure-data [thunk]
+  (try
+    (thunk)
+    nil
+    (catch clojure.lang.ExceptionInfo error
+      (ex-data error))))
+
 (deftest v2-current-c6-source-owner-produces-a-real-binding
   (let [path (temp-source-path)]
     (try
@@ -88,6 +95,69 @@
         (is (= :gravity/c6-reader-owner-metadata-projection
                (get-in report [:source-policy-receipt :projection-contract :artifact])))
         (is (= :passed (:status report))))
+      (finally
+        (java.nio.file.Files/deleteIfExists (.toPath (java.io.File. path)))))))
+
+(deftest v2-c11-public-construction-consumes-real-c6-artifact
+  (let [path (temp-source-path)
+        text (source-text)
+        context (bootstrap/p15-s23-stage2-gravity-checked-core-context
+                 path text :jvm)
+        c6-header {:interface :gravity/c6-c10 :version 2}
+        c11-header {:interface :gravity/c11-mir :version 2}]
+    (try
+      (let [checked-core
+            (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+             context c6-header)
+            artifact
+            (bootstrap/p15-s23-stage2-c11-mir-artifact
+             checked-core context c11-header)
+            report
+            (bootstrap/p15-s23-stage2-c11-mir-verification-report
+             artifact checked-core context c11-header)]
+        (is (= :gravity/p15-s23-c11-authenticated-mir-artifact
+               (:kind artifact)))
+        (is (= 2 (:schema-version artifact)))
+        (is (= :passed (:status (:verification-report artifact))))
+        (is (= :passed (:status report)))
+        (is (= {:interface :gravity/c11-mir :version 2}
+               (:source-interface report)))
+        (is (= {:interface :gravity/c11-mir :version 2}
+               (:source-interface (:source-rule report))))
+        (is (= :gravity-source-pure
+               (get-in report [:checked-core-ingress :checked-core-ingress-mode])))
+        (is (= :development-unadmitted
+               (get-in report [:checked-core-ingress :source-policy :admission-status])))
+        (is (false? (get-in report [:source-rule :self-hosted?]))))
+      (finally
+        (java.nio.file.Files/deleteIfExists (.toPath (java.io.File. path)))))))
+
+(deftest v2-c11-rejects-forged-core-and-policy-before-c11-source
+  (let [path (temp-source-path)
+        text (source-text)
+        context (bootstrap/p15-s23-stage2-gravity-checked-core-context
+                 path text :jvm)
+        header {:interface :gravity/c11-mir :version 2}]
+    (try
+      (let [checked-core
+            (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+             context {:interface :gravity/c6-c10 :version 2})
+            forged-core (assoc checked-core :artifact-id "sha256:forged-core")
+            forged-core-data
+            (failure-data
+             #(bootstrap/p15-s23-stage2-c11-mir-artifact
+               forged-core context header))
+            changed-context (assoc context :source-text (str text " "))
+            changed-policy-data
+            (failure-data
+             #(bootstrap/p15-s23-stage2-c11-mir-artifact
+               checked-core changed-context header))]
+        (is (= "C6-VERIFY" (:id forged-core-data)))
+        (is (= :exact-gravity-artifact-template-replay
+               (:missing-fact forged-core-data)))
+        (is (= "C6-VERIFY" (:id changed-policy-data)))
+        (is (= :exact-public-source-verification-context
+               (:missing-fact changed-policy-data))))
       (finally
         (java.nio.file.Files/deleteIfExists (.toPath (java.io.File. path)))))))
 
