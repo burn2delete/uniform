@@ -457,6 +457,42 @@ recommendation: shared canonical schema IR with explicit target adapters.
 
 Status: Open
 
+<!-- domains-query-parent:start -->
+### Query parent proposed criteria
+
+Current refinement of the same Open `query` task. Owner role: query maintainer.
+Resume its complete proposed criteria from
+[the published reconciliation](https://github.com/burn2delete/uniform/blob/2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc/specs/domains-workflow/tasks.md#implementation-tasks).
+Only source-context references are rebound; all other body text, literal
+criteria and Open state are preserved. The original paragraph remains below
+as history. Read the [current interface composition](plan.md#query-workflow-gpu-and-ui-composition)
+before selecting an operation. It distinguishes production, checking and
+actual execution without transferring provider, backend or Runtime ownership.
+No target/adapter adoption, implementation acceptance or earlier qualified
+review is conferred by this resumption.
+
+Projected task block:
+Outcome: real parameterized queries return validated rows and respect declared
+transaction/provider semantics. Remaining tasks, all open: implement relational
+IR and typed parameters; lower to a declared provider; connect row/schema and
+transaction checks; execute result-equivalence, injection, missing-grant and
+invalid-row fixtures. Yes/no acceptance: are parameters separated from query
+syntax? Are results typed and grants enforced? Do transaction failures preserve
+semantics? Integration: Schema/MIR to Query, Runtime provider, Stdlib database
+API. Decision owner: query maintainer; recommendation: explicit provider dialect
+contract, not host SQL strings as semantic authority.
+
+Criterion `domain/analytic-plan-lowering`: Lower typed analytics/aggregation/window plans to an explicit SQL/native/GPU/workflow/host venue preserving numeric/null/order/determinism/approximation and policy lineage. Accepted fixture: Lower aggregate/window inputs to the declared SQL/native/GPU/workflow venue, preserving order, nulls, numeric mode, determinism, approximation and lineage. Negative fixture: Reject undeclared execution venues, nondeterministic order or lost policy lineage. Required evidence: typed dataflow plan and venue/reference comparison; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in [the full preserved Domain context](#wider-integration-task-proposals). Dependencies consume schema, runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.
+
+Criterion `domain/database-query-integration`: Demonstrate the declared schema-migration/query slice with typed rows, grants, failures and portability evidence. Accepted fixture: Run schema migration and typed query with prepared bindings, validated rows, explicit transactions/grants, compatibility and rollback/forward policy. Negative fixture: Reject tainted query syntax, invalid null/timezone/numeric/enum rows, missing grants and unapproved data loss. Required evidence: migration artifact, prepared query, row adapter and reference fixtures; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in [the full preserved Domain context](#wider-integration-task-proposals). Dependencies consume schema, runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.
+
+Criterion `domain/revenue-aggregate-integration`: Demonstrate declared revenue aggregation against reference and invalid-input/authority/semantic rejection cases. Accepted fixture: Run the declared revenue aggregate with decimal mode, source/output schemas, grouping/null/order semantics, database authority and source-table lineage. Negative fixture: Reject schema drift, unauthorized data access, changed numeric semantics or lost lineage. Required evidence: SQL/native plan, lineage/schema reports and reference/rejection fixtures; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in [the full preserved Domain context](#wider-integration-task-proposals). Dependencies consume schema, runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.
+
+Criterion `domain/streaming-materialization`: Enforce declared streaming/materialization state and memory policy, rejecting unbounded materialization in constrained profiles. Accepted fixture: Execute declared streaming/materialization and memory behavior for the chosen constrained runtime/provider, preserving data and failure semantics. Negative fixture: Reject materialization that violates the actual declared runtime memory/streaming policy; do not introduce compiler input/work allowances. Required evidence: execution/memory plan and stream/materialization failure fixtures; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in [the full preserved Domain context](#wider-integration-task-proposals). Dependencies consume schema, runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.
+
+Historical projected paragraph (unchanged):
+<!-- domains-query-parent:end -->
+
 Projected task block:
 Outcome: real parameterized queries return validated rows and respect declared
 transaction/provider semantics. Remaining tasks, all open: implement relational
@@ -471,6 +507,58 @@ contract, not host SQL strings as semantic authority.
 - [ ] `workflow` Workflow
 
 Status: Open
+
+<!-- domains-workflow-parent:start -->
+### Workflow parent proposed criteria
+
+Current refinement of the same Open `workflow` task. Owner role: workflow maintainer.
+Resume its complete proposed criteria from
+[the published reconciliation](https://github.com/burn2delete/uniform/blob/2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc/specs/domains-workflow/tasks.md#implementation-tasks).
+Only source-context references are rebound; all other body text, literal
+criteria and Open state are preserved. The original paragraph remains below
+as history. Read the [current interface composition](plan.md#query-workflow-gpu-and-ui-composition)
+before selecting an operation. It distinguishes production, checking and
+actual execution without transferring provider, backend or Runtime ownership.
+No target/adapter adoption, implementation acceptance or earlier qualified
+review is conferred by this resumption.
+
+Projected task block:
+Outcome: a workflow executes and replays without repeating recorded external
+effects. Remaining tasks, all open: implement graph validation/lowering;
+implement event-log schema and durable transitions; connect retry/compensation/
+timer providers; execute crash/restart/replay and unrecorded-nondeterminism
+rejection fixtures. Yes/no acceptance: is replay deterministic? Are external
+calls deduplicated? Are invalid transitions rejected? Integration: MIR/Schema,
+Runtime durability, AI review steps, Stdlib workflows. Decision owner: workflow
+maintainer; recommendation: versioned event log as replay input, explicit
+provider boundary for storage rather than a hidden database choice.
+
+DOM9 acceptance also requires declared CRDT identity/order/merge/update and
+serialization laws, causal history, offline authorization, conflict visibility,
+tombstone/compaction and migration policy. Classify coordination as free,
+required or deferred; reject nonmonotonic rules without an explicit mechanism.
+The checkout fixture must not double-charge on replay. The local-first cart
+fixture must converge after partition/heal, duplicate/reordered delivery,
+restart and migration, and reject invalid merge laws or hidden intent loss.
+Dependencies: Schema state/event versions, Runtime durable storage/replay and
+Auth grants. These criteria add no acceptance credit or provider selection. P9 profile interface: emit typed step input/output/effect/grant/retry/timeout/cancellation/idempotency/compensation and event/replay records; validate versioned messages and persisted state with migration/taint/retention/order/delivery policy. Execute recovery separately from admitted step construction; replay must consume recorded nondeterminism without repeating external actions. Reject schema drift without migration, untyped external failure, unrecorded replay inputs and missing required compensation. Service-boundary admission consumes Schema/Auth and Runtime facts, not their whole-task completion.
+
+Criterion profile-gap/distributed/durable-step-contract (Open): Input: Workflow graph and step input/output schemas, declared effects/grants, idempotency key, retry/timeout/cancellation/compensation and failure policy. Accept: Construct typed step records and durable transitions; execute admitted external steps with declared idempotency; execute failure/retry/timeout/cancel/compensation transitions separately; replay recorded results/decisions without repeating the recorded external action. Retain human-review state where applicable. Reject: Untyped external failure, missing required idempotency/compensation or timeout/failure contract, ambient grants, raw device operations and unrecorded nondeterminism in replay-sensitive steps. Required outputs: Workflow graph, typed step table, event-log/persistence boundary records, retry/timeout/compensation table, replay policy/schema and accepted/rejected recovery fixtures. Dependencies: runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution, schema, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime interface facts, not whole-task completion. Exact source predicates and frozen evidence: [the preserved profile-interface context](plan.md#query-workflow-gpu-and-ui-source-context), mapping distributed/durable-step-contract; all attached contextual and negative predicates remain required. No implementation acceptance is inferred. Criterion profile-gap/distributed/message-state-boundary (Open): Input: Message, persisted state and service endpoint with schema/version, compatibility/migration, taint/retention, delivery/order and relevant idempotency policies. Accept: Validate transport input/output against the named schemas, apply or reject state/schema migrations under replay compatibility, enforce data-sink taint/retention, and admit services only with declared effect/grant/timeout/retry/error and required backpressure/circuit-breaker policy. Reject: Schemaless boundary, version drift without migration, untyped service failure, ambient service authority and missing delivery/order or required side-effect policy. Required outputs: Message schema bundle, migration result, service capability/error boundary manifest, state persistence and delivery/ordering conformance records. Dependencies: schema, runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime interface facts, not whole-task completion. Exact source predicates and frozen evidence: [the preserved profile-interface context](plan.md#query-workflow-gpu-and-ui-source-context), mapping distributed/message-state-boundary; all attached contextual and negative predicates remain required. No implementation acceptance is inferred.
+
+Criterion `domain/coordination-classification`: Classify replicated rules as coordination-free/required/deferred and require explicit coordination evidence for nonmonotonic invariants. Accepted fixture: Classify monotonic and nonmonotonic replicated computations as coordination-free, required or deferred with source-linked mechanism evidence. Negative fixture: Reject a nonmonotonic invariant labeled coordination-free without an explicit barrier or reconciliation mechanism. Required evidence: coordination analysis report and mechanism fixtures; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in [the full preserved Domain context](#wider-integration-task-proposals). Dependencies consume schema, runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.
+
+Criterion `domain/crdt-convergence`: Implement declared CRDT state/wire identity/order, merge algebra and update rules with type-preserving convergence evidence. Accepted fixture: Check associative, commutative, idempotent and type-preserving merge, identity/order and inflationary update or declared operation-based delivery semantics. Negative fixture: Reject invalid merge/update laws, insufficient recovery serialization or false convergence evidence. Required evidence: CRDT law proof/model fixtures and typed merge/update trace; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in [the full preserved Domain context](#wider-integration-task-proposals). Dependencies consume schema, runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.
+
+Criterion `domain/distributed-checkout-integration`: Execute the declared checkout workflow with durable idempotency/retry/compensation and typed failure/replay evidence. Accepted fixture: Execute checkout payment/shipping steps with typed schemas, recorded results, idempotency, retry/timeout/cancellation and compensation. Negative fixture: Reject unrecorded clock/randomness, repeat charging on replay or missing required compensation. Required evidence: workflow graph, event schema and restart/replay/failure trace; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in [the full preserved Domain context](#wider-integration-task-proposals). Dependencies consume schema, runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.
+
+Criterion `domain/local-first-cart-integration`: Execute the declared local-first cart reconciliation with explicit merge/causality/conflict/coordination boundaries. Accepted fixture: Mutate a replicated cart note offline, retain causality, heal partitions and converge under delayed/duplicated/reordered delivery and restart/migration. Negative fixture: Reject nonmonotonic rules without coordination and reconciliation that hides or loses conflicting intent. Required evidence: CRDT/sync/conflict manifests, convergence and rejection fixtures; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in [the full preserved Domain context](#wider-integration-task-proposals). Dependencies consume schema, runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.
+
+Criterion `domain/local-first-sync`: Persist and exchange enough causal state/history to reconcile offline replicas with declared topology, dedup, conflicts, deletion/compaction and authorization changes. Accepted fixture: Persist and exchange declared causal state/history with replica identity, topology, dedup, retention/snapshots, tombstones/compaction, authorization and explicit conflict visibility. Negative fixture: Reject incomplete recovery history, undeclared clock authority or silent overwrite/drop of conflicting intent. Required evidence: sync manifest, conflict table and partition/restart/migration traces; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in [the full preserved Domain context](#wider-integration-task-proposals). Dependencies consume schema, runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.
+
+Decision criterion `interface/domain/execute-crdt-merge-update` (Open): Execute merge and local update against the declared typed state/wire identity, identity element, version/order and delivery contract, consuming applicable checked merge/update laws. Refuse: Reject type/order/wire mismatches, noninflationary updates lacking the declared operation-based delivery alternative and results incompatible with the admitted law record. Required outputs: actual merge/update state transitions, wire round-trip and reordered/duplicated delivery fixtures. Dependencies consume schema, runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution as typed operation artifacts, not whole-component completion. Preserve every source facet and unresolved metadata ID in the exact phase-09 decision allocation; no implementation acceptance is inferred.
+
+Historical projected paragraph (unchanged):
+<!-- domains-workflow-parent:end -->
 
 Projected task block:
 Outcome: a workflow executes and replays without repeating recorded external
@@ -503,6 +591,46 @@ artifacts and explicit model identity, never a vendor SDK side path.
 
 Status: Open
 
+<!-- domains-gpu-parent:start -->
+### GPU parent proposed criteria
+
+Current refinement of the same Open `gpu` task. Owner role: accelerator maintainer.
+Resume its complete proposed criteria from
+[the published reconciliation](https://github.com/burn2delete/uniform/blob/2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc/specs/domains-workflow/tasks.md#implementation-tasks).
+Only source-context references are rebound; all other body text, literal
+criteria and Open state are preserved. The original paragraph remains below
+as history. Read the [current interface composition](plan.md#query-workflow-gpu-and-ui-composition)
+before selecting an operation. It distinguishes production, checking and
+actual execution without transferring provider, backend or Runtime ownership.
+No target/adapter adoption, implementation acceptance or earlier qualified
+review is conferred by this resumption.
+
+Projected task block:
+Outcome: kernels execute on the adopted target with validated memory/barrier
+behavior. Remaining tasks, all open: adopt target and kernel ABI; implement GPU
+IR/checking; lower kernel and host dispatch; execute numeric/result and illegal
+memory-space/barrier fixtures. Yes/no acceptance: do kernels produce the
+specified results? Are invalid synchronization and target features rejected?
+Integration: MIR/Legality, Lower/Emit, explicit Runtime dispatch. Decision owner:
+accelerator maintainer; recommendation: one named reference target first,
+additional targets only by their own conformance evidence. Target choice is
+not silently adopted by this roadmap.
+
+P11 profile interface: emit host/device argument/address-space/layout/alignment/alias/lifetime, transfer/synchronization and feature/workgroup/launch/occupancy records. Reject host services in kernels, use-after-free/double release/unsynchronized host reads, unsupported launch/features and invalid barriers; safe sharing needs provider evidence. Preserve precision/rounding/fusion/denormal/approximation/provider/certificate facts through lowering or diagnose. ABI production, kernel/launch checks, buffer validity and actual Runtime transfers remain separate interfaces; a graph is not executed transfer evidence.
+
+Criterion profile-gap/gpu/host-device-boundary (Open): Input: Separate host orchestration and GPU kernel artifacts with argument address-space/layout/alignment/alias/lifetime and declared target feature/workgroup/grid/occupancy/launch configuration. Accept: Validate kernel-only legality, construct the typed host/device ABI boundary and transfer/lifetime records, and check target launch/features independently. Host profile remains explicit; device orchestration cannot import ambient host semantics into a kernel. Reject: Host IO/reflection/eval/allocation/GC/exceptions/ordinary threads in kernels, unsupported recursion/dispatch, missing argument or transfer boundary, invalid target or launch configuration. Required outputs: Host/device and target/launch/occupancy manifests, kernel IR, typed argument ABI and accepted/rejected kernel/launch/feature fixtures with kernel/buffer/address-space/origin context. Dependencies: backend-interface, lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs, legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks, runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries interface facts, not whole-task completion. Exact source predicates and frozen evidence: [the preserved profile-interface context](plan.md#query-workflow-gpu-and-ui-source-context), mapping gpu/host-device-boundary; all attached contextual and negative predicates remain required. No implementation acceptance is inferred. Criterion profile-gap/gpu/memory-synchronization (Open): Input: GPU buffers/slices and transfer/queue/kernel/barrier graph with ownership/lifetime/address-space/alignment/layout/alias/visibility and sharing-provider facts. Accept: Treat buffers as linear unless provider-backed sharing is proved; validate use/release and host/device visibility; preserve launch/fence/workgroup barrier/atomic/queue/transfer-completion order and address spaces through backend lowering. Actual transfer execution consumes the validated graph separately. Reject: Use-after-free, double release, unsynchronized host read, invalid device alias, missing barrier/queue dependency/transfer completion or unsupported host allocation. Required outputs: Lifetime report and transfer/synchronization graphs, accepted ownership/transfer/barrier cases and P11-DEVICE-MEMORY/TRANSFER/SYNC/ALIAS/RAW diagnostics with exact buffer/address-space/edge/target/origin. Dependencies: legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks, runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries, lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs interface facts, not whole-task completion. Exact source predicates and frozen evidence: [the preserved profile-interface context](plan.md#query-workflow-gpu-and-ui-source-context), mapping gpu/memory-synchronization; all attached contextual and negative predicates remain required. No implementation acceptance is inferred. Criterion profile-gap/gpu/numeric-mode-contract (Open): Input: GPU/EFIR numeric operations with declared precision, rounding, fusion, denormal, approximation error, provider, certificate/validation and device feature facts. Accept: Check the selected device implementation and target mapping against every declared numeric/accuracy fact and preserve the certificate contract or emit a diagnostic. Reject: Implicit backend approximate math, missing mode/provider/certificate or accuracy record, undeclared denormal/fusion change and unsupported target features. Required outputs: Math-mode/feature manifest and approximation certificate bundle, accepted/failed numeric-preservation cases and P11-MATH/TARGET-FEATURE context with kernel/target/origin/certificate. Dependencies: math, lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs, legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks interface facts, not whole-task completion. Exact source predicates and frozen evidence: [the preserved profile-interface context](plan.md#query-workflow-gpu-and-ui-source-context), mapping gpu/numeric-mode-contract; all attached contextual and negative predicates remain required. No implementation acceptance is inferred.
+
+Criterion `domain/gpu-dispatch`: Dispatch declared kernels using explicit buffer state, transfer, layout, ownership and synchronization contracts. Accepted fixture: Dispatch a declared kernel through explicit host/device buffer layout, ownership/lifetime, transfer state and synchronization contracts. Negative fixture: Reject implicit transfer, invalid lifetime/aliasing or unsynchronized device-state use. Required evidence: host adapter, launch descriptor and transfer/synchronization graphs; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in [the full preserved Domain context](#wider-integration-task-proposals). Dependencies consume backend-gpu, lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.
+
+Criterion `domain/gpu-kernel-validation`: Validate/lower GPU kernels under explicit target/features/geometry/memory-space/barrier/atomic and numeric/certificate constraints. Accepted fixture: Validate selected target/features, launch geometry, address spaces, layout, barriers/atomics and numeric/certificate mode before kernel lowering. Negative fixture: Reject host effects, unsupported recursion/dynamic allocation, invalid launch geometry or unjustified fast math. Required evidence: checked GPU IR, device memory and numeric/feature reports; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in [the full preserved Domain context](#wider-integration-task-proposals). Dependencies consume backend-gpu, lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.
+
+Criterion `domain/gpu-reduction-integration`: Demonstrate declared reduction against reference with selected numeric ordering and target/launch/layout/performance evidence. Accepted fixture: Run the selected reduction with explicit deterministic or relaxed order and compare device output with CPU/MIR reference using pinned launch/layout/input context. Negative fixture: Reject deterministic-mode nondeterminism, host IO, invalid synchronization or unsupported target feature assumptions. Required evidence: kernel/host artifacts, reference comparison and performance context; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in [the full preserved Domain context](#wider-integration-task-proposals). Dependencies consume backend-gpu, lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.
+
+Decision criterion `interface/domain/lower-accepted-gpu-kernel` (Open): Lower the accepted typed GPU kernel to declared device/kernel IR while retaining layout/address-space, source/generated origins, effects/authority, synchronization/race and numeric/proof facts required by its backend. Refuse: Reject missing accepted-verifier facts, lost source/layout/authority/synchronization/numeric evidence or unsupported IR transitions. Host dispatch/transfers and backend kernel-code emission remain separate consumers; preserve both original facet IDs with authenticated metadata-only source binding; these example/diagnostic contexts add no requirements. Required outputs: verified device/kernel IR and preserved-fact/provenance table with stable lowering diagnostics. Dependencies consume backend-gpu, lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout as typed operation artifacts, not whole-component completion. Preserve every source facet and unresolved metadata ID in the exact phase-09 decision allocation; no implementation acceptance is inferred.
+
+Historical projected paragraph (unchanged):
+<!-- domains-gpu-parent:end -->
+
 Projected task block:
 Outcome: kernels execute on the adopted target with validated memory/barrier
 behavior. Remaining tasks, all open: adopt target and kernel ABI; implement GPU
@@ -517,6 +645,59 @@ not silently adopted by this roadmap.
 - [ ] `ui` UI
 
 Status: Open
+
+<!-- domains-ui-parent:start -->
+### UI parent proposed criteria
+
+Current refinement of the same Open `ui` task. Owner role: UI maintainer.
+Resume its complete proposed criteria from
+[the published reconciliation](https://github.com/burn2delete/uniform/blob/2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc/specs/domains-workflow/tasks.md#implementation-tasks).
+Only source-context references are rebound; all other body text, literal
+criteria and Open state are preserved. The original paragraph remains below
+as history. Read the [current interface composition](plan.md#query-workflow-gpu-and-ui-composition)
+before selecting an operation. It distinguishes production, checking and
+actual execution without transferring provider, backend or Runtime ownership.
+No target/adapter adoption, implementation acceptance or earlier qualified
+review is conferred by this resumption.
+
+Projected task block:
+Outcome: an actual UI artifact renders, handles typed events and enforces
+capabilities through the adopted adapter. Remaining tasks, all open: lock UI
+IR/state/event contract; implement lowering and rendering adapter; connect
+runtime events and source maps; execute render/update and invalid-event/unsafe
+DOM/authority rejection fixtures. Yes/no acceptance: do state transitions and
+rendering follow typed semantics? Are unsafe or unauthorized actions rejected?
+Integration: Types/MIR, Lower/Emit, Runtime and Stdlib UI. Decision owner: UI
+maintainer; recommendation: explicit adapter contract rather than browser host
+semantics defining the language. Backend choice remains an explicit decision.
+
+DOM6 browser acceptance requires the ticket-list slice, typed API/schema drift
+checks and source-mapped loading, validation and unsafe-sink failures. DOM7
+mobile acceptance separately requires an adopted platform adapter with permission,
+lifecycle, main-thread/actor, null/error and taint contracts; background timeout,
+retry and cancellation; local schema/migration/encryption/retention/conflict
+policy; and keychain/keystore grants and redaction. The offline ticket fixture
+must exercise permission denial, offline edit, sync retry and crash source maps
+on a named simulator/device. Dependencies: Schema generated clients and local
+migrations, Auth grants, Runtime lifecycle and Backend mobile artifacts. Browser
+evidence cannot establish mobile conformance; both remain Open.
+
+Criterion `domain/mobile-background-lifecycle`: Execute mobile background work under declared suspension/lifecycle, timeout/retry/network/storage/cancellation rules. Accepted fixture: Run mobile background work under suspension/lifecycle, timeout/retry, network/storage grants and cancellation contracts. Negative fixture: Reject hidden background execution, invalid lifecycle assumptions and missing cancellation/failure mapping. Required evidence: background lifecycle manifest and simulator transition/error trace; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in [the full preserved Domain context](#wider-integration-task-proposals). Dependencies consume schema, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.
+
+Criterion `domain/mobile-offline-storage`: Persist and synchronize mobile local data using declared schemas, migrations, encryption/retention and conflict policy. Accepted fixture: Persist and sync local values with schema/migration, encryption/storage provider, retention and explicit conflict handling. Negative fixture: Reject schema-less storage, unsafe migration, missing encryption/provider policy and silent conflict loss. Required evidence: offline schema/migration bundle and offline-edit/sync fixtures; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in [the full preserved Domain context](#wider-integration-task-proposals). Dependencies consume schema, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.
+
+Criterion `domain/mobile-platform-adaptation`: Adapt mobile APIs using declared permissions, lifecycle, main-thread/actor, null/error and taint rules. Accepted fixture: Adapt platform APIs with explicit permissions, capabilities, lifecycle, main-thread/actor, null/error and taint behavior. Negative fixture: Reject missing permissions, unchecked platform nulls and lifecycle/thread-unsafe UI callbacks. Required evidence: platform binding/permission manifest and simulator adapter fixtures; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in [the full preserved Domain context](#wider-integration-task-proposals). Dependencies consume schema, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.
+
+Criterion `domain/mobile-secret-provider`: Access mobile secrets through a declared keychain/keystore or equivalent provider with grant/redaction policy. Accepted fixture: Read/write secrets through declared keychain/keystore or equivalent provider grants with redaction and failure policy. Negative fixture: Reject ambient secret access, plaintext/unsafe storage or secret disclosure through crash/log artifacts. Required evidence: secret-provider manifest and grant/redaction/failure fixtures; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in [the full preserved Domain context](#wider-integration-task-proposals). Dependencies consume schema, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.
+
+Criterion `domain/mobile-ticket-integration`: Demonstrate the offline mobile ticket slice with permission/lifecycle/offline/crash cases on a named simulator/device. Accepted fixture: Run the offline ticket screen with local schema, migration, sync, lifecycle/threading, network and notification permission contracts. Negative fixture: Reject permission denial bypass, hidden background work, unchecked platform null and unsafe storage. Required evidence: app/binding/resource manifests and simulator permission/offline/retry/crash tests; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in [the full preserved Domain context](#wider-integration-task-proposals). Dependencies consume schema, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.
+
+Criterion `domain/ui-rendering`: Lower typed UI/component/state/event forms and execute declared rendering/event adapters without unsafe or unauthorized DOM actions. Accepted fixture: Lower typed components/state/events and execute the adopted renderer with source maps, event schemas and capability/taint-safe DOM boundaries. Negative fixture: Reject invalid events, unsafe rendering sinks, ambient globals and generated code bypassing normal checks. Required evidence: typed UI IR, rendered/event trace and source-map diagnostics; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in [the full preserved Domain context](#wider-integration-task-proposals). Dependencies consume schema, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.
+
+Criterion `domain/web-ticket-integration`: Render/update the declared ticket-list browser slice with source maps, validated inputs and API/schema drift rejection. Accepted fixture: Render/update the ticket-list route with typed props/API clients, validated network/user input and browser source maps. Negative fixture: Reject schema drift, untyped imports, ambient browser authority and unsafe HTML/script sinks. Required evidence: JS/declaration/client artifacts and loading/validation/input/browser fixtures; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in [the full preserved Domain context](#wider-integration-task-proposals). Dependencies consume schema, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.
+
+Historical projected paragraph (unchanged):
+<!-- domains-ui-parent:end -->
 
 Projected task block:
 Outcome: an actual UI artifact renders, handles typed events and enforces

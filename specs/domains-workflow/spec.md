@@ -74,6 +74,18 @@ Testing consumers retain their distinct outcomes. See
 [Math parent composition](plan.md#math-parent-composition); none of these
 criteria establishes execution or source-facet acceptance.
 
+The Open `query`, `workflow`, `gpu` and `ui` parents now carry their complete
+preserved proposed bodies, with nineteen Domain operation/integration clauses,
+five profile interfaces and two decision criteria. Their short original
+paragraphs remain historical. Only five profile-context and nineteen
+Domain-context references change. The [composition plan](plan.md#query-workflow-gpu-and-ui-composition)
+separates domain admission/lowering, backend emission, Runtime invocation and
+actual domain conformance; the older broad role allocations remain qualified
+for current repartition review. Browser and mobile evidence remain separate,
+as do CRDT law checking and actual merge/update execution. The larger AI parent
+still needs its detailed source resumption and producer/consumer reconciliation;
+the existing AI entry and short task do not discharge all A1-A11 criteria.
+
 Their source obligations include actual DOM5 vector/native execution with
 proof-gated optimization and differential benchmarks; DOM8 service routes,
 workers, typed API/config, denied IO and redacted observability; DOM10 page/WAL

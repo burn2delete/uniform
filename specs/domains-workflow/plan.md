@@ -56,6 +56,83 @@ component acceptance and coordinator integration pending until their exact
 evidence is present. Whole-domain, full-language, self-hosted and release claims
 remain governed by their separate existing outcomes.
 
+## Query, Workflow, GPU and UI composition
+
+Select one exact criterion in the existing Open `query`, `workflow`, `gpu` or
+`ui` task. Their complete preserved proposed bodies now appear above their
+unchanged historical paragraphs. Nineteen Domain clauses, five profile
+interfaces and two decision criteria preserve their source identities. These
+are refinements of the same four authorities, not new tasks or accepted domains.
+The AI parent's much larger A1-A11 source criteria remain separate unfinished
+resumption work; do not infer them from Workflow's AI integration interface.
+
+Read the complete selected DOM6/7/9/10/11/13 contracts and P9/P11 where
+applicable, using the [Domain phase index](../../docs/phase-09-domain-specific-computing-coverage/README.md).
+For target artifacts also read B6/B8/B10/B11/B12 in the
+[Backend phase](../../docs/phase-07-backend-architecture/README.md); R7 and
+STD11/STD12/STD19 govern actual services and callable APIs. Domain, backend,
+Runtime and library tasks retain their existing owners and editable authorities.
+
+| Selected interface | Domain product and decisive cases | Existing consumer boundary |
+| --- | --- | --- |
+| Query semantic admission and analytics | Typed query/dataflow IR separates structure and parameters, names source/result schemas, dialect/venue, transaction/null/collation/timezone/numeric/order/approximation semantics, taint/privacy and lineage. Reject interpolation of tainted syntax, hidden provider semantics, schema drift and materialization violating the actual constrained runtime policy. | `backend-query` produces the declared SQL/prepared-binding/adapter artifacts; Lower owns general target representation. Native/GPU/workflow venues require their corresponding actual lowering and reference evidence. A query plan alone does not execute a provider. |
+| Query execution and migration composition | Execute admitted prepared queries with real provider results and row validation; exercise read/write/transaction grants, isolation, timeout, retry, commit/rollback/error mapping and null/timezone/decimal/enum cases. Run the revenue aggregate with source-table lineage and the schema-migration/query slice with approved compatibility/loss/deployment/rollback-or-forward policy. | Runtime performs the actual provider invocation; STD11 exposes callable query/transaction APIs. Schema's migration task owns the checked diff/plan and migration authority interface. Storage page/WAL durability remains with the separate `storage` task, not a client-query claim. |
+| Durable graph admission and recovery | Construct typed step/message/state/log records with effect/grant, idempotency, retry, timeout, cancellation, failure, compensation and review contracts. Exercise first-run, crash/restart, retry and replay using actual recorded decisions; a checkout must not double-charge. Reject schema/log drift without migration, untyped failures, missing compensation and unrecorded clock/random/model/tool/IO. | `backend-workflow` turns the checked semantic graph into versioned deployable graph/provider artifacts. Runtime owns scheduling, persistence and actual durable transitions. Workflow owns composed source semantics and domain results; AI owns model/tool/memory/review policy. STD12 owns the callable library surface. |
+| CRDT checking and execution | Check declared state/wire identity, order, merge associativity/commutativity/idempotence/type preservation and inflationary update or the declared operation-based delivery alternative. Separately execute merge/update and classify monotonic/nonmonotonic rules as free/required/deferred with mechanism evidence. | Consume an actual checked law record before claiming convergence. A checker pass is not an executed merge. Runtime/storage supply persisted causal history, serialization, snapshots, delivery/dedup and recovery. Partition/heal/reorder/duplicate/restart/migration/tombstone/authorization-change cases must converge or expose conflicts without losing intent. |
+| GPU checking and typed kernel lowering | Validate kernel-only constructs, features/geometry/occupancy, argument ABI/address-space/layout/alignment/alias/lifetime, barriers/atomics/queue/transfer completion and numeric/certificate mode. Produce checked device/kernel IR with origins and retained facts. Reject host effects, unsupported recursion/allocation, invalid sharing/synchronization and unjustified approximate math. | Lower derives the actual target representation and ABI; `backend-gpu` emits kernel code, host stubs and target artifacts. The Domain's typed kernel lowering is not a second target-code generator. Preserve numeric assumptions through Math/Opt/Lower and invalidate/reprove affected certificates. |
+| GPU dispatch and conformance | Execute explicit allocation/transfer/launch/fence/release under the adopted host/device contract. Compare device reduction against pinned CPU/MIR inputs, launch/layout/device and strict or declared relaxed order; cover required image/filter/tensor examples separately. Reject implicit transfer, use-after-release, double release and unsynchronized host reads. | Runtime owns actual device provider calls and buffer visibility. Backend conformance and Release consume real reference/performance reports. A transfer graph or manifest is not device execution; the named target/kernel ABI remains unadopted until its existing decision is resolved. |
+| Typed UI lowering and web execution | Produce source/schema/effect/grant/taint-bearing component/state/event IR, then execute the adopted renderer and typed events. Exercise ticket-list loading, forms/routes, API drift, user input and source-mapped validation/error cases. Reject unsafe HTML/URL/script sinks, ambient globals, untyped imports, unchecked host values and generated-code bypass. | Lower and `backend-js`/selected Wasm produce actual target bundles/declarations/maps. Schema owns generated clients; Runtime owns event/host calls; STD19 owns callable components, routes, rendering and accessibility APIs. Declaration files cannot replace runtime validation. |
+| Mobile adaptation and conformance | Independently exercise platform permissions and denial, lifecycle/main-thread/actor callbacks, null/error mapping, cancellation/background timeout/retry, local schema/migration/encryption-or-provider/retention/conflicts, keychain/keystore grants and redaction. The offline ticket runs on a named simulator/device with offline-edit/sync/retry/crash source maps. | `backend-mobile` emits the actual app, binding/resource/permission and audit artifacts; Runtime and the adopted platform adapter execute lifecycle and API calls. Browser tests cannot establish mobile results. Signing/store publication remain their existing later package/release boundaries. |
+
+Start with typed interface artifacts and focused deterministic fixtures; do not
+require whole Backend, Runtime, Schema or Auth completion before ordinary domain
+development. Actual composition acceptance needs the selected provider/device/
+adapter and its real results. The unresolved dialect/venue, device ABI and UI/
+platform adapter decisions remain with their existing owners; no provider or
+target is adopted by this plan. No held C12, native, live-provider or publication
+operation is run to prepare these criteria.
+
+For implementation inspection, the existing specialized
+[query/workflow assembly](../../bootstrap/clojure/src/gravity/bootstrap_impl/semantic_early/25345-specialized-lowering-workflow-and-query-backends.clj),
+[GPU assembly](../../bootstrap/clojure/src/gravity/bootstrap_impl/semantic_early/25345-specialized-lowering-gpu-and-hdl-backends.clj)
+and [Domain summaries](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/platform-phases/00322-p09-domain-summaries.clj)
+produce declared records and fixed examples. Their `:status :complete` fields
+do not establish general lowering, provider execution, convergence, device
+dispatch or an app bundle. Trace the actual selected caller using the stage
+ownership table; put meaningful positive/negative fixtures beside its existing
+test authority. Capture real source/compiler/artifact/provider/target/schema/
+policy identities, diagnostics, raw results and explicit absent/unrun paths.
+
+### Query, Workflow, GPU and UI source context
+
+The four full proposed bodies match
+[the published task predecessor](https://github.com/burn2delete/uniform/blob/2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc/specs/domains-workflow/tasks.md)
+byte-for-byte before the declared reference rebindings. Nineteen Domain context
+references use the full seventy-record context linked in the task preamble,
+not the local one-record excerpt. Five profile references use the existing
+[profile-interface record](https://github.com/burn2delete/uniform/blob/bc0a04f8e70de2be04b642aec357dcfe9a532a5c/specs/requirement-reconciliation/profile-residual-interfaces.edn),
+SHA-256 `22ba3f689b81fd783d6854bc4c3b821e3ce2ad7eb73fb3ad1826c78ab374e027`.
+Its mappings are `distributed/durable-step-contract`,
+`distributed/message-state-boundary`, `gpu/host-device-boundary`,
+`gpu/memory-synchronization` and `gpu/numeric-mode-contract`. No other proposed
+body text or criterion ID changes; original short paragraphs remain historical.
+
+Thirty existing Open decision-role contexts name these four parents. Their
+allocation records retain source qualifications and do not establish full
+attached-facet entailment. In particular, preserve the distinct
+`interface/domain/lower-parameterized-query`, `interface/domain/execute-typed-query`
+and `interface/domain/parameterized-query-execution` identities; the broader
+lower-and-execute label does not merge compiler production with actual provider
+results. Preserve `interface/domain/check-crdt-laws` versus
+`interface/domain/execute-crdt-merge-update`, and
+`interface/domain/lower-typed-ui-program` versus
+`interface/domain/execute-ui-render-event`. GPU's
+`interface/domain/lower-accepted-gpu-kernel` preserves typed device IR and its
+facts before backend emission and actual dispatch. These source allocations
+need current source/facet and producer/consumer repartition review against the
+split above; no second emitter, runtime or checker is authorized by a broad
+historical task label. Resumption does not silently confer that review.
+
 ## Wider integration task selection
 
 Select the existing `automation`, `blockchain`, `crypto`, `formal`, `native`,
