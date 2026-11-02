@@ -47,7 +47,7 @@
                              :stable-l2-diagnostic-catalog
                              :accepted-core-semantics-fixtures
                              :rejected-core-semantics-fixtures
-                             :bounded-set-mutation-execution]
+                             :set-mutation-execution]
                :preserves #{:source-spans :syntax-identity
                             :diagnostic-codes :artifact-provenance
                             :origin-chains :generated-origin
@@ -307,14 +307,13 @@
    :scope :same-namespace-top-level-var
    :supported-value-forms [:literal :set!]
    :supported-literal-kinds [:nil :integer]
-   :state-model :explicit-bounded-store
+   :state-model :explicit-store
    :semantics [:evaluate-value-exactly-once
                :do-not-evaluate-target
                :write-explicit-location
                :yield-unit]
    :trace-steps [:evaluate-value :evaluate-literal
                  :write-target :yield-unit]
-   :maximum-steps 96
    :result :unit
    :required-effect :state/write
    :verification-carrier :request-bound-substitution-and-staleness-guard
@@ -339,14 +338,13 @@
    :scope :same-namespace-top-level-var
    :supported-value-forms [:literal :set!]
    :supported-literal-kinds [:nil :integer]
-   :state-model :explicit-bounded-store
+   :state-model :explicit-store
    :semantics [:evaluate-value-exactly-once
                :do-not-evaluate-target
                :write-explicit-location
                :yield-unit]
    :trace-steps [:evaluate-value :evaluate-literal
                  :write-target :yield-unit]
-   :maximum-steps 96
    :result :unit
    :required-effect :state/write
    :verification-carrier :request-bound-substitution-and-staleness-guard
@@ -379,9 +377,6 @@
    :result :unit
    :required-effect :state/write
    :verification-carrier :request-bound-substitution-and-staleness-guard
-   :bounds {:maximum-nodes 32
-            :maximum-mutations 16
-            :maximum-store-entries 16}
    :pending-legality {:types :pending-sh08
                       :effects-and-capabilities :pending-sh09
                       :ownership :pending-sh10
@@ -397,8 +392,7 @@
                :sh07-complete]})
 
 (defn l2-set-execution-c6-verification-checks []
-  [:bounded-carriers
-   :unique-node-and-mutation-identities
+  [:unique-node-and-mutation-identities
    :source-and-generated-origin-shape
    :acyclic-root-reachable-node-graph
    :exact-set-mutation-carriers
@@ -517,21 +511,18 @@
        :target (if (map? request) (get request :target) nil)
        :facts {:reason reason :fail-closed true}
        :remediation
-       "Execute only a C6-verified bounded same-namespace set-mutation request."}]
+       "Execute only a C6-verified same-namespace set-mutation request."}]
      :claim-boundary (l2-set-execution-contract-value)}))
 
 (defn l2-set-execution-node [request node-id state]
-  (if (> (get state :steps) 96)
-    {:status :rejected :reason :set-execution-step-bound
-     :node-id node-id}
-    (let [node
+  (let [node
           (l2-set-execution-find (get request :nodes) :node-id node-id)]
       (if (map? node)
         (if (= (get node :core-form) :literal)
           (let [attributes (get node :attributes)
                 next-state
                 (l2-set-execution-trace-step
-                 (assoc state :steps (+ (get state :steps) 1))
+                 state
                  :evaluate-literal node-id nil (get attributes :value))]
             {:status :accepted
              :value (get attributes :value)
@@ -544,7 +535,7 @@
                 (let [value-node-id (get mutation :value-core-node-id)
                       before-value
                       (l2-set-execution-trace-step
-                       (assoc state :steps (+ (get state :steps) 1))
+                       state
                        :evaluate-value node-id nil value-node-id)
                       evaluated
                       (l2-set-execution-node
@@ -568,9 +559,7 @@
                                (get evaluated :value))
                               result-state
                               (l2-set-execution-trace-step
-                               (assoc written-state
-                                      :steps
-                                      (+ (get written-state :steps) 1))
+                               written-state
                                :yield-unit node-id nil :unit)]
                           {:status :accepted
                            :value :unit
@@ -587,7 +576,7 @@
              :node-id node-id}))
         {:status :rejected
          :reason :set-value-link-mismatch
-         :node-id node-id}))))
+         :node-id node-id})))
 
 (defn execute-l2-set-mutation [verified]
   (let [envelope-checked
@@ -598,8 +587,7 @@
             (l2-set-execution-node
              request (get request :root-node-id)
              {:store (get request :store)
-              :trace []
-              :steps 0})]
+              :trace []})]
         (if (= (get executed :status) :accepted)
           {:artifact :gravity/l2-set-mutation-execution-result
            :schema-version 1
