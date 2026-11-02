@@ -21,6 +21,8 @@
 (def task-path "specs/domains-workflow/tasks.md")
 (def historical-task-sha
   "5abf39bc1af6040f84b4e4db77ee93ee000dc14112e8f636970833d0f945e382")
+(def historical-task-tree
+  "e3f5bb1c91e3ad59ddb64fceef4eccdb07b9960b")
 (def current-manifest-sha
   "d24ed46e2de0c1672a1a37c0eeacb3340452dcf56ce1b511ecc678761909155b")
 (def current-task-sha
@@ -81,6 +83,22 @@
     (require! (zero? exit) (str "Missing immutable Git input " ref ":" path " " err))
     out))
 
+(defn git-tree [ref]
+  (let [{:keys [exit out err]} (shell/sh "git" "rev-parse" "--verify"
+                                         (str ref "^{tree}"))]
+    (require! (and (zero? exit) (re-matches #"[0-9a-f]{40}" (str/trim out)))
+              (str "Missing immutable Git tree " ref " " err))
+    (str/trim out)))
+
+(defn historical-task! [ref expected-sha expected-tree]
+  (let [text (git-text ref task-path)
+        tree (git-tree ref)]
+    (require! (= expected-tree tree)
+              "Historical task Git tree changed")
+    (require! (= expected-sha (sha256 text))
+              "Historical task source bytes changed")
+    {:text text :tree tree :sha256 (sha256 text)}))
+
 (def historical-proposal
   (edn/read-string (git-text historical-head proposal-path)))
 (def current-manifest-text (git-text current-source manifest-path))
@@ -93,14 +111,19 @@
 (defn facet-row [facet]
   (select-keys facet facet-keys))
 
-(defn source-pair! []
+(defn source-pair!
+  ([] (source-pair! historical-proposal))
+  ([proposal]
   (require! (= current-manifest-sha (sha256 current-manifest-text))
             "Current manifest bytes are not the authenticated applying source")
   (require! (= current-source-tree (:source-tree current-manifest))
             "Current source tree identity changed")
   (require! (= current-source-baseline (:source-baseline current-manifest))
             "Current source baseline identity changed")
-  (let [witnesses (:source-facet-witnesses historical-proposal)
+  (let [{historical-task-text :text} (historical-task! historical-task-source
+                                                        historical-task-sha
+                                                        historical-task-tree)
+        witnesses (:source-facet-witnesses proposal)
         historical-facets (mapv #(facet-row (:metadata %)) witnesses)
         current-by-id (into {} (map (juxt :id identity) (:source-facets current-manifest)))
         historical-by-id (into {} (map (juxt :id identity) historical-facets))
@@ -122,6 +145,14 @@
             :let [current (get current-by-id id)]]
       (require! (= historical (facet-row current))
                 (str "Historical/current source facet mismatch " id)))
+    (doseq [witness witnesses
+            :let [document-id (get-in witness [:metadata :document-id])
+                  current (get current-docs document-id)]]
+      (require! current (str "Missing current source document " document-id))
+      (require! (= (:path witness) (:path current))
+                (str "Historical witness path mismatch " document-id))
+      (require! (= (:document-sha256 witness) (:sha256 current))
+                (str "Historical witness document hash mismatch " document-id)))
     (doseq [[document-id document-sha] document-pairs
             :let [current (get current-docs document-id)]]
       (require! current (str "Missing current source document " document-id))
@@ -138,14 +169,16 @@
       {:facets (count historical-facets)
        :documents (count document-pairs)
        :facet-digest facet-digest
-       :document-digest document-digest})))
+       :document-digest document-digest
+       :historical-task-tree historical-task-tree
+       :historical-task-sha256 (sha256 historical-task-text)}))))
 
 (defn proposal! [proposal]
   (let [operations (:decision-field-proposals proposal)
         ids (mapv :id operations)]
     (require! (= 25 (count operations) (count (set ids)))
               "Decision allocation count or uniqueness changed")
-    (require! (= expected-decision-ids (vec (sort ids)))
+    (require! (= expected-decision-ids ids)
               "Decision allocation IDs/order changed")
     (require! (= 25 (get-in proposal [:counts :assigned-decisions]))
               "Decision allocation count is not 25")
@@ -200,7 +233,12 @@
              (assoc-in proposal [:decision-field-proposals 0 :id] "forged-id")
              (assoc-in proposal [:decision-field-proposals 0 :before-record :status] :accepted)
              (assoc-in proposal [:decision-field-proposals 0 :after :implementation-acceptance]
-                       :accepted)]]
+                       :accepted)
+             (update proposal :decision-field-proposals
+                     (fn [operations]
+                       (assoc (vec operations)
+                              0 (nth operations 1)
+                              1 (nth operations 0))))]]
     (require! (every? (fn [x] (catches? #(proposal! x))) bad)
               "Decision/facet tamper control accepted")
     (doseq [mutated [(assoc-in proposal [:source-facet-witnesses 0 :metadata :raw-sha256]
@@ -219,9 +257,23 @@
                                               "schema/graphql-generation/full-source-interface"
                                               "schema/forged-interface")))
               "Task criterion-ID tamper control accepted")
+    (require! (catches?
+               #(source-pair!
+                 (assoc-in proposal [:source-facet-witnesses 0 :path]
+                           "docs/forged/unrelated-source.md")))
+              "Witness document-path tamper control accepted")
+    (doseq [[ref expected-sha expected-tree message]
+            [[(apply str (repeat 40 "0")) historical-task-sha historical-task-tree
+              "Historical task ref tamper control accepted"]
+             [historical-task-source (apply str (repeat 64 "0")) historical-task-tree
+              "Historical task hash tamper control accepted"]
+             [historical-task-source historical-task-sha (apply str (repeat 40 "0"))
+              "Historical task tree tamper control accepted"]]]
+      (require! (catches? #(historical-task! ref expected-sha expected-tree))
+                message))
     (require! (= 463 (:facets source-summary))
               "Source summary changed during negative controls")
-    (+ (count bad) 3)))
+    (+ (count bad) 3 1 3)))
 
 (when (= ["--check"] (vec *command-line-args*))
   (let [source-summary (source-pair!)
