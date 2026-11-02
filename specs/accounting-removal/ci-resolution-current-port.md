@@ -80,3 +80,27 @@ workflow dispatch was performed.
 
 No release, publication, compiler semantic, self-hosting, seed-retirement,
 resource-equivalence, billing, or roadmap completion authority is conferred.
+
+## Final current-main composition
+
+The candidate was normally merged with current main
+`6218e80e0238cbd071a8837193e7afb5f0b87869`, tree
+`51a615a96828ecaff57824625bb062a9dd2c5f20`, which adds PR571's six Reader
+source/test/receipt paths. The composed candidate is merge commit
+`8b9df4793717714bd25e25ec8d645cb8b95d9a7f`, tree
+`7f08cab80f2183a2288ecd061631514cdddaf387`.
+
+Those six Reader paths are disjoint from the CI workflow, `tools/ci/run.clj`,
+and `tools/ci/run_test.clj`. The harness loads the CI runner and its process
+and lint helpers only; it does not import or execute the Reader implementation.
+The final comparison against current main contains exactly the workflow, CI
+runner, focused harness, and this receipt.
+
+Fresh exact-composition results:
+
+- `PATH=/tmp/acc08-controls-01a183dd/kondo-2025.10.23:$PATH clojure -J-Xmx512m -M tools/ci/run_test.clj`: 34 tests, 334 assertions, 0 failures, 0 errors.
+- Pinned changed-file lint for `tools/ci/run.clj` and
+  `tools/ci/run_test.clj`: 0 unchanged baseline warnings, 0 blocking
+  warnings/errors.
+
+No Resolution namespace was executed as part of this composition refresh.
