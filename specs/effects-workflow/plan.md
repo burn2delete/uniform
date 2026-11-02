@@ -98,6 +98,8 @@ are required; missing, mismatched, reordered and extra records are L6 errors.
 Retain the existing R6 qualification only outside stricter R7/R8 recorded-output
 segments. This source plan neither authorizes live calls nor reruns held replay.
 
+The [L12 hermetic refinement](../../docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md#hermetic-builds) requires explicit declared-key/value policy, configured replayable providers or pinned results, recorded clock values/deterministic seeds, declared target manifests and hashed generated inputs where applicable. A grant alone cannot supply those premises. L6 lists environment reads as denied while L12 admits an explicitly declared key/value-policy case; retain this exact wording difference with the existing Build/Expand source-policy owners before accepting live hermetic environment reads. Local implementation under unchanged contracts can proceed. No broader allowance or new stable semantic decision is inferred here.
+
 Nine finite profile74 predicates retain the frozen review/applicability/receipt
 already recorded with the source-memory proposal. Restore seven missing exact
 predicates under their existing candidate tasks; the exact record/replay and
