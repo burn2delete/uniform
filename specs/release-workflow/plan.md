@@ -25,6 +25,12 @@ signing custody and writer reservations; record failed/unrun work explicitly.
 Independent review and coordinator integration remain separate from author
 validation, and final product acceptance does not close wider language scope.
 
+## Source effect dependency interface
+
+Use the [source effect and handler dependency order](../effects-workflow/plan.md#source-effect-and-handler-dependency-order) and the existing selected-result table. Language/runtime/profile suites consume actual selected compiler/handler/fixture products and owner examples, then execute their own exact subject/oracle/matrix. API construction and owner examples do not require final suite acceptance first, and do not prove a harness run or independent admission.
+
+Task bodies/statuses and previous qualified evidence stay unchanged. Current source/dependency entailment and implementation acceptance remain pending; preserve all actual operation holds.
+
 ## Current governance consumer composition
 
 The existing first task now carries the proposed consumer block in

@@ -22,6 +22,12 @@ the existing selected task. Distinguish compiler-service subset acceptance,
 wider families, independent review/integration and release; do not restore
 removed project accounting as a runtime admission requirement.
 
+## Source effect dependency interface
+
+Use the [source effect and handler dependency order](../effects-workflow/plan.md#source-effect-and-handler-dependency-order) and the existing selected-result table. Separate early service/cleanup contracts, actual selected continuation/scheduler/record primitives and later complete error/async/generator/workflow/tool examples. Workflow/AI supply early definitions and later consume actual results; separately required review evidence remains external.
+
+Task bodies/statuses and previous qualified evidence stay unchanged. Current source/dependency entailment and implementation acceptance remain pending; preserve all actual operation holds.
+
 ## Source effects and typed-handler interface
 
 Use the [complete source effect and handler criteria](../effects-workflow/plan.md#complete-source-effect-and-handler-criteria) with the existing task authority. Use the existing cleanup task for typed resumable-error execution, memory/concurrency for async/generator execution and distributed/AI for workflow/tool interpretation. Consume checked handler/grant/capture/service products and produce actual values/cleanup/replay traces; no second interpreter authority is added.

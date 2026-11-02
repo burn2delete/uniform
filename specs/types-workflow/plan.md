@@ -23,6 +23,12 @@ publication restriction and existing writer reservations explicit. Refine only
 the same authoritative task and record exact scoped evidence, unrun work and
 independent review/integration separately; do not issue a competing checklist.
 
+## Source effect dependency interface
+
+Use the [source effect and handler dependency order](../effects-workflow/plan.md#source-effect-and-handler-dependency-order) and the existing selected-result table. Types1 supplies actual handler request/response/resume/body-result constraints; Types5 exports early solved facts rather than requiring final Effects5 conformance. The C7 publication restriction and existing task authority remain.
+
+Task bodies/statuses and previous qualified evidence stay unchanged. Current source/dependency entailment and implementation acceptance remain pending; preserve all actual operation holds.
+
 ## Source effects and typed-handler interface
 
 Use the [complete source effect and handler criteria](../effects-workflow/plan.md#complete-source-effect-and-handler-criteria) with the existing task authority. The existing types1 constraint task supplies actual registered-handler request/response/resume/body-result type solutions and mismatch diagnostics for Effects3. This selected L6 interface does not adopt the pending C7 source proposal or change its publication restriction, task identity or implementation status.

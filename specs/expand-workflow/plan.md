@@ -25,6 +25,12 @@ an explicit unfinished acceptance boundary. Record evidence in the existing
 package and update only its authoritative task; do not create a parallel
 implementation checklist. Independent review and integration remain separate.
 
+## Source effect dependency interface
+
+Use the [source effect and handler dependency order](../effects-workflow/plan.md#source-effect-and-handler-dependency-order) and the existing selected-result table. Keep checked macro program P distinct from generated caller Q. Expand3's early enforcement/replay gate precedes Expand1 execution; later actual action logs feed recording. An output cannot supply its own prior admission; exact hermetic premises remain.
+
+Task bodies/statuses and previous qualified evidence stay unchanged. Current source/dependency entailment and implementation acceptance remain pending; preserve all actual operation holds.
+
 ## Source effects and typed-handler interface
 
 Use the [complete source effect and handler criteria](../effects-workflow/plan.md#complete-source-effect-and-handler-criteria) with the existing task authority. The existing expand3 task owns actual compile-time boundary enforcement and input/output/phase/replay records. Auth issues grants, Effects infers behavior and Build packages the logs; listed grants do not prove performed work.

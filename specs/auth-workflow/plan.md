@@ -23,6 +23,12 @@ the selected authoritative task. Record exact passed, failed and unrun evidence,
 residual host/trust assumptions, independent review and integration separately.
 A structurally valid manifest or supplied verdict does not close enforcement.
 
+## Source effect dependency interface
+
+Use the [source effect and handler dependency order](../effects-workflow/plan.md#source-effect-and-handler-dependency-order) and the existing selected-result table. Early actual provider/form/resume support precedes profile compatibility and grants; grants consume actual early inferred requirements before final combined handler legality. Handling/fixtures never mint authority.
+
+Task bodies/statuses and previous qualified evidence stay unchanged. Current source/dependency entailment and implementation acceptance remain pending; preserve all actual operation holds.
+
 ## Source effects and typed-handler interface
 
 Use the [complete source effect and handler criteria](../effects-workflow/plan.md#complete-source-effect-and-handler-criteria) with the existing task authority. The existing grant task checks interpreted-effect and handler-implementation authority separately, including live/fixture/mock/replay/scheduler/tool scope, the narrowest allowance and no ambient widening. Effects owns inferred behavior and final combined handler legality.

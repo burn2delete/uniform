@@ -56,6 +56,12 @@ component acceptance and coordinator integration pending until their exact
 evidence is present. Whole-domain, full-language, self-hosted and release claims
 remain governed by their separate existing outcomes.
 
+## Source effect dependency interface
+
+Use the [source effect and handler dependency order](../effects-workflow/plan.md#source-effect-and-handler-dependency-order) and the existing selected-result table. Selected Workflow/AI definitions precede Runtime interpretation; later source-consumer examples consume actual typed results, grant/review and replay/refusal records. These L6 boundaries do not accept whole AI/workflow/visual domains or duplicate Runtime services.
+
+Task bodies/statuses and previous qualified evidence stay unchanged. Current source/dependency entailment and implementation acceptance remain pending; preserve all actual operation holds.
+
 ## Compiler domain IR composition
 
 The [C12 registry and transition plan](../compiler-api-workflow/plan.md#complete-domain-ir-source-criteria)

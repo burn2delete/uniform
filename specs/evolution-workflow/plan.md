@@ -5,6 +5,12 @@ Evidence: [evidence.md](evidence.md). Owner role: language-evolution/governance
 maintainer; accountable individual remains unassigned. Independent acceptance
 and integration stay with the existing coordinator responsibilities.
 
+## Source effect dependency interface
+
+Use the [source effect and handler dependency order](../effects-workflow/plan.md#source-effect-and-handler-dependency-order) and the existing selected-result table. Existing new-stable effect/handler/resume/replay registration consumes the affected actual checker/grant/interpreter/fixture/source results only where that adoption is sought. It neither gates unchanged-contract development nor authorizes a denied experiment or operation; memory-weakening review remains distinct.
+
+Task bodies/statuses and previous qualified evidence stay unchanged. Current source/dependency entailment and implementation acceptance remain pending; preserve all actual operation holds.
+
 ## Contract alignment and selected increment
 
 Select one existing `evolution/...` task and its whole applicable GOV contract,

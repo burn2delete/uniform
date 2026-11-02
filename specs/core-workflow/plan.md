@@ -23,6 +23,12 @@ reused unchanged evidence, unrun boundaries and stable diagnostic ownership.
 implementation checklist. Independent acceptance, migration and integration
 remain separate from ordinary development and structural validation.
 
+## Source effect dependency interface
+
+Use the [source effect and handler dependency order](../effects-workflow/plan.md#source-effect-and-handler-dependency-order) and the existing selected-result table. Core4 supplies actual verified ordered structure/source products before early solved type/effect projections. Preserve the retained Core/Resolve ordering qualification and actual generated-program identities.
+
+Task bodies/statuses and previous qualified evidence stay unchanged. Current source/dependency entailment and implementation acceptance remain pending; preserve all actual operation holds.
+
 ## Source memory-model and provider interface
 
 Use the [complete source memory-model and provider criteria](../legality-workflow/plan.md#complete-source-memory-model-and-provider-criteria) with the existing task authority.

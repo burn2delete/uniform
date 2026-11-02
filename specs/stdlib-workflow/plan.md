@@ -22,6 +22,12 @@ cases, residual host/provider boundaries and actual manifest/stability changes.
 Preserve reserved writers and held live operations. Separate reachable compiler
 support, wider module/profile completion, independent acceptance and release.
 
+## Source effect dependency interface
+
+Use the [source effect and handler dependency order](../effects-workflow/plan.md#source-effect-and-handler-dependency-order) and the existing selected-result table. The real typed fixture API and selected Runtime primitive precede the Release harness that calls them. A local fake needs only its actual selected services, retains the target profile and explicit fixture grants, and cannot prove live behavior.
+
+Task bodies/statuses and previous qualified evidence stay unchanged. Current source/dependency entailment and implementation acceptance remain pending; preserve all actual operation holds.
+
 ## Source effects and typed-handler interface
 
 Use the [complete source effect and handler criteria](../effects-workflow/plan.md#complete-source-effect-and-handler-criteria) with the existing task authority. The existing pure-core/testing API task owns actual typed fixture/fake/mock/golden/replay interpretation, setup/body/teardown and expected diagnostics under the active target profile and explicit harness grants. Release consumes actual API results; a fake cannot hide live authority or profile violations.

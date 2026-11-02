@@ -131,11 +131,109 @@ and independent acceptance remain unassessed.
 
 Use explicit typed-Core/registry/handler/grant/capture/service interfaces for
 local development, then actual selected producer/consumer values and refused
-cases for composition. The dependency table retains its current 409 joins;
-complete L6-specific producer/consumer reconciliation remains pending. No whole
+cases for composition. The [source effect dependency order](#source-effect-and-handler-dependency-order)
+now declares the selected L6 routes in the existing table. Complete source/
+interface entailment and current independent review remain pending. No whole
 component release or migration fingerprint is an ordinary editing prerequisite.
 All actual compiler/provider/native/callback/plugin/probe/replay/migration/
 review/signing/publication holds remain; no such action runs in this proposal.
+
+## Source effect and handler dependency order
+
+Use the [existing selected-result table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition).
+Twelve existing consumers gain routes: Effects1/2/4/5, Auth grants, Expand1/3,
+Runtime cleanup and distributed/AI, Stdlib testing, Workflow and AI. Nine existing
+routes retain their full prior input/contract scope and gain selected L6 detail:
+Effects3, ownership, Runtime memory/concurrency, profile/provider compatibility,
+conditional Evolution change-review and three Release suites. No task body,
+status, owner, evidence receipt or ordinary construction permission changes.
+
+1. Core4 supplies actual structurally verified, ordered Core/source products.
+   Types1 derives handler request/response/resume/body-result constraints;
+   Types5 exports the actual early solved-type projection and call identities.
+   It does not require final Effects5 conformance first. Actual expanded and
+   generated products retain their own source/program identities. This selected
+   interface neither adopts the pending C7 source proposal nor resolves the
+   retained Core/Resolve representation-order question.
+2. Effects1 derives concrete direct actions and versioned registry facts from
+   actual typed/control operations. Effects2 derives conservative ordered,
+   branch, call/latent/recursive, try/match and residual summaries before grants.
+   Existing/adopted registry definitions are early source inputs. A new stable
+   extension's conditional adoption is separate; this plan grants neither an
+   experiment nor otherwise forbidden unregistered behavior.
+3. Auth publishes actual early provider/handler/form/resume/target support;
+   Profile checks compatibility. Auth grants consumes early inferred action
+   requirements and actual source/phase/principal/package/build/deployment
+   configuration. Effects and capabilities remain separate sets; handling or a
+   fixture never widens authority. Runtime1 support descriptors are not actual
+   linking, action execution or conformance results.
+4. Legality derives actual selected capture/lifetime/resource/transfer/cloning
+   premises from current verified Core, type, early inferred action, profile,
+   provider and grant facts before the combined handler decision. Effects3
+   consumes those valid facts and actual Types1 solutions to check all handler,
+   continuation, authority, profile and replay conditions before MIR. The later
+   memory-policy analysis still consumes checked Effects3. A candidate obligation
+   or supplied safe flag cannot substitute for a required valid transfer/proof.
+5. Effects2's later handled/escaping projection consumes the actual Effects3
+   decision; it does not hold early inference hostage to that later projection.
+   Effects4 publishes actual early build/replay obligation and schema products
+   from current inference/checker/policy facts. These precede actions. Its later
+   record packaging/comparison consumes actual performed build and interpreted
+   Runtime/Stdlib results, not declarations or assigned log status.
+6. A macro/build program P is distinct from the generated caller Q. P has actual
+   applicable typed/effect/profile/grant facts before invocation; imported or
+   bootstrap metadata without those facts stays unassessed/refused. Expand3's
+   early policy/replay/enforcement gate precedes Expand1's actual invocation and
+   each relevant action. Expand3 then consumes actual permitted/denied action
+   traces. Q re-enters the ordinary compiler with generated origins afterward.
+   Check both effectful-P/pure-Q and pure-P/effectful-Q cases. This staging does
+   not let P obtain its own prior admission from Q or confer migration authority.
+   Exact L6/L12 hermetic premises and their recorded environment-wording issue
+   remain; a grant alone is not a hermetic exception.
+7. Runtime2's early service/panic/failure/cleanup contract precedes Runtime3 use.
+   Runtime3 produces actual selected continuation/resource/scheduler primitives;
+   later Runtime2 resumable-error execution consumes those real primitives and
+   emits resume/abort/finalization/cleanup traces. Runtime4's selected record/
+   read/append primitives can precede whole workflow/tool execution where
+   Runtime3 scheduler replay needs them. A primitive's actual result, early
+   descriptor and final whole-family acceptance are three different subjects.
+8. Workflow publishes actual versioned typed graph/event/state/schema contracts;
+   AI publishes tool/schema/effect/review-policy definitions. Runtime4 consumes
+   those early definitions, actual selected Schema validators/codecs, grants and
+   error/continuation/scheduler primitives, then executes typed workflow/tool
+   actions and record/replay. Actual required review evidence is separately
+   supplied for the exact action; no compiler, service or policy definition
+   issues that review or grant. Later Workflow/AI source-consumer examples
+   consume the real results. These selected L6 boundaries accept neither whole
+   DOM18/DOM21/A1-A11 nor a visual editor, backend, store or live provider.
+9. Stdlib's fixture interpreter consumes actual checked type/handler/capture/
+   grant facts, early fixture/replay contracts and the real Runtime primitive
+   needed by the claimed case. Execute setup/body/teardown, typed fixture values,
+   lifecycle/cleanup and expected diagnostic behavior. A local fake does not
+   need every external service, and cannot prove or hide one. The active target
+   profile and explicit fixture capability remain visible.
+10. Effects5 first exports actual checked compiler-interface facts for MIR and
+    selected interpreter consumers. Later owner examples join six actual handler
+    classes, Workflow/AI source results, MIR verification, Opt preservation and
+    Lower effect/origin preservation. These are actual selected owner examples,
+    not Release harness execution or independent admission. The three existing
+    Release suites then execute their own subject/oracle/profile/runtime matrix;
+    no final suite or public compiler is a reverse construction prerequisite.
+    Conditional new stable registration consumes the affected current products;
+    existing labels and unchanged-contract development do not wait for it.
+
+Every consumer-specific selected result retains its exact source/program/phase,
+profile/target/provider, handler/schema/grant/capture and artifact identities.
+Recorded graph cycles make these stages visible; structural staging alone does
+not prove semantic completeness, actual execution, acceptance or permission.
+Preserve affine defaults, explicit multi-shot proof/profile conditions, all
+lifecycle/transfer refusals, original handled labels and all record mismatches.
+The R6 exception remains qualified by L6/profile and stricter R7/R8 recorded-
+output obligations. Actual primitive results are required wherever claimed;
+ordinary local interface/fixture development needs no whole-component release.
+Current source/dependency review and implementation acceptance remain pending;
+all actual compiler/provider/native/callback/plugin/probe/replay/migration/
+review/signing/publication holds remain. No such action runs here.
 
 ## Complete effect-checker source criteria
 

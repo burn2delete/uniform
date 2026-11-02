@@ -176,6 +176,18 @@
 
 (def selected-parent-consumers
   #{"domain-ir-boundaries" "math"
+    "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects"
+    "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects"
+    "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation"
+    "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers"
+    "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+    "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects"
+    "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+    "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+    "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis"
+    "workflow"
+    "ai"
     "evolution/security-review"
     "evolution/change-review"
     "core/current-evidence-and-remaining-work/core1-lower-core-forms"

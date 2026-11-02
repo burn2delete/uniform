@@ -23,6 +23,12 @@ Record exact source/fixture/consumer identities and passed, failed or unrun work
 preserve operation restrictions and separate author checks, independent
 acceptance, integration and the complete profile/provider matrix.
 
+## Source effect dependency interface
+
+Use the [source effect and handler dependency order](../effects-workflow/plan.md#source-effect-and-handler-dependency-order) and the existing selected-result table. Derive actual valid selected capture/lifetime/transfer/cloning premises before Effects3's combined handler decision; later memory-policy analysis still consumes checked Effects3. A candidate obligation is not a required valid-transfer proof.
+
+Task bodies/statuses and previous qualified evidence stay unchanged. Current source/dependency entailment and implementation acceptance remain pending; preserve all actual operation holds.
+
 ## Source effects and typed-handler interface
 
 Use the [complete source effect and handler criteria](../effects-workflow/plan.md#complete-source-effect-and-handler-criteria) with the existing task authority. The existing ownership task derives actual linear/borrow/raw/interrupt/lock/FFI captured-state lifetime, transfer and cloning facts. Effects3 consumes those facts for combined handler/continuation legality; Runtime executes the admitted interpretation.
