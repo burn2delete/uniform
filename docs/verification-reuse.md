@@ -1714,10 +1714,28 @@ to check byte/report preservation through the existing serializer. It is not a
 fact produced by the current runner or evidence that the method is ready.
 Negative controls retain the current nil-global/true-tracked case, failed or
 missing wait/root/stream facts, timeout, forced close, truncation and stream
-errors. Raw ownership stays local. Report-file reading, one-shot output
-publication, exact launch/loader/watchdog binding, native/helper reachability,
-independent method review, separate runtime admission and all original real
-producer/reuse/invalidation evidence remain open.
+errors. Raw ownership stays local.
+
+`parent-producer-observation/publish-capture!` connects a contained C2 report
+file to that existing serializer and one new capture file. The caller supplies
+authentic private secure directory handles, relative leaf names, existing
+input/output capture allowances and byte-admission authority. Strict UTF8 and
+one-frame EDN reading plus serialization finish before input close and output
+admission. Refused parent/report facts or input-close failure create no output.
+The output uses private CREATE_NEW/NOFOLLOW access without overwrite, deletion
+or retry. Write/close failure can leave failed partial or complete bytes; no
+atomic or durable publication is claimed. Caller directory handles remain
+caller-owned. Ordinary primary errors retain distinct ordinary close errors
+as suppressed. Fatal close failures take precedence over ordinary primary
+errors and retain those primary errors as suppressed. Interruption from failure
+causes is restored after owned-channel close and before callback failure escapes.
+
+Compiler-free DATA/IO controls exercise the real IO/serializer path; their
+global-cleanup=true positive is explicitly synthetic and unadmitted. The
+capture-v1 terminal schema, current nil-global refusal and freshness/cache
+policy are unchanged. Exact launch/loader/watchdog binding, native/helper
+reachability, independent method review, separate runtime admission and all
+original real producer/reuse/invalidation evidence remain open.
 
 ### RV1: retained checks at the live Resolve/Reader/AE boundary
 
