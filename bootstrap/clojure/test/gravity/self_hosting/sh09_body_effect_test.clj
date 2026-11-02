@@ -29,21 +29,19 @@
 
 (defn- fresh-current-products [relative]
   ;; Use the existing five-argument C5 source boundary for this selector only.
-  ;; The C6 invocation deliberately keeps the SH03 reader map exact; macro
-  ;; source selection belongs to the C5/SH06 invocation and must not be smuggled
-  ;; through the SH07 reader options.
+  ;; SH07 carries the authenticated Macro mode through construction while
+  ;; stripping it at the exact SH03 Reader boundary.
   (let [source-path (path relative)
         reader-path (path bootstrap/sh03-reader-source-relative-path)
         c5-invocation {:reader-source-path reader-path
                        :authenticated-envelope-options {:source :development-current}
                        :macro-source-mode :development-current}
-        core-invocation (dissoc c5-invocation :macro-source-mode)
         c5 (bootstrap/compiler-c5-resolution-source-artifact
             source-path (slurp source-path :encoding "UTF-8")
             {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
             reader-path c5-invocation)
-        artifact (bootstrap/sh07-core-from-resolution-artifact c5 core-invocation)
-        report (bootstrap/sh07-core-artifact-verification artifact core-invocation)
+        artifact (bootstrap/sh07-core-from-resolution-artifact c5 c5-invocation)
+        report (bootstrap/sh07-core-artifact-verification artifact c5-invocation)
         coordinator ((sh08-helper 'coordinator-verification) artifact report)
         context ((sh08-helper 'b47-context) artifact report coordinator)
         request {:canonical-core-artifact (:canonical-core-artifact context)

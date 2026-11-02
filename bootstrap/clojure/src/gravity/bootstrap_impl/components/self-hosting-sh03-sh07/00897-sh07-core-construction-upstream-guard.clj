@@ -4,7 +4,14 @@
   (select-keys binding [:artifact :status :source-path :source-byte-count
                        :source-content-hash :plan-semantic-hash :functions-semantic-hash
                        :function-count :function-names-hash :function-shapes-hash
-                       :public-function-hashes :public-function-shapes :input-key :plan]))
+                       :public-function-hashes :public-function-shapes :input-key :plan
+                       :source-mode :revision-status :source-authority]))
+
+(def ^:private sh07-core-macro-source-modes
+  #{:pinned :development-current})
+
+(def ^:private sh07-core-macro-provenance-keys
+  [:source-mode :revision-status :source-authority])
 
 (declare ^:private sh07-core-build-verified-artifact ^:private sh07-core-artifact-base)
 
@@ -12,6 +19,66 @@
   (throw (ex-info "SH-07 construction dependencies changed"
                   {:id "C6-VERIFY" :stage :core-lowering :source-path source-path
                    :reason reason})))
+
+(defn- sh07-core-construction-reader-invocation
+  "Keep the Reader envelope contract exact while retaining Macro mode for SH05/SH06.
+
+  The Macro source mode is authenticated by the upstream artifact and is not a
+  Reader option.  SH07 therefore carries it in the full invocation, but strips
+  it at every C3/SH03 boundary that accepts only the Reader map.
+  "
+  [invocation]
+  (if (map? invocation)
+    (dissoc invocation :macro-source-mode)
+    invocation))
+
+(defn- sh07-core-construction-macro-source-mode
+  "Resolve Macro mode from the authenticated artifact, then bind the caller to it.
+
+  Missing mode preserves the historical pinned default.  A caller-provided mode
+  is only an assertion about the authenticated artifact; it never selects a
+  different source by itself.
+  "
+  [artifact invocation]
+  (let [resolution-mode
+        (get-in artifact [:gravity-resolution-boundary :plan-binding
+                          :macro-source-mode])
+        macro-mode
+        (get-in artifact [:sh05-macro-artifact :gravity-macro-boundary
+                          :plan-binding :source-mode])
+        authenticated-mode (or resolution-mode macro-mode :pinned)
+        requested-mode (if (map? invocation)
+                         (or (:macro-source-mode invocation) :pinned)
+                         :pinned)]
+    (when-not (contains? sh07-core-macro-source-modes authenticated-mode)
+      (sh07-core-construction-fail!
+       (or (get-in artifact [:provenance :source-path]) "<sh07-core-input>")
+       :authenticated-macro-source-mode))
+    (when-not (contains? sh07-core-macro-source-modes requested-mode)
+      (sh07-core-construction-fail!
+       (or (get-in artifact [:provenance :source-path]) "<sh07-core-input>")
+       :requested-macro-source-mode))
+    (when (and resolution-mode macro-mode (not= resolution-mode macro-mode))
+      (sh07-core-construction-fail!
+       (or (get-in artifact [:provenance :source-path]) "<sh07-core-input>")
+       :authenticated-macro-source-binding-drift))
+    (when-not (= authenticated-mode requested-mode)
+      (sh07-core-construction-fail!
+       (or (get-in artifact [:provenance :source-path]) "<sh07-core-input>")
+       :macro-source-mode-mismatch))
+    authenticated-mode))
+
+(defn- sh07-core-construction-macro-binding
+  [artifact source-path invocation]
+  (let [source-mode (sh07-core-construction-macro-source-mode artifact invocation)
+        binding (sh05-macro-current-binding! source-path invocation source-mode)
+        expected (get-in artifact [:sh05-macro-artifact :gravity-macro-boundary
+                                    :plan-binding])]
+    (when (and expected
+               (not= (select-keys binding sh07-core-macro-provenance-keys)
+                     (select-keys expected sh07-core-macro-provenance-keys)))
+      (sh07-core-construction-fail! source-path :macro-source-binding-drift))
+    binding))
 
 (defn- sh07-core-construction-carrier! [artifact]
   (let [aggregate (p15-s23-trusted-carrier-validation artifact :default-only)]
@@ -37,7 +104,9 @@
      (p15-s23-stage2-sh02-descriptor-envelope
       sh06-resolution-envelope-stage sh06-resolution-sealed-artifact-kind
       (get-in artifact [:gravity-resolution-boundary :authenticated-envelope-descriptor])
-      source-path (sh03-reader-authenticated-envelope-options source-path invocation)))
+      source-path
+      (sh03-reader-authenticated-envelope-options
+       source-path (sh07-core-construction-reader-invocation invocation))))
   ;; Reuse the owner's component-safe, bounded, pinned source reader. This
   ;; obtains no envelope authority and never exposes its lexical token.
   (let [anchor (.normalize (.toAbsolutePath (.toPath (java.io.File. (p15-s23-c11-mir-resolve-source-path)))))
@@ -52,21 +121,26 @@
 (defn- sh07-core-construction-dependencies
   ([source-path] (sh07-core-construction-dependencies nil source-path nil))
   ([artifact source-path invocation]
-  {:core (sh07-core-current-source-key)
+  (let [macro-source-mode
+        (sh07-core-construction-macro-source-mode artifact invocation)]
+    {:core (sh07-core-current-source-key)
    :resolver (sh06-resolution-current-source-key)
-   :macro (select-keys (sh05-macro-read-pinned-source! source-path)
+   :macro (select-keys (sh05-macro-read-pinned-source! source-path macro-source-mode)
                        [:source-path :source-byte-count :source-content-hash])
    :syntax (select-keys (sh04-syntax-read-pinned-source! source-path)
                         [:source-path :source-byte-count :source-content-hash])
-   :envelope (sh07-core-construction-envelope-source artifact source-path invocation)}))
+   :envelope (sh07-core-construction-envelope-source artifact source-path invocation)})))
 
-(defn- sh07-core-construction-bindings [source-path]
-  (let [resolution (sh06-resolution-current-binding! source-path)]
+(defn- sh07-core-construction-bindings
+  ([source-path] (sh07-core-construction-bindings nil source-path nil))
+  ([artifact source-path invocation]
+  (let [resolution (sh06-resolution-current-binding! source-path)
+        macro (sh07-core-construction-macro-binding artifact source-path invocation)]
     (sh06-resolution-binding-current! source-path resolution)
     {:resolver (sh07-core-construction-binding-view resolution)
-     :macro (sh07-core-construction-binding-view (sh05-macro-current-binding! source-path))
+     :macro (sh07-core-construction-binding-view macro)
      :syntax (sh07-core-construction-binding-view (sh04-syntax-current-binding! source-path))
-     :core (sh07-core-construction-binding-view @sh07-core-cached-binding)}))
+     :core (sh07-core-construction-binding-view @sh07-core-cached-binding)})))
 
 (defn-
  sh07-core-construction-roots
@@ -95,6 +169,8 @@
  #'sh07-core-development-binding
  #'sh07-core-public-function-shapes
  #'sh07-core-source-relative-path
+    #'sh07-core-macro-source-modes
+    #'sh07-core-macro-provenance-keys
  #'*sh07-core-execution-binding*
  #'gravity.checked-core/build-form-tree
  #'gravity.checked-core/children
@@ -275,6 +351,9 @@
      sh04-syntax-current-binding!
      sh07-core-construction-dependencies
      sh07-core-construction-bindings
+     sh07-core-construction-reader-invocation
+     sh07-core-construction-macro-source-mode
+     sh07-core-construction-macro-binding
      sh07-core-construction-envelope-source
      sh07-core-construction-carrier!
      sh07-core-construction-reader
@@ -309,7 +388,7 @@
   (let [c3 (get-in artifact [:sh05-macro-artifact :gravity-macro-boundary :authenticated-sh04-artifact])]
     (when-not (apply c3-current-reader-revision-authentic?
                     (cond-> [(:c2-reader-artifact c3) (:gravity-syntax-boundary c3)]
-                      invocation (conj invocation)))
+                      invocation (conj (sh07-core-construction-reader-invocation invocation))))
       (sh07-core-construction-fail! (sh07-core-source-path-from-resolution artifact)
                                    :construction-selected-reader-drift))
     {:revision (get-in c3 [:c2-reader-artifact :sh03-reader-authentication :reader-source-revision])
@@ -322,7 +401,9 @@
   ;; Preserve the authority owner's operation as well as its source bookend.
   ;; The descriptor was authenticated by this invocation's full SH-06 report.
   (let [boundary (:gravity-resolution-boundary artifact)
-        options (when invocation (sh03-reader-authenticated-envelope-options source-path invocation))]
+        options (when invocation
+                  (sh03-reader-authenticated-envelope-options
+                   source-path (sh07-core-construction-reader-invocation invocation)))]
     (apply p15-s23-stage2-sh02-descriptor-envelope-verify!
      (cond-> [(:authenticated-envelope boundary) sh06-resolution-envelope-stage sh06-resolution-sealed-artifact-kind
               (:authenticated-envelope-descriptor boundary) source-path]
@@ -337,7 +418,7 @@
                    (= carrier (sh07-core-construction-carrier! artifact))
                    (= reader (sh07-core-construction-reader artifact invocation))
                    (= dependencies (sh07-core-construction-dependencies artifact source-path invocation))
-                   (= bindings (sh07-core-construction-bindings source-path)))
+                   (= bindings (sh07-core-construction-bindings artifact source-path invocation)))
       (sh07-core-construction-fail! source-path :construction-dependency-drift))
     (when-let [context (:context phase)]
       (when-not (= catalog
@@ -351,18 +432,20 @@
   (try
    (let [carrier (sh07-core-construction-carrier! artifact)
         source-path (sh07-core-source-path-from-resolution artifact)
-        _ (when invocation (sh03-reader-authenticated-envelope-options source-path invocation))
-        dependencies (sh07-core-construction-dependencies artifact source-path invocation)
-        bindings (sh07-core-construction-bindings source-path)
-        roots (sh07-core-construction-roots)
-        phase (sh07-core-construction-phase)
+        _ (when invocation
+            (sh03-reader-authenticated-envelope-options
+             source-path (sh07-core-construction-reader-invocation invocation)))
         report (if invocation
                  (sh06-resolution-artifact-verification artifact ::legacy invocation)
                  (sh06-resolution-artifact-verification artifact))]
     (if-not (= :passed (:status report))
       ;; The caller keeps its existing failed-upstream diagnostic boundary.
       (build {:artifact artifact :report report :invocation invocation})
-      (let [facts {:artifact artifact :report report :source-path source-path
+      (let [dependencies (sh07-core-construction-dependencies artifact source-path invocation)
+            bindings (sh07-core-construction-bindings artifact source-path invocation)
+            roots (sh07-core-construction-roots)
+            phase (sh07-core-construction-phase)
+            facts {:artifact artifact :report report :source-path source-path
                    :dependencies dependencies :roots roots :phase phase :carrier carrier
                    :reader (sh07-core-construction-reader artifact invocation)
                    :invocation invocation
