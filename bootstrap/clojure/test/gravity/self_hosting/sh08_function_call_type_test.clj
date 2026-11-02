@@ -23075,9 +23075,29 @@
   ;; request constructor. These rows alone confer no C7 proof authority.
   (let [source-path (fixture-path "preserved" basename ".gravity")
         text (slurp source-path)
-        artifact (stage :sh07 #(bootstrap/sh07-public-core-file-artifact
-                                source-path {:reader :development-current}))
-        resolved (:sh06-resolution-artifact artifact)
+        reader-source-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        syntax-source-path (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
+        invocation {:reader-source-path reader-source-path
+                    :authenticated-envelope-options {:source :development-current}
+                    :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                              :source-path syntax-source-path}
+                    :macro-source-mode :development-current}
+        reader-invocation (dissoc invocation :macro-source-mode)
+        context (bootstrap/reader-project-context-for-source source-path)
+        syntax (stage :c3 #(bootstrap/compiler-c3-syntax-source-artifact
+                            source-path text context nil nil reader-source-path
+                            reader-invocation))
+        expanded (stage :sh05 #(bootstrap/sh05-macro-artifact-from-c3-artifact
+                                source-path syntax reader-invocation
+                                :development-current))
+        resolved (stage :sh06 #(bootstrap/sh06-resolution-artifact-from-sh05-artifact
+                                source-path expanded
+                                {:artifact :gravity/sh06-module-inputs
+                                 :schema-version 1
+                                 :module-artifacts []}
+                                reader-source-path invocation))
+        artifact (stage :sh07 #(bootstrap/sh07-core-from-resolution-artifact
+                                resolved invocation))
         boundary (:gravity-core-boundary artifact)]
     {:source-path source-path :source-text text :resolved resolved :core-wrapper artifact
      :core (:canonical-core-artifact boundary)
