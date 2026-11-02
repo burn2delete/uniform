@@ -94,94 +94,94 @@
 (defn- prepared-c9
   ([] (prepared-c9 "/checkout-a/function.gravity"))
   ([actual-path]
-  (let [prepared ((sh10-var 'prepared-bound) actual-path)
-        c8-bound (:bound prepared)
-        c8-verification (:binding-verification prepared)
-        owned
-        (invoke-c9
-         'sh10-build-authenticated-ownership-core
-         [c8-bound c8-verification])
-        fact-template
-        (invoke-c9
-         'sh10-authenticated-ownership-identity-requests
-         [c8-bound c8-verification owned])
-        fact-resolutions
-        (resolve-requests (:fact-requests fact-template) 101)
-        core-template
-        (invoke-c9
-         'sh10-authenticated-ownership-core-identity-request
-         [c8-bound c8-verification owned fact-resolutions])
-        resolved
-        {:fact-resolutions fact-resolutions
-         :core-resolution
-         {:request (:core-request core-template) :digest (digest 201)}}
-        bound
-        (invoke-c9
-         'sh10-bind-authenticated-ownership-identities
-         [c8-bound c8-verification owned resolved])
-        verification
-        (invoke-c9
-         'sh10-verify-authenticated-ownership-identities
-         [c8-bound c8-verification owned resolved bound])]
-    {:prepared prepared
-     :c8-bound c8-bound
-     :c8-verification c8-verification
-     :owned owned
-     :fact-template fact-template
-     :fact-resolutions fact-resolutions
-     :core-template core-template
-     :resolved resolved
-     :bound bound
-     :verification verification})))
+   (let [prepared ((sh10-var 'prepared-bound) actual-path)
+         c8-bound (:bound prepared)
+         c8-verification (:binding-verification prepared)
+         owned
+         (invoke-c9
+          'sh10-build-authenticated-ownership-core
+          [c8-bound c8-verification])
+         fact-template
+         (invoke-c9
+          'sh10-authenticated-ownership-identity-requests
+          [c8-bound c8-verification owned])
+         fact-resolutions
+         (resolve-requests (:fact-requests fact-template) 101)
+         core-template
+         (invoke-c9
+          'sh10-authenticated-ownership-core-identity-request
+          [c8-bound c8-verification owned fact-resolutions])
+         resolved
+         {:fact-resolutions fact-resolutions
+          :core-resolution
+          {:request (:core-request core-template) :digest (digest 201)}}
+         bound
+         (invoke-c9
+          'sh10-bind-authenticated-ownership-identities
+          [c8-bound c8-verification owned resolved])
+         verification
+         (invoke-c9
+          'sh10-verify-authenticated-ownership-identities
+          [c8-bound c8-verification owned resolved bound])]
+     {:prepared prepared
+      :c8-bound c8-bound
+      :c8-verification c8-verification
+      :owned owned
+      :fact-template fact-template
+      :fact-resolutions fact-resolutions
+      :core-template core-template
+      :resolved resolved
+      :bound bound
+      :verification verification})))
 
 (defn- prepared-c10
   ([] (prepared-c10 "/checkout-a/function.gravity"))
   ([actual-path]
-  (let [c9 (prepared-c9 actual-path)
-        safety
-        (invoke-c10
-         'sh11-build-authenticated-safety-core
-         [(:bound c9) (:verification c9)])
-        proof-template
-        (invoke-c10
-         'sh11-authenticated-safety-identity-requests
-         [(:bound c9) (:verification c9) safety])
-        proof-resolution
-        {:request (:proof-request proof-template) :digest (digest 301)}
-        result-template
-        (invoke-c10
-         'sh11-authenticated-safety-result-identity-request
-         [(:bound c9) (:verification c9) safety proof-resolution])
-        result-resolution
-        {:request (:result-request result-template) :digest (digest 302)}
-        core-template
-        (invoke-c10
-         'sh11-authenticated-safety-core-identity-request
-         [(:bound c9) (:verification c9) safety
-          proof-resolution result-resolution])
-        resolved
-        {:proof-resolution proof-resolution
-         :result-resolution result-resolution
-         :core-resolution
-         {:request (:core-request core-template) :digest (digest 303)}}
-        bound
-        (invoke-c10
-         'sh11-bind-authenticated-safety-identities
-         [(:bound c9) (:verification c9) safety resolved])
-        verification
-        (invoke-c10
-         'sh11-verify-authenticated-safety-identities
-         [(:bound c9) (:verification c9) safety resolved bound])]
-    (assoc c9
-           :safety safety
-           :proof-template proof-template
-           :proof-resolution proof-resolution
-           :result-template result-template
-           :result-resolution result-resolution
-           :safety-core-template core-template
-           :safety-resolved resolved
-           :safety-bound bound
-           :safety-verification verification))))
+   (let [c9 (prepared-c9 actual-path)
+         safety
+         (invoke-c10
+          'sh11-build-authenticated-safety-core
+          [(:bound c9) (:verification c9)])
+         proof-template
+         (invoke-c10
+          'sh11-authenticated-safety-identity-requests
+          [(:bound c9) (:verification c9) safety])
+         proof-resolution
+         {:request (:proof-request proof-template) :digest (digest 301)}
+         result-template
+         (invoke-c10
+          'sh11-authenticated-safety-result-identity-request
+          [(:bound c9) (:verification c9) safety proof-resolution])
+         result-resolution
+         {:request (:result-request result-template) :digest (digest 302)}
+         core-template
+         (invoke-c10
+          'sh11-authenticated-safety-core-identity-request
+          [(:bound c9) (:verification c9) safety
+           proof-resolution result-resolution])
+         resolved
+         {:proof-resolution proof-resolution
+          :result-resolution result-resolution
+          :core-resolution
+          {:request (:core-request core-template) :digest (digest 303)}}
+         bound
+         (invoke-c10
+          'sh11-bind-authenticated-safety-identities
+          [(:bound c9) (:verification c9) safety resolved])
+         verification
+         (invoke-c10
+          'sh11-verify-authenticated-safety-identities
+          [(:bound c9) (:verification c9) safety resolved bound])]
+     (assoc c9
+            :safety safety
+            :proof-template proof-template
+            :proof-resolution proof-resolution
+            :result-template result-template
+            :result-resolution result-resolution
+            :safety-core-template core-template
+            :safety-resolved resolved
+            :safety-bound bound
+            :safety-verification verification))))
 
 (deftest sh11-c9-identity-binding-is-sequential-and-exact
   (let [prepared (prepared-c9)
@@ -485,8 +485,7 @@
   (let [c9-functions (:functions @c9-plan)
         c10-functions (:functions @c10-plan)
         policy (invoke-c10 'sh11-authenticated-safety-adapter-policy [])
-        c9-at-bound (node-bound-carrier 15 1007)
-        c9-over-bound (node-bound-carrier 15 1008)
+        c9-over-retired-size (node-bound-carrier 15 1008)
         c10-at-bound (node-bound-carrier 31 991)
         c10-over-bound (node-bound-carrier 31 992)
         wide-vector (vec (repeat 1025 :leaf))
@@ -535,11 +534,14 @@
     (is (not (some #{:authenticated-sh09-sh10-adapter}
                    (:pending (invoke-c10 'sh11-safety-policy [])))))
     (is (java.util.Arrays/equals gravity-bytes qst-bytes))
-    (is (= {:status :accepted :nodes 16384}
-           (invoke-c9 'sh10-identity-carrier-preflight [c9-at-bound])))
-    (is (= :identity-carrier-node-bound
+    (is (= :accepted
+           (:status
+            (invoke-c9 'sh10-identity-carrier-preflight
+                       [c9-over-retired-size]))))
+    (is (= :identity-carrier-seq-unsupported
            (:reason
-            (invoke-c9 'sh10-identity-carrier-preflight [c9-over-bound]))))
+            (invoke-c9 'sh10-identity-carrier-preflight
+                       [[(list :leaf)]]))))
     (is (= {:status :accepted :nodes 32768}
            (invoke-c10 'sh11-authenticated-identity-preflight
                        [c10-at-bound])))
@@ -548,11 +550,7 @@
             (invoke-c10 'sh11-authenticated-identity-preflight
                         [c10-over-bound]))))
     (doseq [[invoke function width-reason depth-reason seq-reason]
-            [[invoke-c9 'sh10-identity-carrier-preflight
-              :identity-carrier-width-bound
-              :identity-carrier-depth-bound
-              :identity-carrier-seq-unsupported]
-             [invoke-c10 'sh11-authenticated-identity-preflight
+            [[invoke-c10 'sh11-authenticated-identity-preflight
               :authenticated-identity-width-bound
               :authenticated-identity-depth-bound
               :authenticated-identity-seq-unsupported]]]

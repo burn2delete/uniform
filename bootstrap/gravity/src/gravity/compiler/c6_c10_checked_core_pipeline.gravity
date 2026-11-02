@@ -98,14 +98,7 @@
                :mutation :resource :runtime-check :unsafe-island
                :effect :capability :dependency :import :provider
                :domain-ir :backend-specific-lowering]
-   :limits {:maximum-functions 1
-            :maximum-forms 128
-            :maximum-plan-nodes 128
-            :maximum-digest-requests 2048
-            :maximum-graph-depth 48
-            :maximum-container-width 128
-            :maximum-scalar-bytes 65536
-            :maximum-integer-bits 256}})
+   :limits {:maximum-functions 1}})
 
 (def c6c10-core-node-lowering-rule-version
   "c6-c10-core-lowering-v1")
@@ -1345,16 +1338,7 @@
 
 (defn c6c10-implicit-nil-product
   [state envelope form path depth generated-role]
-  (if (> depth 48)
-    (c6c10-form-rejection
-     state envelope form :C6-VERIFY :lower-to-core
-     :diagnostic/c6-verify
-     {:missing-fact :bounded-generated-node-depth
-      :observed-depth depth
-      :maximum-depth 48
-      :plan-path path}
-     :reduce-expression-nesting)
-    (let [base-origin
+  (let [base-origin
         (c6c10-origin-products
          state envelope form (conj path :generated-input) nil nil)
         product
@@ -1367,7 +1351,7 @@
          :gravity/nil :compiler-generated-value
          {:storage :static-value}
          generated-role (get base-origin :origin-id))]
-      (assoc result :direct-root-node-ids [(get result :result-node-id)]))))
+  (assoc result :direct-root-node-ids [(get result :result-node-id)])))
 
 (defn c6c10-map-sequence-loop
   [state envelope instructions form-ids path field env depth index
@@ -1526,21 +1510,12 @@
 
 (defn c6c10-generated-nil-from-origin
   [state envelope form path depth generated-role base-origin-id]
-  (if (> depth 48)
-    (c6c10-form-rejection
-     state envelope form :C6-VERIFY :lower-to-core
-     :diagnostic/c6-verify
-     {:missing-fact :bounded-generated-node-depth
-      :observed-depth depth
-      :maximum-depth 48
-      :plan-path path}
-     :reduce-expression-nesting)
-    (c6c10-add-node
-     (c6c10-empty-product state) envelope form path
-     :literal :implicit-nil false depth []
-     {:value nil :generated-role generated-role}
-     :gravity/nil :compiler-generated-value {:storage :static-value}
-     generated-role base-origin-id)))
+  (c6c10-add-node
+   (c6c10-empty-product state) envelope form path
+   :literal :implicit-nil false depth []
+   {:value nil :generated-role generated-role}
+   :gravity/nil :compiler-generated-value {:storage :static-value}
+   generated-role base-origin-id))
 
 (defn c6c10-map-if-valid
   [state envelope instruction form path env depth]
@@ -1928,16 +1903,7 @@
   [state envelope instruction form-id path env depth]
   (let [form (c6c10-form-by-id (get envelope :form-tree) form-id)
         operation (get instruction :op)]
-    (if (> depth 48)
-      (c6c10-form-rejection
-       state envelope form :C6-VERIFY :lower-to-core
-       :diagnostic/c6-verify
-       {:missing-fact :bounded-plan-depth
-        :observed-depth depth
-        :maximum-depth 48
-        :plan-path path}
-       :reduce-expression-nesting)
-      (if (= form nil)
+    (if (= form nil)
         (c6c10-form-rejection
          state envelope {} :C6-ORIGIN :lower-to-core
          :diagnostic/c6-origin
@@ -1974,15 +1940,15 @@
                           :observed-operation operation
                           :plan-path path}
                          :remove-out-of-scope-operation))))))))
-          (c6c10-form-rejection
-           state envelope form :C6-ORIGIN :lower-to-core
-           :diagnostic/c6-origin
-           {:missing-fact :lockstep-plan-c2-form-mapping
-            :plan-operation operation
-            :source-form-kind (get form :kind)
-            :source-form-operator (c6c10-form-operator form)
-            :plan-path path}
-           :regenerate-fresh-c2-c3-and-stage2-plan))))))
+        (c6c10-form-rejection
+         state envelope form :C6-ORIGIN :lower-to-core
+         :diagnostic/c6-origin
+         {:missing-fact :lockstep-plan-c2-form-mapping
+          :plan-operation operation
+          :source-form-kind (get form :kind)
+          :source-form-operator (c6c10-form-operator form)
+          :plan-path path}
+         :regenerate-fresh-c2-c3-and-stage2-plan)))))
 
 (defn c6c10-build-zero-arity-function-product
   [state envelope function-plan function-form]
@@ -3980,12 +3946,10 @@
                   (if (vector? roots)
                     (if (vector? syntaxes)
                       (if (> (count forms) 0)
-                        (if (<= (count forms) 128)
-                          (if (= (count roots) (count syntaxes))
-                            (c6c10-exhaustive-top-level-program?
-                             forms roots syntaxes
-                             (get authoritative-module :module))
-                            false)
+                        (if (= (count roots) (count syntaxes))
+                          (c6c10-exhaustive-top-level-program?
+                           forms roots syntaxes
+                           (get authoritative-module :module))
                           false)
                         false)
                       false)

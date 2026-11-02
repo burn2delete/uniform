@@ -24,6 +24,12 @@
         request (bootstrap/sh06-resolution-analysis-inputs {} {:expanded-syntax-stream [prefix syntax]} {})]
     [(assoc source :map-order (:p15-s23-stage2-map-order (with-order source)) :request request) syntax]))
 
+(defn- owner-reference-input [body]
+  (let [span {:source "normalized-map.gravity" :byte-start 9 :byte-end 999}
+        syntax {:syntax/id :root :span span :form (list 'def 'main (list 'fn [] body))}
+        request (bootstrap/sh06-resolution-analysis-inputs {} {:expanded-syntax-stream [syntax]} {})]
+    [{:map-order {} :request request} syntax]))
+
 (deftest stage2-module-map-fixture-parity
   (doseq [[family name] [["modules" "module-map-caller"] ["modules" "module-map-leaf"]
                          ["rejected" "module-map-private-import"]]]
@@ -73,12 +79,18 @@
       (is (= :unsupported-map-reference-header
              (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-map-reference-index
                                    caller (assoc syntax :form '(def main (fn [x :- String] :body))) definition)) [:facts :reason])))
-      (is (= :map-reference-work-limit
-             (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-map-reference-index
-                                   (assoc-in caller [:request :references] (vec (repeat 65537 (first refs)))) syntax definition)) [:facts :reason])))
       (is (= :map-source-order-mismatch
              (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-map-reference-index
                                    (assoc-in caller [:map-order ['main [0 2]] :host-keys] [:wrong]) syntax definition)) [:facts :reason]))))))
+
+(deftest stage2-module-map-reference-index-accepts-unmetered-shapes
+  (doseq [body [(nth (iterate vector :leaf) 66)
+                (vec (repeat 65537 :leaf))]]
+    (let [[caller syntax] (owner-reference-input body)
+          definition {:name 'main :params [] :body [body]}]
+      ;; The actual owner walks the supplied header/body; no duplicate traversal
+      ;; predicate is used here.  Both shapes exceed the retired ceilings.
+      (is (= {} (bootstrap/p15-s23-stage2-module-map-reference-index caller syntax definition))))))
 
 (deftest stage2-module-map-context-fences-development-kernel
   (doseq [body ['#{ {:k (leaf/identity :x)} } '(fn [] {:k (leaf/identity :x)})

@@ -514,13 +514,12 @@
                    (get request :initialization))
                 (if (= :available (get request :availability))
                   (if (vector? (get request :events))
-                    (if (<= (count (get request :events)) 1024)
-                      (if (sh10-unique-event-ids?
-                           (get request :events) {})
-                        (if
-                         (sh10-events-allowed-for-ownership-kind?
-                          (get request :ownership-kind)
-                          (get request :events))
+                    (if (sh10-unique-event-ids?
+                         (get request :events) {})
+                      (if
+                       (sh10-events-allowed-for-ownership-kind?
+                        (get request :ownership-kind)
+                        (get request :events))
                         (if (sh10-lifetime-coordinate?
                              (get request :owner-lifetime-end))
                           (if (sh10-sha256-id?
@@ -533,9 +532,8 @@
                                     false
                                     (sh10-not
                                      (= nil (get request :target))))
-                          false)
-                        false)
-                      false)
+                                  false)
+                                false)
                               false)
                             false)
                           false)
@@ -1354,12 +1352,10 @@
               (if (sh10-lifetime-coordinate?
                    (get scenario :owner-lifetime-end))
                 (if (vector? (get scenario :events))
-                  (if (<= (count (get scenario :events)) 16)
-                    (if (sh10-unique-event-ids?
-                         (get scenario :events) {})
-                      (sh10-authenticated-owned-mutable-events-valid?
-                       (get scenario :events))
-                      false)
+                  (if (sh10-unique-event-ids?
+                       (get scenario :events) {})
+                    (sh10-authenticated-owned-mutable-events-valid?
+                     (get scenario :events))
                     false)
                   false)
                 false)
@@ -1628,80 +1624,22 @@
       (if (set? value) (vec value) []))))
 
 (defn sh10-identity-carrier-preflight [value]
-  (loop [frontier [[value 0]] cursor 0 nodes 0 enqueued 1]
+  (loop [frontier [value] cursor 0]
     (if (= cursor (count frontier))
-      {:status :accepted :nodes nodes}
-      (let [entry (get frontier cursor)
-            current (first entry)
-            depth (second entry)
-            next-nodes (+ nodes 1)]
-        (if (> next-nodes 16384)
-          {:status :rejected :reason :identity-carrier-node-bound}
-          (if (> depth 16)
-            {:status :rejected :reason :identity-carrier-depth-bound}
-            (if (map? current)
-              (let [width (count current)]
-                (if (> width 512)
-                  {:status :rejected :reason :identity-carrier-width-bound}
-                  (let [next-enqueued (+ enqueued (* 2 width))]
-                    (if (> next-enqueued 16384)
-                      {:status :rejected
-                       :reason :identity-carrier-node-bound}
-                      (let [children
-                            (sh10-identity-components current)
-                            next-frontier
-                            (loop [remaining children result frontier]
-                              (if (= (count remaining) 0)
-                                result
-                                (recur
-                                 (rest remaining)
-                                 (conj result
-                                       [(first remaining) (+ depth 1)]))))]
-                        (recur next-frontier (+ cursor 1) next-nodes
-                               next-enqueued))))))
-              (if (vector? current)
-                (let [width (count current)]
-                  (if (> width 1024)
-                    {:status :rejected :reason :identity-carrier-width-bound}
-                    (let [next-enqueued (+ enqueued width)]
-                      (if (> next-enqueued 16384)
-                        {:status :rejected
-                         :reason :identity-carrier-node-bound}
-                        (let [children (sh10-identity-components current)
-                              next-frontier
-                              (loop [remaining children result frontier]
-                                (if (= (count remaining) 0)
-                                  result
-                                  (recur
-                                   (rest remaining)
-                                   (conj result
-                                         [(first remaining) (+ depth 1)]))))]
-                          (recur next-frontier (+ cursor 1) next-nodes
-                                 next-enqueued))))))
-                (if (set? current)
-                  (let [width (count current)]
-                    (if (> width 512)
-                      {:status :rejected
-                       :reason :identity-carrier-width-bound}
-                      (let [next-enqueued (+ enqueued width)]
-                        (if (> next-enqueued 16384)
-                          {:status :rejected
-                           :reason :identity-carrier-node-bound}
-                          (let [children (sh10-identity-components current)
-                                next-frontier
-                                (loop [remaining children result frontier]
-                                  (if (= (count remaining) 0)
-                                    result
-                                    (recur
-                                     (rest remaining)
-                                     (conj result
-                                           [(first remaining) (+ depth 1)]))))]
-                            (recur next-frontier (+ cursor 1) next-nodes
-                                   next-enqueued))))))
-                  (if (seq? current)
-                    {:status :rejected
-                     :reason :identity-carrier-seq-unsupported}
-                    (recur frontier (+ cursor 1) next-nodes enqueued)))))))))))
+      {:status :accepted}
+      (let [current (get frontier cursor)]
+        (if (seq? current)
+          {:status :rejected
+           :reason :identity-carrier-seq-unsupported}
+          (let [children (sh10-identity-components current)
+                next-frontier
+                (loop [remaining children result frontier]
+                  (if (= (count remaining) 0)
+                    result
+                    (recur
+                     (rest remaining)
+                     (conj result (first remaining)))))]
+            (recur next-frontier (+ cursor 1))))))))
 
 (defn sh10-ownership-fact-records-in-result
   [request ownership-result remaining-facts result]
@@ -2444,12 +2382,10 @@
               (if (sh10-lifetime-coordinate?
                    (get scenario :owner-lifetime-end))
                 (if (vector? (get scenario :events))
-                  (if (<= (count (get scenario :events)) 16)
-                    (if (sh10-unique-event-ids?
-                         (get scenario :events) {})
-                      (sh10-runtime-mutable-borrow-events-valid?
-                       (get scenario :events))
-                      false)
+                  (if (sh10-unique-event-ids?
+                       (get scenario :events) {})
+                    (sh10-runtime-mutable-borrow-events-valid?
+                     (get scenario :events))
                     false)
                   false)
                 false)
