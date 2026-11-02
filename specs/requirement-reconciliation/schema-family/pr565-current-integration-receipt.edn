@@ -13,6 +13,9 @@
  :current-port
  {:base "dbeda7c7dc9a7bb880baa90af1a89046828db327"
   :base-tree "576075197b5b4e815b78bae7d949bfb5fe2d0437"
+  :candidate-parent "dbeda7c7dc9a7bb880baa90af1a89046828db327"
+  :candidate-head "6e30b47fa1113da59fb972107900b31cff4bd61b"
+  :candidate-tree "469f5832fe92e5bb5a1724118fd045f6c4fb2fb0"
   :current-source "dbeda7c7dc9a7bb880baa90af1a89046828db327"
   :current-source-tree "5b62819e511bfc7e6b5eba0527d8c9b5883c5572"
   :current-source-baseline "a1b991be499d50579a8b4366976c519ae8949224"
@@ -104,4 +107,5 @@
   :no-implementation-release-self-hosting-or-runtime-claim]
  :integration-note
  "The five Open criteria are a current task-interface increment. The 25 historical decision allocations remain an authenticated, source-facet-conserved proposal until a canonical owner reconciles each operation against the current requirement/task predecessor."
- :receipt-head :filled-after-scoped-commit}
+ :receipt-head :this-file-is-bound-by-the-containing-commit
+ :receipt-nonclaim :the-containing-commit-hash-is-reported-separately}
