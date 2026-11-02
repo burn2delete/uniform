@@ -77,46 +77,29 @@
        :functions-semantic-hash functions-hash
        :builder-semantic-hash builder-hash :function-shapes shapes})))
 
-(defn p15-s23-b4-wasm-u32-leb [value]
-  (loop [value value result []]
-    (let [next (quot value 128)
-          byte (mod value 128)]
-      (if (zero? next)
-        (conj result byte)
-        (recur next (conj result (+ byte 128)))))))
+(defn p15-s23-b4-wasm-u32-leb
+  [value]
+  (gravity.backend.wasm/u32-leb value))
 
-(defn p15-s23-b4-wasm-s32-leb [value]
-  (loop [value value result []]
-    (let [q (quot value 128)
-          r (- value (* q 128))
-          [q r] (if (neg? r) [(dec q) (+ r 128)] [q r])
-          done? (or (and (zero? q) (< r 64))
-                    (and (= -1 q) (>= r 64)))]
-      (if done?
-        (conj result r)
-        (recur q (conj result (+ r 128)))))))
+(defn p15-s23-b4-wasm-s32-leb
+  [value]
+  (gravity.backend.wasm/s32-leb value))
 
-(defn p15-s23-b4-wasm-section [id payload]
-  (vec (concat [id] (p15-s23-b4-wasm-u32-leb (count payload)) payload)))
+(defn p15-s23-b4-wasm-section
+  [id payload]
+  (gravity.backend.wasm/section #'p15-s23-b4-wasm-u32-leb id payload))
 
-(defn p15-s23-b4-wasm-block-order [mir function]
-  (let [entry (:entry function)
-        blocks (:blocks function)]
-    (if (= 1 (count blocks))
-      [entry]
-      [entry
-       (first (get-in blocks [entry :successors]))
-       (second (get-in blocks [entry :successors]))
-       (get-in mir [:control-flow-graph :join :block-id])])))
+(defn p15-s23-b4-wasm-block-order
+  [mir function]
+  (gravity.backend.wasm/block-order mir function))
 
-(defn p15-s23-b4-wasm-operation-sequence [mir function block-order]
-  (vec (mapcat #(get-in function [:blocks % :instructions]) block-order)))
+(defn p15-s23-b4-wasm-operation-sequence
+  [mir function block-order]
+  (gravity.backend.wasm/operation-sequence mir function block-order))
 
-(defn p15-s23-b4-wasm-constant-i32 [operation]
-  (let [value (get-in operation [:constant-payload :value])]
-    (cond (= :gravity/bool (:type operation)) (if value 1 0)
-          (= :gravity/nil (:type operation)) 0
-          :else value)))
+(defn p15-s23-b4-wasm-constant-i32
+  [operation]
+  (gravity.backend.wasm/constant-i32 operation))
 
 (defn p15-s23-b4-wasm-preflight! [wasm-packet]
   (let [source-path (get-in wasm-packet [:actual-path-provenance :source])
@@ -198,13 +181,14 @@
      :operation-index (zipmap (map :op-id operations) (range))
      :block-labels block-labels :wasm-packet wasm-packet :b1 b1}))
 
-(defn p15-s23-b4-wasm-local [opcode index]
-  (vec (concat [opcode] (p15-s23-b4-wasm-u32-leb index))))
+(defn p15-s23-b4-wasm-local
+  [opcode index]
+  (gravity.backend.wasm/local #'p15-s23-b4-wasm-u32-leb opcode index))
 
-(defn p15-s23-b4-wasm-forwarded? [opcode]
-  (contains? #{:local :local-binding :sequence :lexical-scope
-               :function-boundary} opcode))
+(defn p15-s23-b4-wasm-forwarded?
+  [opcode]
+  (gravity.backend.wasm/forwarded? opcode))
 
-(def p15-s23-b4-wasm-comparison-opcodes
-  {:integer-eq 0x46 :integer-lt 0x48 :integer-lte 0x4c
-   :integer-gt 0x4a :integer-gte 0x4e}))
+(def p15-s23-b4-wasm-comparison-opcodes gravity.backend.wasm/comparison-opcodes)
+
+)

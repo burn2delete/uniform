@@ -1,14 +1,22 @@
 (ns platform-task-projection
   "Project existing target projects and full-product scope from one task ledger."
-  (:require [clojure.string :as str]))
-
-(load-file "tools/task_projection.clj")
-(load-file "tools/task_projection_links.clj")
+  (:require [clojure.string :as str]
+            [task-projection :as task-projection]
+            [task-projection-links :as task-projection-links]))
 (def task-path "specs/platform-workflow/tasks.md")
 (def roadmap-path "docs/component-roadmaps/platform.md")
 (def project-order ["hardware" "firmware" "kernel" "devices"])
 (def project-titles {"hardware" "Hardware / `hardware`" "firmware" "Firmware / `firmware`"
                      "kernel" "Kernel / `kernel`" "devices" "Devices / `devices`"})
+(def product-task-ids
+  #{"platform-product/adopt-hardware-contract" "platform-product/adopt-kernel-contract"
+    "platform-product/adopt-application-contract" "platform-product/adopt-physical-boundary"
+    "platform-product/implement-hardware" "platform-product/implement-firmware"
+    "platform-product/implement-os" "platform-product/implement-drivers"
+    "platform-product/implement-applications" "platform-product/integrate-execution"
+    "platform-product/distribute-product"})
+(def product-record-pattern
+  #"(?s)^- \[([ x])\] `([^`]+)` ([^\n|]+)\n\nStatus: ([^\n|]+)\n\nClosing evidence: ([^\n|]+)\n\nDependencies: ([^\n|]+)$")
 (def record-pattern
   #"(?s)^- \[([ x])\] `([a-z]+)` ([^\n|]+)\n\nStatus: ([^\n|]+)\n\nDeclared completion and remaining work: ([^\n|]+)\n\nSource basis: ([^\n|]+)$")
 (def link-pattern task-projection-links/link-pattern)
@@ -31,8 +39,16 @@
         (fail "Platform literal key and original project/key cell disagree")))
     (task-projection-links/validate-targets "Platform" task-path rows)))
 
+(defn product-records [text]
+  (task-projection/records
+    {:component "Platform Product" :task-marker "platform-product-implementation-tasks"
+     :record-pattern product-record-pattern :semantic-ids product-task-ids
+     :record-keys [:id :title :status :acceptance :dependencies]
+     :validate-field validate-field} text))
+
 (defn product-scope [text]
   (let [body (str/trim (:body (task-projection/region text "platform-product-scope")))]
+    (product-records body)
     (when-not (and (str/starts-with? body "The full goal also includes")
                    (str/includes? body "semantic key `platform-product`.")
                    (str/includes? body "| Decision record (open) | Recommendation for review | Accountable role and required output |")
@@ -41,7 +57,8 @@
                    (str/includes? body "External prerequisites are not language features:")
                    (str/includes? body "Product acceptance is yes/no:"))
       (fail "Platform product scope requires its original identity, four decisions, conditional work and acceptance"))
-    (validate-field body)
+    (validate-field
+      (str/replace body #"(?s)<!-- platform-product-implementation-tasks:start -->.*?<!-- platform-product-implementation-tasks:end -->" ""))
     (task-projection-links/validate-targets "Platform" task-path [{:id "platform-product" :scope body}])
     body))
 
@@ -77,7 +94,8 @@
     (fail "Usage: clojure -M tools/platform_task_projection.clj --check|--write"))
   (let [tasks (slurp task-path) roadmap (slurp roadmap-path)]
     (if (= ["--write"] (vec args))
-      (spit roadmap-path (project tasks roadmap))
+      (task-projection-links/write-file! "Platform" roadmap-path
+                                         (project tasks roadmap))
       (check-projection tasks roadmap))
     (println "Platform task projection validated; no target or product acceptance inferred.")))
 (when (seq *command-line-args*) (run *command-line-args*))

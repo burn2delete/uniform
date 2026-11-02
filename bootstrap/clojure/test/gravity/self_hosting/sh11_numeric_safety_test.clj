@@ -1,151 +1,10 @@
 (ns gravity.self-hosting.sh11-numeric-safety-test
-  (:require [clojure.java.io :as io]
-            [clojure.test :refer [deftest is testing]]
-            [gravity.bootstrap :as bootstrap]))
-
-(defn- repository-root
-  []
-  (let [resource
-        (io/resource "gravity/self_hosting/sh11_numeric_safety_test.clj")]
-    (when-not resource
-      (throw
-       (ex-info "SH-11 test source is not on the classpath"
-                {:id "SH11-TEST-SOURCE"})))
-    (loop [candidate (.getParent (.toPath (io/file (.toURI resource))))]
-      (cond
-        (nil? candidate)
-        (throw
-         (ex-info "Repository root could not be located"
-                  {:id "SH11-REPOSITORY-ROOT"}))
-
-        (.isFile (.toFile (.resolve candidate "deps.edn")))
-        candidate
-
-        :else
-        (recur (.getParent candidate))))))
-
-(def ^:private root (delay (repository-root)))
-
-(defn- path
-  [relative]
-  (str (.resolve @root relative)))
-
-(def ^:private c10-source-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity")
-
-(def ^:private fixture-root
-  "bootstrap/clojure/fixtures/self-hosting/sh-11")
-
-(defn- fixture-relative-path
-  [family basename extension]
-  (str fixture-root "/" family "/" basename extension))
-
-(defn- compile-plan
-  [relative-path]
-  (let [source-path (path relative-path)
-        source-text (slurp source-path)
-        emitter
-        (:emitter
-         (bootstrap/c-backend-stage2-plan-emitter-source-rule!
-          source-path :jvm))]
-    (bootstrap/p15-s23-stage2-compiler-artifact-plan
-     emitter source-path source-text)))
-
-(def ^:private c10-plan
-  (delay (compile-plan c10-source-relative-path)))
-
-(def ^:private accepted-gravity-plan
-  (delay
-   (compile-plan
-    (fixture-relative-path
-     "accepted" "numeric-safety-outcomes" ".gravity"))))
-
-(def ^:private accepted-qst-plan
-  (delay
-   (compile-plan
-    (fixture-relative-path
-     "accepted" "numeric-safety-outcomes" ".qst"))))
-
-(def ^:private rejected-gravity-plan
-  (delay
-   (compile-plan
-    (fixture-relative-path
-     "rejected" "invalid-numeric-safety" ".gravity"))))
-
-(def ^:private rejected-qst-plan
-  (delay
-   (compile-plan
-    (fixture-relative-path
-     "rejected" "invalid-numeric-safety" ".qst"))))
-
-(defn- invoke
-  [plan function arguments]
-  (bootstrap/p15-s23-stage2-runtime-execute-function
-   {:engine :gravity-sh11-numeric-safety-leaf
-    :compiler-artifact-plan? true}
-   @plan function arguments))
-
-(defn- invoke-c10
-  [function arguments]
-  (invoke c10-plan function arguments))
-
-(defn- request
-  [plan function]
-  (invoke plan function []))
-
-(defn- classify
-  [request]
-  (invoke-c10 'sh11-classify-operation [request]))
-
-(def ^:private accepted-functions
-  '[sh11-proven-index-request
-    sh11-proven-overflow-request
-    sh11-proven-wrapping-request
-    sh11-proven-division-request
-    sh11-proven-cast-request
-    sh11-proven-shift-request
-    sh11-runtime-division-request
-    sh11-unsafe-overflow-request])
-
-(def ^:private rejected-cases
-  {'sh11-out-of-bounds-request
-   ["C10-NUMERIC"
-    :numeric-operation-lacks-proof-check-or-audit
-    :bounds-safety]
-   'sh11-overflow-request
-   ["C10-NUMERIC"
-    :numeric-operation-lacks-proof-check-or-audit
-    :SAFE9-OVERFLOW]
-   'sh11-zero-divisor-request
-   ["C10-NUMERIC"
-    :numeric-operation-lacks-proof-check-or-audit
-    :SAFE9-DIV-ZERO]
-   'sh11-narrowing-request
-   ["C10-NUMERIC"
-    :numeric-operation-lacks-proof-check-or-audit
-    :SAFE9-NARROW]
-   'sh11-invalid-shift-request
-   ["C10-NUMERIC"
-    :numeric-operation-lacks-proof-check-or-audit
-    :SAFE9-SHIFT]
-   'sh11-invalid-check-request
-   ["C10-CHECK" :invalid-runtime-check :SAFE9-DIV-ZERO]
-   'sh11-unsafe-safe-mode-request
-   ["C10-UNSAFE"
-    :unsafe-island-policy-or-metadata-gap
-    :SAFE9-OVERFLOW]
-   'sh11-incomplete-audit-request
-   ["C10-UNSAFE"
-    :unsafe-island-policy-or-metadata-gap
-    :SAFE9-OVERFLOW]
-   'sh11-ambiguous-evidence-request
-   ["C10-NO-OUTCOME"
-    :multiple-outcome-evidence
-    :SAFE9-DIV-ZERO]
-   'sh11-malformed-request
-   ["C10-NO-OUTCOME"
-    :malformed-safety-operation
-    :bounds-safety]})
+  (:require [clojure.test :refer [deftest is testing]]
+            [gravity.self-hosting.sh11-numeric-safety-fixture-support
+             :refer [path fixture-relative-path c10-plan
+                     accepted-gravity-plan accepted-qst-plan
+                     rejected-gravity-plan rejected-qst-plan invoke-c10
+                     request classify accepted-functions rejected-cases]]))
 
 (deftest sh11-source-and-fixtures-compile-as-gravity
   (is (= :gravity/stage2-compiler-artifact-plan (:kind @c10-plan)))
@@ -181,8 +40,6 @@
             #{:proof-required :checked :panic
               :wrapping :unsafe-unchecked}}
            (:legal-modes policy)))
-    (is (= 16
-           (get-in policy [:structural-bounds :maximum-depth])))
     (is (not (some #{"C10-PROOF"} (:diagnostics policy))))
     (is (some #{:memory-safety} (:pending policy)))
     (is (some #{:mir-preservation} (:pending policy))))
@@ -509,7 +366,7 @@
                 (invoke-c10 'sh11-verify-safety-result
                             [malformed (classify base)]))))))))
 
-(deftest sh11-fails-closed-on-schema-mode-lineage-and-structural-attacks
+(deftest sh11-fails-closed-on-schema-mode-lineage-and-provenance-attacks
   (let [base
         (request accepted-gravity-plan 'sh11-proven-overflow-request)
         division
@@ -518,10 +375,6 @@
         (request accepted-gravity-plan 'sh11-proven-index-request)
         shift
         (request accepted-gravity-plan 'sh11-proven-shift-request)
-        runtime
-        (request accepted-gravity-plan 'sh11-runtime-division-request)
-        unsafe
-        (request accepted-gravity-plan 'sh11-unsafe-overflow-request)
         malformed
         [(assoc-in base [:facts :numeric-mode] :future/mode)
          (assoc base :facts
@@ -539,7 +392,7 @@
          (assoc base :origin-chain [])
          (assoc-in division [:facts :numeric-mode] :wrapping)]
         malformed-results (mapv classify malformed)
-        bounds-result
+        wide-provenance-result
         (classify
          (assoc base :origin-chain
                 (vec
@@ -552,8 +405,11 @@
              (get-in result [:diagnostics 0 :rule])))
       (is (= :malformed-safety-operation
              (get-in result [:diagnostics 0 :reason]))))
-    (is (= "C10-NO-OUTCOME"
-           (get-in bounds-result [:diagnostics 0 :rule])))))
+    (is (= :accepted (:status wide-provenance-result)))
+    (is (= :proven-safe (:outcome wide-provenance-result)))
+    (is (= 100
+           (count (get-in wide-provenance-result
+                          [:identity-input :request :origin-chain]))))))
 
 (deftest sh11-fails-closed-on-runtime-unsafe-and-result-attacks
   (let [base
@@ -602,7 +458,7 @@
         [(assoc valid-result :status :substituted)
          (assoc-in valid-result
                    [:outcomes 0 :outcome] :runtime-checked)]
-        oversized-candidate
+        altered-candidate
         (assoc valid-result :padding (vec (repeat 100 :x)))]
     (doseq [request runtime-attacks]
       (let [result (classify request)]
@@ -621,17 +477,70 @@
       (let [verification
             (invoke-c10
              'sh11-verify-safety-result [base candidate])]
+        (is (= :rejected (:status verification)))
+        (is (= "C10-NO-OUTCOME"
+               (get-in verification [:diagnostics 0 :rule])))
+        (is (= :safety-result-substitution
+               (get-in verification [:diagnostics 0 :reason])))))
+    (let [verification
+          (invoke-c10
+           'sh11-verify-safety-result
+           [base altered-candidate])]
       (is (= :rejected (:status verification)))
       (is (= "C10-NO-OUTCOME"
              (get-in verification [:diagnostics 0 :rule])))
       (is (= :safety-result-substitution
-             (get-in verification [:diagnostics 0 :reason])))))
-    (let [verification
-          (invoke-c10
-           'sh11-verify-safety-result
-           [base oversized-candidate])]
-      (is (= :rejected (:status verification)))
-      (is (= "C10-NO-OUTCOME"
-             (get-in verification [:diagnostics 0 :rule])))
-      (is (= :candidate-structural-bound
              (get-in verification [:diagnostics 0 :reason]))))))
+
+(deftest sh11-accepts-finite-carriers-beyond-retired-structural-quotas
+  (let [wide-carrier (vec (repeat 1025 :identity))
+        accepted
+        (invoke-c10
+         'sh11-authenticated-identity-preflight [wide-carrier])
+        rejected
+        (invoke-c10
+         'sh11-authenticated-identity-preflight [(range 1025)])]
+    (is (= {:status :accepted} accepted))
+    (is (= {:status :rejected
+            :reason :authenticated-identity-seq-unsupported}
+           rejected))))
+
+(deftest sh11-preserves-schema-types-without-payload-size-ceilings
+  (let [long-string (apply str (repeat 257 \x))
+        keyword-values
+        (mapv #(keyword (str "metadata-" %)) (range 33))
+        wide-keyword-set (set keyword-values)
+        wrong-keyword-set (conj #{} :metadata-0 "not-a-keyword")
+        wrong-keyword-vector [:metadata-0 "not-a-keyword"]
+        sha-id
+        "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        wide-sha-vector (vec (repeat 9 sha-id))
+        wrong-sha-vector (assoc wide-sha-vector 0 "not-a-sha256-id")]
+    (is (= true (invoke-c10 'sh11-nonempty-string? [long-string])))
+    (is (= false (invoke-c10 'sh11-nonempty-string? [""])))
+    (is (= false (invoke-c10 'sh11-nonempty-string? [[]])))
+    (is (= true
+           (invoke-c10 'sh11-nonempty-keyword-set? [wide-keyword-set])))
+    (is (= true (invoke-c10 'sh11-keyword-set? [wide-keyword-set])))
+    (is (= false (invoke-c10 'sh11-nonempty-keyword-set? [#{}])))
+    (is (= false
+           (invoke-c10 'sh11-nonempty-keyword-set?
+                       [wrong-keyword-set])))
+    (is (= false
+           (invoke-c10 'sh11-keyword-set? [wrong-keyword-set])))
+    (is (= false
+           (invoke-c10 'sh11-nonempty-keyword-set? [keyword-values])))
+    (is (= true
+           (invoke-c10 'sh11-nonempty-keyword-vector?
+                       [keyword-values])))
+    (is (= false
+           (invoke-c10 'sh11-nonempty-keyword-vector? [[]])))
+    (is (= false
+           (invoke-c10 'sh11-nonempty-keyword-vector?
+                       [wrong-keyword-vector])))
+    (is (= true (invoke-c10 'sh11-sha-vector? [wide-sha-vector])))
+    (is (= false (invoke-c10 'sh11-sha-vector? [[]])))
+    (is (= false
+           (invoke-c10 'sh11-sha-vector? [(seq wide-sha-vector)])))
+    (is (= false
+           (invoke-c10 'sh11-sha-vector? [wrong-sha-vector])))))

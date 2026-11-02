@@ -2380,9 +2380,7 @@
           (if (= function-reason nil)
             (if (= cfg-reason nil)
               (if (if (> (count operations) 0)
-                    (if (<= (count operations) 127)
-                      (= (count operations) (count operation-index))
-                      false)
+                    (= (count operations) (count operation-index))
                     false)
                 (b4-first-operation-rejection
                  operations operations operation-index block-labels)

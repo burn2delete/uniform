@@ -8,7 +8,7 @@ Authority transfer baseline: `88f621ee7633be6965f34d33a43a361cbdd26157`.
 
 This is the sole editable Types implementation task ledger. The roadmap's
 [current evidence and remaining work](../../docs/component-roadmaps/types.md#current-evidence-and-remaining-work)
-is generated from these records. IDs preserve the established phase/title slug
+is a navigation view of these records. IDs preserve the established phase/title slug
 convention; the original `types/1` through `types/5` labels remain display
 text. Order is display order, not dependency evidence. An unchecked box means
 not accepted complete. Check a box only with explicit `Accepted;` status and an

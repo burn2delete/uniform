@@ -42,23 +42,11 @@ references, not proposed implementation naming. No compiler test was run for
 this roadmap and no source inspection or pre-existing report is credited as
 release acceptance.
 
-<!-- expand-task-projection:start -->
-| Task | Status | Concrete exit evidence |
-| --- | --- | --- |
-| expand/1: Execute syntax macros | Open; partial source evidence above is not closure | Implement syntax-object invocation and macro environment/version checks, validating returned graphs and compile phases. |
-| expand/2: Record hygiene and safety | Open; partial source evidence above is not closure | Preserve definition/call/generated origins, explicit capture and unsafe declarations; reject undeclared authority capture or missing unsafe metadata. |
-| expand/3: Authorize compile-time effects | Open; partial source evidence above is not closure | Require declared grants, redacted logs and replay inputs for effectful expansion; reject ambient host effects and unreplayable hermetic expansion. |
-| expand/4: Validate reuse and termination | Open; partial source evidence above is not closure | Bind cache reuse to every semantic input and replay record; diagnose actual expansion cycles/phase errors without node, size or work quotas. |
-| expand/5: Integrate generated programs | Open; partial source evidence above is not closure | Feed generated core forms through the same resolution/type/effect/profile/safety path as handwritten forms and retain expansion trace comparison evidence. |
-<!-- expand-task-projection:end -->
+Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/expand-workflow/tasks.md#implementation-tasks).
 
-The table above is generated from the sole editable
-[implementation task ledger](../../specs/expand-workflow/tasks.md#implementation-tasks).
-Edit that ledger, then run `clojure -M tools/expand_task_projection.clj --write`;
-verify with `--check`. This transfer changes no task status or release criteria.
 Close a task only with the exact source revision, actual invocation/result and relevant
 accepted/rejected artifacts, reviewed by the responsible owner. Do not infer
-completion from assertion counts, generated status fields or filenames.
+completion from assertion counts, status fields or filenames.
 
 ## Acceptance criteria (yes/no)
 

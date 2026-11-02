@@ -54,24 +54,24 @@
 
 (def ^:private accepted-gravity-plan
   (delay
-   (compile-plan
-    (fixture-path "accepted" "initialization-move" ".gravity"))))
+    (compile-plan
+     (fixture-path "accepted" "initialization-move" ".gravity"))))
 
 (def ^:private accepted-qst-plan
   (delay
-   (compile-plan
-    (fixture-path "accepted" "initialization-move" ".qst"))))
+    (compile-plan
+     (fixture-path "accepted" "initialization-move" ".qst"))))
 
 (def ^:private rejected-gravity-plan
   (delay
-   (compile-plan
-    (fixture-path
-     "rejected" "invalid-initialization-move" ".gravity"))))
+    (compile-plan
+     (fixture-path
+      "rejected" "invalid-initialization-move" ".gravity"))))
 
 (def ^:private rejected-qst-plan
   (delay
-   (compile-plan
-    (fixture-path "rejected" "invalid-initialization-move" ".qst"))))
+    (compile-plan
+     (fixture-path "rejected" "invalid-initialization-move" ".qst"))))
 
 (defn- invoke [plan function arguments]
   (bootstrap/p15-s23-stage2-runtime-execute-function
@@ -323,13 +323,6 @@
                :events [initialize-event
                         (assoc read-event
                                :event-id (:event-id initialize-event))])
-        too-many-events
-        (assoc scenario
-               :scenario-id :too-many-events
-               :events
-               (mapv (fn [index]
-                       (assoc read-event :event-id index))
-                     (range 17)))
         missing-control-path
         (assoc scenario
                :scenario-id :missing-control-path
@@ -370,7 +363,7 @@
          [altered-fact-bound (:verification @prepared) scenario])
         malformed-results
         (mapv analyze
-              [contradictory-read duplicate-events too-many-events
+              [contradictory-read duplicate-events
                missing-control-path])
         move-while-borrowed-result (analyze move-while-borrowed)]
     (is (= :rejected (:status wrong-node-result)))

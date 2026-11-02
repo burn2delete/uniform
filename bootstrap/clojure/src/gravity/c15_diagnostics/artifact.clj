@@ -10,28 +10,31 @@
   (operations/invoke :c4-artifact-id (fn [v] (str "sha256:" (digest/sha256-hex (pr-str v)))) x))
 (defn- diagnostic-record [& args]
   (apply operations/invoke :c15-diagnostic-record records/diagnostic-record args))
-(defn- diagnostics [path lowering-id]
+(defn- diagnostics [path lowering-id module]
   (vec (sort-by :ordering-key
-                [(diagnostic-record "C15-FACTS" :info :c15-compiler-diagnostics :diagnostic.structured-facts path 0 lowering-id
+                [(diagnostic-record "C15-FACTS" :info :compiler-diagnostics :diagnostic.structured-facts path 0 lowering-id
                                     {:fact-families [:types :effects :capabilities :safety :proofs :target-features]
-                                     :artifact lowering-id} [{:kind :inspect-facts}])
-                 (diagnostic-record "C15-ORIGIN" :warning :c15-compiler-diagnostics :diagnostic.generated-origin path 1 lowering-id
+                                     :artifact lowering-id} [{:kind :inspect-facts}]
+                                    :profile (:profile module) :target (:target module))
+                 (diagnostic-record "C15-ORIGIN" :warning :compiler-diagnostics :diagnostic.generated-origin path 1 lowering-id
                                     {:generated-form "c15-generated-check" :producer :compiler-c15-diagnostics
                                      :source-producer :stage0-build-macro} [{:kind :jump-to-source-producer}]
-                                    :generated? true
+                                    :profile (:profile module) :target (:target module) :generated? true
                                     :origin-chain [{:producer :stage0-build-macro :source (records/source-span path 1)
                                                     :generated-artifact lowering-id}]
                                     :related [{:role :generated-by :span (records/source-span path 1)
                                                :artifact :stage0-build-macro}])
-                 (diagnostic-record "C15-REDACTION" :error :c15-compiler-diagnostics :diagnostic.redaction-policy path 2 lowering-id
+                 (diagnostic-record "C15-REDACTION" :error :compiler-diagnostics :diagnostic.redaction-policy path 2 lowering-id
                                     {:redacted-fields [:credential-value :private-expansion] :policy :public-diagnostic}
                                     [{:kind :move-to-private-artifact-store}]
+                                    :profile (:profile module) :target (:target module)
                                     :redactions [{:field :credential-value :replacement :redacted
                                                   :value-hash "sha256:redacted-stage0"}])
-                 (diagnostic-record "C15-GOLDEN" :hint :c15-compiler-diagnostics :diagnostic.golden-fixture path 3 lowering-id
+                 (diagnostic-record "C15-GOLDEN" :hint :compiler-diagnostics :diagnostic.golden-fixture path 3 lowering-id
                                     {:fixture :compiler-c15-diagnostics
                                      :asserts [:rule :severity :primary :related :facts :remediation :redactions :ordering]}
-                                    [{:kind :regenerate-golden-fixture}])])))
+                                    [{:kind :regenerate-golden-fixture}]
+                                    :profile (:profile module) :target (:target module))])))
 (defn source-artifact [configuration source-path source-text]
   (let [records* (operations/invoke :read-source-form-records (policy/unsupported :read-source-form-records) source-path source-text)
         forms (mapv :form records*)
@@ -44,7 +47,7 @@
         lowering-artifact (operations/invoke :compiler-c14-lowering-source-artifact
                                               (policy/unsupported :compiler-c14-lowering-source-artifact) source-path source-text)
         lowering-id (:artifact-id lowering-artifact)
-        diagnostics* (diagnostics source-path lowering-id)
+        diagnostics* (diagnostics source-path lowering-id module)
         catalog (operations/invoke :c15-diagnostic-catalog (fn [] (records/catalog configuration)))
         base (projection/artifact-base configuration module source-overrides lowering-artifact diagnostics* catalog)
         _ (operations/invoke :c15-diagnostics-validate! (fn [path value] (validation/validate! configuration path value)) source-path base)

@@ -57,22 +57,58 @@
 
 (defn p15-s23-c6c10-unique-resolved-values!
   [source-path missing-fact values]
-  (let [canonical-identities
-        (mapv #(p15-s23-c6c10-canonical-identity source-path %) values)]
-    ;; Canonical identity separates vector/list and every scalar type.  The
-    ;; second check is also required because Clojure maps and sets would merge
-    ;; certain canonically distinct but host-equal values during construction.
-    (when-not (and (= (count values)
-                      (count (distinct canonical-identities)))
-                   (= (count values)
-                      (count (distinct values))))
+  ;; Validate the entire input before hashing or comparing any member, as the
+  ;; original eager canonical-form pass did. No normalized trees are retained.
+  (doseq [value values]
+    (p15-s23-c6c10-streaming-validation! source-path value))
+  (let [scalar-only? (every? p15-s23-c6c10-streaming-scalar-value? values)
+        ;; In this validated domain, host equality is exactly canonical
+        ;; equality. Ratios, decimals and containers deliberately stay on the
+        ;; typed canonical path. Ordinary source-map keys need no hash streams.
+        canonical-count
+        (if scalar-only?
+          (count (distinct values))
+          (loop [remaining (seq values) buckets {} total 0]
+          (if-not remaining
+            total
+            (let [value (first remaining)
+                  digest (p15-s23-c6c10-streaming-digest source-path value)
+                  bucket (get buckets digest [])
+                  ;; Digests select buckets only. Exact forms distinguish real
+                  ;; hash collisions from duplicates, without retaining forms
+                  ;; for every value in the surrounding map or set.
+                  duplicate? (when (seq bucket)
+                               (let [form (p15-s23-c6c10-canonical-identity source-path value)]
+                                 (some #(= form (p15-s23-c6c10-canonical-identity source-path %)) bucket)))]
+              (recur (next remaining)
+                     (if duplicate? buckets (assoc buckets digest (conj bucket value)))
+                     (if duplicate? total (inc total)))))))
+        host-count (if scalar-only? canonical-count (count (distinct values)))]
+    ;; Clojure would also merge host-equal but canonically distinct values
+    ;; (for example a vector and a list) during map/set construction.
+    (when-not (and (= (count values) canonical-count)
+                   (= (count values) host-count))
       (p15-s23-c6c10-host-fail!
        "C6-VERIFY" source-path missing-fact
        {:value-count (count values)
-        :canonical-identity-count
-        (count (distinct canonical-identities))
-        :host-equality-count (count (distinct values))})))
+        :canonical-identity-count canonical-count
+        :host-equality-count host-count})))
   values)
+
+(defn- p15-s23-c6c10-reuse-resolved-container [original rebuilt]
+  ;; Recursion and collision checks have already completed. Keep the old
+  ;; constructor's exact class, metadata removal and iteration order; compare
+  ;; children by identity without invoking their equality/hash callbacks.
+  (if (and (identical? (class original) (class rebuilt))
+           (nil? (meta original))
+           (= (count original) (count rebuilt))
+           (if (map? rebuilt)
+             (every? true? (map (fn [left right]
+                                 (and (identical? (key left) (key right))
+                                      (identical? (val left) (val right))))
+                               original rebuilt))
+             (every? true? (map identical? original rebuilt))))
+    original rebuilt))
 
 (defn p15-s23-c6c10-resolve-digest-references!
   [source-path value request-count consumer-ordinal resolved-digests]
@@ -113,19 +149,19 @@
                     keys (mapv first entries)]
                 (p15-s23-c6c10-unique-resolved-values!
                  source-path :collision-free-resolved-map-keys keys)
-                (into {} entries))
+                (p15-s23-c6c10-reuse-resolved-container item (into {} entries)))
 
               (vector? item)
-              (mapv resolve-value item)
+              (p15-s23-c6c10-reuse-resolved-container item (mapv resolve-value item))
 
               (set? item)
               (let [items (mapv resolve-value item)]
                 (p15-s23-c6c10-unique-resolved-values!
                  source-path :collision-free-resolved-set-items items)
-                (into #{} items))
+                (p15-s23-c6c10-reuse-resolved-container item (into #{} items)))
 
               (list? item)
-              (apply list (map resolve-value item))
+              (p15-s23-c6c10-reuse-resolved-container item (apply list (map resolve-value item)))
 
               :else item))]
     (resolve-value value)))

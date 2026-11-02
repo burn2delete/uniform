@@ -63,7 +63,22 @@
          (= (:semantic-value-table-id summary)
             (:sh03-semantic-value-table-id products))
          (= summary (:sh03-reader-adapter-descriptor products))
-         (= summary descriptor-summary))))
+         (= summary descriptor-summary)
+         (if-not (some #(= :tagged-literal (:kind %)) raw-forms)
+           (empty? (:extension-dispatch-observations products))
+           (let [source-bytes (.getBytes source-text java.nio.charset.StandardCharsets/UTF_8)
+                 source-content-id (:bytes-hash source-unit)
+                 boundaries (sh03-reader-source-scalar-boundaries!
+                             source-path source-text source-bytes)
+                 semantic-index (sh03-reader-semantic-value-index!
+                                 source-path (:semantic-value-table result))]
+             (sh03-reader-semantic-value-closure!
+              source-path source-bytes source-content-id boundaries
+              raw-tokens raw-forms semantic-index)
+             (reader-standard-dispatch-products-match?
+              source-path source-bytes source-content-id boundaries raw-forms
+              semantic-index source-unit form-id-map form-tree
+              (:extension-dispatch-observations products)))))))
 
 (defn- sh03-reader-precomputed-products-verify!
   ([candidate source-path source-text project-context products]
@@ -101,6 +116,7 @@
     (when-not
      (and (= :gravity/sh03-to-c2-reader-products-v2
              (:sh03-reader-adapter-contract products))
+          (not (contains? products :pure-extension-results))
           (= expected-binding (:sh03-reader-plan-binding products))
           (= :gravity/sh03-reader-result (:artifact raw-result))
           (= :accepted (:status raw-result))

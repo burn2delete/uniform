@@ -1,146 +1,185 @@
 (ns gravity.self-hosting.sh10-ownership-transition-test
-  (:require [clojure.java.io :as io]
+  (:require [clojure.string :as string]
             [clojure.test :refer [deftest is testing]]
-            [gravity.bootstrap :as bootstrap]))
+            [gravity.bootstrap :as bootstrap]
+            [gravity.self-hosting.sh10-ownership-transition-fixture-support
+             :refer [path fixture-relative-path c9-plan
+                     accepted-gravity-plan accepted-qst-plan
+                     rejected-gravity-plan rejected-qst-plan invoke-c9
+                     request check accepted-functions rejected-cases]]))
 
-(defn- repository-root
+(def ^:private c9-kernel-unit-namespace
+  'gravity.compiler.c9-ownership-checker-kernel-unit)
+(def ^:private c9-kernel-definition-roots
+  '[sh10-identity-carrier-preflight
+    sh10-check-ownership-request
+    sh10-verify-ownership-result
+    sh10-authenticated-owned-mutable-scenario-valid?
+    sh10-runtime-mutable-borrow-scenario-valid?])
+
+(defn- c9-kernel-definition-table
+  [forms]
+  (into {}
+        (keep (fn [form]
+                (when (and (seq? form)
+                           (#{'def 'defn} (first form))
+                           (symbol? (second form)))
+                  [(second form) form]))
+              forms)))
+
+(defn- c9-kernel-definition-closure
+  [definitions]
+  (loop [pending c9-kernel-definition-roots
+         seen #{}]
+    (if (seq pending)
+      (let [name (first pending)]
+        (if (contains? seen name)
+          (recur (next pending) seen)
+          (recur
+           (concat
+            (next pending)
+            (filter
+             #(contains? definitions %)
+             (set (filter symbol?
+                          (tree-seq coll? seq (get definitions name))))))
+           (conj seen name))))
+      seen)))
+
+(defn- c9-kernel-unit-source
   []
-  (let [resource
-        (io/resource
-         "gravity/self_hosting/sh10_ownership_transition_test.clj")]
-    (when-not resource
-      (throw
-       (ex-info "SH-10 test source is not on the classpath"
-                {:id "SH10-TEST-SOURCE"})))
-    (loop [candidate (.getParent (.toPath (io/file (.toURI resource))))]
-      (cond
-        (nil? candidate)
-        (throw
-         (ex-info "Repository root could not be located"
-                  {:id "SH10-REPOSITORY-ROOT"}))
-
-        (.isFile (.toFile (.resolve candidate "deps.edn")))
-        candidate
-
-        :else
-        (recur (.getParent candidate))))))
-
-(def ^:private root (delay (repository-root)))
-
-(defn- path
-  [relative]
-  (str (.resolve @root relative)))
-
-(def ^:private c9-source-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity")
-
-(def ^:private fixture-root
-  "bootstrap/clojure/fixtures/self-hosting/sh-10")
-
-(defn- fixture-relative-path
-  [family basename extension]
-  (str fixture-root "/" family "/" basename extension))
-
-(defn- compile-plan
-  [relative-path]
-  (let [source-path (path relative-path)
+  (let [source-relative-path
+        "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"
+        source-path (path source-relative-path)
         source-text (slurp source-path)
-        emitter
-        (:emitter
-         (bootstrap/c-backend-stage2-plan-emitter-source-rule!
-          source-path :jvm))]
-    (bootstrap/p15-s23-stage2-compiler-artifact-plan
-     emitter source-path source-text)))
+        forms (bootstrap/read-forms source-path source-text)
+        definitions (c9-kernel-definition-table forms)
+        closure (c9-kernel-definition-closure definitions)
+        selected (vec
+                  (filter
+                   #(and (seq? %)
+                         (contains? closure (second %)))
+                   forms))
+        source-hash (str "sha256:" (bootstrap/sha256-hex source-text))
+        header
+        (list 'ns c9-kernel-unit-namespace
+              (list :profile :meta)
+              (list :target :jvm)
+              (list :exports (vec c9-kernel-definition-roots))
+              (list :effects #{})
+              (list :capabilities #{})
+              (list :safety :safe)
+              (list :metadata
+                    {:development-unit
+                     {:source-origin source-relative-path
+                      :source-origin-sha256 source-hash
+                      :selected-definition-count (count selected)
+                      :selected-definitions (mapv second selected)
+                      :full-module-authority? false}}))]
+    {:source-origin source-relative-path
+     :source-origin-sha256 source-hash
+     :selected-definitions (mapv second selected)
+     :selected-definition-count (count selected)
+     :source-text
+     (str (string/join "\n" (map pr-str (cons header selected))) "\n")}))
 
-(def ^:private c9-plan
-  (delay (compile-plan c9-source-relative-path)))
+(defn- with-c9-kernel-unit
+  [thunk]
+  (let [{:keys [source-origin source-origin-sha256 selected-definitions
+                selected-definition-count source-text]}
+        (c9-kernel-unit-source)
+        directory
+        (java.nio.file.Files/createTempDirectory
+         "gravity-c9-ownership-kernel-unit-"
+         (make-array java.nio.file.attribute.FileAttribute 0))
+        unit-path (.resolve directory "c9_ownership_checker_kernel_unit.gravity")]
+    (try
+      (java.nio.file.Files/write
+       unit-path
+       (.getBytes source-text java.nio.charset.StandardCharsets/UTF_8)
+       (make-array java.nio.file.OpenOption 0))
+      (let [unit-path (str unit-path)
+            emitter
+            (:emitter
+             (bootstrap/c-backend-stage2-plan-emitter-source-rule!
+              unit-path :jvm))
+            plan
+            (bootstrap/p15-s23-stage2-compiler-artifact-plan-raw
+             emitter unit-path source-text nil)
+            provenance
+            {:source-origin source-origin
+             :source-origin-sha256 source-origin-sha256
+             :unit-path unit-path
+             :unit-namespace c9-kernel-unit-namespace
+             :unit-source-sha256
+             (str "sha256:" (bootstrap/sha256-hex source-text))
+             :selected-definitions selected-definitions
+             :selected-definition-count selected-definition-count
+             :full-module-authority? false}]
+        (thunk
+         {:plan plan
+          :provenance provenance
+          :invoke
+          (fn [function arguments]
+            (bootstrap/p15-s23-stage2-runtime-execute-function
+             {:engine :gravity-sh10-ownership-kernel-unit
+              :compiler-artifact-plan? true
+              :source-origin source-origin
+              :unit-namespace c9-kernel-unit-namespace}
+             plan function arguments))}))
+      (finally
+        (java.nio.file.Files/deleteIfExists unit-path)
+        (java.nio.file.Files/deleteIfExists directory)))))
 
-(def ^:private accepted-gravity-plan
-  (delay
-   (compile-plan
-    (fixture-relative-path
-     "accepted" "ownership-transitions" ".gravity"))))
+(defn- c9-kernel-event
+  [event-id operation]
+  {:event-id event-id
+   :op operation
+   :borrow-id nil
+   :destination-owner nil
+   :destination-lifetime-end nil
+   :escape-destination nil
+   :control-path :normal
+   :source-span {:source "c9-ownership-kernel-unit.gravity"
+                 :start-byte 0
+                 :end-byte 1}
+   :origin-chain []})
 
-(def ^:private accepted-qst-plan
-  (delay
-   (compile-plan
-    (fixture-relative-path
-     "accepted" "ownership-transitions" ".qst"))))
+(defn- c9-kernel-request
+  [events]
+  {:artifact :gravity/sh10-normalized-ownership-request
+   :request-id :c9-kernel-unit-request
+   :value-id "c9-kernel-value"
+   :owner-id "c9-kernel-owner"
+   :ownership-kind :owned-mutable
+   :initialization :initialized
+   :availability :available
+   :owner-lifetime-end 10
+   :events events
+   :type-fact-id
+   "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+   :effect-fact-id
+   "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+   :capability-proof-id nil
+   :source-span {:source "c9-ownership-kernel-unit.gravity"
+                 :start-byte 0
+                 :end-byte 1}
+   :origin-chain []
+   :profile :meta
+   :target :jvm})
 
-(def ^:private rejected-gravity-plan
-  (delay
-   (compile-plan
-    (fixture-relative-path
-     "rejected" "invalid-ownership-transitions" ".gravity"))))
-
-(def ^:private rejected-qst-plan
-  (delay
-   (compile-plan
-    (fixture-relative-path
-     "rejected" "invalid-ownership-transitions" ".qst"))))
-
-(defn- invoke
-  [plan function arguments]
-  (bootstrap/p15-s23-stage2-runtime-execute-function
-   {:engine :gravity-sh10-ownership-transition-leaf
-    :compiler-artifact-plan? true}
-   @plan function arguments))
-
-(defn- invoke-c9
-  [function arguments]
-  (invoke c9-plan function arguments))
-
-(defn- request
-  [plan function]
-  (invoke plan function []))
-
-(defn- check
-  [request]
-  (invoke-c9 'sh10-check-ownership-request [request]))
-
-(def ^:private accepted-functions
-  '[sh10-initialize-read-request
-    sh10-many-immutable-request
-    sh10-exclusive-mutable-request
-    sh10-bounded-escape-request])
-
-(def ^:private rejected-cases
-  {'sh10-uninitialized-read-request
-   ["L10-UNINIT-READ" :operation-before-initialization :read]
-   'sh10-use-after-move-request
-   ["C9-USE-AFTER-MOVE" :operation-after-move :read]
-   'sh10-use-after-consume-request
-   ["C9-USE-AFTER-CONSUME" :operation-after-consume :read]
-   'sh10-mutable-alias-request
-   ["C9-MUT-ALIAS"
-    :mutable-borrow-with-active-immutable-aliases
-    :borrow-mutable]
-   'sh10-owner-read-during-mutable-request
-   ["C9-MUT-ALIAS"
-    :owner-read-during-active-mutable-borrow
-    :read]
-   'sh10-move-while-borrowed-request
-   ["C9-MOVE-WHILE-BORROWED"
-    :move-during-active-borrow
-    :move]
-   'sh10-consume-while-borrowed-request
-   ["C9-UNSAFE"
-    :consume-during-active-borrow
-    :consume]
-   'sh10-borrow-escape-request
-   ["C9-BORROW-ESCAPE" :borrow-outlives-owner :escape-borrow]
-   'sh10-wrong-borrow-escape-request
-   ["C9-BORROW-ESCAPE" :escape-of-inactive-borrow :escape-borrow]
-   'sh10-missing-borrow-escape-request
-   ["C9-UNSAFE" :malformed-ownership-event :escape-borrow]
-   'sh10-missing-destination-escape-request
-   ["C9-UNSAFE" :malformed-ownership-event :escape-borrow]
-   'sh10-wrong-borrow-end-request
-   ["C9-UNSAFE" :end-of-inactive-borrow :end-borrow]
-   'sh10-malformed-event-request
-   ["C9-UNSAFE" :malformed-ownership-event :future/ownership]
-   'sh10-double-initialize-request
-   ["C9-UNSAFE" :double-initialization :initialize]})
+(defn- c9-kernel-scenario
+  [artifact events]
+  {:artifact artifact
+   :schema-version 1
+   :scenario-id :c9-kernel-unit-scenario
+   :core-node-id :c9-kernel-unit-core
+   :initialization :initialized
+   :owner-lifetime-end 10
+   :events
+   (mapv #(select-keys % [:event-id :op :borrow-id :destination-owner
+                          :destination-lifetime-end :escape-destination
+                          :control-path])
+         events)})
 
 (deftest sh10-source-and-fixtures-compile-as-gravity
   (is (= :gravity/stage2-compiler-artifact-plan (:kind @c9-plan)))
@@ -180,6 +219,65 @@
   (doseq [plan [accepted-gravity-plan accepted-qst-plan
                 rejected-gravity-plan rejected-qst-plan]]
     (is (= :gravity/stage2-compiler-artifact-plan (:kind @plan)))))
+
+(deftest sh10-current-source-kernel-accepts-retired-carrier-and-event-sizes
+  (let [large-carrier
+        (vec
+         (concat
+          (repeat 15 (vec (repeat 1024 :leaf)))
+          [(vec (repeat 1008 :leaf))]))
+        nested-carrier (nth (iterate vector :leaf) 17)
+        events (mapv #(c9-kernel-event % :read) (range 1025))
+        request (c9-kernel-request events)
+        scenario-events (subvec events 0 17)
+        owned-scenario
+        (c9-kernel-scenario
+         :gravity/sh10-authenticated-owned-mutable-scenario scenario-events)
+        runtime-scenario
+        (c9-kernel-scenario
+         :gravity/sh10-runtime-checked-mutable-borrow-scenario scenario-events)
+        malformed (assoc-in request [:events 0 :op] :unsupported-ownership-event)]
+    (with-c9-kernel-unit
+      (fn [{:keys [plan provenance invoke]}]
+        (let [carrier-result
+              (invoke 'sh10-identity-carrier-preflight [large-carrier])
+              nested-result
+              (invoke 'sh10-identity-carrier-preflight [nested-carrier])
+              lazy-result
+              (invoke 'sh10-identity-carrier-preflight
+                      [(lazy-seq (list :leaf))])
+              owned-scenario-result
+              (invoke 'sh10-authenticated-owned-mutable-scenario-valid?
+                      [owned-scenario])
+              runtime-scenario-result
+              (invoke 'sh10-runtime-mutable-borrow-scenario-valid?
+                      [runtime-scenario])
+              result (invoke 'sh10-check-ownership-request [request])
+              verification
+              (invoke 'sh10-verify-ownership-result [request result])
+              rejected (invoke 'sh10-check-ownership-request [malformed])]
+          (is (= c9-kernel-unit-namespace (:unit-namespace provenance)))
+          (is (= "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"
+                 (:source-origin provenance)))
+          (is (pos? (:selected-definition-count provenance)))
+          (is (not= (:source-origin provenance) (:unit-path provenance)))
+          (is (false? (:full-module-authority? provenance)))
+          (is (= (:unit-source-sha256 provenance)
+                 (get-in plan [:source :sha256])))
+          (is (= c9-kernel-unit-namespace
+                 (get-in plan [:module :module])))
+          (is (= :accepted (:status carrier-result)))
+          (is (= :accepted (:status nested-result)))
+          (is (= :identity-carrier-seq-unsupported (:reason lazy-result)))
+          (is (true? owned-scenario-result))
+          (is (true? runtime-scenario-result))
+          (is (= :accepted (:status result)))
+          (is (= 1025 (count (:ownership-facts result))))
+          (is (= request (get-in result [:identity-input :request])))
+          (is (= :passed (:status verification)))
+          (is (= :rejected (:status rejected)))
+          (is (= ["C9-UNSAFE" :malformed-ownership-event]
+                 ((juxt :rule :reason) (first (:diagnostics rejected))))))))))
 
 (deftest sh10-accepts-initiation-borrow-move-and-bounded-lifetime-flows
   (let [gravity-requests
@@ -285,7 +383,7 @@
     ;; False is an existing legal, non-nil identity, not an inactive sentinel.
     (doseq [operation [:borrow-immutable :borrow-mutable]]
       (let [r (assoc base :events [(assoc borrow :op operation :borrow-id false)
-                                  (assoc end :borrow-id false)])
+                                   (assoc end :borrow-id false)])
             result (check r)]
         (is (= :accepted (:status result)))
         (is (= [false false] (mapv :borrow-id (:ownership-facts result))))
@@ -310,17 +408,17 @@
              [:initialized [(assoc read :event-id :consume :op :consume)]
               "C9-USE-AFTER-CONSUME" :operation-after-consume]]]
       (let [r (assoc base :initialization initialization
-                          :events (conj prefix (dissoc invalid-end :borrow-id)))
+                     :events (conj prefix (dissoc invalid-end :borrow-id)))
             result (check r)]
         (is (= :rejected (:status result)))
         (is (= [rule reason] ((juxt :rule :reason) (first (:diagnostics result)))))
         (is (= :passed (:status (verify r result))))))))
 
-(deftest sh10-executes-the-declared-event-bound-without-host-recursion
-  ;; Exercise the original normalized kernel, not public C8/source admission.
+(deftest sh10-executes-long-event-flow-without-host-recursion
+  ;; Exercise the current normalized kernel, not public C8/source admission.
   (let [base (request accepted-gravity-plan 'sh10-exclusive-mutable-request)
         read (last (:events base))
-        reads (mapv #(assoc read :event-id %) (range 1024))
+        reads (mapv #(assoc read :event-id %) (range 2048))
         verify (fn [r result] (invoke-c9 'sh10-verify-ownership-result [r result]))
         observe (fn [r]
                   (try (check r)
@@ -335,31 +433,30 @@
               result (if (= kind :owned-mutable) maximum (check r))
               facts (:ownership-facts result)]
           (is (= :accepted (:status result)))
-          (is (= 1024 (count facts)))
+          (is (= 2048 (count facts)))
           (is (= (mapv :event-id reads) (mapv :event-id facts)))
           (is (every? #(= :read (:operation %)) facts))
           (is (= (:state-before (first facts)) (:state result) (:state-after (last facts))))
           (is (= r (get-in result [:identity-input :request])))
           (is (= :passed (:status (verify r result))))
           (is (= :rejected (:status (verify r (update result :ownership-facts pop)))))))
-      (doseq [r [(assoc base :events (conj reads (assoc read :event-id 1024)))
-                 (assoc base :events (assoc-in reads [1023 :event-id] 0))
+      (doseq [r [(assoc base :events (assoc-in reads [2047 :event-id] 0))
                  (assoc base :ownership-kind :persistent-immutable
-                             :events (assoc-in reads [1023 :op] :write))]]
+                        :events (assoc-in reads [2047 :op] :write))]]
         (let [result (check r)]
           (is (= :rejected (:status result)))
           (is (= ["C9-UNSAFE" :malformed-normalized-ownership-request]
                  ((juxt :rule :reason) (first (:diagnostics result)))))
           (is (empty? (:ownership-facts result)))
           (is (= :passed (:status (verify r result))))))
-      (let [failure (assoc read :event-id 1023 :op :end-borrow :borrow-id nil
-                               :source-span {:source "last-event.gravity" :start-byte 8 :end-byte 9}
-                               :origin-chain [{:from :last-event}])
-            r (assoc base :events (assoc reads 1023 failure))
+      (let [failure (assoc read :event-id 2047 :op :end-borrow :borrow-id nil
+                           :source-span {:source "last-event.gravity" :start-byte 8 :end-byte 9}
+                           :origin-chain [{:from :last-event}])
+            r (assoc base :events (assoc reads 2047 failure))
             result (check r) diagnostic (first (:diagnostics result))]
         (is (= :rejected (:status result)))
-        (is (= 1023 (count (:ownership-facts result))))
-        (is (= ["C9-UNSAFE" :end-of-inactive-borrow 1023]
+        (is (= 2047 (count (:ownership-facts result))))
+        (is (= ["C9-UNSAFE" :end-of-inactive-borrow 2047]
                ((juxt :rule :reason :event-id) diagnostic)))
         (is (= [(:source-span failure) (:origin-chain failure)]
                [(:source-span diagnostic) (:generated-origin-chain diagnostic)]))

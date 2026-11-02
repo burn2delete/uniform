@@ -6,6 +6,9 @@
    :reader-canonical-value
    c2-artifact-identity/reader-canonical-value value))
 
+(def ^:private c2-artifact-identity-canonical-defaults
+  [reader-canonical-value c2-artifact-identity/reader-canonical-value])
+
 (defn reader-canonical-hash
   [value]
   (c2-artifact-identity-call

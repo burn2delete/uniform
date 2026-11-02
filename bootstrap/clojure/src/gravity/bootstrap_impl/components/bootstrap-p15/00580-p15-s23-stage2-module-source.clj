@@ -23,30 +23,7 @@
        (seq (drop 3 form)) (not= ':- (nth form 3 nil))))
 
 (defn p15-s23-stage2-module-literal! [value]
-  (loop [pending [[value 0 false]] visited 0]
-    (when (> visited 65536) (p15-s23-stage2-module-fail! :literal-data-size-limit {}))
-    (if (empty? pending)
-      (letfn [(materialize [item]
-                (cond
-                  (and (seq? item) (= 'quote (first item))) (second item)
-                  (map? item) (into {} (map (fn [[k v]] [(materialize k) (materialize v)])) item)
-                  (vector? item) (mapv materialize item)
-                  (set? item) (into #{} (map materialize) item)
-                  :else item))]
-        (materialize value))
-      (let [[item depth quoted?] (peek pending)
-            quote? (and (not quoted?) (seq? item) (= 'quote (first item)) (= 2 (count item)))
-            collection? (or (vector? item) (map? item) (set? item) (and quoted? (seq? item)))]
-        (when (or (> depth 64)
-                  (not (or quote? collection? (nil? item) (boolean? item) (number? item)
-                           (char? item) (keyword? item) (string? item) (and quoted? (symbol? item))))
-                  (and (string? item) (> (count item) 65536)))
-          (p15-s23-stage2-module-fail! :unsupported-literal-data {}))
-        (recur (cond
-                 quote? (conj (pop pending) [(second item) (inc depth) true])
-                 collection? (into (pop pending) (map #(vector % (inc depth) quoted?))
-                                   (if (map? item) (mapcat identity item) item))
-                 :else (pop pending)) (inc visited))))))
+  (gravity.bootstrap.module-literals/materialize! #'p15-s23-stage2-module-fail! value))
 
 (defn p15-s23-stage2-module-literals [forms]
   (let [declarations (filterv #(and (seq? %) (contains? '#{def defn} (first %))) forms)

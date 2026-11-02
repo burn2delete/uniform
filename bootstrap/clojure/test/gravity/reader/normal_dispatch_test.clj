@@ -8,7 +8,10 @@
             [gravity.c2-artifact-identity.canonical :as canonical]
             [gravity.digest :as digest]
             [gravity.source-unit :as source-unit]
+            [gravity.reader.pure-text :as pure-text]
             [gravity.reader.dispatch :as reader-dispatch]))
+
+(alias 'reader-pure-text (ns-name (:ns (meta #'pure-text/returned-data!))))
 
 (def ^:private component-root
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/")
@@ -32,8 +35,15 @@
 (defn sh03-reader-boundary-fail! [_ rule _ _]
   (throw (ex-info "Fixture reached normal Reader refusal" {:id "C2-HASH" :rule rule})))
 
-(declare sh03-reader-host-bigint! sh03-reader-host-decimal-value!
+;; This existing fixture family exercises standard/pure policies only. The
+;; separate resource connection model owns the lexical resource ports.
+(defn reader-resource-options? [_] false)
+(declare reader-resource-record!)
+
+(declare sh03-reader-host-bigint! sh03-reader-host-decimal-value! sh03-reader-host-atomic-value!
+         sh03-reader-decode-buffer!
          sh03-reader-host-character-value! sh03-reader-host-values!
+         reader-standard-dispatch-products-match?
          sh03-reader-semantic-value-reference-keys sh03-reader-source-slice-keys
          standard-reader-policy sh03-reader-source-scalar-boundaries!
          sh03-reader-semantic-value-closure! sh03-reader-form-value-reference!
@@ -44,13 +54,14 @@
 (install! (str reader-root "00811-sh03-reader-plan-validate.clj")
           '[sh03-reader-source-slice-keys sh03-reader-semantic-value-reference-keys])
 (install! (str reader-root "00813-sh03-reader-canonical-identity.clj")
-          '[sh03-reader-decode-raw-bytes! sh03-reader-source-scalar-boundaries!])
+          '[sh03-reader-decode-buffer! sh03-reader-decode-raw-bytes!
+            sh03-reader-source-scalar-boundaries!])
 (install! (str reader-root "00814-sh03-reader-source-slice-text.clj")
           '[sh03-reader-source-slice-text! sh03-reader-accepted-raw-text!
             sh03-reader-codepoints-text! sh03-reader-semantic-reference-value!])
 (install! (str reader-root "00815-sh03-reader-normalization-deferred.clj")
           '[sh03-reader-host-atomic-value! sh03-reader-metadata-map!
-            sh03-reader-host-values!])
+            sh03-reader-host-values! reader-standard-dispatch-products-match?])
 (install! "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_late/146156-sh03-reader-adapt-identities.clj"
           '[semantic-late-sh03-reader-adapt-products!-identities])
 
@@ -92,7 +103,8 @@
                :descriptor {:decoded-codepoints (mapv int payload)}}]
     {:source-unit source-unit :bytes bytes :content-id content-id
      :boundaries (sh03-reader-source-scalar-boundaries! "fixture" text bytes)
-     :forms [{:form-id "form/0" :kind :tagged-literal :tag-codepoints (mapv int (str tag))
+        :forms [{:form-id "form/0" :kind :tagged-literal :origin :source
+                 :tag-codepoints (mapv int (str tag))
               :children ["form/1"] :span (span 0 end)}
              {:form-id "form/1" :kind :string :open-token "token/1" :children []
               :span (span start end) :raw slice :value reference}]
@@ -113,9 +125,10 @@
             ['inst "2026-10-28T00:00:00.000-00:00"
              (java.util.Date. 1793145600000) 'gravity.reader.standard/read-inst]]]
     (let [input (fixture tag payload)
-          calls (atom []) original reader-dispatch/dispatch
+          calls (atom []) seeds (atom []) original reader-dispatch/dispatch
           result (with-redefs [reader-dispatch/dispatch
                               (fn [& args] (swap! calls conj (second args))
+                                (swap! seeds conj (nth args 2))
                                 (apply original args))]
                    (binding [*data-readers* {tag (fn [_] (throw (Exception. "ambient")))}]
                      (execute input)))
@@ -123,9 +136,13 @@
       (is (= expected (get-in result [:values "form/0"])))
       (is (= payload (get-in result [:values "form/1"])))
       (is (= [tag] @calls))
+      (is (= #{:source-id :form-id :span :datum}
+             (set (keys (first @seeds)))))
       (is (= handler (:handler record)))
       (is (= :invoked (:status record)))
       (is (= :unsealed-bootstrap-observation (:authority record)))
+      (is (= :source (:origin record)))
+      (is (= (get-in input [:source-unit :path]) (:source-path record)))
       (is (= (get-in input [:source-unit :source-id]) (:source-id record)))
       (is (= (:content-id input) (:source-content-hash record)))
       (is (= (canonical-hash standard-reader-policy) (:policy-id record)))
@@ -188,6 +205,105 @@
     (is (not= (:input-hash a) (:input-hash b)))
     (is (not= (:result-hash a) (:result-hash b)))
     (is (= (:policy-id a) (:policy-id b)))))
+
+(deftest actual-path-provenance-does-not-change-semantic-hashes
+  (let [input (fixture 'uuid "550e8400-e29b-41d4-a716-446655440000")
+        alternate (assoc input :source-unit
+                         (assoc (:source-unit input) :path "fixtures/alternate.gravity"))
+        observation #(first (:extension-dispatch-observations %))
+        a (observation (execute input))
+        b (observation (execute alternate))]
+    (is (= (:source-id a) (:source-id b)))
+    (is (= (:source-content-hash a) (:source-content-hash b)))
+    (is (= (:input-hash a) (:input-hash b)))
+    (is (= (:result-hash a) (:result-hash b)))
+    (is (not= (:source-path a) (:source-path b)))
+    (is (= :source (:origin a) (:origin b)))))
+
+(deftest malformed-standard-source-and-forms-refuse-before-dispatch
+  (let [input (fixture 'uuid "550e8400-e29b-41d4-a716-446655440000")
+        calls (atom 0)
+        changed "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        foreign (proxy [java.util.HashMap] []
+                  (entrySet [] (swap! calls inc)
+                            (throw (Exception. "foreign identity callback"))))]
+    (with-redefs [reader-dispatch/dispatch (fn [& _] (swap! calls inc))]
+      (doseq [bad [(assoc input :bytes (.getBytes "stale" "UTF-8"))
+                   (assoc-in input [:source-unit :bytes-hash] changed)
+                   (assoc-in input [:source-unit :identity-inputs :bytes-hash] changed)
+                   (assoc-in input [:source-unit :identity-inputs :foreign] foreign)]]
+        (is (= :source-identity
+               (:reason (failure #(execute bad))))))
+      (is (= :sh03-reader-dispatch-source-binding
+             (:rule (failure #(execute (assoc input :content-id changed))))))
+      (is (= :sh03-reader-dispatch-source-binding
+             (:rule (failure #(sh03-reader-host-values!
+                               "other.gravity" (:bytes input) (:content-id input)
+                               (:boundaries input) (:forms input) (:index input)
+                               (:source-unit input))))))
+      (is (= :origin
+             (:reason (failure #(execute (assoc-in input [:forms 0 :origin] :generated))))))
+      (is (= :span
+             (:reason (failure #(execute (assoc-in input [:forms 0 :span :byte-start] -1))))))
+      (is (zero? @calls)))))
+
+(defn- reconstructed-standard-product [input]
+  (let [result (execute input)
+        ids {"form/0" :form-0 "form/1" :form-1}]
+    {:ids ids
+     :forms (mapv (fn [form]
+                    {:form-id (get ids (:form-id form))
+                     :value (get-in result [:values (:form-id form)])})
+                  (:forms input))
+     :observations (:extension-dispatch-observations result)}))
+
+(deftest returned-standard-products-require-fresh-values-and-observations
+  (let [input (fixture 'uuid "550e8400-e29b-41d4-a716-446655440000")
+        candidate (reconstructed-standard-product input)
+        match? (fn [candidate*]
+                 (reader-standard-dispatch-products-match?
+                  (get-in input [:source-unit :path]) (:bytes input)
+                  (:content-id input) (:boundaries input) (:forms input)
+                  (:index input) (:source-unit input) (:ids candidate*)
+                  (:forms candidate*) (:observations candidate*)))]
+    (is (true? (match? candidate)))
+    (doseq [path [[:handler] [:policy-id] [:source-id] [:source-content-hash]
+                  [:source-path] [:origin] [:span] [:input-hash] [:result-hash]]]
+      (is (false? (match? (assoc-in candidate (into [:observations 0] path)
+                                    :forged)))))
+    (is (false? (match? (assoc candidate :observations nil))))
+    (is (false? (match? (update candidate :forms subvec 1))))
+    (is (false? (match? (assoc-in candidate [:forms 0 :value] :forged))))
+    (is (false? (match? (assoc-in candidate [:ids "form/0"] :missing))))))
+
+(deftest standard-source-joins-do-not-enter-pure-sealed-or-resource-branches
+  (let [input (fixture 'uuid "550e8400-e29b-41d4-a716-446655440000")
+        standard-calls (atom 0)
+        reject-standard (fn [& _]
+                          (swap! standard-calls inc)
+                          (throw (ex-info "standard branch reached" {})))]
+    (with-redefs [reader-dispatch/validate-standard-source! reject-standard
+                  reader-dispatch/pure-source? (constantly true)
+                  reader-dispatch/validate-pure-tags! (fn [& _] {})
+                  reader-dispatch/dispatch-pure-tag
+                  (fn [& _] {:value :pure-value :pure-result {:branch :pure}})]
+      (is (= :pure-value (get-in (execute input) [:values "form/0"]))))
+    (let [resource (fixture 'resource "fixtures/input.txt")]
+      (with-redefs [reader-resource-options? (constantly true)
+                    reader-resource-record!
+                    (fn [_]
+                      {:invocations [{:form-id "form/0"
+                                      :input-seed {:datum "fixtures/input.txt"}
+                                      :returned-seed {:datum :resource-value}}]})
+                    reader-dispatch/validate-standard-source! reject-standard]
+        (is (= :resource-value (get-in (execute resource) [:values "form/0"])))))
+    (let [sealed (fixture 'text "sealed text")]
+      (with-redefs [pure-text/options? (constantly true)
+                    pure-text/returned-data!
+                    (fn [_] {"form/0" {:decoded-codepoints (mapv int "sealed text")}})
+                    reader-dispatch/validate-standard-source! reject-standard]
+        (is (= "sealed text" (get-in (execute sealed) [:values "form/0"])))))
+    (is (zero? @standard-calls))))
 
 (deftest normal-adapter-cannot-dispatch-before-its-existing-semantic-closure-check
   (let [calls (atom []) sentinel (ex-info "Stop at existing validation boundary" {})]

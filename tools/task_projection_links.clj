@@ -1,11 +1,49 @@
 (ns task-projection-links
-  "Document-relative task links; no CLI, task discovery or write operations."
-  (:require [clojure.string :as str] [clojure.java.io :as io]))
-
-(load-file "tools/task_projection.clj")
+  "Document-relative task links and bounded repository output writes."
+  (:require [clojure.string :as str]
+            [clojure.java.io :as io]
+            [task-projection :as task-projection]))
 
 (def link-pattern #"\[([^\[\]<>!\\\n]+)\]\(([^\s()<>\"`\\]+)\)")
 (defn fail [component message] (task-projection/fail (str component " " message)))
+
+(def nofollow-links
+  (into-array java.nio.file.LinkOption [java.nio.file.LinkOption/NOFOLLOW_LINKS]))
+
+(defn- repository-root []
+  (.toRealPath (.toPath (io/file ".")) (make-array java.nio.file.LinkOption 0)))
+
+(defn safe-output-path
+  "Return a repository-relative output path after rejecting symlinked parents and targets."
+  [component path]
+  (let [root (repository-root)
+        relative (.normalize (.toPath (io/file path)))]
+    (when (or (.isAbsolute relative) (.startsWith relative ".."))
+      (fail component "output path must remain repository-relative"))
+    (let [target (.normalize (.resolve root relative))
+          parent (.getParent target)
+          parent-relative (.relativize root parent)]
+      (when-not (.startsWith target root)
+        (fail component "output path escapes repository"))
+      (loop [cursor root parts (iterator-seq (.iterator parent-relative))]
+        (when (seq parts)
+          (let [next-path (.resolve cursor (str (first parts)))]
+            (when (java.nio.file.Files/isSymbolicLink next-path)
+              (fail component "output parent must not be a symbolic link"))
+            (recur next-path (next parts)))))
+      (when-not (java.nio.file.Files/isDirectory parent nofollow-links)
+        (fail component "output parent must be an existing directory"))
+      (when (java.nio.file.Files/isSymbolicLink target)
+        (fail component "output target must not be a symbolic link"))
+      target)))
+
+(defn write-file!
+  "Write a generated repository file only after the no-symlink boundary check."
+  [component path text]
+  (let [target (safe-output-path component path)]
+    (java.nio.file.Files/write target (.getBytes ^String text "UTF-8")
+                               (make-array java.nio.file.OpenOption 0))
+    target))
 
 (defn relative-target [component document target]
   ;; Pure lexical resolution; existence and symlink containment are separate.

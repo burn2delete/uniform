@@ -1,88 +1,15 @@
 (let [p15-s23-c13-c14-b1-authority-token (nth __gravity_bootstrap_lexical_values_126914 0)]
 (defn- p15-s23-b2-c17-process-exit-code
   [value]
-  (if (boolean? value) (if value 1 0) value))
+  (gravity.backend.c/process-exit-code value))
 
 (defn p15-s23-b2-c17-proof-to-c-assumption-record
-  [b1-record mir operations operation-records return-id
-   return-value-name semantic-result]
-  (let [certificates (get-in b1-record [:proofs :certificates])
-        base-entries
-        [{:assumption :signed-i64-carrier
-          :evidence :authenticated-mir-scalar-type-and-constant-closure
-          :c-site :all-generated-int64-t-initializers
-          :outcome :proven-safe}
-         {:assumption :explicit-discarded-value-conversions
-          :evidence :initialized-generated-scalar-liveness
-          :c-site :one-void-conversion-per-generated-local
-          :outcome :proven-safe}
-         {:assumption :final-exit-code-narrowing
-          :evidence :independent-pure-mir-evaluation-in-0-to-255
-          :c-site (str "return (int)" return-value-name ";")
-          :outcome :proven-safe}]
-        equality-entries
-        (if (some #(= :integer-eq (:opcode %)) operations)
-          (conj
-           base-entries
-           {:assumption :defined-signed-i64-equality
-            :evidence
-            :authenticated-two-integer-operands-and-boolean-result
-            :c-site :generated-integer-eq-expressions
-            :outcome :proven-safe})
-          base-entries)
-        entries
-        (if (some #(contains?
-                    #{:integer-lt :integer-lte :integer-gt :integer-gte}
-                    (:opcode %))
-                  operations)
-          (conj
-           equality-entries
-           {:assumption :defined-signed-i64-ordering
-            :evidence
-            :authenticated-ordered-two-integer-operands-and-boolean-result
-            :c-site :generated-integer-ordering-expressions
-            :outcome :proven-safe})
-          equality-entries)]
-    {:artifact :gravity/b2-proof-to-c-assumption-map
-     :proof-certificate-binding
-     {:content-id (:content-id certificates)
-      :entry-count (:entry-count certificates)}
-     :operation-bindings
-     (p15-s23-b2-c17-operation-proof-bindings
-      operations operation-records)
-     :entries entries
-     :generated-c-casts
-     (conj
-      (p15-s23-b2-c17-discard-cast-records
-       operations operation-records)
-      {:kind :integer-narrowing
-       :site (str "return (int)" return-value-name ";")
-       :from :int64-t :to :int
-       :proof :independent-pure-mir-evaluation-in-0-to-255
-       :proof-binding
-       {:kind :independent-bounded-mir-evaluation
-        :mir-module-id (:module-id mir)
-        :return-operation-id return-id
-        :semantic-result semantic-result
-        :permitted-result-range [0 255]
-        :b1-artifact-id (:artifact-id b1-record)
-        :proof-table-content-id (:content-id certificates)}})
-     :all-casts-proof-authorized? true
-     :implicit-undefined-behavior-permitted? false}))
+  [b1-record mir operations operation-records return-id return-value-name semantic-result]
+  (gravity.backend.c/proof-to-c-assumption-record #'p15-s23-b2-c17-operation-proof-bindings #'p15-s23-b2-c17-discard-cast-records b1-record mir operations operation-records return-id return-value-name semantic-result))
 
 (defn- p15-s23-b2-c17-assert-exact!
   [source-path expected actual missing-fact]
-  (when-let [mismatch
-             (p15-s23-c6c10-strict-first-mismatch
-              source-path expected actual [])]
-    (p15-s23-c-backend-fail!
-     "B2-MANIFEST" source-path actual
-     {:missing-fact missing-fact
-      :bounded-reason
-      (select-keys mismatch
-                   [:path :expected-kind :actual-kind
-                    :expected-count :actual-count
-                    :missing-key-count :unexpected-key-count])})))
+  (gravity.backend.c/assert-exact! #'p15-s23-c6c10-strict-first-mismatch #'p15-s23-c-backend-fail! source-path expected actual missing-fact))
 
 (defn- p15-s23-b2-c17-independent-raw
   [source-path c11-artifact c-packet]

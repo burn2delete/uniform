@@ -179,6 +179,9 @@
    :public-authority? false
    :release? false})
 
+(defn w5-tc-not [value]
+  (if value false true))
+
 (defn w5-tc-member-from? [values value index]
   (if (= index (count values))
     false
@@ -205,9 +208,11 @@
       false)))
 
 (defn w5-tc-path-ends-with? [value suffix]
-  (if (and (string? value) (string? suffix))
-    (if (<= (count suffix) (count value))
-      (w5-tc-suffix-match? value suffix 0)
+  (if (string? value)
+    (if (string? suffix)
+      (if (<= (count suffix) (count value))
+        (w5-tc-suffix-match? value suffix 0)
+        false)
       false)
     false))
 
@@ -766,42 +771,42 @@
 (defn w5-tooling-conformance-verify [request]
   (if (w5-tc-request-valid? request)
     (w5-tc-accepted request)
-    (if (not (w5-tc-request-shape-valid? request))
+    (if (w5-tc-not (w5-tc-request-shape-valid? request))
       (w5-tc-rejected request "W5-TC-SCHEMA" :schema)
-      (if (not (w5-tc-target-contract-valid?
+      (if (w5-tc-not (w5-tc-target-contract-valid?
                 (get request :target-contract)))
         (w5-tc-rejected request "W5-TC-TARGET" :target)
-        (if (not (w5-tc-provenance-valid?
+        (if (w5-tc-not (w5-tc-provenance-valid?
                   (get request :provenance)))
           (w5-tc-rejected request "W5-TC-PROVENANCE" :provenance)
-          (if (not (w5-tc-source-provenance-bindings-valid? request))
+          (if (w5-tc-not (w5-tc-source-provenance-bindings-valid? request))
             (w5-tc-rejected request "W5-TC-PROVENANCE" :provenance)
-            (if (not (w5-tc-source-valid? (get request :source)))
+            (if (w5-tc-not (w5-tc-source-valid? (get request :source)))
               (w5-tc-rejected request "W5-TC-SOURCE" :source)
-              (if (not (w5-tc-check-valid? (get request :check)))
+              (if (w5-tc-not (w5-tc-check-valid? (get request :check)))
             (w5-tc-rejected request "W5-TC-CHECK" :check)
-            (if (not (w5-tc-replay-valid? (get request :replay)))
+            (if (w5-tc-not (w5-tc-replay-valid? (get request :replay)))
               (w5-tc-rejected request "W5-TC-REPLAY" :replay)
-                      (if (not (w5-tc-narrative-valid?
+                      (if (w5-tc-not (w5-tc-narrative-valid?
                                (get request :narrative)))
                 (w5-tc-rejected request "W5-TC-NARRATIVE" :narrative)
-                (if (not (w5-tc-suite-valid? (get request :suite)))
+                (if (w5-tc-not (w5-tc-suite-valid? (get request :suite)))
                   (w5-tc-rejected request "W5-TC-SUITE" :suite)
-                  (if (not (w5-tc-separation-valid?
+                  (if (w5-tc-not (w5-tc-separation-valid?
                             (get request :separation)))
                     (w5-tc-rejected request "W5-TC-CHECK" :check)
-                    (if (not (w5-tc-evidence-valid?
+                    (if (w5-tc-not (w5-tc-evidence-valid?
                               (get request :evidence)))
                       (w5-tc-rejected request "W5-TC-SCHEMA" :schema)
-                      (if (not (w5-tc-authority-valid?
+                      (if (w5-tc-not (w5-tc-authority-valid?
                                 (get request :authority)))
                         (w5-tc-rejected request "W5-TC-AUTHORITY"
                                         :authority)
-                      (if (not (= (get request :residual-seed-harness)
+                      (if (w5-tc-not (= (get request :residual-seed-harness)
                                     w5-tc-seed-harness))
                           (w5-tc-rejected request "W5-TC-AUTHORITY"
                                           :authority)
-                          (if (not (w5-tc-provenance-valid?
+                          (if (w5-tc-not (w5-tc-provenance-valid?
                                     (get request :provenance)))
                             (w5-tc-rejected request "W5-TC-PROVENANCE"
                                             :provenance)
@@ -851,18 +856,20 @@
        :matrix-240-credit? false
        :fail-closed? true})))
 
-(def w5-tooling-conformance-policy w5-tc-policy)
-(def w5-tooling-conformance-diagnostic-catalog w5-tc-diagnostic-catalog)
-(def w5-tooling-conformance-diagnostic w5-tc-diagnostic)
-(def w5-tooling-conformance-source-valid? w5-tc-source-valid?)
-(def w5-tooling-conformance-check-valid? w5-tc-check-valid?)
-(def w5-tooling-conformance-replay-valid? w5-tc-replay-valid?)
-(def w5-tooling-conformance-narrative-valid? w5-tc-narrative-valid?)
-(def w5-tooling-conformance-suite-valid? w5-tc-suite-valid?)
-(def w5-tc-target-valid? w5-tooling-conformance-target-valid?)
-(def w5-tc-request-valid? w5-tooling-conformance-request-valid?)
-(def w5-tc-verify w5-tooling-conformance-verify)
-(def w5-tc-execute w5-tooling-conformance-execute)
-(def w5-tc-run w5-tooling-conformance-run)
-(def w5-tc-recompute w5-tooling-conformance-recompute)
-(def w5-tc-verify-result w5-tooling-conformance-verify-result)
+(defn w5-tooling-conformance-policy [] (w5-tc-policy))
+(defn w5-tooling-conformance-diagnostic-catalog [] (w5-tc-diagnostic-catalog))
+(defn w5-tooling-conformance-diagnostic [request rule reason]
+  (w5-tc-diagnostic request rule reason))
+(defn w5-tooling-conformance-source-valid? [source] (w5-tc-source-valid? source))
+(defn w5-tooling-conformance-check-valid? [check] (w5-tc-check-valid? check))
+(defn w5-tooling-conformance-replay-valid? [replay] (w5-tc-replay-valid? replay))
+(defn w5-tooling-conformance-narrative-valid? [narrative]
+  (w5-tc-narrative-valid? narrative))
+(defn w5-tooling-conformance-suite-valid? [suite] (w5-tc-suite-valid? suite))
+(defn w5-tc-target-valid? [target] (w5-tooling-conformance-target-valid? target))
+(defn w5-tc-verify [request] (w5-tooling-conformance-verify request))
+(defn w5-tc-execute [request] (w5-tooling-conformance-execute request))
+(defn w5-tc-run [request] (w5-tooling-conformance-run request))
+(defn w5-tc-recompute [request] (w5-tooling-conformance-recompute request))
+(defn w5-tc-verify-result [request result]
+  (w5-tooling-conformance-verify-result request result))

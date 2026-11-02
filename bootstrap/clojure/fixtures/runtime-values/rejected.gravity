@@ -1,0 +1,4 @@
+(ns fixture.runtime-values.rejected (:profile :hosted) (:target :jvm) (:effects #{}) (:capabilities #{}))
+(defn divide-zero [] (/ 1 0))
+(defn wrong-operand [] (+ "bad" 1))
+(defn lookup-eager-default [] (get {:a 7} :a (/ 1 0)))

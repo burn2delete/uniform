@@ -4,14 +4,6 @@
 ;; prevents host reader/printer implementation details (notably BigInt's `N`
 ;; suffix and ambient print vars) from becoming Gravity output semantics, but
 ;; it does not claim that readable printing has moved into Gravity source.
-(def p15-s23-seed-readable-printer-limits
-  {:maximum-arguments 256
-   :maximum-nodes 4096
-   :maximum-depth 96
-   :maximum-collection-width 512
-   :maximum-integer-bits 4096
-   :maximum-scalar-bytes 32768
-   :maximum-output-bytes 262144})
 
 (def p15-s23-seed-readable-printer-scalar-class-kinds
   {java.lang.Boolean :boolean

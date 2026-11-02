@@ -33,7 +33,6 @@
 (defn p15-s23-c14-c-target-policy
   []
   {:scope :bounded-pure-scalar-forwarding-do-let-if-integer-comparisons
-   :maximum-operation-count 128
    :dialect :c17
    :whole-c14? false :whole-b1? false :whole-b2? false
    :public? false :release? false :self-hosted? false})

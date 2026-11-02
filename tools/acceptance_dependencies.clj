@@ -4,7 +4,8 @@
   (:require [clojure.string :as str]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [gravity.tooling.strict-json :as json]))
+            [gravity.tooling.strict-json :as json]
+            [requirement-sources :as requirement-sources]))
 
 (def roadmap-path "docs/full-language-implementation-gap-map.md")
 (def milestone-path "docs/self-hosting-milestone-completion-plan.md")
@@ -155,8 +156,8 @@
               parsed (mapv #(re-matches #"- \[[ xX]\] `([^\s`]+)`(?: .*)?" %) rows)
               ids (mapv second parsed)]
           ;; Preserve literal existing IDs, including backend-llvm. Naming is
-          ;; not ownership: each component's projector validates its own exact
-          ;; population; this read-only census must not invent a prefix policy.
+          ;; not ownership: this read-only census must not invent a prefix
+          ;; policy or become a second task authority.
           (require! (and (seq ids) (every? some? parsed)
                          (= (count ids) (count (set ids))))
                     (str "Missing, duplicate or malformed implementation IDs: " component))
@@ -203,13 +204,204 @@
 ;; crosswalk routes are incidence, not a second editable task/status graph.
 (def sh-crosswalk-path "specs/sh-family-crosswalk/crosswalk.edn")
 
-(defn source-bound! [{:keys [path start-byte end-byte sha256 raw]} read-text]
-  (let [text (read-text path) bytes (.getBytes text "UTF-8")]
-    (require! (and (integer? start-byte) (integer? end-byte)
-                   (<= 0 start-byte end-byte (alength bytes))) "Invalid source byte span")
-    (let [actual (String. (java.util.Arrays/copyOfRange bytes start-byte end-byte) "UTF-8")]
-      (require! (and (= raw actual) (= sha256 (acceptance-dependencies/sha256 actual)))
-                (str "Changed source span: " path)))))
+(defn navigation-source-path? [path]
+  ;; Component roadmaps and task-ledger preambles are navigation-only views of
+  ;; the exact task rows. Their captured digests stay in the crosswalk as
+  ;; historical provenance, but layout edits must not rebind SH acceptance
+  ;; history. Task rows and all other source-bound inputs remain exact below;
+  ;; the separately classified historical ownership map is not a current claim.
+  (or (str/starts-with? path "docs/component-roadmaps/")
+      (re-matches #"specs/[a-z-]+-workflow/tasks\.md" path)))
+
+(defn historical-sh-source-path? [path]
+  ;; This ownership map is a historical SH routing input. Its live entries may
+  ;; be retired without rebinding current task or acceptance authority; the
+  ;; caller records that drift as unassessed instead of treating it as current.
+  (= path "docs/self-hosting-slice-ownership.edn"))
+
+(defn source-raw
+  "Resolve a legacy inline source span or a normalized crosswalk snapshot.
+  Snapshot references are content-addressed and therefore fail closed on a
+  missing, substituted or internally inconsistent payload."
+  ([source] (source-raw source nil))
+  ([source snapshots]
+   (cond
+     (contains? source :raw)
+     (do
+       (require! (not (contains? source :source-snapshot-ref))
+                 "Source span contains both inline and referenced payloads")
+       (require! (string? (:raw source)) "Inline source span is not text")
+       (:raw source))
+
+     :else
+     (let [reference (:source-snapshot-ref source)
+           raw (get snapshots reference)]
+       (require! (and (string? reference) (string? raw)
+                      (= reference (sha256 raw)))
+                 "Missing or tampered source snapshot")
+       raw))))
+
+(defn source-bound!
+  ([source read-text] (source-bound! source nil read-text))
+  ([{:keys [path start-byte end-byte sha256] :as source} snapshots read-text]
+   (let [raw (source-raw source snapshots)
+         text (read-text path) bytes (.getBytes text "UTF-8")]
+     (require! (and (integer? start-byte) (integer? end-byte)
+                    (<= 0 start-byte end-byte (alength bytes))) "Invalid source byte span")
+     (let [actual (String. (java.util.Arrays/copyOfRange bytes start-byte end-byte) "UTF-8")]
+       (require! (and (= raw actual) (= sha256 (acceptance-dependencies/sha256 actual)))
+                 (str "Changed source span: " path))))))
+
+(def platform-task-source-transition
+  requirement-sources/platform-task-source-transition)
+
+(defn- platform-task-row-matches [text id]
+  (let [quoted-id (java.util.regex.Pattern/quote id)
+        pattern (re-pattern
+                 (str "(?ms)^- \\[([ xX])\\] `" quoted-id
+                      "` .*?(?=^\\- \\[|^<!-- platform-implementation-tasks:end -->)"))
+        matcher (re-matcher pattern text)]
+    (loop [matches []]
+      (if (.find matcher)
+        (recur (conj matches {:raw (str/trim (.group matcher))
+                              :start (.start matcher)}))
+        matches))))
+
+(defn platform-task-row
+  "Return one exact Platform task row, excluding inter-row navigation whitespace.
+  The row's status, criteria and source basis are all part of the authenticated
+  bytes; only surrounding ledger layout is intentionally ignored."
+  [text id]
+  (let [matches (platform-task-row-matches text id)]
+    (require! (= 1 (count matches))
+              (str "Missing or duplicate Platform task row: " id))
+    (:raw (first matches))))
+
+(defn- utf8-line-number [bytes offset]
+  (inc (count (filter #(= 10 (aget bytes %)) (range offset)))))
+
+(defn- platform-task-locator [baseline id path]
+  (let [matches (platform-task-row-matches baseline id)]
+    (require! (= 1 (count matches))
+              (str "Missing or duplicate historical Platform task row: " id))
+    (let [{:keys [raw start]} (first matches)
+          bytes (.getBytes ^String baseline "UTF-8")
+          raw-bytes (.getBytes ^String raw "UTF-8")
+          end (+ start (alength raw-bytes))]
+      {:path path
+       :start-byte start
+       :end-byte end
+       :start-line (utf8-line-number bytes start)
+       :end-line (utf8-line-number bytes (dec end))
+       :sha256 (sha256 raw)
+       :source-snapshot-ref (sha256 raw)})))
+
+(defn- validate-platform-task-locator!
+  [transition row baseline snapshots]
+  (let [id (:id row)
+        path (:path transition)
+        source (:source row)
+        historical-source-commit (:historical-source-commit transition)
+        expected (platform-task-locator baseline id path)]
+    (require! (= path (:path row))
+              (str "Platform task file path changed: " id))
+    (require! (= historical-source-commit (:source-commit row))
+              (str "Platform task source commit changed: " id))
+    (require! (= (:baseline-sha256 transition) (:file-sha256 row))
+              (str "Platform task file digest changed: " id))
+    ;; Compare the complete historical locator, not merely its recovered text.
+    ;; This retains byte offsets, UTF-8 line bounds, span digest and snapshot
+    ;; identity before the current applying row is considered.
+    (require! (= expected source)
+              (str "Platform task source locator changed: " id))
+    (require! (= (platform-task-row baseline id) (source-raw source snapshots))
+              (str "Platform task source snapshot changed: " id))))
+
+(defn platform-task-transition-view
+  "Authenticate the four Platform task rows across PR554's frozen source view.
+  The transition is intentionally exact and one-way: the historical crosswalk
+  rows must occur in the baseline Git blob, and the live rows must equal the
+  applying Git blob.  Preamble/order/layout edits remain navigation-only."
+  [transition rows snapshots read-text]
+  (require! (= transition platform-task-source-transition)
+            "Platform task source transition identity or qualification changed")
+  (let [parent (get requirement-sources/exact-source-bridge-contracts
+                    (:parent-bridge-kind transition))
+        path (:path transition)
+        expected-ids (set (:task-ids transition))
+        ids (mapv :id rows)
+        read-ref (fn [ref source-path]
+                   (requirement-sources/git-source "." ref source-path require!))
+        _ (require! (and parent
+                         (= (:parent-bridge-applying-ref transition)
+                            (:applying-ref parent))
+                         (= (:applying-ref transition)
+                            (:parent-bridge-applying-ref transition)))
+                    "Platform task transition is detached from the PR554 source bridge")
+        _ (require! (not= (:baseline-ref transition) (:applying-ref transition))
+                    "Platform task source transition replays one source identity")
+        _ (require! (and (= expected-ids (set ids))
+                         (= (count ids) (count (set ids))))
+                    "Platform task transition has missing or duplicate task identities")
+        _ (requirement-sources/validate-snapshots!
+           transition read-ref sha256 require!)
+        historical (read-ref (:historical-source-commit transition) path)
+        _ (require! (= (:historical-source-tree transition)
+                       (requirement-sources/git-commit-tree
+                        "." (:historical-source-commit transition) require!))
+                    "Platform historical source commit/tree changed")
+        _ (require! (= (:baseline-sha256 transition) (sha256 historical))
+                    "Platform historical source commit bytes differ from baseline")
+        _ (require! (= (:baseline-blob transition)
+                       (requirement-sources/git-blob-id historical))
+                    "Platform historical source commit blob differs from baseline")
+        baseline (read-ref (:baseline-ref transition) path)
+        applying (read-ref (:applying-ref transition) path)
+        current (read-text path)]
+    (doseq [{:keys [id source]} rows]
+      (validate-platform-task-locator! transition
+                                        (first (filter #(= id (:id %)) rows))
+                                        baseline snapshots)
+      (let [raw (source-raw source snapshots)
+            historical-row (platform-task-row baseline id)
+            applying-row (platform-task-row applying id)
+            current-row (platform-task-row current id)]
+        (require! (= raw historical-row)
+                  (str "Historical Platform task body is not the frozen source row: " id))
+        (require! (= current-row applying-row)
+                  (str "Changed or unauthenticated current Platform task row: " id))))
+    {:kind (:kind transition)
+     :path path
+     :row-ids (vec (sort ids))
+     :historical-source-commit (:historical-source-commit transition)
+     :historical-source-tree (:historical-source-tree transition)
+     :baseline-ref (:baseline-ref transition)
+     :baseline-tree (:baseline-tree transition)
+     :applying-ref (:applying-ref transition)
+     :applying-tree (:applying-tree transition)
+     :snapshot-provenance :git-bytes-verified
+     :locator-provenance :historical-git-blob-and-utf8-span-verified
+     :authority :historical-routing-and-structural-only
+     :current-file-sha256 (sha256 current)}))
+
+(defn current-task-body!
+  "Check a current task row's captured body without rebinding its history.
+  Task-ledger preambles are navigation layout, so their edits can shift a row;
+  the row itself must remain one unique exact captured byte sequence."
+  ([source read-text] (current-task-body! source nil read-text))
+  ([{:keys [path sha256] :as source} snapshots read-text]
+   (let [raw (source-raw source snapshots)
+         text (read-text path)
+        occurrence-count (loop [offset 0 occurrences 0]
+                           (let [found (.indexOf text raw offset)]
+                             (if (neg? found)
+                               occurrences
+                               (recur (+ found (max 1 (clojure.core/count raw)))
+                                      (inc occurrences)))))]
+     (require! (= sha256 (acceptance-dependencies/sha256 raw))
+               (str "Forged current task body digest: " path))
+     (require! (= 1 occurrence-count)
+               (str "Changed or ambiguous current task body: " path)))))
 
 (defn typed-adjacency [nodes edges condition-values]
   (let [ids (set (keys nodes))]
@@ -303,10 +495,13 @@
 
 (defn task-sh-view [crosswalk read-text]
   (let [requirements (:requirements crosswalk)
+        snapshots (:source-snapshots crosswalk)
+        source-text #(source-raw % snapshots)
         shared-rule (:shared-completion-rule crosswalk)
-        _ (source-bound! (:source shared-rule) read-text)
+        _ (source-bound! (:source shared-rule) snapshots read-text)
         _ (require! (and (= :sh03-and-later-uniform-completion (:id shared-rule))
-                         (str/starts-with? (get-in shared-rule [:source :raw]) "## Three boundaries and one shared completion rule"))
+                         (str/starts-with? (source-text (:source shared-rule))
+                                           "## Three boundaries and one shared completion rule"))
                     "Missing original shared completion rule")
         original-sh (milestone-graph (read-text milestone-path))
         _ (require-population! (set (for [n (range 30) r (range 1 7)] (format "SH-%02d.%d" n r)))
@@ -314,6 +509,11 @@
         _ (require! (= 180 (count requirements)) "Duplicate SH criterion")
         tasks (vec (mapcat val (:task-authorities crosswalk)))
         task-map (into {} (map (juxt :id identity) tasks))
+        platform-tasks (vec (filter #(= "platform" (:component %)) tasks))
+        platform-transition
+        (when (seq platform-tasks)
+          (platform-task-transition-view platform-task-source-transition
+                                         platform-tasks snapshots read-text))
         routing (:stable-task-routing-keys crosswalk)
         _ (require! (= (count tasks) (count task-map)) "Duplicate global literal task ID")
         _ (doseq [[component rows] (:task-authorities crosswalk)]
@@ -322,18 +522,20 @@
               (implementation-ids (read-text (str "specs/" component "-workflow/tasks.md")) component)
               (str component " live implementation task")))
         _ (doseq [row tasks]
-            (source-bound! (:source row) read-text)
-            (let [[_ checked id] (re-find #"^- \[([ xX])\] `([^`]+)`" (get-in row [:source :raw]))]
+            (when-not (and (= "platform" (:component row))
+                           (= (:path (:source row)) (:path platform-task-source-transition)))
+              (current-task-body! (:source row) snapshots read-text))
+            (let [[_ checked id] (re-find #"^- \[([ xX])\] `([^`]+)`" (source-text (:source row)))]
               (require! (and (= id (:id row)) (= (:checked row) (not= " " checked)))
                         "Task status/ID differs from actual authority")
               (when (:checked row)
-                (require! (str/includes? (get-in row [:source :raw]) "Accepted;")
+                (require! (str/includes? (source-text (:source row)) "Accepted;")
                           "Checked task lacks explicit accepted status"))))
         _ (doseq [r requirements]
-            (source-bound! (:acceptance-source r) read-text)
-            (source-bound! (:context-source r) read-text)
+            (source-bound! (:acceptance-source r) snapshots read-text)
+            (source-bound! (:context-source r) snapshots read-text)
             (when-let [history (get-in r [:historical-completion :evidence-source])]
-              (source-bound! history read-text))
+              (source-bound! history snapshots read-text))
             (require! (= (set (:completion-prerequisites r)) (get original-sh (:milestone r)))
                       "SH criterion changed original completion prerequisites")
             (require! (= (:shared-completion-rule r)
@@ -343,7 +545,21 @@
                       "Unmapped SH criterion without explicit gap")
             (doseq [t (:task-references r)]
               (require! (= (:component t) (:component (task-map (:id t)))) "Unknown SH task owner/reference")))
-        _ (doseq [[path digest] (:source-digests crosswalk)]
+        historical-source-applicability
+        (into (sorted-map)
+              (for [[path digest] (:source-digests crosswalk)
+                    :when (historical-sh-source-path? path)]
+                [path (evidence-source-state
+                       {:path path
+                        :sha256 digest
+                        :source-commit (get-in crosswalk [:applying-source-pins path])
+                        :current-applicability :unassessed}
+                       read-text)]))
+        ;; Navigation snapshots and the explicitly historical ownership input
+        ;; report drift separately; current task/acceptance inputs stay exact.
+        _ (doseq [[path digest] (:source-digests crosswalk)
+                  :when (not (or (navigation-source-path? path)
+                                 (historical-sh-source-path? path)))]
             (require! (= digest (sha256 (read-text path))) (str "Stale SH input: " path)))
         ;; Contract declarations permit interface work; they do not attest an
         ;; implementation. Acceptance facets remain unknown without exact receipts.
@@ -367,9 +583,9 @@
         _ (require-population! (set (map #(format "SH07-C%02d" %) (range 1 19))) (map :id sequence) "SH07 sequence")
         _ (require! (= 18 (count sequence)) "Duplicate SH07 sequence row")
         _ (doseq [r sequence]
-            (source-bound! (:source r) read-text)
+            (source-bound! (:source r) snapshots read-text)
             (let [[_ id _ _ declaration] (re-matches #"\| (SH07-C\d{2}) \| ([^|]+) \| ([^|]+) \| ([^|]+) \| ([^\n]+)\|"
-                                                    (get-in r [:source :raw]))]
+                                                    (source-text (:source r)))]
               (require! (and (= id (:id r)) (= (str/trim declaration) (:dependency-declaration r)))
                         "SH07 sequence metadata differs from original source")))
         sequence-nodes (into {} (for [r sequence] [(:id r) {:state :unassessed :scope :original-implementation-sequence}]))
@@ -425,6 +641,8 @@
     {:schema-version 1 :authority :structural-only :nodes nodes :typed-edges edges
      :condition-values conditions
      :evidence-source-applicability evidence-applicability
+     :platform-task-source-transition platform-transition
+     :historical-source-applicability historical-source-applicability
      :mapping-ready? (every? #(= :owner-and-independent-reviewed (:coverage %)) requirements)
      :coverage-gaps (mapv :id (filter #(= :missing-task-authority (:coverage %)) requirements))
      :adjacency adjacency :cycles (cycles adjacency) :frontier (advisory-frontier nodes edges conditions)

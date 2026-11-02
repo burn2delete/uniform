@@ -267,7 +267,7 @@ The supporting task-authority migration has a fixed population: the registered
 component pages and all their existing named finite task sections, including
 Compiler API suboutcomes, backend families, tools, domains and selected/wider
 runtime/library outcomes. Its existing owner continues the transfers and
-projectors. The [finite migration stopping rule](../acceptance-dependencies.md#finite-task-authority-migration-population)
-requires one editable task source, exact preserved rows and a checked projection
-for every section, then stops. It adds no endless successor requirement and
+links. The [finite migration stopping rule](../acceptance-dependencies.md#finite-task-authority-migration-population)
+requires one editable task source with direct roadmap links for every section,
+then stops. It adds no endless successor requirement and
 cannot close the implementation those rows describe.

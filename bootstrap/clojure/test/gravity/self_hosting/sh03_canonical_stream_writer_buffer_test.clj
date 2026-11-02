@@ -31,7 +31,7 @@
         writer (if buffered? (java.io.BufferedWriter. counted 8192) counted)
         started (System/nanoTime)
         emitted (with-open [writer writer]
-                ((operation 'sh03-reader-canonical-stream-write!)
+                ((operation 'p15-s23-c6c10-streaming-write!)
                  "/declared/buffer-micro.gravity" value writer))]
     {:bytes (.toByteArray output) :emission emitted :encoder-calls @calls
      :characters @characters :elapsed-ns (- (System/nanoTime) started)}))
@@ -45,7 +45,7 @@
            result (:result @reader-delay)
            rows (:token-stream result)
            value {:token-stream (vec (take 1024 (cycle rows)))}
-           validated ((operation 'sh03-reader-canonical-stream-validation!)
+           validated ((operation 'p15-s23-c6c10-streaming-validation!)
                       "/declared/buffer-micro.gravity" value)
            plain (encode value false)
            buffered (encode value true)
@@ -77,7 +77,7 @@
            payload-start (inc (.indexOf ^String empty-text "\""))
            value (str (apply str (repeat (- 8191 payload-start) "x")) "🙂λ\"\\\n")
            reference ((fixture-operation 'old-record) value)
-           validated ((operation 'sh03-reader-canonical-stream-validation!)
+           validated ((operation 'p15-s23-c6c10-streaming-validation!)
                       "/declared/buffer-unicode.gravity" value)
            expected (.getBytes ^String (:text reference)
                                java.nio.charset.StandardCharsets/UTF_8)
@@ -90,5 +90,5 @@
        (is (java.util.Arrays/equals ^bytes expected ^bytes (:bytes buffered)))
        (is (= {:status :passed} validated (:emission plain) (:emission buffered)))
        (is (= (str "sha256:" (digest/sha256-bytes-hex expected))
-              ((operation 'sh03-reader-canonical-stream-digest)
+              ((operation 'p15-s23-c6c10-streaming-digest)
                "/declared/buffer-unicode.gravity" value)))))))

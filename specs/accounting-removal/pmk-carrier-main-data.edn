@@ -1,0 +1,23 @@
+{:schema :pmk-carrier-main-data-v1 :authority :inert-data-only :semantic-execution :unrun
+ :parameter-ABI 7 :remaining-accounting :preserved
+ :scope :raw-carrier-component-not-authentic-compiler-input
+ :cases
+ [{:kind :valid :children [{:kind :symbol :value m} {:kind :keyword :value :-} {:kind :symbol :value Map}]
+   :payload [m :- Map] :expected :existing-valid-path :observed :unrun}
+  {:kind :carrier :children [{:kind :symbol :value m}] :payload :forged
+   :expected {:status :rejected :reason :private-map-keys-source-mismatch :work-count base} :observed :unrun}
+  {:kind :carrier :children [{:kind :symbol :value m}] :payload (m) :observed :unrun}
+  {:kind :carrier :children [{:kind :symbol :value m}] :payload {m value} :observed :unrun}
+  {:kind :carrier :children [{:kind :symbol :value m}] :payload #{m} :observed :unrun}
+  {:kind :width :children [{:kind :symbol :value m}] :payload [] :observed :unrun}
+  {:kind :late-name :children [{:kind :symbol :value m} {:kind :keyword :value :-} {:kind :symbol :value Map} {:kind :symbol :value other}]
+   :payload [m :- Map forged] :observed :unrun}
+  {:kind :late-marker :children [{:kind :symbol :value m} {:kind :keyword :value :-} {:kind :symbol :value Map}]
+   :payload [m :wrong Map] :observed :unrun}
+  {:kind :late-type :children [{:kind :symbol :value m} {:kind :keyword :value :-} {:kind :symbol :value Map}]
+   :payload [m :- Int] :observed :unrun}
+  {:kind :opaque :children [{:kind :symbol :value m}] :payload [{:inert-placeholder :opaque-not-instantiated}] :observed :unrun}
+  {:kind :opaque :children [{:kind :symbol :value {:inert-placeholder :opaque-not-instantiated}}] :payload [m] :observed :unrun}
+  {:kind :children :child-ids [:missing] :forms {} :payload [m] :observed :unrun}
+  {:kind :children :children [{:kind :symbol :value second} {:kind :symbol :value first}] :payload [first second] :observed :unrun}
+  {:kind :metadata :source-parent :forged :payload [m] :expected :existing-source-checks-before-correspondence :observed :unrun}]}

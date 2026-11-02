@@ -13,7 +13,8 @@
          (:arglists (meta #'bootstrap/c15-stable-diagnostic-id))))
   (is (= '([rule severity stage message-key source-path form-index
             primary-artifact facts remediation &
-            {:keys [related origin-chain redactions lifecycle generated?]}])
+            {:keys [related origin-chain redactions lifecycle generated?
+                    profile target syntax-id]}])
          (:arglists (meta #'bootstrap/c15-diagnostic-record))))
   (is (= '([source-path source-text])
          (:arglists
@@ -40,6 +41,11 @@
            (fixture "accepted/compiler-c15-diagnostics.gravity")))]
     (is (= 4 @calls))
     (is (every? :interposed?
+                (get-in artifact [:diagnostic-stream :diagnostics])))
+    (is (= :hosted (get-in artifact [:module :profile])))
+    (is (= :jvm (get-in artifact [:module :target])))
+    (is (every? #(= [:hosted :jvm :compiler-diagnostics nil]
+                   [(:profile %) (:target %) (:stage %) (get-in % [:primary :syntax-id])])
                 (get-in artifact [:diagnostic-stream :diagnostics]))))
   (let [sentinel {:kind :sentinel-c15-source}]
     (is (= sentinel

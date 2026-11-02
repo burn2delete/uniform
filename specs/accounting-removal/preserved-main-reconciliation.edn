@@ -1,0 +1,28 @@
+{:kind :gravity/preserved-accounting-evidence-main-reconciliation
+ :authority :historical-disposition-evidence-only
+ :assessed-main "32fe90b1e6a41df5a4083d0abe3917e0cb2643e1"
+ :assessed-main-tree "b95a59281e71f741a91e6d93275fd055f8b6c962"
+ :preserved-input {:pr 569
+                   :commit "bb1389f5c62952052a819bdeb6c89ba8b0ea256c"
+                   :tree "79de57af304a17f7de106e7600cba4bb87770388"}
+ :historical-census {:authored-paths 29 :changed-reader-units 530 :production-units 316
+                     :qualification "Inventory, not completed semantic disposition."}
+ :integrated-successors
+ [{:pr 619 :merge "a6f5b2f99e0076e2a790a9f99494c0312c896af1"}
+  {:pr 620 :merge "8300c415628d2110cd703824a059e06476f4e1e0"}
+  {:pr 622 :merge "b1d590cc7edda61c81a53eeccbf879d7e4d2bcbf"}
+  {:pr 625 :merge "7d590aa40932b2592f43dd8aa0785ac79328fcfc"}
+  {:pr 626 :merge "c0053c47a171fb58d627ee4ef6d406ab86f752ab"}
+  {:pr 628 :merge "ce4f0f42774486ee7e0f8791f51e8f0e9b8898ea"}
+  {:pr 632 :merge "2654d155322f7863dd087065f19000b43c877cbe"}
+  {:pr 634 :merge "9c0925085f2a3e1fbb9875e83e4b0f0c6e2c6636"}
+  {:pr 635 :merge "e4d98947201a9473d8bca5777c1f59f5e3426bfd"}
+  {:pr 643 :merge "4b8c7a66ccb6ab9455a048fe5708dc635dfcb137"}]
+ :observed-git-ancestry :all-ten-merges-reachable-from-assessed-main
+ :replay :none
+ :pr643-pending-receipt :historical-integration-status-only
+ :remaining :individual-useful-deltas-and-genuine-acceptance-unresolved
+ :pr502 :open
+ :restricted-operations :not-retried-or-transferred
+ :nonclaims [:current-compiler-acceptance :fixture-execution :native-execution
+             :whole-accounting-closure :release :self-hosting :seed-retirement]}

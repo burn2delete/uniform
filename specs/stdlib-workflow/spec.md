@@ -9,7 +9,7 @@ Input revision: `017b541d678c6acb93eb5e843b1eda5a66babc32`.
 
 The retained standard-library module inventory, profile-aware exports, safe wrappers, metadata, runnable examples and compiler-support subset.
 
-Adopt a four-artifact Spec Kit workflow around the [canonical component roadmap](../../docs/component-roadmaps/stdlib.md). Language rules stay in their retained contracts; implementation records are edited only in [tasks.md](tasks.md#implementation-tasks), with a checked generated roadmap table. This is workflow migration, not a rewrite of normative specifications or a new implementation result.
+Adopt a four-artifact Spec Kit workflow around the [canonical component roadmap](../../docs/component-roadmaps/stdlib.md). Language rules stay in their retained contracts; implementation records are edited only in [tasks.md](tasks.md#implementation-tasks), with a checked direct roadmap link to the task ledger. This is workflow migration, not a rewrite of normative specifications or a new implementation result.
 
 [Inventory](../../docs/document-inventory.json) entries routed for this component are listed below as reviewable navigation, not proof of semantic conformance or exclusive ownership. The routing proposal must be reconciled centrally; cross-component links are legitimate.
 
@@ -49,7 +49,7 @@ A reader sees preparation, independent review and integration separately in task
 
 ## Scope and compatibility
 
-Own `specs/stdlib-workflow/{spec.md,plan.md,tasks.md,evidence.md}`, the generated task region in `docs/component-roadmaps/stdlib.md` and `tools/stdlib_task_projection{,_test}.clj`. No compiler/runtime source, existing contract, shared helper, historical pilot, protocol ID or permission changes. No Specify CLI execution or automatic discovery is claimed.
+Own `specs/stdlib-workflow/{spec.md,plan.md,tasks.md,evidence.md}`. No compiler/runtime source, existing contract, shared helper, historical pilot, protocol ID or permission changes. No Specify CLI execution or automatic discovery is claimed.
 
 ## Evidence and outcome ownership
 

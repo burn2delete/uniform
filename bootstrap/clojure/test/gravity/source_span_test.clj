@@ -122,6 +122,27 @@
                     (source-span/source-location source starts line column)])
                  cases)))))
 
+(deftest source-prefix-offsets-match-java-utf8-for-every-utf16-boundary
+  (doseq [text ["" "ascii\r\nend" "\u03bb\r\u03b2\n\u4e00"
+                "A\uD83D\uDE42Z" "\uD800x\uDC00" "\uD800\uD800\uDC00\uDC00"
+                "\u007f\u0080\u07ff\u0800\uD7ff\uE000\uffff\uDBff\uDfff"]
+          index (range (inc (count text)))]
+    (let [expected (alength (.getBytes ^String (subs text 0 index)
+                                      java.nio.charset.StandardCharsets/UTF_8))]
+      (is (= expected (:byte (source-span/source-location text [0] 1 (inc index)))))))
+  (doseq [text ["a\r\nb" "\u03bb\n\uD83D\uDE42" "\uD800\r\uDC00"]
+          :let [starts (source-span/line-start-indices text)]
+          line (range 1 (+ 2 (count starts)))
+          column (range 0 (+ 3 (count text)))]
+    (let [index (min (count text) (source-span/char-index-at starts line column))
+          expected (source-span/utf8-byte-count (subs text 0 index))]
+      (is (= expected (:byte (source-span/source-location text starts line column))))))
+  (is (thrown? NullPointerException (source-span/source-location nil [0] 1 1)))
+  (is (thrown? StringIndexOutOfBoundsException
+               (source-span/source-location "abc" [-1] 1 1)))
+  (is (= {:line 1 :column 2.5 :char 1.5 :byte 1}
+         (source-span/source-location "abc" [0] 1 2.5))))
+
 (deftest source-position-namespace-contract-is-narrow-and-acyclic
   (let [contract-var
         (get (ns-interns 'gravity.source-span) 'namespace-contract)

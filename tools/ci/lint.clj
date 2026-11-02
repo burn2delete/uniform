@@ -46,15 +46,121 @@
           (cond-> (assoc finding :row (first old-rows))
             (:end-row finding) (assoc :end-row (last old-rows))))))))
 
+(def definition-symbols
+  '#{def defn defn- defmacro defonce defmulti defmethod defprotocol deftype defrecord})
+
+(defn definition-identity [form]
+  (let [head (first form)
+        name (second form)]
+    (when (and (seq? form)
+               (contains? definition-symbols head)
+               (symbol? name))
+      [head name])))
+
+(defn source-definitions [lines]
+  (if-not (seq lines)
+    []
+    (try
+      (binding [*read-eval* false
+                *data-readers* {}
+                *default-data-reader-fn* (fn [tag _]
+                                           (throw (ex-info "Unsupported definition source tag"
+                                                           {:tag tag})))]
+        (let [reader (clojure.lang.LineNumberingPushbackReader.
+                      (java.io.StringReader. (str/join "\n" lines)))
+              eof (Object.)]
+          (with-open [_ reader]
+            (loop [definitions [] context [] previous-end 0]
+              (let [reader-line (.getLineNumber reader)
+                    form (read {:eof eof} reader)]
+                (if (identical? eof form)
+                  (with-meta definitions {:source-context context})
+                  (let [start (max (if (pos? previous-end) (inc previous-end) 1)
+                                   reader-line)
+                        end (max start (.getLineNumber reader))
+                        identity (definition-identity form)
+                        source-lines (subvec (vec lines)
+                                             (dec start)
+                                             (min end (count lines)))
+                        entry {:form form :source-lines source-lines}]
+                    (recur (if identity
+                             (conj definitions
+                                   (assoc entry :identity identity
+                                          :start start :end end
+                                          :preceding-context context))
+                             definitions)
+                           (if identity context (conj context entry))
+                           end))))))))
+      (catch Exception _ []))))
+
+(defn moved-definition-warning
+  [finding {:keys [before after before-definitions after-definitions]}]
+  (when (and (= :warning (:level finding))
+             (seq before) (seq after)
+             (pos-int? (:row finding))
+             (pos-int? (:end-row finding))
+             (<= (:row finding) (:end-row finding)))
+    (let [start (:row finding)
+          end (:end-row finding)
+          current-definitions (or after-definitions (source-definitions after))
+          baseline-definitions (or before-definitions (source-definitions before))
+          current-context (:source-context (meta current-definitions))
+          baseline-context (:source-context (meta baseline-definitions))
+          current-candidates (filter #(and (<= (:start %) start)
+                                           (<= end (:end %)))
+                                     current-definitions)
+          matches (keep (fn [current]
+                          (let [identity (:identity current)
+                                current-same (filter #(= identity (:identity %))
+                                                     current-definitions)
+                                baseline-same (filter #(= identity (:identity %))
+                                                      baseline-definitions)
+                                baseline (first baseline-same)]
+                            (when (and (= 1 (count current-same))
+                                       (= 1 (count baseline-same))
+                                       (= (:form current) (:form baseline))
+                                       (= (:source-lines current)
+                                          (:source-lines baseline))
+                                       (= (:preceding-context current)
+                                          (:preceding-context baseline))
+                                       (= current-context baseline-context))
+                              [current baseline])))
+                        current-candidates)]
+      (when (= 1 (count matches))
+        (let [[current baseline] (first matches)
+              offset (- (:start baseline) (:start current))
+              mapped-start (+ start offset)
+              mapped-end (+ end offset)]
+          (when (and (pos-int? mapped-start)
+                     (pos-int? mapped-end)
+                     (<= mapped-start mapped-end (count before)))
+            (assoc finding :row mapped-start :end-row mapped-end)))))))
+
 (defn classify [baseline current sources]
-  (loop [findings current available (frequencies baseline) existing [] blocking []]
-    (if-let [finding (first findings)]
-      (let [mapped (mapped-warning finding (get sources (:filename finding)))
-            matched? (pos? (get available mapped 0))]
-        (recur (next findings) (if matched? (update available mapped dec) available)
-               (cond-> existing matched? (conj finding))
-               (cond-> blocking (and (not matched?) (#{:warning :error} (:level finding))) (conj finding))))
-      {:baseline-warnings existing :blocking blocking})))
+  (let [warning-files (set (keep (fn [finding]
+                                   (when (= :warning (:level finding))
+                                     (:filename finding)))
+                                 current))
+        sources (into {}
+                      (for [[filename source] sources
+                            :when (warning-files filename)]
+                        [filename (assoc source
+                                         :before-definitions
+                                         (source-definitions (:before source))
+                                         :after-definitions
+                                         (source-definitions (:after source)))]))]
+    (loop [findings current available (frequencies baseline) existing [] blocking []]
+      (if-let [finding (first findings)]
+        (let [warning? (= :warning (:level finding))
+              source (when warning? (get sources (:filename finding)))
+              mapped (when warning?
+                       (or (mapped-warning finding source)
+                           (moved-definition-warning finding source)))
+              matched? (and warning? (pos? (get available mapped 0)))]
+          (recur (next findings) (if matched? (update available mapped dec) available)
+                 (cond-> existing matched? (conj finding))
+                 (cond-> blocking (and (not matched?) (#{:warning :error} (:level finding))) (conj finding))))
+        {:baseline-warnings existing :blocking blocking}))))
 
 (defn read-one! [path]
   (with-open [reader (java.io.PushbackReader. (io/reader path))]
@@ -80,6 +186,17 @@
                                  (#{:info :warning :error} (:level %))) (:findings result)))
       (throw (ex-info "Malformed or out-of-scope lint output" {:path (str path)})))
     (mapv #(update % :filename rename) (:findings result))))
+
+(defn source-paths-for-warnings
+  "Select only current warning filenames for source/definition mapping.
+  Errors always block and informational findings never need source mapping."
+  [paths current-plan whole-context? findings]
+  (let [candidates (distinct (concat paths (when whole-context? (:paths current-plan))))
+        warnings (set (keep (fn [finding]
+                              (when (= :warning (:level finding))
+                                (:filename finding)))
+                            findings))]
+    (vec (filter warnings candidates))))
 
 (defn run-comparison! [execute! output base paths]
   (let [root (io/file output "lint-base")
@@ -112,19 +229,32 @@
                     (into ["clj-kondo" "--repro" "--cache" "false"
                            "--config-dir" macros/config-directory
                            "--config" "{:output {:format :edn}}" "--lint"] files))
+        module-selected? (some #{macros/module-source} paths)
         macro-current (context/local-bytes! macros/source)
         _ (Files/write (.toPath (io/file output "lint-macro-current-source.clj"))
                        ^bytes macro-current (make-array java.nio.file.OpenOption 0))
+        module-current (when module-selected? (context/local-bytes! macros/module-source))
+        _ (when module-selected?
+            (Files/write (.toPath (io/file output "lint-module-current-source.clj"))
+                         ^bytes module-current (make-array java.nio.file.OpenOption 0)))
         macro-contract (let [observations (atom {:status :running :base-commit base})]
                          (try
                            (swap! observations assoc :model-inputs
                                   (into (sorted-map)
                                         (for [path ["tools/ci/lint_macros.clj" "tools/ci/kondo/config.edn"
-                                                    "tools/ci/kondo/hooks/c2.clj"]]
+                                                    "tools/ci/kondo/hooks/c2.clj"
+                                                    "tools/ci/kondo/hooks/module_analysis.clj"]]
                                           [path (context/sha256 (context/local-bytes! path))])))
                            (let [macro-base (run "lint-macro-base-source"
                                                  ["git" "show" (str base ":" macros/source)] #{0})]
                              (swap! observations assoc :base (macros/contract! (Files/readAllBytes (.toPath macro-base)))))
+                           (when module-selected?
+                             (let [module-base (get copied macros/module-source)]
+                               (swap! observations assoc :module
+                                      {:base (when module-base
+                                               (macros/module-contract!
+                                                (Files/readAllBytes (.toPath (io/file module-base)))))
+                                       :current (macros/module-contract! module-current)})))
                            (swap! observations assoc :current (macros/contract! macro-current) :status :admitted)
                            @observations
                            (catch Exception error
@@ -148,7 +278,7 @@
                       (run "lint-context-base-archive"
                            ["git" "archive" "--format=zip" (str "--output=" archive)
                             base "--" context/source-root] #{0})
-                      (context/archived-plan! archive inventory paths)))
+                      (context/archived-plan! archive inventory present)))
         contextual (fn [id plan selected]
                      (if-not plan []
                              (let [view (context/assemble! (io/file output id) plan)
@@ -171,7 +301,7 @@
         current (into (normal "lint-current" (remove context-paths paths))
                       (contextual "lint-context-current" current-plan
                                   (if whole-context? context-paths (set paths))))
-        source-paths (vec (distinct (concat paths (when whole-context? (:paths current-plan)))))
+        source-paths (source-paths-for-warnings paths current-plan whole-context? current)
         sources (into {}
                       (for [[index path] (map-indexed vector source-paths)
                             :let [before (if-let [bytes (get-in base-plan [:inputs path])]
@@ -191,16 +321,28 @@
         config-diff (run "lint-config-diff" ["git" "diff" "--name-only" base "HEAD" "--"
                                              ".clj-kondo" "tools/ci/kondo" "tools/ci/lint_macros.clj"] #{0})
         config-unchanged? (str/blank? (slurp config-diff))
+        usage-groups (fn [plan files]
+                       (cond-> (mapv (fn [[path file]]
+                                       {:paths [path] :inputs {path (Files/readAllBytes (.toPath (io/file file)))}})
+                                     (filter #(str/ends-with? (first %) ".clj") files))
+                         plan (conj plan)))
+        baseline-usage (context/resolve-private-usages
+                        baseline (context/private-var-usages
+                                  (usage-groups base-plan (apply dissoc copied context-paths))))
+        current-usage (context/resolve-private-usages
+                       current (context/private-var-usages
+                                (usage-groups current-plan (mapv #(vector % %) (remove context-paths paths)))))
         report (merge {:base base :commit (System/getenv "GITHUB_SHA")
                        :policy :unchanged-source-warnings-only :config-unchanged? config-unchanged?
                        :macro-contract macro-contract
+                       :resolved-private-usages {:base (:resolved baseline-usage) :current (:resolved current-usage)}
                        :context-selection (when current-plan
                                             {:whole-context? (boolean whole-context?)
                                              :current (vec (sort (if whole-context? context-paths
                                                                      (filter context-paths paths))))
                                              :base (vec (sort (if whole-context? (:paths base-plan)
                                                                   (filter (set (:paths base-plan)) (keys copied)))))})}
-                      (classify (if config-unchanged? baseline []) current sources))]
+                      (classify (if config-unchanged? (:findings baseline-usage) []) (:findings current-usage) sources))]
     (spit (io/file output "changed-lint-report.edn") (str (pr-str report) "\n"))
     (println "Changed-file lint:" (count (:baseline-warnings report)) "unchanged baseline warnings;"
              (count (:blocking report)) "blocking warnings/errors. All errors block.")

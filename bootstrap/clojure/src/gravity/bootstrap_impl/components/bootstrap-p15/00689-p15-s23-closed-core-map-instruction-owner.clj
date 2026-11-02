@@ -6,15 +6,6 @@
                                            depth
                                            generated-role
                                            base-origin-products]
-  (when (> depth p15-s23-closed-core-max-plan-depth)
-    (p15-s23-closed-core-fail!
-      "C6-VERIFY"
-      (:source-path ctx)
-      instruction
-      {:missing-fact :closed-core-plan-depth-bound,
-       :observed-depth depth,
-       :maximum-depth p15-s23-closed-core-max-plan-depth,
-       :plan-path path}))
   (let [form-record (get-in ctx [:indexes :form-by-id form-id])
         origin-products (if generated-role
                           (p15-s23-closed-core-generated-origin-products

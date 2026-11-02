@@ -8,7 +8,7 @@ Authority transfer baseline: `023ec47d86004fc829ae7dc5753b715ca4a653dc`.
 
 This is the sole editable Resolve implementation task ledger. The roadmap's
 [current evidence and remaining work](../../docs/component-roadmaps/resolve.md#current-evidence-and-remaining-work)
-is generated from these records. IDs preserve the established phase/title slug
+is a navigation view of these records. IDs preserve the established phase/title slug
 convention; the original `resolve/1` through `resolve/5` labels remain display
 text. Order is display order, not dependency evidence. An unchecked box means
 not accepted complete. Check a box only with explicit `Accepted;` status and an
