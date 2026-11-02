@@ -1,0 +1,334 @@
+{:reviewer-checker-rerun :not-performed-no-reproduction-claim,
+ :semantic-assessment
+ {:source-joins
+  [:source-and-span-identity
+   :private-entry-and-use-census
+   :binding-and-visibility
+   :parameter-and-call-arity
+   :evaluation-order
+   :mutations-and-reentry
+   :ancestry-and-source-resolution
+   :fresh-source-reconstruction],
+  :native-comparison
+  :candidate-first-native-DATA-admission-private-arenas-index-only-lookups-kind-preservation-ordered-sequences-and-bijective-Map-Set-matching,
+  :source-entry
+  :original-DATA-full-input-admission-original-row-family-indexes-and-unique-source-IDs,
+  :all-test-obligations :SOURCE-DEFINITIONS-ONLY-UNRUN,
+  :test-obligations
+  [:real-source-Core-relationship-assertions
+   :independent-expanded-product-reference
+   :positive-private-product
+   :coherent-core-and-range-transplants
+   :unknown-field-and-supplied-validation-rejection
+   :changed-source-rejection
+   :late-source-ID-mutation
+   :private-mutability-reentry-and-visibility-negatives
+   :large-deep-and-shared-DATA
+   :native-metadata-unsupported-carriers-comparator-ratio-tail-and-cycle-rejection
+   :Map-Set-order-and-kind-cases
+   :duplicate-Map-entries
+   :opaque-callback-counters],
+  :numeric-source-pattern
+  :private-matcher-and-source-products-not-numeric-certification,
+  :closed-product
+  :candidate-DATA-first-then-closed-shape-original-input-reconstruction-complete-kind-and-value-comparison,
+  :native-assumptions
+  :actual-native-header-provider-protocol-and-callback-behavior-not-executed-or-proved,
+  :numeric-proof-established false,
+  :ordinary-parameter-helper
+  :historical-source-preserved-existing-ordinary-callers-not-migrated-or-newly-accepted},
+ :source-conservation
+ {:shared-carrier-public-C7-B47-functiontypeverifier-Effects-emitter-runtime
+  :unchanged,
+  :entire-parent-test-bytes :unchanged-prefix,
+  :entire-parent-production-raw-lines :retained-in-order,
+  :fixtures
+  :all-four-original-accepted-to-preserved-byte-exact-copies-and-two-extension-byte-pairs-only,
+  :all-existing-modes-including-changed-source :unchanged,
+  :all-other-paths-and-modes :unchanged,
+  :entire-parent-production-form-sequence :unchanged,
+  :entire-parent-test-form-sequence :unchanged,
+  :all45
+  :complete-reader-form-identical-to-historical-no-body-adaptation,
+  :new-test-adaptations
+  :only-actual-fixture-path-accepted-to-preserved-and-one-unused-forms-binding-with-as-original-retained},
+ :parent-tree "5daf1c0d0f690a4557c362fc7203ebe589570768",
+ :parent-review-counter-reporting
+ {:sealed-checks 7698, :handoff-checks 7699, :credited :sealed-only},
+ :tree "4dea01d8d3073b57a1dfd026068ffe71bd9080f2",
+ :execution
+ {:genuine-GIS3-nativecomparison-compiler-Effects-lowering-runtime-sourceauthentication
+  :UNRUN,
+  :target-or-native-helper-called false,
+  :reader-eval false,
+  :Bootstrap-loaded false,
+  :shared-checkout-writes :none,
+  :APPROVE :not-performed,
+  :source-and-DATA-only true,
+  :new-worker :none,
+  :test-proxy-or-fixture-or-kernel-executed false},
+ :counts
+ {:fixture-byte-copies 4,
+  :native-comparison 5,
+  :fixture-extension-pairs 2,
+  :direct-external-dependency-definitions 15,
+  :candidate-tree-entries 10071,
+  :GIS3 39,
+  :tests 9,
+  :checks 7905,
+  :fixture-directory-adaptations 2,
+  :parent-tree-entries 10065,
+  :unused-forms-destructuring-adaptations 1,
+  :complete-historical-definitions 45,
+  :changed-paths 8,
+  :effective-independent-source-corruption-refusals 97,
+  :false-numeric-proof-fields 7,
+  :helpers 3,
+  :added-test-helper-forms 12,
+  :ordinary-parameter-helper 1},
+ :consumer-verification
+ :receipt-checker-six-artifacts-frozen-tree-inputs-forty-five-definitions-tests-fixtures-dependencies-and-false-proof-flags,
+ :consumer-source-sha256
+ "22185e921d535baf152d6671f35fc6efbbc1eec714d8b0dcded6e8890383167d",
+ :parent "1c0d699f06372fe3c52fa003f53aa38ffd40d07c",
+ :candidate "c8f16877f822959b7a024aed6efefad511bfb868",
+ :blocking-findings [],
+ :author-writers
+ {:original-census-generator
+  {:path "/tmp/acc01-source-products-validation.clj",
+   :sha256
+   "5c0de6b2cd3e2b879a5cf10bbb439f2aae26a39680928f97f4bb71f24d134775"},
+  :intake-generator
+  {:path "/tmp/acc01-source-products-intake.clj",
+   :sha256
+   "9503f060eaf50849566d697cff5add9358b8444595a5be1fdd88204d0440b933"},
+  :action :inspect-and-hash-only-not-executed},
+ :reproduction
+ {:checker "/tmp/pr593-independent-source-review.clj",
+  :checker-sha256
+  "7d7398b98665818cf77ae231efddbbb410e8c52ad457c6617a3ef98e83c98394",
+  :artifacts
+  [{:path "/tmp/pr593-independent-source-review/definition-pins.edn",
+    :sha256
+    "a6f061b1a95239feb3737db9b002b9fb17e26173c9b5d258f7132f9a21bd9f8d"}
+   {:path
+    "/tmp/pr593-independent-source-review/direct-dependencies.edn",
+    :sha256
+    "b63276c5aeac17558a775888491d3c72efbff4fa403894b1e81113015aa195d9"}
+   {:path "/tmp/pr593-independent-source-review/test-adaptations.edn",
+    :sha256
+    "cf439bf4e95889a895865daa8e5f148329c3fb55db92f06fd82f2235cf51e6f5"}
+   {:path "/tmp/pr593-independent-source-review/fixture-pins.edn",
+    :sha256
+    "b3645a6ffadeb7e26e13404f91b32243ba14c251f88dd371df90bbf3c5fc6982"}
+   {:path "/tmp/pr593-independent-source-review/negative-controls.edn",
+    :sha256
+    "6c59fee96ad129017f74e78014c5849fce1752416ab993185cb23893679eb5d1"}
+   {:path
+    "/tmp/pr593-independent-source-review/numeric-proof-flags.edn",
+    :sha256
+    "a5411d6d99f826d34098664ff426b4ddfeaa0aed2108760b3d318243d5c50f19"}]},
+ :schema-version 1,
+ :transitive-callgraph-closure :not-proved,
+ :delivery
+ :own-thread-final-for-authorized-reconciliation-readback-no-outbound-send,
+ :harness-history
+ ["Early parenthesis/need argument mistakes in the new checker were corrected before final validation."
+  "Parent form sequence filtering preserves the vector container; initial lazy-sequence-versus-vector comparison was a harness mismatch, not a candidate change."],
+ :governing-policy
+ [{:path "AGENTS.md",
+   :sha256
+   "05758d7322985d88f8fc31cc25d02c7e5514442df11d67c0517bc96bc5004c93"}
+  {:path
+   "docs/phase-01-core-language/015-l5-type-system-specification.md",
+   :sha256
+   "0a7eacfe8745a47e07c3475276cc44337e27129945972370f20805ead2facd0c"}
+  {:path
+   "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+   :sha256
+   "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3"}
+  {:path
+   "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md",
+   :sha256
+   "6a8421c78a90a8bcc1185f3fe15517eb23f3007371eaa10c027b85de7f31a84a"}
+  {:path
+   "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+   :sha256
+   "9defd108707c5359377d11e95d18f751f2de72d8981a3789d905118419c2d56b"}],
+ :intake
+ {:reconciliation "01a18b65-91fa-740a-b712-8a22b3cd000c",
+  :author "01a183dd-7208-7d33-a336-7483fd90e358",
+  :additional-readbacks
+  ["01a183cc-8cd1-735d-bf59-055c4b5f0039"
+   "01a18424-d867-7c12-8a04-07484900100c"],
+  :authorship-conflict :none-observed,
+  :exact-other-reservation-or-duplicate-receipt :none-observed,
+  :prior591-638-B-637-goals :remain-closed,
+  :denied-and-held-scopes :unchanged-not-retried-no-new-worker},
+ :inputs
+ {:census
+  {:path "specs/accounting-removal/source-products-census.edn",
+   :sha256
+   "17eb61e4efe54e6d43a3ef43377352f4b56cc9da509a76f361345f1c18e4a28d"},
+  :author-intake
+  {:source "75176f01fbfa9427a7dc489e15ede75c1a39fbd7",
+   :tree "5bef5f6573cc9d11e7f2e795f3a4f9788216ff2e",
+   :path
+   "specs/accounting-removal/source-products-frozen-review-intake.edn",
+   :sha256
+   "b6a07d4de6c06706850afb0632e5f53625623ffd174e0eb7450bb26f283e4612"},
+  :eight-paths
+  [{:path
+    "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/compact-source-proof-interval.gravity",
+    :entry "100644 blob 2a24d72ff85e8fed276740c4e1ff772670cbb024",
+    :sha256
+    "b73cb794e6ef937a8fa786c6a6d5ae91afced2457d34367e07ce50f72306ccec"}
+   {:path
+    "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/compact-source-proof-interval.qst",
+    :entry "100644 blob 2a24d72ff85e8fed276740c4e1ff772670cbb024",
+    :sha256
+    "b73cb794e6ef937a8fa786c6a6d5ae91afced2457d34367e07ce50f72306ccec"}
+   {:path
+    "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/compact-source-proof-minimum.gravity",
+    :entry "100644 blob b06cbe0e56185c2802cc5020e242444323da0575",
+    :sha256
+    "cb92409e01b28c9218c631327a104a07dcb14c4c9d867d4b97557b074e832e6b"}
+   {:path
+    "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/compact-source-proof-minimum.qst",
+    :entry "100644 blob b06cbe0e56185c2802cc5020e242444323da0575",
+    :sha256
+    "cb92409e01b28c9218c631327a104a07dcb14c4c9d867d4b97557b074e832e6b"}
+   {:path
+    "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+    :entry "100644 blob 721cf1b56be3aa1041524c444385322e14faa6a3",
+    :sha256
+    "dc18d3f7b7df2be3b9a635db16177bd581bec9f14dc8ea7fa9f081b3a5c41fa5"}
+   {:path
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+    :entry "100644 blob 89c0d91ad09c5838f5d70c47291883635a810df2",
+    :sha256
+    "09a629263ee6c654534b66c7d7031ea722adfa9bbfe329001a2ed42c69632303"}
+   {:path "specs/accounting-removal/source-products-census.edn",
+    :entry "100644 blob bbf1eb31dbc13bc8351c41bd8607592991c4454e",
+    :sha256
+    "17eb61e4efe54e6d43a3ef43377352f4b56cc9da509a76f361345f1c18e4a28d"}
+   {:path "specs/accounting-removal/source-products.md",
+    :entry "100644 blob 9050394bde5fe5476a0e0333ec6330f7c59c3fd5",
+    :sha256
+    "39a2eedb8b2cc2995f1f6cc96202f0ceb709ca86c90d0bce6069d41e353c4d34"}]},
+ :existingCI
+ {:record-source "75176f01fbfa9427a7dc489e15ede75c1a39fbd7",
+  :path "specs/accounting-removal/source-products-frozen-ci.json",
+  :sha256
+  "358277916d83f8d01de7868e09e3b32fe64342e040d72f38bc3511f117e4c89e",
+  :successes 7,
+  :configured-skips 2,
+  :qualification
+  :historical-exact-candidate-record-no-rerun-no-genuine-or-semantic-credit},
+ :kind :source-products-independent-source-review-consumption,
+ :receipt-sha256
+ "443be064b52255cea0868d0eb127e321a35f2a27e1dc470212343578f6b518fa",
+ :direct-dependencies
+ [{:name sh08-ft-all-true?,
+   :sha256
+   "e490157e9d5ffb1425fd53e173c1ee8697244e32ebba91d6a39b42dc2e4e966a",
+   :parent-and-history-identical true,
+   :transitive-closure :not-proved}
+  {:name sh08-ft-call-edge-valid?,
+   :sha256
+   "569d1c426bfeee18ebca34567d19e2dc9c07cd837af2f5099d4bbdce8604761e",
+   :parent-and-history-identical true,
+   :transitive-closure :not-proved}
+  {:name sh08-ft-call-valid?,
+   :sha256
+   "e134b0aef4f52596b5260cc585d5e3bc3e8182b5006376e5c35812d1a34f5854",
+   :parent-and-history-identical true,
+   :transitive-closure :not-proved}
+  {:name sh08-ft-caller-edge-valid?,
+   :sha256
+   "4e8a043c615e51841c4ae7e119f29ab4701f088df5600db38b506a5358d88640",
+   :parent-and-history-identical true,
+   :transitive-closure :not-proved}
+  {:name sh08-ft-known?,
+   :sha256
+   "1a29e93808b52608400110375f22939cb3068b20f0c46953a2a45a73b0167528",
+   :parent-and-history-identical true,
+   :transitive-closure :not-proved}
+  {:name sh08-ix-literal?,
+   :sha256
+   "55514d929ff9d916cd133dbedf9c013aa766b177a85e4afeaf9b5e349dc3c9d9",
+   :parent-and-history-identical true,
+   :transitive-closure :not-proved}
+  {:name sh08-ma-form-source,
+   :sha256
+   "dbad3483351682d1059815ecfb87ab690274cad40ae62450153fe536f6bc8f26",
+   :parent-and-history-identical true,
+   :transitive-closure :not-proved}
+  {:name sh08-pc-id?,
+   :sha256
+   "a2015a52ca2a543ce0fdee1c8d3bf6a388215b49e035031b0ff9d8e104a2b4d7",
+   :parent-and-history-identical true,
+   :transitive-closure :not-proved}
+  {:name sh08-pe-select,
+   :sha256
+   "dc61a6806e1606c5145f6463e761674ca43f594d8f120d583d3f695167771e27",
+   :parent-and-history-identical true,
+   :transitive-closure :not-proved}
+  {:name sh08-primitive-type-from-literal-kind,
+   :sha256
+   "314ea7a18714ff172c4535724a8d0752f5462682464d6f2bc5ecd934841d729a",
+   :parent-and-history-identical true,
+   :transitive-closure :not-proved}
+  {:name sh08-sse-ids?,
+   :sha256
+   "6b03ead3eeadda7f172c364dbe2b5fee437eea4df97225c6d977dc6c0a379719",
+   :parent-and-history-identical true,
+   :transitive-closure :not-proved}
+  {:name sh08-vf-ancestor?,
+   :sha256
+   "fd4ebeda311495e19d97a39dbd8bd54d2226b32c7307d5f79f5cbe8fb8416c27",
+   :parent-and-history-identical true,
+   :transitive-closure :not-proved}
+  {:name sh08-vf-data-failure,
+   :sha256
+   "4f54864cf84791a8c4a1102699f88ae41ca406578c0eed6a935993bc41ef356a",
+   :parent-and-history-identical true,
+   :transitive-closure :not-proved}
+  {:name sh08-vf-header-failure,
+   :sha256
+   "c089f76ec82d68e3b88a9300b7344f75c88cff3c9fdc6eb386e5f5be5a0e8e70",
+   :parent-and-history-identical true,
+   :transitive-closure :not-proved}
+  {:name sh08-vf-original-data,
+   :sha256
+   "0d2f04d5ae85e021856e16f1ec1e193e0c265622652ce4cb05603ea21b6f5241",
+   :parent-and-history-identical true,
+   :transitive-closure :not-proved}],
+ :parent591-review
+ {:path "/tmp/pr591-independent-source-review/receipt.edn",
+  :automatic593-acceptance :none,
+  :scope :exact-parent-source-adaptation-and-tests-only,
+  :discrepancy :retained-sealed-count-only,
+  :sealed-checks 7698,
+  :sha256
+  "178e7bd4b2d17bc21e237af9cc9d68676bdc47fe00cd770a9baebf8e63e49f6e",
+  :all-parent-source-pins-and-mode-blob-entries :rechecked,
+  :prior-receipt-mutated false,
+  :handoff-checks 7699},
+ :whole-PR569-ACC01-PR502-disposition :incomplete,
+ :acceptance-limits
+ [:no-public-C7-or-B47-routing-acceptance
+  :no-fresh-functiontypeverifier-acceptance
+  :no-certified-numeric-result
+  :no-transitive-runtime-or-provider-proof
+  :no-parent-stack-acceptance
+  :no-currentmain-composition-or-integration
+  :no-whole-ACC01-PR502-release-selfhosting-closure
+  :no-held-or-unknown-operation-retry],
+ :current-main-composition-and-integration :UNRUN,
+ :reviewer "01a18528-ebbf-7033-bb47-501bd7e204d5",
+ :numeric-proof-established false,
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01,
+ :decision :PASS-exact-source-product-adaptation-and-test-scope,
+ :genuine-GIS3-native-compiler-effects-lowering-runtime :UNRUN}

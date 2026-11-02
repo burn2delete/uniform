@@ -498,13 +498,18 @@
 (deftest sh17-validates-complete-carriers-without-quotas
   (let [base (request :llvm "/checkout-a")
         deep (loop [n 120 value nil] (if (zero? n) value (recur (dec n) [value])))
+        very-deep (loop [remaining 10000 value base]
+                    (if (zero? remaining) value (recur (dec remaining) [value])))
+        wide-map (into {} (map (fn [index] [(keyword (str "k" index)) index])
+                               (range 300)))
         many (vec (repeat 17 (vec (range 600))))
         late-opaque (assoc-in many [16 599] (Object.))
         old-id (get-in base [:mir :functions 0 :blocks 0 :operations 0 :operation-id])
         long-id (keyword (apply str (repeat 300 "x")))
         subject (walk/postwalk #(if (= old-id %) long-id %) base)
         result (build subject)]
-    (doseq [carrier [deep (vec (range 1025)) many (apply str (repeat 65537 "x"))]]
+    (doseq [carrier [deep very-deep wide-map (vec (range 1025)) many
+                    (apply str (repeat 65537 "x"))]]
       (is (= {:status :accepted} (invoke 'sh17-structural-preflight [carrier]))))
     (is (= :accepted (:status result)))
     (is (= :passed (:status (verify subject result))))

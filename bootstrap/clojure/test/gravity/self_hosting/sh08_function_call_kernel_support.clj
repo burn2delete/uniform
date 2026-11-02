@@ -198,7 +198,11 @@
 
 (defn cold-metadata-invalid-inputs
   [input]
-  [(assoc input :quote-work-count 0) (assoc input :quote-work-count 1)
+  [(assoc input :mode :body)
+   (assoc-in input [:cut :excluded-node-ids] [:forged])
+   (assoc input :source-argument-call-node-ids [:forged])
+   (dissoc input :source-argument-call-node-ids)
+   (assoc input :quote-work-count 0) (assoc input :quote-work-count 1)
    (assoc input :quote-work-count nil) (assoc input :unknown-field true)])
 
 (defn- sh08-verification-preimage

@@ -1,10 +1,46 @@
 (ns gravity.types
-  "Seed type products and explicit current C7 runtime entry points. Semantics remain Gravity-owned.")
+  "Seed type products, verification data and explicit current C7 runtime entry points. Semantics remain Gravity-owned.")
 
 (def
  ^{:private true} namespace-contract
  '{:public-api
-   {compile-plan
+   {dynamic-boundary-records
+    {:arglists ([node-operator nodes module]),
+     :admission :none, :seed-compatibility-data-only? true,
+     :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
+    cast-records
+    {:arglists ([node-operator nodes]),
+     :admission :none, :seed-compatibility-data-only? true,
+     :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
+    generic-instantiations
+    {:arglists ([node-operator nodes]),
+     :admission :none, :seed-compatibility-data-only? true,
+     :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
+    protocol-dispatch-table
+    {:arglists ([node-operator nodes]),
+     :admission :none, :seed-compatibility-data-only? true,
+     :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
+    schema-links
+    {:arglists ([domain-boundaries]),
+     :admission :none, :seed-compatibility-data-only? true,
+     :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
+    layout-facts
+    {:arglists ([node-type nodes]),
+     :admission :none, :seed-compatibility-data-only? true,
+     :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
+    typed-core-verifier-report
+    {:arglists ([nodes type-facts constraints functions dynamic cast generic dispatch schema layout]),
+     :admission :none, :seed-compatibility-data-only? true,
+     :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
+    type-capability-proof
+    {:arglists ([diagnostic-ids artifact]),
+     :admission :none, :seed-compatibility-data-only? true,
+     :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
+    validate!
+    {:arglists ([type-capability-proof type-fail! source-path artifact]),
+     :admission :none, :seed-compatibility-data-only? true,
+     :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
+    compile-plan
     {:arglists ([emitter source-path source-text operations]),
      :admission :none,
      :current-gravity-runtime-data-only? true,
@@ -87,7 +123,7 @@
      :grants-authority? false}},
    :dependency-direction
    {:requires [],
-    :consumed-by [gravity.c7-type-checker.inference gravity.bootstrap],
+    :consumed-by [gravity.c7-type-checker.inference gravity.c7-type-checker.verification gravity.c7-type-checker.evidence gravity.bootstrap],
     :forbids
     [gravity.bootstrap
      gravity.cli
@@ -117,13 +153,18 @@
     :type-fact-data
     :explicit-emitter-source-path-and-text
     :compiler-plan-and-native-core-or-type-result-data
-    :explicit-compiler-and-runtime-operations],
+    :explicit-compiler-and-runtime-operations
+    :native-node-fact-constraint-and-evidence-records
+    :diagnostic-catalog-and-native-verifier-report
+    :explicit-proof-projection-and-failure-operations
+    :native-domain-boundary-records
+    :explicit-node-operator-and-type-classifiers],
    :namespace gravity.types,
    :diagnostic-ownership
-   {:stage [],
+   {:stage [:hosted-report-construction :ordered-missing-field-decisions],
     :upstream [:core-node-source-and-origin-data],
     :existing-c7-owner
-    [:typed-core-verification :type-diagnostic-decisions]
+    [:type-diagnostic-construction :catalog-and-source-mapping]
     :propagated [:compiler-and-runtime-diagnostics :gravity-c7-diagnostics]},
    :artifact-outputs
    [:seed-literal-and-node-classifications
@@ -133,8 +174,14 @@
     :function-signature-data
     :current-c7-executable-plan-data
     :unauthenticated-primitive-typed-template
-    :c7-replay-report-data],
-   :contract-boundary :seed-type-products-and-current-gravity-runtime})
+    :c7-replay-report-data
+    :hosted-typed-core-verifier-report
+    :legacy-type-capability-flag-projection
+    :ordered-c7-missing-field-refusal-or-complete-sentinel
+    :hosted-dynamic-cast-generic-dispatch-schema-layout-data],
+   :contract-boundary :seed-type-products-and-current-gravity-runtime
+   :additional-contract-boundaries [:hosted-seed-verification-data-and-missing-field-checks
+    :hosted-dynamic-cast-generic-dispatch-schema-and-layout-data]})
 
 (defn compile-plan [emitter source-path source-text operations]
   ((:compile-plan operations) emitter source-path source-text))
@@ -339,9 +386,215 @@
    (filter (fn* [p1__137#] (= 'fn (:form p1__137#))) nodes)),
   :status :complete})
 
+(defn typed-core-verifier-report
+  [nodes type-facts constraints functions dynamic cast generic dispatch schema layout]
+  (let [node-ids (set (map :node-id nodes))
+        typed-node-ids (set (map :core-node type-facts))
+        all-typed? (= node-ids typed-node-ids)
+        constraints-solved? (every? #(= :solved (:status %))
+                                    (:constraints constraints))
+        functions-have-effects? (every? #(contains? % :latent-effects)
+                                        (:functions functions))
+        casts-classified? (every? #(contains? % :classification)
+                                  (:records cast))
+        dynamic-profiled? (every? #(contains? % :profile) (:records dynamic))
+        schema-preserved? (seq (:records schema))
+        layout-recorded? (and (seq (:records layout))
+                              (every? #(= :recorded (:status %))
+                                      (:records layout)))
+        origins-preserved? (every? #(get-in % [:source :syntax-id]) nodes)
+        generic-solved? (= :complete (:status generic))
+        dispatch-typed? (= :complete (:status dispatch))]
+    {:artifact :gravity/c7-typed-core-verifier-report
+     :every-node-typed-or-diagnostic? all-typed?
+     :constraints-solved? constraints-solved?
+     :function-latent-effects-present? functions-have-effects?
+     :casts-classified? casts-classified?
+     :dynamic-boundaries-profile-marked? dynamic-profiled?
+     :schema-derived-types-preserve-identity? (boolean schema-preserved?)
+     :layout-facts-recorded? layout-recorded?
+     :generic-instantiations-solved? generic-solved?
+     :protocol-dispatch-typed? dispatch-typed?
+     :origins-preserved? origins-preserved?
+     :status (if (and all-typed? constraints-solved?
+                      functions-have-effects? casts-classified?
+                      dynamic-profiled? schema-preserved? layout-recorded?
+                      generic-solved? dispatch-typed? origins-preserved?)
+               :passed
+               :failed)}))
+
+(defn type-capability-proof
+  [diagnostic-ids artifact]
+  (let [diagnostics (set (map :diagnostic
+                              (get-in artifact
+                                      [:type-diagnostics :diagnostics])))
+        verifier (:typed-core-verifier-report artifact)]
+    {:every-core-node-has-type-or-diagnostic?
+     (:every-node-typed-or-diagnostic? verifier)
+     :constraints-solved?
+     (:constraints-solved? verifier)
+     :function-types-include-latent-effects?
+     (:function-latent-effects-present? verifier)
+     :dynamic-boundaries-profile-gated?
+     (:dynamic-boundaries-profile-marked? verifier)
+     :casts-classified?
+     (:casts-classified? verifier)
+     :generic-and-protocol-evidence?
+     (and (:generic-instantiations-solved? verifier)
+          (:protocol-dispatch-typed? verifier))
+     :schema-identity-preserved?
+     (:schema-derived-types-preserve-identity? verifier)
+     :layout-facts-recorded?
+     (:layout-facts-recorded? verifier)
+     :diagnostics-covered?
+     (= (set diagnostic-ids) diagnostics)
+     :verifier-passed?
+     (= :passed (:status verifier))
+     :status :complete}))
+
+(defn validate!
+  [type-capability-proof type-fail! source-path artifact]
+  (let [proof (type-capability-proof artifact)]
+    (doseq [[field id] [[:every-core-node-has-type-or-diagnostic?
+                         "C7-TYPE-MISMATCH"]
+                        [:constraints-solved? "C7-VERIFY"]
+                        [:function-types-include-latent-effects?
+                         "C7-VERIFY"]
+                        [:dynamic-boundaries-profile-gated? "C7-DYNAMIC"]
+                        [:casts-classified? "C7-CAST"]
+                        [:generic-and-protocol-evidence? "C7-GENERIC"]
+                        [:schema-identity-preserved? "C7-SCHEMA"]
+                        [:layout-facts-recorded? "C7-LAYOUT"]
+                        [:diagnostics-covered? "C7-VERIFY"]
+                        [:verifier-passed? "C7-VERIFY"]]]
+      (when-not (get proof field)
+        (type-fail! id source-path {:stage :type-check}
+                    {:missing-fields [field]}))))
+  :complete)
+
+(defn dynamic-boundary-records
+  [node-operator nodes module]
+  {:artifact :gravity/c7-dynamic-boundary-records
+   :records
+   (mapv (fn [node]
+           {:boundary-id (str "c7-dynamic-" (:node-id node))
+            :kind :dynamic-call
+            :source (:node-id node)
+            :input-type "Dynamic"
+            :result-type "Dynamic"
+            :profile (:profile node)
+            :target (:target node)
+            :runtime-checks [:runtime-type-known]
+            :effects #{:runtime/dynamic-dispatch}
+            :capabilities #{}
+            :accepted? (= :hosted (:profile module))
+            :diagnostics []})
+         (filter #(= 'dynamic/value (node-operator %)) nodes))
+   :status :complete})
+
+(defn cast-records
+  [node-operator nodes]
+  {:artifact :gravity/c7-cast-records
+   :records
+   (mapv (fn [node]
+           {:cast-id (str "c7-cast-" (:node-id node))
+            :kind :checked-dynamic-cast
+            :source-node (:node-id node)
+            :from "Dynamic"
+            :to "String"
+            :classification :runtime-checked
+            :runtime-check :type-tag-check
+            :unsafe-metadata (:unsafe-metadata node)
+            :source (:source node)
+            :status :checked})
+         (filter #(= 'dynamic/cast (node-operator %)) nodes))
+   :status :complete})
+
+(defn generic-instantiations
+  [node-operator nodes]
+  {:artifact :gravity/c7-generic-instantiation-table
+   :records
+   (mapv (fn [node]
+           {:instantiation-id (str "c7-generic-" (:node-id node))
+            :generic 'generic/id
+            :type-arguments ["T"]
+            :bounds ["Any"]
+            :source-node (:node-id node)
+            :profile (:profile node)
+            :target (:target node)
+            :status :solved})
+         (filter #(= 'generic/id (node-operator %)) nodes))
+   :status :complete})
+
+(defn protocol-dispatch-table
+  [node-operator nodes]
+  {:artifact :gravity/c7-protocol-dispatch-type-table
+   :records
+   (mapv (fn [node]
+           {:dispatch-id (str "c7-dispatch-" (:node-id node))
+            :protocol :Displayable
+            :method 'protocol/value
+            :receiver-type "String"
+            :dispatch :hosted-dynamic
+            :effects (:effects node)
+            :capabilities (:capabilities node)
+            :profile (:profile node)
+            :target (:target node)
+            :source-node (:node-id node)
+            :status :typed})
+         (filter #(= 'protocol/value (node-operator %)) nodes))
+   :status :complete})
+
+(defn schema-links
+  [domain-boundaries]
+  {:artifact :gravity/c7-schema-type-links
+   :records
+   (mapv (fn [boundary]
+           {:schema-type-id (str "c7-schema-"
+                                 (get-in boundary [:source :syntax-id]))
+            :schema :Packet
+            :source-schema (get-in boundary [:semantic-anchor :source-syntax])
+            :domain (:domain boundary)
+            :validation-boundary :schema-ir-verifier
+            :profile (:profile boundary)
+            :target (:target boundary)
+            :status :preserved})
+         (filter #(= :schema-ir (:domain %)) domain-boundaries))
+   :status :complete})
+
+(defn layout-facts
+  [node-type nodes]
+  {:artifact :gravity/c7-layout-facts
+   :records
+   (mapv (fn [node]
+           {:layout-id (str "c7-layout-" (:node-id node))
+            :core-node (:node-id node)
+            :type (node-type node)
+            :profile (:profile node)
+            :target (:target node)
+            :layout (case (:profile node)
+                      :hosted :managed
+                      :native :explicit-native-layout
+                      :firmware :fixed-layout
+                      :kernel :explicit-kernel-layout
+                      :hardware :synthesizable-layout
+                      :abstract)
+            :status :recorded})
+         nodes)
+   :status :complete})
+
 (doseq
  [operation
-  [#'compile-plan
+  [#'dynamic-boundary-records
+   #'cast-records
+   #'generic-instantiations
+   #'protocol-dispatch-table
+   #'schema-links
+   #'layout-facts
+   #'typed-core-verifier-report
+   #'type-capability-proof
+   #'validate!
+   #'compile-plan
    #'check-primitives
    #'verify-primitives
    #'verify-function-result

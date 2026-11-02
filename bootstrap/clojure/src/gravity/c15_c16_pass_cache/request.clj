@@ -1,14 +1,12 @@
 (ns gravity.c15-c16-pass-cache.request
-  "Pure C15/C16 generic-pass request construction.
+  "Pure C15/C16 generic-pass request construction for validated context.
 
-  Validation and cache-key implementations are supplied by the facade so this
-  helper cannot create a second authority or dependency cycle.")
+  Callers own context validation; this helper only projects the request and
+  rechecks its input artifact identity before deriving the cache key.")
 
 (defn build
-  [{:keys [validate-context! require-sha256! stage-cache-key]
-    :as operations}
+  [{:keys [require-sha256! stage-cache-key]}
    context stage-key contract input-id input-facts external-root?]
-  (validate-context! context)
   (require-sha256! :input-artifact-id input-id)
   (let [request
         {:stage (:pass contract)

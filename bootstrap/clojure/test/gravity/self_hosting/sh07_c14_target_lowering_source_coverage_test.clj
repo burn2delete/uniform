@@ -131,8 +131,6 @@
     (loop [forms []]
       (let [form (read {:eof ::eof} reader)]
         (if (= ::eof form) forms (recur (conj forms form)))))))
-(defn- named-top-level-form [forms kind name]
-  (first (filter #(and (seq? %) (= kind (first %)) (= name (second %))) forms)))
 (defn- quoted-body [definition-form]
   (let [body (nth definition-form 3 nil)]
     (when (and (seq? body) (= 'quote (first body))) (second body))))

@@ -489,88 +489,34 @@
       value
       (if (set? value) (vec value) []))))
 
-(defn sh13-c11-de-carrier-rejection [reason nodes enqueued]
+(defn sh13-c11-de-carrier-rejection [reason]
   {:status :rejected
-   :reason reason
-   :nodes nil
-   :observed-nodes nodes
-   :enqueued enqueued
-   :nodes-exact? false})
+   :reason reason})
 
-(defn sh13-c11-de-push-children [frontier children depth]
+(defn sh13-c11-de-push-children [frontier children]
   (loop [remaining children result frontier]
     (if (= (count remaining) 0)
       result
       (recur
        (rest remaining)
-       (conj result [(first remaining) (+ depth 1)])))))
+       (conj result (first remaining))))))
 
-; The walker admits only finite persistent maps/vectors/sets.  Width and the
-; enqueued frontier are checked before children are added, so a lazy or cyclic
-; host value cannot be realized without a bounded receipt.
+; The walker admits only the native map/vector/set carriers used by the
+; evidence adapter.  Lazy sequence carriers remain rejected; no input-shape
+; allowance is imposed on otherwise valid persistent carriers.
 (defn sh13-c11-de-walk [value]
-  (if (seq? value)
-    (sh13-c11-de-carrier-rejection :arbitrary-seq 0 1)
-    (loop [frontier [[value 0]] nodes 0 enqueued 1]
-      (if (= (count frontier) 0)
-        {:status :accepted
-         :nodes nodes
-         :enqueued enqueued
-         :nodes-exact? true}
-        (let [entry (first frontier)
-              remaining (subvec frontier 1 (count frontier))
-              current (first entry)
-              depth (second entry)
-              next-nodes (+ nodes 1)]
-          (if (> next-nodes 32768)
-            (sh13-c11-de-carrier-rejection
-             :carrier-node-bound nodes enqueued)
-            (if (> depth 256)
-              (sh13-c11-de-carrier-rejection
-               :carrier-depth-bound next-nodes enqueued)
-              (if (seq? current)
-                (sh13-c11-de-carrier-rejection
-                 :arbitrary-seq next-nodes enqueued)
-                (if (map? current)
-                  (if (> (count current) 512)
-                    (sh13-c11-de-carrier-rejection
-                     :carrier-map-width next-nodes enqueued)
-                    (let [children (sh13-c11-de-children current)
-                          next-enqueued (+ enqueued (count children))]
-                      (if (> next-enqueued 32768)
-                        (sh13-c11-de-carrier-rejection
-                         :carrier-frontier-bound next-nodes enqueued)
-                        (recur
-                         (sh13-c11-de-push-children
-                          remaining children depth)
-                         next-nodes next-enqueued))))
-                  (if (vector? current)
-                    (if (> (count current) 1024)
-                      (sh13-c11-de-carrier-rejection
-                       :carrier-vector-width next-nodes enqueued)
-                      (let [children (sh13-c11-de-children current)
-                            next-enqueued (+ enqueued (count children))]
-                        (if (> next-enqueued 32768)
-                          (sh13-c11-de-carrier-rejection
-                           :carrier-frontier-bound next-nodes enqueued)
-                          (recur
-                           (sh13-c11-de-push-children
-                            remaining children depth)
-                           next-nodes next-enqueued))))
-                    (if (set? current)
-                      (if (> (count current) 512)
-                        (sh13-c11-de-carrier-rejection
-                         :carrier-set-width next-nodes enqueued)
-                        (let [children (sh13-c11-de-children current)
-                              next-enqueued (+ enqueued (count children))]
-                          (if (> next-enqueued 32768)
-                            (sh13-c11-de-carrier-rejection
-                             :carrier-frontier-bound next-nodes enqueued)
-                            (recur
-                             (sh13-c11-de-push-children
-                              remaining children depth)
-                             next-nodes next-enqueued))))
-                      (recur remaining next-nodes enqueued))))))))))))
+  (loop [frontier [value]]
+    (if (= (count frontier) 0)
+      {:status :accepted}
+      (let [current (first frontier)
+            remaining (subvec frontier 1 (count frontier))]
+        (if (seq? current)
+          (sh13-c11-de-carrier-rejection :arbitrary-seq)
+          (if (sh13-c11-de-aggregate? current)
+            (recur
+             (sh13-c11-de-push-children
+              remaining (sh13-c11-de-children current)))
+            (recur remaining)))))))
 
 (defn sh13-c11-domain-evidence-carrier-preflight [value]
   (sh13-c11-de-walk value))
@@ -627,10 +573,6 @@
     (if (= :accepted (get expected-preflight :status))
       (if (= :accepted (get candidate-preflight :status))
         {:status :accepted
-         :nodes (+ (get metadata-preflight :nodes)
-                   (get expected-preflight :nodes)
-                   (get candidate-preflight :nodes))
-         :nodes-exact? true
          :metadata-preflight metadata-preflight
          :expected-preflight expected-preflight
          :candidate-preflight candidate-preflight}
@@ -2178,20 +2120,6 @@
             :variant :vector :map :set :mutable-buffer}
    :allocation-regimes #{:persistent :static :stack :region :bounded}
    :alignments #{1 2 4 8 16 32 64}
-   :maximum-capacity 4096
-   :maximum-element-size 64
-   :maximum-size-bytes 131072
-   :maximum-origin-count 64
-   :maximum-generated-origin-depth 64
-   :maximum-variant-tags 64
-   :maximum-identifier-units 256
-   :structural-bounds
-   {:maximum-nodes 32768
-    :maximum-depth 96
-    :maximum-width 8192
-    :maximum-collections 8192
-    :maximum-scalars 24576
-    :maximum-scalar-units 262144}
    :supported-profile-target-pairs
    #{[:safe :portable] [:meta :portable-mir]}
    :integer-width-bits 64
@@ -2603,75 +2531,18 @@
     (vec value)))
 
 (defn sh14-v3-structural-preflight [value]
-  (let [bounds (get (sh14-layout-policy) :structural-bounds)
-        maximum-nodes (get bounds :maximum-nodes)
-        maximum-depth (get bounds :maximum-depth)
-        maximum-width (get bounds :maximum-width)
-        maximum-collections (get bounds :maximum-collections)
-        maximum-scalars (get bounds :maximum-scalars)
-        maximum-scalar-units (get bounds :maximum-scalar-units)]
-    (loop [frontier [[value 0]]
-           cursor 0
-           nodes 0
-           collections 0
-           scalars 0
-           scalar-units 0]
-      (if (= cursor (count frontier))
-        {:status :accepted
-         :nodes nodes
-         :collections collections
-         :scalars scalars
-         :scalar-units scalar-units}
-        (let [entry (get frontier cursor)
-              current (first entry)
-              depth (second entry)
-              next-nodes (+ nodes 1)]
-          (if (> next-nodes maximum-nodes)
-            {:status :rejected :reason :structure-node-bound}
-            (if (> depth maximum-depth)
-              {:status :rejected :reason :structure-depth-bound}
-              (if (sh14-v3-aggregate? current)
-                (let [components (sh14-v3-aggregate-components current)
-                      width (count components)
-                      next-collections (+ collections 1)]
-                  (if (> width maximum-width)
-                    {:status :rejected :reason :structure-width-bound}
-                    (if (> next-collections maximum-collections)
-                      {:status :rejected
-                       :reason :structure-collection-bound}
-                      (let [next-frontier
-                            (loop [remaining components
-                                   result frontier]
-                              (if (= (count remaining) 0)
-                                result
-                                (recur
-                                 (rest remaining)
-                                 (conj result
-                                       [(first remaining)
-                                        (+ depth 1)]))))]
-                        (recur next-frontier (+ cursor 1)
-                               next-nodes next-collections
-                               scalars scalar-units)))))
-                (if (seq? current)
-                  {:status :rejected
-                   :reason :structure-sequence-carrier}
-                  (let [next-scalars (+ scalars 1)
-                        units
-                        (if (string? current)
-                          (count current)
-                          (if (keyword? current)
-                            (count (str current))
-                            (if (symbol? current)
-                              (count (str current))
-                              1)))
-                        next-units (+ scalar-units units)]
-                    (if (> next-scalars maximum-scalars)
-                      {:status :rejected :reason :structure-scalar-bound}
-                      (if (> next-units maximum-scalar-units)
-                        {:status :rejected
-                         :reason :structure-scalar-unit-bound}
-                        (recur frontier (+ cursor 1) next-nodes
-                               collections next-scalars next-units)))))))))))))
+  (loop [frontier [value]]
+    (if (= 0 (count frontier))
+      {:status :accepted}
+      (let [current (first frontier)
+            remaining (subvec frontier 1 (count frontier))]
+        (if (seq? current)
+          {:status :rejected :reason :structure-sequence-carrier}
+          (if (sh14-v3-aggregate? current)
+            (recur
+             (sh13-c11-de-push-children
+              (sh14-v3-aggregate-components current) remaining))
+            (recur remaining)))))))
 
 (defn sh14-v3-identifier-character? [character]
   (sh14-v2-character-member-from?
@@ -2681,14 +2552,12 @@
 (defn sh14-v3-ascii-identifier? [value]
   (if (string? value)
     (if (> (count value) 0)
-      (if (<= (count value) 256)
-        (loop [index 0]
-          (if (= index (count value))
-            true
-            (if (sh14-v3-identifier-character? (get value index))
-              (recur (+ index 1))
-              false)))
-        false)
+      (loop [index 0]
+        (if (= index (count value))
+          true
+          (if (sh14-v3-identifier-character? (get value index))
+            (recur (+ index 1))
+            false)))
       false)
     false))
 
@@ -2708,7 +2577,7 @@
         (sh14-v2-range?
          value -9223372036854775808 9223372036854775807)
         (if (string? value)
-          (<= (count value) 4096)
+          true
           (if (sh14-v3-canonical-identifier? value)
             true
             (char? value)))))))
@@ -2823,41 +2692,33 @@
    (sh14-v3-exact-keys?
     span #{:source-id :actual-source-path :start :end})
     (if (sh14-v3-source-id? (get span :source-id))
-      (if (string? (get span :actual-source-path))
-        (if (> (count (get span :actual-source-path)) 0)
-          (if (<= (count (get span :actual-source-path)) 4096)
-            (if (sh14-v3-point-valid? (get span :start))
-              (if (sh14-v3-point-valid? (get span :end))
-                (sh14-v2-source-span-valid? span)
+          (if (string? (get span :actual-source-path))
+            (if (> (count (get span :actual-source-path)) 0)
+              (if (sh14-v3-point-valid? (get span :start))
+                (if (sh14-v3-point-valid? (get span :end))
+                  (sh14-v2-source-span-valid? span)
+                  false)
                 false)
               false)
-            false)
-          false)
         false)
       false)
     false))
 
-(defn sh14-v3-generated-origin-valid-at? [origin depth]
-  (if (> depth 64)
-    false
-    (if (map? origin)
-      (let [parent (get origin :parent-generated-origin)
+(defn sh14-v3-generated-origin-valid-at? [origin]
+  (loop [current origin]
+    (if (map? current)
+      (let [parent (get current :parent-generated-origin)
             expected
             (if (= nil parent)
               #{:generator-id :anchor-id :actual-source-path}
               #{:generator-id :anchor-id :actual-source-path
                 :parent-generated-origin})]
-        (if (sh14-v3-exact-keys? origin expected)
-          (if (sh14-v2-sha256-id? (get origin :generator-id))
-            (if (sh14-v2-sha256-id? (get origin :anchor-id))
-              (if (string? (get origin :actual-source-path))
-                (if (> (count (get origin :actual-source-path)) 0)
-                  (if (<= (count (get origin :actual-source-path)) 4096)
-                    (if (= nil parent)
-                      true
-                      (sh14-v3-generated-origin-valid-at?
-                       parent (+ depth 1)))
-                    false)
+        (if (sh14-v3-exact-keys? current expected)
+          (if (sh14-v2-sha256-id? (get current :generator-id))
+            (if (sh14-v2-sha256-id? (get current :anchor-id))
+              (if (string? (get current :actual-source-path))
+                (if (> (count (get current :actual-source-path)) 0)
+                  (if (= nil parent) true (recur parent))
                   false)
                 false)
               false)
@@ -2876,15 +2737,13 @@
               #{}))]
       (if (sh14-v3-exact-keys? origin expected)
         (if (sh14-v3-source-id? (get origin :source-id))
-          (if (string? (get origin :actual-source-path))
-            (if (> (count (get origin :actual-source-path)) 0)
-              (if (<= (count (get origin :actual-source-path)) 4096)
+            (if (string? (get origin :actual-source-path))
+              (if (> (count (get origin :actual-source-path)) 0)
                 (if (= kind :source)
                   true
                   (sh14-v3-generated-origin-valid-at?
-                   (get origin :generated-origin) 1))
+                   (get origin :generated-origin)))
                 false)
-              false)
             false)
           false)
         false))
@@ -2893,14 +2752,12 @@
 (defn sh14-v3-origin-chain-valid? [origins]
   (if (vector? origins)
     (if (> (count origins) 0)
-      (if (<= (count origins) 64)
-        (loop [index 0]
-          (if (= index (count origins))
-            true
-            (if (sh14-v3-origin-entry-valid? (get origins index))
-              (recur (+ index 1))
-              false)))
-        false)
+      (loop [index 0]
+        (if (= index (count origins))
+          true
+          (if (sh14-v3-origin-entry-valid? (get origins index))
+            (recur (+ index 1))
+            false)))
       false)
     false))
 
@@ -2956,20 +2813,20 @@
     :request-not-map))
 
 (defn sh14-v2-variant-schema-from? [tags arities index]
-  (if (= index (count tags))
-    true
-    (let [tag (get tags index)
-          arity (get arities tag)]
-      (if (keyword? tag)
-        (if (= nil tag)
-          false
-          (if (sh14-v3-canonical-identifier? tag)
-            (if (sh14-v2-range? arity 0 4096)
-              (sh14-v2-variant-schema-from?
-               tags arities (+ index 1))
-              false)
-            false))
-        false))))
+  (loop [cursor index]
+    (if (= cursor (count tags))
+      true
+      (let [tag (get tags cursor)
+            arity (get arities tag)]
+        (if (keyword? tag)
+          (if (= nil tag)
+            false
+            (if (sh14-v3-canonical-identifier? tag)
+              (if (if (integer? arity) (>= arity 0) false)
+                (recur (+ cursor 1))
+                false)
+              false))
+          false)))))
 
 (defn sh14-v2-variant-valid? [request payload]
   (let [tags (get request :allowed-tags)
@@ -2978,20 +2835,18 @@
     (if (vector? payload)
       (if (vector? tags)
         (if (> (count tags) 0)
-          (if (<= (count tags) 64)
-            (if (sh14-unique? tags)
-              (if (map? arities)
-                (if (= (count tags) (count arities))
-                  (if (sh14-v2-variant-schema-from? tags arities 0)
-                    (if (keyword? tag)
-                      (if (= nil tag)
-                        false
-                        (if (sh14-v3-canonical-identifier? tag)
-                          (if (contains? arities tag)
-                            (= (count payload) (get arities tag))
-                            false)
-                          false))
-                      false)
+          (if (sh14-unique? tags)
+            (if (map? arities)
+              (if (= (count tags) (count arities))
+                (if (sh14-v2-variant-schema-from? tags arities 0)
+                  (if (keyword? tag)
+                    (if (= nil tag)
+                      false
+                      (if (sh14-v3-canonical-identifier? tag)
+                        (if (contains? arities tag)
+                          (= (count payload) (get arities tag))
+                          false)
+                        false))
                     false)
                   false)
                 false)
@@ -3064,19 +2919,23 @@
   (let [capacity (get request :capacity)
         length (get request :length)]
     (if (>= capacity 0)
-      (if (<= capacity 4096)
-        (if (>= length 0)
-          (if (<= length capacity)
-            (if (= length (count (get request :payload)))
-              nil
-              :payload-length-mismatch)
-            :length-over-capacity)
-          :negative-length)
-        :capacity-over-limit)
+      (if (>= length 0)
+        (if (<= length capacity)
+          (if (= length (count (get request :payload)))
+            nil
+            :payload-length-mismatch)
+          :length-over-capacity)
+        :negative-length)
       :negative-capacity)))
 
 (defn sh14-v2-aligned-size [raw-size alignment]
-  (* alignment (quot (+ raw-size (- alignment 1)) alignment)))
+  (let [quotient (quot raw-size alignment)
+        base (* quotient alignment)
+        remainder (- raw-size base)
+        padding (if (= remainder 0) 0 (- alignment remainder))]
+    (if (<= raw-size (- 9223372036854775807 padding))
+      (+ raw-size padding)
+      nil)))
 
 (defn sh14-v3-kind-element-size-valid? [request]
   (if
@@ -3092,21 +2951,19 @@
     (if (sh14-member? #{1 2 4 8 16 32 64} alignment)
       (if (integer? element-size)
         (if (> element-size 0)
-          (if (<= element-size 64)
-            (if (sh14-v3-kind-element-size-valid? request)
-              (if (<= capacity
-                      (quot 9223372036854775807 element-size))
-                (let [raw-size (* capacity element-size)
-                      aligned-size
-                      (sh14-v2-aligned-size raw-size alignment)]
-                  (if (<= aligned-size 131072)
-                    (if (= (get request :size-bytes) aligned-size)
-                      nil
-                      :unaligned-size-mismatch)
-                    :total-size-over-limit))
-                :integer-overflow)
-              :kind-element-size)
-            :element-size-over-limit)
+          (if (sh14-v3-kind-element-size-valid? request)
+            (if (<= capacity
+                    (quot 9223372036854775807 element-size))
+              (let [raw-size (* capacity element-size)
+                    aligned-size
+                    (sh14-v2-aligned-size raw-size alignment)]
+                (if (= nil aligned-size)
+                  :integer-overflow
+                  (if (= (get request :size-bytes) aligned-size)
+                    nil
+                    :unaligned-size-mismatch)))
+              :integer-overflow)
+            :kind-element-size)
           :nonpositive-element-size)
         :invalid-element-size)
       :invalid-alignment)))
@@ -3139,11 +2996,8 @@
     "C12-FACTS"
     (if
      (contains?
-      #{:negative-capacity :capacity-over-limit :negative-length
+      #{:negative-capacity :negative-length
         :length-over-capacity :payload-length-mismatch
-        :structure-node-bound :structure-depth-bound
-        :structure-width-bound :structure-collection-bound
-        :structure-scalar-bound :structure-scalar-unit-bound
         :structure-sequence-carrier}
       error)
       "SAFE2-BOUNDS"
@@ -3152,9 +3006,9 @@
         (if
          (contains?
           #{:invalid-alignment :invalid-element-size
-            :nonpositive-element-size :element-size-over-limit
+            :nonpositive-element-size
             :kind-element-size
-            :integer-overflow :total-size-over-limit
+            :integer-overflow
             :unaligned-size-mismatch}
           error)
           "S7-LAYOUT"
@@ -3227,11 +3081,22 @@
 (defn sh14-identity-generated-origin [origin]
   (if (= nil origin)
     nil
-    {:generator-id (get origin :generator-id)
-     :anchor-id (get origin :anchor-id)
-     :parent-generated-origin
-     (sh14-identity-generated-origin
-      (get origin :parent-generated-origin))}))
+    (let [entries
+          (loop [current origin result []]
+            (if (= nil current)
+              result
+              (recur
+               (get current :parent-generated-origin)
+               (conj result current))))]
+      (loop [index (- (count entries) 1) result nil]
+        (if (< index 0)
+          result
+          (let [entry (get entries index)]
+            (recur
+             (- index 1)
+             {:generator-id (get entry :generator-id)
+              :anchor-id (get entry :anchor-id)
+              :parent-generated-origin result})))))))
 
 (defn sh14-identity-origin-entry [origin]
   {:kind (get origin :kind)
@@ -3334,7 +3199,7 @@
    :source-span nil
    :generated-origin-chain []
    :structural-preflight preflight
-   :remediation :supply-a-structurally-bounded-layout-request})
+   :remediation :supply-a-canonical-layout-request})
 
 (defn sh14-build-layout [request]
   (let [preflight (sh14-v3-structural-preflight request)]
@@ -3551,12 +3416,12 @@
              :schema-version (get request :schema-version)
              :profile (get request :profile)
              :target (get request :target)}
-            metadata-preflight (sh13-c11-de-walk metadata)
-            facts-preflight (sh13-c11-de-walk (get request :facts))
+            metadata-preflight (sh14-v3-structural-preflight metadata)
+            facts-preflight (sh14-v3-structural-preflight (get request :facts))
             anchor-preflight
-            (sh13-c11-de-walk (get request :semantic-anchor))
+            (sh14-v3-structural-preflight (get request :semantic-anchor))
             provenance-preflight
-            (sh13-c11-de-walk (get request :provenance))]
+            (sh14-v3-structural-preflight (get request :provenance))]
         (if (= :accepted (get metadata-preflight :status))
           (if (= :accepted (get facts-preflight :status))
             (if (= :accepted (get anchor-preflight :status))
@@ -3580,12 +3445,12 @@
             (let [candidate (get request :c11-mir)
                   verification (get request :c11-verification)
                   evidence (get request :domain-evidence)
-                  candidate-preflight (sh13-c11-de-walk candidate)
+                  candidate-preflight (sh14-v3-structural-preflight candidate)
                   verification-preflight
                   (sh13-c11-de-verification-envelope verification)
-                  evidence-preflight (sh13-c11-de-walk evidence)
+                  evidence-preflight (sh14-v3-structural-preflight evidence)
                   layout-request (get request :layout-request)
-                  layout-preflight (sh13-c11-de-walk layout-request)]
+                  layout-preflight (sh14-v3-structural-preflight layout-request)]
               (if (= :accepted (get candidate-preflight :status))
                 (if (= :accepted (get verification-preflight :status))
                   (if (= :accepted (get evidence-preflight :status))
@@ -3744,9 +3609,7 @@
      :artifact-id
      (if (sh14-v2-sha256-id? artifact-id) artifact-id nil)
      :semantic-anchor
-     (if (string? anchor-id)
-       (if (<= (count anchor-id) 512) anchor-id nil)
-       nil)
+     (if (string? anchor-id) anchor-id nil)
      :owner-document "C12"
      :verifier
      :gravity.compiler.c12-domain-ir-architecture/sh14-verify-authenticated-layout
@@ -3812,7 +3675,7 @@
 
 (defn sh14-verify-authenticated-layout [request candidate]
   (let [request-error (sh14-auth-layout-request-error request)
-        candidate-preflight (sh13-c11-de-walk candidate)]
+        candidate-preflight (sh14-v3-structural-preflight candidate)]
     (if (= nil request-error)
       (if (= :accepted (get candidate-preflight :status))
         (let [expected (sh14-build-authenticated-layout request)]
