@@ -13,9 +13,9 @@
  :current-port
  {:base "dbeda7c7dc9a7bb880baa90af1a89046828db327"
   :base-tree "576075197b5b4e815b78bae7d949bfb5fe2d0437"
-  :candidate-parent "dbeda7c7dc9a7bb880baa90af1a89046828db327"
-  :candidate-head "731fcc9d0e7f80ab04c76f45c77e446afca46a1a"
-  :candidate-tree "d8ceb5fc5dbe9c5f7a3e9a67eb498b368f07543e"
+  :candidate-parent "a4ceedaf01ac1754c99bd067e6247b5d7d215870"
+  :candidate-head "67b9f60e66c72f95186a70fca365a971f126f78d"
+  :candidate-tree "d06acc4617240e97f48b122ff7aa86d995a0624e"
   :current-source "dbeda7c7dc9a7bb880baa90af1a89046828db327"
   :current-source-tree "5b62819e511bfc7e6b5eba0527d8c9b5883c5572"
   :current-source-baseline "a1b991be499d50579a8b4366976c519ae8949224"
@@ -24,6 +24,7 @@
   :task-path "specs/domains-workflow/tasks.md"
   :task-sha256 "7f67d299cb01671756a442e7165a0b61e5c710c79081daf05c13664d0b9b0fb6"
   :historical-task-source "86747916c4c876d707a1548113409fb939d854c9"
+  :historical-task-tree "e3f5bb1c91e3ad59ddb64fceef4eccdb07b9960b"
   :historical-task-sha256 "5abf39bc1af6040f84b4e4db77ee93ee000dc14112e8f636970833d0f945e382"}
  :valuable-slices
  {:task-interface
@@ -47,13 +48,34 @@
    :document-digest "0f3f9f70454ac6765204b23f3daacbe5fe388c694e715c29f2c784a611ec06ad"
    :historical-current-selected-fields :byte-and-hash-identical}}
  :checks
- {:command "clojure -J-Xmx768m -M tools/schema_phase10_current.clj --check"
+ {:command "clojure -M tools/schema_phase10_current.clj --check"
   :source-pair [463 19 0]
   :decision-allocation [25 25 0]
   :schema-task [7 5 0]
-  :negative-controls 8
+  :negative-controls 13
   :result :pass
   :native-runtime-compiler-execution :not-run}
+ :repair-history
+ {:prior-candidate-head "a4ceedaf01ac1754c99bd067e6247b5d7d215870"
+  :prior-candidate-tree "02ed31256f64cb2259a8e3334056bd216d19d5a7"
+  :prior-review-disposition :hold
+  :prior-checks {:source-pair [463 19 0]
+                 :decision-allocation [25 25 0]
+                 :schema-task [7 5 0]
+                 :negative-controls 8
+                 :result :checker-pass-review-hold}
+  :prior-gaps [:witness-document-path-not-authenticated
+               :decision-order-permutation-accepted
+               :historical-task-source-ref-hash-tree-not-authenticated]
+  :repair-controls [:witness-document-path-negative
+                    :decision-order-swap-negative
+                    :historical-task-ref-negative
+                    :historical-task-hash-negative
+                    :historical-task-tree-negative]
+  :post-repair-checks {:candidate-head "67b9f60e66c72f95186a70fca365a971f126f78d"
+                       :candidate-tree "d06acc4617240e97f48b122ff7aa86d995a0624e"
+                       :negative-controls 13
+                       :result :pass}}
  :original-path-accounting
  [{:path "docs/component-roadmaps/domains.md"
    :disposition :historical-retained
