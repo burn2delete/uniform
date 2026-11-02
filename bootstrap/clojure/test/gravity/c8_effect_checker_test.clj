@@ -4,6 +4,7 @@
             [gravity.c8-effect-checker.facts :as compatibility]
             [gravity.c8-effect-checker.verification :as report-compatibility]
             [gravity.c8-effect-checker.evidence :as record-compatibility]
+            [gravity.c8-effect-checker.artifact :as artifact-compatibility]
             [gravity.effects :as effects]))
 
 (def module
@@ -54,7 +55,7 @@
     (is (= :hosted-seed-effect-data-and-native-reports (:contract-boundary contract)))
     (is (= #{'fact-direct-effects 'effectful-facts 'effect-graph
              'native-verifier-report 'native-capability-proof 'validate-native-report!
-             'legality-records 'capability-proof-records 'build-effect-log
+             'assemble-source-artifact 'legality-records 'capability-proof-records 'build-effect-log
              'replay-requirements 'ordering-constraints 'residual-effect-report} (set (keys publics))))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (doseq [[name api] (:public-api contract)]
@@ -66,7 +67,7 @@
       (is (false? (:proves-effect-legality? api)))
       (is (false? (:grants-authority? api))))
     (is (= '[clojure.set] (get-in contract [:dependency-direction :requires])))
-    (is (= '[gravity.c8-effect-checker.facts gravity.c8-effect-checker.verification gravity.c8-effect-checker.evidence]
+    (is (= '[gravity.c8-effect-checker.facts gravity.c8-effect-checker.verification gravity.c8-effect-checker.evidence gravity.c8-effect-checker.artifact]
            (get-in contract [:dependency-direction :consumed-by])))
     (is (false? (:legacy-status-labels-authoritative? contract)))
     (is (false? (:legacy-build-grants-prove-performed-effects? contract)))
@@ -149,6 +150,51 @@
         #(is (identical? marker (apply wrapper arguments))))
       (is (= arity (count @observed)))
       (is (every? true? (map identical? arguments @observed))))))
+
+(deftest effects-stage-assembly-wrapper-preserves-argument-identity
+  (let [ops (Object.) source (Object.) text (Object.) marker (Object.) observed (atom nil)]
+    (with-redefs [effects/assemble-source-artifact
+                  (fn [& values] (reset! observed values) marker)]
+      (is (identical? marker (artifact-compatibility/source-artifact ops source text))))
+    (is (= 3 (count @observed)))
+    (is (every? true? (map identical? [ops source text] @observed)))))
+
+(deftest effects-stage-assembly-preserves-sequencing-and-refusal-barriers
+  (doseq [stop [nil :overrides :validate]]
+    (let [events (atom []) failure (ex-info "owner refusal" {:marker (Object.)})
+          supplied (into {} (for [[key operation] (operations)]
+                              [key (fn [& values]
+                                     (swap! events conj key)
+                                     (apply operation values))]))
+          supplied (assoc supplied
+                          :c8-effect-validate-overrides!
+                          (fn [& values]
+                            (swap! events conj :overrides)
+                            (when (= :overrides stop) (throw failure))
+                            (apply c8/c8-effect-validate-overrides! values))
+                          :c8-effect-validate!
+                          (fn [& values]
+                            (swap! events conj :validate)
+                            (when (= :validate stop) (throw failure))
+                            (apply c8/c8-effect-validate! values))
+                          :c8-effect-capability-proof
+                          (fn [& values]
+                            (swap! events conj :proof)
+                            (apply c8/c8-effect-capability-proof values)))
+          result (try (c8/with-operations supplied
+                        #(c8/compiler-c8-effect-source-artifact "c8-test.gravity" "ignored"))
+                      (catch clojure.lang.ExceptionInfo error error))]
+      (is (= (case stop
+               :overrides [:read-source-form-records :validate-ns-syntax! :parse-module :overrides]
+               :validate [:read-source-form-records :validate-ns-syntax! :parse-module :overrides
+                          :compiler-c7-type-source-artifact :validate]
+               [:read-source-form-records :validate-ns-syntax! :parse-module :overrides
+                :compiler-c7-type-source-artifact :validate :proof :proof])
+             @events))
+      (if stop
+        (is (identical? failure result))
+        (do (is (= :passed (get-in result [:effect-verifier-report :status])))
+            (is (re-matches #"sha256:[0-9a-f]{64}" (:artifact-id result))))))))
 
 (deftest effects-stage-records-preserve-labels-order-and-legacy-nonclaims
   (let [effect-capability {:io/write :io/stdout :memory/raw :memory/raw}
