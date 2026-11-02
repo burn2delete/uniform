@@ -473,39 +473,47 @@ Lower derives concrete target layouts, STD10 exposes callable codecs and Runtime
 executes actual FFI checks. The older allocation and its qualifications remain
 visible rather than being silently accepted or removed.
 
-The current focused check covers 62 changed files, including 61 Markdown files
-and 2,172 local references, 139 current component task routes, all sixteen
-separate future Domain records and 48 historical spec/plan suffixes. The
+The focused component conservation check covers all 139 existing component
+task routes, sixteen separate future Domain records and 48 historical spec/plan
+suffixes. The
 original 48 task/evidence file contents remain conserved: 45 are untouched;
 removing only the declared governance consumer blocks, the two Domains
 future-record regions and the Schema parent amendment restores the other three
 task files exactly. All ten
 governance task bytes and all nine wider-Domain criterion bodies retain their
-earlier verified source scope. Canonical and full-language structural validators
-passed, and whitespace checks passed. The preceding producer checkpoint's
-dependency controls passed 18 tests / 419 assertions. After the current Schema
-amendment those controls fail closed: 18 tests / 115 assertions, zero assertion
-failures and five errors for the changed exact captured Domains task body.
-That failure is expected evidence of stale projection applicability, not a
-passing check or permission to renew its old acceptance.
+earlier verified source scope. The Schema amendment first caused five exact-body
+errors in the existing dependency controls; that published failure remains
+history rather than being erased or passed by weakening the guard.
 
-Read-only inspection of the existing SH generator also refuses the resumed
-Evolution authority until its literal routing is explicitly declared. An
-in-memory inspection with that known authority and four named source-inspection
-locators made the remaining source/version work concrete: 25 authorities and
-149 current task keys, plus stale applying pins in the generator for nineteen
-task files. This was inspection only; no routing, pin, crosswalk, review state
-or generated output was written. Existing captured projection rows and the
-generator's older defaults must be compared per file and per task, preserving
-all predecessors, rather than blanket-rebaselining them. The next integration
-increment is the existing SH source-version workflow: reconcile those exact
-bindings and the Schema/Evolution additions, regenerate through the existing
-Clojure tools, retain pending review and current whole-criterion nonclaims,
-then rerun the failed dependency controls. Independent acceptance cannot be
-inferred from an author-generated successor.
+The [SH source-version successor](../specs/sh-family-crosswalk/implementation-readiness-source-version.edn)
+now binds the exact current task-file versions and resumed Governance authority
+through the existing Clojure generator. It records nineteen task-file versions,
+five navigation versions, four source-inspection locators and 27 explicit
+successor pin entries. All were checked against their local Git objects before
+generation. Of 139 prior task bodies, 135 are unchanged; the two Build consumers,
+one Release consumer and Schema parent change while remaining Open. The ten
+Governance records remain Open and are now discovered in the same task-source
+projection. Its 149 keys across 25 authorities are a source inventory view, not
+implementation completion units or new SH milestones. Sixteen separate future
+Domain records retain pending exact task/projection composition.
 
-No compiler/domain/provider execution, policy decision,
-independent review or SH route adoption occurred. Remaining Math parent criteria,
+All original 180 SH criteria, 30 milestones, 18 SH07 rows, original task-reference
+routes and three scoped Reader receipts are conserved. The historical ownership
+map keeps its original pinned bytes while the changed live map is reported as
+unassessed. Current source/routing review is pending at the exact successor
+fingerprint; earlier reviews retain their original subjects. The generated
+rollup labels its mapping review as historical rather than implying current
+acceptance. See [current SH evidence](../specs/sh-family-crosswalk/evidence.md#current-implementation-readiness-source-version-successor)
+for the commands, initial historical/live assertion failures and their correction.
+
+Crosswalk controls now pass 24 tests / 569 assertions, and dependency controls
+again pass 18 tests / 419 assertions. Original inventory and deterministic
+crosswalk checks pass. The source/tooling boundary check passed 6 tests /
+11 assertions. These checks do not establish substantive requirement entailment,
+execution, independent acceptance or release readiness.
+
+No compiler/domain/provider execution, policy decision or independent review
+occurred. Remaining Math parent criteria,
 current source/facet conjunctions and parent allocations, full support breadth,
 consumer and SH composition
 remain required work in the existing reconciliation lineage.

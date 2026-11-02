@@ -1,5 +1,55 @@
 # SH crosswalk evidence and finite gates
 
+## Current implementation-readiness source-version successor
+
+Source input: `a9fc9b1c63c0eb344f29bb63d985f71e6c24af24`. The
+[explicit bridge](implementation-readiness-source-version.edn) pins the entire
+predecessor projection and its pending review metadata. It records nineteen
+task-file versions, five navigation versions, four source-inspection locators
+and 27 explicit successor pin entries. Every recorded current file version was
+checked against its exact local Git object before generation. Of 139 prior
+task bodies, 135 are identical; the two Build governance consumers, one Release
+consumer and Schema parent change while remaining Open. The resumed Governance
+authority adds its existing ten Open IDs. Current task-key discovery is 149
+across 25 authorities, not an implementation denominator or new milestone.
+
+All 180 original SH criteria, 30 milestones, 18 SH07 rows and their existing
+task-reference routes are retained, as are the three scoped Reader receipts.
+Sixteen future Domain records remain outside this task-key projection. The
+historical ownership source retains commit `c8fd8e437ef921041b181e2f09ee1a37d716d357`
+and SHA-256 `868180b50622c3646deaf1ff25a380eb996db868ae7c8a43f2faf8afbf1522ed`;
+the changed live source is recorded separately and is not adopted as authority.
+No current owner reservation or compiler implementation is changed.
+
+Observed focused checks:
+
+- Original inventory check passed, preserving the 180/30 source identities.
+- Crosswalk generation passed its pre-write Git pin checks, and deterministic
+  `--check` passed. Review remains `pending-source-version-review`.
+- Crosswalk controls passed 24 tests / 569 assertions. The first run reported
+  five failures where historical Reader/navigation and ownership tests still
+  expected live bytes. Historical checks now verify the original Git versions;
+  new successor controls independently verify current versions, task-body and
+  route conservation, pending review and rejection of stale review/pins,
+  missing Governance routing/locators and a changed Schema criterion.
+- Dependency controls passed 18 tests / 419 assertions. The preceding Schema
+  checkpoint's five stale-body errors are preserved in its published history;
+  the exact-body guard was not weakened.
+- Language-boundary controls passed 6 tests / 11 assertions. No genuine Reader,
+  compiler, provider, native, C12, migration or seed-retirement execution ran.
+- Canonical document and full-language structural validators passed. The dated
+  full-language snapshot remains non-authoritative for current execution.
+  Focused conservation/navigation passed for the whole draft: 71 changed files,
+  66 Markdown files, 2,505 local references and all 48 original component
+  task/evidence contents conserved after removing the declared additions.
+  Changed Clojure/EDN files are ASCII; whitespace checks passed.
+
+These are author-observed source/projection controls. Exact independent
+source/routing and affected composition review remain pending, as do every
+current whole-SH acceptance claim and the broader project reconciliation.
+Predecessor review receipts retain their original subjects. No other chats were
+messaged, no review was self-awarded and no integration was performed.
+
 ## Observed source population
 
 The source extractor found 180 unique criteria, SH-00.1 through SH-29.6, and

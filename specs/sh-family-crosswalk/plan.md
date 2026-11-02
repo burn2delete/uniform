@@ -1,5 +1,40 @@
 # Crosswalk integration plan
 
+## Implementation-readiness source-version successor
+
+The project-wide reconciliation continues this existing projection rather than
+creating another dependency graph. Its source input is
+`a9fc9b1c63c0eb344f29bb63d985f71e6c24af24`. The new
+[source-version record](implementation-readiness-source-version.edn) pins the
+predecessor projection and exact per-file before/after versions. Of the 139
+captured task bodies, 135 are unchanged; two Build governance consumers, one
+Release governance consumer and the Schema parent change while remaining Open.
+The resumed Governance authority adds its ten existing Open IDs. It is not a
+compiler stage or another SH milestone. The sixteen future Domain records stay
+outside the current SH task-key projection and retain pending composition.
+
+Update only this projection's existing Clojure generator, focused controls,
+generated views and successor evidence. Retain all original 180 criteria,
+30 milestones, 18 SH07 sequence rows, task-reference routes, conditional edges,
+three scoped Reader receipts and predecessor review metadata. Bind every
+changed task file to a verified Git version; do not relabel its bytes with an
+old commit. Distinguish an unchanged task body from a changed surrounding file.
+New source-inspection locators grant no execution or acceptance evidence.
+
+The ownership map is already classified as a historical input. Keep its
+existing pinned bytes in the projection and report live drift as unassessed;
+do not adopt the changed live map as current authority. Navigation versions have
+their own explicit before/after pins. No normative contract, implementation,
+current ownership reservation or historical receipt is renewed here.
+
+Use the existing inventory, crosswalk generation/check, source-pin rejection,
+dependency and language-boundary controls. Add regression checks for exact
+task-body conservation, the declared four changes, Governance routing, unchanged
+SH routes and rejection of stale review/pins or missing routing/locators. Leave
+mapping review pending for the exact successor fingerprint, even when those
+checks pass. Required independent acceptance and coordinator integration remain
+separate; no other chat is messaged under this goal.
+
 ## Ownership handoffs
 
 Canonical requirement owner `01a179ad-2198-7392-966a-1e3c31209027` supplied the

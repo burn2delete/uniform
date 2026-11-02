@@ -1,5 +1,13 @@
 # All-SH acceptance crosswalk
 
+Current project-wide successor: reconcile exact task-source versions and the
+resumed Governance authority through the existing
+[source-version plan](plan.md#implementation-readiness-source-version-successor).
+The earlier review statements below retain their historical subjects. The new
+composition remains pending independent review, with every current whole-SH
+criterion unassessed. Governance adds task routes, not a compiler stage or SH
+milestone; the original acceptance and sequence populations remain unchanged.
+
 Status: source-bound routing, dependency mapping, source-pin guard and bounded
 source-version bridge independently reviewed; owner task-boundary integration
 is complete. Publication receipts are recorded in PR490. This is an acceptance view,

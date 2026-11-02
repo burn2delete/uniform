@@ -155,8 +155,11 @@
           source (first (:source-files (or (:normal-dispatch-seam successor)
                                           (:current-main-composition successor) successor)))]
       (is (= (:applying-main bridge) (get-in historical-source [:before :commit])))
+      ;; This bridge is the historical Reader adoption. The readiness successor
+      ;; separately verifies the current whole-file version and unchanged body.
       (is (= (get-in source [:after :commit])
-             (get-in view [:applying-source-pins "specs/reader-workflow/tasks.md"]))))))
+             (get sh-crosswalk/predecessor-applying-source-pins
+                  "specs/reader-workflow/tasks.md" sh-crosswalk/baseline))))))
 
 (deftest reader-dispatch-successor-retains-exact-source-and-open-acceptance
   (let [view (sh-crosswalk/build)
@@ -177,11 +180,14 @@
              (if (= path "docs/self-hosting-slice-ownership.edn")
                (get-in (edn/read-string (slurp "specs/sh-family-crosswalk/reader-assembly-source-version.edn"))
                        [:source-file :before :commit])
-               (get-in view [:applying-source-pins path]))))
+               (get sh-crosswalk/predecessor-applying-source-pins path sh-crosswalk/baseline))))
       (is (= (:sha256 before)
              (sh-inventory/sha256 (sh-crosswalk/git-source (:commit before) path))))
       (when-not (= path "docs/self-hosting-slice-ownership.edn")
-        (is (= (:sha256 after) (sh-inventory/sha256 (slurp path)))))
+        (if-let [successor (first (filter #(= path (:path %))
+                                         (:source-files sh-crosswalk/readiness-source-version)))]
+          (is (= (:sha256 after) (get-in successor [:before :sha256])))
+          (is (= (:sha256 after) (sh-inventory/sha256 (slurp path))))))
       (is (= (:sha256 after)
              (sh-inventory/sha256 (sh-crosswalk/git-source (:commit after) path)))))
     (let [path "specs/reader-workflow/tasks.md"
@@ -341,7 +347,8 @@
     (is (every? #(= "Open" (get-in % [:after :status])) rows))
     (is (:historical-suffix-unchanged lineage))
     (doseq [path ["specs/build-workflow/tasks.md" "docs/component-roadmaps/build.md"]]
-      (is (= (:applying-task-source bridge) (get-in view [:applying-source-pins path]))))
+      (is (= (:applying-task-source bridge)
+             (get sh-crosswalk/predecessor-applying-source-pins path sh-crosswalk/baseline))))
     (is (= :pending-source-version-review (get-in view [:mapping-review :status])))
     (is (= :pending-source-version-review (get-in view [:mapping-review :predecessor-review :status])))
     (is (= "c0714e09a510f173d0e69380478beb1a5790b07635283009749612aff9754b57"
@@ -517,7 +524,9 @@
 (deftest resolution-native-composition-conserves-both-source-histories
   (let [bridge (edn/read-string (slurp "specs/sh-family-crosswalk/resolution-runtime-composition-source-version.edn"))
         {:keys [path before after]} (:source-file bridge)
-        current (edn/read-string (slurp path))
+        ;; The ownership input is historical; current live drift is inspected
+        ;; separately by the readiness successor and dependency report.
+        current (edn/read-string (sh-crosswalk/git-source (:commit after) path))
         remove-entries (fn [record entries]
                          (reduce-kv (fn [r section paths]
                                       (update r section #(apply dissoc % (if (string? paths) [paths] paths)))) record entries))
@@ -526,10 +535,11 @@
         view (sh-crosswalk/build)
         ignored [:input-fingerprint :source-version-bridge :qualification
                  :resolution-main-predecessor-review :resolution-runtime-current-review
-                 :resolution-runtime-predecessor-review]]
+                 :resolution-runtime-predecessor-review
+                 :implementation-readiness-predecessor-review]]
     (is (= main (remove-entries current (:added-entries bridge))))
     (is (= resolution (remove-entries current (:native-entries bridge))))
-    (is (= (:sha256 after) (sh-inventory/sha256 (slurp path))))
+    (is (= (:sha256 after) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit after) path))))
     (doseq [record [before after (:resolution-source-ownership bridge) (:native-source-ownership bridge)]]
       (is (= (:sha256 record) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit record) path)))))
     (is (= (:commit after) (get-in view [:applying-source-pins path])))
@@ -547,7 +557,8 @@
     (is (= (get-in bridge [:predecessors :resolution :review])
            (get-in view [:mapping-review :resolution-runtime-current-review])))
     (is (= (get-in view [:resolution-runtime-composition-source-version :path])
-           (get-in view [:mapping-review :source-version-bridge])))
+           (get-in view [:mapping-review :implementation-readiness-predecessor-review
+                         :source-version-bridge])))
     (is (= (sh-crosswalk/review-fingerprint (sh-crosswalk/source-view))
            (get-in view [:mapping-review :input-fingerprint])))
     (is (= :source-conservation-only (:authority bridge)))
@@ -560,6 +571,82 @@
                    (sh-crosswalk/validate-pinned-sources!
                     {:applying-source-pins {path wrong} :source-digests {path (:sha256 after)}}
                     sh-crosswalk/git-source))))))
+
+(deftest readiness-successor-conserves-task-bodies-routes-and-historical-subjects
+  (let [bridge sh-crosswalk/readiness-source-version
+        predecessor (:predecessor bridge)
+        prior-text (sh-crosswalk/git-source (:commit predecessor) (:path predecessor))
+        prior (edn/read-string prior-text)
+        view (sh-crosswalk/build)
+        rows (fn [v] (into {} (for [[_ records] (:task-authorities v) r records] [(:id r) r])))
+        before (rows prior) after (rows view)
+        raw (fn [v r] (acceptance-dependencies/source-raw (:source r) (:source-snapshots v)))
+        changed (set (for [[id r] before :when (not= (raw prior r) (raw view (after id)))] id))
+        comparisons (:task-comparisons bridge)]
+    (is (= (:sha256 predecessor) (sh-inventory/sha256 prior-text)))
+    (is (= (:review predecessor)
+           (select-keys (:mapping-review prior) [:status :input-fingerprint :source-version-bridge])))
+    (is (= 135 (:unchanged-body-count comparisons)))
+    (is (= (set (map :id (:changed-bodies comparisons))) changed))
+    (is (= 4 (count changed)))
+    (is (= 135 (count (remove changed (keys before)))))
+    (is (every? #(= (:checked (before %)) (:checked (after %))) (keys before)))
+    (is (= (set (:added-ids comparisons)) (set (remove (set (keys before)) (keys after)))))
+    (is (= (set (:added-ids comparisons)) (set (get-in view [:stable-task-routing-keys "evolution"]))))
+    (is (= 10 (count (:added-ids comparisons))))
+    (is (every? #(false? (:checked (after %))) (:added-ids comparisons)))
+    (is (empty? (remove (set (keys after)) (keys before))))
+    (doseq [{:keys [id before-sha256 after-sha256 before-checked after-checked]} (:changed-bodies comparisons)]
+      (is (= before-sha256 (sh-inventory/sha256 (raw prior (before id)))) id)
+      (is (= after-sha256 (sh-inventory/sha256 (raw view (after id)))) id)
+      (is (false? before-checked) id)
+      (is (false? after-checked) id))
+    (doseq [{:keys [path before after]} (:source-files bridge)]
+      (when (:commit before)
+        (is (= (:sha256 before) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit before) path))) path))
+      (is (= (:sha256 after) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit after) path))) path)
+      (is (= (:sha256 after) (sh-inventory/sha256 (slurp path))) path))
+    (is (= (mapv :task-references (:requirements prior)) (mapv :task-references (:requirements view))))
+    (is (= (mapv :task-references (:sh07-sequence prior)) (mapv :task-references (:sh07-sequence view))))
+    (is (= (:accepted-current-scoped-evidence prior) (:accepted-current-scoped-evidence view)))
+    (doseq [[path record] (:retained-historical-source-inputs bridge)]
+      (is (= (:sha256 record) (get-in prior [:source-digests path]) (get-in view [:source-digests path])))
+      (is (= (:commit record) (get-in view [:applying-source-pins path])))
+      (is (= (:sha256 record) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit record) path))))
+      (is (= (:live-inspected-sha256 record)
+             (sh-inventory/sha256 (sh-crosswalk/git-source (:source-input-commit bridge) path)))))
+    (is (= :pending-source-version-review (get-in view [:mapping-review :status])))
+    (is (= (select-keys sh-crosswalk/readiness-predecessor-mapping-review
+                        [:status :input-fingerprint :source-version-bridge])
+           (get-in view [:mapping-review :implementation-readiness-predecessor-review])))
+    (is (= (:input-fingerprint bridge) (sh-crosswalk/review-fingerprint (sh-crosswalk/source-view))))
+    (is (= 180 (count (:requirements view))))
+    (is (= 18 (count (:sh07-sequence view))))
+    (is (every? #(= :unassessed (:accepted-current-requirement %)) (:requirements view)))))
+
+(deftest readiness-successor-rejects-stale-review-pins-and-missing-source-routes
+  (let [source (sh-crosswalk/source-view)
+        bridge sh-crosswalk/readiness-source-version
+        domain (first (filter #(= "specs/domains-workflow/tasks.md" (:path %)) (:source-files bridge)))
+        path (:path domain)]
+    (is (thrown? Exception (sh-crosswalk/adopt-review source sh-crosswalk/readiness-predecessor-mapping-review)))
+    (is (thrown? Exception
+                 (sh-crosswalk/validate-pinned-sources!
+                  (assoc-in source [:applying-source-pins path] (get-in domain [:before :commit]))
+                  sh-crosswalk/git-source)))
+    (with-redefs [sh-crosswalk/stable-task-routing-keys
+                  (dissoc sh-crosswalk/stable-task-routing-keys "evolution")]
+      (is (thrown? Exception (sh-crosswalk/source-view))))
+    (with-redefs [sh-crosswalk/pinned-evidence-hashes
+                  (dissoc sh-crosswalk/pinned-evidence-hashes "docs/phase-02-safety/043-safe14-supply-chain-safety.md")]
+      (is (thrown? Exception (sh-crosswalk/source-view))))
+    (let [view (sh-crosswalk/build)
+          schema (first (filter #(= "schema" (:id %)) (get-in view [:task-authorities "domains"])))
+          changed-text (str/replace (slurp path) "Source-specific acceptance for S1-S9 remains open." "Changed source criterion.")]
+      (is (thrown? Exception
+                   (acceptance-dependencies/current-task-body!
+                    (:source schema) (:source-snapshots view)
+                    (fn [p] (if (= p path) changed-text (slurp p)))))))))
 
 (let [result (run-tests 'sh-crosswalk-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))
