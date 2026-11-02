@@ -1388,7 +1388,7 @@
  {:resource "gravity/bootstrap_impl/components/foundation/00796-c2-reader-diagnostics-leaf-call.clj", :reader-line 143753, :owner :foundation, :first-form "*c2-reader-diagnostics-leaf-call?*"}
  {:resource "gravity/bootstrap_impl/components/compiler/00797-c2-reader-diagnostics-call.clj", :reader-line 143755, :owner :compiler, :first-form "c2-reader-diagnostics-call"}
  {:resource "gravity/bootstrap_impl/components/foundation/00798-reader-canonical-value.clj", :reader-line 143796, :owner :foundation, :first-form "reader-canonical-value"}
- {:resource "gravity/bootstrap_impl/components/compiler/00799-c2-artifact-identity-ops.clj", :reader-line 143809, :owner :compiler, :first-form "c2-artifact-identity-ops"}
+ {:resource "gravity/bootstrap_impl/components/compiler/00799-c2-artifact-identity-ops.clj", :reader-line 143809, :owner :compiler, :first-form "declare"}
  {:resource "gravity/bootstrap_impl/components/foundation/00800-c2-artifact-identity-leaf-call.clj", :reader-line 143829, :owner :foundation, :first-form "*c2-artifact-identity-leaf-call?*"}
  {:resource "gravity/bootstrap_impl/components/compiler/00801-c2-artifact-identity-call.clj", :reader-line 143831, :owner :compiler, :first-form "c2-artifact-identity-call"}
  {:resource "gravity/bootstrap_impl/components/foundation/00802-reader-canonical-value.clj", :reader-line 143842, :owner :foundation, :first-form "reader-canonical-value"}
