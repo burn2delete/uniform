@@ -5,14 +5,20 @@ Source preparation only. The frozen child is the single
 `3d115ebedfcd23078d3981a43bb1453c10c30095`. Its reviewed ten-selector patch
 and PR579 remain unchanged; all ten genuine selectors remain UNRUN.
 
-This current composition is based on the accepted PR581 composition
-`22d0a1bf9ca06176e85942aac4d51149e4687012`, tree
-`245b91f78cc5834200ad3eb520677e65a09ef961`. The PR581 modified
-authenticated-pipeline test was not replayed: that composition already carries
-the newer PR579 cache-hit assertion and its related controls.
+The initial current-source port was based on `2d0844f8f7f21321d920b9245341a2b98adc642e`,
+tree `c5f5941ca3db4ce38695f870276e1b345a323339`. The PR581 modified
+authenticated-pipeline test was not replayed: current main already carries the
+newer PR579 cache-hit assertion and its related controls.
 
-The selective port is the exact direct child of that base; the coordinator
-binds the final head/tree tuple at integration preflight.
+The PR582 source port was then based on the accepted PR581 composition
+`22d0a1bf9ca06176e85942aac4d51149e4687012`, tree
+`245b91f78cc5834200ad3eb520677e65a09ef961`; that composition already carries
+the newer PR579 cache-hit assertion and its related controls. This selective
+PR582 port began as a direct child of that accepted PR581 composition. Later
+normal main composition retains the reviewed PR581 source and adds only this
+reviewed single-broker acquisition delta; the coordinator binds the final
+base/head/tree tuple at integration preflight. Original PR581 and PR582
+ancestry are preserved without importing their superseded trees.
 
 ## Implementation and port boundary
 
