@@ -16,7 +16,7 @@
            :sh08-qd-node :sh08-qd-executable-data
            :sh08-qd-products-valid-data :sh08-qd-products]}
   {:path "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
-   :sha256 "6947de97a07c7ca80a54c0529b288906f067420b8bc5de587d97bc51617435ff"
+   :sha256 "1289d1954ad7c55c9d91b28abed2d56ee225f95d57e9dced20130f2575744f94"
    :delta [:4097-wide-children :deep-192-path :iterative-executable-scan
            :duplicate-and-uncountable-id-refusals :opaque-data-callback-guard]}
   {:path "bootstrap/clojure/test/gravity/self_hosting/sh08_recursive_function_type_test.clj"

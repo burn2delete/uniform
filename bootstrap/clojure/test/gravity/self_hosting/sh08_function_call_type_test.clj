@@ -920,7 +920,9 @@
         callbacks (atom [])
         opaque (proxy [Object] []
                  (toString [] (swap! callbacks conj :render)
-                   (throw (AssertionError. "quoted rendering"))))]
+                   (throw (AssertionError. "quoted rendering"))))
+        opaque-products (invoke-c7 'sh08-qd-products
+                                   [[node] (conj (vec (vals forms)) {:unused opaque}) {}])]
     (is (= :accepted (:status result)) (pr-str result))
     (is (= :leaf (:value leaf)))
     (is (= (vec (repeat 192 0)) (get-in leaf [:origin :data-path])))
@@ -932,6 +934,8 @@
                      (assoc-in forms [payload :child-form-ids] (vec (repeat 2 payload)))
                      (assoc forms :unused opaque)]]
       (is (= :rejected (:status (invoke-c7 'sh08-qd-node [node changed])))))
+    (is (= :malformed-quoted-data-tree
+           (get-in opaque-products [:diagnostics 0 :reason])))
     (is (empty? @callbacks))))
 
 (defn- pattern-alias-kernel-input []
