@@ -96,7 +96,7 @@
                                       (get-in view [:current-source :task-sources])))]
     (require! (= 1 (count transitions))
               "Safety current-source transition population changed")
-    (doseq [{:keys [path from to changed-record-ids] :as transition} transitions]
+    (doseq [{:keys [path from to changed-record-ids]} transitions]
       (let [entry (get current-entries path)]
         (require! entry (str "Safety transition has no current task source: " path))
         (require! (= "specs/runtime-workflow/tasks.md" path)
