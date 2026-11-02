@@ -6,7 +6,15 @@
     :contract-boundary :native-seed-c11-records-and-relative-validation
     :governing-contracts [D1 D2 D3 D8 D9 C1 C6 C7 C8 C9 C10 C11 C15 BOOT8 TEST2]
     :public-api
-    {node-opcode {:arglists ([node]) :admission :none :native-data-only? true}
+    {validate-carrier! {:arglists ([owner-operations source-path definition value]) :admission :none
+      :operation-inputs [:trusted-carrier-validation :valid-unicode-string? :fail! :contain-exception!]
+      :native-data-only? true :authenticates-inputs? false}
+     metadata-free? {:arglists ([value]) :admission :none :native-data-only? true}
+     require-strict-structure! {:arglists ([strict-first-mismatch fail! source-path expected actual missing-fact])
+       :admission :none :native-data-only? true :operation-inputs [:strict-first-mismatch :fail!]}
+     require! {:arglists ([fail! condition id source-path subject missing-fact]) :admission :none
+       :native-data-only? true :operation-inputs [:fail!]}
+     node-opcode {:arglists ([node]) :admission :none :native-data-only? true}
      node-facts {:arglists ([checked-core node]) :admission :none :native-data-only? true}
      runtime-check-operation-id {:arglists ([check]) :admission :none :native-data-only? true}
      runtime-check-token-id {:arglists ([check]) :admission :none :native-data-only? true}
@@ -68,7 +76,8 @@
      valid-dominance-edge? {:arglists ([edge blocks operation-by-id definitions position-by-id join]
                                       [edge blocks operation-by-id definitions position-by-id join parameter]) :admission :none}
      valid-terminator-use? {:arglists ([use blocks operation-by-id position-by-id]) :admission :none}}
-    :artifact-inputs [:native-node-and-fact-source-and-check-data :explicit-token-id-operation
+    :artifact-inputs [:native-carrier-and-structural-comparison-data :explicit-carrier-unicode-diagnostic-and-containment-operations
+                      :native-node-and-fact-source-and-check-data :explicit-token-id-operation
                       :native-module-and-function-key-schemas :explicit-envelope-operations
                       :explicit-fact-table-reconstruction-and-require-operations
                       :explicit-operation-rules-and-schema-data
@@ -81,13 +90,15 @@
                       :explicit-require-and-terminator-operations :terminator-key-schema
                       :checked-core-and-mir-data :expected-envelope-and-operation-products
                       :definitions :operation-positions :join-and-parameter-data]
-    :artifact-outputs [:native-opcodes-fact-references-operands-generated-source-and-ids
+    :artifact-outputs [:native-carrier-validation-result :metadata-predicate :relative-structure-and-condition-rule-results
+                       :native-opcodes-fact-references-operands-generated-source-and-ids
                        :native-module-and-function-key-sets :native-envelope-products
                        :native-fact-table-rule-return :native-operation-products :native-data-flow-counts :native-effect-placement-result
                        :native-block-placement-data :native-use-definition-and-value-records
                        :native-runtime-check-facts :id-indexed-fact-and-proof-tables
                        :cfg-entry-exit-and-conditional-count :native-rule-outcome :dominance-and-use-predicates]
-    :diagnostic-ownership {:stage [:native-node-opcode-and-fact-source-id-projection
+    :diagnostic-ownership {:stage [:native-carrier-unicode-metadata-and-relative-structure-rules
+                                  :native-node-opcode-and-fact-source-id-projection
                                   :native-module-function-and-provenance-envelope-parity :native-envelope-key-schemas
                                   :native-fact-table-equality
                                   :native-operation-shape-parity-and-fact-references
@@ -112,6 +123,96 @@
 
 
 
+
+(defn validate-carrier!
+  [owner-operations source-path definition value]
+  (let [{:keys [trusted-carrier-validation valid-unicode-string? fail! contain-exception!]} owner-operations]
+    (try
+      ;; Establish exact native classes, comparators, metadata and acyclicity
+      ;; before traversing. Numeric representations are checked by this helper;
+      ;; Float/Double remain legitimate carriers, not canonical digest values.
+      (let [validation (trusted-carrier-validation value :default-only)]
+        (when-not (= :passed (:status validation))
+          (fail!
+           "C11-VERIFY" source-path {}
+           {:missing-fact :valid-native-c11-carrier
+            :reason (:reason validation)
+            :runtime-contract-definition definition})))
+      (loop [pending [value]]
+        (when (seq pending)
+          (let [item (peek pending) pending (pop pending)
+                texts (cond (string? item) [item]
+                            (or (keyword? item) (symbol? item))
+                            (cond-> [(name item)] (namespace item) (conj (namespace item)))
+                            :else [])]
+            (when-not
+             (and (every? #(and (string? %)
+                                (valid-unicode-string? %)) texts)
+                  (not (and (char? item) (<= 0xD800 (int item) 0xDFFF))))
+              (fail!
+               "C11-VERIFY" source-path {}
+               {:missing-fact :well-formed-unicode-c11-carrier
+                :runtime-contract-definition definition}))
+            (recur (cond
+                     (map? item) (reduce-kv #(conj %1 %2 %3) pending item)
+                     (or (vector? item) (set? item) (seq? item))
+                     (reduce conj pending item)
+                     :else pending)))))
+      {:status :passed}
+      (catch InterruptedException interrupted
+        (.interrupt (Thread/currentThread))
+        (throw interrupted))
+      (catch StackOverflowError error
+        (contain-exception!
+         source-path :contained-c11-carrier-host-stack error))
+      (catch AssertionError error
+        (contain-exception!
+         source-path :contained-c11-carrier-assertion error))
+      (catch LinkageError error
+        (contain-exception!
+         source-path :contained-c11-carrier-linkage error))
+      (catch clojure.lang.ExceptionInfo ex
+        (contain-exception!
+         source-path :contained-c11-carrier-diagnostic ex))
+      (catch Exception error
+        (contain-exception!
+         source-path :contained-c11-carrier-host-failure error)))))
+
+(defn metadata-free?
+  [value]
+  (loop [stack [value]]
+    (if (empty? stack)
+      true
+      (let [item (peek stack)
+            stack (pop stack)]
+        (if (and (instance? clojure.lang.IObj item)
+                 (some? (meta item)))
+          false
+          (cond
+            (map? item)
+            (recur
+             (reduce (fn [pending [key child]]
+                       (conj pending key child))
+                     stack item))
+
+            (or (vector? item) (list? item) (set? item))
+            (recur (reduce conj stack item))
+
+            :else (recur stack)))))))
+
+(defn require-strict-structure!
+  [strict-first-mismatch fail! source-path expected actual missing-fact]
+  (when (strict-first-mismatch
+         source-path expected actual [])
+    (fail!
+     "C11-VERIFY" source-path {}
+     {:missing-fact missing-fact})))
+
+(defn require!
+  [fail! condition id source-path subject missing-fact]
+  (when-not condition
+    (fail!
+     id source-path subject {:missing-fact missing-fact})))
 
 (defn node-opcode
   [node]

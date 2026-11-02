@@ -43,7 +43,8 @@
            'expected-runtime-check-value 'validate-effect-edge-placement! 'validate-data-flow!
            'validate-operations! 'validate-fact-tables! 'validate-module-envelope!
            'module-keys 'function-keys 'node-opcode 'node-facts 'node-operands
-           'runtime-check-operation-id 'runtime-check-token-id 'runtime-check-source 'runtime-check-fact-id}
+           'runtime-check-operation-id 'runtime-check-token-id 'runtime-check-source 'runtime-check-fact-id
+           'validate-carrier! 'metadata-free? 'require-strict-structure! 'require!}
          (set (keys (ns-publics 'gravity.mir)))))
   (let [contract (:gravity/namespace-contract (meta #'mir/validate-cfg!))]
     (is (= (set (keys (:public-api contract)))
@@ -62,6 +63,112 @@
       (is (false? (:authenticates-inputs? contract)))
       (is (false? (:issues-verifier-certificates? contract)))
       (is (some #{:general-cfgs} (:unsupported contract))))))
+
+(defn- carrier-validation-ports []
+  {:trusted-carrier-validation #'b/p15-s23-trusted-carrier-validation
+   :valid-unicode-string? #'b/p15-s23-c6c10-valid-unicode-string?
+   :fail! #'b/p15-s23-c11-mir-fail!
+   :contain-exception! #'b/p15-s23-c11-mir-contain-exception!})
+
+(deftest native-carrier-rules-check-real-emission-and-refuse-invalid-data
+  (doseq [{:keys [source] emitted :mir} @products]
+    (let [ports (carrier-validation-ports)
+          validate #(mir/validate-carrier! ports source :c11-module %)]
+      (is (= {:status :passed} (validate emitted)))
+      (is (= (validate emitted) (b/p15-s23-c11-mir-bounded-value! source :c11-module emitted)))
+      (is (= {:status :passed} (b/p15-s23-c11-mir-bounded-value! source :c11-module emitted 0 -1)))
+      (is (true? (mir/metadata-free? emitted)))
+      (doseq [[changed missing]
+              [[(assoc emitted :module (str (char 0xD800))) :well-formed-unicode-c11-carrier]
+               [(assoc emitted :module (char 0xDFFF)) :well-formed-unicode-c11-carrier]
+               [(assoc emitted :module (Object.)) :valid-native-c11-carrier]
+               [(with-meta emitted {:extra true}) :valid-native-c11-carrier]]]
+        (let [stage (failure #(validate changed))
+              legacy (failure #(b/p15-s23-c11-mir-bounded-value! source :c11-module changed))]
+          (is (= "C11-VERIFY" (:id stage)))
+          (is (= missing (:missing-fact stage)))
+          (is (= stage legacy))))
+      (is (nil? (mir/require-strict-structure!
+                 #'b/p15-s23-c6c10-strict-first-mismatch #'b/p15-s23-c11-mir-fail!
+                 source emitted emitted :carrier-parity)))
+      (let [changed (assoc emitted :module "changed")
+            rejected (failure #(mir/require-strict-structure!
+                                #'b/p15-s23-c6c10-strict-first-mismatch #'b/p15-s23-c11-mir-fail!
+                                source emitted changed :carrier-parity))]
+        (is (= "C11-VERIFY" (:id rejected)))
+        (is (= :carrier-parity (:missing-fact rejected)))
+        (is (= rejected (failure #(b/p15-s23-c11-mir-require-strict-structure!
+                                   source emitted changed :carrier-parity))))))))
+
+(deftest native-metadata-condition-and-structure-rules-preserve-owner-operations
+  (doseq [container [#(hash-map % :value) #(hash-map :key %) vector list hash-set]]
+    (is (false? (mir/metadata-free? (container (with-meta [] {:extra true}))))))
+  (is (false? (mir/metadata-free? (with-meta [] {}))))
+  (is (true? (mir/metadata-free? {:key [nil true false 1 1.5 :value 'symbol \a]})))
+  (let [calls (atom []) marker (Object.)
+        mismatch (fn [& args] (swap! calls conj [:mismatch args]) :different)
+        fail (fn [& args] (swap! calls conj [:fail args]) marker)
+        subject (Object.)]
+    (is (nil? (mir/require! fail true "C11-VERIFY" :source subject :fact)))
+    (is (empty? @calls))
+    (is (identical? marker (mir/require! fail false "C11-VERIFY" :source subject :fact)))
+    (is (= [[:fail ["C11-VERIFY" :source subject {:missing-fact :fact}]]] @calls))
+    (reset! calls [])
+    (is (identical? marker (mir/require-strict-structure! mismatch fail :source :expected :actual :fact)))
+    (is (= [[:mismatch [:source :expected :actual []]]
+            [:fail ["C11-VERIFY" :source {} {:missing-fact :fact}]]] @calls))
+    (reset! calls [])
+    (is (nil? (mir/require-strict-structure! (constantly nil) fail :source :same :same :fact)))
+    (is (empty? @calls))))
+
+(deftest native-carrier-containment-keeps-original-host-error-and-interruption
+  (doseq [[error reason] [[(StackOverflowError. "stack") :contained-c11-carrier-host-stack]
+                          [(AssertionError. "assert") :contained-c11-carrier-assertion]
+                          [(LinkageError. "link") :contained-c11-carrier-linkage]
+                          [(ex-info "diagnostic" {}) :contained-c11-carrier-diagnostic]
+                          [(Exception. "host") :contained-c11-carrier-host-failure]]]
+    (let [observed (atom nil) marker (Object.)
+          ports (assoc (carrier-validation-ports)
+                       :trusted-carrier-validation (fn [& _] (throw error))
+                       :contain-exception! (fn [& args] (reset! observed args) marker))]
+      (is (identical? marker (mir/validate-carrier! ports :source :definition :value)))
+      (is (= [:source reason error] @observed))
+      (is (identical? error (last @observed)))))
+  (let [error (InterruptedException. "interrupted") called (atom false)
+        ports (assoc (carrier-validation-ports)
+                     :trusted-carrier-validation (fn [& _] (throw error))
+                     :contain-exception! (fn [& _] (reset! called true)))
+        observed (try (mir/validate-carrier! ports :source :definition :value)
+                      nil
+                      (catch InterruptedException e
+                        {:error e :interrupted? (.isInterrupted (Thread/currentThread))})
+                      (finally (Thread/interrupted)))]
+    (is (identical? error (:error observed)))
+    (is (true? (:interrupted? observed)))
+    (is (false? @called))))
+
+(deftest native-carrier-wrappers-preserve-live-vars-and-legacy-arity
+  (let [observed (atom nil) marker (Object.)]
+    (with-redefs [mir/validate-carrier! (fn [& args] (reset! observed args) marker)]
+      (is (identical? marker (b/p15-s23-c11-mir-bounded-value! :source :definition :value)))
+      (is (= (carrier-validation-ports) (first @observed)))
+      (is (= [:source :definition :value] (vec (rest @observed))))))
+  (doseq [[stage wrapper ports args]
+          [[#'mir/metadata-free? #'b/p15-s23-c11-mir-metadata-free? [] [:value]]
+           [#'mir/require! #'b/p15-s23-c11-mir-require!
+            [#'b/p15-s23-c11-mir-fail!] [:condition :id :source :subject :fact]]
+           [#'mir/require-strict-structure! #'b/p15-s23-c11-mir-require-strict-structure!
+            [#'b/p15-s23-c6c10-strict-first-mismatch #'b/p15-s23-c11-mir-fail!]
+            [:source :expected :actual :fact]]]]
+    (let [observed (atom nil) marker (Object.)]
+      (with-redefs-fn {stage (fn [& supplied] (reset! observed supplied) marker)}
+        #(is (identical? marker (apply wrapper args))))
+      (is (= (concat ports args) @observed))
+      (is (every? true? (map identical? ports (take (count ports) @observed))))))
+  (let [original b/p15-s23-c11-mir-bounded-value! observed (atom nil) marker (Object.)]
+    (with-redefs [b/p15-s23-c11-mir-bounded-value! (fn [& args] (reset! observed args) marker)]
+      (is (identical? marker (original :source :definition :value :ignored :ignored))))
+    (is (= [:source :definition :value] @observed))))
 
 (deftest native-node-records-match-real-emitted-operations
   (doseq [{:keys [checked by-id]} @products node (:core-nodes checked)
