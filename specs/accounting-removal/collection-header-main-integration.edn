@@ -1,0 +1,117 @@
+{:integration-mode-preflight
+ {:sha256
+  "560a292074c5f963cb06a9e9e32e25d186c14a010e3e73b9ec9a43f8ec4418cf",
+  :preconditions
+  {"all-pass" true,
+   "base-resolved" true,
+   "candidate-identities-match" true,
+   "clean-worktree" true,
+   "named-branch" true,
+   "reconciliation-allowed" true},
+  :observed-identities
+  {"expected-base" "9c0925085f2a3e1fbb9875e83e4b0f0c6e2c6636",
+   "expected-commit" "1ddceb19b5372d1e0c297c8fcb186eb57808e680",
+   "expected-tree" "4c6e069bfd7f8bbd375231fc410f85008ccad850"},
+  :exact-full-tuple true,
+  :no-exclusions-or-cleanup true},
+ :remote-merge
+ {:source-ref :retained,
+  :merged true,
+  :tree "4c6e069bfd7f8bbd375231fc410f85008ccad850",
+  :GitHub-APPROVE false,
+  :parent "9c0925085f2a3e1fbb9875e83e4b0f0c6e2c6636",
+  :method :squash,
+  :base-branch "main",
+  :state :closed,
+  :unresolved-review-threads [],
+  :administrator-bypass false,
+  :formal-reviews [],
+  :expected-head "1ddceb19b5372d1e0c297c8fcb186eb57808e680",
+  :commit "e4d98947201a9473d8bca5777c1f59f5e3426bfd"},
+ :nonclaims
+ [:genuine-owner-acceptance
+  :helper-transitive-equivalence
+  :accounting-policy-endorsement
+  :whole-accounting-removal
+  :whole-path-incorporation
+  :whole-ACC01
+  :PR502-closure
+  :release
+  :self-hosting],
+ :execution
+ {:genuine-owner-kernels :UNRUN,
+  :affected-Gravity-Bootstrap-native-runtime :UNRUN,
+  :new-genuine-execution false},
+ :original-review
+ {:receipt-sha256
+  "839487b24fe504a037615b0cc4391e43bd6c7b24eb9428a7151818981f01406c",
+  :source-DATA-checks 293,
+  :corruption-refusals 68,
+  :current-scope :separately-reviewed},
+ :integration-base "9c0925085f2a3e1fbb9875e83e4b0f0c6e2c6636",
+ :candidate "1ddceb19b5372d1e0c297c8fcb186eb57808e680",
+ :accepted-scope
+ {:original-is-forms-per-kernel 11,
+  :candidate-entries 10084,
+  :parent-is-forms-per-kernel 8,
+  :accepted-PR626-PR634 :preserved,
+  :all-production-and-every-other-base-entry :unchanged,
+  :complete-three-owner-header-equality :source-controls-restored,
+  :base-entries 10082,
+  :obsolete-field-forgeries [0 1 nil],
+  :raw-adaptations-per-kernel 2,
+  :all-three-reviewed-file-bytes :identical-to-original-b745ccee,
+  :changed-paths
+  ["bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj"
+   "specs/accounting-removal/collection-header-controls-census.edn"
+   "specs/accounting-removal/collection-header-controls.md"],
+  :assertion-definitions-only-not-genuine-results true,
+  :restored-kernel-definitions 4},
+ :fresh-readback
+ {:GitHub-merged-and-closed true,
+  :merged-parent-matches-reviewed-base true,
+  :candidate-and-merged-tree-identical true,
+  :main-reachable true,
+  :observed-main "e4d98947201a9473d8bca5777c1f59f5e3426bfd"},
+ :CI
+ {:head "1ddceb19b5372d1e0c297c8fcb186eb57808e680",
+  :run 40981631055,
+  :successes 7,
+  :configured-skips 2,
+  :all-completed true,
+  :live-readback-before-merge :verified,
+  :genuine-owner-acceptance false},
+ :preservation
+ {:original-cache :untouched,
+  :source-refs-and-historical-failures :retained,
+  :original-29-path-inventory :unchanged,
+  :PR532-scope :unchanged,
+  :PR502 :open},
+ :kind :collection-header-finite-main-integration,
+ :independent-review
+ {:receipt-sha256
+  "96d885e1c8271f1b8e8a9981fd0e23da313641b6db0c3724f1d46f0645f868ab",
+  :decision :PASS,
+  :scope :exact-affected-current-main-source-DATA-composition,
+  :checks 548,
+  :current-corruption-refusals 73,
+  :original-refusals-revalidated 68,
+  :twelve-header-six-helper-pins :verified},
+ :generator
+ {:language :clojure,
+  :sha256
+  "314e2156255236c38b31c4e0d0d0f4cf80f4ee8f9ed73c0a3c82bba93e2f53f6",
+  :preserved-locally true},
+ :fixture-whole-file
+ {:original-reviewed-sha256
+  "48d3fcaa665f273361c098890ab1d326e51fd84eee4f588827cd020f6f698de1",
+  :current-sha256
+  "03207474a0e691a2ba235ac8aefa0132abf0af4b81f7ae8554cac32ab3becd71",
+  :six-selected-helpers :identical,
+  :accepted634 :preserved,
+  :old-census-full-file-hash :historical-not-current},
+ :pr 635,
+ :owner :ACC-01,
+ :outer-budget
+ "Existing caller/header65536 and exact/one-short lowering-work assertions are byte-conserved unresolved source facts. This restoration adds or endorses no admission policy.",
+ :candidate-tree "4c6e069bfd7f8bbd375231fc410f85008ccad850"}

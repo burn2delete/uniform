@@ -8,7 +8,10 @@
             [gravity.c2-artifact-identity.canonical :as canonical]
             [gravity.digest :as digest]
             [gravity.source-unit :as source-unit]
+            [gravity.reader.pure-text :as pure-text]
             [gravity.reader.dispatch :as reader-dispatch]))
+
+(alias 'reader-pure-text (ns-name (:ns (meta #'pure-text/returned-data!))))
 
 (def ^:private component-root
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/")
@@ -32,7 +35,13 @@
 (defn sh03-reader-boundary-fail! [_ rule _ _]
   (throw (ex-info "Fixture reached normal Reader refusal" {:id "C2-HASH" :rule rule})))
 
-(declare sh03-reader-host-bigint! sh03-reader-host-decimal-value!
+;; This existing fixture family exercises standard/pure policies only. The
+;; separate resource connection model owns the lexical resource ports.
+(defn reader-resource-options? [_] false)
+(declare reader-resource-record!)
+
+(declare sh03-reader-host-bigint! sh03-reader-host-decimal-value! sh03-reader-host-atomic-value!
+         sh03-reader-decode-buffer!
          sh03-reader-host-character-value! sh03-reader-host-values!
          sh03-reader-semantic-value-reference-keys sh03-reader-source-slice-keys
          standard-reader-policy sh03-reader-source-scalar-boundaries!
@@ -44,7 +53,8 @@
 (install! (str reader-root "00811-sh03-reader-plan-validate.clj")
           '[sh03-reader-source-slice-keys sh03-reader-semantic-value-reference-keys])
 (install! (str reader-root "00813-sh03-reader-canonical-identity.clj")
-          '[sh03-reader-decode-raw-bytes! sh03-reader-source-scalar-boundaries!])
+          '[sh03-reader-decode-buffer! sh03-reader-decode-raw-bytes!
+            sh03-reader-source-scalar-boundaries!])
 (install! (str reader-root "00814-sh03-reader-source-slice-text.clj")
           '[sh03-reader-source-slice-text! sh03-reader-accepted-raw-text!
             sh03-reader-codepoints-text! sh03-reader-semantic-reference-value!])

@@ -57,9 +57,7 @@
        artifact-sorted-policy)
       (p15-s23-c11-mir-bounded-value!
        source-path
-       :public-c11-mir-verifier-ingress artifact
-       p15-s23-c11-mir-max-final-artifact-carrier-nodes
-       p15-s23-c11-mir-max-carrier-depth)
+       :public-c11-mir-verifier-ingress artifact)
       (let [ingress
             (authenticate-checked-core-ingress!
              checked-core context :contained-public-checked-core-verifier)]

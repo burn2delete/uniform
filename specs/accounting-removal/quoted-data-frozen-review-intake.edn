@@ -1,0 +1,99 @@
+{:native-DATA-definitions 5,
+ :tree "5daf1c0d0f690a4557c362fc7203ebe589570768",
+ :nonclaims
+ [:no-transitive-callgraph-closure
+  :no-main-composition
+  :no-automatic-PR634-fixture-review-inheritance
+  :no-shared-carrier-removal
+  :no-public-verifier-arena-acceptance
+  :no-whole-PR502-disposition],
+ :census-sha256
+ "d1edc82f2c06c80f1777c5528a67febcb5d308b05bec8ec6279e654fe91b1687",
+ :candidate "1c0d699f06372fe3c52fa003f53aa38ffd40d07c",
+ :complete-source-definitions 17,
+ :source-checker-sha256
+ "89147a6ee95caf021d0bca842070ae08f6fcb3dd51f02d5d396270d7d083a7ed",
+ :direct-named-production-dependencies
+ [{:name sh08-bm-error,
+   :candidate-form-sha256
+   "385615c4ea89c1ff2872480f0dae2aed4562f792e35e80df3c28202b9c7c55d2",
+   :parent-form-identical true,
+   :historical-form-identical true}
+  {:name sh08-bm-select,
+   :candidate-form-sha256
+   "ba309d0d96ee7f91242071340d07dadcd239c529dbd38c7f1381d6d49b7c99b6",
+   :parent-form-identical true,
+   :historical-form-identical true}
+  {:name sh08-bm-source-node,
+   :candidate-form-sha256
+   "37647ccd0a7269dc01bea61e85b4af3d1e679812a593ca3ad707baaf020c31d7",
+   :parent-form-identical true,
+   :historical-form-identical true}
+  {:name sh08-character-carrier?,
+   :candidate-form-sha256
+   "989798e035a8828d30d43fae9e599547e28508b17bcd8e4ca70fa83a20633c6c",
+   :parent-form-identical true,
+   :historical-form-identical true}
+  {:name sh08-even-count?,
+   :candidate-form-sha256
+   "95e3efea21e6346fda5a219a67c3eae014c01b58ddf3003ba14db379e3330ac7",
+   :parent-form-identical true,
+   :historical-form-identical true}
+  {:name sh08-ft-all-true?,
+   :candidate-form-sha256
+   "e490157e9d5ffb1425fd53e173c1ee8697244e32ebba91d6a39b42dc2e4e966a",
+   :parent-form-identical true,
+   :historical-form-identical true}
+  {:name sh08-primitive-type-from-literal-kind,
+   :candidate-form-sha256
+   "314ea7a18714ff172c4535724a8d0752f5462682464d6f2bc5ecd934841d729a",
+   :parent-form-identical true,
+   :historical-form-identical true}
+  {:name sh08-sha256-id?,
+   :candidate-form-sha256
+   "28b09892cf1074ff4bf671c9961bf7bcec9e186c469fbf65de8736a589289b6a",
+   :parent-form-identical true,
+   :historical-form-identical true}],
+ :definition-adaptation
+ :explicit-native-guard-symbol-at-recorded-source-sites-only,
+ :complete-tree-equation :pass,
+ :changed-callers #{sh08-is-cold-infer sh08-vn-project-input},
+ :quoted-definitions 12,
+ :independent-source-review
+ :coordinator-intake-needed-no-reviewer-assigned,
+ :census-path "specs/accounting-removal/quoted-data-census.edn",
+ :kind :quoted-data-frozen-source-review-intake,
+ :changed-paths
+ ["bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+  "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
+  "bootstrap/clojure/test/gravity/self_hosting/sh08_recursive_function_type_test.clj"
+  "specs/accounting-removal/quoted-data-census.edn"
+  "specs/accounting-removal/quoted-data.md"],
+ :base "b7347f6b1b978dbc318e88dfe50e7917f7b1e318",
+ :retired-entrypoints
+ #{sh08-qd-products-with-budget sh08-qd-node-with-budget},
+ :pr 591,
+ :source-checker-preserved-locally true,
+ :owner :ACC-01,
+ :genuine-quoted-data-native-source-authentication-compiler-runtime
+ :UNRUN,
+ :historical-reader-test-bodies 3,
+ :source-file-pins
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :base-sha256
+   "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142",
+   :candidate-sha256
+   "43fec6998510d94ec3686f77b9cf4358234be9e59660b40c5cbe86958e9bcc7e"}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :base-sha256
+   "5cce988f440520052ae9379634c82c5f5dd60a8e9f71a55d56c74e133aa53443",
+   :candidate-sha256
+   "e3592dcde07b806f1bc76caf253d60bba11c3f62beb5c9359a3a877787201854"}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_recursive_function_type_test.clj",
+   :base-sha256
+   "2d8bc000ff5cb28c8fb564d28081eb5a8ccf96a3bdf6212965114a0994fcf0fd",
+   :candidate-sha256
+   "5c62fdeea442baec4364adfe99c026ce68166cf64ac978e7d38ae1b184f2836a"}]}

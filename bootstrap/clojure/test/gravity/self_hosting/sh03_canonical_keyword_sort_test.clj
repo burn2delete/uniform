@@ -37,11 +37,11 @@
                      nil true 42 2/3 1.00M "field" 'field [1] (list 1) #{1} {:a 1}]]
         (let [form (normalized value)]
           (is (= (original form) (prototype-sort-key original form)))
-          (is (= (original form) ((operation 'sh03-reader-canonical-stream-sort-key) form))))))))
+          (is (= (original form) ((operation 'p15-s23-c6c10-streaming-sort-key) form))))))))
 
 (deftest typed-hex-stores-match-existing-byte-order-for-complete-byte-domain
   (let [reference (operation 'p15-s23-c6c10-lowercase-hex)
-        actual (operation 'sh03-reader-canonical-stream-hex)]
+        actual (operation 'p15-s23-c6c10-streaming-hex)]
     (doseq [values [[] (range 256) (reverse (range 256))
                     (concat (range 256) (range 256))]]
       (let [bytes (byte-array (map unchecked-byte values))]
@@ -98,7 +98,7 @@
           (is (= expected (prototype-sort-key original form))))))))
 
 (defn- observe-stream [value prototype?]
-  (let [variable (ns-resolve 'gravity.bootstrap 'sh03-reader-canonical-stream-sort-key)
+  (let [variable (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-streaming-sort-key)
         original @variable generic (operation 'p15-s23-c6c10-canonical-sort-key)
         counts (atom {:keyword 0 :fallback 0})
         started (System/nanoTime)]
@@ -106,10 +106,10 @@
       {variable (fn [form]
                   (swap! counts update (if (= :keyword (first form)) :keyword :fallback) inc)
                   (if prototype? (original form) (generic form)))}
-      #(let [validated ((operation 'sh03-reader-canonical-stream-validation!) path value)
+      #(let [validated ((operation 'p15-s23-c6c10-streaming-validation!) path value)
              after-v (System/nanoTime)
              writer (java.io.StringWriter.)
-             emitted ((operation 'sh03-reader-canonical-stream-write!) path value writer)
+             emitted ((operation 'p15-s23-c6c10-streaming-write!) path value writer)
              after-e (System/nanoTime)]
          {:text (.toString writer) :validation validated :emission emitted :counts @counts
           :v-ns (- after-v started) :e-ns (- after-e after-v)}))))
@@ -152,11 +152,11 @@
                (keyword (String. (char-array [(char 0xD800)])))
                (keyword "ns" (String. (char-array [(char 0xDC00)])))]]
     (let [value (array-map key (Object.)) reference (outcome value false)
-          variable (ns-resolve 'gravity.bootstrap 'sh03-reader-canonical-stream-sort-key)
+          variable (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-streaming-sort-key)
           original @variable calls (atom 0)
           actual (with-redefs-fn
                    {variable (fn [form] (swap! calls inc) (original form))}
-                   #(try ((operation 'sh03-reader-canonical-stream-validation!) path value) nil
+                   #(try ((operation 'p15-s23-c6c10-streaming-validation!) path value) nil
                          (catch clojure.lang.ExceptionInfo error {:error (ex-data error)})))]
       (is (some? (:error reference)))
       (is (= reference actual))
@@ -165,7 +165,7 @@
 
 (defn- quoted-text [text]
   (let [writer (java.io.StringWriter.)]
-    ((operation 'sh03-reader-canonical-stream-quoted!) writer text)
+    ((operation 'p15-s23-c6c10-streaming-quoted!) writer text)
     (.toString writer)))
 
 (deftest combined-string-writer-matches-existing-escaping-for-all-utf16-units

@@ -1,0 +1,126 @@
+{:nonclaims
+ [:whole-recursive-accounting-removal
+  :authenticated-source-admission
+  :Effects-emitter-runtime-composition
+  :genuine-kernel-acceptance
+  :main-integration
+  :PR502-closure
+  :release
+  :self-hosting],
+ :integration :UNRUN,
+ :independent-acceptance :pending,
+ :production
+ {:path
+  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+  :sha256
+  "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142",
+  :all-production-bytes-unchanged true,
+  :actual-entrypoint sh08-lc-validate-types,
+  :entrypoint-and-immediate-source-targets
+  [{:name sh08-hl-type?,
+    :base-form-sha256
+    "51bafeac355832ac49db384dfd6f51a1ce83f041a7d0b887026284b1455f89b8",
+    :historical-state :present,
+    :historical-form-sha256
+    "51bafeac355832ac49db384dfd6f51a1ce83f041a7d0b887026284b1455f89b8",
+    :historical-identical true}
+   {:name sh08-lc-ancestor?,
+    :base-form-sha256
+    "ab26af004efd009f9824ff4b3a6b20a1f741e3709ba30b9c6d62317c7f8052de",
+    :historical-state :absent,
+    :historical-form-sha256 nil,
+    :historical-identical false}
+   {:name sh08-lc-native-arguments,
+    :base-form-sha256
+    "1ddac242e4421de063f8d0fd49770660be95b40017ae8617eb2d6608e7624654",
+    :historical-state :absent,
+    :historical-form-sha256 nil,
+    :historical-identical false}
+   {:name sh08-lc-native-map?,
+    :base-form-sha256
+    "6b2654576b9e5327a5e67a1b4255ee9035d6d3223dfa066391f5a6e97e3c68ab",
+    :historical-state :absent,
+    :historical-form-sha256 nil,
+    :historical-identical false}
+   {:name sh08-lc-native-view?,
+    :base-form-sha256
+    "ba60d895455ca8d1c14ab46eaf0816f852f21fce5566ea70012ff6b17035829a",
+    :historical-state :absent,
+    :historical-form-sha256 nil,
+    :historical-identical false}
+   {:name sh08-lc-validate-types,
+    :base-form-sha256
+    "c7016b2411e4b2559154c26b8473326ae8faeb256cf81081395cf1231c495a59",
+    :historical-state :present,
+    :historical-form-sha256
+    "b9c0d0a219e4985ec89ead54e0ea66aa861901dfd66b5089b5d0ddfa6110ea47",
+    :historical-identical false}
+   {:name sh08-ni-type?,
+    :base-form-sha256
+    "1fa184855f95b6d49069f4ca5f3fa5209e1ccf6fb43d6fb809eb0fa2da84af45",
+    :historical-state :present,
+    :historical-form-sha256
+    "1fa184855f95b6d49069f4ca5f3fa5209e1ccf6fb43d6fb809eb0fa2da84af45",
+    :historical-identical true}
+   {:name sh08-ss-type?,
+    :base-form-sha256
+    "b09c5b52d9e3b9f7bb0e1f8d735fcfe3a50b25168f029f6b26d948c879bcebcc",
+    :historical-state :present,
+    :historical-form-sha256
+    "b09c5b52d9e3b9f7bb0e1f8d735fcfe3a50b25168f029f6b26d948c879bcebcc",
+    :historical-identical true}
+   {:name sh08-syc-type?,
+    :base-form-sha256
+    "42259f72cee707198b8d3ac8a8ffad6804fc52fad3de25d851b7c7f26101d71d",
+    :historical-state :present,
+    :historical-form-sha256
+    "42259f72cee707198b8d3ac8a8ffad6804fc52fad3de25d851b7c7f26101d71d",
+    :historical-identical true}],
+  :whole-callgraph-proof false,
+  :historical-helper-equivalence false},
+ :test-file
+ {:path
+  "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+  :base-sha256
+  "5cce988f440520052ae9379634c82c5f5dd60a8e9f71a55d56c74e133aa53443",
+  :candidate-sha256
+  "18224e4e291204b367f947c74a447d685a261bca4c72d820d726b72c1a454bd6",
+  :all-other-bytes-unchanged true},
+ :kind :recursive-type-original-controls,
+ :restored-control
+ {:name sh08-list-construction-unmetered-types-development-kernel,
+  :raw-original-span-sha256
+  "b22eb142c911747aa77f22062c5b24f2fc6c6ab5801b52d61b0cdcb0bab8bcfe",
+  :form-sha256
+  "16d35e010d9172d014dcb35d469563004123962c4fa1ea58f465ed2acaf99fcd",
+  :raw-byte-identical true,
+  :positive-nesting 192,
+  :positive-width 4097,
+  :late-invalid-index 4096,
+  :native-cycle-and-callback-controls true},
+ :generator
+ {:language :clojure,
+  :sha256
+  "30f06b894b1a342baa81930262f5fb1d456e27ca6cdebf78899ea884af114200",
+  :preserved-locally true},
+ :base-tree "2b2168fe83fc08a7b4a882d75650c5b6e6eac31d",
+ :validation
+ {:reader-eval false,
+  :Bootstrap-loaded false,
+  :source-checks :passed,
+  :genuine-execution :UNRUN},
+ :base "e047157d711652a5624012f0da7d6911ce086718",
+ :symbol-carrier-control
+ {:name sh08-symbol-set-carrier-development-kernel,
+  :before-form-sha256
+  "7fc9250448dad09db4c097e9ed270a0532f83e100ba833b94620127fd25780eb",
+  :after-form-sha256
+  "9c651f32ace66ac502247c5511925654c94499ffe557d6b99ded976ac339080d",
+  :only-byte-replacement
+  {:before "[value [(nest 127 carrier) (nest 129 carrier) wide]]",
+   :after
+   "[value [(nest 127 carrier) (nest 129 carrier) (nest 192 carrier) wide]]"},
+  :historical-depth-restored 192,
+  :prior-depths-and-late-invalid-conserved true},
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01}

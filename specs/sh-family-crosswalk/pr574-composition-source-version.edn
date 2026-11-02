@@ -1,0 +1,169 @@
+{:reader-pr640-history
+ {:path "specs/sh-family-crosswalk/reader-assembly-source-version.edn",
+  :candidate "c4a0184306879cb77f371e90305e060d9204ae3a"},
+ :authority :source-conservation-only,
+ :native-pure-source-review
+ {:pkg5-source-review
+  {:reviewed-commit "023a28488f8f161c68cbe57aa29fa48247197d62",
+   :reviewed-tree "e8b660791bdaf3e865528f943725b5d1dd307b41",
+   :receipt-sha256
+   "c0714e09a510f173d0e69380478beb1a5790b07635283009749612aff9754b57",
+   :prior-pkg5-mapping-review
+   {:status :pending-source-version-review,
+    :input-fingerprint
+    "05038c26ff9d7255528b483b008236ed5dbb540ca1dd417a32cc000403464d9c",
+    :predecessor-review
+    {:reviewed-tree "b824c0d40abb35d47ed1625beac8088b1f916e27",
+     :reviewed-commit "ac5f4c6ea4105da0cf2626634e31424623d66b1e",
+     :predecessor-review
+     {:reviewed-tree "1229798edab46b3774dbab18c1c555c043eafa55",
+      :source-version-review
+      {:reviewed-commit "a7b52d4592d6b82e191ee1fba308ae5dc26625d4",
+       :reviewed-tree "49119f422a98f51131a5ee171ef3a107bdb7a2fb",
+       :receipt-sha256
+       "a660add10af34afc961231571dfc0763d1fd31fd79c6f4ad49442cd1922f3b70",
+       :scope
+       "Four named version changes, new Reader receipt, complete explicit-pin guard and metadata-only adoption for the identical ae42 payload."},
+      :reviewed-commit "c6c80530dd2b36a9b66ffd1a2a9042f0f43b4f36",
+      :locator-and-current-main-review
+      {:reviewer "01a17a6d-1145-74dd-94c5-ecec12b8b005",
+       :reviewed-commit "79305c95a2440d3879940043494a5cad396b6100",
+       :reviewed-tree "bddcb3d9e7130eca8868ff2be1b98afdacc5747d",
+       :audit-commit "90b6f524a2f498fbb21bf9d63b7aef7c368922c3",
+       :receipt-sha256
+       "6130242a544f3db7bfd073d097279e7680144183022e29b36dc20efb4056050f",
+       :locator-receipt-sha256
+       "2cb188cd202a46cff696f818480f49230511269587482b728221bcbb924f833f",
+       :composition-receipt-sha256
+       "1357cf8975587dbf661ddd5ea9dfd4a2d1a8e6cde4ff423093cdb06900f73904",
+       :scope
+       "Exact inspected pins/live drift, current-main source-version composition, six lint fixes and corrected ownership provenance. Metadata-only adoption for the identical655a9b89 payload; no implementation or whole-SH acceptance."},
+      :status :accepted-mapping-only,
+      :receipt-sha256
+      "39e91ae6270c92ad789e15b635e7dbaf8890726ea2dd7c432ec019077375037c",
+      :qualification
+      "Independent acceptance of all180 mappings/18sequence rows and graph only. No implementation acceptance, global requirement denominator or rate.",
+      :predecessor-input-fingerprint
+      "cdca8f11a6ad11d3917646a932235a302f3356860ab5c559e2e4dd12166c4c5e",
+      :reviewer "01a17a6d-8d52-7002-999b-89d8cdd34008",
+      :review-text-sha256
+      "1269e58c6d1dc859f3d064bb8c3342a1d82061a26acc8252af7d32cc6e046942",
+      :input-fingerprint
+      "655a9b89bf18eb04770ab27181d77097e72e751565352dad16745c9f108ecf68"},
+     :audit-commit "9ac62964ac00eef5730785ba18062bcd508b238e",
+     :status :accepted-mapping-only,
+     :receipt-sha256
+     "fdb720fd1a9682753dcc2a334b414f9dea906ebaf788629f405c5b88c1ccd6b8",
+     :qualification
+     "Independently reviewed PR530 ownership source-version metadata adoption only, bound to this exact input fingerprint. All180 current whole-criterion acceptance states remain unassessed; no semantic, implementation, release or seedless credit.",
+     :reviewer "01a17a6d-1145-74dd-94c5-ecec12b8b005",
+     :input-fingerprint
+     "660701592149e71eae4ec4408301c54d34fd4ca7dcf58eebef1888cacadb5abb"},
+    :qualification
+    "Build PKG5 task-interface successor; predecessor acceptance retained as history. Changed task acceptance and source pins need independent exact-source review. All180 whole-criterion acceptance states remain unassessed."},
+   :scope :finite-task-interface-and-source-conservation-only},
+  :predecessor-review
+  {:status :pending-source-version-review,
+   :input-fingerprint
+   "8f9bca309f67fcdf293603bc1ad5392c138942cac159adb1de950c47ce73e587",
+   :predecessor-review
+   {:reviewed-tree "b824c0d40abb35d47ed1625beac8088b1f916e27",
+    :reviewed-commit "ac5f4c6ea4105da0cf2626634e31424623d66b1e",
+    :predecessor-review
+    {:reviewed-tree "1229798edab46b3774dbab18c1c555c043eafa55",
+     :source-version-review
+     {:reviewed-commit "a7b52d4592d6b82e191ee1fba308ae5dc26625d4",
+      :reviewed-tree "49119f422a98f51131a5ee171ef3a107bdb7a2fb",
+      :receipt-sha256
+      "a660add10af34afc961231571dfc0763d1fd31fd79c6f4ad49442cd1922f3b70",
+      :scope
+      "Four named version changes, new Reader receipt, complete explicit-pin guard and metadata-only adoption for the identical ae42 payload."},
+     :reviewed-commit "c6c80530dd2b36a9b66ffd1a2a9042f0f43b4f36",
+     :locator-and-current-main-review
+     {:reviewer "01a17a6d-1145-74dd-94c5-ecec12b8b005",
+      :reviewed-commit "79305c95a2440d3879940043494a5cad396b6100",
+      :reviewed-tree "bddcb3d9e7130eca8868ff2be1b98afdacc5747d",
+      :audit-commit "90b6f524a2f498fbb21bf9d63b7aef7c368922c3",
+      :receipt-sha256
+      "6130242a544f3db7bfd073d097279e7680144183022e29b36dc20efb4056050f",
+      :locator-receipt-sha256
+      "2cb188cd202a46cff696f818480f49230511269587482b728221bcbb924f833f",
+      :composition-receipt-sha256
+      "1357cf8975587dbf661ddd5ea9dfd4a2d1a8e6cde4ff423093cdb06900f73904",
+      :scope
+      "Exact inspected pins/live drift, current-main source-version composition, six lint fixes and corrected ownership provenance. Metadata-only adoption for the identical655a9b89 payload; no implementation or whole-SH acceptance."},
+     :status :accepted-mapping-only,
+     :receipt-sha256
+     "39e91ae6270c92ad789e15b635e7dbaf8890726ea2dd7c432ec019077375037c",
+     :qualification
+     "Independent acceptance of all180 mappings/18sequence rows and graph only. No implementation acceptance, global requirement denominator or rate.",
+     :predecessor-input-fingerprint
+     "cdca8f11a6ad11d3917646a932235a302f3356860ab5c559e2e4dd12166c4c5e",
+     :reviewer "01a17a6d-8d52-7002-999b-89d8cdd34008",
+     :review-text-sha256
+     "1269e58c6d1dc859f3d064bb8c3342a1d82061a26acc8252af7d32cc6e046942",
+     :input-fingerprint
+     "655a9b89bf18eb04770ab27181d77097e72e751565352dad16745c9f108ecf68"},
+    :audit-commit "9ac62964ac00eef5730785ba18062bcd508b238e",
+    :status :accepted-mapping-only,
+    :receipt-sha256
+    "fdb720fd1a9682753dcc2a334b414f9dea906ebaf788629f405c5b88c1ccd6b8",
+    :qualification
+    "Independently reviewed PR530 ownership source-version metadata adoption only, bound to this exact input fingerprint. All180 current whole-criterion acceptance states remain unassessed; no semantic, implementation, release or seedless credit.",
+    :reviewer "01a17a6d-1145-74dd-94c5-ecec12b8b005",
+    :input-fingerprint
+    "660701592149e71eae4ec4408301c54d34fd4ca7dcf58eebef1888cacadb5abb"},
+   :source-version-bridge
+   "specs/sh-family-crosswalk/reader-dispatch-source-version.edn",
+   :qualification
+   "Reader metadata source 2e0292c6 reconciled with main43112981 in e446f326; both standalone ownership records retained. Incoming and Reader predecessor reviews remain historical; composed inputs await independent source-version review. No implementation acceptance or task credit."},
+  :source-api-qualification
+  "Pure Native selector ownership adoption; all predecessor Reader/Build source and review history retained, no admission or implementation acceptance.",
+  :prior-current-main-input-fingerprint
+  "adbb73b9a2bec1a367ea2b743350420aabf5292f84b6010a9ac347105e520a1a",
+  :prior-current-main-qualification
+  "Composed Reader and Build task source pins; both predecessor histories are retained. Changed composition awaits independent review; all180 whole-criterion implementation assessments stay unassessed.",
+  :status :pending-source-version-review,
+  :reader-normal-source-review
+  {:status :pending-source-version-review,
+   :input-fingerprint
+   "98c5fa7283ba55654d8cd4f5bce73bbcd687115d64adbccd0f2cd8fbb7362959",
+   :source-version-bridge
+   "specs/sh-family-crosswalk/reader-dispatch-source-version.edn",
+   :qualification
+   "Normal Reader dispatch fixture ownership added at 4d96671d; prior Reader/task/roadmap and all predecessor reviews retained. Changed ownership source awaits independent source-version review. No implementation acceptance or task credit.",
+   :source-commit "afe5d20b3d013beabec45fa23768949ea05f2611"},
+  :qualification
+  "Normal Reader fixture ownership and current Build task source pins composed; both predecessor source/review histories retained. Changed exact composition awaits independent review; no implementation acceptance or mapping promotion.",
+  :pre-source-api-input-fingerprint
+  "96346270c7fd3d6fd31e9f8e0aabf805cd7b9258a136ce6ec05df03e43ef9a9a",
+  :input-fingerprint
+  "f46081f1dfe8ee424b8b1d97faf37df26c7750e5488c4843f06dfbbd5fdfd264"},
+ :native-pr453-history
+ {:path "specs/sh-family-crosswalk/source-version-bridge.edn",
+  :key :native-v2-ownership-successor,
+  :candidate "c15e5be3c455d7499128fabe61e156f9cdea1b97"},
+ :source-commit "3f22e4be1ec73b85bec9dd1a47c5dea9732cdd63",
+ :added-entries
+ {:module-owners
+  ["bootstrap/clojure/src/gravity/source_interface_header.clj"
+   "bootstrap/clojure/test/gravity/source_interface_header_test.clj"],
+  :reserved-leaf-modules ["source-interface-header"]},
+ :status :pending-independent-affected-composition-review,
+ :kind :pr574-current-main-ownership-composition,
+ :source-file
+ {:path "docs/self-hosting-slice-ownership.edn",
+  :before
+  {:commit "6c7df70327e8ccfe138bd21ffa0db89a11cee99e",
+   :sha256
+   "c03f626c84f8d2f21405c867735e4bcad8228eb4ced5a8f1a16123ca34e200a4"},
+  :after
+  {:commit "3f22e4be1ec73b85bec9dd1a47c5dea9732cdd63",
+   :sha256
+   "e0407921c16a3840d6f035a51e0b0bd1a1a0d1045e3fa3bf2051217ce5b00c35"}},
+ :accepted-pure-candidate "c15e5be3c455d7499128fabe61e156f9cdea1b97",
+ :qualification
+ "Actual current-main ownership plus exactly the three accepted paired header registrations. Preserve all Reader, Syntax, compiler-domain and Native predecessor histories. This reporting pin is not a compiler source pin refresh, runtime closure acceptance, v3 admission or SH implementation credit.",
+ :main "6c7df70327e8ccfe138bd21ffa0db89a11cee99e",
+ :syntax-history
+ {:path "specs/sh-family-crosswalk/syntax-pipeline-source-version.edn"}}

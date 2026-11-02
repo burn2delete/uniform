@@ -9,7 +9,7 @@ Follow the retained contracts linked in spec.md and [constitution](../../.specif
 
 ## Canonical task source
 
-Edit implementation records only in [tasks.md](tasks.md#implementation-tasks). These original outcome sections retain their generated task view and selected-versus-wider acceptance boundaries:
+Edit implementation records only in [tasks.md](tasks.md#implementation-tasks). These original outcome sections retain their acceptance boundaries and selected-versus-wider scope:
 
 - [remaining tasks and evidence](../../docs/component-roadmaps/stdlib.md#remaining-tasks-and-evidence)
 - [compiler support outcome](../../docs/component-roadmaps/stdlib.md#compiler-support-outcome)
@@ -20,7 +20,6 @@ Edit implementation records only in [tasks.md](tasks.md#implementation-tasks). T
 2. `plan.md`: canonical task anchors, interfaces and dependency boundaries.
 3. `tasks.md`: five implementation records and the entire unchanged historical migration file, clearly separated.
 4. `evidence.md`: observed checks and implementation nonclaims.
-5. `tools/stdlib_task_projection{,_test}.clj`: fixed-path projection and focused controls. Shared helpers remain unchanged; relative file-plus-heading evidence is validated locally without weakening other components.
 
 Central migration inventory/schema is owned separately. This package does not write shared indexes or transfer implementation ownership.
 

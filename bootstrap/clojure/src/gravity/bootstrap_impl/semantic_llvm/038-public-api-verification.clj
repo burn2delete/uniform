@@ -2,7 +2,7 @@
   [source-path boundary exception]
   (let [data
         (p15-s23-backend-trusted-exception-data
-         exception 65536 128)
+         exception 65536)
         b3-diagnostic
         (p15-s23-b3-llvm-sanitized-complete-diagnostic data)
         c11-diagnostic

@@ -149,7 +149,7 @@
       :boolean (if value "true" "false")
       :integer (p15-s23-seed-readable-integer-text value)
       :ratio
-      (let [[numerator denominator _ _]
+      (let [[numerator denominator]
             (p15-s23-seed-readable-ratio-components! source-path value)]
         (str (p15-s23-seed-readable-integer-text numerator)
              "/"

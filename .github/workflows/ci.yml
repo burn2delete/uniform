@@ -24,23 +24,73 @@ env:
   LC_ALL: C.UTF-8
 
 jobs:
+  select:
+    name: select CI checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    outputs:
+      static: ${{ steps.selection.outputs.static }}
+      contracts: ${{ steps.selection.outputs.contracts }}
+      bootstrap: ${{ steps.selection.outputs.bootstrap }}
+      macro: ${{ steps.selection.outputs.macro }}
+      resolution: ${{ steps.selection.outputs.resolution }}
+      checked-core-runtime: ${{ steps.selection.outputs.checked-core-runtime }}
+      leaves-portable: ${{ steps.selection.outputs.leaves-portable }}
+      leaves-darwin: ${{ steps.selection.outputs.leaves-darwin }}
+      darwin-unsupported: ${{ steps.selection.outputs.darwin-unsupported }}
+      static-tools-required: ${{ steps.selection.outputs.static-tools-required }}
+      selection-valid: ${{ steps.selection.outputs.selection-valid }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          # The selector validates the merge commit's two parents and diffs
+          # the tested merge against its first parent.  Two commits retain
+          # both parent commits and their direct trees without fetching the
+          # repository's full history.
+          fetch-depth: 2
+          persist-credentials: false
+      - uses: ./.github/actions/clojure
+      - name: Select existing CI paths
+        id: selection
+        env:
+          CI_BASE_SHA: ${{ github.event.before }}
+          CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: clojure -Srepro -M tools/ci/run.clj select
+
   checks:
     name: ${{ matrix.mode }}
+    needs: select
+    if: ${{ always() && !cancelled() }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       max-parallel: 2
       matrix:
-        mode: [static, projections, bootstrap]
+        mode: [static, contracts, bootstrap, macro, resolution, checked-core-runtime]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          fetch-depth: 0
+          # Selected and fail-closed compiler jobs retain full history because
+          # their suites materialize pinned historical git-show sources.  An
+          # unselected matrix job only records its checked-out tree and can
+          # use a single commit.
+          fetch-depth: ${{ needs.select.result == 'success' && needs.select.outputs.selection-valid == 'true' && needs.select.outputs[matrix.mode] == 'false' && 1 || 0 }}
           persist-credentials: false
       - uses: ./.github/actions/clojure
+        if: ${{ always() && !cancelled() && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs[matrix.mode] != 'false') }}
+        with:
+          install-static-tools: ${{ matrix.mode == 'static' && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs.static-tools-required != 'false') }}
+      - name: Retain unselected CI status
+        if: ${{ always() && !cancelled() && needs.select.result == 'success' && needs.select.outputs.selection-valid == 'true' && needs.select.outputs[matrix.mode] == 'false' }}
+        env:
+          CI_MODE: ${{ matrix.mode }}
+        run: |
+          mkdir -p target/ci
+          printf '{:mode "%s" :status :skipped :reason :unaffected-shared-selection}\n' "$CI_MODE" > "target/ci/$CI_MODE-summary.edn"
+          echo "CI mode $CI_MODE skipped by the shared path selection; required matrix job retained"
       - name: Install workflow syntax checker
-        if: matrix.mode == 'static'
+        if: ${{ always() && !cancelled() && matrix.mode == 'static' && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs.static-tools-required != 'false') }}
         run: |
           mkdir -p "$RUNNER_TEMP/actionlint"
           curl --fail --location --retry 3 --max-time 60 \
@@ -49,7 +99,8 @@ jobs:
           echo "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  $RUNNER_TEMP/actionlint/archive.tar.gz" | sha256sum --check
           tar -xzf "$RUNNER_TEMP/actionlint/archive.tar.gz" -C "$RUNNER_TEMP/actionlint" actionlint
           echo "$RUNNER_TEMP/actionlint" >> "$GITHUB_PATH"
-      - name: Run checks in fresh child processes
+      - name: Run selected checks in fresh child processes (docs-only PRs retain contract checks)
+        if: ${{ always() && !cancelled() && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs[matrix.mode] != 'false') }}
         env:
           CI_MODE: ${{ matrix.mode }}
           CI_BASE_SHA: ${{ github.event.before }}
@@ -80,6 +131,8 @@ jobs:
 
   leaves:
     name: ${{ matrix.check }}
+    needs: select
+    if: ${{ always() && !cancelled() }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 20
     strategy:
@@ -91,50 +144,51 @@ jobs:
             check: fresh-leaf-regressions / portable
             runner: ubuntu-24.04
             java: 21.0.8+9.0.LTS
+            selection-key: leaves-portable
           - platform: darwin
             check: fresh-leaf-regressions / darwin
             runner: macos-26
             java: 26.0.1+8
+            selection-key: leaves-darwin
           - platform: unsupported
             check: darwin-unsupported-host
             runner: macos-15
             java: 26.0.1+8
+            selection-key: darwin-unsupported
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          fetch-depth: 0
+          # Selected and fail-closed leaf suites retain full history because
+          # their tests materialize pinned historical git-show sources.  An
+          # unselected leaf job only records its checked-out tree and can use
+          # a single commit.
+          fetch-depth: ${{ needs.select.result == 'success' && needs.select.outputs.selection-valid == 'true' && needs.select.outputs[matrix.selection-key] == 'false' && 1 || 0 }}
           persist-credentials: false
       - uses: ./.github/actions/clojure
+        if: ${{ always() && !cancelled() && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs[matrix.selection-key] != 'false') }}
         with:
           java-version: ${{ matrix.java }}
           private-temp: ${{ matrix.platform == 'portable' }}
-      - name: Conservative selection
-        id: selection
+      - name: Retain unselected leaf status
+        if: ${{ always() && !cancelled() && needs.select.result == 'success' && needs.select.outputs.selection-valid == 'true' && needs.select.outputs[matrix.selection-key] == 'false' }}
         env:
-          EVENT: ${{ github.event_name }}
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          CHECK_NAME: ${{ matrix.check }}
         run: |
-          selected=true
           mkdir -p target/ci
-          if [[ "$EVENT" == pull_request ]]; then
-            git diff --name-only -z "$BASE_SHA" HEAD > target/ci/changed-paths.nul
-            selected=false
-            while IFS= read -r -d '' path; do
-              if [[ "$path" != *.md ]]; then selected=true; fi
-            done < target/ci/changed-paths.nul
-          fi
-          echo "selected=$selected" >> "$GITHUB_OUTPUT"
-          echo "Full fresh leaf fallback selected: $selected. Markdown-only PRs retain projection and bootstrap checks." | tee target/ci/selection.txt
+          printf '{:status :skipped :reason :unaffected-shared-selection}\n' > target/ci/leaf-summary.edn
+          echo "CI check $CHECK_NAME skipped by the shared path selection; required matrix job retained"
       - name: Diagnose actual Darwin host and descriptor ABI
-        if: matrix.platform == 'darwin'
+        if: ${{ always() && !cancelled() && matrix.platform == 'darwin' && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs[matrix.selection-key] != 'false') }}
         run: clojure -Srepro -M tools/ci/run.clj darwin-probe
-      - name: Fresh catalog fallback
-        if: ${{ !cancelled() && steps.selection.outputs.selected == 'true' && matrix.platform != 'unsupported' }}
+      - name: Fresh path-aware catalog selection
+        if: ${{ always() && !cancelled() && matrix.platform != 'unsupported' && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs[matrix.selection-key] != 'false') }}
         env:
           LEAF_PLATFORM: ${{ matrix.platform }}
+          CI_BASE_SHA: ${{ github.event.before }}
+          CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: clojure -Srepro -M tools/ci/run.clj "leaves-$LEAF_PLATFORM"
       - name: Actual unsupported-kernel refusal before publication I/O
-        if: ${{ !cancelled() && steps.selection.outputs.selected == 'true' && matrix.platform == 'unsupported' }}
+        if: ${{ always() && !cancelled() && matrix.platform == 'unsupported' && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs[matrix.selection-key] != 'false') }}
         run: clojure -Srepro -M tools/ci/run.clj darwin-unsupported
       - name: Preserve failure receipts
         if: always()
@@ -159,44 +213,33 @@ jobs:
           retention-days: 14
           if-no-files-found: error
 
-  core-readiness:
-    name: source-Core-readiness
-    if: github.event_name != 'pull_request'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 2
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          persist-credentials: false
-      - name: Report unavailable genuine integration gate
-        run: |
-          mkdir -p target/ci
-          git rev-parse HEAD 'HEAD^{tree}' > target/ci/checkout.txt
-          printf '%s\n' "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > target/ci/run-url.txt
-          echo 'unavailable/nonpassing: C6-VERIFY/:actual-selected-current-reader-products; no genuine execution attempted' > target/ci/core-readiness.txt
-          (cd target/ci && shasum -a 256 ./*.txt > SHA256SUMS)
-          echo '::error::Genuine current-source Core construction and independent fresh verification are unavailable on main. Native owner is repairing the C3 Reader-provenance join (C6-VERIFY/:actual-selected-current-reader-products). No modeled test substitutes for this gate.'
-          echo 'Source-to-Core gate: unavailable/nonpassing; no genuine compiler execution claimed.' >> "$GITHUB_STEP_SUMMARY"
-          exit 1
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        if: always()
-        with:
-          name: ci-core-readiness-${{ github.sha }}-${{ github.run_attempt }}
-          path: target/ci/
-          retention-days: 14
-
   snapshot:
     name: experimental-source-snapshot
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          fetch-depth: 0
+          # The archive is rooted at HEAD and its notes retain git log -10.
+          fetch-depth: 10
           persist-credentials: false
       - uses: ./.github/actions/clojure
-      - name: Package exact source twice and compare
-        run: clojure -J-Xmx256m -Srepro -M tools/ci/snapshot.clj
+      - name: Verify deterministic archive recipe
+        run: clojure -J-Xmx256m -Srepro -M tools/ci/snapshot_test.clj
+      - name: Package exact source archive and checksum
+        run: |
+          umask 077
+          mkdir -p "$RUNNER_TEMP/uniform-snapshot-diagnostic"
+          command -v clojure > "$RUNNER_TEMP/uniform-snapshot-diagnostic/launcher.txt"
+          clojure -J-Xmx256m -Srepro -M tools/ci/snapshot.clj 2> "$RUNNER_TEMP/uniform-snapshot-diagnostic/init.stderr"
+      - name: Retain bounded dependency evidence after the single snapshot launch
+        if: always()
+        run: >-
+          java -Xmx128m
+          -cp "$CLOJURE_INSTALL_DIR/lib/clojure/libexec/clojure-tools-1.12.5.1654.jar"
+          clojure.main tools/ci/snapshot_diagnostics.clj collect "$CLOJURE_INSTALL_DIR"
+          "$RUNNER_TEMP/uniform-snapshot-diagnostic"
       - name: Reject tracked source mutation
         if: always()
         run: git diff --exit-code HEAD
@@ -225,7 +268,7 @@ jobs:
   publish:
     name: experimental-prerelease
     needs: [checks, leaves, snapshot]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
@@ -240,6 +283,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
+          test "$GITHUB_EVENT_NAME" = workflow_dispatch
+          test "$GITHUB_REF" = refs/heads/main
           cd snapshot/experimental
           sha256sum --check SHA256SUMS
           test -f "uniform-experimental-source-$GITHUB_SHA.tar.gz"

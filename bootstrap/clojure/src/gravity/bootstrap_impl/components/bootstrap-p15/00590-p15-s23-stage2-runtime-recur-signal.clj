@@ -10,19 +10,7 @@
 
 (defn- p15-s23-stage2-runtime-map-entry
   [value requested-key]
-  (when (map? value)
-    (if (sorted? value)
-      ;; A sorted map can use a comparator that rejects a heterogeneous lookup
-      ;; key before equality is considered. Runtime records may legitimately
-      ;; be inspected for keyword control keys even when their own keys use a
-      ;; different comparable type, so retain the equality scan for that case.
-      (some (fn [entry]
-              (when (= requested-key (key entry)) entry))
-            value)
-      ;; Ordinary runtime records are persistent hash/array maps. `find`
-      ;; preserves their key equality and nil-value behavior without scanning
-      ;; every entry for every interpreted instruction.
-      (find value requested-key))))
+  (gravity.runtime/map-entry value requested-key))
 
 (defn- p15-s23-stage2-runtime-recur-values
   [value]
@@ -37,31 +25,24 @@
 
 (defn p15-s23-stage2-runtime-recur-fail!
   [plan target-arity actual-arity reason]
-  (fail! "L2-RECUR-TARGET"
-         "recur has no compatible loop or function target"
-         {:source-span {:source (get-in plan [:source :path])}
-          :target-arity target-arity
-          :actual-arity actual-arity
-          :reason reason
-          :remediation
-          "Use recur only in tail position inside a compatible loop or function with matching arity."}))
+  (gravity.runtime/fail-recur! #'fail! plan target-arity actual-arity reason))
+
+(def ^:private p15-s23-runtime-nontail-operations
+  {:recur-signal? #'p15-s23-stage2-runtime-recur-signal?
+   :recur-fail! #'p15-s23-stage2-runtime-recur-fail!
+   :recur-values #'p15-s23-stage2-runtime-recur-values})
 
 (defn p15-s23-stage2-runtime-nontail-value!
   [plan value reason]
-  (when (p15-s23-stage2-runtime-recur-signal? value)
-    (p15-s23-stage2-runtime-recur-fail!
-     plan nil (count (p15-s23-stage2-runtime-recur-values value)) reason))
-  value)
+  (gravity.runtime/nontail-value! plan value reason p15-s23-runtime-nontail-operations))
 
 (declare ^:private p15-s23-stage2-runtime-execute-instruction-scoped)
 
+(declare ^:private p15-s23-runtime-evaluation-operations)
+
 (defn- p15-s23-stage2-runtime-execute-value-scoped
   [runtime plan env instruction reason public-invocation-scope]
-  (p15-s23-stage2-runtime-nontail-value!
-   plan
-   (p15-s23-stage2-runtime-execute-instruction-scoped
-    runtime plan env instruction public-invocation-scope)
-   reason))
+  (gravity.runtime/execute-value-scoped runtime plan env instruction reason public-invocation-scope p15-s23-runtime-evaluation-operations))
 
 (defn- p15-s23-stage2-runtime-execute-value
   [runtime plan env instruction reason]
@@ -70,50 +51,11 @@
 
 (defn- p15-s23-stage2-runtime-bind-values
   [base names values]
-  ;; Function and loop binders are normally tiny. Avoid `zipmap`'s transient
-  ;; map plus `merge`'s seq traversal for the common fixed-arity cases.
-  (case (count names)
-    0 base
-    1 (assoc base (nth names 0) (nth values 0))
-    2 (assoc (assoc base
-                    (nth names 0) (nth values 0))
-             (nth names 1) (nth values 1))
-    3 (assoc (assoc (assoc base
-                          (nth names 0) (nth values 0))
-                   (nth names 1) (nth values 1))
-             (nth names 2) (nth values 2))
-    (merge base (zipmap names values))))
+  (gravity.runtime/bind-values base names values))
 
 (defn- p15-s23-stage2-runtime-execute-values-scoped
   [runtime plan env instructions reason public-invocation-scope]
-  ;; Builtin and function calls overwhelmingly carry zero to three arguments.
-  ;; `mapv` allocates a transient vector root/tail even for those tiny
-  ;; collections, which accounted for most allocation in a live B47 profile.
-  ;; Preserve the generic path for larger carriers.
-  (case (count instructions)
-    0 []
-    1 [(p15-s23-stage2-runtime-execute-value-scoped
-        runtime plan env (nth instructions 0) reason
-        public-invocation-scope)]
-    2 [(p15-s23-stage2-runtime-execute-value-scoped
-        runtime plan env (nth instructions 0) reason
-        public-invocation-scope)
-       (p15-s23-stage2-runtime-execute-value-scoped
-        runtime plan env (nth instructions 1) reason
-        public-invocation-scope)]
-    3 [(p15-s23-stage2-runtime-execute-value-scoped
-        runtime plan env (nth instructions 0) reason
-        public-invocation-scope)
-       (p15-s23-stage2-runtime-execute-value-scoped
-        runtime plan env (nth instructions 1) reason
-        public-invocation-scope)
-       (p15-s23-stage2-runtime-execute-value-scoped
-        runtime plan env (nth instructions 2) reason
-        public-invocation-scope)]
-    (mapv (fn [instruction]
-            (p15-s23-stage2-runtime-execute-value-scoped
-             runtime plan env instruction reason public-invocation-scope))
-          instructions)))
+  (gravity.runtime/execute-values-scoped runtime plan env instructions reason public-invocation-scope p15-s23-runtime-evaluation-operations))
 
 (defn p15-s23-stage2-runtime-execute-values
   [runtime plan env instructions reason]
@@ -133,46 +75,7 @@
   the public helper's established behavior for direct list callers.
   "
   [runtime plan env entries public-invocation-scope]
-  (if (vector? entries)
-    (let [entry-count (count entries)]
-      (loop [index 0
-             result (transient {})]
-        (if (< index entry-count)
-          (let [{:keys [key value]} (nth entries index)
-                evaluated-key
-                (p15-s23-stage2-runtime-nontail-value!
-                 plan
-                 (p15-s23-stage2-runtime-execute-instruction-scoped
-                  runtime plan env key public-invocation-scope)
-                 :recur-inside-map-key)
-                evaluated-value
-                (p15-s23-stage2-runtime-nontail-value!
-                 plan
-                 (p15-s23-stage2-runtime-execute-instruction-scoped
-                  runtime plan env value public-invocation-scope)
-                 :recur-inside-map-value)]
-            (recur (inc index)
-                   (assoc! result evaluated-key evaluated-value)))
-          (persistent! result))))
-    (loop [remaining (seq entries)
-           result (transient {})]
-      (if (seq remaining)
-        (let [{:keys [key value]} (first remaining)
-              evaluated-key
-              (p15-s23-stage2-runtime-nontail-value!
-               plan
-               (p15-s23-stage2-runtime-execute-instruction-scoped
-                runtime plan env key public-invocation-scope)
-               :recur-inside-map-key)
-              evaluated-value
-              (p15-s23-stage2-runtime-nontail-value!
-               plan
-               (p15-s23-stage2-runtime-execute-instruction-scoped
-                runtime plan env value public-invocation-scope)
-               :recur-inside-map-value)]
-          (recur (next remaining)
-                 (assoc! result evaluated-key evaluated-value)))
-        (persistent! result)))))
+  (gravity.runtime/execute-map-entries-scoped runtime plan env entries public-invocation-scope p15-s23-runtime-evaluation-operations))
 
 (defn- p15-s23-stage2-runtime-execute-map-entries
   [runtime plan env entries]
@@ -181,63 +84,35 @@
 
 (defn- p15-s23-stage2-runtime-execute-instructions-scoped
   [runtime plan env instructions public-invocation-scope]
-  (if (vector? instructions)
-    ;; Compiler plans use vectors. Indexing avoids constructing a chunked seq
-    ;; and calling `next` for every interpreted function body.
-    (let [instruction-count (count instructions)]
-      (loop [index 0
-             result nil]
-        (if (< index instruction-count)
-          (let [value (p15-s23-stage2-runtime-execute-instruction-scoped
-                       runtime plan env (nth instructions index)
-                       public-invocation-scope)
-                more? (< (inc index) instruction-count)]
-            (if (and (p15-s23-stage2-runtime-recur-signal? value) more?)
-              (p15-s23-stage2-runtime-recur-fail!
-               plan nil (count (p15-s23-stage2-runtime-recur-values value))
-               :non-tail-sequential-position)
-              (recur (inc index) value)))
-          result)))
-    ;; Retain the established behavior for direct callers that supply lists.
-    (loop [remaining (seq instructions)
-           result nil]
-      (if-let [instruction (first remaining)]
-        (let [value (p15-s23-stage2-runtime-execute-instruction-scoped
-                     runtime plan env instruction public-invocation-scope)
-              more (next remaining)]
-          (if (and (p15-s23-stage2-runtime-recur-signal? value) more)
-            (p15-s23-stage2-runtime-recur-fail!
-             plan nil (count (p15-s23-stage2-runtime-recur-values value))
-             :non-tail-sequential-position)
-            (recur more value)))
-        result))))
+  (gravity.runtime/execute-instructions-scoped runtime plan env instructions public-invocation-scope p15-s23-runtime-evaluation-operations))
 
 (defn p15-s23-stage2-runtime-execute-instructions
   [runtime plan env instructions]
   (p15-s23-stage2-runtime-execute-instructions-scoped
    runtime plan env instructions nil))
 
+(def ^:private p15-s23-runtime-generic-call-operations
+  {:execute-values-scoped #'p15-s23-stage2-runtime-execute-values-scoped
+   :artifact-invoke #'p15-s23-stage2-runtime-artifact-invoke
+   :artifact-function #'p15-s23-stage2-runtime-artifact-function
+   :artifact-concat-function #'p15-s23-stage2-runtime-artifact-concat-function
+   :fail-call-arity! #'p15-s23-stage2-runtime-fail-call-arity!
+   :invoke-compiler-internal-builtin #'p15-s23-sh07-runtime-invoke-compiler-internal-builtin
+   :invoke-builtin #'p15-s23-stage2-runtime-invoke-builtin})
+
 (defn- p15-s23-stage2-runtime-execute-generic-builtin-call-scoped
   [runtime plan env instruction function public-invocation-scope]
-  (let [args (p15-s23-stage2-runtime-execute-values-scoped
-              runtime plan env (:args instruction)
-              :recur-inside-builtin-argument public-invocation-scope)]
-    (if (and (= 'str function)
-             (:runtime-artifact-plan runtime))
-      (case (count args)
-        1 (p15-s23-stage2-runtime-artifact-invoke
-           runtime p15-s23-stage2-runtime-artifact-function args)
-        2 (p15-s23-stage2-runtime-artifact-invoke
-           runtime p15-s23-stage2-runtime-artifact-concat-function args)
-        (p15-s23-stage2-runtime-fail-call-arity!
-         "L2-BUILTIN-ARITY" plan function args "1 or 2"))
-      (if (contains? instruction :compiler-internal-caller)
-        (p15-s23-sh07-runtime-invoke-compiler-internal-builtin
-         runtime plan instruction args public-invocation-scope)
-        (p15-s23-stage2-runtime-invoke-builtin
-         runtime plan function args)))))
+  (gravity.runtime/execute-generic-builtin-call-scoped runtime plan env instruction function public-invocation-scope p15-s23-runtime-generic-call-operations))
 
 (defn- p15-s23-stage2-runtime-execute-generic-builtin-call
   [runtime plan env instruction function]
   (p15-s23-stage2-runtime-execute-generic-builtin-call-scoped
    runtime plan env instruction function nil))
+
+(def ^:private p15-s23-runtime-evaluation-operations
+  {:nontail-value! #'p15-s23-stage2-runtime-nontail-value!
+   :execute-instruction-scoped #'p15-s23-stage2-runtime-execute-instruction-scoped
+   :execute-value-scoped #'p15-s23-stage2-runtime-execute-value-scoped
+   :recur-signal? #'p15-s23-stage2-runtime-recur-signal?
+   :recur-fail! #'p15-s23-stage2-runtime-recur-fail!
+   :recur-values #'p15-s23-stage2-runtime-recur-values})

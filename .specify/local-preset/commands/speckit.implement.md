@@ -8,6 +8,16 @@ description: Execute authorized tasks with exact evidence
 $ARGUMENTS
 ```
 
+Before selecting a feature directory, classify the request with
+`.specify/semantic-names.md`. For private rename-only changes, return to the
+ordinary branch/PR workflow there and stop: record the old/new map, complete
+reference search, focused owner checks and required manifest/digest updates;
+create no feature directory or Spec Kit artifact. Otherwise continue only with
+this command's applicable bounded workflow. Public/serialized identity,
+protocol/schema/diagnostic IDs, ownership, semantics and new evidence are
+explicitly not private-only; no substantive edit implicitly requires all four
+artifacts.
+
 Read `AGENTS.md`, `.specify/README.md`, `.specify/memory/constitution.md`,
 and the owning canonical contracts before changing artifacts. User authorization
 and current coordination remain authoritative. Use the selected feature directory

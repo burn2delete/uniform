@@ -205,6 +205,15 @@ Registered worktrees are inventory, not integration authority. Dirty state in
 another worktree is reported so the coordinator can avoid destructive cleanup,
 but only the exact candidate worktree and identities can satisfy admission.
 
+An ordinary source-only pull request that makes no governed authority or
+lifecycle claim uses its normal checks and independent review as the durable
+disposition evidence. It does not require a separate lifecycle metadata
+commit or terminal ledger record. This does not relax exact integration
+preflight, ownership, evidence, nonclaim, or governance validation when a
+candidate changes lifecycle data or admission policy, or claims governed
+authority; those candidates continue through the existing lifecycle and
+composition path.
+
 ## Acceptance Criteria
 
 The coordination layer conforms when:

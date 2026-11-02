@@ -1,0 +1,23 @@
+{:kind :resolution-runtime-ownership-source-version,
+ :authority :source-conservation-only,
+ :status :pending-independent-source-version-review,
+ :source-file
+ {:path "docs/self-hosting-slice-ownership.edn",
+  :before
+  {:commit "7591d0604d1de7944d15927d9ac2f8473701bac6",
+   :sha256
+   "c9adcfcf7887c37721e95cd7fb6cfb15e77ab35765f1fd28c880212816306772"},
+  :after
+  {:commit "dc44fa6bf37a098a09691507d0a724f59782683e",
+   :sha256
+   "b7e54552cb35ab2f13374d3751f510c194e5558b6c99a4a102cb1e6e1c1c1d85"}},
+ :added-entries
+ {:production-helper-associations
+  "bootstrap/clojure/src/gravity/resolution.clj",
+  :module-owners "bootstrap/clojure/src/gravity/resolution.clj",
+  :standalone-test-owners
+  "bootstrap/clojure/test/gravity/resolution/pipeline_test.clj"},
+ :predecessor-input-fingerprint
+ "42a769c041b8bfdeda4ad7713877221c0a270c98d8b2b7a9986dfdf538197b86",
+ :qualification
+ "Only resolution source/plan runtime source/consumer/test ownership is added. All predecessor entries, task predicates/statuses, routing, source pins and pending review history remain. This is read-only reporting provenance, not compiler migration or semantic acceptance. All 180 whole-criterion assessments remain unassessed."}

@@ -1,0 +1,24 @@
+{:kind :macro-artifacts-ownership-source-version,
+ :authority :source-conservation-only,
+ :status :pending-independent-source-version-review,
+ :source-file
+ {:path "docs/self-hosting-slice-ownership.edn",
+  :before
+  {:commit "ffb3cbac042c3755f2296b98223e586486abca59",
+   :sha256
+   "c742e291bf3aa0f85ad8c80b95b215680f2fa36a0dd218add9261e9c684845f4"},
+  :after
+  {:commit "7591d0604d1de7944d15927d9ac2f8473701bac6",
+   :sha256
+   "c9adcfcf7887c37721e95cd7fb6cfb15e77ab35765f1fd28c880212816306772"}},
+ :changed-entry
+ {:section :production-helper-associations,
+  :path "bootstrap/clojure/src/gravity/macro_run_storage.clj",
+  :field :consumer-path,
+  :before
+  "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_late/150856-sh05-verification-expansion-replay.clj",
+  :after "bootstrap/clojure/src/gravity/macro.clj"},
+ :predecessor-input-fingerprint
+ "904a047459a1ddab17e8ac975c0c35df6e863ece53bb4383c284f4d5850e8048",
+ :qualification
+ "Only the existing macro run-storage helper consumer path changes to its stage-owned verifier. All predecessor ownership entries, task predicates/statuses, routing, source pins and pending review history remain. This is read-only reporting provenance, not compiler migration evidence or semantic acceptance. All current whole-criterion assessments remain unassessed."}

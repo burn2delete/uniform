@@ -5,10 +5,10 @@
   [artifact context]
   (p15-s23-checked-core-bounded-context! context)
   ;; Use the iterative closed-artifact walker here so the public verifier
-  ;; preserves the precise C6 bound that failed.  Generic runtime-carrier
+  ;; preserves the precise C6 value-domain failure.  Generic runtime-carrier
   ;; containment would collapse every hostile artifact into one opaque ingress
   ;; error and lose the established checked-core diagnostic contract.
-  (p15-s23-closed-core-bounded-value! "<closed-core>" artifact)
+  (p15-s23-closed-core-value-domain! "<closed-core>" artifact)
   (let [source-path (or (:source-path context)
                         (get-in artifact [:provenance :actual-paths :source])
                         "<closed-core>")
