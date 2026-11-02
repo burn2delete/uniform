@@ -266,6 +266,29 @@
     :semantic-deltas [{:hunk-id "AGENTS-integration-preflight" :classification :governance-lifecycle-and-preflight-binding}]
     :projection-hunks agents-policy-projection-hunks}})
 
+;; The PR554 task ledger is a second source view of the same bounded platform
+;; transfer.  Its historical SH crosswalk points at the four short rows in the
+;; frozen comparator, while the applying commit adds the current criteria to
+;; those rows.  Keep that transition explicit and content-addressed: callers
+;; may tolerate navigation/layout movement around a row, but they may not
+;; silently accept a changed criterion, status or source basis.
+(def platform-task-source-transition
+  {:kind :platform-task-authority-ledger-current-layout-v1
+   :document-id "platform-task-authority"
+   :path "specs/platform-workflow/tasks.md"
+   :baseline-ref "5dfe15c9fad14e5abebf23bf1e645bf9154a2e1e"
+   :applying-ref "2a86a9f1fc56b1eceacf4ca29aac7c95a1a4792b"
+   :baseline-sha256 "789f8482bf8212e68c978daaaa2487f39f66a46467385ba0b0350df82a78e39f"
+   :live-sha256 "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f"
+   :baseline-blob "0c5e17169840e1a5deee71e5733955ff0a41805a"
+   :applying-blob "054ee72c93246d88785ed29d82b549428a0d4e64"
+   :parent-bridge-kind platform-generated-view-kind
+   :parent-bridge-applying-ref "2a86a9f1fc56b1eceacf4ca29aac7c95a1a4792b"
+   :task-ids ["hardware" "firmware" "kernel" "devices"]
+   :review-state :proposed
+   :authority "PR554 task-ledger source transition, authenticated against the frozen SH task rows and the applying task-authority Git blob."
+   :qualification "Only the four named Platform task rows transfer from the frozen historical SH source view to the applying PR554 task ledger. The applying row bytes, IDs, status, criteria and source-basis identities are exact; surrounding navigation layout may move. This bridge preserves historical SH routing and structural-only authority, confers no implementation or product acceptance, and does not authorize arbitrary task-criterion changes or source-hash renewal."})
+
 ;; These are the six reviewed source regions, not a text diff computed from the
 ;; checkout.  The exact baseline/live fragment hashes make an omitted hunk,
 ;; retained-semantic edit, or additional source mutation fail closed.

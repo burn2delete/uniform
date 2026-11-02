@@ -238,7 +238,55 @@
            (:authority (dependencies/task-sh-view source task-layout-read))))
     ;; Frozen task-authority spans still reject mutation; only navigation views
     ;; are exempt from the historical whole-file digest check.
-    (is (thrown? Exception (dependencies/task-sh-view source task-read)))))
+    (is (thrown? Exception (dependencies/task-sh-view source task-read)))
+    (let [platform-rows (vec (get-in source [:task-authorities "platform"]))
+          snapshots (:source-snapshots source)
+          transition dependencies/platform-task-source-transition
+          platform-path (:path transition)
+          current (slurp platform-path)
+          layout-read (fn [path]
+                        (if (= path platform-path)
+                          (str/replace current
+                                       "<!-- platform-implementation-tasks:start -->"
+                                       "Navigation-only preamble edit.\n<!-- platform-implementation-tasks:start -->")
+                          (slurp path)))
+          changed-read (fn [path]
+                         (if (= path platform-path)
+                           (str/replace current
+                                        "Adopt clock/reset/HDL target contract"
+                                        "Adopt an unauthenticated target contract")
+                           (slurp path)))
+          duplicate-row (dependencies/platform-task-row current "hardware")
+          replay-read (fn [path]
+                        (if (= path platform-path)
+                          (str/replace current
+                                       "<!-- platform-implementation-tasks:end -->"
+                                       (str duplicate-row
+                                            "\n\n<!-- platform-implementation-tasks:end -->"))
+                          (slurp path)))]
+      ;; The authenticated row pair survives a navigation-only preamble edit.
+      (is (= :git-bytes-verified
+             (:snapshot-provenance
+              (dependencies/platform-task-transition-view
+               transition platform-rows snapshots layout-read))))
+      ;; A changed criterion is not a navigation edit and cannot receive SH
+      ;; routing credit through the transition.
+      (is (thrown? Exception
+                   (dependencies/platform-task-transition-view
+                    transition platform-rows snapshots changed-read)))
+      ;; Baseline/applying identities are a fixed pair, not interchangeable
+      ;; labels that can be replayed with a new body.
+      (is (thrown? Exception
+                   (dependencies/platform-task-transition-view
+                    (assoc transition :applying-blob (:baseline-blob transition))
+                    platform-rows snapshots slurp)))
+      (is (thrown? Exception
+                   (dependencies/platform-task-transition-view
+                    (assoc transition :baseline-ref (:applying-ref transition))
+                    platform-rows snapshots slurp)))
+      (is (thrown? Exception
+                   (dependencies/platform-task-transition-view
+                    transition platform-rows snapshots replay-read))))))
 
 (deftest historical-sh-routing-drift-stays-unassessed
   (let [source (edn/read-string (slurp dependencies/sh-crosswalk-path))
@@ -297,6 +345,8 @@
                      (assoc-in source [:requirements 0 :context-source :raw] "forged stopping rule")
                      (assoc-in source [:requirements 18 :shared-completion-rule] nil)
                      (assoc-in source [:task-authorities "core" 0 :checked] true)
+                     (assoc-in source [:task-authorities "core" 0 :source :path]
+                               "specs/platform-workflow/tasks.md")
                      (assoc-in source [:sh07-sequence 1 :dependency-declaration] "none")
                      (update source :sh07-sequence pop)]]
       (is (thrown? Exception (dependencies/task-sh-view changed slurp))))
