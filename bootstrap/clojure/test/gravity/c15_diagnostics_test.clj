@@ -99,6 +99,72 @@
       (is (identical? marker (c15/c15-diagnostics-source-overrides module))))
     (is (identical? module @observed))))
 
+(deftest native-phase-and-location-predicates-preserve-unavailable-data
+  (let [early (c15/c15-diagnostic-record "C15-FACTS" :error :read-source :facts
+                                        "native-only.gravity" 0 "native-artifact" {:field :facts} [:repair])
+        semantic (assoc early :stage :effect-check :profile :kernel :target :llvm)]
+    (is (true? (diagnostics/native-context-valid? early)))
+    (is (true? (diagnostics/native-primary-valid? early)))
+    (is (false? (diagnostics/native-context-valid? (assoc early :stage :effect-check))))
+    (is (true? (diagnostics/native-context-valid? semantic)))
+    (is (false? (diagnostics/native-primary-valid? semantic)))
+    (doseq [field [:profile :target]]
+      (is (false? (diagnostics/native-context-valid? (dissoc early field))))
+      (doseq [value [false 3 "kernel"]]
+        (is (false? (diagnostics/native-context-valid? (assoc semantic field value))))))
+    (doseq [value [false 3 ""]]
+      (is (false? (diagnostics/native-primary-valid? (assoc-in early [:primary :syntax-id] value)))))
+    (doseq [[value expected] [["native-syntax" (seq "native-syntax")] [:native-syntax true]]]
+      (is (= expected (diagnostics/native-primary-valid? (assoc-in semantic [:primary :syntax-id] value)))))))
+
+(deftest native-validation-wrapper-retains-configuration-and-live-owner-vars
+  (let [observed (atom nil) marker (Object.) artifact {}]
+    (with-redefs [diagnostics/validate-native! (fn [& args] (reset! observed (vec args)) marker)]
+      (is (identical? marker (c15/c15-diagnostics-validate! "native-only.gravity" artifact))))
+    (let [[ports configuration path supplied] @observed]
+      (is (= #{:fail! :stable-id :context-valid? :primary-valid?} (set (keys ports))))
+      (is (every? var? (vals ports)))
+      (is (= #{'fail! 'stable-id 'context-valid? 'primary-valid?}
+             (set (map #(:name (meta %)) (vals ports)))))
+      (is (identical? c15/c15-diagnostic-required-fields (:c15-diagnostic-required-fields configuration)))
+      (is (= "native-only.gravity" path))
+      (is (identical? artifact supplied))
+      (doseq [operation (vals ports)]
+        (let [error (ex-info "late native owner failure" {})]
+          (with-redefs-fn {operation (fn [& _] (throw error))}
+            #(is (identical? error (try (operation) nil
+                                       (catch clojure.lang.ExceptionInfo caught caught))))))))
+    (doseq [operation [#'diagnostics/native-context-valid? #'diagnostics/native-primary-valid?
+                      #'diagnostics/validate-native!]]
+      (let [contract (:gravity/namespace-contract (meta operation))]
+        (is (= (:arglists (meta operation)) (get-in contract [:public-api (:name (meta operation)) :arglists])))
+        (is (= :none (get-in contract [:public-api (:name (meta operation)) :admission])))
+        (is (some #{'gravity.c15-diagnostics.validation} (get-in contract [:dependency-direction :consumed-by])))))))
+
+(deftest native-validation-refusal-barrier-and-legacy-label-result-remain-unchanged
+  (let [events (atom []) error (ex-info "owner schema refusal" {})
+        ports {:fail! (fn [& args] (swap! events conj args) (throw error))
+               :stable-id (fn [& _] (throw (ex-info "identity after refusal" {})))
+               :context-valid? (fn [& _] (throw (ex-info "context after refusal" {})))
+               :primary-valid? (fn [& _] (throw (ex-info "primary after refusal" {})))}
+        configuration {:c15-diagnostic-required-fields c15/c15-diagnostic-required-fields
+                       :c15-diagnostics-diagnostic-ids c15/c15-diagnostics-diagnostic-ids}]
+    (is (identical? error (try (diagnostics/validate-native! ports configuration "native-only.gravity" {})
+                              nil (catch clojure.lang.ExceptionInfo caught caught))))
+    (is (= 1 (count @events)))
+    (let [[supplied rule path subject extra] (first @events)]
+      (is (identical? configuration supplied))
+      (is (= ["C15-SCHEMA" "native-only.gravity" nil] [rule path subject]))
+      (is (= (set c15/c15-diagnostic-required-fields) (set (:missing-fields extra)))))
+    ;; These are legacy label data. No golden comparison, secret redaction,
+    ;; publication or canonical schema service is performed by this call.
+    (let [labels {:diagnostic-schema {:required-fields []}
+                  :diagnostic-stream {:diagnostics []} :diagnostic-catalog {:rules []}
+                  :golden-diagnostic-fixtures [] :redaction-report {:public-safe? true}}]
+      (is (= :complete (diagnostics/validate-native!
+                        ports {:c15-diagnostic-required-fields [] :c15-diagnostics-diagnostic-ids []}
+                        "native-only.gravity" labels))))))
+
 (deftest operation-map-is-validated-and-preserves-variadic-interposition
   (doseq [operation-map
           [nil
