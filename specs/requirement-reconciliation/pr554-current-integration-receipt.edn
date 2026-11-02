@@ -33,6 +33,74 @@
   :selected-entry-count 84
   :role :historical-frozen-comparator-not-integration-base
   :source-views-renewed? false}
+ :transition-repair
+ {:candidate-commit "87f8e0dfb9ed49cad90f41eb9667c6c3617eb17a"
+  :candidate-tree "3e053d24997e66b57ceaa06e39b00489d3bcfe81"
+  :parent-commit "f2bd8ff35bef5a03f16bcc9cdaab608177976239"
+  :parent-tree "c3683e098ee77021486f6dd84c40e332ff780d8b"
+  :review-state :proposed
+  :source-transition
+  {:kind :platform-task-authority-ledger-current-layout-v1
+   :parent-bridge-kind :platform-generated-view-kind
+   :parent-bridge-applying-ref "2a86a9f1fc56b1eceacf4ca29aac7c95a1a4792b"
+   :path "specs/platform-workflow/tasks.md"
+   :baseline
+   {:ref "5dfe15c9fad14e5abebf23bf1e645bf9154a2e1e"
+    :tree "643afe5f3b00918fc3de76f2855294481a09b505"
+    :blob "0c5e17169840e1a5deee71e5733955ff0a41805a"
+    :sha256 "789f8482bf8212e68c978daaaa2487f39f66a46467385ba0b0350df82a78e39f"}
+   :applying
+   {:ref "2a86a9f1fc56b1eceacf4ca29aac7c95a1a4792b"
+    :tree "8a242945a690dcf4ae6a7b15ecc546c09179a80c"
+    :blob "054ee72c93246d88785ed29d82b549428a0d4e64"
+    :sha256 "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f"}
+   :task-ids ["hardware" "firmware" "kernel" "devices"]
+   :historical-routing-preserved? true
+   :navigation-layout-tolerated? true
+   :structural-authority-only? true
+   :arbitrary-task-criteria-rejected? true
+   :source-hash-renewal? false}
+  :guards
+  [:layout-only-preamble-accepted
+   :changed-body-rejected
+   :wrong-baseline-applying-pair-rejected
+   :replayed-row-rejected
+   :nonplatform-path-bypass-rejected]
+  :local-validation
+  {:acceptance-dependencies-test
+   {:command "clojure -M tools/acceptance_dependencies_test.clj"
+    :tests 18 :assertions 425 :failures 0 :errors 0}
+   :acceptance-dependencies-check
+   {:command "clojure -M tools/acceptance_dependencies.clj --check"
+    :exit 0 :result :pass}
+   :platform-source-transition-test
+   {:command "clojure -M tools/platform_source_transition_test.clj"
+    :tests 2 :assertions 6 :failures 0 :errors 0}
+   :platform-task-projection-test
+   {:command "clojure -M tools/platform_task_projection_test.clj"
+    :tests 5 :assertions 90 :failures 0 :errors 0}
+   :frozen-source-view-test
+   {:command "clojure -M tools/pr554_frozen_source_view_test.clj"
+    :tests 4 :assertions 48 :failures 0 :errors 0}
+   :requirement-reconciliation
+   {:tests 31 :assertions 270 :source :existing-focused-gate}
+   :frozen-source-view-verification
+   {:verified 84 :entries 84 :result :pass}
+   :pinned-lint
+   {:version "clj-kondo-2025.10.23"
+    :errors 0 :warnings 0 :info 1 :result :pass}
+   :git-diff-check {:result :pass}}
+  :scope :historical-routing-and-structural-only}
+ :historical-hosted-nonpass
+ {:run-id "41502859336"
+  :job-id "125474750568"
+  :command "tools/acceptance_dependencies_test.clj"
+  :tests 18
+  :assertions 115
+  :failures 0
+  :errors 5
+  :diagnostic "Changed or ambiguous current task body: specs/platform-workflow/tasks.md"
+  :disposition :repaired-locally-not-accepted}
  :evidence
  {:pinned-linter "clj-kondo-2025.10.23"
   :changed-clojure-edn-file-count 11
