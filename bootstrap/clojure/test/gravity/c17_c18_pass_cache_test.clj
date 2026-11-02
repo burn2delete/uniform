@@ -1,9 +1,11 @@
 (ns gravity.c17-c18-pass-cache-test
   (:require [clojure.test :refer [deftest is]]
             [gravity.c15-c16-pass-cache :as upstream-cache]
+            [gravity.c15-c16-pass-cache.envelope :as c15-envelope]
             [gravity.c15-diagnostics :as c15]
             [gravity.c16-incremental :as c16]
             [gravity.c17-c18-pass-cache :as cache]
+            [gravity.c17-c18-pass-cache.envelope :as c17-envelope]
             [gravity.c17-c18-pass-cache.upstream-boundary :as upstream-boundary]
             [gravity.c17-c18-pass-cache.validation :as validation]
             [gravity.c17-plugin :as c17]
@@ -17,6 +19,15 @@
 
 (defn- id [value]
   (str "sha256:" (digest/sha256-hex (pr-str value))))
+
+(defn- exception-snapshot
+  [thunk]
+  (try
+    (thunk)
+    ::accepted
+    (catch clojure.lang.ExceptionInfo error
+      {:message (.getMessage error)
+       :data (ex-data error)})))
 
 (defn- delete-tree! [^Path root]
   (when (Files/exists root (make-array LinkOption 0))
@@ -143,6 +154,78 @@
 (defn- upstream-result [store calls]
   (upstream-cache/lookup-or-compute!
    store (upstream-context) (upstream-operations calls)))
+
+(deftest adjacent-envelope-codecs-preserve-wire-shape-and-diagnostics
+  (let [artifact {:kind :gravity/test-envelope
+                  :values [1 :two {:three true}]}
+        artifact-id (id :envelope-artifact)
+        operations {:artifact-id-of (constantly artifact-id)}
+        c15 (c15-envelope/encode! :c15 artifact operations)
+        c17 (c17-envelope/encode! :c17 artifact operations)
+        c15-base {:id "C16-ENTRY" :stage :c15
+                  :release-authority? false :proof-authority? false
+                  :self-hosting-authority? false}
+        c17-base {:id "C16-ENTRY" :stage :c17 :authority :none
+                  :release-authority? false :proof-authority? false
+                  :self-hosting-authority? false}]
+    (is (= {:artifact :gravity/c15-c16-pass-cache-envelope
+            :schema-version 1 :stage :c15 :artifact-id artifact-id
+            :payload-edn (pr-str artifact)} c15))
+    (is (= {:artifact :gravity/c17-c18-pass-cache-envelope
+            :schema-version 1 :stage :c17 :artifact-id artifact-id
+            :payload-edn (pr-str artifact)} c17))
+    (is (= artifact
+           (c15-envelope/decode! :c15 c15 (constantly nil) operations)))
+    (is (= artifact
+           (c17-envelope/decode! :c17 c17 (constantly nil) operations)))
+    (is (= {:message "C15/C16 cache envelope is malformed"
+            :data c15-base}
+           (exception-snapshot
+            #(c15-envelope/decode! :c15 (dissoc c15 :stage)
+                                   (constantly nil) operations))))
+    (is (= {:message "C17/C18 cache envelope is malformed"
+            :data c17-base}
+           (exception-snapshot
+            #(c17-envelope/decode! :c17 (dissoc c17 :stage)
+                                   (constantly nil) operations))))
+    (is (= {:message "C15/C16 cache envelope contains an unknown tag"
+            :data (assoc c15-base :tag 'unknown)}
+           (exception-snapshot
+            #(c15-envelope/decode! :c15 (assoc c15 :payload-edn
+                                               "#unknown {:value 1}")
+                                   (constantly nil) operations))))
+    (is (= {:message "C17/C18 cache envelope contains an unknown tag"
+            :data (assoc c17-base :tag 'unknown)}
+           (exception-snapshot
+            #(c17-envelope/decode! :c17 (assoc c17 :payload-edn
+                                               "#unknown {:value 1}")
+                                   (constantly nil) operations))))
+    (is (= {:message "C15/C16 cache envelope EDN is malformed"
+            :data (assoc c15-base :host-error "java.lang.RuntimeException")}
+           (exception-snapshot
+            #(c15-envelope/decode! :c15 (assoc c15 :payload-edn "(")
+                                   (constantly nil) operations))))
+    (is (= {:message "C17/C18 cache envelope EDN is malformed"
+            :data (assoc c17-base :host-error "java.lang.RuntimeException")}
+           (exception-snapshot
+            #(c17-envelope/decode! :c17 (assoc c17 :payload-edn "(")
+                                   (constantly nil) operations))))
+    (is (= {:message "C15/C16 envelope artifact identity is stale"
+            :data (assoc c15-base :id "C16-STALE"
+                         :expected (id :stale-envelope)
+                         :observed artifact-id)}
+           (exception-snapshot
+            #(c15-envelope/decode!
+              :c15 (assoc c15 :artifact-id (id :stale-envelope))
+              (constantly nil) operations))))
+    (is (= {:message "C17/C18 envelope artifact identity is stale"
+            :data (assoc c17-base :id "C16-STALE"
+                         :expected (id :stale-envelope)
+                         :observed artifact-id)}
+           (exception-snapshot
+            #(c17-envelope/decode!
+              :c17 (assoc c17 :artifact-id (id :stale-envelope))
+              (constantly nil) operations))))))
 
 (deftest contract-is-exactly-downstream-local-and-nonauthoritative
   (let [contract (cache/c17-c18-pass-cache-contract)
