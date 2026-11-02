@@ -82,11 +82,12 @@ Effects semantic port. Their useful behavior remains owned as follows:
   `process-result`, and `finalize-owned-process!` remain the custody API.
 - Current SH-01 lifecycle hooks preserve the raw Process/token, source-drift
   recheck, interruption and suppressed-cleanup behavior. The exact PR533
-  public retained-Git result wrapper is not copied. Strict complete-UTF-8 /
-  truncation receipt and one shared outer deadline across Git/child/cleanup/
-  publication are not exposed by the current public interfaces; that is the
-  concrete remaining SH-01/source-custody delta. No duplicate controller or
-  PMK-specific exclusive-lease gate is introduced here.
+  public retained-Git result wrapper is not copied. The selected observer now
+  injects the existing runner controller down through the wiring cycle: the
+  runner performs bounded strict-UTF-8 capture and owned cleanup, while wiring
+  validates the complete/non-truncated receipt and returns only canonical
+  bytes to the Git identity callers. No duplicate controller or PMK-specific
+  exclusive-lease gate is introduced here.
 
 ## Validation and evidence limits
 
@@ -107,6 +108,14 @@ before Reader authentication. Fresh controls cover current-positive,
 pinned-default, current-to-pinned downgrade, source/mode tampering, and fresh
 Macro-binding provenance (2 tests, 9 assertions passed).
 
+The current SH-01 custody adapter's inert controls pass in
+`producer-git-observation-test`: one positive case verifies controller launch,
+retention, stdin close, remaining-deadline handoff, strict complete capture,
+and published receipt metadata; one negative case rejects a truncated receipt
+after cleanup. The runner's existing process-result tests continue to cover
+owned-handle finalization and interruption behavior. These tests use injected
+process/controller ports and are not evidence of actual broker admission.
+
 The PMK composition selector was retried only after that owner repair. Its
 fresh JVM remained CPU-bound in the C5/C6 construction for approximately 40
 minutes with multi-gigabyte garbage-collection cycles and was stopped cleanly
@@ -116,20 +125,27 @@ success, or public C8 execution is claimed. The former pinned C4 rejection is
 therefore no longer the current code-level blocker, but the downstream PMK
 composition remains unevidenced pending a bounded permitted run.
 
-The retained-Git/source-custody behavior is already present in the actual
+The retained-Git/source-custody behavior is now connected in the actual
 current SH01 owner: `gravity.build.producer-git-observation` and its
 `*producer-git-lifecycle*` bookends use the canonical retained-process APIs,
 preserve raw Process/token identity, recheck source bindings before and after
 the selected C2 observation, and retain only non-authoritative observation
-facts. Those paths are present in current main through commits
+facts. The wiring binds one monotonic operation deadline for the child,
+selected Git bookends, controller wait/capture/cleanup, and final publication;
+the remaining timeout is handed to the existing runner rather than resetting
+at Git start. The published observation contains capture status, observed and
+retained byte counts, limits, truncation and forced-close flags, while
+the wiring's strict decode records `:utf8-valid? true`; `capture-v1-ready?`
+remains false. These are process-custody facts, not a semantic or
+authoritative receipt.
+
+Those paths are present in current main through commits
 `e047157d7`/`e02d28e15`/`7a74f6e38` and are preserved by this candidate; the
 old PR533 `effects_retained_git` wrapper and PMK lease gate are not replayed.
-The remaining unique deadline delta is not yet incorporated: current
-`run-git-bytes!` has no shared monotonic operation clock, bounded capture
-receipt, or outer-deadline handoff from `run-selected!`. That interface is
-owned by SH01/source custody and remains a concrete pending delta rather than
-an ownership-only claim. No project-accounting or PMK-exclusive lease is
-reintroduced.
+No project-accounting or PMK-exclusive lease is reintroduced. The process
+controller's cleanup and capture are still host-bounded and descendant
+coverage remains `:unknown`; no global process containment or genuine PMK
+admission is claimed.
 
 The old 257-entry rejection in the neighboring import-table test was removed
 because the current predicate is shape-only; its type and collection-shape
@@ -139,6 +155,9 @@ negatives remain.
 
 - The current-main tree remains otherwise intact.
 - The three semantic selectors and adapter tests pass with stable diagnostics.
+- The selected observer controller adapter and complete-receipt negative
+  control pass as inert custody tests; they do not execute a native compiler or
+  restricted process route.
 - The historical acceptance record remains byte-for-byte unchanged.
 - The final candidate has an exact base, commit, tree, clean worktree, and
   independent review before any integration decision.

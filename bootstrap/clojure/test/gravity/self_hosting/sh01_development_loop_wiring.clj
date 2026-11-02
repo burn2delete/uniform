@@ -71,6 +71,140 @@
 
 (def ^:private ^:dynamic *producer-git-lifecycle* nil)
 
+;; The selected producer bookends run inside this namespace, while the
+;; retained-process controller lives in the parallel runner (which already
+;; depends on this wiring).  Keep the ownership boundary explicit by letting
+;; the caller inject that controller instead of creating a second launcher or
+;; a second process registry here.
+(def ^:dynamic *operation-deadline* nil)
+
+(defn- new-operation-deadline
+  [options]
+  (let [timeout-ms (long (or (:timeout-ms options) default-timeout-ms))]
+    {:deadline-ns (+ (System/nanoTime) (* timeout-ms 1000000))
+     :timeout-ms timeout-ms}))
+
+(defn- operation-remaining-ms
+  []
+  (when *operation-deadline*
+    (let [remaining-ns (- (long (:deadline-ns *operation-deadline*))
+                          (System/nanoTime))]
+      (if (pos? remaining-ns)
+        (long (quot (+ remaining-ns 999999) 1000000))
+        0))))
+
+(defn- require-operation-time!
+  [stage]
+  (when (and *operation-deadline*
+             (zero? (operation-remaining-ms)))
+    (fail! "SH01-DEVELOPMENT-LOOP-DEADLINE"
+           "Development-loop operation exceeded its shared deadline"
+           {:stage stage
+            :deadline-ns (:deadline-ns *operation-deadline*)})))
+
+(declare strict-utf8)
+
+(defn- process-result-clean?
+  [result]
+  (let [cleanup (:cleanup result)]
+    (and (map? result)
+         (= :passed (:status result))
+         (= 0 (long (or (:exit-code result) 1)))
+         (= :complete (:stdout-capture-status result))
+         (= :complete (:stderr-capture-status result))
+         (not (:output-truncated? result))
+         (not (:capture-failed? result))
+         (not (:stdout-capture-forced-close? result))
+         (not (:stderr-capture-forced-close? result))
+         (:root-exited? result)
+         (:tracked-owned-processes-terminal? result)
+         (not (:cleanup-failed? result))
+         (not (:timeout-containment-unproven? result))
+         (map? cleanup)
+         (false? (:root-alive? cleanup))
+         (true? (:tracked-complete? cleanup))
+         (= 0 (long (or (:descendants-alive cleanup) -1)))
+         (nil? (:discovery-error cleanup))
+         (nil? (:cleanup-error cleanup))
+         (= :unknown (:descendant-coverage cleanup))
+         (string? (:stdout result)))))
+
+(defn- run-git-with-process-controller!
+  [directory command input-bytes lifecycle controller]
+  (require-operation-time! :git-start)
+  (let [raw (atom nil)
+        owned (atom nil)
+        result (atom nil)
+        primary (atom nil)]
+    (try
+      ((:before! lifecycle) command directory)
+      (reset! raw ((:start controller) command directory))
+      (let [record ((:retain! lifecycle) @raw command directory)
+            token (:owned-process @record)]
+        (when-not token
+          (fail! "SH01-DEVELOPMENT-LOOP-GIT-CUSTODY"
+                 "Selected Git process was not retained by the owner"
+                 {:command command}))
+        (reset! owned record)
+        ;; Git's identity commands use a closed stdin.  The controller still
+        ;; owns launch, wait, capture, and cleanup; this write is only the
+        ;; caller-supplied input handoff.
+        (with-open [input (.getOutputStream ^Process @raw)]
+          (when input-bytes
+            (.write input ^bytes input-bytes)))
+        (require-operation-time! :git-result)
+        (let [options (cond-> (or (:process-options lifecycle) {})
+                        *operation-deadline*
+                        (assoc :deadline-ns (:deadline-ns *operation-deadline*)
+                               :timeout-ms (operation-remaining-ms)))
+              observed ((:result controller) @raw options token)]
+          (reset! result observed)
+          (swap! @owned assoc
+                 :capture-receipt
+                 (select-keys observed
+                              [:stdout-capture-status :stderr-capture-status
+                               :stdout-truncated? :stderr-truncated?
+                               :output-truncated? :capture-failed?
+                               :stdout-capture-forced-close?
+                               :stderr-capture-forced-close?
+                               :stdout-observed-bytes :stderr-observed-bytes
+                               :stdout-limit-bytes :stderr-limit-bytes
+                               :stdout-captured-bytes :stderr-captured-bytes]))
+          ((:waited! lifecycle) @owned (:exit-code observed) nil)
+          (when-not (process-result-clean? observed)
+            (fail! "SH01-DEVELOPMENT-LOOP-GIT-CUSTODY"
+                   "Selected Git process did not return a complete owned receipt"
+                   {:command command
+                    :result (select-keys observed
+                                         [:status :exit-code :wait-error
+                                          :stdout-capture-status
+                                          :stderr-capture-status
+                                          :output-truncated? :capture-failed?
+                                          :cleanup :cleanup-failed?
+                                          :timeout-containment-unproven?])}))
+          (require-operation-time! :git-publication)
+          ;; The normal controller decoder is strict.  Recheck the returned
+          ;; text before handing bytes to the existing Git identity callers so
+          ;; a replacement-decoded receipt cannot enter source identity.
+          (let [bytes (.getBytes ^String (:stdout observed) StandardCharsets/UTF_8)]
+            (when-not (= (:stdout observed) (strict-utf8 bytes))
+              (fail! "SH01-DEVELOPMENT-LOOP-GIT"
+                     "Git returned a non-canonical UTF-8 receipt" {}))
+            (swap! @owned assoc-in [:capture-receipt :utf8-valid?] true)
+            bytes)))
+      (catch Throwable error
+        (reset! primary error)
+        (throw error))
+      (finally
+        (when (and @raw (nil? @owned))
+          (try ((:abort controller) @raw)
+               (catch Throwable error
+                 (if-let [original @primary]
+                   (.addSuppressed ^Throwable original error)
+                   (reset! primary error)))))
+        (when @owned
+          ((:finalize! lifecycle) @owned @primary))))))
+
 (defn- start-git-process [command directory]
   (-> (ProcessBuilder. ^java.util.List command)
       (.directory directory)
@@ -86,46 +220,52 @@
                      (io/file working-directory))
          command (into ["git"] arguments)
          lifecycle *producer-git-lifecycle*
-         _ (when lifecycle ((:before! lifecycle) command directory))
-         process (start-git-process command directory)
-         owned (when lifecycle ((:retain! lifecycle) process command directory))
-         primary (atom nil)]
-     (try
-       (let [writer-error (atom nil)
-             writer
-             (doto
-              (Thread.
-               ^Runnable
-               (fn []
-                 (try
-                   (with-open [input (.getOutputStream process)]
-                     (when input-bytes
-                       (.write input ^bytes input-bytes)))
-                   (catch Throwable exception
-                     (reset! writer-error exception)))))
-              (.setDaemon true)
-              (.start))
-             output (ByteArrayOutputStream.)]
-         (with-open [input (.getInputStream process)]
-           (.transferTo input output))
-         (.join ^Thread writer)
-         (let [exit-code (.waitFor process)
-               _ (when lifecycle ((:waited! lifecycle) owned exit-code @writer-error))
-               bytes (.toByteArray output)]
-           (when-not (zero? exit-code)
-             (fail! "SH01-DEVELOPMENT-LOOP-GIT"
-                    "Development-loop repository identity command failed"
-                    {:command command
-                     :exit-code exit-code
-                     :output (String. bytes StandardCharsets/UTF_8)}))
-           (when @writer-error
-             (fail! "SH01-DEVELOPMENT-LOOP-GIT"
-                    "Development-loop repository identity input failed"
-                    {:command command :exit-code exit-code}))
-           bytes))
-       (catch Throwable error (reset! primary error) (throw error))
-       (finally
-         (when lifecycle ((:finalize! lifecycle) owned @primary)))))))
+         controller (:process-controller lifecycle)]
+     (if (and lifecycle (map? controller)
+              (fn? (:start controller)) (fn? (:result controller))
+              (fn? (:abort controller)))
+       (run-git-with-process-controller!
+        directory command input-bytes lifecycle controller)
+       (let [_ (when lifecycle ((:before! lifecycle) command directory))
+             process (start-git-process command directory)
+             owned (when lifecycle ((:retain! lifecycle) process command directory))
+             primary (atom nil)]
+         (try
+           (let [writer-error (atom nil)
+                 writer
+                 (doto
+                  (Thread.
+                   ^Runnable
+                   (fn []
+                     (try
+                       (with-open [input (.getOutputStream process)]
+                         (when input-bytes
+                           (.write input ^bytes input-bytes)))
+                       (catch Throwable exception
+                         (reset! writer-error exception)))))
+                  (.setDaemon true)
+                  (.start))
+                 output (ByteArrayOutputStream.)]
+             (with-open [input (.getInputStream process)]
+               (.transferTo input output))
+             (.join ^Thread writer)
+             (let [exit-code (.waitFor ^Process process)
+                   _ (when lifecycle ((:waited! lifecycle) owned exit-code @writer-error))
+                   bytes (.toByteArray output)]
+               (when-not (zero? exit-code)
+                 (fail! "SH01-DEVELOPMENT-LOOP-GIT"
+                        "Development-loop repository identity command failed"
+                        {:command command
+                         :exit-code exit-code
+                         :output (String. bytes StandardCharsets/UTF_8)}))
+               (when @writer-error
+                 (fail! "SH01-DEVELOPMENT-LOOP-GIT"
+                        "Development-loop repository identity input failed"
+                        {:command command :exit-code exit-code}))
+               bytes))
+           (catch Throwable error (reset! primary error) (throw error))
+           (finally
+             (when lifecycle ((:finalize! lifecycle) owned @primary)))))))))
 
 (defn- git-common-directory
   [working-directory]
@@ -1683,7 +1823,7 @@
                :child-runtime-identity (:child-runtime-identity binding)}
               :applying-source (:source binding)}))))
 
-(defn run-child-unit!
+(defn- run-child-unit-with-deadline!
   "Optionally reuse a complete selection inside the actual existing test JVM.
 
   The parent still launches and holds its broker lease. This entrypoint does
@@ -1693,7 +1833,7 @@
   (if (:observe-producer? options)
     (observe-fresh-producer!
      namespaces options
-     #(run-child-unit! namespaces (dissoc options :observe-producer?) operation))
+     #(run-child-unit-with-deadline! namespaces (dissoc options :observe-producer?) operation))
     (let [effects-reviewed? (not-any? unreviewed-bootstrap-effect-selections namespaces)
         resource-loaders-supported? (supported-resource-loaders?)
         index (component-dependencies/dependency-index)
@@ -1786,6 +1926,19 @@
                :tests-executed? (:producer-executed? receipt)
                :child-cache-hit? (= :hit (:decision receipt))
                :child-cache-receipt receipt))))))
+
+(defn run-child-unit!
+  "Run one child selection under one monotonic deadline.
+
+  Nested producer observation reuses the same bound deadline.  The deadline
+  is a host-operation bound, not project accounting and not semantic proof."
+  [namespaces options operation]
+  (let [deadline (or *operation-deadline*
+                     (new-operation-deadline options))]
+    (binding [*operation-deadline* deadline]
+      (let [result (run-child-unit-with-deadline! namespaces options operation)]
+        (require-operation-time! :child-publication)
+        result))))
 
 (defn report-facts
   "Return deterministic cache receipts plus the exact launch count."
