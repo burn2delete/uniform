@@ -1483,6 +1483,8 @@ pass-evidence owner. Structural success, generic differential fixtures and
 nonsemantic conformance cannot replace that scope. Failed validation retains
 the prior valid artifact and counterexamples. C18 is pinned as this additional
 canonical input, not credited as fully reconciled or implemented.
+That initial alternative wording is tightened by the complete C18 review below:
+checked matrix minima remain required and stronger labels cannot waive them.
 
 The existing basic-pass task already owns constant folding, branch
 simplification, dead-code and common-expression implementation. The preserved
@@ -1560,7 +1562,8 @@ retains its historical stage0 document boundary, residual-cost observation and
 target/backend/release/self-hosting exclusions. Its reported tests were not
 rerun or promoted to current acceptance.
 
-The next full source review is C18. Direct canonical reading already qualified
+At that checkpoint, the next full source review was C18. Direct canonical
+reading already qualified
 the affected-function C13 boundary. Its preserved complete trace at
 `984f1e74f98905f53b4b20c63b8f76d2a948dae3` has SHA-256
 `a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d`.
@@ -1590,3 +1593,114 @@ messaged. Current independent review, global substantive reconciliation and
 implementation evidence assessment remain unfinished; mapping readiness stays
 false and the goal remains active. Reader contract coverage remains the first
 implementation preparation increment.
+
+## Complete compiler-verification source review
+
+Direct C18 review and its preserved complete predicate mapping restores only
+the missing detailed records clause under [pass-evidence](../specs/compiler-api-workflow/tasks.md#implementation-tasks).
+The existing pass-evidence block and [backend-conformance block](../specs/backends-workflow/tasks.md#implementation-tasks)
+remain literal unchanged witnesses. The [Compiler API plan](../specs/compiler-api-workflow/plan.md#complete-compiler-verification-source-criteria)
+binds the complete pass population, four risk meanings, ten matrix rows,
+changed-function validation, trust/release gates, available counterexamples,
+source/generated origins and nine diagnostic meanings to actual positive and
+refused evidence. Full mechanization of every pass is not an initial
+prerequisite. Actual checked matrix minima stay distinct from optional stronger
+methods; applicable claim policy can require stronger evidence but its label
+cannot waive the minimum.
+
+This corrects the previous Opt wording that could be read as allowing stronger
+proof to replace per-function translation validation. The current Opt task,
+spec and plan now explicitly require checked affected-function minimum evidence;
+a mechanized method must establish that required validation with actual scope.
+The frozen C13 source proposal and its previous interpretation remain history,
+with the current correction bound separately rather than renewing old review.
+Actual stage/checker owners supply their products, pass-evidence orchestrates
+subject-bound gates, Backends supplies real conformance and Release independently
+owns final admission. Local record/refusal-fixture work needs declared
+interfaces; actual composition and affected release claims need real evidence.
+
+The trace preserves 101 C18 facets (86 semantic and fifteen context), 45
+occurrence cases including thirty semantic conjunctions and seven source owner
+joins. Six existing owners remain candidates and the backend producer retains
+its separate proposed exact-criterion join; no global owner-resolution state
+is promoted. Every source span and the canonical whole-file hash match the
+preserved inputs, and the spans cover every nonwhitespace C18 byte. These are
+conservation observations, not implementation or whole-project acceptance.
+Three exact current criterion witnesses retain their old raw hashes; only the
+records clause needed restoration. Trace SHA-256:
+`a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d`;
+historical task source `984f1e74f98905f53b4b20c63b8f76d2a948dae3`.
+
+The old independent scoped PASS retains frozen subject `494afbf8`, qualified
+adoption/current-applicability records, B6 containing-file exclusion and every
+held-action limit. Whole-head, final denominator, implementation, release,
+self-hosting and integration acceptance are not transferred. Current entailment
+is an author-assessed preserved-predicate/current-consumer proposal, independent
+review is pending and implementation/global conjunctions remain unassessed.
+The tested historical GitHub trace returned Not Found. Current canonical and
+task witnesses are used without a replacement dead link, aggregate publication
+or stopped-handoff retry.
+
+Source `0e1cec28f43d2902032b1786af08f7aa17af8107` advances only the affected
+Compiler API and Opt task/plan inputs from predecessor `f05e3627`, preserving
+its complete metadata/projection and pending review. Two task bodies change;
+pass-evidence is the one newly amended original body. Of 139 original bodies,
+93 remain identical and 46 carry declared additions. Original IDs/statuses,
+149 current task keys, forty future records, SH/SH07 routes and three scoped
+Reader receipts remain conserved. The source-version record adds the previously
+unchanged Compiler API task file, bringing it to 31 file records, with a new
+Compiler API plan inspection locator and an explicitly advanced Opt plan pin.
+Current mapping review remains pending at fingerprint
+`9dc8e9d0f45469bd83836db0bcb13b50127afa4506732f38752e4f80aa96f4a6`.
+
+Selected static implementation inspection retains existing construction and
+validation work without accepting assigned status fields. The [Clojure assembly](../bootstrap/clojure/src/gravity/c18_verification/artifact.clj)
+consumes injected C17/risk/diagnostic/validation operations. Its [products](../bootstrap/clojure/src/gravity/c18_verification/products.clj)
+directly populate evidence-present, accepted translation/proof, passed verifier/
+fixture/backend, allowed release and captured-regression records. The
+[validator](../bootstrap/clojure/src/gravity/c18_verification/verification.clj)
+checks field/population/status conditions; those labels do not establish actual
+checker invocation, representative execution or release authority. The C17-shaped
+adapter input is not a universal prerequisite for ordinary built-in pass work.
+The [Gravity record-model source](../bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity)
+has quoted constructors and a generic verification declaration that explicitly
+says production verification is not claimed. These are selected source
+observations, not a whole-code audit or current execution receipt.
+The separate [W5 verifier source](../bootstrap/gravity/src/gravity/compiler/w5_c18_pass_verifier.gravity)
+does contain actual field/linkage validation and result recomputation. Selected
+translation-entry checks require unverified/false cryptographic-hash status,
+and its policy/result paths explicitly retain seed/JVM/review gaps and
+non-authority, no release/self-hosting/full-language credit. Preserve that
+partial implementation; it does not turn supplied translation/proof records
+into actual solver/checker execution or discharge the full per-class matrix.
+The [2026-06-25 report](../docs/artifacts/phase-06/reports/p06-d097-c18-verification-report.md)
+retains its stage0 document-coverage scope and production/backend/runtime/release/
+self-hosting exclusions; its reported tests were not rerun or promoted.
+
+The next full source review is C16 incremental compilation. Its canonical
+document has been read. The preserved trace at
+`0cbc3d4c00c47831d7e3ab6cdb63e289707167a7` has SHA-256
+`1e9f938d7485107fed63f0ab81eea5643a2599ad7457ca7cd8136f9ccaa7f9e1`.
+Its existing/records/rebuild witnesses hash-verify but do not occur as complete
+literal spans in the current Build tasks. The 114 facets, 44 occurrences,
+29 semantic conjunctions and six owner joins require direct predicate, current
+wording and reference-drift review before source credit or amendments. This
+observation creates no task, completion claim or execution authority.
+
+Final C18 validation passes: 39 crosswalk tests / 4,357 assertions, 23 dependency
+tests / 1,774 assertions, deterministic generation/check, read-only dependency
+audit, canonical document/full-language structural validators and the language
+boundary (six tests / eleven assertions). Source controls conserve all three
+criterion witnesses, 101 spans, unchanged backend records, old review exclusions
+and the explicit current matrix minimum; removing a semantic facet leaves a
+detected coverage gap. Conservation/navigation passes for 82 changed files,
+76 Markdown files, 2,936 local references, 139 original routes, 48 historical
+spec/plan suffixes and all 48 original task/evidence contents after stripping
+declared additions. All changed files are ASCII and whitespace checks pass.
+
+No actual compiler, pass/checker/proof replay, backend/native/target/device,
+runtime/provider/C12, migration, signing, private-store or product-publication
+operation ran, and no other chat was messaged. Current independent review,
+global substantive reconciliation and implementation evidence assessment remain
+unfinished; mapping readiness stays false and the goal remains active. Reader
+contract coverage remains the first implementation preparation increment.
