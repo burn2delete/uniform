@@ -3,6 +3,7 @@
             [gravity.c7-type-checker :as c7]
             [gravity.c7-type-checker.inference :as compatibility]
             [gravity.c7-type-checker.evidence :as record-compatibility]
+            [gravity.c7-type-checker.artifact :as artifact-compatibility]
             [gravity.c7-type-checker.verification :as verification]
             [gravity.types :as types]))
 
@@ -176,7 +177,7 @@
   (let [contract (:gravity/namespace-contract (meta #'types/type-fact))
         publics (ns-publics 'gravity.types)]
     (is (= :seed-type-products-and-current-gravity-runtime (:contract-boundary contract)))
-    (is (= 20 (count publics)))
+    (is (= 21 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (doseq [[name api] (:public-api contract)]
       (is (= (:arglists api) (:arglists (meta (publics name)))))
@@ -188,7 +189,7 @@
       (is (false? (:proves-canonical-types? api)))
       (is (false? (:grants-authority? api))))
     (is (= [] (get-in contract [:dependency-direction :requires])))
-    (is (= '[gravity.c7-type-checker.inference gravity.c7-type-checker.verification gravity.c7-type-checker.evidence gravity.bootstrap]
+    (is (= '[gravity.c7-type-checker.inference gravity.c7-type-checker.verification gravity.c7-type-checker.evidence gravity.c7-type-checker.artifact gravity.bootstrap]
            (get-in contract [:dependency-direction :consumed-by])))
     (is (false? (:legacy-status-labels-authoritative? contract)))
     (is (not (contains? (ns-aliases 'gravity.types) 'gravity.bootstrap)))
@@ -386,3 +387,49 @@
       (is (= arity (count @observed)))
       (is (every? true? (map identical? arguments @observed)))))
   (is (= [] (:records (record-compatibility/schema-links [])))))
+
+(deftest types-stage-assembly-compatibility-preserves-port-identity
+  (let [ports (Object.) source (Object.) text (Object.) result (Object.)
+        observed (atom nil)]
+    (with-redefs [types/assemble-source-artifact
+                  (fn [& values] (reset! observed values) result)]
+      (is (identical? result (artifact-compatibility/source-artifact ports source text))))
+    (is (= 3 (count @observed)))
+    (is (every? true? (map identical? [ports source text] @observed)))))
+
+(deftest types-stage-assembly-preserves-order-and-refusal-barriers
+  (doseq [stop [nil :overrides :validate]]
+    (let [events (atom []) failure (ex-info "owner refusal" {:marker (Object.)})
+          supplied (into {} (for [[key operation] (operations)]
+                              [key (fn [& args]
+                                     (swap! events conj key)
+                                     (apply operation args))]))
+          supplied (assoc supplied
+                          :c7-type-validate-overrides!
+                          (fn [& args]
+                            (swap! events conj :overrides)
+                            (when (= :overrides stop) (throw failure))
+                            (apply c7/c7-type-validate-overrides! args))
+                          :c7-type-validate!
+                          (fn [& args]
+                            (swap! events conj :validate)
+                            (when (= :validate stop) (throw failure))
+                            (apply c7/c7-type-validate! args))
+                          :c7-type-capability-proof
+                          (fn [& args]
+                            (swap! events conj :proof)
+                            (apply c7/c7-type-capability-proof args)))
+          result (try (c7/with-operations supplied
+                        #(c7/compiler-c7-type-source-artifact "c7-test.gravity" "ignored"))
+                      (catch clojure.lang.ExceptionInfo error error))]
+      (is (= (case stop
+               :overrides [:read-source-form-records :validate-ns-syntax! :parse-module :overrides]
+               :validate [:read-source-form-records :validate-ns-syntax! :parse-module :overrides
+                          :compiler-c6-lowering-source-artifact :validate]
+               [:read-source-form-records :validate-ns-syntax! :parse-module :overrides
+                :compiler-c6-lowering-source-artifact :validate :proof :proof])
+             @events))
+      (if stop
+        (is (identical? failure result))
+        (do (is (= :passed (get-in result [:typed-core-verifier-report :status])))
+            (is (re-matches #"sha256:[0-9a-f]{64}" (:artifact-id result))))))))
