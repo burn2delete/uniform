@@ -796,10 +796,10 @@
  {:resource "gravity/bootstrap_impl/components/foundation/00544-validate-stage0-compiled-standard-library-conformance.clj", :reader-line 81222, :owner :foundation, :first-form "validate-stage0-compiled-standard-library-conformance!"}
  {:resource "gravity/bootstrap_impl/components/language-and-analysis/00545-validate-stage0-compiled-performance-regression.clj", :reader-line 81258, :owner :language-and-analysis, :first-form "validate-stage0-compiled-performance-regression!"}
  {:resource "gravity/bootstrap_impl/components/foundation/00546-validate-stage0-compiled-self-hosting-validation.clj", :reader-line 81265, :owner :foundation, :first-form "validate-stage0-compiled-self-hosting-validation!"}
- {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00547-p15-s23-seed-readable-printer-limits.clj", :reader-line 81437, :owner :bootstrap-p15, :first-form "p15-s23-seed-readable-printer-limits"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00547-p15-s23-seed-readable-printer-limits.clj", :reader-line 81437, :owner :bootstrap-p15, :first-form "p15-s23-seed-readable-printer-scalar-class-kinds"}
  {:resource "gravity/bootstrap_impl/components/foundation/00548-p15-s23-seed-readable-owned-failures.clj", :reader-line 81476, :owner :foundation, :first-form "*p15-s23-seed-readable-owned-failures*"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00549-p15-s23-seed-readable-printer-fail.clj", :reader-line 81478, :owner :bootstrap-p15, :first-form "p15-s23-seed-readable-printer-fail!"}
- {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00550-p15-s23-seed-readable-scalar-bytes.clj", :reader-line 81654, :owner :bootstrap-p15, :first-form "p15-s23-seed-readable-scalar-bytes!"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00550-p15-s23-seed-readable-scalar-bytes.clj", :reader-line 81654, :owner :bootstrap-p15, :first-form "p15-s23-seed-readable-validate-scalar!"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00551-p15-s23-seed-readable-preflight.clj", :reader-line 81783, :owner :bootstrap-p15, :first-form "p15-s23-seed-readable-preflight!"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00552-p15-s23-seed-readable-instant-text.clj", :reader-line 81999, :owner :bootstrap-p15, :first-form "p15-s23-seed-readable-instant-text"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00943-p15-s23-sh07-host-builtins-and-oracle.clj", :reader-line 82220, :owner :bootstrap-p15, :first-form "p15-s23-sh07-declared-builtin-exact-arities"}
