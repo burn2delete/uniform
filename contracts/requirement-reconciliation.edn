@@ -50525,7 +50525,10 @@
    :current-tree "f6305181e0df2e841c15c752f3e1ee1260bdee17",
    :current-sha256 "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
    :change-class :acceptance-boundary-extension,
-   :qualification "Three existing Compiler API records retain their historical owner/status/boundary and gain appended Foundation/Bootstrap/Decision criteria in current main. Those appended criteria are current source obligations only; this proposal preserves the old record identity and does not claim their implementation or acceptance.",
+   :qualification "Three historically referenced Compiler API records retain their historical owner/status/boundary and gain appended Foundation/Bootstrap/Decision criteria in current main. Current main also contains the current-only domain-ir-boundaries development-boundary record; it is explicitly unassessed scope and is not attached to an older requirement. These current source obligations preserve record identity and do not claim implementation or acceptance.",
+   :current-only-records
+   [{:id "domain-ir-boundaries",
+     :current-record-sha256 "114bda63e653e18999b7dd56542decbcc7c95f9b254ef04db5414b96be679b09"}],
    :changed-records
    [{:id "pipeline",
      :historical-record-sha256 "2cd9bd26bdfe71294362391ba21766bdcb7af204dc71853547316b44350004cc",

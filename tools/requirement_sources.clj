@@ -156,6 +156,8 @@
   "58d096cc16d922ad72d560c5b3e4d60d093c9527a9472c2414d63deb98630e3d")
 (def std3-accounting-live-sha256
   "af847392b2ff50155d61a9a9c93bb6e2f1cc573220ceb11920de4dd483bd4160")
+(def std3-accounting-lineage-record-digest
+  "a6780e4a2514b65d84d84f003b4eb582f5dd66866dc461915ebe72e40885cf7e")
 (def std3-accounting-authority
   "AGENTS.md#project-accounting-removal, with STD3 source-bound selective supersession review.")
 (def std3-accounting-qualification
@@ -321,7 +323,7 @@
        (= std3-accounting-authority (:authority bridge))
        (= std3-accounting-qualification (:qualification bridge))
        (= std3-accounting-semantic-deltas (:semantic-deltas bridge))
-       (re-matches #"[0-9a-f]{64}" (or (:lineage-record-digest bridge) ""))
+       (= std3-accounting-lineage-record-digest (:lineage-record-digest bridge))
        (= std3-accounting-projection-hunks (:projection-hunks bridge))))
 
 (defn- line-segments [text]
@@ -381,9 +383,12 @@
                        (vector? (:unit-ids record))
                        (vector? (:shared-facet-set-ids record)))
                   (str "STD3 accounting lineage is incomplete or changed: " lineage-id))))
-    (let [selected (mapv #(get by-id (:lineage-id %)) std3-accounting-projection-hunks)]
-      (require! (= (:lineage-record-digest (first (filter #(= std3-accounting-kind (:kind %))
-                                                          (:source-version-bridges manifest))))
+    (let [bridge (first (filter #(= std3-accounting-kind (:kind %))
+                                (:source-version-bridges manifest)))
+          selected (mapv #(get by-id (:lineage-id %)) std3-accounting-projection-hunks)]
+      (require! (= std3-accounting-lineage-record-digest (:lineage-record-digest bridge))
+                "STD3 accounting lineage metadata is not the trusted canonical digest")
+      (require! (= std3-accounting-lineage-record-digest
                    (canonical-digest sha256 selected))
                 "STD3 accounting lineage metadata digest differs")
       selected)))

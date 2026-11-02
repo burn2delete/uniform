@@ -238,7 +238,7 @@
                    (= (count bridges) (count by-path)))
               "Missing or duplicate task source version bridge")
     (doseq [{:keys [path historical-ref historical-sha256 current-ref current-tree current-sha256
-                    marker changed-records change-class qualification] :as bridge} bridges]
+                    marker changed-records current-only-records change-class qualification]} bridges]
       (require! (and (string? path) (not (.isAbsolute (io/file path)))
                      (re-matches #"[0-9a-f]{40}" (or historical-ref ""))
                      (re-matches #"[0-9a-f]{40}" (or current-ref ""))
@@ -264,7 +264,14 @@
             (require! (= historical-record-sha256 (task-record-digest old-record sha256))
                       (str "Historical task record digest drift: " path "#" record-id))
             (require! (= current-record-sha256 (task-record-digest current-record sha256))
-                      (str "Current task record digest drift: " path "#" record-id))))))
+                      (str "Current task record digest drift: " path "#" record-id))))
+        (doseq [{record-id :id current-record-sha256 :current-record-sha256} current-only-records]
+          (let [current-record (requirement-evidence/task-record current marker record-id)]
+            (require! (= current-record-sha256 (task-record-digest current-record sha256))
+                      (str "Current-only task record digest drift: " path "#" record-id))
+            (require! (and (false? (:checked? current-record))
+                           (= "Open" (:status current-record)))
+                      (str "Current-only task record is not explicitly unassessed: " path "#" record-id))))))
     (doseq [{:keys [path] expected-sha :sha256} refs]
       (if-let [bridge (get by-path path)]
         (require! (= expected-sha (:historical-sha256 bridge))

@@ -180,6 +180,9 @@
     (is (= #{:navigation-only :acceptance-boundary-extension :status-and-development-evidence}
            (set (map :change-class bridges))))
     (is (= 3 (count (:changed-records (nth bridges 2)))))
+    (is (= [{:id "domain-ir-boundaries"
+             :current-record-sha256 "114bda63e653e18999b7dd56542decbcc7c95f9b254ef04db5414b96be679b09"}]
+           (:current-only-records (nth bridges 2))))
     (is (= 2 (count (:changed-records (nth bridges 11)))))
     (is (thrown? Exception
                  (rr/validate-task-source-versions!
@@ -188,6 +191,10 @@
     (is (thrown? Exception
                  (rr/validate-task-source-versions!
                   "." (assoc-in manifest [:task-source-version-bridges 2 :changed-records 0
+                                           :current-record-sha256] "wrong"))))
+    (is (thrown? Exception
+                 (rr/validate-task-source-versions!
+                  "." (assoc-in manifest [:task-source-version-bridges 2 :current-only-records 0
                                            :current-record-sha256] "wrong"))))))
 
 (deftest proposed-source-disposition-is-not-reviewed-closure
@@ -494,43 +501,22 @@
       (is (= 1 (:denominator (rr/project (assoc-in projected [:source-version-bridges 0 :review-state] :reviewed) sources)))))))
 
 (defn std3-accounting-fixture []
-  (let [hunks requirement-sources/std3-accounting-projection-hunks
-        lineage (mapv (fn [{:keys [lineage-id facet-ids baseline-start-line baseline-end-line
-                                   baseline-fragment-sha256]}]
-                        {:id lineage-id :document-id "STD3"
-                         :source-sha256 requirement-sources/std3-accounting-baseline-sha256
-                         :structural-kind :source-block :disposition :mixed-policy-supersession
-                         :review-state :proposed
-                         :start-line baseline-start-line :end-line baseline-end-line
-                         :raw-sha256 baseline-fragment-sha256 :facet-ids facet-ids
-                         :authority-source-occurrence-ids ["fixture/authority"]
-                         :rationale "Fixture lineage retains typed review metadata."
-                         :specific-fragment-proposal {:remove ["fixture accounting"]
-                                                      :retain ["fixture validation"]}
-                         :shared-facet-set-ids [] :unit-ids []})
-                      hunks)
-        digest (rr/sha256 (pr-str ((var requirement-sources/canonical-value) lineage)))
-        bridge {:document-id "STD3"
-                :path requirement-sources/std3-accounting-path
-                :kind requirement-sources/std3-accounting-kind
-                :review-state :proposed
-                :baseline-ref requirement-sources/std3-accounting-baseline-ref
-                :applying-ref requirement-sources/std3-accounting-applying-ref
-                :baseline-sha256 requirement-sources/std3-accounting-baseline-sha256
-                :live-sha256 requirement-sources/std3-accounting-live-sha256
-                :baseline-blob "ca89df08c128c25d23a4a0781da79dd5e37abd74"
-                :applying-blob "19581f5720fea820ff97a1afc392cf3446f44bc3"
-                :authority requirement-sources/std3-accounting-authority
-                :qualification requirement-sources/std3-accounting-qualification
-                :semantic-deltas requirement-sources/std3-accounting-semantic-deltas
-                :lineage-record-digest digest
-                :projection-hunks hunks}]
-    {:scope-version "fixture-stdlib-1"
-     :source-baseline requirement-sources/std3-accounting-baseline-ref
-     :original-documents [{:id "STD3" :path requirement-sources/std3-accounting-path
-                           :sha256 requirement-sources/std3-accounting-baseline-sha256}]
+  (let [manifest (edn/read-string (slurp "contracts/requirement-reconciliation.edn"))
+        bridge (first (filter #(= requirement-sources/std3-accounting-kind (:kind %))
+                              (:source-version-bridges manifest)))
+        document (first (filter #(= "STD3" (:id %)) (:original-documents manifest)))
+        lineage (get-in manifest [:stdlib-reconciliation-context :accounting-lineage
+                                  :mixed-std3-paragraphs])]
+    {:scope-version (:scope-version manifest)
+     :source-baseline (:source-baseline manifest)
+     :original-documents [document]
      :source-version-bridges [bridge]
      :stdlib-reconciliation-context {:accounting-lineage {:mixed-std3-paragraphs lineage}}}))
+
+(defn std3-lineage-digest [manifest]
+  (rr/sha256 (pr-str ((var requirement-sources/canonical-value)
+                      (get-in manifest [:stdlib-reconciliation-context :accounting-lineage
+                                        :mixed-std3-paragraphs])))))
 
 (deftest std3-accounting-projection-is-exact-and-snapshot-bound
   (let [manifest (std3-accounting-fixture)
@@ -581,6 +567,15 @@
                                            :mixed-std3-paragraphs 2 :specific-fragment-proposal]
                                   {:remove ["untrusted"] :retain []})
                        live baseline)))
+    (doseq [[field value]
+            [[:authority-source-occurrence-ids ["forged/authority"]]
+             [:rationale "forged rationale"]
+             [:specific-fragment-proposal {:remove ["untrusted"] :retain []}]]]
+      (let [tampered (assoc-in manifest [:stdlib-reconciliation-context :accounting-lineage
+                                         :mixed-std3-paragraphs 0 field] value)
+            recomputed (assoc-in tampered [:source-version-bridges 0 :lineage-record-digest]
+                                 (std3-lineage-digest tampered))]
+        (is (thrown? Exception (view recomputed live baseline)))))
     (is (thrown? Exception
                  (view (assoc-in manifest [:source-version-bridges 0 :path]
                                  "docs/phase-16-standard-library/212-std2-core-library-specification.md")
