@@ -1,0 +1,160 @@
+{:kind :accounting-gap-current-main-composition
+ :schema-version 1
+ :integration
+ {:base-commit "585298b5faa75a307c5b06be19a0aebb8b09168c"
+  :base-tree "2c7faed87df1a204b6acb49bf6e07c5679dc9776"
+  :candidate-parent "585298b5faa75a307c5b06be19a0aebb8b09168c"
+  :review-branch "codex/review-572-current"}
+ :task-source
+ {:path "specs/accounting-removal/tasks.md"
+  :marker "accounting-source-criteria"
+  :before-sha256 "fa53e20d02235fcfec19fb4b68cc100560b4571b21c555e59d405d601eee96f8"
+  :after-sha256 "9bcb77f367b13253f14c51fc7162eace49fe19319b3f00b049e58e6cd81f2ba4"
+  :existing-task-ids ["ACC-01" "ACC-12" "ACC-13"]
+  :task-statuses {"ACC-01" :open "ACC-12" :open "ACC-13" :open}
+  :new-criterion-count 8
+  :new-task-count 0
+  :status-delta 0}
+ :source-authority
+ {:documents
+  [{:path "AGENTS.md"
+    :sha256 "05758d7322985d88f8fc31cc25d02c7e5514442df11d67c0517bc96bc5004c93"
+    :role :current-project-accounting-policy}
+   {:path "specs/accounting-removal/spec.md"
+    :sha256 "e3d7c4936bf2cfbdd30b0df24fe2db42555033d507308df204f48389ace48321"
+    :role :accounting-removal-contract}
+   {:path "docs/development-verification.md"
+    :sha256 "d685d291b3bc4da89c7f056921e7dc4e46ac334b6996cedfcaee36d62eaf4b59"
+    :role :verification-boundary}
+   {:path "docs/development-verification-workflow.md"
+    :sha256 "51d4500d091815ff55f0186d67013664e8dfd6a725edc92b4592df153e32934a"
+    :role :development-workflow-boundary}]
+  :requirements-path "contracts/requirement-reconciliation.edn"
+  :requirements-sha256 "d24ed46e2de0c1672a1a37c0eeacb3340452dcf56ce1b511ecc678761909155b"
+  :requirement-records
+  [{:id "policy/accounting/source-grounded-inventory"
+    :task "ACC-01"
+    :criterion "accounting-source-inventory"
+    :task-gap :partial
+    :facet-ids ["facet/extension/81b347b50b389d47748ba512"
+                "facet/extension/f9d2b0829c7d71d90a00cbb5"
+                "facet/extension/d52ee8ce3fed3c840458f3ae"
+                "facet/extension/46c00a2e061a20dfa058e7fa"
+                "facet/extension/b3ac01d3101e1c2b8a365c21"
+                "facet/extension/b4d7d896f4d58ee22ff69465"
+                "facet/extension/340afdbab9ac40baeef00bf6"
+                "facet/extension/661e99e543ebbb90426a5540"]}
+   {:id "policy/accounting/remove-artificial-refusals"
+    :task "ACC-12"
+    :criterion "accounting-artificial-refusal-removal"
+    :task-gap :partial
+    :facet-ids ["facet/extension/81b347b50b389d47748ba512"
+                "facet/extension/f9d2b0829c7d71d90a00cbb5"
+                "facet/extension/d52ee8ce3fed3c840458f3ae"
+                "facet/extension/39c2bfa75c064758d41df1a0"
+                "facet/extension/22370b2464bfef0cdba95864"
+                "facet/extension/46c00a2e061a20dfa058e7fa"
+                "facet/extension/b3ac01d3101e1c2b8a365c21"
+                "facet/extension/b4d7d896f4d58ee22ff69465"
+                "facet/extension/340afdbab9ac40baeef00bf6"
+                "facet/extension/661e99e543ebbb90426a5540"
+                "facet/extension/c0d50272ffb5be27ae236735"]}
+   {:id "policy/accounting/preserve-semantic-validation"
+    :task "ACC-12"
+    :criterion "accounting-semantic-validation-preservation"
+    :task-gap :partial
+    :facet-ids ["facet/extension/f9d2b0829c7d71d90a00cbb5"
+                "facet/extension/39c2bfa75c064758d41df1a0"
+                "facet/extension/22370b2464bfef0cdba95864"
+                "facet/extension/46c00a2e061a20dfa058e7fa"
+                "facet/extension/b3ac01d3101e1c2b8a365c21"
+                "facet/extension/b4d7d896f4d58ee22ff69465"
+                "facet/extension/340afdbab9ac40baeef00bf6"
+                "facet/extension/661e99e543ebbb90426a5540"
+                "facet/extension/c0d50272ffb5be27ae236735"]}
+   {:id "policy/accounting/host-external-boundary-separation"
+    :task "ACC-12"
+    :criterion "accounting-host-external-boundaries"
+    :task-gap :partial
+    :facet-ids ["facet/extension/f9d2b0829c7d71d90a00cbb5"
+                "facet/extension/c0a50dab808dbc55acedbe6f"]}
+   {:id "policy/accounting/beyond-limit-and-late-invalid-evidence"
+    :task "ACC-12"
+    :criterion "accounting-beyond-limit-late-invalid"
+    :task-gap :partial
+    :facet-ids ["facet/extension/46c00a2e061a20dfa058e7fa"
+                "facet/extension/b3ac01d3101e1c2b8a365c21"
+                "facet/extension/b4d7d896f4d58ee22ff69465"
+                "facet/extension/340afdbab9ac40baeef00bf6"
+                "facet/extension/661e99e543ebbb90426a5540"
+                "facet/extension/c0d50272ffb5be27ae236735"]}
+   {:id "policy/accounting/closure-evidence-record"
+    :task "ACC-12"
+    :criterion "accounting-closure-evidence"
+    :task-gap :partial
+    :facet-ids ["facet/extension/46c00a2e061a20dfa058e7fa"
+                "facet/extension/b3ac01d3101e1c2b8a365c21"
+                "facet/extension/b4d7d896f4d58ee22ff69465"
+                "facet/extension/340afdbab9ac40baeef00bf6"
+                "facet/extension/661e99e543ebbb90426a5540"
+                "facet/extension/c0d50272ffb5be27ae236735"]}
+   {:id "policy/development/autonomy-and-conflict-coordination"
+    :task "ACC-12"
+    :criterion "development-autonomy-conflict-coordination"
+    :task-gap :policy-only
+    :facet-ids ["facet/extension/d52ee8ce3fed3c840458f3ae"
+                "facet/extension/0e4cba66a2e3d7d8ab4dda10"
+                "facet/extension/f3636df6e157a3cd03c6759b"
+                "facet/extension/b4faf5c413baf7acccd9f9aa"
+                "facet/extension/74c658623c0e7fa71db70872"
+                "facet/extension/1e870cbdb8245c6676bf5e21"
+                "facet/extension/70b6be3c1c9b0901c38f7cf9"
+                "facet/extension/d3c54bd0a627a0423d27c564"
+                "facet/extension/93cf1f576b4b93ccd064759d"
+                "facet/extension/fb812dbb0759c68f99c0a956"]}
+   {:id "policy/development/exact-candidate-admission"
+    :task "ACC-12"
+    :criterion "development-exact-candidate-admission"
+    :task-gap :policy-only
+    :facet-ids ["facet/extension/36ae1f06f3d916349306d096"
+                "facet/extension/81d3d77531dc76543665c3ac"
+                "facet/extension/2998bc6f17aeb73521322dad"
+                "facet/extension/90c0a765d3433d23d1f41686"
+                "facet/extension/7be86bf274f4b91e89704c2e"
+                "facet/extension/0e4cba66a2e3d7d8ab4dda10"
+                "facet/extension/f3636df6e157a3cd03c6759b"
+                "facet/extension/b4faf5c413baf7acccd9f9aa"
+                "facet/extension/74c658623c0e7fa71db70872"
+                "facet/extension/1e870cbdb8245c6676bf5e21"
+                "facet/extension/70b6be3c1c9b0901c38f7cf9"
+                "facet/extension/d3c54bd0a627a0423d27c564"
+                "facet/extension/93cf1f576b4b93ccd064759d"
+                "facet/extension/fb812dbb0759c68f99c0a956"]}]}
+ :conservation
+ {:existing-acc-statuses-unchanged true
+  :historical-task-receipts-preserved true
+  :new-task-count 0
+  :replacement-accounting :none
+  :canonical-task-adoption :none
+  :implementation-credit :none}
+ :validation
+ {:source-record-count 8
+  :criteria-marker :pass
+  :stale-hash :pass
+  :duplicate-mapping :pass
+  :status-mutation :pass
+  :facet-tamper :pass}
+ :review
+ {:state :pending-independent-review
+  :acceptance-authority :canonical-task-owner
+  :current-main-integration :not-run}
+ :nonclaims
+ [:implementation-acceptance
+  :whole-accounting-closure
+  :replacement-accounting
+  :compiler-runtime-native-acceptance
+  :source-authentication
+  :host-policy-acceptance
+  :release
+  :self-hosting
+  :seed-retirement]}
