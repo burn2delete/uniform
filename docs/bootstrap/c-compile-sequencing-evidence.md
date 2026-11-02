@@ -225,3 +225,36 @@ file/digest probe. Exact union review, its own CI/artifact receipts and immediat
 clean current-main preflight remain mandatory. Earlier e1029fb7/e766 CI passed
 all nine enabled checks only after main advanced; it is historical evidence,
 not this composition's integration credit.
+
+## Diagnostic operation lookup correction
+
+A further adversarial probe on candidate 90bfa54c found a real extraction
+regression. A host IOException subclass changes the diagnostic Var while its
+getMessage method is evaluated. The original Var call selects its function
+before evaluating arguments; the extracted Var operation had invoked the new
+root afterward. The isolated stage probe selected the late diagnostic and
+failed. This is retained at /tmp/uniform-c-diagnostic-root-before.log, with
+its Clojure report. No original compiler-call body or native operation ran.
+
+Source correction f3baca04a23fc0007cabe3c62d66fb0c372c4df9 has tree
+5822ab8a5238cf0bee7cde7aeb707a498f807d7e. Each of the three diagnostic
+call sites now selects a Var's function value before argument evaluation;
+anonymous function operations retain their direct behavior. The new regression
+uses anonymous staging/process/cleanup operations and an actual IOException
+subclass to change the owner Var, then checks original diagnostic identity,
+arguments and cleanup order. The corrected probe selects the original diagnostic.
+The wrapper, admission, broker, native operations and authority remain untouched.
+
+Focused C tests pass 13/222; affected backend tests 46/961; seven selected
+Release tests 7/83; language/ownership 47/1154. Fresh after captures for all
+three slices still match complete original records and serialization, with
+source/plan/byte hashes recomputed. Whole-file reconstruction includes explicit
+equivalent callee retrieval at those three sites and preserves C type tags.
+Nine-path exact-base lint has zero warnings and blockers, archived at
+/tmp/uniform-backend-release-order-lint. Base remains exact main 32fe above.
+
+Prior 90bfa54c CI passed all nine enabled jobs, but its source acceptance is
+invalidated by this defect and cannot establish corrected-candidate eligibility.
+New exact independent review, candidate-owned CI/artifacts and immediate clean
+current-main preflight remain mandatory. The native C body, broker, process,
+toolchain, Gates, default pinned Reader and release routes remain unrun.

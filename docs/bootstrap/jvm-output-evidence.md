@@ -171,3 +171,15 @@ reconstruct under the three slice checks. Shared details and strict unrun
 Release boundaries are in release-file-evidence.md. Exact union acceptance,
 candidate-owned CI/artifacts and immediate clean current-main preflight remain
 required; earlier base/source checks confer no current integration credit.
+
+## Diagnostic-order integration correction
+
+Source f3baca04a23fc0007cabe3c62d66fb0c372c4df9 corrects the C slice's
+per-call diagnostic function lookup before cause-message evaluation. JVM and
+Release production/test files are unchanged. Fresh JVM complete/raw products
+still match the original clean-main 32fe Runtime captures, with all identities
+and byte hashes recomputed. Backend regressions now pass 46/961, selected
+Release tests 7/83, boundary 47/1154 and nine-path lint has zero blockers.
+The C evidence records the retained adversarial nonpass and correction. The
+corrected exact union requires renewed review and its own CI/artifact/preflight
+gates; prior 90bfa54c checks and acceptance do not transfer.

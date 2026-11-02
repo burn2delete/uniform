@@ -142,3 +142,18 @@ checks pass. Package/archive/release builder tests remain unrun; no restricted
 native, authority, Reader or release route is probed. Fresh exact union review,
 its own CI/artifact verification and immediate clean current-main preflight
 remain gates. Separate-source and earlier-base checks do not transfer.
+
+## Diagnostic-order integration correction
+
+The C slice receives a separate lookup-order parity correction in source
+f3baca04a23fc0007cabe3c62d66fb0c372c4df9, tree
+5822ab8a5238cf0bee7cde7aeb707a498f807d7e. Release and JVM production/test
+files remain unchanged. Fresh Release after records and original serialization
+still match the same exact-main 32fe Runtime before products, with source/plan
+and emitted hashes recomputed; the original/extracted Release lookup probe
+also agrees. Backend regressions pass 46/961, the exact seven allowed Release
+tests 7/83, boundary 47/1154 and nine-path lint has zero blockers. All restricted
+and unrun boundaries remain. The C evidence retains the real stage-unit failure
+and correction. The corrected exact union needs renewed independent acceptance,
+its own CI/artifacts and immediate clean current-main preflight; old acceptance
+and green CI for 90bfa54c do not transfer.
