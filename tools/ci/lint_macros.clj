@@ -101,7 +101,7 @@
                             observations)
         macro-names (mapv #(core-name (second (:form %))) macro-forms)
         [first-macro second-macro] macro-forms
-        {:keys [start end]} first-macro
+        {:keys [start]} first-macro
         support (fn [name heads]
                   (filter #(and (seq? (:form %))
                                 (heads (core-name (first (:form %))))
