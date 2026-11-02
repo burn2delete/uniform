@@ -4,14 +4,17 @@
    the explicit current public Core constructor/verifier is wired.")
 
 (def current-compiler-program
+  ;; This is the owner-produced current v2 snapshot.  Keep the historical v1
+  ;; admission constants in 00702 unchanged; this DATA records only the
+  ;; current C6 source and the identities derived by its existing plan owner.
   {:version 2
    :source-relative-path "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
-   :source-byte-count 186870
-   :source-content-hash "sha256:0e7e30e15bc68dabdcee3cfea4c91740d82808204c5fe322d67ccd0ffdb76b98"
-   :plan-semantic-hash "sha256:0cfce809aeefed1cbf34e8176dad01527ff1f8055ee43cff93c7ed634aeac4a9"
-   :functions-semantic-hash "sha256:a85c2096fca9e456ffcd45b71c053c938e0c7f62d2082594493e0b13e0e6c821"
-   :builder-semantic-hash "sha256:0153c36e3ec0dc9c121c5850b68477b8f0a3d87dcdd4e98f41e6a47ab4c60342"
-   :verifier-semantic-hash "sha256:84ada992e0bf1bbd127b5927c699aa74e9f5aec82b75557d1e363f516408f0d4"
+   :source-byte-count 185620
+   :source-content-hash "sha256:c5433537cf9423b14a0456696d9f7c3eb5953f88a9535787ef9c53af883bc6b8"
+   :plan-semantic-hash "sha256:93c16cb1b7ae0cc579fbe05f241e87a10873a71bd489e72ee95d91209ae09267"
+   :functions-semantic-hash "sha256:2bbce0a2d312eef9d190292479de17cebaa7da3b8924d83daeb7bdb2ab2319e5"
+   :builder-semantic-hash "sha256:f79e48bf4718e12956e751d02064ebbcdd6666a0b1e900411dbc4c359ae65ae7"
+   :verifier-semantic-hash "sha256:eaad999db226d2fd140a1595421a0a197f7397c48924b257e26b17fd98defd12"
    :required-functions
    {'c6-c10-build-checked-core-template {:arity 1 :params ['input]}
     'c6-c10-verify-checked-core-template {:arity 3 :params ['input 'template 'requests]}}
