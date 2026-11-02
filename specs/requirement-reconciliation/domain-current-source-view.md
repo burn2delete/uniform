@@ -66,10 +66,16 @@ reintroduced as compiler or admission quotas.
 The historical family manifest (`43ac4686...`) is a composed artifact that is
 not present in current main. The gap receipt manifest (`f4c17182...`) is kept
 as historical evidence at its pinned commit. The preserved PR445 manifest
-(`aa7ee8df...`) is also historical/external. Current main's manifest is
-`8a41f5aa638ec717b1321a02974e63c6afc8103f498ee5d7bfc5738ebb3ad21e`, and its
-exact Domain task-source bridge is pinned and checked. The checker rejects
-silent substitution of any historical manifest for it.
+(`aa7ee8df...`) is also historical/external. The authenticated successor
+manifest checkpoint is `c7bd27a6543add21a4b715ba9ed13deb67e8816e` (tree
+`e783d6ccb3251e4af6c00edc47cb23de918b83fd`), with bytes SHA-256
+`88ae5e2254a3553321ab49c493cfa78339207d799fa4976068e2df871a4a281e`.
+Its exact Domain task-source bridge points to the composed source checkpoint
+`24e7b5e5cd8bc42fa495997870605b596a380678` (tree
+`52a90b3d537f23b3f572ee65ff03edf827c1e29b`, bytes SHA-256
+`5378c2c7fba1bb49318fc6cda890c60c77bdbdc57dfe6f5ea42ea8aa23298943`) and is
+pinned and checked. The checker rejects silent substitution of any historical
+manifest for it.
 
 ## Checker and evidence boundary
 

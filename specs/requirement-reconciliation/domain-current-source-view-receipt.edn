@@ -27,13 +27,22 @@
   :gap-predecessor-tree "b90613cc0344b4b4a8bde0ff1afc61153723becf"}
  :source-view
  {:path "specs/requirement-reconciliation/domain-current-source-view.edn"
-  :sha256 "31928d89799c9a45e3f752f45f4fcf12187ca0d19b68e30251f3ce4bb158ea28"
+  :sha256 "dffc69a6910993b5375f07267a5150f296c2f3576e848c75441d4f65f8805e6f"
   :checker-path "tools/domain_current_source_view.clj"
   :checker-sha256
   "200699746ad5b75408d624f0801520e8619162b42784ff5ce38d16569044e8e5"
   :evidence-path "specs/requirement-reconciliation/domain-current-source-view.md"
   :evidence-sha256
-  "a024791bca9656c77339b35660c1154b470156c44d48ef0a3cf329c31355cc4f"}
+  "42f7f43a705879edf6b39b7ed180e08ab6b892a6046f687c14f4a0185cd8c00c"}
+ :current-manifest-transition
+ {:path "contracts/requirement-reconciliation.edn"
+  :commit "c7bd27a6543add21a4b715ba9ed13deb67e8816e"
+  :tree "e783d6ccb3251e4af6c00edc47cb23de918b83fd"
+  :sha256 "88ae5e2254a3553321ab49c493cfa78339207d799fa4976068e2df871a4a281e"
+  :domain-current-ref "24e7b5e5cd8bc42fa495997870605b596a380678"
+  :domain-current-tree "52a90b3d537f23b3f572ee65ff03edf827c1e29b"
+  :domain-current-sha256 "5378c2c7fba1bb49318fc6cda890c60c77bdbdc57dfe6f5ea42ea8aa23298943"
+  :change-class :family-criteria-preserved-plus-current-main-safety-criteria}
  :counts {:source-documents 21
           :source-occurrences 1533
           :source-dispositions 777

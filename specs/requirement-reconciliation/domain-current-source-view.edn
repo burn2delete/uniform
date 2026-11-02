@@ -167,25 +167,25 @@
   :preserved-pr445 {:sha256 "aa7ee8dfa7c7b0b7a9cb0e609944d7dcbcd81791f080708364a0faf8cc2e7980"
                     :availability :historical-external-not-in-current-tree}}
  :current-manifest
- {:commit "38add2342719b91c6ef22f064fa813a16e9a97b3"
-  :tree "5e260f72a8455fc44bb39039b9e0ce5f2be0907c"
-  :sha256 "8a41f5aa638ec717b1321a02974e63c6afc8103f498ee5d7bfc5738ebb3ad21e"
+ {:commit "c7bd27a6543add21a4b715ba9ed13deb67e8816e"
+  :tree "e783d6ccb3251e4af6c00edc47cb23de918b83fd"
+  :sha256 "88ae5e2254a3553321ab49c493cfa78339207d799fa4976068e2df871a4a281e"
   :domain-task-source-bridge
   {:path "specs/domains-workflow/tasks.md"
    :historical-sha256 "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4"
    :historical-ref "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950"
-   :change-class :acceptance-boundary-extension
+   :change-class :family-criteria-preserved-plus-current-main-safety-criteria
    :marker "domains-implementation-tasks"
-   :current-tree "23974efdf7c3fa19160a344f26084ebe051ef1a5"
+   :current-tree "52a90b3d537f23b3f572ee65ff03edf827c1e29b"
    :changed-records [{:id "math"
                       :historical-record-sha256 "fd5a8ea4fed8cedd5889bb6030359e87b8abefb1a6467470d161800b6387e0c7"
                       :current-record-sha256 "4696449459576064a9b13100f3313cdfb97a92b536bc89362992705fde5c5f2b"}
                      {:id "ai"
                       :historical-record-sha256 "f1646c5fd968cd1cc3b6e4616ccbb69884872a73d682ceaa558932efcfbc3139"
                       :current-record-sha256 "0dd8433702ae07f6cfbabe7acba0c32ddaaf95c09bf35da2537d1ba313991ea4"}]
-   :qualification "The PR560 safety-source qualification appends SAFE9 and SAFE13 domain boundary criteria to the Math and AI Open records. Historical task identity and acceptance remain pinned; current source is authenticated at the exact pre-repair integration checkpoint. No domain implementation or requirement acceptance is inferred."
-   :current-sha256 "2da7118e08067ff31e22d74ccfbafacc0cea1673d667c6258fe3ba5c28377162"
-   :current-ref "8e6608856edcde2b57c33951839dfa9b79f2c503"}}
+   :qualification "The authenticated current source is the PR562 family/current-main composition checkpoint: historical Domain Workflow/UI criteria remain present and current main's SAFE9/SAFE13 Math/AI boundary criteria are retained. Historical task identity and acceptance remain pinned; no domain implementation or requirement acceptance is inferred."
+   :current-sha256 "5378c2c7fba1bb49318fc6cda890c60c77bdbdc57dfe6f5ea42ea8aa23298943"
+   :current-ref "24e7b5e5cd8bc42fa495997870605b596a380678"}}
  :qualification-policy
  {:current-task-status :open-and-unassessed
   :current-task-acceptance :not-replaced

@@ -6,13 +6,13 @@
         :tree "9f464ed0f03866bd4978e4213a488f3b1ae48683"}
  :candidate {:commit "24c2b6f390cffdff87d0964cdd8dd533838aa333"
              :tree "402d4c4aa3c85c486da1072ba4ace52a645a046b"}
- :current-source {:commit "c6044c5eac93d358ca2bf8ff1351d83496767eb0"
-                  :tree "d1691576a3f09d21620e9a28a2a25bea37b080b3"}
+ :current-source {:commit "24e7b5e5cd8bc42fa495997870605b596a380678"
+                  :tree "52a90b3d537f23b3f572ee65ff03edf827c1e29b"}
  :artifacts
  {:source-view {:path "specs/requirement-reconciliation/phase-02-safety/current-source-view.edn"
-                :sha256 "c0b4a5e53649cedcd7fcb5bc498afe35fe4fcf50ae3e42813bd0a2738d6a782c"}
+                :sha256 "aedd6c72c9a0dd3e5fb488de31fdc05083aedc7077a4eadfa883b641cded356d"}
   :checker {:path "tools/safety_task_source_view.clj"
-            :sha256 "e3214b5bbf5775ec225653613b8a1249aeb1bf9d6df02ba74e9221e1b507cf16"}}
+            :sha256 "1c9d1ea7336ae3a9ee9cfebf490ff630b3423a6e3e5e2d9ad99161234e34f5fb"}}
  :conservation {:source-documents 16
                 :source-occurrences 1908
                 :source-dispositions 962
@@ -25,8 +25,17 @@
  :source-transition
  {:historical-candidate-task-bytes :preserved
   :current-main-composition :authenticated
-  :changed-task-sources [:auth :expand :legality]
-  :unchanged-task-sources [:build :domains :runtime]
+  :changed-task-sources [:auth :expand :legality :domains-composition]
+  :unchanged-task-sources [:build :runtime]
+  :current-manifest-task-transition
+  {:path "contracts/requirement-reconciliation.edn"
+   :commit "c7bd27a6543add21a4b715ba9ed13deb67e8816e"
+   :tree "e783d6ccb3251e4af6c00edc47cb23de918b83fd"
+   :sha256 "88ae5e2254a3553321ab49c493cfa78339207d799fa4976068e2df871a4a281e"
+   :domain-current-ref "24e7b5e5cd8bc42fa495997870605b596a380678"
+   :domain-current-tree "52a90b3d537f23b3f572ee65ff03edf827c1e29b"
+   :domain-current-sha256 "5378c2c7fba1bb49318fc6cda890c60c77bdbdc57dfe6f5ea42ea8aa23298943"
+   :change-class :family-criteria-preserved-plus-current-main-safety-criteria}
   :status-order-and-identity :verified}
  :controls {:positive :pass
             :proposal-hash-tamper :reject

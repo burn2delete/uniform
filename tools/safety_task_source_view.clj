@@ -11,6 +11,7 @@
 
 (def view-path "specs/requirement-reconciliation/phase-02-safety/current-source-view.edn")
 (def proposal-path "specs/requirement-reconciliation/phase-02-safety/proposal.edn")
+(def manifest-path "contracts/requirement-reconciliation.edn")
 (def zero-hex (apply str (repeat 64 "0")))
 
 (defn require! [condition message]
@@ -103,6 +104,43 @@
     :aggregate-adoption :denominator :release :seed-retirement
     :current-task-criteria :independent-review :integration})
 
+(defn validate-domain-manifest-transition! [view]
+  (let [transition (get-in view [:current-source :domain-task-source-transition])
+        path (:path transition)
+        manifest-text (slurp manifest-path)
+        pinned-manifest (git-text (:manifest-commit transition) manifest-path)
+        manifest (edn/read-string manifest-text)
+        bridge (first (filter #(= path (:path %))
+                              (:task-source-version-bridges manifest)))
+        current-entry (first (filter #(= path (:path %))
+                                    (get-in view [:current-source :task-sources])))]
+    (require! (= "specs/domains-workflow/tasks.md" path)
+              "Safety Domain transition path changed")
+    (verify-commit-tree! {:commit (:manifest-commit transition)
+                          :tree (:manifest-tree transition)})
+    (require! (= (:manifest-sha256 transition)
+                 (sha256 pinned-manifest)
+                 (sha256 manifest-text))
+              "Safety current manifest transition bytes drifted")
+    (require! (= (:bridge transition) bridge)
+              "Safety Domain manifest bridge drifted")
+    (require! (= (:current-ref transition)
+                 (:current-ref bridge)
+                 (get-in view [:current-source :commit]))
+              "Safety Domain current source commit is not authenticated")
+    (require! (= (:current-tree transition)
+                 (:current-tree bridge)
+                 (get-in view [:current-source :tree]))
+              "Safety Domain current source tree is not authenticated")
+    (require! (= (:current-sha256 transition)
+                 (:current-sha256 bridge)
+                 (:sha256 current-entry)
+                 (sha256 (git-text (:current-ref transition) path)))
+              "Safety Domain current source bytes are not authenticated")
+    (require! (= (:change-class transition) (:change-class bridge))
+              "Safety Domain current transition qualification drifted")
+    true))
+
 (defn validate-view! [view proposal]
   (require! (= :gravity/noncanonical-safety-current-source-view (:kind view))
             "Wrong safety current-source-view kind")
@@ -126,6 +164,7 @@
         proposal-pin (get-in view [:historical-source :proposal])]
     (verify-commit-tree! proposal-pin)
     (verify-commit-tree! {:commit current-commit :tree (get-in view [:current-source :tree])})
+    (validate-domain-manifest-transition! view)
     (require! (= 6 (count historical) (count base) (count current))
               "Safety task source population changed")
     (unique-by! historical :path "Duplicate historical safety task source")
@@ -215,6 +254,11 @@
      :current-source-pair-tamper
      (rejected? #(validate-view! (assoc-in view [:current-source :task-sources 0 :sha256] zero-hex)
                                  proposal))
+     :current-domain-manifest-transition-tamper
+     (rejected? #(validate-view!
+                  (assoc-in view [:current-source :domain-task-source-transition
+                                  :bridge :current-sha256] zero-hex)
+                  proposal))
      :task-order-tamper
      (rejected? #(validate-view! (update-in view [:historical-source :task-sources 0 :ordered-task-ids]
                                             (fn [ids] (vec (reverse ids))))
@@ -250,4 +294,5 @@
           :unique-task-interfaces (get-in view [:expected :unique-task-interfaces])
           :implementation-acceptance :unassessed
           :canonical-adoption :pending
-          :independent-review :pending})))
+          :independent-review :pending}))
+  (shutdown-agents))

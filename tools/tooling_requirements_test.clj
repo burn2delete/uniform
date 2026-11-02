@@ -145,7 +145,7 @@
                                         [])]
     (is (= {:snapshot-provenance :git-commit-tree-blob-and-bytes-verified
             :population :conserved
-            :interpretation :platform-generated-view-v2-plus-pr560-task-source-bridge-extension}
+            :interpretation :platform-generated-view-v2-plus-pr560-task-source-bridge-extension-plus-pr562-domain-composition}
            (select-keys
             (tooling-requirements/validate-current-manifest-transition! source-view)
             [:snapshot-provenance :population :interpretation])))
