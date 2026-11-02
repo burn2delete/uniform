@@ -3,6 +3,7 @@
             [gravity.c8-effect-checker :as c8]
             [gravity.c8-effect-checker.facts :as compatibility]
             [gravity.c8-effect-checker.verification :as report-compatibility]
+            [gravity.c8-effect-checker.evidence :as record-compatibility]
             [gravity.effects :as effects]))
 
 (def module
@@ -50,9 +51,11 @@
 (deftest effects-stage-contract-preserves-the-native-data-boundary
   (let [contract (:gravity/namespace-contract (meta #'effects/effect-graph))
         publics (ns-publics 'gravity.effects)]
-    (is (= :hosted-seed-effect-graph-data-and-native-reports (:contract-boundary contract)))
+    (is (= :hosted-seed-effect-data-and-native-reports (:contract-boundary contract)))
     (is (= #{'fact-direct-effects 'effectful-facts 'effect-graph
-             'native-verifier-report 'native-capability-proof 'validate-native-report!} (set (keys publics))))
+             'native-verifier-report 'native-capability-proof 'validate-native-report!
+             'legality-records 'capability-proof-records 'build-effect-log
+             'replay-requirements 'ordering-constraints 'residual-effect-report} (set (keys publics))))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (doseq [[name api] (:public-api contract)]
       (is (= (:arglists api) (:arglists (meta (publics name)))))
@@ -63,7 +66,7 @@
       (is (false? (:proves-effect-legality? api)))
       (is (false? (:grants-authority? api))))
     (is (= '[clojure.set] (get-in contract [:dependency-direction :requires])))
-    (is (= '[gravity.c8-effect-checker.facts gravity.c8-effect-checker.verification]
+    (is (= '[gravity.c8-effect-checker.facts gravity.c8-effect-checker.verification gravity.c8-effect-checker.evidence]
            (get-in contract [:dependency-direction :consumed-by])))
     (is (false? (:legacy-status-labels-authoritative? contract)))
     (is (false? (:legacy-build-grants-prove-performed-effects? contract)))
@@ -133,6 +136,50 @@
     (doseq [[name spec] c8/public-api :when (:arglists spec)]
       (is (= (:arglists spec) (:arglists (meta (get publics name))))))
     (is (nil? (find-ns 'gravity.bootstrap)))))
+
+(deftest effects-stage-record-wrappers-preserve-argument-identity
+  (doseq [[operation arity] [['legality-records 3] ['capability-proof-records 3]
+                             ['build-effect-log 2] ['replay-requirements 1]
+                             ['ordering-constraints 1] ['residual-effect-report 1]]]
+    (let [arguments (vec (repeatedly arity #(Object.)))
+          marker (Object.) observed (atom nil)
+          stage (ns-resolve 'gravity.effects operation)
+          wrapper (ns-resolve 'gravity.c8-effect-checker.evidence operation)]
+      (with-redefs-fn {stage (fn [& values] (reset! observed values) marker)}
+        #(is (identical? marker (apply wrapper arguments))))
+      (is (= arity (count @observed)))
+      (is (every? true? (map identical? arguments @observed))))))
+
+(deftest effects-stage-records-preserve-labels-order-and-legacy-nonclaims
+  (let [effect-capability {:io/write :io/stdout :memory/raw :memory/raw}
+        module {:module 'records.test :profile :hosted :target :jvm
+                :effects #{:io/write} :capabilities #{:io/stdout}
+                :metadata {:build-grants #{:build/network :build/env}}}
+        graph {:namespace {:inferred #{:memory/raw :io/write :error/throw}}
+               :replay-required #{:time/read :random/read}
+               :nodes (array-map "z" {:direct #{:io/write} :ordering :sequence}
+                                 "pure" {:direct #{} :ordering :pure}
+                                 "a" {:direct #{:memory/raw} :ordering :sequence})}
+        legality (effects/legality-records effect-capability module graph)
+        proofs (effects/capability-proof-records effect-capability module graph)
+        build (effects/build-effect-log effect-capability module)]
+    (is (= [:error/throw :io/write :memory/raw] (mapv :effect (:records legality))))
+    (is (= [#{} #{:io/stdout} #{}] (mapv :granted-capabilities (:records legality))))
+    ;; These legacy accepted labels do not establish the missing declaration or grant.
+    (is (false? (get-in legality [:records 2 :allowed-by :namespace])))
+    (is (= [:accepted :accepted :accepted] (mapv :result (:records legality))))
+    (is (= [:accepted :accepted :rejected] (mapv :status (:records proofs))))
+    (is (= :stage0/raw (get-in proofs [:records 2 :grant :grant/id])))
+    (is (= [:build/env :build/network] (mapv :effect (:records build))))
+    (is (every? :granted? (:records build)))
+    (is (= ["c8-replay-read" "c8-replay-read"]
+           (mapv :record-id (:records (effects/replay-requirements graph)))))
+    (is (= [:random/read :time/read]
+           (mapv :effect (:records (effects/replay-requirements graph)))))
+    (is (= ["z" "a"] (mapv :core-node (:records (effects/ordering-constraints graph)))))
+    (is (= [:error/throw :memory/raw]
+           (mapv :effect (:records (effects/residual-effect-report graph)))))
+    (is (= legality (record-compatibility/legality-records effect-capability module graph)))))
 
 (deftest operation-map-is-validated-and-preserves-nested-interposition
   (doseq [operations [nil
