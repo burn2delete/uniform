@@ -2,7 +2,7 @@
 
 (defn sh03-reader-source-slice-text!
   [source-path source-bytes source-content-id scalar-boundaries raw]
-  (let [byte-count (alength source-bytes)
+  (let [byte-count (alength ^bytes source-bytes)
         start (:byte-start raw)
         end (:byte-end raw)
         scalar-start (:scalar-start raw)
