@@ -9,8 +9,14 @@
             [gravity.pass-cache.recovery :refer :all]
             [gravity.pass-cache.request-key :refer :all]
             [gravity.pass-cache.secure-io :refer :all]
-            [gravity.pass-cache.store-directories :refer :all])
+            [gravity.pass-cache.store-directories :refer :all]
+            [gravity.pass-cache.receipt-validation :as receipt-validation])
   (:import [java.nio.file SecureDirectoryStream]))
+
+(def ^:private default-envelope-artifact-id
+  ;; Capture the known pure operation once. A later Var redefinition or
+  ;; wrapper must remain on the ordinary callback path.
+  receipt-validation/envelope-artifact-id)
 
 (defn lookup-unlocked!
   [store key validation-ops]
@@ -71,7 +77,7 @@
                   key artifact receipt validation-ops
                   {:entry entry :key key :retain-artifact-id? true})
                  artifact-id (if (identical? (:artifact-id-of validation-ops)
-                                             envelope-artifact-id)
+                                             default-envelope-artifact-id)
                                artifact-id
                                (artifact-id-of validation-ops artifact))
                  _ (validate-entry-derived!
