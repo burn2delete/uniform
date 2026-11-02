@@ -101,6 +101,17 @@
 
 (def ^:private parameter-c6-plan (delay (compile-plan parameter-c6-source)))
 
+(defn- current-reader-invocation
+  [reader-source-path]
+  {:reader-source-path (.getCanonicalPath (io/file reader-source-path))
+   :authenticated-envelope-options {:source :development-current}
+   :syntax-source-selection
+   {:schema :gravity/sh04-development-syntax-selection-v1
+    :source-path (.getCanonicalPath
+                  (io/file
+                   (str (.resolve @root
+                                 "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"))))}})
+
 (deftest sh12-current-c6-selects-last-result-sources
   ;; Direct original Gravity helpers on bounded DATA, not fabricated Core or
   ;; source admission. Every production caller supplies a bounded Vector.
@@ -143,8 +154,10 @@
   ([source-path source-text compiled-binding reader-source-path]
    ;; Always reconstruct original source-derived C2/C5 BEFORE using binding
    ;; DATA. These products remain development DATA, not frozen admission.
-   (let [ingress ((ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-private-ingress-products)
-                  source-path source-text reader-source-path)
+   (let [selected-reader-invocation (when reader-source-path
+                                      (current-reader-invocation reader-source-path))
+         ingress ((ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-private-ingress-products)
+                  source-path source-text reader-source-path nil nil selected-reader-invocation)
          binding (if (nil? compiled-binding) (parameter-compiled-binding-data source-path) compiled-binding)]
      {:ingress ingress :compiled-binding-data binding
       :envelope (bootstrap/p15-s23-c6c10-private-builder-envelope source-path ingress binding)})))

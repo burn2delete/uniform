@@ -20,6 +20,9 @@
           emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source :jvm))
           files (mapv path dependencies)
           reader (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+          syntax (str (.getCanonicalPath
+                       (java.io.File.
+                        (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"))))
           empty-inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
           resolve-source (fn [file module-inputs]
                            (let [start (System/nanoTime)]
@@ -28,6 +31,9 @@
                                              file (slurp file) module-inputs reader
                                              {:reader-source-path reader
                                               :authenticated-envelope-options {:source :development-current}
+                                              :syntax-source-selection
+                                              {:schema :gravity/sh04-development-syntax-selection-v1
+                                               :source-path syntax}
                                               :macro-source-mode :development-current})]
                                (prn {:development-phase :c5-complete :source file
                                      :elapsed-nanoseconds (- (System/nanoTime) start)})
