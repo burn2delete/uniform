@@ -23,6 +23,14 @@ the selected authoritative task. Record exact passed, failed and unrun evidence,
 residual host/trust assumptions, independent review and integration separately.
 A structurally valid manifest or supplied verdict does not close enforcement.
 
+## Source memory-model and provider interface
+
+Use the [complete source memory-model and provider criteria](../legality-workflow/plan.md#complete-source-memory-model-and-provider-criteria) with the existing task authority.
+
+The existing provider-declaration/selection task validates L18's seventeen families, nine declared safety contracts, concrete enforcing mechanisms and complete allocation/layout/init/release/sharing/foreign/interrupt behavior. A replacement changes implementation without weakening safe semantics. Compatible deterministic selection, actual grant derivation, provider conformance and execution remain separate products; the actual checker/runtime/library owns its operation. Exercise missing/ambiguous/incompatible or semantics-weakening providers and wrong-source evidence without live authority.
+
+The new whole-source proposal preserves the eight finite review qualifications; current independent review, full cross-component entailment and actual implementation acceptance remain pending. No compiler/provider/native/device/callback/probe/replay/migration/review/signing/publication action runs in this planning increment.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Auth task authority

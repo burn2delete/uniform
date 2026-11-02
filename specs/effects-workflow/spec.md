@@ -21,6 +21,8 @@ the selected handler's actual scheduler/generator/error/workflow/tool/test
 interpretation. Neither a handled label nor a declared effect mints capability
 authority, and a capability does not establish inferred effects.
 
+The [complete source memory-model and provider criteria](../legality-workflow/plan.md#complete-source-memory-model-and-provider-criteria) join complete L10/L18 behavior to existing Core, Effects, Auth, Legality, Runtime, library and conditional source-change roles. Preserve the eight frozen finite predicates without granting whole-source or current acceptance. Actual allocation/release/transfer and source-bound provider/checker/consumer evidence remain required; task status and authority do not change.
+
 ## Existing implementation routes and acceptance
 
 The [sole marked ledger](tasks.md#implementation-tasks) retains

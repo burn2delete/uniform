@@ -26,6 +26,8 @@ compiler recipe using the same five task records. It can finish before every
 application-facing module. Wider STD1-STD20 APIs remain required, separately
 owned and open until their actual complete evidence exists.
 
+The [complete source memory-model and provider criteria](../legality-workflow/plan.md#complete-source-memory-model-and-provider-criteria) join complete L10/L18 behavior to existing Core, Effects, Auth, Legality, Runtime, library and conditional source-change roles. Preserve the eight frozen finite predicates without granting whole-source or current acceptance. Actual allocation/release/transfer and source-bound provider/checker/consumer evidence remain required; task status and authority do not change.
+
 ## Existing implementation routes and acceptance
 
 Use [the sole marked ledger](tasks.md#implementation-tasks) under

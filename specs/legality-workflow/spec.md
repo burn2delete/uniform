@@ -24,6 +24,8 @@ rule. Auth decides grants; runtime/backend owners implement and preserve the
 required checks and memory operations. Legality verifies their required facts
 and keeps composition work visible.
 
+The [source memory-model and provider criteria](plan.md#complete-source-memory-model-and-provider-criteria) join complete L10/L18 behavior to existing Core, Effects, Auth, Legality, Runtime, library and conditional source-change roles. Preserve the eight frozen finite predicates without granting whole-source or current acceptance. Actual allocation/release/transfer and source-bound provider/checker/consumer evidence remain required; task status and authority do not change.
+
 ## Existing implementation routes and acceptance
 
 Use [the sole marked ledger](tasks.md#implementation-tasks) under

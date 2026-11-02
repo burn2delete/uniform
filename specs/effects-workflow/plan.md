@@ -23,6 +23,14 @@ provider/replay operations. Refine the existing authoritative task only, record
 exact passed/failed/unrun evidence and retain separate independent acceptance,
 integration and wider-runtime/handler completion boundaries.
 
+## Source memory-model and provider interface
+
+Use the [complete source memory-model and provider criteria](../legality-workflow/plan.md#complete-source-memory-model-and-provider-criteria) with the existing task authority.
+
+The existing effects3 task exposes L10/L18 regime/provider/allocation/failure/blocking/cleanup/transfer behavior and volatile/MMIO/atomic ordering before MIR. Enforce actual profile/grant and source memory/storage policy, including hidden or ambient allocation and AI/distributed schema-governed storage. Actual capacity/alignment/representation/timing remains distinct from removed compiler accounting. Keep inference separate from declarations, authority grants and provider execution; preserve the C8 criteria and their frozen source scope.
+
+The new whole-source proposal preserves the eight finite review qualifications; current independent review, full cross-component entailment and actual implementation acceptance remain pending. No compiler/provider/native/device/callback/probe/replay/migration/review/signing/publication action runs in this planning increment.
+
 ## Complete effect-checker source criteria
 
 Restore the five complete C8 criteria under the existing five task IDs, retaining

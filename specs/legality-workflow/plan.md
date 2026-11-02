@@ -23,6 +23,78 @@ Record exact source/fixture/consumer identities and passed, failed or unrun work
 preserve operation restrictions and separate author checks, independent
 acceptance, integration and the complete profile/provider matrix.
 
+## Complete source memory-model and provider criteria
+
+Read complete [L10 memory semantics](../../docs/phase-01-core-language/020-l10-memory-model-specification.md)
+and [L18 alternative providers](../../docs/phase-01-core-language/028-l18-alternative-memory-model-contract.md)
+with the Core Language phase, existing Safety criteria and actual provider,
+compiler, runtime, library and source-change interfaces. The preserved all-240
+census contains 226 facets, 143 occurrences and thirteen shared original owners
+for these two documents. It supplies identities and source context, not semantic
+acceptance. Full section conjunctions include their preambles, examples,
+following conditions, outputs, diagnostics and conformance obligations.
+
+L10's twelve source regimes and L18's seventeen provider families describe
+different scopes. Preserve GC/RC, owned/borrowed, region/arena, stack/static,
+linear/raw/foreign/pinned, shared/atomic, device/unified/MMIO, persistent and
+compiler-constant distinctions instead of substituting SAFE2's shorter list.
+Actual safe access, provider replacement invariants and declared enforcement
+mechanisms remain required across every supported profile.
+
+| Existing owner/task | Source behavior and decisive evidence |
+| --- | --- |
+| Core / core1 | Produce defined value/control/effect/panic or prior rejection for real memory primitives; preserve actual regime and operation declarations. Expression outcomes are distinct from C10 safety outcomes. |
+| Core / core3 | Lower with-open and scoped acquire/body/release into ordered Core/control/source products, preserving every modeled cleanup exit and explicit privileged-forget boundary for later checking. Do not duplicate Legality's flow analyzer. |
+| Effects / effects3 | Infer/expose allocation and memory regime/provider/failure/blocking/cleanup/transfer behavior; preserve volatile/MMIO/atomic barriers and reject forbidden hidden/ambient allocation before MIR. |
+| Auth / provider declaration and selection | Validate actual versioned families, profiles, allocation/layout/init/release/sharing/foreign/interrupt behavior, nine safety contracts and each enforcing mechanism. Deterministic compatible selection is distinct from a grant, checked proof or execution. |
+| Legality / profile | Enforce portable Core, declared hosted/native and constrained/hardware/GPU/AI/distributed memory/storage boundaries, including real layout/failure/synchronization and schema/authority requirements. |
+| Legality / ownership | Derive actual initialization, owner/borrow/region/range/allocator/sharing and exactly-once state/path facts. Enforce explicit privileged forget policy, reject invalid escape and verify provider/checker facts before use. |
+| Legality / classification | Preserve exact safe/checked/rejected/explicit-unsafe outcomes and source-specific refusals. Raw/MMIO/foreign/device wrappers need actual preconditions, checks/proofs, grants, failure/cleanup and visible audits. |
+| Legality / handoff and conformance | Preserve or invalidate exact memory/proof/provider assumptions through MIR/Opt/Lower/Runtime. Exercise complete source positives, refusals, actual consumers and all 21 L10/L18 diagnostic meanings; existing Release remains the later harness/admission owner. |
+| Stdlib / resource-concurrency-IO-network | Own the selected public allocation API and actual provider-mediated usable values/handles with layout/init/failure/sharing evidence. A declaration or compatibility spelling is not execution. |
+| Runtime / memory-concurrency-typed-FFI | Execute actual services, release/transfer with matching allocators, and GC/RC/rooting/finalization/pause/pinning/foreign/device/MMIO contracts; preserve real check/cleanup/transfer traces. |
+| Evolution / change-review, unchanged | Before stable adoption of a weakened memory guarantee, consume actual safety review and the affected downstream fixture matrix. Its existing exact criterion remains; ordinary semantic development gains no approval gate. |
+
+Seven finite profile74 criteria retain review `c21258a8`, applicability
+`5326078f` and receipt
+`4a192f70e00a609e5e046d4df3f53c7ee7fa813a9133c716b8d4a461f584256d`.
+Six missing predicates are restored; the exact Evolution weakening-review
+predicate is already present and unchanged. The separate safe-wrapper predicate
+retains bootstrap25 candidate `cd1f8ce1`, applicability `60aa422f` and receipt
+`df871924b21a5b6be51534132de1d7482c9684688987e3f9ba2943a07ab837ed`.
+Its missing exact clause is restored under classification. Those reviews cover
+only the eight frozen finite source/role/dependency/witness predicates, not
+whole shared facets, the new eleven clauses, current composition or execution.
+Both historical task-source commits remain available on GitHub; no new archive
+or aggregate source adoption is introduced.
+
+Preserve the original owner IDs and their actual candidate allocation roles.
+The earlier broad Core allocation for linear flow retains its structured
+lowering producer; the reviewed finite flow-check predicate belongs to Legality.
+Likewise specialized raw/MMIO facts remain with ownership analysis while final
+boundary classification belongs to the existing C10 task. Allocation API,
+Runtime release/transfer and conditional Evolution review already have concrete
+candidate task links even where the census's old task-reference field is empty.
+Do not create another allocator, flow checker, library facade or review owner.
+
+Use actual typed/effected Core and source/generated identities, compatible
+provider/grant and early target/layout contracts, then legal classification and
+verified MIR, later target layout and actual runtime/library consumers. The
+[existing memory dependency order](#memory-producer-and-consumer-order) retains
+its selected scope; complete L10/L18 cross-component dependency entailment still
+needs current review. Positive/negative cases distinguish partial initialization,
+privileged forget, scope cleanup, replacement-provider invariants, GC/RC versus
+deterministic linear release, foreign allocator/retention and host/device/MMIO
+visibility/order. Retain actual L10/L18 manifests, graphs, proof/check/audit and
+diagnostic fields and changed-assumption refusal, not supplied pass flags.
+
+Concrete physical capacity/layout/alignment/representation, profile allocation
+and failure/timing rules survive accounting removal; synthetic compiler work or
+input quotas do not. Other full profile/SAFE/provider/runtime/library contracts,
+current independent review and implementation acceptance remain unassessed.
+Preserve every actual native/provider/foreign/callback/device/plugin/probe/replay/
+migration/review/signing/publication hold. This source proposal executes none.
+
 ## Complete memory-safety source criteria
 
 Use the complete [SAFE2](../../docs/phase-02-safety/031-safe2-memory-safety-model.md),

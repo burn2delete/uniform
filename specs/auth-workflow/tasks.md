@@ -19,6 +19,14 @@ Evidence baseline: [Hosted contract](../../bootstrap/clojure/src/gravity/capabil
 
 Closing evidence: Typed provider fixtures with deterministic selection and incompatible-provider rejection
 
+<!-- auth-canonical-memory-model-provider-contract:start -->
+
+Apply the [complete source memory-model and provider criteria](../legality-workflow/plan.md#complete-source-memory-model-and-provider-criteria) within this existing task. Status remains Open; frozen finite review does not accept the new whole-source or current composition.
+
+L18 alternative-memory declaration and selection criterion (Open): Validate each provider's identity/version, implemented allocation families, profiles/targets, failure/blocking/hidden allocation, alignment/layout/initialization/destruction/release, pointer/reference/lifetime/alias/sharing/thread/foreign/interrupt rules, trust, effects/capabilities, audit/conformance and enforcing mechanism for each claimed contract. Preserve all seventeen source families: GC, reference counted, owned/move, region, arena, stack/static, linear handles, borrowed views, pinned, shared immutable, atomic shared, foreign heap, device, unified CPU/GPU, MMIO, persistent/nonvolatile and compiler constant storage. Preserve MemorySafety, RegionSafety, OwnershipSafety, LinearResourceSafety, RawMemoryBoundary, DeviceMemorySafety, MMIOSafety, ForeignHeapSafety and ConcurrencyMemorySafety as distinct claimed contracts. Deterministically select a compatible implementation and emit its actual recorded inputs; a family name, trusted label, proof reference or declaration flag cannot establish contract conformance. A replacement may change allocation/deallocation, region/reset, borrow/escape analysis, layout/check/leak/device/foreign/GC/RC implementation but cannot weaken initialization, bounds, lifetime, race, profile, capability or unsafe-artifact guarantees. Checker/plugin and runtime owners validate or execute their own boundary; Auth does not implement a replacement analyzer or allocator. Reject missing/incompatible/ambiguous contracts or unsafe semantic substitution, keeping grants and actual provider execution separate from selection.
+<!-- auth-canonical-memory-model-provider-contract:end -->
+
+
 - [ ] `auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime` Enforce grant intersection, attenuation, revocation, phase and lifetime
 
 Status: Open

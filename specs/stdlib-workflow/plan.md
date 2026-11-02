@@ -22,6 +22,14 @@ cases, residual host/provider boundaries and actual manifest/stability changes.
 Preserve reserved writers and held live operations. Separate reachable compiler
 support, wider module/profile completion, independent acceptance and release.
 
+## Source memory-model and provider interface
+
+Use the [complete source memory-model and provider criteria](../legality-workflow/plan.md#complete-source-memory-model-and-provider-criteria) with the existing task authority.
+
+The existing resource/concurrency/IO/network task restores the reviewed public allocation criterion and adds complete L18 API/provider-boundary requirements. Execute a real selected allocation/use path with initialized storage or a usable handle and declared layout/alignment/failure/sharing/profile/authority facts; reject missing or incompatible providers and invalid accesses. Runtime owns its actual service and matching release/transfer, while compiler checkers derive safety. Declared-interface fixtures can start independently; no mock, compatibility spelling or record-only implementation establishes a live provider or all seventeen family implementations.
+
+The new whole-source proposal preserves the eight finite review qualifications; current independent review, full cross-component entailment and actual implementation acceptance remain pending. No compiler/provider/native/device/callback/probe/replay/migration/review/signing/publication action runs in this planning increment.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Standard Library workflow migration

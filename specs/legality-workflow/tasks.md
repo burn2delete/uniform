@@ -44,6 +44,14 @@ SAFE2-SAFE5 memory availability criterion (Open): Publish actual profile/target/
 <!-- legality-canonical-memory-profile:end -->
 
 
+<!-- legality-canonical-memory-model-profile:start -->
+
+Apply the [complete source memory-model and provider criteria](plan.md#complete-source-memory-model-and-provider-criteria) within this existing task. Status remains Open; frozen finite review does not accept the new whole-source or current composition.
+
+L10/L18 source memory profile criterion (Open): Check the actual regime/provider/type/effect/grant/source configuration before affected lowering. Portable Core uses abstract immutable values and portable facts without a particular runtime allocator. Hosted GC/RC/host buffers and FFI require declared managed boundaries; native ownership/borrows/regions/arenas/stack/static/foreign/pinned/device services require selected providers. Firmware/kernel require explicit allocation and concrete permitted storage/failure conditions with no ambient allocator or hidden hosted fallback; hardware uses register/wire/state/memory/buffer maps rather than heap assumptions. GPU retains host/device/shared/local/constant/global address-space and synchronization facts; AI/distributed persistent/vector/workflow/replay storage keeps schema and authority policy. Any constrained managed-memory exception needs its explicit governing profile boundary and checks, never inheritance from hosted behavior. Reject unavailable families, hidden GC/runtime dependencies, unsupported required metadata/failure mechanisms and widened provider policy. Preserve required target layout, physical capacity, alignment and timing facts without reinstating compiler work allowances.
+<!-- legality-canonical-memory-model-profile:end -->
+
+
 - [ ] `legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis` Complete ownership, borrow, initialization and lifetime analysis
 
 Status: Open
@@ -244,6 +252,18 @@ SAFE5 linear flow, structured cleanup and provider criterion (Open): Track actua
 <!-- legality-canonical-memory-analysis:end -->
 
 
+<!-- legality-canonical-memory-model-memory-analysis:start -->
+
+Apply the [complete source memory-model and provider criteria](plan.md#complete-source-memory-model-and-provider-criteria) within this existing task. Status remains Open; frozen finite review does not accept the new whole-source or current composition.
+
+Decision criterion interface/language/memory/check-linear-resource-flow: Check exactly-once resource consumption or transfer and scoped acquisition/release; a privileged explicit forget path retains its declared policy boundary. Reject: Reject leaks, double consumption/release, invalid transfer and undeclared forget; preserve cleanup on every relevant normal/error/cancel path. Required outputs: Resource-flow and scope-cleanup graph, transfer/forget-policy evidence and leak/double-release refusal fixtures.
+
+Decision criterion interface/language/memory/check-owner-and-borrow-lifetimes: Check ownership moves, shared versus mutable borrows and region lifetimes; permit escape only by valid longer-lived transfer or explicit unsafe responsibility. Reject: Reject stale/moved owners, conflicting mutable borrows, invalid region captures and unaudited unsafe escape. Required outputs: Ownership/borrow/region graph, legal-transfer and invalid-use/escape fixtures, source-bound safety diagnostics.
+
+L10/L18 source memory validity criterion (Open): Derive actual initialized/uninitialized/partially initialized state, ownership/move/borrow access modes and lifetimes, region/arena/allocator identity, range/alignment/layout, sharing/race/synchronization and linear resource facts from typed/effected control and provider contracts. Constructors must establish full initialization before a value is treated as T, and safe reads require their accessed range initialized; partial destruction releases only initialized fields. Region escape is a compile-time error unless a valid longer-lived copy/move or explicit permitted unsafe responsibility establishes the source boundary. Require exactly-once consume/transfer, except a declared privileged explicit forget path whose authority/policy and unsafe obligations are actually checked; reject undeclared forget, leaks, double free/close and invalid transfer. Validate provider/checker-produced lifetime/alias/ownership/region/escape/init/bounds/device/MMIO facts under their actual source/operation/target/profile/grant and declared enforcement mechanism before using them. Replacement analysis cannot make a supplied fact or success flag authoritative. Emit real state/path/graph, initialization/range, linear/forget, allocation/effect and diagnostic products, preserving original producer refusals and actual downstream evidence requirements.
+<!-- legality-canonical-memory-model-memory-analysis:end -->
+
+
 - [ ] `legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries` Complete safe-code classification and taint/unsafe boundaries
 
 Status: Open
@@ -311,6 +331,18 @@ SAFE2-SAFE5 check and unsafe-disposition criterion (Open): Consume actual memory
 <!-- legality-canonical-memory-classification:end -->
 
 
+<!-- legality-canonical-memory-model-wrapper-classification:start -->
+
+Apply the [complete source memory-model and provider criteria](plan.md#complete-source-memory-model-and-provider-criteria) within this existing task. Status remains Open; frozen finite review does not accept the new whole-source or current composition.
+
+Decision criterion interface/language/memory/check-raw-and-mmio-boundary: Admit raw/MMIO operations only through explicit unsafe responsibility or an audited proved/runtime-checked safe wrapper, retaining address-space/width/alignment/volatile/order/grant semantics. Reject: Reject unclassified danger, ungranted device authority, invalid register shape/order and raw operations masquerading as ordinary safe code. Required outputs: Safe-wrapper/unsafe audit and device-map records, proof/check preservation and valid/invalid raw/MMIO diagnostics.
+
+Criterion safety/safe6/safe-wrappers: Admit unsafe internals through a safe public wrapper only when its signature and checked or proved invariants prevent callers violating every required unsafe precondition. Hide raw authority, enforce preconditions, specify failure behavior and connect cleanup to ownership/linear lifetime rules; retain the underlying island and operation in audit/package/release artifacts. Emit wrapper/island/precondition/proof-or-runtime-check/cleanup links under the actual profile/target and review policy. Exercise accepted wrappers and invalid-input, leaked-raw-authority, missing-precondition, unchecked-failure and lost-cleanup refusals with SAFE6-MISSING-BOUNDARY and applicable owning safety diagnostics. A wrapper label, certificate for another subject or reviewed unsafe implementation alone confers no safe API. Consume actual type/ownership/effect/grant facts and GOV9 review where required, as interface artifacts rather than whole-component completion.
+
+L10/L18 raw, foreign and safe-wrapper criterion (Open): Classify every dangerous memory operation through the existing SAFE1/C10 owner. Unproved facts require a profile-legal actual check, rejection or an explicit permitted unsafe island; preserve each specialized rule's stronger static-proof/refusal requirement. Raw pointers, allocator internals, unchecked accesses, MMIO, device and foreign handles remain behind explicit unsafe responsibility or an audited safe wrapper. A safe MMIO wrapper must prove or check actual map, width, alignment, volatility/order, lifetime and capability scope, with the underlying unsafe operation still visible. Foreign contracts retain ownership direction, borrowed lifetime, nullability, initialization, error/exception, thread affinity, callback lifetime and allocator identity. Unexpressible foreign facts require an explicit unsafe boundary or checked wrapper; a binding claiming safe use must state its required ownership/lifetime/nullability/allocator facts. Retain wrapper signature/precondition/failure/cleanup/raw-authority and source-bound review requirements, invalidating changed map/backend/provider assumptions. Reject unclassified danger, ungranted access, invalid width/map/order, raw-safe masquerading and missing or wrong-subject proof/audit. No declared safe status, provider trust or wrapper label is its own proof or permission.
+<!-- legality-canonical-memory-model-wrapper-classification:end -->
+
+
 - [ ] `legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution` Preserve obligations into MIR and runtime execution
 
 Status: Open
@@ -351,6 +383,14 @@ SAFE2-SAFE5 memory consumer-preservation criterion (Open): Compose the existing 
 <!-- legality-canonical-memory-preservation:end -->
 
 
+<!-- legality-canonical-memory-model-preservation:start -->
+
+Apply the [complete source memory-model and provider criteria](plan.md#complete-source-memory-model-and-provider-criteria) within this existing task. Status remains Open; frozen finite review does not accept the new whole-source or current composition.
+
+L10/L18 memory artifact preservation criterion (Open): Serialize actual regime/allocator/runtime/provider/version, ownership/borrow/lifetime/region/escape/init/alias/range/layout/linear/transfer/check/proof/audit and applicable device/MMIO/FFI facts into typed artifacts for their real MIR/Opt/Lower/Runtime/diagnostic consumers. Every actual transformation preserves its exact memory-safety premises or invalidates and recomputes/rechecks them, retaining a legal check or refusing unsupported use. Preserve source/generated identities, memory spaces, physical layouts/alignment, volatile/barrier/atomic order, selected allocator/releaser, safe-wrapper invariants and dependencies; target noalias/alignment/dereferenceable metadata needs current subject-bound proof. Layout/ABI/provider/backend/device-map changes cannot inherit stale proofs. Compiler and API annotations, actual linked manifests and runtime behavior must agree. Demonstrate actual accepted and refused consumer paths, proof invalidation and retained/elided checks under existing SAFE15/PERF10 obligations; this handoff neither implements the allocator nor accepts every profile/provider/backend.
+<!-- legality-canonical-memory-model-preservation:end -->
+
+
 - [ ] `legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface` Close conformance for the declared profile surface
 
 Status: Open
@@ -389,6 +429,14 @@ Apply the [complete memory-safety source criteria](plan.md#complete-memory-safet
 
 SAFE2-SAFE5 family conformance criterion (Open): Exercise every document's positive, negative, unsafe and supported/unsupported profile/provider cases with actual facts and emitted/executed check/failure/cleanup/transfer evidence where claimed. Include safe initialized in-bounds live access and independent missing-premise refusals; partial/moved/conditional/foreign/device initialization and initialized-only drop; all layout/allocator/lifetime/raw hazards; immutable/exclusive/nested/range-split borrowing and generic/call/FFI/task escape contracts; scoped/nested regions, arena reset, cleanup/provider/threading and foreign retention; structured/manual/error/task/actor/provider terminal flow, cancellation and generated duplication. Inspect all required memory/ownership/borrow/lifetime/escape/allocation/region/generation/reset/provider/cleanup/linear/terminal/structured/generated/check/proof/audit/backend artifacts. Preserve all 43 SAFE2/SAFE3/SAFE4/SAFE5 diagnostic meanings: SAFE2-UNINIT, SAFE2-BOUNDS, SAFE2-LIFETIME, SAFE2-ESCAPE, SAFE2-ALIAS, SAFE2-ALLOC-FAILURE, SAFE2-ALLOCATOR, SAFE2-USE-AFTER-RELEASE, SAFE2-DOUBLE-RELEASE, SAFE2-RAW, SAFE2-CHECK-ERASE, SAFE2-PROFILE; SAFE3-USE-AFTER-MOVE, SAFE3-USE-AFTER-CONSUME, SAFE3-BORROW-ESCAPE, SAFE3-MUT-ALIAS, SAFE3-MOVE-WHILE-BORROWED, SAFE3-CONSUME-WHILE-BORROWED, SAFE3-LIFETIME, SAFE3-TASK-CAPTURE, SAFE3-FFI-OWNERSHIP, SAFE3-RUNTIME-CHECK, SAFE3-UNSAFE-ALIAS; SAFE4-REGION-ESCAPE, SAFE4-ARENA-ESCAPE, SAFE4-POST-RESET, SAFE4-INNER-TO-OUTER, SAFE4-RETURN, SAFE4-TASK, SAFE4-FFI-RETAIN, SAFE4-CLEANUP, SAFE4-PROVIDER, SAFE4-RUNTIME-CHECK; SAFE5-LEAK, SAFE5-DOUBLE-CLOSE, SAFE5-USE-AFTER-CLOSE, SAFE5-BRANCH, SAFE5-TRANSFER, SAFE5-CAPTURE, SAFE5-WRONG-PROVIDER, SAFE5-CLEANUP-FAILURE, SAFE5-CANCEL and SAFE5-GENERATED and complete document-specific operation/value/owner/borrow/lifetime/region/arena/generation/resource/provider/acquire/terminal/control-path/source/generated/profile/missing-fact/remediation context. Match rule IDs and spans; wrong artifacts fail despite correct prose. Prove exact check-elision assumptions and refusal after invalidation. Existing Runtime/Backend owners supply actual behavior and Release owns the conformance harness and later independent admission; full L10/L18/SAFE7/SAFE8/provider/profile, release, migration and self-hosting acceptance are not inferred from finite source reviews or this current proposal.
 <!-- legality-canonical-memory-conformance:end -->
+
+
+<!-- legality-canonical-memory-model-conformance:start -->
+
+Apply the [complete source memory-model and provider criteria](plan.md#complete-source-memory-model-and-provider-criteria) within this existing task. Status remains Open; frozen finite review does not accept the new whole-source or current composition.
+
+L10/L18 source-family conformance criterion (Open): Exercise the complete source memory/provider surfaces and declared supported/unsupported profile combinations with actual compiler facts and required provider/API/backend results. Include safe initialized live bounds/borrow/region use; forbidden hidden/ambient allocation and host-runtime assumptions; invalid alias/lifetime/escape/init/linear/forget behavior; actual allocation/failure/release/leak/allocator matching; GC/RC/pinning/deterministic-cleanup distinctions; device/unified visibility and transfer/synchronization; MMIO map/width/alignment/volatile/order/authority; foreign ownership/null/error/affinity/callback boundaries; safe-wrapper proof/check/audit and changed-assumption refusal. Preserve all eight L10 meanings: L10-HIDDEN-ALLOC, L10-USE-AFTER-MOVE, L10-BORROW-ESCAPE, L10-UNINIT-READ, L10-BOUNDS, L10-RAW-SAFE, L10-MMIO-CAP, L10-LINEAR-RESOURCE; and all thirteen L18 meanings: L18-PROVIDER, L18-HIDDEN-ALLOC, L18-LIFETIME, L18-ESCAPE, L18-ALIAS, L18-UNINIT, L18-DOUBLE-RELEASE, L18-LEAK, L18-BOUNDS, L18-DEVICE-SYNC, L18-MMIO, L18-FFI-ALLOCATOR, L18-UNSAFE-AUDIT. Diagnostics and artifacts bind actual source/generated/profile/provider/memory-family/lifetime/region/grant and required-proof/check context. Consumer examples and backend checks preserve allocator and memory-space facts. Feed existing Release execution and independent admission, without treating source review, a record-only fixture or one target as full acceptance.
+<!-- legality-canonical-memory-model-conformance:end -->
 
 
 <!-- legality-implementation-tasks:end -->

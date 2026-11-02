@@ -22,6 +22,14 @@ the existing selected task. Distinguish compiler-service subset acceptance,
 wider families, independent review/integration and release; do not restore
 removed project accounting as a runtime admission requirement.
 
+## Source memory-model and provider interface
+
+Use the [complete source memory-model and provider criteria](../legality-workflow/plan.md#complete-source-memory-model-and-provider-criteria) with the existing task authority.
+
+The existing memory/concurrency/typed-FFI task restores the reviewed release/transfer and device-boundary clauses and adds L18's actual service obligations. Preserve matching allocator identity, foreign lifetime/null/init/error/affinity/callback contracts, GC/RC rooting/finalization/pause/pinning behavior, device/unified visibility/synchronization and MMIO map/width/volatile/order/grants. Actual public allocation APIs remain with Stdlib; compiler facts and Auth grants remain separate inputs. Demonstrate real permitted service/release/transfer/check/cleanup behavior where claimed, retaining all actual execution holds and original unresolved source-recovery IDs. A manifest or assigned completion flag cannot close this task.
+
+The new whole-source proposal preserves the eight finite review qualifications; current independent review, full cross-component entailment and actual implementation acceptance remain pending. No compiler/provider/native/device/callback/probe/replay/migration/review/signing/publication action runs in this planning increment.
+
 ## Foundation source criteria
 
 Four preserved clauses from the

@@ -23,6 +23,14 @@ reused unchanged evidence, unrun boundaries and stable diagnostic ownership.
 implementation checklist. Independent acceptance, migration and integration
 remain separate from ordinary development and structural validation.
 
+## Source memory-model and provider interface
+
+Use the [complete source memory-model and provider criteria](../legality-workflow/plan.md#complete-source-memory-model-and-provider-criteria) with the existing task authority.
+
+Core's two existing memory-model criteria preserve defined expression/control outcomes and actual with-open/acquire/body/release lowering. Preserve source/generated/evaluation and regime/resource declarations; Types/Effects/Legality derive later legality and flow, and Runtime executes cleanup. The original broad linear-flow allocation retains Core's desugaring producer while its exact reviewed flow-check predicate remains with Legality. Core creates no second safety classifier or privileged-forget policy. Supply accepted and malformed/lost-cleanup/origin/control cases against real consumers.
+
+The new whole-source proposal preserves the eight finite review qualifications; current independent review, full cross-component entailment and actual implementation acceptance remain pending. No compiler/provider/native/device/callback/probe/replay/migration/review/signing/publication action runs in this planning increment.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Core task authority
