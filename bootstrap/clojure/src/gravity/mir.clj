@@ -131,8 +131,8 @@
 
 (defn validate-data-flow!
   [operations source-path checked-core mir operation-products]
-  (let [{:keys [require! entry-parameter! expected-data-flow expected-terminator-uses runtime-check-token-id runtime-check-operation-id expected-value expected-runtime-check-value runtime-check-source valid-dominance-edge? valid-terminator-use?]} operations]
-  (let [parameter (entry-parameter! source-path checked-core)
+  (let [{:keys [require! entry-parameter! expected-data-flow expected-terminator-uses runtime-check-token-id runtime-check-operation-id expected-value expected-runtime-check-value runtime-check-source valid-dominance-edge? valid-terminator-use?]} operations
+        parameter (entry-parameter! source-path checked-core)
         nodes (:nodes operation-products)
         operations (:operations operation-products)
         operation-by-id (:operation-by-id operation-products)
@@ -246,7 +246,7 @@
     {:edge-count (count data-flow)
      :terminator-use-count (count terminator-uses)
      :definition-count (count expected-definitions)
-     :value-count (count expected-values)})))
+     :value-count (count expected-values)}))
 
 
 (defn downstream-ids

@@ -17,6 +17,9 @@ checks direct-effect boundaries. Outputs are the existing passed placement
 label, count record or owner failure. Wrappers retain signatures and late Var
 interposition. The remaining construction, containment, carrier and admission
 code is unchanged. The stage still has no imports or Bootstrap dependency.
+Local lint identified a redundant nested let in the initial explicit-operation
+binding. The binding is folded into the original let without changing a rule,
+callback order or input; the initial lint nonpass remains historical.
 
 The stage owns these native C11-EFFECT, C11-DOMINANCE, C11-TYPE and C11-ORIGIN
 decisions; the require operation constructs and throws the existing diagnostic.
