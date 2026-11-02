@@ -108,3 +108,17 @@ Fresh exact-composition results:
   phase indexes.
 
 No Resolution namespace was executed as part of this composition refresh.
+
+## Hosted static observation and formatting repair
+
+Hosted run `41492885887`, static job `125440371301`, tested merge
+`5d6eabbd7f9753bb85812cd374fe826285461904` against actual first parent
+`6218e80e0238cbd071a8837193e7afb5f0b87869` and source head
+`77ffe16c98a4c20a469402a06d83e6f4a8543839`. Actionlint and clj-kondo
+passed; the harness again passed 34 tests / 334 assertions. The static job
+failed because pinned cljfmt requested nine indentation corrections in the
+two changed Clojure files. Commit
+`a242b9a3a2957907891f311b9c87d133446583e3` applies that exact formatting
+diff. `git diff -w` confirms no non-whitespace source change. This observation
+does not turn pending Resolution jobs into execution evidence or claim a
+locally available formatter.
