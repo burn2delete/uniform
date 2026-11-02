@@ -1705,5 +1705,58 @@
     (is (= :unassessed (:implementation-acceptance refinement) (:global-source-conjunctions refinement)))
     (is (= refinement (get-in view [:implementation-readiness-source-version :incremental-refinement])))))
 
+(deftest plugin-plan-reuses-frozen-review-and-preserves-all-current-predicates
+  (let [refinement (:plugin-refinement sh-crosswalk/readiness-source-version)
+        previous (:predecessor-readiness-successor refinement)
+        prior-text (sh-crosswalk/git-source (:commit previous) (:projection-path previous))
+        prior (edn/read-string prior-text) view (sh-crosswalk/build)
+        review-pin (:retained-source-review refinement)
+        review-text (slurp (:path review-pin)) review (edn/read-string review-text)
+        canonical (:canonical-source refinement) body (slurp (:path canonical))
+        read-span (fn [text span] (String. (.getBytes text "UTF-8") (int (:start-byte span)) (int (- (:end-byte span) (:start-byte span))) "UTF-8"))
+        uncovered (fn [facets]
+                    (let [bytes (.getBytes body "UTF-8") covered (java.util.BitSet. (alength bytes))]
+                      (doseq [row facets :let [w (:source-witness row)]] (.set covered (int (:start-byte w)) (int (:end-byte w))))
+                      (filterv #(and (> (bit-and 255 (aget bytes %)) 32) (not (.get covered %))) (range (alength bytes)))))
+        facets (:facet-verdicts review)]
+    (is (= (:projection-sha256 previous) (sh-inventory/sha256 prior-text)))
+    (is (= (:sha256 review-pin) (sh-inventory/sha256 review-text)))
+    (is (= review-text (sh-crosswalk/git-source (:source-commit review-pin) (:path review-pin))))
+    (is (= (:file-sha256 canonical) (sh-inventory/sha256 body)))
+    (is (= 108 (count facets) (count (set (map :id facets)))))
+    (is (= {:retained-hierarchy-or-provenance-context 15 :complete-source-predicate-conjunction 93} (frequencies (map :role facets))))
+    (is (= 45 (count (:occurrence-verdicts review))))
+    (is (= 30 (count (filter #(= :complete-source-predicate-conjunction (:role %)) (vals (:occurrence-verdicts review))))))
+    (is (= 6 (count (:owner-verdicts review))))
+    (doseq [facet facets :let [w (:source-witness facet)]]
+      (is (= (:raw-sha256 w) (sh-inventory/sha256 (read-span body w))) (:id facet)))
+    (is (empty? (uncovered facets)))
+    (let [removed (:id (first (filter #(= :complete-source-predicate-conjunction (:role %)) facets)))]
+      (is (seq (uncovered (remove #(= removed (:id %)) facets)))))
+    (is (= #{:existing :records :pipeline} (set (map :key (:criteria refinement)))))
+    (doseq [{:keys [key historical-witness current-witness preserved-current-before?]} (:criteria refinement)
+            :let [text (slurp (:path current-witness)) clause (read-span text (:source-span current-witness))]]
+      (is preserved-current-before? key)
+      (is (= (:sha256 current-witness) (sh-inventory/sha256 text)))
+      (is (= (:raw-sha256 historical-witness) (get-in current-witness [:source-span :sha256]) (sh-inventory/sha256 clause)))
+      (is (= text (sh-crosswalk/git-source (:source-commit current-witness) (:path current-witness))))
+      (is (= -1 (.indexOf text clause (inc (.indexOf text clause)))))
+      (is (not= (:raw-sha256 historical-witness) (sh-inventory/sha256 (subs clause 1)))))
+    (is (= (:task-authorities prior) (:task-authorities view)))
+    (is (= (:future-task-authorities prior) (:future-task-authorities view)))
+    (is (= (mapv :task-references (:requirements prior)) (mapv :task-references (:requirements view))))
+    (is (= (:sh07-sequence prior) (:sh07-sequence view)))
+    (is (= (:accepted-current-scoped-evidence prior) (:accepted-current-scoped-evidence view)))
+    (is (= [] (:new-task-identities refinement) (:changed-task-ids refinement)))
+    (is (= (:subject review) (get-in refinement [:historical-review :subject])))
+    (is (= :scoped-pass (:verdict review)))
+    (is (= :not-transferred (get-in refinement [:historical-review :current-acceptance])))
+    (is (= :not-accepted (get-in refinement [:historical-review :qualified-adoption :whole-current-head])))
+    (is (= :no-clearance-or-retry (get-in refinement [:historical-review :qualified-adoption :held-actions])))
+    (is (= :not-conferred (get-in refinement [:historical-review :qualified-applicability :unreviewed-C12 :acceptance])))
+    (is (= :pending (:independent-current-review refinement)))
+    (is (= :unassessed (:implementation-acceptance refinement) (:global-source-conjunctions refinement)))
+    (is (= refinement (get-in view [:implementation-readiness-source-version :plugin-refinement])))))
+
 (let [result (run-tests 'sh-crosswalk-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))

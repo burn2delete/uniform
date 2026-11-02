@@ -235,7 +235,7 @@
   "specs/lower-workflow/plan.md"
   "d1bdf30aaf9f5664a23c03b40397be7e30481c379bc714c57bce3279e37e1cff",
   "specs/compiler-api-workflow/plan.md"
-  "827b360ea711320bb49158055e2ca9c4708a3ba8ec71861813a5a6e7c1ad23e2",
+  "4dc380340046ef3f12bf8a419e174a245ab74993b47e0f29bb41e101d0f806fc",
   "docs/phase-17-governance-and-evolution/240-gov10-ecosystem-package-governance-policy.md"
   "aebf4b6087817fd1f5c140868e0225989322c4cfb8f7fa5953ca3fe0f22cf0a3",
   "specs/runtime-workflow/plan.md"
@@ -7828,9 +7828,9 @@
    "d1bdf30aaf9f5664a23c03b40397be7e30481c379bc714c57bce3279e37e1cff",
    :kind :source-inspection-not-execution},
   "specs/compiler-api-workflow/plan.md"
-  {:commit "0e1cec28f43d2902032b1786af08f7aa17af8107",
+  {:commit "0bd2713e104ec12b8def7c7e757293561bcede31",
    :sha256
-   "827b360ea711320bb49158055e2ca9c4708a3ba8ec71861813a5a6e7c1ad23e2",
+   "4dc380340046ef3f12bf8a419e174a245ab74993b47e0f29bb41e101d0f806fc",
    :kind :source-inspection-not-execution},
   "docs/phase-17-governance-and-evolution/240-gov10-ecosystem-package-governance-policy.md"
   {:commit "7c408997aedbe79953cac5a60c97d6370ca4c2e1",
@@ -8082,6 +8082,189 @@
     :preserved-sha256
     "8eb344bd83064c4ab62325e733cafc286d426dbad7d07221b71ee53ec0137ed1",
     :relation :exact-file-bytes}]},
+ :plugin-refinement
+ {:new-task-identities [],
+  :canonical-source
+  {:path
+   "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+   :file-sha256
+   "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+   :coverage
+   :full-document-all30-semantic-paragraph-conjunctions-and15-contexts},
+  :predecessor-readiness-successor
+  {:commit "20b9b996289ea56a633970fca807b9a8eb6b8142",
+   :path
+   "specs/sh-family-crosswalk/implementation-readiness-source-version.edn",
+   :sha256
+   "b391f3a4340c5d04b69d9236899ffbc9fe7b0d5d6c9753bd2f7683467c397087",
+   :projection-path "specs/sh-family-crosswalk/crosswalk.edn",
+   :projection-sha256
+   "a73c66438deeff5edf0d89ae762a8f10ec8150f45626fed3290c9f9ff2eadc70",
+   :input-fingerprint
+   "6524501bf85db814c7c0e72f46a9931f91dfe39e8d76f330d7df41b7a1adc5d3"},
+  :criteria
+  [{:key :existing,
+    :task-id "plugins",
+    :preserved-current-before? true,
+    :historical-witness
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "plugins",
+     :file-sha256
+     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     :raw-sha256
+     "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300",
+     :marker "compiler-api-implementation-tasks",
+     :domain-owner-pin-refresh
+     :prior-predicate-raw-bytes-preserved-addition-not-inherited,
+     :commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :end-byte 25488,
+     :start-byte 16703},
+    :current-witness
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "0e1cec28f43d2902032b1786af08f7aa17af8107",
+     :sha256
+     "06269a8ac686d3dc87c5c0a81738ca826693c7dc6e0765d76339be0f2c19ef53",
+     :source-span
+     {:start-byte 16703,
+      :end-byte 25488,
+      :sha256
+      "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300"}}}
+   {:key :records,
+    :task-id "plugins",
+    :preserved-current-before? true,
+    :historical-witness
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "plugins",
+     :file-sha256
+     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     :raw-sha256
+     "a471224cdf968360b2da86b73625bd860b16bfa734ec72a2d2c0963d5e847e6b",
+     :marker "compiler-api-implementation-tasks",
+     :domain-owner-pin-refresh
+     :prior-predicate-raw-bytes-preserved-addition-not-inherited,
+     :commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :end-byte 29649,
+     :start-byte 25490},
+    :current-witness
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "0e1cec28f43d2902032b1786af08f7aa17af8107",
+     :sha256
+     "06269a8ac686d3dc87c5c0a81738ca826693c7dc6e0765d76339be0f2c19ef53",
+     :source-span
+     {:start-byte 25490,
+      :end-byte 29649,
+      :sha256
+      "a471224cdf968360b2da86b73625bd860b16bfa734ec72a2d2c0963d5e847e6b"}}}
+   {:key :pipeline,
+    :task-id "pipeline",
+    :preserved-current-before? true,
+    :historical-witness
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "pipeline",
+     :file-sha256
+     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     :raw-sha256
+     "d3e89724cc38d9498f0948109167516485480bff8cbebda606ef8c13d557813a",
+     :marker "compiler-api-implementation-tasks",
+     :domain-owner-pin-refresh
+     :prior-predicate-raw-bytes-preserved-addition-not-inherited,
+     :commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :end-byte 16612,
+     :start-byte 832},
+    :current-witness
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "0e1cec28f43d2902032b1786af08f7aa17af8107",
+     :sha256
+     "06269a8ac686d3dc87c5c0a81738ca826693c7dc6e0765d76339be0f2c19ef53",
+     :source-span
+     {:start-byte 832,
+      :end-byte 16612,
+      :sha256
+      "d3e89724cc38d9498f0948109167516485480bff8cbebda606ef8c13d557813a"}}}],
+  :source-entailment :author-assessed-current-plan-proposal,
+  :independent-current-review :pending,
+  :source-trace
+  {:path
+   "specs/requirement-reconciliation/plugin-complete-current-facet-trace.edn",
+   :commit "726b04bbb4add5092074876522ced4792584ae30",
+   :sha256
+   "084a0a1d7cccff88074193da58788a06063c5ab86838d04cd16c916dd1874e57",
+   :scope :historical-source-only-no-aggregate-publication},
+  :source-commit "0bd2713e104ec12b8def7c7e757293561bcede31",
+  :historical-review
+  {:subject
+   {:tree "b348ee3b323b06a9712dedadbe6fddea7500bcba",
+    :repository "burn2delete/uniform",
+    :base-qualification
+    :task-refinement-predecessor-not-main-integration-base,
+    :subject-parent "c21cab926933da13962326ed592fff0946e9e870",
+    :task-source "726b04bbb4add5092074876522ced4792584ae30",
+    :commit "45fa1763f939bdad59a9ee78401223a957382454",
+    :predecessor-tree "18daf36fc83b668587edf2e48558955219beddc8",
+    :refinement-predecessor "41270eeab2b2dc9aa91a63df2884f26a5cdb295f",
+    :pr 554},
+   :verdict :scoped-pass,
+   :exclusions
+   [:implementation
+    :plugin-execution
+    :callbacks
+    :sandbox-execution
+    :compiler
+    :domain-checker
+    :proof-provider
+    :runtime
+    :native-target
+    :publication
+    :readiness
+    :migration
+    :release
+    :integration
+    :final-count-or-denominator
+    :entire-PR-approval
+    :full-dependency-documents
+    :pipeline-order-adjudication
+    :later-main70dcb222
+    :later-composition
+    :held-scope-acceptance
+    :outbound-delivery],
+   :current-acceptance :not-transferred,
+   :qualified-adoption
+   {:whole-current-head :not-accepted,
+    :full-dependency-documents :not-accepted,
+    :held-actions :no-clearance-or-retry,
+    :whole-owner-and-unselected-enclosing-predicates :not-conferred,
+    :coordinator-integration :required-separately},
+   :qualified-applicability
+   {:scope :C17-source-only,
+    :qualification
+    "Exact frozen C17 source and three Plugin Host/Pipeline predicate bodies remain current after separate C12 addition. Their file pins refresh through authenticated identical raw spans; C12 predicates receive no acceptance. Twelve earlier review scopes and65 captured byte-continuity predicates retain their subjects/exclusions. One overlapping provenance context remains one identity with context-only authority. No plugin/callback/sandbox/domain/compiler/runtime/provider/proof-checker execution, broader dependency/held scope, implementation/count/integration authority follows.",
+    :whole-current-head :not-accepted,
+    :unreviewed-C12
+    {:facets 115,
+     :acceptance :not-conferred,
+     :source-refinement
+     "specs/requirement-reconciliation/domain-owner-source-refinement.edn"},
+    :reviewer-checker-execution :none}},
+  :changed-task-ids [],
+  :kind :current-plugin-plan-unchanged-predicate-binding,
+  :global-source-conjunctions :unassessed,
+  :retained-source-review
+  {:path
+   "specs/compiler-api-workflow/review-inputs/plugin-source-review.edn",
+   :source-commit "0bd2713e104ec12b8def7c7e757293561bcede31",
+   :sha256
+   "2e1b2332cbacfa337ba927492388f7300ec6c974bb1d33869fe025c38caebac7",
+   :use
+   :reuse-existing-108-facet-45-occurrence-six-owner-review-without-copying},
+  :qualification
+  "All three complete predicates already occur literally once in current Compiler API tasks. Preserve their text, IDs, statuses, original owner candidates and frozen review exclusions. Current planning refines pre-load refusal, granted execution, registered verifiers and trace consumers; no current acceptance, held execution, whole dependency, runtime, release, self-hosting or integration credit follows.",
+  :plan
+  {:path "specs/compiler-api-workflow/plan.md",
+   :source-commit "0bd2713e104ec12b8def7c7e757293561bcede31",
+   :sha256
+   "4dc380340046ef3f12bf8a419e174a245ab74993b47e0f29bb41e101d0f806fc",
+   :kind :source-inspection-not-execution},
+  :implementation-acceptance :unassessed},
  :math-parent-refinement
  {:source-input-commit "86f194bc693b1eeb39593057284e3b47a713e6f7",
   :task-id "math",
@@ -23973,7 +24156,7 @@
   "specs/opt-workflow/tasks.md"
   "0e1cec28f43d2902032b1786af08f7aa17af8107",
   "specs/compiler-api-workflow/plan.md"
-  "0e1cec28f43d2902032b1786af08f7aa17af8107",
+  "0bd2713e104ec12b8def7c7e757293561bcede31",
   "specs/diag-workflow/tasks.md"
   "d37ba8da837f6dfdf0cc0e185729ce80d0aa1ae5",
   "docs/component-roadmaps/evolution.md"
@@ -25814,4 +25997,4 @@
      "95cb5fa0f1a72e27dc44ca7b64567c312eb2592a33d3811be547e511e485a4ca"}}],
   :implementation-acceptance :unassessed},
  :input-fingerprint
- "6524501bf85db814c7c0e72f46a9931f91dfe39e8d76f330d7df41b7a1adc5d3"}
+ "ba642d24d8a07bc69942f36d7bc854191ad47ebb4f83624d63f2699015fc2044"}

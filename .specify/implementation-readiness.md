@@ -1823,3 +1823,83 @@ operation ran, and no other chat was messaged. Current independent review,
 global substantive reconciliation and implementation evidence assessment remain
 unfinished; mapping readiness stays false and the goal remains active. Reader
 contract coverage remains the first implementation preparation increment.
+
+## Complete plugin and pass API source review
+
+C17's three existing/records/pipeline criterion bodies already occur literally
+once in the [current Compiler API tasks](../specs/compiler-api-workflow/tasks.md#implementation-tasks).
+Preserve those bodies, task identities and statuses. The [current plan](../specs/compiler-api-workflow/plan.md#complete-plugin-and-pass-api-source-criteria)
+now distinguishes manifest and authentic policy checks before initialization,
+scoped context access, actual sandboxed/trusted execution, builtin-equivalent
+pass contracts, actual extension/output verifiers and trace consumption by cache
+and self-hosting comparison. Package identity, signature and audit approval do
+not grant compiler authority. Read-only MIR access cannot authorize rewriting.
+All sixteen compiler scope families, five trust levels, ten diagnostic meanings
+and their complete context remain. Canonical example values are illustrative.
+
+The existing archived [C17 source review](../specs/compiler-api-workflow/review-inputs/plugin-source-review.edn)
+already contains all 108 source-facet witnesses, 45 occurrence verdicts and six
+owner joins. Reuse it without copying its payload into another reconciliation
+database. Its 93 semantic facets and fifteen contexts preserve thirty complete
+semantic conjunctions; source-span conservation is distinct from semantic
+entailment. Three current raw predicate witnesses reproduce the qualified
+`fb3a0501` hashes. Their current containing task file retains its `0e1cec28`
+source pin; no task body or original status changes. The historical review's
+scoped PASS stays at `45fa1763`, tree `b348ee3b`, with all plugin/callback/
+sandbox/compiler/provider/checker/runtime/publication/implementation/readiness/
+migration/release/integration exclusions. Qualified later C12 byte continuity
+does not confer C12 acceptance. Current independent review remains pending.
+
+Source `0bd2713e104ec12b8def7c7e757293561bcede31` changes only the Compiler
+API spec and plan. Its plan inspection pin advances explicitly from `0e1cec28`;
+predecessor `20b9b996` retains its complete source metadata, projection and
+pending review. The current fingerprint is
+`ba642d24d8a07bc69942f36d7bc854191ad47ebb4f83624d63f2699015fc2044`.
+Of 139 original task bodies, 92 remain identical and 47 have declared additions;
+149 current keys, 25 authorities, forty future records, SH/SH07 routes and three
+scoped Reader receipts retain their existing scope.
+
+Selected static inspection preserves partial implementation accurately. The
+[hosted C17 assembly](../bootstrap/clojure/src/gravity/c17_plugin/artifact.clj)
+constructs fixed manifest/grant/registration/output/trace records and assigns
+compatible/verified/passed results. Its [validation](../bootstrap/clojure/src/gravity/c17_plugin/validation.clj)
+checks fields and statuses, and its [policy](../bootstrap/clojure/src/gravity/c17_plugin/policy.clj)
+explicitly excludes plugin discovery/loading/execution, sandbox enforcement,
+signature verification and capability/trust authority. Its C16-shaped adapter
+input is not a universal development prerequisite. The [Gravity record model](../bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity)
+uses quoted constructors and a generic verification declaration. These records
+do not establish the behavior their fields name.
+
+The [W5 leaf](../bootstrap/gravity/src/gravity/compiler/w5_c17_plugin_executor.gravity)
+contains request validation, identity-result recomputation and equality-based
+result verification with explicit seed/JVM, unsupported-target, non-authority,
+incomplete/no-production/no-release/no-self-hosting limits. Its output check
+compares supplied semantic values/facts and supplied verifier fields; signature
+checks inspect supplied status/subject facts. These observations do not establish
+cryptographic verification, process isolation, a production loader or arbitrary
+plugin execution. The [2026-06-25 report](../docs/artifacts/phase-06/reports/p06-d096-c17-plugin-report.md)
+retains its stage0 document boundary. Historical test receipts were not rerun
+or promoted; current execution and full semantic implementation remain unassessed.
+
+Local manifest/context/registration fixtures may start against explicit
+interfaces. Composition still requires actual package/grant/stage/registry/
+checker products and registered execution; cache and Bootstrap own their real
+consumer comparisons, and pass-evidence consumes actual C18 results. Full
+dependency acceptance and fresh migration evidence are not ordinary editing
+prerequisites. All existing execution and publication holds remain effective.
+No other chat is messaged, no held action is run, and no acceptance or integration
+is self-conferred. Global reconciliation and required review remain unfinished;
+Reader contract coverage remains the first implementation preparation increment.
+
+C17 validation passes: 41 crosswalk tests / 4,831 assertions; 23 dependency
+tests / 1,774 assertions; deterministic generation/check, read-only dependency
+audit, both document validators and the language boundary (six tests / eleven
+assertions). The controls bind the reused frozen review, all 108 canonical
+spans and three unchanged current predicates, refuse a removed facet or changed
+criterion, and preserve original owners, routes and scoped receipts. Conservation
+passes for 82 changed files, 76 Markdown files, 2,979 local references, 139
+original routes, 48 historical spec/plan suffixes and all 48 original task/
+evidence contents. ASCII and whitespace checks pass. Preparation caught test
+delimiter errors and an old plan lookup hash before generation; both were
+corrected before the successful checks. No compiler/plugin/sandbox/callback,
+provider/checker/target/migration or publication operation ran.
