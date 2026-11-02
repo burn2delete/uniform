@@ -6597,6 +6597,16 @@
             inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
                        [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types context])]
         (is (= :accepted (:status result)) (pr-str (select-keys result [:status :reason])))
+        (is (not (contains? descriptor :operand-type-work)))
+        (doseq [obsolete [0 1]]
+          (let [forged (assoc descriptor :operand-type-work obsolete)
+                typed (assoc (:types input)
+                             (get-in input [:call :operator-node-id]) forged
+                             (get-in input [:node :node-id]) (:type result))
+                checked (invoke-c7 'sh08-st-inferred-call
+                          [core (:node input) (:call input) (:edge input) nodes bindings typed])]
+            (is (= :rejected (:status checked)))
+            (is (= :set-conversion-source-mismatch (:reason checked)))))
         (is (= (if invoked? :gravity.type/set :gravity.type/never) (:type result) (:return descriptor)))
         (is (= (if invoked? :normal :not-invoked) (:application descriptor)))
         (is (= (when invoked? (count (:element-types type))) (:input-element-count descriptor)))
@@ -6681,6 +6691,16 @@
             inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
                        [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types context])]
         (is (= :accepted (:status result)) (pr-str (select-keys result [:status :reason])))
+        (is (not (contains? descriptor :operand-type-work)))
+        (doseq [obsolete [0 1]]
+          (let [forged (assoc descriptor :operand-type-work obsolete)
+                typed (assoc (:types input)
+                             (get-in input [:call :operator-node-id]) forged
+                             (get-in input [:node :node-id]) (:type result))
+                checked (invoke-c7 'sh08-st-inferred-call
+                          [core (:node input) (:call input) (:edge input) nodes bindings typed])]
+            (is (= :rejected (:status checked)))
+            (is (= :set-conversion-source-mismatch (:reason checked)))))
         (is (= (if invoked? :gravity.type/set :gravity.type/never) (:type result) (:return descriptor)))
         (is (= (if invoked? :normal :not-invoked) (:application descriptor)))
         (is (= (when invoked? (count (:element-types type))) (:input-element-count descriptor)))

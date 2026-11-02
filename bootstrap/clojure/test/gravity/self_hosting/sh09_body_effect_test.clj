@@ -3579,7 +3579,9 @@
         (is (= (when invoked? :runtime-value-dependent) (get-in record [:allocation :extent :result-cardinality])))
         (is (= (:input-element-count descriptor) (get-in record [:allocation :extent :upper-bound])))
         (when invoked?
-          (is (= :all-keyword-members-before-print-compare-hash-or-insert
+          (is (= (if (empty? (:element-types type))
+                   :all-string-members-before-hash
+                   :all-keyword-members-before-print-compare-hash-or-insert)
                  (get-in descriptor [:construction-policy :validation])))
           (is (not (contains? (get descriptor :input-policy) :maximum-input-elements))))
         (doseq [changed [(assoc checked :constraint-ledger [])
