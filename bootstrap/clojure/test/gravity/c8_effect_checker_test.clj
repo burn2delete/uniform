@@ -5,7 +5,6 @@
             [gravity.c8-effect-checker.verification :as report-compatibility]
             [gravity.c8-effect-checker.evidence :as record-compatibility]
             [gravity.c8-effect-checker.artifact :as artifact-compatibility]
-            [gravity.c8-effect-checker.diagnostics :as diagnostic-compatibility]
             [gravity.effects :as effects]))
 
 (def module
