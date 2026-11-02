@@ -90,7 +90,7 @@ status, criteria, IDs, source path or source-basis identity fails closed. The
 transition is structural routing only; it does not create task completion,
 provider execution, canonical adoption, implementation credit or release
 support. The exact candidate transition identities and focused controls are
-recorded at integration once the bounded repair commit exists.
+recorded below; they remain source and routing evidence only.
 
 ### Observed transfer checks
 
@@ -112,3 +112,32 @@ passed 10 tests / 88 assertions. Documentation passed 240 documents / 19 phase
 indexes; full-language roadmap and whitespace passed. Passing commands exited
 naturally with 0. Exact committed-tree checks, independent review and integration
 disposition belong to the public PR receipt, separately from library acceptance.
+
+### Current source-transition repair receipt
+
+The current composition baseline is `dbeda7c7dc9a7bb880baa90af1a89046828db327`
+with tree `576075197b5b4e815b78bae7d949bfb5fe2d0437`. The source-specific task
+criteria are in applying commit `80d8a655cea00218799446986a976ca64043a1f8`,
+tree `8c7e533bed9536a760254754e26dbb75db0b0f55`, with current task-file
+SHA256 `9ac5d948a4df974051fe15adce874f6bf39074982991d8c6c80201a971142d57`.
+The transition records the historical source commit
+`254a5b50ea5e2825c424248c9216802cc866c0fd`, tree
+`abb83592fc9e5e81c0f041e59c67749dbb67b55c`, and file SHA256
+`69ac9a7163838c4cb297c94174d0b3061b0e7686f2378c45aa30e6320b6f6d94`.
+
+The authenticated transition tooling and manifest bridge were committed in
+`c09a602a4c9c27deb46622cd915181ca60d582c1`, tree
+`2d92fd1a45ae272c58300a32c3d438bea02e955e`. Current checks passed: acceptance
+dependency tests (19 tests / 441 assertions), document validation (240
+documents / 19 phase indexes), full-language roadmap validation, and the
+language-boundary gate (6 tests / 11 assertions). The deterministic SH build
+equals its checked-in output and its review fingerprint equals the emitted
+mapping-review fingerprint. Requirement reconciliation passed with the new
+Stdlib bridge; it verifies the historical and applying Git bytes without
+refreshing the historical source identity.
+
+The broader `tools/sh_crosswalk_test.clj` remains non-green on six existing
+bridge/source-drift assertions in files untouched by this repair. Those
+baseline failures are not counted as passing evidence and do not establish a
+current SH-wide acceptance result. No compiler, provider, runtime, library
+implementation, canonical-adoption or release claim is made by this receipt.
