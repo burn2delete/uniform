@@ -71,6 +71,45 @@ whole ownership support. Keep physical/provider/alignment/type/index validity
 distinct from removed project accounting. Preserve all C7/C12/provider/native/
 callback/probe/migration/publication holds and do not run them for this plan.
 
+## Ownership producer and consumer order
+
+The [existing selected-result dependency table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition)
+now declares the four current C9 consumer routes under their existing task IDs.
+Each starts against declared interfaces with no adopted-result prerequisite;
+its composition consumes only the selected actual outputs named in the table.
+These rows do not claim complete P1-P13/C10/other-source dependencies for the
+broader Legality tasks, independent acceptance or implementation.
+
+1. Types supplies actual typed-Core ownership/resource/call annotations; Effects
+   supplies inferred facts before C9, not an already accepted final ownership
+   result. Profile, Auth and Runtime owners supply selected support/grant/
+   provider contracts. Ownership analysis derives real state/borrow/lifetime/
+   region/linear/escape products and refusal evidence.
+2. Safety classification consumes those products with actual checked proof/
+   audit evidence and profile/provider metadata/failure availability. It emits
+   the operation's legal disposition and explicit dynamic-check obligations.
+   Capability authority, memory validity and proof remain separate checks.
+3. Ownership facts and dispositions are available before MIR construction.
+   MIR owns actual construction, fact attachment, verification and downstream
+   admission. Opt owns any selected mutation/regeneration; Lower/Emit own
+   actual target products/conformance; Runtime owns real transfer/check/cleanup/
+   failure execution; Diag owns consumer reporting. The handoff task consumes
+   these results for its final C9 boundary evidence rather than duplicating
+   their implementations or waiting for its own final checkbox before MIR can
+   be constructed. Valid unoptimized verified MIR remains usable by Lower.
+4. Family conformance composes analysis, safety, handoff and profile results,
+   preserving actual supported/unsupported tuples, source/check/provider/
+   diagnostic identities and unrun evidence. Its fixtures/results feed Release's
+   existing harness and later independent admission. It does not require final
+   Release first or create another harness.
+
+The selected producer counts describe source declarations, not work allowances
+or acceptance. Conditional checks/transfers/target paths must keep their actual
+support and evidence scope; a runtime-contract record cannot substitute for
+runtime execution, and a hosted check cannot prove native release. All existing
+execution/publication restrictions remain. Local work may proceed on versioned
+interfaces while actual composition and required review stay unassessed.
+
 ## Foundation source criteria
 
 Three preserved clauses from the

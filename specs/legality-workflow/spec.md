@@ -55,6 +55,12 @@ source occurrence conjunctions. Original task text/statuses and the broader
 L10/SAFE3/SAFE4/SAFE5/SAFE8 obligations remain. Source mapping is a current
 proposal; implementation and independent acceptance remain unassessed.
 
+The [ownership producer and consumer order](plan.md#ownership-producer-and-consumer-order)
+now declares C9's four selected-result routes in the existing dependency table.
+Analysis and legal check decisions precede MIR attachment; final boundary and
+family conformance consume real downstream results. These routes do not make
+whole-component or final Release completion a prerequisite for local C9 work.
+
 The [foundation source criteria](plan.md#foundation-source-criteria) refine the
 existing task records with their original requirement identities, complete
 positive/refusal clauses and actual producer/consumer evidence. Task ownership,
