@@ -1,27 +1,9 @@
 (ns gravity.build.package-selection-test
   (:require [clojure.edn :as edn]
             [clojure.test :refer [deftest is]]
-            [gravity.build.package-selection :as selection]))
-
-(def package-record
-  {:package "gravity/http" :version "2.1.4" :registry :public
-   :content-hash "sha256:http-214" :provenance "prov:http"
-   :capabilities [:http/client] :effects [:network/http]
-   :safety :reviewed :unsafe-islands [] :features [] :dependencies []
-   :variants [{:profile :hosted :target :jvm-21 :artifact "http:jvm"}]
-   :yank-status :active :revocation-status :clear
-   :signature-status :unverified :provenance-status :unverified})
-
-(def constraint-record
-  {:package "gravity/http" :version "2.1.4" :chain ["app" "gravity/http"]})
-
-(def request
-  {:constraints [constraint-record] :candidates [package-record]
-   :locked-records [] :mode :select :unsafe-policy :deny
-   :allowed-effects #{:network/http} :allowed-capabilities #{:http/client}
-   :context {:registry :public :visibility :public :registry-grants {}
-             :profile :hosted :target :jvm-21
-             :policy {:id :standard :yanked :reject :revoked :reject}}})
+            [gravity.build.package-selection :as selection]
+            [gravity.build.package-selection-fixtures
+             :refer [package-record constraint-record request]]))
 
 (defn code [result] (get-in result [:diagnostics 0 :diagnostic]))
 
