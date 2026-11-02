@@ -1,0 +1,34 @@
+{:kind :bounded-reconciliation-validation-receipt
+ :original-checkpoint "2c761cca47b77e8825e42640529308a3730637ae"
+ :composition-parent "adc4af9f707f97fe3f654d796b355a5c568c5601"
+ :integrated-main "4325a9f46292472a7f984c5adfef81209874bb5c"
+ :integrated-main-tree "5316d54c97ed99ad120f0eab499a0d9435b9b80f"
+ :manifest-sha256 "39c20f1f2ec02e8b813ef677a79a1411f7340f0eabe797bc1781d0bea96d7c00"
+ :source-review-artifact-sha256 "70b5e963ddb82256f046ce1f6ef54c15be17fef56ad3420a8c268886bf3afda9"
+ :source-conservation {:source-views 245 :occurrences 19962 :facets 29177
+                       :source-byte-changes 0 :scope-changes 0}
+ :compiler-consolidation {:original-records 119 :aliases-applied 40
+                          :archived-exact-semantic-records 40
+                          :prior-candidates 1296 :current-candidates 1256
+                          :all-task-and-historical-pointers-preserved true
+                          :route-and-inverse-membership-check :pass
+                          :receipt-sha256 "7c3c8eb8876ddfaba773a73ba38e3312022475aac4434ac510901ba097df659c"
+                          :applied-independent-review :pending}
+ :task-source-adoption {:reader-interfaces 39 :compiler-api-interfaces 19
+                        :literal-ids-and-acceptance-boundaries :unchanged
+                        :predecessor-references-and-records :retained
+                        :requirement-acceptance-changes 0}
+ :validation [{:check :focused-tests :exit 0 :tests 25 :assertions 186 :failures 0 :errors 0
+               :stdout-sha256 "0aff5def1ae057d30cbd5980a467b9ae9ad6ae08c8638f312742695d7a634545"}
+              {:check :complete-source-and-evidence-audit :exit 0
+               :stdout-sha256 "6d7ad55335e8ecddc0d221b5a00d8403a5bdf9cf514331650fce09fe07252399"}
+              {:check :canonical-documents :exit 0 :documents 240 :phase-indexes 19
+               :stdout-sha256 "b5dce9188d336690f62c126312001ec4d4ab6732fb2ede1187faddbd98600d16"}
+              {:check :full-language-roadmap :exit 0
+               :stdout-sha256 "b98ada882a8411d3ee15d4ee5bb3bff2f84c4e7c84ba05d02db23950560dc8ad"}
+              {:check :clojure-source-size :exit 0 :source-files 2035 :maximum-lines 250 :exceptions 0
+               :stdout-sha256 "056adf9739df1ef62eed43fdaa2708ec898b4ec3512f55dad0d912ae710c4d28"}]
+ :whole-project-denominator nil
+ :whole-project-rate nil
+ :limits [:not-independent-applied-model-approval :not-implementation-acceptance
+          :not-integration-approval :no-compiler-proof-replay :no-dashboard-write]}
