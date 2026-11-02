@@ -81,7 +81,14 @@ The exact capture API is refined by macro implementation documents, but the inva
 
 ## Expansion Rules
 
-Expansion proceeds until no macro calls remain in macro positions or until the compiler reaches a configured recursion/depth limit.
+Expansion proceeds until no macro calls remain in macro positions. A
+non-progressing recursive expansion is rejected deterministically using the
+existing `L4-EXPANSION-DEPTH` compatibility diagnostic; this diagnostic names a
+cycle or host-containment failure, not a project depth allowance. Finite legal
+expansion chains are not rejected because of their depth, body-form count, or
+expanded size.
+Actual process, heap and watchdog restrictions remain host safeguards outside
+the language's semantic acceptance rule.
 
 Each expansion step records:
 
@@ -175,7 +182,8 @@ The trace is used by diagnostics, tooling, incremental compilation, conformance 
 - Macro output must pass normal type, effect, profile, capability, memory, and safety checks.
 - Hygienic expansion is default; intentional capture is explicit.
 - Expansion must be deterministic under the same source, macro versions, build grants, and dependency graph.
-- Macro recursion and expansion size limits must produce stable diagnostics.
+- Non-progressing macro recursion must produce a stable diagnostic without
+  introducing a project depth or expansion-size quota.
 
 ## Dependencies
 
@@ -215,14 +223,18 @@ L4 rejects:
 - `L4-MACRO-NOT-SYNTAX`: macro returned non-syntax value.
 - `L4-HYGIENE-CAPTURE`: expansion captures or is captured unintentionally.
 - `L4-BUILD-EFFECT`: macro used undeclared or ungranted build effect.
-- `L4-EXPANSION-DEPTH`: macro expansion exceeded configured depth.
+- `L4-EXPANSION-DEPTH`: retained compatibility identifier for a detected
+  non-progressing expansion cycle or contained host expansion failure; it does
+  not report a configurable project depth limit.
 - `L4-GENERATED-PROFILE`: generated code violates caller profile.
 - `L4-GENERATED-UNSAFE`: macro generated unsafe code not allowed by policy.
 - `L4-PROVENANCE-MISSING`: expansion output lacks generated-origin metadata.
 
 ## Conformance Criteria
 
-- Fixtures cover simple macro expansion, nested expansion, syntax quote/unquote, metadata preservation, hygiene, intentional capture, and generated diagnostics.
+- Fixtures cover simple macro expansion, finite nested expansion chains,
+  syntax quote/unquote, metadata preservation, hygiene, intentional capture,
+  recursive-cycle containment, and generated diagnostics.
 - Hermetic build fixtures reject macros that read environment, network, shell, model, or tool state without grants.
 - Profile fixtures show the same macro accepted in `:hosted` and rejected in `:kernel` when generated code is illegal.
 - Unsafe macro fixtures produce unsafe audit artifacts or rejection diagnostics.

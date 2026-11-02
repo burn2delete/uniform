@@ -30,8 +30,8 @@ requires the listed structured C4 diagnostic with the actual fixture path.
 | `not-macro` | `C4-NOT-MACRO` | macro-position symbol is unavailable |
 | `phase-mismatch` | `C4-NOT-MACRO` | runtime binding is requested during macro expansion |
 | `return-non-syntax` | `C4-RETURN` | macro result is not syntax |
-| `depth-limit` | `C4-DEPTH` | expansion exceeds configured depth |
-| `size-limit` | `C4-SIZE` | expanded graph exceeds configured size |
+| `depth-limit` | `C4-DEPTH` | historical recursive-expansion quota record (retired from active checks) |
+| `size-limit` | `C4-SIZE` | historical expansion-size quota record (retired from active checks) |
 | `build-effect-ungranted` | `C4-BUILD-EFFECT` | build authority is undeclared or ungranted |
 | `hygiene-hidden-binding` | `C4-HYGIENE` | introduced identifier loses its hygiene mark |
 | `capture-authority` | `C4-CAPTURE` | capture of an authority-bearing binding is denied |
@@ -41,6 +41,13 @@ requires the listed structured C4 diagnostic with the actual fixture path.
 | `override-scalar` | `C4-RETURN` | request override is a scalar |
 | `override-vector` | `C4-RETURN` | request override is a vector |
 | `override-nil` | `C4-RETURN` | request override is nil-like |
+
+The `depth-limit` and `size-limit` pairs remain byte-identical historical
+records so their former diagnostics and provenance stay auditable. They are
+not active SH-05 rejection cases: the current engine does not impose project
+depth, output-size, or body-count quotas. Recursive non-progress is handled by
+cycle/host containment, while hygiene, build authority, profile legality,
+generated-origin, and trace validation remain active.
 
 The fixtures and dedicated namespace prove only the bounded `defn` expansion
 surface. They do not claim general macro evaluation, target legality beyond the
