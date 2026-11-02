@@ -39,7 +39,7 @@
 (defn- with-entrypoint [owners f]
   (with-dispatch ['p15-s23-stage2-c13-c14-b1-packet-from-c11!] owners f))
 
-(def native-revision "69d21cb8aacd0be8e74cbf4c9ad8b12b84d244e8")
+(def native-revision "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950")
 
 (defn- pinned-source [path digest]
   ;; Read immutable dependency source; never execute a producer/consumer job.
