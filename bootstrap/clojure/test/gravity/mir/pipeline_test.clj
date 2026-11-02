@@ -34,7 +34,9 @@
 
 (deftest contract-identifies-the-native-rule-boundary
   (is (empty? (ns-aliases 'gravity.mir)))
-  (is (= #{'validate-terminator! 'validate-cfg! 'valid-dominance-edge? 'valid-terminator-use?}
+  (is (= #{'validate-terminator! 'validate-cfg! 'valid-dominance-edge? 'valid-terminator-use?
+           'runtime-check-fact-record 'add-runtime-check-facts 'reindex-fact-table
+           'profile-target-table 'capability-proof-table 'safety-proof-table}
          (set (keys (ns-publics 'gravity.mir)))))
   (let [contract (:gravity/namespace-contract (meta #'mir/validate-cfg!))]
     (is (= (set (keys (:public-api contract)))
@@ -53,6 +55,85 @@
       (is (false? (:authenticates-inputs? contract)))
       (is (false? (:issues-verifier-certificates? contract)))
       (is (some #{:general-cfgs} (:unsupported contract))))))
+
+(deftest fact-tables-preserve-ids-order-and-borrowed-data
+  (let [source {:origin-id "origin" :generated-origin [:macro]}
+        proof {:proof-id "proof" :status :supplied-data}
+        node {:node-id "node" :source source :profile :hosted :safety {:proof proof}}
+        profile {:profile :hosted :evidence :supplied-data}
+        core {:core-nodes [node] :source-target :jvm :profile-facts {"node" profile}
+              :capability-proof-records [proof]
+              :target-request-metadata {:requested-target :c}}
+        original {:core-node-id "node" :fact-id "original" :source source}
+        indexed (mir/reindex-fact-table [node] {"node" original} :fact-id ":type-fact")
+        fallback (mir/reindex-fact-table [node] {} :fact-id ":type-fact")
+        target (get (mir/profile-target-table core) "node:profile-target-fact")]
+    (is (sorted? indexed))
+    (is (= {"original" original} indexed))
+    (is (identical? source (get-in indexed ["original" :source])))
+    (is (= {"node:type-fact" {:fact-id "node:type-fact"}} fallback))
+    (is (identical? profile (:profile-fact target)))
+    (is (= [:hosted :jvm :c] ((juxt :profile :source-target :target-request) target)))
+    (is (identical? proof (get (mir/capability-proof-table core) "proof")))
+    (is (identical? proof (get (mir/safety-proof-table core) "proof")))
+    (is (= {} (mir/safety-proof-table (assoc core :core-nodes [(dissoc node :safety)]))))))
+
+(deftest runtime-check-facts-retain-owner-ports-and-native-classification
+  (let [check {:check-id "check" :capability-proof-id "proof" :authority-record-id "authority"
+               :failure :panic}
+        node {:node-id "node" :source {:origin-id "origin"} :profile :hosted :safety {:check check}}
+        core {:core-nodes [node] :source-target :jvm :profile-facts {"node" :profile-data}
+              :target-request-metadata {:requested-target :c}}
+        events (atom [])
+        fact-id (fn [value kind] (swap! events conj [:fact value kind]) "fact")
+        op-id (fn [value] (swap! events conj [:operation value]) "operation")
+        token-id (fn [value] (swap! events conj [:token value]) "token")]
+    (doseq [kind [:type :effect :capability :ownership :safety :profile-target]]
+      (reset! events [])
+      (let [record (mir/runtime-check-fact-record fact-id op-id token-id core node kind)]
+        (is (= [[:fact check kind] [:operation check] [:token check]] @events))
+        (is (= "fact" (or (:fact-id record) (:outcome-id record))))
+        (is (= (when-not (= :profile-target kind) "origin") (:source-origin-id record)))
+        (is (= :hosted (:profile record)))
+        (is (true? (:derived? record)))
+        (case kind
+          :effect (is (= [:sequence true #{}] ((juxt :ordering :non-dce? :direct) record)))
+          :capability (is (= [["proof"] "authority" #{}]
+                             ((juxt :capability-proof-ids :authority-id :granted) record)))
+          :safety (is (= [:runtime-checked "check" :panic]
+                         ((juxt :outcome :runtime-check :failure-behavior) record)))
+          :ownership (is (= ["token" :single-guard-use :forbidden]
+                            ((juxt :value-id :shareability :mutation) record)))
+          :type (is (= :gravity/runtime-check-token (:type record)))
+          :profile-target (is (= [:profile-data :c] ((juxt :profile-fact :target-request) record))))))
+    (let [table (sorted-map "old" :retained) marker (Object.) calls (atom [])]
+      (is (= (assoc table "fact" marker)
+             (mir/add-runtime-check-facts
+              fact-id (fn [& args] (swap! calls conj args) marker) core :type table)))
+      (is (= [[core node :type]] @calls))
+      (is (identical? table (mir/add-runtime-check-facts fact-id nil (assoc core :core-nodes [{}]) :type table))))
+    (let [error (ex-info "owner id failure" {})
+          caught (try (mir/runtime-check-fact-record (fn [& _] (throw error)) op-id token-id core node :type)
+                      nil (catch clojure.lang.ExceptionInfo e e))]
+      (is (identical? error caught)))))
+
+(deftest fact-table-wrappers-retain-late-owner-var-identity
+  (doseq [[name arguments ports]
+          [['runtime-check-fact-record [:core :node :type]
+            [#'b/p15-s23-c11-mir-runtime-check-fact-id #'b/p15-s23-c11-mir-runtime-check-operation-id
+             #'b/p15-s23-c11-mir-runtime-check-token-id]]
+           ['add-runtime-check-facts [:core :type :table]
+            [#'b/p15-s23-c11-mir-runtime-check-fact-id #'b/p15-s23-c11-mir-runtime-check-fact-record]]
+           ['reindex-fact-table [:nodes :table :key :suffix] []]
+           ['profile-target-table [:core] []] ['capability-proof-table [:core] []]
+           ['safety-proof-table [:core] []]]]
+    (let [stage (ns-resolve 'gravity.mir name)
+          wrapper (ns-resolve 'gravity.bootstrap (symbol (str "p15-s23-c11-mir-" name)))
+          marker (Object.) observed (atom nil)]
+      (with-redefs-fn {stage (fn [& args] (reset! observed args) marker)}
+        #(is (identical? marker (apply wrapper arguments))))
+      (is (= (concat ports arguments) @observed))
+      (is (every? true? (map identical? ports (take (count ports) @observed)))))))
 
 (deftest paired-gravity-fixture-emits-mir-and-keeps-native-rule-results
   ;; Actual Gravity fixture/builder execution on normalized data. The fixture's
