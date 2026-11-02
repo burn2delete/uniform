@@ -392,7 +392,7 @@
          (assoc base :origin-chain [])
          (assoc-in division [:facts :numeric-mode] :wrapping)]
         malformed-results (mapv classify malformed)
-        bounds-result
+        wide-provenance-result
         (classify
          (assoc base :origin-chain
                 (vec
@@ -405,8 +405,11 @@
              (get-in result [:diagnostics 0 :rule])))
       (is (= :malformed-safety-operation
              (get-in result [:diagnostics 0 :reason]))))
-    (is (= "C10-NO-OUTCOME"
-           (get-in bounds-result [:diagnostics 0 :rule])))))
+    (is (= :accepted (:status wide-provenance-result)))
+    (is (= :proven-safe (:outcome wide-provenance-result)))
+    (is (= 100
+           (count (get-in wide-provenance-result
+                          [:identity-input :request :origin-chain]))))))
 
 (deftest sh11-fails-closed-on-runtime-unsafe-and-result-attacks
   (let [base
@@ -501,3 +504,43 @@
     (is (= {:status :rejected
             :reason :authenticated-identity-seq-unsupported}
            rejected))))
+
+(deftest sh11-preserves-schema-types-without-payload-size-ceilings
+  (let [long-string (apply str (repeat 257 \x))
+        keyword-values
+        (mapv #(keyword (str "metadata-" %)) (range 33))
+        wide-keyword-set (set keyword-values)
+        wrong-keyword-set (conj #{} :metadata-0 "not-a-keyword")
+        wrong-keyword-vector [:metadata-0 "not-a-keyword"]
+        sha-id
+        "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        wide-sha-vector (vec (repeat 9 sha-id))
+        wrong-sha-vector (assoc wide-sha-vector 0 "not-a-sha256-id")]
+    (is (= true (invoke-c10 'sh11-nonempty-string? [long-string])))
+    (is (= false (invoke-c10 'sh11-nonempty-string? [""])))
+    (is (= false (invoke-c10 'sh11-nonempty-string? [[]])))
+    (is (= true
+           (invoke-c10 'sh11-nonempty-keyword-set? [wide-keyword-set])))
+    (is (= true (invoke-c10 'sh11-keyword-set? [wide-keyword-set])))
+    (is (= false (invoke-c10 'sh11-nonempty-keyword-set? [#{}])))
+    (is (= false
+           (invoke-c10 'sh11-nonempty-keyword-set?
+                       [wrong-keyword-set])))
+    (is (= false
+           (invoke-c10 'sh11-keyword-set? [wrong-keyword-set])))
+    (is (= false
+           (invoke-c10 'sh11-nonempty-keyword-set? [keyword-values])))
+    (is (= true
+           (invoke-c10 'sh11-nonempty-keyword-vector?
+                       [keyword-values])))
+    (is (= false
+           (invoke-c10 'sh11-nonempty-keyword-vector? [[]])))
+    (is (= false
+           (invoke-c10 'sh11-nonempty-keyword-vector?
+                       [wrong-keyword-vector])))
+    (is (= true (invoke-c10 'sh11-sha-vector? [wide-sha-vector])))
+    (is (= false (invoke-c10 'sh11-sha-vector? [[]])))
+    (is (= false
+           (invoke-c10 'sh11-sha-vector? [(seq wide-sha-vector)])))
+    (is (= false
+           (invoke-c10 'sh11-sha-vector? [wrong-sha-vector])))))

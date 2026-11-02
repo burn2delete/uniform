@@ -472,9 +472,7 @@
 
 (defn sh11-nonempty-string? [value]
   (if (string? value)
-    (if (> (count value) 0)
-      (<= (count value) 256)
-      false)
+    (> (count value) 0)
     false))
 
 (defn sh11-lowercase-hex? [characters]
@@ -541,20 +539,6 @@
 (defn sh11-nonempty-keyword-set? [value]
   (if (set? value)
     (if (> (count value) 0)
-      (if (<= (count value) 32)
-        (loop [remaining (vec value)]
-          (if (= (count remaining) 0)
-            true
-            (if (keyword? (first remaining))
-              (recur (rest remaining))
-              false)))
-        false)
-      false)
-    false))
-
-(defn sh11-keyword-set? [value]
-  (if (set? value)
-    (if (<= (count value) 32)
       (loop [remaining (vec value)]
         (if (= (count remaining) 0)
           true
@@ -564,31 +548,37 @@
       false)
     false))
 
+(defn sh11-keyword-set? [value]
+  (if (set? value)
+    (loop [remaining (vec value)]
+      (if (= (count remaining) 0)
+        true
+        (if (keyword? (first remaining))
+          (recur (rest remaining))
+          false)))
+    false))
+
 (defn sh11-nonempty-keyword-vector? [value]
   (if (vector? value)
     (if (> (count value) 0)
-      (if (<= (count value) 32)
-        (loop [remaining value]
-          (if (= (count remaining) 0)
-            true
-            (if (keyword? (first remaining))
-              (recur (rest remaining))
-              false)))
-        false)
+      (loop [remaining value]
+        (if (= (count remaining) 0)
+          true
+          (if (keyword? (first remaining))
+            (recur (rest remaining))
+            false)))
       false)
     false))
 
 (defn sh11-sha-vector? [value]
   (if (vector? value)
     (if (> (count value) 0)
-      (if (<= (count value) 8)
-        (loop [remaining value]
-          (if (= (count remaining) 0)
-            true
-            (if (sh11-sha256-id? (first remaining))
-              (recur (rest remaining))
-              false)))
-        false)
+      (loop [remaining value]
+        (if (= (count remaining) 0)
+          true
+          (if (sh11-sha256-id? (first remaining))
+            (recur (rest remaining))
+            false)))
       false)
     false))
 
