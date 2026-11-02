@@ -199,7 +199,6 @@
               (if (> (count (get revision :logical-source-path)) 0)
                 (if (c3-nonnegative-integer?
                      (get revision :source-byte-count))
-                  (if (<= (get revision :source-byte-count) 1048576)
                     (if (= (get revision :entry-function)
                            'sh03-read-source-unit)
                       (if (= (get revision :verifier-function)
@@ -237,7 +236,6 @@
                           false)
                         false)
                       false)
-                    false)
                   false)
                 false)
               false)
