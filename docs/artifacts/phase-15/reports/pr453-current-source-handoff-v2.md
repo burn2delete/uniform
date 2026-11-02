@@ -116,6 +116,22 @@ The existing legacy v1 C6 binding test fails closed with
 historical/default boundary, not a v1 repin. No large C11/C5 run, native C
 run, fresh authority migration proof or denied operation was attempted.
 
+## Coordinator lint repair and fresh handoff
+
+Pinned clj-kondo 2025.10.23 initially found four new warnings: an unused
+`testing` refer and three duplicate requires after dependencies moved earlier
+in the Bootstrap facade. The repair removes only those redundant declarations;
+the earlier namespace aliases and all function bodies remain intact.
+
+Changed-file lint against main
+`6218e80e0238cbd071a8837193e7afb5f0b87869` then passed with 3459 inherited
+baseline warnings and zero blocking diagnostics. The complete static receipts
+are preserved in `/tmp/uniform-pr453-final-static-artifacts`. After this
+cleanup the genuine handoff rerun passed 10 tests / 52 assertions, and the
+language boundary passed 6 tests / 11 assertions. The logs are
+`/tmp/uniform-pr453-lint-fixed-handoff.log` and
+`/tmp/uniform-pr453-lint-fixed-boundary.log`.
+
 ## Conformance and acceptance criteria
 
 Integration requires an independent review of the exact candidate commit and
