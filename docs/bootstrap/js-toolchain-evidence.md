@@ -94,7 +94,7 @@ All six complete serializable products and original serializations agree:
 three existing native scalar/control/pure fixtures for each source spelling.
 Native fixture data digests, actual rejected-source hashes and all four emitted
 file hashes recompute. Real Node 24 execution preserves NUL/UTF8, integer extrema,
-control-flow text and pure empty output. Malformed ESM and a process exiting7
+control-flow text and pure empty output. Malformed ESM and a process exiting 7
 retain B6-TARGET, including actual stdout/stderr; existing output, escaped
 sidecars, outside roots and a file used as parent retain C14-INPUT. The actual
 Node 20 eligibility and JS source-target refusals remain in every record.
@@ -128,3 +128,34 @@ Affected composition, committed contextual lint, language/ownership, contract
 validators, independent exact acceptance, own CI/artifacts and immediate clean
 current-main integration preflight remain required. No review or CI from the
 separate JVM slice transfers to this candidate.
+
+## Exact current-main composition
+
+Current base is f23bdce29c79d8c483af74750f682ed51923cb2b, tree
+23133f854b240f20eb620526488a4abc440f27ee, including the independently
+integrated JVM slice. Source composition a455e2545428721f941cbde7fa5ec6891162b8ee
+has tree 02fd94345c0c62a84004dfdddabe019df2d9c199. The adjacent namespace-map
+row conflict was resolved by preserving the complete main map and replacing
+only its JS row with this candidate's reviewed row; both final owners remain.
+No JVM production changes are part of this JS diff.
+
+Fresh native baseline d5e465c407a903de01a65f36d6c65bd8997c1437, tree
+7a3a5caf2fb3b66df72ead089ea1216709cbbce8, is this exact main plus the two
+declared-JS fixtures and original capture-test file. It executes original JS
+helpers in this same physical checkout. Its process exits before the checkout
+returns to the extracted source composition. All six complete serializable
+records and original serializations agree again, including unchanged source
+and Node20 refusals. Fixture/source hashes and four file hashes per record
+recompute. Opaque publication values remain separate observations and units.
+Earlier records are retained under
+/tmp/uniform-js-toolchain-evidence-base2c-history.
+
+Fresh affected backend tests pass 36/873; language/ownership pass 47/1154.
+Committed contextual lint against this base covers four paths with zero
+warnings and zero blockers; receipts are archived at
+/tmp/uniform-js-toolchain-lint-mainf23. Source reconstruction includes every
+original type tag. The stage cold-loads without Bootstrap and exposes 18 public
+operations. Final document/roadmap/governance checks, independent exact
+composition acceptance, this candidate's own CI/artifact verification and
+immediate clean integration preflight remain gates; earlier acceptance or CI
+from another tuple is not transferred.
