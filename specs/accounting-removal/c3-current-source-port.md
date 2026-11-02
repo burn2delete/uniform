@@ -69,6 +69,51 @@ renewed.
 - Docs: 240 documents / 19 phase indexes passed. Roadmap and governance
   validators passed. `git diff --check` passed.
 
+## Post-composition current-source caller repair
+
+The first hosted validation of the composed candidate was red and is retained
+as a defect receipt, not treated as a stale check. Run `41498207973` reported
+the following affected jobs:
+
+- Resolution pipeline job `125458841658`: 42 tests / 2144 assertions, 2
+  failures and 4 errors. The current-cohort fixture reached C3 with expected
+  Syntax bytes `81241` and observed current bytes `78739` because its
+  current Reader/Macro invocation omitted the validated Syntax selection.
+- SH04 fresh-C2 job `125458841740`: 63 tests / 609 assertions, 2 failures and
+  1 error. Its current construction and standalone frozen-entry fixtures had
+  the same missing handoff; the standalone entry also exposed the correct
+  earlier pinned C3 refusal for a current C2.
+- Macro pipeline job `125458841884`: 27 tests / 148 assertions, 12 errors in
+  paired expansion, source-mode, and current receipt fixtures for the same
+  omitted Syntax selection.
+- SH06 unmetered Resolution job `125458841639`: 9 tests / 58 assertions,
+  1 error in the actual current-source artifact fixture.
+
+The scoped repair keeps Syntax selection explicit and independent. Resolution,
+SH06, SH08's C8 fixture helper, Macro paired fixtures, and SH04 fresh-C2
+construction now carry the validated
+`:gravity/sh04-development-syntax-selection-v1` binding for their intended
+current-source routes. The Resolution Macro-isolation case selects Reader and
+Syntax but omits Macro, so it still fails closed at C4 with
+`:exact-pinned-macro-source`; a separate Reader-only case omits both selections
+and fails closed at C3 with `:exact-pinned-syntax-source`. The SH04 standalone
+two-argument public entry likewise records the early frozen C3 refusal when
+given an explicitly current C2. No default/pinned call was converted to
+current mode and no admission hash was refreshed.
+
+On the repaired local candidate, the affected JVM receipts are:
+
+- `gravity.resolution.pipeline-test`: 43 tests / 2203 assertions passed.
+- `gravity.self-hosting.sh06-unmetered-resolution-test`: 9 tests / 78
+  assertions passed.
+- `gravity.self-hosting.sh04-fresh-c2-construction-test`: 5 tests / 30
+  assertions passed.
+- `gravity.macro.pipeline-test`: 22 tests / 307 assertions passed.
+
+These are focused development checks, not hosted or canonical admission
+authority. The original hosted red result, the exact current-source byte
+comparison, and the pinned/default refusal cases remain part of the record.
+
 ## Remaining work and nonclaims
 
 The Reader revision byte ceiling `1048576` remains in this source and is the
