@@ -1045,8 +1045,8 @@ decisions and cannot change D3 itself. D3's complete distinctions, explicitly
 narrowed meanings, migration/deprecation and diagnostic obligations remain
 applicable beyond the listed example counterexamples.
 
-The other thirteen of those 52 proposed clauses are not literal current task
-text. Their Build, Runtime, CLI, Lower, Legality and Diagnostics owners already
+At that checkpoint, the other thirteen of those 52 proposed clauses were not
+literal current task text. Their Build, Runtime, CLI, Lower, Legality and Diagnostics owners already
 have related broad task/spec criteria; whether those entail every source
 condition still requires review before proposing any further amendment. No
 missing-text count is presented as a semantic gap count. Other preserved
@@ -1081,3 +1081,83 @@ execution ran, and no other chat was messaged. The first implementation
 preparation increment remains Reader contract coverage. Complete substantive
 coverage, current implementation assessment, material source/product decisions,
 independent acceptance and integration remain unfinished; the goal stays active.
+
+## Remaining foundation owner criteria
+
+The thirteen remaining clauses from that same preserved foundation context now
+appear byte-for-byte under their nine original task owners in Build, CLI, Diag,
+Runtime, Lower and Legality. All 52 clauses in this particular context occur
+once in their owning current task files. This establishes literal preservation;
+it does not establish the complete semantic partition or entail every predicate
+in each attached source facet.
+
+The [Build](../specs/build-workflow/plan.md#foundation-source-criteria),
+[CLI](../specs/cli-workflow/plan.md#foundation-source-criteria),
+[Diag](../specs/diag-workflow/plan.md#foundation-source-criteria),
+[Runtime](../specs/runtime-workflow/plan.md#foundation-source-criteria),
+[Lower](../specs/lower-workflow/plan.md#foundation-source-criteria) and
+[Legality](../specs/legality-workflow/plan.md#foundation-source-criteria) planning
+entries bind full canonical conditions, actual inputs/results, concrete
+counterexamples and evidence to the existing records. Build compares graph
+edges as well as hashes. CLI names the actual D2 hosted hello, malformed source
+and missing-stdout-authority cases. Diag requires actual check failures across
+optimization and claimed providers. Runtime closes real transitive service use
+and tests foreign conversion/callback boundaries. Lower distinguishes operation
+coverage, guarded variants and real native emission. Legality separates each
+operation's four-way safety outcome, mode-conditional unsafe cases and complete
+safe-wrapper preconditions/cleanup.
+
+The FFI task owns shared foreign conversion/callback adapters; managed/native
+execution consumes them and owns family lifecycle/collection/state behavior.
+Emit/backend owners still produce target bytes, Runtime owns actual checks and
+calls, semantic producers own rule decisions, and Diag/CLI own their consumer
+contracts. No duplicate implementation task is introduced. Declared interfaces
+permit local work; actual relevant products remain required at composition.
+The selected Linux LLVM release target, runtime-delegation/symbol-resolution
+qualifications, operation holds, source policy and accounting removal remain.
+
+The thirteen retained requirement identities carry 331 distinct contextual
+facet IDs. Nineteen applicable canonical source pins match their preserved
+versions; their documents and phase READMEs were read directly. Existing
+Foundation7 preservation/allocation qualifications and all global conjunctions
+remain unassessed. Neither the count nor copying a reviewed clause confers
+source-family acceptance or implemented behavior.
+
+Task source `ae9d37bb3e43cc8148319b9fd315366804be80e1` and Runtime planning
+clarification `5ddb31bd0625f1d7472d45d138fc80e7258f4d71` retain the complete
+predecessor bridge/projection and pending review at `925cd2fb`. Six task sources
+advance explicitly, the Lower task inspection hash follows its declared source
+change, and six newly linked plans receive exact inspection-only pins. Original
+task IDs/statuses, forty future records, original SH/SH07 routes and narrow
+Reader receipts remain unchanged. Of 139 original bodies, 110 remain identical
+and 29 carry declared additions; there are still 149 current task keys across
+25 authorities. The version record has 23 task files, five navigation files
+and two dependency inputs, with separate source-inspection locators. Current
+mapping review remains pending at
+`beb32fd5cd0eb73f0715572b044ff5f7a7c04d047acab451219d47c039e9be42`.
+
+Validation passes: 34 crosswalk tests / 1,710 assertions, 23 dependency tests /
+1,774 assertions, deterministic crosswalk write/check, read-only dependency
+audit, canonical document/full-language structural validators and the language
+boundary (six tests / eleven assertions). The staged graph is acyclic and
+mapping readiness remains false. Conservation/navigation passes for 79 changed
+files, 73 Markdown files, 2,792 local references, 139 original component routes,
+48 preserved spec/plan suffixes and all 48 original task/evidence contents after
+stripping declared additions. Initial helper assertions and an unpinned-plan
+regeneration refusal were corrected before these passing checks; they receive
+no passing credit. No compiler/native/provider/C12/device, migration, signing,
+publication or held operation ran, and no other chat was messaged.
+
+The next source-conjunction review is the preserved complete C15 trace at
+`916f020c064991fd308550e4e934c0b4443f6d6b`: its seven exact criterion witness
+spans were read and hash-verified against Git. Six are absent literally from
+the current Diag records; the TEST2 diagnostic-match witness is already present
+in the existing Release producer. That observation is not a semantic absence
+verdict. The trace's 133 C15 facets, thirteen foundation diagnostic predicates
+and twenty unrelated retained foundation residuals require their actual scope,
+current applicability and conjunction review. Its earlier independent PASS
+explicitly covers only its frozen subject; no automatic current adoption or
+reviewer contact follows. The goal stays active, with substantive global
+coverage, evidence assessment, decisions and independent review/integration
+unfinished. Reader contract coverage remains the first implementation
+preparation increment.

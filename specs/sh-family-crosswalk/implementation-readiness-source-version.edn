@@ -230,14 +230,26 @@
   :global-source-conjunctions :unassessed,
   :implementation-acceptance :unassessed},
  :additional-pinned-evidence-hashes
- {"docs/phase-02-safety/043-safe14-supply-chain-safety.md"
-  "403faf1d18dab790276e8c5072ca42821e9754856127b73e72eef52ceb28a1f5",
-  "docs/phase-05-mathematical-and-elementary-function-system/README.md"
-  "03e284a061857a0d0fc4a2c2f87ffdc73841fa96bebf36f64a02014aa6a68960",
+ {"specs/lower-workflow/plan.md"
+  "b4d75c9cc9672efe7145677a7f1b927bbe9da6fabf20c2be82abaa49145eb439",
   "docs/phase-17-governance-and-evolution/240-gov10-ecosystem-package-governance-policy.md"
   "aebf4b6087817fd1f5c140868e0225989322c4cfb8f7fa5953ca3fe0f22cf0a3",
+  "specs/runtime-workflow/plan.md"
+  "3286d6e741dfcb14206dd9ec38ab62f9dcdbea80f0f87f6354a36df368cbe66e",
+  "docs/phase-05-mathematical-and-elementary-function-system/README.md"
+  "03e284a061857a0d0fc4a2c2f87ffdc73841fa96bebf36f64a02014aa6a68960",
+  "specs/diag-workflow/plan.md"
+  "7a4a07a05de3cd616f5f4ec3822fdb0a9b4aa1740cd850ece5a35f599b88eeea",
+  "specs/cli-workflow/plan.md"
+  "b25db661156837e5a61d15d745dd612814a5574bc8c74e230536cecd20210735",
+  "specs/build-workflow/plan.md"
+  "b1a68edd236414df44814fe79b454e54d4c42990ae445e262675fb567d782e16",
+  "specs/legality-workflow/plan.md"
+  "78d1282c3332fc8f788452c4691634a74d2cee0e0454eab56933d56ae7ba650a",
+  "docs/phase-02-safety/043-safe14-supply-chain-safety.md"
+  "403faf1d18dab790276e8c5072ca42821e9754856127b73e72eef52ceb28a1f5",
   "specs/lower-workflow/tasks.md"
-  "0ef7630d5e962068e47bfb85cd1028fd070b24656f0dd922148e72976ded84d2"},
+  "a726439daf7b57b8d0efec06786ce94694d10217bd6c0530c5807770ffda8ee4"},
  :stable-task-routing-additions
  {"evolution"
   ["evolution/change-review"
@@ -250,9 +262,9 @@
    "evolution/security-review"
    "evolution/stabilization-decision"
    "evolution/target-support-admission"]},
- :source-input-commit "e52c1505b762b8c316a5b7dbba302c54552d0b07",
+ :source-input-commit "5ddb31bd0625f1d7472d45d138fc80e7258f4d71",
  :task-comparisons
- {:unchanged-body-count 119,
+ {:unchanged-body-count 110,
   :changed-bodies
   [{:id "ai",
     :path "specs/domains-workflow/tasks.md",
@@ -260,6 +272,15 @@
     "259e56b5a3ef7013c0cac28b89961938f79dc91634affb6189f6fa4492dbdbeb",
     :after-sha256
     "2a53eb9ffee12850d7ff9f06ccf198a3b0bf8ac66f0549b62ab572d53eaeb2b9",
+    :before-checked false,
+    :after-checked false}
+   {:id
+    "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+    :path "specs/build-workflow/tasks.md",
+    :before-sha256
+    "e8987cc8863981527889461d9af2194c2a0b17393b82ca6f83e8a555581b5ebe",
+    :after-sha256
+    "497a094ce811e502e7a5bf614b2cb60848d1d2e48c3c0d877585dae3eda74b7c",
     :before-checked false,
     :after-checked false}
    {:id
@@ -280,12 +301,30 @@
     "497f2ff15a9d3f33b238f41ea6d9becc0337fcd6a925fa6e96dfb7207cd6eb3c",
     :before-checked false,
     :after-checked false}
+   {:id
+    "cli/remaining-tasks-and-evidence/connect-checkruncompilebuildtestpackageverify-to-real-services",
+    :path "specs/cli-workflow/tasks.md",
+    :before-sha256
+    "9214938d797eb51dd04ab193cb16775b1ded3a1bd7266794e71141d29dca097b",
+    :after-sha256
+    "29fefc18145fc1bf00591fc94c74a9684fb5618dcefcf11b4d32a7725eaf35f9",
+    :before-checked false,
+    :after-checked false}
    {:id "devices",
     :path "specs/platform-workflow/tasks.md",
     :before-sha256
     "5493075b464fce8a99cee1dd7c10c45511708a0b80f2def02682f39d3d636873",
     :after-sha256
     "74fed080cedf5da0f0d585684c8ccbe9e6eebf562bc164b04af0695e14067502",
+    :before-checked false,
+    :after-checked false}
+   {:id
+    "diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift",
+    :path "specs/diag-workflow/tasks.md",
+    :before-sha256
+    "daeaf70c28ec25bb0996b2fb74350050a98292a42ef63d75013bda88cb6f21bf",
+    :after-sha256
+    "e03f540a737a2136a488959a0f9e5ec84633d8cc6762f1a9e153ce04a34ea602",
     :before-checked false,
     :after-checked false}
    {:id "firmware",
@@ -318,6 +357,42 @@
     "5dbfd482e65831287c53bf6f91c6d1a5788ae792168447c126a38c3937a0021e",
     :after-sha256
     "58a678ed9b1d6fb96b42f03b2c770da546e63739a3bb0d0b96cfb974a27c03d7",
+    :before-checked false,
+    :after-checked false}
+   {:id
+    "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+    :path "specs/legality-workflow/tasks.md",
+    :before-sha256
+    "0bca8126d43acf042bf255a7a28721d7767ef9b0515c23638a194585cec03b51",
+    :after-sha256
+    "5bf614a73b3924aaec8531907b7ef3cc8af14720edf6a2bcfb7402a05eaab184",
+    :before-checked false,
+    :after-checked false}
+   {:id
+    "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+    :path "specs/legality-workflow/tasks.md",
+    :before-sha256
+    "1872ebe2a5eda2592ba7d86bdd08c20da03a812a787e1044cffb32a1f8ddb50c",
+    :after-sha256
+    "21bb6b9822fe6a0164289f2bc74bf8fc0f62f183d193222c23a44859f385fb9a",
+    :before-checked false,
+    :after-checked false}
+   {:id
+    "lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs",
+    :path "specs/lower-workflow/tasks.md",
+    :before-sha256
+    "c640667fed0375261d824acedb06e7db04ad8a0f333bc82f2bf65484698372d7",
+    :after-sha256
+    "9253ac1c541ddb45907a1fc2d2210c271fa57a365e21e6619874db41c46078ed",
+    :before-checked false,
+    :after-checked false}
+   {:id
+    "lower/current-evidence-and-remaining-work/lower5-integrate-target-emission",
+    :path "specs/lower-workflow/tasks.md",
+    :before-sha256
+    "bea71cfcf6e99dac9285833ca027126fb34d835638f0771a4a5645959884132f",
+    :after-sha256
+    "783be43780c2a712aaf0e8926711e7896c5e3917fb8d553a44c6e74d578a5c6d",
     :before-checked false,
     :after-checked false}
    {:id "math",
@@ -379,6 +454,24 @@
     "ae4d6a913a262ccf365ad6e93b5f810f689a3f6f82703013235318f9a4ccb1b3",
     :after-sha256
     "d650f548865ff04bdd28a7ab76b7c8c0b156266f232a76e15e1c5ad597d1d34e",
+    :before-checked false,
+    :after-checked false}
+   {:id
+    "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection",
+    :path "specs/runtime-workflow/tasks.md",
+    :before-sha256
+    "aab8d166839b35fb798d8fe57d4fdc81d7945f7ac2f6a0988951ab4334be7653",
+    :after-sha256
+    "03d86dcd092837a1a86c229c4b659d215d39d01a6f5ffd9429e2722648dd75a0",
+    :before-checked false,
+    :after-checked false}
+   {:id
+    "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
+    :path "specs/runtime-workflow/tasks.md",
+    :before-sha256
+    "86bceb1d3186fd03c074849fc0fd1cd86c10ea6f81cf00e6c15377aefda92c9c",
+    :after-sha256
+    "8d1e0439a3df2848313e20d220aa3a2ea95265cf2b24c6f8bd8b5bf4870b2dbc",
     :before-checked false,
     :after-checked false}
    {:id "schema",
@@ -2256,9 +2349,9 @@
     :sha256
     "6c88f677477ec41d755dbedd39d1e03de7c9ae81cc9a956a48c8cf319bfca1b0"},
    :after
-   {:commit "3e34a600c7e139abb0cf51673ef9175dae1b1eba",
+   {:commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
     :sha256
-    "beb27b61e41d554e3bca856cb44eeb6d70221e0f289a04ed5ed87e0e71c31980"},
+    "26749c506f9b4ddcf1ea3293b640e922d7d882839a51dea882353ebd34101ce3"},
    :scope :task-file-version}
   {:path "specs/core-workflow/tasks.md",
    :before
@@ -2276,9 +2369,9 @@
     :sha256
     "a4b029e285344368079a3120f387217c01468fbc11f24aff8cf219c9284128b4"},
    :after
-   {:commit "69831d09bc2007844265968b265c493cf064bdf9",
+   {:commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
     :sha256
-    "c3c0c33e30aa33d70afca4b863be94f7412a8d154df566e96f433dfbaacae502"},
+    "9f7606a10a9a98405137858df82e2d9f44166dc0c0091e8171edb84c296e5906"},
    :scope :task-file-version}
   {:path "specs/domains-workflow/tasks.md",
    :before
@@ -2326,9 +2419,9 @@
     :sha256
     "937ed9cf0a8a7272559564344141fff0f1e3db34c9deef4106ab3ca958354f9e"},
    :after
-   {:commit "69831d09bc2007844265968b265c493cf064bdf9",
+   {:commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
     :sha256
-    "7ea9be2215a02987c86a57bb300fbe948391a46d1464353d1fe588e6a97f0007"},
+    "7a5b6164c9da7ab099a9d92660468a0276f524515fe95115fb77e7761e43be27"},
    :scope :task-file-version}
   {:path "specs/lower-workflow/tasks.md",
    :before
@@ -2336,9 +2429,9 @@
     :sha256
     "9be5eed80229ee59fe35b2279fe95a40e9aeee977a503739bfa3fdd9e3eea48c"},
    :after
-   {:commit "69831d09bc2007844265968b265c493cf064bdf9",
+   {:commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
     :sha256
-    "0ef7630d5e962068e47bfb85cd1028fd070b24656f0dd922148e72976ded84d2"},
+    "a726439daf7b57b8d0efec06786ce94694d10217bd6c0530c5807770ffda8ee4"},
    :scope :task-file-version}
   {:path "specs/mir-workflow/tasks.md",
    :before
@@ -2500,27 +2593,77 @@
    {:commit "e52c1505b762b8c316a5b7dbba302c54552d0b07",
     :sha256
     "dcc9b5eb9885b1c8c3608034cfad1e8ddcc0ea916c5be8a260ec5d1af93f8bf2"},
-   :scope :foundation-tools-task-criteria}],
+   :scope :foundation-tools-task-criteria}
+  {:path "specs/cli-workflow/tasks.md",
+   :before
+   {:commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "75300e2d2d3c9a44e0799ee203d3126eeba690adbbd89f0dcc8b4bbf4c7a88c7"},
+   :after
+   {:commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+    :sha256
+    "4e98c91c8beeb40ef78c8305db99f11b05b3095bbf9076204b55f319d854b73b"},
+   :scope :foundation-owner-task-criteria}
+  {:path "specs/runtime-workflow/tasks.md",
+   :before
+   {:commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972"},
+   :after
+   {:commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+    :sha256
+    "95cb5fa0f1a72e27dc44ca7b64567c312eb2592a33d3811be547e511e485a4ca"},
+   :scope :foundation-owner-task-criteria}],
  :inspection-locators
- {"docs/phase-02-safety/043-safe14-supply-chain-safety.md"
-  {:commit "697917447d70ba0797a096d9427d4706bf5515df",
+ {"specs/lower-workflow/plan.md"
+  {:commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
    :sha256
-   "403faf1d18dab790276e8c5072ca42821e9754856127b73e72eef52ceb28a1f5",
-   :kind :source-inspection-not-execution},
-  "docs/phase-05-mathematical-and-elementary-function-system/README.md"
-  {:commit "697917447d70ba0797a096d9427d4706bf5515df",
-   :sha256
-   "03e284a061857a0d0fc4a2c2f87ffdc73841fa96bebf36f64a02014aa6a68960",
+   "b4d75c9cc9672efe7145677a7f1b927bbe9da6fabf20c2be82abaa49145eb439",
    :kind :source-inspection-not-execution},
   "docs/phase-17-governance-and-evolution/240-gov10-ecosystem-package-governance-policy.md"
   {:commit "7c408997aedbe79953cac5a60c97d6370ca4c2e1",
    :sha256
    "aebf4b6087817fd1f5c140868e0225989322c4cfb8f7fa5953ca3fe0f22cf0a3",
    :kind :source-inspection-not-execution},
-  "specs/lower-workflow/tasks.md"
-  {:commit "69831d09bc2007844265968b265c493cf064bdf9",
+  "specs/runtime-workflow/plan.md"
+  {:commit "5ddb31bd0625f1d7472d45d138fc80e7258f4d71",
    :sha256
-   "0ef7630d5e962068e47bfb85cd1028fd070b24656f0dd922148e72976ded84d2",
+   "3286d6e741dfcb14206dd9ec38ab62f9dcdbea80f0f87f6354a36df368cbe66e",
+   :kind :source-inspection-not-execution},
+  "docs/phase-05-mathematical-and-elementary-function-system/README.md"
+  {:commit "697917447d70ba0797a096d9427d4706bf5515df",
+   :sha256
+   "03e284a061857a0d0fc4a2c2f87ffdc73841fa96bebf36f64a02014aa6a68960",
+   :kind :source-inspection-not-execution},
+  "specs/diag-workflow/plan.md"
+  {:commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+   :sha256
+   "7a4a07a05de3cd616f5f4ec3822fdb0a9b4aa1740cd850ece5a35f599b88eeea",
+   :kind :source-inspection-not-execution},
+  "specs/cli-workflow/plan.md"
+  {:commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+   :sha256
+   "b25db661156837e5a61d15d745dd612814a5574bc8c74e230536cecd20210735",
+   :kind :source-inspection-not-execution},
+  "specs/build-workflow/plan.md"
+  {:commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+   :sha256
+   "b1a68edd236414df44814fe79b454e54d4c42990ae445e262675fb567d782e16",
+   :kind :source-inspection-not-execution},
+  "specs/legality-workflow/plan.md"
+  {:commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+   :sha256
+   "78d1282c3332fc8f788452c4691634a74d2cee0e0454eab56933d56ae7ba650a",
+   :kind :source-inspection-not-execution},
+  "docs/phase-02-safety/043-safe14-supply-chain-safety.md"
+  {:commit "697917447d70ba0797a096d9427d4706bf5515df",
+   :sha256
+   "403faf1d18dab790276e8c5072ca42821e9754856127b73e72eef52ceb28a1f5",
+   :kind :source-inspection-not-execution},
+  "specs/lower-workflow/tasks.md"
+  {:commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+   :sha256
+   "a726439daf7b57b8d0efec06786ce94694d10217bd6c0530c5807770ffda8ee4",
    :kind :source-inspection-not-execution}},
  :ai-parent-refinement
  {:source-input-commit "92b3917ec51e882338fc221bddde86310815221f",
@@ -4212,7 +4355,7 @@
    "4ee538fce884ae04d1dbaf22ea54d9aee0e32abbbb071272f7115baf9da141ad",
    :scope :retained-historical-ownership-not-current-authority}},
  :qualification
- "Bind exact task versions, Governance routing, all seven Domain and four Platform parent refinements plus Release aggregates. Twenty Open original bodies carry declared additions, including two Tools records; 119 bodies and all original checkboxes are conserved. Preserve each readiness predecessor and qualified review subject. Sixteen Domain, thirteen Release and eleven Platform Product future records retain pending SH composition. Global source entailment, independent current review and implementation acceptance remain unassessed.",
+ "Bind exact task versions, Governance routing, all seven Domain and four Platform parent refinements plus Release aggregates. Twenty-nine Open original bodies carry declared additions, including eleven foundation owner records; 110 bodies and all original checkboxes are conserved. Preserve each readiness predecessor and qualified review subject. Sixteen Domain, thirteen Release and eleven Platform Product future records retain pending SH composition. Global source entailment, independent current review and implementation acceptance remain unassessed.",
  :future-dependency-refinement
  {:predecessor-readiness-successor
   {:commit "ea8147fd983a3d7ddb16bd89680af5677b3a636f",
@@ -4864,7 +5007,9 @@
     "6778a1ede4e57076c54a574bcb9f2d1c44d520897a2900d58a4ff46cda63bd69",
     :relation :exact-file-bytes}]},
  :applying-source-pins
- {"specs/release-workflow/tasks.md"
+ {"specs/lower-workflow/plan.md"
+  "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+  "specs/release-workflow/tasks.md"
   "be099c84b68e17e171e67905de64c9053226a083",
   "docs/component-roadmaps/build.md"
   "69831d09bc2007844265968b265c493cf064bdf9",
@@ -4873,7 +5018,7 @@
   "specs/opt-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9",
   "specs/diag-workflow/tasks.md"
-  "69831d09bc2007844265968b265c493cf064bdf9",
+  "ae9d37bb3e43cc8148319b9fd315366804be80e1",
   "docs/component-roadmaps/evolution.md"
   "b69133db3237dc47c5fce321763ae4a3b0532cc4",
   "specs/reader-workflow/tasks.md"
@@ -4892,24 +5037,36 @@
   "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
   "specs/expand-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9",
+  "specs/runtime-workflow/plan.md"
+  "5ddb31bd0625f1d7472d45d138fc80e7258f4d71",
   "docs/phase-05-mathematical-and-elementary-function-system/README.md"
   "697917447d70ba0797a096d9427d4706bf5515df",
   "specs/effects-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9",
   "specs/build-workflow/tasks.md"
-  "3e34a600c7e139abb0cf51673ef9175dae1b1eba",
+  "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+  "specs/diag-workflow/plan.md"
+  "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+  "specs/cli-workflow/plan.md"
+  "ae9d37bb3e43cc8148319b9fd315366804be80e1",
   "specs/auth-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9",
+  "specs/runtime-workflow/tasks.md"
+  "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+  "specs/build-workflow/plan.md"
+  "ae9d37bb3e43cc8148319b9fd315366804be80e1",
   "specs/tools-workflow/tasks.md"
   "e52c1505b762b8c316a5b7dbba302c54552d0b07",
   "specs/resolve-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9",
   "specs/legality-workflow/tasks.md"
-  "69831d09bc2007844265968b265c493cf064bdf9",
+  "ae9d37bb3e43cc8148319b9fd315366804be80e1",
   "specs/syntax-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9",
   "specs/types-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9",
+  "specs/legality-workflow/plan.md"
+  "ae9d37bb3e43cc8148319b9fd315366804be80e1",
   "specs/domains-workflow/tasks.md"
   "92b3917ec51e882338fc221bddde86310815221f",
   "docs/phase-02-safety/043-safe14-supply-chain-safety.md"
@@ -4923,7 +5080,9 @@
   "specs/evolution-workflow/tasks.md"
   "b69133db3237dc47c5fce321763ae4a3b0532cc4",
   "specs/lower-workflow/tasks.md"
-  "69831d09bc2007844265968b265c493cf064bdf9",
+  "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+  "specs/cli-workflow/tasks.md"
+  "ae9d37bb3e43cc8148319b9fd315366804be80e1",
   "specs/emit-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9"},
  :finish-line-refinement
@@ -5813,5 +5972,885 @@
   :platform-product-adoption :unknown,
   :first-seedless-stop :unchanged-not-240-document-completion,
   :implementation-acceptance :unassessed},
+ :foundation-owner-refinement
+ {:new-task-identities [],
+  :canonical-documents
+  [{:id "D0",
+    :path
+    "docs/phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md",
+    :current-sha256
+    "9b16a7773d0d283a2f6b595e6b65c0fdee7be66d602275a2aebea3bcc79e763e"}
+   {:id "D1",
+    :path
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+    :current-sha256
+    "3791a95f860d4d8fca8e73d7bb57701cdf1e099c14c2b8d0f1778d8ce1e95f75"}
+   {:id "D2",
+    :path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :current-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc"}
+   {:id "D5",
+    :path
+    "docs/phase-00-foundation-and-thesis/006-d5-language-replacement-strategy.md",
+    :current-sha256
+    "2dfc71f40ec14f7a17b65c73dcce873185c82f08ea18590a1bff635178805cb8"}
+   {:id "D6",
+    :path
+    "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md",
+    :current-sha256
+    "5e8f1f06e25b8aaefb4c549a7ecf8678a00c8b64bff0ebe9198c5f4daf8f5ff2"}
+   {:id "D8",
+    :path
+    "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md",
+    :current-sha256
+    "ef9a50aabbf60ecb1927ae86a77a54d40248ea759ab82df80bef70e794e39e63"}
+   {:id "D9",
+    :path
+    "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+    :current-sha256
+    "9defd108707c5359377d11e95d18f751f2de72d8981a3789d905118419c2d56b"}
+   {:id "SAFE1",
+    :path "docs/phase-02-safety/030-safe1-safe-gravity-semantics.md",
+    :current-sha256
+    "220615f64d0041ab248dbf34c2ef5118a9a40ba07bed86b86436d2b0cb9bc3df"}
+   {:id "SAFE6",
+    :path
+    "docs/phase-02-safety/035-safe6-unsafe-code-and-audit-model.md",
+    :current-sha256
+    "ead50f3f54d0a3e46d6dedeb0abbd6d7c2dc135e9be06476598957174b1cbd6f"}
+   {:id "P1",
+    :path
+    "docs/phase-03-profile-system/046-p1-profile-system-specification.md",
+    :current-sha256
+    "3fe9fcaf0e9c6fca4e0fba40fcbc3241eca3f5b2a24b956a6a40e73c42f2806b"}
+   {:id "C14",
+    :path
+    "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md",
+    :current-sha256
+    "ec3664547f3425cfa994fd0b3c44c37f85e0206fca237b384bac04ef4b07d405"}
+   {:id "C15",
+    :path
+    "docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md",
+    :current-sha256
+    "6947ad905feb04d2e6d4d5e029bb6d4253a859ea30ceb43510caed5bda202e70"}
+   {:id "R1",
+    :path
+    "docs/phase-08-runtime-architecture/112-r1-runtime-architecture-overview.md",
+    :current-sha256
+    "c8b69b53960bc7257e797db4b77deff7cc76cc747890d107a4a0e4b660631a20"}
+   {:id "R2",
+    :path
+    "docs/phase-08-runtime-architecture/113-r2-no-runtime-execution-model.md",
+    :current-sha256
+    "d2eae424530f2b4feb929d54da5fad6499b82f0adba5da488ec2841275207797"}
+   {:id "R4",
+    :path
+    "docs/phase-08-runtime-architecture/115-r4-managed-runtime-design.md",
+    :current-sha256
+    "16b665c5e65532775242b02d7faf0fba3ab35e93abbb58b720e8031539106297"}
+   {:id "R10",
+    :path
+    "docs/phase-08-runtime-architecture/121-r10-ffi-runtime-design.md",
+    :current-sha256
+    "b04ba44656a7cbb41020fe2cd60fa36d6c4cad692c09a8a3a8acd8d06dda3de8"}
+   {:id "R12",
+    :path
+    "docs/phase-08-runtime-architecture/123-r12-runtime-observability-and-diagnostics-design.md",
+    :current-sha256
+    "b66d26b2aa5e93a8fbb4952f5f379050e5311b94a1d163208cb25bc482070439"}
+   {:id "PKG7",
+    :path
+    "docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md",
+    :current-sha256
+    "be029602301a0a9f1f392df06d84f8b6ea56226f5d61754a78de7dbc589e9933"}
+   {:id "T1",
+    :path
+    "docs/phase-13-tooling-and-developer-experience/177-t1-cli-specification.md",
+    :current-sha256
+    "359d631dbb0330508657ef107bbc39c03ababf9c93f3b852db1def1a9fab1d23"}],
+  :predecessor-readiness-successor
+  {:commit "925cd2fb2a0cd5ac6c51012f842ed06ce6e1ec1c",
+   :path
+   "specs/sh-family-crosswalk/implementation-readiness-source-version.edn",
+   :sha256
+   "5609ff7d9467386771b2f7379e1cd75eab4483000436c3b5845d80fe0204bf37",
+   :projection-path "specs/sh-family-crosswalk/crosswalk.edn",
+   :projection-sha256
+   "4551c6a8bf39f66d56e8eeb16ec4faa3ed37c2c7c552e0670fc3605d04761b2a",
+   :input-fingerprint
+   "888978bdb4f157054dbe7782da9ba2d8783164509e4e558bf3567f185aa624b6"},
+  :criteria
+  [{:id "gravity/artifact-graph-reproducibility",
+    :path "specs/build-workflow/tasks.md",
+    :task-id
+    "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+    :marker "build-foundation-reproducibility",
+    :criterion-sha256
+    "63ec3784468a2458c81b09e2a5e4dc42e951438b9f6b76cb3edcafaab1f6f318",
+    :source-facet-ids
+    ["facet/foundation/8a088e39f71e161162011d65"
+     "facet/foundation/b0476099c29ee19fd9b8283b"
+     "facet/foundation/ea9af5667b0b095d5aadf517"
+     "facet/foundation/08fbeb71ac7a9a5ce80d81ec"
+     "facet/foundation/88e6c82eff0c6a6fb53002ab"
+     "facet/foundation/6417313d2f333de7082cf785"
+     "facet/foundation/f4ea0b5d5c73e8b9467f9cc7"
+     "facet/foundation/09cdf5ae95950e511f0dd064"
+     "facet/foundation/8e92ffcc004134a32d87e553"
+     "facet/foundation/2c160e28d27085795f49c712"
+     "facet/foundation/10b263fc4b8c7b313581cec9"
+     "facet/foundation/6bfc3a6e135070e2cd47ef2b"
+     "facet/foundation/523b8379cdd950c846157716"
+     "facet/foundation/10da89a275c908917e039346"
+     "facet/foundation/6bf793d5f7c5656aab741023"
+     "facet/foundation/75eec15133c55efd31cbebd3"
+     "facet/foundation/9ef6fbc71713de8426563175"
+     "facet/foundation/8d7af893de09e3cace6656e1"
+     "facet/foundation/6a3fc5f3c758f30d5f92db8e"
+     "facet/foundation/e8693bed2e6ae49b9763cf26"
+     "facet/foundation/9ba0f8e82b8b995ee2aba266"
+     "facet/foundation/3adec8d328aadbf51409fafa"
+     "facet/foundation/d06435ec2f90a888ca20a4ae"
+     "facet/foundation/edf5c560d47b735d8aa5f368"
+     "facet/foundation/36ba293412c0247c08c1cc4d"
+     "facet/foundation/08c03d82bd660a18e3bca17a"
+     "facet/foundation/0612cd01b329cf5f0bf60847"
+     "facet/foundation/7fa2a8cf6bc98341299bc44b"
+     "facet/foundation/a3cf8f4d7dd8ed3616eeab7c"
+     "facet/foundation/7f07fa593703d99ad1924731"
+     "facet/foundation/2336dae1e6bfce26fc357af7"
+     "facet/foundation/5f8aecc1ce278f223f320bbe"
+     "facet/foundation/21eb43b934256e6f10875d80"
+     "facet/foundation/585504d215d9ffa198c67879"
+     "facet/foundation/9db1acf044749a97851bab96"
+     "facet/foundation/ede1c4d5e66d96d7d32b9d79"
+     "facet/foundation/5b42b51208761d13fe28019b"
+     "facet/foundation/4c6337b14ba3496c203eab8f"]}
+   {:id "gravity/explicit-runtime-service-dependencies",
+    :path "specs/runtime-workflow/tasks.md",
+    :task-id
+    "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection",
+    :marker "runtime-foundation-service-closure",
+    :criterion-sha256
+    "fff8e17e5c57786c68c168cc1f91bebd0962dde727a4ab0bcab0eb3315a1c59a",
+    :source-facet-ids
+    ["facet/foundation/a8a496e791ca62b00c5ed975"
+     "facet/foundation/434ad5d19cd6c0044253291c"
+     "facet/foundation/329073b00bd2e93539eb8049"
+     "facet/foundation/2ec5135f80ed611f95699a4f"
+     "facet/foundation/f0ce1dd6e8c04172d4b6f0d3"
+     "facet/foundation/af0be0c286491fe8a747bc96"
+     "facet/foundation/164f8fd077e4bbc3f95d1e5f"
+     "facet/foundation/322d0ce91b95f9f5be885bd0"
+     "facet/foundation/ae564e9b496c99db8b8b6a48"
+     "facet/foundation/c3960a8f8115e607247be937"
+     "facet/foundation/c323b8b1ad935ac3e2470bfa"
+     "facet/foundation/4a33f0752cf922fd5362cca0"
+     "facet/foundation/557f36f6329baa78ba7c6a72"
+     "facet/foundation/0964b041922655167e1ed203"
+     "facet/foundation/89c77ea533a270d9e9062ae3"
+     "facet/foundation/c41d1a79df68a28561ba9635"
+     "facet/foundation/4d101049b1e75abe93fb6884"
+     "facet/foundation/1e8e8ea29d43ed93b3c21f4e"
+     "facet/foundation/ec5169a3f4078e2c6a697ddf"
+     "facet/foundation/c86087cf94730ef9980a3832"
+     "facet/foundation/c7d0495c7a6d26d2333ec528"
+     "facet/foundation/cd0929b1662cb190a1bdf186"
+     "facet/foundation/0172c21720c8700b0d0f6d26"
+     "facet/foundation/fb622d20277efd0deb65f879"
+     "facet/foundation/0b1a3d72b84b8c2b81809453"
+     "facet/foundation/ea196d5db9a6ce937ba623a7"
+     "facet/foundation/c85da1a6ea4da0046e752e34"
+     "facet/foundation/5f14a7ab70f0c84eb555b009"
+     "facet/foundation/9baf6c0b0bef7b63be199c2c"
+     "facet/foundation/26835d95382eb8aa94305eac"
+     "facet/foundation/203642834c4090d42d60365b"
+     "facet/foundation/5c8e553842f7e13979f64d68"
+     "facet/foundation/8a088e39f71e161162011d65"
+     "facet/foundation/46eec10c1ed7a29ad28cb5aa"
+     "facet/foundation/b0476099c29ee19fd9b8283b"
+     "facet/foundation/ea9af5667b0b095d5aadf517"
+     "facet/foundation/08fbeb71ac7a9a5ce80d81ec"
+     "facet/foundation/88e6c82eff0c6a6fb53002ab"
+     "facet/foundation/6417313d2f333de7082cf785"
+     "facet/foundation/f4ea0b5d5c73e8b9467f9cc7"
+     "facet/foundation/17ad84e6d440d713eda5dd41"
+     "facet/foundation/8e92ffcc004134a32d87e553"
+     "facet/foundation/0a91c877c17192f00b309c16"
+     "facet/foundation/2c160e28d27085795f49c712"
+     "facet/foundation/10b263fc4b8c7b313581cec9"
+     "facet/foundation/8f265e8429935b9fa956a49b"
+     "facet/foundation/6bfc3a6e135070e2cd47ef2b"
+     "facet/foundation/523b8379cdd950c846157716"
+     "facet/foundation/1aa082f56ae56b3c2c0f823b"
+     "facet/foundation/10da89a275c908917e039346"
+     "facet/foundation/6bf793d5f7c5656aab741023"
+     "facet/foundation/75eec15133c55efd31cbebd3"
+     "facet/foundation/60c31c9bf71b48df4fd1c9d3"
+     "facet/foundation/713a34496e802790f290683b"
+     "facet/foundation/cdc83421a4e528f733d6c2c7"
+     "facet/foundation/9d5a38fba7e132288d6bf189"
+     "facet/foundation/b0f787b54f65b45bd5a8670a"
+     "facet/foundation/ab2d9a1f2d344fc08f4e2d5a"
+     "facet/foundation/9cf1b7fa51a1d2de0da7895a"
+     "facet/foundation/21729a51b721ab7be767ac05"
+     "facet/foundation/5417bf3c43a093f2efec97d9"
+     "facet/foundation/2e327f6d08b4e2251ab4ed05"
+     "facet/foundation/a243f16eb771569c66b802a0"
+     "facet/foundation/0624811bdb01f5083da03398"
+     "facet/foundation/a9708e9b317328fd31fd825f"
+     "facet/foundation/a8c0ecdce59f58dcb7926eef"
+     "facet/foundation/c444ec5fdaa377b4961c11c6"
+     "facet/foundation/b4906a343151ca8ff6c25a26"
+     "facet/foundation/f9bbb3cc33d1faddb87ee68d"
+     "facet/foundation/df34a97da0d0ff8c0f95168e"]}
+   {:id "gravity/hosted-hello-execution",
+    :path "specs/cli-workflow/tasks.md",
+    :task-id
+    "cli/remaining-tasks-and-evidence/connect-checkruncompilebuildtestpackageverify-to-real-services",
+    :marker "cli-foundation-hosted-hello",
+    :criterion-sha256
+    "b3515265a9a67422107e2d8684ab69c187fff51bfbd6f9c58536007cc5e09ea3",
+    :source-facet-ids
+    ["facet/foundation/69bc8ba8fcc4531b7ceeb836"
+     "facet/foundation/ceb69aaa55b76131e1b37517"
+     "facet/foundation/4477ee0ed06871ce707145d7"
+     "facet/foundation/9d73f7cb8dfebb7267006667"
+     "facet/foundation/e68e6537e4748a35fcad0ad7"
+     "facet/foundation/36152b7b654cf2ded50e1f01"
+     "facet/foundation/fdb0770180d1e7abb622f507"
+     "facet/foundation/28147019e69b3d70c3a1081f"
+     "facet/foundation/c20a4d7a2b3062355f032dae"
+     "facet/foundation/97d50cb5ec5176d24c4373c9"
+     "facet/foundation/da30500ee017b96eb352ade6"
+     "facet/foundation/4df359629ebcfa6268e0affa"
+     "facet/foundation/2a9552f8b2e1ae66c392ab93"
+     "facet/foundation/ed94ec0c3e34fa14b9a6e513"
+     "facet/foundation/f2bc0f4a189b856944d0f99d"]}
+   {:id "gravity/interop-boundary-manifest",
+    :path "specs/runtime-workflow/tasks.md",
+    :task-id
+    "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
+    :marker "runtime-foundation-foreign-boundary",
+    :criterion-sha256
+    "ec98a85d34f44348bac1daa7a779d14efa85db88a4386c6ba3db639b475dc48b",
+    :source-facet-ids
+    ["facet/foundation/b1df0e61126f5fb1a9c0f1f4"
+     "facet/foundation/3c7e2156678a4426f34ea376"
+     "facet/foundation/18d9f8fbebd0571d019a82ea"
+     "facet/foundation/745493a1e4d39b2e14ef658f"
+     "facet/foundation/5eb2019ac6894708ff8ae368"
+     "facet/foundation/2519888d44f7023813a7785b"
+     "facet/foundation/d8d5595d4de210e9254c78df"
+     "facet/foundation/a1500f5a9f14f5c04051de1a"
+     "facet/foundation/d6b42fa05462c2f222379915"
+     "facet/foundation/a39f06eee3bbdad9cb4fc10d"
+     "facet/foundation/6f83f262803f7150218dc18f"
+     "facet/foundation/d514cde2743616632ee79d2b"
+     "facet/foundation/1710def2e1c5e265a0ca479e"
+     "facet/foundation/742a69c8bc29c28d2baeea83"
+     "facet/foundation/a53203e4e13d9abc7b0bbf4a"
+     "facet/foundation/6bc712dc9e3e8f2d708fd613"
+     "facet/foundation/4ca552b873e395e5bad48640"
+     "facet/foundation/2c2f878fc04ecc76c5c20886"
+     "facet/foundation/40065705d6266384dca822c2"
+     "facet/foundation/5e4e9b6d45b430e366d957ab"
+     "facet/foundation/789d13b5541865b24a840963"
+     "facet/foundation/8309a29336013ec9046d4d0e"
+     "facet/foundation/d03d1f4db57e9d1120517ad7"
+     "facet/foundation/69fe894e10e343514e40edf3"
+     "facet/foundation/f1c8f7bf9849ff7572c9a336"
+     "facet/foundation/072afcaa8a39f6779c8c64f7"
+     "facet/foundation/6fe0f1bc91aea088c2a7844b"
+     "facet/foundation/fe231b30b933186373a4222e"
+     "facet/foundation/e23db2d839d97e927de05044"
+     "facet/foundation/2336dae1e6bfce26fc357af7"
+     "facet/foundation/5c652bed3db4c4b8852bf6ac"
+     "facet/foundation/5f8aecc1ce278f223f320bbe"
+     "facet/foundation/21eb43b934256e6f10875d80"
+     "facet/foundation/585504d215d9ffa198c67879"
+     "facet/foundation/9db1acf044749a97851bab96"
+     "facet/foundation/ede1c4d5e66d96d7d32b9d79"
+     "facet/foundation/8d6d3743129e951d437d17b4"
+     "facet/foundation/5b42b51208761d13fe28019b"]}
+   {:id "gravity/interop-is-not-host-semantics",
+    :path "specs/runtime-workflow/tasks.md",
+    :task-id
+    "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
+    :marker "runtime-foundation-foreign-boundary",
+    :criterion-sha256
+    "2f3172eae020575f0997e201ddbdc8e8acfb122704c7541b026d2e95f01f2f30",
+    :source-facet-ids
+    ["facet/foundation/b1df0e61126f5fb1a9c0f1f4"
+     "facet/foundation/3c7e2156678a4426f34ea376"
+     "facet/foundation/18d9f8fbebd0571d019a82ea"
+     "facet/foundation/745493a1e4d39b2e14ef658f"
+     "facet/foundation/5eb2019ac6894708ff8ae368"
+     "facet/foundation/2519888d44f7023813a7785b"
+     "facet/foundation/d8d5595d4de210e9254c78df"
+     "facet/foundation/a1500f5a9f14f5c04051de1a"
+     "facet/foundation/d6b42fa05462c2f222379915"
+     "facet/foundation/a39f06eee3bbdad9cb4fc10d"
+     "facet/foundation/4ca552b873e395e5bad48640"
+     "facet/foundation/2c2f878fc04ecc76c5c20886"
+     "facet/foundation/40065705d6266384dca822c2"
+     "facet/foundation/5e4e9b6d45b430e366d957ab"
+     "facet/foundation/789d13b5541865b24a840963"
+     "facet/foundation/8309a29336013ec9046d4d0e"
+     "facet/foundation/072afcaa8a39f6779c8c64f7"
+     "facet/foundation/6fe0f1bc91aea088c2a7844b"
+     "facet/foundation/fe231b30b933186373a4222e"
+     "facet/foundation/e23db2d839d97e927de05044"]}
+   {:id "gravity/multiversion-guard-manifest",
+    :path "specs/lower-workflow/tasks.md",
+    :task-id
+    "lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs",
+    :marker "lower-foundation-input-closure",
+    :criterion-sha256
+    "fbbb8c024e21d9adc556268f41d01abfad7ec92de9e1f3df27f4fceecc5034ba",
+    :source-facet-ids
+    ["facet/foundation/72ccabc5472257dbd5fdace6"
+     "facet/foundation/ad7c67f86945dad31730e8f7"
+     "facet/foundation/0cd03a1cc41c3ecabe52c7d0"
+     "facet/foundation/0631b3ea5395230e648ee07d"
+     "facet/foundation/b24b59bdbc17e477ea1d6a91"
+     "facet/foundation/20c682df6a71b5af98dda65a"
+     "facet/foundation/206ad8d9325efd0df045a894"
+     "facet/foundation/4e17133c95dbcee6d20b0b8f"
+     "facet/foundation/71e81efa62dbc52154009106"
+     "facet/foundation/89541537263fd84e68adb53b"
+     "facet/foundation/9886e0a21acf9c776dd8e894"
+     "facet/foundation/f51c19f7c8d8c004bebede36"
+     "facet/foundation/1ebbd755d5e0442eb2fd5874"
+     "facet/foundation/aff5a49d9d9564149326058a"
+     "facet/foundation/e44f68059ac399159fa81700"
+     "facet/foundation/72ddd77038a1dafbd47fc34c"
+     "facet/foundation/bfb41cdb9847e2dce4648e8e"
+     "facet/foundation/bba476e5f599e2a8d322f7e8"
+     "facet/foundation/358246d1bb7bd013384043da"
+     "facet/foundation/0f63cdb0569fc5e163c4eb55"
+     "facet/foundation/3fa23a511b344f7fa4212cf5"
+     "facet/foundation/d28b5f598eb700ba4abd1b06"
+     "facet/foundation/1cb7d1be992411705e274a3c"
+     "facet/foundation/8de6e825fc02bb0a2a3b3dbc"
+     "facet/foundation/5887f58141d9212b30bdce24"
+     "facet/foundation/86ad5967e36c9552d3af9a45"]}
+   {:id "gravity/native-target-artifact-emission",
+    :path "specs/lower-workflow/tasks.md",
+    :task-id
+    "lower/current-evidence-and-remaining-work/lower5-integrate-target-emission",
+    :marker "lower-foundation-native-emission",
+    :criterion-sha256
+    "165271bdc6230280185c68cbd3a18a8c7800bc496d6d0edbe8082e618a3bf2af",
+    :source-facet-ids
+    ["facet/foundation/61c5e6448861b942b8e1ae1a"
+     "facet/foundation/abc6bd1bb664485f35eb63f2"
+     "facet/foundation/c467b67e1b8f85a1c901aaf3"
+     "facet/foundation/5d21f737b745893ec4f5e887"
+     "facet/foundation/b216f19e89ce79f94db3406b"
+     "facet/foundation/4c17b8ae89124808966dbe13"
+     "facet/foundation/ae9572d2ebd35cc86007cf3d"
+     "facet/foundation/28e40efadef99ce7833cc97f"
+     "facet/foundation/bf24b1a1eaf740e97c49c91f"
+     "facet/foundation/fabc239487047134810ab229"
+     "facet/foundation/62132f31bdc329c7e53a0622"
+     "facet/foundation/177b8e98d817586c440a3753"
+     "facet/foundation/9902d4e84526968a8906803c"
+     "facet/foundation/07228cfdcbc5a6d77f1871cf"
+     "facet/foundation/3d67ba40cb8878ce8549dcdc"
+     "facet/foundation/d281dd522ea8562986f1c4b9"
+     "facet/foundation/6fbf8fd7a36eda14747dcc09"
+     "facet/foundation/8433916cb3ac1ee47f43a930"
+     "facet/foundation/08bda61bbea21f9d10e3d601"
+     "facet/foundation/1d587641600405d203ef25b2"
+     "facet/foundation/ed94ec0c3e34fa14b9a6e513"
+     "facet/foundation/3ba9ad2839ade2ccf25ebfe8"
+     "facet/foundation/0f6cf6bb385ab31c4dff1b70"]}
+   {:id "gravity/profile-contract-declaration",
+    :path "specs/legality-workflow/tasks.md",
+    :task-id
+    "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+    :marker "legality-foundation-profile-contract",
+    :criterion-sha256
+    "f77d4dc75970fe295f2616dfb7b29a4140c7ea6b784fdc869f10c03d839ddbdf",
+    :source-facet-ids
+    ["facet/foundation/ea0ca62cacfc29e1d10a80b9"
+     "facet/foundation/aaaed8151b9d309ca7818e1b"
+     "facet/foundation/4d0c331fe980e20dcbe310f3"
+     "facet/foundation/6f62aa23c41bea6bcc9d7406"
+     "facet/foundation/a8a496e791ca62b00c5ed975"
+     "facet/foundation/434ad5d19cd6c0044253291c"
+     "facet/foundation/38d113cafe1c2227d9c60560"
+     "facet/foundation/1f7b39294d5e2e3f57b10845"
+     "facet/foundation/0598ffa33cbd0cb9816094b9"
+     "facet/foundation/557f36f6329baa78ba7c6a72"
+     "facet/foundation/0964b041922655167e1ed203"
+     "facet/foundation/21da008e5c74e1f864ffc236"
+     "facet/foundation/c41d1a79df68a28561ba9635"
+     "facet/foundation/4d101049b1e75abe93fb6884"
+     "facet/foundation/1e8e8ea29d43ed93b3c21f4e"
+     "facet/foundation/a68f791861366970acd49ce8"
+     "facet/foundation/ec5169a3f4078e2c6a697ddf"
+     "facet/foundation/c86087cf94730ef9980a3832"
+     "facet/foundation/5eae63f667c2e59e234e53a3"
+     "facet/foundation/c7d0495c7a6d26d2333ec528"
+     "facet/foundation/cd0929b1662cb190a1bdf186"
+     "facet/foundation/21c844bdce628a80ec01fecd"
+     "facet/foundation/cacbf543c65a552a0ddee323"
+     "facet/foundation/1d5412d4f816cfc0924752b7"
+     "facet/foundation/69bc8ba8fcc4531b7ceeb836"
+     "facet/foundation/ceb69aaa55b76131e1b37517"
+     "facet/foundation/89c6411e63058918fa6a20ae"
+     "facet/foundation/83315905b472936ac8efa81f"
+     "facet/foundation/9855b5004dc2532ea4bc1ad8"
+     "facet/foundation/9d73f7cb8dfebb7267006667"
+     "facet/foundation/e68e6537e4748a35fcad0ad7"
+     "facet/foundation/fdb0770180d1e7abb622f507"
+     "facet/foundation/28147019e69b3d70c3a1081f"
+     "facet/foundation/c20a4d7a2b3062355f032dae"
+     "facet/foundation/023ea8c4ec07f97e315a050a"
+     "facet/foundation/da30500ee017b96eb352ade6"
+     "facet/foundation/2a9552f8b2e1ae66c392ab93"
+     "facet/foundation/f84256711d1db99aa2819ef1"
+     "facet/foundation/34adb9de94e9f86424c57fbe"
+     "facet/foundation/b6c05b07801cb5dca538b70d"
+     "facet/foundation/92f94c5129689ebd458256f6"
+     "facet/foundation/d58a437e3abcfb0ad01ce156"
+     "facet/foundation/c250a4cb4bf9e0c6456c76dc"
+     "facet/foundation/1933eb956794efb170cdb0eb"
+     "facet/foundation/50198cae4ac1edd7cef1eaa6"
+     "facet/foundation/b96ba354d01c4873c5fd6948"
+     "facet/foundation/941400954cbfd7f47b957b73"
+     "facet/foundation/1386eb51457bb862170d6ea6"
+     "facet/foundation/075c7de83c4b6841514461c6"
+     "facet/foundation/eb50c16d475d5f277c6b5acb"
+     "facet/foundation/d9ce823ed7e69ebe294d9f27"
+     "facet/foundation/3c8eac2fca0a5032571c712c"
+     "facet/foundation/0251ef6b64f99c0d0e4a89c3"
+     "facet/foundation/2e290ffc4ba0fd47289ac147"
+     "facet/foundation/9676101f88e19b81d4ce25b6"
+     "facet/foundation/72ba4e58270f8b54fe7e9e24"
+     "facet/foundation/bddff3fd055b7b3fae6d1881"
+     "facet/foundation/ea0564a4e551bd9b8c1116b6"
+     "facet/foundation/e09d1b42a2b57350ff24c6b7"
+     "facet/foundation/cf120e9ba59be0a74213a631"
+     "facet/foundation/60c31c9bf71b48df4fd1c9d3"
+     "facet/foundation/713a34496e802790f290683b"
+     "facet/foundation/cdc83421a4e528f733d6c2c7"
+     "facet/foundation/9d5a38fba7e132288d6bf189"
+     "facet/foundation/b0f787b54f65b45bd5a8670a"
+     "facet/foundation/ab2d9a1f2d344fc08f4e2d5a"
+     "facet/foundation/21729a51b721ab7be767ac05"
+     "facet/foundation/5417bf3c43a093f2efec97d9"
+     "facet/foundation/2e327f6d08b4e2251ab4ed05"
+     "facet/foundation/a243f16eb771569c66b802a0"
+     "facet/foundation/0624811bdb01f5083da03398"
+     "facet/foundation/a9708e9b317328fd31fd825f"
+     "facet/foundation/a8c0ecdce59f58dcb7926eef"
+     "facet/foundation/b4906a343151ca8ff6c25a26"
+     "facet/foundation/df34a97da0d0ff8c0f95168e"]}
+   {:id "gravity/runtime-check-diagnostic-stability",
+    :path "specs/diag-workflow/tasks.md",
+    :task-id
+    "diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift",
+    :marker "diag-foundation-runtime-checks",
+    :criterion-sha256
+    "a084055bbda2aba3c42964fb5ada27c61f1e9e6789b15953716ca6317fa550bb",
+    :source-facet-ids
+    ["facet/foundation/99e263fa95482ba02e422f04"
+     "facet/foundation/69b2446e5f70f48489038924"
+     "facet/foundation/d51b9fa2f21db1867b44d66d"
+     "facet/foundation/4fafba169df6751d5a76135a"
+     "facet/foundation/62ba45290b10db616f91119a"
+     "facet/foundation/5be06327a0aa6d6874f599c1"
+     "facet/foundation/407eed4cae64c77c6e3e498b"
+     "facet/foundation/1617ef1370cda52aa98de080"
+     "facet/foundation/d472c31ea128f3b0f1a06d1b"
+     "facet/foundation/3b57cc70c705d4cd890cae80"
+     "facet/foundation/bd9136e6dee34ae8a2396ad2"
+     "facet/foundation/6b70b6af44ccd79fe7c90a4e"
+     "facet/foundation/2745645d4a937a89241dc22c"]}
+   {:id "gravity/runtime-manifest-closure",
+    :path "specs/runtime-workflow/tasks.md",
+    :task-id
+    "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection",
+    :marker "runtime-foundation-service-closure",
+    :criterion-sha256
+    "9d88bfb64efd48e89713053044c05f236163321772bde0faeb1828f89cd26eac",
+    :source-facet-ids
+    ["facet/foundation/a8a496e791ca62b00c5ed975"
+     "facet/foundation/434ad5d19cd6c0044253291c"
+     "facet/foundation/329073b00bd2e93539eb8049"
+     "facet/foundation/2ec5135f80ed611f95699a4f"
+     "facet/foundation/f0ce1dd6e8c04172d4b6f0d3"
+     "facet/foundation/af0be0c286491fe8a747bc96"
+     "facet/foundation/164f8fd077e4bbc3f95d1e5f"
+     "facet/foundation/322d0ce91b95f9f5be885bd0"
+     "facet/foundation/ae564e9b496c99db8b8b6a48"
+     "facet/foundation/c3960a8f8115e607247be937"
+     "facet/foundation/c323b8b1ad935ac3e2470bfa"
+     "facet/foundation/4a33f0752cf922fd5362cca0"
+     "facet/foundation/557f36f6329baa78ba7c6a72"
+     "facet/foundation/0964b041922655167e1ed203"
+     "facet/foundation/89c77ea533a270d9e9062ae3"
+     "facet/foundation/c41d1a79df68a28561ba9635"
+     "facet/foundation/4d101049b1e75abe93fb6884"
+     "facet/foundation/1e8e8ea29d43ed93b3c21f4e"
+     "facet/foundation/ec5169a3f4078e2c6a697ddf"
+     "facet/foundation/c86087cf94730ef9980a3832"
+     "facet/foundation/c7d0495c7a6d26d2333ec528"
+     "facet/foundation/cd0929b1662cb190a1bdf186"
+     "facet/foundation/0172c21720c8700b0d0f6d26"
+     "facet/foundation/fb622d20277efd0deb65f879"
+     "facet/foundation/0b1a3d72b84b8c2b81809453"
+     "facet/foundation/ea196d5db9a6ce937ba623a7"
+     "facet/foundation/c85da1a6ea4da0046e752e34"
+     "facet/foundation/5f14a7ab70f0c84eb555b009"
+     "facet/foundation/9baf6c0b0bef7b63be199c2c"
+     "facet/foundation/26835d95382eb8aa94305eac"
+     "facet/foundation/203642834c4090d42d60365b"
+     "facet/foundation/5c8e553842f7e13979f64d68"
+     "facet/foundation/8a088e39f71e161162011d65"
+     "facet/foundation/46eec10c1ed7a29ad28cb5aa"
+     "facet/foundation/b0476099c29ee19fd9b8283b"
+     "facet/foundation/ea9af5667b0b095d5aadf517"
+     "facet/foundation/08fbeb71ac7a9a5ce80d81ec"
+     "facet/foundation/88e6c82eff0c6a6fb53002ab"
+     "facet/foundation/6417313d2f333de7082cf785"
+     "facet/foundation/f4ea0b5d5c73e8b9467f9cc7"
+     "facet/foundation/17ad84e6d440d713eda5dd41"
+     "facet/foundation/8e92ffcc004134a32d87e553"
+     "facet/foundation/0a91c877c17192f00b309c16"
+     "facet/foundation/2c160e28d27085795f49c712"
+     "facet/foundation/10b263fc4b8c7b313581cec9"
+     "facet/foundation/8f265e8429935b9fa956a49b"
+     "facet/foundation/6bfc3a6e135070e2cd47ef2b"
+     "facet/foundation/523b8379cdd950c846157716"
+     "facet/foundation/1aa082f56ae56b3c2c0f823b"
+     "facet/foundation/10da89a275c908917e039346"
+     "facet/foundation/6bf793d5f7c5656aab741023"
+     "facet/foundation/75eec15133c55efd31cbebd3"
+     "facet/foundation/60c31c9bf71b48df4fd1c9d3"
+     "facet/foundation/713a34496e802790f290683b"
+     "facet/foundation/cdc83421a4e528f733d6c2c7"
+     "facet/foundation/9d5a38fba7e132288d6bf189"
+     "facet/foundation/b0f787b54f65b45bd5a8670a"
+     "facet/foundation/ab2d9a1f2d344fc08f4e2d5a"
+     "facet/foundation/9cf1b7fa51a1d2de0da7895a"
+     "facet/foundation/21729a51b721ab7be767ac05"
+     "facet/foundation/5417bf3c43a093f2efec97d9"
+     "facet/foundation/2e327f6d08b4e2251ab4ed05"
+     "facet/foundation/a243f16eb771569c66b802a0"
+     "facet/foundation/0624811bdb01f5083da03398"
+     "facet/foundation/a9708e9b317328fd31fd825f"
+     "facet/foundation/a8c0ecdce59f58dcb7926eef"
+     "facet/foundation/c444ec5fdaa377b4961c11c6"
+     "facet/foundation/b4906a343151ca8ff6c25a26"
+     "facet/foundation/f9bbb3cc33d1faddb87ee68d"
+     "facet/foundation/df34a97da0d0ff8c0f95168e"]}
+   {:id "gravity/safety-family-conformance",
+    :path "specs/legality-workflow/tasks.md",
+    :task-id
+    "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+    :marker "legality-foundation-safe-api",
+    :criterion-sha256
+    "d32d1584c90f5615d915186cbdd676289de98db747d963bee5042b439430d0ac",
+    :source-facet-ids
+    ["facet/foundation/f99bad477ae60f19eba01c8c"
+     "facet/foundation/30aab94429fb760cbb54f2ed"
+     "facet/foundation/2c05833cd034f442d8e33ebb"
+     "facet/foundation/e077c7102ff96ec31b6b8f7d"
+     "facet/foundation/3b7302e290f490dda554b55b"
+     "facet/foundation/83438627cfbbb88b1dafd0f3"
+     "facet/foundation/ea70495bf282046ae10cf983"
+     "facet/foundation/311c59abbc670789ebae40f4"
+     "facet/foundation/37204070c83285dd55bddeb7"
+     "facet/foundation/026ca28744f5486b4cf256d7"
+     "facet/foundation/19cb4ce5e173385b8412f6c8"
+     "facet/foundation/d04e37ba7a782a3d725697b4"
+     "facet/foundation/02641729fa05540463adbd60"
+     "facet/foundation/03f0311fa694a55767e7d961"
+     "facet/foundation/2c7fc6ccd763355987f2c723"
+     "facet/foundation/7dce269a240b439730715547"
+     "facet/foundation/133e04226e712f5302c27a78"
+     "facet/foundation/cebf1e609afeada47ff8aa8f"
+     "facet/foundation/71bc4da1cfb28717eb7b45c3"
+     "facet/foundation/beeeaff3743e8bc7aef4010a"
+     "facet/foundation/20b9ab8bf40a606a1396fb32"
+     "facet/foundation/0845314d1c44a0f38856eab5"
+     "facet/foundation/f66730dd4e7d447ebe7c3e67"
+     "facet/foundation/6477669df4a2f9cc07e113eb"
+     "facet/foundation/9198a82a10c318a96a933f5d"
+     "facet/foundation/f63d511cdc4b602fc79da7de"
+     "facet/foundation/de62a1df0298c02601d8c383"
+     "facet/foundation/8b920a9107779698b096fbcc"
+     "facet/foundation/bffbd0bd69fa682b2860aef5"
+     "facet/foundation/66ff300af64e4eedc2b46a82"
+     "facet/foundation/9d5a9308bd42d179ccb8e456"
+     "facet/foundation/41a7a068bdfc1d45020514c4"
+     "facet/foundation/a8eb044320c4977752166848"
+     "facet/foundation/abcc47e682317ee2f68d7fcc"
+     "facet/foundation/bfc9a9d2e9c24f0ea8c86da7"
+     "facet/foundation/9f64cfed04293ef5d8624f46"
+     "facet/foundation/616ced6dcd5d7466c6a710ab"
+     "facet/foundation/65e2dc8603f38c67c1ad3adf"
+     "facet/foundation/a4b3029e2f1a86162b829e5c"
+     "facet/foundation/5c85862bddea6e3324adcdd8"
+     "facet/foundation/e4b17a98fce790d6a1067901"
+     "facet/foundation/b2fc3d32aaa65e78fb266a30"
+     "facet/foundation/c9935c23a872bc5e6ab521ff"
+     "facet/foundation/afbf90ca461b6e279f02cc9e"
+     "facet/foundation/c9ae10b80b3391f2404102b5"
+     "facet/foundation/e6202b07e1c9b34883502332"]}
+   {:id "gravity/target-lowering-operation-contract",
+    :path "specs/lower-workflow/tasks.md",
+    :task-id
+    "lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs",
+    :marker "lower-foundation-input-closure",
+    :criterion-sha256
+    "7b10b9e8190a8a2701a8c5a982a267e075ee88744a3ff9701f3269b92eefe241",
+    :source-facet-ids
+    ["facet/foundation/8a088e39f71e161162011d65"
+     "facet/foundation/201a6b125aae7c9697e44a5d"
+     "facet/foundation/b0476099c29ee19fd9b8283b"
+     "facet/foundation/ea9af5667b0b095d5aadf517"
+     "facet/foundation/08fbeb71ac7a9a5ce80d81ec"
+     "facet/foundation/88e6c82eff0c6a6fb53002ab"
+     "facet/foundation/6417313d2f333de7082cf785"
+     "facet/foundation/f4ea0b5d5c73e8b9467f9cc7"
+     "facet/foundation/59ec790233dbbcdd4ea13062"
+     "facet/foundation/09cdf5ae95950e511f0dd064"
+     "facet/foundation/8e92ffcc004134a32d87e553"
+     "facet/foundation/f9351bdadf09d60d128637e7"
+     "facet/foundation/2c160e28d27085795f49c712"
+     "facet/foundation/211c3ae68e6f758b7ec23f94"
+     "facet/foundation/10b263fc4b8c7b313581cec9"
+     "facet/foundation/fab284642d19b35ea1c3ee45"
+     "facet/foundation/6bfc3a6e135070e2cd47ef2b"
+     "facet/foundation/5cfffe1796426a81a91015bc"
+     "facet/foundation/523b8379cdd950c846157716"
+     "facet/foundation/aeab054ac38e9e8a7e8f05fa"
+     "facet/foundation/10da89a275c908917e039346"
+     "facet/foundation/6bf793d5f7c5656aab741023"
+     "facet/foundation/75eec15133c55efd31cbebd3"
+     "facet/foundation/2336dae1e6bfce26fc357af7"
+     "facet/foundation/5f8aecc1ce278f223f320bbe"
+     "facet/foundation/21eb43b934256e6f10875d80"
+     "facet/foundation/a94b39207badee633c1b5e2a"
+     "facet/foundation/585504d215d9ffa198c67879"
+     "facet/foundation/9db1acf044749a97851bab96"
+     "facet/foundation/ede1c4d5e66d96d7d32b9d79"
+     "facet/foundation/5b42b51208761d13fe28019b"]}
+   {:id "gravity/unsafe-island-safe-api-eligibility",
+    :path "specs/legality-workflow/tasks.md",
+    :task-id
+    "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+    :marker "legality-foundation-safe-api",
+    :criterion-sha256
+    "ca6533fcb23488dc70274a3cf8bd9edd73306c892beb07e7c61f992c03175abc",
+    :source-facet-ids
+    ["facet/foundation/bf6427c1b9fecf59c0d5e85e"
+     "facet/foundation/8d8d1b38e538a0bf6af6b0cb"
+     "facet/foundation/557f36f6329baa78ba7c6a72"
+     "facet/foundation/0964b041922655167e1ed203"
+     "facet/foundation/682a3137e4bec3c462a50417"
+     "facet/foundation/4d101049b1e75abe93fb6884"
+     "facet/foundation/c86087cf94730ef9980a3832"
+     "facet/foundation/5eae63f667c2e59e234e53a3"
+     "facet/foundation/c7d0495c7a6d26d2333ec528"
+     "facet/foundation/3946ecac9b1bb91fc6f77d58"
+     "facet/foundation/e426c82b932504c04d62e9de"
+     "facet/foundation/b6c05b07801cb5dca538b70d"
+     "facet/foundation/92f94c5129689ebd458256f6"
+     "facet/foundation/d58a437e3abcfb0ad01ce156"
+     "facet/foundation/c250a4cb4bf9e0c6456c76dc"
+     "facet/foundation/1933eb956794efb170cdb0eb"
+     "facet/foundation/1386eb51457bb862170d6ea6"
+     "facet/foundation/075c7de83c4b6841514461c6"
+     "facet/foundation/eb50c16d475d5f277c6b5acb"
+     "facet/foundation/d9ce823ed7e69ebe294d9f27"
+     "facet/foundation/3c8eac2fca0a5032571c712c"
+     "facet/foundation/d6f51346283ae98cbeac7572"
+     "facet/foundation/0251ef6b64f99c0d0e4a89c3"
+     "facet/foundation/2e290ffc4ba0fd47289ac147"
+     "facet/foundation/9676101f88e19b81d4ce25b6"
+     "facet/foundation/bddff3fd055b7b3fae6d1881"
+     "facet/foundation/4b0b6dc1c628efff22efcd7b"
+     "facet/foundation/ea0564a4e551bd9b8c1116b6"
+     "facet/foundation/e09d1b42a2b57350ff24c6b7"
+     "facet/foundation/82fe9e05c44a2392797d6dea"
+     "facet/foundation/218485e105172a0d9b484b89"
+     "facet/foundation/673c41b2981276027f12d753"
+     "facet/foundation/43232997e9ccbafd53890444"
+     "facet/foundation/855af05cfd0be85e932f91b1"
+     "facet/foundation/05fe4979a72cffa23491ad17"
+     "facet/foundation/98885cbe609c7df7b72ad45d"
+     "facet/foundation/a20f2076c66eab28219f8e6a"
+     "facet/foundation/a6e583c6b9f871a335b50593"
+     "facet/foundation/26921f37e6a36a0ddb2301cc"
+     "facet/foundation/d1ce72fee61744ec07c44528"
+     "facet/foundation/1acb9c207e14cb63760abb25"
+     "facet/foundation/97dbf8dbca8b43ef35a4c171"
+     "facet/foundation/7cd78237eb80df6757513659"
+     "facet/foundation/f9b2429556daa41fb5fa381d"
+     "facet/foundation/a24d8748ec3bdc8a1c71cd5b"
+     "facet/foundation/6e6c565c3f615a575e29c14b"
+     "facet/foundation/a6813f1797aac3c6fc466e03"
+     "facet/foundation/a8c9b03b1d43eedc72c53c4c"
+     "facet/foundation/797fc909ddad9b457ac57993"
+     "facet/foundation/418cb0ad067dab128872a574"
+     "facet/foundation/9b50dba0338291cfdd3c8504"
+     "facet/foundation/ab202a5c65f989c081f5b692"
+     "facet/foundation/11da577ec211d7bd5823a180"
+     "facet/foundation/a86f9f58237db471c951673d"
+     "facet/foundation/f63d511cdc4b602fc79da7de"
+     "facet/foundation/9235e8a0f3d2c0e50e0658e7"
+     "facet/foundation/bffbd0bd69fa682b2860aef5"
+     "facet/foundation/66ff300af64e4eedc2b46a82"
+     "facet/foundation/9d5a9308bd42d179ccb8e456"
+     "facet/foundation/41a7a068bdfc1d45020514c4"
+     "facet/foundation/abcc47e682317ee2f68d7fcc"
+     "facet/foundation/616ced6dcd5d7466c6a710ab"
+     "facet/foundation/65e2dc8603f38c67c1ad3adf"
+     "facet/foundation/97618fb3aaa6acaac9ef6360"
+     "facet/foundation/5c54577704959583861fd275"
+     "facet/foundation/1661898f39dec2bd8fde4ddf"
+     "facet/foundation/2336dae1e6bfce26fc357af7"
+     "facet/foundation/e8ffebfdd814fc98c9de3e9b"
+     "facet/foundation/5f8aecc1ce278f223f320bbe"
+     "facet/foundation/21eb43b934256e6f10875d80"
+     "facet/foundation/585504d215d9ffa198c67879"
+     "facet/foundation/9db1acf044749a97851bab96"
+     "facet/foundation/ede1c4d5e66d96d7d32b9d79"
+     "facet/foundation/5b42b51208761d13fe28019b"]}],
+  :inspection-sources
+  [{:path "specs/build-workflow/plan.md",
+    :before
+    {:source-version-state :not-previously-projected-by-crosswalk},
+    :after
+    {:commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+     :sha256
+     "b1a68edd236414df44814fe79b454e54d4c42990ae445e262675fb567d782e16"},
+    :kind :source-inspection-not-execution}
+   {:path "specs/cli-workflow/plan.md",
+    :before
+    {:source-version-state :not-previously-projected-by-crosswalk},
+    :after
+    {:commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+     :sha256
+     "b25db661156837e5a61d15d745dd612814a5574bc8c74e230536cecd20210735"},
+    :kind :source-inspection-not-execution}
+   {:path "specs/diag-workflow/plan.md",
+    :before
+    {:source-version-state :not-previously-projected-by-crosswalk},
+    :after
+    {:commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+     :sha256
+     "7a4a07a05de3cd616f5f4ec3822fdb0a9b4aa1740cd850ece5a35f599b88eeea"},
+    :kind :source-inspection-not-execution}
+   {:path "specs/legality-workflow/plan.md",
+    :before
+    {:source-version-state :not-previously-projected-by-crosswalk},
+    :after
+    {:commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+     :sha256
+     "78d1282c3332fc8f788452c4691634a74d2cee0e0454eab56933d56ae7ba650a"},
+    :kind :source-inspection-not-execution}
+   {:path "specs/lower-workflow/plan.md",
+    :before
+    {:source-version-state :not-previously-projected-by-crosswalk},
+    :after
+    {:commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+     :sha256
+     "b4d75c9cc9672efe7145677a7f1b927bbe9da6fabf20c2be82abaa49145eb439"},
+    :kind :source-inspection-not-execution}
+   {:path "specs/runtime-workflow/plan.md",
+    :before
+    {:source-version-state :not-previously-projected-by-crosswalk},
+    :after
+    {:commit "5ddb31bd0625f1d7472d45d138fc80e7258f4d71",
+     :sha256
+     "3286d6e741dfcb14206dd9ec38ab62f9dcdbea80f0f87f6354a36df368cbe66e"},
+    :kind :source-inspection-not-execution}],
+  :source
+  {:path
+   "specs/requirement-reconciliation/foundation-residual-interfaces.edn",
+   :sha256
+   "6975c8fe50965ddc3e6d6da7d7ec7472878b6778cfd88f26fd3d88ec7c78ab88",
+   :preserved-commit "55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6",
+   :published-context-commit
+   "df11890b21f71d3f246cc47e9f63d866239a0d68"},
+  :scope
+  :thirteen-existing-foundation-clauses-under-nine-existing-task-bodies,
+  :changed-task-ids
+  ["build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix"
+   "cli/remaining-tasks-and-evidence/connect-checkruncompilebuildtestpackageverify-to-real-services"
+   "diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift"
+   "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+   "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+   "lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs"
+   "lower/current-evidence-and-remaining-work/lower5-integrate-target-emission"
+   "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
+   "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"],
+  :literal-foundation-context-clauses 52,
+  :independent-review :pending,
+  :global-source-conjunctions :unassessed,
+  :task-sources
+  [{:path "specs/build-workflow/tasks.md",
+    :before
+    {:commit "3e34a600c7e139abb0cf51673ef9175dae1b1eba",
+     :sha256
+     "beb27b61e41d554e3bca856cb44eeb6d70221e0f289a04ed5ed87e0e71c31980"},
+    :after
+    {:commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+     :sha256
+     "26749c506f9b4ddcf1ea3293b640e922d7d882839a51dea882353ebd34101ce3"}}
+   {:path "specs/cli-workflow/tasks.md",
+    :before
+    {:commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+     :sha256
+     "75300e2d2d3c9a44e0799ee203d3126eeba690adbbd89f0dcc8b4bbf4c7a88c7"},
+    :after
+    {:commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+     :sha256
+     "4e98c91c8beeb40ef78c8305db99f11b05b3095bbf9076204b55f319d854b73b"}}
+   {:path "specs/diag-workflow/tasks.md",
+    :before
+    {:commit "69831d09bc2007844265968b265c493cf064bdf9",
+     :sha256
+     "c3c0c33e30aa33d70afca4b863be94f7412a8d154df566e96f433dfbaacae502"},
+    :after
+    {:commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+     :sha256
+     "9f7606a10a9a98405137858df82e2d9f44166dc0c0091e8171edb84c296e5906"}}
+   {:path "specs/legality-workflow/tasks.md",
+    :before
+    {:commit "69831d09bc2007844265968b265c493cf064bdf9",
+     :sha256
+     "7ea9be2215a02987c86a57bb300fbe948391a46d1464353d1fe588e6a97f0007"},
+    :after
+    {:commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+     :sha256
+     "7a5b6164c9da7ab099a9d92660468a0276f524515fe95115fb77e7761e43be27"}}
+   {:path "specs/lower-workflow/tasks.md",
+    :before
+    {:commit "69831d09bc2007844265968b265c493cf064bdf9",
+     :sha256
+     "0ef7630d5e962068e47bfb85cd1028fd070b24656f0dd922148e72976ded84d2"},
+    :after
+    {:commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+     :sha256
+     "a726439daf7b57b8d0efec06786ce94694d10217bd6c0530c5807770ffda8ee4"}}
+   {:path "specs/runtime-workflow/tasks.md",
+    :before
+    {:commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+     :sha256
+     "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972"},
+    :after
+    {:commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+     :sha256
+     "95cb5fa0f1a72e27dc44ca7b64567c312eb2592a33d3811be547e511e485a4ca"}}],
+  :implementation-acceptance :unassessed},
  :input-fingerprint
- "888978bdb4f157054dbe7782da9ba2d8783164509e4e558bf3567f185aa624b6"}
+ "beb32fd5cd0eb73f0715572b044ff5f7a7c04d047acab451219d47c039e9be42"}
