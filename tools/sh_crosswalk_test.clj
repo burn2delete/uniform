@@ -586,10 +586,10 @@
     (is (= (:sha256 predecessor) (sh-inventory/sha256 prior-text)))
     (is (= (:review predecessor)
            (select-keys (:mapping-review prior) [:status :input-fingerprint :source-version-bridge])))
-    (is (= 121 (:unchanged-body-count comparisons)))
+    (is (= 119 (:unchanged-body-count comparisons)))
     (is (= (set (map :id (:changed-bodies comparisons))) changed))
-    (is (= 18 (count changed)))
-    (is (= 121 (count (remove changed (keys before)))))
+    (is (= 20 (count changed)))
+    (is (= 119 (count (remove changed (keys before)))))
     (let [refinement (:math-parent-refinement bridge)
           predecessor (:predecessor-readiness-successor refinement)
           previous-text (sh-crosswalk/git-source (:commit predecessor) (:path predecessor))
@@ -829,7 +829,9 @@
     (is (= refinement (get-in (sh-crosswalk/source-view) [:implementation-readiness-source-version :ai-parent-refinement])))))
 
 (deftest platform-refinement-preserves-target-bodies-and-conditional-product-records
-  (let [bridge sh-crosswalk/readiness-source-version
+  (let [checkpoint (get-in sh-crosswalk/readiness-source-version [:foundation-tools-refinement :predecessor-readiness-successor])
+        bridge (if checkpoint (edn/read-string (sh-crosswalk/git-source (:commit checkpoint) (:path checkpoint)))
+                   sh-crosswalk/readiness-source-version)
         refinement (:platform-refinement bridge)
         predecessor (:predecessor-readiness-successor refinement)
         previous-text (sh-crosswalk/git-source (:commit predecessor) (:path predecessor))
@@ -1074,14 +1076,17 @@
     (is (= refinement (get-in view [:implementation-readiness-source-version :release-dependency-refinement])))))
 
 (deftest finish-line-successor-binds-new-source-without-rebinding-task-history
-  (let [bridge sh-crosswalk/readiness-source-version
+  (let [checkpoint (get-in sh-crosswalk/readiness-source-version [:foundation-tools-refinement :predecessor-readiness-successor])
+        bridge (if checkpoint (edn/read-string (sh-crosswalk/git-source (:commit checkpoint) (:path checkpoint)))
+                   sh-crosswalk/readiness-source-version)
         refinement (:finish-line-refinement bridge)
         previous (:predecessor-readiness-successor refinement)
         old-text (sh-crosswalk/git-source (:commit previous) (:path previous))
         old (edn/read-string old-text)
         old-projection-text (sh-crosswalk/git-source (:commit previous) (:projection-path previous))
         old-projection (edn/read-string old-projection-text)
-        view (sh-crosswalk/build)
+        view (if checkpoint (edn/read-string (sh-crosswalk/git-source (:commit checkpoint) (:projection-path checkpoint)))
+                 (sh-crosswalk/build))
         full "docs/full-language-implementation-gap-map.md"
         doc "docs/acceptance-dependencies.md"
         summarize (fn [row] (assoc (select-keys row [:id :kind :path :source-commit :sha256 :recorded-status])
@@ -1113,6 +1118,48 @@
     (is (= (:sh07-sequence old-projection) (:sh07-sequence view)))
     (is (= (:accepted-current-scoped-evidence old-projection) (:accepted-current-scoped-evidence view)))
     (is (= refinement (get-in view [:implementation-readiness-source-version :finish-line-refinement])))))
+
+(deftest foundation-tools-successor-restores-criteria-without-changing-task-or-evidence-authority
+  (let [bridge sh-crosswalk/readiness-source-version
+        refinement (:foundation-tools-refinement bridge)
+        previous (:predecessor-readiness-successor refinement)
+        old-text (sh-crosswalk/git-source (:commit previous) (:path previous))
+        old (edn/read-string old-text)
+        old-projection-text (sh-crosswalk/git-source (:commit previous) (:projection-path previous))
+        prior (edn/read-string old-projection-text)
+        view (sh-crosswalk/build)
+        path "specs/tools-workflow/tasks.md"
+        current (slurp path)
+        before (sh-crosswalk/git-source (get-in refinement [:task-source :before :commit]) path)
+        restored (str/replace current #"(?s)\n<!-- tools-foundation-(?:lint|inspection):start -->.*?<!-- tools-foundation-(?:lint|inspection):end -->\n\n" "")
+        criteria (re-seq #"(?m)^Foundation requirement (gravity/[^:]+):[^\n]+$" current)]
+    (is (= (:sha256 previous) (sh-inventory/sha256 old-text)))
+    (is (= (:projection-sha256 previous) (sh-inventory/sha256 old-projection-text)))
+    (is (= (:input-fingerprint previous) (:input-fingerprint old)))
+    (is (= before restored))
+    (is (= 5 (count (:criteria refinement)) (count criteria)))
+    (is (= 2 (count (:changed-task-ids refinement))))
+    (is (= [] (:new-task-identities refinement)))
+    (is (= 12 (count (get-in view [:task-authorities "tools"]))))
+    (is (= 121 (get-in old [:task-comparisons :unchanged-body-count])))
+    (is (= 119 (get-in bridge [:task-comparisons :unchanged-body-count])))
+    (is (= (dissoc (:applying-source-pins old) path) (dissoc (:applying-source-pins bridge) path)))
+    (is (= (:task-authorities prior) (assoc (:task-authorities view) "tools" (get-in prior [:task-authorities "tools"]))))
+    (is (= (:future-task-authorities prior) (:future-task-authorities view)))
+    (is (= (mapv :task-references (:requirements prior)) (mapv :task-references (:requirements view))))
+    (is (= (:sh07-sequence prior) (:sh07-sequence view)))
+    (is (= (:accepted-current-scoped-evidence prior) (:accepted-current-scoped-evidence view)))
+    (is (= (mapv #(select-keys % [:id :checked :status]) (get-in prior [:task-authorities "tools"]))
+           (mapv #(select-keys % [:id :checked :status]) (get-in view [:task-authorities "tools"]))))
+    (doseq [{:keys [id criterion-sha256 source-facet-ids]} (:criteria refinement)
+            :let [line (first (filter #(str/starts-with? % (str "Foundation requirement " id ":")) (str/split-lines current)))]]
+      (is (seq source-facet-ids) id)
+      (is (= criterion-sha256 (sh-inventory/sha256 line)) id))
+    (doseq [{:keys [path current-sha256]} (:canonical-documents refinement)]
+      (is (= current-sha256 (sh-inventory/sha256 (slurp path))) path))
+    (is (= :unassessed (:implementation-acceptance refinement) (:global-source-conjunctions refinement)))
+    (is (= :pending (:independent-review refinement)))
+    (is (= refinement (get-in view [:implementation-readiness-source-version :foundation-tools-refinement])))))
 
 (let [result (run-tests 'sh-crosswalk-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))

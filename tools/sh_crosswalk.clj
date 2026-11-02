@@ -887,7 +887,8 @@
                    :retained-historical-source-inputs :math-parent-refinement
                    :release-testing-refinement :domain-parent-refinement
                    :ai-parent-refinement :platform-refinement :future-dependency-refinement
-                   :math-schema-dependency-refinement :release-dependency-refinement :finish-line-refinement])
+                   :math-schema-dependency-refinement :release-dependency-refinement :finish-line-refinement
+                   :foundation-tools-refinement])
      :pr574-macro-artifacts-composition
      {:path "specs/sh-family-crosswalk/pr574-macro-artifacts-composition.edn" :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/pr574-macro-artifacts-composition.edn"))}
      :pr574-composition-source-version

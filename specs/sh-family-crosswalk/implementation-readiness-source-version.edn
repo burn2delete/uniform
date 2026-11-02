@@ -1,4 +1,235 @@
-{:additional-pinned-evidence-hashes
+{:foundation-tools-refinement
+ {:new-task-identities [],
+  :canonical-documents
+  [{:id "D0",
+    :path
+    "docs/phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md",
+    :current-sha256
+    "9b16a7773d0d283a2f6b595e6b65c0fdee7be66d602275a2aebea3bcc79e763e"}
+   {:id "D1",
+    :path
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+    :current-sha256
+    "3791a95f860d4d8fca8e73d7bb57701cdf1e099c14c2b8d0f1778d8ce1e95f75"}
+   {:id "D2",
+    :path
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+    :current-sha256
+    "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc"}
+   {:id "D3",
+    :path
+    "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md",
+    :current-sha256
+    "7aae837fbf1063910b9bd147fff013c76cfee2e38a5d86766e2874e0759121a1"}],
+  :predecessor-readiness-successor
+  {:commit "37f3817b50e28415e2b4c3d004440be90dbbc996",
+   :path
+   "specs/sh-family-crosswalk/implementation-readiness-source-version.edn",
+   :sha256
+   "cb878747358efaa447ab32d65d0ec9f7e2a30bee5e6fcb860106e9592b5b3f32",
+   :projection-path "specs/sh-family-crosswalk/crosswalk.edn",
+   :projection-sha256
+   "0d5b3327ccb2e49d53c92b0b4dc618a5044ce214ba09610d69c764294518b367",
+   :input-fingerprint
+   "a969db9ecb4565f71217702129ae9822fcb85136c5f99014843d355f3280f412"},
+  :source-context
+  {:path
+   "specs/requirement-reconciliation/foundation-residual-interfaces.edn",
+   :sha256
+   "6975c8fe50965ddc3e6d6da7d7ec7472878b6778cfd88f26fd3d88ec7c78ab88",
+   :preserved-commit "55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6",
+   :published-context-commit
+   "df11890b21f71d3f246cc47e9f63d866239a0d68"},
+  :criteria
+  [{:id "gravity/canonical-concept-vocabulary",
+    :task-id
+    "tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer",
+    :criterion-sha256
+    "6b1469060b5e8fedff0ffb8bbf2494f327901241f05e22b2d4ddac02c2ddd64f",
+    :source-facet-ids
+    ["facet/foundation/7552ab0b129979ce8d37f935"
+     "facet/foundation/48162c035baa300668975983"
+     "facet/foundation/f51fb462f3a6e3424a121c74"
+     "facet/foundation/f0b937c3bf6719f08bd4d96d"
+     "facet/foundation/c86c4a9c5b4a0ce587adee96"
+     "facet/foundation/3eaa9052424cc3cb751aee45"
+     "facet/foundation/61e19ff87f95840dc300b41b"
+     "facet/foundation/54f61f135b5f65b30ab41556"
+     "facet/foundation/afe5ca1bbc11f7b4f8421425"
+     "facet/foundation/13db72aee6a51f1542798547"
+     "facet/foundation/ada38de5b17ffbec531b7898"
+     "facet/foundation/f2c7297e97ac5dc1838850a5"
+     "facet/foundation/a526e49e2dfaf0b2efc9a3da"
+     "facet/foundation/dfa97704ef75886b59f987b6"
+     "facet/foundation/e1540d5b4684540501c92b2e"
+     "facet/foundation/1e4ba5d674be7c359041c798"
+     "facet/foundation/7d4467c19e0cf923f37c1347"
+     "facet/foundation/9c660ef73597e7136f4f38a8"
+     "facet/foundation/786b4175ea44b11f7565e17d"
+     "facet/foundation/c9aad8506442890b58410337"
+     "facet/foundation/557e080847c62cd1fc3d944d"
+     "facet/foundation/a022e13523259b5ff02b3003"
+     "facet/foundation/5185edff61b08cae5b07ddb1"
+     "facet/foundation/057d75e96c648a577cc82429"
+     "facet/foundation/5f39c96cbaa1fb06031cef87"
+     "facet/foundation/73cdf4f5b0581b8416495d35"
+     "facet/foundation/277d8592556dd0858ad0d35d"
+     "facet/foundation/88098259d233909789ebaf32"
+     "facet/foundation/70a2da45347075473c6851ef"
+     "facet/foundation/90efa52768304a59127ee0c7"
+     "facet/foundation/4c1ca5c68479f400d6a0cf9e"
+     "facet/foundation/aa46456ff40d2e98c13bce1b"
+     "facet/foundation/86982fa83e2c7d4eccf978e5"
+     "facet/foundation/4b2c788e229e0fcd2a3c696d"
+     "facet/foundation/989a99060af6c8beecbd472c"
+     "facet/foundation/3e082f0f4ccea7b199780f73"
+     "facet/foundation/d9c9650aa1d718c0646fa6ce"
+     "facet/foundation/0a0aa78618b4921d1a5dc07d"
+     "facet/foundation/064a22f194f968c95aebadbf"
+     "facet/foundation/2435e22c9cd1893acc9a8256"
+     "facet/foundation/884a47ed67cdb5cc0ed8e2bc"
+     "facet/foundation/dfc06ac3052ae093eef3f8b4"
+     "facet/foundation/88b422a7a25646b58123010b"
+     "facet/foundation/599c1877789e5bf6141a56b7"
+     "facet/foundation/8d4a6282a91ffb63f7b541d4"
+     "facet/foundation/c779cccd2a18f68e9070debc"
+     "facet/foundation/c8a3398e6a9beb761ee87afc"
+     "facet/foundation/dd6376da9fc069c7c94f38d7"
+     "facet/foundation/79fc584184cbd4a5cddf4f81"
+     "facet/foundation/62fbf4d4dda08666b379eed7"
+     "facet/foundation/814d9b4a021fe39b27f4f741"
+     "facet/foundation/7b4c52dff58f61ddb1a6d9b8"
+     "facet/foundation/f99bad477ae60f19eba01c8c"
+     "facet/foundation/30aab94429fb760cbb54f2ed"
+     "facet/foundation/2c05833cd034f442d8e33ebb"
+     "facet/foundation/e077c7102ff96ec31b6b8f7d"
+     "facet/foundation/3b7302e290f490dda554b55b"
+     "facet/foundation/83438627cfbbb88b1dafd0f3"
+     "facet/foundation/ea70495bf282046ae10cf983"
+     "facet/foundation/311c59abbc670789ebae40f4"
+     "facet/foundation/37204070c83285dd55bddeb7"
+     "facet/foundation/026ca28744f5486b4cf256d7"
+     "facet/foundation/19cb4ce5e173385b8412f6c8"
+     "facet/foundation/d04e37ba7a782a3d725697b4"
+     "facet/foundation/02641729fa05540463adbd60"
+     "facet/foundation/03f0311fa694a55767e7d961"
+     "facet/foundation/2c7fc6ccd763355987f2c723"
+     "facet/foundation/e7fdae8c2e5c38d761d9abdd"
+     "facet/foundation/7dce269a240b439730715547"
+     "facet/foundation/133e04226e712f5302c27a78"
+     "facet/foundation/cebf1e609afeada47ff8aa8f"
+     "facet/foundation/71bc4da1cfb28717eb7b45c3"
+     "facet/foundation/beeeaff3743e8bc7aef4010a"
+     "facet/foundation/20b9ab8bf40a606a1396fb32"
+     "facet/foundation/0845314d1c44a0f38856eab5"
+     "facet/foundation/eede6f6d0df5f9078b9072ce"]}
+   {:id "gravity/cross-phase-term-change-control",
+    :task-id
+    "tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer",
+    :criterion-sha256
+    "184e7c918162d33a9acf28fadaa6421ae8fc9a73edfd1393061fb14fbbfee96a",
+    :source-facet-ids
+    ["facet/foundation/557e080847c62cd1fc3d944d"
+     "facet/foundation/057d75e96c648a577cc82429"
+     "facet/foundation/5f39c96cbaa1fb06031cef87"
+     "facet/foundation/41650256e3d9587a9734d965"
+     "facet/foundation/2365394379765e06051ae171"
+     "facet/foundation/73cdf4f5b0581b8416495d35"
+     "facet/foundation/277d8592556dd0858ad0d35d"
+     "facet/foundation/88098259d233909789ebaf32"
+     "facet/foundation/70a2da45347075473c6851ef"
+     "facet/foundation/4c1ca5c68479f400d6a0cf9e"
+     "facet/foundation/aa46456ff40d2e98c13bce1b"
+     "facet/foundation/989a99060af6c8beecbd472c"
+     "facet/foundation/2435e22c9cd1893acc9a8256"
+     "facet/foundation/884a47ed67cdb5cc0ed8e2bc"
+     "facet/foundation/dfc06ac3052ae093eef3f8b4"
+     "facet/foundation/c8a3398e6a9beb761ee87afc"
+     "facet/foundation/79fc584184cbd4a5cddf4f81"
+     "facet/foundation/62fbf4d4dda08666b379eed7"
+     "facet/foundation/814d9b4a021fe39b27f4f741"
+     "facet/foundation/7a577519b538309d80ec94b7"]}
+   {:id "gravity/domain-concept-layer-map",
+    :task-id
+    "tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer",
+    :criterion-sha256
+    "4681ee2572622af1aa5a60949b85edc91f1cd49feb55f9887379ddac291579f9",
+    :source-facet-ids
+    ["facet/foundation/5f39c96cbaa1fb06031cef87"
+     "facet/foundation/73cdf4f5b0581b8416495d35"
+     "facet/foundation/277d8592556dd0858ad0d35d"
+     "facet/foundation/989a99060af6c8beecbd472c"
+     "facet/foundation/2435e22c9cd1893acc9a8256"
+     "facet/foundation/884a47ed67cdb5cc0ed8e2bc"
+     "facet/foundation/c8a3398e6a9beb761ee87afc"]}
+   {:id "gravity/qualify-ambiguous-normative-terms",
+    :task-id
+    "tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer",
+    :criterion-sha256
+    "cfe9c07ba4d3da646588485aa9c5a8ec9c511141a3eb7fd6e5c66d2a6d84d802",
+    :source-facet-ids
+    ["facet/foundation/7552ab0b129979ce8d37f935"
+     "facet/foundation/dfa97704ef75886b59f987b6"
+     "facet/foundation/557e080847c62cd1fc3d944d"
+     "facet/foundation/a022e13523259b5ff02b3003"
+     "facet/foundation/73cdf4f5b0581b8416495d35"
+     "facet/foundation/277d8592556dd0858ad0d35d"
+     "facet/foundation/3519780c50379745fcfd8d3c"
+     "facet/foundation/462f9c9981ddeb572ad7cb2c"
+     "facet/foundation/9ba71cf4d6443891e9e78c21"
+     "facet/foundation/989a99060af6c8beecbd472c"
+     "facet/foundation/2435e22c9cd1893acc9a8256"
+     "facet/foundation/884a47ed67cdb5cc0ed8e2bc"
+     "facet/foundation/a63576cc66ae0d2c9535ecec"
+     "facet/foundation/62fbf4d4dda08666b379eed7"]}
+   {:id "gravity/tooling-semantic-consistency",
+    :task-id
+    "tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer",
+    :criterion-sha256
+    "0afd97dcd5e039333c5ed3895d9ccac06ed61a9695214175f9e5df7d76a6dbc3",
+    :source-facet-ids
+    ["facet/foundation/28753b4e765ed53eb5d99f78"
+     "facet/foundation/92540536ac2cad5942257171"
+     "facet/foundation/dc5576667f453e627d85f271"
+     "facet/foundation/39e5e9305d1000e5334a0ea5"
+     "facet/foundation/bc7b865a898332f1373ec440"
+     "facet/foundation/9725ad3e82b03b3746d751aa"
+     "facet/foundation/9327272b9f1e485f70201944"
+     "facet/foundation/d7c824fbc622c91bcaf4b295"
+     "facet/foundation/205382f4c57f58e932eb978e"
+     "facet/foundation/59a8a3d0533524a5f1b2d28a"
+     "facet/foundation/c00fd9a136212dc4c27b6835"
+     "facet/foundation/3dfa5a468e08da1bed029f06"
+     "facet/foundation/f5c6c4107feed5d647405297"
+     "facet/foundation/5a25912d48373018ff6be6b0"
+     "facet/foundation/c94d6ee3e57d3e5d293d15b9"
+     "facet/foundation/0a51695d036b9f6243906a53"
+     "facet/foundation/1175abdb6c2c011f09693d6f"
+     "facet/foundation/ed94ec0c3e34fa14b9a6e513"
+     "facet/foundation/61c66a599e29bf9394f5e64e"
+     "facet/foundation/9ba757643cd02b1a1f3e8ef7"
+     "facet/foundation/fc19a06f0a131e92b0943beb"
+     "facet/foundation/e19e17839b31244979a2f610"
+     "facet/foundation/162ef50e7b7d471ba2beae71"]}],
+  :scope
+  :five-literal-foundation-criteria-under-two-existing-tools-tasks,
+  :task-source
+  {:path "specs/tools-workflow/tasks.md",
+   :before
+   {:commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54"},
+   :after
+   {:commit "e52c1505b762b8c316a5b7dbba302c54552d0b07",
+    :sha256
+    "dcc9b5eb9885b1c8c3608034cfad1e8ddcc0ea916c5be8a260ec5d1af93f8bf2"}},
+  :changed-task-ids
+  ["tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer"
+   "tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer"],
+  :independent-review :pending,
+  :global-source-conjunctions :unassessed,
+  :implementation-acceptance :unassessed},
+ :additional-pinned-evidence-hashes
  {"docs/phase-02-safety/043-safe14-supply-chain-safety.md"
   "403faf1d18dab790276e8c5072ca42821e9754856127b73e72eef52ceb28a1f5",
   "docs/phase-05-mathematical-and-elementary-function-system/README.md"
@@ -19,9 +250,9 @@
    "evolution/security-review"
    "evolution/stabilization-decision"
    "evolution/target-support-admission"]},
- :source-input-commit "0c85be0f758272dfc81d91fb5ae4db6fa4a5ccec",
+ :source-input-commit "e52c1505b762b8c316a5b7dbba302c54552d0b07",
  :task-comparisons
- {:unchanged-body-count 121,
+ {:unchanged-body-count 119,
   :changed-bodies
   [{:id "ai",
     :path "specs/domains-workflow/tasks.md",
@@ -156,6 +387,24 @@
     "1bd123b4c7d4a0e2bd4e5db7ea35139e20fea0e213fcdde01d410e14a9610491",
     :after-sha256
     "93eaf9c7b6d3371cbdb3af8d0fbf719e1084e5f3ef53b2a3115826cfc65363ac",
+    :before-checked false,
+    :after-checked false}
+   {:id
+    "tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer",
+    :path "specs/tools-workflow/tasks.md",
+    :before-sha256
+    "f8de788be8e6a1d19915ca27d55b21ef4cd471776c4245cdbb177722294879c5",
+    :after-sha256
+    "fe79bcf2ef19d1c964a06b3f4965c00a6ec1e79aec28a1cf003f0c587f22a115",
+    :before-checked false,
+    :after-checked false}
+   {:id
+    "tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer",
+    :path "specs/tools-workflow/tasks.md",
+    :before-sha256
+    "c71b38a1bc54c7b44158eb5e27b19b5054bea261bab64903672fa5aa8c541ac5",
+    :after-sha256
+    "8f9f13d4df39314d7aa2eb37919e3bc8239c52c71aff7ec7328e53ba969d8905",
     :before-checked false,
     :after-checked false}
    {:id "ui",
@@ -2241,7 +2490,17 @@
    {:commit "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
     :sha256
     "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac"},
-   :scope :full-language-source-version}],
+   :scope :full-language-source-version}
+  {:path "specs/tools-workflow/tasks.md",
+   :before
+   {:commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54"},
+   :after
+   {:commit "e52c1505b762b8c316a5b7dbba302c54552d0b07",
+    :sha256
+    "dcc9b5eb9885b1c8c3608034cfad1e8ddcc0ea916c5be8a260ec5d1af93f8bf2"},
+   :scope :foundation-tools-task-criteria}],
  :inspection-locators
  {"docs/phase-02-safety/043-safe14-supply-chain-safety.md"
   {:commit "697917447d70ba0797a096d9427d4706bf5515df",
@@ -4641,6 +4900,8 @@
   "3e34a600c7e139abb0cf51673ef9175dae1b1eba",
   "specs/auth-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9",
+  "specs/tools-workflow/tasks.md"
+  "e52c1505b762b8c316a5b7dbba302c54552d0b07",
   "specs/resolve-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9",
   "specs/legality-workflow/tasks.md"
@@ -5553,4 +5814,4 @@
   :first-seedless-stop :unchanged-not-240-document-completion,
   :implementation-acceptance :unassessed},
  :input-fingerprint
- "a969db9ecb4565f71217702129ae9822fcb85136c5f99014843d355f3280f412"}
+ "888978bdb4f157054dbe7782da9ba2d8783164509e4e558bf3567f185aa624b6"}

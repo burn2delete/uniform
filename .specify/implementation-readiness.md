@@ -1011,3 +1011,73 @@ entailment across the 240 contracts and extensions, current implementation/suppo
 evidence assessment, material decisions and independent review/integration. The
 declarations do not prove that semantic coverage. Reader contract coverage remains
 the first implementation preparation increment. Reconciliation remains active.
+
+## Foundation source review and Tools criterion continuation
+
+The ten D0-D9 documents and their phase README were read directly for this
+continuation, followed by the Tools phase README and complete T4/T10 contracts.
+This is a substantive source review of the selected criteria, not an assertion
+that every foundation conjunction or every document is now fully reconciled.
+D1/C1/C6's retained pipeline identity/order decision remains open under the
+existing `gravity/canonical-pass-order` criterion; this continuation selects no
+new stage or normative source amendment.
+
+The preserved `foundation-residual-interfaces.edn` at aggregate
+`55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6` has SHA-256
+`6975c8fe50965ddc3e6d6da7d7ec7472878b6778cfd88f26fd3d88ec7c78ab88`.
+Its bytes equal the local Git object at published context commit
+`df11890b21f71d3f246cc47e9f63d866239a0d68`. Of its 52 proposed foundation
+clauses, 34 were already literal current task criteria. Five absent clauses
+belong to the existing Tools authority and are now resumed byte-for-byte:
+canonical vocabulary, ambiguous normative terms, cross-phase concept change
+control, domain concept/layer mapping and tool/compiler semantic consistency.
+Their 106 distinct attached facet identities are retained as source context;
+that count confers no full-facet entailment or acceptance. The four D0-D3 source
+pins in that context match current canonical bytes.
+
+The [Tools planning entry](../specs/tools-workflow/plan.md#foundation-criteria-and-source-context)
+binds those clauses to exact canonical sections, concrete producers/consumers,
+positive and refusal behavior, evidence and owner boundaries. Four clauses
+extend the existing Lint task; one extends IR Explorer's comparison of actual
+tool/compiler results. Formatter, Language Server and REPL still own their
+respective transformations/sessions. Lint consumes governing compatibility
+decisions and cannot change D3 itself. D3's complete distinctions, explicitly
+narrowed meanings, migration/deprecation and diagnostic obligations remain
+applicable beyond the listed example counterexamples.
+
+The other thirteen of those 52 proposed clauses are not literal current task
+text. Their Build, Runtime, CLI, Lower, Legality and Diagnostics owners already
+have related broad task/spec criteria; whether those entail every source
+condition still requires review before proposing any further amendment. No
+missing-text count is presented as a semantic gap count. Other preserved
+Foundation7 allocations, runtime delegation/symbol-resolution gaps and global
+source/facet conjunctions remain qualified, with no automatic adoption.
+
+Source task commit `e52c1505b762b8c316a5b7dbba302c54552d0b07` changes only
+the Tools spec/plan and two task bodies. The source-version successor retains
+the complete prior bridge/projection and pending fingerprint at `37f3817b`.
+The Tools task source advances from its original `254a5b50` pin; all other
+applying pins, original task IDs/statuses, forty future records, SH/SH07 routes
+and three Reader receipts are preserved. Of the original 139 task bodies, 119
+remain identical and twenty now have declared additions. There are still 149
+current tasks in 25 authorities, with no new task identity. The source-version
+record covers 21 task files, five navigation files and the two dependency inputs.
+Current mapping review remains pending at
+`888978bdb4f157054dbe7782da9ba2d8783164509e4e558bf3567f185aa624b6`.
+
+Validation passes: 33 crosswalk tests / 1,317 assertions, 23 dependency tests /
+1,774 assertions, canonical document and full-language structural validators,
+read-only dependency audit, language boundary (six tests / eleven assertions),
+and source/criterion conservation. The staged dependency graph remains acyclic
+and mapping readiness remains false. Conservation checks pass for 74 changed
+files, 68 Markdown files, 2,689 local references, 139 original component routes,
+48 preserved spec/plan suffixes and all 48 original task/evidence contents after
+stripping declared additions. Changed files are ASCII; whitespace checks pass.
+An unsupported audit flag was corrected to the existing `--check` command
+before the passing audit; that failed invocation receives no validation credit.
+
+No compiler, native/provider/C12/device, migration, signing, publication or held
+execution ran, and no other chat was messaged. The first implementation
+preparation increment remains Reader contract coverage. Complete substantive
+coverage, current implementation assessment, material source/product decisions,
+independent acceptance and integration remain unfinished; the goal stays active.

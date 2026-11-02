@@ -14615,11 +14615,242 @@
    :source-version-bridge
    "specs/sh-family-crosswalk/macro-runtime-source-version.edn"},
   :input-fingerprint
-  "a969db9ecb4565f71217702129ae9822fcb85136c5f99014843d355f3280f412"},
+  "888978bdb4f157054dbe7782da9ba2d8783164509e4e558bf3567f185aa624b6"},
  :implementation-readiness-source-version
- {:source-input-commit "0c85be0f758272dfc81d91fb5ae4db6fa4a5ccec",
+ {:foundation-tools-refinement
+  {:new-task-identities [],
+   :canonical-documents
+   [{:id "D0",
+     :path
+     "docs/phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md",
+     :current-sha256
+     "9b16a7773d0d283a2f6b595e6b65c0fdee7be66d602275a2aebea3bcc79e763e"}
+    {:id "D1",
+     :path
+     "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md",
+     :current-sha256
+     "3791a95f860d4d8fca8e73d7bb57701cdf1e099c14c2b8d0f1778d8ce1e95f75"}
+    {:id "D2",
+     :path
+     "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md",
+     :current-sha256
+     "2f5afbb0805d20b4fd3542107a09019b25099bb3b8d855bbfb27b4abe750a2bc"}
+    {:id "D3",
+     :path
+     "docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md",
+     :current-sha256
+     "7aae837fbf1063910b9bd147fff013c76cfee2e38a5d86766e2874e0759121a1"}],
+   :predecessor-readiness-successor
+   {:commit "37f3817b50e28415e2b4c3d004440be90dbbc996",
+    :path
+    "specs/sh-family-crosswalk/implementation-readiness-source-version.edn",
+    :sha256
+    "cb878747358efaa447ab32d65d0ec9f7e2a30bee5e6fcb860106e9592b5b3f32",
+    :projection-path "specs/sh-family-crosswalk/crosswalk.edn",
+    :projection-sha256
+    "0d5b3327ccb2e49d53c92b0b4dc618a5044ce214ba09610d69c764294518b367",
+    :input-fingerprint
+    "a969db9ecb4565f71217702129ae9822fcb85136c5f99014843d355f3280f412"},
+   :source-context
+   {:path
+    "specs/requirement-reconciliation/foundation-residual-interfaces.edn",
+    :sha256
+    "6975c8fe50965ddc3e6d6da7d7ec7472878b6778cfd88f26fd3d88ec7c78ab88",
+    :preserved-commit "55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6",
+    :published-context-commit
+    "df11890b21f71d3f246cc47e9f63d866239a0d68"},
+   :criteria
+   [{:id "gravity/canonical-concept-vocabulary",
+     :task-id
+     "tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer",
+     :criterion-sha256
+     "6b1469060b5e8fedff0ffb8bbf2494f327901241f05e22b2d4ddac02c2ddd64f",
+     :source-facet-ids
+     ["facet/foundation/7552ab0b129979ce8d37f935"
+      "facet/foundation/48162c035baa300668975983"
+      "facet/foundation/f51fb462f3a6e3424a121c74"
+      "facet/foundation/f0b937c3bf6719f08bd4d96d"
+      "facet/foundation/c86c4a9c5b4a0ce587adee96"
+      "facet/foundation/3eaa9052424cc3cb751aee45"
+      "facet/foundation/61e19ff87f95840dc300b41b"
+      "facet/foundation/54f61f135b5f65b30ab41556"
+      "facet/foundation/afe5ca1bbc11f7b4f8421425"
+      "facet/foundation/13db72aee6a51f1542798547"
+      "facet/foundation/ada38de5b17ffbec531b7898"
+      "facet/foundation/f2c7297e97ac5dc1838850a5"
+      "facet/foundation/a526e49e2dfaf0b2efc9a3da"
+      "facet/foundation/dfa97704ef75886b59f987b6"
+      "facet/foundation/e1540d5b4684540501c92b2e"
+      "facet/foundation/1e4ba5d674be7c359041c798"
+      "facet/foundation/7d4467c19e0cf923f37c1347"
+      "facet/foundation/9c660ef73597e7136f4f38a8"
+      "facet/foundation/786b4175ea44b11f7565e17d"
+      "facet/foundation/c9aad8506442890b58410337"
+      "facet/foundation/557e080847c62cd1fc3d944d"
+      "facet/foundation/a022e13523259b5ff02b3003"
+      "facet/foundation/5185edff61b08cae5b07ddb1"
+      "facet/foundation/057d75e96c648a577cc82429"
+      "facet/foundation/5f39c96cbaa1fb06031cef87"
+      "facet/foundation/73cdf4f5b0581b8416495d35"
+      "facet/foundation/277d8592556dd0858ad0d35d"
+      "facet/foundation/88098259d233909789ebaf32"
+      "facet/foundation/70a2da45347075473c6851ef"
+      "facet/foundation/90efa52768304a59127ee0c7"
+      "facet/foundation/4c1ca5c68479f400d6a0cf9e"
+      "facet/foundation/aa46456ff40d2e98c13bce1b"
+      "facet/foundation/86982fa83e2c7d4eccf978e5"
+      "facet/foundation/4b2c788e229e0fcd2a3c696d"
+      "facet/foundation/989a99060af6c8beecbd472c"
+      "facet/foundation/3e082f0f4ccea7b199780f73"
+      "facet/foundation/d9c9650aa1d718c0646fa6ce"
+      "facet/foundation/0a0aa78618b4921d1a5dc07d"
+      "facet/foundation/064a22f194f968c95aebadbf"
+      "facet/foundation/2435e22c9cd1893acc9a8256"
+      "facet/foundation/884a47ed67cdb5cc0ed8e2bc"
+      "facet/foundation/dfc06ac3052ae093eef3f8b4"
+      "facet/foundation/88b422a7a25646b58123010b"
+      "facet/foundation/599c1877789e5bf6141a56b7"
+      "facet/foundation/8d4a6282a91ffb63f7b541d4"
+      "facet/foundation/c779cccd2a18f68e9070debc"
+      "facet/foundation/c8a3398e6a9beb761ee87afc"
+      "facet/foundation/dd6376da9fc069c7c94f38d7"
+      "facet/foundation/79fc584184cbd4a5cddf4f81"
+      "facet/foundation/62fbf4d4dda08666b379eed7"
+      "facet/foundation/814d9b4a021fe39b27f4f741"
+      "facet/foundation/7b4c52dff58f61ddb1a6d9b8"
+      "facet/foundation/f99bad477ae60f19eba01c8c"
+      "facet/foundation/30aab94429fb760cbb54f2ed"
+      "facet/foundation/2c05833cd034f442d8e33ebb"
+      "facet/foundation/e077c7102ff96ec31b6b8f7d"
+      "facet/foundation/3b7302e290f490dda554b55b"
+      "facet/foundation/83438627cfbbb88b1dafd0f3"
+      "facet/foundation/ea70495bf282046ae10cf983"
+      "facet/foundation/311c59abbc670789ebae40f4"
+      "facet/foundation/37204070c83285dd55bddeb7"
+      "facet/foundation/026ca28744f5486b4cf256d7"
+      "facet/foundation/19cb4ce5e173385b8412f6c8"
+      "facet/foundation/d04e37ba7a782a3d725697b4"
+      "facet/foundation/02641729fa05540463adbd60"
+      "facet/foundation/03f0311fa694a55767e7d961"
+      "facet/foundation/2c7fc6ccd763355987f2c723"
+      "facet/foundation/e7fdae8c2e5c38d761d9abdd"
+      "facet/foundation/7dce269a240b439730715547"
+      "facet/foundation/133e04226e712f5302c27a78"
+      "facet/foundation/cebf1e609afeada47ff8aa8f"
+      "facet/foundation/71bc4da1cfb28717eb7b45c3"
+      "facet/foundation/beeeaff3743e8bc7aef4010a"
+      "facet/foundation/20b9ab8bf40a606a1396fb32"
+      "facet/foundation/0845314d1c44a0f38856eab5"
+      "facet/foundation/eede6f6d0df5f9078b9072ce"]}
+    {:id "gravity/cross-phase-term-change-control",
+     :task-id
+     "tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer",
+     :criterion-sha256
+     "184e7c918162d33a9acf28fadaa6421ae8fc9a73edfd1393061fb14fbbfee96a",
+     :source-facet-ids
+     ["facet/foundation/557e080847c62cd1fc3d944d"
+      "facet/foundation/057d75e96c648a577cc82429"
+      "facet/foundation/5f39c96cbaa1fb06031cef87"
+      "facet/foundation/41650256e3d9587a9734d965"
+      "facet/foundation/2365394379765e06051ae171"
+      "facet/foundation/73cdf4f5b0581b8416495d35"
+      "facet/foundation/277d8592556dd0858ad0d35d"
+      "facet/foundation/88098259d233909789ebaf32"
+      "facet/foundation/70a2da45347075473c6851ef"
+      "facet/foundation/4c1ca5c68479f400d6a0cf9e"
+      "facet/foundation/aa46456ff40d2e98c13bce1b"
+      "facet/foundation/989a99060af6c8beecbd472c"
+      "facet/foundation/2435e22c9cd1893acc9a8256"
+      "facet/foundation/884a47ed67cdb5cc0ed8e2bc"
+      "facet/foundation/dfc06ac3052ae093eef3f8b4"
+      "facet/foundation/c8a3398e6a9beb761ee87afc"
+      "facet/foundation/79fc584184cbd4a5cddf4f81"
+      "facet/foundation/62fbf4d4dda08666b379eed7"
+      "facet/foundation/814d9b4a021fe39b27f4f741"
+      "facet/foundation/7a577519b538309d80ec94b7"]}
+    {:id "gravity/domain-concept-layer-map",
+     :task-id
+     "tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer",
+     :criterion-sha256
+     "4681ee2572622af1aa5a60949b85edc91f1cd49feb55f9887379ddac291579f9",
+     :source-facet-ids
+     ["facet/foundation/5f39c96cbaa1fb06031cef87"
+      "facet/foundation/73cdf4f5b0581b8416495d35"
+      "facet/foundation/277d8592556dd0858ad0d35d"
+      "facet/foundation/989a99060af6c8beecbd472c"
+      "facet/foundation/2435e22c9cd1893acc9a8256"
+      "facet/foundation/884a47ed67cdb5cc0ed8e2bc"
+      "facet/foundation/c8a3398e6a9beb761ee87afc"]}
+    {:id "gravity/qualify-ambiguous-normative-terms",
+     :task-id
+     "tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer",
+     :criterion-sha256
+     "cfe9c07ba4d3da646588485aa9c5a8ec9c511141a3eb7fd6e5c66d2a6d84d802",
+     :source-facet-ids
+     ["facet/foundation/7552ab0b129979ce8d37f935"
+      "facet/foundation/dfa97704ef75886b59f987b6"
+      "facet/foundation/557e080847c62cd1fc3d944d"
+      "facet/foundation/a022e13523259b5ff02b3003"
+      "facet/foundation/73cdf4f5b0581b8416495d35"
+      "facet/foundation/277d8592556dd0858ad0d35d"
+      "facet/foundation/3519780c50379745fcfd8d3c"
+      "facet/foundation/462f9c9981ddeb572ad7cb2c"
+      "facet/foundation/9ba71cf4d6443891e9e78c21"
+      "facet/foundation/989a99060af6c8beecbd472c"
+      "facet/foundation/2435e22c9cd1893acc9a8256"
+      "facet/foundation/884a47ed67cdb5cc0ed8e2bc"
+      "facet/foundation/a63576cc66ae0d2c9535ecec"
+      "facet/foundation/62fbf4d4dda08666b379eed7"]}
+    {:id "gravity/tooling-semantic-consistency",
+     :task-id
+     "tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer",
+     :criterion-sha256
+     "0afd97dcd5e039333c5ed3895d9ccac06ed61a9695214175f9e5df7d76a6dbc3",
+     :source-facet-ids
+     ["facet/foundation/28753b4e765ed53eb5d99f78"
+      "facet/foundation/92540536ac2cad5942257171"
+      "facet/foundation/dc5576667f453e627d85f271"
+      "facet/foundation/39e5e9305d1000e5334a0ea5"
+      "facet/foundation/bc7b865a898332f1373ec440"
+      "facet/foundation/9725ad3e82b03b3746d751aa"
+      "facet/foundation/9327272b9f1e485f70201944"
+      "facet/foundation/d7c824fbc622c91bcaf4b295"
+      "facet/foundation/205382f4c57f58e932eb978e"
+      "facet/foundation/59a8a3d0533524a5f1b2d28a"
+      "facet/foundation/c00fd9a136212dc4c27b6835"
+      "facet/foundation/3dfa5a468e08da1bed029f06"
+      "facet/foundation/f5c6c4107feed5d647405297"
+      "facet/foundation/5a25912d48373018ff6be6b0"
+      "facet/foundation/c94d6ee3e57d3e5d293d15b9"
+      "facet/foundation/0a51695d036b9f6243906a53"
+      "facet/foundation/1175abdb6c2c011f09693d6f"
+      "facet/foundation/ed94ec0c3e34fa14b9a6e513"
+      "facet/foundation/61c66a599e29bf9394f5e64e"
+      "facet/foundation/9ba757643cd02b1a1f3e8ef7"
+      "facet/foundation/fc19a06f0a131e92b0943beb"
+      "facet/foundation/e19e17839b31244979a2f610"
+      "facet/foundation/162ef50e7b7d471ba2beae71"]}],
+   :scope
+   :five-literal-foundation-criteria-under-two-existing-tools-tasks,
+   :task-source
+   {:path "specs/tools-workflow/tasks.md",
+    :before
+    {:commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+     :sha256
+     "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54"},
+    :after
+    {:commit "e52c1505b762b8c316a5b7dbba302c54552d0b07",
+     :sha256
+     "dcc9b5eb9885b1c8c3608034cfad1e8ddcc0ea916c5be8a260ec5d1af93f8bf2"}},
+   :changed-task-ids
+   ["tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer"
+    "tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer"],
+   :independent-review :pending,
+   :global-source-conjunctions :unassessed,
+   :implementation-acceptance :unassessed},
+  :source-input-commit "e52c1505b762b8c316a5b7dbba302c54552d0b07",
   :task-comparisons
-  {:unchanged-body-count 121,
+  {:unchanged-body-count 119,
    :changed-bodies
    [{:id "ai",
      :path "specs/domains-workflow/tasks.md",
@@ -14754,6 +14985,24 @@
      "1bd123b4c7d4a0e2bd4e5db7ea35139e20fea0e213fcdde01d410e14a9610491",
      :after-sha256
      "93eaf9c7b6d3371cbdb3af8d0fbf719e1084e5f3ef53b2a3115826cfc65363ac",
+     :before-checked false,
+     :after-checked false}
+    {:id
+     "tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer",
+     :path "specs/tools-workflow/tasks.md",
+     :before-sha256
+     "f8de788be8e6a1d19915ca27d55b21ef4cd471776c4245cdbb177722294879c5",
+     :after-sha256
+     "fe79bcf2ef19d1c964a06b3f4965c00a6ec1e79aec28a1cf003f0c587f22a115",
+     :before-checked false,
+     :after-checked false}
+    {:id
+     "tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer",
+     :path "specs/tools-workflow/tasks.md",
+     :before-sha256
+     "c71b38a1bc54c7b44158eb5e27b19b5054bea261bab64903672fa5aa8c541ac5",
+     :after-sha256
+     "8f9f13d4df39314d7aa2eb37919e3bc8239c52c71aff7ec7328e53ba969d8905",
      :before-checked false,
      :after-checked false}
     {:id "ui",
@@ -22980,7 +23229,7 @@
   "tools"
   [{:path "specs/tools-workflow/tasks.md",
     :file-sha256
-    "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54",
+    "dcc9b5eb9885b1c8c3608034cfad1e8ddcc0ea916c5be8a260ec5d1af93f8bf2",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/tools-workflow/tasks.md",
@@ -22994,227 +23243,227 @@
      "3fc9086fe811e75aad4d3da742497e659b79eff9058797b2b8bd64c584b2c0a4"},
     :owner-source "docs/component-roadmaps/tools.md",
     :component "tools",
-    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :source-commit "e52c1505b762b8c316a5b7dbba302c54552d0b07",
     :id
     "tools/finite-service-outcomes-and-remaining-work/format-formatter-maintainer",
     :checked false}
    {:path "specs/tools-workflow/tasks.md",
     :file-sha256
-    "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54",
+    "dcc9b5eb9885b1c8c3608034cfad1e8ddcc0ea916c5be8a260ec5d1af93f8bf2",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/tools-workflow/tasks.md",
      :start-byte 1169,
-     :end-byte 1746,
+     :end-byte 4966,
      :start-line 22,
-     :end-line 28,
+     :end-line 40,
      :sha256
-     "c71b38a1bc54c7b44158eb5e27b19b5054bea261bab64903672fa5aa8c541ac5",
+     "8f9f13d4df39314d7aa2eb37919e3bc8239c52c71aff7ec7328e53ba969d8905",
      :source-snapshot-ref
-     "c71b38a1bc54c7b44158eb5e27b19b5054bea261bab64903672fa5aa8c541ac5"},
+     "8f9f13d4df39314d7aa2eb37919e3bc8239c52c71aff7ec7328e53ba969d8905"},
     :owner-source "docs/component-roadmaps/tools.md",
     :component "tools",
-    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :source-commit "e52c1505b762b8c316a5b7dbba302c54552d0b07",
     :id
     "tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer",
     :checked false}
    {:path "specs/tools-workflow/tasks.md",
     :file-sha256
-    "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54",
+    "dcc9b5eb9885b1c8c3608034cfad1e8ddcc0ea916c5be8a260ec5d1af93f8bf2",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/tools-workflow/tasks.md",
-     :start-byte 1748,
-     :end-byte 2365,
-     :start-line 30,
-     :end-line 36,
+     :start-byte 4969,
+     :end-byte 5586,
+     :start-line 43,
+     :end-line 49,
      :sha256
      "0f790030034098f822efa5b6903f40fce800c05a42e2d099667f12bb413d67a2",
      :source-snapshot-ref
      "0f790030034098f822efa5b6903f40fce800c05a42e2d099667f12bb413d67a2"},
     :owner-source "docs/component-roadmaps/tools.md",
     :component "tools",
-    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :source-commit "e52c1505b762b8c316a5b7dbba302c54552d0b07",
     :id
     "tools/finite-service-outcomes-and-remaining-work/language-server-editor-maintainer",
     :checked false}
    {:path "specs/tools-workflow/tasks.md",
     :file-sha256
-    "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54",
+    "dcc9b5eb9885b1c8c3608034cfad1e8ddcc0ea916c5be8a260ec5d1af93f8bf2",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/tools-workflow/tasks.md",
-     :start-byte 2367,
-     :end-byte 2941,
-     :start-line 38,
-     :end-line 44,
+     :start-byte 5588,
+     :end-byte 6162,
+     :start-line 51,
+     :end-line 57,
      :sha256
      "d677a56900b22f330f4a85e74cda0143e2af31ab98f2711cc01f004642720e6e",
      :source-snapshot-ref
      "d677a56900b22f330f4a85e74cda0143e2af31ab98f2711cc01f004642720e6e"},
     :owner-source "docs/component-roadmaps/tools.md",
     :component "tools",
-    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :source-commit "e52c1505b762b8c316a5b7dbba302c54552d0b07",
     :id
     "tools/finite-service-outcomes-and-remaining-work/debug-debugger-maintainer",
     :checked false}
    {:path "specs/tools-workflow/tasks.md",
     :file-sha256
-    "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54",
+    "dcc9b5eb9885b1c8c3608034cfad1e8ddcc0ea916c5be8a260ec5d1af93f8bf2",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/tools-workflow/tasks.md",
-     :start-byte 2943,
-     :end-byte 3522,
-     :start-line 46,
-     :end-line 52,
+     :start-byte 6164,
+     :end-byte 6743,
+     :start-line 59,
+     :end-line 65,
      :sha256
      "bbce0daddaa0713835b776a9300540a0d42fd05728010f7fecb602c4f360401e",
      :source-snapshot-ref
      "bbce0daddaa0713835b776a9300540a0d42fd05728010f7fecb602c4f360401e"},
     :owner-source "docs/component-roadmaps/tools.md",
     :component "tools",
-    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :source-commit "e52c1505b762b8c316a5b7dbba302c54552d0b07",
     :id
     "tools/finite-service-outcomes-and-remaining-work/repl-interactive-runtime-tooling-maintainer",
     :checked false}
    {:path "specs/tools-workflow/tasks.md",
     :file-sha256
-    "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54",
+    "dcc9b5eb9885b1c8c3608034cfad1e8ddcc0ea916c5be8a260ec5d1af93f8bf2",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/tools-workflow/tasks.md",
-     :start-byte 3524,
-     :end-byte 4120,
-     :start-line 54,
-     :end-line 60,
+     :start-byte 6745,
+     :end-byte 8842,
+     :start-line 67,
+     :end-line 79,
      :sha256
-     "f8de788be8e6a1d19915ca27d55b21ef4cd471776c4245cdbb177722294879c5",
+     "fe79bcf2ef19d1c964a06b3f4965c00a6ec1e79aec28a1cf003f0c587f22a115",
      :source-snapshot-ref
-     "f8de788be8e6a1d19915ca27d55b21ef4cd471776c4245cdbb177722294879c5"},
+     "fe79bcf2ef19d1c964a06b3f4965c00a6ec1e79aec28a1cf003f0c587f22a115"},
     :owner-source "docs/component-roadmaps/tools.md",
     :component "tools",
-    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :source-commit "e52c1505b762b8c316a5b7dbba302c54552d0b07",
     :id
     "tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer",
     :checked false}
    {:path "specs/tools-workflow/tasks.md",
     :file-sha256
-    "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54",
+    "dcc9b5eb9885b1c8c3608034cfad1e8ddcc0ea916c5be8a260ec5d1af93f8bf2",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/tools-workflow/tasks.md",
-     :start-byte 4122,
-     :end-byte 4712,
-     :start-line 62,
-     :end-line 68,
+     :start-byte 8845,
+     :end-byte 9435,
+     :start-line 82,
+     :end-line 88,
      :sha256
      "21e65d171dffa5751eacacd1f1a7ab9b75678041b687e6cb787470b792f792c6",
      :source-snapshot-ref
      "21e65d171dffa5751eacacd1f1a7ab9b75678041b687e6cb787470b792f792c6"},
     :owner-source "docs/component-roadmaps/tools.md",
     :component "tools",
-    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :source-commit "e52c1505b762b8c316a5b7dbba302c54552d0b07",
     :id
     "tools/finite-service-outcomes-and-remaining-work/profile-performance-tool-maintainer",
     :checked false}
    {:path "specs/tools-workflow/tasks.md",
     :file-sha256
-    "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54",
+    "dcc9b5eb9885b1c8c3608034cfad1e8ddcc0ea916c5be8a260ec5d1af93f8bf2",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/tools-workflow/tasks.md",
-     :start-byte 4714,
-     :end-byte 5268,
-     :start-line 70,
-     :end-line 76,
+     :start-byte 9437,
+     :end-byte 9991,
+     :start-line 90,
+     :end-line 96,
      :sha256
      "58b8999aab357fed7f61008dd312d9628d45e7c1c53e39f79f15e871914c2d85",
      :source-snapshot-ref
      "58b8999aab357fed7f61008dd312d9628d45e7c1c53e39f79f15e871914c2d85"},
     :owner-source "docs/component-roadmaps/tools.md",
     :component "tools",
-    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :source-commit "e52c1505b762b8c316a5b7dbba302c54552d0b07",
     :id
     "tools/finite-service-outcomes-and-remaining-work/docs-documentation-tool-maintainer",
     :checked false}
    {:path "specs/tools-workflow/tasks.md",
     :file-sha256
-    "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54",
+    "dcc9b5eb9885b1c8c3608034cfad1e8ddcc0ea916c5be8a260ec5d1af93f8bf2",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/tools-workflow/tasks.md",
-     :start-byte 5270,
-     :end-byte 5834,
-     :start-line 78,
-     :end-line 84,
+     :start-byte 9993,
+     :end-byte 10557,
+     :start-line 98,
+     :end-line 104,
      :sha256
      "51df7063860bc42222f2d7c07b19c8e2fca505c6ff978447be39d5b20c650250",
      :source-snapshot-ref
      "51df7063860bc42222f2d7c07b19c8e2fca505c6ff978447be39d5b20c650250"},
     :owner-source "docs/component-roadmaps/tools.md",
     :component "tools",
-    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :source-commit "e52c1505b762b8c316a5b7dbba302c54552d0b07",
     :id
     "tools/finite-service-outcomes-and-remaining-work/dev-server-development-session-maintainer",
     :checked false}
    {:path "specs/tools-workflow/tasks.md",
     :file-sha256
-    "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54",
+    "dcc9b5eb9885b1c8c3608034cfad1e8ddcc0ea916c5be8a260ec5d1af93f8bf2",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/tools-workflow/tasks.md",
-     :start-byte 5836,
-     :end-byte 6417,
-     :start-line 86,
-     :end-line 92,
+     :start-byte 10559,
+     :end-byte 11140,
+     :start-line 106,
+     :end-line 112,
      :sha256
      "2d44c419d75759d044d2d2b80328aa5189e7e15d211569e58c0f126a59d905e4",
      :source-snapshot-ref
      "2d44c419d75759d044d2d2b80328aa5189e7e15d211569e58c0f126a59d905e4"},
     :owner-source "docs/component-roadmaps/tools.md",
     :component "tools",
-    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :source-commit "e52c1505b762b8c316a5b7dbba302c54552d0b07",
     :id
     "tools/finite-service-outcomes-and-remaining-work/registry-view-package-tool-maintainer",
     :checked false}
    {:path "specs/tools-workflow/tasks.md",
     :file-sha256
-    "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54",
+    "dcc9b5eb9885b1c8c3608034cfad1e8ddcc0ea916c5be8a260ec5d1af93f8bf2",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/tools-workflow/tasks.md",
-     :start-byte 6419,
-     :end-byte 6990,
-     :start-line 94,
-     :end-line 100,
+     :start-byte 11142,
+     :end-byte 11713,
+     :start-line 114,
+     :end-line 120,
      :sha256
      "5ae94c9d508491ce7715089bbd64159e07ed20bbea02d1cd68fb0176399b347a",
      :source-snapshot-ref
      "5ae94c9d508491ce7715089bbd64159e07ed20bbea02d1cd68fb0176399b347a"},
     :owner-source "docs/component-roadmaps/tools.md",
     :component "tools",
-    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :source-commit "e52c1505b762b8c316a5b7dbba302c54552d0b07",
     :id
     "tools/finite-service-outcomes-and-remaining-work/safety-explorer-safety-tool-maintainer",
     :checked false}
    {:path "specs/tools-workflow/tasks.md",
     :file-sha256
-    "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54",
+    "dcc9b5eb9885b1c8c3608034cfad1e8ddcc0ea916c5be8a260ec5d1af93f8bf2",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/tools-workflow/tasks.md",
-     :start-byte 6992,
-     :end-byte 7638,
-     :start-line 102,
-     :end-line 108,
+     :start-byte 11715,
+     :end-byte 12361,
+     :start-line 122,
+     :end-line 128,
      :sha256
      "40d7b73ae6f9255d48d9451bb8071500f18c4c84672a8c9b359ae76486281e5e",
      :source-snapshot-ref
      "40d7b73ae6f9255d48d9451bb8071500f18c4c84672a8c9b359ae76486281e5e"},
     :owner-source "docs/component-roadmaps/tools.md",
     :component "tools",
-    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :source-commit "e52c1505b762b8c316a5b7dbba302c54552d0b07",
     :id
     "tools/finite-service-outcomes-and-remaining-work/ai-development-ai-tool-maintainer",
     :checked false}],
@@ -23563,7 +23812,7 @@
   "specs/syntax-workflow/tasks.md"
   "feadfc4136f886d5981efedfb8f52d1a3a3e68a1858af3e7fd31e5924b8be6d5",
   "specs/tools-workflow/tasks.md"
-  "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54",
+  "dcc9b5eb9885b1c8c3608034cfad1e8ddcc0ea916c5be8a260ec5d1af93f8bf2",
   "specs/types-workflow/tasks.md"
   "13149ad814bebd312dd5c371ff88ff06255848e86d23b02e2d94922c1240f10f"},
  :applying-source-pins
@@ -23609,6 +23858,8 @@
   "4325a9f46292472a7f984c5adfef81209874bb5c",
   "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
   "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+  "specs/tools-workflow/tasks.md"
+  "e52c1505b762b8c316a5b7dbba302c54552d0b07",
   "specs/resolve-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9",
   "docs/self-hosting-slice-ownership.edn"
@@ -26039,6 +26290,8 @@
   "4. **SH-06.4:** Reject unresolved, private, ambiguous, duplicate and illegal\n   cyclic or phase-crossing references with stable binding diagnostics.",
   "8f5d452b19faacd6635a8c0a75c63ba62e0ce49f26f87492d6cb425a5881ca6b"
   "3. **SH-21.3:** Reject ambient filesystem, environment, network, shell,\n   registry and undeclared host-service dependencies in compiler execution.",
+  "8f9f13d4df39314d7aa2eb37919e3bc8239c52c71aff7ec7328e53ba969d8905"
+  "- [ ] `tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer` Lint / analysis-tool maintainer\n\nStatus: Open\n\nRemaining implementation tasks: Implement the contract rule classes against named compiler/manifest facts; add project-scoped baselines and rule explanations; implement checked fixes and structured export\n\nClosing evidence and governing contract: Rule source/facts and applicability visible? Unsafe fixes rejected? Baseline/fail-on-new reproducible? [Linter](../../docs/phase-13-tooling-and-developer-experience/180-t4-linter-specification.md)\n\n<!-- tools-foundation-lint:start -->\nApply the [foundation criteria and source context](plan.md#foundation-criteria-and-source-context) within this existing task. Status remains Open; implementation acceptance is unassessed.\n\nFoundation requirement gravity/canonical-concept-vocabulary: Publish the D3 reference meanings and relationships for profile, target, backend, runtime, effect, capability, safety outcome, artifact and file, and check representative compiler/package/runtime manifests against those meanings. Refusals: Reject a manifest that equates an effect with authority, a profile with a backend, or an artifact with its storage file; retain the offending span/field and owning concept reference. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion.\n\nFoundation requirement gravity/cross-phase-term-change-control: Before downstream reliance on a changed cross-phase concept, update the canonical D3 definition and affected contract/schema references together, record the compatibility decision and invalidate dependent terminology checks. Refusals: Reject use of a changed downstream meaning with an unchanged canonical definition, stale dependent checks or an unrecorded compatibility impact. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance - Exact component/slice contracts, declared unsupported scope and claimed-support evidence.\n\nFoundation requirement gravity/domain-concept-layer-map: Publish a domain-concept map relating each declared concept to its source forms, Core/domain IR boundary, emitted artifact, effects and required capabilities; verify a representative domain product against that map. Refusals: Reject an unmapped claimed concept, a host API substituted for its source meaning or a mapping that treats an effect declaration as a capability grant. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products.\n\nFoundation requirement gravity/qualify-ambiguous-normative-terms: For normative uses whose meaning affects implementation, require an explicit qualified D3 concept or owning contract reference; report the exact ambiguous span and the competing interpretations. Refusals: Reject unqualified uses such as runtime/profile/target or effect/capability where they change the required implementation meaning; ordinary nonnormative prose does not create a new terminology gate. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion.\n<!-- tools-foundation-lint:end -->",
   "9009b2a86eb77e54a9eb40f28527c498b00dc4cab3436830550d564ab6995b05"
   "5. **SH-04.5:** Reject broken references, origin cycles, invalid scope/mark\n   relations, malformed metadata and over-bound syntax graphs.",
   "901ed5800ad757e9360ce90b596286fcec6744b7516062ea0ac0e49b3bf52153"
@@ -26283,8 +26536,6 @@
   "- [ ] `runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup` Finish managed/native execution, startup, panic and cleanup\n\nStatus: Open\n\nEvidence baseline: [Development evaluator](../../bootstrap/gravity/src/gravity/runtime.gravity) and [native manifest](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00287-minimal-native-runtime-manifest.clj)\n\nClosing evidence: Executed startup/failure/resource fixtures and manifest-to-service agreement",
   "c6ec6c83214aabda9059ba9fccd0cb0ccd9d99f2dde699bb1ae8fbdaf025f91f"
   "4. **SH-10.4:** Track closure/return/global/provider escapes and required\n   region/arena generations; reject references outliving their owners.",
-  "c71b38a1bc54c7b44158eb5e27b19b5054bea261bab64903672fa5aa8c541ac5"
-  "- [ ] `tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer` Lint / analysis-tool maintainer\n\nStatus: Open\n\nRemaining implementation tasks: Implement the contract rule classes against named compiler/manifest facts; add project-scoped baselines and rule explanations; implement checked fixes and structured export\n\nClosing evidence and governing contract: Rule source/facts and applicability visible? Unsafe fixes rejected? Baseline/fail-on-new reproducible? [Linter](../../docs/phase-13-tooling-and-developer-experience/180-t4-linter-specification.md)",
   "c73c7accbc926ef3bf7eec96e9b695b3a00d19bb5156fece1e62d01d3de84cb1"
   "- [ ] `reader/finite-remaining-work/component-release-evidence` Component release evidence\n\nCurrent evidence/status: Open; the accepted finite invocation receipt is not the complete Reader release outcome.\n\nDone when (yes/no): Owner supplies immutable source/fixture/runtime identities, complete surface results, diagnostic goldens, fresh handoff and residual-boundary statement; independent review and Deus disposition explicitly accept this outcome.",
   "c744d2dcd220f157204784c99f3add5b1aaa5254e8727c22857c8170ac9e0d81"
@@ -26497,8 +26748,6 @@
   "| SH-02.1 | `genuine-c13-and-b1-packets-use-two-reusable-stage-envelopes` | E02 | S |",
   "f7a0e749e8662412357848b2d40d8fb136debef3452a73a86280688dbf0f62b9"
   "| SH-02.4 | Changed-product/stale-carrier/contextual rejection checks | E02 | S |",
-  "f8de788be8e6a1d19915ca27d55b21ef4cd471776c4245cdbb177722294879c5"
-  "- [ ] `tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer` IR Explorer / compiler-tool maintainer\n\nStatus: Open\n\nRemaining implementation tasks: Expose actual stage artifacts and source edges; implement semantic-versus-format diff; show failed pass and preservation/proof records\n\nClosing evidence and governing contract: Version/profile/target and artifact IDs present? Missing/stale stages shown honestly? Check-elision evidence visible? [IR inspector](../../docs/phase-13-tooling-and-developer-experience/186-t10-compiler-explorer-and-ir-inspector-design.md)",
   "f9044a22900564f22a6d2d70950f3ede58c0246a06724cbd12b9bebfe3ff4938"
   "6. **SH-05.6:** Compare real compiler macro expansions and rejected diagnostic\n   behavior with the accepted prior-stage subset.",
   "f9d45597ff23e8679b8c82bd5c5c9440ce7e74c3b69127e0c2a0cf18e9a1e7ac"
@@ -26513,6 +26762,8 @@
   "- [ ] `expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination` expand/4: Validate reuse and termination\n\nStatus: Open; partial source evidence above is not closure\n\nConcrete exit evidence: Bind cache reuse to every semantic input and replay record; diagnose actual expansion cycles/phase errors without node, size or work quotas.",
   "fe606d870140b009a13d0c55291a2e4b94313a517d80a9418df4014fd417259f"
   "- [ ] `backend-conformance` Backend Conformance\n\nStatus: Open\n\nProjected task block:\nRemaining tasks: reconcile canonical operation/domain fixture matrix; implement\nfamily adapters and exact rejection assertions; execute or semantically compare\nreal outputs; check evidence/provenance preservation and nondeterminism replay;\nrecord unavailable targets explicitly without converting skips to passes;\npublish exact-source family coverage. Yes/no: does each claim have positive and\nnegative execution evidence, are metadata checks independent of result equality,\nand are unavailable targets honestly open? Evidence:\n[existing test-matrix artifact](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00224-backend-test-matrix-file-artifact.clj)\nis a starting integration surface, not acceptance. Decision owner: conformance\nmaintainer; recommendation: shared fixture semantics plus target-specific runners,\nwith explicit availability records. Conformance interface work is parallel;\nfamily acceptance awaits its actual backend. No automatic release closure follows.",
+  "fe79bcf2ef19d1c964a06b3f4965c00a6ec1e79aec28a1cf003f0c587f22a115"
+  "- [ ] `tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer` IR Explorer / compiler-tool maintainer\n\nStatus: Open\n\nRemaining implementation tasks: Expose actual stage artifacts and source edges; implement semantic-versus-format diff; show failed pass and preservation/proof records\n\nClosing evidence and governing contract: Version/profile/target and artifact IDs present? Missing/stale stages shown honestly? Check-elision evidence visible? [IR inspector](../../docs/phase-13-tooling-and-developer-experience/186-t10-compiler-explorer-and-ir-inspector-design.md)\n\n<!-- tools-foundation-inspection:start -->\nApply the [foundation criteria and source context](plan.md#foundation-criteria-and-source-context) within this existing task. Status remains Open; implementation acceptance is unassessed.\n\nFoundation requirement gravity/tooling-semantic-consistency: Make formatter/LSP/REPL/inspection consumers use actual compiler diagnostics, syntax/source identities and compiled profile/effect/capability boundaries; compare supported tool and ordinary compiler results on the same accepted and rejected inputs. Refusals: Reject stale tool diagnostics, lost syntax identity, a refactor changing source meaning or interactive evaluation bypassing compiled grant/profile checks; no alternate tool-only language semantics. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products; diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift - Actual runtime/compiler/tool structured diagnostics with stable owning codes and provenance; legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks - Expanded source profile/effect/grant facts and checked/delegated/rejected legality products.\n<!-- tools-foundation-inspection:end -->",
   "fec0124ae53255813304b7182f65923eafcf442c13c00602a05f63fbc1b007cf"
   "- [ ] `platform-product/adopt-hardware-contract` Adopt the product hardware contract\n\nStatus: Open\n\nClosing evidence: Reviewed ISA or justified alternative, hardware/device model, simulator and executable acceptance workloads; explicit rejection of an unsupported or incompatible hardware configuration\n\nDependencies: The existing ISA and hardware implementation decision record; accountable hardware architect remains unassigned",
   "ff26569e14594bd3f26b7d5530a24ed93cb4a35986bfb83ab446cf3eb0d2dc40"
