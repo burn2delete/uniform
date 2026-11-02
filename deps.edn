@@ -1,4 +1,4 @@
-{:paths ["bootstrap/clojure/src"]
+{:paths ["bootstrap/clojure/src" "tools"]
  :aliases
  {:gravity
   {:main-opts ["-m" "gravity.cli.launcher"]}

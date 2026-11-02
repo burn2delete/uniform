@@ -50174,24 +50174,32 @@
  :source-version-bridges
  [{:document-id "platform-product",
   :path "docs/component-roadmaps/platform.md",
-  :kind :platform-task-authority-current-layout,
+  :kind :platform-task-authority-current-layout-v2,
   :review-state :proposed,
   :baseline-ref "a1b991be499d50579a8b4366976c519ae8949224",
-  :applying-ref "84a929dfa6661e7e4fa8ff16f58767b3652f31f7",
+  :applying-ref "2a86a9f1fc56b1eceacf4ca29aac7c95a1a4792b",
   :baseline-sha256
   "03a971d2bf910876352e9555d45679a9fa3d00876710c8233de5f50882349a3f",
   :live-sha256
-  "179397f1c4751e231981d5e6ffe44bf5d091deb2ae1767dd16aed76f5ea2ab2d",
+  "9d4efe1bb5348949dde850880154cf31d06dbc81cb4b659144e771efce2a54d5",
   :baseline-blob "91c4d4fcc0094c41c4d73e39fae3006f7c9e44cf",
-  :applying-blob "69520b7864b0e1d47f276eb15bbe5e3ac9712642",
+  :applying-blob "2fdfdc30648d1bc7d08adde3d925a2d9aa7c73cb",
   :authority
-  "Platform task-ledger authority/layout reconciliation for current main, preserving the historical PR472 source-view receipt.",
+  "Platform task-ledger authority and generated-view reconciliation for the bounded PR554 product-task port.",
   :qualification
-  "Only the exact current task-authority stanza and two generated-view replacements are projected to the authenticated historical platform source view. The editable ledger, task status/history, platform architecture decisions, target/product semantics and acceptance remain current and open; this bridge confers no implementation or product acceptance and is not accounting equivalence.",
+  "Only the exact generated task/product regions and the task-ledger instruction stanza are removed to recover the current navigation view; the existing named source hunks then project to the authenticated historical platform source. The sole editable task ledger remains authoritative for the eleven product task interfaces; task status, product architecture, target semantics and implementation acceptance remain open. This bridge confers no implementation or product acceptance and is not accounting equivalence.",
   :semantic-deltas
   [{:hunk-id "platform-authority-stanza" :classification :platform-task-ledger-authority-layout}
+   {:hunk-id "platform-generated-task-view" :classification :platform-generated-task-interface-view}
+   {:hunk-id "platform-generated-product-view" :classification :platform-generated-product-interface-view}
    {:hunk-id "platform-project-ledger-view" :classification :platform-generated-view-authority-layout}
    {:hunk-id "platform-product-ledger-view" :classification :platform-product-scope-authority-layout}],
+  :generated-view
+  {:instructions "Edit the ledger and run `clojure -M tools/platform_task_projection.clj --write`;\nthe project table and full-product scope below are generated.\n",
+   :regions [{:marker "platform-task-projection",
+              :replacement "Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/platform-workflow/tasks.md#implementation-tasks).\n"}
+             {:marker "platform-product-projection",
+              :replacement "Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/platform-workflow/tasks.md#platform-product-scope).\n"}]},
   :projection-hunks
   [{:hunk-id "platform-authority-stanza",
     :facet-ids ["facet/extension/a82b36fd375fb3fb6a9a5834"],
