@@ -8,6 +8,18 @@
     :governing-contracts [D1 D2 D3 D8 D9 L6 L15 C1 C7 C8 C15 BOOT8 TEST2]
     :public-api
     {
+     native-source-overrides
+     {:arglists ([module]) :admission :none :seed-compatibility-data-only? true
+      :authenticates-inputs? false :proves-effect-legality? false :grants-authority? false}
+     native-diagnostic-fail!
+     {:arglists ([fail-operation effect-message source-span governing-document id source-path subject extra]) :admission :none :seed-compatibility-data-only? true
+      :authenticates-inputs? false :proves-effect-legality? false :grants-authority? false}
+     validate-native-overrides!
+     {:arglists ([effect-fail! source-span override-diagnostics effect-capability source-path module overrides]) :admission :none :seed-compatibility-data-only? true
+      :authenticates-inputs? false :proves-effect-legality? false :grants-authority? false}
+     native-diagnostics
+     {:arglists ([source-span diagnostic-ids rejected-designs effect-capability source-path type-facts]) :admission :none :seed-compatibility-data-only? true
+      :authenticates-inputs? false :proves-effect-legality? false :grants-authority? false}
      assemble-source-artifact
      {:arglists ([ops source-path source-text]) :admission :none :seed-compatibility-data-only? true
       :authenticates-inputs? false :proves-effect-legality? false :grants-authority? false}
@@ -49,17 +61,18 @@
       :admission :none :seed-compatibility-data-only? true
       :authenticates-inputs? false :proves-effect-legality? false :grants-authority? false}}
     :dependency-direction
-    {:requires [clojure.set] :consumed-by [gravity.c8-effect-checker.facts gravity.c8-effect-checker.verification gravity.c8-effect-checker.evidence gravity.c8-effect-checker.artifact]
+    {:requires [clojure.set] :consumed-by [gravity.c8-effect-checker.facts gravity.c8-effect-checker.verification gravity.c8-effect-checker.evidence gravity.c8-effect-checker.artifact gravity.c8-effect-checker.diagnostics]
      :forbids [gravity.bootstrap gravity.cli gravity.release gravity.c8-effect-checker]}
-    :artifact-inputs [:source-path-and-text-with-explicit-owner-operations :explicit-effect-capability-catalog :native-seed-type-facts :native-function-records :native-module-declarations
+    :artifact-inputs [:native-diagnostic-subject-extra-and-catalog-data :explicit-message-span-and-failure-callbacks :source-path-and-text-with-explicit-owner-operations :explicit-effect-capability-catalog :native-seed-type-facts :native-function-records :native-module-declarations
                       :explicit-classifier-and-selection-callbacks :replay-sensitive-effect-catalog :native-effect-catalog-and-diagnostic-ids :native-legality-capability-build-replay-ordering-residual-and-diagnostic-records :trusted-projection-and-failure-callbacks]
-    :artifact-outputs [:hosted-seed-effect-artifact-and-borrowed-owner-identity :native-legality-capability-build-replay-ordering-and-residual-records :seed-direct-effect-sets :lazy-seed-effectful-fact-view :seed-effect-graph-data :native-verifier-report :legacy-capability-projection :complete-marker-or-native-report-refusal]
+    :artifact-outputs [:native-override-data :owner-failure-return-or-exception :native-fixture-diagnostic-registry :hosted-seed-effect-artifact-and-borrowed-owner-identity :native-legality-capability-build-replay-ordering-and-residual-records :seed-direct-effect-sets :lazy-seed-effectful-fact-view :seed-effect-graph-data :native-verifier-report :legacy-capability-projection :complete-marker-or-native-report-refusal]
     :diagnostic-ownership
-    {:stage [C8-VERIFY C8-UNDECLARED C8-PROFILE C8-CAPABILITY C8-BUILD C8-REPLAY C8-ORDER C8-RUNTIME] :upstream [:type-function-and-source-data]
+    {:projection [:native-payload-fields :fixture-override-selection :fixture-registry-data]
+     :stage [C8-VERIFY C8-UNDECLARED C8-PROFILE C8-CAPABILITY C8-BUILD C8-REPLAY C8-ORDER C8-RUNTIME] :upstream [:type-function-and-source-data]
      :existing-c8-owner [:effect-rules :legality :capabilities :replay :ordering :source-admission-and-diagnostic-publication]}
     :legacy-status-labels-authoritative? false
     :legacy-build-grants-prove-performed-effects? false
-    :unsupported [:native-ingress-authentication :callback-validation :canonical-c8-legality
+    :unsupported [:canonical-c15-diagnostic-schema :diagnostic-identity-binding :redaction-and-safe-publication :native-ingress-authentication :callback-validation :canonical-c8-legality
                   :pure-native-graph-ordering-gap :canonical-diagnostic-coverage :untrusted-report-authentication :call-effect-fixed-point :latent-body-inference :handlers-and-continuations
                   :performed-build-effects :package-deployment-provider-authority :profile-and-safety-legality
                   :canonical-full-source-pipeline :authority-admission :migration :release :self-hosting :seed-retirement]})
@@ -111,6 +124,85 @@
                        (set (mapcat direct-effects effectful)))
      :diagnostics []
      :status :complete}))
+
+(defn native-source-overrides [module]
+  (get-in module [:metadata :compiler :c8-effect-check] {}))
+
+(defn native-diagnostic-fail!
+  [fail-operation effect-message source-span governing-document
+   id source-path subject extra]
+  (fail-operation
+   id
+   (effect-message id)
+   (merge {:source-span (or (:source-span subject)
+                            (get-in subject [:source :span])
+                            (:span subject)
+                            (source-span source-path 0))
+           :diagnostic-family :c8-effect-checker
+           :stage :effect-check
+           :document-id "C8"
+           :expected-document governing-document
+           :core-node-id (or (:core-node-id subject) (:core-node subject))
+           :generated-origin-chain (or (:generated-origin subject)
+                                       (get-in subject [:source :origin-chain]))
+           :function (:function subject)
+           :namespace (:namespace subject)
+           :effect (or (:effect subject) :unknown/effect)
+           :capability (:capability subject)
+           :profile (:profile subject)
+           :target (:target subject)
+           :provider (:provider subject)
+           :grant (:grant subject)
+           :remediation
+           "Emit effect graph facts, legality intersection records, capability proofs, build/replay obligations, ordering constraints, residual effect records, and verifier-accepted diagnostics before MIR construction."}
+          extra)))
+
+(defn validate-native-overrides!
+  [effect-fail! source-span override-diagnostics effect-capability
+   source-path module overrides]
+  (when-let [fail-kind (:fail overrides)]
+    (when-let [id (get override-diagnostics fail-kind)]
+      (effect-fail! id source-path
+                    {:source-span (source-span source-path 0)
+                     :core-node "fixture-override"
+                     :function "fixture"
+                     :namespace (:module module)
+                     :effect fail-kind
+                     :capability (get effect-capability fail-kind)
+                     :profile (:profile module)
+                     :target (:target module)
+                     :provider :fixture/provider
+                     :grant :fixture/grant
+                     :generated-origin []}
+                    {:missing-fields [fail-kind]}))))
+
+(defn native-diagnostics
+  [source-span diagnostic-ids rejected-designs effect-capability
+   source-path type-facts]
+  {:artifact :gravity/c8-effect-diagnostic-registry
+   :required-diagnostic-ids diagnostic-ids
+   :diagnostics
+   (mapv (fn [design]
+           (let [fact (first type-facts)
+                 effect (keyword "fixture" (:diagnostic design))]
+             {:diagnostic (:diagnostic design)
+              :fixture (:fixture design)
+              :core-node-id (:core-node fact)
+              :source-span (get-in fact [:source :span]
+                                   (source-span source-path 0))
+              :generated-origin-chain (get-in fact [:source :origin-chain])
+              :function :fixture
+              :namespace :fixture
+              :effect effect
+              :capability (get effect-capability effect)
+              :profile (:profile fact)
+              :target (:target fact)
+              :provider :fixture/provider
+              :grant :fixture/grant
+              :remediation
+              "Keep effect legality explicit before MIR construction."}))
+         rejected-designs)
+   :status :complete})
 
 (defn assemble-source-artifact
   [ops source-path source-text]
@@ -385,5 +477,5 @@
                       {:missing-fields [field]}))))
   :complete)
 
-(doseq [operation [#'assemble-source-artifact #'legality-records #'capability-proof-records #'build-effect-log #'replay-requirements #'ordering-constraints #'residual-effect-report #'native-verifier-report #'native-capability-proof #'validate-native-report! #'fact-direct-effects #'effectful-facts #'effect-graph]]
+(doseq [operation [#'native-source-overrides #'native-diagnostic-fail! #'validate-native-overrides! #'native-diagnostics #'assemble-source-artifact #'legality-records #'capability-proof-records #'build-effect-log #'replay-requirements #'ordering-constraints #'residual-effect-report #'native-verifier-report #'native-capability-proof #'validate-native-report! #'fact-direct-effects #'effectful-facts #'effect-graph]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))
