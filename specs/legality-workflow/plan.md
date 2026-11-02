@@ -74,13 +74,80 @@ Declared allocation/cleanup failure, hidden allocation prohibitions, actual
 storage/ABI representability, provider restrictions and host limits survive.
 
 Start local fixtures against declared typed/effect/profile/provider/Core and
-consumer interfaces. The existing selected root/C9/C10 routes retain their
-recorded scopes; extending them for complete memory-family producer, operation,
-provider and consumer details remains explicit dependency reconciliation. Full
+consumer interfaces. The [memory producer and consumer order](#memory-producer-and-consumer-order)
+extends the five existing routes with selected complete memory-family products,
+preserving their root/C9/C10 scopes. Full
 L10/L18/SAFE7/SAFE8/profile/provider/source conjunctions and actual compiler/
 runtime/target evidence remain unassessed. Preserve every native/FFI/callback/
 provider/probe/replay/migration/review/signing/publication hold; no such action
 is executed by this source proposal.
+
+## Memory producer and consumer order
+
+The [existing selected-result table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition)
+extends the five existing Legality routes. Task bodies, statuses and ownership
+stay unchanged. Nine new joins name selected actual products: Core/Expand,
+Auth provider declaration/selection and Backend Interface inputs to ownership;
+Lower ABI/layout and provider decisions, Backend Interface results and Runtime
+service agreement to handoff; and the existing resource-library task's selected
+API results to conformance. They do not require whole producer completion.
+
+1. Core/Expand supply actual control/evaluation paths, structured acquire/body/
+   cleanup lowering and source/generated origins. Types supplies current type,
+   initialization/ownership/resource constraints, call/foreign contracts and
+   required layout facts; Effects supplies actual allocation, failure, blocking,
+   transfer and cleanup behavior. These are analysis inputs, not supplied final
+   initialized/valid/closed verdicts. Memory analysis derives state and path
+   facts, including partial initialization, initialized-only drop, nested
+   invalidation and every modeled resource exit.
+2. Auth/Runtime/Backend publish early provider and service/target/ABI/layout
+   descriptors. Profile checks support against typed/effected source and actual
+   configuration; Auth supplies compatible deterministic selection and exact
+   scoped grants. Ownership consumes those records and the selected memory,
+   region, arena, resource, foreign and device contracts. A provider declaration,
+   selection record, grant and actual provider execution remain separate facts.
+3. [C7](../../docs/phase-06-compiler-architecture/086-c7-type-checker-design.md)
+   requires layout facts before safety analysis. Bind bounds, field/range,
+   initialization, padding/alignment/endianness and allocator assumptions to
+   those actual typed/source/provider/target facts, rejecting missing required
+   information rather than inventing a host layout. Do not require the later
+   [C14](../../docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md)
+   MIR-dependent layout result before analysis. Legal classification and verified
+   MIR precede final target layout/provider selection and emitted artifacts.
+4. Handoff consumes those actual later Lower/Backend/Runtime results, compares
+   them with earlier layout/provider/proof/check assumptions, and preserves or
+   invalidates/reanalyzes affected facts before use. Target layout changes,
+   unsupported packing/alignment and wrong allocators cannot inherit stale
+   proofs; retain a legal check or refuse. Prove actual linked-service agreement,
+   check-before-access, region/generation invalidation, initialized-only cleanup,
+   linear cleanup/transfer and declared failure/unwind/cancellation behavior.
+   A record or supplied success flag cannot demonstrate execution.
+5. The existing [resource-library owner](../stdlib-workflow/tasks.md#implementation-tasks)
+   supplies selected [STD6 memory/resource](../../docs/phase-16-standard-library/216-std6-memory-and-resource-library-specification.md)
+   and [STD8 scoped IO](../../docs/phase-16-standard-library/218-std8-io-and-filesystem-library-specification.md)
+   consumer examples after the compiler products needed to compile them.
+   Conformance composes those actual APIs with analysis and handoff results,
+   including accepted scopes and refused missing/duplicate/wrong-provider/
+   post-transfer release. This is neither every IO/network API nor the final
+   library release as an ordinary fixture-development prerequisite.
+
+Fixtures must distinguish valid and invalid control paths, partial/moved fields,
+range aliases, lifetime escapes, arena resets and actual provider identities;
+supported emitted checks and forbidden metadata/failure machinery; changed
+layout/proof assumptions; and actual normal/error/panic/cancellation cleanup.
+Retain all 43 SAFE2-SAFE5 diagnostic meanings with their source/generated,
+operation, owner/region/resource/provider/profile and path context. Source-rule
+static proof/refusal and permitted audited alternatives remain exact; SAFE3
+normal-borrow and SAFE4 safe arena-use refusals are not waived. Existing unsafe
+candidate, required specialist review and final-outcome stages remain unchanged.
+
+Send family results to the existing Release suite and later independent
+admission; final Release is not a prerequisite for these compiler fixtures.
+These selected source products do not accept the complete L10/L18, Runtime,
+Backend, library, profile or other SAFE predicates. All actual provider/native/
+foreign/callback/device/probe/replay/migration/review/signing/publication holds
+remain; this planning change executes none of them. Current independent review,
+global entailment and implementation acceptance remain pending/unassessed.
 
 ## Root safety and unsafe-audit source criteria
 

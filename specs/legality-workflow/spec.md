@@ -55,6 +55,12 @@ owner roles. Current whole-source and dependency review remain pending; actual
 checks, cleanup, provider behavior and target preservation retain their separate
 implementation evidence requirements.
 
+The [memory dependency order](plan.md#memory-producer-and-consumer-order)
+separates typed layout/control/provider inputs from later derived layouts,
+actual checks/cleanup/transfers and resource-library consumer results. It keeps
+the five existing tasks and leaves complete source and current independent
+acceptance pending.
+
 The [root safety and unsafe-audit criteria](plan.md#root-safety-and-unsafe-audit-source-criteria)
 restore six finite reviewed SAFE1/SAFE6 predicates and bind the complete two
 root contracts to the four existing task owners. Mode/profile restrictions,
