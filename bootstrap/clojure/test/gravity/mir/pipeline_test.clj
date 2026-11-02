@@ -41,7 +41,7 @@
            'downstream-ids 'expected-block-operation-ids 'expected-data-flow 'expected-uses
            'expected-terminator-uses 'expected-terminator-value-uses 'expected-value
            'expected-runtime-check-value 'validate-effect-edge-placement! 'validate-data-flow!
-           'validate-operations!}
+           'validate-operations! 'validate-fact-tables!}
          (set (keys (ns-publics 'gravity.mir)))))
   (let [contract (:gravity/namespace-contract (meta #'mir/validate-cfg!))]
     (is (= (set (keys (:public-api contract)))
@@ -60,6 +60,59 @@
       (is (false? (:authenticates-inputs? contract)))
       (is (false? (:issues-verifier-certificates? contract)))
       (is (some #{:general-cfgs} (:unsupported contract))))))
+
+(defn- fact-validation-ports []
+  {:add-runtime-check-facts #'b/p15-s23-c11-mir-add-runtime-check-facts
+   :reindex-fact-table #'b/p15-s23-c11-mir-reindex-fact-table
+   :profile-target-table #'b/p15-s23-c11-mir-profile-target-table
+   :capability-proof-table #'b/p15-s23-c11-mir-capability-proof-table
+   :safety-proof-table #'b/p15-s23-c11-mir-safety-proof-table
+   :require! #'b/p15-s23-c11-mir-require!})
+
+(deftest native-fact-table-equality-accepts-emission-and-rejects-table-substitution
+  (doseq [{:keys [source checked] emitted :mir} @products]
+    (let [ports (fact-validation-ports)]
+      (is (nil? (mir/validate-fact-tables! ports source checked emitted)))
+      (is (nil? (b/p15-s23-c11-mir-validate-fact-tables! source checked emitted)))
+      (doseq [[key id missing]
+              [[:type-table "C11-TYPE" :id-indexed-c7-type-facts]
+               [:effect-table "C11-EFFECT" :id-indexed-c8-effect-facts]
+               [:ownership-table "C11-VERIFY" :id-indexed-c9-ownership-facts]
+               [:capability-table "C11-EFFECT" :id-indexed-c8-capability-facts]
+               [:safety-table "C11-SAFETY" :id-indexed-c10-safety-outcomes]
+               [:profile-target-table "C11-MODULE" :id-indexed-profile-target-facts]
+               [:capability-proof-table "C11-EFFECT" :id-indexed-capability-proofs]
+               [:proof-certificate-table "C11-SAFETY" :id-indexed-authenticated-safety-proof-certificates]]]
+        (let [changed (assoc emitted key {:substituted :native-data})
+              rejected (failure #(mir/validate-fact-tables! ports source checked changed))]
+          (is (= id (:id rejected)))
+          (is (= missing (:missing-fact rejected)))
+          (is (= rejected (failure #(b/p15-s23-c11-mir-validate-fact-tables! source checked changed))))))
+      (let [changed (assoc emitted :effect-order-graph {})]
+        (is (nil? (mir/validate-fact-tables! ports source checked changed)))
+        (is (= :authenticated-partial-effect-order-graph
+               (:missing-fact (failure #(b/p15-s23-c11-mir-validate-fact-tables! source checked changed)))))))))
+
+(deftest fact-table-wrapper-preserves-live-ports-and-separate-graph-rule
+  (let [{:keys [source checked] emitted :mir} (first @products)
+        observed (atom nil) marker (Object.)
+        expected (fact-validation-ports)]
+    (with-redefs [mir/validate-fact-tables! (fn [& args] (reset! observed args) marker)]
+      (is (nil? (b/p15-s23-c11-mir-validate-fact-tables! source checked emitted))))
+    (is (= [expected source checked emitted] (vec @observed)))
+    (is (every? true? (map #(identical? (get expected %) (get (first @observed) %)) (keys expected))))
+    (let [error (ex-info "late fact-table callback" {})
+          caught (with-redefs [b/p15-s23-c11-mir-require! (fn [& _] (throw error))]
+                   (try (mir/validate-fact-tables! (first @observed) source checked emitted)
+                        nil (catch clojure.lang.ExceptionInfo e e)))]
+      (is (identical? error caught)))
+    (let [events (atom [])
+          ports (into {} (for [[key value] expected]
+                           [key (fn [& args] (swap! events conj key) (apply value args))]))]
+      (is (nil? (mir/validate-fact-tables! ports source checked emitted)))
+      (is (= (vec (concat (mapcat (fn [_] [:reindex-fact-table :add-runtime-check-facts]) (range 5))
+                         [:profile-target-table :add-runtime-check-facts :capability-proof-table :safety-proof-table]
+                         (repeat 8 :require!))) @events)))))
 
 (defn- operation-validation-ports []
   {:entry-parameter! #'b/p15-s23-c11-mir-entry-parameter!

@@ -6,7 +6,11 @@
     :contract-boundary :native-seed-c11-control-flow-and-dominance
     :governing-contracts [D1 D2 D3 D8 D9 C1 C6 C7 C8 C9 C10 C11 C15 BOOT8 TEST2]
     :public-api
-    {validate-operations!
+    {validate-fact-tables!
+     {:arglists ([owner-operations source-path checked-core mir]) :admission :none
+      :operation-inputs [:add-runtime-check-facts :reindex-fact-table :profile-target-table :capability-proof-table :safety-proof-table :require!]
+      :native-data-only? true :authenticates-inputs? false :issues-verifier-certificates? false}
+     validate-operations!
      {:arglists ([owner-operations source-path checked-core mir]) :admission :none
       :operation-inputs [:entry-parameter! :operation-sequence :runtime-check-operation-id :expected-block-operation-ids :require! :block-keys :node-facts :operation-keys :node-opcode :allowed-opcodes :allowed-source-operations :node-operands :expected-runtime-check-operation :set-union]
       :native-data-only? true :authenticates-inputs? false :issues-verifier-certificates? false}
@@ -50,7 +54,8 @@
      valid-dominance-edge? {:arglists ([edge blocks operation-by-id definitions position-by-id join]
                                       [edge blocks operation-by-id definitions position-by-id join parameter]) :admission :none}
      valid-terminator-use? {:arglists ([use blocks operation-by-id position-by-id]) :admission :none}}
-    :artifact-inputs [:explicit-operation-rules-and-schema-data
+    :artifact-inputs [:explicit-fact-table-reconstruction-and-require-operations
+                      :explicit-operation-rules-and-schema-data
                       :explicit-native-data-flow-rule-operations
                       :native-block-operation-position-definition-use-and-source-tables
                       :native-node-path-operand-and-operation-data
@@ -60,17 +65,18 @@
                       :explicit-require-and-terminator-operations :terminator-key-schema
                       :checked-core-and-mir-data :expected-envelope-and-operation-products
                       :definitions :operation-positions :join-and-parameter-data]
-    :artifact-outputs [:native-operation-products :native-data-flow-counts :native-effect-placement-result
+    :artifact-outputs [:native-fact-table-rule-return :native-operation-products :native-data-flow-counts :native-effect-placement-result
                        :native-block-placement-data :native-use-definition-and-value-records
                        :native-runtime-check-facts :id-indexed-fact-and-proof-tables
                        :cfg-entry-exit-and-conditional-count :native-rule-outcome :dominance-and-use-predicates]
-    :diagnostic-ownership {:stage [:native-operation-shape-parity-and-fact-references
+    :diagnostic-ownership {:stage [:native-fact-table-equality
+                                  :native-operation-shape-parity-and-fact-references
                                   C11-MODULE C11-TARGET-LEAK C11-SAFETY
                                   :native-data-flow-equality-and-dominance :native-effect-edge-placement
                                   C11-DOMINANCE C11-TYPE C11-ORIGIN C11-EFFECT
                                   :native-use-and-placement-reference-records C11-BLOCK :terminating-pure-control-transfer :canonical-cfg-structure]
                            :existing-caller [C11-TYPE C11-EFFECT C11-SAFETY C11-MODULE C11-VERIFY
-                                             :fact-table-equality-and-admission C11-DOMINANCE :predicate-refusal]
+                                             :effect-graph-equality-and-admission C11-DOMINANCE :predicate-refusal]
                            :supplied-require-operation [:diagnostic-construction :throwing]}
     :dependency-direction {:requires [] :consumed-by [gravity.bootstrap]
                            :forbids [gravity.bootstrap gravity.c11-mir gravity.cli gravity.release]}
@@ -86,6 +92,70 @@
 
 
 
+
+(defn validate-fact-tables!
+  [owner-operations source-path checked-core mir]
+  (let [{:keys [add-runtime-check-facts reindex-fact-table profile-target-table capability-proof-table safety-proof-table require!]} owner-operations
+        nodes (:core-nodes checked-core)
+        expected-type
+        (add-runtime-check-facts
+         checked-core :type
+         (reindex-fact-table
+          nodes (:type-facts checked-core) :fact-id ":type-fact"))
+        expected-effect
+        (add-runtime-check-facts
+         checked-core :effect
+         (reindex-fact-table
+          nodes (:effect-facts checked-core) :fact-id ":effect-fact"))
+        expected-ownership
+        (add-runtime-check-facts
+         checked-core :ownership
+         (reindex-fact-table
+          nodes (:ownership-facts checked-core)
+          :fact-id ":ownership-fact"))
+        expected-capability
+        (add-runtime-check-facts
+         checked-core :capability
+         (reindex-fact-table
+          nodes (:capability-facts checked-core)
+          :fact-id ":capability-fact"))
+        expected-safety
+        (add-runtime-check-facts
+         checked-core :safety
+         (reindex-fact-table
+          nodes (:safety-facts checked-core)
+          :outcome-id ":safety-outcome"))
+        expected-profile-target
+        (add-runtime-check-facts
+         checked-core :profile-target
+         (profile-target-table checked-core))
+        expected-capability-proofs
+        (capability-proof-table checked-core)
+        expected-safety-proofs
+        (safety-proof-table checked-core)]
+    (doseq [[expected observed id missing]
+            [[expected-type (:type-table mir)
+              "C11-TYPE" :id-indexed-c7-type-facts]
+             [expected-effect (:effect-table mir)
+              "C11-EFFECT" :id-indexed-c8-effect-facts]
+             [expected-ownership (:ownership-table mir)
+              "C11-VERIFY" :id-indexed-c9-ownership-facts]
+             [expected-capability (:capability-table mir)
+              "C11-EFFECT" :id-indexed-c8-capability-facts]
+             [expected-safety (:safety-table mir)
+              "C11-SAFETY" :id-indexed-c10-safety-outcomes]
+             [expected-profile-target (:profile-target-table mir)
+              "C11-MODULE" :id-indexed-profile-target-facts]
+             [expected-capability-proofs (:capability-proof-table mir)
+              "C11-EFFECT" :id-indexed-capability-proofs]]]
+      (require!
+       (= expected observed) id source-path mir missing))
+    (require!
+     (= {:capability-proof-table-reference :capability-proof-table
+         :safety-proofs expected-safety-proofs}
+        (:proof-certificate-table mir))
+     "C11-SAFETY" source-path mir
+     :id-indexed-authenticated-safety-proof-certificates)))
 
 (defn validate-operations!
   [owner-operations source-path checked-core mir]
