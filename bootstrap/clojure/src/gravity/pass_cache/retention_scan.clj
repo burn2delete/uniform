@@ -8,7 +8,8 @@
             [gravity.pass-cache.receipt-validation :refer :all]
             [gravity.pass-cache.secure-io :refer :all]
             [gravity.pass-cache.store-directories :refer :all]
-            [gravity.pass-execution :as pass-execution])
+            [gravity.pass-execution :as pass-execution]
+            [gravity.pass-execution.receipt :as pass-receipt])
   (:import [java.nio.file SecureDirectoryStream]))
 
 (declare validate-retained-entry-references!)
@@ -58,17 +59,12 @@
 
 (defn verified-pass-execution-receipt-id!
   [receipt]
-  (let [calculator-var
-        (ns-resolve 'gravity.pass-execution 'calculated-receipt-id)]
-    (when-not calculator-var
-      (fail! "C16-POLICY"
-             "pass execution receipt identity verifier is unavailable" {}))
-    (let [observed (require-sha256! :receipt-id (:receipt-id receipt))
-          calculated ((var-get calculator-var) receipt)]
-      (when-not (= observed calculated)
-        (fail! "C16-ENTRY" "orphan receipt content identity is stale"
-               {:observed observed}))
-      observed)))
+  (let [observed (require-sha256! :receipt-id (:receipt-id receipt))
+        calculated (pass-receipt/calculated-receipt-id receipt)]
+    (when-not (= observed calculated)
+      (fail! "C16-ENTRY" "orphan receipt content identity is stale"
+             {:observed observed}))
+    observed))
 
 (defn validate-retained-entry-references!
   [store directories entry validation-ops]
