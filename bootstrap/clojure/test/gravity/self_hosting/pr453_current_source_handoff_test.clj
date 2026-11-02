@@ -200,6 +200,60 @@
       (finally
         (java.nio.file.Files/deleteIfExists (.toPath (java.io.File. path)))))))
 
+(deftest v2-c13-c14-b1-packet-selection-consumes-current-c11-owner
+  ;; The C6 and C11 producers and the public four-argument packet entrypoint
+  ;; are real.  Stop at the downstream owner boundary here: this is bounded
+  ;; source-selection evidence, not whole C13/C14/B1, native-C, release,
+  ;; migration, or self-hosting authority.
+  (let [path (temp-source-path)
+        text (source-text)
+        context (bootstrap/p15-s23-stage2-gravity-checked-core-context
+                 path text :jvm)
+        c6-header {:interface :gravity/c6-c10 :version 2}
+        c11-header {:interface :gravity/c11-mir :version 2}
+        build-var (ns-resolve
+                   'gravity.bootstrap
+                   'p15-s23-c13-c14-b1-build-verified-internal!)
+        bind-var (ns-resolve
+                  'gravity.bootstrap
+                  'p15-s23-c13-c14-b1-bind-selected-source-contract)
+        selected (atom nil)
+        downstream-calls (atom 0)]
+    (try
+      (let [checked-core
+            (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+             context c6-header)
+            artifact
+            (bootstrap/p15-s23-stage2-c11-mir-artifact
+             checked-core context c11-header)
+            tampered-artifact
+            (assoc-in artifact [:source-rule :source-mode] :legacy-pinned)
+            invoke
+            (fn [candidate]
+              (with-redefs-fn
+                {build-var
+                 (fn [& _]
+                   (swap! downstream-calls inc)
+                   {:status :accepted-for-bounded-llvm})
+                 bind-var
+                 (fn [packet selection]
+                   (reset! selected selection)
+                   (assoc packet :source-contract-selection selection))}
+                #(bootstrap/p15-s23-stage2-c13-c14-b1-packet-from-c11!
+                  candidate checked-core context c11-header)))
+            packet (invoke artifact)
+            selected-rule (:source-rule @selected)
+            tampered-data (failure-data #(invoke tampered-artifact))]
+        (is (= :accepted-for-bounded-llvm (:status packet)))
+        (is (= :development-current (:source-mode selected-rule)))
+        (is (= (get-in artifact [:source-rule :source-content-hash])
+               (:source-content-hash selected-rule)))
+        (is (= "C11-VERIFY" (:id tampered-data)))
+        (is (some? (:missing-fact tampered-data)))
+        (is (= 1 @downstream-calls)))
+      (finally
+        (java.nio.file.Files/deleteIfExists (.toPath (java.io.File. path)))))))
+
 (deftest v2-c11-rejects-forged-core-and-policy-before-c11-source
   (let [path (temp-source-path)
         text (source-text)

@@ -82,6 +82,7 @@
 ;; producer-owned definitions from the current C11 v2 composition.  There is
 ;; no local implementation or fallback for a missing owner.
 (declare p15-s23-c11-mir-contract-binding
+         p15-s23-c11-mir-source-binding!
          p15-s23-c11-mir-require-core-policy-data!
          p15-s23-c11-mir-core-policy-binding)
 
@@ -89,12 +90,29 @@
   [c11-artifact checked-core context c11-report interface-header]
   ;; Called only after the public C11 owner validates this exact header and
   ;; authenticates/replays this original artifact/Core/context tuple.
-  ;; Derive the selector from the owner-produced report, never from an
-  ;; arbitrary caller flag.  The header is retained only after exact parity.
+  ;; Derive the selector from the owner-produced artifact/report pair, never
+  ;; from an arbitrary caller flag.  A current source rule is re-derived by
+  ;; the C11 owner before it is admitted downstream; the legacy route retains
+  ;; its fixed contract.  The header is retained only after exact parity.
   (let [source-interface (:source-interface c11-report)
         version (:version source-interface)
         source-path (p15-s23-c11-ingress-source-path context)
-        binding (p15-s23-c11-mir-contract-binding version)
+        source-rules [(:source-rule c11-artifact) (:source-rule c11-report)]
+        source-modes (mapv :source-mode source-rules)
+        current-source? (= [:development-current :development-current]
+                           source-modes)
+        legacy-source? (= [nil nil] source-modes)
+        _ (when (and (not current-source?) (not legacy-source?))
+            ;; Keep the source-mode diagnostic on the existing structural
+            ;; owner boundary; this lexical component has no fallback owner.
+            (p15-s23-c11-mir-require-strict-structure!
+             source-path [nil nil] source-modes
+             :selected-downstream-c11-source-mode))
+        binding (if current-source?
+                  (p15-s23-c11-mir-source-binding!
+                   (:source-path context) (:requested-target context)
+                   version :development-current)
+                  (p15-s23-c11-mir-contract-binding version))
         rule (p15-s23-c11-mir-source-rule-record binding)
         ingress (:checked-core-ingress c11-artifact)
         policy (:source-policy ingress)]

@@ -70,28 +70,31 @@ fail-closed tamper behavior. Injected owner results and synthetic packets are
 NONACCEPTANCE evidence; they do not authenticate a Core, Reader, C11 product,
 or downstream C13/C14/B1 product.
 
-The existing PR453 handoff remains the intended genuine producer evidence for
-C6/C11 v2 construction, but the fresh final-main positive is currently blocked
-before C11 construction by the current C6 owner contract. This PR does not
-relax or renew that identity. No full C13/C14/B1 source composition, native C
-compiler, restricted process route, broker admission, release, self-hosting,
-or v3 product execution is claimed.
+The PR453 handoff now supplies genuine current-v2 producer evidence on the
+composed main: `v2-c11-public-construction-consumes-real-c6-artifact` ran as
+1 test with 9 assertions and zero failures or errors
+(`/tmp/uniform-pr552-v2-c11-public-after-main.log`). The live C6/C11 owner
+route therefore no longer has the earlier fixed-C6-pin blocker. The earlier
+5ecc final-main run that stopped before C11 construction is retained only as
+superseded-base history; this consumer does not renew that historical pin.
+The bounded four-argument packet-selection control separately exercises the
+real C6/C11 producer tuple and rejects a tampered source mode at the C11
+owner boundary. No full C13/C14/B1 source composition, native C compiler,
+restricted process route, broker admission, release, self-hosting, or v3
+product execution is claimed.
 
 ## Validation record
 
-The focused selector suite ran in a fresh JVM against final main with 9 tests,
-113 assertions, zero failures and zero errors
-(`/tmp/uniform-pr552-final-selector-5ecc.log`). A fresh final-main genuine
-current-v2 producer positive (`v2-c11-public-construction-consumes-real-c6-artifact`)
-was attempted separately with 1 test, 0 passes, 0 failures and 1 error
-(`/tmp/uniform-pr552-final-genuine-v2-5ecc-counted.log`). It fails closed at
-the C6 owner before C11 construction: the current source is 185620 bytes with
-hash `sha256:c5433537cf9423b14a0456696d9f7c3eb5953f88a9535787ef9c53af883bc6b8`,
-while `gravity.c6-c10.source-contract/current-compiler-program` still requires
-186870 bytes and `sha256:0e7e30e15bc68dabdcee3cfea4c91740d82808204c5fe322d67ccd0ffdb76b98`.
-That is a current-owner source-contract reconciliation blocker, not a reason
-for this consumer to renew a frozen pin. The earlier 69d/4df genuine runs are
-superseded-base evidence only.
+The focused selector suite ran in a fresh JVM against the pinned source
+fixture with 9 tests, 113 assertions, zero failures and zero errors
+(`/tmp/uniform-pr552-final-selector-5ecc.log`). The genuine current-v2
+producer positive above ran separately with 1 test and 9 assertions, zero
+failures and zero errors. The bounded four-argument current-v2 selector
+control also passed with 1 test and 6 assertions; its downstream C13/C14/B1
+owner is deliberately stopped at an injected boundary, so it is not packet
+or backend acceptance evidence. The former 5ecc C6 mismatch log remains an
+immutable historical nonpass for that older base, not current acceptance
+status. The earlier 69d/4df genuine runs are superseded-base evidence only.
 The language-boundary gate,
 document/roadmap validators, `git diff --check`, and current-main composition
 checks remain separate evidence. Any existing broader C13/C14/B1 ownership or
