@@ -151,6 +151,29 @@
       #(is (identical? values (bootstrap/p15-s23-c6c10-unique-resolved-values!
                               path :collision-free-resolved-map-keys values))))))
 
+(deftest validated-scalar-keys-use-exact-identity-without-opening-digest-streams
+  (let [digest (operation 'p15-s23-c6c10-streaming-digest)
+        cases [(mapv #(keyword "source" (str %)) (range 100))
+               (mapv #(str "source-" %) (range 100))
+               [nil false true (byte -1) (short 0) (int 1) (long 2)
+                (bigint 3) (.shiftLeft java.math.BigInteger/ONE 128)
+                Long/MIN_VALUE Long/MAX_VALUE "name" \a :name 'name 'ns/name]
+               [(byte 1) (short 1) (int 1) (long 1) (bigint 1) java.math.BigInteger/ONE]
+               [:duplicate :duplicate nil nil]]]
+    (doseq [values cases]
+      (let [canonical-count (count (distinct (mapv form values)))
+            host-count (count (distinct values))
+            result (with-redefs-fn
+                     {digest (fn [& _] (throw (ex-info "Scalar opened a digest stream" {:tripwire true})))}
+                     #(capture (fn [] (bootstrap/p15-s23-c6c10-unique-resolved-values!
+                                      path :collision-free-resolved-map-keys values))))]
+        (is (= canonical-count host-count))
+        (if (= canonical-count (count values))
+          (is (= {:value values} result))
+          (is (= {:value-count (count values) :canonical-identity-count canonical-count
+                  :host-equality-count host-count :missing-fact :collision-free-resolved-map-keys}
+                 (get-in result [:data :facts]))))))))
+
 (deftest all-values-validate-before-digest-and-uniqueness-comparisons
   (let [digest (operation 'p15-s23-c6c10-streaming-digest)
         calls (atom 0)]

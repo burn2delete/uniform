@@ -61,8 +61,14 @@
   ;; original eager canonical-form pass did. No normalized trees are retained.
   (doseq [value values]
     (p15-s23-c6c10-streaming-validation! source-path value))
-  (let [canonical-count
-        (loop [remaining (seq values) buckets {} total 0]
+  (let [scalar-only? (every? p15-s23-c6c10-streaming-scalar-value? values)
+        ;; In this validated domain, host equality is exactly canonical
+        ;; equality. Ratios, decimals and containers deliberately stay on the
+        ;; typed canonical path. Ordinary source-map keys need no hash streams.
+        canonical-count
+        (if scalar-only?
+          (count (distinct values))
+          (loop [remaining (seq values) buckets {} total 0]
           (if-not remaining
             total
             (let [value (first remaining)
@@ -76,8 +82,8 @@
                                  (some #(= form (p15-s23-c6c10-canonical-identity source-path %)) bucket)))]
               (recur (next remaining)
                      (if duplicate? buckets (assoc buckets digest (conj bucket value)))
-                     (if duplicate? total (inc total))))))
-        host-count (count (distinct values))]
+                     (if duplicate? total (inc total)))))))
+        host-count (if scalar-only? canonical-count (count (distinct values)))]
     ;; Clojure would also merge host-equal but canonically distinct values
     ;; (for example a vector and a list) during map/set construction.
     (when-not (and (= (count values) canonical-count)
