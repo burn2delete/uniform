@@ -43,7 +43,6 @@
   ([source-path source-text module-inputs]
   (let [plan-binding (sh06-resolution-current-binding! source-path)]
    (binding [*sh06-resolution-operation-binding* plan-binding]
-  (with-sh06-resolution-transport-bounds
    (let [artifact (sh06-resolution-finalize-candidate
     source-path
     (sh06-resolution-source-artifact-candidate
@@ -51,7 +50,7 @@
      (sh05-macro-source-artifact source-path source-text)
      true ::legacy module-inputs))]
      (sh06-resolution-binding-current! source-path plan-binding)
-     artifact))))))
+     artifact)))))
 
 (defn sh06-resolution-artifact-from-sh05-artifact
   "Resolve an already authenticated SH-05 artifact without rebuilding C3/SH-05.
@@ -66,29 +65,26 @@
   ([source-path sh05-artifact]
    (let [plan-binding (sh06-resolution-current-binding! source-path)]
     (binding [*sh06-resolution-operation-binding* plan-binding]
-   (with-sh06-resolution-transport-bounds
     (let [artifact (sh06-resolution-finalize-candidate
      source-path
      (sh06-resolution-source-artifact-candidate
       source-path sh05-artifact false))]
       (sh06-resolution-binding-current! source-path plan-binding)
-      artifact)))))
+      artifact))))
   ([source-path sh05-artifact context]
    (when (nil? context)
      (sh06-resolution-c5-fail! source-path :missing-context {}))
-   (with-sh06-resolution-transport-bounds
-    (sh06-resolution-finalize-candidate
-     source-path
-     (sh06-resolution-source-artifact-candidate
-      source-path sh05-artifact false context)
-     context)))
+   (sh06-resolution-finalize-candidate
+    source-path
+    (sh06-resolution-source-artifact-candidate
+     source-path sh05-artifact false context)
+    context))
   ([source-path sh05-artifact module-inputs reader-source-path]
    (let [before (sh03-reader-read-selected-source-bytes! source-path reader-source-path)
          plan-binding (sh06-resolution-current-binding! source-path)
          identity-keys [:source-content-hash :source-byte-count]]
      (binding [*sh06-resolution-operation-binding* plan-binding]
-       (with-sh06-resolution-transport-bounds
-         (let [candidate (sh06-resolution-source-artifact-candidate
+       (let [candidate (sh06-resolution-source-artifact-candidate
                           source-path sh05-artifact false ::legacy module-inputs)
                retained (get-in candidate [:sh05-macro-artifact :gravity-macro-boundary
                                           :authenticated-sh04-artifact :c2-reader-artifact
@@ -103,7 +99,7 @@
               "C5-UNRESOLVED" source-path :selected-current-reader-parent
               (select-keys retained identity-keys) {:reason :current-reader-parent-revision-mismatch}))
            (sh06-resolution-binding-current! source-path plan-binding)
-           artifact)))))
+           artifact))))
   ([source-path sh05-artifact module-inputs reader-source-path invocation]
    (sh06-resolution-with-reader-invocation
     source-path invocation

@@ -2,7 +2,7 @@
 (defn p15-s23-c-backend-contain-exception!
   [source-path boundary exception]
   (let [data (p15-s23-backend-trusted-exception-data
-              exception 65536 128)
+              exception 65536)
         c-diagnostic
         (p15-s23-c-backend-sanitized-complete-diagnostic data)
         llvm-diagnostic

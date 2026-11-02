@@ -24,12 +24,89 @@
              "Gravity-Bootstrap-Hosted: true\n"
              "Gravity-Seedless-Release: false\n\n")))
 
-(declare p18-t02-jar-entries p18-t02-jar-file-entries)
+(defn p18-t02-source-inventory-failure!
+  [report]
+  (fail! "P18T02006"
+         "packaged JVM CLI source inventory is invalid"
+         {:source-span {:source "P18-T02 source inventory"}
+          :missing-fact :complete-packaged-source-inventory
+          :observed-source-count (count (:paths report))
+          :observed-packaged-source-count
+          (count (:packaged-source-entries report))
+          :remediation
+          "Restore the exact launcher and complete regular production source/data inventory before building the package."}))
 
-(defn p18-t02-build-packaged-jvm-cli!
-  ([] (p18-t02-build-packaged-jvm-cli! (p18-t02-source-inventory)))
+(defn p18-t02-source-observation
+  "Capture one validated source inventory and its derived content views."
+  ([]
+   (try
+     (p18-t02-source-observation (p18-t02-source-inventory))
+     (catch clojure.lang.ExceptionInfo error
+       (if (= "packaged source inventory contains a symbolic link"
+              (.getMessage error))
+         (fail! "P18T02006"
+                "packaged JVM CLI source inventory is invalid"
+                {:source-span {:source "P18-T02 source inventory"}
+                 :missing-fact :complete-packaged-source-inventory
+                 :source-error (ex-data error)
+                 :remediation
+                 "Remove symbolic links from the production source tree before building the package."})
+         (throw error)))))
   ([inventory]
-   (p18-t02-validate-source-inventory! inventory)
+   (let [report (p18-t02-source-inventory-report inventory)]
+     (when-not (:valid? report)
+       (p18-t02-source-inventory-failure! report))
+     (let [material (:source-material report)]
+       {:source-inventory inventory
+        :source-inventory-report report
+        :source-material material
+        :source-hashes
+        (into (sorted-map)
+              (map (fn [{:keys [path hash]}] [path hash]))
+              material)
+        :packaged-source-entries (:packaged-source-entries report)
+        :expected-jar-file-entries
+        (p18-t02-expected-jar-file-entries inventory)
+        :jar-command (p18-t02-jar-command inventory)}))))
+
+(defn p18-t02-source-observation-input
+  [inventory-or-observation]
+  (if (and (map? inventory-or-observation)
+           (contains? inventory-or-observation :source-inventory)
+           (contains? inventory-or-observation :source-material)
+           (contains? inventory-or-observation :source-hashes))
+    inventory-or-observation
+    (p18-t02-source-observation inventory-or-observation)))
+
+(defn p18-t02-assert-source-observations-stable!
+  [before after]
+  (when-not (= (select-keys before [:source-inventory :source-material])
+               (select-keys after [:source-inventory :source-material]))
+    (fail! "P18T02006"
+           "packaged JVM CLI source inventory changed during the build"
+           {:source-span {:source "P18-T02 source inventory"}
+            :missing-fact :stable-packaged-source-inventory
+            :source-inventory-before (:source-inventory before)
+            :source-inventory-after (:source-inventory after)
+            :source-material-before (:source-material before)
+            :source-material-after (:source-material after)
+            :remediation
+            "Build from an unchanged complete packaged source inventory and retry."}))
+  after)
+
+(declare p18-t02-jar-entry-records p18-t02-jar-observation)
+
+(defn p18-t02-build-packaged-jvm-cli-observation!
+  "Build once and return the operation-local observations used by package records."
+  ([]
+   (p18-t02-build-packaged-jvm-cli-observation!
+    (p18-t02-source-observation)
+    true))
+  ([inventory]
+   (p18-t02-build-packaged-jvm-cli-observation!
+    (p18-t02-source-observation inventory)
+    false))
+  ([source-observation refresh-post-inventory?]
    (p18-ensure-dir! p18-t02-build-root)
    (p18-ensure-dir! p18-t02-classes-dir)
    (p18-t02-write-manifest!)
@@ -41,13 +118,30 @@
      p18-t02-launcher-source])
    (p18-t02-shell!
     "p18-t02-jar"
-    (p18-t02-jar-command inventory))
-   (let [source-report
+    (:jar-command source-observation))
+   (let [post-source-observation
+         (if refresh-post-inventory?
+           (p18-t02-source-observation)
+           (p18-t02-source-observation
+            (:source-inventory source-observation)))
+         _ (p18-t02-assert-source-observations-stable!
+            source-observation post-source-observation)
+         jar-observation (p18-t02-jar-observation)
+         jar-entries (:jar-entries jar-observation)
+         jar-file-entries (:jar-file-entries jar-observation)
+         source-report
          (p18-t02-jar-source-inventory-report
-          inventory (p18-t02-jar-entries))
+          (:source-inventory post-source-observation) jar-entries)
          jar-report
          (p18-t02-jar-inventory-report
-          inventory (p18-t02-jar-file-entries))]
+          (:source-inventory post-source-observation) jar-file-entries)
+         observation
+         {:source-observation-before source-observation
+          :source-observation-after post-source-observation
+          :jar-observation jar-observation
+          :jar-source-inventory-report source-report
+          :jar-inventory-report jar-report
+          :jar-path p18-t02-jar-path}]
      (when-not (and (:valid? source-report) (:valid? jar-report))
        (fail! "P18T02006"
               "packaged JVM CLI JAR inventory is invalid"
@@ -60,7 +154,14 @@
                :packaged-source-inventory-valid?
                (:valid? source-report)
                :remediation
-               "Rebuild the package from the exact declared launcher and Clojure source inventory without omissions or ambient files."})))
+               "Rebuild the package from the exact declared launcher and Clojure source inventory without omissions or ambient files."}))
+     observation)))
+
+(defn p18-t02-build-packaged-jvm-cli!
+  ([] (p18-t02-build-packaged-jvm-cli-observation!)
+      p18-t02-jar-path)
+  ([inventory]
+   (p18-t02-build-packaged-jvm-cli-observation! inventory)
    p18-t02-jar-path))
 
 (defn p18-t02-jar-entry-records
@@ -83,6 +184,16 @@
         (comp (remove :directory?)
               (map :name))
         (p18-t02-jar-entry-records)))
+
+(defn p18-t02-jar-observation
+  []
+  (let [records (p18-t02-jar-entry-records)]
+    {:jar-entry-records records
+     :jar-entries (mapv :name records)
+     :jar-file-entries (into []
+                             (comp (remove :directory?)
+                                   (map :name))
+                             records)}))
 
 (defn p18-t02-dependency-record
   []
@@ -145,17 +256,19 @@
   ([package-manifest jar-hash]
    (p18-t02-reproducible-build-record
     package-manifest jar-hash (p18-t02-source-inventory)))
-  ([package-manifest jar-hash inventory]
-   (let [base {:artifact :gravity/p18-t02-reproducible-build-record
+  ([package-manifest jar-hash inventory-or-observation]
+   (let [source-observation
+         (p18-t02-source-observation-input inventory-or-observation)
+         base {:artifact :gravity/p18-t02-reproducible-build-record
                :schema-version "gravity.reproducible-build/v1"
                :package-id (:package-id package-manifest)
                :recipe {:javac ["javac" "-cp" "<runtime-classpath>" "-d"
                                 p18-t02-classes-dir p18-t02-launcher-source]
-                        :jar (p18-t02-jar-command inventory)}
+                        :jar (:jar-command source-observation)}
                :timestamp-policy :fixed-jar-entry-time
                :network-policy :disabled-after-local-runtime-dependencies
-               :source-inventory inventory
-               :source-hashes (p18-t02-source-hashes inventory)
+               :source-inventory (:source-inventory source-observation)
+               :source-hashes (:source-hashes source-observation)
                :expected-output-hash jar-hash
                :reproducible-claim :packaged-jvm-bootstrap-milestone
                :final-release-reproducible? false}]
@@ -166,18 +279,23 @@
    (p18-t02-provenance-record
     package-manifest dependency-record reproducible-record jar-hash
     (p18-t02-source-inventory)))
-  ([package-manifest dependency-record reproducible-record jar-hash inventory]
-   (let [base {:artifact :gravity/p18-t02-provenance-record
+  ([package-manifest dependency-record reproducible-record jar-hash
+   inventory-or-observation]
+   (let [source-observation
+         (p18-t02-source-observation-input inventory-or-observation)
+         base {:artifact :gravity/p18-t02-provenance-record
                :schema-version "gravity.provenance/v1"
                :artifact-path p18-t02-jar-path
                :artifact-content-hash jar-hash
                :package-id (:package-id package-manifest)
-               :project-manifest-hash (p18-file-sha256 "deps.edn")
+               :project-manifest-hash
+               (or (get (:source-hashes source-observation) "deps.edn")
+                   (p18-file-sha256 "deps.edn"))
                :compiler-identity :clojure-stage0-bootstrap
                :builder-identity {:kind :local-jdk
                                   :java-version (System/getProperty "java.version")
                                   :java-runtime (System/getProperty "java.runtime.name")}
-               :source-material (p18-t02-source-material inventory)
+               :source-material (:source-material source-observation)
                :dependency-record-id (:artifact-id dependency-record)
                :reproducible-build-record-id (:artifact-id reproducible-record)
                :generated-source-ledger []
@@ -192,14 +310,16 @@
    (p18-t02-sbom-record
     package-manifest dependency-record provenance-record
     (p18-t02-source-inventory)))
-  ([package-manifest dependency-record provenance-record inventory]
-   (let [base {:artifact :gravity/p18-t02-sbom
+  ([package-manifest dependency-record provenance-record inventory-or-observation]
+   (let [source-observation
+         (p18-t02-source-observation-input inventory-or-observation)
+         base {:artifact :gravity/p18-t02-sbom
                :schema-version "gravity.sbom/v1"
                :package-id (:package-id package-manifest)
                :package-version (:package-version package-manifest)
                :artifact-path p18-t02-jar-path
                :dependencies (:dependencies dependency-record)
-               :source-references (p18-t02-source-material inventory)
+               :source-references (:source-material source-observation)
                :capability-summary {:declared #{:io/stdout}
                                     :denied #{:network/ambient :shell/ambient}}
                :unsafe-summary {:unsafe-islands 0}
