@@ -20,6 +20,12 @@ failed or unrun cases in the selected existing authority. Preserve C12 and
 other recorded restrictions and reserved writers. Retain independent acceptance,
 complete operation-family coverage and release as separate outcomes.
 
+## Concurrency dependency interface
+
+Use the [concurrency producer and consumer order](../legality-workflow/plan.md#concurrency-producer-and-consumer-order) and existing selected-result table. MIR3 consumes actual graph/fact tables and checked source obligations before its independent verifier result; Legality's later end-to-end preservation consumes that verdict. A passed field or copied proof is insufficient.
+
+Task bodies/statuses, source criteria and qualified reviews stay unchanged. Current source/dependency entailment and implementation acceptance remain pending; preserve every actual hold.
+
 ## Complete MIR source criteria
 
 Six preserved criteria from `c11-complete-current-facet-trace.edn` now refine

@@ -176,6 +176,16 @@
 
 (def selected-parent-consumers
   #{"domain-ir-boundaries" "math"
+    "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses"
+    "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
+    "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"
+    "lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins"
+    "backend-gpu"
+    "backend-hdl"
+    "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks"
+    "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality"
+    "hardware"
+    "gpu"
     "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects"
     "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects"
     "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation"

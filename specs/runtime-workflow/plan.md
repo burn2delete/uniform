@@ -22,6 +22,12 @@ the existing selected task. Distinguish compiler-service subset acceptance,
 wider families, independent review/integration and release; do not restore
 removed project accounting as a runtime admission requirement.
 
+## Concurrency dependency interface
+
+Use the [concurrency producer and consumer order](../legality-workflow/plan.md#concurrency-producer-and-consumer-order) and existing selected-result table. Separate early support/cleanup/event/gate/record APIs, real selected primitive implementations and later task/message/cancel/replay/enforcement results. A no-runtime profile gains no scheduler, and a manifest is not execution.
+
+Task bodies/statuses, source criteria and qualified reviews stay unchanged. Current source/dependency entailment and implementation acceptance remain pending; preserve every actual hold.
+
 ## Complete concurrency source interface
 
 Use the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria). The five existing tasks select support, perform cleanup, execute tasks/synchronization/messages, perform durable/AI replay, and enforce actual action policy. Runtime records do not substitute for those behaviors. Historical finite reviews remain scoped; current source composition and implementation acceptance remain pending. Preserve every held operation.

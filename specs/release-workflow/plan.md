@@ -25,6 +25,12 @@ signing custody and writer reservations; record failed/unrun work explicitly.
 Independent review and coordinator integration remain separate from author
 validation, and final product acceptance does not close wider language scope.
 
+## Concurrency dependency interface
+
+Use the [concurrency producer and consumer order](../legality-workflow/plan.md#concurrency-producer-and-consumer-order) and existing selected-result table. The seven existing language/compiler/runtime/profile/safety/library/agent suites consume actual owner/API/target results and run their own subjects/oracles. Early definitions and owner examples neither require nor prove final harness acceptance.
+
+Task bodies/statuses, source criteria and qualified reviews stay unchanged. Current source/dependency entailment and implementation acceptance remain pending; preserve every actual hold.
+
 ## Source effect dependency interface
 
 Use the [source effect and handler dependency order](../effects-workflow/plan.md#source-effect-and-handler-dependency-order) and the existing selected-result table. Language/runtime/profile suites consume actual selected compiler/handler/fixture products and owner examples, then execute their own exact subject/oracle/matrix. API construction and owner examples do not require final suite acceptance first, and do not prove a harness run or independent admission.

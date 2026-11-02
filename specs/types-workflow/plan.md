@@ -23,6 +23,12 @@ publication restriction and existing writer reservations explicit. Refine only
 the same authoritative task and record exact scoped evidence, unrun work and
 independent review/integration separately; do not issue a competing checklist.
 
+## Concurrency dependency interface
+
+Use the [concurrency producer and consumer order](../legality-workflow/plan.md#concurrency-producer-and-consumer-order) and existing selected-result table. Types5 supplies real solved type/message/operation facts before final combined compiler conformance; actual source schemas and serialization codecs stay separate. This selected interface does not adopt full C7 or alter its publication hold.
+
+Task bodies/statuses, source criteria and qualified reviews stay unchanged. Current source/dependency entailment and implementation acceptance remain pending; preserve every actual hold.
+
 ## Source effect dependency interface
 
 Use the [source effect and handler dependency order](../effects-workflow/plan.md#source-effect-and-handler-dependency-order) and the existing selected-result table. Types1 supplies actual handler request/response/resume/body-result constraints; Types5 exports early solved facts rather than requiring final Effects5 conformance. The C7 publication restriction and existing task authority remain.

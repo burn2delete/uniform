@@ -21,6 +21,12 @@ yourself. Refine only that existing record, coordinating genuine overlapping
 writers and shared interfaces. Preserve restricted operations and publication/
 signing authority. Independent family acceptance and release remain separate.
 
+## Concurrency dependency interface
+
+Use the [concurrency producer and consumer order](../legality-workflow/plan.md#concurrency-producer-and-consumer-order) and existing selected-result table. GPU/HDL consume actual checked domain/source/layout/synchronization facts and lowered operations before emission. Source definitions precede later device/reference or HDL simulation results; current C12/target/provider/device holds remain.
+
+Task bodies/statuses, source criteria and qualified reviews stay unchanged. Current source/dependency entailment and implementation acceptance remain pending; preserve every actual hold.
+
 ## Complete concurrency source interface
 
 Use the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria). Existing GPU/HDL tasks preserve actual synchronization or clocked state in emitted artifacts and target refusals. Selected interfaces do not accept full B8/B9, device execution or current C12/target holds. Historical finite reviews remain scoped; current source composition and implementation acceptance remain pending. Preserve every held operation.

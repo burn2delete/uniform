@@ -23,6 +23,12 @@ provider/replay operations. Refine the existing authoritative task only, record
 exact passed/failed/unrun evidence and retain separate independent acceptance,
 integration and wider-runtime/handler completion boundaries.
 
+## Concurrency dependency interface
+
+Use the [concurrency producer and consumer order](../legality-workflow/plan.md#concurrency-producer-and-consumer-order) and existing selected-result table. Check real concurrent actions and ordering/replay obligations from Core, inferred effects, valid capture and profile/grant/provider facts before checked Core and later MIR/target preservation. No later preservation trace supplies an earlier premise.
+
+Task bodies/statuses, source criteria and qualified reviews stay unchanged. Current source/dependency entailment and implementation acceptance remain pending; preserve every actual hold.
+
 ## Complete concurrency source interface
 
 Use the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria). Effects3 checks actual blocking, synchronization order and replay effects from the existing fact producers. Historical finite reviews remain scoped; current source composition and implementation acceptance remain pending. Preserve every held operation.

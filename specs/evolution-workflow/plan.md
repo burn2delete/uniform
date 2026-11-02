@@ -5,6 +5,12 @@ Evidence: [evidence.md](evidence.md). Owner role: language-evolution/governance
 maintainer; accountable individual remains unassigned. Independent acceptance
 and integration stay with the existing coordinator responsibilities.
 
+## Concurrency dependency interface
+
+Use the [concurrency producer and consumer order](../legality-workflow/plan.md#concurrency-producer-and-consumer-order) and existing selected-result table. The unchanged conditional concurrency semantic-change criterion consumes actual affected results only where that adoption is sought. It does not gate unchanged-contract implementation or renew an old review.
+
+Task bodies/statuses, source criteria and qualified reviews stay unchanged. Current source/dependency entailment and implementation acceptance remain pending; preserve every actual hold.
+
 ## Complete concurrency source interface
 
 Use the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria). The already-exact conditional concurrency semantic-change predicate stays unchanged under change-review; its task bytes and status are preserved, with no new ordinary-development gate. Historical finite reviews remain scoped; current source composition and implementation acceptance remain pending. Preserve every held operation.

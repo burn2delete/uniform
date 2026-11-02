@@ -23,6 +23,12 @@ reused unchanged evidence, unrun boundaries and stable diagnostic ownership.
 implementation checklist. Independent acceptance, migration and integration
 remain separate from ordinary development and structural validation.
 
+## Concurrency dependency interface
+
+Use the [concurrency producer and consumer order](../legality-workflow/plan.md#concurrency-producer-and-consumer-order) and existing selected-result table. Core3 consumes early actual library/source definitions before desugaring; Core5 exports checked Core only after actual type/effect/profile/grant/safety facts. Candidate and checked products remain distinct.
+
+Task bodies/statuses, source criteria and qualified reviews stay unchanged. Current source/dependency entailment and implementation acceptance remain pending; preserve every actual hold.
+
 ## Complete concurrency source interface
 
 Use the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria). Core3 preserves actual ordered task/control/cleanup and Core5 composes real semantic products before MIR. Historical finite reviews remain scoped; current source composition and implementation acceptance remain pending. Preserve every held operation.

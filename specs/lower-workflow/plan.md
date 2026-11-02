@@ -21,6 +21,12 @@ recording exact passed, failed or unrun cases and residual target/host bounds.
 Do not replace actual layouts or helper linkage with manifest assertions.
 Independent acceptance, other target families and release remain separate.
 
+## Concurrency dependency interface
+
+Use the [concurrency producer and consumer order](../legality-workflow/plan.md#concurrency-producer-and-consumer-order) and existing selected-result table. Lower4 consumes actual verified MIR, current facts, compatible target/provider contracts and affected revalidation, preserving valid unoptimized MIR. Actual target operations precede backend artifacts and later end-to-end checks.
+
+Task bodies/statuses, source criteria and qualified reviews stay unchanged. Current source/dependency entailment and implementation acceptance remain pending; preserve every actual hold.
+
 ## Complete concurrency source interface
 
 Use the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria). Lower4 preserves actual task/synchronization/order/fence/source/proof products and invalidates changed assumptions before target consumption. Historical finite reviews remain scoped; current source composition and implementation acceptance remain pending. Preserve every held operation.

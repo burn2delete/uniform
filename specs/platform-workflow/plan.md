@@ -22,6 +22,12 @@ exact passed/failed/unrun and source/tool/artifact identities. Do not order
 fabrication, purchase devices or promote partial conformance into product or
 release acceptance through this planning step.
 
+## Concurrency dependency interface
+
+Use the [concurrency producer and consumer order](../legality-workflow/plan.md#concurrency-producer-and-consumer-order) and existing selected-result table. Selected hardware source declarations precede profile checking; checked signal/state/clock/reset/CDC definitions precede emitted HDL, then claimed FIFO/test-bench/simulation evidence. These source interfaces confer no product-adoption or physical execution permission.
+
+Task bodies/statuses, source criteria and qualified reviews stay unchanged. Current source/dependency entailment and implementation acceptance remain pending; preserve every actual hold.
+
 ## Target conformance and product composition
 
 The four existing Open parents now carry full proposed bodies above their

@@ -56,6 +56,12 @@ component acceptance and coordinator integration pending until their exact
 evidence is present. Whole-domain, full-language, self-hosted and release claims
 remain governed by their separate existing outcomes.
 
+## Concurrency dependency interface
+
+Use the [concurrency producer and consumer order](../legality-workflow/plan.md#concurrency-producer-and-consumer-order) and existing selected-result table. Selected GPU/workflow/AI definitions precede Runtime/domain IR/backend use. Later actual source consumers need the emitted/checked/task/replay results they claim; DOM13 device/reference evidence is not supplied by a host-only mock.
+
+Task bodies/statuses, source criteria and qualified reviews stay unchanged. Current source/dependency entailment and implementation acceptance remain pending; preserve every actual hold.
+
 ## Source effect dependency interface
 
 Use the [source effect and handler dependency order](../effects-workflow/plan.md#source-effect-and-handler-dependency-order) and the existing selected-result table. Selected Workflow/AI definitions precede Runtime interpretation; later source-consumer examples consume actual typed results, grant/review and replay/refusal records. These L6 boundaries do not accept whole AI/workflow/visual domains or duplicate Runtime services.

@@ -23,6 +23,12 @@ the selected authoritative task. Record exact passed, failed and unrun evidence,
 residual host/trust assumptions, independent review and integration separately.
 A structurally valid manifest or supplied verdict does not close enforcement.
 
+## Concurrency dependency interface
+
+Use the [concurrency producer and consumer order](../legality-workflow/plan.md#concurrency-producer-and-consumer-order) and existing selected-result table. Separate provider/support definitions, narrow grants, the early gate API and actual scoped gate installation before use. Later denial/revocation/redaction traces witness the sink; they cannot grant their own permission.
+
+Task bodies/statuses, source criteria and qualified reviews stay unchanged. Current source/dependency entailment and implementation acceptance remain pending; preserve every actual hold.
+
 ## Complete concurrency source interface
 
 Use the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria). The existing provider-selection task declares and selects compatible actual services; a declaration is separate from grants and execution. Historical finite reviews remain scoped; current source composition and implementation acceptance remain pending. Preserve every held operation.

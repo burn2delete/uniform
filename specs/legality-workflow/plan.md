@@ -23,15 +23,108 @@ Record exact source/fixture/consumer identities and passed, failed or unrun work
 preserve operation restrictions and separate author checks, independent
 acceptance, integration and the complete profile/provider matrix.
 
+## Concurrency producer and consumer order
+
+The [existing selected-result table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition)
+now declares ten additional existing parent consumers and extends twenty-three
+existing routes for the complete L11/SAFE8/R6 criteria. It retains all 235 prior
+inputs of those selected consumers and all fifty unaffected route meanings.
+There are 172 new selected producer-result joins, yielding 698 across 83 routes:
+43 current parents and the same forty future records. All task bodies, identities,
+statuses and accepted-evidence scopes stay unchanged. These are proposed source
+interfaces, not executed results or independently accepted dependencies.
+
+The coarse result graph exposes cycles of forty and eight nodes. The former
+29-node group now also contains the ten newly routed parents and the existing
+Domain IR boundary owner. The eight-node group is unchanged. Preserve all prior
+memory, safety and L6 stages. The additional stage distinctions below describe
+concrete interfaces within the enlarged group; a coarse task checkbox cannot
+supply all of its different products at once.
+
+| Boundary | Earlier product | Later actual consumer/result |
+| --- | --- | --- |
+| Core and library | Actual versioned task/future/atomic/message API definitions and expanded source/control structure | Desugared scope/transfer/cleanup graphs, then compiled API behavior over selected Runtime primitives |
+| Source and checked Core | Actual candidate Core/type/effect products with unresolved legality explicit; real capture/race/synchronization facts from their owners | Combined profile/grant/safety decisions and checked Core before MIR |
+| Provider and Runtime selection | Truthful model/operation/order/scope/target and failure/cancel/blocking/detach/affinity declarations | Compatible selected services and real primitive implementation/link/load evidence for the manifest, then program execution |
+| Authority and action gates | Actual provider requirements, capability interface/schema, inferred requirements and narrow grants; gate installation before action | Actual allowed/refused action, revocation/deployment-narrowing and redacted observability traces |
+| Structured work and cleanup | Admitted task/capture/transfer contracts and early cleanup/event sink API; actual selected task/resource transitions | Linear release, handlers and preserved failure records on scope exit, cancellation, timeout and partial initialization |
+| Replay and task primitives | Real typed event/schema and record/read/append primitives with early gate contracts | Actual scheduling/message/cancel/retry/idempotency/compensation records and no-repeat replay, then integrated enforcement traces |
+| MIR and Legality handoff | Actual checked source obligations/facts before graph construction and verification | Independent MIR verdict, affected Opt/Lower revalidation and later end-to-end preservation result |
+| Hardware/GPU source and profile | Actual source/kernel/clock/protocol declarations with legality pending; selected shape/type facts | Checked source/domain definitions after profile/effect/grant/safety rules, before target emission |
+| Domain IR and target | Actual verified Core/MIR anchors, checked selected domain payload/entry/verifier products and target exit contracts | Real lowered synchronization/clocked state, then GPU kernel or HDL artifacts with source/proof identities |
+| GPU service and emitted kernel | Selected queue/fence/atomic provider contracts and actual primitive implementation where used | Emitted kernel/transfer/synchronization artifacts before claimed launch, then actual device/reference comparison |
+| Hardware source and HDL | Checked fixed-shape signal/state/clock/reset/CDC/interface definitions | Emitted HDL/timing/source artifacts before the claimed test bench/simulation result |
+| Owner examples and Release | Real admitted/refused compiler/service/library/target/source examples | Actual separate language/compiler/runtime/profile/safety/library/agent harness executions with exact subjects and oracles |
+| Conditional semantic change | Actual affected checker/provider/runtime/library/source results and separately required review evidence | Existing Evolution stable-use decision only when that concurrency contract changes |
+
+Core3 emits structural task/control obligations before final type/effect/safety
+analysis. It does not need final library execution to desugar the library's
+already-available definition. Core5 joins actual analyses only after their own
+facts exist; early candidate Core is never labeled checked. Types5 likewise
+exports solved type facts before later combined compiler conformance. Retain the
+existing Core/Resolve qualification and C7 publication restriction.
+
+Runtime1 exposes support before compatibility and grants. Its later service
+closure uses real selected implementations, not every Runtime3/5 program result.
+For a no-runtime hardware profile, the relevant result is the enforced absence
+of forbidden services, not an invented scheduler. A gate API/schema can precede
+per-principal grants; installing the actual scoped gate precedes action use, and
+the performed/refused trace follows it. Later observability results cannot grant
+their own earlier permission. Debug-after-race reporting cannot replace prevention.
+
+Runtime2/3/4/5 have early interfaces, actual selected primitives and later
+integrated results. Cleanup/event sink and record/read/append APIs precede the
+operations using them; actual release, handler, message and replay traces follow.
+An actual primitive implementation is distinct from a declared primitive, and
+from a later whole-family program or suite. Detachment still needs an allowed
+model and lifecycle owner and cannot capture non-static borrows. Preserve exact
+source atomic defaults and actual target order/scope/fence/alignment support.
+
+Schema definitions can precede message delivery. Actual selected validators or
+codecs are needed where the claimed boundary serializes or validates records;
+local typed message shapes do not require full Schema migration. Hardware/GPU
+source declarations precede final profile checks; checked definitions and actual
+Domain IR entry/verifier/exit results precede emission. The existing Domain IR
+route is unchanged and receives no current C12 acceptance or execution clearance.
+GPU target emission can use actual selected provider implementations without
+requiring its own later kernel-specific device output beforehand. Claimed DOM13
+reduction conformance still needs real CPU/MIR-reference versus device results.
+Likewise emitted HDL precedes FIFO/CDC simulation results; generic unsafe marking
+cannot substitute for a hardware-policy waiver. Other numeric/certificate,
+protocol, formal, performance and full-domain obligations remain intact.
+
+The seven existing Release suites retain their own task authorities. Owner
+examples, declarations and supplied passed flags do not run those harnesses.
+Suites consume the exact claimed runtime/profile/target and source evidence;
+a restricted physical case remains unassessed. A first selected seedless release
+is distinct from universal GPU/HDL or complete wider-domain execution. Formal and
+performance evidence is required when its actual contract or claim applies,
+without adding universal proof/benchmark gates to ordinary source construction.
+
+All previous L6 macro program P versus generated caller Q identities, exact
+hermetic premises, narrow grants, handler/capture staging and stricter R7/R8
+recorded-output segments survive. Project work/call/token/fuel accounting stays
+removed; physical executors, mailbox capacity, target resources and timeout/retry
+semantics remain independently meaningful. Required human/unsafe/stable-change
+reviews are separately supplied for their applicable subjects; historical finite
+receipts remain frozen, including the already-consumed bounded R6 review.
+
+Source-interface entailment, independent current review and implementation
+acceptance remain pending. No full component acceptance, final suite, new stable
+adoption, recovery receipt or migration fingerprint is an ordinary construction
+prerequisite. No held C12/provider/native/callback/device/replay action is run or
+transferred, no preserved aggregate is published, and no other chat is messaged.
+
 ## Complete concurrency source criteria
 
 This proposal reads complete L11, SAFE8 and R6 as joint contracts, with selected
 STD7 library and B8/B9 target synchronization interfaces. It refines eighteen
 existing tasks in eight authorities; it creates no implementation task or status.
 The existing dependency table remains the only editable dependency authority.
-Its 526 joins and 73 routes survive; complete concurrency-specific result joins
-and cycle staging still require a separate review. The following table describes
-interfaces, not additional task completion prerequisites.
+The [concurrency producer and consumer order](#concurrency-producer-and-consumer-order)
+now declares the selected result joins and stage contracts in that table.
+Their source/interface entailment and independent current review remain pending.
+The following table describes interfaces, not additional task completion prerequisites.
 
 | Existing authority | Required behavior and actual evidence |
 | --- | --- |
