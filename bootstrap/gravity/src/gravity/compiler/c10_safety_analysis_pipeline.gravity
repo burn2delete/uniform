@@ -403,13 +403,6 @@
       :saturating :unsafe-unchecked}
     :shift #{:proof-required :checked :panic
              :wrapping :unsafe-unchecked}}
-   :structural-bounds
-   {:maximum-nodes 2048
-    :maximum-depth 16
-    :maximum-width 64
-    :maximum-scalars 1600
-    :maximum-scalar-units 16384
-    :maximum-collections 512}
    :diagnostics ["C10-NO-OUTCOME"
                  "C10-CHECK"
                  "C10-UNSAFE"
@@ -624,113 +617,9 @@
      false)
    false))
 
-(defn sh11-aggregate? [value]
-  (if (map? value)
-    true
-    (if (vector? value)
-      true
-      (if (set? value)
-        true
-        (seq? value)))))
-
-(defn sh11-aggregate-width [value]
-  (if (map? value)
-    (* 2 (count value))
-    (count value)))
-
-(defn sh11-aggregate-components [value]
-  (if (map? value)
-    (loop [remaining (keys value) result []]
-      (if (= (count remaining) 0)
-        result
-        (recur
-         (rest remaining)
-         (conj
-          (conj result (first remaining))
-          (get value (first remaining))))))
-    (vec value)))
-
-(defn sh11-max [left right]
-  (if (> left right) left right))
-
-(defn sh11-structural-preflight [value]
-  (let [bounds (get (sh11-safety-policy) :structural-bounds)
-        maximum-nodes (get bounds :maximum-nodes)
-        maximum-depth (get bounds :maximum-depth)
-        maximum-width (get bounds :maximum-width)
-        maximum-scalars (get bounds :maximum-scalars)
-        maximum-scalar-units (get bounds :maximum-scalar-units)
-        maximum-collections (get bounds :maximum-collections)]
-    (loop [frontier [[value 0]]
-           nodes 0
-           scalars 0
-           scalar-units 0
-           collections 0
-           observed-depth 0
-           observed-width 0]
-      (if (= (count frontier) 0)
-        {:status :accepted
-         :nodes nodes
-         :scalars scalars
-         :scalar-units scalar-units
-         :collections collections
-         :maximum-depth observed-depth
-         :maximum-width observed-width}
-        (let [entry (first frontier)
-              current (first entry)
-              depth (second entry)
-              next-nodes (+ nodes 1)]
-          (if (> next-nodes maximum-nodes)
-            {:status :rejected :reason :structure-node-bound}
-            (if (> depth maximum-depth)
-              {:status :rejected :reason :structure-depth-bound}
-              (if (sh11-aggregate? current)
-                (let [width (sh11-aggregate-width current)
-                      next-collections (+ collections 1)]
-                  (if (> width maximum-width)
-                    {:status :rejected :reason :structure-width-bound}
-                    (if (> next-collections maximum-collections)
-                      {:status :rejected
-                       :reason :structure-collection-bound}
-                      (let [components
-                            (sh11-aggregate-components current)
-                            next-frontier
-                            (loop [remaining components
-                                   result (rest frontier)]
-                              (if (= (count remaining) 0)
-                                result
-                                (recur
-                                 (rest remaining)
-                                 (conj
-                                  result
-                                  [(first remaining)
-                                   (+ depth 1)]))))]
-                        (recur
-                         next-frontier next-nodes scalars
-                         scalar-units next-collections
-                         (sh11-max observed-depth depth)
-                         (sh11-max observed-width width))))))
-                (let [next-scalars (+ scalars 1)
-                      next-scalar-units
-                      (+ scalar-units (count (vec (str current))))]
-                  (if (> next-scalars maximum-scalars)
-                    {:status :rejected
-                     :reason :structure-scalar-count-bound}
-                    (if (> next-scalar-units maximum-scalar-units)
-                      {:status :rejected
-                       :reason :structure-scalar-unit-bound}
-                      (recur
-                       (rest frontier) next-nodes next-scalars
-                       next-scalar-units collections
-                       (sh11-max observed-depth depth)
-                       observed-width))))))))))))
-
 ; The authenticated C9/C10 seam receives complete cross-stage carriers rather
-; than a selected projection.  Keep this admission separate from the legacy
-; numeric structural checker: maps, vectors, and persistent sets are finite
-; aggregates; arbitrary seqs/lazy seqs are never realized.  The enqueued bound
-; is checked before children are appended so a wide root cannot allocate an
-; unbounded frontier.
+; than a selected projection.  Maps, vectors, and persistent sets are finite
+; aggregates; arbitrary seqs/lazy seqs are never realized.
 (defn sh11-authenticated-identity-components [value]
   (if (map? value)
     (loop [remaining (keys value) result []]
@@ -746,82 +635,22 @@
       (if (set? value) (vec value) []))))
 
 (defn sh11-authenticated-identity-preflight [value]
-  (loop [frontier [[value 0]] cursor 0 nodes 0 enqueued 1]
-    (if (= cursor (count frontier))
-      {:status :accepted :nodes nodes}
-      (let [entry (get frontier cursor)
-            current (first entry)
-            depth (second entry)
-            next-nodes (+ nodes 1)]
-        (if (> next-nodes 32768)
-          {:status :rejected :reason :authenticated-identity-node-bound}
-          (if (> depth 16)
-            {:status :rejected :reason :authenticated-identity-depth-bound}
-            (if (map? current)
-              (let [width (count current)]
-                (if (> width 512)
-                  {:status :rejected :reason :authenticated-identity-width-bound}
-                  (let [next-enqueued (+ enqueued (* 2 width))]
-                    (if (> next-enqueued 32768)
-                      {:status :rejected
-                       :reason :authenticated-identity-node-bound}
-                      (let [children
-                            (sh11-authenticated-identity-components current)
-                            next-frontier
-                            (loop [remaining children result frontier]
-                              (if (= (count remaining) 0)
-                                result
-                                (recur
-                                 (rest remaining)
-                                 (conj result
-                                       [(first remaining) (+ depth 1)]))))]
-                        (recur next-frontier (+ cursor 1) next-nodes
-                               next-enqueued))))))
-              (if (vector? current)
-                (let [width (count current)]
-                  (if (> width 1024)
-                    {:status :rejected :reason :authenticated-identity-width-bound}
-                    (let [next-enqueued (+ enqueued width)]
-                      (if (> next-enqueued 32768)
-                        {:status :rejected
-                         :reason :authenticated-identity-node-bound}
-                        (let [children
-                              (sh11-authenticated-identity-components current)
-                              next-frontier
-                              (loop [remaining children result frontier]
-                                (if (= (count remaining) 0)
-                                  result
-                                  (recur
-                                   (rest remaining)
-                                   (conj result
-                                         [(first remaining) (+ depth 1)]))))]
-                          (recur next-frontier (+ cursor 1) next-nodes
-                                 next-enqueued))))))
-                (if (set? current)
-                  (let [width (count current)]
-                    (if (> width 512)
-                      {:status :rejected
-                       :reason :authenticated-identity-width-bound}
-                      (let [next-enqueued (+ enqueued width)]
-                        (if (> next-enqueued 32768)
-                          {:status :rejected
-                           :reason :authenticated-identity-node-bound}
-                          (let [children
-                                (sh11-authenticated-identity-components current)
-                                next-frontier
-                                (loop [remaining children result frontier]
-                                  (if (= (count remaining) 0)
-                                    result
-                                    (recur
-                                     (rest remaining)
-                                     (conj result
-                                           [(first remaining) (+ depth 1)]))))]
-                            (recur next-frontier (+ cursor 1) next-nodes
-                                   next-enqueued))))))
-                  (if (seq? current)
-                    {:status :rejected
-                     :reason :authenticated-identity-seq-unsupported}
-                    (recur frontier (+ cursor 1) next-nodes enqueued)))))))))))
+  (loop [frontier [value]]
+    (if (= (count frontier) 0)
+      {:status :accepted}
+      (let [current (first frontier)]
+        (if (seq? current)
+          {:status :rejected
+           :reason :authenticated-identity-seq-unsupported}
+          (let [children (sh11-authenticated-identity-components current)
+                next-frontier
+                (loop [remaining children result (rest frontier)]
+                  (if (= (count remaining) 0)
+                    result
+                    (recur
+                     (rest remaining)
+                     (conj result (first remaining)))))]
+            (recur next-frontier)))))))
 
 (defn sh11-in-range? [value minimum maximum]
   (if (number? value)
@@ -1904,45 +1733,8 @@
   (sh11-result
    request :unsafe-island nil nil (get request :unsafe-audit) nil))
 
-(defn sh11-bounds-rejected [request preflight]
-  {:artifact :gravity/sh11-safety-classification-result
-   :status :rejected
-   :operation-id (get request :operation-id)
-   :outcome :rejected
-   :outcomes
-   [{:artifact :gravity/safety-outcome
-     :operation-id (get request :operation-id)
-     :outcome :rejected
-     :diagnostic
-     {:diagnostic-id "C10-NO-OUTCOME"
-      :rule "C10-NO-OUTCOME"
-      :severity :error
-      :stage :safety-analysis
-      :reason (get preflight :reason)
-      :missing-fact :bounded-normalized-operation
-      :remediation :supply-a-structurally-bounded-operation}}]
-   :proofs []
-   :runtime-checks []
-   :unsafe-islands []
-   :diagnostics
-   [{:diagnostic-id "C10-NO-OUTCOME"
-     :rule "C10-NO-OUTCOME"
-     :severity :error
-     :stage :safety-analysis
-     :reason (get preflight :reason)
-     :missing-fact :bounded-normalized-operation
-     :remediation :supply-a-structurally-bounded-operation}]
-   :identity-input
-   {:operation-id (get request :operation-id)
-    :policy-version 2
-    :structural-preflight preflight}
-   :scope (sh11-result-scope (get request :kind))
-   :pending (get (sh11-safety-policy) :pending)})
-
 (defn sh11-classify-operation [request]
-  (let [preflight (sh11-structural-preflight request)]
-    (if (= :accepted (get preflight :status))
-      (if (sh11-valid-request-shape? request)
+  (if (sh11-valid-request-shape? request)
         (if
          (sh11-and
           (= nil (get request :runtime-check))
@@ -2001,73 +1793,51 @@
         (sh11-rejected-result
          request "C10-NO-OUTCOME" :malformed-safety-operation
          :complete-normalized-operation
-         :provide-all-operation-identity-profile-and-fact-fields))
-      (sh11-bounds-rejected request preflight))))
+         :provide-all-operation-identity-profile-and-fact-fields)))
 
 (defn sh11-verify-safety-result [request candidate]
-  (let [request-preflight (sh11-structural-preflight request)
-        candidate-preflight (sh11-structural-preflight candidate)]
-    (if (sh11-not (= :accepted
-                      (get request-preflight :status)))
-      {:artifact :gravity/sh11-safety-result-verification
-       :status :rejected
-       :diagnostics
-       [{:diagnostic-id "C10-NO-OUTCOME"
-         :rule "C10-NO-OUTCOME"
-         :reason :request-structural-bound
-         :preflight request-preflight}]}
-      (if (sh11-not (= :accepted
-                        (get candidate-preflight :status)))
+  (let [expected (sh11-classify-operation request)
+        outcomes (get candidate :outcomes)
+        outcome (get candidate :outcome)]
+    (if (= expected candidate)
+      (if (= (count outcomes) 1)
+        (if
+         (sh11-member?
+          #{:proven-safe :runtime-checked
+            :rejected :unsafe-island}
+          outcome)
+         {:artifact :gravity/sh11-safety-result-verification
+          :status :passed
+          :operation-id (get request :operation-id)
+          :checks [:complete-recomputation
+                   :exactly-one-outcome
+                   :legal-outcome
+                   :proof-check-audit-exclusivity
+                   :diagnostic-identity
+                   :source-lineage-identity]}
+         {:artifact :gravity/sh11-safety-result-verification
+          :status :rejected
+          :diagnostics
+          [(sh11-diagnostic
+            request "C10-NO-OUTCOME" :illegal-outcome
+            :one-of-four-safe1-outcomes
+            :use-a-defined-safe1-outcome)]})
         {:artifact :gravity/sh11-safety-result-verification
          :status :rejected
          :diagnostics
-         [{:diagnostic-id "C10-NO-OUTCOME"
-           :rule "C10-NO-OUTCOME"
-           :reason :candidate-structural-bound
-           :preflight candidate-preflight}]}
-        (let [expected (sh11-classify-operation request)
-              outcomes (get candidate :outcomes)
-              outcome (get candidate :outcome)]
-          (if (= expected candidate)
-            (if (= (count outcomes) 1)
-              (if
-               (sh11-member?
-                #{:proven-safe :runtime-checked
-                  :rejected :unsafe-island}
-                outcome)
-               {:artifact :gravity/sh11-safety-result-verification
-                :status :passed
-                :operation-id (get request :operation-id)
-                :checks [:bounded-request-and-candidate
-                         :complete-recomputation
-                         :exactly-one-outcome
-                         :legal-outcome
-                         :proof-check-audit-exclusivity
-                         :diagnostic-identity
-                         :source-lineage-identity]}
-               {:artifact :gravity/sh11-safety-result-verification
-                :status :rejected
-                :diagnostics
-                [(sh11-diagnostic
-                  request "C10-NO-OUTCOME" :illegal-outcome
-                  :one-of-four-safe1-outcomes
-                  :use-a-defined-safe1-outcome)]})
-              {:artifact :gravity/sh11-safety-result-verification
-               :status :rejected
-               :diagnostics
-               [(sh11-diagnostic
-                 request "C10-NO-OUTCOME"
-                 :outcome-count-mismatch
-                 :exactly-one-outcome
-                 :emit-one-and-only-one-outcome)]})
-            {:artifact :gravity/sh11-safety-result-verification
-             :status :rejected
-             :diagnostics
-             [(sh11-diagnostic
-               request "C10-NO-OUTCOME"
-               :safety-result-substitution
-               :complete-recomputed-result
-               :recompute-from-the-normalized-operation)]}))))))
+         [(sh11-diagnostic
+           request "C10-NO-OUTCOME"
+           :outcome-count-mismatch
+           :exactly-one-outcome
+           :emit-one-and-only-one-outcome)]})
+      {:artifact :gravity/sh11-safety-result-verification
+       :status :rejected
+       :diagnostics
+       [(sh11-diagnostic
+         request "C10-NO-OUTCOME"
+         :safety-result-substitution
+         :complete-recomputed-result
+         :recompute-from-the-normalized-operation)]})))
 
 ; This v2 adapter consumes only the current identity-bound C9 product. Digest
 ; computation remains an explicit external coordinator boundary: Gravity checks
@@ -2349,7 +2119,7 @@
             (sh11-build-authenticated-safety-core bound verification)]
         {:artifact :gravity/sh11-authenticated-safety-core-verification
          :status (if (= expected candidate) :passed :rejected)
-         :checks [:bounded-current-c9-input
+         :checks [:current-c9-input-shape
                   :unique-persistent-immutable-read
                   :upstream-fact-identity-linkage
                   :source-profile-target-preservation
@@ -2360,9 +2130,9 @@
          :candidate candidate})
       {:artifact :gravity/sh11-authenticated-safety-core-verification
        :status :rejected
-       :checks [:candidate-carrier-bound]
+       :checks [:candidate-carrier-sequence-boundary]
        :diagnostics [{:diagnostic-id "C10-NO-OUTCOME"
-                      :reason :candidate-carrier-bound
+                      :reason :candidate-carrier-sequence-boundary
                       :preflight candidate-preflight}]})))
 
 (defn sh11-authenticated-safety-identity-requests
@@ -2499,9 +2269,9 @@
          :candidate candidate})
       {:artifact :gravity/sh11-authenticated-load-result-verification
        :status :rejected
-       :checks [:candidate-carrier-bound]
+       :checks [:candidate-carrier-sequence-boundary]
        :diagnostics [{:diagnostic-id "C10-NO-OUTCOME"
-                      :reason :candidate-carrier-bound
+                      :reason :candidate-carrier-sequence-boundary
                       :preflight candidate-preflight}]})))
 
 (defn sh11-authenticated-safety-result-identity-request
@@ -2732,7 +2502,7 @@
        :schema-version 2 :status :rejected
        :diagnostics
        [(sh11-authenticated-adapter-diagnostic
-         bound :safety-identity-carrier-bound)]
+         bound :safety-identity-carrier-sequence-boundary)]
        :pending (sh11-authenticated-adapter-pending)})))
 
 (defn sh11-verify-authenticated-safety-identities
@@ -2761,12 +2531,12 @@
          :candidate candidate})
       {:artifact :gravity/sh11-safety-identity-binding-verification
        :status :rejected
-       :checks [:candidate-carrier-bound]
+       :checks [:candidate-carrier-sequence-boundary]
        :nonclaims [:trusted-digest-resolution
                    :independent-canonical-digest-verification
                    :authoritative-safety-certificate]
        :diagnostics [{:diagnostic-id "C10-NO-OUTCOME"
-                      :reason :candidate-carrier-bound
+                      :reason :candidate-carrier-sequence-boundary
                       :preflight candidate-preflight}]})))
 
 ; Authenticated C9 ownership facts establish that two primitive integer
@@ -3546,9 +3316,9 @@
        :status :rejected
        :diagnostics
        [(sh11-division-bounds-verification-diagnostic
-         descriptor "C10-NO-OUTCOME" :candidate-structural-bound
-         :bounded-classification-result
-         :supply-a-structurally-bounded-result)]})))
+         descriptor "C10-NO-OUTCOME" (get candidate-preflight :reason)
+         :authenticated-result-carrier
+         :supply-a-schema-valid-sequence-free-result)]})))
 
 ; SH-09 and SH-10 authenticate the integer operand type, effects,
 ; capabilities, initialization, availability, ownership, spans, and origins.
@@ -4732,6 +4502,6 @@
        :status :rejected
        :diagnostics
        [(sh11-overflow-cast-verification-diagnostic
-         descriptor "C10-NO-OUTCOME" :candidate-structural-bound
-         :bounded-classification-result
-         :supply-a-structurally-bounded-result)]})))
+         descriptor "C10-NO-OUTCOME" (get candidate-preflight :reason)
+         :authenticated-result-carrier
+         :supply-a-schema-valid-sequence-free-result)]})))

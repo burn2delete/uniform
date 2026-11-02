@@ -40,8 +40,6 @@
             #{:proof-required :checked :panic
               :wrapping :unsafe-unchecked}}
            (:legal-modes policy)))
-    (is (= 16
-           (get-in policy [:structural-bounds :maximum-depth])))
     (is (not (some #{"C10-PROOF"} (:diagnostics policy))))
     (is (some #{:memory-safety} (:pending policy)))
     (is (some #{:mir-preservation} (:pending policy))))
@@ -368,7 +366,7 @@
                 (invoke-c10 'sh11-verify-safety-result
                             [malformed (classify base)]))))))))
 
-(deftest sh11-fails-closed-on-schema-mode-lineage-and-structural-attacks
+(deftest sh11-fails-closed-on-schema-mode-lineage-and-provenance-attacks
   (let [base
         (request accepted-gravity-plan 'sh11-proven-overflow-request)
         division
@@ -377,10 +375,6 @@
         (request accepted-gravity-plan 'sh11-proven-index-request)
         shift
         (request accepted-gravity-plan 'sh11-proven-shift-request)
-        runtime
-        (request accepted-gravity-plan 'sh11-runtime-division-request)
-        unsafe
-        (request accepted-gravity-plan 'sh11-unsafe-overflow-request)
         malformed
         [(assoc-in base [:facts :numeric-mode] :future/mode)
          (assoc base :facts
@@ -461,7 +455,7 @@
         [(assoc valid-result :status :substituted)
          (assoc-in valid-result
                    [:outcomes 0 :outcome] :runtime-checked)]
-        oversized-candidate
+        altered-candidate
         (assoc valid-result :padding (vec (repeat 100 :x)))]
     (doseq [request runtime-attacks]
       (let [result (classify request)]
@@ -480,17 +474,30 @@
       (let [verification
             (invoke-c10
              'sh11-verify-safety-result [base candidate])]
+        (is (= :rejected (:status verification)))
+        (is (= "C10-NO-OUTCOME"
+               (get-in verification [:diagnostics 0 :rule])))
+        (is (= :safety-result-substitution
+               (get-in verification [:diagnostics 0 :reason])))))
+    (let [verification
+          (invoke-c10
+           'sh11-verify-safety-result
+           [base altered-candidate])]
       (is (= :rejected (:status verification)))
       (is (= "C10-NO-OUTCOME"
              (get-in verification [:diagnostics 0 :rule])))
       (is (= :safety-result-substitution
-             (get-in verification [:diagnostics 0 :reason])))))
-    (let [verification
-          (invoke-c10
-           'sh11-verify-safety-result
-           [base oversized-candidate])]
-      (is (= :rejected (:status verification)))
-      (is (= "C10-NO-OUTCOME"
-             (get-in verification [:diagnostics 0 :rule])))
-      (is (= :candidate-structural-bound
              (get-in verification [:diagnostics 0 :reason]))))))
+
+(deftest sh11-accepts-finite-carriers-beyond-retired-structural-quotas
+  (let [wide-carrier (vec (repeat 1025 :identity))
+        accepted
+        (invoke-c10
+         'sh11-authenticated-identity-preflight [wide-carrier])
+        rejected
+        (invoke-c10
+         'sh11-authenticated-identity-preflight [(range 1025)])]
+    (is (= {:status :accepted} accepted))
+    (is (= {:status :rejected
+            :reason :authenticated-identity-seq-unsupported}
+           rejected))))
