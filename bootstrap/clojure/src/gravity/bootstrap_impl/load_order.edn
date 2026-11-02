@@ -1111,6 +1111,8 @@
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00701-p15-s23-c6c10-source-relative-path.clj", :reader-line 111285, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-source-relative-path"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00702-p15-s23-c6c10-host-fail.clj", :reader-line 111450, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-host-fail!"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00703-p15-s23-c6c10-canonical-form.clj", :reader-line 111612, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-canonical-form*"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00703a-p15-s23-c6c10-canonical-stream-scalars.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-streaming-scalar-value?"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00703b-p15-s23-c6c10-canonical-stream.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-streaming-header!"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00704-p15-s23-c6c10-carrier-validation.clj", :reader-line 111827, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-carrier-validation"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00705-p15-s23-c6c10-literal-authentication.clj", :reader-line 112005, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-literal-authentication"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00706-p15-s23-c6c10-prefix-occurrences.clj", :reader-line 112246, :owner :bootstrap-p15, :first-form "p15-s23-c6c10-prefix-occurrences"}
@@ -1386,7 +1388,7 @@
  {:resource "gravity/bootstrap_impl/components/foundation/00796-c2-reader-diagnostics-leaf-call.clj", :reader-line 143753, :owner :foundation, :first-form "*c2-reader-diagnostics-leaf-call?*"}
  {:resource "gravity/bootstrap_impl/components/compiler/00797-c2-reader-diagnostics-call.clj", :reader-line 143755, :owner :compiler, :first-form "c2-reader-diagnostics-call"}
  {:resource "gravity/bootstrap_impl/components/foundation/00798-reader-canonical-value.clj", :reader-line 143796, :owner :foundation, :first-form "reader-canonical-value"}
- {:resource "gravity/bootstrap_impl/components/compiler/00799-c2-artifact-identity-ops.clj", :reader-line 143809, :owner :compiler, :first-form "c2-artifact-identity-ops"}
+ {:resource "gravity/bootstrap_impl/components/compiler/00799-c2-artifact-identity-ops.clj", :reader-line 143809, :owner :compiler, :first-form "declare"}
  {:resource "gravity/bootstrap_impl/components/foundation/00800-c2-artifact-identity-leaf-call.clj", :reader-line 143829, :owner :foundation, :first-form "*c2-artifact-identity-leaf-call?*"}
  {:resource "gravity/bootstrap_impl/components/compiler/00801-c2-artifact-identity-call.clj", :reader-line 143831, :owner :compiler, :first-form "c2-artifact-identity-call"}
  {:resource "gravity/bootstrap_impl/components/foundation/00802-reader-canonical-value.clj", :reader-line 143842, :owner :foundation, :first-form "reader-canonical-value"}
@@ -1400,8 +1402,6 @@
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00810-sh03-reader-plan-static-audit.clj", :reader-line 144471, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-plan-static-audit!"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00811-sh03-reader-plan-validate.clj", :reader-line 144639, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-plan-validate!"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00812-sh03-reader-input-source-unit.clj", :reader-line 144850, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-input-source-unit"}
- {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00813-sh03-reader-canonical-scalar-validation.clj", :reader-line 1, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-canonical-stream-scalar-value?"}
- {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00813-sh03-reader-canonical-digest-stream.clj", :reader-line 1, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-canonical-stream-header!"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00813-sh03-reader-canonical-identity.clj", :reader-line 145087, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-canonical-identity"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00814-sh03-reader-source-slice-text.clj", :reader-line 145316, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-source-slice-text!"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00815-sh03-reader-normalization-deferred.clj", :reader-line 145552, :owner :self-hosting-sh03-sh07, :first-form "sh03-reader-host-character-value!"}
