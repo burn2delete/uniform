@@ -43,6 +43,22 @@ An initial test command selected the SH runner, which does not own the C7
 namespace. That command's usage non-pass is retained; the documented development
 runner selects the existing bootstrap-free C7 test namespace.
 
-After products, whole-file conservation, focused regression and boundary checks,
-independent acceptance, own CI/artifacts and immediate clean current-main
-integration preflight remain pending at this draft snapshot.
+Source d99432dbe65e9fcb51640afbe249a064e7982f7e has tree
+5cabf6216fbefa6a4faa94616f0c7dc88ec61413. The after producer runs at that
+clean committed source. Complete data and original serialization agree for both
+spellings. Their record hashes are
+8bed282072316a4263bfbfd424c7a6bbf6308ddfd9c25bd1e875cdc9cb78af2e
+and ac21dbd113fbaccb73932d83c7a74813490adcafe37ddc61d5e337a784221682.
+The current C7 source hash is
+9c7352932e54554ccce3001290c1cd2f09e1d4e3e4f22ac22218c2cd900d6b39,
+and its recomputed executable plan identity is
+sha256:70067d83f3d2b3425d686597f53177128de0306f0425d873272e93e8361bc909.
+
+Whole-file reconstruction preserves all three function bodies and both complete
+production files. The focused C7 suite passes 10/271 and language/ownership
+passes 47/1154. Cold loading exposes 14 public APIs without Bootstrap.
+Three-path contextual lint has zero warnings/blockers; receipts are archived at
+/tmp/uniform-types-verification-lint. Docs, roadmap and governance pass.
+Independent final acceptance, own integration-candidate CI/artifacts and
+immediate clean current-main preflight remain required. Earlier source, CI or
+main-snapshot acceptance cannot confer eligibility on a later composition.
