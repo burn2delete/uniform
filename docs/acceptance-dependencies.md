@@ -188,6 +188,7 @@ and grants no platform, provider, device or publication permission.
 <!-- future-composition-dependencies:start -->
 | Consumer | Start results | Composition results | Selected output contract |
 | --- | --- | --- | --- |
+| `domain-ir-boundaries` | none | `mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality`, `math`, `schema`, `workflow`, `ai`, `hardware`, `gpu`, `query`, `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries`, `build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects`, `math/independent-proof-and-certificate-checking`, `plugins`, `lower/current-evidence-and-remaining-work/lower5-integrate-target-emission` | Actual verified Core/MIR anchors and selected EFIR/schema/workflow/AI/HDL/GPU/query/FFI/package-graph schemas, payload semantics, verifier and transition products; independent Math proof/certificate checking supplies the concrete required accepted/refused optimization fixture, not universal domain proof authority. Plugin policy supplies actual registration/grant checks. Registered Lower exits and target eligibility/fallback consume already verified domain products; final conformance requires actual emission/refusal where claimed. Domain payload, optimization, registry, proof, backend and runtime owners stay distinct. Interface fixtures start without whole parents; no C12 execution hold is cleared. |
 | `automation` | none | `build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects`, `auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime` | Typed operation graph, granted roots/commands, dry-run and actual action audit are distinct outputs. |
 | `blockchain` | none | `schema`, `legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries` | Checked versioned state/ABI schemas and deterministic safe transition/authority facts; preserve selected chain rules and current accounting removal. |
 | `crypto` | none | `auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`, `legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries` | Secret/key authority, audited boundaries and protocol-specific checks; metadata does not prove cryptographic execution. |
@@ -237,7 +238,8 @@ and grants no platform, provider, device or publication permission.
 <!-- future-composition-dependencies:end -->
 
 These declarations cover all forty captured future consumers, the existing Math
-parent and five Release aggregates, with source/routing review still pending.
+and domain-IR parents and five Release aggregates, with source/routing review
+still pending.
 The Release suite and seed rows identify selected subject/oracle inputs, followed
 separately by stage comparison, intermediate admission and final release. No
 declaration supplies execution, acceptance or complete prose entailment. A missing

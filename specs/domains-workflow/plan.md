@@ -56,6 +56,18 @@ component acceptance and coordinator integration pending until their exact
 evidence is present. Whole-domain, full-language, self-hosted and release claims
 remain governed by their separate existing outcomes.
 
+## Compiler domain IR composition
+
+The [C12 registry and transition plan](../compiler-api-workflow/plan.md#complete-domain-ir-source-criteria)
+consumes each selected family's actual schema, semantic anchors, verifier,
+evidence and registered transitions from its existing owner. Domain tasks retain
+their payload semantics and transformations; Compiler API composes registration
+and safe entry/exit, Opt owns selected optimizations, Lower/Backends emit target
+artifacts and Runtime performs calls. Preserve all nine baseline IR families;
+the EFIR/schema/workflow/HDL demonstration does not close the others. Local
+interface fixtures can start independently; actual composed acceptance requires
+real selected products and retains all C12/provider/checker/target holds.
+
 ## AI parent composition
 
 Select the existing Open `ai` task and one literal criterion in its

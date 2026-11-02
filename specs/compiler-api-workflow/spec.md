@@ -42,6 +42,13 @@ safety and exported fact/equivalence contracts, and cannot redefine language
 meaning. Component/domain/provider owners implement those semantics; the API
 owns their declared registration, invocation and consumer boundaries.
 
+The [complete domain IR source criteria](plan.md#complete-domain-ir-source-criteria)
+keep the three existing domain/proof predicates unchanged and bind registry,
+transition and verifier composition to all nine baseline family owners. The
+initial EFIR/schema/workflow/HDL demonstration remains a conformance minimum;
+actual producer products, checked evidence and registered exits remain required.
+Current independent review is pending and existing C12 execution holds remain.
+
 The [complete plugin and pass API source criteria](plan.md#complete-plugin-and-pass-api-source-criteria)
 bind the existing Plugin Host/Pipeline predicates to pre-load refusal, actual
 granted execution, registered verifiers and trace/cache/bootstrap consumers.

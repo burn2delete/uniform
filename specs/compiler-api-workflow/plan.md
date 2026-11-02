@@ -21,6 +21,61 @@ artifacts and counterexamples without changing ownership, accepting pending
 source amendments, refreshing migration evidence or claiming whole-pass/release
 support from local checks.
 
+## Complete domain IR source criteria
+
+The existing `domain-ir-boundaries` and `pass-evidence` tasks already contain
+the three complete existing/records/proof criterion blocks from the preserved
+`domain-complete-current-facet-trace.edn`. Keep their text and statuses. The
+retained [C12 review](review-inputs/domain-source-review.edn) contains all 115
+source facets, fifty occurrences, 34 semantic conjunctions and six owner joins;
+its scoped PASS remains frozen at `bec12ac1`. Reuse that archive, keeping
+current plan review, actual execution and independent acceptance separate.
+
+| Boundary and owning task | Required implementation and decisive evidence |
+| --- | --- |
+| Registry and schema; `domain-ir-boundaries` | Register every [required field](../../docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md#requirements): owning document/schema, semantic anchor, entry/exit passes, actual verifier, profiles, target lowerings, optimization rules and diagnostics. Retain proof/fallback policy and stable package-visible registration for plugins/libraries and self-hosting. Reject missing/foreign schema, opaque payload, invalid registration and plugin-policy bypass. An identifier or registry seed is not the owning payload schema or its verifier. |
+| Source and fact continuity; `domain-ir-boundaries` consumes MIR/domain products | Preserve [artifact identity and owning payload](../../docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md#domain-artifact-shape), source syntax/span/origins and valid typed-core or MIR anchors, plus downstream type/effect/ownership/capability/profile/target/safety/provenance facts. Enter through expanded source, typed Core, MIR, provider/package/schema declarations or plugin output, recording consumed/preserved/invalidated/translated facts. Mutated, missing or stale anchors/facts must reject or regenerate before consumption. Domain IR refines Gravity semantics; it is not another untyped language. |
+| Verifier and legal exits; `domain-ir-boundaries` with Lower | Invoke the actual [domain verifier](../../docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md#domain-verifier) for schema, anchors, provenance, compatible facts, domain invariants, safety/proofs, target preconditions, fallback and diagnostics. Failed verification blocks that artifact's emission. Each [exit family](../../docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md#exit-passes), including MIR, provider call, backend IR, runtime manifest, generated code, package or verification artifact, needs its registered path and actual equivalence/proof/certificate/accepted-lowering evidence. Lower and Backends own target derivation/emission; Runtime owns actual calls. |
+| Optimization evidence; `pass-evidence` with Opt and domain/checker owners | Expose results only through actual [proof replay, certificate validation, translation validation or nonsemantic conformance acceptance](../../docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md#optimization-boundary), otherwise reject with diagnostics. Nonsemantic fixtures never authorize a semantic rewrite. Search, benchmark, provider assertions, EML tree identity and assigned accepted flags cannot establish correctness. Preserve C18's applicable checked matrix minimum and PERF10's exact check-elision evidence. |
+| Unsupported target and diagnostics; `domain-ir-boundaries` | Produce eligibility plus semantically legal fallback, residual MIR or explicit rejection. Reject unregistered exits, unsupported emission and fallback violating profile/effect/safety rules. Preserve all nine [C12 diagnostic meanings](../../docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md#diagnostics) with domain/artifact/source span/anchor/owner/profile/target/verifier/missing fact/remediation. Capture authentic positive/refused products and actual unavailable results. |
+
+Retain all nine [baseline families](../../docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md#standard-domain-ir-families):
+EFIR (with adjacent EML proof/search), schema, workflow, AI agent/tool, HDL/state
+machine, GPU, query, FFI boundary and package/artifact graph. Domain owners retain
+their detailed schemas, semantics, entry/exit transformations and verifiers.
+Math, Schema, Workflow, AI, GPU and Query use the existing Domain tasks; Platform's
+`hardware` supplies HDL; Runtime's typed-FFI owner supplies foreign-boundary
+semantics with the owning compiler/ABI contracts; Build supplies package/graph
+semantics. The compiler registry/transition task composes these products without
+duplicating them or turning every listed backend/runtime into universal support.
+
+The required initial [conformance demonstration](../../docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md#conformance-criteria)
+includes actual EFIR, schema, workflow and the already identified HDL registration
+and verification, source-through-MIR anchors, accepted proof/certificate
+optimization and missing-evidence refusal, eligibility/fallback, plugin-policy
+and named diagnostic cases. This four-family demonstration does not remove the
+other baseline families. The [existing dependency declarations](../../docs/acceptance-dependencies.md#future-task-construction-and-composition)
+now bind `domain-ir-boundaries` to thirteen selected producer results, including
+all nine family owners, MIR verification, independent Math checking, plugin
+policy and registered Lower emission. These are result interfaces, not thirteen
+new tasks or whole-component start prerequisites. The independent Math checker
+is one concrete proof/certificate fixture route, not a universal checker for
+every domain or every legal evidence method.
+
+Start registry, schema, anchor and refusal fixtures against explicit versioned
+producer/verifier interfaces. Composition requires actual selected family
+products, callbacks, evidence and consumer results; C12-to-Lower staging keeps
+verified domain products available before the downstream target emission used
+by final conformance. The graph distinguishes declared interfaces from those
+real results. Whole-component acceptance and fresh migration proof are not
+ordinary editing prerequisites. Preserve the unresolved compiler ordering and
+every C12/callback/provider/checker/target/publication hold; this plan runs none.
+Keep hosted projection records, quoted Gravity models and narrow evidence/layout
+adapters as partial code, with their existing nonclaims. Removed input/work
+allowances are superseded; real type/index/ABI representability and provenance
+conditions remain. No registry count, proof label or generated report creates
+implementation, release, self-hosting or integration acceptance.
+
 ## Complete plugin and pass API source criteria
 
 Keep the existing `plugins` and `pipeline` predicates unchanged. The three
