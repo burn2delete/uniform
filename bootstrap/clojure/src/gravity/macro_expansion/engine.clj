@@ -155,7 +155,6 @@
                                     *print-length* nil
                                     *print-level* nil]
                             (pr-str form))]
-            (do
             (when (contains? seen-inputs input-key)
               (operations/fail!
                ops "L4-EXPANSION-DEPTH"
@@ -211,7 +210,7 @@
                                    {:macro (:identity macro)
                                     :policy (:hygiene-policy macro)}))
                        (inc depth)
-                       (conj seen-inputs input-key))))))
+                       (conj seen-inputs input-key)))))
 
           (coll? form)
           (assoc syntax
