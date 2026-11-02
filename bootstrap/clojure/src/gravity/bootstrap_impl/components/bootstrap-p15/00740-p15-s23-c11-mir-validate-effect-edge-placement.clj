@@ -114,7 +114,9 @@
 ;; owner; standalone final-artifact validation is relative to checked Core.
 (declare p15-s23-c11-mir-expected-ingress-semantic
          p15-s23-c11-ingress-source-path
-         p15-s23-c6c10-source-binding!)
+         p15-s23-c6c10-source-binding!
+         p15-s23-c6c10-project-expression-owner-metadata
+         p15-s23-stage2-current-expression-development-binding!)
 
 (def p15-s23-c11-core-policy-keys
   #{:source-interface :source-policy-binding-id :admission-status
@@ -162,7 +164,21 @@
                            (assoc :source-mode :development-current))
         envelope (:authenticated-envelope receipt)
         expression (:expression-binding receipt)
-        expression-contract c6-source-contract/current-expression-program]
+        expression-contract c6-source-contract/current-expression-program
+        current-expression? (and (= 2 version)
+                                 (= :development-current
+                                    (:source-mode expression)))
+        expected-expression
+        (if current-expression?
+          (p15-s23-c6c10-project-expression-owner-metadata
+           path
+           (dissoc (p15-s23-stage2-current-expression-development-binding!
+                   path)
+                   :plan))
+          (select-keys expression-contract
+                       [:source-content-hash :semantic-hash
+                        :functions-semantic-hash :artifact-hash
+                        :function-count]))]
     (p15-s23-c11-mir-require!
      (and (= (cond-> p15-s23-c11-core-policy-keys (= 3 version) (conj :semantic-family)) (set (keys policy)))
           (= (count (cond-> p15-s23-c11-core-policy-keys (= 3 version) (conj :semantic-family))) (count policy))
@@ -205,8 +221,13 @@
              (get-in receipt [:reader-source-revision :source-content-hash]))
           (identical? Long (class (:source-contract-version expression)))
           (= 2 (:source-contract-version expression))
-          (= (select-keys expression-contract [:source-content-hash :semantic-hash :functions-semantic-hash :artifact-hash :function-count])
-             (select-keys expression [:source-content-hash :semantic-hash :functions-semantic-hash :artifact-hash :function-count]))
+          (= expected-expression
+             (if current-expression?
+               expression
+               (select-keys expression
+                            [:source-content-hash :semantic-hash
+                             :functions-semantic-hash :artifact-hash
+                             :function-count])))
           (= (:source-policy-binding-id policy)
              (p15-s23-c6c10-canonical-digest
               path {:domain (if (= 3 version) :gravity/c6-c10-source-policy-v3 :gravity/c6-c10-source-policy-v2)
