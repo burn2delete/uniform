@@ -81,8 +81,8 @@
                        "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
                        "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"]}]}
  :current-source
- {:commit "19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b"
-  :tree "dc79967f4939df6790c3a16b0a71a71e81191f9e"
+ {:commit "c8971ef923154cae61be744585e5d5f1683eee80"
+  :tree "330c021a9cd97dcd8545bba7fd7286c475f6439c"
   :domain-criteria-transition
   {:historical-commit "2c3eac90b9736873ce7c439cdc9603b1e43249e5"
    :historical-tree "3de79028eeaced10f00c6895f4f5cf446d7304f2"
@@ -167,9 +167,9 @@
   :preserved-pr445 {:sha256 "aa7ee8dfa7c7b0b7a9cb0e609944d7dcbcd81791f080708364a0faf8cc2e7980"
                     :availability :historical-external-not-in-current-tree}}
  :current-manifest
- {:commit "19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b"
-  :tree "dc79967f4939df6790c3a16b0a71a71e81191f9e"
-  :sha256 "8948438410df7c5b6c2c547e48be16b3ff8b1033ec866fb1bec432e4e3c32007"
+ {:commit "c8971ef923154cae61be744585e5d5f1683eee80"
+  :tree "330c021a9cd97dcd8545bba7fd7286c475f6439c"
+  :sha256 "182c7f6c0b5b55a147b68b7b8a56fa148e56fa05f4e62b21e81628846b97cdac"
   :domain-task-source-bridge
   {:path "specs/domains-workflow/tasks.md"
    :historical-sha256 "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4"

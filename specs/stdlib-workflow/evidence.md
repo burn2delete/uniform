@@ -189,3 +189,46 @@ indexes), full-language roadmap and the language boundary (6 / 11) passed.
 The six known untouched SH crosswalk/source-drift failures remain preserved as
 nonpasses. No implementation, provider, canonical-adoption, release or
 self-hosting claim is made.
+
+### Current PR562/PR564 composition receipt
+
+On 2026-11-02, the current PR564 branch was composed with an ordinary normal
+merge of PR562's final commit `2bb86bb44edc4214cfb219b33e757689d282a1a5`
+(tree `fe8c4ffeba1cc32193973ee2201812cc2bcd58fa`) into the PR564 branch. The
+PR562 commit already carries current main `74d2bba143746d7bed6e6ed7758e5d7a14a8de11`
+(tree `6ccfe339ed63c9907ed382714ca6ca30ef12584d`). The resulting composition
+merge is `c8971ef923154cae61be744585e5d5f1683eee80`, tree
+`330c021a9cd97dcd8545bba7fd7286c475f6439c`, with parents
+`d1a72068d1fb0f9a60a94cad7e2bbcfe07e07511` and
+`2bb86bb44edc4214cfb219b33e757689d282a1a5`.
+
+The final manifest is bound to that exact merge: its blob is
+`9025ee7f997814e272fff7030c1d9b6dda621d51` and its UTF-8 SHA256 is
+`182c7f6c0b5b55a147b68b7b8a56fa148e56fa05f4e62b21e81628846b97cdac`. It has
+19 task-source bridges. The PR564 Stdlib bridge remains the sole new row over
+the PR562/PR561 18-row composition, with current source commit
+`80d8a655cea00218799446986a976ca64043a1f8`, tree
+`8c7e533bed9536a760254754e26dbb75db0b0f55`, and task-file SHA256
+`9ac5d948a4df974051fe15adce874f6bf39074982991d8c6c80201a971142d57`.
+The Runtime bridge `42c34ab55af0000dfaaf73d96d7ee09ec22c243e` /
+`b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c` and
+Domain bridge `24e7b5e5cd8bc42fa495997870605b596a380678` /
+`5378c2c7fba1bb49318fc6cda890c60c77bdbdc57dfe6f5ea42ea8aa23298943` remain
+present; the frozen historical source identities and
+nonclaims remain unchanged. Safety and Domain current-source views now bind
+the exact composition merge while retaining their six task-source populations.
+
+Current bounded checks passed: Profile with `-J-Xmx2g` (13 documents, 1,254
+occurrences, 1,506 facets, 631 dispositions, 55 units, 14 amendments, 55
+requirement edits and 27 unique references, negative controls passing), Safety
+(6 task sources, 237 references, 18 interfaces, all controls passing), Runtime
+(5 Open task rows and all source/tamper/nonclaim controls), Domain (21
+historical documents, 1,533 occurrences, 1,838 facets, 139 family units and
+all controls), acceptance dependencies (19 tests / 441 assertions), tooling
+requirements (8 / 52), requirement reconciliation (31 / 272), the language
+boundary (6 / 11), document validation (240 documents / 19 phase indexes),
+and full-language roadmap validation. The broader SH crosswalk command remains
+an explicit nonpass: its fail-closed source-version-pin guard stops before
+producing a SH-wide result; no SH-wide acceptance is claimed. No
+implementation, provider execution, canonical adoption, release,
+self-hosting or denominator authority is inferred from this receipt.

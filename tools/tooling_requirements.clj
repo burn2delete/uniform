@@ -19,10 +19,11 @@
 ;; digest. Main later added one exact versioned Platform generated-view bridge
 ;; and PR560 adds five authenticated task-source bridge changes. PR562 then
 ;; composes the Domain source with its preserved Workflow/UI criteria on a
-;; named successor checkpoint. Accept this named transition only when both immutable Git
-;; snapshots, the complete bridge body, the explicit task-bridge delta and
-;; every source population agree; a live hash refresh alone is never
-;; sufficient.
+;; named successor checkpoint. PR564 then adds one authenticated Stdlib row
+;; against that serial composition. Accept each named transition only when
+;; both immutable Git snapshots, the complete bridge body, the explicit
+;; task-bridge delta and every source population agree; a live hash refresh
+;; alone is never sufficient.
 (def current-manifest-source-transition
   {:kind :tooling-current-manifest-platform-bridge-and-pr560-task-bridges-v1
    :path manifest-path
@@ -102,13 +103,11 @@
     :tree "dc79967f4939df6790c3a16b0a71a71e81191f9e"
     :blob "4dd11c7af6868616b8bdd0c50c96a025c9e9e270"
     :sha256 "8948438410df7c5b6c2c547e48be16b3ff8b1033ec866fb1bec432e4e3c32007"}
-   ;; This identity is temporarily the PR562 applying snapshot. It is bound
-   ;; to the actual composition merge immediately after that merge is created.
    :applying
-   {:commit "2bb86bb44edc4214cfb219b33e757689d282a1a5"
-    :tree "fe8c4ffeba1cc32193973ee2201812cc2bcd58fa"
-    :blob "4dd11c7af6868616b8bdd0c50c96a025c9e9e270"
-    :sha256 "8948438410df7c5b6c2c547e48be16b3ff8b1033ec866fb1bec432e4e3c32007"}
+   {:commit "c8971ef923154cae61be744585e5d5f1683eee80"
+    :tree "330c021a9cd97dcd8545bba7fd7286c475f6439c"
+    :blob "9025ee7f997814e272fff7030c1d9b6dda621d51"
+    :sha256 "182c7f6c0b5b55a147b68b7b8a56fa148e56fa05f4e62b21e81628846b97cdac"}
    :stdlib-task-source-successor expected-current-stdlib-task-bridge
    :interpretation :pr561-runtime-successor-to-pr564-stdlib-source-successor})
 
