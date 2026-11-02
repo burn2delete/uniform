@@ -2,6 +2,7 @@
   "Check the historical Phase 13 proposal against current source views only."
   (:require [clojure.edn :as edn]
             [clojure.java.shell :as shell]
+            [clojure.set :as set]
             [clojure.string :as str]
             [requirement-sources :as requirement-sources]))
 
@@ -16,11 +17,13 @@
 
 ;; The #557 source view deliberately retains its frozen current-manifest
 ;; digest. Main later added one exact versioned Platform generated-view bridge
-;; in that manifest. Accept that named transition only when both immutable Git
-;; snapshots, the complete bridge body and every source population agree; a
-;; live hash refresh alone is never sufficient.
+;; and PR560 adds five authenticated task-source bridge changes to that same
+;; manifest. Accept this named transition only when both immutable Git
+;; snapshots, the complete bridge body, the explicit task-bridge delta and
+;; every source population agree; a live hash refresh alone is never
+;; sufficient.
 (def current-manifest-source-transition
-  {:kind :tooling-current-manifest-platform-bridge-v1
+  {:kind :tooling-current-manifest-platform-bridge-and-pr560-task-bridges-v1
    :path manifest-path
    :source-view-baseline-sha256
    "aa51bfad176edcf7ed75109a68ea1a0bcbcb3eeeedd6311db256bf331ad01ef0"
@@ -30,11 +33,20 @@
     :blob "2dc56539cf67ad1b0170b8fdffa251f7d8535885"
     :sha256 "aa51bfad176edcf7ed75109a68ea1a0bcbcb3eeeedd6311db256bf331ad01ef0"}
    :applying
-   {:commit "5f6cfdcfd7e9eeee1fb13a1bfaf923f571f18065"
-    :tree "b550c38ca740c30a5d1a0d90429d3e417eafa06a"
-    :blob "c3f22d33eae72b6a31a5b8d1d3c1dccdf7df18ba"
-    :sha256 "d24ed46e2de0c1672a1a37c0eeacb3340452dcf56ce1b511ecc678761909155b"}
-   :interpretation :platform-generated-view-v2-source-bridge-only})
+   {:commit "f4bb6ceb7e7d68fd9590938b1327edf7ace64fd4"
+    :tree "605a924d4f24a775301c5d545e75fb4c1a51210f"
+    :blob "a37f9c95b0e4534c89d1cf413b2ddbc9fadfe38c"
+    :sha256 "8a41f5aa638ec717b1321a02974e63c6afc8103f498ee5d7bfc5738ebb3ad21e"}
+   :task-source-bridge-extension
+   {:added-paths ["specs/runtime-workflow/tasks.md"
+                  "specs/build-workflow/tasks.md"
+                  "specs/domains-workflow/tasks.md"]
+    :updated-paths ["specs/auth-workflow/tasks.md"
+                    "specs/legality-workflow/tasks.md"]
+    :current-ref "8e6608856edcde2b57c33951839dfa9b79f2c503"
+    :current-tree "23974efdf7c3fa19160a344f26084ebe051ef1a5"
+    :change-class :acceptance-boundary-extension}
+   :interpretation :platform-generated-view-v2-plus-pr560-task-source-bridge-extension})
 
 (def historical-platform-bridge-kind
   :platform-task-authority-current-layout)
@@ -112,6 +124,9 @@
   (first (filter #(= "platform-product" (:document-id %))
                 (:source-version-bridges manifest))))
 
+(defn- task-source-bridges [manifest]
+  (into {} (map (juxt :path identity) (:task-source-version-bridges manifest))))
+
 (defn- expected-current-platform-bridge []
   (merge
    (assoc (get requirement-sources/exact-source-bridge-contracts
@@ -147,7 +162,14 @@
         applying-manifest (edn/read-string applying-text)
         baseline-platform (platform-bridge baseline-manifest)
         applying-platform (platform-bridge applying-manifest)
-        expected-platform (expected-current-platform-bridge)]
+        expected-platform (expected-current-platform-bridge)
+        extension (:task-source-bridge-extension transition)
+        baseline-task-bridges (task-source-bridges baseline-manifest)
+        applying-task-bridges (task-source-bridges applying-manifest)
+        baseline-task-paths (set (keys baseline-task-bridges))
+        applying-task-paths (set (keys applying-task-bridges))
+        added-task-paths (set (:added-paths extension))
+        updated-task-paths (set (:updated-paths extension))]
     (require! (= (manifest-population baseline-manifest)
                  (manifest-population applying-manifest))
               "Tooling manifest transition changed a required source population")
@@ -159,6 +181,28 @@
               "Tooling Platform bridge path changed")
     (require! (= expected-platform applying-platform)
               "Tooling Platform bridge is not the authenticated v2 extension")
+    (require! (and (= :acceptance-boundary-extension (:change-class extension))
+                   (= "8e6608856edcde2b57c33951839dfa9b79f2c503"
+                      (:current-ref extension))
+                   (= "23974efdf7c3fa19160a344f26084ebe051ef1a5"
+                      (:current-tree extension)))
+              "PR560 task-source bridge extension identity drifted")
+    (require! (= added-task-paths
+                 (set/difference applying-task-paths baseline-task-paths))
+              "PR560 task-source bridge additions drifted")
+    (require! (empty? (set/difference baseline-task-paths applying-task-paths))
+              "Task-source bridge was removed during the authenticated transition")
+    (require! (set/subset? updated-task-paths baseline-task-paths)
+              "PR560 task-source bridge update is not based on an existing bridge")
+    (doseq [path (set/difference baseline-task-paths updated-task-paths)]
+      (require! (= (get baseline-task-bridges path)
+                   (get applying-task-bridges path))
+                (str "Unauthenticated task-source bridge change: " path)))
+    (doseq [path updated-task-paths]
+      (require! (and (contains? applying-task-bridges path)
+                     (not= (get baseline-task-bridges path)
+                           (get applying-task-bridges path)))
+                (str "Expected PR560 task-source bridge update is absent: " path)))
     {:kind (:kind transition)
      :path (:path transition)
      :baseline baseline

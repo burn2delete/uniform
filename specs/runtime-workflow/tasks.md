@@ -35,7 +35,7 @@ Status: Open
 
 Evidence baseline: [Runtime contracts](../../docs/phase-08-runtime-architecture/README.md)
 
-Closing evidence: Allocation, lifetime, transfer, race and foreign-failure conformance with explicit providers
+Closing evidence: Allocation, lifetime, transfer, race and foreign-failure conformance with explicit providers. Execute the [SAFE2-SAFE8 contracts](../../docs/phase-02-safety/README.md): declared allocation and cleanup failures, partial initialization cleanup, region/arena generation and borrow checks, release through the correct allocator/provider, callback lifetime/thread/reentrancy/release and foreign error/exception/promise translation. Reject retained borrows, post-reset access, missing FFI declarations, unsupported atomics and unsynchronized mutable access; validate immutable sharing, lock cleanup, actor/channel transfer and declared backpressure/cancellation. Inspect actual checks and audit records, with no hidden GC or host-thread fallback.
 
 - [ ] `runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution` Connect distributed/AI replay and interactive execution
 
@@ -43,7 +43,7 @@ Status: Open
 
 Evidence baseline: [Runtime contracts](../../docs/phase-08-runtime-architecture/README.md)
 
-Closing evidence: Recorded nondeterminism, replay equality, no duplicated external effect, REPL grant denial
+Closing evidence: Recorded nondeterminism, replay equality, no duplicated external effect, REPL grant denial. Under [SAFE8/SAFE13](../../docs/phase-02-safety/README.md), retain signal/timer/retry/idempotency/compensation and tool failure records; exact replay consumes recorded model/tool outputs, while audit policy retains digests, schemas, decisions, review events and providers. None is allowed only in interactive or non-safe contexts; workflow and release claims require replay or audit. Execute retention/deletion and secret-tainted memory denial fixtures through the declared provider; prompt text never grants authority.
 
 - [ ] `runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration` Close enforcement and observability integration
 
