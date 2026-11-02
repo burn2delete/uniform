@@ -17,6 +17,17 @@
        "(def ^:dynamic *bypass-next-operation-keys* #{})\n"
        "(def ^:dynamic *active-operation-keys* #{})\n"
        "(defn- current-operation [key] (get {} key))\n" recipe "\n"))
+(def module-source-text (slurp macros/module-source))
+(def module-observed (macros/module-contract! (.getBytes module-source-text "UTF-8")))
+(def module-recipe
+  (str/join "\n" (subvec (vec (str/split-lines module-source-text))
+                          (dec (:start module-observed)) (:end module-observed))))
+(def module-header
+  (str "(ns gravity.module-analysis)\n"
+       "(def ^:dynamic *bypass-next-operation-keys* #{})\n"
+       "(def ^:dynamic *active-operation-keys* #{})\n"
+       "(defn- current-operation [key] (get {} key))\n"
+       module-recipe "\n"))
 (def counter (atom 0))
 
 (defn findings! [program & [config-directory]]
@@ -30,6 +41,56 @@
                                "--lint" "-" "--filename" macros/source] (.getPath input))]
       (is (#{0 2 3} (:exit-code result)) (pr-str result))
       (lint/findings! (io/file ci/output (str id ".log")) #{macros/source} identity))))
+
+(defn module-findings!
+  [program]
+  (let [id (str "module-macro-fixture-" (swap! counter inc))
+        input (.toFile (java.nio.file.Files/createTempFile
+                        "uniform-module-macro-" ".clj"
+                        (make-array java.nio.file.attribute.FileAttribute 0)))]
+    (try
+      (spit input program)
+      (let [result (ci/execute! id 15
+                                ["clj-kondo" "--repro" "--cache" "false"
+                                 "--config-dir" macros/config-directory
+                                 "--config" "{:output {:format :edn}}"
+                                 "--lint" "-" "--filename" macros/module-source]
+                                (.getCanonicalPath input))]
+        (is (#{0 2 3} (:exit-code result)) (pr-str result))
+        (lint/findings! (io/file ci/output (str id ".log"))
+                        #{macros/module-source} identity))
+      (finally
+        (.delete input)))))
+
+(deftest module-analysis-hook-model-is-precise
+  (let [positive (str module-header
+                      "(definterposable generated :key [value] (inc value))\n"
+                      "(generated 1)\n"
+                      "(definterposable-private generated-private :private-key [value] value)\n"
+                      "(generated-private 1)\n")]
+    (is (empty? (module-findings! positive)))
+    (doseq [call ["(definterposable :bad-name :key [value] value)"
+                  "(definterposable generated not-a-key [value] value)"
+                  "(definterposable generated :key [value value] value)"
+                  "(definterposable-private generated :key [other/value] value)"
+                  "(definterposable-private generated :key [value & more] value)"]]
+      (let [findings (module-findings! (str module-header call "\n"))]
+        (is (some #(and (= :ci/unsupported-interposable (:type %))
+                        (= :error (:level %))) findings)
+            (pr-str findings)))))
+  (is (= macros/module-recipe-sha256
+         (:macro-sha256
+          (macros/module-contract! (.getBytes module-source-text "UTF-8")))))
+  (doseq [program [(str/replace module-source-text
+                                "(defn- current-operation [key]"
+                                "(defn current-operation [key]")
+                   (str/replace module-source-text
+                                "(defmacro ^:private definterposable [name key arguments & body]"
+                                "(defmacro definterposable [name key arguments & body]")
+                   (str/replace module-source-text
+                                "(do ~@body)" "(do :changed ~@body)")]]
+    (is (thrown? Exception
+                 (macros/module-contract! (.getBytes program "UTF-8"))))))
 
 (deftest precise-wrapper-context-and-body-diagnostics
   (let [positive (str header "(definterposable generated :different-key [value] (inc value))\n(generated 1)\n")
