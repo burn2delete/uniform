@@ -3619,3 +3619,36 @@ original task/evidence contents after declared additions are removed. ASCII and
 whitespace checks pass. Dated roadmap counts are not current execution evidence,
 and no compiler/provider/native/physical-target/release suite or independent
 review is claimed from these source/traceability checks.
+
+### Cache authority clarification
+
+The final ownership audit found that the new reproducibility wording could be
+read as assigning cache invalidation to a second task. The existing dependency-aware
+caching task remains the sole key-construction/reuse/invalidation producer. Its
+selected L15 criterion now explicitly requires provider/version/scope/contract/
+trust/policy/replay inputs and actual invalidation/refusal results. The existing
+reproducibility task consumes those results for recorded recipes and actual
+repeat-build manifest/content comparisons. No new task or status is introduced.
+
+This clarification yields seventeen clauses across fifteen existing tasks in the
+same six authorities. All 278 facets, 181 occurrences, 46 conjunctions, twenty
+owners, sixteen finite witnesses, original 67-identical/72-amended accounting,
+149 current keys and 25 authorities remain. The source subject is now
+`d2812996f4433e2102daacff9c5f7b3194a0b5e9`, with applying fingerprint
+`70b36281f3c69514ee55fdb65cba882c216104a11cdc65374c11ecee930d614e`.
+The initial source `9a12cb86cf89d2572c7c43df3c52714d5bf99774` and its bound
+proposal at `ab5485a1b36367683340794b04e45d182659dab8` remain explicit history;
+the governing pre-provider predecessor and all frozen reviews are unchanged.
+Complete provider/capability dependency staging and current independent acceptance
+remain pending. The preceding validation records describe the initial subject;
+the clarified subject receives its own verification below.
+
+Clarified-subject validation passes: 59 crosswalk tests with 22,711 assertions,
+23 dependency tests with 2,921 assertions, both pinned projection checks and
+six language-boundary tests with eleven assertions. The unchanged canonical
+240-document/19-index and full-language structural checks remain applicable.
+Conservation/navigation confirms 88 changed files, 82 Markdown files, 3,377 local
+references, 139 original routes, 48 historical spec/plan suffixes and all 48
+original task/evidence contents after declared additions are removed. ASCII and
+whitespace checks pass. These are source/traceability results, not actual
+provider/cache/reproducibility execution, independent acceptance or integration.

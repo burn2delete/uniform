@@ -636,15 +636,15 @@
   "specs/cli-workflow/plan.md"
   "b25db661156837e5a61d15d745dd612814a5574bc8c74e230536cecd20210735",
   "specs/legality-workflow/spec.md"
-  "1e83c16424a14da79a2254d18b12988642df85b1947a73e4a23fe38d957d4069",
+  "5bea391e3d7709a2f19460d041162671e27a6bd983ac98167e0e3116747c8e33",
   "specs/backends-workflow/spec.md"
   "0b3caa8138dccf3070ffa6937cd4e2c7449f57591d905aedc6985355f0f59a5e",
   "specs/auth-workflow/plan.md"
-  "ae2c0933e95288583f6b96ad8159da4fb675a12719240c9ee6bd61257e495bf1",
+  "3849ac7576221019a6afc23fe72d26f1699403e624f8980c9a64a0be1cfaa422",
   "specs/build-workflow/plan.md"
-  "d764eb1602a65f0b69c46eee3a81e091c10eb82adad52be8547da43b7a632c96",
+  "05b2e313db98902b99cda6d9b04ab82f9bb3b787118d7a8160b30ea2f97e52ed",
   "specs/auth-workflow/spec.md"
-  "fce65f3cf8a770c87a0d20d6d97b0cfd1b277e5c915508e3c52a6ae2ea945c6d",
+  "58402fc1c93d5e2d14895d5ae1b680cc7bf49c96b58f12dc1905fac1b96dc8e8",
   "specs/effects-workflow/plan.md"
   "3b8b1cb992f14e56eeb5413a2a36575cb79170c6f6daed1575b291fdf239c21f",
   "specs/opt-workflow/plan.md"
@@ -662,7 +662,7 @@
   "docs/acceptance-dependencies.md"
   "d4500151b7ee1ae931e66d5ef0ddbb1d33e80e0434f51ca601310384d2d8dbdd",
   "specs/runtime-workflow/spec.md"
-  "574292ac0df07c3a30dd9cc16dc1ab084a3edade73ad4f7aa6247d1f6a17aa6d",
+  "5da74f34315e7beeedd058d3678886de3a5f01b4c804f94febceb139f1fe02d7",
   "specs/expand-workflow/plan.md"
   "dca64606792fe9fa439a9759c45130213189655efcb50fc16a928f069e72324e",
   "specs/lower-workflow/tasks.md"
@@ -681,7 +681,7 @@
    "evolution/security-review"
    "evolution/stabilization-decision"
    "evolution/target-support-admission"]},
- :source-input-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+ :source-input-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
  :task-comparisons
  {:unchanged-body-count 67,
   :changed-bodies
@@ -760,7 +760,7 @@
     :before-sha256
     "e8987cc8863981527889461d9af2194c2a0b17393b82ca6f83e8a555581b5ebe",
     :after-sha256
-    "c1b28fc9cd72acf9b3aa1eb225c1b05f313a03a06203e917ba3a17cccc8f03b4",
+    "cb20cece44c0ea88e18d2724790355518a82ef4d788702e55016096269eb0c7a",
     :before-checked false,
     :after-checked false}
    {:id
@@ -778,7 +778,7 @@
     :before-sha256
     "f293e86a6d4be7cc1b6f0723e2a117d1880a592c1e16d3ec75cac24dd234d01e",
     :after-sha256
-    "8a6713eb4d92b663a6c3d677fdc6041c130827e8cce7f43a2e00176235d7b1db",
+    "57f5613fcfbeb8819296ddbc32324de35ba84bbb219d5a1c9d48a1e0d0a9db5a",
     :before-checked false,
     :after-checked false}
    {:id
@@ -12052,7 +12052,7 @@
     :sha256
     "9db81aa1c8ef183a9da8656a343a29fd9104b10e7130fd63ba4e52b75ce2b256"},
    :after
-   {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+   {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
     :sha256
     "5cf7bbfd8163d5735929492ef3a47d883051f0e6dea69acb6340b70c21093365"},
    :scope :task-file-version}
@@ -12072,9 +12072,9 @@
     :sha256
     "6c88f677477ec41d755dbedd39d1e03de7c9ae81cc9a956a48c8cf319bfca1b0"},
    :after
-   {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+   {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
     :sha256
-    "67c7be0da1537e54bc9ee3603a05f7c1d93dbcf69bfdbbe7dd56c76de416afc2"},
+    "419706e9d2a780edf001f6390cb32dc4331d0338dbc6eafeea14479eb913d1c6"},
    :scope :task-file-version}
   {:path "specs/cli-workflow/tasks.md",
    :before
@@ -12158,7 +12158,7 @@
     :sha256
     "e1cf578f48991336eb885172b3f829a150dd856de018b47f52fb8e2dfc51b63f"},
    :after
-   {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+   {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
     :sha256
     "8fad03dbc715b4ad517a5cd01d534c7f947b74d32fbb9c73f6cd84d545bdc1b9"},
    :scope :task-file-version}
@@ -12168,7 +12168,7 @@
     :sha256
     "937ed9cf0a8a7272559564344141fff0f1e3db34c9deef4106ab3ca958354f9e"},
    :after
-   {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+   {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
     :sha256
     "f344127846714a6824ca4a1f3cb045def4091ec350c9597f7eede7793543e572"},
    :scope :task-file-version}
@@ -12247,7 +12247,7 @@
     :sha256
     "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972"},
    :after
-   {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+   {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
     :sha256
     "2ec2989379d6c36ede87ea9462043cfa26b0bf4cbcf5672debe836dfdb4524d4"},
    :scope :foundation-owner-task-criteria}
@@ -12258,7 +12258,7 @@
     "69ac9a7163838c4cb297c94174d0b3061b0e7686f2378c45aa30e6320b6f6d94",
     :prior-explicit-applying-pin nil},
    :after
-   {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+   {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
     :sha256
     "cacd132df4463a45b4846a8b0b37391ea932a5ba3c2ef3c9e9e6c2100d8c7ed6"},
    :scope :existing-task-authority-source-refinement}
@@ -12299,7 +12299,7 @@
    "04d76ca3e9bee1b595c32fbd9e8679444cdfed8847fc5e1a0284c45b5ce7d3fe",
    :kind :source-inspection-not-execution},
   "specs/lower-workflow/plan.md"
-  {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
    :sha256
    "074b74ffe429eb965ea9270f829be263c8bd5eb49310af25a12a5b8b21c367a0",
    :kind :source-inspection-not-execution},
@@ -12314,7 +12314,7 @@
    "aebf4b6087817fd1f5c140868e0225989322c4cfb8f7fa5953ca3fe0f22cf0a3",
    :kind :source-inspection-not-execution},
   "specs/release-workflow/plan.md"
-  {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
    :sha256
    "377fe1ebfa407643b0a69c9fa1a11b9eb4d5a8ef98af69ae154151e34bc02f93",
    :kind :source-inspection-not-execution},
@@ -12324,7 +12324,7 @@
    "bb1ae98552251fff4d7f766b0ea601ffb13bb067c631ee25a3313ea58122a411",
    :kind :source-inspection-not-execution},
   "specs/runtime-workflow/plan.md"
-  {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
    :sha256
    "60f7a896118946bfe7f2ae2d08a34f302c670647d2266acd1d5a7c27f4d0c66b",
    :kind :source-inspection-not-execution},
@@ -12334,22 +12334,22 @@
    "03e284a061857a0d0fc4a2c2f87ffdc73841fa96bebf36f64a02014aa6a68960",
    :kind :source-inspection-not-execution},
   "specs/evolution-workflow/plan.md"
-  {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
    :sha256
    "fb289edd31fe4f08c7058258ba6149eaed564399d848f5d839930db7ff1c0f75",
    :kind :source-inspection-not-execution},
   "specs/types-workflow/plan.md"
-  {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
    :sha256
    "2c88faf4a2a33b941de04833f5acf59180f35140c402b1d3c36cb8b67e6c6bd4",
    :kind :source-inspection-not-execution},
   "specs/domains-workflow/plan.md"
-  {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
    :sha256
    "b3842cc22ebde9d167a66effc507025b06cab4c1f2944d4aaf4c3050396a9d3d",
    :kind :source-inspection-not-execution},
   "specs/diag-workflow/plan.md"
-  {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
    :sha256
    "3bb2b397868a45173c07bae7280223987a2000f566493a436ca26cf8188b1b3f",
    :kind :source-inspection-not-execution},
@@ -12359,9 +12359,9 @@
    "b25db661156837e5a61d15d745dd612814a5574bc8c74e230536cecd20210735",
    :kind :source-inspection-not-execution},
   "specs/legality-workflow/spec.md"
-  {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
    :sha256
-   "1e83c16424a14da79a2254d18b12988642df85b1947a73e4a23fe38d957d4069",
+   "5bea391e3d7709a2f19460d041162671e27a6bd983ac98167e0e3116747c8e33",
    :kind :source-inspection-not-execution},
   "specs/backends-workflow/spec.md"
   {:commit "480b2ebed8199ed1489b7f5bf871883e6a191403",
@@ -12369,22 +12369,22 @@
    "0b3caa8138dccf3070ffa6937cd4e2c7449f57591d905aedc6985355f0f59a5e",
    :kind :source-inspection-not-execution},
   "specs/auth-workflow/plan.md"
-  {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
    :sha256
-   "ae2c0933e95288583f6b96ad8159da4fb675a12719240c9ee6bd61257e495bf1",
+   "3849ac7576221019a6afc23fe72d26f1699403e624f8980c9a64a0be1cfaa422",
    :kind :source-inspection-not-execution},
   "specs/build-workflow/plan.md"
-  {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
    :sha256
-   "d764eb1602a65f0b69c46eee3a81e091c10eb82adad52be8547da43b7a632c96",
+   "05b2e313db98902b99cda6d9b04ab82f9bb3b787118d7a8160b30ea2f97e52ed",
    :kind :source-inspection-not-execution},
   "specs/auth-workflow/spec.md"
-  {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
    :sha256
-   "fce65f3cf8a770c87a0d20d6d97b0cfd1b277e5c915508e3c52a6ae2ea945c6d",
+   "58402fc1c93d5e2d14895d5ae1b680cc7bf49c96b58f12dc1905fac1b96dc8e8",
    :kind :source-inspection-not-execution},
   "specs/effects-workflow/plan.md"
-  {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
    :sha256
    "3b8b1cb992f14e56eeb5413a2a36575cb79170c6f6daed1575b291fdf239c21f",
    :kind :source-inspection-not-execution},
@@ -12394,7 +12394,7 @@
    "d0489478bcf66691b3d678de96ced913d23f8e871aa18912cffbd3ef37d9f5ee",
    :kind :source-inspection-not-execution},
   "specs/stdlib-workflow/plan.md"
-  {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
    :sha256
    "be73974d95559c8ec173bee18b94263ffb5e7a38682473b7ca7bf6632c150a5d",
    :kind :source-inspection-not-execution},
@@ -12404,7 +12404,7 @@
    "7f12b9fa18bdf839fd751fa0b9b30c6abca80e5f3e0df8aab2f7ebae704e245c",
    :kind :source-inspection-not-execution},
   "specs/legality-workflow/plan.md"
-  {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
    :sha256
    "3ecb9a868982e40406737b191428ccf8fd43569554ae223a1de8df62574d880f",
    :kind :source-inspection-not-execution},
@@ -12419,12 +12419,12 @@
    "403faf1d18dab790276e8c5072ca42821e9754856127b73e72eef52ceb28a1f5",
    :kind :source-inspection-not-execution},
   "specs/runtime-workflow/spec.md"
-  {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
    :sha256
-   "574292ac0df07c3a30dd9cc16dc1ab084a3edade73ad4f7aa6247d1f6a17aa6d",
+   "5da74f34315e7beeedd058d3678886de3a5f01b4c804f94febceb139f1fe02d7",
    :kind :source-inspection-not-execution},
   "specs/expand-workflow/plan.md"
-  {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
    :sha256
    "dca64606792fe9fa439a9759c45130213189655efcb50fc16a928f069e72324e",
    :kind :source-inspection-not-execution},
@@ -74323,6 +74323,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -74378,6 +74379,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -74473,6 +74475,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -74675,6 +74678,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -74704,6 +74708,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -74786,7 +74791,13 @@
      "0e4d7654fdba9af5cb15890c601b5be23e06598606dddaeef8f911f8f49fc9bb"},
     :role :complete-source-predicate-conjunction,
     :criterion-keys
-    [:declaration :trust :handoff :build :cache :conformance],
+    [:declaration
+     :trust
+     :handoff
+     :build
+     :cache-producer
+     :cache
+     :conformance],
     :current-entailment :proposal-pending-independent-review},
    "L15/source/fcfa437eab6a8bdac43b762ad604348c4bd626db34ebdd27b93252224f9d1a52"
    {:index 5,
@@ -74827,6 +74838,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -74895,6 +74907,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -74964,6 +74977,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -75006,6 +75020,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -75061,6 +75076,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -75243,6 +75259,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -75331,6 +75348,7 @@
      :runtime
      :expand
      :build
+     :cache-producer
      :cache
      :conformance],
     :current-entailment :proposal-pending-independent-review},
@@ -75360,6 +75378,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -75434,6 +75453,7 @@
      :runtime
      :expand
      :build
+     :cache-producer
      :cache
      :conformance],
     :current-entailment :proposal-pending-independent-review},
@@ -75463,6 +75483,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -75478,7 +75499,13 @@
      "2cc043daf9f0baaa8b80a5afcfa317da76cd0579ff247d4652c96872c2b19c55"},
     :role :complete-source-predicate-conjunction,
     :criterion-keys
-    [:declaration :trust :handoff :build :cache :conformance],
+    [:declaration
+     :trust
+     :handoff
+     :build
+     :cache-producer
+     :cache
+     :conformance],
     :current-entailment :proposal-pending-independent-review},
    "L15/source/24929c00c7109f16141d8b0b3430eea50b371d84ee32999c4a86ba700093c516"
    {:index 56,
@@ -75573,6 +75600,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -75602,6 +75630,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -75631,6 +75660,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -75699,6 +75729,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -75728,6 +75759,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -75824,6 +75856,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -75906,6 +75939,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -75948,6 +75982,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -75963,7 +75998,13 @@
      "79e43e073fe3f80673014b980e13b24e9fb47d7c6821b89fc70b1ba77b4a6c9e"},
     :role :complete-source-predicate-conjunction,
     :criterion-keys
-    [:declaration :trust :handoff :build :cache :conformance],
+    [:declaration
+     :trust
+     :handoff
+     :build
+     :cache-producer
+     :cache
+     :conformance],
     :current-entailment :proposal-pending-independent-review},
    "L15/source/90382a4cb7adbfe040931ff48fcace94027b3f3d2e47df697c415f6ce4008da6"
    {:index 20,
@@ -76050,6 +76091,7 @@
      :runtime
      :expand
      :build
+     :cache-producer
      :cache
      :conformance],
     :current-entailment :proposal-pending-independent-review},
@@ -76106,6 +76148,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -76176,6 +76219,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -76205,6 +76249,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -76375,6 +76420,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -76404,6 +76450,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -76485,6 +76532,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -76514,6 +76562,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -76543,6 +76592,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -76585,6 +76635,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -76693,6 +76744,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -76735,6 +76787,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -76856,6 +76909,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -76991,7 +77045,13 @@
      "ded989a4abe5ca1222bcbc5bd4771afb9b3452d59ec4293f9185ef787179da97"},
     :role :complete-source-predicate-conjunction,
     :criterion-keys
-    [:declaration :trust :handoff :build :cache :conformance],
+    [:declaration
+     :trust
+     :handoff
+     :build
+     :cache-producer
+     :cache
+     :conformance],
     :current-entailment :proposal-pending-independent-review},
    "R11/source/79dc6301d5f11ace0c2a3ac9c7201c24ff76034ebe376a5b2744ad54d73be67e"
    {:index 117,
@@ -77072,6 +77132,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review},
@@ -77194,7 +77255,13 @@
      "588a63dd3ec494087871763ec2fa0aa7756723e1d41a37ae29d4e2c70dfe66fe"},
     :role :complete-source-predicate-conjunction,
     :criterion-keys
-    [:declaration :trust :handoff :build :cache :conformance],
+    [:declaration
+     :trust
+     :handoff
+     :build
+     :cache-producer
+     :cache
+     :conformance],
     :current-entailment :proposal-pending-independent-review},
    "SAFE10/source/47364c41b00f1df2f88ac2fa197ba20c284047f3c0591e373082b3f7867ffb6a"
    {:index 146,
@@ -77345,9 +77412,9 @@
      "2d9748069f9b8b85a2ab36c9dcfa77f3e5ff405f54f750029c2fc70d7286c9e6",
      :kind :source-inspection-not-execution},
     :after
-    {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+    {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
-     "fce65f3cf8a770c87a0d20d6d97b0cfd1b277e5c915508e3c52a6ae2ea945c6d",
+     "58402fc1c93d5e2d14895d5ae1b680cc7bf49c96b58f12dc1905fac1b96dc8e8",
      :kind :source-inspection-not-execution}}
    {:path "specs/runtime-workflow/spec.md",
     :before
@@ -77356,9 +77423,9 @@
      "15646da599cec467ecfb74e1f109f7d8fa98335c539d37e6f4a540a902413429",
      :kind :source-inspection-not-execution},
     :after
-    {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+    {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
-     "574292ac0df07c3a30dd9cc16dc1ab084a3edade73ad4f7aa6247d1f6a17aa6d",
+     "5da74f34315e7beeedd058d3678886de3a5f01b4c804f94febceb139f1fe02d7",
      :kind :source-inspection-not-execution}}
    {:path "specs/legality-workflow/spec.md",
     :before
@@ -77367,9 +77434,9 @@
      "a9bb08086dab26679c7d83568bbdefc1498cbf35ea1832971690d227528a34bb",
      :kind :source-inspection-not-execution},
     :after
-    {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+    {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
-     "1e83c16424a14da79a2254d18b12988642df85b1947a73e4a23fe38d957d4069",
+     "5bea391e3d7709a2f19460d041162671e27a6bd983ac98167e0e3116747c8e33",
      :kind :source-inspection-not-execution}}],
   :predecessor-readiness-successor
   {:commit "14c5be01f2e0027347c7ca0398ddc3b4bb2f39e3",
@@ -77382,6 +77449,14 @@
    "c80de0ce758ac94d76c883edcf74701f06f1d3f8ed0c8bb64711402d4aa5c752",
    :input-fingerprint
    "837c2544f81d26e9701e4e21b46cf49b98f397a902607a387411b3ee663280ce"},
+  :prior-proposal-binding
+  {:source-commit "ab5485a1b36367683340794b04e45d182659dab8",
+   :path
+   "specs/sh-family-crosswalk/implementation-readiness-source-version.edn",
+   :sha256
+   "8a92ae7a7dea418412a32ebe27b967fdb2ac252fccea8a8ea7da019db7dd8a20",
+   :input-fingerprint
+   "3cd46d1bea3e08c0ff1a1648fa4aab74fb10d5814b4e8248a5861fc4c9d4c124"},
   :dependency-review
   :existing-698-joins-83-routes-43-current-parents-40-future-records-retained-complete-provider-capability-result-staging-pending,
   :criteria
@@ -77390,7 +77465,7 @@
     "auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection",
     :current-witness
     {:path "specs/auth-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "5cf7bbfd8163d5735929492ef3a47d883051f0e6dea69acb6340b70c21093365",
      :source-span
@@ -77407,7 +77482,7 @@
     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
     :current-witness
     {:path "specs/auth-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "5cf7bbfd8163d5735929492ef3a47d883051f0e6dea69acb6340b70c21093365",
      :source-span
@@ -77424,7 +77499,7 @@
     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
     :current-witness
     {:path "specs/auth-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "5cf7bbfd8163d5735929492ef3a47d883051f0e6dea69acb6340b70c21093365",
      :source-span
@@ -77441,7 +77516,7 @@
     "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
     :current-witness
     {:path "specs/auth-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "5cf7bbfd8163d5735929492ef3a47d883051f0e6dea69acb6340b70c21093365",
      :source-span
@@ -77458,7 +77533,7 @@
     "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks",
     :current-witness
     {:path "specs/auth-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "5cf7bbfd8163d5735929492ef3a47d883051f0e6dea69acb6340b70c21093365",
      :source-span
@@ -77475,7 +77550,7 @@
     "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity",
     :current-witness
     {:path "specs/auth-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "5cf7bbfd8163d5735929492ef3a47d883051f0e6dea69acb6340b70c21093365",
      :source-span
@@ -77492,7 +77567,7 @@
     "auth/remaining-tasks-and-evidence/publish-conformance-and-remaining-trust-assumptions",
     :current-witness
     {:path "specs/auth-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "5cf7bbfd8163d5735929492ef3a47d883051f0e6dea69acb6340b70c21093365",
      :source-span
@@ -77509,7 +77584,7 @@
     "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
     :current-witness
     {:path "specs/legality-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "f344127846714a6824ca4a1f3cb045def4091ec350c9597f7eede7793543e572",
      :source-span
@@ -77526,7 +77601,7 @@
     "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution",
     :current-witness
     {:path "specs/legality-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "f344127846714a6824ca4a1f3cb045def4091ec350c9597f7eede7793543e572",
      :source-span
@@ -77543,7 +77618,7 @@
     "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
     :current-witness
     {:path "specs/runtime-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "2ec2989379d6c36ede87ea9462043cfa26b0bf4cbcf5672debe836dfdb4524d4",
      :source-span
@@ -77560,7 +77635,7 @@
     "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
     :current-witness
     {:path "specs/runtime-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "2ec2989379d6c36ede87ea9462043cfa26b0bf4cbcf5672debe836dfdb4524d4",
      :source-span
@@ -77577,7 +77652,7 @@
     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
     :current-witness
     {:path "specs/runtime-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "2ec2989379d6c36ede87ea9462043cfa26b0bf4cbcf5672debe836dfdb4524d4",
      :source-span
@@ -77594,7 +77669,7 @@
     "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects",
     :current-witness
     {:path "specs/expand-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "8fad03dbc715b4ad517a5cd01d534c7f947b74d32fbb9c73f6cd84d545bdc1b9",
      :source-span
@@ -77611,9 +77686,9 @@
     "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects",
     :current-witness
     {:path "specs/build-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
-     "67c7be0da1537e54bc9ee3603a05f7c1d93dbcf69bfdbbe7dd56c76de416afc2",
+     "419706e9d2a780edf001f6390cb32dc4331d0338dbc6eafeea14479eb913d1c6",
      :source-span
      {:start-byte 4140,
       :end-byte 5077,
@@ -77623,21 +77698,38 @@
       "196930fafe9b3583bde6aadb69d3fb3f75beaa8cd1359dfdcdd993932ea72cb2"}},
     :status
     :author-proposed-whole-source-criterion-no-independent-acceptance}
+   {:key :cache-producer,
+    :task-id
+    "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+    :current-witness
+    {:path "specs/build-workflow/tasks.md",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
+     :sha256
+     "419706e9d2a780edf001f6390cb32dc4331d0338dbc6eafeea14479eb913d1c6",
+     :source-span
+     {:start-byte 14469,
+      :end-byte 15284,
+      :start-line 95,
+      :end-line 95,
+      :sha256
+      "d09a8a59960e4892f2071e73473588b7ededd5269643d779824ad994424e1cb4"}},
+    :status
+    :author-proposed-whole-source-criterion-no-independent-acceptance}
    {:key :cache,
     :task-id
     "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
     :current-witness
     {:path "specs/build-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
-     "67c7be0da1537e54bc9ee3603a05f7c1d93dbcf69bfdbbe7dd56c76de416afc2",
+     "419706e9d2a780edf001f6390cb32dc4331d0338dbc6eafeea14479eb913d1c6",
      :source-span
-     {:start-byte 26307,
-      :end-byte 27121,
-      :start-line 160,
-      :end-line 160,
+     {:start-byte 27464,
+      :end-byte 28588,
+      :start-line 168,
+      :end-line 168,
       :sha256
-      "03a6af4c8f690b0cab8559c8a64fdb617015f9f12981a2bcd992564ad6c19fd9"}},
+      "503d7c596f19bfb605bdd0b638a6437f8268679216ded5546b397f65096ecdb5"}},
     :status
     :author-proposed-whole-source-criterion-no-independent-acceptance}
    {:key :library,
@@ -77645,7 +77737,7 @@
     "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
     :current-witness
     {:path "specs/stdlib-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "cacd132df4463a45b4846a8b0b37391ea932a5ba3c2ef3c9e9e6c2100d8c7ed6",
      :source-span
@@ -78530,7 +78622,9 @@
     :target-compiler-default],
    :pure-value
    :capability-value-transport-not-provider-effect-or-grant-creation,
-   :existing-tasks 14,
+   :reproducibility-consumer
+   "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+   :existing-tasks 15,
    :finite-byte-witnesses 16,
    :diagnostics {:L15 11, :SAFE10 10, :R11 10},
    :runtime-initialization
@@ -78544,12 +78638,14 @@
     :profile
     :build-or-deployment-invocation
     :runtime-provider-scope],
-   :whole-source-clauses 16,
+   :whole-source-clauses 17,
    :original-owners 20,
    :compile-time-exception
    :recorded-replay-exception-does-not-waive-grants-isolation-or-exact-L6-L12-hermetic-premises,
    :type-owner
    :selected-existing-Types-interface-no-full-C7-adoption-or-publication-hold-change,
+   :cache-key-producer
+   "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
    :runtime-authority
    :existing-Schema25-Runtime5-consumer-with-Auth-gates-and-Legality-compiler-checks,
    :restored-witnesses 10,
@@ -78579,7 +78675,7 @@
     :package-mutation
     :observability],
    :distinct-finite-records 13},
-  :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
   :source-facets
   [{:role :retained-hierarchy-or-provenance-context,
     :census-kind :context,
@@ -78663,6 +78759,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -78700,6 +78797,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -78759,6 +78857,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -78796,6 +78895,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -78833,6 +78933,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -78870,6 +78971,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -78906,6 +79008,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -78943,6 +79046,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -78980,6 +79084,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -79037,6 +79142,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -79080,6 +79186,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -79123,6 +79230,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -79179,6 +79287,7 @@
      :runtime
      :expand
      :build
+     :cache-producer
      :cache
      :conformance],
     :current-entailment :proposal-pending-independent-review,
@@ -79209,6 +79318,7 @@
      :runtime
      :expand
      :build
+     :cache-producer
      :cache
      :conformance],
     :current-entailment :proposal-pending-independent-review,
@@ -79239,6 +79349,7 @@
      :runtime
      :expand
      :build
+     :cache-producer
      :cache
      :conformance],
     :current-entailment :proposal-pending-independent-review,
@@ -79269,6 +79380,7 @@
      :runtime
      :expand
      :build
+     :cache-producer
      :cache
      :conformance],
     :current-entailment :proposal-pending-independent-review,
@@ -79299,6 +79411,7 @@
      :runtime
      :expand
      :build
+     :cache-producer
      :cache
      :conformance],
     :current-entailment :proposal-pending-independent-review,
@@ -79328,6 +79441,7 @@
      :runtime
      :expand
      :build
+     :cache-producer
      :cache
      :conformance],
     :current-entailment :proposal-pending-independent-review,
@@ -79357,6 +79471,7 @@
      :runtime
      :expand
      :build
+     :cache-producer
      :cache
      :conformance],
     :current-entailment :proposal-pending-independent-review,
@@ -79387,6 +79502,7 @@
      :runtime
      :expand
      :build
+     :cache-producer
      :cache
      :conformance],
     :current-entailment :proposal-pending-independent-review,
@@ -79417,6 +79533,7 @@
      :runtime
      :expand
      :build
+     :cache-producer
      :cache
      :conformance],
     :current-entailment :proposal-pending-independent-review,
@@ -79447,6 +79564,7 @@
      :runtime
      :expand
      :build
+     :cache-producer
      :cache
      :conformance],
     :current-entailment :proposal-pending-independent-review,
@@ -80379,6 +80497,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -80416,6 +80535,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -80453,6 +80573,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -80489,6 +80610,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -80526,6 +80648,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -80583,6 +80706,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -80619,6 +80743,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -80656,6 +80781,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -80695,6 +80821,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -80735,6 +80862,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -80772,6 +80900,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -80812,6 +80941,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -80849,6 +80979,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -81006,6 +81137,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -81043,6 +81175,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -81100,6 +81233,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -81137,6 +81271,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -81174,6 +81309,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -81211,6 +81347,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -81268,6 +81405,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -81304,6 +81442,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -81340,6 +81479,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -81376,6 +81516,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -81412,6 +81553,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -81448,6 +81590,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -81484,6 +81627,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -81520,6 +81664,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -81556,6 +81701,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -81605,6 +81751,7 @@
      :runtime
      :expand
      :build
+     :cache-producer
      :cache
      :conformance],
     :current-entailment :proposal-pending-independent-review,
@@ -81635,6 +81782,7 @@
      :runtime
      :expand
      :build
+     :cache-producer
      :cache
      :conformance],
     :current-entailment :proposal-pending-independent-review,
@@ -81665,6 +81813,7 @@
      :runtime
      :expand
      :build
+     :cache-producer
      :cache
      :conformance],
     :current-entailment :proposal-pending-independent-review,
@@ -81695,6 +81844,7 @@
      :runtime
      :expand
      :build
+     :cache-producer
      :cache
      :conformance],
     :current-entailment :proposal-pending-independent-review,
@@ -81725,6 +81875,7 @@
      :runtime
      :expand
      :build
+     :cache-producer
      :cache
      :conformance],
     :current-entailment :proposal-pending-independent-review,
@@ -81756,6 +81907,7 @@
      :runtime
      :expand
      :build
+     :cache-producer
      :cache
      :conformance],
     :current-entailment :proposal-pending-independent-review,
@@ -81787,6 +81939,7 @@
      :runtime
      :expand
      :build
+     :cache-producer
      :cache
      :conformance],
     :current-entailment :proposal-pending-independent-review,
@@ -82718,7 +82871,13 @@
      :sha256
      "2cc043daf9f0baaa8b80a5afcfa317da76cd0579ff247d4652c96872c2b19c55"},
     :criterion-keys
-    [:declaration :trust :handoff :build :cache :conformance],
+    [:declaration
+     :trust
+     :handoff
+     :build
+     :cache-producer
+     :cache
+     :conformance],
     :current-entailment :proposal-pending-independent-review,
     :candidate-current-decision-ids [],
     :census-disposition
@@ -82740,7 +82899,13 @@
      :sha256
      "588a63dd3ec494087871763ec2fa0aa7756723e1d41a37ae29d4e2c70dfe66fe"},
     :criterion-keys
-    [:declaration :trust :handoff :build :cache :conformance],
+    [:declaration
+     :trust
+     :handoff
+     :build
+     :cache-producer
+     :cache
+     :conformance],
     :current-entailment :proposal-pending-independent-review,
     :candidate-current-decision-ids [],
     :census-disposition
@@ -82762,7 +82927,13 @@
      :sha256
      "0e4d7654fdba9af5cb15890c601b5be23e06598606dddaeef8f911f8f49fc9bb"},
     :criterion-keys
-    [:declaration :trust :handoff :build :cache :conformance],
+    [:declaration
+     :trust
+     :handoff
+     :build
+     :cache-producer
+     :cache
+     :conformance],
     :current-entailment :proposal-pending-independent-review,
     :candidate-current-decision-ids [],
     :census-disposition
@@ -82784,7 +82955,13 @@
      :sha256
      "ded989a4abe5ca1222bcbc5bd4771afb9b3452d59ec4293f9185ef787179da97"},
     :criterion-keys
-    [:declaration :trust :handoff :build :cache :conformance],
+    [:declaration
+     :trust
+     :handoff
+     :build
+     :cache-producer
+     :cache
+     :conformance],
     :current-entailment :proposal-pending-independent-review,
     :candidate-current-decision-ids [],
     :census-disposition
@@ -82806,7 +82983,13 @@
      :sha256
      "79e43e073fe3f80673014b980e13b24e9fb47d7c6821b89fc70b1ba77b4a6c9e"},
     :criterion-keys
-    [:declaration :trust :handoff :build :cache :conformance],
+    [:declaration
+     :trust
+     :handoff
+     :build
+     :cache-producer
+     :cache
+     :conformance],
     :current-entailment :proposal-pending-independent-review,
     :candidate-current-decision-ids [],
     :census-disposition
@@ -83522,6 +83705,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -83559,6 +83743,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -83596,6 +83781,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -83633,6 +83819,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -83670,6 +83857,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -83727,6 +83915,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -83763,6 +83952,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -83800,6 +83990,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -83837,6 +84028,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -83874,6 +84066,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -83912,6 +84105,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -83949,6 +84143,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -83986,6 +84181,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -84025,6 +84221,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -84123,6 +84320,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -84173,6 +84371,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -84243,6 +84442,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -84280,6 +84480,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -84317,6 +84518,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -84354,6 +84556,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -84391,6 +84594,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -84428,6 +84632,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -84465,6 +84670,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -84522,6 +84728,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -84571,6 +84778,7 @@
      :runtime
      :expand
      :build
+     :cache-producer
      :cache
      :conformance],
     :current-entailment :proposal-pending-independent-review,
@@ -85549,6 +85757,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -85599,6 +85808,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -85649,6 +85859,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -85699,6 +85910,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -85749,6 +85961,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -85799,6 +86012,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -85869,6 +86083,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -85919,6 +86134,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :current-entailment :proposal-pending-independent-review,
@@ -85949,6 +86165,7 @@
     :document-id "SAFE10"}],
   :markers
   {:handoff "authority-source-handoff",
+   :cache-producer "authority-source-cache-producer",
    :conformance "authority-source-conformance",
    :startup "authority-source-startup",
    :secrets "authority-source-secrets",
@@ -85971,6 +86188,7 @@
    "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"
    "auth/remaining-tasks-and-evidence/publish-conformance-and-remaining-trust-assumptions"
    "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"
+   "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"
    "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix"
    "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects"
    "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
@@ -86002,6 +86220,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :qualification
@@ -86043,6 +86262,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :qualification
@@ -86107,6 +86327,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :qualification
@@ -86134,6 +86355,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :qualification
@@ -86156,6 +86378,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :qualification
@@ -86185,7 +86408,13 @@
      "L15/source/2db2ef20c057feed2ca451e0edb54d740d713665d6c3fe3dd4bcbafe111fd142"
      "L15/source/00ee3252e341063b8ceab93d244de5b919f12272f99147a073934d48c96ffc3f"],
     :criterion-keys
-    [:declaration :trust :handoff :build :cache :conformance],
+    [:declaration
+     :trust
+     :handoff
+     :build
+     :cache-producer
+     :cache
+     :conformance],
     :qualification
     :whole-section-preamble-list-example-and-following-conditions-required},
    ["SAFE10" "Conformance Criteria"]
@@ -86207,6 +86436,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :qualification
@@ -86238,6 +86468,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :qualification
@@ -86289,6 +86520,7 @@
      :runtime
      :expand
      :build
+     :cache-producer
      :cache
      :conformance],
     :qualification
@@ -86344,6 +86576,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :qualification
@@ -86366,6 +86599,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :qualification
@@ -86389,6 +86623,7 @@
      :runtime
      :expand
      :build
+     :cache-producer
      :cache
      :conformance],
     :qualification
@@ -86412,6 +86647,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :qualification
@@ -86470,6 +86706,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :qualification
@@ -86496,6 +86733,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :qualification
@@ -86518,6 +86756,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :qualification
@@ -86533,6 +86772,7 @@
      :runtime
      :expand
      :build
+     :cache-producer
      :cache
      :conformance],
     :qualification
@@ -86590,6 +86830,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :qualification
@@ -86613,6 +86854,7 @@
      :replay
      :expand
      :build
+     :cache-producer
      :cache
      :library],
     :qualification
@@ -87029,7 +87271,7 @@
     :qualified-source "893bb4b85926a9d7f8953798544b2126baf6ef58"}},
   :global-source-conjunctions :unassessed,
   :qualification
-  "Complete L15/SAFE10/R11 conjunctions refine sixteen clauses in fourteen existing tasks across six authorities, preserving278 facets,181 occurrences,20 original owners and16 byte witnesses for13 finite records. Restore ten missing witnesses and retain six already exact; preserve the no-facet Runtime/Schema strengthening and current deployment consumer qualification. Provider selection, actual grants, compiler safety, startup and service action enforcement remain distinct. Profile74/safety107/schema25 finite reviews stay frozen without renewal; Runtime20 current composition remains pending. Retain model-cost source bytes and all other scope/retention/evaluation predicates while project accounting stays removed and actual external billing remains separate. Actual current conformance, independent source/interface review and all-project entailment remain unassessed. No task/status/hold/review/integration authority changes, no C7/C12 adoption, private-store/signing/publication/provider execution, preserved aggregate publication or stopped handoff retry/transfer.",
+  "Complete L15/SAFE10/R11 conjunctions refine seventeen clauses in fifteen existing tasks across six authorities, preserving278 facets,181 occurrences,20 original owners and16 byte witnesses for13 finite records. Restore ten missing witnesses and retain six already exact; preserve the no-facet Runtime/Schema strengthening and current deployment consumer qualification. Provider selection, actual grants, compiler safety, startup and service action enforcement remain distinct. Profile74/safety107/schema25 finite reviews stay frozen without renewal; Runtime20 current composition remains pending. Retain model-cost source bytes and all other scope/retention/evaluation predicates while project accounting stays removed and actual external billing remains separate. Actual current conformance, independent source/interface review and all-project entailment remain unassessed. No task/status/hold/review/integration authority changes, no C7/C12 adoption, private-store/signing/publication/provider execution, preserved aggregate publication or stopped handoff retry/transfer.",
   :source-census
   {:path
    "specs/requirement-reconciliation/all240-current-source-facet-inventory.edn",
@@ -87112,7 +87354,7 @@
     :id "interface/language/effects/authorize-and-record-build-effect",
     :current-witness
     {:path "specs/expand-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "8fad03dbc715b4ad517a5cd01d534c7f947b74d32fbb9c73f6cd84d545bdc1b9",
      :source-span
@@ -87153,7 +87395,7 @@
     :id "interface/language/provider/initialize-runtime-contract",
     :current-witness
     {:path "specs/runtime-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "2ec2989379d6c36ede87ea9462043cfa26b0bf4cbcf5672debe836dfdb4524d4",
      :source-span
@@ -87194,7 +87436,7 @@
     :id "interface/safety/safe10/ambient-policy",
     :current-witness
     {:path "specs/auth-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "5cf7bbfd8163d5735929492ef3a47d883051f0e6dea69acb6340b70c21093365",
      :source-span
@@ -87235,7 +87477,7 @@
     :id "interface/safety/safe10/attenuation",
     :current-witness
     {:path "specs/auth-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "5cf7bbfd8163d5735929492ef3a47d883051f0e6dea69acb6340b70c21093365",
      :source-span
@@ -87276,7 +87518,7 @@
     :id "interface/safety/safe10/grant-intersection",
     :current-witness
     {:path "specs/auth-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "5cf7bbfd8163d5735929492ef3a47d883051f0e6dea69acb6340b70c21093365",
      :source-span
@@ -87317,7 +87559,7 @@
     :id "interface/safety/safe10/revocation",
     :current-witness
     {:path "specs/auth-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "5cf7bbfd8163d5735929492ef3a47d883051f0e6dea69acb6340b70c21093365",
      :source-span
@@ -87358,7 +87600,7 @@
     :id "interface/safety/safe10/scope-denial",
     :current-witness
     {:path "specs/auth-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "5cf7bbfd8163d5735929492ef3a47d883051f0e6dea69acb6340b70c21093365",
      :source-span
@@ -87399,7 +87641,7 @@
     :id "interface/safety/safe10/secret-phase",
     :current-witness
     {:path "specs/auth-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "5cf7bbfd8163d5735929492ef3a47d883051f0e6dea69acb6340b70c21093365",
      :source-span
@@ -87440,7 +87682,7 @@
     :id "interface/runtime/durable-effect-replay",
     :current-witness
     {:path "specs/runtime-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "2ec2989379d6c36ede87ea9462043cfa26b0bf4cbcf5672debe836dfdb4524d4",
      :source-span
@@ -87481,7 +87723,7 @@
     :id "interface/runtime/policy-safe-observation",
     :current-witness
     {:path "specs/runtime-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "2ec2989379d6c36ede87ea9462043cfa26b0bf4cbcf5672debe836dfdb4524d4",
      :source-span
@@ -87522,7 +87764,7 @@
     :id "interface/runtime/service-policy-enforcement",
     :current-witness
     {:path "specs/runtime-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "2ec2989379d6c36ede87ea9462043cfa26b0bf4cbcf5672debe836dfdb4524d4",
      :source-span
@@ -87563,7 +87805,7 @@
     :id "interface/runtime/service-policy-enforcement",
     :current-witness
     {:path "specs/runtime-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "2ec2989379d6c36ede87ea9462043cfa26b0bf4cbcf5672debe836dfdb4524d4",
      :source-span
@@ -87604,7 +87846,7 @@
     :id "interface/runtime/service-policy-enforcement",
     :current-witness
     {:path "specs/runtime-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "2ec2989379d6c36ede87ea9462043cfa26b0bf4cbcf5672debe836dfdb4524d4",
      :source-span
@@ -87645,7 +87887,7 @@
     :id "interface/runtime/service-policy-enforcement",
     :current-witness
     {:path "specs/runtime-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "2ec2989379d6c36ede87ea9462043cfa26b0bf4cbcf5672debe836dfdb4524d4",
      :source-span
@@ -87686,7 +87928,7 @@
     :id "decision/runtime-schema-safe10-strengthening",
     :current-witness
     {:path "specs/auth-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "5cf7bbfd8163d5735929492ef3a47d883051f0e6dea69acb6340b70c21093365",
      :source-span
@@ -87727,7 +87969,7 @@
     :id "interface/safety/safe10/runtime-authority",
     :current-witness
     {:path "specs/runtime-workflow/tasks.md",
-     :source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+     :source-commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "2ec2989379d6c36ede87ea9462043cfa26b0bf4cbcf5672debe836dfdb4524d4",
      :source-span
@@ -87793,9 +88035,9 @@
      "fd0eec2a4128bb2a2f30bff46dd1922bd1c3937d3139ff9826d28657cc22161f",
      :kind :source-inspection-not-execution},
     :after
-    {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+    {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
-     "ae2c0933e95288583f6b96ad8159da4fb675a12719240c9ee6bd61257e495bf1",
+     "3849ac7576221019a6afc23fe72d26f1699403e624f8980c9a64a0be1cfaa422",
      :kind :source-inspection-not-execution}}
    {:path "specs/runtime-workflow/plan.md",
     :before
@@ -87804,7 +88046,7 @@
      "d1a8310b232989e63d94f456e503f47f9c4e9efabb7622312aa92b7a0f512869",
      :kind :source-inspection-not-execution},
     :after
-    {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+    {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "60f7a896118946bfe7f2ae2d08a34f302c670647d2266acd1d5a7c27f4d0c66b",
      :kind :source-inspection-not-execution}}
@@ -87815,7 +88057,7 @@
      "206c64bfed7e359db13fc3cc78611e0dd3d9813da7aa75a2a942bb5a4c93dfef",
      :kind :source-inspection-not-execution},
     :after
-    {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+    {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "3ecb9a868982e40406737b191428ccf8fd43569554ae223a1de8df62574d880f",
      :kind :source-inspection-not-execution}}
@@ -87826,7 +88068,7 @@
      "6eada28b4a818b70f5a0556d30bb0e16e434ab240b8a6cf0cab7d28600f8598d",
      :kind :source-inspection-not-execution},
     :after
-    {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+    {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "dca64606792fe9fa439a9759c45130213189655efcb50fc16a928f069e72324e",
      :kind :source-inspection-not-execution}}
@@ -87837,9 +88079,9 @@
      "f7918ef386b1e87561348931b9986aa19792eccdab489b26ee967d397be0e7fc",
      :kind :source-inspection-not-execution},
     :after
-    {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+    {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
-     "d764eb1602a65f0b69c46eee3a81e091c10eb82adad52be8547da43b7a632c96",
+     "05b2e313db98902b99cda6d9b04ab82f9bb3b787118d7a8160b30ea2f97e52ed",
      :kind :source-inspection-not-execution}}
    {:path "specs/stdlib-workflow/plan.md",
     :before
@@ -87848,7 +88090,7 @@
      "3a109cead101b798e5786c1e8c9f829e719550ff03f52ac354561c223f83db5d",
      :kind :source-inspection-not-execution},
     :after
-    {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+    {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "be73974d95559c8ec173bee18b94263ffb5e7a38682473b7ca7bf6632c150a5d",
      :kind :source-inspection-not-execution}}
@@ -87859,7 +88101,7 @@
      "09721876f09e06b53168adb6f6b9eebb6f451a41acaec2cf828354085bc60170",
      :kind :source-inspection-not-execution},
     :after
-    {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+    {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "2c88faf4a2a33b941de04833f5acf59180f35140c402b1d3c36cb8b67e6c6bd4",
      :kind :source-inspection-not-execution}}
@@ -87870,7 +88112,7 @@
      "a813ac0e0734726b7830e46c9e817805712c82fc4871d8dc1a33c56f69e21a64",
      :kind :source-inspection-not-execution},
     :after
-    {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+    {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "3b8b1cb992f14e56eeb5413a2a36575cb79170c6f6daed1575b291fdf239c21f",
      :kind :source-inspection-not-execution}}
@@ -87881,7 +88123,7 @@
      "0955ed9ef2a79d7a57ac21a8b31bddd3c4eb843d5e8de1e8063dddff2427283e",
      :kind :source-inspection-not-execution},
     :after
-    {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+    {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "b3842cc22ebde9d167a66effc507025b06cab4c1f2944d4aaf4c3050396a9d3d",
      :kind :source-inspection-not-execution}}
@@ -87892,7 +88134,7 @@
      "21c32bca9d8a5053d8dad3fc71520dc1700f9120b1cf5592f6a78aea99b91d51",
      :kind :source-inspection-not-execution},
     :after
-    {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+    {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "377fe1ebfa407643b0a69c9fa1a11b9eb4d5a8ef98af69ae154151e34bc02f93",
      :kind :source-inspection-not-execution}}
@@ -87903,7 +88145,7 @@
      "f4b61e7516561e7e4ae27ae32faf0b1fe8ee1e51f3c5c21e9b54c2a64234690b",
      :kind :source-inspection-not-execution},
     :after
-    {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+    {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "fb289edd31fe4f08c7058258ba6149eaed564399d848f5d839930db7ff1c0f75",
      :kind :source-inspection-not-execution}}
@@ -87914,7 +88156,7 @@
      "292ebf732ba3b2306adf0a91c4c9228bf0fb6c63c33ab185b8b4ecb5f258e3f4",
      :kind :source-inspection-not-execution},
     :after
-    {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+    {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "074b74ffe429eb965ea9270f829be263c8bd5eb49310af25a12a5b8b21c367a0",
      :kind :source-inspection-not-execution}}
@@ -87925,7 +88167,7 @@
      "6f353a4c517e6412b83c8bbfbd5898025501fccebae0e0fa0dcec4d3c6d9ee07",
      :kind :source-inspection-not-execution},
     :after
-    {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+    {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "3bb2b397868a45173c07bae7280223987a2000f566493a436ca26cf8188b1b3f",
      :kind :source-inspection-not-execution}}],
@@ -87936,7 +88178,7 @@
      :sha256
      "aa8fb3f0537a9e32e19d1f7f72abf7b40d2ae2ae2dd3d9154c5be6c93dbab965"},
     :after
-    {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+    {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "5cf7bbfd8163d5735929492ef3a47d883051f0e6dea69acb6340b70c21093365"}}
    {:path "specs/build-workflow/tasks.md",
@@ -87945,16 +88187,16 @@
      :sha256
      "4278f904693ba87e994b082a8272d8b7c7cbfbe40dc60b1c5c9299dd173780d3"},
     :after
-    {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+    {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
-     "67c7be0da1537e54bc9ee3603a05f7c1d93dbcf69bfdbbe7dd56c76de416afc2"}}
+     "419706e9d2a780edf001f6390cb32dc4331d0338dbc6eafeea14479eb913d1c6"}}
    {:path "specs/expand-workflow/tasks.md",
     :before
     {:commit "5ea0927faa58b3ed0b1207c5655f630268c1ae3e",
      :sha256
      "e5b0490a4816aa490f5a781ae4276eaec93c211736aceebfa26e91c64cc987f6"},
     :after
-    {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+    {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "8fad03dbc715b4ad517a5cd01d534c7f947b74d32fbb9c73f6cd84d545bdc1b9"}}
    {:path "specs/legality-workflow/tasks.md",
@@ -87963,7 +88205,7 @@
      :sha256
      "28b214e5b6fd0bd700e109c309ebb4bff7c9b457a78f073cb8277bdd01d7bd0a"},
     :after
-    {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+    {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "f344127846714a6824ca4a1f3cb045def4091ec350c9597f7eede7793543e572"}}
    {:path "specs/runtime-workflow/tasks.md",
@@ -87972,7 +88214,7 @@
      :sha256
      "df3d3701e34416d8ebbcf405d67a79c33014dc40ae9a8c7a0a706cb2e9d973e5"},
     :after
-    {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+    {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "2ec2989379d6c36ede87ea9462043cfa26b0bf4cbcf5672debe836dfdb4524d4"}}
    {:path "specs/stdlib-workflow/tasks.md",
@@ -87981,9 +88223,12 @@
      :sha256
      "c81a8537902357faadafba3a174cbbcdc9c61fb22cd6133bfd19d138f4c3f781"},
     :after
-    {:commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+    {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
      :sha256
      "cacd132df4463a45b4846a8b0b37391ea932a5ba3c2ef3c9e9e6c2100d8c7ed6"}}],
+  :initial-source-commit "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  :source-clarification-commits
+  ["d2812996f4433e2102daacff9c5f7b3194a0b5e9"],
   :implementation-acceptance :unassessed},
  :status :pending-independent-source-version-and-composition-review,
  :memory-dependency-refinement
@@ -97895,11 +98140,11 @@
  {"specs/mir-workflow/plan.md"
   "15c5a0a64d782c9b592648dc77726dd0837ac74a",
   "specs/lower-workflow/plan.md"
-  "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
   "specs/release-workflow/tasks.md"
   "be099c84b68e17e171e67905de64c9053226a083",
   "specs/stdlib-workflow/tasks.md"
-  "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
   "docs/component-roadmaps/build.md"
   "69831d09bc2007844265968b265c493cf064bdf9",
   "docs/component-roadmaps/README.md"
@@ -97925,53 +98170,53 @@
   "docs/component-roadmaps/compiler-api.md"
   "69831d09bc2007844265968b265c493cf064bdf9",
   "specs/release-workflow/plan.md"
-  "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
   "specs/platform-workflow/plan.md"
   "15c5a0a64d782c9b592648dc77726dd0837ac74a",
   "docs/full-language-implementation-gap-map.md"
   "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
   "specs/expand-workflow/tasks.md"
-  "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
   "specs/runtime-workflow/plan.md"
-  "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
   "docs/phase-05-mathematical-and-elementary-function-system/README.md"
   "697917447d70ba0797a096d9427d4706bf5515df",
   "specs/evolution-workflow/plan.md"
-  "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
   "specs/effects-workflow/tasks.md"
   "480b2ebed8199ed1489b7f5bf871883e6a191403",
   "specs/types-workflow/plan.md"
-  "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
   "specs/domains-workflow/plan.md"
-  "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
   "specs/build-workflow/tasks.md"
-  "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
   "specs/diag-workflow/plan.md"
-  "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
   "specs/cli-workflow/plan.md"
   "ae9d37bb3e43cc8148319b9fd315366804be80e1",
   "specs/legality-workflow/spec.md"
-  "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
   "specs/compiler-api-workflow/tasks.md"
   "0e1cec28f43d2902032b1786af08f7aa17af8107",
   "specs/backends-workflow/spec.md"
   "480b2ebed8199ed1489b7f5bf871883e6a191403",
   "specs/auth-workflow/tasks.md"
-  "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
   "specs/runtime-workflow/tasks.md"
-  "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
   "specs/auth-workflow/plan.md"
-  "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
   "specs/build-workflow/plan.md"
-  "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
   "specs/auth-workflow/spec.md"
-  "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
   "specs/effects-workflow/plan.md"
-  "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
   "specs/opt-workflow/plan.md"
   "0e1cec28f43d2902032b1786af08f7aa17af8107",
   "specs/stdlib-workflow/plan.md"
-  "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
   "specs/tools-workflow/tasks.md"
   "e52c1505b762b8c316a5b7dbba302c54552d0b07",
   "specs/resolve-workflow/tasks.md"
@@ -97979,13 +98224,13 @@
   "specs/effects-workflow/spec.md"
   "a60517246473213ed0930a181f56675218586409",
   "specs/legality-workflow/tasks.md"
-  "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
   "specs/syntax-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9",
   "specs/types-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9",
   "specs/legality-workflow/plan.md"
-  "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
   "specs/backends-workflow/plan.md"
   "15c5a0a64d782c9b592648dc77726dd0837ac74a",
   "specs/domains-workflow/tasks.md"
@@ -97995,7 +98240,7 @@
   "docs/acceptance-dependencies.md"
   "15c5a0a64d782c9b592648dc77726dd0837ac74a",
   "specs/runtime-workflow/spec.md"
-  "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
   "specs/platform-workflow/tasks.md"
   "0876063f41e2ad3e13f3c332f4877daecb62b45d",
   "specs/backends-workflow/tasks.md"
@@ -98003,7 +98248,7 @@
   "specs/evolution-workflow/tasks.md"
   "b69133db3237dc47c5fce321763ae4a3b0532cc4",
   "specs/expand-workflow/plan.md"
-  "9a12cb86cf89d2572c7c43df3c52714d5bf99774",
+  "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
   "specs/lower-workflow/tasks.md"
   "480b2ebed8199ed1489b7f5bf871883e6a191403",
   "specs/cli-workflow/tasks.md"
@@ -109623,4 +109868,4 @@
   :newly-amended-original-task-ids [],
   :implementation-acceptance :unassessed},
  :input-fingerprint
- "3cd46d1bea3e08c0ff1a1648fa4aab74fb10d5814b4e8248a5861fc4c9d4c124"}
+ "70b36281f3c69514ee55fdb65cba882c216104a11cdc65374c11ecee930d614e"}
