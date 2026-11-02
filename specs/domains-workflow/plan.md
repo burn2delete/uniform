@@ -351,8 +351,9 @@ Use the task preamble's existing Schema decision-role references: emission,
 operation checking, migration authority/validation and actual handler contract
 execution remain distinct roles. Do not normalize an older criterion label
 into a whole-task alias or let one HTTP test discharge the multi-consumer C6
-conjunction. Current parent-criterion and cross-component joins remain explicit
-remaining composition work.
+conjunction. Current source conjunctions and producer/consumer allocation review
+remain explicit work. The dependency projection below records declared artifact
+joins; it does not accept their implementation or current semantic entailment.
 
 ## Math parent composition
 
@@ -454,6 +455,36 @@ where applicable and invalidation of changed schema/version/target/provider
 subjects. Reuse the existing evidence record. Resuming four criterion bodies
 and verifying source bytes confers neither semantic entailment nor execution
 acceptance; no source, provider, Runtime or held C12 operation is run here.
+
+## Math and Schema dependency projection
+
+Use the existing
+[dependency declarations](../../docs/acceptance-dependencies.md#math-output-dependencies-and-schema-staging)
+and exact captured task bodies, rather than another task list. The seven future
+Math/Schema consumers and the parent's independent-verdict consumer now have
+declared artifact joins. The checker derives the 48 existing Math criteria's
+literal output prerequisites, retaining each complete criterion span, output
+declaration, canonical MATH identity and external input contract. Those facts
+remain in their original six task authorities; they are not new tasks or passes.
+
+Follow verified numeric/mode/EFIR facts into untrusted candidates, traces,
+partitions and ledgers, then independently check the exact selected claim before
+promotion, extraction, selection or elision. Retain coarse producer/checker
+backedges and the separate output order. Applicable proof methods are selected
+per claim; neither a search pass nor a task checkbox can certify the result.
+General compiler/target/provider facts and full prose, foundation/profile/safety
+conjunctions remain required beyond the literal Math dependency declarations.
+
+For Schema, generate the exact candidate projection from S1-S3 contracts, compare
+old/new source and consumer versions, then consume the checked compatibility/
+migration decision at the actual handler, transaction, FFI, reload or evidence
+boundary. Keep the projection/compatibility backedge visible. Reuse versioned
+interfaces for independent development, preserving Lower layout, STD10 codec,
+Runtime execution and Release decision roles. The later C6 amendment and current
+repartition review remain qualified. All outputs are execution-unassessed, and
+the thirteen Release suite/seed joins and future SH/full-language composition
+remain pending their actual owning work. No component implementation body,
+checkbox, source pin, receipt or execution hold changes here.
 
 ## Historical workflow-transfer plan
 

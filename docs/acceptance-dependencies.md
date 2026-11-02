@@ -166,8 +166,9 @@ editable component task file, source pin, literal ID, checkbox and full closing
 evidence. Capturing these records does not add SH criteria, route keys or
 accepted evidence. A changed, missing or duplicated body invalidates this view.
 
-The following declarations formalize the nine wider Domain tasks' explicit
-`Dependencies consume` clauses and the eleven Platform Product records together
+The following declarations formalize the wider Domain tasks' explicit
+`Dependencies consume` clauses, the Math/Schema producer and checker boundaries,
+the Math parent's independent-verdict consumer, and the Platform Product records together
 with [their existing composition plan](../specs/platform-workflow/plan.md#product-decision-and-implementation-order).
 They are dependency declarations, not another task/status ledger. Full task IDs
 are literal; `none` means this table declares no prerequisite at that boundary.
@@ -196,6 +197,14 @@ and grants no platform, provider, device or publication permission.
 | `simulation` | none | `math`, `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries` | Selected numeric/rounding contracts and actual runtime boundary behavior for deterministic simulation. |
 | `storage` | none | `schema`, `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries` | Checked durable data contracts and actual ownership/FFI execution with recovery and failure cases. |
 | `visual` | none | `workflow`, `schema`, `ui` | Checked visual/schema mappings and actual workflow/UI operations; visual graph construction alone is insufficient. |
+| `math` | none | `math/independent-proof-and-certificate-checking` | Proof-dependent equality, normalization, transforms, provider use and conformance consume the exact independently checked claim/certificate/verdict; numeric-family declarations alone do not require a completed checker. |
+| `math/eml-normalization-and-search` | none | `math`, `math/symbolic-rule-and-trace-production`, `math/independent-proof-and-certificate-checking` | Verified EFIR, numeric mode and guarded rule facts feed candidates/traces; promotion consumes the applicable exact accepted proof or bounded certificate and independent replay. |
+| `math/certified-implementation-synthesis` | none | `math`, `math/interval-and-real-proof-production`, `math/independent-proof-and-certificate-checking` | Verified EFIR/mode/floating eligibility and separate real/roundoff ledgers feed executable candidates and certificates; independent exact-subject checking precedes accepted ranking/selection. |
+| `math/interval-and-real-proof-production` | none | `math`, `math/independent-proof-and-certificate-checking` | Verified EFIR/mode feeds pending claims and exact domains/partitions/ledgers; allowed residual checks consume independent partition replay, preserving unresolved cells and failure behavior. |
+| `math/symbolic-rule-and-trace-production` | none | `math`, `math/independent-proof-and-certificate-checking` | EFIR identity, numeric/proof policy and exact independent verdicts feed rule promotion, guarded rewrite and extraction; registration and candidate trace production precede accepted use. |
+| `math/independent-proof-and-certificate-checking` | none | `math`, `math/eml-normalization-and-search`, `math/certified-implementation-synthesis`, `math/interval-and-real-proof-production`, `math/symbolic-rule-and-trace-production`, `pass-evidence`, `formal`, `opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors` | Independently check the selected actual EFIR/claim/candidate/certificate, EML/symbolic trace or partition with exact assumptions/trust/target/invalidation; these proof methods are applicable alternatives, not a demand for every method on every claim. |
+| `schema/compatibility-and-migration` | none | `schema`, `schema/checked-consumer-projection`, `query`, `backend-query`, `runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution`, `auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime` | Actual old/new source and affected projection contracts feed semantic diffs and checked plans; actual granted migration/reload transitions supply result, state, rollback/loss, lifecycle and replay evidence. |
+| `schema/checked-consumer-projection` | none | `schema`, `schema/compatibility-and-migration`, `pipeline`, `types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit`, `lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout`, `emit/current-evidence-and-remaining-work/emit2-emit-real-outputs`, `query`, `backend-query`, `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries`, `runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution`, `runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration`, `stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`, `auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`, `auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity`, `pass-evidence`, `release/remaining-tasks-and-evidence/execute-formal-evidence-checks`, `release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance` | Same-source generated API/database/ABI/config/artifact products consume applicable checked compatibility/migration and real compiler/handler/FFI/reload/evidence-consumer outputs. Layout, STD10 codec consumption, Runtime call/callback and actual release decisions remain distinct. |
 | `platform-product/adopt-hardware-contract` | none | none | Reviewed ISA/alternative, device model, simulator and executable workloads; hardware architect remains unassigned. |
 | `platform-product/adopt-kernel-contract` | none | none | Reviewed boot, memory, scheduling, IPC, service and driver interfaces; OS architect remains unassigned. |
 | `platform-product/adopt-application-contract` | none | none | Named end-user workloads and accepted/rejected cases; product owner remains unassigned. |
@@ -209,12 +218,10 @@ and grants no platform, provider, device or publication permission.
 | `platform-product/distribute-product` | none | `platform-product/integrate-execution`, `platform-product/adopt-physical-boundary` | Reproducible distribution of the actual integrated stack; physical deliverable/bring-up only where adopted. |
 <!-- future-composition-dependencies:end -->
 
-These twenty declarations are a partial dependency review. The seven future
-Math/Schema tasks and thirteen Release testing/seed tasks retain their complete
-source clauses but are explicitly reported as unresolved dependency joins.
-Math criterion IDs such as `math/efir-verification` are output facts, not new
-task IDs; they need exact producer/consumer allocation, including independent
-checker backedges. Release suite execution needs selected actual subject/oracle
+These declarations cover twenty-seven future consumers and the existing Math
+parent, with source/routing review still pending. The thirteen Release testing/
+seed tasks retain their complete source clauses and are explicitly reported as
+unresolved dependency joins. Release suite execution needs selected actual subject/oracle
 interfaces, followed separately by stage comparison, intermediate admission
 and final release. No empty adjacency may label those joins complete.
 
@@ -226,6 +233,52 @@ project scope still retains those outcomes. Future-to-SH and full-language
 finish-line joins, source conjunction review, independent acceptance and
 integration remain pending. Existing full-language SCCs and final proof gates
 are unchanged by this table.
+
+### Math output dependencies and Schema staging
+
+The checker derives forty-eight existing `math/*` criterion outputs directly
+from the exact captured bodies of the Math parent and its five future Math
+tasks. For each it preserves the full source-bound criterion, canonical MATH
+identity, output declaration, literal `Dependencies:` clause and unchanged
+external input contract. Every named Math dependency must resolve to exactly
+one criterion in its existing task. Unknown, duplicated or malformed declarations
+reject. These are output facts, not forty-eight new tasks or accepted features.
+The projection connects cross-task selected results to their exact named output
+inputs and reports both the detailed output graph and coarse task backedges.
+It does not infer semantic coverage from those edges or clear pending review.
+
+Verified EFIR and explicit numeric facts permit untrusted EML, approximation,
+interval and symbolic candidates to be produced before any proof-dependent use.
+The independent checker consumes exact recorded candidate/trace/partition inputs;
+it cannot trust a producer's pass flag, assume the conclusion or rerun heuristic
+search as proof replay. The parent's equality and transform gates consume the
+applicable accepted verdict before normalization, extraction, selection or check
+elision. A claim chooses a method allowed by D9/MATH5/MATH6/SAFE15; the dependency
+declaration does not require all symbolic, interval, SMT and approximation
+methods for each claim. The four literal checker criteria and its full MATH5/
+MATH10 certificate contract remain one checker authority. The older parent
+checker allocation stays qualified for current repartition review.
+
+The detailed literal Math output graph exposes which input facts precede each
+operation. Its acyclicity does not prove that every prose dependency has been
+formalized: independent certificate use, general compiler facts, target/provider
+execution, foundation/profile/safety clauses and full conformance remain explicit
+task contracts and selected-output obligations. Current accounting removal still
+supersedes historical compiler fuel, candidate/depth/iteration allowances and
+quota-only refusals. Preserve numeric error, domain, branch, outward rounding,
+target representability and actual host/provider constraints.
+
+Schema's coarse projection/compatibility backedge also remains visible. S1
+source validators and S2/S3/S7 contracts permit an initial typed projection
+candidate without a migration verdict. Compatibility consumes that exact old/new
+projection pair, then produces the checked diff and applicable migration or
+reload plan. Actual generated consumers, migration execution or reload use the
+matching checked policy/result and declared Runtime authority. S7 layout stays
+with Lower, codecs with their STD10/Schema boundary and actual call/callback
+checking with Runtime. S9 validates the exact evidence graph and required checker
+results; its gate grants no publication authority. The complete inherited C6
+consumer conjunction remains required, with its later source amendment and
+current independent review qualification preserved.
 
 ## SH acceptance to Spec Kit task projection
 

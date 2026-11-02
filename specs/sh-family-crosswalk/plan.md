@@ -227,3 +227,29 @@ literal table syntax, known consumers/producers, duplicate/malformed/unknown
 references, missing populations, source tampering, advisory frontier behavior,
 and preservation of selected-result versus whole-task boundaries. Source review,
 actual implementation, independent acceptance and integration remain separate.
+
+## Math and Schema output dependency continuation
+
+Preserve the complete future-task checkpoint and fingerprint before extending
+the same dependency declarations to seven Math/Schema consumers and the existing
+Math parent's independent-verdict boundary. Advance only the dependency
+document's current applying version; the 149 current and forty future task
+bodies, task-file pins, statuses, SH routes and receipts remain unchanged.
+
+Derive all 48 existing literal Math output criteria, their exact spans and
+67 named prerequisites from captured source, including 28 joins between existing
+tasks. Require every named output to have one owner. Reject absent/malformed/
+duplicate/unknown output declarations and preserve the unchanged external input
+contract. Connect selected producer results to exact named outputs; never
+interpret a whole parent task checkbox as satisfying one of them. Expose coarse
+Math checker and Schema projection/compatibility cycles, retaining the declared
+artifact staging and per-claim proof alternatives. All resulting facts remain
+execution/review-unassessed. Do not infer full prose coverage from the literal
+output DAG or force every proof technique on every claim.
+
+Check source-span/UTF8/hash reconstruction, criterion ownership, accepted/rejected
+dependency syntax, changed assumptions and exact candidate-before-checker-before-
+use boundaries. Preserve historical checkpoint tests against their frozen source
+versions and add current successor tests. Record actual validation in the existing
+evidence/report, leaving Release's thirteen joins, future SH/full-language links,
+global conjunctions, independent review and integration pending.
