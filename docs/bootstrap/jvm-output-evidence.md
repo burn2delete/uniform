@@ -184,15 +184,27 @@ The C evidence records the retained adversarial nonpass and correction. The
 corrected exact union requires renewed review and its own CI/artifact/preflight
 gates; prior 90bfa54c checks and acceptance do not transfer.
 
-## Current regression-main composition
+## Current integration composition
 
-Base c8a67ad6f6eda914a60f883a45d2de2a77ce00b3, tree
-7cf36b5ebaef9125ab62776dbfa2ac8b6f26c681, adds only SH-08 regression
-coverage. Source ea3d5633daf3d20257f841d10d9f317dfd6954de, tree
-6f98308755fa38e301d1df534d14917eb88b5080, retains the C diagnostic-order
-correction. Fresh exact-clean-main Runtime before processes finish before source
-restoration; all complete/raw JVM products and source/plan/five hashes agree.
-The full three-slice checks pass 46/961 backends, 7/83 selected Release and
-47/1154 boundary, with six-file reconstruction and nine-path zero-blocker lint.
-Current C evidence records the shared context and retained nonpasses. New exact
-review, own CI/artifacts and immediate clean current-main preflight are mandatory.
+Current base is 068321a889f4b4278c234a53d3f7a92d1300d22b, tree
+744a2318c4627c4fc7fd29754a2e1e7244f3b896. Main PR 535 adds only 26
+SH-08 regression-test lines. Source composition
+56178be8b88f61408e4ccc0379862df6a1c305af has tree
+6ee0db00ba5d9a33a358526235c972d5098e08d5 and retains the C diagnostic-order
+correction. No incoming C/JVM/Release implementation changes occur.
+
+Fresh original before processes for all three slices execute exact clean main
+068 in this same Runtime checkout, without added fixtures, and exit before
+source restoration. All complete after records AND original serialization agree;
+source/plan/file hashes and the Release lookup probe recompute. Earlier c8
+records remain in each slice's c8-history directory. No actual path, mode, pin
+or artifact field is projected or normalized.
+
+Fresh backend tests pass 46/961, the same seven allowed Release selectors
+7/83 and language/ownership 47/1154. Six whole production files reconstruct,
+including equivalent explicit diagnostic function retrieval and C type tags.
+Nine-path contextual lint has zero warnings and blockers, archived at
+/tmp/uniform-backend-release-068-lint. All existing native, authority, Reader,
+package/archive and release restrictions remain. Renewed exact independent
+acceptance, new candidate-owned CI/artifacts and immediate clean current-main
+preflight remain required. Earlier source/base acceptance and CI do not transfer.

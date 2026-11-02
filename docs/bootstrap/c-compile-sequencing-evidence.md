@@ -259,25 +259,27 @@ New exact independent review, candidate-owned CI/artifacts and immediate clean
 current-main preflight remain mandatory. The native C body, broker, process,
 toolchain, Gates, default pinned Reader and release routes remain unrun.
 
-## Current regression-main composition
+## Current integration composition
 
-Current base is c8a67ad6f6eda914a60f883a45d2de2a77ce00b3, tree
-7cf36b5ebaef9125ab62776dbfa2ac8b6f26c681. Main PR 526 changes only the
-SH-08 function-call type regression file. Source composition
-ea3d5633daf3d20257f841d10d9f317dfd6954de has tree
-6f98308755fa38e301d1df534d14917eb88b5080, retaining the diagnostic-order
-correction above. No incoming C/JVM/Release implementation changes occur.
+Current base is 068321a889f4b4278c234a53d3f7a92d1300d22b, tree
+744a2318c4627c4fc7fd29754a2e1e7244f3b896. Main PR 535 adds only 26
+SH-08 regression-test lines. Source composition
+56178be8b88f61408e4ccc0379862df6a1c305af has tree
+6ee0db00ba5d9a33a358526235c972d5098e08d5 and retains the C diagnostic-order
+correction. No incoming C/JVM/Release implementation changes occur.
 
-Fresh original before captures for all three slices run exact clean c8 main
-in this same Runtime checkout, without added fixtures, and exit before restoring
-the corrected source. Complete after records and original serializations all
-agree; source/plan/file hashes and the Release lookup probe recompute. Earlier
-records remain in the respective base32/runtime32 history directories.
+Fresh original before processes for all three slices execute exact clean main
+068 in this same Runtime checkout, without added fixtures, and exit before
+source restoration. All complete after records AND original serialization agree;
+source/plan/file hashes and the Release lookup probe recompute. Earlier c8
+records remain in each slice's c8-history directory. No actual path, mode, pin
+or artifact field is projected or normalized.
 
-Fresh backend tests pass 46/961, selected Release tests 7/83 and boundary
-47/1154. All six production files reconstruct against c8, with the explicit
-equivalent diagnostic callee retrieval and original C type tags preserved.
+Fresh backend tests pass 46/961, the same seven allowed Release selectors
+7/83 and language/ownership 47/1154. Six whole production files reconstruct,
+including equivalent explicit diagnostic function retrieval and C type tags.
 Nine-path contextual lint has zero warnings and blockers, archived at
-/tmp/uniform-backend-release-c8-lint. Renewed exact independent acceptance,
-new candidate-owned CI/artifacts and immediate clean current-main preflight
-remain required. Old source/base acceptance and CI do not transfer.
+/tmp/uniform-backend-release-068-lint. All existing native, authority, Reader,
+package/archive and release restrictions remain. Renewed exact independent
+acceptance, new candidate-owned CI/artifacts and immediate clean current-main
+preflight remain required. Earlier source/base acceptance and CI do not transfer.
