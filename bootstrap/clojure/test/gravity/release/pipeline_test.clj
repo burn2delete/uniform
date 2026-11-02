@@ -24,11 +24,12 @@
 
 (deftest namespace-boundary-is-native-inventory-data
   (let [contract (:gravity/namespace-contract (meta #'release/jar-inventory-report))]
-    (is (= :native-jar-inventory-reports (:contract-boundary contract)))
-    (is (= '#{jar-source-inventory-report jar-inventory-report}
+    (is (= :native-inventory-and-observed-file-data (:contract-boundary contract)))
+    (is (= '#{jar-source-inventory-report jar-inventory-report file-bytes bytes-sha256 file-sha256}
            (set (keys (:public-api contract)))))
     (is (false? (:authenticates-inputs? contract)))
-    (is (false? (:performs-io? contract)))
+    (is (true? (:performs-io? contract)))
+    (is (false? (:inventory-operations-perform-io? contract)))
     (is (false? (:self-hosted? contract)))
     (is (= '[clojure.string] (get-in contract [:dependency-direction :requires])))
     (is (= (:gravity/namespace-contract (meta #'release/jar-source-inventory-report)) contract))))
@@ -129,3 +130,78 @@
           (is (true? (:packaged-source-inventory-valid? data)))
           (is (= bootstrap/p18-t02-jar-path (get-in data [:source-span :source])))
           (is (= "packaged JVM CLI JAR inventory is invalid" (.getMessage error))))))))
+
+(deftest real-file-byte-and-digest-operations
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "gravity-release-file-test-"
+                            (make-array java.nio.file.attribute.FileAttribute 0)))
+        file (io/file directory "observed-bytes")
+        missing (io/file directory "missing")
+        bytes (byte-array (map unchecked-byte [0 127 128 255]))
+        expected "89273d2f70b93285bb7ddb4bcee86a5347ca7159352e3cbdd20c23e9d1e507d3"]
+    (try
+      (java.nio.file.Files/write (.toPath file) bytes (make-array java.nio.file.OpenOption 0))
+      (is (= (vec bytes) (vec (release/file-bytes (.getPath file)))))
+      (is (= (vec bytes) (vec (bootstrap/p18-file-bytes (.getPath file)))))
+      (is (= expected (release/bytes-sha256 bytes) (bootstrap/p18-bytes-sha256 bytes)))
+      (is (= (str "sha256:" expected)
+             (release/file-sha256 #'bootstrap/p18-bytes-sha256 #'bootstrap/p18-file-bytes (.getPath file))
+             (bootstrap/p18-file-sha256 (.getPath file))))
+      (is (= "sha256:missing" (bootstrap/p18-file-sha256 (.getPath missing))))
+      (is (thrown? java.nio.file.NoSuchFileException (release/file-bytes (.getPath missing))))
+      (is (thrown? java.nio.file.NoSuchFileException (bootstrap/p18-file-bytes (.getPath missing))))
+      (spit file "")
+      (is (= "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+             (bootstrap/p18-file-sha256 (.getPath file))))
+      (finally
+        (doseq [entry (reverse (file-seq directory))]
+          (java.nio.file.Files/deleteIfExists (.toPath entry)))))))
+
+(deftest file-helper-wrapper-ports-and-byte-identity
+  (doseq [[wrapped owner arguments port-count]
+          [[#'bootstrap/p18-file-bytes #'release/file-bytes '[path] 0]
+           [#'bootstrap/p18-bytes-sha256 #'release/bytes-sha256 '[bytes] 0]
+           [#'bootstrap/p18-file-sha256 #'release/file-sha256 '[path] 2]]]
+    (let [value (Object.) token (Object.) calls (atom nil)]
+      (is (= (list arguments) (:arglists (meta wrapped))))
+      (with-redefs-fn {owner (fn [& args] (reset! calls args) token)}
+        #(is (identical? token (wrapped value))))
+      (is (identical? value (last @calls)))
+      (is (every? var? (take port-count @calls)))))
+  (doseq [[name operation] (ns-publics 'gravity.release)]
+    (let [contract (:gravity/namespace-contract (meta operation))]
+      (is (= (:arglists (meta operation)) (get-in contract [:public-api name :arglists])) name))))
+
+(deftest file-digest-preserves-operation-root-lookup-and-failure
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "gravity-release-file-order-"
+                            (make-array java.nio.file.attribute.FileAttribute 0)))
+        file (io/file directory "input")
+        bytes (byte-array [1 2 3])
+        sentinel (ex-info "original file dependency failure" {:test :identity})]
+    (try
+      (spit file "actual regular file")
+      (with-local-vars [digest nil read-bytes nil]
+        (let [calls (atom [])]
+          (var-set digest (fn [value]
+                            (swap! calls conj :original-digest)
+                            (is (identical? bytes value))
+                            "observed-old-root"))
+          (var-set read-bytes
+                   (fn [path]
+                     (swap! calls conj [:read path])
+                     (var-set digest (fn [_] (throw (AssertionError. "late digest root"))))
+                     bytes))
+          (is (= "sha256:observed-old-root"
+                 (release/file-sha256 digest read-bytes (.getPath file))))
+          (is (= [[:read (.getPath file)] :original-digest] @calls)))
+        (var-set digest (fn [_] (throw (AssertionError. "digest must not run"))))
+        (var-set read-bytes (fn [_] (throw sentinel)))
+        (is (identical? sentinel
+                        (try (release/file-sha256 digest read-bytes (.getPath file))
+                             (catch Throwable error error))))
+        (is (= "sha256:missing"
+               (release/file-sha256 digest read-bytes (.getPath (io/file directory "missing"))))))
+      (finally
+        (doseq [entry (reverse (file-seq directory))]
+          (java.nio.file.Files/deleteIfExists (.toPath entry)))))))
