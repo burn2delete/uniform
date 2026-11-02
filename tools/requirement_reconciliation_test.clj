@@ -2,10 +2,15 @@
   (:require [clojure.test :refer [deftest is run-tests]] [clojure.string :as str]))
 (binding [*command-line-args* nil] (load-file "tools/requirement_reconciliation.clj"))
 (require '[requirement-reconciliation :as rr])
+(require 'requirement-evidence 'requirement-sources)
 
 (defn open-manifest []
   {:scope-version "fixture-1" :scope-state :open :requirements []
    :source-dispositions [] :aliases [] :scope-decisions [] :scope-amendments []})
+
+(defn declare-sources [manifest sources]
+  (assoc manifest :original-documents
+         (mapv (fn [[id text]] {:id id :sha256 (rr/sha256 text)}) (sort-by key sources))))
 
 (deftest byte-conservation-and-distinct-occurrences
   (let [text "# Rules\n\nRepeat.\n\nRepeat.\n\nUnicode: \u03bb\n"
@@ -25,14 +30,15 @@
     (is (some #(= ["Rules"] (mapv :text (:headings %))) contexts))
     (is (= 2 (count (filter :table-row? contexts))))
     (is (some #(and (:fence %) (= 11 (:line %))) contexts))
-    (is (pos? (count (:unresolved-source-occurrences (rr/project (open-manifest) {"L1" text})))))))
+    (is (pos? (count (:unresolved-source-occurrences
+                     (rr/project (declare-sources (open-manifest) {"L1" text}) {"L1" text})))))))
 
 (defn complete-fixture []
   (let [text "Do one thing.\n" occurrence (first (rr/source-occurrences "X" text))]
-    [(assoc (open-manifest) :scope-state :reviewed
+    [(declare-sources (assoc (open-manifest) :scope-state :reviewed
             :requirements [{:id "fixture/one-thing" :atomicity :reviewed :nonoverlap :reviewed}]
             :source-dispositions [{:occurrence-id (:id occurrence) :kind :requirement :review-state :reviewed
-                                   :requirement-ids ["fixture/one-thing"]}])
+                                   :requirement-ids ["fixture/one-thing"]}]) {"X" text})
      {"X" text}]))
 
 (deftest unknowns-and-scope-decisions-stay-visible
@@ -40,10 +46,10 @@
     (is (= 1 (:denominator (rr/project manifest sources))))
     (is (nil? (:overall-rate (rr/project manifest sources))))
     (is (false? (:denominator-ready? (rr/project (assoc manifest :scope-state :open) sources))))
-    (is (false? (:denominator-ready? (rr/project manifest (assoc sources "new" "New in-scope obligation.\n")))))
+    (is (thrown? Exception (rr/project manifest (assoc sources "new" "New in-scope obligation.\n"))))
     (is (false? (:denominator-ready? (rr/project (assoc manifest :scope-decisions [{:id "pending" :state :unresolved}]) sources))))
     (is (false? (:denominator-ready? (rr/project (assoc-in manifest [:requirements 0 :atomicity] :unresolved) sources))))
-    (is (empty? (:proposed-requirement-ids (rr/project (open-manifest) sources))))))
+    (is (empty? (:proposed-requirement-ids (rr/project (declare-sources (open-manifest) sources) sources))))))
 
 (deftest duplicate-and-dangling-source-dispositions-reject
   (let [[manifest sources] (complete-fixture)]
@@ -52,6 +58,51 @@
     (is (thrown? Exception (rr/project (assoc-in manifest [:source-dispositions 0 :requirement-ids] ["absent"]) sources)))
     (is (thrown? Exception (rr/project (assoc-in manifest [:source-dispositions 0 :occurrence-id] "absent") sources)))
     (is (thrown? Exception (rr/project (assoc-in manifest [:source-dispositions 0 :kind] :silently-excluded) sources)))))
+
+(deftest declared-source-population-cannot-be-omitted-or-expanded
+  (let [[manifest sources] (complete-fixture)
+        text "Reviewed context, not another requirement.\n"
+        occurrence (first (rr/source-occurrences "Y" text))
+        all-sources (assoc sources "Y" text)
+        disposition {:occurrence-id (:id occurrence) :kind :nonnormative :review-state :reviewed
+                     :rationale "Fixture context has no additional obligation."}
+        complete (-> manifest (declare-sources all-sources)
+                     (update :source-dispositions conj disposition))]
+    (is (= 1 (:denominator (rr/project complete all-sources))))
+    ;; Removing both text and its disposition must not hide a declared source.
+    (is (thrown? Exception (rr/project (assoc complete :source-dispositions (:source-dispositions manifest)) sources)))
+    ;; A fully reviewed extra disposition cannot silently expand declared scope.
+    (is (thrown? Exception (rr/project (update manifest :source-dispositions conj disposition) all-sources)))
+    (is (thrown? Exception (rr/project (dissoc manifest :original-documents) sources)))
+    (is (thrown? Exception (rr/project (update manifest :original-documents conj (first (:original-documents manifest))) sources)))))
+
+(deftest canonical-requirement-ids-must-be-nonblank-strings
+  (let [[manifest sources] (complete-fixture)]
+    (doseq [id [nil "" " " 17 :not-a-semantic-id]]
+      (let [malformed (-> manifest (assoc-in [:requirements 0 :id] id)
+                          (assoc-in [:source-dispositions 0 :requirement-ids] [id]))]
+        (is (thrown? Exception (rr/project malformed sources)))))))
+
+(deftest accepted-scope-decisions-require-unique-source-bound-authority
+  (let [[manifest sources] (complete-fixture)
+        occurrence (first (rr/source-occurrences "X" (get sources "X")))
+        decision {:id "scope/fixture" :state :accepted :scope-version "fixture-1"
+                  :authority "Fixture scope review" :reason "Retain the fixture requirement."
+                  :source-id "X" :authority-source-occurrence-id (:id occurrence)
+                  :authority-sha256 (:raw-sha256 occurrence)}
+        approved (assoc manifest :scope-decisions [decision])]
+    (is (= 1 (:denominator (rr/project approved sources))))
+    (is (thrown? Exception (rr/project (assoc manifest :scope-decisions [{:id "scope/fixture" :state :accepted}]) sources)))
+    (is (thrown? Exception (rr/project (update approved :scope-decisions conj decision) sources)))
+    (is (thrown? Exception (rr/project (assoc manifest :scope-decisions [{:id "pending" :state :unresolved}
+                                                                      {:id "pending" :state :unresolved}]) sources)))
+    (is (thrown? Exception (rr/project (dissoc approved :scope-version) sources)))
+    (doseq [field [:id :scope-version :authority :reason :authority-source-occurrence-id]]
+      (is (thrown? Exception (rr/project (update-in approved [:scope-decisions 0] dissoc field) sources))))
+    (doseq [[field value] [[:scope-version "other"] [:authority ""] [:authority 17] [:reason ""]
+                          [:authority-source-occurrence-id "missing"] [:source-id "other"]
+                          [:authority-sha256 "wrong"]]]
+      (is (thrown? Exception (rr/project (assoc-in approved [:scope-decisions 0 field] value) sources))))))
 
 (deftest aliases-and-amendments-cannot-shrink-scope-silently
   (let [[manifest sources] (complete-fixture)]
@@ -98,7 +149,8 @@
                      (update :source-dispositions into
                              [{:occurrence-id old-id :kind :superseded :review-state :reviewed :decision-id "removal"}
                               {:occurrence-id authority-id :kind :nonnormative :review-state :reviewed
-                               :rationale "Fixture policy authority; implementation scope is represented separately."}]))]
+                               :rationale "Fixture policy authority; implementation scope is represented separately."}])
+                     (declare-sources sources))]
     (is (= 1 (:denominator (rr/project proposed sources))))
     (doseq [field [:authority :reason :scope-version :lineage :authority-source-occurrence-id :source-occurrence-ids]]
       (is (thrown? Exception (rr/project (update-in proposed [:scope-decisions 0] dissoc field) sources))))
@@ -231,12 +283,12 @@
         os (mapv #(first (rr/source-occurrences % (get sources %))) ["A" "B"])
         facet (fn [id o unit] {:id id :source-occurrence-id (:id o) :start-byte 0 :end-byte (:end-byte o)
                                :start-line 1 :end-line 1 :raw-sha256 (:raw-sha256 o) :unit-ids [unit]})
-        manifest (assoc (open-manifest) :scope-state :reviewed
+        manifest (declare-sources (assoc (open-manifest) :scope-state :reviewed
                         :requirements [{:id "one" :atomicity :reviewed :nonoverlap :reviewed :source-facet-ids ["fa"]}
                                        {:id "two" :atomicity :reviewed :nonoverlap :reviewed :source-facet-ids ["fb"]}]
                         :source-facets [(facet "fa" (first os) "one") (facet "fb" (second os) "two")]
                         :source-dispositions [{:occurrence-id (:id (first os)) :kind :requirement :review-state :reviewed :requirement-ids ["one"] :facet-ids ["fa"]}
-                                              {:occurrence-id (:id (second os)) :kind :requirement :review-state :reviewed :requirement-ids ["two"] :facet-ids ["fb"]}])]
+                                              {:occurrence-id (:id (second os)) :kind :requirement :review-state :reviewed :requirement-ids ["two"] :facet-ids ["fb"]}]) sources)]
     (is (= 2 (:denominator (rr/project manifest sources))))
     (is (thrown? Exception (rr/project (update manifest :requirements #(mapv (fn [r] (dissoc r :source-facet-ids)) %)) sources)))
     (is (thrown? Exception (rr/project (-> manifest
@@ -268,7 +320,8 @@
         o (first (rr/source-occurrences "outside" text))
         m (update m :source-dispositions conj {:occurrence-id (:id o) :kind :unresolved
                                                :review-state :reviewed :rationale "Owner interface is not adjudicated."})
-        result (rr/project m (assoc sources "outside" text))]
+        all-sources (assoc sources "outside" text)
+        result (rr/project (declare-sources m all-sources) all-sources)]
     (is (false? (:denominator-ready? result)))
     (is (= [(:id o)] (:unresolved-source-occurrences result)))))
 
@@ -316,6 +369,7 @@
                  :unit-ids ["fixture/one-thing"]})
         first-facet (facet "old" 0 3) second-facet (facet "current" 3 (count text))
         decision {:id "removal" :state :accepted :authority "Fixture policy" :source-id "policy"
+                  :reason "Retire the source-bound obsolete quota."
                   :scope-version "fixture-1" :authority-source-occurrence-id (:id authority)
                   :authority-sha256 (:raw-sha256 authority)}
         supersession {:decision-id "removal" :scope-version "fixture-1" :review-state :proposed
@@ -327,7 +381,8 @@
               (assoc-in [:requirements 0 :source-facet-ids] ["old" "current"])
               (assoc-in [:source-dispositions 0 :facet-ids] ["old" "current"])
               (update :source-dispositions conj {:occurrence-id (:id authority) :kind :nonnormative :review-state :reviewed
-                                                :rationale "Fixture governing policy, not another product requirement."}))
+                                                :rationale "Fixture governing policy, not another product requirement."})
+              (declare-sources sources))
         reviewed (assoc-in m [:source-facets 0 :supersession :review-state] :reviewed)]
     (is (false? (:denominator-ready? (rr/project m sources))))
     (is (= 1 (:historical-superseded-facet-count (rr/project reviewed sources))))
@@ -355,16 +410,18 @@
                          :start-line 1 :end-line 1 :raw-sha256 (rr/sha256 (subs text start end)) :unit-ids ["u"]})
                 quota (facet "old" 0 6) remaining (assoc (facet "remaining" 6 (count text)) :kind kind)
                 decision {:id "remove" :state :accepted :authority "Fixture accounting removal" :source-id "policy"
+                          :reason "Retire only the obsolete quota facet."
                           :scope-version "v1" :authority-source-occurrence-id (:id authority)
                           :authority-sha256 (:raw-sha256 authority)}
                 supersession {:decision-id "remove" :scope-version "v1" :review-state :reviewed
                               :authority-source-occurrence-id (:id authority) :authority-sha256 (:raw-sha256 authority)
                               :source-facet-id "old" :source-fragment-sha256 (:raw-sha256 quota) :reason "Remove the old quota."}]
-            [{:scope-version "v1" :scope-state :reviewed :scope-decisions [decision] :aliases []
+            [(declare-sources {:scope-version "v1" :scope-state :reviewed :scope-decisions [decision] :aliases []
               :requirements [{:id "u" :atomicity :reviewed :nonoverlap :reviewed :source-facet-ids ["old" "remaining"]}]
               :source-dispositions [{:occurrence-id (:id o) :kind :requirement :review-state :reviewed :requirement-ids ["u"] :facet-ids ["old" "remaining"]}
                                     {:occurrence-id (:id authority) :kind :nonnormative :review-state :reviewed :rationale "Governing policy."}]
               :source-facets [(assoc quota :requirement-role :historical-superseded :supersession supersession) remaining]}
+                              {"X" text "policy" authority-text})
              {"X" text "policy" authority-text}]))]
     (doseq [[tail kind] [["\n" :layout] ["\n" nil] ["\n" :requirement]
                          [" Heading.\n" :layout] [" Commentary.\n" :nonnormative]

@@ -6,6 +6,7 @@
 (load-file "tools/requirement_evidence.clj")
 (load-file "tools/requirement_facets.clj")
 (load-file "tools/requirement_sources.clj")
+(require 'requirement-evidence 'requirement-facets 'requirement-sources)
 
 (def manifest-path "contracts/requirement-reconciliation.edn")
 (defn require! [condition message]
@@ -101,7 +102,34 @@
                    (= (:scope-version manifest) (:scope-version lineage)))
               "Supersession lacks source-bound authority, rationale or versioned lineage")))
 
-(defn project [manifest sources]
+(defn validate-scope-decisions! [manifest by-source]
+  (let [decisions (:scope-decisions manifest) ids (mapv :id decisions)]
+    (require! (and (every? #(and (string? %) (not (str/blank? %))) ids)
+                   (= (count ids) (count (set ids)))) "Missing or duplicate scope decision ID")
+    (doseq [decision decisions :when (= :accepted (:state decision))]
+      (let [authority (get by-source (:authority-source-occurrence-id decision))]
+        (require! (and (= (:scope-version manifest) (:scope-version decision))
+                       (string? (:authority decision)) (not (str/blank? (:authority decision)))
+                       (string? (:reason decision)) (not (str/blank? (:reason decision)))
+                       (= :source-block (:structural-kind authority))
+                       (or (not (contains? decision :source-id))
+                           (= (:source-id decision) (:document-id authority)))
+                       (or (not (contains? decision :authority-sha256))
+                           (= (:authority-sha256 decision) (:raw-sha256 authority))))
+                  "Accepted scope decision lacks exact source authority, rationale or version")))))
+
+(defn project
+  "Pure non-authoritative preview of declared scope. Readiness is not an audited
+  or independently accepted denominator: audit must verify checkout bytes and
+  bridge snapshots before this projection is used as current-source evidence."
+  [manifest sources]
+  (let [documents (concat (:original-documents manifest) (:extension-sources manifest))
+        ids (mapv :id documents)]
+    (require! (and (every? #(and (string? %) (not (str/blank? %))) ids)
+                   (= (count ids) (count (set ids)))) "Missing or duplicate declared source ID")
+    (require! (= (set ids) (set (keys sources))) "Supplied sources differ from declared source population"))
+  (require! (and (string? (:scope-version manifest)) (not (str/blank? (:scope-version manifest))))
+            "Missing scope version")
   (let [views (requirement-sources/views manifest sources sha256 require!)
         sources (requirement-sources/texts views)
         requirements (:requirements manifest) ids (mapv :id requirements)
@@ -109,11 +137,14 @@
         by-source (into {} (map (juxt :id identity) occurrences))
         dispositions (:source-dispositions manifest)
         req-set (set ids)
+        _ (require! (every? #(and (string? %) (not (str/blank? %))) ids)
+                    "Missing or invalid semantic requirement ID")
         _ (require! (= (count ids) (count req-set)) "Duplicate semantic requirement ID")
         _ (require! (= (count dispositions) (count (set (map :occurrence-id dispositions))))
                     "Duplicate source disposition")
         _ (validate-aliases! requirements (:aliases manifest))
         _ (validate-scope-lineage! manifest)
+        _ (validate-scope-decisions! manifest by-source)
         mapped (into {} (map (juxt :occurrence-id identity) dispositions))
         facet-result (requirement-facets/validate! manifest sources by-source sha256)]
     (doseq [{:keys [occurrence-id kind requirement-ids rationale decision-id]} dispositions]
@@ -168,6 +199,7 @@
        :overall-rate nil
        :scope-decisions (:scope-decisions manifest)
        :limits [:source-blocks-are-not-atomic-requirements :no-implementation-credit
+                :projection-requires-current-source-audit
                 :historical-checkboxes-are-not-current-acceptance
                 :no-compiler-replay :no-dashboard-write]})))
 
