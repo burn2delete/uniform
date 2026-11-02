@@ -1,6 +1,7 @@
 (ns gravity.c15-c16-pass-cache-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [clojure.test :refer [deftest is]]
             [gravity.c15-c16-pass-cache :as cache]
+            [gravity.c15-c16-pass-cache.validation :as validation]
             [gravity.c15-diagnostics :as c15]
             [gravity.c16-incremental :as c16]
             [gravity.digest :as digest]
@@ -19,14 +20,14 @@
       (doseq [path (reverse (sort-by #(.getNameCount ^Path %) (vec (.toArray paths))))]
         (Files/deleteIfExists ^Path path)))))
 
-(defmacro with-temporary-directory
-  [[binding] & body]
-  `(let [~binding (Files/createTempDirectory
+(defn- with-temporary-directory
+  [test-fn]
+  (let [directory (Files/createTempDirectory
                    "gravity-c15-c16-pass-cache-"
                    (make-array FileAttribute 0))]
-     (try
-       ~@body
-       (finally (delete-tree! ~binding)))))
+    (try
+      (test-fn directory)
+      (finally (delete-tree! directory)))))
 
 (def module
   {:module 'gravity.c15-c16-cache-test
@@ -194,36 +195,84 @@
                       (id :changed-c15-validator)))))))
 
 (deftest adjacent-real-passes-store-hit-and-compose-one-internal-edge
-  (with-temporary-directory [directory]
-    (let [store (pass-cache/open-local-store directory)
-          calls (atom {:c15 0 :c16 0})
-          first-result
-          (cache/lookup-or-compute! store (context) (operations calls))
-          second-result
-          (cache/lookup-or-compute! store (context) (operations calls))]
-      (is (= {:c15 1 :c16 1} @calls))
-      (is (= [:stored :stored]
-             [(get-in first-result [:c15-cache-evidence :status])
-              (get-in first-result [:c16-cache-evidence :status])]))
-      (is (= [:hit :hit]
-             [(get-in second-result [:c15-cache-evidence :status])
-              (get-in second-result [:c16-cache-evidence :status])])
-          (pr-str {:c15 (:c15-cache-evidence second-result)
-                   :c16 (:c16-cache-evidence second-result)}))
-      (is (= :gravity/stage0-c15-compiler-diagnostics-artifact
-             (get-in second-result [:c15-artifact :kind])))
-      (is (= :gravity/stage0-c16-incremental-compilation-artifact
-             (get-in second-result [:c16-artifact :kind])))
-      (is (= 2 (count (get-in second-result [:evidence-dag :receipts]))))
-      (is (= 2 (count (get-in second-result [:evidence-dag :contracts]))))
-      (is (= 1 (count (get-in second-result [:evidence-dag :edges]))))
-      (is (= :none
-             (get-in second-result [:evidence-dag :authority
-                                    :effective-level])))
-      (is (= (:evidence-root-id second-result)
-             (get-in second-result [:evidence-dag :evidence-root-id])))
-      (is (false? (:release-authority? second-result)))
-      (is (false? (:proof-authority? second-result))))))
+  (with-temporary-directory
+    (fn [directory]
+      (let [store (pass-cache/open-local-store directory)
+            calls (atom {:c15 0 :c16 0})
+            first-result
+            (cache/lookup-or-compute! store (context) (operations calls))
+            second-result
+            (cache/lookup-or-compute! store (context) (operations calls))]
+        (is (= {:c15 1 :c16 1} @calls))
+        (is (= [:stored :stored]
+               [(get-in first-result [:c15-cache-evidence :status])
+                (get-in first-result [:c16-cache-evidence :status])]))
+        (is (= [:hit :hit]
+               [(get-in second-result [:c15-cache-evidence :status])
+                (get-in second-result [:c16-cache-evidence :status])])
+            (pr-str {:c15 (:c15-cache-evidence second-result)
+                     :c16 (:c16-cache-evidence second-result)}))
+        (is (= :gravity/stage0-c15-compiler-diagnostics-artifact
+               (get-in second-result [:c15-artifact :kind])))
+        (is (= :gravity/stage0-c16-incremental-compilation-artifact
+               (get-in second-result [:c16-artifact :kind])))
+        (is (= 2 (count (get-in second-result [:evidence-dag :receipts]))))
+        (is (= 2 (count (get-in second-result [:evidence-dag :contracts]))))
+        (is (= 1 (count (get-in second-result [:evidence-dag :edges]))))
+        (is (= :none
+               (get-in second-result [:evidence-dag :authority
+                                      :effective-level])))
+        (is (= (:evidence-root-id second-result)
+               (get-in second-result [:evidence-dag :evidence-root-id])))
+        (is (false? (:release-authority? second-result)))
+        (is (false? (:proof-authority? second-result)))))))
+
+(deftest default-orchestration-reuses-validated-context-once
+  (with-temporary-directory
+    (fn [directory]
+      (let [store (pass-cache/open-local-store directory)
+            calls (atom {:c15 0 :c16 0})
+            observed (atom [])
+            original-context validation/validate-context!
+            original-operations validation/validate-operations!
+            result
+            (with-redefs
+             [validation/validate-context!
+              (fn [value]
+                (swap! observed conj :context)
+                (original-context value))
+              validation/validate-operations!
+              (fn [value]
+                (swap! observed conj :operations)
+                (original-operations value))]
+              (cache/lookup-or-compute! store (context) (operations calls)))]
+        (is (= [:context :operations] @observed))
+        (is (= [:stored :stored]
+               [(get-in result [:c15-cache-evidence :status])
+                (get-in result [:c16-cache-evidence :status])]))))))
+
+(deftest public-stage-request-interposition-remains-live
+  (with-temporary-directory
+    (fn [directory]
+      (let [store (pass-cache/open-local-store directory)
+            calls (atom {:c15 0 :c16 0})
+            c15-original cache/c15-stage-request
+            c16-original cache/c16-stage-request
+            observed (atom [])
+            result
+            (with-redefs
+             [cache/c15-stage-request
+              (fn [value]
+                (swap! observed conj :c15)
+                (c15-original value))
+              cache/c16-stage-request
+              (fn [value artifact-id]
+                (swap! observed conj :c16)
+                (c16-original value artifact-id))]
+              (cache/lookup-or-compute! store (context) (operations calls)))]
+        (is (= [:c15 :c16] @observed))
+        (is (= :gravity/stage0-c16-incremental-compilation-artifact
+               (get-in result [:c16-artifact :kind])))))))
 
 (deftest malformed-context-operations-and-stale-validator-fail-closed
   (let [base (context)]
@@ -234,20 +283,26 @@
                                "sha256:bad")]]
       (is (thrown? clojure.lang.ExceptionInfo
                    (cache/c15-stage-request invalid)))))
-  (with-temporary-directory [directory]
-    (let [store (pass-cache/open-local-store directory)
-          calls (atom {:c15 0 :c16 0})
-          base (context)
-          _ (cache/lookup-or-compute! store base (operations calls))
-          changed (assoc-in base [:validation-binding-ids :c15]
-                            (id :replacement-c15-validator))
-          result (cache/lookup-or-compute! store changed (operations calls))]
-      (is (= :miss (get-in result [:c15-cache-evidence :status])))
-      (is (= :withheld
-             (get-in result [:c15-cache-evidence :cache-publication])))
-      (is (= {:c15 2 :c16 1} @calls)))
-  (with-temporary-directory [directory]
-    (let [store (pass-cache/open-local-store directory)]
-      (is (thrown? clojure.lang.ExceptionInfo
-                   (cache/lookup-or-compute!
-                    store (context) {:produce-c15! identity})))))))
+  (is (thrown? clojure.lang.ExceptionInfo
+               (cache/c16-stage-request
+                (assoc (context) :unknown true)
+                (id :c15-output))))
+  (with-temporary-directory
+    (fn [directory]
+      (let [store (pass-cache/open-local-store directory)
+            calls (atom {:c15 0 :c16 0})
+            base (context)
+            _ (cache/lookup-or-compute! store base (operations calls))
+            changed (assoc-in base [:validation-binding-ids :c15]
+                              (id :replacement-c15-validator))
+            result (cache/lookup-or-compute! store changed (operations calls))]
+        (is (= :miss (get-in result [:c15-cache-evidence :status])))
+        (is (= :withheld
+               (get-in result [:c15-cache-evidence :cache-publication])))
+        (is (= {:c15 2 :c16 1} @calls)))))
+  (with-temporary-directory
+    (fn [directory]
+      (let [store (pass-cache/open-local-store directory)]
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (cache/lookup-or-compute!
+                      store (context) {:produce-c15! identity})))))))
