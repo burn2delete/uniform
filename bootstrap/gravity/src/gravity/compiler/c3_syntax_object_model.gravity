@@ -44,7 +44,7 @@
                      :syntax-template :reader-binding
                      :reader-source-revision :ownership-product
                      :digest-requests
-                     :diagnostics :bounds :containment
+                     :diagnostics :containment
                      :execution-boundary]})
 
 (defn c3-exact-keys? [value expected]
@@ -59,22 +59,20 @@
        result
        #{:artifact :schema-version :status :syntax-template
          :reader-binding :reader-source-revision :ownership-product
-         :digest-requests :diagnostics :bounds :containment
+         :digest-requests :diagnostics :containment
          :execution-boundary})
     (if (= (get result :artifact) :gravity/sh04-syntax-template-result)
       (if (= (get result :schema-version) 1)
         (if (contains? #{:accepted :rejected} (get result :status))
           (if (vector? (get result :digest-requests))
             (if (vector? (get result :diagnostics))
-              (if (map? (get result :bounds))
-                (if (map? (get result :containment))
+              (if (map? (get result :containment))
                   (if (map? (get result :execution-boundary))
                     (if (= (get result :status) :accepted)
                       (map? (get result :syntax-template))
                       (= (get result :syntax-template) nil))
                     false)
                   false)
-                false)
               false)
             false)
           false)

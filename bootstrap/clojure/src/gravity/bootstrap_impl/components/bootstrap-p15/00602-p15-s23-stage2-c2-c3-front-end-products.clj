@@ -16,8 +16,17 @@
    (p15-s23-stage2-c2-c3-front-end-products
      source-path source-text project-context retain-authenticated-artifacts? nil))
   ([source-path source-text project-context retain-authenticated-artifacts? reader-source-path]
+   (p15-s23-stage2-c2-c3-front-end-products
+    source-path source-text project-context retain-authenticated-artifacts?
+    reader-source-path
+    (when reader-source-path
+      {:reader-source-path reader-source-path
+       :authenticated-envelope-options {:source :development-current}})))
+  ([source-path source-text project-context retain-authenticated-artifacts?
+    reader-source-path invocation]
   (let [c3-artifact (compiler-c3-syntax-source-artifact
-                     source-path source-text project-context nil nil reader-source-path)
+                     source-path source-text project-context nil nil
+                     reader-source-path invocation)
         c2-artifact (:c2-reader-artifact c3-artifact)
         root-form-ids (:top-level-form-ids c2-artifact)
         rich-syntax (vec (take (count root-form-ids)

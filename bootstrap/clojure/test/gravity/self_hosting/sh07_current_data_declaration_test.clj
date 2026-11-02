@@ -40,6 +40,12 @@
         source-path (path "bootstrap/clojure/fixtures/self-hosting/sh-07/compiler-envelope-contract.gravity")
         source (slurp source-path :encoding "UTF-8")
         reader (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        syntax (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
+        invocation {:reader-source-path reader
+                    :authenticated-envelope-options {:source :development-current}
+                    :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                              :source-path syntax}
+                    :macro-source-mode :development-current}
         negatives (atom [])]
     (is (str/ends-with? source (str declaration "\n")))
     (is (= source (slurp (path "bootstrap/clojure/fixtures/self-hosting/sh-07/compiler-envelope-contract.qst") :encoding "UTF-8")))
@@ -51,11 +57,10 @@
     (is (str/includes? source "(:exports [authenticated-envelope-contract])"))
     (println {:data-declaration-phase :current-reader-c5}) (flush)
     (let [resolved (b/compiler-c5-resolution-source-artifact source-path source
-                     {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []} reader)
+                     {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+                     reader invocation)
           _ (println {:data-declaration-phase :gravity-core})
-          artifact (b/sh07-core-from-resolution-artifact resolved
-                     {:reader-source-path reader
-                      :authenticated-envelope-options {:source :development-current}})
+          artifact (b/sh07-core-from-resolution-artifact resolved invocation)
           boundary (:gravity-core-boundary artifact)
           core (:canonical-core-artifact boundary)
           request (:authenticated-core-request boundary)

@@ -50,6 +50,8 @@
         current-invocation
         {:reader-source-path "reader.gravity"
          :authenticated-envelope-options {:source :development-current}
+         :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                   :source-path "syntax.gravity"}
          :macro-source-mode :development-current}
         reader-only
         (dissoc current-invocation :macro-source-mode)]
@@ -96,6 +98,8 @@
                           :source-authority :development-current}}}}
         invocation {:reader-source-path "reader.gravity"
                     :authenticated-envelope-options {:source :development-current}
+                    :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                              :source-path "syntax.gravity"}
                     :macro-source-mode :development-current}
         binding {:source-mode :development-current
                  :revision-status :development-unadmitted
@@ -116,6 +120,7 @@
   (let [path #(str (io/file (root) %))
         owner-path (path "bootstrap/gravity/src/gravity/checked_core.gravity")
         reader-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        syntax-path (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
         prefix "bootstrap/clojure/fixtures/self-hosting/sh-07/compiler-exact-keys"
         source-path (path (str prefix ".gravity"))
         text (slurp source-path :encoding "UTF-8")
@@ -128,12 +133,17 @@
     (is (str/ends-with? text (str helper "\n")))
     (is (= text (slurp (path (str prefix ".qst")) :encoding "UTF-8")))
     (println {:map-guard-phase :current-reader-c5}) (flush)
-    (let [resolved (b/compiler-c5-resolution-source-artifact
+    (let [invocation {:reader-source-path reader-path
+                      :authenticated-envelope-options {:source :development-current}
+                      :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                                :source-path syntax-path}
+                      :macro-source-mode :development-current}
+          resolved (b/compiler-c5-resolution-source-artifact
                     source-path text
                     {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
-                    reader-path)
+                    reader-path invocation)
           _ (println {:map-guard-phase :gravity-core})
-          artifact (b/sh07-core-from-resolution-artifact resolved)
+          artifact (b/sh07-core-from-resolution-artifact resolved invocation)
           boundary (:gravity-core-boundary artifact)
           core (:canonical-core-artifact boundary)
           request (:authenticated-core-request boundary)

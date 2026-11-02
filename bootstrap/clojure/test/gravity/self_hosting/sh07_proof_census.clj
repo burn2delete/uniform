@@ -16,8 +16,13 @@
 
 (defn- current-authenticated-request [path source]
   (let [reader-path (bootstrap/sh03-reader-resolve-source-path)
+        syntax-path (.getCanonicalPath
+                     (io/file bootstrap/sh04-syntax-source-relative-path))
         invocation {:reader-source-path reader-path
-                    :authenticated-envelope-options {:source :development-current}}
+                    :authenticated-envelope-options {:source :development-current}
+                    :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                              :source-path syntax-path}
+                    :macro-source-mode :development-current}
         resolved (bootstrap/compiler-c5-resolution-source-artifact
                   path source
                   {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}

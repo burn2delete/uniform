@@ -10,9 +10,12 @@
 (defn- path [relative] (.getPath (io/file @root relative)))
 (defn- source-path [] (path "bootstrap/clojure/fixtures/self-hosting/sh-04/accepted/source-syntax.gravity"))
 (defn- reader-path [] (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
+(defn- syntax-path [] (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"))
 (defn- invocation []
   {:reader-source-path (reader-path)
-   :authenticated-envelope-options {:source :development-current}})
+   :authenticated-envelope-options {:source :development-current}
+   :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                             :source-path (syntax-path)}})
 (defn- project [] (bootstrap/reader-project-context-for-source (source-path)))
 (defn- bootstrap-var [name] (ns-resolve 'gravity.bootstrap name))
 (defn- construct [text]
@@ -120,9 +123,12 @@
                                   (fn [] (bootstrap/sh04-syntax-resolved-result! (source-path) @small-c2))))
                          (range 2)))]
     (is (= 2 (count @events)))
-    (is (= ["B1-INPUT" "B1-INPUT"] (mapv :id results)))
-    (is (= [:pinned-sh02-source-snapshot :pinned-sh02-source-snapshot]
-           (mapv :missing-fact results)))
+    ;; The public two-argument entry intentionally omits the current Syntax
+    ;; selection, so an explicitly current C2 is refused at the frozen C3
+    ;; boundary before any downstream Reader admission check.
+    (is (= ["C3-ID" "C3-ID"] (mapv :id results)))
+    (is (= [:exact-pinned-syntax-source :exact-pinned-syntax-source]
+           (mapv #(first (:missing-fields %)) results)))
     (is (every? #(identical? @small-c2 (:c2 %)) @events))
     (is (= "C3-FACT-STALE"
            (:id (diagnostic #(bootstrap/sh04-syntax-resolved-result!

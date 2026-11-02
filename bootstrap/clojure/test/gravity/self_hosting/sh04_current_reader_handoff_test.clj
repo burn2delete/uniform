@@ -10,9 +10,12 @@
   "bootstrap/clojure/fixtures/self-hosting/sh-04/current-reader-handoff")
 (defn- path [extension] (.getCanonicalPath (io/file (str fixture-base extension))))
 (defn- reader-path [] (.getCanonicalPath (io/file b/sh03-reader-source-relative-path)))
+(defn- syntax-path [] (.getCanonicalPath (io/file b/sh04-syntax-source-relative-path)))
 (defn- invocation []
   {:reader-source-path (reader-path)
-   :authenticated-envelope-options {:source :development-current}})
+   :authenticated-envelope-options {:source :development-current}
+   :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                             :source-path (syntax-path)}})
 (defn- construct [source text]
   (b/compiler-c3-syntax-source-artifact
     source text (b/reader-project-context-for-source source)
