@@ -1677,7 +1677,8 @@ The [2026-06-25 report](../docs/artifacts/phase-06/reports/p06-d097-c18-verifica
 retains its stage0 document-coverage scope and production/backend/runtime/release/
 self-hosting exclusions; its reported tests were not rerun or promoted.
 
-The next full source review is C16 incremental compilation. Its canonical
+At that checkpoint, the next full source review was C16 incremental compilation.
+Its canonical
 document has been read. The preserved trace at
 `0cbc3d4c00c47831d7e3ab6cdb63e289707167a7` has SHA-256
 `1e9f938d7485107fed63f0ab81eea5643a2599ad7457ca7cd8136f9ccaa7f9e1`.
@@ -1700,6 +1701,124 @@ declared additions. All changed files are ASCII and whitespace checks pass.
 
 No actual compiler, pass/checker/proof replay, backend/native/target/device,
 runtime/provider/C12, migration, signing, private-store or product-publication
+operation ran, and no other chat was messaged. Current independent review,
+global substantive reconciliation and implementation evidence assessment remain
+unfinished; mapping readiness stays false and the goal remains active. Reader
+contract coverage remains the first implementation preparation increment.
+
+## Complete incremental-compilation source review
+
+Direct C16 review, with the applicable L12 hermetic and PKG7/PKG11 rebuild
+boundaries, refines only the existing [Build cache and reproducibility tasks](../specs/build-workflow/tasks.md#implementation-tasks).
+The [Build plan](../specs/build-workflow/plan.md#complete-incremental-compilation-source-criteria)
+specifies producer-owned stage keys, all fifteen graph node families, complete
+invalidation/revalidation and proof-node mapping conditions, inspectable cache
+entries, speculative publication refusal and actual recorded-input rebuilds.
+Exact field edges are used when available; explicitly coarse early edges are
+legal but cannot skip invalidation. All nine C16 diagnostic meanings and their
+cache/artifact/stage/invalidating-input/span-or-manifest/profile/target/remediation
+context remain. Cache/trust labels cannot create authority or checker results.
+
+The historical existing/records/rebuild criterion spans are not complete
+literal current blocks, but their cache/rebuild opening criteria and the
+foundation graph-reproducibility clause already exist. Restore only the missing
+suffixes and records clause. Six ordered current fragments, joined with their
+original single spaces, reproduce all three old raw criterion hashes exactly.
+The foundation clause remains present once. This preserves source conjunctions
+without copying an already-owned clause or changing task identities/statuses.
+The cache task owns key/entry/graph reuse decisions and revalidation; the rebuild
+task performs authentic repeat-build and per-target comparisons. Stage, Resolve,
+Expand/Auth/typed-graph, provider and proof owners supply actual products under
+declared interfaces; Bootstrap consumes comparison evidence separately.
+
+The restored rebuild context retains byte-identical typed core in the required
+hermetic modes, complete controlled recipes, canonical manifest/content/graph
+comparison, explicit native-object metadata exceptions only with nonsemantic
+marking and target conformance, per-target support/failure/fallback evidence and
+standard-library package provenance. This is not whole L12, PKG2/7/11,
+foundation, library or bootstrap acceptance. Removed fuel/work/input quotas
+remain superseded; real semantic validation, target representability, secret
+redaction and external-service/host policy stay distinct. Local fixture work
+needs declared interfaces, not whole Build or fresh migration admission; actual
+composition and release claims require actual producer/checker/consumer results.
+
+The trace preserves 114 C16 facets (99 semantic and fifteen context), 44
+occurrences including 29 semantic conjunctions and six original owner joins.
+All source spans and the canonical whole-file hash match preserved inputs, and
+the spans cover every nonwhitespace C16 byte. These are conservation observations,
+not implementation acceptance. Trace SHA-256:
+`1e9f938d7485107fed63f0ab81eea5643a2599ad7457ca7cd8136f9ccaa7f9e1`;
+historical task source `0cbc3d4c00c47831d7e3ab6cdb63e289707167a7`.
+The independent scoped PASS remains at `e32ada7e` with qualified adoption/current
+applicability and all unselected/dependency/held-action exclusions. Whole-head,
+readiness, implementation, release and integration acceptance are not transferred.
+Current entailment is an author-assessed preserved-predicate fragment proposal;
+independent current review is pending and implementation/global conjunctions are
+unassessed. The tested GitHub trace reference returned Not Found; current
+canonical and task-fragment witnesses are used without a replacement dead link,
+aggregate publication or stopped-handoff retry.
+
+Source `7662cb4a4527d4e8d905f88f352428dc3d7867f5` advances the Build task
+and plan inputs from predecessor `191a1a03`, preserving its complete metadata/
+projection and pending review. Two task bodies change, with the cache task the
+one newly amended original body. Of 139 original bodies, 92 remain identical
+and 47 carry declared additions. Original IDs/statuses, 149 current task keys,
+forty future records, SH/SH07 routes and three scoped Reader receipts remain
+conserved. The 31 source-version file records remain; the existing Build plan
+inspection pin advances explicitly. Current mapping review remains pending at
+`6524501bf85db814c7c0e72f46a9931f91dfe39e8d76f330d7df41b7a1adc5d3`.
+
+Selected static inspection preserves partial code without promoting assigned
+reports into execution. The [hosted C16 assembly](../bootstrap/clojure/src/gravity/build/incremental/artifact.clj)
+constructs a diagnostic-shaped stage0 input, a fixed dependency graph and
+assigned validated/passed/rejected/reproducible records. Its [key projection](../bootstrap/clojure/src/gravity/build/incremental/projection.clj)
+uses several placeholder identities, and [validation](../bootstrap/clojure/src/gravity/build/incremental/validation.clj)
+checks fields/statuses rather than establishing all real reuse or rebuilds.
+The [policy](../bootstrap/clojure/src/gravity/build/incremental/policy.clj)
+explicitly excludes cache storage/lookup/publication/actual reuse and canonical
+C16/proof/release authority. That C15-shaped adapter input is not a universal
+prerequisite for ordinary incremental stage work.
+
+The [Gravity record model](../bootstrap/gravity/src/gravity/compiler/c16_incremental_compilation_design.gravity)
+has quoted constructors and generic verification declarations. The separate
+[W5 executor](../bootstrap/gravity/src/gravity/compiler/w5_c16_incremental_executor.gravity)
+contains actual request validation and result recomputation, while its supplied-
+data-only store, seed/JVM boundaries and pending independent rebuild/external
+proof/filesystem engine retain explicit no-release/no-self-hosting/non-authority
+limits. The [local pass-cache facade](../bootstrap/clojure/src/gravity/pass_cache.clj)
+delegates key/open/lookup/store/compute behavior to existing leaves and retains
+local/speculative scope rather than release/proof/equivalence authority. Its
+shape-allowance compatibility fields remain accounting-removal assessment work;
+actual filesystem/host store restrictions are separate. These are selected
+source observations, not a whole-cache audit or current execution receipts.
+The [2026-06-25 report](../docs/artifacts/phase-06/reports/p06-d095-c16-incremental-report.md)
+retains its stage0 document boundary and production persistence/release/
+self-hosting exclusions; its tests were not rerun or promoted.
+
+The next full source review is C17. Its canonical document has been read, and
+all three existing/records/pipeline witnesses hash-verify at `fb3a0501` and are
+already literal current Compiler API task text. Preserve those predicates while
+reviewing full current source/task/plan applicability. The trace at
+`726b04bbb4add5092074876522ced4792584ae30` has SHA-256
+`084a0a1d7cccff88074193da58788a06063c5ab86838d04cd16c916dd1874e57`,
+with 108 facets, 45 occurrences, thirty semantic conjunctions and six owner
+joins. This preliminary observation does not transfer source review, accept
+implementation or authorize plugin/sandbox/callback execution.
+
+Final C16 validation passes: 40 crosswalk tests / 4,678 assertions, 23 dependency
+tests / 1,774 assertions, deterministic generation/check, read-only dependency
+audit, canonical document/full-language structural validators and the language
+boundary (six tests / eleven assertions). Controls verify all three historical
+criterion hashes through six exact current fragments, preserve the single
+foundation clause, detect a removed conjunction fragment or semantic facet,
+and retain historical review exclusions without execution credit.
+Conservation/navigation passes for 82 changed files, 76 Markdown files,
+2,960 local references, 139 original routes, 48 historical spec/plan suffixes
+and all 48 original task/evidence contents after stripping declared additions.
+All changed files are ASCII and whitespace checks pass.
+
+No actual compiler/cache-build/proof/provider/broker/controller/target-probe,
+C12/native/device/migration, signing, private-store or product-publication
 operation ran, and no other chat was messaged. Current independent review,
 global substantive reconciliation and implementation evidence assessment remain
 unfinished; mapping readiness stays false and the goal remains active. Reader

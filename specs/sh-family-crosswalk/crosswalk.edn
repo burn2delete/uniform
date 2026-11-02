@@ -10789,6 +10789,12 @@
      "aebf4b6087817fd1f5c140868e0225989322c4cfb8f7fa5953ca3fe0f22cf0a3",
      :source-commit "7c408997aedbe79953cac5a60c97d6370ca4c2e1",
      :kind :source-inspection-not-execution,
+     :current-applicability :unassessed}
+    {:path "specs/build-workflow/plan.md",
+     :sha256
+     "f7918ef386b1e87561348931b9986aa19792eccdab489b26ee967d397be0e7fc",
+     :source-commit "7662cb4a4527d4e8d905f88f352428dc3d7867f5",
+     :kind :source-inspection-not-execution,
      :current-applicability :unassessed}],
    :qualification
    "Real execution/rebuild/release evidence required; supplied-record validation cannot close this facet.",
@@ -11644,8 +11650,8 @@
      :current-applicability :unassessed}
     {:path "specs/build-workflow/plan.md",
      :sha256
-     "b1a68edd236414df44814fe79b454e54d4c42990ae445e262675fb567d782e16",
-     :source-commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+     "f7918ef386b1e87561348931b9986aa19792eccdab489b26ee967d397be0e7fc",
+     :source-commit "7662cb4a4527d4e8d905f88f352428dc3d7867f5",
      :kind :source-inspection-not-execution,
      :current-applicability :unassessed}],
    :qualification
@@ -12039,8 +12045,8 @@
      :current-applicability :unassessed}
     {:path "specs/build-workflow/plan.md",
      :sha256
-     "b1a68edd236414df44814fe79b454e54d4c42990ae445e262675fb567d782e16",
-     :source-commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+     "f7918ef386b1e87561348931b9986aa19792eccdab489b26ee967d397be0e7fc",
+     :source-commit "7662cb4a4527d4e8d905f88f352428dc3d7867f5",
      :kind :source-inspection-not-execution,
      :current-applicability :unassessed}],
    :qualification
@@ -12388,8 +12394,8 @@
      :current-applicability :unassessed}
     {:path "specs/build-workflow/plan.md",
      :sha256
-     "b1a68edd236414df44814fe79b454e54d4c42990ae445e262675fb567d782e16",
-     :source-commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+     "f7918ef386b1e87561348931b9986aa19792eccdab489b26ee967d397be0e7fc",
+     :source-commit "7662cb4a4527d4e8d905f88f352428dc3d7867f5",
      :kind :source-inspection-not-execution,
      :current-applicability :unassessed}],
    :qualification
@@ -12461,8 +12467,8 @@
      :current-applicability :unassessed}
     {:path "specs/build-workflow/plan.md",
      :sha256
-     "b1a68edd236414df44814fe79b454e54d4c42990ae445e262675fb567d782e16",
-     :source-commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+     "f7918ef386b1e87561348931b9986aa19792eccdab489b26ee967d397be0e7fc",
+     :source-commit "7662cb4a4527d4e8d905f88f352428dc3d7867f5",
      :kind :source-inspection-not-execution,
      :current-applicability :unassessed}],
    :qualification
@@ -15059,7 +15065,7 @@
    :source-version-bridge
    "specs/sh-family-crosswalk/macro-runtime-source-version.edn"},
   :input-fingerprint
-  "9dc8e9d0f45469bd83836db0bcb13b50127afa4506732f38752e4f80aa96f4a6"},
+  "6524501bf85db814c7c0e72f46a9931f91dfe39e8d76f330d7df41b7a1adc5d3"},
  :implementation-readiness-source-version
  {:foundation-tools-refinement
   {:new-task-identities [],
@@ -15292,9 +15298,9 @@
    :independent-review :pending,
    :global-source-conjunctions :unassessed,
    :implementation-acceptance :unassessed},
-  :source-input-commit "0e1cec28f43d2902032b1786af08f7aa17af8107",
+  :source-input-commit "7662cb4a4527d4e8d905f88f352428dc3d7867f5",
   :task-comparisons
-  {:unchanged-body-count 93,
+  {:unchanged-body-count 92,
    :changed-bodies
    [{:id "ai",
      :path "specs/domains-workflow/tasks.md",
@@ -15310,7 +15316,16 @@
      :before-sha256
      "e8987cc8863981527889461d9af2194c2a0b17393b82ca6f83e8a555581b5ebe",
      :after-sha256
-     "497a094ce811e502e7a5bf614b2cb60848d1d2e48c3c0d877585dae3eda74b7c",
+     "c81fd5fabb556511458db6d4ebf13d9e3d8abbeb51f1445330e3fe0bbb603f79",
+     :before-checked false,
+     :after-checked false}
+    {:id
+     "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+     :path "specs/build-workflow/tasks.md",
+     :before-sha256
+     "f293e86a6d4be7cc1b6f0723e2a117d1880a592c1e16d3ec75cac24dd234d01e",
+     :after-sha256
+     "8a6713eb4d92b663a6c3d677fdc6041c130827e8cce7f43a2e00176235d7b1db",
      :before-checked false,
      :after-checked false}
     {:id
@@ -34386,6 +34401,2410 @@
    "Resume thirteen existing test/seed producers and the detailed criteria of the five aggregate Release tasks. Keep actual evidence production, stage comparison, intermediate admission and final release separate. Existing native receipts retain their original scopes. TEST6 remains with Backends. Budget/resource labels concern real external billing or host/platform restrictions, not compiler work quotas. No suite, native observation, held operation or release decision ran.",
    :math-consumer-context :future-release-testing-records-now-resumed,
    :implementation-acceptance :unassessed},
+  :incremental-refinement
+  {:canonical-sources
+   {"docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md"
+    {:path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-commit "191a1a036a2cc289d25dc24326d5768a2934da58",
+     :sha256
+     "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662"}},
+   :new-task-identities [],
+   :occurrence-cases
+   {"C16/source/5fa564012938853f289e3b62c9c4b8130abe72401896424a71e9cad5687b96d4"
+    {:index 31,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit."},
+    "C16/source/b33f13d9e0c2df3814aa637c3ead1a6619aef38597591180781e2cf12db6eb76"
+    {:index 30,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :predicate
+     "Proof reuse compares claim/inputs/assumptions/profile/target/compiler/provider/package/invalidation; changed node identity with preserved operation needs actual proof mapping before reuse, otherwise reject/reprove and retain residual checks."},
+    "C16/source/935831ff96d55776a037d14b833d13627b6a5eecdafbc51189cfd4dd2ec8b883"
+    {:index 43,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :predicate
+     "Require real stage keys/graphs, equal-input-policy reuse, changed source/macro/namespace/type/effect/profile/safety/proof/dependency/target/backend refusals/recompute, stale proof/diagnostics, replay keying, nonpublishing speculation and recorded-input release rebuild."},
+    "C16/source/e2681642f4a462a0cb0c03c85170764f9dd344dd8d0955a0eee1882921ec361b"
+    {:index 16,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :predicate
+     "Key fields bind actual stage/source/reader/syntax/expansion/namespace/profile/target/compiler/pass/dependency/replay/capability/facet hashes; type-check example does not set universal subsets or supply valid hashes."},
+    "C16/source/7aba80be970f34bb1ea983c10189a943f60eee71f2c8d6df5c6ca38ed7e047a2"
+    {:index 35,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit."},
+    "C16/source/0daa913e0f5eaae0dd76efe96884065563f4dfb7c251eaeae52034ab02b1a97f"
+    {:index 18,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit."},
+    "C16/source/8cecbd59feeff90a8078a1f2e643822baf4972fc200b7964fcc46b83bf22d7c0"
+    {:index 1,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit."},
+    "C16/source/ea70c7f90a8182308c7c6d6d4040ee6a51ab12bbf85aa7672291155fb3d6fe83"
+    {:index 21,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit."},
+    "C16/source/16a758bfb50b6cf7ab1feda1b6936d3c99940b473a947e42d0306061a4e92aac"
+    {:index 14,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :predicate
+     "Use field-level dependencies when available; explicitly coarse early edges are legal but reduce reuse and cannot skip invalidation."},
+    "C16/source/b0b8e2aa6323b12251f9c373d193cf6f36d99d3a8afd62ed0094122be6a3d1fc"
+    {:index 12,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:records],
+     :predicate
+     "Dependency graph retains the full following artifact node family set."},
+    "C16/source/1c55eca6e0bcc12a9250807ce1e8eecf5aaa96eac6c495c0bdc798e6db3e2b10"
+    {:index 34,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:records],
+     :predicate
+     "Diagnostics retain cache key/artifact/stage/invalidating input/available span-or-manifest/profile/target/remediation."},
+    "C16/source/f8e8e0bfecd8c35798b001a9b7804b777c9151e23334cb089370bf941d8a3629"
+    {:index 27,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :predicate
+     "Check key equality/schema/pass version/preserved facts/proof freshness/profile-target/diagnostic/dependency graph compatibility."},
+    "C16/source/1aa888bdc6e95778b509c8bf2d0d8ec01c718ef5175aa6f3bb70a9e3efb53cee"
+    {:index 19,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:records],
+     :predicate
+     "Entry manifests bind actual key/artifact/producer version/inputs/preserved facts/invalidation/diagnostics/trust/revalidation. Example local-build trust and type-check values confer no authority or universal policy."},
+    "C16/source/d9af46bcc47e2d3f93e9c6326f20dfeef27b8983c6cd9fc132062900b1bf6f21"
+    {:index 0,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit."},
+    "C16/source/9d215b1b4472059ce1f4a6a618fec61dd96eaf772c5582234884978fdc044428"
+    {:index 42,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :predicate
+     "Conformance requires actual results for the complete following reuse/invalidation/rebuild matrix."},
+    "C16/source/f3e22a7047b40a82f8aeeef8179a1330d67df2bd2e6a59593b1b3c24f35c7f39"
+    {:index 2,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit."},
+    "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36"
+    {:index 13,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:records],
+     :predicate
+     "Source/syntax/expansion/namespace/typed core/effect/ownership/safety/MIR/optimization/domain/target/diagnostic/proof/package-provider nodes retain real identities."},
+    "C16/source/51af5d9ca77a9f904c409cd9e3e6bc6fb1079fe9a4d254ea2bb0c49880fb5fd5"
+    {:index 11,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit."},
+    "C16/source/6b61a8590bc14212d30d046a765b6dac15f9fc334672f43aab23797bab3e7b7f"
+    {:index 6,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :predicate
+     "All seven requirements survive: complete keys, stage/pass validation, all named changes, diagnostics/provenance/invalidation, proof freshness, reproducible recorded/replay builds and explicit speculative revalidation status."},
+    "C16/source/f92742f4db1dd17abf5c17b587c4227713cf25a290e3ab034900f7959af6c5f5"
+    {:index 10,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :predicate
+     "Emit every graph/key/entry/invalidation/reuse/revalidation/stale-proof/diagnostic product."},
+    "C16/source/8169ab4c3aeacd50c265bd1a5501ef4c1a6c91151ad9b210e8be82324eb3eb01"
+    {:index 36,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :predicate "Timestamp-only identity refuses."},
+    "C16/source/cc425c73eafeba23c7842808fa87f96afef3117c5c9a624bbd3e3498e0cf1e30"
+    {:index 9,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit."},
+    "C16/source/c41812f1bcfe4a68fed5d7a28611b6ef3e5ae22fa06440c0a402275d054ff213"
+    {:index 40,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :predicate
+     "Proof invalidation premises are checked before reuse."},
+    "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea"
+    {:index 23,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :predicate
+     "Cover source/reader option-extension/macro-definition-dependency/grant-replay/namespace import-export-alias/package version/type-rule-provider/effect-capability policy/profile/safety-proof-trust/pass/target-backend/runtime-provider/facet/diagnostic changes."},
+    "C16/source/533f892e31da1f8c2d3bb507b8e8ef015181299b2e3894d137eadf7d9a5b2a04"
+    {:index 37,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :predicate
+     "Changed type/effect/profile/safety/proof inputs cannot bypass validation through cache reuse."},
+    "C16/source/25b04269ebba3b9fa69631d0f42e248a6c12c649751cd0528eaf495dbdb211c2"
+    {:index 17,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :predicate
+     "Each producing stage owns its required subset; omitted required key fields reject."},
+    "C16/source/879807156b48d418d5197c9e6429a0f83b160eabd206ae9b367f51bb9dedbab9"
+    {:index 4,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :predicate
+     "Reuse is optimization and never bypasses stale/incomplete artifact validation."},
+    "C16/source/e158cd5df2290a42a2c80bf4c642dc142d8020275fa29b41edfaf8870a12ab46"
+    {:index 38,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :predicate
+     "Changed diagnostic origins/facts cannot reuse a stale stream."},
+    "C16/source/47de5367df50cd65a8968b8adff0d4c417c93d589b21ef5905e36c1486bd2a3b"
+    {:index 15,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit."},
+    "C16/source/be09d21f0c19ff80e3297bf00f379add33b87f29646367c8dd7360c080ec4e18"
+    {:index 7,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit."},
+    "C16/source/a0bf36c83711c99e09c1276a97b9fcec891658e62e43f106ddca4e688d4ac473"
+    {:index 8,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :predicate
+     "Actual C1 and stage contracts, L12 replay/effects, SAFE15 proof, PERF3 specialization, package/project/lock/graph/environment and later bootstrap comparison interfaces retain distinct producer/consumer evidence, not completed-component prerequisites."},
+    "C16/source/aa39593b3ed16db99ef6248fe89dcaca7ca473e0065acdfbe143f85ac742c6b9"
+    {:index 39,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :predicate
+     "Speculative cache artifacts cannot satisfy release publication."},
+    "C16/source/07b4f48acb7943f4efdabb5c40d67f123ba333916a04d3fce3afb2043dc407bb"
+    {:index 5,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit."},
+    "C16/source/73973f34701a310778b06ae0ff91cca52213b6625b6d85e7f8070432c2137a20"
+    {:index 22,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :predicate
+     "All following invalidation classes participate in actual dependency revalidation."},
+    "C16/source/4a82da1bf814df3c3652c80ece4d76726acf2edf65ef99bcd08ee3b5c11abd70"
+    {:index 3,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :predicate
+     "Reuse preserves semantic/safety/profile/proof/reproducibility guarantees and keys all actual meaning-bearing source/compiler/profile/target/dependency/build-effect/authority/pass/policy facts."},
+    "C16/source/c325588faabe92e80d147223ecbc395c4bbfbbdd8ce13bdf2839e168d1940c9c"
+    {:index 25,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit."},
+    "C16/source/ccca9e06a699efb82ffb69a9d3740b0ea7c2a6d9709a4662d7be7db1e155beb3"
+    {:index 26,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :predicate
+     "The complete following revalidation conjunction precedes ordinary non-speculative reuse."},
+    "C16/source/b8a9ce501774f1bf92d9fbb29576b9c2c5356fe102f839058367fc9f47015c92"
+    {:index 24,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :predicate
+     "Invalidation names exact affected nodes and downstream stages, not merely a changed flag."},
+    "C16/source/9e0de417c737286474447693a6ac5be9c743d3f45a7be8a99c28f20cead9bea3"
+    {:index 32,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:records],
+     :predicate "Preserve C16 diagnostic family and meanings."},
+    "C16/source/5944a98c1f3c222d31c0c4603d206a3c82b9703c7ce585e7656eb2a0fb514265"
+    {:index 41,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit."},
+    "C16/source/86d9995f96c186c23b3a47da0c7ebe3a55beb1fe485900a6914cf11f8f08210d"
+    {:index 29,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit."},
+    "C16/source/1574ef47db2e79b3ccf52d99cb99bd1fc489edee63606bd4af14b9b439e89784"
+    {:index 33,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :predicate
+     "All nine key/entry/stale/proof/speculative/replay/policy/diagnostic/graph failures retain actual refusal fixtures."},
+    "C16/source/50edccdfe201db1353086acd15cca806a2e14d1211ec9c219a6eede441ea558c"
+    {:index 28,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :predicate
+     "Mark partial interactive artifacts :reuse :speculative and record status; prevent release publication until full revalidation passes."},
+    "C16/source/ad0ffb0ee79ec605dfe8765b23e2c43f24da9a0abbd914b9193219fd75f2e438"
+    {:index 20,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:records],
+     :predicate
+     "Cache entries remain inspectable/invalidateable provenance artifacts like other compiler products."}},
+   :dependency-joins
+   [{:source "C1/C2-C15 stage contracts; L12/SAFE15/PERF3",
+     :input
+     "Actual versioned stage/schema/fact/origin/diagnostic, build replay, proof invalidation and specialization contracts",
+     :consumers [:existing :records]}
+    {:source
+     "Project/lock/package/graph/environment; Build reproducibility task",
+     :input
+     "Recorded authentic input/replay/recipe and actual canonical repeated-output comparison, not cache success flags",
+     :consumers [:rebuild]}
+    {:source "Bootstrap stage comparison",
+     :input
+     "Actual stage artifacts and provenance; full equivalence/seed retirement remains separate",
+     :consumers [:records :rebuild]}],
+   :predecessor-readiness-successor
+   {:commit "191a1a036a2cc289d25dc24326d5768a2934da58",
+    :path
+    "specs/sh-family-crosswalk/implementation-readiness-source-version.edn",
+    :sha256
+    "15591c880f09678c57a5a63ba83e7adb605e2b741d73a98d942955738e4e5a5e",
+    :projection-path "specs/sh-family-crosswalk/crosswalk.edn",
+    :projection-sha256
+    "365121588c4e6dfe3a278ef3a46b0a4f8fa8c90055986507f95826936b90de45",
+    :input-fingerprint
+    "9dc8e9d0f45469bd83836db0bcb13b50127afa4506732f38752e4f80aa96f4a6"},
+   :plan-source
+   {:path "specs/build-workflow/plan.md",
+    :before
+    {:commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+     :sha256
+     "b1a68edd236414df44814fe79b454e54d4c42990ae445e262675fb567d782e16",
+     :kind :source-inspection-not-execution},
+    :after
+    {:commit "7662cb4a4527d4e8d905f88f352428dc3d7867f5",
+     :sha256
+     "f7918ef386b1e87561348931b9986aa19792eccdab489b26ee967d397be0e7fc"},
+    :kind :source-inspection-not-execution},
+   :criteria
+   [{:key :existing,
+     :task-id
+     "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+     :preserved-fragment-count 1,
+     :historical-witness
+     {:path "specs/build-workflow/tasks.md",
+      :marker "build-implementation-tasks",
+      :task-id
+      "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+      :file-sha256
+      "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+      :start-byte 22471,
+      :end-byte 27237,
+      :raw-sha256
+      "72b77a11a1ab790211d0c85693527fafde9d253a22f26b687371dd9cfbdb8ab2",
+      :commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7"},
+     :current-fragments
+     [{:path "specs/build-workflow/tasks.md",
+       :source-commit "7662cb4a4527d4e8d905f88f352428dc3d7867f5",
+       :sha256
+       "4278f904693ba87e994b082a8272d8b7c7cbfbe40dc60b1c5c9299dd173780d3",
+       :source-span
+       {:start-byte 4094,
+        :end-byte 4177,
+        :start-line 67,
+        :end-line 67,
+        :sha256
+        "2e91b83a5c96eed13d7f9a40276c95fe07852d78c649e93934fadb5bfe9d4e4d"}}
+      {:path "specs/build-workflow/tasks.md",
+       :source-commit "7662cb4a4527d4e8d905f88f352428dc3d7867f5",
+       :sha256
+       "4278f904693ba87e994b082a8272d8b7c7cbfbe40dc60b1c5c9299dd173780d3",
+       :source-span
+       {:start-byte 4512,
+        :end-byte 9194,
+        :start-line 73,
+        :end-line 73,
+        :sha256
+        "00df9b6ae44a8627addfe259c7069b384761888be6288ac54166f1ab402105ae"}}],
+     :join-separator " ",
+     :reconstructed-sha256
+     "72b77a11a1ab790211d0c85693527fafde9d253a22f26b687371dd9cfbdb8ab2"}
+    {:key :records,
+     :task-id
+     "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+     :preserved-fragment-count 0,
+     :historical-witness
+     {:path "specs/build-workflow/tasks.md",
+      :marker "build-implementation-tasks",
+      :task-id
+      "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+      :file-sha256
+      "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+      :start-byte 27238,
+      :end-byte 30497,
+      :raw-sha256
+      "c972fd4e67b15c5aa720467d95f911a2995e0f2de35c09f0dcb8b9ac14b7e7aa",
+      :commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7"},
+     :current-fragments
+     [{:path "specs/build-workflow/tasks.md",
+       :source-commit "7662cb4a4527d4e8d905f88f352428dc3d7867f5",
+       :sha256
+       "4278f904693ba87e994b082a8272d8b7c7cbfbe40dc60b1c5c9299dd173780d3",
+       :source-span
+       {:start-byte 9578,
+        :end-byte 12837,
+        :start-line 80,
+        :end-line 80,
+        :sha256
+        "c972fd4e67b15c5aa720467d95f911a2995e0f2de35c09f0dcb8b9ac14b7e7aa"}}],
+     :join-separator " ",
+     :reconstructed-sha256
+     "c972fd4e67b15c5aa720467d95f911a2995e0f2de35c09f0dcb8b9ac14b7e7aa"}
+    {:key :rebuild,
+     :task-id
+     "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+     :preserved-fragment-count 2,
+     :historical-witness
+     {:path "specs/build-workflow/tasks.md",
+      :marker "build-implementation-tasks",
+      :task-id
+      "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+      :file-sha256
+      "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+      :start-byte 52302,
+      :end-byte 60337,
+      :raw-sha256
+      "17fa76a91d1ea5fb748a9d9258750b8e5da578f8275258d68c966d861e5fa9f4",
+      :commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7"},
+     :current-fragments
+     [{:path "specs/build-workflow/tasks.md",
+       :source-commit "7662cb4a4527d4e8d905f88f352428dc3d7867f5",
+       :sha256
+       "4278f904693ba87e994b082a8272d8b7c7cbfbe40dc60b1c5c9299dd173780d3",
+       :source-span
+       {:start-byte 16032,
+        :end-byte 16119,
+        :start-line 133,
+        :end-line 133,
+        :sha256
+        "bc110f0ceac69fcccb179e1baeb6251777c4c585b1b9b7d6aacf82981a4397e6"}}
+      {:path "specs/build-workflow/tasks.md",
+       :source-commit "7662cb4a4527d4e8d905f88f352428dc3d7867f5",
+       :sha256
+       "4278f904693ba87e994b082a8272d8b7c7cbfbe40dc60b1c5c9299dd173780d3",
+       :source-span
+       {:start-byte 16334,
+        :end-byte 17299,
+        :start-line 138,
+        :end-line 138,
+        :sha256
+        "63ec3784468a2458c81b09e2a5e4dc42e951438b9f6b76cb3edcafaab1f6f318"}}
+      {:path "specs/build-workflow/tasks.md",
+       :source-commit "7662cb4a4527d4e8d905f88f352428dc3d7867f5",
+       :sha256
+       "4278f904693ba87e994b082a8272d8b7c7cbfbe40dc60b1c5c9299dd173780d3",
+       :source-span
+       {:start-byte 17680,
+        :end-byte 24661,
+        :start-line 145,
+        :end-line 145,
+        :sha256
+        "ba7650e21f0ed6b40d030aca502d99a97fd29378586219ed420d31caae12d985"}}],
+     :join-separator " ",
+     :reconstructed-sha256
+     "17fa76a91d1ea5fb748a9d9258750b8e5da578f8275258d68c966d861e5fa9f4"}],
+   :owner-joins
+   {"compiler/c16/cache-revalidation"
+    {:id "compiler/c16/cache-revalidation",
+     :original-obligation
+     "Reuse stage-specific entries only after producing-pass/schema/version/facts/policy/dependency/diagnostic validation, retaining provenance and invalidation records.",
+     :criterion-keys [:existing :records],
+     :status
+     :existing-owner-current-conjunction-proposed-independent-acceptance-pending,
+     :implementation-credit :none},
+    "compiler/c16/dependency-invalidation"
+    {:id "compiler/c16/dependency-invalidation",
+     :original-obligation
+     "Invalidate downstream artifacts on every specified source/macro/namespace/type/effect/profile/capability/safety/proof/provider/target/backend/package/policy/facet/diagnostic change; record exact affected revalidation stages.",
+     :criterion-keys [:existing :records],
+     :status
+     :existing-owner-current-conjunction-proposed-independent-acceptance-pending,
+     :implementation-credit :none},
+    "compiler/c16/proof-reuse"
+    {:id "compiler/c16/proof-reuse",
+     :original-obligation
+     "Reuse proofs/certificates only when complete claim/input/assumption/context/invalidation conditions match; require a mapping when node identity changes but semantics survive.",
+     :criterion-keys [:existing :records],
+     :status
+     :existing-owner-current-conjunction-proposed-independent-acceptance-pending,
+     :implementation-credit :none},
+    "compiler/c16/recorded-rebuild"
+    {:id "compiler/c16/recorded-rebuild",
+     :original-obligation
+     "Reproduce hermetic/release artifacts from recorded inputs and replay rather than trusting stale or incomplete caches.",
+     :criterion-keys [:existing :records :rebuild],
+     :status
+     :existing-owner-current-conjunction-proposed-independent-acceptance-pending,
+     :implementation-credit :none},
+    "compiler/c16/semantic-cache-key"
+    {:id "compiler/c16/semantic-cache-key",
+     :original-obligation
+     "Key each reusable stage artifact over all meaning/legality/proof/diagnostic/output inputs with producer-owned required fields; reject incomplete or timestamp-only identity.",
+     :criterion-keys [:existing :records],
+     :status
+     :existing-owner-current-conjunction-proposed-independent-acceptance-pending,
+     :implementation-credit :none},
+    "compiler/c16/speculation-publication-gate"
+    {:id "compiler/c16/speculation-publication-gate",
+     :original-obligation
+     "Mark partial interactive reuse speculative and withhold release publication until full revalidation succeeds.",
+     :criterion-keys [:existing :records :rebuild],
+     :status
+     :existing-owner-current-conjunction-proposed-independent-acceptance-pending,
+     :implementation-credit :none}},
+   :source-entailment
+   :author-assessed-preserved-predicate-fragment-proposal,
+   :independent-current-review :pending,
+   :source-facets
+   [{:id "C16/normalized-facet/0-39/b1533f4b06824ead",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/d9af46bcc47e2d3f93e9c6326f20dfeef27b8983c6cd9fc132062900b1bf6f21",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 0,
+      :end-byte 39,
+      :sha256
+      "b1533f4b06824ead83ffd960ee5fb0254e4606924c1ef9880d73dd657877bef5"}}
+    {:id "C16/normalized-facet/40-316/64388db857b74ef8",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/8cecbd59feeff90a8078a1f2e643822baf4972fc200b7964fcc46b83bf22d7c0",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 40,
+      :end-byte 316,
+      :sha256
+      "64388db857b74ef899a81b871e0c1db897afbb9b5a4a2cdfc91ca7c44e382314"}}
+    {:id "C16/normalized-facet/317-328/994413297a3e95a9",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/f3e22a7047b40a82f8aeeef8179a1330d67df2bd2e6a59593b1b3c24f35c7f39",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 317,
+      :end-byte 328,
+      :sha256
+      "994413297a3e95a9b72f5e4c04aa9c306f9009ad88fa0f99453d1963835668b9"}}
+    {:id "C16/facet/329-622",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/4a82da1bf814df3c3652c80ece4d76726acf2edf65ef99bcd08ee3b5c11abd70",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 329,
+      :end-byte 622,
+      :sha256
+      "6dc8c55899bad2a1d9898d20e87cca247c78f8c2a420253a854f56ead54e57bd"}}
+    {:id "C16/facet/623-713",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/879807156b48d418d5197c9e6429a0f83b160eabd206ae9b367f51bb9dedbab9",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 623,
+      :end-byte 713,
+      :sha256
+      "93851511c5ddfff580848d7823fc7d8dbe8de910b9f67875745004028300e3cd"}}
+    {:id "C16/normalized-facet/714-730/d8416f1863ce5290",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/07b4f48acb7943f4efdabb5c40d67f123ba333916a04d3fce3afb2043dc407bb",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 714,
+      :end-byte 730,
+      :sha256
+      "d8416f1863ce5290f0f41fa533fb9e10fef5d405c1300c03e276a0a894382b61"}}
+    {:id "C16/facet/731-882",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/6b61a8590bc14212d30d046a765b6dac15f9fc334672f43aab23797bab3e7b7f",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids ["compiler/c16/semantic-cache-key"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 731,
+      :end-byte 882,
+      :sha256
+      "e1bef964d0b67e30ebb69882ed586b351b225623033ca2fde260d19d33f229f2"}}
+    {:id "C16/facet/882-972",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/6b61a8590bc14212d30d046a765b6dac15f9fc334672f43aab23797bab3e7b7f",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids ["compiler/c16/cache-revalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 882,
+      :end-byte 972,
+      :sha256
+      "84ee40632387b37daea2be77da3580e8a820a21d4cef72143e31a6a2ccbb724f"}}
+    {:id "C16/facet/972-1146",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/6b61a8590bc14212d30d046a765b6dac15f9fc334672f43aab23797bab3e7b7f",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 972,
+      :end-byte 1146,
+      :sha256
+      "b8ecb1b305b7c6ffd8878b228e53f9bd0591acbe036442f114fe841ee13748b2"}}
+    {:id "C16/facet/1146-1233",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/6b61a8590bc14212d30d046a765b6dac15f9fc334672f43aab23797bab3e7b7f",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids ["compiler/c16/cache-revalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 1146,
+      :end-byte 1233,
+      :sha256
+      "1d00369ebc9eedb0607ab6c3f675c083ccdfc24318d26dbd5ed8aacef9fa5b1d"}}
+    {:id "C16/facet/1233-1322",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/6b61a8590bc14212d30d046a765b6dac15f9fc334672f43aab23797bab3e7b7f",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids ["compiler/c16/proof-reuse"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 1233,
+      :end-byte 1322,
+      :sha256
+      "029fec42ea19fc3582f970ce597f242161f39148bf3a17384a5e70e0356b251e"}}
+    {:id "C16/facet/1322-1416",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/6b61a8590bc14212d30d046a765b6dac15f9fc334672f43aab23797bab3e7b7f",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids ["compiler/c16/recorded-rebuild"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 1322,
+      :end-byte 1416,
+      :sha256
+      "2bda143813bac1181c9dbab2959896a191ed3bf951edc7fd3a1c299ed4d81de5"}}
+    {:id "C16/facet/1416-1538",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/6b61a8590bc14212d30d046a765b6dac15f9fc334672f43aab23797bab3e7b7f",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 1416,
+      :end-byte 1538,
+      :sha256
+      "a23bff721217aead12be4bf6ddccb440138dc56ab32fb649c8f4960f782858d8"}}
+    {:id "C16/normalized-facet/1539-1555/21d1931a332d9b7f",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/be09d21f0c19ff80e3297bf00f379add33b87f29646367c8dd7360c080ec4e18",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 1539,
+      :end-byte 1555,
+      :sha256
+      "21d1931a332d9b7f509d0637a459922427a666e44b8a7f19d1a912664edf66f7"}}
+    {:id "C16/facet/1556-1594",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/a0bf36c83711c99e09c1276a97b9fcec891658e62e43f106ddca4e688d4ac473",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 1556,
+      :end-byte 1594,
+      :sha256
+      "4ba7cf640c2cd1c245b46d913ccf64d354cc7dd96b623b6007ae4344526d25f8"}}
+    {:id "C16/facet/1594-1655",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/a0bf36c83711c99e09c1276a97b9fcec891658e62e43f106ddca4e688d4ac473",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 1594,
+      :end-byte 1655,
+      :sha256
+      "1b9ecf213ea23d88e72191dfc2027ab8edd0296f9d1939c56fc83003c00405bf"}}
+    {:id "C16/facet/1655-1710",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/a0bf36c83711c99e09c1276a97b9fcec891658e62e43f106ddca4e688d4ac473",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 1655,
+      :end-byte 1710,
+      :sha256
+      "fa2f111ea22b28568a963896bb879e42c1b999d64e1fd3530502a2b94a192f8f"}}
+    {:id "C16/facet/1710-1765",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/a0bf36c83711c99e09c1276a97b9fcec891658e62e43f106ddca4e688d4ac473",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 1710,
+      :end-byte 1765,
+      :sha256
+      "323b0894965e9f90640ee62e50df9580643d2cf706390936d2eaef7448fa70b1"}}
+    {:id "C16/facet/1765-1818",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/a0bf36c83711c99e09c1276a97b9fcec891658e62e43f106ddca4e688d4ac473",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 1765,
+      :end-byte 1818,
+      :sha256
+      "6ef20f97df35838b1b9fed637206a79933081e84b798f436962c561c0403f05e"}}
+    {:id "C16/facet/1818-1933",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/a0bf36c83711c99e09c1276a97b9fcec891658e62e43f106ddca4e688d4ac473",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 1818,
+      :end-byte 1933,
+      :sha256
+      "b383a4091f154bfbf007ec815cdeeb1499b8a8ee3308e1534b5a9680d71cb348"}}
+    {:id "C16/facet/1933-2003",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/a0bf36c83711c99e09c1276a97b9fcec891658e62e43f106ddca4e688d4ac473",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 1933,
+      :end-byte 2003,
+      :sha256
+      "217ed50e76d210f0b6f0bd46b393c0349e9f49daa42cc29e99e2f083c2375b2e"}}
+    {:id "C16/normalized-facet/2004-2029/f4280a4d61a89adc",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/cc425c73eafeba23c7842808fa87f96afef3117c5c9a624bbd3e3498e0cf1e30",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2004,
+      :end-byte 2029,
+      :sha256
+      "f4280a4d61a89adc67415f182bd6ae026ebf04a881b9948794b09fe7418ab882"}}
+    {:id "C16/facet/2030-2062",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/f92742f4db1dd17abf5c17b587c4227713cf25a290e3ab034900f7959af6c5f5",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2030,
+      :end-byte 2062,
+      :sha256
+      "740684f7424034213791be933b436d3ec27dd7f97c55b928e26bfee237cea9c0"}}
+    {:id "C16/facet/2062-2088",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/f92742f4db1dd17abf5c17b587c4227713cf25a290e3ab034900f7959af6c5f5",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2062,
+      :end-byte 2088,
+      :sha256
+      "a67a32223c0ac45c2def28b16a57568fe611e8474b54de25194e31e8a09ae430"}}
+    {:id "C16/facet/2088-2112",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/f92742f4db1dd17abf5c17b587c4227713cf25a290e3ab034900f7959af6c5f5",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2088,
+      :end-byte 2112,
+      :sha256
+      "0ce10bbe448a1d167b7139599fd85374b24ac6d86dd311afd99f4c39a3088387"}}
+    {:id "C16/facet/2112-2134",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/f92742f4db1dd17abf5c17b587c4227713cf25a290e3ab034900f7959af6c5f5",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2112,
+      :end-byte 2134,
+      :sha256
+      "4404ade3fd069ec79b1162d8269a5832c8ebfb6e8e86f3839eb1e8edd9402c5b"}}
+    {:id "C16/facet/2134-2159",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/f92742f4db1dd17abf5c17b587c4227713cf25a290e3ab034900f7959af6c5f5",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2134,
+      :end-byte 2159,
+      :sha256
+      "579913e845ee0e1e4ee3ae4a35f13d3700d33f793b23530188fb0dc43b93d8b4"}}
+    {:id "C16/facet/2159-2182",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/f92742f4db1dd17abf5c17b587c4227713cf25a290e3ab034900f7959af6c5f5",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2159,
+      :end-byte 2182,
+      :sha256
+      "4e91fb6000a41d17a1953c826e030c11a9e72a9d98fea59f0cb1904df1cc7fd6"}}
+    {:id "C16/facet/2182-2214",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/f92742f4db1dd17abf5c17b587c4227713cf25a290e3ab034900f7959af6c5f5",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2182,
+      :end-byte 2214,
+      :sha256
+      "3b45dbcff672114d063bfc11b5f9111ec9311d1febe5820d7950996eaedcabe3"}}
+    {:id "C16/facet/2214-2241",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/f92742f4db1dd17abf5c17b587c4227713cf25a290e3ab034900f7959af6c5f5",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2214,
+      :end-byte 2241,
+      :sha256
+      "be2b3cb2825537ab6c0a30068ed0f49c11faa9127732d4640369c589992d4917"}}
+    {:id "C16/normalized-facet/2242-2262/07fd7c08ec1f7168",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/51af5d9ca77a9f904c409cd9e3e6bc6fb1079fe9a4d254ea2bb0c49880fb5fd5",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2242,
+      :end-byte 2262,
+      :sha256
+      "07fd7c08ec1f7168d12e9e097ee6bf43c21391f1b26a3db1abfbf05c487460cf"}}
+    {:id "C16/facet/2263-2300",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/b0b8e2aa6323b12251f9c373d193cf6f36d99d3a8afd62ed0094122be6a3d1fc",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2263,
+      :end-byte 2300,
+      :sha256
+      "7676213e66efe25b02b42400ea56e83198b7f56a84d9a6b0e1f1a891a4a3d25c"}}
+    {:id "C16/facet/2301-2317",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2301,
+      :end-byte 2317,
+      :sha256
+      "8402c2f4534d4271a113782765e7e96771d04463ef451f47232b377b5e7a46bb"}}
+    {:id "C16/facet/2317-2342",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2317,
+      :end-byte 2342,
+      :sha256
+      "19b1f268da52fc49c61473b4dba653ae774908fc255ab50593e32286f96e2a82"}}
+    {:id "C16/facet/2342-2368",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2342,
+      :end-byte 2368,
+      :sha256
+      "70feb124c0cc18b3adcd9251f1a0351d6f288786c5aa27d5299dd305eb186941"}}
+    {:id "C16/facet/2368-2390",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2368,
+      :end-byte 2390,
+      :sha256
+      "03654bda34c93e2897dc289164aa7ebff76907b8fdacae0e0a8218947806f2f3"}}
+    {:id "C16/facet/2390-2404",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2390,
+      :end-byte 2404,
+      :sha256
+      "5c107a57b48a958bbf5b64ff60a97220e7f379c852c213431aac5218ade92a1f"}}
+    {:id "C16/facet/2404-2420",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2404,
+      :end-byte 2420,
+      :sha256
+      "15247f13a586029e8058c6489f5595b89498b5bcc2d8b2ce5be49be57714f78f"}}
+    {:id "C16/facet/2420-2439",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2420,
+      :end-byte 2439,
+      :sha256
+      "a23cef0f5e554c6b2f11ef4cfb1f27de4a8e65050fae2f941e1808c19cae280e"}}
+    {:id "C16/facet/2439-2458",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2439,
+      :end-byte 2458,
+      :sha256
+      "5f5f7e76dddaa2647bba3a797ec90164ff43cc87ad8d03036cd1f7810d8f2538"}}
+    {:id "C16/facet/2458-2473",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2458,
+      :end-byte 2473,
+      :sha256
+      "55b262e2fdfad0bd56ae7e9437c33f05f42936d5b6813104ce19c6cc8348396b"}}
+    {:id "C16/facet/2473-2499",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2473,
+      :end-byte 2499,
+      :sha256
+      "3a5fe5c2504d9e7708471bcbb1bcd36426210bfac6e54cd14787f4333d0697ae"}}
+    {:id "C16/facet/2499-2522",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2499,
+      :end-byte 2522,
+      :sha256
+      "d53c5a09223b316b705ae8bfde938c941502efae065343f5d599c844fc7540d3"}}
+    {:id "C16/facet/2522-2542",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2522,
+      :end-byte 2542,
+      :sha256
+      "fc54557048fd9695a7bb448f7a8809ecdea9af78cd1098f7cc8a1a78750ca05f"}}
+    {:id "C16/facet/2542-2557",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2542,
+      :end-byte 2557,
+      :sha256
+      "30cd0dcb0471f6a92177d53c685e6118bd1ab5135247cfdcc2f4758e8a948946"}}
+    {:id "C16/facet/2557-2584",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2557,
+      :end-byte 2584,
+      :sha256
+      "1d650bf16999d09ba65d0ac60f36d013915bb0fd1cf935be225689e39a839156"}}
+    {:id "C16/facet/2584-2618",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/1a3ac64d27c965463216b5044618a01d163373164e851f12e090d516192a0f36",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2584,
+      :end-byte 2618,
+      :sha256
+      "76a5d08324635f9ba05cea34ee36cbdca2753f4a40c32ff50b89ba7556fcbc23"}}
+    {:id "C16/facet/2619-2756",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/16a758bfb50b6cf7ab1feda1b6936d3c99940b473a947e42d0306061a4e92aac",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2619,
+      :end-byte 2756,
+      :sha256
+      "a1b05356c88586bfaeaa04e8e905b5b60199a87af7df587f6d8e1a34e2d19af9"}}
+    {:id "C16/normalized-facet/2757-2770/6f681672a55b0cd3",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/47de5367df50cd65a8968b8adff0d4c417c93d589b21ef5905e36c1486bd2a3b",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2757,
+      :end-byte 2770,
+      :sha256
+      "6f681672a55b0cd374cfe19ec8d48aa54c081b7f1901f7a6c7be016d5f721718"}}
+    {:id "C16/facet/2771-3262",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/e2681642f4a462a0cb0c03c85170764f9dd344dd8d0955a0eee1882921ec361b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/semantic-cache-key"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 2771,
+      :end-byte 3262,
+      :sha256
+      "308107f227038a10bd0ad10a26e8370d3046957e8172b208edfad78ce3bf4e2f"}}
+    {:id "C16/facet/3263-3373",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/25b04269ebba3b9fa69631d0f42e248a6c12c649751cd0528eaf495dbdb211c2",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/semantic-cache-key"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 3263,
+      :end-byte 3373,
+      :sha256
+      "94ed17ecacfc2729e4e38336e2214789b3fd1934a2f803e739e8b8d107a8059a"}}
+    {:id "C16/normalized-facet/3374-3398/70b5897793835bb5",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/0daa913e0f5eaae0dd76efe96884065563f4dfb7c251eaeae52034ab02b1a97f",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 3374,
+      :end-byte 3398,
+      :sha256
+      "70b5897793835bb54c6c87248744a96ce40b7ac5f7d1a620b63c2336804ad916"}}
+    {:id "C16/facet/3399-3883",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/1aa888bdc6e95778b509c8bf2d0d8ec01c718ef5175aa6f3bb70a9e3efb53cee",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:records],
+     :owner-requirement-ids ["compiler/c16/cache-revalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 3399,
+      :end-byte 3883,
+      :sha256
+      "edc87e8c6ee7425b7a44a508b4e32628fa447b5995204eabf8a76da96d8602de"}}
+    {:id "C16/facet/3884-3983",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/ad0ffb0ee79ec605dfe8765b23e2c43f24da9a0abbd914b9193219fd75f2e438",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:records],
+     :owner-requirement-ids ["compiler/c16/cache-revalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 3884,
+      :end-byte 3983,
+      :sha256
+      "379843073785311b4d476ac40b744ad0a1543c4ecdb7aacd0f171326f50782ba"}}
+    {:id "C16/normalized-facet/3984-4008/65655c963bad2c96",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/ea70c7f90a8182308c7c6d6d4040ee6a51ab12bbf85aa7672291155fb3d6fe83",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 3984,
+      :end-byte 4008,
+      :sha256
+      "65655c963bad2c966bf15de7090892bae31ce79ef4774290a13feeb9341752b0"}}
+    {:id "C16/facet/4009-4038",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/73973f34701a310778b06ae0ff91cca52213b6625b6d85e7f8070432c2137a20",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4009,
+      :end-byte 4038,
+      :sha256
+      "132cf3b90fbf3984604b827fa293064228b88d80a9154da1c8ce95a8db9639bf"}}
+    {:id "C16/facet/4039-4063",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4039,
+      :end-byte 4063,
+      :sha256
+      "36193308b7ef57e32fd60f5c3b8e9cf947d5d6d3e0fffdbab5d118949e1275e0"}}
+    {:id "C16/facet/4063-4089",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4063,
+      :end-byte 4089,
+      :sha256
+      "6256e6ee53f702f87cf66f899e5762de3b810c090e2c6aaf24f9667a3cc58ac3"}}
+    {:id "C16/facet/4089-4117",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4089,
+      :end-byte 4117,
+      :sha256
+      "7841f722be4939d21357adfe4d2fad552e221a8fecc61f0b095f6d4331a210a4"}}
+    {:id "C16/facet/4117-4165",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4117,
+      :end-byte 4165,
+      :sha256
+      "ad452ee9beff8f6c5837c83a0cdf5cc028b1f5f12ae8009e3f52e6d73afc6e4e"}}
+    {:id "C16/facet/4165-4204",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4165,
+      :end-byte 4204,
+      :sha256
+      "e12ab0d6aef0f64e57bca13b06a4efdb2ab835c2a73a5aaa701b6f021633da68"}}
+    {:id "C16/facet/4204-4245",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4204,
+      :end-byte 4245,
+      :sha256
+      "35840949520bc50bdb84fd15ddbd620c244e86974c73094ce92b64f0624c3e5a"}}
+    {:id "C16/facet/4245-4283",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4245,
+      :end-byte 4283,
+      :sha256
+      "6100ea76bf81e827393e5a43ab8b85105825f63aafecc5a66f29d945457940e6"}}
+    {:id "C16/facet/4283-4321",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4283,
+      :end-byte 4321,
+      :sha256
+      "c114fcd67a0fe96355824e4208e72e1d1ec361f44ec1a3b18cd3b63c150bb75e"}}
+    {:id "C16/facet/4321-4369",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4321,
+      :end-byte 4369,
+      :sha256
+      "ec9be76f94895b8832b0fda6d929cdbb4e82df7a3299b3ab972ef58e85aaeebc"}}
+    {:id "C16/facet/4369-4397",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4369,
+      :end-byte 4397,
+      :sha256
+      "bde97230e6313670af80ee0fb571db9e1ab5a8a7dac287b7cf77fbca3e8b430a"}}
+    {:id "C16/facet/4397-4465",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4397,
+      :end-byte 4465,
+      :sha256
+      "d3c52542886157ac7f490a847d15bf758a3e1fc5ade146ed6c031a3f5f88e5d5"}}
+    {:id "C16/facet/4465-4503",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4465,
+      :end-byte 4503,
+      :sha256
+      "39aa4587ecb885adbff4e52d18013b23d7d1b347333cf3464f84a8edfbe99edc"}}
+    {:id "C16/facet/4503-4540",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4503,
+      :end-byte 4540,
+      :sha256
+      "82fc36a589530c74e19b876ebd6afda74e8d85ff58ae111c0f4b5b460a712b99"}}
+    {:id "C16/facet/4540-4577",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4540,
+      :end-byte 4577,
+      :sha256
+      "4af5225240cb5649a15bbc17949e00af67aba94f9ab4894a7f670ee36e395a74"}}
+    {:id "C16/facet/4577-4607",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4577,
+      :end-byte 4607,
+      :sha256
+      "d7b9b460d32a3887a509f04c0d2b7fa8c2fe0309b73571876ac7e440ba10767a"}}
+    {:id "C16/facet/4607-4636",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/da2f44b45cf3f188ba112a4f412366b3c8c6a669ee877afdc714250ffedfd8ea",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4607,
+      :end-byte 4636,
+      :sha256
+      "15fac6cf9aea135344ee909552029e8e844e0a53dea2788f043afeae1dae908b"}}
+    {:id "C16/facet/4637-4717",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/b8a9ce501774f1bf92d9fbb29576b9c2c5356fe102f839058367fc9f47015c92",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4637,
+      :end-byte 4717,
+      :sha256
+      "cb6e5c589cc9763a726573397f49c5db86721c62ddf54344298557acdbc4a9a8"}}
+    {:id "C16/normalized-facet/4718-4734/783e447e4e42b17d",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/c325588faabe92e80d147223ecbc395c4bbfbbdd8ce13bdf2839e168d1940c9c",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4718,
+      :end-byte 4734,
+      :sha256
+      "783e447e4e42b17dd1984f2e1db51843a390171f76bff3840f9bcfde4e08414a"}}
+    {:id "C16/facet/4735-4756",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/ccca9e06a699efb82ffb69a9d3740b0ea7c2a6d9709a4662d7be7db1e155beb3",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/cache-revalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4735,
+      :end-byte 4756,
+      :sha256
+      "706816feb4abf9ca578afc773a3dfc82ddf744e1a842669df6447a542277dad3"}}
+    {:id "C16/facet/4757-4779",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/f8e8e0bfecd8c35798b001a9b7804b777c9151e23334cb089370bf941d8a3629",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/cache-revalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4757,
+      :end-byte 4779,
+      :sha256
+      "541123655814215c50f4c20555ee1029717ede4f26e158bdebb9dbfbb31cc1d8"}}
+    {:id "C16/facet/4779-4806",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/f8e8e0bfecd8c35798b001a9b7804b777c9151e23334cb089370bf941d8a3629",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/cache-revalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4779,
+      :end-byte 4806,
+      :sha256
+      "78e6822a7aefb96bfbea02820f1c70f78b34f5be6b12b259551841c532f98e81"}}
+    {:id "C16/facet/4806-4831",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/f8e8e0bfecd8c35798b001a9b7804b777c9151e23334cb089370bf941d8a3629",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/cache-revalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4806,
+      :end-byte 4831,
+      :sha256
+      "a1d651b080a9d159eb143d4132f588c32cb3a7e0768d39643a84275853e22a93"}}
+    {:id "C16/facet/4831-4853",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/f8e8e0bfecd8c35798b001a9b7804b777c9151e23334cb089370bf941d8a3629",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/cache-revalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4831,
+      :end-byte 4853,
+      :sha256
+      "f2d92c727bad5693eae4c4e923f2b3a907eee78fad1f8c3c930f0155957b52d7"}}
+    {:id "C16/facet/4853-4884",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/f8e8e0bfecd8c35798b001a9b7804b777c9151e23334cb089370bf941d8a3629",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/cache-revalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4853,
+      :end-byte 4884,
+      :sha256
+      "13e6b3158bf390b4aaca7a4976496fd0db7dc98e57842b6c6403e6cf1805da08"}}
+    {:id "C16/facet/4884-4920",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/f8e8e0bfecd8c35798b001a9b7804b777c9151e23334cb089370bf941d8a3629",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/cache-revalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4884,
+      :end-byte 4920,
+      :sha256
+      "b7317b422711359550c49808c9ee72820b490d7a62b1fafd37a6296bcc6e8524"}}
+    {:id "C16/facet/4920-4955",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/f8e8e0bfecd8c35798b001a9b7804b777c9151e23334cb089370bf941d8a3629",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/cache-revalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4920,
+      :end-byte 4955,
+      :sha256
+      "29b8764eec3453cebb75b4a8b8db596be93e8e480705c981448cdca50bc6976d"}}
+    {:id "C16/facet/4955-4989",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/f8e8e0bfecd8c35798b001a9b7804b777c9151e23334cb089370bf941d8a3629",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/cache-revalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4955,
+      :end-byte 4989,
+      :sha256
+      "dea04d36aed845f78635b5f4f9b91b687c148a268210ffc21b0be4cf3600a262"}}
+    {:id "C16/facet/4990-5142",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/50edccdfe201db1353086acd15cca806a2e14d1211ec9c219a6eede441ea558c",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/cache-revalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 4990,
+      :end-byte 5142,
+      :sha256
+      "ee928111a9d8363069351c6ae7fcb5260e799a976c026f446bc3740de9a0eae7"}}
+    {:id "C16/normalized-facet/5143-5174/90cb5cf7d99617dd",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/86d9995f96c186c23b3a47da0c7ebe3a55beb1fe485900a6914cf11f8f08210d",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 5143,
+      :end-byte 5174,
+      :sha256
+      "90cb5cf7d99617dd61180a16336638af48834be8f222ccbe835bcadfe1e1aa02"}}
+    {:id "C16/facet/5175-5470",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/b33f13d9e0c2df3814aa637c3ead1a6619aef38597591180781e2cf12db6eb76",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/proof-reuse"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 5175,
+      :end-byte 5470,
+      :sha256
+      "646f420529a36af2b27a71f55e8473c19c38bcbc26c2521d3ac135eb27a53652"}}
+    {:id "C16/normalized-facet/5471-5486/84b964dab09b580d",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/5fa564012938853f289e3b62c9c4b8130abe72401896424a71e9cad5687b96d4",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 5471,
+      :end-byte 5486,
+      :sha256
+      "84b964dab09b580d85bc6c25ae5289e07a178aada1792ed38b72a4e79230f004"}}
+    {:id "C16/facet/5487-5546",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/9e0de417c737286474447693a6ac5be9c743d3f45a7be8a99c28f20cead9bea3",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:records],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 5487,
+      :end-byte 5546,
+      :sha256
+      "d14d45b735c1955e3280e563db30c01357e775665c434b01c11688b2c6dcdaf2"}}
+    {:id "C16/facet/5547-5599",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/1574ef47db2e79b3ccf52d99cb99bd1fc489edee63606bd4af14b9b439e89784",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 5547,
+      :end-byte 5599,
+      :sha256
+      "89cc9efd81e1f6301199da1e926a23cb30d4735dda349b581ef77675119f2c2a"}}
+    {:id "C16/facet/5599-5642",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/1574ef47db2e79b3ccf52d99cb99bd1fc489edee63606bd4af14b9b439e89784",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 5599,
+      :end-byte 5642,
+      :sha256
+      "008b8d7b899c8367b3ff473cb4837e7ff6e029035bf95781acc3746f6a73e4cf"}}
+    {:id "C16/facet/5642-5709",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/1574ef47db2e79b3ccf52d99cb99bd1fc489edee63606bd4af14b9b439e89784",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 5642,
+      :end-byte 5709,
+      :sha256
+      "44c2046dcb7e8bdc5fd82b8c90fbad947465b8c85c0174707f6fc00fc2da8ba6"}}
+    {:id "C16/facet/5709-5761",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/1574ef47db2e79b3ccf52d99cb99bd1fc489edee63606bd4af14b9b439e89784",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 5709,
+      :end-byte 5761,
+      :sha256
+      "5d1c37e6455a31dce2ecb9eee64918998af1f6dc2cc2a75aad526f0dce512f6a"}}
+    {:id "C16/facet/5761-5836",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/1574ef47db2e79b3ccf52d99cb99bd1fc489edee63606bd4af14b9b439e89784",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 5761,
+      :end-byte 5836,
+      :sha256
+      "3c135e3c4d7eb4eb182cc56106adf4268482c6ce89c80f5e4f8e6a2a8f6de6ec"}}
+    {:id "C16/facet/5836-5892",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/1574ef47db2e79b3ccf52d99cb99bd1fc489edee63606bd4af14b9b439e89784",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 5836,
+      :end-byte 5892,
+      :sha256
+      "e16a34a9f5a9bd82f2b06ec44d8a6fb297bd031bd0a3743b2b169453ca4cab7f"}}
+    {:id "C16/facet/5892-5984",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/1574ef47db2e79b3ccf52d99cb99bd1fc489edee63606bd4af14b9b439e89784",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 5892,
+      :end-byte 5984,
+      :sha256
+      "0683ea69b2223b3ea046db183748af972270de751a3871eb707c544e8eeb4504"}}
+    {:id "C16/facet/5984-6033",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/1574ef47db2e79b3ccf52d99cb99bd1fc489edee63606bd4af14b9b439e89784",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 5984,
+      :end-byte 6033,
+      :sha256
+      "fdacf5565102656fa8534af8924b6461547d4331dadb5e1adff5dea3005e34cc"}}
+    {:id "C16/facet/6033-6085",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/1574ef47db2e79b3ccf52d99cb99bd1fc489edee63606bd4af14b9b439e89784",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 6033,
+      :end-byte 6085,
+      :sha256
+      "c0ed8fce8e68b5209ea469a72a21899b61f47e0f8ed2397d3e22ecc91c5f9247"}}
+    {:id "C16/facet/6086-6242",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/1c55eca6e0bcc12a9250807ce1e8eecf5aaa96eac6c495c0bdc798e6db3e2b10",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:records],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 6086,
+      :end-byte 6242,
+      :sha256
+      "39ee5a190349c88d936f16452d900cc5cc660951f7049bdf0c59c08eba22bb09"}}
+    {:id "C16/normalized-facet/6243-6263/81a99744c82b0f20",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/7aba80be970f34bb1ea983c10189a943f60eee71f2c8d6df5c6ca38ed7e047a2",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 6243,
+      :end-byte 6263,
+      :sha256
+      "81a99744c82b0f200a1b23f569815e25e994ddb3455b81be46a31fd7408dcd80"}}
+    {:id "C16/facet/6264-6320",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/8169ab4c3aeacd50c265bd1a5501ef4c1a6c91151ad9b210e8be82324eb3eb01",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/semantic-cache-key"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 6264,
+      :end-byte 6320,
+      :sha256
+      "0feab245ca5e5182fd96521da5777c54345671cdbf15f04618588be6a557b863"}}
+    {:id "C16/facet/6321-6420",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/533f892e31da1f8c2d3bb507b8e8ef015181299b2e3894d137eadf7d9a5b2a04",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 6321,
+      :end-byte 6420,
+      :sha256
+      "8afdc905903c0f151818e8e7776d738a2ca840529a2b947aa11190063744a195"}}
+    {:id "C16/facet/6421-6494",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/e158cd5df2290a42a2c80bf4c642dc142d8020275fa29b41edfaf8870a12ab46",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 6421,
+      :end-byte 6494,
+      :sha256
+      "7380613576397174324e1bdf71b7771d4c4b1ab6f009c3f7e0bb89d2e321bdf7"}}
+    {:id "C16/facet/6495-6567",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/aa39593b3ed16db99ef6248fe89dcaca7ca473e0065acdfbe143f85ac742c6b9",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 6495,
+      :end-byte 6567,
+      :sha256
+      "624758cee1aac6a17392efd35413e315a0917d6bff8b4918c2579e07e490e7e5"}}
+    {:id "C16/facet/6568-6638",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/c41812f1bcfe4a68fed5d7a28611b6ef3e5ae22fa06440c0a402275d054ff213",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records],
+     :owner-requirement-ids ["compiler/c16/proof-reuse"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 6568,
+      :end-byte 6638,
+      :sha256
+      "602c2fac0abf653b3e51992c0a5b8820e605326545d72a46fbbd23aec57c283d"}}
+    {:id "C16/normalized-facet/6639-6663/4cea7efb2bd3a140",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/5944a98c1f3c222d31c0c4603d206a3c82b9703c7ce585e7656eb2a0fb514265",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 6639,
+      :end-byte 6663,
+      :sha256
+      "4cea7efb2bd3a140f2517b9e6a6e71fc6809db54e3f8158b9ed8f31c3ae7eae2"}}
+    {:id "C16/facet/6664-6716",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/9d215b1b4472059ce1f4a6a618fec61dd96eaf772c5582234884978fdc044428",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/cache-revalidation"
+      "compiler/c16/dependency-invalidation"
+      "compiler/c16/proof-reuse"
+      "compiler/c16/recorded-rebuild"
+      "compiler/c16/semantic-cache-key"
+      "compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 6664,
+      :end-byte 6716,
+      :sha256
+      "d73f4cf790a8bee8ecea4c14f9fb199552555c8add3d9da565e52258a00cb1d3"}}
+    {:id "C16/facet/6717-6746",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/935831ff96d55776a037d14b833d13627b6a5eecdafbc51189cfd4dd2ec8b883",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids ["compiler/c16/semantic-cache-key"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 6717,
+      :end-byte 6746,
+      :sha256
+      "df60b7dcb1398113af24bb5626a7113b62730057255cbac0d8db12e553afa546"}}
+    {:id "C16/facet/6746-6779",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/935831ff96d55776a037d14b833d13627b6a5eecdafbc51189cfd4dd2ec8b883",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 6746,
+      :end-byte 6779,
+      :sha256
+      "0b260f15b33b372b98293896acfaa759653ca0ba2c753726e7faf6dc86aae3c5"}}
+    {:id "C16/facet/6779-6830",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/935831ff96d55776a037d14b833d13627b6a5eecdafbc51189cfd4dd2ec8b883",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids ["compiler/c16/cache-revalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 6779,
+      :end-byte 6830,
+      :sha256
+      "749f7becba5e7de6912884bb0a3ccd738ab2b7e90d0cf125f3d5687773712a22"}}
+    {:id "C16/facet/6830-6956",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/935831ff96d55776a037d14b833d13627b6a5eecdafbc51189cfd4dd2ec8b883",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids ["compiler/c16/dependency-invalidation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 6830,
+      :end-byte 6956,
+      :sha256
+      "12e5ae33f9548644eb6f9bd8e1a5db78eac5a889212e2307a60585d46e4caa94"}}
+    {:id "C16/facet/6956-7002",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/935831ff96d55776a037d14b833d13627b6a5eecdafbc51189cfd4dd2ec8b883",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids ["compiler/c16/proof-reuse"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 6956,
+      :end-byte 7002,
+      :sha256
+      "2f88fabcfc9037a16d76d7580646facc86bc26ca7a1f5c852e873e1fc489fd8b"}}
+    {:id "C16/facet/7002-7039",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/935831ff96d55776a037d14b833d13627b6a5eecdafbc51189cfd4dd2ec8b883",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids ["compiler/c16/semantic-cache-key"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 7002,
+      :end-byte 7039,
+      :sha256
+      "9190e7af2482cda2ebc4bf9899fc04b308b99de85d241a3eee84d99b5853a4ab"}}
+    {:id "C16/facet/7039-7092",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/935831ff96d55776a037d14b833d13627b6a5eecdafbc51189cfd4dd2ec8b883",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids
+     ["compiler/c16/speculation-publication-gate"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 7039,
+      :end-byte 7092,
+      :sha256
+      "a6041153ca5e02b7e6d5b91faec2088cfda4fde668e802d5a80da7cd486c4212"}}
+    {:id "C16/facet/7092-7145",
+     :document-id "C16",
+     :source-occurrence-id
+     "C16/source/935831ff96d55776a037d14b833d13627b6a5eecdafbc51189cfd4dd2ec8b883",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:existing :records :rebuild],
+     :owner-requirement-ids ["compiler/c16/recorded-rebuild"],
+     :source-path
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :source-span
+     {:start-byte 7092,
+      :end-byte 7145,
+      :sha256
+      "4c07eece3e29b9f9d05a3ac475a9db45ac07bb32b37af22ac66b74fae47ce3f1"}}],
+   :task-source
+   {:path "specs/build-workflow/tasks.md",
+    :after
+    {:commit "7662cb4a4527d4e8d905f88f352428dc3d7867f5",
+     :sha256
+     "4278f904693ba87e994b082a8272d8b7c7cbfbe40dc60b1c5c9299dd173780d3"}},
+   :historical-review
+   {:receipt
+    {:path
+     "specs/requirement-reconciliation/c16-independent-source-review.edn",
+     :sha256
+     "4f02ba36aea562b5a8fdaca266b2c72075baf28f69a27c2c38fd9657a3e8d299"},
+    :qualified-applicability
+    {:path
+     "specs/requirement-reconciliation/c16-qualified-current-applicability.edn",
+     :sha256
+     "8800642c008378eb401c9fc52bf596aba75952e47c4c582bc67d69d3ddbef268",
+     :whole-current-head :not-accepted,
+     :qualification
+     "Exact frozen C16 source, all three cache/rebuild predicates and original identity/provenance records remain current. Four intervening adopted review scopes are preserved, not conferred by this older receipt. One overlapping metadata context remains one identity with source-context-only authority. No runtime/compiler/cache/proof/provider execution, broader dependency/held scope, implementation, count or integration authority follows."},
+    :exclusions
+    [:implementation
+     :compiler
+     :cache-runtime
+     :provider-proofchecker
+     :execution
+     :release
+     :publication-authority
+     :integration
+     :final-task-denominator
+     :readiness
+     :entire-PR-approval
+     :unselected-scope-acceptance
+     :previously-authored-Safety107-semantics
+     :later-C13-Resolve-Core-Types-adoptions
+     :later-main70dcb222-Reader640-applicability
+     :all-held-and-unknown-actions],
+    :current-acceptance :not-transferred,
+    :normative-review
+    {:diagnostics
+     :all9-C16-meanings-and-key-artifact-stage-invalidatinginput-available-spanormanifest-profile-target-remediation-context,
+     :file-sha256
+     "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+     :key
+     :producer-owned-stage-required-subsets-over-every-meaning-legality-proof-diagnostic-output-input-missing-required-and-timestamp-only-refuse,
+     :publication
+     :mark-every-partial-interactive-artifact-speculative-with-status-and-withhold-release-until-full-revalidation,
+     :authority
+     :trust-cache-labels-or-comparison-links-do-not-supply-capability-policy-proof-or-release-authority,
+     :criteria
+     :three-authenticated-current-task-spans-in-two-existing-Build-tasks,
+     :coverage
+     :full-document-and-all29-complete-semantic-paragraph-conjunctions,
+     :preserved-clauses
+     :stage-validation-invalidation-proof-reuse-recorded-rebuild-and-speculation-publication,
+     :proof
+     :all-claim-input-assumption-profile-target-compiler-provider-package-invalidation-premises-and-node-ID-proof-mapping-otherwise-reject-or-reprove-retain-residual-checks,
+     :document
+     "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+     :dependency-roles
+     :C1-C2throughC15-L12-SAFE15-PERF3-input-contracts-package-project-lock-environment-and-Build-rebuild-producer-bootstrap-stagecomparison-separate-consumer,
+     :new-clause :graph-key-entry-diagnostic-record-structure,
+     :rebuild
+     :actual-authentic-unchanged-reproducibility-task-produces-recorded-input-replay-repeated-canonical-output-comparison-no-cache-flag-substitute,
+     :examples
+     :typecheck-localbuild-and-example-hashes-not-universal-values-or-authority,
+     :graph
+     :all15-node-families-exact-field-level-edges-when-available-coarse-edges-reduce-reuse-without-skipping-invalidation,
+     :lifetime
+     :retain-invalidated-provenance-diagnostics-check-current-origin-facts-schema-policy-and-graph-before-reuse,
+     :entry
+     :versioned-inspectable-key-artifact-stage-pass-input-facts-invalidation-diagnostics-trust-revalidation-records,
+     :dependency-document-acceptance :not-conferred},
+    :scope
+    {:historical-spans 4819,
+     :task-ids 5,
+     :current-witnesses 931,
+     :overlapping-context-facets 1,
+     :semantic-conjunctions 29,
+     :owner-joins 6,
+     :history 561,
+     :833-records 833,
+     :occurrences 44,
+     :task-appends 1,
+     :facets 114,
+     :prior-qualified-scopes 572,
+     :contexts 15,
+     :criterion-spans 3},
+    :verdict :scoped-pass,
+    :qualified-adoption
+    {:path
+     "specs/requirement-reconciliation/c16-qualified-source-review-adoption.edn",
+     :sha256
+     "098b0371fc757775b0ee6b410566bb4f9072ee8df17537557508b5c1752fdd55",
+     :receipt
+     {:path
+      "specs/requirement-reconciliation/c16-independent-source-review.edn",
+      :sha256
+      "4f02ba36aea562b5a8fdaca266b2c72075baf28f69a27c2c38fd9657a3e8d299",
+      :reviewed-source "e32ada7ee3e588454e2fd323f34c26144e1e70d5",
+      :reviewed-tree "df7be4829dfc2b132b8cd8e10d74ca1acd74bbba"},
+     :whole-current-head :not-accepted,
+     :held-actions :no-clearance-or-retry,
+     :full-dependency-documents :not-accepted},
+    :subject
+    {:repository "burn2delete/uniform",
+     :pr 554,
+     :commit "e32ada7ee3e588454e2fd323f34c26144e1e70d5",
+     :tree "df7be4829dfc2b132b8cd8e10d74ca1acd74bbba",
+     :subject-parent "f0343c1c02c2636a9725648aa152d970a6615527",
+     :previous-published-base
+     "103fba824db72589e6afbfc7a5d3573ce3af2d27",
+     :base-tree "3ff8fea6661f140648712b0322d3ecc1f8122a15",
+     :task-source "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7"}},
+   :markers
+   {:existing "build-canonical-cache-conditions",
+    :records "build-canonical-incremental-records",
+    :rebuild "build-canonical-recorded-rebuild"},
+   :context-publication
+   {:status :not-found-at-tested-GitHub-reference,
+    :tested-ref "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :aggregate-handoff :not-retried},
+   :changed-task-ids
+   ["build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"
+    "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix"],
+   :criterion-conservation
+   :exact-ordered-fragment-reconstruction-with-preserved-prefixes-and-foundation-clause,
+   :context
+   {:path
+    "specs/requirement-reconciliation/incremental-complete-current-facet-trace.edn",
+    :commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :sha256
+    "1e9f938d7485107fed63f0ab81eea5643a2599ad7457ca7cd8136f9ccaa7f9e1"},
+   :global-source-conjunctions :unassessed,
+   :newly-amended-original-task-ids
+   ["build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"],
+   :source-binding-relationship :whole-file-and-span-bytes-unchanged,
+   :implementation-acceptance :unassessed},
   :status :pending-independent-source-version-and-composition-review,
   :predecessor
   {:commit "a9fc9b1c63c0eb344f29bb63d985f71e6c24af24",
@@ -38938,7 +41357,7 @@
   "build"
   [{:path "specs/build-workflow/tasks.md",
     :file-sha256
-    "26749c506f9b4ddcf1ea3293b640e922d7d882839a51dea882353ebd34101ce3",
+    "4278f904693ba87e994b082a8272d8b7c7cbfbe40dc60b1c5c9299dd173780d3",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/build-workflow/tasks.md",
@@ -38952,13 +41371,13 @@
      "647eccb8560e766ebecabbd7ca9c5e2f6d26f3c08d46b87cd6cf7fe96672b946"},
     :owner-source "docs/component-roadmaps/build.md",
     :component "build",
-    :source-commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+    :source-commit "7662cb4a4527d4e8d905f88f352428dc3d7867f5",
     :id
     "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
     :checked false}
    {:path "specs/build-workflow/tasks.md",
     :file-sha256
-    "26749c506f9b4ddcf1ea3293b640e922d7d882839a51dea882353ebd34101ce3",
+    "4278f904693ba87e994b082a8272d8b7c7cbfbe40dc60b1c5c9299dd173780d3",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/build-workflow/tasks.md",
@@ -38972,67 +41391,67 @@
      "bd3ece7385d43b00746b4d36bdd8d4ae7f6fac527650b03d08166a16518713f8"},
     :owner-source "docs/component-roadmaps/build.md",
     :component "build",
-    :source-commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+    :source-commit "7662cb4a4527d4e8d905f88f352428dc3d7867f5",
     :id
     "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects",
     :checked false}
    {:path "specs/build-workflow/tasks.md",
     :file-sha256
-    "26749c506f9b4ddcf1ea3293b640e922d7d882839a51dea882353ebd34101ce3",
+    "4278f904693ba87e994b082a8272d8b7c7cbfbe40dc60b1c5c9299dd173780d3",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/build-workflow/tasks.md",
      :start-byte 3829,
-     :end-byte 4177,
+     :end-byte 12886,
      :start-line 61,
-     :end-line 67,
+     :end-line 81,
      :sha256
-     "f293e86a6d4be7cc1b6f0723e2a117d1880a592c1e16d3ec75cac24dd234d01e",
+     "8a6713eb4d92b663a6c3d677fdc6041c130827e8cce7f43a2e00176235d7b1db",
      :source-snapshot-ref
-     "f293e86a6d4be7cc1b6f0723e2a117d1880a592c1e16d3ec75cac24dd234d01e"},
+     "8a6713eb4d92b663a6c3d677fdc6041c130827e8cce7f43a2e00176235d7b1db"},
     :owner-source "docs/component-roadmaps/build.md",
     :component "build",
-    :source-commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+    :source-commit "7662cb4a4527d4e8d905f88f352428dc3d7867f5",
     :id
     "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
     :checked false}
    {:path "specs/build-workflow/tasks.md",
     :file-sha256
-    "26749c506f9b4ddcf1ea3293b640e922d7d882839a51dea882353ebd34101ce3",
+    "4278f904693ba87e994b082a8272d8b7c7cbfbe40dc60b1c5c9299dd173780d3",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/build-workflow/tasks.md",
-     :start-byte 4179,
-     :end-byte 7018,
-     :start-line 69,
-     :end-line 111,
+     :start-byte 12888,
+     :end-byte 15727,
+     :start-line 83,
+     :end-line 125,
      :sha256
      "497f2ff15a9d3f33b238f41ea6d9becc0337fcd6a925fa6e96dfb7207cd6eb3c",
      :source-snapshot-ref
      "497f2ff15a9d3f33b238f41ea6d9becc0337fcd6a925fa6e96dfb7207cd6eb3c"},
     :owner-source "docs/component-roadmaps/build.md",
     :component "build",
-    :source-commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+    :source-commit "7662cb4a4527d4e8d905f88f352428dc3d7867f5",
     :id
     "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
     :checked false}
    {:path "specs/build-workflow/tasks.md",
     :file-sha256
-    "26749c506f9b4ddcf1ea3293b640e922d7d882839a51dea882353ebd34101ce3",
+    "4278f904693ba87e994b082a8272d8b7c7cbfbe40dc60b1c5c9299dd173780d3",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/build-workflow/tasks.md",
-     :start-byte 7020,
-     :end-byte 8636,
-     :start-line 113,
-     :end-line 125,
+     :start-byte 15729,
+     :end-byte 24707,
+     :start-line 127,
+     :end-line 146,
      :sha256
-     "497a094ce811e502e7a5bf614b2cb60848d1d2e48c3c0d877585dae3eda74b7c",
+     "c81fd5fabb556511458db6d4ebf13d9e3d8abbeb51f1445330e3fe0bbb603f79",
      :source-snapshot-ref
-     "497a094ce811e502e7a5bf614b2cb60848d1d2e48c3c0d877585dae3eda74b7c"},
+     "c81fd5fabb556511458db6d4ebf13d9e3d8abbeb51f1445330e3fe0bbb603f79"},
     :owner-source "docs/component-roadmaps/build.md",
     :component "build",
-    :source-commit "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+    :source-commit "7662cb4a4527d4e8d905f88f352428dc3d7867f5",
     :id
     "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
     :checked false}],
@@ -41711,9 +44130,9 @@
   "specs/backends-workflow/tasks.md"
   "11a2f0af81732e0f9759a0553d037f304d5aeee0accd26f0a983f233d7f6b54f",
   "specs/build-workflow/plan.md"
-  "b1a68edd236414df44814fe79b454e54d4c42990ae445e262675fb567d782e16",
+  "f7918ef386b1e87561348931b9986aa19792eccdab489b26ee967d397be0e7fc",
   "specs/build-workflow/tasks.md"
-  "26749c506f9b4ddcf1ea3293b640e922d7d882839a51dea882353ebd34101ce3",
+  "4278f904693ba87e994b082a8272d8b7c7cbfbe40dc60b1c5c9299dd173780d3",
   "specs/cli-workflow/plan.md"
   "b25db661156837e5a61d15d745dd612814a5574bc8c74e230536cecd20210735",
   "specs/cli-workflow/tasks.md"
@@ -41816,7 +44235,7 @@
   "specs/effects-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9",
   "specs/build-workflow/tasks.md"
-  "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+  "7662cb4a4527d4e8d905f88f352428dc3d7867f5",
   "specs/diag-workflow/plan.md"
   "d37ba8da837f6dfdf0cc0e185729ce80d0aa1ae5",
   "specs/cli-workflow/plan.md"
@@ -41830,7 +44249,7 @@
   "specs/runtime-workflow/tasks.md"
   "ae9d37bb3e43cc8148319b9fd315366804be80e1",
   "specs/build-workflow/plan.md"
-  "ae9d37bb3e43cc8148319b9fd315366804be80e1",
+  "7662cb4a4527d4e8d905f88f352428dc3d7867f5",
   "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
   "bffefedfada9e3312e68e0a28a69d71db459d0e2",
   "specs/opt-workflow/plan.md"
@@ -43993,8 +46412,6 @@
   "2. **SH-25.2:** Cover reader, syntax, macros, resolution, Core, types, effects,\n   ownership, safety, MIR, required passes/domain anchors and diagnostics.",
   "4967c2309a9bee5c6be264a8a0738852f2366c181d643c047d400d859229f90f"
   "| SH-05.5 | Depth/size/return/hygiene/trace malformed cases | E05-T/R | S |",
-  "497a094ce811e502e7a5bf614b2cb60848d1d2e48c3c0d877585dae3eda74b7c"
-  "- [ ] `build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix` Close reproducibility and target matrix\n\nStatus: Open\n\nEvidence baseline: [Reproducibility contract](../../docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md)\n\nClosing evidence: Repeated locked builds with matching identities and explicit failing-target diagnostics\n\n<!-- build-foundation-reproducibility:start -->\nApply the [foundation source criteria](plan.md#foundation-source-criteria) within this existing task. Status remains Open; implementation acceptance is unassessed.\n\nFoundation requirement gravity/artifact-graph-reproducibility: Rebuild the declared artifact graph from recorded source/compiler/pass/policy/provider/target and dependency identities; compare canonical graph edges and outputs under an explicit accepted-delta policy. Refusals: Reject omitted inputs or edges, substituted provider/compiler identities and unexplained output drift; preserve the failed comparison and any policy-reviewed exception. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products; runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection - Selected runtime/provider service contracts and actual link/load/service-use evidence.\n<!-- build-foundation-reproducibility:end -->",
   "497f2ff15a9d3f33b238f41ea6d9becc0337fcd6a925fa6e96dfb7207cd6eb3c"
   "- [ ] `build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records` Produce and verify package/provenance/signing records\n\nStatus: Open\n\nEvidence baseline: [Artifact contract](../../docs/phase-12-build-package-and-artifact-system/167-pkg3-artifact-model-specification.md)\n\nClosing evidence: Actual published package retrieval/verification fixtures; tamper and missing-record rejection\n\n<!-- build-governance-package:start -->\nSource requirement: `governance/registry-release-admission`, continuing the\nexisting source-family binding to this same task. See\n[GOV10 requirements](../../docs/phase-17-governance-and-evolution/240-gov10-ecosystem-package-governance-policy.md#requirements)\nand [SAFE14 conformance](../../docs/phase-02-safety/043-safe14-supply-chain-safety.md#conformance-criteria).\n\nAdditional source criteria, proposed current composition: Under SAFE14/SAFE15,\nPKG9-PKG12 and GOV10, verify actual registry content digest, required signature,\nmanifest and attestation before use. Generated outputs retain generator/version,\nsource/output digests, effects/grants, reproducibility and performed safety\nchecks. Safe claims require reproducibility or accepted provenance attestations;\nimported certificates bind the actual package/compiler/schema/profile/target,\nprovider trust and noninvalidated assumptions.\n\nValidate stable identity, namespace, owner, version, license and signing status,\nmanifest/lock where applicable, hashes/provenance/SBOM, profile/target matrices\nand conformance tied to compiler/target/profile/stdlib versions. Before\ninstallation/publication expose effects/capabilities, GOV9 unsafe metadata,\nFFI/host delegation and AI policy/eval/`:ai/human-review`/injection evidence.\nConsume the actual applicable library/target/security/namespace/yank decisions\nfrom `evolution/library-admission`, `evolution/target-support-admission`,\n`evolution/security-review`, `evolution/namespace-decision` and\n`evolution/registry-yank`; this gate does not adjudicate their policy.\n\nExercise declared registry accept/reject/quarantine behavior and real consumer\nresults. Reject tamper, wrong/stale/missing required evidence, unsigned content\nwhen signatures are required, nonreproducible or malicious releases under the\ndeclared policy, hidden authority, unsupported conformance, policy-forbidden\nadvisory/yanked dependencies, reserved-name abuse and unmitigated dependency\nconfusion. Quarantine unresolved security/provenance risk according to policy.\nPreserve original SAFE14/SAFE15/PKG/GOV diagnostics, source and exact content/\npolicy/tool identities; metadata presence alone does not prove verification.\nActual publication and signing retain their authority boundaries. All existing\ntask IDs and Open statuses remain; no package operation was executed here.\n<!-- build-governance-package:end -->",
   "4a09875f800d4966895f72e157d7d943a8e4a363b9eb350d5b412a43749f1d76"
@@ -44269,6 +46686,8 @@
   "6. **SH-07.6 - Verified canonical Core:** Every required executable form\n   lowers to L2 Core, a declared primitive or an owned domain boundary.\n   Verify child/binding references, source/generated origins, preserved\n   declarations and evaluation records; emit maps/traces and C6 diagnostics.\n   Exercise handwritten/macro-generated equivalents and real SH-06 -> C6\n   composition; missing/forged/reordered products must fail closed.",
   "89ade36995c20bec963bb228f98ad2c6068b35cc59443b816123cf313ab65eec"
   "4. **SH-21.4:** Re-enter generated compiler code through the normal pipeline,\n   preserving producer origins and rejecting generated illegal behavior.",
+  "8a6713eb4d92b663a6c3d677fdc6041c130827e8cce7f43a2e00176235d7b1db"
+  "- [ ] `build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation` Implement dependency-aware caching and invalidation\n\nStatus: Open\n\nEvidence baseline: [Pass cache](../../bootstrap/clojure/src/gravity/pass_cache.clj)\n\nClosing evidence: Reuse on equal inputs; rebuild on source, compiler, grant, policy or target changes\n\n\n<!-- build-canonical-cache-conditions:start -->\nApply the [complete incremental-compilation source criteria](plan.md#complete-incremental-compilation-source-criteria) within this existing task. Status remains Open; current independent review and implementation acceptance are pending. Existing criterion fragments remain in place.\n\nSource compiler/c16/cache-revalidation: Reuse stage-specific entries only after producing-pass/schema/version/facts/policy/dependency/diagnostic validation, retaining provenance and invalidation records. Concrete acceptance: Change producer pass version, schema, preserved facts, profile/target, policy, dependency or diagnostic schema separately; reject stale reuse and record the actual affected revalidation/recomputation, keeping prior provenance. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source compiler/c16/proof-reuse: Reuse proofs/certificates only when complete claim/input/assumption/context/invalidation conditions match; require a mapping when node identity changes but semantics survive. Concrete acceptance: Change each claim/input/assumption/profile/target/compiler/provider/package/invalidation premise, and change a node ID without a proof mapping; reject reuse or reprove, retaining residual checks until evidence is valid. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source compiler/c16/recorded-rebuild: Reproduce hermetic/release artifacts from recorded inputs and replay rather than trusting stale or incomplete caches. Concrete acceptance: Remove or alter a recorded build input or effect replay record; the hermetic/release rebuild must refuse the claim or expose output drift rather than passing from a stale cache. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source compiler/c16/semantic-cache-key: Key each reusable stage artifact over all meaning/legality/proof/diagnostic/output inputs with producer-owned required fields; reject incomplete or timestamp-only identity. Concrete acceptance: Omit each producer-required semantic/legality/proof/diagnostic/output input, or provide only a timestamp; reject C16-KEY and demonstrate that each changed relevant field prevents a false cache hit. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source compiler/c16/speculation-publication-gate: Mark partial interactive reuse speculative and withhold release publication until full revalidation succeeds. Concrete acceptance: Attempt publication from a partially revalidated interactive cache; require C16-SPECULATIVE and no release artifact until complete revalidation succeeds. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Criterion behavior/pkg2/dependency-aware-cache: accept Reuse equal source, lockfile, compiler, profile, target, policy and relevant environment inputs with a matching cache key. Reject Changing any consumed source, lock, compiler, profile, target, safety policy, capability grant or relevant environment input still reuses the cached artifact. Emit Input hashes and reused/rebuilt node/cache-decision log with changed key field and PKG2002. Dependencies: PKG2, PKG7, C16. Decision allocation interface/compiler/c16/dependency-invalidation (Open). Role: build cache/invalidation maintainer. Invalidate downstream artifacts on every specified source/macro/namespace/type/effect/profile/capability/safety/proof/provider/target/backend/package/policy/facet/diagnostic change; record exact affected revalidation stages. Refusals and conditional cases: Change source, reader option/extension, macro/dependency, grant/replay, namespace import/export/alias, package version, type/provider, effect/capability registry, profile, safety/proof/trust, pass contract, target/backend, runtime/provider, facet or diagnostic schema; reject stale reuse and record each affected downstream revalidation stage. Required outputs: Field-sensitive dependency graph, complete change-class invalidation trace and clean-versus-revalidated artifact/diagnostic comparison. Consume actual dependency interface outputs: resolve/current-evidence-and-remaining-work/resolve4-publish-stable-indexes, pipeline; whole-component completion is not a prerequisite. Retain exact source/compiler/pass/profile/target and checker/provider identities, actual positive products and refused-case diagnostics. Implementation acceptance remains unassessed.\n<!-- build-canonical-cache-conditions:end -->\n\n\n<!-- build-canonical-incremental-records:start -->\nApply the [complete incremental-compilation source criteria](plan.md#complete-incremental-compilation-source-criteria) within this existing task. Status remains Open; current independent review and implementation acceptance are pending. Existing criterion fragments remain in place.\n\nC16 incremental graph/record/diagnostic criterion (Open): The actual incremental graph contains source units, syntax streams, expansion traces, namespace analysis, typed core, effect and ownership graphs, safety outcomes, MIR, optimization decisions, domain and target artifacts, diagnostics, proofs/certificates and package/provider manifests. Record exact field-level dependency edges when available; explicitly coarse early edges are legal but reduce reuse and must not skip invalidation. Emit producer-owned stage key schemas over every meaning/legality/proof/diagnostic/output premise: source, reader options/extensions, syntax, macro expansion, namespace, profile, target, compiler, pass contract, dependencies, build-effect replay, capability policy and language facets as required by that stage. Reject missing required fields and timestamp-only identity; example type-check stage/hash values are illustrative, not global required subsets. Cache entries are inspectable versioned artifacts binding cache key, artifact identity, producing stage/pass version, actual input hashes, preserved facts, invalidation conditions, diagnostic stream, trust context and release revalidation status. Preserve accurate provenance and diagnostics even when an entry is invalidated. Trust labels do not supply capability, policy or proof authority. Revalidation requires equal keys, compatible artifact schema and producer pass versions, preserved facts, fresh proof/certificate, profile/target, diagnostic schema and dependency graph. Mark every partially revalidated interactive artifact :reuse :speculative and record revalidation status; release publication is withheld until full revalidation passes. Required outputs: actual dependency graph, stage key schemas, cache manifests, invalidation trace, reuse/revalidation reports, stale-proof refusals and incremental diagnostic records, with changed-input and unchanged-input comparisons. Preserve all nine C16 diagnostic meanings: KEY incomplete key, ENTRY malformed entry, STALE invalidating change, PROOF stale certificate, SPECULATIVE publishable-boundary misuse, REPLAY missing build-effect replay, POLICY incompatible profile/capability/safety, DIAGNOSTIC stale stream and GRAPH inconsistent dependency graph. Include cache key, artifact ID, stage, invalidating input, available source span or manifest entry, profile, target and remediation. Reject stale origins/facts/diagnostic schemas and malformed graph or manifest even if cached content hashes match. Real conformance covers every graph/key/entry field, changed invalidation class, proof premise, node-ID proof mapping and speculative publish gate, plus reproducible recorded-input/replay release rebuild. Consume authentic C1/stage, L12, SAFE15, PERF3 and package/project/lock/environment interfaces; stage-comparison consumers retain separate bootstrap evidence. Full dependency-document, compiler, proof checker, build execution, migration and release acceptance are not inferred. The existing six C16 source criteria and their independent scopes remain exact prefixes; all five Build tasks stay Open, with no new task units or quota. No compiler/cache-build/runtime/provider/broker/controller/target-probe execution is authorized or reported here.\n<!-- build-canonical-incremental-records:end -->",
   "8d1e0439a3df2848313e20d220aa3a2ea95265cf2b24c6f8bd8b5bf4870b2dbc"
   "- [ ] `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries` Implement memory, concurrency and typed FFI boundaries\n\nStatus: Open\n\nEvidence baseline: [Runtime contracts](../../docs/phase-08-runtime-architecture/README.md)\n\nClosing evidence: Allocation, lifetime, transfer, race and foreign-failure conformance with explicit providers\n\n<!-- runtime-foundation-foreign-boundary:start -->\nApply the [foundation source criteria](plan.md#foundation-source-criteria) within this existing task. Status remains Open; implementation acceptance is unassessed.\n\nFoundation requirement gravity/interop-boundary-manifest: Produce and consume the typed foreign boundary manifest with applicable ABI/layout, ownership/transfer/lifetime, null/error/callback/thread, host/schema/provider, effects/grants and provenance obligations; demonstrate a conforming boundary invocation. Refusals: Reject a missing applicable obligation, incompatible ABI/schema/provider, invalid ownership transfer or absent authority; a declaration-only check does not prove actual conversion or callback execution. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): schema - Versioned source schema, generated validators/codecs and parity artifacts; legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks - Expanded source profile/effect/grant facts and checked/delegated/rejected legality products.\n\nFoundation requirement gravity/interop-is-not-host-semantics: Normalize an admitted foreign value/failure/callback through its declared typed and audited Gravity boundary while preserving Gravity errors, source identity, effects and capability requirements. Refusals: Reject a host null, exception, reflection/loading convention or object-identity assumption leaking into portable Gravity semantics; keep actual adaptation separate from manifest publication. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks - Expanded source profile/effect/grant facts and checked/delegated/rejected legality products; diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift - Actual runtime/compiler/tool structured diagnostics with stable owning codes and provenance.\n<!-- runtime-foundation-foreign-boundary:end -->",
   "8d6215523bd324b10e17e58482aa6955b277041afd3ce0fdeca6b4c6f07bebe4"
@@ -44527,6 +46946,8 @@
   "4. **SH-10.4:** Track closure/return/global/provider escapes and required\n   region/arena generations; reject references outliving their owners.",
   "c73c7accbc926ef3bf7eec96e9b695b3a00d19bb5156fece1e62d01d3de84cb1"
   "- [ ] `reader/finite-remaining-work/component-release-evidence` Component release evidence\n\nCurrent evidence/status: Open; the accepted finite invocation receipt is not the complete Reader release outcome.\n\nDone when (yes/no): Owner supplies immutable source/fixture/runtime identities, complete surface results, diagnostic goldens, fresh handoff and residual-boundary statement; independent review and Deus disposition explicitly accept this outcome.",
+  "c81fd5fabb556511458db6d4ebf13d9e3d8abbeb51f1445330e3fe0bbb603f79"
+  "- [ ] `build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix` Close reproducibility and target matrix\n\nStatus: Open\n\nEvidence baseline: [Reproducibility contract](../../docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md)\n\nClosing evidence: Repeated locked builds with matching identities and explicit failing-target diagnostics\n\n<!-- build-foundation-reproducibility:start -->\nApply the [foundation source criteria](plan.md#foundation-source-criteria) within this existing task. Status remains Open; implementation acceptance is unassessed.\n\nFoundation requirement gravity/artifact-graph-reproducibility: Rebuild the declared artifact graph from recorded source/compiler/pass/policy/provider/target and dependency identities; compare canonical graph edges and outputs under an explicit accepted-delta policy. Refusals: Reject omitted inputs or edges, substituted provider/compiler identities and unexplained output drift; preserve the failed comparison and any policy-reviewed exception. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products; runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection - Selected runtime/provider service contracts and actual link/load/service-use evidence.\n<!-- build-foundation-reproducibility:end -->\n\n\n<!-- build-canonical-recorded-rebuild:start -->\nApply the [complete incremental-compilation source criteria](plan.md#complete-incremental-compilation-source-criteria) within this existing task. Status remains Open; current independent review and implementation acceptance are pending. Existing criterion fragments remain in place.\n\nSource obligation `language/compiletime/reproduce-hermetic-core`: Reproduce byte-identical typed core from declared semantic inputs in required hermetic release/conformance/publication/safety-critical modes, rejecting undeclared ambient inputs. Accept: In release, conformance, reproducible publication and safety-critical modes, repeat the same source/compiler/lock/target/grants/declared inputs and require byte-identical typed core. Declare environment key/value policy, pin or replay network/shell/model/tool/package inputs, record clock/random values or deterministic seeds, use declared target manifests and hash generated inputs. Native-object metadata differences require a marked nonsemantic field and target conformance acceptance. Reject: Reject undeclared filesystem/environment input, unrecorded nondeterminism, ambient target probing, typed-core drift or an unreviewed native-object exception; report L12-HERMETIC-INPUT or L12-NONDETERMINISM as applicable. Required outputs: Hermetic input/replay manifest, paired typed-core byte comparison, generated-input hashes, exception record when applicable and accepted/rejected diagnostics. Dependencies consume versioned facts/receipts from expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime, build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects; they do not require blanket component completion. Implementation status remains Open. Criterion behavior/pkg11/explicit-target-fallback: accept Use a fallback target/runtime only when explicitly declared and compatible with project/profile/policy. Reject A failed target silently falls back to a different target or runtime. Emit Visible fallback selection in target/artifact records and PKG11007. Dependencies: PKG11, P13. Criterion behavior/pkg11/host-independent-cross-compile: accept Resolve and compile target profile/backend/runtime/ABI contracts independently of implicit host ABI, services and paths. Reject A cross build inherits host ABI/paths/default target assumptions. Emit Target-specific build/artifact identity and host-leakage rejection with PKG11002. Dependencies: PKG11, B1, R1. Criterion behavior/pkg11/per-target-evidence: accept Attach required conformance and support-level evidence separately to each target and expose every failing profile/target pair. Reject Default-target success hides a required target failure or a release claims support without its per-target conformance. Emit Per-target test/conformance reports, support table and PKG11006. Dependencies: PKG11, TEST3, TEST4, TEST6. Criterion behavior/pkg11/target-compatibility-admission: accept Validate profile/backend legality, dependency variants and capability availability for every concrete target before lowering. Reject A pair is unsupported, contradicts project profiles, lacks a dependency variant or assumes capabilities legal on another target. Emit Checked matrix, per-target graph/capability decision and PKG11001/PKG11003/PKG11004/PKG11008. Dependencies: PKG11, PKG5, P13, B1. Criterion behavior/pkg11/target-matrix-artifact: accept Normalize grouped declarations into concrete profile/backend/triple/ABI/calling-convention/runtime/features/dependency/capability/artifact/test/support entries and emit each target's manifests and support level. Reject Required target/ABI identity is missing, a matrix contradicts the project or a supported claim lacks its target-specific record. Emit Normalized matrix, dependency graph, capability summary, artifact/test/conformance manifests and supported/experimental/internal/build-only/unsupported table; PKG11005/PKG11008. Dependencies: PKG1, PKG11, R1, B1. Criterion behavior/pkg7/canonical-rebuild-comparison: accept Compare canonical manifests and actual content hashes for two locked builds under the same recipe, explaining only declared differences. Reject Verification compares filenames alone or ignores a changed canonical content/manifest identity. Emit Expected/actual digest lists and rebuild verification report; PKG7007. Dependencies: PKG3, PKG7. Criterion behavior/pkg7/deterministic-build-environment: accept Control source/project/lock/compiler/toolchain/graph/profile/target/environment/locale/timezone/order/timestamps/seeds/network/generated/blob/FFI inputs; normalize time/order/paths and seed or record randomness. Reject A reproducible build uses unlocked dependencies, unrecorded external reads/randomness, leaked host paths or generated source without generator/input hashes. Emit Controlled environment and input/output manifests, build recipe, exception list and PKG7002-PKG7006; changed compiler invalidates cache. Dependencies: PKG7, PKG2, PKG10. Criterion behavior/pkg7/nonreproducible-claim-boundary: accept Mark uncontrolled-input artifacts nonreproducible and list their exceptions explicitly. Reject A nonreproducible artifact satisfies a reproducible release/signing gate or a reproducibility claim lacks its recipe. Emit Nonreproducibility exception and release decision; PKG7001/PKG7008. Dependencies: PKG7, PKG12. Criterion behavior/pkg7/recorded-build-recipe: accept Emit a schema-valid release build recipe binding package/version, source/project/lock/compiler/toolchain, graph/task settings, concrete profile/target matrix, controlled environment/locale/timezone/traversal/timestamps/seeds/network, generator/input hashes, blobs/FFI inputs, expected artifact identities, output hashes and verification command or machine-readable equivalent. Rebuild twice under that exact recipe and compare canonical manifests and actual content hashes. For standard-library packages retain source commit, build graph, compiler, package lock, tests and policy-required signatures in the provenance record. Reject Reject a claimed reproducible release with no recipe, omitted or altered consumed inputs/outputs, unlocked dependencies, unrecorded network/randomness, host path leakage, missing generator hashes, filename-only comparison or unexplained hash drift; mark uncontrolled inputs nonreproducible and deny reproducible signing/release claims when policy requires reproducibility. Standard-library provenance and artifact identity must agree; neither API inventory nor a supplied success label proves a rebuild. Emit Versioned build-recipe artifact, controlled-environment manifest, input/output digest lists, actual repeat-build canonical comparison, exception list and PKG7001-PKG7008 diagnostics with recipe/input/artifact/target/environment context; standard-library source/build/lock/test/signature provenance links. Dependencies: PKG1/PKG2 project, lock and typed graph producers, PKG3 canonical manifests, PKG5 complete dependency lock, PKG10/PKG12 provenance/signing evidence, stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests module/package manifests, BOOT6 trust evidence remains separate.\n<!-- build-canonical-recorded-rebuild:end -->",
   "c8e09423d5059bddbff68fed0c0b99027083f28c90e71ece16f4ade357cc8d3e"
   "5. **SH-17.5:** Preserve origins, effects, safety/proof and dependency records\n   in requests/results, with stable unsupported-feature diagnostics.",
   "c8e1c1fbb325cda7c5fce56c53deca3b479743fa356a40ddd898490e4ee7aa20"
@@ -44705,8 +47126,6 @@
   "- [ ] `effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering` effects/3: Check legality and ordering\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Reject undeclared effects and forbidden profile behavior, expose capability requirements, and preserve sequencing constraints without granting authority.",
   "f236db5992ef5d2c8d665da57c878074c2b613c9f8a42e1042330f2b9ff3cfc1"
   "- [ ] `evolution/stabilization-decision` Establish an exact stable contract and compatibility baseline\n\nStatus: Open\n\nSource requirement: `governance/stabilization-decision`\n\nRequired outputs: Stabilization record naming contract/surfaces, evidence and accountable decision Future compatibility baseline, package/tooling metadata and lifecycle release notes Owned deprecation/removal decision and record naming contract/export/profile surfaces, replacement or explicit no-replacement rationale, diagnostic id, warning/error/removal schedule, migration artifacts, retained-until-removal tests and release/package visibility; security emergency links to GOV4 and GOV2.\n\nClosing evidence: Require conformance history, negative fixtures, compatibility analysis, documentation and migration readiness for the exact surfaces; safety/security/library changes include applicable evidence and GOV4/GOV3/STD20 review. Close or update GOV7 experiment records; accepted RFC/module admission alone does not confer stability. Deprecation and removal retain replacement/rationale, diagnostic/schedule/migration and tests until removal under GOV8. Security emergency removals require both GOV4 and GOV2 records; release tooling lists stabilized/deprecated/removed contracts and source-qualified consumer outputs. Actual complete accepted artifact and consumer result for the named source contract, with input/source/policy/tool identity. Historical stage0 records or a passing schema alone do not implement these outcomes. Produce a governed deprecation record with replacement or explicit no-replacement rationale, structured diagnostic, warning/error/removal schedule and migration artifacts. Keep deprecated contracts supported and test-covered until the approved removal window; removal proceeds after that window or an explicit GOV4/GOV2 security emergency. Compiler diagnostics, docs, package warnings/rejection, migration tools or structured fix data and release notes consume the exact record. For standard-library exports preserve declared stability and compatibility dimensions; breaking source/behavior/effect/capability/diagnostic/artifact/profile/conformance changes carry impact analysis, migration, conformance updates and governance approval. Removing profile availability and tightening safety/capability/schema rules are explicitly classified by source/artifact impact; library release compatibility reports and signed provenance remain required inputs. Emit GOV8003-GOV8008 and STD20007 as applicable; historical or compatibility packages do not imply a removed API remains generally available.\n\nRequired rejection evidence: Reject evidence-free stabilization, missing compatibility surfaces, missing security/library review and experiments stabilized without GOV7 closure. Reject omitted lifecycle release metadata, missing migration readiness and premature removal without explicit emergency policy. Malformed/missing/stale/wrong-scope records and each named source rejection produce the original GOV diagnostics at the actual consuming boundary. Reject silent removal, missing replacement or rationale, diagnostic id or schedules, absent migration/fix data, premature removal without the explicit security exception, lost deprecated-contract tests, missing package metadata or lifecycle release notes and hidden profile/stability/compatibility changes. Reject standard-library breaking changes without impact/migration/conformance/governance evidence and emergency removal lacking both GOV4 and GOV2 records.\n\nDependencies: GOV2 compatibility baseline/report; GOV3/STD20 library and GOV4 safety/security review as applicable; GOV7 experiment closure and GOV8 lifecycle evidence; Affected component conformance history/negative fixtures/docs/migration metadata. Dependencies are required artifacts/conditional consumers, not a claim their producer tasks are implemented or a cyclic all-tasks-complete gate. GOV1 accountable change and GOV2 compatibility/migration evidence; GOV4 emergency authorization where applicable; GOV7 experiment closure when relevant; GOV3/STD20 library owner supplies export stability, compatibility reports and signed provenance; affected compiler/docs/package/migration/test/release owners produce actual consumer conformance and retained tests. The accountable lifecycle record does not substitute for their implementations.\n\nExact source criteria: facet/bootstrap-governance/d0e05b1ed2644e1fd2ce4b85, facet/bootstrap-governance/489b4263da8d23ddabd9e3ae, facet/bootstrap-governance/df842eeb4177a968623ac0a8, facet/bootstrap-governance/37be7f5bd2b4ae59e497d1dc, facet/bootstrap-governance/db8be9ed3c06f63372ff70b4, facet/bootstrap-governance/78c3423f45c1be476ad57dd9, facet/bootstrap-governance/2e9f5cf7506d3736da73112e, facet/bootstrap-governance/9cd815d35a827190fb4ea9c6, facet/bootstrap-governance/d2c7dd8882323ca560e37a99, facet/bootstrap-governance/d634d2f511cc86d514a6d273, facet/bootstrap-governance/07242484e572c5187957998e, facet/bootstrap-governance/a14a05f8a4b60af84326df49, facet/bootstrap-governance/ab2f0f63f41575436939bcdb, facet/bootstrap-governance/e77be9411c2e3a5ce64a216a, facet/bootstrap-governance/ae1a409d8759166b0124487b, facet/bootstrap-governance/6cf3e5c475d03002a6a0f926, facet/bootstrap-governance/71851eebba2ef5d5f0332d7d, facet/bootstrap-governance/9c7ba3bc06e4bbd463c47194, facet/bootstrap-governance/3f3bf717df0f53d9b7fa4cf7, facet/bootstrap-governance/214aa4b6095b637daf154a40, facet/bootstrap-governance/849233a58c888af074151884, facet/bootstrap-governance/48ce65ab7cf428db0d10af20, facet/bootstrap-governance/b7c9748e4bb4a4bae11ce067, facet/bootstrap-governance/9d26093d9d0953d512e6227f.",
-  "f293e86a6d4be7cc1b6f0723e2a117d1880a592c1e16d3ec75cac24dd234d01e"
-  "- [ ] `build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation` Implement dependency-aware caching and invalidation\n\nStatus: Open\n\nEvidence baseline: [Pass cache](../../bootstrap/clojure/src/gravity/pass_cache.clj)\n\nClosing evidence: Reuse on equal inputs; rebuild on source, compiler, grant, policy or target changes",
   "f2dd06e4461f0288a18732201a17ac3b614d2645dacc293316005fa23c8303ca"
   "- [ ] `FL-P08-T01` Implement runtime selection, no-runtime, minimal native,\n  memory, managed, concurrency, distributed, AI, REPL, FFI, capability, and\n  observability runtime surfaces.\n  - Subtasks:\n    - Make runtime selection explicit and profile-compatible.\n    - Enforce capabilities deny-by-default.\n    - Preserve audit, redaction, observability, panic/trap, and replay records.\n    - Reject hidden services, missing grants, unchecked FFI, and observability\n      sinks without authority.\n  - Proof gate:\n    - `gravity run` and generated executables exercise runtime services\n      through real capability checks.\n",
   "f31dae1ca26f4b7f1a6672d3f8c825a30950fd92d7b8959300034873a1d76ced"
