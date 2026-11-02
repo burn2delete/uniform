@@ -44813,6 +44813,29 @@
         (when was-interrupted?
           (.interrupt (Thread/currentThread)))))))
 
+(deftest math-proof-accepts-decreasing-measure-without-fuel
+  (let [artifact (bootstrap/math-proof-file-artifact
+                  (fixture "accepted/math-rewrite-decreasing-measure.gravity"))
+        termination (:termination-report artifact)
+        proof (:capability-based-proof artifact)]
+    (is (= :decreasing-measure (:strategy termination)))
+    (is (= :strictly-decreasing (:direction termination)))
+    (is (= :proof/operator-decrease (:proof-ref termination)))
+    (is (nil? (:fuel termination)))
+    (is (true? (:termination-bounded? proof)))))
+
+(deftest math-proof-still-rejects-unbounded-termination
+  (is (= "MATH9-TERMINATION"
+         (diagnostic-id
+          #(bootstrap/math-proof-file-artifact
+            (fixture "rejected/math-rewrite-termination.gravity"))))))
+
+(deftest math-proof-rejects-nonincreasing-measure-without-decrease-proof
+  (is (= "MATH9-TERMINATION"
+         (diagnostic-id
+          #(bootstrap/math-proof-file-artifact
+            (fixture "rejected/math-rewrite-nonincreasing-measure.gravity"))))))
+
 (defn -main
   [& _]
   (let [result (run-tests 'gravity.diagnostics-test
