@@ -53,8 +53,10 @@ unchanged.
 
 ## Checks
 
-All checks below ran against the immutable port commit before this receipt was
-written:
+The source-focused checks and first structural pass below ran against the
+immutable port commit before this receipt was written. The documentation and
+roadmap validators were also rerun after this report was added and still
+passed:
 
 | Check | Result |
 | --- | --- |
