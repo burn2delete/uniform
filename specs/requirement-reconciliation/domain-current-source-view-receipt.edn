@@ -7,11 +7,11 @@
  :review-base {:commit "38add2342719b91c6ef22f064fa813a16e9a97b3"
                :tree "5e260f72a8455fc44bb39039b9e0ce5f2be0907c"}
  :current-source-checkpoint
- {:commit "374aae5814d4f2027a613d2cd7a249ad2b08b07c"
-  :tree "358c68e3ea6dfe1bf4254448aad16faace470f76"
-  :parents ["8de866671bb0ec4af4c0aae4ce591ae69f22f498"
-            "38add2342719b91c6ef22f064fa813a16e9a97b3"]
-  :task-criteria-port :domains-family-and-current-main-composed-platform-prefix-composed}
+ {:commit "19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b"
+  :tree "dc79967f4939df6790c3a16b0a71a71e81191f9e"
+  :parents ["b35a7004f20f8dab1ba7183fc1c591dc8df2da1c"
+            "a13e148ae5078faa94f69e86a911dbe2df378e29"]
+  :task-criteria-port :domains-family-and-current-main-composed-platform-prefix-composed-runtime-successor}
  :main-composition {:commit "38add2342719b91c6ef22f064fa813a16e9a97b3"
                     :tree "5e260f72a8455fc44bb39039b9e0ce5f2be0907c"}
  :historical-pr562
@@ -27,21 +27,25 @@
   :gap-predecessor-tree "b90613cc0344b4b4a8bde0ff1afc61153723becf"}
  :source-view
  {:path "specs/requirement-reconciliation/domain-current-source-view.edn"
-  :sha256 "dffc69a6910993b5375f07267a5150f296c2f3576e848c75441d4f65f8805e6f"
+  :sha256 "f86ffa1b40c56ecf7d0016ea96a48f5ccd40b8cbce834a48335a6c93e747a529"
   :checker-path "tools/domain_current_source_view.clj"
   :checker-sha256
   "200699746ad5b75408d624f0801520e8619162b42784ff5ce38d16569044e8e5"
   :evidence-path "specs/requirement-reconciliation/domain-current-source-view.md"
   :evidence-sha256
-  "42f7f43a705879edf6b39b7ed180e08ab6b892a6046f687c14f4a0185cd8c00c"}
+  "e8b340668f2abb5518d1c7a73705a4878659b0b91eabf3d4b937fe18702308a2"}
  :current-manifest-transition
  {:path "contracts/requirement-reconciliation.edn"
-  :commit "c7bd27a6543add21a4b715ba9ed13deb67e8816e"
-  :tree "e783d6ccb3251e4af6c00edc47cb23de918b83fd"
-  :sha256 "88ae5e2254a3553321ab49c493cfa78339207d799fa4976068e2df871a4a281e"
+  :commit "19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b"
+  :tree "dc79967f4939df6790c3a16b0a71a71e81191f9e"
+  :sha256 "8948438410df7c5b6c2c547e48be16b3ff8b1033ec866fb1bec432e4e3c32007"
   :domain-current-ref "24e7b5e5cd8bc42fa495997870605b596a380678"
   :domain-current-tree "52a90b3d537f23b3f572ee65ff03edf827c1e29b"
   :domain-current-sha256 "5378c2c7fba1bb49318fc6cda890c60c77bdbdc57dfe6f5ea42ea8aa23298943"
+  :runtime-current-ref "42c34ab55af0000dfaaf73d96d7ee09ec22c243e"
+  :runtime-current-tree "e8f1cc090800f9fcd9e81b7a5bcea32a88101526"
+  :runtime-current-sha256 "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c"
+  :runtime-changed-record-count 5
   :change-class :family-criteria-preserved-plus-current-main-safety-criteria}
  :counts {:source-documents 21
           :source-occurrences 1533

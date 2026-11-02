@@ -14,9 +14,9 @@ denominator, or claim implementation or product completion.
   tree `2da5a46eb4fbc0fce547604a29b5305127513127`, parent `12480d592`.
 - Current-main composition: `38add2342719b91c6ef22f064fa813a16e9a97b3`, tree
   `5e260f72a8455fc44bb39039b9e0ce5f2be0907c`.
-- Current source-view checkpoint: `374aae5814d4f2027a613d2cd7a249ad2b08b07c`,
-  tree `358c68e3ea6dfe1bf4254448aad16faace470f76`, with parents
-  `8de866671bb0ec4af4c0aae4ce591ae69f22f498` and `38add234`.
+- Current source-view checkpoint: `19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b`,
+  tree `dc79967f4939df6790c3a16b0a71a71e81191f9e`, with parents
+  `b35a7004f20f8dab1ba7183fc1c591dc8df2da1c` and `a13e148ae5078faa94f69e86a911dbe2df378e29`.
 - Historical PR562 candidate: `2c3eac90b9736873ce7c439cdc9603b1e43249e5`,
   tree `3de79028eeaced10f00c6895f4f5cf446d7304f2`.
 - Historical family source: `6276c94b0b753c888ef8fecc794bcc81245ea3b3`,
@@ -49,9 +49,14 @@ historical `platform` criteria remain an authenticated prefix of the
 current-main platform rows; current main additionally supplies its current
 platform criteria and product projection. The checker verifies that transition
 against both immutable source commits, rather than treating the old platform
-file hash as current. Compiler API, build, legality, and runtime rows remain
-current-main composition; the historical compiler-api source had four rows
-while current main has added `domain-ir-boundaries`.
+file hash as current. Compiler API, build, and legality rows remain
+current-main composition; the Runtime row is additionally authenticated
+through the PR561 successor bridge at
+`42c34ab55af0000dfaaf73d96d7ee09ec22c243e` (tree
+`e8f1cc090800f9fcd9e81b7a5bcea32a88101526`, bytes SHA-256
+`b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c`). The
+historical compiler-api source had four rows while current main has added
+`domain-ir-boundaries`.
 
 The gap proposal retains 577 historical records, 70 assigned records and
 coverage operations, 15 existing-task amendments, nine new-task proposals,
@@ -66,10 +71,11 @@ reintroduced as compiler or admission quotas.
 The historical family manifest (`43ac4686...`) is a composed artifact that is
 not present in current main. The gap receipt manifest (`f4c17182...`) is kept
 as historical evidence at its pinned commit. The preserved PR445 manifest
-(`aa7ee8df...`) is also historical/external. The authenticated successor
-manifest checkpoint is `c7bd27a6543add21a4b715ba9ed13deb67e8816e` (tree
-`e783d6ccb3251e4af6c00edc47cb23de918b83fd`), with bytes SHA-256
-`88ae5e2254a3553321ab49c493cfa78339207d799fa4976068e2df871a4a281e`.
+(`aa7ee8df...`) is also historical/external. The authenticated combined
+successor manifest checkpoint is
+`19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b` (tree
+`dc79967f4939df6790c3a16b0a71a71e81191f9e`), with bytes SHA-256
+`8948438410df7c5b6c2c547e48be16b3ff8b1033ec866fb1bec432e4e3c32007`.
 Its exact Domain task-source bridge points to the composed source checkpoint
 `24e7b5e5cd8bc42fa495997870605b596a380678` (tree
 `52a90b3d537f23b3f572ee65ff03edf827c1e29b`, bytes SHA-256
