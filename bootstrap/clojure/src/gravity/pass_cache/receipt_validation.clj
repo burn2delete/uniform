@@ -2,9 +2,12 @@
   "Cache operation, artifact, and historical receipt validation."
   (:require [clojure.set :as set]
             [gravity.digest :as digest]
-            [gravity.pass-cache.canonical-encode :refer :all]
-            [gravity.pass-cache.policy :refer :all]
-            [gravity.pass-cache.request-key :refer :all]
+            [gravity.pass-cache.canonical-encode :refer [content-id]]
+            [gravity.pass-cache.policy
+             :refer [execution-request-fields fail! require-sha256!
+                     schema-version sha256-id?]]
+            [gravity.pass-cache.request-key
+             :refer [key-id validate-stage-request!]]
             [gravity.pass-execution :as pass-execution]))
 
 (def cache-operation-fields

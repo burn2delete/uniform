@@ -1,16 +1,27 @@
 (ns gravity.pass-cache.lookup
   "Receipt-first immutable cache lookup and current revalidation."
-  (:require [gravity.pass-cache.canonical-decode :refer :all]
-            [gravity.pass-cache.entry-schema :refer :all]
-            [gravity.pass-cache.locking :refer :all]
-            [gravity.pass-cache.path-policy :refer :all]
-            [gravity.pass-cache.policy :refer :all]
-            [gravity.pass-cache.receipt-validation :refer :all]
-            [gravity.pass-cache.recovery :refer :all]
-            [gravity.pass-cache.request-key :refer :all]
-            [gravity.pass-cache.secure-io :refer :all]
-            [gravity.pass-cache.store-directories :refer :all]
-            [gravity.pass-cache.receipt-validation :as receipt-validation])
+  (:require [gravity.pass-cache.canonical-decode
+             :refer [decode-canonical-bytes]]
+            [gravity.pass-cache.entry-schema
+             :refer [build-reuse-receipt rejected-result
+                     validate-entry-derived! validate-entry-record!]]
+            [gravity.pass-cache.locking
+             :refer [with-global-store-lock with-key-lock]]
+            [gravity.pass-cache.path-policy
+             :refer [sha-file-name! validate-store!]]
+            [gravity.pass-cache.policy
+             :refer [*key-lock-held* fail! fatal? maximum-blob-bytes
+                     maximum-entry-bytes schema-version]]
+            [gravity.pass-cache.receipt-validation
+             :as receipt-validation
+             :refer [artifact-id-of blob-id validate-artifact-against-receipt!
+                     validate-cache-operations! validate-receipt!]]
+            [gravity.pass-cache.recovery :refer [recover-orphans!]]
+            [gravity.pass-cache.request-key :refer [key-id validate-key!]]
+            [gravity.pass-cache.secure-io
+             :refer [secure-child-exists? secure-read-bytes!]]
+            [gravity.pass-cache.store-directories
+             :refer [with-secure-store-directories]])
   (:import [java.nio.file SecureDirectoryStream]))
 
 (def ^:private default-envelope-artifact-id

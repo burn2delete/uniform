@@ -32,19 +32,18 @@
         (delete-tree-fn directory)))))
 
 (deftest warm-hit-retains-known-pure-envelope-identity
-  (let [identity-calls (atom 0)]
-    (let [original-artifact-id-of
-          (var-get #'receipt-validation/artifact-id-of)]
-      (with-redefs [receipt-validation/artifact-id-of
-                    (fn [operations artifact]
-                      (swap! identity-calls inc)
-                      (original-artifact-id-of operations artifact))]
-        (is (= :hit
-               (warm-hit-result receipt-validation/envelope-artifact-id
-                                #(reset! identity-calls 0))))
-        ;; The retained id satisfies the derived-entry check without another
-        ;; dispatch through the identity operation.
-        (is (= 1 @identity-calls))))))
+  (let [identity-calls (atom 0)
+        original-artifact-id-of (var-get #'receipt-validation/artifact-id-of)]
+    (with-redefs [receipt-validation/artifact-id-of
+                  (fn [operations artifact]
+                    (swap! identity-calls inc)
+                    (original-artifact-id-of operations artifact))]
+      (is (= :hit
+             (warm-hit-result receipt-validation/envelope-artifact-id
+                              #(reset! identity-calls 0))))
+      ;; The retained id satisfies the derived-entry check without another
+      ;; dispatch through the identity operation.
+      (is (= 1 @identity-calls)))))
 
 (deftest warm-hit-preserves-custom-identity-callback
   (let [identity-calls (atom 0)
