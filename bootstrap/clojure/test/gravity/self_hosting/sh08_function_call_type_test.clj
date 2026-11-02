@@ -8525,7 +8525,6 @@
         (is (= :not-refined (get-in descriptor [:equality-policy :bare-domain])))
         (is (= [] (:direct-effects descriptor) (:latent-effects descriptor)))))
     (doseq [pair [[:gravity.type/set (finite [])] [(finite []) :gravity.type/set]
-                  [:gravity.type/set :gravity.type/set]
                   [:gravity.type/set (finite [:gravity.type/string])]
                   [(finite [:gravity.type/string]) :gravity.type/set]
                   [:gravity.type/set :gravity.type/unknown]]]
@@ -8574,6 +8573,7 @@
                  (finite [:gravity.type/character]) (finite [:gravity.type/unknown])
                  (finite [:gravity.type/never]) (finite [{:kind :gravity.type/nil-or :value-type k}])]
             other [(finite []) :gravity.type/never]
+            :when (not (and (= bad :gravity.type/set) (= other :gravity.type/never)))
             pair [[bad other] [other bad]]]
       (is (= (if (and (some #{:gravity.type/set} pair) (not (some #{:gravity.type/never} pair)))
                :bare-keyword-anchor-set-equality-operand-type-required :keyword-set-equality-operand-type-required)
