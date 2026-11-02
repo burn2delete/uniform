@@ -2,7 +2,7 @@
   (:require [clojure.test :refer [deftest is]]
             [gravity.pass-cache :as cache]
             [gravity.pass-cache.receipt-validation :as receipt-validation])
-  (:import [java.nio.file Files LinkOption Path Paths StandardOpenOption]
+  (:import [java.nio.file Files LinkOption Path StandardOpenOption]
            [java.util.concurrent TimeUnit]
            [java.nio.file.attribute PosixFilePermissions]))
 
@@ -118,14 +118,14 @@
                   java.nio.charset.StandardCharsets/UTF_8)
          (when (> declared-size observed) "\n...[child log truncated]"))))
 
+(defn- independent-cache-child-command [expression]
+  ;; Keep real JVM isolation without resolving a second CLI dependency graph.
+  [(str (System/getProperty "java.home") "/bin/java") "-Xmx256m"
+   "-cp" (System/getProperty "java.class.path") "clojure.main" "-e" expression])
+
 (defn- run-independent-cache-child!
   [^Path directory ^Path marker target-id barrier? hang? wait?]
-  (let [clojure-command (or (System/getenv "GRAVITY_CLOJURE") "clojure")
-        source-root (.toAbsolutePath (Paths/get "bootstrap/clojure/src"
-                                                (make-array String 0)))
-        test-root (.toAbsolutePath (Paths/get "bootstrap/clojure/test"
-                                              (make-array String 0)))
-        ready-marker (.resolve directory "publication.ready")
+  (let [ready-marker (.resolve directory "publication.ready")
         expression
         (str "(require 'gravity.pass-cache 'gravity.pass-cache-test)"
              "(try (let [request (var-get (ns-resolve 'gravity.pass-cache-test 'request))"
@@ -180,21 +180,18 @@
           java.nio.file.attribute.FileAttribute
           [(PosixFilePermissions/asFileAttribute
             (PosixFilePermissions/fromString "rw-------"))]))
-        builder (doto (ProcessBuilder.
-                       [clojure-command "-Sdeps"
-                        (str "{:paths [" (pr-str (str source-root)) " "
-                             (pr-str (str test-root)) "]}")
-                        "-M" "-e" expression])
+        command (independent-cache-child-command expression)
+        builder (doto (ProcessBuilder. command)
                   (.redirectErrorStream true)
                   (.redirectOutput (.toFile child-log)))
         process (try
                   (.start builder)
                   (catch java.io.IOException error
-                    (throw (ex-info "required clojure subprocess unavailable"
-                                    {:command clojure-command
+                    (throw (ex-info "required independent JVM unavailable"
+                                    {:command command
                                      :log-path (str child-log)} error))))]
     (if-not wait?
-      {:available? true :finished? false :exit nil :process process
+      {:available? true :finished? false :exit nil :process process :command command
        :log-path child-log :log-text nil}
       (let [finished? (try (.waitFor process 30 TimeUnit/SECONDS)
                            (catch InterruptedException _ false))]
@@ -203,7 +200,7 @@
           (when-not (.waitFor process 10 TimeUnit/SECONDS)
             (throw (ex-info "timed-out cache child survived forced termination"
                             {:log-path (str child-log)}))))
-        {:available? true :finished? finished?
+        {:available? true :finished? finished? :command command
          :timed-out? (not finished?) :alive? (.isAlive process)
          :exit (when finished? (.exitValue process))
          :log-path child-log
@@ -803,49 +800,19 @@
                 "late invalid candidate prevents both blob and receipt deletion"))))
       (finally (delete-tree! directory)))))
 
-(deftest canonical-accounting-and-recovery-traversal-are-bounded
-  (is (thrown? clojure.lang.ExceptionInfo
-               ((var-get (ns-resolve 'gravity.pass-cache 'canonical-bytes))
-                (vec (repeat 12 (apply str (repeat 100 "x")))) 512))
-      "aggregate scalar bytes reject before final encoding")
-  (let [canonical-bytes
-        (var-get (ns-resolve 'gravity.pass-cache 'canonical-bytes))]
+(deftest canonical-values-do-not-use-work-bounds-and-storage-limits-remain-explicit
+  (let [canonical-bytes (var-get (ns-resolve 'gravity.pass-cache 'canonical-bytes))
+        large-vector (vec (repeat 40000 "x"))
+        deep-value (nth (iterate vector :leaf) 120)
+        large-result (canonical-bytes large-vector)
+        deep-result (canonical-bytes deep-value)]
+    (is (pos? (alength ^bytes large-result))
+        "semantic identities accept vectors above the former node allowance")
+    (is (pos? (alength ^bytes deep-result))
+        "semantic identities accept nesting above the former depth allowance")
     (is (thrown? clojure.lang.ExceptionInfo
-                 (canonical-bytes (apply str (repeat 2 (char 0))) 75))
-        "single scalar accounts printed control-character escapes")
-    (is (thrown? clojure.lang.ExceptionInfo
-                 (canonical-bytes
-                  (vec (repeat 5 (str "x" (char 0)))) 425))
-        "aggregate scalars account every printed escape")
-    (is (thrown? clojure.lang.ExceptionInfo
-                 (canonical-bytes
-                  (String. (Character/toChars 0x1f600)) 69))
-        "supplementary code points account four printed UTF-8 bytes")
-    (doseq [named [(keyword "namespace-1234567890" "name-1234567890")
-                   (symbol "namespace-1234567890" "name-1234567890")]]
-      (is (thrown? clojure.lang.ExceptionInfo
-                   (canonical-bytes named 100))
-          "namespaced keyword/symbol components are both charged"))
-    (let [large-integer (java.math.BigInteger.
-                         (apply str (repeat 200 "9")))]
-      (is (thrown? clojure.lang.ExceptionInfo
-                   (canonical-bytes large-integer 150))
-          "integer bit-length bounds decimal printing before str")
-      (is (thrown? clojure.lang.ExceptionInfo
-                   (canonical-bytes
-                    (clojure.lang.Ratio. large-integer
-                                         (.subtract large-integer
-                                                    java.math.BigInteger/ONE))
-                    300))
-          "ratio components are independently pre-accounted"))
-    (is (thrown? clojure.lang.ExceptionInfo
-                 (canonical-bytes
-                  (java.math.BigDecimal. java.math.BigInteger/ONE 1000000)
-                  1024))
-        "BigDecimal precision/scale bounds printing before str")
-    (is (thrown? clojure.lang.ExceptionInfo
-                 (canonical-bytes [nil nil] 200))
-        "container and child tagged-node syntax is conservatively charged"))
+                 (canonical-bytes large-vector 512))
+        "an explicit storage byte limit still rejects an oversized encoding"))
   (let [directory (Files/createTempDirectory
                    "gravity-pass-cache-recovery-bound-"
                    (make-array java.nio.file.attribute.FileAttribute 0))]
@@ -1082,6 +1049,36 @@
                    "\nsecond child log: " (:log-text second)))
           (when marker-exists?
             (is (= 1 (count (Files/readAllLines marker)))))))
+      (finally (delete-tree! directory)))))
+
+(deftest independent-child-uses-resolved-runtime-and-rejects-missing-runtime
+  (let [directory (Files/createTempDirectory
+                   "gravity-pass-cache-runtime-"
+                   (make-array java.nio.file.attribute.FileAttribute 0))
+        marker (.resolve directory "producer.log")
+        missing-marker (.resolve directory "unexpected-producer.log")
+        empty-classpath (Files/createDirectory
+                         (.resolve directory "empty runtime")
+                         (make-array java.nio.file.attribute.FileAttribute 0))
+        command independent-cache-child-command]
+    (try
+      (is (= [(str (System/getProperty "java.home") "/bin/java") "-Xmx256m"
+              "-cp" (System/getProperty "java.class.path") "clojure.main" "-e" "sentinel"]
+             (command "sentinel")))
+      (let [positive (run-independent-cache-child! directory marker nil false false true)]
+        (is (:finished? positive) (pr-str positive))
+        (is (false? (:alive? positive)))
+        (is (= 0 (:exit positive)) (pr-str positive))
+        (is (re-find #":child-status :stored" (:log-text positive)))
+        (is (= ["x"] (vec (Files/readAllLines marker)))))
+      (let [negative (with-redefs [independent-cache-child-command
+                                  #(assoc (command %) 3 (str empty-classpath))]
+                       (run-independent-cache-child! directory missing-marker nil false false true))]
+        (is (:finished? negative) (pr-str negative))
+        (is (false? (:alive? negative)))
+        (is (not= 0 (:exit negative)) (pr-str negative))
+        (is (re-find #"ClassNotFoundException: clojure.main" (:log-text negative)))
+        (is (not (Files/exists missing-marker (make-array LinkOption 0)))))
       (finally (delete-tree! directory)))))
 
 (deftest independent-process-different-key-producers-overlap

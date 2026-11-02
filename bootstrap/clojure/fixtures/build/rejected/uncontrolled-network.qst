@@ -1,0 +1,14 @@
+(ns build.uncontrolled-network
+  (:profile :hosted)
+  (:target :jvm)
+  (:exports [main])
+  (:effects #{:io/write})
+  (:capabilities #{:io/stdout})
+  (:safety :safe)
+  (:metadata
+   {:package
+    {:compiled-gate
+     {:reproducible-build-recipes
+      [{:artifact-id "recipe:fixture" :environment {:network :enabled}}]}}}))
+
+(defn main [] (println "must-not-execute"))

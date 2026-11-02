@@ -3,12 +3,10 @@
 (defn p15-s23-closed-core-form-indexes
   [source-path form-tree root-form-ids]
   (when-not (and (vector? form-tree)
-                 (vector? root-form-ids)
-                 (<= (count form-tree) 2048))
+                 (vector? root-form-ids))
     (p15-s23-closed-core-fail!
-     "C6-VERIFY" source-path {:missing-fact :bounded-c2-form-tree}
-     {:observed-form-count (when (vector? form-tree) (count form-tree))
-      :maximum-form-count 2048}))
+     "C6-VERIFY" source-path {:missing-fact :typed-c2-form-tree}
+     {:missing-fact :typed-c2-form-tree-and-root-ids}))
   (let [form-by-id (into {} (map (juxt :form-id identity)) form-tree)
         ordinal-by-id (into {} (map-indexed (fn [idx form]
                                              [(:form-id form) idx]))

@@ -2,7 +2,6 @@
   "Order-invariant pass-receipt DAG validation and composition."
   (:require [clojure.set :as set]
             [gravity.pass-execution.canonical :as canonical]
-            [gravity.pass-execution.config :as config]
             [gravity.pass-execution.contract :as contract]
             [gravity.pass-execution.diagnostics :as diagnostics]
             [gravity.pass-execution.receipt-validation :as receipt-validation]
@@ -52,11 +51,6 @@
                  (vector? contracts) (seq contracts))
     (diagnostics/fail! "D1-ARTIFACT-GAP"
                        "receipts and contracts must be nonempty vectors" {}))
-  (when (or (> (count receipts) config/maximum-dag-receipts)
-            (> (count contracts) config/maximum-dag-receipts))
-    (diagnostics/fail! "D1-ARTIFACT-GAP"
-                       "pass evidence DAG exceeds its receipt bound"
-                       {:maximum-receipts config/maximum-dag-receipts}))
   (doseq [pass-contract contracts]
     (contract/validate-pass-contract! pass-contract))
   (let [contracts-by-id

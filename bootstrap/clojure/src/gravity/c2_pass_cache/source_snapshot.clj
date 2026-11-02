@@ -70,9 +70,7 @@
                                  (= (.permissions posix)
                                     (.permissions after-posix))
                                  (java.util.Arrays/equals
-                                  ^bytes first-bytes ^bytes second-bytes)
-                                 (= (digest/sha256-bytes-hex first-bytes)
-                                    (digest/sha256-bytes-hex second-bytes)))
+                                  ^bytes first-bytes ^bytes second-bytes))
                     (cache-fail! "C16-KEY"
                                  "source changed during stable double snapshot"
                                  {:path (str source-path)}))

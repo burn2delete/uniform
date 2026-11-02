@@ -27,38 +27,41 @@
 (declare p18-t02-jar-entries p18-t02-jar-file-entries)
 
 (defn p18-t02-build-packaged-jvm-cli!
-  []
-  (p18-t02-validate-source-inventory!)
-  (p18-ensure-dir! p18-t02-build-root)
-  (p18-ensure-dir! p18-t02-classes-dir)
-  (p18-t02-write-manifest!)
-  (p18-t02-shell!
-   "p18-t02-javac"
-   ["javac" "-cp" (str/join java.io.File/pathSeparator
-                            (p18-t02-classpath-entries))
-    "-d" p18-t02-classes-dir
-    p18-t02-launcher-source])
-  (p18-t02-shell!
-   "p18-t02-jar"
-   (p18-t02-jar-command))
-  (let [source-report
-        (p18-t02-jar-source-inventory-report (p18-t02-jar-entries))
-        jar-report
-        (p18-t02-jar-inventory-report (p18-t02-jar-file-entries))]
-    (when-not (and (:valid? source-report) (:valid? jar-report))
-      (fail! "P18T02006"
-             "packaged JVM CLI JAR inventory is invalid"
-             {:source-span {:source p18-t02-jar-path}
-              :missing-fact :exact-whole-jar-file-inventory
-              :expected-file-entries (:expected jar-report)
-              :observed-file-entries (:observed jar-report)
-              :missing-file-entries (:missing jar-report)
-              :unexpected-file-entries (:unexpected jar-report)
-              :packaged-source-inventory-valid?
-              (:valid? source-report)
-              :remediation
-              "Rebuild the package from the exact declared launcher and Clojure source inventory without omissions or ambient files."})))
-  p18-t02-jar-path)
+  ([] (p18-t02-build-packaged-jvm-cli! (p18-t02-source-inventory)))
+  ([inventory]
+   (p18-t02-validate-source-inventory! inventory)
+   (p18-ensure-dir! p18-t02-build-root)
+   (p18-ensure-dir! p18-t02-classes-dir)
+   (p18-t02-write-manifest!)
+   (p18-t02-shell!
+    "p18-t02-javac"
+    ["javac" "-cp" (str/join java.io.File/pathSeparator
+                             (p18-t02-classpath-entries))
+     "-d" p18-t02-classes-dir
+     p18-t02-launcher-source])
+   (p18-t02-shell!
+    "p18-t02-jar"
+    (p18-t02-jar-command inventory))
+   (let [source-report
+         (p18-t02-jar-source-inventory-report
+          inventory (p18-t02-jar-entries))
+         jar-report
+         (p18-t02-jar-inventory-report
+          inventory (p18-t02-jar-file-entries))]
+     (when-not (and (:valid? source-report) (:valid? jar-report))
+       (fail! "P18T02006"
+              "packaged JVM CLI JAR inventory is invalid"
+              {:source-span {:source p18-t02-jar-path}
+               :missing-fact :exact-whole-jar-file-inventory
+               :expected-file-entries (:expected jar-report)
+               :observed-file-entries (:observed jar-report)
+               :missing-file-entries (:missing jar-report)
+               :unexpected-file-entries (:unexpected jar-report)
+               :packaged-source-inventory-valid?
+               (:valid? source-report)
+               :remediation
+               "Rebuild the package from the exact declared launcher and Clojure source inventory without omissions or ambient files."})))
+   p18-t02-jar-path))
 
 (defn p18-t02-jar-entry-records
   []
@@ -139,62 +142,73 @@
     (assoc base :artifact-id (c4-artifact-id base))))
 
 (defn p18-t02-reproducible-build-record
-  [package-manifest jar-hash]
-  (let [base {:artifact :gravity/p18-t02-reproducible-build-record
-              :schema-version "gravity.reproducible-build/v1"
-              :package-id (:package-id package-manifest)
-              :recipe {:javac ["javac" "-cp" "<runtime-classpath>" "-d"
-                               p18-t02-classes-dir p18-t02-launcher-source]
-                       :jar (p18-t02-jar-command)}
-              :timestamp-policy :fixed-jar-entry-time
-              :network-policy :disabled-after-local-runtime-dependencies
-              :source-inventory p18-t02-source-inventory
-              :source-hashes (p18-t02-source-hashes)
-              :expected-output-hash jar-hash
-              :reproducible-claim :packaged-jvm-bootstrap-milestone
-              :final-release-reproducible? false}]
-    (assoc base :artifact-id (c4-artifact-id base))))
+  ([package-manifest jar-hash]
+   (p18-t02-reproducible-build-record
+    package-manifest jar-hash (p18-t02-source-inventory)))
+  ([package-manifest jar-hash inventory]
+   (let [base {:artifact :gravity/p18-t02-reproducible-build-record
+               :schema-version "gravity.reproducible-build/v1"
+               :package-id (:package-id package-manifest)
+               :recipe {:javac ["javac" "-cp" "<runtime-classpath>" "-d"
+                                p18-t02-classes-dir p18-t02-launcher-source]
+                        :jar (p18-t02-jar-command inventory)}
+               :timestamp-policy :fixed-jar-entry-time
+               :network-policy :disabled-after-local-runtime-dependencies
+               :source-inventory inventory
+               :source-hashes (p18-t02-source-hashes inventory)
+               :expected-output-hash jar-hash
+               :reproducible-claim :packaged-jvm-bootstrap-milestone
+               :final-release-reproducible? false}]
+     (assoc base :artifact-id (c4-artifact-id base)))))
 
 (defn p18-t02-provenance-record
-  [package-manifest dependency-record reproducible-record jar-hash]
-  (let [base {:artifact :gravity/p18-t02-provenance-record
-              :schema-version "gravity.provenance/v1"
-              :artifact-path p18-t02-jar-path
-              :artifact-content-hash jar-hash
-              :package-id (:package-id package-manifest)
-              :project-manifest-hash (p18-file-sha256 "deps.edn")
-              :compiler-identity :clojure-stage0-bootstrap
-              :builder-identity {:kind :local-jdk
-                                 :java-version (System/getProperty "java.version")
-                                 :java-runtime (System/getProperty "java.runtime.name")}
-              :source-material (p18-t02-source-material)
-              :dependency-record-id (:artifact-id dependency-record)
-              :reproducible-build-record-id (:artifact-id reproducible-record)
-              :generated-source-ledger []
-              :binary-blob-ledger []
-              :revocation-status :not-applicable-local-bootstrap-package
-              :bootstrap-hosted? true
-              :seedless-release? false}]
-    (assoc base :artifact-id (c4-artifact-id base))))
+  ([package-manifest dependency-record reproducible-record jar-hash]
+   (p18-t02-provenance-record
+    package-manifest dependency-record reproducible-record jar-hash
+    (p18-t02-source-inventory)))
+  ([package-manifest dependency-record reproducible-record jar-hash inventory]
+   (let [base {:artifact :gravity/p18-t02-provenance-record
+               :schema-version "gravity.provenance/v1"
+               :artifact-path p18-t02-jar-path
+               :artifact-content-hash jar-hash
+               :package-id (:package-id package-manifest)
+               :project-manifest-hash (p18-file-sha256 "deps.edn")
+               :compiler-identity :clojure-stage0-bootstrap
+               :builder-identity {:kind :local-jdk
+                                  :java-version (System/getProperty "java.version")
+                                  :java-runtime (System/getProperty "java.runtime.name")}
+               :source-material (p18-t02-source-material inventory)
+               :dependency-record-id (:artifact-id dependency-record)
+               :reproducible-build-record-id (:artifact-id reproducible-record)
+               :generated-source-ledger []
+               :binary-blob-ledger []
+               :revocation-status :not-applicable-local-bootstrap-package
+               :bootstrap-hosted? true
+               :seedless-release? false}]
+     (assoc base :artifact-id (c4-artifact-id base)))))
 
 (defn p18-t02-sbom-record
-  [package-manifest dependency-record provenance-record]
-  (let [base {:artifact :gravity/p18-t02-sbom
-              :schema-version "gravity.sbom/v1"
-              :package-id (:package-id package-manifest)
-              :package-version (:package-version package-manifest)
-              :artifact-path p18-t02-jar-path
-              :dependencies (:dependencies dependency-record)
-              :source-references (p18-t02-source-material)
-              :capability-summary {:declared #{:io/stdout}
-                                   :denied #{:network/ambient :shell/ambient}}
-              :unsafe-summary {:unsafe-islands 0}
-              :generated-source-summary []
-              :binary-blob-summary []
-              :provenance-record-id (:artifact-id provenance-record)
-              :bootstrap-hosted? true
-              :seedless-release? false}]
-    (assoc base :artifact-id (c4-artifact-id base))))
+  ([package-manifest dependency-record provenance-record]
+   (p18-t02-sbom-record
+    package-manifest dependency-record provenance-record
+    (p18-t02-source-inventory)))
+  ([package-manifest dependency-record provenance-record inventory]
+   (let [base {:artifact :gravity/p18-t02-sbom
+               :schema-version "gravity.sbom/v1"
+               :package-id (:package-id package-manifest)
+               :package-version (:package-version package-manifest)
+               :artifact-path p18-t02-jar-path
+               :dependencies (:dependencies dependency-record)
+               :source-references (p18-t02-source-material inventory)
+               :capability-summary {:declared #{:io/stdout}
+                                    :denied #{:network/ambient :shell/ambient}}
+               :unsafe-summary {:unsafe-islands 0}
+               :generated-source-summary []
+               :binary-blob-summary []
+               :provenance-record-id (:artifact-id provenance-record)
+               :bootstrap-hosted? true
+               :seedless-release? false}]
+     (assoc base :artifact-id (c4-artifact-id base)))))
 
 (defn p18-t02-signing-record
   [artifact-manifest provenance-record sbom-record]

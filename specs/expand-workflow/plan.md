@@ -14,7 +14,7 @@ Only task editing authority changes; compiler and language semantics do not.
 ## Canonical work and handoffs
 
 - Implementation work: [five authoritative records](tasks.md#implementation-tasks).
-- Compatibility view: [generated table](../../docs/component-roadmaps/expand.md#current-evidence-and-remaining-work).
+- Roadmap navigation: [sole task ledger](tasks.md#implementation-tasks).
 - Release criteria: [owning acceptance checklist](../../docs/component-roadmaps/expand.md#acceptance-criteria-yesno).
 - Overall composition: [integration outcomes](../../docs/component-roadmaps/README.md#integration-outcomes).
 - Input: Verified syntax, macro versions, namespace context and explicit build grants/replay inputs.
@@ -34,37 +34,18 @@ Each record has a checkbox; the known ID set prevents row loss/substitution,
 and its ID must agree with the retained phase/title slug. An intentional task-set
 change needs review of that set, not positional renumbering.
 
-`tools/expand_task_projection.clj` follows Reader's accepted projection pattern.
-It validates the complete ledger before writing only the marked roadmap table.
-`tools/expand_task_projection_test.clj` covers accepted projection and rejection
-controls. Preserve the exact three-column header and all bytes of the original
-table. Everything outside that region remains evidence/navigation or release
-criteria. Historical scaffold checkboxes remain frozen, separate from actual
-implementation. The four workflow artifacts explain this authority transfer.
-No other file or independent machine-readable status ledger is introduced.
-
 ## Validation and evidence
 
 Run from the repository root:
 
 ```bash
-clojure -J-Xmx512m -M tools/expand_task_projection.clj --write
-clojure -J-Xmx512m -M tools/expand_task_projection.clj --check
-clojure -J-Xmx512m -M tools/expand_task_projection_test.clj
 clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
 clojure -J-Xmx512m -M tools/validate_gravity_docs.clj
 clojure -J-Xmx512m -M tools/validate_full_language_roadmap.clj
 ```
 
-`--check` is read-only. Missing/duplicate IDs and markers, malformed fields,
-ID/title disagreement, checkbox/status disagreement, unsupported Markdown and
-stale projections reject. Record fields support plain text and inline absolute
-HTTPS links, preventing context-dependent receipt targets. URL syntax alone
-cannot prove an accepted receipt exists. Links outside records remain relative
-and unchanged where possible.
-
-Compare baseline/current table bytes and explicit task IDs, retained historical
-checkboxes and links. Check all five affected Markdown files for ASCII and local
+Check the five task IDs, statuses, preserved criteria, retained historical
+checkboxes and links. Check the affected Markdown files for ASCII and local
 file/heading links, `git diff --check`, then run integration preflight with the
 exact final base/commit/tree. Record commands and results in [evidence](evidence.md).
 Structural checks are not compiler semantic validation or migration admission.
@@ -73,13 +54,13 @@ Structural checks are not compiler semantic validation or migration admission.
 
 Publish a draft for independent current-head review. Record review separately
 from implementation and integration. Merge only after the maintainer confirms
-independent current-head review. Future implementation updates change the ledger
-and regenerate the table together. No implementation task closes here.
+independent current-head review. Future implementation updates change the ledger;
+the roadmap remains a direct navigation link. No implementation task closes here.
 
 ## Names, callers and compatibility
 
-Preserve existing anchors, links, explicit IDs and table text; consumers continue
-reading the same generated roadmap table. New semantic tool filenames/namespaces
+Preserve existing anchors, links, explicit IDs and task text; consumers continue
+following the same direct task-ledger link. New semantic tool filenames/namespaces
 follow existing Reader conventions. No caller, load order, runtime API, schema,
 diagnostic, manifest or wire ID changes. No global catalog or dashboard is edited.
 

@@ -8,7 +8,7 @@ Authority transfer baseline: `fcb23737be00f646a74200fc26faaa8908f77164`.
 
 This is the sole editable Effects implementation task ledger. The roadmap's
 [current evidence and remaining work](../../docs/component-roadmaps/effects.md#current-evidence-and-remaining-work)
-is generated from these records. IDs preserve the established phase/title slug
+is a navigation view of these records. IDs preserve the established phase/title slug
 convention; the original `effects/1` through `effects/5` labels remain display
 text. Order is display order, not dependency evidence. An unchecked box means
 not accepted complete. Check a box only with explicit `Accepted;` status and an

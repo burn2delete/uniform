@@ -1,29 +1,46 @@
 
 (defn- revalidate-payload?
   "Re-run the owning stage's bounded verifier before accepting a fast hit."
-  [stage source-path payload]
-  (try
-    (case stage
-      :source true
-      :reader (do (bootstrap-call 'c2-reader-validate! source-path payload)
-                  true)
-      :syntax (do (bootstrap-call 'c3-syntax-validate! source-path payload)
-                  true)
-      :macroexpansion (= :passed
-                         (:status
-                          (bootstrap-call 'sh05-macro-artifact-verification
-                                          payload)))
-      :resolution (= :passed
-                     (:status
-                      (bootstrap-call 'sh06-resolution-artifact-verification
-                                      payload)))
-      :checked-core (= :passed
-                       (:status
-                        (bootstrap-call 'sh07-core-artifact-verification
-                                        payload)))
-      false)
-    (catch clojure.lang.ExceptionInfo _ false)
-    (catch IllegalArgumentException _ false)))
+  ([stage source-path payload]
+   (revalidate-payload? stage source-path payload nil))
+  ([stage source-path payload operation]
+   (try
+     (if-let [invocation (:invocation operation)]
+       (and
+        (case stage
+          :resolution (= (:module-inputs operation) (get-in payload [:gravity-resolution-boundary :module-inputs]))
+          :checked-core (= (:module-inputs operation) (get-in payload [:sh06-resolution-artifact :gravity-resolution-boundary :module-inputs]))
+          true)
+        (case stage
+          :source true
+          :reader (do (bootstrap-call 'c2-reader-validate! source-path payload)
+                      (bootstrap-call 'c3-reader-artifact-view payload invocation) true)
+          :syntax (do (bootstrap-call 'c3-syntax-validate! source-path payload invocation) true)
+          :macroexpansion (= :passed (:status (bootstrap-call 'sh05-macro-artifact-verification payload invocation)))
+          :resolution (= :passed (:status (bootstrap-call 'sh06-resolution-artifact-verification payload :gravity.bootstrap/legacy invocation)))
+          :checked-core (= :passed (:status (bootstrap-call 'sh07-core-artifact-verification payload invocation)))
+          false))
+       (case stage
+         :source true
+         :reader (do (bootstrap-call 'c2-reader-validate! source-path payload)
+                     true)
+         :syntax (do (bootstrap-call 'c3-syntax-validate! source-path payload)
+                     true)
+         :macroexpansion (= :passed
+                            (:status
+                             (bootstrap-call 'sh05-macro-artifact-verification
+                                             payload)))
+         :resolution (= :passed
+                        (:status
+                         (bootstrap-call 'sh06-resolution-artifact-verification
+                                         payload)))
+         :checked-core (= :passed
+                          (:status
+                           (bootstrap-call 'sh07-core-artifact-verification
+                                           payload)))
+         false))
+     (catch clojure.lang.ExceptionInfo _ false)
+     (catch IllegalArgumentException _ false))))
 
 (defn- authenticate-reader-source!
   "Bind the C2 reader payload to the source identity selected by this run.
@@ -55,8 +72,8 @@
              "reader artifact source identity does not match the snapshot"
              {:source-path source-path
               :expected (select-keys source-id
-                                      [:bytes-hash :project-root-id
-                                       :project-relative-path])
+                                     [:bytes-hash :project-root-id
+                                      :project-relative-path])
               :observed (select-keys record
                                      [:bytes-hash :project-root
                                       :project-relative-path :path])}))
@@ -87,25 +104,27 @@
 
 (defn- cache-key-preimage
   [stage lane source-id parents request]
-  {:artifact :gravity/authenticated-artifact-cache-key
-   :schema-version pipeline-schema-version
-   :stage stage
-   :lane lane
-   :source source-id
-   :parents parents
-   :compiler implementation-binding
+  (cond-> {:artifact :gravity/authenticated-artifact-cache-key
+           :schema-version pipeline-schema-version
+           :stage stage
+           :lane lane
+           :source source-id
+           :parents parents
+           :compiler implementation-binding
    ;; These are bounded, authenticated inputs to the cache identity.  They are
    ;; deliberately timestamp-free so a stable source and toolchain can reuse a
    ;; product while any compiler/tool/contract/policy change forces rebuild.
-   :tool-binding tool-binding
-   :contract-binding contract-binding
-   :policy-binding policy-binding
-   :pass-id (get stage-pass-ids stage)
-   :policy {:cache-eligible? (= lane :fast)
-            :fresh-required? (= lane :fresh)
-            :source-authentication :bounded-secure-double-snapshot
-            :mutation-check :post-execution-secure-resnapshot}
-   :request-policy (select-keys request [:target-stage :mode])})
+           :tool-binding tool-binding
+           :contract-binding contract-binding
+           :policy-binding policy-binding
+           :pass-id (get stage-pass-ids stage)
+           :policy {:cache-eligible? (= lane :fast)
+                    :fresh-required? (= lane :fresh)
+                    :source-authentication :bounded-secure-double-snapshot
+                    :mutation-check :post-execution-secure-resnapshot}
+           :request-policy (select-keys request [:target-stage :mode])}
+    (:reader-operation request)
+    (assoc :reader-operation (select-keys (:reader-operation request) [:binding :module-artifact-ids]))))
 
 (defn- receipt
   [stage lane artifact-id parents cache-hit? cache-key-id source-id provenance]
@@ -150,12 +169,12 @@
         payload-integrity-id (payload-integrity stage payload)
         stage-facts (get stage-fact-contracts stage)
         parent-consumption (case stage
-                            :source :none
-                            :reader :authenticated-source-identity
-                            :syntax :authenticated-parent
-                            :macroexpansion :authenticated-immediate-parent
-                            :resolution :authenticated-immediate-parent
-                            :checked-core :authenticated-parent)
+                             :source :none
+                             :reader :authenticated-source-identity
+                             :syntax :authenticated-parent
+                             :macroexpansion :authenticated-immediate-parent
+                             :resolution :authenticated-immediate-parent
+                             :checked-core :authenticated-parent)
         recomputation-boundary? false
         base {:artifact :gravity/authenticated-compiler-artifact
               :schema-version pipeline-schema-version

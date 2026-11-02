@@ -22,12 +22,13 @@
 (defn c15-diagnostic-record
   [rule severity stage message-key source-path form-index primary-artifact
    facts remediation & {:keys [related origin-chain redactions lifecycle
-                               generated?]}]
+                               generated? profile target syntax-id]}]
   (c15-call c15/c15-diagnostic-record
             rule severity stage message-key source-path form-index
             primary-artifact facts remediation
             :related related :origin-chain origin-chain
-            :redactions redactions :lifecycle lifecycle :generated? generated?))
+            :redactions redactions :lifecycle lifecycle :generated? generated?
+            :profile profile :target target :syntax-id syntax-id))
 
 (defn c15-diagnostic-catalog []
   (c15-call c15/c15-diagnostic-catalog))

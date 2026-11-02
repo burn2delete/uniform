@@ -130,12 +130,7 @@
 
 (defn validate-stage0-compiled-build-graph!
   [module build-graph]
-  (when-not (every? #(set/subset? (:effects %)
-                                  (:declared-effects build-graph))
-                    (:nodes build-graph))
-    (compiled-package-fail!
-     "PKG2001" module build-graph
-     {:missing-fields [:declared-effects]})))
+  (gravity.build/check-graph-effects! #'compiled-package-fail! module build-graph))
 
 (defn validate-stage0-compiled-artifact-manifest!
   [module artifact-manifest]
@@ -169,9 +164,4 @@
 
 (defn validate-stage0-compiled-reproducible-build!
   [module reproducible-build-recipe]
-  (when-not (= :disabled
-               (get-in reproducible-build-recipe
-                       [:environment :network]))
-    (compiled-package-fail!
-     "PKG7003" module reproducible-build-recipe
-     {:missing-fields [:controlled-network]})))
+  (gravity.build/check-offline-recipe! #'compiled-package-fail! module reproducible-build-recipe))

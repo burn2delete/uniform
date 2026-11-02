@@ -1,7 +1,7 @@
 (ns gravity.pass-execution
   "Compatibility facade for pure, non-authoritative pass execution evidence.
 
-  Components own bounded canonical identity, validation, receipt construction,
+  Components own type-sensitive canonical identity, validation, receipt construction,
   and DAG composition. This namespace preserves the original public API and
   private test seams."
   (:require [gravity.pass-execution.canonical :as canonical]
@@ -15,13 +15,7 @@
             [gravity.pass-execution.request :as request]
             [gravity.pass-execution.validation :as validation]))
 
-;; Preserve every original private Var for leaf-level seam discovery.
-(def ^:private maximum-depth config/maximum-depth)
-(def ^:private maximum-nodes config/maximum-nodes)
-(def ^:private maximum-canonical-bytes config/maximum-canonical-bytes)
-(def ^:private maximum-integer-bits config/maximum-integer-bits)
-(def ^:private maximum-evidence-records config/maximum-evidence-records)
-(def ^:private maximum-dag-receipts config/maximum-dag-receipts)
+;; Preserve every semantic private Var for leaf-level seam discovery.
 (def ^:private sha256-pattern config/sha256-pattern)
 (def ^:private pass-contract-fields config/pass-contract-fields)
 (def ^:private semantic-binding-fields config/semantic-binding-fields)
@@ -57,26 +51,7 @@
   sorted-sha-vector! validation/sorted-sha-vector!)
 (def ^{:private true :arglists '([value])} integral-tag canonical/integral-tag)
 (def ^{:private true :arglists '([values])} canonical-sort canonical/canonical-sort)
-(def ^{:private true :arglists '([text])}
-  bounded-utf8-size canonical/bounded-utf8-size)
-(def ^{:private true :arglists '([text])}
-  escaped-string-byte-bound canonical/escaped-string-byte-bound)
 (def ^{:private true :arglists '([value])}
-  arbitrary-integer-bit-length
-  canonical/arbitrary-integer-bit-length)
-(def ^{:private true :arglists '([value])} integer-decimal-byte-bound!
-  canonical/integer-decimal-byte-bound!)
-(def ^{:private true :arglists '([state byte-bound])}
-  preflight-account! canonical/preflight-account!)
-(def ^{:private true :arglists '([value])} preflight-container-cardinality!
-  canonical/preflight-container-cardinality!)
-(def ^{:private true :arglists '([value state depth])}
-  preflight-value! canonical/preflight-value!)
-(def ^{:private true :arglists '([value])}
-  preflight-canonical! canonical/preflight-canonical!)
-(def ^{:private true :arglists '([state byte-estimate])}
-  account-canonical! canonical/account-canonical!)
-(def ^{:private true :arglists '([value state depth])}
   canonical-node canonical/canonical-node)
 (def ^{:private true :arglists '([value])} canonical-bytes canonical/canonical-bytes)
 (def ^{:private true :arglists '([domain value])} content-id canonical/content-id)
@@ -122,7 +97,7 @@
 (def ^{:private true :arglists '([dag])} dag-id-projection dag/dag-id-projection)
 
 (defn validate-pass-contract!
-  "Validate one exact, bounded C1/C16/C18 pass contract."
+  "Validate one exact C1/C16/C18 pass contract."
   [contract]
   (binding [diagnostics/*diagnostic-context* *diagnostic-context*
             diagnostics/*fail!* fail!]

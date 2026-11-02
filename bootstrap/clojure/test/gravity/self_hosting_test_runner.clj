@@ -274,7 +274,22 @@
   This validates data only and supplies no execution or cache authority."
   [options]
   (and (map? options)
-       (= #{:cache-directory :timeout-ms :repository-identity} (set (keys options)))
+       (contains? #{#{:cache-directory :timeout-ms :repository-identity}
+                    #{:cache-directory :timeout-ms :repository-identity :observe-producer?}
+                    #{:cache-directory :timeout-ms :repository-identity :observe-producer?
+                      :producer-git-binding}}
+                  (set (keys options)))
+       (or (not (contains? options :observe-producer?))
+           (true? (:observe-producer? options)))
+       (or (not (contains? options :producer-git-binding))
+           (and (true? (:observe-producer? options))
+                (map? (:producer-git-binding options))
+                (let [root (get-in options [:producer-git-binding :root])]
+                  (and (string? root)
+                       (try (.isAbsolute (Paths/get root (make-array String 0)))
+                            (catch Exception _ false))))
+                (= :gravity/rv2-git-binding-v1
+                   (get-in options [:producer-git-binding :schema]))))
        (string? (:cache-directory options))
        (string? (:repository-identity options))
        (re-matches #"sha256:[0-9a-f]{64}" (:repository-identity options))
@@ -309,6 +324,9 @@
             selection (select-tests-without-cache remaining)]
         (when-not (and (= :run (:mode selection))
                        (some #{"--namespace"} remaining))
+          (invalid!))
+        (when (and (contains? options :producer-git-binding)
+                   (not= ['gravity.c2-artifact-identity-test] (:namespaces selection)))
           (invalid!))
         (assoc selection :development-cache-options options)))))
 
@@ -795,6 +813,13 @@
         (count (:namespace-results report)) " attempted namespaces, "
         (count (:skipped-namespaces report)) " skipped namespaces")))
 
+(defn- run-development-child-unit! [namespaces options operation]
+  (if-let [binding (:producer-git-binding options)]
+    ((requiring-resolve 'gravity.build.producer-git-observation/run-selected!)
+     binding (atom []) options operation)
+    ((requiring-resolve 'gravity.self-hosting.sh01-development-loop-wiring/run-child-unit!)
+     namespaces options operation)))
+
 (defn -main
   [& arguments]
   (let [result
@@ -815,8 +840,7 @@
                                          :progress-file
                                          (System/getenv progress-file-environment)})
                     report (if development-cache-options
-                             ((requiring-resolve
-                               'gravity.self-hosting.sh01-development-loop-wiring/run-child-unit!)
+                             (run-development-child-unit!
                               namespaces
                               (assoc development-cache-options
                                      :arguments (vec arguments)

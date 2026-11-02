@@ -1122,6 +1122,31 @@
     (is (empty? (literal-require-gaps path (slurp path) declared #(.isFile (io/file %))))
         (str namespace " consumes " path))))
 
+(deftest shared-process-supervision-input-invalidates-reviewed-cache-key
+  (with-coordination-root
+    (fn [base]
+      (let [root (.resolve base "repository")
+            coordination (.resolve base "coordination")
+            job (reviewed-closure-job 'gravity.c11-mir-test)
+            relative "bootstrap/clojure/src/gravity/process_supervision.clj"]
+        (Files/createDirectories root no-file-attributes)
+        (copy-reviewed-closure! root job)
+        (is (some #(= relative (:path %))
+                  (get-in job [:cache-closure :inputs])))
+        (let [before (closure-cache-request coordination root job snapshot-id)
+              source (.resolve root relative)
+              original (Files/readAllBytes source)]
+          (try
+            (Files/write source
+                         (byte-array (concat original [(byte 10)]))
+                         (make-array java.nio.file.OpenOption 0))
+            (is (not= (cache/cache-key before)
+                      (cache/cache-key
+                       (closure-cache-request coordination root job snapshot-id))))
+            (finally
+              (Files/write source original
+                           (make-array java.nio.file.OpenOption 0)))))))))
+
 (deftest literal-require-guard-rejects-mutation-unknown-and-shadowed-inputs
   (let [source "fixture.clj"
         original "(ns fixture (:require [gravity.digest :as digest]))"

@@ -94,7 +94,6 @@
     (let [args (:args instruction) observed-arity (when (vector? args) (count args))]
       (when-not (and
                   (vector? args)
-                  (<= observed-arity p15-s23-closed-runtime-max-nodes)
                   (= :io/write (:effect instruction))
                   (= :io/stdout (:capability instruction)))
         (p15-s23-stage2-runtime-executor-fail!
