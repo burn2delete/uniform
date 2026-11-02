@@ -3307,3 +3307,102 @@ after declared additions are removed. ASCII and whitespace checks pass.
 These are source/planning/tooling consistency and preservation results, not
 current semantic acceptance, interpreter execution, release/self-hosting/seed
 completion, independent review or integration.
+
+## Complete concurrency source continuation
+
+The [complete concurrency criteria](../specs/legality-workflow/plan.md#complete-concurrency-source-criteria)
+compare all of L11, SAFE8 and R6 with the current implementation tasks. This
+proposal preserves 238 census facets (94/66/78), 160 occurrences (61/60/39),
+44 substantive section conjunctions and 27 original owners. Hierarchy/provenance
+context remains visible; source spans and count conservation establish identity,
+not semantic acceptance. Eighteen whole-source clauses refine eighteen existing
+tasks across Core, Effects, Auth, Legality, Runtime, Stdlib, Backends and Lower.
+Selected STD7/B8/B9 interfaces retain their broader unassessed source obligations.
+
+The material differences are the required behavior and evidence. L11 requires
+thirteen concurrency families with profile-specific schedulers, task lifetimes,
+ownership transfer, typed messages, ordering and hardware/GPU semantics. SAFE8
+requires actual race/capture/sharing/guard/order/message checks and prevention of
+unsafe access. R6 requires actual supported task/synchronization/message execution,
+cancellation release and preserved failures/replay. Current source includes actual
+form/profile checks and meaningful partial Gravity ownership/safety kernels,
+alongside manifests, supplied safe/valid values and coverage records. Those
+records do not demonstrate the full required behavior. Static inspection here
+executes no compiler, runtime, native/provider, device or replay operation.
+
+The existing authorities now explicitly require:
+
+- Actual conflicting-access and capture facts before safety classification;
+  legal preventive synchronization, rather than debug reporting after a race.
+- Child completion/cancellation or explicit permitted handle transfer. R6's
+  lifecycle-owner alternative does not waive SAFE8's detached non-static-borrow ban.
+- Sequentially-consistent source atomic defaults unless a governing explicit
+  profile/library contract permits weaker order, with actual target support.
+- Real typed channel/actor transfer, immutable representation checks, exact guard
+  release, backpressure/close/failure behavior and cancellation cleanup traces.
+- Hardware clocked signals/state and GPU synchronization artifacts without hidden
+  host threads, silent order weakening or invented device/ISA adoption.
+- Actual durable/AI record/replay and per-action enforcement, preserving the
+  restricted R6 alternative outside stricter R7/R8 recorded-output segments.
+
+Thirty-two exact historical byte witnesses identify 27 finite records: ten
+profile74 witnesses, eight safety107, twelve fragments for seven runtime20 records,
+and two bounded R6 task/cancellation clauses. Twenty-nine missing witnesses are
+restored and three already exact predicates remain unchanged. Cleanup and policy
+fragments are conjunctions, not extra tasks. Eight empty historical task-reference
+fields use their already-recorded finite candidate routes. SAFE8 workflow replay
+uses its recorded Runtime consumer and retains Legality's safety production.
+The existing Evolution semantic-change criterion remains byte-identical.
+
+Profile74 and safety107 reviews remain frozen finite review. Runtime20 actual
+composition remains pending. The bounded R6 review stays sealed/consumed once;
+restoring its exact clauses does not consume or renew it. Its local source
+`fbcbe1474aa3a299adf480a014b63b9b1df003cd` was unavailable from GitHub (422).
+This proposal publishes neither that preserved aggregate nor a replacement handoff,
+and does not retry or transfer the stopped public-contract-cluster request.
+Historical GPU finite18 context remains historical; the later authenticated 17 IDs
+and 22 incidences do not confer current canonical-index adoption or introduce a
+recovery prerequisite for ordinary semantic development.
+
+Task authority remains 149 keys across 25 authorities. Of the 139 original task
+bodies, 71 remain identical and 68 carry declared additions; four become newly
+amended here. All identities, checkboxes, frozen evidence and earlier source and
+dependency refinements are conserved. Nine plans and three specs gain navigation.
+The existing dependency authority retains 526 joins, 73 routes, 33 current parent
+consumers, 40 future records and its two known cycles of 29 and 8 nodes. Complete
+concurrency-specific result dependencies and cycle staging are still pending;
+this source proposal does not claim that the retained graph entails them.
+
+Current whole-source entailment, independent review and implementation acceptance
+remain pending/unassessed. All existing C12/target/native/callback/provider and
+other actual holds remain. No chat is messaged, reviewer woken, implementation
+executed, milestone credited or main integration performed. The first existing
+increment remains `reader/finite-remaining-work/contract-coverage-reconciliation`;
+see its [selected increment](../specs/reader-workflow/plan.md#selected-increment-complete-contract-coverage).
+
+The initial 57-test traceability run reached 17,757 assertions with thirteen
+failures: three stale current-body totals and ten historical Lower/Verification
+checks that combined frozen review metadata with live task bytes. The current
+count assertions now use 71/68. The two historical tests read their exact frozen
+subjects throughout; no review hash or receipt is refreshed. The corrected four-test
+set, including current concurrency conservation, passes 3,903 assertions. A final
+complete traceability run verifies the corrected composition separately below.
+
+The task/plan/spec source subject is
+`480b2ebed8199ed1489b7f5bf871883e6a191403`; the applying traceability fingerprint is
+`aa5c6cf29cc9bdef20d140814b36ad1468d2cd949f98c2793a9bc5225052a0b4`.
+The existing implementation-readiness source-version record binds all source
+spans and the exact predecessor `6a80e2ed2be0eb2c8af01a089cb04d7f275343cb`.
+Every explicit current and historical source pin verifies against local Git;
+remote source availability remains separately qualified as described above.
+
+Final validation of this source/traceability composition passes: 57 crosswalk tests
+with 17,757 assertions; 23 dependency tests with 2,523 assertions; the pinned
+crosswalk and dependency projection checks; structural validation of 240 documents
+and 19 phase indexes; the separate full-language roadmap structural check; and
+six language-boundary tests with eleven assertions. Conservation/navigation checks
+cover 88 changed files, 82 Markdown files, 3,316 local references, 139 original
+routes, 48 historical spec/plan suffixes and all 48 original task/evidence contents
+after declared additions are removed. ASCII and whitespace checks pass. The dated
+roadmap snapshot is not fresh execution evidence. No compiler/provider/target/
+release suite or independent review is claimed from these checks.
