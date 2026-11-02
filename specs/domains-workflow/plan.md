@@ -7,8 +7,10 @@ rules. Retain current task identities, Open status and accepted receipt scope.
 The nine wider integration records are resumed as
 [explicit future tasks](tasks.md#wider-integration-task-proposals) in this same
 file. Their source references use the full preserved context rather than the
-local one-record excerpt. The original seven-key SH region remains unchanged;
-future task/projection composition and independent acceptance remain pending.
+local one-record excerpt. The SH projection retains its original seven keys;
+the proposed Schema parent refinement below changes neither that key set nor
+its acceptance. Future task/projection composition and independent acceptance
+remain pending.
 Do not treat source resumption as SH credit or create a parallel task ledger.
 The seven Math/Schema producer/checker records are also resumed as
 [explicit future tasks](tasks.md#math-and-schema-producer-task-proposals), with
@@ -119,6 +121,45 @@ execution remain distinct roles. Do not normalize an older criterion label
 into a whole-task alias or let one HTTP test discharge the multi-consumer C6
 conjunction. Current parent-criterion and cross-component joins remain explicit
 remaining composition work.
+
+## Schema parent composition
+
+The existing Open `schema` task now resumes its four preserved parent criteria
+in the same [task authority](tasks.md#implementation-tasks), with their text
+unchanged and the old broad paragraph explicitly historical. Select one exact
+criterion for implementation, preserving the other criteria and the two future
+Schema producer/consumer records. These are the actionable boundary and order:
+
+| Parent criterion | Start inputs and actual deliverable | Composition and required rejection evidence |
+| --- | --- | --- |
+| `schema/source-manifest-and-validator/decision-interface` | Resolved schema/type and refinement/taint/authority facts become an expanded versioned manifest and executable source-derived validator. Whole Types/Effects/Auth completion is not required to start against those interfaces. | Exercise every declared schema family, recursion/refinement class and boundary. Invalid values and weakened generated constraints reject; schema validation does not clear stronger sink taint. S2-S9 consume the same manifest/validator identity. |
+| `schema/declared-format-codecs/decision-interface` | The S1 manifest/validator plus a concrete format's representability, field, numeric, string/byte, variant, conversion and trust policies become actual encoder/decoder products. | Compare round trips and malformed/duplicate/missing/unknown/precision/encoding cases. Preserve untrusted, authenticated-unvalidated, schema-validated and sink-validated states. Canonical identity additionally consumes S3 rules; ABI encoding additionally consumes S7 representation facts. |
+| `schema/canonical-codecs-and-identity/decision-interface` | S1 identity and S2 representation policy become canonical encoder/decoder products and byte-exact type-family vectors. | Equal semantic values under the same schema/version/policy produce equal bytes independent of host order, identity, timezone or target layout. Actual hash/sign/replay consumers require those bytes and reject unsupported domains, altered versions and noncanonical input. A manifest flag is insufficient. |
+| `schema/binary-layout-codecs-and-vectors/decision-interface` | Declared ABI/binary schema, target/calling convention and ownership/lifetime facts become schema-bound codecs/binding input and checked reference vectors. | Lower's existing `lower2-derive-abi-and-layout` supplies concrete target layout. Check actual bytes, endian/padding/alignment/pointer/variant legality and compatibility; retain schema hash joins. STD10 public codec execution and Runtime FFI call/callback checking are separate required consumers. |
+
+Do not require the whole S3 system before a noncanonical S2 format can start,
+or a finished backend before declaring and checking ABI schema contracts.
+Actual target byte and FFI composition needs its selected implementation and
+provider. S1 compatibility/migration products are supplied by
+`schema/compatibility-and-migration`; S4-S9 generated consumers and their actual
+execution use `schema/checked-consumer-projection`. The parent cannot check off
+those tasks by returning a typed schema or a standalone validator.
+
+The preserved source allocation still lists
+`interface/schema/emit-explicit-binary-layout` with the parent as producer.
+Current Lower owns concrete layout derivation. Preserve the old allocation and
+bind its exact declarative-schema versus concrete-layout interface during
+current repartition review; do not copy the physical layout implementation into
+Domains, treat the old allocation as accepted, or silently remove the source
+obligation. The other twelve existing parent decision-role references remain
+visible in its task amendment, with Open status and their original qualifications.
+
+Each selected criterion needs source-bound positive/negative programs, actual
+validator/codec/consumer results, exact diagnostic context, byte/oracle vectors
+where applicable and invalidation of changed schema/version/target/provider
+subjects. Reuse the existing evidence record. Resuming four criterion bodies
+and verifying source bytes confers neither semantic entailment nor execution
+acceptance; no source, provider, Runtime or held C12 operation is run here.
 
 ## Historical workflow-transfer plan
 

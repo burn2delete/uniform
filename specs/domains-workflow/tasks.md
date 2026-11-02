@@ -33,6 +33,78 @@ adjacent proof/search representation, never ordinary runtime equality authority.
 
 Status: Open
 
+<!-- domains-schema-parent:start -->
+Current proposed refinement of the existing `schema` task (Open). The four
+criteria below resume the preserved parent criteria from
+[the existing reconciliation](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/domains-workflow/tasks.md#implementation-tasks),
+without changing their text. They are future implementation obligations, not
+accepted behavior or a new task authority. Owner role: schema semantics
+maintainer; no individual assignment is inferred.
+
+This parent owns source schema normalization, validators, declared codecs and
+canonical value/encoding semantics. Evolution and migration decisions belong
+to `schema/compatibility-and-migration`; API/database/ABI/config/artifact
+projection and actual consumer conjunction belong to
+`schema/checked-consumer-projection`, both in the future-record region below.
+The following original projected paragraph is retained as history after this
+refinement; its broad generation wording does not create duplicate ownership.
+
+For the S7 criterion, Schema supplies the declared ABI/binary schema and
+schema-bound codec/binding input and checks byte vectors. Concrete target
+layout derivation stays with
+`lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout` in
+[Lower's authority](../lower-workflow/tasks.md#implementation-tasks). Consume
+its actual layout/ownership manifest rather than create a second layout
+producer. STD10 callable codec use and Runtime's actual FFI call/callback
+validation remain separate consumers. The preserved
+`interface/schema/emit-explicit-binary-layout` decision allocates a producer
+role to this parent; that exact cross-component allocation remains pending
+current repartition review against Lower, not silently adopted or erased.
+The four frozen criterion bodies below are preserved source context for that
+review, not proof that the old producer allocation is current.
+
+The existing decision-role references are `interface/schema/` followed by:
+`normalized-source-schema`, `expand-authoritative-schema`,
+`generate-source-validator`, `serialization-codecs`, `encode-declared-format`,
+`decode-declared-format`, `canonical-bytes`, `encode-canonical-value`,
+`decode-canonical-value`, `check-canonical-identity-input`,
+`emit-explicit-binary-layout`, `emit-binary-codec-binding-input` and
+`check-binary-reference-layout`. They remain Open in the preserved
+source dispositions; these are role references, not aliases for whole tasks.
+
+Source-specific acceptance for S1-S9 remains open. S1: expanded manifests and
+static types preserve every declared schema family, recursive strategy,
+refinement classification, version, hash, source span, compatibility mode,
+validation boundary and derivation target. Shared validators cover API,
+database, message, workflow, AI, config, decoded-data, FFI and artifact sinks;
+schema validation alone cannot clear stronger sink taint. Semantic diffs cover
+field removal/rename, nullability, enums/variants, refinements and binary layout;
+missing compatibility or migration policy rejects.
+
+S2: codecs declare representability, unknown/duplicate/missing-field,
+numeric/string/byte/variant and conversion policies, retain schema hashes and
+pass round trips. Reject schemaless or unbounded polymorphic decoding, implicit
+lossy conversion and decoded values used before intended-boundary validation.
+Recursion/length checks may enforce concrete encoding or target representation
+legality; arbitrary input/work quotas confer no acceptance authority.
+
+S3: byte-for-byte vectors cover every supported canonical type family and
+schema/version identity, encoded-byte map/set ordering, absent versus null,
+numeric special values, UTF-8/normalization, timestamps and metadata policy.
+Host order, identity, timezone and layout cannot affect bytes. Reject values
+outside the declared domain and noncanonical hash/signature inputs.
+
+Criterion `schema/source-manifest-and-validator/decision-interface` (Open): Input: S1 source schema and resolved type/effect/capability/taint facts, declared refinement class, boundaries and derivation policy. Outputs: Expanded versioned schema manifest; Generated runtime validator; Recursive/refined schema fixtures and source/generated parity report. Accept: Expand records/maps/arrays/sets/tuples/enums/tagged unions/optional/refined/alias/reference/recursive/opaque schemas into an authoritative typed manifest, preserving id/version/hash/span/compatibility/boundary/derivation target. Generate the validator from that manifest; preserve compile-time/runtime/boundary/proof/advisory refinement classes and intended-schema versus stronger-sink trust distinctions. Run accepted and invalid payloads through API/database/message/workflow/AI/config/decoded/FFI/artifact boundary fixtures; documented narrowing projections remain explicit. Refuse: Malformed shape, unsupported/unclassified refinement or recursion without strategy; Missing identity/boundary/manifest metadata or generated constraints weaker than source; External values trusted before intended validator/sink validation or AI output bypass. Dependencies consume actual artifacts: Types resolved schema identities and constraints; Effects/Auth/Legality authority and taint facts; S2-S9 consumers receive the expanded schema and validator; no whole-component completion gate. Diagnostics: Applicable S1-SHAPE/REFINEMENT/BOUNDARY/PROJECTION/TAINT/RECURSION/MANIFEST with schema/version/span/boundary/target/field and remediation. These are required future products/results; no execution or implementation acceptance is claimed.
+
+Criterion `schema/declared-format-codecs/decision-interface` (Open): Input: S2 schema/version/format representability, field/unknown-field/numeric/string-byte/variant/conversion/trust/canonicalization policy and actual typed values or external bytes. Outputs: Serializer manifest and encoder/decoder products; Validation/trust/compatibility records; Round-trip and invalid-byte/value fixtures tied to schema hashes. Accept: Encode typed values under the declared policies and decode external bytes while checking required/unknown/duplicate fields, variants/refinements, precision, UTF-8/normalization and binary representation legality. Preserve numeric/string/timestamp/decimal/UUID/binary/variant conversions only under explicit compatible loss policy. Round-trip all claimed formats and retain untrusted/authenticated-unvalidated/schema-validated/sink-validated distinctions. Refuse: Schemaless or unsafe polymorphic decode without a finite declared type set; Implicit lossy conversion, duplicate/missing/incompatible fields, invalid variants or encoding; Trusting decoded data before intended validation, missing round-trip evidence, or noncanonical hash/signature use. Dependencies consume actual artifacts: S1 schema/validator and SAFE11 sink-taint facts; S3 canonical rules when canonical identity is claimed; S7 target representation when binary/ABI format is claimed. Diagnostics: Applicable S2 format/field/variant/numeric/string/polymorphic/taint/roundtrip/manifest diagnostics bind schema/format/path/span/policy/trust state. Removed work/input quotas are not reinstated by mixed recursion/length text. These are required future products/results; no execution or implementation acceptance is claimed.
+
+Criterion `schema/canonical-codecs-and-identity/decision-interface` (Open): Input: S1 schema hash, format version, canonical domain/policy, typed semantic value or encoded bytes; hash/sign/replay consumers supply their actual identity input. Outputs: Canonical encoder/decoder and format manifest; Byte-exact per-type reference vectors; Hash/sign/replay input admission and rejection records. Accept: Encode equal values identically under the same schema/version/policy, using encoded-byte map/set ordering, type/version tags and explicit absent/null, integer/decimal width, NaN/infinity/signed-zero, timestamp/timezone, UUID/symbol/keyword, union, UTF-8/normalization, byte and metadata rules. Decode against that same version/domain and reference vectors. Actual hash/sign/replay identity consumers require those canonical bytes and reject mismatched or unsupported encodings before use. Refuse: Host iteration/object identity/target layout/timezone/encoding changing canonical bytes; Ambiguous values, missing canonical rules, invalid UTF-8/metadata or vector mismatch; Hashes/signatures over noncanonical or wrong-schema/version bytes; a canonical flag alone is insufficient. Dependencies consume actual artifacts: S1 expanded schema and S2 representation policy; B13/package/workflow/AI/proof/release consume checked canonical bytes and input records. Diagnostics: S3-NONCANONICAL/ORDER/NUMERIC/STRING/METADATA/HASH/VECTOR/MANIFEST bind schema/value-path/rule/version/consumer context and remediation. These are required future products/results; no execution or implementation acceptance is claimed.
+
+Criterion `schema/binary-layout-codecs-and-vectors/decision-interface` (Open): Input: S1/S2 schema and declared target triple/calling convention, explicit field representation, compatibility, pointer ownership/lifetime and target ABI facts. Outputs: Binary/ABI and layout manifests; Schema-hash-bound codecs and typed FFI binding input; Ownership/lifetime map, cross-target report and byte reference fixtures. Accept: Produce field-order/width/alignment/padding/endian/signedness/optional/tag/pointer layouts including struct/union/enum/string/buffer/error/ownership-transfer ABI policy. Generate codecs/binding input from the accepted layout and its schema hash. Check each supported target against byte-exact reference vectors or a declared target-independent encoding, including buffers/handles/callback/bitfield/resource forms where claimed. Refuse: Implicit host layout/packing/pointer size or ABI/calling-convention mismatch; Uninitialized/nondeterministic stable bytes or pointers/handles missing ownership/lifetime policy; Wrong schema hash, unsupported representation, missing vectors or undeclared binary-breaking changes. Dependencies consume actual artifacts: Types/ownership facts and S1/S2 schema contracts; B2/B3/B4/B9/B12 and SAFE2/SAFE7/SAFE15 layout/proof contracts; R10 consumes binding input, while actual foreign invocation remains a separate runtime consumer. Diagnostics: Applicable S7 layout/endian/pointer/ABI/variant/fixture/compatibility/manifest diagnostics bind schema/field/target/rule/pointer-or-variant/fixture/proof and remediation. These are required future products/results; no execution or implementation acceptance is claimed.
+
+Historical projected paragraph (unchanged):
+<!-- domains-schema-parent:end -->
+
 Projected task block:
 Outcome: generated consumers enforce the same source schema. Remaining tasks,
 all open: implement schema normalization and validators; implement canonical

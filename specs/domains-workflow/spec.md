@@ -2,8 +2,9 @@
 
 Implementation scope added under the 2026-11-01 request. Domain architecture
 and specialist owners retain their responsibilities. This entry preserves the
-inspected-main task authority and historical migration below; it does not adopt
-the pending source-family task amendments or confer domain acceptance.
+inspected-main task authority and historical migration below. Resumed proposed
+criteria retain their pending source/composition review; they confer no domain
+acceptance.
 
 ## Behavior and interfaces
 
@@ -52,6 +53,15 @@ the current seven aggregate keys do not prove their implementation or discharge
 their source predicates. Four stale accounting/stopping passages are explicitly
 corrected under current AGENTS.md. This is not an unresolved permission
 decision; current source/facet and projection review remain pending.
+
+The existing `schema` parent now carries four preserved proposed criteria for
+S1 source manifests/validators, S2 declared codecs, S3 canonical identities and
+S7 binary codecs/reference vectors. They refine the same Open task; its original
+broad paragraph remains historical. Migration and consumer-projection outcomes
+stay with their two existing future tasks. Concrete target layout derivation
+stays with Lower; the older parent allocation for explicit binary-layout
+production is preserved as a specific pending repartition issue, not a second
+accepted producer. See the [parent composition plan](plan.md#schema-parent-composition).
 
 Their source obligations include actual DOM5 vector/native execution with
 proof-gated optimization and differential benchmarks; DOM8 service routes,

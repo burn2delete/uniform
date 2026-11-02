@@ -455,16 +455,57 @@ the retained execution hold. It exposes the historical quota-only rejection
 cases for reconciliation rather than counting them as current conformance.
 No Reader source, fixture, task status or execution receipt changed.
 
+The Schema parent successor resumes four exact preserved criterion bodies in
+the existing Open `schema` record: source manifest/validator, declared-format
+codecs, canonical codecs/identity, and binary codecs/reference vectors. The
+original broad paragraph remains historical; migration and generated-consumer
+outcomes retain their existing separate future tasks. The current plan gives
+actual inputs, outputs, ordering and rejection/evidence requirements for each
+criterion. This adds no task key or completed outcome.
+
+Author checks matched all four criterion bodies and ten decision-role witness
+hashes to the preserved source, retained three older qualified parent role
+contexts, and confirmed current byte equality of S1/S2/S3/S7. They exposed the
+specific `interface/schema/emit-explicit-binary-layout` producer allocation as
+pending current repartition review against Lower's existing concrete target
+layout task. Schema owns the declared ABI schema and schema-bound codecs;
+Lower derives concrete target layouts, STD10 exposes callable codecs and Runtime
+executes actual FFI checks. The older allocation and its qualifications remain
+visible rather than being silently accepted or removed.
+
 The current focused check covers 62 changed files, including 61 Markdown files
-and 2,169 local references, 139 current component task routes, all sixteen
+and 2,172 local references, 139 current component task routes, all sixteen
 separate future Domain records and 48 historical spec/plan suffixes. The
 original 48 task/evidence file contents remain conserved: 45 are untouched;
-removing only the declared governance consumer blocks and the two Domains
-future-record regions restores the other three task files exactly. All ten
+removing only the declared governance consumer blocks, the two Domains
+future-record regions and the Schema parent amendment restores the other three
+task files exactly. All ten
 governance task bytes and all nine wider-Domain criterion bodies retain their
 earlier verified source scope. Canonical and full-language structural validators
-passed; dependency controls passed 18 tests / 419 assertions, and whitespace
-checks passed. No compiler/domain/provider execution, policy decision,
-independent review or SH route adoption occurred. Current parent criteria,
-source/facet conjunctions, full support breadth, consumer and SH composition
+passed, and whitespace checks passed. The preceding producer checkpoint's
+dependency controls passed 18 tests / 419 assertions. After the current Schema
+amendment those controls fail closed: 18 tests / 115 assertions, zero assertion
+failures and five errors for the changed exact captured Domains task body.
+That failure is expected evidence of stale projection applicability, not a
+passing check or permission to renew its old acceptance.
+
+Read-only inspection of the existing SH generator also refuses the resumed
+Evolution authority until its literal routing is explicitly declared. An
+in-memory inspection with that known authority and four named source-inspection
+locators made the remaining source/version work concrete: 25 authorities and
+149 current task keys, plus stale applying pins in the generator for nineteen
+task files. This was inspection only; no routing, pin, crosswalk, review state
+or generated output was written. Existing captured projection rows and the
+generator's older defaults must be compared per file and per task, preserving
+all predecessors, rather than blanket-rebaselining them. The next integration
+increment is the existing SH source-version workflow: reconcile those exact
+bindings and the Schema/Evolution additions, regenerate through the existing
+Clojure tools, retain pending review and current whole-criterion nonclaims,
+then rerun the failed dependency controls. Independent acceptance cannot be
+inferred from an author-generated successor.
+
+No compiler/domain/provider execution, policy decision,
+independent review or SH route adoption occurred. Remaining Math parent criteria,
+current source/facet conjunctions and parent allocations, full support breadth,
+consumer and SH composition
 remain required work in the existing reconciliation lineage.
