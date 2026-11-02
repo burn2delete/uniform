@@ -5933,6 +5933,66 @@
         (sh08-ij-normal-type then-type else-type)))))
 
 ; L1/L2 quoted payloads are authenticated DATA, never executable core nodes.
+(defn sh08-vf-data-failure [reason]
+  {:status :rejected :reason reason})
+
+(defn sh08-vf-ancestor? [value ancestors]
+  ; Identity is used only to reject cycles on the current traversal path.
+  ; Equal values and shared acyclic subgraphs are still distinct occurrences.
+  (loop [pending ancestors]
+    (if (= 0 (count pending)) false
+      (if (bootstrap-native-identical? value (first pending)) true
+        (recur (rest pending))))))
+
+(defn sh08-vf-header-failure [header tail?]
+  (let [kind (get header 0)]
+    (if (get header 1) :verification-carrier-metadata
+      (if (if (= kind :symbol) (= false (= true (get header 4))) false)
+        :verification-native-symbol-name
+        (if (if (= kind :unsupported) true
+              (if (= kind :subvector) true
+                (if (= kind :tree-map) (= :foreign-comparator (get header 4)) false)))
+          :verification-native-carrier
+          (if (if tail? (= false (contains? #{:list-node :empty-list :nil} kind)) false)
+            :verification-native-list-tail
+            (if (if (= kind :ratio) (= 0 (get header 4)) false)
+              :verification-ratio-denominator-zero nil)))))))
+
+(defn sh08-vf-original-expand-indexed [value kind size pending ancestors]
+  (let [items (vec value)]
+    (loop [i 0 out pending]
+      (if (= i size) out
+        (if (contains? #{:map :tree-map} kind)
+          (let [entry (get items i)]
+            (recur (+ i 1)
+              (conj (conj out [(get entry 0) false ancestors])
+                             [(get entry 1) false ancestors])))
+          (recur (+ i 1) (conj out [(get items i) false ancestors])))))))
+
+(defn sh08-vf-original-data [value]
+  ; Authentication needs complete native DATA, not a retained comparison arena.
+  (loop [pending (list [value false []])]
+    (if (= 0 (count pending)) {:status :accepted}
+      (let [frame (first pending) item (get frame 0) tail? (get frame 1)
+            ancestors (get frame 2) tail (rest pending)
+            header (bootstrap-native-carrier-header item) kind (get header 0)
+            failure (sh08-vf-header-failure header tail?)]
+        (if (= failure nil)
+          (if (sh08-vf-ancestor? item ancestors)
+            (sh08-vf-data-failure :verification-native-cycle)
+            (if (contains? #{:map :tree-map :vector :set} kind)
+              (let [size (get header 2) path (conj ancestors item)]
+                (if (if (integer? size) (>= size 0) false)
+                  (let [expanded (sh08-vf-original-expand-indexed item kind size tail path)]
+                    (recur (if (= kind :set)
+                             (conj expanded [(get header 4) false path]) expanded)))
+                  (sh08-vf-data-failure :verification-native-extent)))
+              (if (= kind :list-node)
+                (let [path (conj ancestors item)]
+                  (recur (conj (conj tail [(get header 4) false path]) [(get header 5) true path])))
+                (recur tail))))
+          (sh08-vf-data-failure failure))))))
+
 (defn sh08-qd-failure [rule reason form expected actual]
   {:status :rejected :rule rule :reason reason :form form :expected expected :actual actual})
 
@@ -6056,18 +6116,25 @@
            (= attrs {:quoted-form-id (get payload :form-id) :quoted-syntax-id (get payload :syntax-id)
                      :quoted-kind (get payload :kind) :quoted-value (get payload :value)})])
       (let [result (sh08-qd-data forms (get payload :form-id) (get owner :form-id) (get node :node-id) [] #{})]
-        result)
+        (if (if (= :accepted (get result :status))
+              (= false (= :accepted (get (sh08-vf-original-data (get result :data)) :status))) false)
+          (sh08-qd-failure "C7-ANNOTATION" :quoted-data-evidence-invalid payload :finite-native-quoted-data-evidence nil) result))
       (sh08-qd-failure "C7-VERIFY" :malformed-quote-owner-payload-join owner :exact-inert-quote-source-and-payload attrs))))
 
 (defn sh08-qd-node [node forms]
-  (sh08-qd-node-valid-data node forms))
+  (if (= :accepted (get (sh08-vf-original-data [node forms]) :status))
+    (sh08-qd-node-valid-data node forms)
+    (sh08-qd-failure "C7-VERIFY" :malformed-quoted-data-tree {} :finite-native-quoted-data nil)))
 
 (defn sh08-qd-executable-data [data executable-forms]
-  (if (contains? executable-forms (get (get data :origin) :form-id)) data
-    (loop [remaining (get data :children)]
-      (if (= (count remaining) 0) nil
-        (let [found (sh08-qd-executable-data (first remaining) executable-forms)]
-          (if (= found nil) (recur (rest remaining)) found))))))
+  (loop [pending (list data)]
+    (if (= 0 (count pending)) nil
+      (let [item (first pending)]
+        (if (contains? executable-forms (get (get item :origin) :form-id)) item
+          (recur (let [children (get item :children)]
+                   (loop [i (- (count children) 1) out (rest pending)]
+                     (if (< i 0) out
+                       (recur (- i 1) (conj out (get children i))))))))))))
 
 (defn sh08-qd-products-valid-data [nodes source-forms module]
   (let [forms (loop [remaining source-forms out {}]
@@ -6078,7 +6145,10 @@
                              (recur (rest remaining) (conj out (get (get (first remaining) :source) :form-id)))))]
     (loop [remaining nodes types {} constraints [] diagnostics []]
       (if (= (count remaining) 0)
-        {:type-table types :constraints constraints :diagnostics diagnostics}
+        {:type-table types :constraints constraints
+         :diagnostics (if (= :accepted (get (sh08-vf-original-data constraints) :status)) diagnostics
+                        (conj diagnostics (sh08-bm-error "C7-ANNOTATION" :quoted-data-evidence-invalid
+                                           (first (sh08-bm-select nodes :core-form :quote)) :finite-native-quoted-data-ledger nil)))}
         (let [node (first remaining)]
           (if (= :quote (get node :core-form))
             (let [checked (sh08-qd-node node forms)
@@ -6110,7 +6180,11 @@
             (recur (rest remaining) types constraints diagnostics)))))))
 
 (defn sh08-qd-products [nodes source-forms module]
-  (sh08-qd-products-valid-data nodes source-forms module))
+  (if (= :accepted (get (sh08-vf-original-data [nodes source-forms module]) :status))
+    (sh08-qd-products-valid-data nodes source-forms module)
+    {:type-table {} :constraints []
+     :diagnostics [(sh08-bm-error "C7-VERIFY" :malformed-quoted-data-tree
+                     {} :finite-native-quoted-data nil)]}))
 
 (defn sh08-qd-shape [data node]
   (let [kind (get data :kind) children (get data :children)

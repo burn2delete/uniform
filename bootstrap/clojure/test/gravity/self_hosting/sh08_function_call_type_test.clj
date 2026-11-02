@@ -895,7 +895,7 @@
                             [[node invented (:node second-input)]
                              (vec (vals (merge forms (:forms second-input))))
                              {}])
-        wide-input (quoted-data-input (vec (repeat 1025 true)))
+        wide-input (quoted-data-input (vec (repeat 4097 true)))
         wide-products (invoke-c7 'sh08-qd-products
                                  [[(:node wide-input)] (:source-forms wide-input) {}])]
     (is (= [:unsupported-quoted-numeric-representation]
@@ -907,8 +907,32 @@
     (is (= [] (:diagnostics wide-products)))
     (is (= :gravity.type/vector
            (get-in wide-products [:type-table (:node-id (:node wide-input)) :kind])))
-    (is (= 1025
+    (is (= 4097
            (count (get-in wide-products [:constraints 0 :quoted-data :children]))))))
+
+(deftest sh08-quoted-data-deep-and-malformed-development-kernel
+  (let [value (reduce (fn [value _] [value]) :leaf (range 192))
+        {:keys [node forms payload]} (quoted-data-input value)
+        result (invoke-c7 'sh08-qd-node [node forms])
+        data (:data result)
+        leaf (loop [item data]
+               (if (empty? (:children item)) item (recur (first (:children item)))))
+        callbacks (atom [])
+        opaque (proxy [Object] []
+                 (toString [] (swap! callbacks conj :render)
+                   (throw (AssertionError. "quoted rendering"))))]
+    (is (= :accepted (:status result)) (pr-str result))
+    (is (= :leaf (:value leaf)))
+    (is (= (vec (repeat 192 0)) (get-in leaf [:origin :data-path])))
+    (is (nil? (invoke-c7 'sh08-qd-executable-data [data #{}])))
+    (is (= leaf (invoke-c7 'sh08-qd-executable-data
+                           [data #{(get-in leaf [:origin :form-id])}])))
+    (doseq [changed [(assoc-in forms [payload :child-form-ids] :uncountable)
+                     (assoc-in forms [payload :child-form-ids] [payload])
+                     (assoc-in forms [payload :child-form-ids] (vec (repeat 2 payload)))
+                     (assoc forms :unused opaque)]]
+      (is (= :rejected (:status (invoke-c7 'sh08-qd-node [node changed])))))
+    (is (empty? @callbacks))))
 
 (defn- pattern-alias-kernel-input []
   ;; Normalized pass input; genuine C5/C6 source products are tested separately.
