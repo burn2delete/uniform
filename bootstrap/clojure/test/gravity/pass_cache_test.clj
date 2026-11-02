@@ -6,7 +6,9 @@
             [gravity.pass-cache.entry-schema :as entry-schema]
             [gravity.pass-cache.path-policy :as path-policy]
             [gravity.pass-cache.policy :as policy]
-            [gravity.pass-cache.receipt-validation :as receipt-validation] [gravity.pass-execution :as pass-execution] [gravity.pass-execution.contract :as pass-contract])
+            [gravity.pass-cache.receipt-validation :as receipt-validation]
+            [gravity.pass-execution :as pass-execution]
+            [gravity.pass-execution.contract :as pass-contract])
   (:import [java.nio.file Files LinkOption Path StandardOpenOption]
            [java.util.concurrent TimeUnit]
            [java.nio.file.attribute PosixFilePermissions]))
@@ -245,7 +247,6 @@
                             (dissoc :validate-output!)
                             (assoc :validate-artifact! recovery))
         requested (fn [artifact _ _ _] artifact)
-        output (:validate-output! ordinary)
         handoff (fn [error _] (throw error))
         split (assoc ordinary
                      :validate-artifact! recovery
@@ -963,25 +964,25 @@
 
 (deftest exact-operation-and-authority-claims-are-required
   (let [base (request) key (cache/stage-cache-key base) calls (atom {})
-        ops (operations calls)]
-    (let [directory (Files/createTempDirectory
-                     "gravity-pass-cache-test-"
-                     (make-array java.nio.file.attribute.FileAttribute 0))]
-      (try
-        (let [store (cache/open-local-store directory)
-              result (cache/lookup-or-compute! store key base ops)
-              receipt (assoc-in (:producer-receipt result)
-                                [:authority :aggregate-authoritative?] true)]
-          (is (thrown? clojure.lang.ExceptionInfo
-                       (cache/lookup! store key (assoc ops :unknown true))))
-          (is (thrown? clojure.lang.ExceptionInfo
-                       (cache/lookup! store key
-                                      (dissoc ops :validate-output!))))
-          (is (thrown? clojure.lang.ExceptionInfo
-                       (cache/store! store key (:artifact result) receipt ops)))
-          (is (false? (get-in result [:cache-evidence :release?])))
-          (is (false? (get-in result [:cache-evidence :proof?]))))
-        (finally (delete-tree! directory))))))
+        ops (operations calls)
+        directory (Files/createTempDirectory
+                   "gravity-pass-cache-test-"
+                   (make-array java.nio.file.attribute.FileAttribute 0))]
+    (try
+      (let [store (cache/open-local-store directory)
+            result (cache/lookup-or-compute! store key base ops)
+            receipt (assoc-in (:producer-receipt result)
+                              [:authority :aggregate-authoritative?] true)]
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (cache/lookup! store key (assoc ops :unknown true))))
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (cache/lookup! store key
+                                    (dissoc ops :validate-output!))))
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (cache/store! store key (:artifact result) receipt ops)))
+        (is (false? (get-in result [:cache-evidence :release?])))
+        (is (false? (get-in result [:cache-evidence :proof?]))))
+      (finally (delete-tree! directory)))))
 
 (deftest stage-cache-key-validates-contract-once
   (let [calls (atom 0)
