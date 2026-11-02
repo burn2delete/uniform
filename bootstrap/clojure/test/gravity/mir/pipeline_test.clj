@@ -47,7 +47,7 @@
            'validate-carrier! 'metadata-free? 'require-strict-structure! 'require!
            'pass-contract-record 'canonical-block-order 'operation-sequence 'path-prefix?
            'block-keys 'operation-keys 'terminator-keys 'allowed-opcodes 'allowed-source-operations
-           'diagnostic-rule-contract 'diagnostic-message 'throw-record!}
+           'diagnostic-context 'diagnostic-rule-contract 'diagnostic-message 'throw-record!}
          (set (keys (ns-publics 'gravity.mir)))))
   (let [contract (:gravity/namespace-contract (meta #'mir/validate-cfg!))]
     (is (= (set (keys (:public-api contract)))
@@ -66,6 +66,61 @@
       (is (false? (:authenticates-inputs? contract)))
       (is (false? (:issues-verifier-certificates? contract)))
       (is (some #{:general-cfgs} (:unsupported contract))))))
+
+(deftest native-diagnostic-context-preserves-emitted-artifact-provenance
+  (doseq [{:keys [checked] emitted :mir} @products]
+    (let [actual (b/p15-s23-c11-mir-diagnostic-context checked {} emitted)]
+      (is (= actual (mir/diagnostic-context #'b/p15-s23-c11-mir-safe-diagnostic-scalar
+                                           checked {} emitted)))
+      (is (= (:artifact-id checked) (:checked-core-artifact-id actual)))
+      (is (= (:entrypoint checked) (:function-id actual)))
+      (is (= (get-in emitted [:control-flow-graph :entry]) (:block-id actual)))
+      (is (= (:profile checked) (:profile actual)))
+      (is (= (:source-target checked) (:source-target actual)))
+      (is (= (get-in checked [:target-request-metadata :requested-target])
+             (:requested-target actual)))
+      (is (= :wasm (:requested-target (b/p15-s23-c11-mir-diagnostic-context
+                                      checked {:requested-target :wasm} emitted)))))))
+
+(deftest native-diagnostic-context-normalizes-data-without-claiming-authority
+  (let [defaults (mir/diagnostic-context identity :not-map :not-map :not-map)]
+    (is (= {:requested-target :target-neutral :source-target :unknown :profile :hosted
+            :checked-core-artifact-id nil :module-id :not-applicable :function-id :not-applicable
+            :block-id :not-applicable :operation-id :not-applicable :source-operation :not-applicable
+            :syntax-id :not-applicable :origin-id :not-applicable :mir-id :not-applicable}
+           defaults)))
+  (let [core {:target-request-metadata {:requested-target :jvm}}
+        context #(mir/diagnostic-context identity core {:requested-target %} {})]
+    (is (= :jvm (:requested-target (context nil))))
+    (is (= :jvm (:requested-target (context false))))
+    (is (= :target-neutral (:requested-target (context "invalid but present")))))
+  (let [private-value (Object.)
+        context (mir/diagnostic-context #'b/p15-s23-c11-mir-safe-diagnostic-scalar
+                                        {:artifact-id private-value} {} {})]
+    (is (= :redacted (:checked-core-artifact-id context)))))
+
+(deftest native-diagnostic-context-preserves-scalar-port-order-and-exceptions
+  (let [core {:artifact-id :core :source-core-input {:module :module} :entrypoint :function}
+        artifact {:control-flow-graph {:entry :block} :mir-id :mir}
+        events (atom []) original b/p15-s23-c11-mir-diagnostic-context
+        marker (Object.) error (ex-info "scalar owner refusal" {})]
+    (with-redefs [b/p15-s23-c11-mir-safe-diagnostic-scalar
+                  (fn [value] (swap! events conj value) marker)]
+      (is (identical? marker (:mir-id (original core {} artifact)))))
+    (is (= [:block :module :mir :core :function] @events))
+    (reset! events [])
+    (is (identical? error
+                    (try (mir/diagnostic-context
+                          (fn [value] (swap! events conj value) (throw error)) core {} artifact)
+                         nil (catch clojure.lang.ExceptionInfo caught caught))))
+    (is (= [:block] @events))))
+
+(deftest native-diagnostic-context-wrapper-retains-the-live-scalar-var
+  (let [observed (atom nil) marker (Object.)]
+    (with-redefs [mir/diagnostic-context (fn [& args] (reset! observed args) marker)]
+      (is (identical? marker (b/p15-s23-c11-mir-diagnostic-context :core :context :artifact))))
+    (is (= [#'b/p15-s23-c11-mir-safe-diagnostic-scalar :core :context :artifact] (vec @observed)))
+    (is (identical? #'b/p15-s23-c11-mir-safe-diagnostic-scalar (first @observed)))))
 
 (deftest native-diagnostic-policy-preserves-real-refusals-and-wording-independent-ids
   (doseq [{:keys [source checked] emitted :mir} @products]

@@ -6,7 +6,9 @@
     :contract-boundary :native-seed-c11-records-and-relative-validation
     :governing-contracts [D1 D2 D3 D8 D9 C1 C6 C7 C8 C9 C10 C11 C15 BOOT8 TEST2]
     :public-api
-    {diagnostic-rule-contract {:arglists ([contracts rule]) :admission :none :native-data-only? true
+    {diagnostic-context {:arglists ([safe-scalar checked-core context artifact]) :admission :none
+       :native-data-only? true :operation-inputs [:safe-scalar]}
+     diagnostic-rule-contract {:arglists ([contracts rule]) :admission :none :native-data-only? true
        :value-inputs [:contracts]}
      diagnostic-message {:arglists ([diagnostic-ids message rule]) :admission :none :native-data-only? true
        :value-inputs [:diagnostic-ids] :operation-inputs [:message]}
@@ -92,7 +94,8 @@
      valid-dominance-edge? {:arglists ([edge blocks operation-by-id definitions position-by-id join]
                                       [edge blocks operation-by-id definitions position-by-id join parameter]) :admission :none}
      valid-terminator-use? {:arglists ([use blocks operation-by-id position-by-id]) :admission :none}}
-    :artifact-inputs [:native-diagnostic-rule-catalogs-and-records :explicit-diagnostic-message-operations
+    :artifact-inputs [:native-diagnostic-context-inputs :explicit-scalar-redaction-operation
+                      :native-diagnostic-rule-catalogs-and-records :explicit-diagnostic-message-operations
                       :native-opcode-and-source-operation-vocabularies
                       :native-block-operation-and-terminator-schema-data
                       :native-mir-module-blocks-and-paths :explicit-block-order-operation
@@ -110,7 +113,7 @@
                       :explicit-require-and-terminator-operations :terminator-key-schema
                       :checked-core-and-mir-data :expected-envelope-and-operation-products
                       :definitions :operation-positions :join-and-parameter-data]
-    :artifact-outputs [:borrowed-native-diagnostic-rule-contract :native-display-message :stage0-c11-exception-info
+    :artifact-outputs [:native-diagnostic-context-data :borrowed-native-diagnostic-rule-contract :native-display-message :stage0-c11-exception-info
                        :native-opcode-and-source-operation-sets
                        :native-block-operation-and-terminator-key-sets
                        :native-pass-contract-record :canonical-native-block-order :native-operation-sequence :path-prefix-predicate
@@ -121,7 +124,7 @@
                        :native-block-placement-data :native-use-definition-and-value-records
                        :native-runtime-check-facts :id-indexed-fact-and-proof-tables
                        :cfg-entry-exit-and-conditional-count :native-rule-outcome :dominance-and-use-predicates]
-    :diagnostic-ownership {:stage [:native-c11-rule-lookup-display-and-exception-view
+    :diagnostic-ownership {:stage [:native-c11-context-projection :native-c11-rule-lookup-display-and-exception-view
                                   :native-opcode-and-source-operation-vocabularies
                                   :native-block-operation-and-terminator-key-schemas
                                   :native-pass-contract-block-and-operation-order-and-path-rules
@@ -153,6 +156,45 @@
 
 
 
+
+(defn diagnostic-context
+  [safe-scalar checked-core context artifact]
+  (let [checked-core (if (map? checked-core) checked-core {})
+        context (if (map? context) context {})
+        artifact (if (map? artifact) artifact {})]
+    {:requested-target
+     (let [candidate (or (:requested-target context)
+                         (get-in checked-core
+                                 [:target-request-metadata
+                                  :requested-target]))]
+       (if (keyword? candidate) candidate :target-neutral))
+     :source-target (if (keyword? (:source-target checked-core))
+                      (:source-target checked-core) :unknown)
+     :profile (if (keyword? (:profile checked-core))
+                (:profile checked-core) :hosted)
+     :checked-core-artifact-id
+     (safe-scalar
+      (:artifact-id checked-core))
+     :module-id
+     (safe-scalar
+      (or (get-in checked-core [:source-core-input :module])
+          (:module-id artifact)
+          :not-applicable))
+     :function-id
+     (safe-scalar
+      (or (:entrypoint checked-core) :not-applicable))
+     :block-id
+     (safe-scalar
+      (or (get-in artifact [:control-flow-graph :entry])
+          (get-in artifact [:mir-module :control-flow-graph :entry])
+          :not-applicable))
+     :operation-id :not-applicable
+     :source-operation :not-applicable
+     :syntax-id :not-applicable
+     :origin-id :not-applicable
+     :mir-id
+     (safe-scalar
+      (or (:mir-id artifact) (:source-core artifact) :not-applicable))}))
 
 (defn diagnostic-rule-contract
   [contracts rule]
