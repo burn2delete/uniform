@@ -5,13 +5,15 @@ Source preparation only. The frozen child is the single
 `3d115ebedfcd23078d3981a43bb1453c10c30095`. Its reviewed ten-selector patch
 and PR579 remain unchanged; all ten genuine selectors remain UNRUN.
 
-This current composition is based on `2d0844f8f7f21321d920b9245341a2b98adc642e`,
+The initial current-source port was based on `2d0844f8f7f21321d920b9245341a2b98adc642e`,
 tree `c5f5941ca3db4ce38695f870276e1b345a323339`. The PR581 modified
 authenticated-pipeline test was not replayed: current main already carries the
 newer PR579 cache-hit assertion and its related controls.
 
-The selective port is the exact direct child of that base; the coordinator
-binds the final head/tree tuple at integration preflight.
+The selective source port began as a direct child of that base. Later normal
+main compositions retain the reviewed source unchanged; the coordinator binds
+the final base/head/tree tuple at integration preflight. Original PR581
+ancestry is preserved without importing its superseded tree.
 
 ## Implementation and port boundary
 
