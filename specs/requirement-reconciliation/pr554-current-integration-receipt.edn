@@ -103,6 +103,52 @@
   :errors 5
   :diagnostic "Changed or ambiguous current task body: specs/platform-workflow/tasks.md"
   :disposition :repaired-locally-not-accepted}
+ :current-main-composition
+ {:main-commit "69d21cb8aacd0be8e74cbf4c9ad8b12b84d244e8"
+  :main-tree "1911689d59beb0d9771d5efc5fe29856177b470e"
+  :candidate-commit "1b956d99c9af26e188f05088df7baadb7a96bbde"
+  :candidate-tree "de3c1c34bd3dde9e7cf51ea1d12955035a788fe1"
+  :candidate-parents
+  ["da18a412fa0feb0cfee357c2e71f8a65b7cbde85"
+   "69d21cb8aacd0be8e74cbf4c9ad8b12b84d244e8"]
+  :base-before-main "4df59ab107d5865e3afbf9173041cc9401227542"
+  :base-before-main-tree "d977cf8ca3de45e73920d6d6a5f5f59aca219527"
+  :frozen-comparator
+  {:commit "5dfe15c9fad14e5abebf23bf1e645bf9154a2e1e"
+   :tree "643afe5f3b00918fc3de76f2855294481a09b505"
+   :source-views-renewed? false}
+  :pr554-validation
+  {:acceptance-dependencies-test [18 425 0 0]
+   :acceptance-dependencies-check {:exit 0 :result :pass}
+   :platform-source-transition [2 6 0 0]
+   :platform-task-projection [5 90 0 0]
+   :frozen-source-view [4 48 0 0]
+   :requirement-reconciliation [31 270 0 0]
+   :git-diff-check :pass}
+  :pr557-coupling
+  {:paths
+   ["specs/tools-workflow/current-source-view.edn"
+    "specs/tools-workflow/evidence.md"
+    "tools/tooling_requirements.clj"
+    "tools/tooling_requirements_test.clj"]
+   :requirement-sources-import? false
+   :platform-task-source-transition-consumed? false
+   :source-view-inputs-independent? true
+   :checks
+   [{:command "clojure -M tools/tooling_requirements_test.clj"
+     :exit 1
+     :tests :not-reached
+     :diagnostic "Current manifest bytes drifted"}
+    {:command "clojure -M tools/tooling_requirements.clj --check"
+     :exit 1
+     :diagnostic "Current manifest bytes drifted"}]
+   :expected-current-manifest-sha256
+   "aa51bfad176edcf7ed75109a68ea1a0bcbcb3eeeedd6311db256bf331ad01ef0"
+   :observed-current-manifest-sha256
+   "d24ed46e2de0c1672a1a37c0eeacb3340452dcf56ce1b511ecc678761909155b"
+   :cause-commit "5f6cfdcfd7e9eeee1fb13a1bfaf923f571f18065"
+   :disposition :separate-stale-source-view-nonpass}
+  :scope :pr554-composition-and-independent-pr557-diagnostic}
  :evidence
  {:pinned-linter "clj-kondo-2025.10.23"
   :changed-clojure-edn-file-count 11
