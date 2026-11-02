@@ -90,7 +90,7 @@
               (catch clojure.lang.ExceptionInfo exception
                 (let [data
                       (p15-s23-backend-trusted-exception-data
-                       exception 65536 128)]
+                       exception 65536)]
                   (if (and
                        data
                        (p15-s23-c11-mir-owned-upstream-diagnostic? data))
@@ -124,9 +124,7 @@
          "B4-MANIFEST" source-path {}
          {:missing-fact :bounded-b4-final-artifact-map}))
       (p15-s23-c11-mir-bounded-value!
-       source-path :b4-public-final-artifact-ingress artifact
-       p15-s23-b4-wasm-max-final-artifact-carrier-nodes
-       p15-s23-b4-wasm-max-final-artifact-carrier-depth)
+       source-path :b4-public-final-artifact-ingress artifact)
       (p15-s23-b4-wasm-verify-frozen-envelope! artifact source-path)
       (let [fresh (p15-s23-stage2-c11-mir-artifact checked-core context)
             fresh-report (p15-s23-stage2-c11-mir-verification-report

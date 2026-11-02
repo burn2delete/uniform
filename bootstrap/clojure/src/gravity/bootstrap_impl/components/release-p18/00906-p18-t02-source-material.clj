@@ -118,7 +118,7 @@
     #'p18-t02-packaged-source-entries jar-entries))
   ([inventory jar-entries]
    (gravity.release/jar-source-inventory-report
-    (atom #(p18-t02-packaged-source-entries inventory)) jar-entries)))
+    #(p18-t02-packaged-source-entries inventory) jar-entries)))
 
 (defn p18-t02-jar-inventory-report
   ([jar-file-entries]
@@ -126,7 +126,7 @@
     #'p18-t02-expected-jar-file-entries jar-file-entries))
   ([inventory jar-file-entries]
    (gravity.release/jar-inventory-report
-    (atom #(p18-t02-expected-jar-file-entries inventory)) jar-file-entries)))
+    #(p18-t02-expected-jar-file-entries inventory) jar-file-entries)))
 
 (defn p18-t02-jar-command
   ([] (p18-t02-jar-command (p18-t02-source-inventory)))

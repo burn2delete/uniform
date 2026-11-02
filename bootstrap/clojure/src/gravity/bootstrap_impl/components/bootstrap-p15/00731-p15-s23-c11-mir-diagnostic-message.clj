@@ -32,24 +32,14 @@
 (defn p15-s23-c11-mir-require-trusted-carrier!
   [source-path carrier value sorted-policy]
   (let [validation
-        (p15-s23-trusted-carrier-validation
-         value sorted-policy
-         p15-s23-c11-mir-max-final-artifact-carrier-nodes
-         p15-s23-c11-mir-max-carrier-depth
-         p15-s23-c11-mir-max-final-artifact-carrier-nodes)]
+        (p15-s23-trusted-carrier-validation value sorted-policy)]
     (when-not (= :passed (:status validation))
       (p15-s23-c11-mir-fail!
-       (if (contains? #{:maximum-carrier-nodes
-                        :maximum-carrier-depth
-                        :maximum-carrier-width}
-                      (:reason validation))
-         "C11-VERIFY"
-         "C11-MODULE")
+       "C11-MODULE"
        source-path {}
        (assoc
         (select-keys validation
-                     [:reason :observed-nodes :observed-depth
-                      :maximum-nodes :maximum-depth :maximum-width])
+                     [:reason :class])
         :missing-fact :trusted-comparator-free-c11-carrier
         :carrier carrier)))
     validation))
@@ -155,52 +145,56 @@
    :observed-at :c11-authenticated-mir})
 
 (defn p15-s23-trusted-diagnostic-data
-  [data maximum-nodes maximum-depth]
-  (when (and (map? data)
-             (contains? p15-s23-trusted-carrier-map-classes
-                        (.getName (class data)))
-             (nil? (meta data))
-             (<= (count data) maximum-nodes))
-    (let [projection
-          (reduce-kv
-           (fn [state key value]
-             (if (identical? key ::c11-upstream-diagnostic-owner)
-               (-> state
-                   (update :owner-count inc)
-                   (update :owner-valid?
-                           #(and %
-                                 (some?
-                                  *p15-s23-c11-upstream-diagnostic-owner*)
-                                 (identical?
-                                  *p15-s23-c11-upstream-diagnostic-owner*
-                                  value)))
-                   (update :entries conj [key nil]))
-               (update state :entries conj [key value])))
-           {:entries [] :owner-count 0 :owner-valid? true}
-           data)
-          owner-valid?
-          (or (zero? (:owner-count projection))
-              (and (= 1 (:owner-count projection))
-                   (:owner-valid? projection)))
-          validation
-          (when owner-valid?
-            (p15-s23-trusted-carrier-validation
-             (:entries projection) :default-only
-             maximum-nodes maximum-depth maximum-nodes))]
-      (when (= :passed (:status validation)) data))))
+  ([data maximum-nodes]
+   (when (and (map? data)
+              (contains? p15-s23-trusted-carrier-map-classes
+                         (.getName (class data)))
+              (nil? (meta data))
+              (<= (count data) maximum-nodes))
+     (let [projection
+           (reduce-kv
+            (fn [state key value]
+              (if (identical? key ::c11-upstream-diagnostic-owner)
+                (-> state
+                    (update :owner-count inc)
+                    (update :owner-valid?
+                            #(and %
+                                  (some?
+                                   *p15-s23-c11-upstream-diagnostic-owner*)
+                                  (identical?
+                                   *p15-s23-c11-upstream-diagnostic-owner*
+                                   value)))
+                    (update :entries conj [key nil]))
+                (update state :entries conj [key value])))
+            {:entries [] :owner-count 0 :owner-valid? true}
+            data)
+           owner-valid?
+           (or (zero? (:owner-count projection))
+               (and (= 1 (:owner-count projection))
+                    (:owner-valid? projection)))
+           validation
+           (when owner-valid?
+             (p15-s23-trusted-carrier-validation
+              (:entries projection) :default-only))]
+       (when (= :passed (:status validation)) data))))
+  ;; Existing diagnostic consumers may still provide the retired depth bound;
+  ;; it never participated in diagnostic-map admission.
+  ([data maximum-nodes _maximum-depth]
+   (p15-s23-trusted-diagnostic-data data maximum-nodes)))
 
 (defn p15-s23-backend-trusted-exception-data
-  [exception maximum-nodes maximum-depth]
-  (when (instance? clojure.lang.ExceptionInfo exception)
-    (p15-s23-trusted-diagnostic-data
-     (ex-data exception) maximum-nodes maximum-depth)))
+  ([exception maximum-nodes]
+   (when (instance? clojure.lang.ExceptionInfo exception)
+     (p15-s23-trusted-diagnostic-data
+      (ex-data exception) maximum-nodes)))
+  ([exception maximum-nodes _maximum-depth]
+   (p15-s23-backend-trusted-exception-data exception maximum-nodes)))
 
 (defn p15-s23-c11-mir-contain-exception!
   [source-path boundary exception]
   (let [data
         (p15-s23-backend-trusted-exception-data
-         exception p15-s23-c11-mir-max-final-artifact-carrier-nodes
-         p15-s23-c11-mir-max-carrier-depth)
+         exception p15-s23-c11-mir-max-final-artifact-carrier-nodes)
         complete (p15-s23-c11-mir-sanitized-complete-diagnostic data)]
     (if complete
       (let [observation (p15-s23-c11-mir-containment-observation)
