@@ -545,6 +545,12 @@
                            :integration}
                          (set (:nonclaims view)))
             "Domain current-source-view lost a required nonclaim")
+  (require! (= family-path
+               (get-in view [:historical-source :family-proposal :path]))
+            "Historical family proposal path drifted")
+  (require! (= gap-path
+               (get-in view [:historical-source :gap-proposal :path]))
+            "Historical gap proposal path drifted")
   (doseq [pin [(:base view)
                (get-in view [:historical-source :family-proposal])
                (get-in view [:historical-source :gap-proposal])]]
@@ -568,13 +574,22 @@
 (defn controls [view family gap]
   (let [current (get-in view [:current-source :task-sources])
         first-current (first current)
-        first-text (slurp (:path first-current))]
+        first-text (slurp (:path first-current))
+        second-id (second (:ordered-task-ids first-current))]
     {:positive (do (validate-view! view family gap) true)
      :family-proposal-hash-tamper
      (rejected? #(validate-view! (assoc-in view [:historical-source :family-proposal :sha256] zero-hex)
                                  family gap))
+     :family-proposal-path-tamper
+     (rejected? #(validate-view! (assoc-in view [:historical-source :family-proposal :path]
+                                           "specs/wrong-family-source.edn")
+                                 family gap))
      :gap-proposal-hash-tamper
      (rejected? #(validate-view! (assoc-in view [:historical-source :gap-proposal :sha256] zero-hex)
+                                 family gap))
+     :gap-proposal-path-tamper
+     (rejected? #(validate-view! (assoc-in view [:historical-source :gap-proposal :path]
+                                           "specs/wrong-historical-source.edn")
                                  family gap))
      :current-source-hash-tamper
      (rejected? #(validate-view! (assoc-in view [:current-source :task-sources 0 :sha256] zero-hex)
@@ -587,7 +602,7 @@
      (rejected? #(validate-task-records!
                   (str/replace-first first-text
                                      #"(?m)^- \[ \] `[^`]+`"
-                                     "- [ ] `build/duplicate-id`")
+                                     (str "- [ ] `" second-id "`"))
                   first-current))
      :closed-task-tamper
      (rejected? #(validate-task-records!

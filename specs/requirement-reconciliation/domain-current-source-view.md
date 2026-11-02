@@ -83,7 +83,8 @@ negative controls reject proposal/source tampering, task reorder, duplicate
 IDs, closed rows, wrong paths, canonical-adoption closure, and implementation
 closure. The successful scoped run reported 21 documents, 1,533 occurrences,
 1,838 facets, 139 family units, 70 assigned gap records, six current task
-sources, and all ten controls passing.
+sources, and all twelve controls passing, including family- and gap-proposal
+path tamper rejection.
 
 The current-main platform projection check passed (5 tests, 90 assertions),
 shared acceptance dependencies passed (18 tests, 434 assertions), and
