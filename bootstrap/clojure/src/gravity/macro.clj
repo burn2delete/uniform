@@ -3749,57 +3749,8 @@
      :gravity-verifiers gravity-verifiers}))))))
 
 (doseq
- [operation
-  [#'source-eligible?
-   #'assemble
-   #'path-neutral-value
-   #'source-snapshot!
-   #'merge-request
-   #'current-plan-binding!
-   #'resolve-expansion-template!
-   #'expand
-   #'expanded-form
-   #'artifact-payload
-   #'compiler-source-path?
-   #'identity-chunks
-   #'boundary-fail!
-   #'trace-identity-input
-   #'c4-artifact-id
-   #'defmacro-form?
-   #'defn-form?
-   #'request
-   #'source-stable!
-   #'resolve-digest-preimage!
-   #'contain-operation!
-   #'expanded-syntax-object
-   #'expanded-graph-valid?
-   #'raise-rejection!
-   #'run-summary
-   #'plan-identities
-   #'envelope-summary
-   #'artifact-id
-   #'semantic-component-id
-   #'source-syntax-stream
-   #'execute-plan!
-   #'read-pinned-plan-source!
-   #'resolve-plan-source-path
-   #'artifact-identity-input
-   #'expanded-graph
-   #'legacy-position?
-   #'stream-id
-   #'stream-identity-input
-   #'resolve-digests!
-   #'envelope-descriptor
-   #'trace-record
-   #'trace-id
-   #'compute-plan-identities
-   #'compile-source
-   #'c4-artifact
-   #'replay-report
-   #'c4-identity-input
-   #'accept-syntax-parent!
-   #'build-plan-binding!
-   #'verify]]
+ [name (keys (:public-api namespace-contract))
+  :let [operation (get (ns-interns *ns*) name)]]
  ^{:line 73, :column 10}
  (alter-meta!
   operation
