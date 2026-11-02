@@ -3,7 +3,6 @@
   (:profile :meta)
   (:target :jvm)
   (:exports [c3-syntax-object-contract
-             c3-syntax-bounds
              c3-syntax-diagnostic-catalog
              c3-syntax-build-template
              c3-generated-syntax-template
@@ -75,20 +74,6 @@
    :whole-language? false
    :clojure-seed-boundary? true})
 
-(def c3-syntax-bounds
-  {:maximum-syntax-objects 2048
-   :maximum-reference-depth 64
-   :maximum-origin-entries 32
-   :maximum-references-per-object 32
-   :maximum-marks 64
-   :maximum-lexical-scopes 64
-   :maximum-renames 64
-   :maximum-captures 32
-   :maximum-introduced-identifiers 64
-   :maximum-metadata-entries 64
-   :maximum-fact-records 64
-   :maximum-container-width 256})
-
 (def c3-syntax-diagnostic-catalog
   {:diagnostics ["C3-SHAPE" "C3-ID" "C3-SPAN" "C3-ORIGIN"
                  "C3-HYGIENE" "C3-CAPTURE" "C3-METADATA"
@@ -96,20 +81,6 @@
    :stable-fields [:rule :severity :stage :primary :related
                    :origin-chain :profile :target :facts :remediation]
    :stops [:macro-expansion :name-resolution :analysis]})
-
-(defn c3-bounds-record []
-  {:maximum-syntax-objects 2048
-   :maximum-reference-depth 64
-   :maximum-origin-entries 32
-   :maximum-references-per-object 32
-   :maximum-marks 64
-   :maximum-lexical-scopes 64
-   :maximum-renames 64
-   :maximum-captures 32
-   :maximum-introduced-identifiers 64
-   :maximum-metadata-entries 64
-   :maximum-fact-records 64
-   :maximum-container-width 256})
 
 (defn c3-exact-keys? [value expected]
   (if (map? value)
@@ -414,9 +385,8 @@
   (if (c3-exact-keys? context #{:current :aliases :imports})
     (if (= (symbol? (get context :current)) false)
       false
-      (if (c3-both? (map? (get context :aliases))
-                    (<= (count (get context :aliases)) 64))
-        (if (c3-bounded-vector? (get context :imports) 64)
+      (if (map? (get context :aliases))
+        (if (vector? (get context :imports))
           (c3-all-unique? (get context :imports) [])
           false)
         false))
@@ -499,10 +469,7 @@
     (if (contains? hygiene :captures)
       (let [captures (get hygiene :captures)]
         (if (vector? captures)
-          (if (> (count captures)
-                 (get (c3-bounds-record) :maximum-captures))
-            true
-            (= (c3-captures-valid? captures) false))
+          (= (c3-captures-valid? captures) false)
           true))
       false)
     false))
@@ -513,30 +480,23 @@
        #{:marks :lexical-scopes :renames :introduced-identifiers
          :captures :macro-definition-namespace
          :macro-call-site-namespace})
-    (let [bounds (c3-bounds-record)
-          marks (get hygiene :marks)
+    (let [marks (get hygiene :marks)
           scopes (get hygiene :lexical-scopes)
           renames (get hygiene :renames)
           introduced (get hygiene :introduced-identifiers)
           captures (get hygiene :captures)]
-      (if (c3-bounded-vector? marks (get bounds :maximum-marks))
+      (if (vector? marks)
         (if (c3-all-unique? marks [])
           (if (c3-hygiene-ids-valid? marks)
-            (if (c3-bounded-vector?
-               scopes (get bounds :maximum-lexical-scopes))
+            (if (vector? scopes)
             (if (c3-all-unique? scopes [])
               (if (c3-hygiene-ids-valid? scopes)
-                (if (c3-both?
-                   (map? renames)
-                   (<= (count renames) (get bounds :maximum-renames)))
-                (if (c3-bounded-vector?
-                     introduced
-                     (get bounds :maximum-introduced-identifiers))
+                (if (map? renames)
+                (if (vector? introduced)
                   (if (c3-all-unique? introduced [])
                     (if (c3-symbols-valid? introduced)
                       (if (c3-renames-valid? renames introduced)
-                        (if (c3-bounded-vector?
-                         captures (get bounds :maximum-captures))
+                        (if (vector? captures)
                           (if (c3-captures-valid? captures)
                             (if (= (get hygiene
                                         :macro-definition-namespace) nil)
@@ -601,11 +561,8 @@
               false
               (if (= (get origin :producer-version) nil)
                 false
-                (if (c3-bounded-vector? (get origin :build-effects) 32)
-                  (if (c3-bounded-vector?
-                       inputs
-                       (get (c3-bounds-record)
-                            :maximum-references-per-object))
+                (if (vector? (get origin :build-effects))
+                  (if (vector? inputs)
                     (if (c3-all-unique? inputs [])
                       (if (= kind :source)
                         (if (= (count inputs) 0)
@@ -630,8 +587,7 @@
     false))
 
 (defn c3-origins-valid? [origins]
-  (if (c3-bounded-vector?
-       origins (get (c3-bounds-record) :maximum-origin-entries))
+  (if (vector? origins)
     (if (> (count origins) 0)
       (loop [remaining origins]
         (if (= (count remaining) 0)
@@ -650,13 +606,12 @@
       (if (= (get fact :fact-kind) nil)
         false
         (if (= (get fact :version) 1)
-          (c3-bounded-vector? (get fact :invalidated-by) 32)
+          (vector? (get fact :invalidated-by))
           false)))
     false))
 
 (defn c3-facts-valid? [facts]
-  (if (c3-bounded-vector?
-       facts (get (c3-bounds-record) :maximum-fact-records))
+  (if (vector? facts)
     (loop [remaining facts]
       (if (= (count remaining) 0)
         true
@@ -690,10 +645,7 @@
 
 (defn c3-metadata-valid? [metadata]
   (if (map? metadata)
-    (if (<= (count metadata)
-            (get (c3-bounds-record) :maximum-metadata-entries))
-      (c3-metadata-keys-valid? (keys metadata))
-      false)
+    (c3-metadata-keys-valid? (keys metadata))
     false))
 
 (defn c3-descriptor-reader-binding? [descriptor]
@@ -878,7 +830,6 @@
    :ownership-product nil
    :digest-requests []
    :diagnostics [(c3-diagnostic rule descriptor reason missing-fields)]
-   :bounds (c3-bounds-record)
    :containment {:downstream-artifacts-forbidden true}
    :execution-boundary {:owner :gravity-source
                         :ambient-authority-denied true
@@ -938,7 +889,6 @@
          :depends-on [0]
          :preimage preimage}]
        :diagnostics []
-       :bounds (c3-bounds-record)
        :containment {:downstream-artifacts-forbidden false}
        :execution-boundary {:owner :gravity-source
                             :ambient-authority-denied true
@@ -1030,10 +980,7 @@
                   (if (c3-hygiene-context? (get syntax :hygiene))
                     (if (c3-origins-valid? (get syntax :origin))
                       (if (c3-facts-valid? (get syntax :facts))
-                        (if (c3-bounded-vector?
-                             (get syntax :prior-syntax-ids)
-                             (get (c3-bounds-record)
-                                  :maximum-references-per-object))
+                        (if (vector? (get syntax :prior-syntax-ids))
                           (if (c3-build-descriptor?
                                (c3-template-descriptor syntax))
                             (if (= (get syntax :ownership)
@@ -1131,8 +1078,8 @@
                     :stable-identity-preimage
                     :source-or-generated-span
                     :origin-chain-valid
-                    :hygiene-visible-and-bounded
-                    :metadata-bounded
+                    :hygiene-visible-and-valid
+                    :metadata-valid
                     :facts-versioned
                     :immutable-value
                     :digest-request-exact-replay]
@@ -1374,23 +1321,23 @@
         (recur (rest remaining))
         false))))
 
-(defn c3-reference-depth [references depths maximum]
+(defn c3-reference-depth [references depths]
   (loop [remaining references greatest 0]
     (if (= (count remaining) 0)
       (+ greatest 1)
       (let [reference (first remaining)
             depth (get depths reference)]
         (if (= depth nil)
-          (+ maximum 1)
+          nil
           (recur (rest remaining) (c3-maximum greatest depth)))))))
 
 (defn c3-graph-accepted [object-count maximum-depth]
   {:artifact :gravity/sh04-syntax-graph-verification-report
    :schema-version 1
    :status :passed
-   :checks [:bounded-node-count :stable-unique-identities
+   :checks [:syntax-vector :stable-unique-identities
             :prior-only-reference-closure :acyclic-reference-graph
-            :bounded-reference-depth :valid-syntax-templates]
+            :complete-reference-depth :valid-syntax-templates]
    :object-count object-count
    :maximum-reference-depth maximum-depth
    :containment {:downstream-artifacts-forbidden false}
@@ -1411,9 +1358,7 @@
                    reason [:syntax-graph index])]})
 
 (defn c3-syntax-graph-verify-template [syntax-objects]
-  (let [bounds (c3-bounds-record)]
-    (if (c3-bounded-vector?
-         syntax-objects (get bounds :maximum-syntax-objects))
+    (if (vector? syntax-objects)
       (if (> (count syntax-objects) 0)
         (loop [remaining syntax-objects
                index 0
@@ -1431,7 +1376,7 @@
                 (if (= (c3-sha256-id? syntax-id) false)
                   (c3-graph-rejected syntax "C3-ID"
                                      :unresolved-syntax-id index)
-                  (if (c3-vector-contains? observed syntax-id)
+                  (if (contains? depths syntax-id)
                     (c3-graph-rejected syntax "C3-ID"
                                        :duplicate-syntax-id index)
                     (if (= (c3-all-unique? references []) false)
@@ -1443,20 +1388,17 @@
                         (let [depth
                               (if (= (count references) 0)
                                 1
-                                (c3-reference-depth
-                                 references depths
-                                 (get bounds :maximum-reference-depth)))]
-                          (if (> depth
-                                 (get bounds :maximum-reference-depth))
+                                (c3-reference-depth references depths))]
+                          (if (= depth nil)
                             (c3-graph-rejected syntax "C3-ORIGIN"
-                                               :reference-depth-limit index)
+                                               :reference-not-prior index)
                             (recur (rest remaining)
                                    (+ index 1)
                                    (conj observed syntax-id)
                                    (assoc depths syntax-id depth)
                                    (c3-maximum greatest-depth depth))))))))))))
         (c3-graph-rejected {} "C3-SHAPE" :empty-syntax-graph 0))
-      (c3-graph-rejected {} "C3-SHAPE" :syntax-node-limit 0))))
+      (c3-graph-rejected {} "C3-SHAPE" :syntax-vector-required 0)))
 
 (defn c3-resolved-product-report [product reader-binding revision]
   (if (c3-exact-keys?
@@ -1774,9 +1716,7 @@
   [resolved-products reader-binding reader-source-revision root-syntax-ids]
   (if (c3-reader-binding-revision-match?
        reader-binding reader-source-revision)
-    (if (c3-bounded-vector?
-         resolved-products
-         (get (c3-bounds-record) :maximum-syntax-objects))
+    (if (vector? resolved-products)
       (if (> (count resolved-products) 0)
         (let [reports
               (c3-resolved-product-reports
@@ -1834,7 +1774,7 @@
             (c3-stream-rejection
              "C3-ID" :resolved-object-verification reports)))
         (c3-stream-rejection "C3-SHAPE" :empty-syntax-stream {}))
-      (c3-stream-rejection "C3-SHAPE" :syntax-node-limit {}))
+      (c3-stream-rejection "C3-SHAPE" :syntax-vector-required {}))
     (c3-stream-rejection
      "C3-ID" :reader-binding-substitution-or-replay {})))
 
@@ -1928,9 +1868,7 @@
          "C3-SERIALIZE"
          (if (map? resolved-stream)
            (let [syntaxes (get resolved-stream :syntax-object-stream)]
-             (if (c3-bounded-vector?
-                  syntaxes
-                  (get (c3-bounds-record) :maximum-syntax-objects))
+             (if (vector? syntaxes)
                (if (> (count syntaxes) 0)
                  (c3-template-descriptor (first syntaxes))
                  {})
