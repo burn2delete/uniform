@@ -6,7 +6,7 @@
 (require '[sh-inventory] '[acceptance-dependencies])
 (def baseline "254a5b50ea5e2825c424248c9216802cc866c0fd")
 (def applying-source-pins
-  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/component-roadmaps/build.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "docs/component-roadmaps/compiler-api.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "docs/component-roadmaps/reader.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/self-hosting-slice-ownership.edn" "c8fd8e437ef921041b181e2f09ee1a37d716d357", "specs/build-workflow/tasks.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "specs/compiler-api-workflow/tasks.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "specs/reader-workflow/tasks.md" "2e0292c61603aad200df397e397e94e3c7d24818"})
+  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/component-roadmaps/build.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "docs/component-roadmaps/compiler-api.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "docs/component-roadmaps/reader.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/self-hosting-slice-ownership.edn" "c8fd8e437ef921041b181e2f09ee1a37d716d357", "specs/build-workflow/tasks.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "specs/compiler-api-workflow/tasks.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "specs/reader-workflow/tasks.md" "2e0292c61603aad200df397e397e94e3c7d24818", "specs/runtime-workflow/tasks.md" "42c34ab55af0000dfaaf73d96d7ee09ec22c243e"})
 (def pinned-evidence-hashes
   {"docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
  "6bf8d0fce1744526f500857eedfd03f11138ee4b0941c49ab787e5dacb5ba5d6",
@@ -704,7 +704,9 @@
 
 (def mapping-review
   (assoc resolution-main-predecessor-review
-         :input-fingerprint "f16680ce6e29658f827e6a50a5bd13fd3c90241aeb01614e4465422c40533f8e"
+         :historical-predecessor-input-fingerprint "f16680ce6e29658f827e6a50a5bd13fd3c90241aeb01614e4465422c40533f8e"
+         :predecessor-input-fingerprint "9a4a8c8219cfb90965396426e9544caa91c3307dcf1c67b0663d001eb2a7993a"
+         :input-fingerprint "4f4c7275e14284a2f0ce0528272b3e35e76fb54f9d0c3aeb82e3ba8da6b17bcd"
          :source-version-bridge "specs/sh-family-crosswalk/resolution-runtime-composition-source-version.edn"
          :resolution-main-predecessor-review
          (select-keys resolution-main-predecessor-review

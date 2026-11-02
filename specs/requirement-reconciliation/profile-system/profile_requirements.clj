@@ -218,7 +218,14 @@
              (doseq [{:keys [id]} current-rows]
                (task-open! current-text marker id))
              (when bridge
-               (validate-task-bridge-records! bridge))
+               (validate-task-bridge-records! bridge)
+               (when-let [predecessor (:known-pr560-current bridge)]
+                 (require! (= path (:path bridge))
+                           (str "Runtime predecessor bridge path drift: " path))
+                 (validate-task-bridge-records!
+                  (merge
+                   (select-keys bridge [:path :marker :historical-ref :historical-sha256])
+                   predecessor))))
              {:path path
               :marker marker
               :historical-base {:commit base-commit :sha256 (:sha256 source)
