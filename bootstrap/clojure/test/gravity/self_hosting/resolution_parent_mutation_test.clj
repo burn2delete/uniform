@@ -34,7 +34,11 @@
         roots (atom nil)
         sample (fn []
                  {:same-parent? true
-                  :invocation-current? (= invocation ((implementation 'sh06-resolution-reader-invocation)))
+                  :invocation-current?
+                  (= (if (map? invocation)
+                       (dissoc invocation :macro-source-mode)
+                       invocation)
+                     ((implementation 'sh06-resolution-reader-invocation)))
                   :proof-transaction-absent? (nil? ((implementation 'sh07-proof-transaction-context!)))
                   ;; This is the existing short-seam catalog, not a claim of
                   ;; complete transitive dispatch or closed-over-state proof.
@@ -82,14 +86,19 @@
   (let [source (.getCanonicalPath
                 (io/file "bootstrap/clojure/fixtures/self-hosting/sh-06/accepted/compiler-subset.gravity"))
         reader (.getCanonicalPath (io/file b/sh03-reader-source-relative-path))
-        invocation {:reader-source-path reader
-                    :authenticated-envelope-options {:source :development-current}}
+        syntax-path (.getCanonicalPath (io/file b/sh04-syntax-source-relative-path))
+        syntax-invocation {:reader-source-path reader
+                           :authenticated-envelope-options {:source :development-current}
+                           :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                                     :source-path syntax-path}}
+        invocation (assoc syntax-invocation :macro-source-mode :development-current)
         syntax (b/compiler-c3-syntax-source-artifact
                  source (slurp source) (b/reader-project-context-for-source source)
-                 nil nil reader invocation)
+                 nil nil reader syntax-invocation)
         _ (reset! observations {:phase :constructing-macro
                                 :c3-proof-status (get-in syntax [:capability-based-proof :status])})
-        original (b/sh05-macro-artifact-from-c3-artifact source syntax invocation)
+        original (b/sh05-macro-artifact-from-c3-artifact
+                  source syntax syntax-invocation :development-current)
         _ (reset! observations {:phase :constructing-positive-resolve
                                 :parent-proof-status (get-in original [:capability-based-proof :status])})
         {:keys [parent mutate! restore! restored?]} (aliased-parent original)

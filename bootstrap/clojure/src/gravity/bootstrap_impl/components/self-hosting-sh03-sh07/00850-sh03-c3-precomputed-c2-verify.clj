@@ -150,6 +150,7 @@
 (declare
  sh04-syntax-boundary-fail!
  sh04-syntax-resolve-source-path
+ sh04-syntax-read-current-source!
  sh04-syntax-read-pinned-source!
  sh04-syntax-plan-identities
  sh04-syntax-build-binding!
@@ -182,6 +183,7 @@
   :p15-s23-trusted-carrier-validation
   #'p15-s23-trusted-carrier-validation,
   :c-backend-canonical-value #'c-backend-canonical-value,
+  :sh04-syntax-read-current-source! #'sh04-syntax-read-current-source!,
   :sh04-syntax-read-pinned-source! #'sh04-syntax-read-pinned-source!,
   :sh04-syntax-resolve-source-path #'sh04-syntax-resolve-source-path,
   :sh04-syntax-expected-function-shapes-hash
@@ -239,6 +241,79 @@
  (gravity.syntax/read-pinned-plan-source!
   request-source
   (syntax-stage-runtime-operations)))
+
+(defn
+ sh04-syntax-read-current-source!
+ [request-source selected-path]
+ (when-not
+  (string? selected-path)
+  (sh04-syntax-boundary-fail!
+   "C3-ID"
+   request-source
+   :selected-current-syntax-source
+   selected-path
+   {:required-source sh04-syntax-source-relative-path}))
+ (try
+  (let [snapshot (c2-pass-cache/source-snapshot! selected-path)
+        expected (.getCanonicalPath
+                  (java.io.File. (sh04-syntax-resolve-source-path)))
+        actual (.getCanonicalPath
+                (java.io.File. (:canonical-path snapshot)))]
+    (when-not
+     (= expected actual)
+     (sh04-syntax-boundary-fail!
+      "C3-ID"
+      request-source
+      :selected-current-syntax-source
+      actual
+      {:expected-source-path expected
+       :selected-source-path selected-path}))
+    {:source-path actual
+     :source-byte-count (:byte-count snapshot)
+     :source-content-hash (:bytes-hash snapshot)
+     :source-text (sh03-reader-strict-source-text!
+                   request-source actual (:bytes snapshot))})
+  (catch InterruptedException interrupted
+   (.interrupt (Thread/currentThread))
+   (throw interrupted))
+  (catch clojure.lang.ExceptionInfo error
+   (if (= "C3-ID" (:id (ex-data error)))
+    (throw error)
+    (sh04-syntax-boundary-fail!
+     "C3-ID"
+     request-source
+     :stable-current-syntax-source
+     selected-path
+     {:cause-id (:id (ex-data error))})))
+  (catch Exception error
+   (sh04-syntax-boundary-fail!
+    "C3-ID"
+    request-source
+    :strict-current-syntax-source
+    selected-path
+    {:cause-class (.getName (class error))}))))
+
+(defn-
+ sh04-syntax-selection!
+ [request-source invocation]
+ (when (some? invocation)
+  (when-not
+   (= :passed
+      (:status (p15-s23-trusted-carrier-validation invocation :default-only)))
+   (sh04-syntax-boundary-fail!
+    "C3-ID" request-source :native-syntax-selection invocation {}))
+  (when (contains? invocation :syntax-source-selection)
+   (let [selection (:syntax-source-selection invocation)]
+    (when-not
+     (and
+      (map? selection)
+      (= #{:schema :source-path} (set (keys selection)))
+      (= :gravity/sh04-development-syntax-selection-v1 (:schema selection))
+      (string? (:source-path selection)))
+     (sh04-syntax-boundary-fail!
+      "C3-ID" request-source :explicit-syntax-selection selection {}))
+    (sh04-syntax-read-current-source!
+    request-source (:source-path selection))))))
 (defn
  sh04-syntax-plan-identities
  [plan]

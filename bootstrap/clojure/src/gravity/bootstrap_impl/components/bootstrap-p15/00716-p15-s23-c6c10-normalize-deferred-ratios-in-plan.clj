@@ -154,6 +154,11 @@
   ([source-path source-text reader-source-path source-policy-version]
    (p15-s23-c6c10-private-ingress-products source-path source-text reader-source-path source-policy-version nil))
   ([source-path source-text reader-source-path source-policy-version selected-reader-binding]
+   (p15-s23-c6c10-private-ingress-products
+    source-path source-text reader-source-path source-policy-version
+    selected-reader-binding nil))
+  ([source-path source-text reader-source-path source-policy-version
+    selected-reader-binding selected-reader-invocation]
   (when-not (and (string? source-path)
                  (qst-or-gravity-source? source-path)
                  (string? source-text))
@@ -181,20 +186,27 @@
             *print-readably* true
             *print-namespace-maps* false]
     (let [;; Selection is host invocation context, never artifact authority.
-          invocation (when reader-source-path
-                       {:reader-source-path reader-source-path
-                        :authenticated-envelope-options {:source :development-current}})
+          invocation (or selected-reader-invocation
+                          (when reader-source-path
+                            {:reader-source-path reader-source-path
+                             :authenticated-envelope-options {:source :development-current}}))
+          ;; C2/C3 only accept the Reader/Syntax selection.  Macro mode is a
+          ;; separate explicit C4 choice and must continue through the later
+          ;; current-source resolver without being presented to C2.
+          reader-invocation (if (map? invocation)
+                              (dissoc invocation :macro-source-mode)
+                              invocation)
           raw-front-end
           (p15-s23-stage2-c2-c3-front-end-products
            source-path source-text
            (reader-project-context-for-source source-path)
-           true reader-source-path)
+           true reader-source-path reader-invocation)
           source-content-hash
           (get-in raw-front-end [:source-unit-record :bytes-hash])
           literal-authentication
-          (p15-s23-c6c10-literal-authentication source-path raw-front-end invocation)
+          (p15-s23-c6c10-literal-authentication source-path raw-front-end reader-invocation)
           front-end
-          (p15-s23-c6c10-project-front-end source-path raw-front-end invocation)
+          (p15-s23-c6c10-project-front-end source-path raw-front-end reader-invocation)
           _ (validate-ns-syntax! source-path (:forms raw-front-end))
           raw-module (parse-module source-path (:forms raw-front-end))
           parameter? (contains? #{1 2 3} (get-in (stage0-function-table raw-module) ['main :arity]))

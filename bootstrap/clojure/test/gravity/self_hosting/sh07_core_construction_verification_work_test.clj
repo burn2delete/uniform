@@ -13,14 +13,17 @@
 
 (def ^:private invocation
   {:reader-source-path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"
-   :authenticated-envelope-options {:source :development-current}})
+   :authenticated-envelope-options {:source :development-current}
+   :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                             :source-path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"}
+   :macro-source-mode :development-current})
 
 (def ^:private resolution
   (delay
     (let [path "bootstrap/clojure/fixtures/self-hosting/sh-07/compiler-reader-quote.gravity"]
       (b/compiler-c5-resolution-source-artifact path (slurp path :encoding "UTF-8")
         {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
-        "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))))
+        "bootstrap/gravity/src/gravity/bootstrap/reader.gravity" invocation))))
 
 (defn- observe [names f]
   (let [calls (atom {}) arities (atom {})

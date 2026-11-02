@@ -41,7 +41,8 @@
                                 source-path (:reader-source-path invocation)) :bytes)
          :reader (resolution-construction-binding-view
                   (:binding (sh03-reader-verification-invocation! source-path invocation)))
-         :syntax (resolution-construction-binding-view (sh04-syntax-current-binding! source-path))
+         :syntax (resolution-construction-binding-view
+                  (sh04-syntax-current-binding! source-path invocation))
          :macro (resolution-construction-binding-view (sh05-macro-current-binding! source-path))
          :resolver (resolution-construction-binding-view (sh06-resolution-current-binding! source-path))
          :resolver-inputs (sh06-resolution-current-source-key)
@@ -181,6 +182,7 @@
          #'sh03-reader-authenticated-envelope-options #'sh03-reader-verification-invocation!
          #'sh03-reader-invocation-source! #'sh03-reader-current-binding!
          #'sh03-reader-read-selected-source-bytes! #'sh04-syntax-current-binding!
+         #'sh04-syntax-selection! #'sh04-syntax-read-current-source!
          #'sh04-syntax-read-pinned-source! #'sh05-macro-current-binding!
          #'sh05-macro-read-pinned-source! #'sh06-resolution-current-binding!
          #'sh06-resolution-binding-current! #'sh06-resolution-current-source-key
