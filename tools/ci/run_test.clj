@@ -313,7 +313,9 @@
     (is (not (ci/docs-only-change? "push" base
                                    [{:old-mode "100644" :new-mode "100644"
                                      :status "M" :path "README.md"}])))
-    (doseq [mode ["bootstrap" "macro" "resolution" "checked-core-runtime"]]
+    (doseq [mode ["bootstrap" "macro" "resolution"
+                  "resolution-pipeline" "resolution-unmetered"
+                  "resolution-invocation-selection" "checked-core-runtime"]]
       (is (ci/skip-for-docs-only? mode {:kind :docs-only}) mode))
     (is (not (ci/skip-for-docs-only? "static" {:kind :docs-only})))
     (is (not (ci/skip-for-docs-only? "contracts" {:kind :docs-only})))
@@ -366,7 +368,10 @@
     (is (str/includes? workflow "fetch-depth: 2"))
     (is (str/includes? workflow "fetch-depth: 10"))
     (is (str/includes? workflow "&& 1 || 0"))
-    (is (= 4 (count (re-seq #"persist-credentials: false" workflow))))))
+    (is (= 5 (count (re-seq #"persist-credentials: false" workflow))))
+    (is (str/includes? workflow "needs.select.outputs.resolution != 'false'"))
+    (is (str/includes? workflow "target/ci/$CI_MODE-summary.edn"))
+    (is (str/includes? workflow "name: ci-${{ matrix.mode }}-${{ github.sha }}-${{ github.run_attempt }}"))))
 
 (deftest leaf-runner-selection-is-fail-closed-in-leaves-job
   (let [workflow (slurp ".github/workflows/ci.yml")
@@ -385,6 +390,41 @@
     ;; probe, while selector failure or malformed output keeps it on macOS.
     (is (str/includes? leaves "matrix.platform == 'darwin' && (needs.select.result != 'success'"))
     (is (str/includes? leaves "matrix.platform == 'unsupported' && (needs.select.result != 'success'"))))
+
+(deftest resolution-commands-are-complete-and-disjoint
+  (let [modes ["resolution-pipeline" "resolution-unmetered"
+               "resolution-invocation-selection"]
+        commands (mapv (fn [mode]
+                         (first (ci/commands-for-selection mode {:kind :full})))
+                       modes)
+        namespace (fn [[_ _ argv]]
+                    (let [index (.indexOf ^java.util.List argv "--namespace")]
+                      (nth argv (inc index))))]
+    (is (= modes (mapv first commands)))
+    (is (= [600 600 600] (mapv second commands)))
+    (is (= ["gravity.resolution.pipeline-test"
+            "gravity.self-hosting.sh06-unmetered-resolution-test"
+            "gravity.self-hosting.sh06-invocation-selection-test"]
+           (mapv namespace commands)))
+    (is (= 3 (count (set (map #(nth % 2) commands)))))
+    (is (every? #(= 1 (count (filter #{"--namespace"} (nth % 2)))) commands))))
+
+(deftest resolution-workflow-serializes-only-its-own-pool
+  (let [workflow (slurp ".github/workflows/ci.yml")
+        resolution (second (re-find #"(?s)\n  resolution:\n(.*?)(?=\n  leaves:)" workflow))]
+    (is (some? resolution))
+    (is (str/includes? resolution
+                        "mode: [resolution-pipeline, resolution-unmetered, resolution-invocation-selection]"))
+    (is (str/includes? resolution "max-parallel: 1"))
+    (is (str/includes? resolution "needs.select.outputs.resolution == 'false'"))
+    (is (str/includes? resolution "git rev-parse HEAD 'HEAD^{tree}'"))
+    (is (str/includes? resolution "git status --porcelain"))
+    (is (str/includes? resolution "target/ci/SHA256SUMS"))
+    (is (str/includes? workflow "needs: [checks, resolution, leaves, snapshot]"))
+    (is (str/includes? workflow
+                        "if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'"))
+    (is (not (str/includes? workflow
+                           "mode: [static, contracts, bootstrap, macro, resolution, checked-core-runtime]")))))
 
 (deftest stage-selection-follows-owned-downstream-closure
   (let [change (fn [path] {:old-mode "100644" :new-mode "100644"
@@ -415,6 +455,14 @@
           (ci/stage-selection [(change "bootstrap/clojure/src/gravity/resolution.clj")])]
       (is (ci/skip-for-stage-selection? "macro" resolution-selection))
       (is (not (ci/skip-for-stage-selection? "resolution" resolution-selection)))
+      (doseq [mode ["resolution-pipeline" "resolution-unmetered"
+                    "resolution-invocation-selection"]]
+        (is (not (ci/skip-for-stage-selection? mode resolution-selection)) mode))
+      (let [checked-selection
+            (ci/stage-selection [(change "bootstrap/gravity/src/gravity/checked_core.gravity")])]
+        (doseq [mode ["resolution-pipeline" "resolution-unmetered"
+                      "resolution-invocation-selection"]]
+          (is (ci/skip-for-stage-selection? mode checked-selection) mode)))
       (is (not (ci/skip-for-stage-selection? "contracts" resolution-selection))))))
 
 (deftest stage-selection-falls-back-for-cross-cutting-and-unknown-inputs
