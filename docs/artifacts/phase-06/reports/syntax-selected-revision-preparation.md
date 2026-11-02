@@ -22,6 +22,9 @@ The isolated current composition is:
   b00eed074ace0d52ed47570f311d8ac6ab0e00b3;
 - original PR580 ancestry is preserved only as historical review input.
 
+The current branch adds a focused lifecycle-error repair on top of that
+additive port; the coordinator binds its exact final head/tree at composition.
+
 ## Additive controls
 
 The port adds only the following source-owned preparation and control paths:
@@ -57,19 +60,26 @@ not compiler input quotas or project accounting.
 
 ## Focused evidence
 
-The compiler-free panels pass 39 tests / 1,554 assertions:
+The compiler-free panels pass 42 tests / 1,566 assertions:
 
 - selected Git configuration: 4 / 37;
 - selected C3 acceptance inputs: 6 / 28;
-- request preparation and current runner binding: 4 / 51;
+- request preparation and current runner binding: 7 / 63;
 - selected Git lifecycle controls: 12 / 241;
 - parent sequence and failure custody: 13 / 1,197.
 
-These tests use fake owner/runner/lock/watchdog ports and inert filesystem
-fixtures. They do not load Bootstrap, call a genuine compiler or Reader,
-start a child, invoke Git, acquire a broker or lock, or run native C/host
-operations. Genuine selected C3 producer acceptance remains open and must be
-run only after the current PR512/PR544 owner composition supplies its
+The request controller now walks caught Throwable causes with an identity
+visited set (no arbitrary depth quota), restores interruption for wrapped
+`InterruptedException` causes, and lets a fatal finalization failure dominate
+an ordinary wait failure while retaining the ordinary failure as suppressed
+evidence. Raw process/token ownership and finalization-before-release ordering
+remain unchanged.
+
+These 42 tests / 1,566 assertions use fake owner/runner/lock/watchdog ports and
+inert filesystem fixtures. They do not load Bootstrap, call a genuine compiler
+or Reader, start a child, invoke Git, acquire a broker or lock, or run native
+C/host operations. Genuine selected C3 producer acceptance remains open and
+must be run only after the current PR512/PR544 owner composition supplies its
 validated source handoff.
 
 ## Conformance and nonclaims

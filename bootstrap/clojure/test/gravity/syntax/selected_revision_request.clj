@@ -23,6 +23,33 @@
     retained-process-handles [[owned]] process-result [[process options] [process options owned]]
     finalize-owned-process! [[owned] [owned options]]})
 
+(defn- cause-member
+  "Find a cause matching predicate without arbitrary depth limits.
+  Throwable cause chains are hostile inputs at this boundary, so identity
+  tracking stops a cyclic chain without confusing equal values."
+  [error predicate]
+  (loop [candidate error seen (java.util.IdentityHashMap.)]
+    (cond
+      (nil? candidate) nil
+      (.containsKey seen candidate) nil
+      :else (do
+              (.put seen candidate true)
+              (if (predicate candidate)
+                candidate
+                (recur (.getCause ^Throwable candidate) seen))))))
+
+(defn- interrupted-cause [error]
+  (cause-member error #(instance? InterruptedException %)))
+
+(defn- fatal-cause [error]
+  (cause-member error #(or (instance? ThreadDeath %)
+                           (instance? VirtualMachineError %)
+                           (instance? LinkageError %))))
+
+(defn- restore-interrupt! [error]
+  (when (interrupted-cause error)
+    (.interrupt (Thread/currentThread))))
+
 (defn runner-binding! [root]
   (let [input (h/file-input! (str (io/file root runner-relative)))
         _ (h/ensure! (= runner-source-sha (:sha256 input)) :public-runner-source-drift)
@@ -64,23 +91,45 @@
   tracked finalization and C3-specific creation coverage remain separate."
   [ports process owned options]
   (let [primary (atom nil) finalization (atom nil)
+        interrupted (atom false)
         result (try
                  (let [result ((:wait ports) process options owned)]
                    {:process-result result :retained-token owned
                     :raw-handles ((:handles ports) owned)})
                  (catch Throwable error
                    (reset! primary error)
-                   (when (instance? InterruptedException error) (.interrupt (Thread/currentThread)))
+                   (when (interrupted-cause error)
+                     (reset! interrupted true)
+                     (restore-interrupt! error))
                    (throw error))
                  (finally
                    (try (reset! finalization ((:finalize ports) owned))
                         (catch Throwable error
-                          (when (instance? InterruptedException error) (.interrupt (Thread/currentThread)))
-                          (if-let [original @primary]
-                            (when-not (identical? original error) (.addSuppressed ^Throwable original error))
-                            (throw error)))
+                          (when (interrupted-cause error)
+                            (reset! interrupted true)
+                            (restore-interrupt! error))
+                          (let [original @primary
+                                fatal (fatal-cause error)
+                                original-fatal (fatal-cause original)]
+                            (cond
+                              ;; A fatal finalizer failure is the governing
+                              ;; lifecycle failure. Preserve an ordinary wait
+                              ;; failure as suppressed evidence on it.
+                              (and fatal (nil? original-fatal))
+                              (do (when (and original (not (identical? original fatal)))
+                                    (.addSuppressed ^Throwable fatal original))
+                                  (reset! primary fatal)
+                                  (throw fatal))
+                              ;; An already-fatal wait failure remains primary;
+                              ;; ordinary finalization errors are suppressed.
+                              original
+                              (when-not (identical? original error)
+                                (.addSuppressed ^Throwable original error))
+                              ;; No wait failure exists, so finalization owns
+                              ;; the failure and must propagate it.
+                              :else (throw error))))
                         (finally
-                          (when (instance? InterruptedException @primary)
+                          (when @interrupted
                             (.interrupt (Thread/currentThread)))))))]
     (assoc result :finalization @finalization :release-authorized? false
                   :global-descendant-coverage :unknown)))

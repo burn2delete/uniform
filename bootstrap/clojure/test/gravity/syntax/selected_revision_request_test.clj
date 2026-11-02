@@ -114,3 +114,68 @@
           (when (instance? InterruptedException original)
             (is interrupted?)))
         (finally (Thread/interrupted))))))
+
+(deftest fatal-finalization-dominates-ordinary-wait-and-preserves-it
+  (let [wait-error (java.io.IOException. "ordinary wait failure")
+        fatal (LinkageError. "finalizer linkage failure")
+        process (Object.) owned (Object.) finalized (atom nil)
+        error (try
+                (request/wait-C3-child!
+                 {:wait (fn [p _ token]
+                          (is (identical? process p))
+                          (is (identical? owned token))
+                          (throw wait-error))
+                  :handles (fn [_] [])
+                  :finalize (fn [token]
+                              (reset! finalized token)
+                              (throw fatal))}
+                 process owned {})
+                nil
+                (catch Throwable caught caught))]
+    (is (identical? fatal error))
+    (is (identical? owned @finalized))
+    (is (some #(identical? wait-error %) (.getSuppressed ^Throwable fatal)))
+    (is (not (some #(identical? fatal %) (.getSuppressed ^Throwable fatal))))))
+
+(deftest wrapped-interruption-in-wait-or-finalization-restores-the-flag
+  (doseq [phase [:wait :finalize]]
+    (let [wrapped (ex-info (str phase " interruption")
+                           {:phase phase}
+                           (InterruptedException. "wrapped interruption"))
+          process (Object.) owned (Object.)]
+      (try
+        (let [[error interrupted?]
+              (try
+                (request/wait-C3-child!
+                 {:wait (fn [_ _ _]
+                          (if (= :wait phase)
+                            (throw wrapped)
+                            {:completed? true}))
+                  :handles (fn [_] [:raw-handle])
+                  :finalize (fn [_]
+                              (if (= :finalize phase)
+                                (throw wrapped)
+                                {:tracked-complete? true}))}
+                 process owned {})
+                nil
+                (catch Throwable caught
+                  [caught (.isInterrupted (Thread/currentThread))]))]
+          (is (identical? wrapped error))
+          (is interrupted?))
+        (finally (Thread/interrupted))))))
+
+(deftest cyclic-cause-chain-terminates-without-a-depth-quota
+  (let [first-error (Exception. "first")
+        second-error (Exception. "second")]
+    (.initCause first-error second-error)
+    (.initCause second-error first-error)
+    (let [error (try
+                  (request/wait-C3-child!
+                   {:wait (fn [& _] (throw first-error))
+                    :handles (fn [_] [])
+                    :finalize (fn [_] {:tracked-complete? true})}
+                   (Object.) (Object.) {})
+                  nil
+                  (catch Throwable caught caught))]
+      (is (identical? first-error error))
+      (is (not (.isInterrupted (Thread/currentThread)))))))
