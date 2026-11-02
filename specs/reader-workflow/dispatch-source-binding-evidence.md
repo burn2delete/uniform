@@ -104,3 +104,20 @@ authority, release readiness, self-hosting completion, seed retirement, or
 roadmap credit beyond whatever an independent integration review explicitly
 records. No admission pin was renewed, and no GitHub, push, merge, native, or
 restricted operation was performed by this repair.
+
+## Current-main composition refresh
+
+For the final current-main review, the branch was normally merged with main at
+`5dfe15c9fad14e5abebf23bf1e645bf9154a2e1e`, tree
+`643afe5f3b00918fc3de76f2855294481a09b505`. The composed candidate is merge
+commit `95fa0579e00de24ee74851f548a1a43e4077e8fe`, tree
+`63e45eed928eacb324bf907d1db2f3777378ae98`, with a clean worktree.
+
+The intervening main changes are disjoint C8/C7 effect-checker quota-removal
+and traversal changes plus their test/report paths. They do not alter any of
+the five Reader implementation/test paths or this receipt's semantic claims.
+The final comparison against current main contains exactly the five Reader
+source/test paths and this receipt. Repeated focused validation on the exact
+composition remains 18 tests and 167 assertions with zero failures or errors;
+the governance, document, roadmap, language-boundary, diff, and pinned
+changed-file lint checks also pass, with zero blocking lint warnings/errors.
