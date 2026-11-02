@@ -14,7 +14,7 @@ copied here. In particular, this port does not replace the current Reader to
 Syntax handoff, reintroduce a second DATA/export authority, or route Macro or
 Reader products implicitly.
 
-The isolated current composition is:
+The historical source-port checkpoints are:
 
 - base d97539762108d7e44024164c61bb120044ef684b, tree
   093a9c284a1e2fc4dd360fa677e43f7a0512dfba;
@@ -22,8 +22,14 @@ The isolated current composition is:
   b00eed074ace0d52ed47570f311d8ac6ab0e00b3;
 - original PR580 ancestry is preserved only as historical review input.
 
-The current branch adds a focused lifecycle-error repair on top of that
-additive port; the coordinator binds its exact final head/tree at composition.
+The actual current integration base is d975's descendant
+2d0844f8f7f21321d920b9245341a2b98adc642e, tree
+c5f5941ca3db4ce38695f870276e1b345a323339. The normal composition checkpoint
+is 9766a2c55b195108de17c83e4974253e3c6ea56d, tree
+35434551372da527ae032b22833af47ace5d9d9c, with current main as its second
+parent and the lifecycle repair as its first parent. This metadata clarification
+does not alter source/test blobs; the final receipt binds the resulting
+head/tree externally rather than self-referencing this report.
 
 ## Additive controls
 
