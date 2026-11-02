@@ -142,26 +142,29 @@ gates. Neither JVM nor JS slice acceptance or CI transfers to this candidate.
 
 ## Current integration composition
 
-Main advanced through PR 446's retained native-DATA/module tests and related
-documentation. The current integration base is
-a958fd45c5bc2672fc0848be251722ec30e1a8a5, tree
-c9e23fe670827632abb4cf943a02063a3d3ad2fd. Source composition
-bac63469be83dd9c127d92da45edfa2db9030c56 has tree
-dea1579b712cfdfca8535ed695e1e49a5d2ac91c. All C production and test files
-are unchanged by this incoming main delta.
+Main includes PR 446's retained native-DATA/module regressions and PR 776's
+macro quota removal and explicit current-source execution. The current
+integration base is e766928c0ef6bb5c5b70b7e8feeae11e7b9814be, tree
+54144b7b739ea81f8b029b3aec22f360720b1840. Source composition
+5033a45d9a2ee92eca0d4c66fa21e8a559923adc has tree
+d2b3cd30d3ab088b20bd166b6683152a0cb7bcc7. The incoming main changes
+no C production or pipeline-test files. No macro implementation is credited
+to this slice.
 
-Fresh before capture runs that exact clean main in this same Analysis
-checkout. Its process ends before restoring the extracted composition. Four
-complete data records AND original serialization agree again, with actual
-source/plan and C/header byte hashes recomputed. Earlier records are preserved
-at /tmp/uniform-c-compile-sequencing-evidence-base634-history. No native
-broker/toolchain or compiler-call body is probed; sequencing units remain
-anonymous-operation tests.
+Fresh before capture runs this exact clean main in this same Analysis checkout
+without added baseline fixtures. Its process ends before restoring the extracted
+composition. Four complete data records AND original serialization agree again,
+with actual source/plan and C/header byte hashes recomputed. Previous contexts
+remain at /tmp/uniform-c-compile-sequencing-evidence-base634-history and
+/tmp/uniform-c-compile-sequencing-evidence-basea958-history. No native broker,
+compiler-call body, process, staging handle, toolchain, Gate A/B or release path
+is probed; sequencing units remain anonymous-operation tests.
 
-Fresh backend tests pass 43/937 and language/ownership 47/1154. Contextual
-lint against this exact base covers three paths with zero warnings and zero
-blockers; receipts are archived at
-/tmp/uniform-c-compile-sequencing-lint-maina958. Source/type-tag reconstruction,
-contract validators, renewed independent exact acceptance, own CI/artifacts
-and immediate exact clean current-main preflight must bind this composition;
-the earlier 38e37680/base634 acceptance and CI are historical.
+Fresh backend tests pass 43/937 and language/ownership 47/1154. Contextual lint
+against this exact base covers three paths with zero warnings and zero blockers;
+receipts are archived at /tmp/uniform-c-compile-sequencing-lint-maine766. Both
+whole production files and all four type tags reconstruct from this base.
+Contract validators, renewed independent exact acceptance, candidate-owned
+CI/artifacts and immediate exact clean current-main preflight must bind this
+composition. Prior 38e37680/base634 and 12a6ea62/basea958 acceptance and CI are
+historical and confer no current integration credit.
