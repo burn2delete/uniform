@@ -7,10 +7,14 @@
 
 (def output "target/ci")
 (def runtime-deps "{:deps {org.clojure/clojure {:mvn/version \"1.12.5\"}}}")
-(def semantic-modes #{"static" "contracts" "bootstrap" "macro" "resolution" "checked-core-runtime"})
+(def semantic-modes #{"static" "contracts" "bootstrap" "macro" "resolution"
+                      "resolution-pipeline" "resolution-unmetered"
+                      "resolution-invocation-selection" "checked-core-runtime"})
 (def always-pr-modes #{"static" "contracts"})
 (def stage-order ["bootstrap" "macro" "resolution" "checked-core-runtime"])
 (def leaf-modes #{"leaves-portable" "leaves-darwin"})
+(def resolution-modes #{"resolution" "resolution-pipeline" "resolution-unmetered"
+                        "resolution-invocation-selection"})
 
 ;; These are the existing owner boundaries exposed by the CI matrix.  Keep
 ;; this table deliberately small: an unlisted path is cross-cutting and must
@@ -414,9 +418,12 @@
        (not (contains? #{"static" "contracts"} mode))))
 
 (defn skip-for-stage-selection? [mode selection]
-  (and (= :selected (:kind selection))
-       (contains? semantic-modes mode)
-       (not (contains? (:modes selection) mode))))
+  (let [logical-mode (if (contains? resolution-modes mode)
+                       "resolution"
+                       mode)]
+    (and (= :selected (:kind selection))
+         (contains? semantic-modes mode)
+         (not (contains? (:modes selection) logical-mode)))))
 
 (defn selection-error-result [mode selection]
   (when (and (= "static" mode) (:selection-error selection))
@@ -716,6 +723,15 @@
                             "--namespace" "gravity.resolution.pipeline-test"
                             "--namespace" "gravity.self-hosting.sh06-unmetered-resolution-test"
                             "--namespace" "gravity.self-hosting.sh06-invocation-selection-test")]]
+    "resolution-pipeline" [["resolution-pipeline" 600
+                            (command "2g" "-M:dev-test"
+                                     "--namespace" "gravity.resolution.pipeline-test")]]
+    "resolution-unmetered" [["resolution-unmetered" 600
+                             (command "2g" "-M:dev-test"
+                                      "--namespace" "gravity.self-hosting.sh06-unmetered-resolution-test")]]
+    "resolution-invocation-selection" [["resolution-invocation-selection" 600
+                                        (command "2g" "-M:dev-test"
+                                                 "--namespace" "gravity.self-hosting.sh06-invocation-selection-test")]]
     "checked-core-runtime" [["checked-core-runtime-regression" 180
                              (command "2g" "-M:dev-test"
                                       "--namespace" "gravity.checked-core.pipeline-test")]
