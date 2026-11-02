@@ -105,7 +105,7 @@
                                     :authenticated-envelope-descriptor
                                     :source-revision :source-byte-count]))
         snapshot (try
-                   (c2-pass-cache/bounded-source-snapshot! source-path)
+                   (c2-pass-cache/source-snapshot! source-path)
                    (catch Exception error
                      (sh06-resolution-boundary-fail!
                       "C5-UNRESOLVED" source-path phase

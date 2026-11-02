@@ -28,8 +28,7 @@
     :schema-version 1,
     :module-artifacts []}))
  ([source-path sh05-artifact legacy? context module-inputs]
-  (with-sh06-resolution-transport-bounds
-   (let
+  (let
     [contextual?
      (not= :gravity.bootstrap/legacy context)
      _
@@ -161,4 +160,4 @@
       source-before
       c2-artifact
       legacy?))
-    artifact-with-envelope))))
+    artifact-with-envelope)))
