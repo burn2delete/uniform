@@ -1,9 +1,8 @@
 (ns platform-task-projection
   "Project existing target projects and full-product scope from one task ledger."
-  (:require [clojure.string :as str]))
-
-(load-file "tools/task_projection.clj")
-(load-file "tools/task_projection_links.clj")
+  (:require [clojure.string :as str]
+            [task-projection :as task-projection]
+            [task-projection-links :as task-projection-links]))
 (def task-path "specs/platform-workflow/tasks.md")
 (def roadmap-path "docs/component-roadmaps/platform.md")
 (def project-order ["hardware" "firmware" "kernel" "devices"])

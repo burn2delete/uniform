@@ -1,8 +1,8 @@
 (ns task-projection-links
   "Document-relative task links and bounded repository output writes."
-  (:require [clojure.string :as str] [clojure.java.io :as io]))
-
-(load-file "tools/task_projection.clj")
+  (:require [clojure.string :as str]
+            [clojure.java.io :as io]
+            [task-projection :as task-projection]))
 
 (def link-pattern #"\[([^\[\]<>!\\\n]+)\]\(([^\s()<>\"`\\]+)\)")
 (defn fail [component message] (task-projection/fail (str component " " message)))

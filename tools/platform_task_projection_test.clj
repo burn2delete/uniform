@@ -1,5 +1,6 @@
-(load-file "tools/platform_task_projection.clj")
-(require '[clojure.test :refer [deftest is run-tests]] '[clojure.string :as str]
+(require '[platform-task-projection]
+         '[task-projection]
+         '[clojure.test :refer [deftest is run-tests]] '[clojure.string :as str]
          '[clojure.set :as set]
          '[clojure.java.io :as io])
 (def tasks (slurp platform-task-projection/task-path))
