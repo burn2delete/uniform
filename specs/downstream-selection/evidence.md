@@ -83,6 +83,17 @@ owner boundary. No full C13/C14/B1 source composition, native C compiler,
 restricted process route, broker admission, release, self-hosting, or v3
 product execution is claimed.
 
+After that evidence, main advanced with #577. Its PMK cycle edit shortened
+`bootstrap/gravity/p15_s23/emitter.gravity` to 1,529,537 bytes while
+`gravity.c6-c10.source-contract/current-expression-program` still requires
+1,529,728 bytes. On the exact latest base, the same genuine producer and
+four-argument selector controls fail closed at `P15S23Q002` with
+`:current-expression-source-regular-file`, before C6/C11 construction
+(`/tmp/uniform-pr552-v2-c11-public-after-577.log`,
+`/tmp/uniform-pr552-v2-c11-packet-selector-after-577.log`). This is a new
+main-side emitter-contract reconciliation issue, not a reason for this
+consumer to renew a source pin or claim packet/backend acceptance.
+
 ## Validation record
 
 The focused selector suite ran in a fresh JVM against the pinned source
@@ -95,7 +106,8 @@ owner is deliberately stopped at an injected boundary, so it is not packet
 or backend acceptance evidence
 (`/tmp/uniform-pr552-v2-c11-packet-selector-after-560.log`). The former 5ecc C6 mismatch log remains an
 immutable historical nonpass for that older base, not current acceptance
-status. The earlier 69d/4df genuine runs are superseded-base evidence only.
+status on the #560 base. The #577-base failures above are the current
+nonpass; the earlier 69d/4df genuine runs are superseded-base evidence only.
 The language-boundary gate,
 document/roadmap validators, `git diff --check`, and current-main composition
 checks remain separate evidence. Any existing broader C13/C14/B1 ownership or
