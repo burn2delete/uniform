@@ -22,11 +22,17 @@ migration, release, self-hosting, or seed-retirement authority.
   `e9342cc705ae832c5551867f7b000c6f0f86bddf`
 - Prior composition tree before this refresh (historical):
   `0c13cf9c43c52664bcc8c171dddf82e9c5cac378`
-- Current composition main base: `2f785196707cee629e813d3fb435be82804de233`
-- Current composition main base tree: `1d3557547b8d83398e6320139646e0f9784825fb`
-- Current composition merge: `6b2248927604fa9972774ccc6f35b59ae54fa913`
-- Current composition merge tree before this report update:
+- Previous current composition main base (historical):
+  `2f785196707cee629e813d3fb435be82804de233`
+- Previous current composition merge (historical):
+  `6b2248927604fa9972774ccc6f35b59ae54fa913`
+- Previous current composition tree before this refresh (historical):
   `c69b749f2a5834a6e21e81e50106be16f192006f`
+- Current composition main base: `43dbdd419c643df42454db42c2cf1b75dea0e292`
+- Current composition main base tree: `d48baf6d2dfc99ae94f5438a7e6f729d8b8db7b8`
+- Current composition merge: `d24d5da563e9929580f5267bd744be4c3f123d49`
+- Current composition merge tree before this report update:
+  `7a3a2345601d2ff079578f82b86569fac84a5650`
 
 The ancestry merge uses the current-main tree and records the original PR as a
 parent only. The PR's old `effects.gravity` production tree is not replayed.
@@ -168,14 +174,18 @@ negatives remain.
 ## Final composition check
 
 The selective port was normally merged with current main at
-`2f785196707cee629e813d3fb435be82804de233` (tree
-`1d3557547b8d83398e6320139646e0f9784825fb`) in a clean reusable checkout.
-The merge commit is `6b2248927604fa9972774ccc6f35b59ae54fa913`; it had no
-conflicts and did not replay the original PR tree. Focused custody, runner
-UTF-8/capture, Effects adapter, Reader571 dispatch, vector, boundary,
-document, and roadmap checks were rerun on the composed tree. The broader
-SH-01 wiring suite still reports its existing standalone ownership/dependency-
-record failure; that remains a nonpass and is not relabeled as PR533 evidence.
+`43dbdd419c643df42454db42c2cf1b75dea0e292` (tree
+`d48baf6d2dfc99ae94f5438a7e6f729d8b8db7b8`) in a clean reusable checkout.
+The merge commit is `d24d5da563e9929580f5267bd744be4c3f123d49`; it had no
+conflicts and did not replay the original PR tree. This main refresh changes
+the full `bootstrap/clojure/src` dependency-root identity through the Core/C11
+handoff files and load order, but leaves the SH-01 controller and custody test
+paths unchanged; the existing 17-test/288-assertion custody receipt is
+therefore conserved, not relabeled as a fresh full-source hash. Focused Reader
+571, Effects adapter, boundary, document, and roadmap checks remain applicable;
+the broader SH-01 wiring suite still reports its existing standalone
+ownership/dependency-record failure, which remains a nonpass and is not
+relabeled as PR533 evidence.
 Current-main changes outside the twelve listed port paths are inherited from
 the composition parent and are not attributed to PR533.
 
