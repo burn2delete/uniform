@@ -25,6 +25,13 @@
 (defn- source-path [extension]
   (.getCanonicalPath
    (io/file (str "bootstrap/clojure/fixtures/self-hosting/sh-04/accepted/source-syntax" extension))))
+(defn- syntax-source-path []
+  (private-operation 'sh04-syntax-resolve-source-path))
+(defn- syntax-invocation [selected-path]
+  (assoc (invocation)
+         :syntax-source-selection
+         {:schema :gravity/sh04-development-syntax-selection-v1
+          :source-path selected-path}))
 (defn- request [path text]
   {:source-path path :source-text text
    :project-context (bootstrap/reader-project-context-for-source path)
@@ -218,6 +225,70 @@
                                       (fn [& _] (:plan bad-plan)))))]
       (is (= "C3-ID" (:id (ex-data error))))
       (is (= [:pinned-syntax-plan-and-functions] (:missing-fields (ex-data error)))))))
+
+(deftest development-current-syntax-binding-is-explicit-and-unadmitted
+  (let [path (source-path ".gravity")
+        selected-path (syntax-source-path)
+        invocation (syntax-invocation selected-path)
+        binding (bootstrap/sh04-syntax-current-binding! path invocation)
+        identity-keys [:plan-semantic-hash
+                       :functions-semantic-hash
+                       :function-count
+                       :function-names-hash
+                       :function-shapes-hash
+                       :public-function-hashes
+                       :public-function-shapes]
+        artifact @gravity-product]
+    (is (= :gravity/sh04-development-syntax-plan-binding-v1 (:artifact binding)))
+    (is (= :development-current (:source-mode binding)))
+    (is (= :development-unadmitted (:revision-status binding)))
+    (is (= :development-unadmitted (:admission-status binding)))
+    (is (= :development-current (:source-authority binding)))
+    (is (= selected-path (:selected-source-path binding)))
+    (is (= selected-path (:source-path binding)))
+    (is (= (:source-content-hash binding)
+           (get-in binding [:plan :source :sha256])))
+    (is (= (:source-byte-count binding)
+           (get-in binding [:plan :source :byte-count])))
+    (is (= (select-keys binding identity-keys)
+           (:program-identity binding)))
+    (is (true? (syntax/reader-products-authentic?
+                (:syntax-object-stream artifact)
+                (:c2-reader-artifact artifact)
+                (:gravity-syntax-boundary artifact)
+                invocation
+                (reader-operations))))))
+
+(deftest development-current-syntax-rejects-selection-mode-and-source-tampering
+  (let [path (source-path ".gravity")
+        selected-path (syntax-source-path)
+        valid (syntax-invocation selected-path)
+        wrong-path (syntax-invocation (source-path ".qst"))
+        wrong-mode (assoc valid :authenticated-envelope-options {:source :pinned})
+        wrong-schema (assoc-in valid [:syntax-source-selection :schema]
+                               :gravity/sh04-unknown-selection-v1)
+        operations (runtime-operations)
+        read-current (:sh04-syntax-read-current-source! operations)
+        tampered-operations
+        (assoc operations :sh04-syntax-read-current-source!
+               (fn [request-source source-path]
+                 (assoc (read-current request-source source-path)
+                        :source-content-hash "sha256:substituted")))]
+    (doseq [[candidate expected-id]
+            [[wrong-path "C3-ID"]
+             [wrong-mode "C2-HASH"]
+             [wrong-schema "C3-ID"]]]
+      (let [error (caught #(bootstrap/sh04-syntax-current-binding! path candidate))]
+        (is (= expected-id (:id (ex-data error))))))
+    (let [error (caught #(syntax/current-plan-binding!
+                          path
+                          (syntax/plan-binding-cache tampered-operations)
+                          tampered-operations
+                          :development-current
+                          selected-path))]
+      (is (= "C3-ID" (:id (ex-data error))))
+      (is (= [:current-syntax-plan-and-functions]
+             (:missing-fields (ex-data error)))))))
 
 (deftest pinned-source-refuses-real-byte-length-and-content-drift
   (let [path (source-path ".gravity") operations (runtime-operations)

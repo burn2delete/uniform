@@ -44,12 +44,15 @@
    :operation-inputs [:sh04-syntax-registered-literal-fail!],
    :returns :registered-occurrence-registry},
   current-plan-binding!
-  {:arglists ([request-source binding-cache operations]),
+  {:arglists
+   ([request-source binding-cache operations]
+    [request-source binding-cache operations source-mode selected-source-path]),
    :operation-inputs
    [:sh04-syntax-boundary-fail!
     :sh04-syntax-plan-identities
-    :sh04-syntax-read-pinned-source!],
-   :returns :gravity/sh04-pinned-syntax-plan-binding},
+    :sh04-syntax-read-pinned-source!
+    :sh04-syntax-read-current-source!],
+   :returns :gravity/sh04-syntax-plan-binding},
   form-index
   {:arglists
    ([c2-artifact transaction operations canonical-operations]),
@@ -343,7 +346,9 @@
     :sh03-reader-verifier],
    :returns :reader-semantic-binding-and-revision},
   build-plan-binding!
-  {:arglists ([request-source operations]),
+  {:arglists
+   ([request-source operations]
+    [request-source operations source-mode selected-source-path]),
    :operation-inputs
    [:c-backend-canonical-value
     :c-backend-stage2-plan-emitter-source-rule!
@@ -358,8 +363,9 @@
     :sh04-syntax-public-function-hashes
     :sh04-syntax-public-function-shapes
     :sh04-syntax-read-pinned-source!
+    :sh04-syntax-read-current-source!
     :sha256-hex],
-   :returns :gravity/sh04-pinned-syntax-plan-binding},
+   :returns :gravity/sh04-syntax-plan-binding},
   verify
   {:arglists ([source-path artifact operations]), :returns :complete},
   current-reader-product-binding
@@ -423,6 +429,7 @@
   [:sh04-syntax-boundary-fail!
    :sh04-syntax-resolve-source-path
    :sh04-syntax-read-pinned-source!
+   :sh04-syntax-read-current-source!
    :sh04-syntax-plan-identities
    :sh04-syntax-build-binding!
    :sh04-syntax-execute!
@@ -991,7 +998,7 @@
            ae-options
            (conj ae-options)))
          binding
-         (sh04-syntax-current-binding! source-path)
+         (sh04-syntax-current-binding! source-path invocation)
          requests
          (:stream-digest-requests gravity-boundary)
          digests
@@ -1333,6 +1340,33 @@
    :source-byte-count (alength bytes),
    :source-content-hash content-hash}))
 
+(defn-
+ read-plan-source!
+ [request-source operations source-mode selected-source-path]
+ (case
+  source-mode
+  :pinned
+  (read-pinned-plan-source! request-source operations)
+  :development-current
+  (let
+   [reader
+    (:sh04-syntax-read-current-source! operations)]
+   (when-not
+    (ifn? reader)
+    ((:sh04-syntax-boundary-fail! operations)
+     "C3-ID"
+     request-source
+     :current-syntax-source-reader
+     reader
+     {}))
+   (reader request-source selected-source-path))
+  ((:sh04-syntax-boundary-fail! operations)
+   "C3-ID"
+   request-source
+   :known-syntax-source-mode
+   source-mode
+   {:allowed-source-modes [:pinned :development-current]})))
+
 (defn
  plan-identities
  [plan
@@ -1371,25 +1405,37 @@
 
 (defn
  build-plan-binding!
- [request-source
-  {:keys
-   [c-backend-canonical-value
-    c-backend-stage2-plan-emitter-source-rule!
-    p15-s23-stage2-compiler-artifact-plan
-    sh04-syntax-boundary-fail!
-    sh04-syntax-expected-function-count
-    sh04-syntax-expected-function-names-hash
-    sh04-syntax-expected-function-shapes-hash
-    sh04-syntax-expected-functions-semantic-hash
-    sh04-syntax-expected-plan-semantic-hash
-    sh04-syntax-plan-identities
-    sh04-syntax-public-function-hashes
-    sh04-syntax-public-function-shapes
-    sh04-syntax-read-pinned-source!
-    sha256-hex]}]
+ ([request-source operations]
+  (build-plan-binding! request-source operations :pinned nil))
+ ([request-source
+   {:keys
+    [c-backend-canonical-value
+     c-backend-stage2-plan-emitter-source-rule!
+     p15-s23-stage2-compiler-artifact-plan
+     sh04-syntax-boundary-fail!
+     sh04-syntax-expected-function-count
+     sh04-syntax-expected-function-names-hash
+     sh04-syntax-expected-function-shapes-hash
+     sh04-syntax-expected-functions-semantic-hash
+     sh04-syntax-expected-plan-semantic-hash
+     sh04-syntax-plan-identities
+     sh04-syntax-public-function-hashes
+     sh04-syntax-public-function-shapes
+     sh04-syntax-read-current-source!
+     sh04-syntax-read-pinned-source!
+     sha256-hex]
+    :as operations}
+   source-mode
+   selected-source-path]
  (let
   [source
-   (sh04-syntax-read-pinned-source! request-source)
+   (read-plan-source!
+    request-source
+    operations
+    source-mode
+    selected-source-path)
+   development-current?
+   (= :development-current source-mode)
    emitter
    (:emitter
     (c-backend-stage2-plan-emitter-source-rule!
@@ -1402,43 +1448,49 @@
     (:source-text source))
    identities
    (sh04-syntax-plan-identities raw-plan)]
-  (when-not
-   (and
-    (= :gravity/stage2-compiler-artifact-plan (:kind raw-plan))
-    (true? (:compiler-artifact-plan? raw-plan))
-    (= 'gravity.bootstrap.syntax (get-in raw-plan [:module :module]))
-    (= :meta (get-in raw-plan [:module :profile]))
-    (= :jvm (get-in raw-plan [:module :target]))
-    (= #{} (get-in raw-plan [:module :effects]))
-    (= #{} (get-in raw-plan [:module :capabilities]))
-    (= :safe (get-in raw-plan [:module :safety]))
-    (=
-     sh04-syntax-expected-plan-semantic-hash
-     (:plan-semantic-hash identities))
-    (=
-     sh04-syntax-expected-functions-semantic-hash
-     (:functions-semantic-hash identities))
-    (=
-     sh04-syntax-expected-function-count
-     (:function-count identities))
-    (=
-     sh04-syntax-expected-function-names-hash
-     (:function-names-hash identities))
-    (=
-     sh04-syntax-expected-function-shapes-hash
-     (:function-shapes-hash identities))
-    (=
-     sh04-syntax-public-function-hashes
-     (:public-function-hashes identities))
-    (=
-     sh04-syntax-public-function-shapes
-     (:public-function-shapes identities)))
-   (sh04-syntax-boundary-fail!
+  (let [common?
+        (and
+         (= :gravity/stage2-compiler-artifact-plan (:kind raw-plan))
+         (true? (:compiler-artifact-plan? raw-plan))
+         (= 'gravity.bootstrap.syntax (get-in raw-plan [:module :module]))
+         (= :meta (get-in raw-plan [:module :profile]))
+         (= :jvm (get-in raw-plan [:module :target]))
+         (= #{} (get-in raw-plan [:module :effects]))
+         (= #{} (get-in raw-plan [:module :capabilities]))
+         (= :safe (get-in raw-plan [:module :safety]))
+         (= (get-in raw-plan [:source :sha256])
+            (:source-content-hash source)))
+        identity?
+        (if development-current?
+         (= sh04-syntax-public-function-shapes
+            (:public-function-shapes identities))
+         (and
+          (= sh04-syntax-expected-plan-semantic-hash
+             (:plan-semantic-hash identities))
+          (= sh04-syntax-expected-functions-semantic-hash
+             (:functions-semantic-hash identities))
+          (= sh04-syntax-expected-function-count
+             (:function-count identities))
+          (= sh04-syntax-expected-function-names-hash
+             (:function-names-hash identities))
+          (= sh04-syntax-expected-function-shapes-hash
+             (:function-shapes-hash identities))
+          (= sh04-syntax-public-function-hashes
+             (:public-function-hashes identities))
+          (= sh04-syntax-public-function-shapes
+             (:public-function-shapes identities))))
+        valid?
+        (and common? identity?)]
+   (when-not valid?
+    (sh04-syntax-boundary-fail!
     "C3-ID"
     request-source
-    :pinned-syntax-plan-and-functions
+    (if development-current?
+     :current-syntax-plan-and-functions
+     :pinned-syntax-plan-and-functions)
     identities
-    {}))
+    {:source-mode source-mode,
+     :source-path (:source-path source)}))
   (let
    [authenticated-plan-base
     (assoc-in
@@ -1456,52 +1508,128 @@
    (merge
     source
     identities
-    {:artifact :gravity/sh04-pinned-syntax-plan-binding,
-     :status :complete,
-     :semantic-authority :gravity-source,
-     :compiled-by :clojure-stage0-seed,
-     :executed-by :clojure-stage2-generic-rule-runner,
-     :generic-bridge-residual? true,
-     :self-hosted? false,
-     :plan plan}))))
+    (cond->
+     {:artifact
+      (if development-current?
+       :gravity/sh04-development-syntax-plan-binding-v1
+       :gravity/sh04-pinned-syntax-plan-binding),
+      :status :complete,
+      :semantic-authority :gravity-source,
+      :compiled-by :clojure-stage0-seed,
+      :executed-by :clojure-stage2-generic-rule-runner,
+      :generic-bridge-residual? true,
+      :self-hosted? false,
+      :plan plan}
+     development-current?
+     (assoc
+      :source-mode :development-current
+      :revision-status :development-unadmitted
+      :admission-status :development-unadmitted
+      :source-authority :development-current
+      :selected-source-path selected-source-path
+      :program-identity
+      (select-keys
+       identities
+       [:plan-semantic-hash
+        :functions-semantic-hash
+        :function-count
+        :function-names-hash
+        :function-shapes-hash
+        :public-function-hashes
+       :public-function-shapes])))))))))
 
 (defn
  current-plan-binding!
- [request-source
-  binding-cache
-  {:keys
-   [sh04-syntax-boundary-fail!
-    sh04-syntax-plan-identities
-    sh04-syntax-read-pinned-source!]}]
- (let
-  [fresh
-   (sh04-syntax-read-pinned-source! request-source)
-   binding
-   @binding-cache
-   identities
-   (sh04-syntax-plan-identities (:plan binding))]
-  (when-not
-   (and
-    (= (:source-byte-count fresh) (:source-byte-count binding))
-    (= (:source-content-hash fresh) (:source-content-hash binding))
-    (=
-     (select-keys
-      binding
-      [:plan-semantic-hash
-       :functions-semantic-hash
-       :function-count
-       :function-names-hash
-       :function-shapes-hash
-       :public-function-hashes
-       :public-function-shapes])
-     identities))
-   (sh04-syntax-boundary-fail!
-    "C3-ID"
-    request-source
-    :fresh-syntax-source-and-plan-binding
-    binding
-    {}))
-  binding))
+ ([request-source binding-cache operations]
+  (current-plan-binding! request-source binding-cache operations :pinned nil))
+ ([request-source
+   binding-cache
+   {:keys
+    [sh04-syntax-boundary-fail!
+     sh04-syntax-plan-identities]
+    :as operations}
+   source-mode
+   selected-source-path]
+  (let
+   [development-current?
+    (= :development-current source-mode)
+    fresh
+    (read-plan-source!
+     request-source
+     operations
+     source-mode
+     selected-source-path)]
+   (if
+    development-current?
+    (let
+     [binding
+      (build-plan-binding!
+       request-source
+       operations
+       source-mode
+       selected-source-path)
+      after
+      (read-plan-source!
+       request-source
+       operations
+       source-mode
+       selected-source-path)
+      identities
+      (sh04-syntax-plan-identities (:plan binding))]
+     (when-not
+      (and
+       (= (select-keys fresh [:source-path :source-byte-count :source-content-hash])
+          (select-keys after [:source-path :source-byte-count :source-content-hash]))
+       (= (select-keys binding
+                       [:source-path :source-byte-count :source-content-hash])
+          (select-keys after [:source-path :source-byte-count :source-content-hash]))
+       (= :development-current (:source-mode binding))
+       (= :development-unadmitted (:revision-status binding))
+       (= :development-current (:source-authority binding))
+       (= (select-keys binding
+                       [:plan-semantic-hash
+                        :functions-semantic-hash
+                        :function-count
+                        :function-names-hash
+                        :function-shapes-hash
+                        :public-function-hashes
+                        :public-function-shapes])
+          identities))
+      (sh04-syntax-boundary-fail!
+       "C3-ID"
+       request-source
+       :current-syntax-source-and-plan-binding
+       binding
+       {:source-mode source-mode,
+        :selected-source-path selected-source-path}))
+     binding)
+    (let
+     [binding
+      @binding-cache
+      identities
+      (sh04-syntax-plan-identities (:plan binding))]
+     (when-not
+      (and
+       (= (:source-byte-count fresh) (:source-byte-count binding))
+       (= (:source-content-hash fresh) (:source-content-hash binding))
+       (=
+        (select-keys
+         binding
+         [:plan-semantic-hash
+          :functions-semantic-hash
+          :function-count
+          :function-names-hash
+          :function-shapes-hash
+          :public-function-hashes
+          :public-function-shapes])
+        identities))
+      (sh04-syntax-boundary-fail!
+       "C3-ID"
+       request-source
+       :fresh-syntax-source-and-plan-binding
+       binding
+       {}))
+     binding)))))
 
 (defn
  execute-plan!
@@ -3008,6 +3136,16 @@
  (let
   [projection-name
    :syntax-product-identities
+   development-current?
+   (= :development-current (:source-mode binding))
+   function-hashes
+   (if development-current?
+    (:public-function-hashes binding)
+    sh04-syntax-public-function-hashes)
+   function-shapes
+   (if development-current?
+    (:public-function-shapes binding)
+    sh04-syntax-public-function-shapes)
    fact-name
    :syntax-product-binding
    identity-name
@@ -3081,12 +3219,12 @@
     :builder-function 'c3-syntax-stream-build-template,
     :builder-semantic-hash
     (get
-     sh04-syntax-public-function-hashes
+     function-hashes
      'c3-syntax-stream-build-template),
     :source-byte-count (:source-byte-count binding),
     :functions-semantic-hash (:functions-semantic-hash binding),
     :source-language :gravity,
-    :function-shapes sh04-syntax-public-function-shapes,
+    :function-shapes function-shapes,
     :owner :sh04-syntax,
     :logical-source-path sh04-syntax-source-relative-path,
     :plan-semantic-hash (:plan-semantic-hash binding)},
@@ -3164,7 +3302,7 @@
      source-path
      invocation))
    binding
-   (sh04-syntax-current-binding! source-path)
+   (sh04-syntax-current-binding! source-path invocation)
    source-unit
    (:source-unit-record c2-artifact)
    semantic-source-id
