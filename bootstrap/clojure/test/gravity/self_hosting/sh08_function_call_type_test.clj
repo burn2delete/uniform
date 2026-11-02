@@ -16481,6 +16481,32 @@
     (is (= :rejected (:status (invoke-c7 'sh08-syin-inferred-call [core node call edge nodes bindings (assoc established :operator old :call :gravity.type/set)]))))
     (is (= :rejected (:status (invoke-c7 'sh08-syin-inferred-call [core node call edge nodes bindings (assoc-in established [:operator :version] :sh08-symbol-set-insertion-v1)]))))
     (is (= :gravity.type/unknown (invoke-c7 'sh08-ft-loop-kernel-normal-join [[finite carrier]])))))
+(deftest sh08-insertion-inferred-call-ignores-unrelated-function-count
+  ;; Normalized helper inputs only; this is not authenticated Core admission.
+  (let [unrelated (mapv (fn [i] {:function-syntax-id (keyword (str "unrelated-" i))
+                                 :function-core-node-id (keyword (str "unrelated-node-" i))})
+                        (range 65471))
+        owner {:function-syntax-id :owner :function-core-node-id :owner-node}]
+    (doseq [[element checker] [[:gravity.type/string 'sh08-ssin-inferred-call]
+                               [:gravity.type/keyword 'sh08-ksin-inferred-call]
+                               [:gravity.type/symbol 'sh08-syin-inferred-call]]]
+      (let [receiver {:kind :gravity.type/set :shape :literal :element-types [element]}
+            {:keys [core node call edge nodes bindings types forms]} (list-prepend-input receiver element)
+            node (assoc-in node [:evaluation :owner-function-syntax-id] :owner)
+            edge (assoc edge :caller-function-syntax-id :owner :caller-function-core-node-id :owner-node)
+            nodes (assoc nodes :call node)
+            core (assoc core :function-records [owner] :call-edges [edge]
+                        :nodes (mapv #(if (= :call (:node-id %)) node %) (:nodes core)))
+            derived (invoke-c7 'sh08-pl-derive [core node call edge nodes bindings types forms])
+            established (assoc types :operator (:descriptor derived) :call (:type derived))
+            expanded (assoc core :function-records (into [owner] unrelated))
+            result (invoke-c7 checker [expanded node call edge nodes bindings established])
+            bad (assoc-in established [:operator :operation] 'forged)]
+        (is (= :accepted (:status derived)))
+        (is (= {:status :accepted} result))
+        (is (not (contains? result :work-count)))
+        (is (= :rejected (:status (invoke-c7 checker [expanded node call edge nodes bindings bad]))))))))
+
 (deftest sh08-symbol-set-carrier-contains-development-kernel
   (let [finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
         k :gravity.type/symbol carrier (:result-type (invoke-c7 (quote sh08-syin-validate-types) [[(finite []) k]]))
