@@ -96,23 +96,25 @@ development feedback only. No native C compiler, restricted process route,
 broker admission, or remote operation was executed for this port.
 
 The two vector controls and the retained shape-control selector pass together
-with 39 assertions. The PMK composition selector remains held at the first
-real downstream source boundary: its five-argument C5 invocation accepts the
-current Reader/macro selection, then SH07's construction path invokes the
-pinned C4 macro reader and rejects the current macro bytes with
-`C4-TRACE` / `:exact-pinned-macro-source` (expected 56488 bytes, observed
-54374, at `bootstrap/gravity/src/gravity/macro.gravity`). This is not the
-earlier C2 Reader identity failure and does not justify a synthetic product,
-an authentication bypass, or a source-owner refresh in this port. The exact
-remaining work is in `sh07-core-construction-dependencies` at
-`bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00897-sh07-core-construction-upstream-guard.clj`:
-its construction dependency map still calls the one-argument pinned C4 macro
-reader and does not propagate the explicit `:macro-source-mode` through the
-SH07 construction/verification path. The smallest owner repair is to thread
-the already authenticated current/pinned source mode through that path while
-leaving the default one-argument pinned behavior unchanged, then add a
-current-mode positive and pinned-mode negative replay control. No C6/C7 or
-public C8 PMK execution is claimed here.
+with 39 assertions. The SH07 owner repair is isolated in commit
+`80501c6d77ca67b617546f3bb5fa30925704f44f` (tree
+`049e566342b5883acfea7b37ffa9370fec2792ca`). Its construction guard derives
+the Macro mode from the authenticated SH06/C4 product, compares any caller
+assertion to that mode, uses the matching fresh SH05 binding/source, and keeps
+the historical pinned default. The full invocation carries
+`:macro-source-mode` through SH07/SH06; the exact SH03/C3 Reader map strips it
+before Reader authentication. Fresh controls cover current-positive,
+pinned-default, current-to-pinned downgrade, source/mode tampering, and fresh
+Macro-binding provenance (2 tests, 9 assertions passed).
+
+The PMK composition selector was retried only after that owner repair. Its
+fresh JVM remained CPU-bound in the C5/C6 construction for approximately 40
+minutes with multi-gigabyte garbage-collection cycles and was stopped cleanly
+without a result. This is an uncompleted host-bound run, not PMK acceptance;
+no synthetic product, authentication bypass, source-owner refresh, C6/C7
+success, or public C8 execution is claimed. The former pinned C4 rejection is
+therefore no longer the current code-level blocker, but the downstream PMK
+composition remains unevidenced pending a bounded permitted run.
 
 The retained-Git/source-custody behavior is already present in the actual
 current SH01 owner: `gravity.build.producer-git-observation` and its
