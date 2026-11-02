@@ -41,7 +41,8 @@
            'downstream-ids 'expected-block-operation-ids 'expected-data-flow 'expected-uses
            'expected-terminator-uses 'expected-terminator-value-uses 'expected-value
            'expected-runtime-check-value 'validate-effect-edge-placement! 'validate-data-flow!
-           'validate-operations! 'validate-fact-tables!}
+           'validate-operations! 'validate-fact-tables! 'validate-module-envelope!
+           'module-keys 'function-keys}
          (set (keys (ns-publics 'gravity.mir)))))
   (let [contract (:gravity/namespace-contract (meta #'mir/validate-cfg!))]
     (is (= (set (keys (:public-api contract)))
@@ -60,6 +61,81 @@
       (is (false? (:authenticates-inputs? contract)))
       (is (false? (:issues-verifier-certificates? contract)))
       (is (some #{:general-cfgs} (:unsupported contract))))))
+
+(defn- envelope-validation-ports []
+  {:entry-parameter! #'b/p15-s23-c11-mir-entry-parameter!
+   :module-keys b/p15-s23-c11-mir-module-keys
+   :function-keys b/p15-s23-c11-mir-function-keys
+   :require! #'b/p15-s23-c11-mir-require!
+   :require-strict-structure! #'b/p15-s23-c11-mir-require-strict-structure!
+   :pass-contract-record #'b/p15-s23-c11-mir-pass-contract-record})
+
+(deftest native-envelope-rules-preserve-real-records-and-refuse-substitution
+  (doseq [{:keys [source checked] emitted :mir} @products]
+    (let [ports (envelope-validation-ports)
+          accepted (mir/validate-module-envelope! ports source checked emitted)
+          function-path [:functions (:entrypoint checked)]]
+      (is (= accepted (b/p15-s23-c11-mir-validate-module-envelope! source checked emitted)))
+      (is (= #{:function :root-node :return-node :return-id} (set (keys accepted))))
+      (is (identical? (get-in emitted function-path) (:function accepted)))
+      (doseq [key [:root-node :return-node]]
+        (is (some #(identical? % (get accepted key)) (:core-nodes checked))))
+      (doseq [[changed id missing]
+              [[(assoc emitted :source-core "forged") "C11-MODULE" :authenticated-c11-module-envelope]
+               [(assoc emitted :extra true) "C11-MODULE" :authenticated-c11-module-envelope]
+               [(assoc emitted :target-independent? false) "C11-MODULE" :authenticated-c11-module-envelope]
+               [(assoc-in emitted (conj function-path :name) 'other) "C11-MODULE" :authenticated-c11-function-envelope]
+               [(assoc-in emitted [:provenance :checked-core-artifact-id] "forged")
+                "C11-ORIGIN" :checked-core-provenance-binding]
+               [(assoc-in emitted [:construction :status] :accepted) "C11-VERIFY" :gravity-owned-mir-construction]
+               [(assoc-in emitted [:pass-execution-record :status] :passed)
+                "C11-VERIFY" :gravity-owned-build-mir-pass-contract-and-pending-execution]
+               [(assoc-in emitted [:b1-preflight :backend-credit?] true) "C11-VERIFY" :bounded-c11-and-b1-scope]
+               [(assoc-in emitted [:scope :release-credit?] true) "C11-VERIFY" :bounded-c11-and-b1-scope]]]
+        (let [rejected (failure #(mir/validate-module-envelope! ports source checked changed))]
+          (is (= id (:id rejected)))
+          (is (= missing (:missing-fact rejected)))
+          (is (= rejected (failure #(b/p15-s23-c11-mir-validate-module-envelope! source checked changed)))))))))
+
+(deftest envelope-schemas-and-wrapper-retain-data-aliases-and-live-owner-vars
+  (is (identical? mir/module-keys b/p15-s23-c11-mir-module-keys))
+  (is (identical? mir/function-keys b/p15-s23-c11-mir-function-keys))
+  (is (set? mir/module-keys))
+  (is (set? mir/function-keys))
+  (let [original b/p15-s23-c11-mir-module-keys]
+    (with-redefs [mir/module-keys #{}]
+      (is (identical? original b/p15-s23-c11-mir-module-keys))))
+  (let [marker (Object.) observed (atom nil)]
+    (with-redefs [mir/validate-module-envelope! (fn [& args] (reset! observed args) marker)]
+      (is (identical? marker (b/p15-s23-c11-mir-validate-module-envelope! :source :core :mir))))
+    (is (= [:source :core :mir] (vec (rest @observed))))
+    (let [expected (envelope-validation-ports) ports (first @observed)]
+      (is (= expected ports))
+      (is (every? true? (map #(identical? (get expected %) (get ports %)) (keys expected))))
+      (let [error (ex-info "late envelope callback" {})
+            caught (with-redefs [b/p15-s23-c11-mir-entry-parameter! (fn [& _] (throw error))]
+                     (try (mir/validate-module-envelope! ports :source :core :mir)
+                          nil (catch clojure.lang.ExceptionInfo e e)))]
+        (is (identical? error caught))))
+    (let [changed #{:changed-schema}]
+      (with-redefs [b/p15-s23-c11-mir-module-keys changed
+                    mir/validate-module-envelope! (fn [& args] (reset! observed args) marker)]
+        (b/p15-s23-c11-mir-validate-module-envelope! :source :core :mir))
+      (is (identical? changed (:module-keys (first @observed)))))))
+
+(deftest envelope-operation-order-is-preserved
+  (let [{:keys [source checked] emitted :mir} (first @products)
+        expected (envelope-validation-ports) events (atom [])
+        observed (into {} (for [[key value] expected]
+                            [key (if (var? value)
+                                   (fn [& args] (swap! events conj key) (apply value args)) value)]))]
+    (is (= (mir/validate-module-envelope! expected source checked emitted)
+           (mir/validate-module-envelope! observed source checked emitted)))
+    (is (= [:entry-parameter! :require! :require! :require! :require-strict-structure!
+            :require! :require-strict-structure! :pass-contract-record :require!
+            :pass-contract-record :require-strict-structure! :require-strict-structure!
+            :require! :require-strict-structure! :require-strict-structure!]
+           @events))))
 
 (defn- fact-validation-ports []
   {:add-runtime-check-facts #'b/p15-s23-c11-mir-add-runtime-check-facts

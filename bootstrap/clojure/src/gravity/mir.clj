@@ -1,12 +1,18 @@
 (ns gravity.mir
-  "Native seed C11 records and control/data-flow validation rules.")
+  "Native seed C11 records, envelopes and relative validation rules.")
 
 (def ^:private namespace-contract
   '{:namespace gravity.mir
-    :contract-boundary :native-seed-c11-control-flow-and-dominance
+    :contract-boundary :native-seed-c11-records-and-relative-validation
     :governing-contracts [D1 D2 D3 D8 D9 C1 C6 C7 C8 C9 C10 C11 C15 BOOT8 TEST2]
     :public-api
-    {validate-fact-tables!
+    {module-keys {:arglists nil :admission :none :value-kind :native-module-key-set}
+     function-keys {:arglists nil :admission :none :value-kind :native-function-key-set}
+     validate-module-envelope!
+     {:arglists ([owner-operations source-path checked-core mir]) :admission :none
+      :operation-inputs [:entry-parameter! :module-keys :function-keys :require! :require-strict-structure! :pass-contract-record]
+      :native-data-only? true :authenticates-inputs? false :issues-verifier-certificates? false}
+     validate-fact-tables!
      {:arglists ([owner-operations source-path checked-core mir]) :admission :none
       :operation-inputs [:add-runtime-check-facts :reindex-fact-table :profile-target-table :capability-proof-table :safety-proof-table :require!]
       :native-data-only? true :authenticates-inputs? false :issues-verifier-certificates? false}
@@ -54,7 +60,8 @@
      valid-dominance-edge? {:arglists ([edge blocks operation-by-id definitions position-by-id join]
                                       [edge blocks operation-by-id definitions position-by-id join parameter]) :admission :none}
      valid-terminator-use? {:arglists ([use blocks operation-by-id position-by-id]) :admission :none}}
-    :artifact-inputs [:explicit-fact-table-reconstruction-and-require-operations
+    :artifact-inputs [:native-module-and-function-key-schemas :explicit-envelope-operations
+                      :explicit-fact-table-reconstruction-and-require-operations
                       :explicit-operation-rules-and-schema-data
                       :explicit-native-data-flow-rule-operations
                       :native-block-operation-position-definition-use-and-source-tables
@@ -65,11 +72,13 @@
                       :explicit-require-and-terminator-operations :terminator-key-schema
                       :checked-core-and-mir-data :expected-envelope-and-operation-products
                       :definitions :operation-positions :join-and-parameter-data]
-    :artifact-outputs [:native-fact-table-rule-return :native-operation-products :native-data-flow-counts :native-effect-placement-result
+    :artifact-outputs [:native-module-and-function-key-sets :native-envelope-products
+                       :native-fact-table-rule-return :native-operation-products :native-data-flow-counts :native-effect-placement-result
                        :native-block-placement-data :native-use-definition-and-value-records
                        :native-runtime-check-facts :id-indexed-fact-and-proof-tables
                        :cfg-entry-exit-and-conditional-count :native-rule-outcome :dominance-and-use-predicates]
-    :diagnostic-ownership {:stage [:native-fact-table-equality
+    :diagnostic-ownership {:stage [:native-module-function-and-provenance-envelope-parity :native-envelope-key-schemas
+                                  :native-fact-table-equality
                                   :native-operation-shape-parity-and-fact-references
                                   C11-MODULE C11-TARGET-LEAK C11-SAFETY
                                   :native-data-flow-equality-and-dominance :native-effect-edge-placement
@@ -92,6 +101,212 @@
 
 
 
+
+(def module-keys
+  #{:artifact :schema-version :source-core :module-id :profile
+    :source-target :target-request :target-request-metadata :functions
+    :globals :control-flow-graph :data-flow-graph :type-table
+    :effect-table :effect-order-graph :ownership-table
+    :capability-table :capability-proof-table :safety-table
+    :profile-target-table :runtime-check-table
+    :proof-certificate-table :source-map
+    :domain-anchors :diagnostics :provenance :construction
+    :pass-contract :pass-execution-record
+    :verification-status :target-independent? :b1-preflight :scope
+    :clojure-seed-boundary? :self-hosted?})
+
+(def function-keys
+  #{:artifact :fn-id :name :params :returns :latent-effects
+    :capabilities :blocks :entry :source :facts :provenance})
+
+(defn validate-module-envelope!
+  [owner-operations source-path checked-core mir]
+  (let [{:keys [entry-parameter! module-keys function-keys require! require-strict-structure! pass-contract-record]} owner-operations
+        parameter (entry-parameter! source-path checked-core)
+        entrypoint (:entrypoint checked-core)
+        function (get-in mir [:functions entrypoint])
+        root-id (first (:root-node-ids checked-core))
+        root-node (first (filter #(= root-id (:node-id %))
+                                 (:core-nodes checked-core)))
+        return-id (last (:operands root-node))
+        return-node (first (filter #(= return-id (:node-id %))
+                                   (:core-nodes checked-core)))]
+    (require!
+     (and (map? mir)
+          (= module-keys (set (keys mir)))
+          (= :gravity/mir-module (:artifact mir))
+          (= 1 (:schema-version mir))
+          (= (:artifact-id checked-core) (:source-core mir))
+          (= (get-in checked-core [:source-core-input :module])
+             (:module-id mir))
+          (= (:profile checked-core) (:profile mir))
+          (= (:source-target checked-core) (:source-target mir))
+          (= (get-in checked-core
+                     [:target-request-metadata :requested-target])
+             (:target-request mir))
+          (= (:target-request-metadata checked-core)
+             (:target-request-metadata mir))
+          (map? (:functions mir))
+          (= #{entrypoint} (set (keys (:functions mir))))
+          (map? (:globals mir))
+          (= {} (:globals mir))
+          (map? (:domain-anchors mir))
+          (= {} (:domain-anchors mir))
+          (vector? (:diagnostics mir))
+          (= [] (:diagnostics mir))
+          (= :pending (:verification-status mir))
+          (true? (:target-independent? mir))
+          (true? (:clojure-seed-boundary? mir))
+          (false? (:self-hosted? mir)))
+     "C11-MODULE" source-path mir :authenticated-c11-module-envelope)
+    (require!
+     (and (map? root-node)
+          (map? return-node)
+          (map? function)
+          (= function-keys (set (keys function)))
+          (= :gravity/mir-function (:artifact function))
+          (= root-id (:fn-id function))
+          (= entrypoint (:name function))
+          (vector? (:params function))
+          (= (if parameter [(:id parameter)] []) (:params function))
+          (= (:type return-node) (:returns function))
+          (= (get-in checked-core
+                     [:source-core-input :declared-effects])
+             (:latent-effects function))
+          (= (get-in checked-core
+                     [:source-core-input :declared-capabilities])
+             (:capabilities function))
+          (= (:source root-node) (:source function))
+          (= {:type-fact-id
+              (get-in checked-core [:type-facts root-id :fact-id])
+              :effect-fact-id
+              (get-in checked-core [:effect-facts root-id :fact-id])
+              :ownership-fact-id
+              (get-in checked-core [:ownership-facts root-id :fact-id])
+              :safety-outcome-id (str root-id ":safety-outcome")
+              :profile-target-fact-id
+              (str root-id ":profile-target-fact")}
+             (:facts function))
+          (= {:checked-core-artifact-id (:artifact-id checked-core)
+              :core-node-id root-id}
+             (:provenance function)))
+     "C11-MODULE" source-path function :authenticated-c11-function-envelope)
+    (require!
+     (= {:checked-core-artifact-id (:artifact-id checked-core)
+         :checked-core-mapping-id (:mapping-id checked-core)
+         :checked-core-provenance-binding-id
+         (:provenance-binding-id checked-core)
+         :checked-core-origin-closure-binding-id
+         (:provenance-binding-id checked-core)}
+        (:provenance mir))
+     "C11-ORIGIN" source-path mir :checked-core-provenance-binding)
+    (require-strict-structure!
+     source-path
+     {:checked-core-artifact-id (:artifact-id checked-core)
+      :checked-core-mapping-id (:mapping-id checked-core)
+      :checked-core-provenance-binding-id
+      (:provenance-binding-id checked-core)
+      :checked-core-origin-closure-binding-id
+      (:provenance-binding-id checked-core)}
+     (:provenance mir)
+     :type-sensitive-checked-core-provenance-binding)
+    (require!
+     (= {:owner :gravity-source
+         :function :c11-build-target-independent-mir
+         :status :constructed}
+        (:construction mir))
+     "C11-VERIFY" source-path mir :gravity-owned-mir-construction)
+    (require-strict-structure!
+     source-path
+     {:owner :gravity-source
+      :function :c11-build-target-independent-mir
+      :status :constructed}
+     (:construction mir) :type-sensitive-gravity-owned-mir-construction)
+    (require!
+     (and (= (pass-contract-record)
+             (:pass-contract mir))
+          (= {:artifact :gravity/build-mir-pass-execution-record
+              :pass-id :c11-build-mir-bounded-slice
+              :pass-contract-hash :pending-source-binding
+              :input-artifact-id (:artifact-id checked-core)
+              :output-content-id :pending-independent-verifier
+              :verifier-report-id :pending-independent-verifier
+              :verifier-report-hash :pending-independent-verifier
+              :diagnostics []
+              :status :constructed-unverified
+              :record-id :pending-independent-verifier}
+             (:pass-execution-record mir)))
+     "C11-VERIFY" source-path mir
+     :gravity-owned-build-mir-pass-contract-and-pending-execution)
+    (require-strict-structure!
+     source-path (pass-contract-record)
+     (:pass-contract mir) :type-sensitive-build-mir-pass-contract)
+    (require-strict-structure!
+     source-path
+     {:artifact :gravity/build-mir-pass-execution-record
+      :pass-id :c11-build-mir-bounded-slice
+      :pass-contract-hash :pending-source-binding
+      :input-artifact-id (:artifact-id checked-core)
+      :output-content-id :pending-independent-verifier
+      :verifier-report-id :pending-independent-verifier
+      :verifier-report-hash :pending-independent-verifier
+      :diagnostics []
+      :status :constructed-unverified
+      :record-id :pending-independent-verifier}
+     (:pass-execution-record mir)
+     :type-sensitive-pending-build-mir-pass-execution)
+    (require!
+     (and (= {:input-kind :gravity/mir
+              :requires-verifier-status :passed
+              :status :pending-c11-verifier
+              :backend-credit? false}
+             (:b1-preflight mir))
+          (= {:operation-set
+              [:literal :implicit-nil :quote :local :let-binding :truthy
+               :integer-eq :integer-lt :integer-lte :integer-gt :integer-gte
+               :do :if :let :str :println :function
+               :runtime-check]
+              :maximum-conditionals 1
+              :whole-c11? false
+              :domain-ir-credit? false
+              :optimization-credit? false
+              :target-lowering-credit? false
+              :backend-credit? false
+              :llvm-credit? false
+              :release-credit? false
+              :whole-language? false
+              :self-hosted? false}
+             (:scope mir)))
+     "C11-VERIFY" source-path mir :bounded-c11-and-b1-scope)
+    (require-strict-structure!
+     source-path
+     {:input-kind :gravity/mir
+      :requires-verifier-status :passed
+      :status :pending-c11-verifier
+      :backend-credit? false}
+     (:b1-preflight mir) :type-sensitive-pending-b1-preflight)
+    (require-strict-structure!
+     source-path
+     {:operation-set
+      [:literal :implicit-nil :quote :local :let-binding :truthy
+       :integer-eq :integer-lt :integer-lte :integer-gt :integer-gte
+       :do :if :let :str :println :function
+       :runtime-check]
+      :maximum-conditionals 1
+      :whole-c11? false
+      :domain-ir-credit? false
+      :optimization-credit? false
+      :target-lowering-credit? false
+      :backend-credit? false
+      :llvm-credit? false
+      :release-credit? false
+      :whole-language? false
+      :self-hosted? false}
+     (:scope mir) :type-sensitive-bounded-c11-and-b1-scope)
+    {:function function
+     :root-node root-node
+     :return-node return-node
+     :return-id return-id}))
 
 (defn validate-fact-tables!
   [owner-operations source-path checked-core mir]
