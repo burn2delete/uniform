@@ -1,4 +1,5 @@
-(ns gravity.module-analysis.policy)
+(ns gravity.module-analysis.policy
+  (:require [gravity.digest :as digest]))
 
 (def function-operation-keys
   #{:fail! :source-span :ns-form? :bootstrap-target-supported?
@@ -75,9 +76,9 @@
 
 (defn default-sha256-hex
   [text]
-  (let [digest (.digest (java.security.MessageDigest/getInstance "SHA-256")
-                        (.getBytes ^String text "UTF-8"))]
-    (apply str (map #(format "%02x" (bit-and % 0xff)) digest))))
+  ;; Keep the historical ^String receiver behavior (including wrong-carrier
+  ;; failures) while sharing the digest implementation.
+  (digest/sha256-bytes-hex (.getBytes ^String text "UTF-8")))
 
 (defn unsupported-operation
   [key]
