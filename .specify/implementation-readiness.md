@@ -3495,3 +3495,127 @@ Legality-route size expectation; its corrected vector matches the individual
 producer matrix and final suite. Dated roadmap counts are not current execution
 evidence. No compiler/provider/physical-target/release suite or independent review
 is claimed from these source/traceability checks.
+
+## Complete provider and capability source continuation
+
+The [complete provider and capability criteria](../specs/auth-workflow/plan.md#complete-provider-and-capability-source-criteria)
+compare all of L15, SAFE10 and R11 with the current task authorities. This
+proposal preserves 278 facets (126/67/85), 181 occurrences (83/61/37), 46 substantive
+section conjunctions and twenty original owners. The exact spans cover all
+non-whitespace source bytes; identity and byte coverage do not prove semantic
+acceptance. Sixteen clauses refine fourteen existing tasks across Auth, Legality,
+Runtime, Expand, Build and Stdlib. Selected PKG6/R12 interfaces retain broader
+unassessed obligations. Thirteen plans and three specs gain navigation.
+
+The material difference is the enforcement required behind the records. L15
+requires complete provider contracts, deterministic selection, real scoped grants,
+first-class values, safe replacement, compile-time replay and runtime startup.
+SAFE10 requires actual policy intersection, operation-specific scope checks,
+non-expanding attenuation, supported revocation, secret handling and phase
+separation. R11 requires real action/handle/caller-callee enforcement with identity,
+policy, failure, redaction and audit at the service sink. A selected provider,
+trusted label, profile allowance, signed artifact or request manifest issues no
+authority by itself.
+
+The existing hosted capability code performs real set intersections, input and
+provider-identity validation, and phase/mismatch checks, while consuming supplied
+scope/trust facts under an explicitly noncanonical projection contract. Provider
+and SAFE10 builders also assign safe/granted/deterministic/complete/redacted fields.
+R11 assembles fixed manifest, handle and decision rows; its coverage validator
+checks their statuses and listed cases. Those inspected records do not demonstrate
+all required action enforcement. The selected later Gravity pipeline has meaningful
+bounded pure capability closure and explicitly excludes provider selection; this
+retains its actual partial scope without making a whole-language claim.
+Static inspection executes no compiler, provider, runtime, native or external action.
+
+The current criteria now require:
+
+- Complete versioned provider contracts across all 22 common categories, separate
+  from actual implementation of each later owning service. Apply explicit source,
+  package manifest, workspace policy, profile default and target compiler default
+  selection order with actual compatibility/missing/ambiguity results.
+- Eight-layer grant intersection, concrete category-specific scope derivation,
+  declared-and-permitted ambient use, typed capability facts, non-expanding
+  attenuation, actual revocation or a permitted static-lifetime substitute.
+  Capability-value transport alone neither performs its later effect nor creates
+  a grant, and full C7 remains outside this selected interface.
+- Real action gates and provider isolation under all five declared trust classes;
+  actual startup checks before user code or a declared compatible fallback.
+  Required review evidence is distinct from authority to request a review.
+- Actual deny-by-default and typed handle/delegation checks for all seventeen
+  R11 action families, including environment, device, memory-write, deployment,
+  package mutation and observability beyond its shorter example manifest.
+- Secret-safe public diagnostics, generated code, cache keys and artifacts;
+  exact export capability/policy and phase separation. A digest-only label is
+  not redaction proof. No private-store or export operation runs here.
+- Real build/compile-time provider gate and graph results, replay/audit records,
+  lock/provenance identity and cache/rebuild comparisons. A recorded replay
+  exception does not waive grants, isolation or the exact L6/L12 hermetic premises.
+- Actual safe replacement of one math provider and one memory or IO provider,
+  real consumer/API results, all 31 original diagnostic meanings and existing
+  Release harness executions with their own exact subjects/oracles.
+
+Sixteen historical byte witnesses describe thirteen finite records. Ten missing
+witnesses are restored and six already exact witnesses are preserved: two
+profile74, seven safety107, six runtime20 fragments and one schema25 runtime
+predicate. Keep the no-facet Runtime/Schema strengthening decision as a predicate;
+do not manufacture a facet or overwrite its later operation-gate qualification.
+The recorded initialization consumer is Runtime2, and deployment-specific authority
+uses Runtime5 with Auth gates and Legality's compiler checks. Shared service-policy
+snippets remain conjunctive fragments, not extra tasks.
+
+Profile74, safety107 and schema25 reviews stay finite and frozen; schema25's
+already completed pass is neither consumed again nor renewed. Its selected runtime
+witness source `0569306b52fe0972540c76e21d7707e1ee6eb55e` was available on GitHub.
+Runtime20 actual composition remains pending. Current whole-source, whole-owner
+and implementation acceptance are not conferred. The preserved aggregate remains
+unpublished, and no stopped handoff is retried or transferred.
+
+The model-cost wording occurs in two retained multi-predicate facets. Their
+source bytes and all non-accounting scope/identity/input/output/retention/evaluation
+conditions survive, while current project work/call/token/fuel accounting remains
+removed. Actual external account/billing restrictions are separate. Neither the
+historical wording nor current tests add an input/work quota or generic permission
+gate. Private-store, signing, publication, C7/C12, native/callback/provider/device/
+probe/replay and other actual holds remain unchanged.
+
+Task authority remains 149 keys across 25 authorities. Of 139 original bodies,
+67 remain identical and 72 carry declared additions; the three Auth hook/trust/
+conformance bodies and Build graph execution become newly amended here. All
+identities, checkboxes, historical evidence, forty future records and prior
+source/dependency refinements are conserved. The current dependency table retains
+698 joins, 83 routes, 43 current parents, forty future records and cycles of forty
+and eight nodes. Complete provider/capability-specific result staging remains
+pending; source presence and graph structure do not prove it.
+
+The source subject is `9a12cb86cf89d2572c7c43df3c52714d5bf99774`; the applying
+traceability fingerprint is
+`3cd46d1bea3e08c0ff1a1648fa4aab74fb10d5814b4e8248a5861fc4c9d4c124`.
+The exact predecessor is `14c5be01f2e0027347c7ca0398ddc3b4bb2f39e3`.
+All explicit current and historical source pins verify against local Git, with
+remote availability separately qualified. The prior concurrency dependency
+regression reads its exact frozen pre-provider subject; no review hash is refreshed.
+
+Current source/interface entailment, independent review and implementation
+acceptance remain pending/unassessed. The all-240 reconciliation remains unfinished,
+and the first implementation increment remains Reader contract coverage. No other
+chat is messaged, reviewer woken, held implementation run, milestone credited or
+main integration performed.
+
+The initial 59-test traceability run reached 22,705 assertions with twenty failures,
+all in the historical C16 reconstruction test. It combined frozen metadata and
+projection with live Build task bytes. That test now reads its exact frozen bridge
+and source throughout, without refreshing any review or witness hash. The corrected
+C16 test and new current provider/capability test pass 3,159 assertions together;
+a final complete run verifies the corrected composition separately below.
+
+Final validation passes: 59 crosswalk tests with 22,705 assertions; 23 dependency
+tests with 2,921 assertions; pinned crosswalk and dependency projection checks;
+240-document/19-index structural validation; the separate full-language roadmap
+structural check; and six language-boundary tests with eleven assertions.
+Conservation/navigation covers 88 changed files, 82 Markdown files, 3,376 local
+references, 139 original routes, 48 historical spec/plan suffixes and all 48
+original task/evidence contents after declared additions are removed. ASCII and
+whitespace checks pass. Dated roadmap counts are not current execution evidence,
+and no compiler/provider/native/physical-target/release suite or independent
+review is claimed from these source/traceability checks.
