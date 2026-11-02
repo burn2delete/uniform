@@ -604,6 +604,10 @@ many distinct or absent forms. A match establishes only source-form identity;
 different forms require semantic review, not assumed incorporation/rejection.
 No project source was evaluated or runtime rerun performed. Owner/draft inputs
 retain their source and acceptance limits. This input leaves PR502 open.
+The later current-main reconciliation in that document distinguishes already
+merged finite successors, including PR643, from the preserved pending receipts.
+The historical census is evidence for disposition, not duplicate implementation
+or current semantic acceptance.
 
 Finite source `0c64757dcee79d41272dab8486ce042adad93106`, tree
 `2c2ac4199c7bc57fca8717324f1f282e368f36b4`, passed its current-main candidate

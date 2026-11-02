@@ -1,6 +1,32 @@
 # PR502 preserved path reconciliation
 
-## Accepted exact historical-evidence composition; CI pending
+## Current-main reconciliation of preserved evidence
+
+This document preserves the historical PR502 census: 29 authored paths, 530
+changed reader units and 316 production units. Its dated input mains and
+receipts below describe their original subjects. They do not confer current
+compiler, fixture, native, release or whole-accounting acceptance.
+
+At assessed main `32fe90b1e6a41df5a4083d0abe3917e0cb2643e1`, tree
+`b95a59281e71f741a91e6d93275fd055f8b6c962`, finite successors PR619, PR620,
+PR622, PR625, PR626, PR628, PR632, PR634, PR635 and PR643 are already merged.
+Their exact merge commits and ancestry observations are recorded in
+[preserved-main-reconciliation.edn](preserved-main-reconciliation.edn).
+This candidate preserves their receipts as history and does not replay their
+source/tests or award duplicate implementation credit.
+
+In particular, PR643 merged as
+`4b8c7a66ccb6ab9455a048fe5708dc635dfcb137`. Its pending CI/integration text
+below and in the frozen review-consumption record is historical, superseded
+only for that integration status. Its qualified source/data scope, original
+assignment limits, withdrawal addendum and semantic nonclaims remain intact.
+
+Held DSE/dispatch/direct-call, GIS3/source products, vector/List, parameter,
+verifier and mixed-ledger work still requires its own complete current-source
+disposition and acceptance. PR502 remains open. Historical denied or restricted
+operations are not retried, transferred or authorized by this reconciliation.
+
+## Historical accepted evidence composition; CI pending when recorded
 
 [PR643](https://github.com/burn2delete/uniform/pull/643) publishes unchanged
 `404fc27bf8bc12aaa79a9c56a1a3e940ea402ad2`, tree
@@ -13,7 +39,7 @@ and modes are identical; every other main entry is unchanged. The original
 receipt's assignment-context gate and its separate withdrawal addendum are
 both preserved and verified. No foreign checker was rerun.
 
-The candidate remains draft pending actual configured CI and fresh exact
+At the time of this receipt, the candidate remained draft pending configured CI and exact
 integration preflight. Inspection preflight passes clean branch, exact base,
 ancestry and distinct-tree checks; it is not the final integration transaction.
 Historical input/fixture provenance, the two non-equivalent production forms,

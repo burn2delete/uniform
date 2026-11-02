@@ -350,6 +350,9 @@ nil/List joins, ordinary parameter choice, and remaining descriptor/schema and
 mixed-ledger controls still lack complete verified successor dispositions.
 Those are retained ACC-01/04/06/07/08/09/12/13 obligations. PR502 remains open;
 listing all paths is not terminal disposition of every unique delta.
+The current-main reconciliation attached to that input records the finite
+successors already merged without reopening their implementation tasks or
+converting the remaining held work into completed obligations.
 
 Accounting completion owns PR359, PR450, PR454 and PR462. Native owns the seven
 API files in PR446; verification reuse owns registration metadata. These are
