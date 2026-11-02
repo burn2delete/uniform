@@ -4,42 +4,8 @@
 
 (defn p15-s23-c11-mir-diagnostic-context
   [checked-core context artifact]
-  (let [checked-core (if (map? checked-core) checked-core {})
-        context (if (map? context) context {})
-        artifact (if (map? artifact) artifact {})]
-    {:requested-target
-     (let [candidate (or (:requested-target context)
-                         (get-in checked-core
-                                 [:target-request-metadata
-                                  :requested-target]))]
-       (if (keyword? candidate) candidate :target-neutral))
-     :source-target (if (keyword? (:source-target checked-core))
-                      (:source-target checked-core) :unknown)
-     :profile (if (keyword? (:profile checked-core))
-                (:profile checked-core) :hosted)
-     :checked-core-artifact-id
-     (p15-s23-c11-mir-safe-diagnostic-scalar
-      (:artifact-id checked-core))
-     :module-id
-     (p15-s23-c11-mir-safe-diagnostic-scalar
-      (or (get-in checked-core [:source-core-input :module])
-          (:module-id artifact)
-          :not-applicable))
-     :function-id
-     (p15-s23-c11-mir-safe-diagnostic-scalar
-      (or (:entrypoint checked-core) :not-applicable))
-     :block-id
-     (p15-s23-c11-mir-safe-diagnostic-scalar
-      (or (get-in artifact [:control-flow-graph :entry])
-          (get-in artifact [:mir-module :control-flow-graph :entry])
-          :not-applicable))
-     :operation-id :not-applicable
-     :source-operation :not-applicable
-     :syntax-id :not-applicable
-     :origin-id :not-applicable
-     :mir-id
-     (p15-s23-c11-mir-safe-diagnostic-scalar
-      (or (:mir-id artifact) (:source-core artifact) :not-applicable))}))
+  (gravity.mir/diagnostic-context
+   #'p15-s23-c11-mir-safe-diagnostic-scalar checked-core context artifact))
 
 (def p15-s23-c11-mir-upstream-diagnostic-rules
   (set (concat ["L2-BUILTIN-ARITY"]
@@ -90,8 +56,7 @@
 
 (defn p15-s23-c11-mir-diagnostic-rule-contract
   [rule]
-  (first (filter #(contains? (:rules %) rule)
-                 p15-s23-c11-mir-diagnostic-rule-contracts)))
+  (gravity.mir/diagnostic-rule-contract p15-s23-c11-mir-diagnostic-rule-contracts rule))
 
 (defn p15-s23-c11-mir-safe-diagnostic-scalar
   [value]
