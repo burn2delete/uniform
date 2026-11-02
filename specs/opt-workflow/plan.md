@@ -50,8 +50,11 @@ their own semantic implementations and actual acceptance products.
 
 [C18's verification matrix](../../docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md#verification-matrix)
 qualifies C13's general high-risk evidence list. Behavior-relevant MIR changes
-require evidence for affected functions: actual per-function translation
-validation or a stronger mechanized pass proof covering the selected change.
+require evidence for affected functions, including actual per-function
+translation validation under the matrix minimum. Stronger mechanized pass
+proof is optional unless applicable policy requires it; a proof label cannot
+waive checked minimum evidence. A mechanized method must actually establish
+the required affected-function validation rather than merely naming a proof.
 Bind input/output MIR, changed functions, observable results, effects and safety
 outcomes under [the translation-validation contract](../../docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md#translation-validation).
 A structural verifier, generic differential fixture, local assertion or

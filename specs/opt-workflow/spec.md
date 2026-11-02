@@ -47,8 +47,9 @@ The [complete optimization source criteria](plan.md#complete-optimization-source
 restore the preserved C13 conjunctions under the same five task owners. Basic
 constant/branch/dead-code/common-expression implementations remain with task 1;
 task 2 consumes them for full family coverage and owns the remaining structural
-transforms. C18's affected-function translation validation or stronger mechanized
-pass proof qualifies the general high-risk evidence list; structural verification
+transforms. C18's checked per-function translation-validation minimum qualifies
+the general high-risk evidence list. Stronger proof remains optional unless
+policy requires it and cannot waive the checked minimum; structural verification
 and weaker-scope receipts cannot substitute. Current source review and
 implementation acceptance remain pending;
 historical source review does not transfer to this head.

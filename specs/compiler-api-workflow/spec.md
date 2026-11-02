@@ -42,6 +42,13 @@ safety and exported fact/equivalence contracts, and cannot redefine language
 meaning. Component/domain/provider owners implement those semantics; the API
 owns their declared registration, invocation and consumer boundaries.
 
+The [complete compiler-verification source criteria](plan.md#complete-compiler-verification-source-criteria)
+restore C18's detailed records under the existing `pass-evidence` task. The
+existing pass-evidence and backend-conformance witnesses remain unchanged.
+Per-class checked minimum evidence remains distinct from optional stronger
+evidence; actual producer/checker/backend products and Release admission keep
+their owners. Source review is pending for this head and establishes no execution.
+
 ## Starting work and completion
 
 Versioned input/fact/verifier interfaces and fixtures allow local API or pass

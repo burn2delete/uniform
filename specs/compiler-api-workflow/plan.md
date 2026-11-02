@@ -21,6 +21,55 @@ artifacts and counterexamples without changing ownership, accepting pending
 source amendments, refreshing migration evidence or claiming whole-pass/release
 support from local checks.
 
+## Complete compiler-verification source criteria
+
+The preserved `c18-complete-current-facet-trace.edn` binds three criterion
+roles at historical source `984f1e74f98905f53b4b20c63b8f76d2a948dae3`:
+the existing pass-evidence block, the detailed C18 records clause and the
+existing backend-conformance block. The first and third are already literal
+current text and stay unchanged. Restore only the missing records clause
+under the same `pass-evidence` task; no new task or status is introduced.
+Trace SHA-256:
+`a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d`.
+The tested historical GitHub trace reference is unavailable. Use current
+canonical sections and exact task witnesses without a dead link, aggregate
+publication or stopped-handoff retry. The old source PASS retains its frozen
+subject and qualified exclusions; independent current review is pending.
+
+| Required boundary | Canonical conditions and actual completion evidence |
+| --- | --- |
+| Pass population, risk and evidence matrix | Enumerate the actual selected compiler closure with pass/version/risk/reasons/profile/target/evidence/release-gate identities. Preserve all four [risk meanings](../../docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md#pass-risk-classification) and all ten [matrix rows](../../docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md#verification-matrix), with checked minima distinct from optional stronger methods. Reject omitted passes, mismatched risk/profile and below-minimum evidence. Full mechanization of every pass is not an initial prerequisite. |
+| Actual transformation validation | For changed MIR functions consume actual per-function validation, with pass/input/output/changed-function/result/effect/safety/method/proof/counterexample/verdict fields under [the validation contract](../../docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md#translation-validation). Reject failed transformations and retain the prior valid artifact. Stronger proof labels, structural verification or generic fixtures cannot waive the checked matrix minimum. Actual proof/certificate replay remains required for the applicable check-elision or domain case. |
+| Trust and scoped release gates | Emit [trust reports](../../docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md#trust-report) binding compiler/pass/risk/evidence, profile requirements/blocked passes, target/artifact-kind dependencies, plugins and known experimental gaps. Enforce every [release-gate condition](../../docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md#release-gates), with explicit feature/profile gates and artifact markings for shipped experiments. Missing/stale/critical/high-risk evidence refuses affected release artifacts; pass-evidence does not own final Release admission. |
+| Failures, provenance and diagnostics | Capture [available counterexamples](../../docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md#counterexamples) with source/input/output/property/diagnostic/minimized-reproducer/pass-version, turn reproducible failures into regressions and record actual unavailability without fabrication. Preserve original/generated origins and all [nine C18 diagnostic meanings and context fields](../../docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md#diagnostics), with actual accepted/refused cases. |
+| Backend and downstream consumption | Consume the unchanged [backend-conformance task](../backends-workflow/tasks.md#implementation-tasks): actual output execution or semantic comparison, independent metadata/refusal checks, provenance/replay and explicit unavailable-target records. Compare source/Core/MIR intent with emitted behavior for the supported tuple. Actual stage owners, checkers, backend producers and release/bootstrap consumers supply their products; source clauses and unavailable execution cannot create success. |
+
+The `pass-evidence` owner classifies the actual pass closure and orchestrates
+subject-bound verification/trust gates. Each stage owns its actual product and
+semantic verifier; Backends owns its conformance pack; Release independently
+owns final artifact admission. Opt's current application consumes the checked
+per-function matrix minimum. Stronger evidence is optional unless the applicable
+claim policy requires it, and an unchecked stronger label never replaces the
+minimum. A mechanized method can establish the required validation only with
+actual checked affected-function coverage. Preserve the six original owner
+candidates and the separate proposed backend source join without promoting
+global owner resolution or whole-backend acceptance.
+
+Start local record construction and refusal fixtures against explicit stage,
+checker, evidence and backend interfaces. Composition needs actual current
+products, checker invocations, verdicts and consumer refusals for the claim;
+ordinary editing does not require whole-component release or fresh migration
+admission. Release/bootstrap trust reports and compiler-release self-hosting
+comparisons remain real later consumer obligations. The unresolved pipeline
+ordering and every C12/provider/checker/target/publication hold remain effective.
+
+Retain exact source/compiler/pass/version/profile/target/input/output/checker/
+proof/diagnostic/counterexample/trust/gate identities, actual results and explicit
+unavailable evidence. The canonical record examples are illustrative, not
+default grants, universal risk assignments or accepted verifier results.
+Source conservation, implementation, independent acceptance, integration and
+seedless release remain distinct.
+
 ## Historical workflow-transfer and source-composition plan
 
 # Implementation plan: Compiler API workflow migration
