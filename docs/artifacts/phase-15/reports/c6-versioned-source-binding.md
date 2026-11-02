@@ -82,11 +82,21 @@ acceptance, release, backend or self-hosting credit is claimed.
 
 ## Current-main composition
 
-The five-file prerequisite composes onto main
-`32fe90b1e6a41df5a4083d0abe3917e0cb2643e1` without production changes.
-The historical dependency and PR-status observations above remain history.
-This increment still claims only source-binding/cache mechanism controls;
-current-source fresh construction and public C11 consumers are separate work.
+The tested current-main composition is the clean normal merge
+`b3401ea495ba8f44bb7ca4b89de63fb29e357fc4`, tree
+`2e40ffd481479cb95e70363de6239c4cd652dff6`, whose main parent is
+`2c469ab08b1eebe8ae59bb249dc325e4a6be822f`, tree
+`31c162d7f9233a9cd2497a554c943bbeccf21d48`. Its current-main delta is exactly
+six paths (three C6 components, two focused data harnesses, and this report),
+with 430 insertions and 51 deletions. The increment exposes only the v1/v2/v3
+source-contract DATA and versioned binding/cache mechanism; source identity
+failure remains fail-closed, and no live source authentication, fresh Core or
+Reader construction, or C11 admission is claimed.
+
+The earlier five-file composition onto
+`32fe90b1e6a41df5a4083d0abe3917e0cb2643e1` is historical preparation context,
+not the current base or acceptance identity. Historical dependency and PR-status
+observations above remain history.
 
 The affected C11 data harness initially failed to compile because it omitted
 the native view helper now called by actual carrier validation. The harness
