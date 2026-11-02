@@ -132,6 +132,17 @@ language boundary passed 6 tests / 11 assertions. The logs are
 `/tmp/uniform-pr453-lint-fixed-handoff.log` and
 `/tmp/uniform-pr453-lint-fixed-boundary.log`.
 
+## Final CI-only main composition
+
+The normal merge of main
+`2f785196707cee629e813d3fb435be82804de233` adds five CI workflow, harness,
+documentation, and receipt paths. It preserves every PR453 implementation,
+test, and source-contract blob from the lint-clean handoff above. The genuine
+handoff does not import the CI harness; C6, Reader, expression, and C11 source
+identities remain those recorded above. The finite source evidence is reused
+with this explicit dependency conservation; pending hosted jobs are not
+reported as successful execution.
+
 ## Conformance and acceptance criteria
 
 Integration requires an independent review of the exact candidate commit and
