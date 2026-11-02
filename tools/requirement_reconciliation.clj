@@ -1,6 +1,7 @@
 (ns requirement-reconciliation
   "Read-only source conservation and requirement projection. Never executes compiler proofs."
   (:require [clojure.edn :as edn] [clojure.java.io :as io]
+            [clojure.set :as set]
             [clojure.string :as str] [gravity.tooling.strict-json :as json]))
 
 (load-file "tools/requirement_evidence.clj")
@@ -122,15 +123,17 @@
   "Pure non-authoritative preview of declared scope. Readiness is not an audited
   or independently accepted denominator: audit must verify checkout bytes and
   bridge snapshots before this projection is used as current-source evidence."
-  [manifest sources]
-  (let [documents (concat (:original-documents manifest) (:extension-sources manifest))
-        ids (mapv :id documents)]
-    (require! (and (every? #(and (string? %) (not (str/blank? %))) ids)
-                   (= (count ids) (count (set ids)))) "Missing or duplicate declared source ID")
-    (require! (= (set ids) (set (keys sources))) "Supplied sources differ from declared source population"))
-  (require! (and (string? (:scope-version manifest)) (not (str/blank? (:scope-version manifest))))
-            "Missing scope version")
-  (let [views (requirement-sources/views manifest sources sha256 require!)
+  ([manifest sources]
+   (project manifest sources {}))
+  ([manifest sources source-options]
+   (let [documents (concat (:original-documents manifest) (:extension-sources manifest))
+         ids (mapv :id documents)]
+     (require! (and (every? #(and (string? %) (not (str/blank? %))) ids)
+                    (= (count ids) (count (set ids)))) "Missing or duplicate declared source ID")
+     (require! (= (set ids) (set (keys sources))) "Supplied sources differ from declared source population"))
+   (require! (and (string? (:scope-version manifest)) (not (str/blank? (:scope-version manifest))))
+             "Missing scope version")
+   (let [views (requirement-sources/views manifest sources sha256 require! source-options)
         sources (requirement-sources/texts views)
         requirements (:requirements manifest) ids (mapv :id requirements)
         occurrences (mapcat (fn [[id text]] (source-occurrences id text)) sources)
@@ -201,7 +204,7 @@
        :limits [:source-blocks-are-not-atomic-requirements :no-implementation-credit
                 :projection-requires-current-source-audit
                 :historical-checkboxes-are-not-current-acceptance
-                :no-compiler-replay :no-dashboard-write]})))
+                :no-compiler-replay :no-dashboard-write]}))))
 
 (defn checked-path [root path]
   (require! (and (string? path) (not (.isAbsolute (io/file path)))) "Source path must be relative")
@@ -211,6 +214,24 @@
     file))
 (defn read-source [file]
   (java.nio.file.Files/readString (.toPath (io/file file)) java.nio.charset.StandardCharsets/UTF_8))
+
+(defn validate-bridge-projections! [manifest projected-views baseline-texts]
+  (doseq [bridge (:source-version-bridges manifest)
+          :when (= requirement-sources/std3-accounting-kind (:kind bridge))]
+    (let [id (:document-id bridge)
+          projected (get-in projected-views [id :text])
+          baseline (get baseline-texts id)
+          projected-occurrences (source-occurrences id projected)
+          baseline-occurrences (source-occurrences id baseline)
+          expected-facets (set (mapcat :facet-ids (:projection-hunks bridge)))
+          declared-facets (set (map :id (:source-facets manifest)))]
+      (require! (= baseline projected)
+                "STD3 accounting projection does not recover the authenticated baseline bytes")
+      (require! (= (mapv :id baseline-occurrences) (mapv :id projected-occurrences))
+                "STD3 accounting projection changes source occurrence identity")
+      (require! (set/subset? expected-facets declared-facets)
+                "STD3 accounting projection references an undeclared source facet"))))
+
 (defn audit [root]
   (let [manifest (edn/read-string (read-source (checked-path root manifest-path)))
         inventory-path (checked-path root "docs/document-inventory.json")
@@ -224,11 +245,29 @@
               "Original inventory identities/order changed")
     (require! (= (:inventory-sha256 manifest) (sha256 (read-source inventory-path))) "Inventory source drift")
     (let [raw (into (sorted-map) (for [{:keys [id path]} sources] [id (read-source (checked-path root path))]))
-          texts (requirement-sources/texts (requirement-sources/views manifest raw sha256 require!))
-          result (project manifest raw)
-          bridges (mapv #(requirement-sources/validate-snapshots! %
-                           (fn [ref path] (requirement-sources/git-source root ref path require!)) sha256 require!)
-                        (:source-version-bridges result))]
+          documents (into {} (map (juxt :id identity) sources))
+          bridges (mapv (fn [bridge]
+                          (let [document (get documents (:document-id bridge))]
+                            (require! (and document (or (nil? (:path bridge))
+                                                        (= (:path document) (:path bridge))))
+                                      (str "Source bridge path does not match declared document: " (:document-id bridge)))
+                            (requirement-sources/validate-snapshots!
+                             (assoc bridge :path (:path document))
+                             (fn [ref path] (requirement-sources/git-source root ref path require!))
+                             sha256 require!)))
+                        (:source-version-bridges manifest))
+          baseline-texts (into {}
+                              (for [bridge bridges
+                                    :when (= requirement-sources/std3-accounting-kind (:kind bridge))]
+                                [(:document-id bridge)
+                                 (requirement-sources/git-source root (:baseline-ref bridge)
+                                                                 (:path bridge) require!)]))
+          source-options {:baseline-texts baseline-texts
+                          :verified-baselines? (set (keys baseline-texts))}
+          projected-views (requirement-sources/views manifest raw sha256 require! source-options)
+          texts (requirement-sources/texts projected-views)
+          result (project manifest raw source-options)]
+      (validate-bridge-projections! manifest projected-views baseline-texts)
       (require! (= (count sources) (count texts)) "Duplicate original/extension source ID")
       (assoc result :source-baseline (:source-baseline manifest)
              :source-version-bridges bridges
@@ -257,10 +296,24 @@
                       :unresolved-source-occurrence-count (count (:unresolved-source-occurrences report)))))
       (let [[_ id & extra] args
             manifest (edn/read-string (read-source manifest-path))
-            source (first (filter #(= id (:id %)) (concat (:original-documents manifest) (:extension-sources manifest))))]
+            source (first (filter #(= id (:id %)) (concat (:original-documents manifest) (:extension-sources manifest))))
+            bridge (first (filter #(= id (:document-id %)) (:source-version-bridges manifest)))
+            baseline-texts (if (= requirement-sources/std3-accounting-kind (:kind bridge))
+                            {id (requirement-sources/git-source "." (:baseline-ref bridge)
+                                                               (:path bridge) require!)}
+                            {})]
         (require! (and source (empty? extra)) "Unknown source ID or extra argument")
-        (prn {:document-id id :path (:path source)
+        (prn {:document-id id
+              :path (:path source)
               :source-ref (:source-baseline manifest)
-              :source-occurrences (source-occurrences id (:text (requirement-sources/view manifest source (read-source (checked-path "." (:path source))) sha256 require!)))})))))
+              :source-occurrences
+              (source-occurrences
+               id
+               (:text
+                (requirement-sources/view manifest source
+                                          (read-source (checked-path "." (:path source)))
+                                          sha256 require!
+                                          {:baseline-texts baseline-texts
+                                           :verified-baselines? (set (keys baseline-texts))})))})))))
 
 (when (seq *command-line-args*) (run *command-line-args*))

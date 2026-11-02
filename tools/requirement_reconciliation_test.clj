@@ -469,6 +469,92 @@
       (is (false? (:denominator-ready? (rr/project projected sources))))
       (is (= 1 (:denominator (rr/project (assoc-in projected [:source-version-bridges 0 :review-state] :reviewed) sources)))))))
 
+(defn std3-accounting-fixture []
+  (let [hunks requirement-sources/std3-accounting-projection-hunks
+        bridge {:document-id "STD3"
+                :path requirement-sources/std3-accounting-path
+                :kind requirement-sources/std3-accounting-kind
+                :review-state :proposed
+                :baseline-ref requirement-sources/std3-accounting-baseline-ref
+                :applying-ref requirement-sources/std3-accounting-applying-ref
+                :baseline-sha256 requirement-sources/std3-accounting-baseline-sha256
+                :live-sha256 requirement-sources/std3-accounting-live-sha256
+                :baseline-blob "ca89df08c128c25d23a4a0781da79dd5e37abd74"
+                :applying-blob "19581f5720fea820ff97a1afc392cf3446f44bc3"
+                :projection-hunks hunks}
+        lineage (mapv (fn [{:keys [lineage-id facet-ids baseline-start-line baseline-end-line
+                                   baseline-fragment-sha256]}]
+                        {:id lineage-id :document-id "STD3"
+                         :source-sha256 requirement-sources/std3-accounting-baseline-sha256
+                         :structural-kind :source-block :disposition :mixed-policy-supersession
+                         :start-line baseline-start-line :end-line baseline-end-line
+                         :raw-sha256 baseline-fragment-sha256 :facet-ids facet-ids})
+                      hunks)]
+    {:scope-version "fixture-stdlib-1"
+     :source-baseline requirement-sources/std3-accounting-baseline-ref
+     :original-documents [{:id "STD3" :path requirement-sources/std3-accounting-path
+                           :sha256 requirement-sources/std3-accounting-baseline-sha256}]
+     :source-version-bridges [bridge]
+     :stdlib-reconciliation-context {:accounting-lineage {:mixed-std3-paragraphs lineage}}}))
+
+(deftest std3-accounting-projection-is-exact-and-snapshot-bound
+  (let [manifest (std3-accounting-fixture)
+        document (first (:original-documents manifest))
+        live (slurp (:path document))
+        baseline (requirement-sources/git-source "."
+                                                requirement-sources/std3-accounting-baseline-ref
+                                                (:path document) rr/require!)
+        view #(requirement-sources/view %1 document %2 rr/sha256 rr/require!
+                                        {:baseline-texts {"STD3" %3}})
+        projected (view manifest live baseline)
+        snapshots {requirement-sources/std3-accounting-baseline-ref baseline
+                   requirement-sources/std3-accounting-applying-ref live}
+        read-ref (fn [ref path] (when (= path (:path document)) (get snapshots ref)))]
+    (is (= baseline (:text projected)))
+    (is (= :unverified (get-in projected [:bridge :snapshot-provenance])))
+    (is (= :git-bytes-verified
+           (:snapshot-provenance
+            (requirement-sources/validate-snapshots!
+             (get-in projected [:bridge]) read-ref rr/sha256 rr/require!))))
+    (is (thrown? Exception
+                 (view (assoc-in manifest [:source-version-bridges 0 :applying-ref]
+                                 (apply str (repeat 40 "0"))) live baseline)))
+    (is (thrown? Exception
+                 (view (assoc-in manifest [:source-version-bridges 0 :baseline-sha256]
+                                 (apply str (repeat 64 "0"))) live baseline)))
+    (is (thrown? Exception
+                 (view (assoc-in manifest [:source-version-bridges 0 :path]
+                                 "docs/phase-16-standard-library/212-std2-core-library-specification.md")
+                       live baseline)))
+    (is (thrown? Exception
+                 (view manifest live (str/replace baseline "account for construction work"
+                                                 "account for changed work"))))
+    ;; A retained semantic edit in a reviewed region is not an allowed projection.
+    (is (thrown? Exception
+                 (view manifest (str/replace live "validate the input before"
+                                             "skip validation before") baseline)))
+    ;; Removing a reviewed region or changing an unlisted region cannot be hidden.
+    (is (thrown? Exception
+                 (view (update-in manifest [:source-version-bridges 0 :projection-hunks] pop)
+                       live baseline)))
+    (is (thrown? Exception
+                 (view (update-in manifest [:stdlib-reconciliation-context :accounting-lineage
+                                            :mixed-std3-paragraphs]
+                                   conj {:id "STD3/source/unprojected"})
+                       live baseline)))
+    (is (thrown? Exception
+                 (view manifest (str/replace live "## Map Lookup With An Explicit Default"
+                                             "## Changed Map Lookup") baseline)))
+    (is (thrown? Exception
+                 (requirement-sources/validate-snapshots!
+                  (assoc-in (get-in projected [:bridge]) [:live-sha256] (apply str (repeat 64 "0")))
+                  read-ref rr/sha256 rr/require!)))
+    (is (thrown? Exception
+                 (requirement-sources/validate-snapshots!
+                  (assoc-in (get-in projected [:bridge]) [:path]
+                            "docs/phase-16-standard-library/212-std2-core-library-specification.md")
+                  read-ref rr/sha256 rr/require!)))))
+
 (deftest final-transferred-domain-tool-and-platform-records-retain-boundaries
   (let [domains (slurp "specs/domains-workflow/tasks.md")
         tools (slurp "specs/tools-workflow/tasks.md")
