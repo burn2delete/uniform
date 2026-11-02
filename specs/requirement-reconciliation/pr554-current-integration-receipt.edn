@@ -1,19 +1,19 @@
 {:kind :pr554-current-integration-receipt
  :schema-version 1
  :integration
- {:base-commit "4df59ab107d5865e3afbf9173041cc9401227542"
-  :base-tree "d977cf8ca3de45e73920d6d6a5f5f59aca219527"
-  :candidate-commit "9f2f401802c504816c66dd1250a0760a0c22a7f3"
-  :candidate-tree "eb1bd4f06d44f7a7d6bec3bfbbb05c0db41f034e"
-  :candidate-parent "9621fea9a3b3fad8af00ff75c2e2c4e110415464"
-  :previous-integration-base "43dbdd419c643df42454db42c2cf1b75dea0e292"
-  :previous-integration-tree "d48baf6d2dfc99ae94f5438a7e6f729d8b8db7b8"
-  :main-advance {:from-commit "43dbdd419c643df42454db42c2cf1b75dea0e292"
-                 :from-tree "d48baf6d2dfc99ae94f5438a7e6f729d8b8db7b8"
-                 :to-commit "4df59ab107d5865e3afbf9173041cc9401227542"
-                 :to-tree "d977cf8ca3de45e73920d6d6a5f5f59aca219527"
-                 :composition-commit "9f2f401802c504816c66dd1250a0760a0c22a7f3"
-                 :composition-tree "eb1bd4f06d44f7a7d6bec3bfbbb05c0db41f034e"}
+ {:base-commit "69d21cb8aacd0be8e74cbf4c9ad8b12b84d244e8"
+  :base-tree "1911689d59beb0d9771d5efc5fe29856177b470e"
+  :candidate-commit "873704ab629e62e9812d4f4adf33fdfb56c52b71"
+  :candidate-tree "659fbd58bbd95a680d3c68c61f43c6158fc15c58"
+  :candidate-parent "1d3231a48dee4f17776893348e2b6179fe5407b5"
+  :previous-integration-base "4df59ab107d5865e3afbf9173041cc9401227542"
+  :previous-integration-tree "d977cf8ca3de45e73920d6d6a5f5f59aca219527"
+  :main-advance {:from-commit "4df59ab107d5865e3afbf9173041cc9401227542"
+                 :from-tree "d977cf8ca3de45e73920d6d6a5f5f59aca219527"
+                 :to-commit "69d21cb8aacd0be8e74cbf4c9ad8b12b84d244e8"
+                 :to-tree "1911689d59beb0d9771d5efc5fe29856177b470e"
+                 :composition-commit "873704ab629e62e9812d4f4adf33fdfb56c52b71"
+                 :composition-tree "659fbd58bbd95a680d3c68c61f43c6158fc15c58"}
   :source-view-comparator-renewed? false}
  :source-history
  {:original-pr-head "e7a93606858e543119f807130f1583f1b011b151"
@@ -34,16 +34,19 @@
   :role :historical-frozen-comparator-not-integration-base
   :source-views-renewed? false}
  :transition-repair
- {:candidate-commit "87f8e0dfb9ed49cad90f41eb9667c6c3617eb17a"
-  :candidate-tree "3e053d24997e66b57ceaa06e39b00489d3bcfe81"
-  :parent-commit "f2bd8ff35bef5a03f16bcc9cdaab608177976239"
-  :parent-tree "c3683e098ee77021486f6dd84c40e332ff780d8b"
+ {:candidate-commit "873704ab629e62e9812d4f4adf33fdfb56c52b71"
+  :candidate-tree "659fbd58bbd95a680d3c68c61f43c6158fc15c58"
+  :parent-commit "1d3231a48dee4f17776893348e2b6179fe5407b5"
+  :parent-tree "88647726f0e080210fe4bd69c7d526701fcfabd9"
   :review-state :proposed
   :source-transition
   {:kind :platform-task-authority-ledger-current-layout-v1
    :parent-bridge-kind :platform-generated-view-kind
    :parent-bridge-applying-ref "2a86a9f1fc56b1eceacf4ca29aac7c95a1a4792b"
    :path "specs/platform-workflow/tasks.md"
+   :historical-source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd"
+   :historical-source-tree "abb83592fc9e5e81c0f041e59c67749dbb67b55c"
+   :historical-source-blob "0c5e17169840e1a5deee71e5733955ff0a41805a"
    :baseline
    {:ref "5dfe15c9fad14e5abebf23bf1e645bf9154a2e1e"
     :tree "643afe5f3b00918fc3de76f2855294481a09b505"
@@ -59,17 +62,25 @@
    :navigation-layout-tolerated? true
    :structural-authority-only? true
    :arbitrary-task-criteria-rejected? true
-   :source-hash-renewal? false}
+   :source-hash-renewal? false
+   :locator-provenance :historical-git-blob-and-utf8-span-verified
+   :snapshot-tree-identities-verified? true}
   :guards
   [:layout-only-preamble-accepted
    :changed-body-rejected
    :wrong-baseline-applying-pair-rejected
    :replayed-row-rejected
-   :nonplatform-path-bypass-rejected]
+   :nonplatform-path-bypass-rejected
+   :mutated-file-digest-rejected
+   :mutated-source-commit-rejected
+   :mutated-byte-span-rejected
+   :mutated-line-bounds-rejected
+   :mutated-span-digest-rejected
+   :mutated-snapshot-reference-rejected]
   :local-validation
   {:acceptance-dependencies-test
    {:command "clojure -M tools/acceptance_dependencies_test.clj"
-    :tests 18 :assertions 425 :failures 0 :errors 0}
+    :tests 18 :assertions 434 :failures 0 :errors 0}
    :acceptance-dependencies-check
    {:command "clojure -M tools/acceptance_dependencies.clj --check"
     :exit 0 :result :pass}
@@ -106,11 +117,10 @@
  :current-main-composition
  {:main-commit "69d21cb8aacd0be8e74cbf4c9ad8b12b84d244e8"
   :main-tree "1911689d59beb0d9771d5efc5fe29856177b470e"
-  :candidate-commit "1b956d99c9af26e188f05088df7baadb7a96bbde"
-  :candidate-tree "de3c1c34bd3dde9e7cf51ea1d12955035a788fe1"
+  :candidate-commit "873704ab629e62e9812d4f4adf33fdfb56c52b71"
+  :candidate-tree "659fbd58bbd95a680d3c68c61f43c6158fc15c58"
   :candidate-parents
-  ["da18a412fa0feb0cfee357c2e71f8a65b7cbde85"
-   "69d21cb8aacd0be8e74cbf4c9ad8b12b84d244e8"]
+  ["1d3231a48dee4f17776893348e2b6179fe5407b5"]
   :base-before-main "4df59ab107d5865e3afbf9173041cc9401227542"
   :base-before-main-tree "d977cf8ca3de45e73920d6d6a5f5f59aca219527"
   :frozen-comparator
@@ -118,36 +128,60 @@
    :tree "643afe5f3b00918fc3de76f2855294481a09b505"
    :source-views-renewed? false}
   :pr554-validation
-  {:acceptance-dependencies-test [18 425 0 0]
+  {:acceptance-dependencies-test [18 434 0 0]
    :acceptance-dependencies-check {:exit 0 :result :pass}
    :platform-source-transition [2 6 0 0]
    :platform-task-projection [5 90 0 0]
    :frozen-source-view [4 48 0 0]
    :requirement-reconciliation [31 270 0 0]
+   :tooling-requirements-test [8 47 0 0]
+   :tooling-requirements-check
+   {:exit 0 :result :pass :documents 13 :occurrences 631 :facets 960
+    :requirements 65 :edits 200 :task-references 16}
    :git-diff-check :pass}
   :pr557-coupling
   {:paths
    ["specs/tools-workflow/current-source-view.edn"
     "specs/tools-workflow/evidence.md"
+    "tools/requirement_sources.clj"
     "tools/tooling_requirements.clj"
     "tools/tooling_requirements_test.clj"]
-   :requirement-sources-import? false
-   :platform-task-source-transition-consumed? false
+   :requirement-sources-import? true
+   :platform-task-source-transition-consumed? true
    :source-view-inputs-independent? true
+   :source-view-remains-frozen? true
    :checks
    [{:command "clojure -M tools/tooling_requirements_test.clj"
-     :exit 1
-     :tests :not-reached
-     :diagnostic "Current manifest bytes drifted"}
+     :exit 0 :tests 8 :assertions 47 :failures 0 :errors 0}
     {:command "clojure -M tools/tooling_requirements.clj --check"
-     :exit 1
-     :diagnostic "Current manifest bytes drifted"}]
-   :expected-current-manifest-sha256
-   "aa51bfad176edcf7ed75109a68ea1a0bcbcb3eeeedd6311db256bf331ad01ef0"
-   :observed-current-manifest-sha256
-   "d24ed46e2de0c1672a1a37c0eeacb3340452dcf56ce1b511ecc678761909155b"
-   :cause-commit "5f6cfdcfd7e9eeee1fb13a1bfaf923f571f18065"
-   :disposition :separate-stale-source-view-nonpass}
+     :exit 0 :result :pass :documents 13 :occurrences 631 :facets 960
+     :requirements 65 :edits 200 :task-references 16}]
+   :historical-nonpass
+   {:expected-current-manifest-sha256
+    "aa51bfad176edcf7ed75109a68ea1a0bcbcb3eeeedd6311db256bf331ad01ef0"
+    :observed-current-manifest-sha256
+    "d24ed46e2de0c1672a1a37c0eeacb3340452dcf56ce1b511ecc678761909155b"
+    :cause-commit "5f6cfdcfd7e9eeee1fb13a1bfaf923f571f18065"
+    :diagnostic "Current manifest bytes drifted"
+    :disposition :repaired-by-authenticated-transition}
+   :manifest-transition
+   {:kind :tooling-current-manifest-platform-bridge-v1
+    :baseline
+    {:commit "6218e80e0238cbd071a8837193e7afb5f0b87869"
+     :tree "51a615a96828ecaff57824625bb062a9dd2c5f20"
+     :blob "2dc56539cf67ad1b0170b8fdffa251f7d8535885"
+     :sha256 "aa51bfad176edcf7ed75109a68ea1a0bcbcb3eeeedd6311db256bf331ad01ef0"}
+    :applying
+    {:commit "5f6cfdcfd7e9eeee1fb13a1bfaf923f571f18065"
+     :tree "b550c38ca740c30a5d1a0d90429d3e417eafa06a"
+     :blob "c3f22d33eae72b6a31a5b8d1d3c1dccdf7df18ba"
+     :sha256 "d24ed46e2de0c1672a1a37c0eeacb3340452dcf56ce1b511ecc678761909155b"}
+    :source-view-baseline-sha256
+    "aa51bfad176edcf7ed75109a68ea1a0bcbcb3eeeedd6311db256bf331ad01ef0"
+    :population :conserved
+    :snapshot-provenance :git-commit-tree-blob-and-bytes-verified
+    :interpretation :platform-generated-view-v2-source-bridge-only}
+   :disposition :authenticated-versioned-transition}
   :scope :pr554-composition-and-independent-pr557-diagnostic}
  :evidence
  {:pinned-linter "clj-kondo-2025.10.23"
@@ -156,7 +190,9 @@
   :frozen-view-verification {:verified 84 :entries 84 :result :pass}
   :focused-gates {:platform-projection [5 90]
                   :source-transition [2 6]
-                  :requirement-reconciliation [31 270]}}
+                  :requirement-reconciliation [31 270]
+                  :acceptance-dependencies [18 434]
+                  :tooling-requirements [8 47]}}
  :nonclaims
  [:not-source-hash-refresh
   :not-current-source-view-renewal
