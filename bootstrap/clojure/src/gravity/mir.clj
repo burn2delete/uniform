@@ -6,7 +6,15 @@
     :contract-boundary :native-seed-c11-records-and-relative-validation
     :governing-contracts [D1 D2 D3 D8 D9 C1 C6 C7 C8 C9 C10 C11 C15 BOOT8 TEST2]
     :public-api
-    {allowed-opcodes {:arglists nil :admission :none :value-kind :native-opcode-set}
+    {diagnostic-context {:arglists ([safe-scalar checked-core context artifact]) :admission :none
+       :native-data-only? true :operation-inputs [:safe-scalar]}
+     diagnostic-rule-contract {:arglists ([contracts rule]) :admission :none :native-data-only? true
+       :value-inputs [:contracts]}
+     diagnostic-message {:arglists ([diagnostic-ids message rule]) :admission :none :native-data-only? true
+       :value-inputs [:diagnostic-ids] :operation-inputs [:message]}
+     throw-record! {:arglists ([diagnostic-message record]) :admission :none :native-data-only? true
+       :operation-inputs [:diagnostic-message] :throws :clojure.lang.ExceptionInfo}
+     allowed-opcodes {:arglists nil :admission :none :value-kind :native-opcode-set}
      allowed-source-operations {:arglists nil :admission :none :value-kind :native-source-operation-set}
      block-keys {:arglists nil :admission :none :value-kind :native-block-key-set}
      operation-keys {:arglists nil :admission :none :value-kind :native-operation-key-set}
@@ -86,7 +94,9 @@
      valid-dominance-edge? {:arglists ([edge blocks operation-by-id definitions position-by-id join]
                                       [edge blocks operation-by-id definitions position-by-id join parameter]) :admission :none}
      valid-terminator-use? {:arglists ([use blocks operation-by-id position-by-id]) :admission :none}}
-    :artifact-inputs [:native-opcode-and-source-operation-vocabularies
+    :artifact-inputs [:native-diagnostic-context-inputs :explicit-scalar-redaction-operation
+                      :native-diagnostic-rule-catalogs-and-records :explicit-diagnostic-message-operations
+                      :native-opcode-and-source-operation-vocabularies
                       :native-block-operation-and-terminator-schema-data
                       :native-mir-module-blocks-and-paths :explicit-block-order-operation
                       :native-carrier-and-structural-comparison-data :explicit-carrier-unicode-diagnostic-and-containment-operations
@@ -103,7 +113,8 @@
                       :explicit-require-and-terminator-operations :terminator-key-schema
                       :checked-core-and-mir-data :expected-envelope-and-operation-products
                       :definitions :operation-positions :join-and-parameter-data]
-    :artifact-outputs [:native-opcode-and-source-operation-sets
+    :artifact-outputs [:native-diagnostic-context-data :borrowed-native-diagnostic-rule-contract :native-display-message :stage0-c11-exception-info
+                       :native-opcode-and-source-operation-sets
                        :native-block-operation-and-terminator-key-sets
                        :native-pass-contract-record :canonical-native-block-order :native-operation-sequence :path-prefix-predicate
                        :native-carrier-validation-result :metadata-predicate :relative-structure-and-condition-rule-results
@@ -113,7 +124,8 @@
                        :native-block-placement-data :native-use-definition-and-value-records
                        :native-runtime-check-facts :id-indexed-fact-and-proof-tables
                        :cfg-entry-exit-and-conditional-count :native-rule-outcome :dominance-and-use-predicates]
-    :diagnostic-ownership {:stage [:native-opcode-and-source-operation-vocabularies
+    :diagnostic-ownership {:stage [:native-c11-context-projection :native-c11-rule-lookup-display-and-exception-view
+                                  :native-opcode-and-source-operation-vocabularies
                                   :native-block-operation-and-terminator-key-schemas
                                   :native-pass-contract-block-and-operation-order-and-path-rules
                                   :native-carrier-unicode-metadata-and-relative-structure-rules
@@ -125,14 +137,16 @@
                                   :native-data-flow-equality-and-dominance :native-effect-edge-placement
                                   C11-DOMINANCE C11-TYPE C11-ORIGIN C11-EFFECT
                                   :native-use-and-placement-reference-records C11-BLOCK :terminating-pure-control-transfer :canonical-cfg-structure]
-                           :existing-caller [C11-TYPE C11-EFFECT C11-SAFETY C11-MODULE C11-VERIFY
+                           :existing-caller [:diagnostic-record-construction-and-identity :redaction-privacy-and-publication-policy
+                                             C11-TYPE C11-EFFECT C11-SAFETY C11-MODULE C11-VERIFY
                                              :effect-graph-equality-and-admission C11-DOMINANCE :predicate-refusal]
                            :supplied-require-operation [:diagnostic-construction :throwing]}
     :dependency-direction {:requires [] :consumed-by [gravity.bootstrap]
                            :forbids [gravity.bootstrap gravity.c11-mir gravity.cli gravity.release]}
     :supported-cfg-families [:single-entry-return :single-conditional-diamond]
     :authenticates-inputs? false :issues-verifier-certificates? false
-    :unsupported [:proof-authentication :runtime-check-legality :untrusted-native-ingress :callback-authentication :full-c11-verification
+    :unsupported [:canonical-c15-conformance :public-diagnostic-projection :diagnostic-publication
+                  :proof-authentication :runtime-check-legality :untrusted-native-ingress :callback-authentication :full-c11-verification
                   :general-cfgs :loops :matches :exceptions :source-admission :b1-admission
                   :backend-or-native-execution :migration :release :self-hosting :seed-retirement]})
 
@@ -142,6 +156,71 @@
 
 
 
+
+(defn diagnostic-context
+  [safe-scalar checked-core context artifact]
+  (let [checked-core (if (map? checked-core) checked-core {})
+        context (if (map? context) context {})
+        artifact (if (map? artifact) artifact {})]
+    {:requested-target
+     (let [candidate (or (:requested-target context)
+                         (get-in checked-core
+                                 [:target-request-metadata
+                                  :requested-target]))]
+       (if (keyword? candidate) candidate :target-neutral))
+     :source-target (if (keyword? (:source-target checked-core))
+                      (:source-target checked-core) :unknown)
+     :profile (if (keyword? (:profile checked-core))
+                (:profile checked-core) :hosted)
+     :checked-core-artifact-id
+     (safe-scalar
+      (:artifact-id checked-core))
+     :module-id
+     (safe-scalar
+      (or (get-in checked-core [:source-core-input :module])
+          (:module-id artifact)
+          :not-applicable))
+     :function-id
+     (safe-scalar
+      (or (:entrypoint checked-core) :not-applicable))
+     :block-id
+     (safe-scalar
+      (or (get-in artifact [:control-flow-graph :entry])
+          (get-in artifact [:mir-module :control-flow-graph :entry])
+          :not-applicable))
+     :operation-id :not-applicable
+     :source-operation :not-applicable
+     :syntax-id :not-applicable
+     :origin-id :not-applicable
+     :mir-id
+     (safe-scalar
+      (or (:mir-id artifact) (:source-core artifact) :not-applicable))}))
+
+(defn diagnostic-rule-contract
+  [contracts rule]
+  (first (filter #(contains? (:rules %) rule)
+                 contracts)))
+
+(defn diagnostic-message
+  [diagnostic-ids message rule]
+  (if (contains? (set diagnostic-ids) rule)
+    (message rule)
+    "authenticated checked-core validation failed"))
+
+(defn throw-record!
+  [diagnostic-message record]
+  (let [rule (:rule record)
+        message (diagnostic-message rule)]
+    (throw
+     (ex-info
+      message
+      (merge record
+             {:id rule
+              :message message
+              :bootstrap-stage :stage0
+              :source-span (get-in record [:primary :span])
+              :missing-fact (get-in record [:facts :missing-fact])
+              :fallback-status :rejected})))))
 
 (def allowed-opcodes
   #{:constant :local :local-binding :truthiness :sequence
