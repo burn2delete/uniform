@@ -80,9 +80,9 @@ Do not create another allocator, flow checker, library facade or review owner.
 Use actual typed/effected Core and source/generated identities, compatible
 provider/grant and early target/layout contracts, then legal classification and
 verified MIR, later target layout and actual runtime/library consumers. The
-[existing memory dependency order](#memory-producer-and-consumer-order) retains
-its selected scope; complete L10/L18 cross-component dependency entailment still
-needs current review. Positive/negative cases distinguish partial initialization,
+[source memory-model dependency order](#source-memory-model-dependency-order)
+extends the existing memory routes with selected L10/L18 products. Complete
+source/dependency entailment still needs current review. Positive/negative cases distinguish partial initialization,
 privileged forget, scope cleanup, replacement-provider invariants, GC/RC versus
 deterministic linear release, foreign allocator/retention and host/device/MMIO
 visibility/order. Retain actual L10/L18 manifests, graphs, proof/check/audit and
@@ -94,6 +94,89 @@ input quotas do not. Other full profile/SAFE/provider/runtime/library contracts,
 current independent review and implementation acceptance remain unassessed.
 Preserve every actual native/provider/foreign/callback/device/plugin/probe/replay/
 migration/review/signing/publication hold. This source proposal executes none.
+
+## Source memory-model dependency order
+
+The [existing selected-result table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition)
+adds eight existing consumers: Core1, Core3, Effects3, Auth provider selection,
+Runtime memory services, Stdlib resource APIs, Devices, and Evolution's unchanged
+conditional memory-weakening criterion. The five existing Legality routes gain
+selected L10/L18 detail while retaining every prior input. No task body, status,
+authority, ordinary start permission or accepted receipt changes.
+
+1. Actual Syntax/Expand products feed Core primitive/control construction.
+   Core3 consumes those primitive contracts, expanded syntax and the resource
+   library's versioned source/macro declaration. The definition of with-open or
+   resource-scope precedes its compiled API execution; Core produces actual
+   acquire/body/cleanup paths and origins rather than proving linear flow.
+   Core2/Resolve and Core4/Core5 complete binding and verification before typed
+   acceptance at their governed boundary. This order does not adjudicate the
+   retained D1 versus C1/C6 representation-order question.
+2. Types and direct/latent effect inference supply real declaration, call,
+   memory/resource/layout and behavior facts. Auth publishes early versioned
+   provider declarations; Runtime/Backend/Devices publish actual support,
+   target/ABI/layout and memory-map contracts. Profile checks compatibility
+   using those descriptors and early inferred effects. Auth then records
+   deterministic compatible selection and exact grants arrive from their
+   separate owner. Effects3 consumes those facts for grant-dependent memory
+   policy and allocation/volatile/MMIO/atomic/barrier ordering before MIR.
+3. Memory analysis consumes actual Core1/Core3 and checked Effects3 products
+   with its existing typed/provider/grant inputs. It derives initialization,
+   alias/lifetime/region/allocator, linear/forget and sharing obligations.
+   C10 preserves source-specific refusals and legal proof/check/unsafe policy;
+   candidate extraction, applicable specialist decision and final four-outcome
+   classification remain distinct. Provider trust and supplied verdicts confer
+   no validity or authority. C7 layout facts precede this analysis; actual later
+   C14 layout/provider changes require preservation or invalidation/reanalysis.
+4. Runtime consumes legal facts and actual compiled provider/target inputs,
+   selected service/panic/failure/unwind contracts and enforcement hooks. It
+   does not require its own final handoff, family conformance or public API
+   result first. Execute actual allocation/release/transfer/guard/failure/cleanup
+   where claimed, preserving matching allocators, GC/RC/pinning/finalization,
+   foreign lifetimes and device visibility/synchronization. Runtime1/2's early
+   service/cleanup contract is distinct from final memory-program teardown.
+5. Devices publishes selected actual register/address-space/width/alignment/
+   volatile/order, DMA/pinning/coherency/completion, permission and interrupt
+   contract data before service use. Relevant simulator/device/adapter evidence
+   follows actual Runtime results. A pure register map or simulator cannot
+   prove real MMIO. This selected interface neither accepts full DOM4 nor
+   adopts a device, ISA, kernel, driver framework or Platform Product.
+6. Stdlib's early source contract can now be compiled through the ordinary
+   checkers, Core lowering and target layout; its public API acceptance consumes
+   actual provider/service and grant results and returns real usable values or
+   handles. It does not wait for its own final handoff/conformance. Handoff and
+   family conformance then compose actual services, API/device boundaries,
+   checked ordering, proof preservation and all 21 source diagnostic meanings.
+   Release execution and independent admission follow; final Release is not a
+   local compiler/provider-interface prerequisite.
+7. Only governed stable weakening adoption consumes Evolution change-review's
+   selected result. Types4, Effects3, Runtime3, family conformance and applicable
+   checked evidence supply actual old/new and affected fixture dispositions.
+   A real independent safety-review receipt remains an external governance
+   input, not a compiler verdict or a self-issued approval. Existing applicable
+   GOV1/GOV2/GOV4/GOV9 decisions stay distinct; an unsafe-audit decision alone
+   cannot approve a changed safe-memory guarantee. Candidate evidence gives no
+   permission to perform an otherwise denied action or promise stable semantics.
+   Ordinary unchanged-contract work gains no review/adoption gate.
+
+The coarse source/macro, inference/profile/provider and device/service cycles
+must remain visible. Their selected outputs have different subjects and times:
+early library definition versus later API result; early provider declaration
+versus compatible selection/grant; early inferred effects versus checked order;
+and early device/service contract versus actual execution/conformance. Whole
+producer completion cannot substitute for these exact products. Structural
+staged acyclicity alone does not establish semantic readiness or acceptance.
+
+Fixtures distinguish missing producer or metadata, wrong phase/provider/grant,
+lost cleanup/evaluation/source facts, invalid privileged forget, stale layout/
+proof/order, wrong allocator and actual failed device/foreign/cleanup boundaries.
+Conditional adoption tests reject missing real review or downstream dispositions
+without blocking ordinary fixtures. Preserve all actual execution restrictions,
+accounting-removal decisions and independent review/integration responsibilities.
+No compiler, provider, device, review or publication action runs here. These
+selected interfaces do not accept complete Core/Effects/Auth/Runtime/Stdlib,
+Devices/GOV or other source conjunctions; current review and implementation
+acceptance remain pending/unassessed.
 
 ## Complete memory-safety source criteria
 

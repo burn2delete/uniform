@@ -30,6 +30,12 @@ The existing memory/concurrency/typed-FFI task restores the reviewed release/tra
 
 The new whole-source proposal preserves the eight finite review qualifications; current independent review, full cross-component entailment and actual implementation acceptance remain pending. No compiler/provider/native/device/callback/probe/replay/migration/review/signing/publication action runs in this planning increment.
 
+## Source memory-model dependency order
+
+Use the [source memory-model dependency order](../legality-workflow/plan.md#source-memory-model-dependency-order) and the existing selected-result table. Actual memory services consume legal source facts, provider/grant/enforcement decisions and compiled target inputs. Early device-map and service/panic/cleanup contracts precede execution; final device/API/family results follow. Do not require this service's own final handoff, conformance or public API result before executing it. Preserve actual allocation/release/transfer/failure evidence and held operations.
+
+Current selected source/dependency review and implementation acceptance remain pending/unassessed. No actual provider, device, review or publication operation is performed here; all current restrictions and sole task authorities remain.
+
 ## Foundation source criteria
 
 Four preserved clauses from the

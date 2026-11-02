@@ -31,6 +31,12 @@ The existing effects3 task exposes L10/L18 regime/provider/allocation/failure/bl
 
 The new whole-source proposal preserves the eight finite review qualifications; current independent review, full cross-component entailment and actual implementation acceptance remain pending. No compiler/provider/native/device/callback/probe/replay/migration/review/signing/publication action runs in this planning increment.
 
+## Source memory-model dependency order
+
+Use the [source memory-model dependency order](../legality-workflow/plan.md#source-memory-model-dependency-order) and the existing selected-result table. Direct/latent inference and typed/source cleanup facts precede compatibility and grants; the existing effects3 task consumes those actual products to check memory policy and ordering before MIR. Early inferred effects are distinct from the later grant-dependent checked result. Preserve all existing C8/handler/replay qualifications.
+
+Current selected source/dependency review and implementation acceptance remain pending/unassessed. No actual provider, device, review or publication operation is performed here; all current restrictions and sole task authorities remain.
+
 ## Complete effect-checker source criteria
 
 Restore the five complete C8 criteria under the existing five task IDs, retaining

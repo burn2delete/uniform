@@ -31,6 +31,12 @@ The existing provider-declaration/selection task validates L18's seventeen famil
 
 The new whole-source proposal preserves the eight finite review qualifications; current independent review, full cross-component entailment and actual implementation acceptance remain pending. No compiler/provider/native/device/callback/probe/replay/migration/review/signing/publication action runs in this planning increment.
 
+## Source memory-model dependency order
+
+Use the [source memory-model dependency order](../legality-workflow/plan.md#source-memory-model-dependency-order) and the existing selected-result table. Early typed/versioned provider declarations and runtime/target support descriptors are available before Profile validation. Compatible deterministic selection follows real source/package/workspace/default inputs and actual compatibility facts. Selection is distinct from a grant, checked proof or executed provider; no final Runtime or published package is a declaration prerequisite.
+
+Current selected source/dependency review and implementation acceptance remain pending/unassessed. No actual provider, device, review or publication operation is performed here; all current restrictions and sole task authorities remain.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Auth task authority

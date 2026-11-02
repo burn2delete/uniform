@@ -47,6 +47,12 @@ remain pending. Reconcile those existing fields and IDs rather
 than adding duplicate governance producers to Build or Release. Do not import
 a stale whole-file overlay or treat a prior source receipt as current execution.
 
+## Source memory-model dependency order
+
+Use the [source memory-model dependency order](../legality-workflow/plan.md#source-memory-model-dependency-order) and the existing selected-result table. The unchanged memory-weakening criterion consumes actual old/new and affected Types/Effects/Runtime/family conformance plus checked evidence before stable adoption. A real independent safety-review receipt remains a separately supplied governance input; compiler verdicts and self-audit cannot create it. Applicable GOV decisions stay distinct, and the unsafe-audit decision alone is not generic safety-change approval. Ordinary unchanged-contract development gains no adoption/review prerequisite.
+
+Current selected source/dependency review and implementation acceptance remain pending/unassessed. No actual provider, device, review or publication operation is performed here; all current restrictions and sole task authorities remain.
+
 ## Exact artifact scope and evidence
 
 The resumed `tasks.md` bytes are identical to the preserved source identified

@@ -31,6 +31,12 @@ Core's two existing memory-model criteria preserve defined expression/control ou
 
 The new whole-source proposal preserves the eight finite review qualifications; current independent review, full cross-component entailment and actual implementation acceptance remain pending. No compiler/provider/native/device/callback/probe/replay/migration/review/signing/publication action runs in this planning increment.
 
+## Source memory-model dependency order
+
+Use the [source memory-model dependency order](../legality-workflow/plan.md#source-memory-model-dependency-order) and the existing selected-result table. Primitive construction consumes actual Syntax/Expand products. Structured lowering additionally consumes the library's early versioned source/macro contract, not later allocation execution. Existing binding/verification and Core/Resolve representation-order qualifications remain. Legality derives flow and Runtime executes cleanup.
+
+Current selected source/dependency review and implementation acceptance remain pending/unassessed. No actual provider, device, review or publication operation is performed here; all current restrictions and sole task authorities remain.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Core task authority

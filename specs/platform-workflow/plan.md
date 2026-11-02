@@ -136,6 +136,12 @@ No source alias, task-count denominator, product adoption or full source/owner
 entailment is conferred. Current source/repartition and independent review remain
 pending, as does future-product/SH composition outside the unchanged four keys.
 
+## Source memory-model dependency order
+
+Use the [source memory-model dependency order](../legality-workflow/plan.md#source-memory-model-dependency-order) and the existing selected-result table. The existing Devices parent supplies actual selected register/address-space/MMIO/DMA/coherency/permission/interrupt contract data before memory service use. Relevant simulator/device/adapter evidence follows actual Runtime results; a map or pure simulation cannot establish real MMIO. This selected memory interface adopts no target, device, ISA, kernel, driver framework or Platform Product and does not accept complete DOM4.
+
+Current selected source/dependency review and implementation acceptance remain pending/unassessed. No actual provider, device, review or publication operation is performed here; all current restrictions and sole task authorities remain.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Platform workflow migration

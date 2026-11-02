@@ -30,6 +30,12 @@ The existing resource/concurrency/IO/network task restores the reviewed public a
 
 The new whole-source proposal preserves the eight finite review qualifications; current independent review, full cross-component entailment and actual implementation acceptance remain pending. No compiler/provider/native/device/callback/probe/replay/migration/review/signing/publication action runs in this planning increment.
 
+## Source memory-model dependency order
+
+Use the [source memory-model dependency order](../legality-workflow/plan.md#source-memory-model-dependency-order) and the existing selected-result table. Publish the selected versioned resource source/macro/API contract before compiling its consumer examples. Actual public allocation/API acceptance follows the ordinary compiler and real Runtime provider/grant/layout results. Early source definitions and later usable values/handles are separate products; neither whole IO/network completion nor final family conformance gates ordinary interface work.
+
+Current selected source/dependency review and implementation acceptance remain pending/unassessed. No actual provider, device, review or publication operation is performed here; all current restrictions and sole task authorities remain.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Standard Library workflow migration

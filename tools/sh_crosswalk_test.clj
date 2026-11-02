@@ -2532,7 +2532,7 @@
             pattern (re-pattern (str "(?m)^\\| `" (java.util.regex.Pattern/quote (:consumer r)) "` \\|[^\\n]*\\n"))
             without (str/replace text pattern "")
             missing (acceptance-dependencies/future-task-view (:future-task-authorities view) tasks (:source-snapshots view)
-                      #(if (= % (:path dep)) without (read-text %)))]
+                      #(if (= % (:path dep)) without (read-text %)) (:required-parent-consumers refinement))]
         (is (= 1 (count (re-seq pattern text))))
         (is (= [(:consumer r)] (get-in missing [:dependency-review :unresolved-consumers]))))
       (doseq [input (:composition-results r)]
