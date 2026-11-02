@@ -3676,12 +3676,13 @@
 
 
 (deftest provider-capability-source-preserves-authorities-and-real-enforcement
-  (let [bridge sh-crosswalk/readiness-source-version r (:authority-refinement bridge)
+  (let [checkpoint (get-in sh-crosswalk/readiness-source-version [:authority-dependency-refinement :predecessor-readiness-successor])
+        bridge (if checkpoint (edn/read-string (sh-crosswalk/git-source (:commit checkpoint) (:path checkpoint))) sh-crosswalk/readiness-source-version) r (:authority-refinement bridge)
         previous (:predecessor-readiness-successor r)
         old-text (sh-crosswalk/git-source (:commit previous) (:path previous)) old (edn/read-string old-text)
         projection-text (sh-crosswalk/git-source (:commit previous) (:projection-path previous)) prior (edn/read-string projection-text)
-        view (sh-crosswalk/build)
-        read-text slurp
+        view (if checkpoint (edn/read-string (sh-crosswalk/git-source (:commit checkpoint) (:projection-path checkpoint))) (sh-crosswalk/build))
+        read-text (if checkpoint #(sh-crosswalk/git-source (:commit checkpoint) %) slurp)
         rows (fn [v] (into {} (for [rs (vals (:task-authorities v)) row rs] [(:id row) row])))
         before (rows prior) after (rows view)
         raw (fn [v row] (acceptance-dependencies/source-raw (:source row) (:source-snapshots v)))
@@ -3806,6 +3807,279 @@
     (is (= :pending (:independent-current-review r)))
     (is (= :unassessed (:implementation-acceptance r) (:global-source-conjunctions r)))
     (is (= r (get-in view [:implementation-readiness-source-version :authority-refinement])))))
+
+(deftest provider-dependencies-preserve-grants-imports-and-single-cache-owner
+  (let [bridge sh-crosswalk/readiness-source-version r (:authority-dependency-refinement bridge)
+        previous (:predecessor-readiness-successor r)
+        old-text (sh-crosswalk/git-source (:commit previous) (:path previous)) old (edn/read-string old-text)
+        prior-text (sh-crosswalk/git-source (:commit previous) (:projection-path previous)) prior (edn/read-string prior-text)
+        view (sh-crosswalk/build)
+        tasks (into {} (for [rs (vals (:task-authorities view)) row rs] [(:id row) row]))
+        ids (set (concat (keys tasks) (map :id (mapcat val (:future-task-authorities view)))))
+        result (acceptance-dependencies/future-task-view (:future-task-authorities view) tasks (:source-snapshots view) slurp (:required-parent-consumers r))
+        review (:dependency-review result) consumers (set (:consumer-task-ids r))
+        selected (filterv #(consumers (:consumer %)) (:routes review))
+        dep (:dependency-source r)
+        old-routes (acceptance-dependencies/future-dependency-routes (sh-crosswalk/git-source (:commit previous) (:path dep)) ids ids)
+        old-map (into {} (map (juxt :consumer identity) old-routes))
+        meaning #(select-keys % [:consumer :start-results :composition-results :selected-output-contract])
+        added {"release/remaining-tasks-and-evidence/execute-library-conformance-fixtures"
+ ["auth/remaining-tasks-and-evidence/publish-conformance-and-remaining-trust-assumptions"
+  "math"],
+ "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"
+ ["auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"
+  "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution"],
+ "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"
+ ["build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution"
+  "auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
+  "schema"
+  "pass-evidence"
+  "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records"],
+ "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+ ["effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"
+  "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"
+  "schema"],
+ "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+ ["auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks"],
+ "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"
+ ["auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
+  "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+  "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"
+  "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"],
+ "types/current-evidence-and-remaining-work/types5-integrate-typed-core"
+ ["auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
+  "schema"],
+ "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"
+ ["auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
+  "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks"
+  "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"
+  "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution"
+  "schema"],
+ "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface"
+ ["auth/remaining-tasks-and-evidence/publish-conformance-and-remaining-trust-assumptions"
+  "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"
+  "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"
+  "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix"],
+ "auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
+ ["auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"
+  "schema"],
+ "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures"
+ ["auth/remaining-tasks-and-evidence/publish-conformance-and-remaining-trust-assumptions"
+  "auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
+  "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"
+  "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"],
+ "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"
+ ["build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution"
+  "types/current-evidence-and-remaining-work/types5-integrate-typed-core"
+  "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"
+  "auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
+  "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+  "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks"
+  "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"
+  "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects"
+  "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+  "schema"],
+ "release/remaining-tasks-and-evidence/execute-agent-and-workflow-evaluations"
+ ["auth/remaining-tasks-and-evidence/publish-conformance-and-remaining-trust-assumptions"
+  "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks"
+  "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"],
+ "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis"
+ ["auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks"
+  "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"
+  "schema"],
+ "math"
+ ["auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
+  "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+  "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks"
+  "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"
+  "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
+  "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"],
+ "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"
+ ["auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"],
+ "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures"
+ ["auth/remaining-tasks-and-evidence/publish-conformance-and-remaining-trust-assumptions"
+  "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"
+  "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks"
+  "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"],
+ "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks"
+ ["types/current-evidence-and-remaining-work/types5-integrate-typed-core"
+  "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"
+  "schema"
+  "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"
+  "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects"
+  "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"],
+ "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records"
+ ["build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution"
+  "schema"
+  "auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
+  "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+  "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"
+  "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"
+  "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"
+  "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix"
+  "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"],
+ "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures"
+ ["auth/remaining-tasks-and-evidence/publish-conformance-and-remaining-trust-assumptions"
+  "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"],
+ "auth/remaining-tasks-and-evidence/publish-conformance-and-remaining-trust-assumptions"
+ ["auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
+  "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+  "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks"
+  "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"
+  "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+  "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"
+  "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"
+  "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"
+  "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+  "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects"
+  "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"
+  "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"
+  "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix"
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis"
+  "math"],
+ "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"
+ ["build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution"
+  "auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
+  "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+  "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks"
+  "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"
+  "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"
+  "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects"
+  "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+  "schema"],
+ "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures"
+ ["auth/remaining-tasks-and-evidence/publish-conformance-and-remaining-trust-assumptions"
+  "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks"
+  "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"
+  "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"
+  "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"],
+ "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix"
+ ["build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution"
+  "auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
+  "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+  "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks"
+  "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"
+  "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"
+  "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"
+  "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records"
+  "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects"
+  "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"],
+ "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures"
+ ["auth/remaining-tasks-and-evidence/publish-conformance-and-remaining-trust-assumptions"
+  "auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
+  "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+  "math"],
+ "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses"
+ ["auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"
+  "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks"],
+ "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution"
+ ["effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"
+  "auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
+  "schema"
+  "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"],
+ "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+ ["auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
+  "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"
+  "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution"],
+ "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
+ ["auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"],
+ "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+ ["auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"],
+ "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects"
+ ["auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
+  "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"
+  "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"
+  "schema"]}
+
+        expected (into {} (for [id consumers] [id (set (concat (:composition-results (old-map id)) (added id)))]))
+        complete? (fn [rows] (= expected (into {} (map (juxt :consumer (comp set :composition-results)) rows))))]
+    (is (= (:sha256 previous) (sh-inventory/sha256 old-text)))
+    (is (= (:projection-sha256 previous) (sh-inventory/sha256 prior-text)))
+    (is (= (:input-fingerprint previous) (:input-fingerprint old)))
+    (let [changed #{:input-fingerprint :applying-source-pins :additional-pinned-evidence-hashes :inspection-locators :source-files :authority-dependency-refinement}]
+      (is (= (apply dissoc old changed) (apply dissoc bridge changed))))
+    (is (= (:task-authorities prior) (:task-authorities view)))
+    (is (= (:future-task-authorities prior) (:future-task-authorities view)))
+    (is (= 149 (count tasks)))
+    (is (= 25 (count (:task-authorities view))))
+    (is (= 67 (get-in bridge [:task-comparisons :unchanged-body-count])))
+    (is (= 72 (count (get-in bridge [:task-comparisons :changed-bodies]))))
+    (is (= "d2812996f4433e2102daacff9c5f7b3194a0b5e9" (:source-input-commit old) (:source-input-commit bridge)))
+    (is (= 32 (count (:source-files bridge))))
+    (is (= (remove #(= (:path dep) (:path %)) (:source-files old)) (remove #(= (:path dep) (:path %)) (:source-files bridge))))
+    (is (= [] (:changed-task-ids r) (:new-task-identities r)))
+    (is (= 31 (count consumers) (count selected)))
+    (is (= 8 (count (:new-consumer-task-ids r))))
+    (is (= (set (:new-consumer-task-ids r)) (clojure.set/difference consumers (set (keys old-map)))))
+    (is (= added (:added-composition-inputs r)))
+    (is (complete? selected))
+    (doseq [[id inputs] expected]
+      (is (not (complete? (remove #(= id (:consumer %)) selected))))
+      (doseq [input inputs]
+        (is (not (complete? (mapv #(if (= id (:consumer %)) (update % :composition-results (fn [xs] (vec (remove #{input} xs)))) %) selected))))))
+    (is (= 91 (count (:routes review))))
+    (is (= (:routes r) (mapv #(update % :source dissoc :raw) selected)))
+    (is (= 23 (count (:predecessor-selected-routes r))))
+    (is (= 279 (:preserved-prior-input-joins r) (reduce + (map (comp count :composition-results) (:predecessor-selected-routes r)))))
+    (is (= 415 (:selected-consumer-result-joins r) (reduce + (map (comp count :composition-results) selected))))
+    (is (= 136 (:new-selected-producer-result-joins r) (reduce + (map count (vals added)))))
+    (is (= 60 (:preserved-consumer-route-count r)))
+    (is (= (into {} (map (juxt :consumer meaning) (remove #(consumers (:consumer %)) old-routes)))
+           (into {} (map (juxt :consumer meaning) (remove #(consumers (:consumer %)) (:routes review))))))
+    (doseq [row selected :let [id (:consumer row) before (old-map id)]]
+      (is (empty? (:start-results row)))
+      (when before
+        (is (every? (set (:composition-results row)) (:composition-results before)))
+        (is (str/starts-with? (:selected-output-contract row) (:selected-output-contract before))))
+      (let [text (slurp (:path dep))
+            pattern (re-pattern (str "(?m)^\\| `" (java.util.regex.Pattern/quote id) "` \\|[^\\n]*\\n"))
+            missing (acceptance-dependencies/future-task-view (:future-task-authorities view) tasks (:source-snapshots view)
+                      #(if (= % (:path dep)) (str/replace text pattern "") (slurp %)) (:required-parent-consumers r))]
+        (is (= 1 (count (re-seq pattern text))))
+        (is (= [id] (get-in missing [:dependency-review :unresolved-consumers]))))
+      (doseq [input (:composition-results row)]
+        (is (some #(= [(str "task:" id "/implementation") (str "task:" input "/interface") :declared-producer-interface]
+                      [(:from %) (:to %) (:kind %)]) (:typed-edges result)))
+        (is (some #(= [(str "task:" id "/composition") (str "result:" id ":" input) :actual-selected-producer-result]
+                      [(:from %) (:to %) (:kind %)]) (:typed-edges result)))
+        (is (= :unassessed (get-in result [:nodes (str "result:" id ":" input) :state])))))
+    (is (= 834 (:all-selected-result-joins r) (count (filter #(= :actual-selected-producer-result (:kind %)) (:typed-edges result)))))
+    (is (= 51 (count (:declared-parent-consumers r)) (count (:required-parent-consumers r)) (count (:declared-parent-consumers review))))
+    (is (= 40 (count (:declared-future-consumers r))))
+    (is (= [] (:unresolved-consumers r) (:unresolved-consumers review)))
+    (is (= [48 8] (mapv count (:coarse-producer-cycles r)) (mapv count (:declared-output-cycles review))))
+    (let [prior-cycles (get-in old [:concurrency-dependency-refinement :coarse-producer-cycles])
+          auth-cases "auth/remaining-tasks-and-evidence/publish-conformance-and-remaining-trust-assumptions"
+          infer "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects"
+          members (conj (disj (set (:new-consumer-task-ids r)) auth-cases) infer)]
+      (is (= prior-cycles (:predecessor-coarse-cycles r)))
+      (is (= members (set (:new-main-cycle-members r))))
+      (is (= (into (set (first prior-cycles)) members) (set (first (:coarse-producer-cycles r)))))
+      (is (= (second prior-cycles) (second (:coarse-producer-cycles r)))))
+    (is (= 41 (count (:staged-result-subjects r)) (count (set (map :result (:staged-result-subjects r))))))
+    (is (= 14 (count (:subject-phases r))))
+    (let [inputs (into {} (map (juxt :consumer (comp set :composition-results)) (:routes review)))]
+      (doseq [stage (:staged-result-subjects r)]
+        (is (= (:result stage) (str "result:" (:consumer stage) ":" (:producer stage))))
+        (is (contains? (inputs (:consumer stage)) (:producer stage)))
+        (is (= (if (consumers (:consumer stage)) :selected-amended-route :preserved-unchanged-route-context) (:route-scope stage)))))
+    (is (= :preexisting-Q-verification-before-use-P-provenance-after-execution (:import-output-boundary r)))
+    (is (= :existing-cache-task-alone-owns-keys-invalidation-reuse-reproducibility-consumes-results (:cache-ownership r)))
+    (is (= :actual-grant-and-installed-gate-before-action-later-trace-not-prior-authorization (:gate-order r)))
+    (is (= :all-finite-subjects-frozen-no-review-renewal-or-new-consumption (:review-conservation r)))
+    (is (= :declared-interfaces-no-whole-component-suite-signing-publication-migration-start-gate (:ordinary-construction r)))
+    (is (= 11 (count (:plan-sources r))))
+    (doseq [record (concat [dep (:dependency-tool-source r)] (:plan-sources r))
+            :let [p (:path record) after (:after record) before (:before record) text (slurp p)]]
+      (is (= (:sha256 after) (sh-inventory/sha256 text)))
+      (is (= text (sh-crosswalk/git-source (:commit after) p)))
+      (is (= (:sha256 before) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit before) p)))))
+    (is (= 12 (count (:canonical-sources r))))
+    (doseq [{:keys [path source-commit sha256]} (:canonical-sources r)]
+      (is (= sha256 (sh-inventory/sha256 (slurp path)) (sh-inventory/sha256 (sh-crosswalk/git-source source-commit path)))))
+    (is (= :pending (:independent-current-review r)))
+    (is (= :unassessed (:implementation-acceptance r) (:global-source-conjunctions r)))
+    (is (= r (get-in view [:implementation-readiness-source-version :authority-dependency-refinement])))))
 
 (let [result (run-tests 'sh-crosswalk-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))

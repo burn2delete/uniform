@@ -3652,3 +3652,56 @@ references, 139 original routes, 48 historical spec/plan suffixes and all 48
 original task/evidence contents after declared additions are removed. ASCII and
 whitespace checks pass. These are source/traceability results, not actual
 provider/cache/reproducibility execution, independent acceptance or integration.
+
+## Provider and capability dependency continuation
+
+The [existing dependency table](../docs/acceptance-dependencies.md#future-task-construction-and-composition)
+and [provider producer/consumer stages](../specs/auth-workflow/plan.md#provider-and-capability-producer-and-consumer-order)
+now reconcile selected L15/SAFE10/R11 inputs for 31 consumers. Eight existing
+parents gain routes: Auth trust/conformance, all five Build parents and Types5.
+Twenty-three existing routes gain selected detail. Their 279 prior inputs remain;
+136 additions yield 415 selected inputs and 834 total selected-result joins across
+91 routes, 51 current parents and forty unchanged future records. Sixty unaffected
+route meanings remain exact. This extends the preceding 698-join proposal;
+it does not replace its historical subject or claim whole-task completeness.
+
+Eleven existing plans explain 41 staged result subjects. The coarse cycles now
+contain 48 and eight members. The larger group preserves its forty predecessors
+and adds seven newly routed parents plus the existing direct effect-inference
+owner; Auth conformance stays outside it. Early solved capability facts precede
+direct inference, while combined checked products follow actual legality.
+Declarations and normalized requests precede compatible selection and grants;
+actual grants and installed sink gates precede actions. Imported package Q's
+verification precedes Q use; current P's provenance follows P execution. Cache
+keys/invalidation/reuse stay with the existing cache task, and repeat-build
+comparison consumes its results. Real safe Math and memory/IO replacements precede
+owner conformance, then separately executed Release suites.
+
+The source subject is `838152b75d98d686487db566a38c93c020ad017d`, continuing
+`0782b901b285763ae39e938055d5941f82e09833`, bound to predecessor
+`bc11915a5179638ee4d4e4e11ffb133302b95d4a`. The applying fingerprint is
+`eb2b2d0fe6f67022edb218483ffcee4180d9a7f10f6a310bfb4f7092b3b0401c`.
+Task-source input remains `d2812996f4433e2102daacff9c5f7b3194a0b5e9`:
+149 task keys, 25 authorities, original 67-identical/72-amended bodies, every task
+status and all forty future records remain unchanged. The preceding source test
+now reads its complete frozen predecessor; no review subject or hash is refreshed.
+
+These proposed interfaces do not close global source conjunctions, current
+implementation, independent review or integration. All finite review scopes,
+actual restrictions and the stopped public-contract-cluster handoff remain.
+No other chat is messaged, held action executed, aggregate published or signing/
+product publication performed. The first implementation increment remains the
+Reader contract-coverage task already identified above. Complete source/interface
+entailment and current independent acceptance remain pending.
+
+Validation of this dependency subject passes: sixty crosswalk tests with 24,763
+assertions, 23 dependency tests with 3,213 assertions, both pinned projection
+checks, the 240-document/19-index structural check, full-language roadmap
+structural validation and six language-boundary tests with eleven assertions.
+Missing-route and input-deletion controls preserve the declared-interface versus
+actual-composition distinction. Conservation/navigation covers 88 changed files,
+82 Markdown files, 3,391 local references, 139 original routes, 48 historical
+spec/plan suffixes and all 48 original task/evidence contents after declared
+additions are removed. ASCII and whitespace checks pass. These checks execute
+traceability tooling; they establish no compiler/provider/runtime/release result,
+independent acceptance or integration.
