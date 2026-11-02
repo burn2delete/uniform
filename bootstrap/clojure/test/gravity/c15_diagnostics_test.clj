@@ -51,6 +51,54 @@
       (is (= (:arglists spec) (:arglists (meta (get publics name))))))
     (is (nil? (find-ns 'gravity.bootstrap)))))
 
+(deftest native-source-overrides-preserve-precedence-and-borrowed-values
+  (let [selected {:fail :c15-schema} fallback {:fail :c15-id} empty-selected {}]
+    (doseq [[module-value expected]
+            [[{:metadata {:compiler {:c15-diagnostics selected :verification fallback}}} selected]
+             [{:metadata {:compiler {:c15-diagnostics empty-selected :verification fallback}}} empty-selected]
+             [{:metadata {:compiler {:c15-diagnostics false :verification fallback}}} fallback]
+             [{:metadata {:compiler {:verification fallback}}} fallback]]]
+      (is (identical? expected (diagnostics/source-overrides module-value)))
+      (is (identical? expected (c15/c15-diagnostics-source-overrides module-value)))))
+  (is (= {} (diagnostics/source-overrides nil)))
+  (is (= :unvalidated-native-data
+         (diagnostics/source-overrides {:metadata {:compiler {:c15-diagnostics :unvalidated-native-data}}}))))
+
+(deftest native-catalog-preserves-rule-order-duplicates-and-display-data
+  (let [ids ["C15-SCHEMA" "C15-GOLDEN" "C15-SCHEMA"]
+        catalog (diagnostics/native-catalog ids)]
+    (is (= ids (mapv :rule (:rules catalog))))
+    (is (= [:error :hint :error] (mapv :severity (:rules catalog))))
+    (is (= [:diagnostic/c15-schema :diagnostic/c15-golden :diagnostic/c15-schema]
+           (mapv :message-key (:rules catalog))))
+    (is (= ["gravity://diagnostics/C15-SCHEMA" "gravity://diagnostics/C15-GOLDEN"
+            "gravity://diagnostics/C15-SCHEMA"] (mapv :explain-page (:rules catalog))))
+    (is (every? #(= :rule-primary-artifact-stage-facts (:stable-id-policy %)) (:rules catalog)))
+    (is (= catalog (c15/with-operations {:c15-diagnostics-diagnostic-ids ids} c15/c15-diagnostic-catalog))))
+  (is (= :diagnostic/c15-extra
+         (get-in (diagnostics/native-catalog ["C15_EXTRA"]) [:rules 0 :message-key])))
+  (is (= (diagnostics/native-catalog c15/c15-diagnostics-diagnostic-ids) (c15/c15-diagnostic-catalog)))
+  (doseq [operation [#'diagnostics/source-overrides #'diagnostics/native-catalog]]
+    (let [contract (:gravity/namespace-contract (meta operation))]
+      (is (= (:arglists (meta operation)) (get-in contract [:public-api (:name (meta operation)) :arglists])))
+      (is (= :none (get-in contract [:public-api (:name (meta operation)) :admission]))))))
+
+(deftest native-catalog-wrappers-preserve-interposition-and-exception-identity
+  (let [ids ["C15-SCHEMA"] marker (Object.) observed (atom nil)
+        error (ex-info "catalog owner failure" {})]
+    (with-redefs [diagnostics/native-catalog (fn [value] (reset! observed value) marker)]
+      (is (identical? marker (c15/with-operations {:c15-diagnostics-diagnostic-ids ids}
+                              c15/c15-diagnostic-catalog))))
+    (is (identical? ids @observed))
+    (with-redefs [diagnostics/native-catalog (fn [& _] (throw error))]
+      (is (identical? error (try (c15/c15-diagnostic-catalog) nil
+                                (catch clojure.lang.ExceptionInfo caught caught))))
+      (is (identical? marker (c15/with-operations {:c15-diagnostic-catalog (fn [] marker)}
+                              c15/c15-diagnostic-catalog))))
+    (with-redefs [diagnostics/source-overrides (fn [value] (reset! observed value) marker)]
+      (is (identical? marker (c15/c15-diagnostics-source-overrides module))))
+    (is (identical? module @observed))))
+
 (deftest operation-map-is-validated-and-preserves-variadic-interposition
   (doseq [operation-map
           [nil

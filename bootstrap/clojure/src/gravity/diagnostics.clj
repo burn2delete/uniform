@@ -3,17 +3,21 @@
 
   This namespace owns construction and throwing of the bootstrap
   ExceptionInfo carrier, native seed C15 record/identity construction and
-  private source-record binding through explicit source and digest operations.
-  Rule catalogs, C15 validation, redaction,
+  private source-record binding through explicit source and digest operations,
+  plus native C15 catalog and metadata-override projection.
+  Canonical rule catalogs, C15 validation, redaction,
   rendering, and stage-specific diagnostic policy remain with their owning
-  compiler stages.")
+  compiler stages."
+  (:require [clojure.string]))
 
 (def ^:private namespace-contract
   {:namespace 'gravity.diagnostics
    :contract-boundary :stage0-diagnostic-carriers-and-record-data
    :governing-contracts '[D1 D2 D3 D8 D9 C1 C15 BOOT8 TEST2]
    :public-api
-   {'diagnostic {:arglists '([id message data])
+   {'source-overrides {:arglists '([module]) :admission :none}
+    'native-catalog {:arglists '([diagnostic-ids]) :admission :none}
+    'diagnostic {:arglists '([id message data])
                  :returns :clojure.lang/exception-info}
     'fail! {:arglists '([id message data])
             :throws :clojure.lang/exception-info}
@@ -27,19 +31,19 @@
     'diagnostic-record
     {:arglists '([source-span stable-id rule severity stage message-key source-path form-index primary-artifact facts remediation & {:keys [related origin-chain redactions lifecycle generated? profile target syntax-id]}])
      :admission :none}}
-   :artifact-inputs [:rule-id :human-message :structured-data :explicit-span-and-identity-operations
+   :artifact-inputs [:native-compiler-metadata :native-c15-rule-id-order :rule-id :human-message :structured-data :explicit-span-and-identity-operations
                      :native-seed-diagnostic-fields :source-invocation :canonical-request-digest
                      :original-eleven-c15-fields :private-candidate :complete-digest-request]
-   :artifact-outputs [:stage0-exception-info-carrier :native-seed-diagnostic-record :legacy-diagnostic-id
+   :artifact-outputs [:native-source-overrides :native-c15-catalog :stage0-exception-info-carrier :native-seed-diagnostic-record :legacy-diagnostic-id
                       :resolved-request-data :private-c15-binding :source-owned-rejection]
    :diagnostic-ownership
-   {:owns [:stage0-carrier-construction :stage0-carrier-throw :native-seed-record-construction
+   {:owns [:native-source-override-projection :native-c15-catalog-projection :stage0-carrier-construction :stage0-carrier-throw :native-seed-record-construction
            :legacy-stable-id-preimage :request-binding-orchestration :fresh-source-verification-orchestration]
     :does-not-own
-    [:rule-catalogs :c15-schema :identity-authentication :stream-ordering
+    [:canonical-rule-catalogs :c15-schema :identity-authentication :stream-ordering
      :redaction :rendering :stage-specific-policy]}
    :dependency-direction
-   {:requires ['clojure.core]
+   {:requires ['clojure.core 'clojure.string]
     :consumed-by ['gravity.c15-diagnostics.records 'gravity.bootstrap]
     :forbids ['gravity.bootstrap 'gravity.c15-diagnostics 'gravity.cli 'gravity.release]}
    :unsupported [:canonical-c15-conformance :untrusted-native-ingress :public-projection
@@ -56,6 +60,17 @@
    :bootstrap-hosted? true
    :clojure-seed-boundary? true
    :self-hosted? false})
+
+(defn source-overrides [module]
+  (or (get-in module [:metadata :compiler :c15-diagnostics]) (get-in module [:metadata :compiler :verification]) {}))
+(defn native-catalog [diagnostic-ids]
+  {:artifact :gravity/diagnostic-catalog :status :complete
+   :rules (mapv (fn [id] {:rule id :severity (if (= "C15-GOLDEN" id) :hint :error)
+                          :message-key (keyword "diagnostic" (clojure.string/lower-case
+                                                               (clojure.string/replace id #"_" "-")))
+                          :explain-page (str "gravity://diagnostics/" id) :lifecycle :active
+                          :stable-id-policy :rule-primary-artifact-stage-facts})
+                diagnostic-ids)})
 
 (defn diagnostic
   [id message data]
@@ -119,6 +134,6 @@
     (assoc diagnostic :diagnostic-id (stable-id diagnostic)
            :ordering-key [rule stage primary-artifact form-index])))
 
-(doseq [operation [#'diagnostic #'fail! #'stable-id #'diagnostic-record
+(doseq [operation [#'source-overrides #'native-catalog #'diagnostic #'fail! #'stable-id #'diagnostic-record
                   #'resolve-request-id #'verify-private-record #'bind-private-record]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))
