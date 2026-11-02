@@ -74,12 +74,11 @@
    construction?
    :gravity.bootstrap/legacy))
  ([artifact construction? context]
-  (with-sh06-resolution-transport-bounds
-   (#'gravity.resolution/verify*
-    artifact
-    construction?
-    context
-    (resolution-stage-operations)))))
+  (#'gravity.resolution/verify*
+   artifact
+   construction?
+   context
+   (resolution-stage-operations))))
 
 (defn
  sh06-resolution-contained-verification-failure
@@ -94,12 +93,11 @@
    construction?
    :gravity.bootstrap/legacy))
  ([artifact construction? context]
-  (with-sh06-resolution-transport-bounds
-   (#'gravity.resolution/verify-contained*
-    artifact
-    construction?
-    context
-    (resolution-stage-operations)))))
+  (#'gravity.resolution/verify-contained*
+   artifact
+   construction?
+   context
+   (resolution-stage-operations))))
 
 (defn- sh06-resolution-capability-based-proof-for-construction
   ([artifact]
