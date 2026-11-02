@@ -19331,7 +19331,11 @@
         expected {:mode :entries :cut cut :source-argument-call-node-ids []}]
     (is (= expected cold))
     (doseq [variant (cold-metadata-invalid-inputs input)]
-      (is (= expected (invoke-c7 'sh08-is-cold-evidence [variant]))))))
+      ;; The producer projects semantic fields; Effects/lowering own refusal
+      ;; of forged metadata. It must not silently repair substituted fields.
+      (is (= {:mode (:mode variant) :cut (:cut variant)
+              :source-argument-call-node-ids (:source-argument-call-node-ids variant)}
+             (invoke-c7 'sh08-is-cold-evidence [variant]))))))
 
 (deftest record-union-descriptor-rows-have-no-count-quota
   ;; Normalized descriptor DATA exercises the owning closed-family checker.
