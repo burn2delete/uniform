@@ -1,3 +1,30 @@
+# Types implementation planning entry
+
+Select one existing unresolved task from [tasks.md](tasks.md#implementation-tasks)
+and reconcile the plan against [spec.md](spec.md) and the complete applicable
+L5/C7 rule, including all local-inference premises and exclusions. Preserve the
+original transfer plan below and the existing requirement owner's refinements.
+Use [development verification](../../docs/development-verification.md) and the
+[stage ownership table](../../docs/bootstrap/stage-owned-namespaces.md) to locate
+the actual Gravity checker, temporary transport and current focused fixtures.
+
+Name the actual resolved Core, declarations, private call/use/re-entry context,
+profile/schema/layout inputs, independent constraint derivation and consumers.
+Define accepted and rejected programs that distinguish the selected rule from
+nearby unsupported inference: actual versus expected types, empty/normal versus
+non-invoking witnesses, incomplete/circular census, stale facts, illegal
+conversion and required dynamic/profile boundaries. Preserve complete ignored
+value/type validation and all effect/ownership/capability obligations.
+
+Execute the smallest owner semantic checks and affected Core/Effects/MIR
+composition warranted by the change. An expected annotation, returned type map
+or supplied report is not actual constraint solving. Keep the original C7
+publication restriction and existing writer reservations explicit. Refine only
+the same authoritative task and record exact scoped evidence, unrun work and
+independent review/integration separately; do not issue a competing checklist.
+
+## Historical task-authority-transfer plan
+
 # Implementation plan: Types task authority
 
 Spec: [spec.md](spec.md) | Evidence: [evidence.md](evidence.md)

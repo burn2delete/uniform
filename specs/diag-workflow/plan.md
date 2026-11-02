@@ -1,3 +1,103 @@
+# Diagnostic implementation planning entry
+
+Select one unresolved [existing task](tasks.md#implementation-tasks), preserving
+the transfer plan below. Read [spec.md](spec.md), C15 and the actual producer
+rule and consumer/redaction contracts. Resolve current stage/carrier/renderer
+ownership through [development verification](../../docs/development-verification.md)
+and the [stage ownership table](../../docs/bootstrap/stage-owned-namespaces.md).
+
+Name actual producing input/failure, source/generated/artifact locations,
+available and nil context, semantic identity/facts, policy and consumer.
+Construct a real failure plus relevant malformed-record, origin/ordering,
+wording-change, redaction or view-parity cases. Assert semantic fields and
+remediation categories; do not invent facts merely to satisfy the common shape.
+
+Use focused owner checks and affected real producer/CLI/Build/editor/runtime
+composition. Preserve exact diagnostic and compatibility IDs, private-data
+boundaries and failed/unrun evidence. Refine only the selected task; a successful
+rendering fixture does not establish all-stage integration or release.
+
+## Foundation source criteria
+
+The existing runtime/build/editor integration task now carries the preserved
+`gravity/runtime-check-diagnostic-stability` clause from the
+[foundation context](https://github.com/burn2delete/uniform/blob/df11890b21f71d3f246cc47e9f63d866239a0d68/specs/requirement-reconciliation/foundation-residual-interfaces.edn).
+[D9 requires testable diagnosed runtime checks](../../docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md#requirements);
+[C15](../../docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md#golden-fixtures)
+and [R12](../../docs/phase-08-runtime-architecture/123-r12-runtime-observability-and-diagnostics-design.md#requirements)
+govern the actual structured result, stable semantic identity, source/generated
+or manifest attribution, failed facts, remediation and redaction. Unavailable
+early-stage context stays explicit; no invented profile/target/span is required.
+
+Consume Legality's actual operation/check/proof/audit facts and Runtime's
+selected service and execution products. Trigger the actual failure before and
+after a relevant optimization and across each claimed supported provider;
+compare rule, failed predicate, locations, profile/target and remediation.
+Reject raw host-failure leakage, changed/missing attribution and erased checks
+without surviving evidence. Assert structured fields rather than only display
+text, and preserve actual check/event/artifact identities and permitted
+redaction. Runtime owns check execution, semantic owners own the rule and Diag
+owns common records/consumer consistency. The existing task remains Open.
+
+## Complete diagnostic source criteria
+
+The existing record, identity and view tasks now retain six exact criteria from
+the preserved `c15-complete-current-facet-trace.edn` (historical task source
+`916f020c064991fd308550e4e934c0b4443f6d6b`, trace SHA-256
+`4cdf3ab199fe1f860f72c9a048290da27ac587515ecf0aa2ee52eb3b5118f034`).
+That context is available in the preserved local reconciliation; its tested
+GitHub reference is unavailable. No unavailable source link or aggregate
+publication is required to execute this plan: the current canonical sections
+below govern it. Original requirement identities, task owners and Open states
+are preserved. Current source composition and implementation acceptance remain
+pending; the earlier independent source review retains its frozen subject.
+
+| Existing criterion | Canonical conjunction and actual owning result |
+| --- | --- |
+| `compiler/c15/structured-diagnostic` | The existing record task implements [C15 requirements](../../docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md#requirements), [shape and phase availability](../../docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md#diagnostic-shape): authoritative structured records with every required field, actual origins/producer, typed facts, remediation and policy-qualified redaction. Early profile/target/primary syntax-id keys remain explicitly nil until produced; reject invented context, malformed fields and raw private outputs. |
+| `C15 record/stream refinement` | The same record task implements all [severity/lifecycle](../../docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md#severity-and-lifecycle), [location](../../docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md#locations-and-origins), [fact/remediation](../../docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md#facts-and-remediation) and [stream](../../docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md#diagnostic-streams) cases. Error blocks emission; internal-error retains invariant/bug-report context. Suppression retains authorized internal audit data. Actual stream contents determine summaries, order and pipeline/target manifest links; counts impose no work allowance. |
+| `gravity/foundation-diagnostic-context` | The record task consumes actual owning-checker failures from the thirteen selected D0-D4/D7 diagnostic predicates. Preserve rule/thesis/layer/profile attribution, applicable facts, producer/consumer and remediation, including literal D1-ARTIFACT-GAP, D4-INTEROP-UNTRACKED, D7-MACRO-PROVENANCE and D7-PASS-CONTRACT. This does not implement upstream legality, architecture decisions or release admission. Twenty unrelated attached foundation facets retain their original separate scope. |
+| `compiler/c15/diagnostic-identity` | The existing identity task implements [C15 identity](../../docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md#diagnostic-shape) and [semantic goldens](../../docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md#golden-fixtures). Bind rule, primary artifact, producing stage and semantic facts; fixed source/compiler/profile/target/dependencies/grants preserve identity/order across consumers. Wording/localization changes do not change identity. Reject duplicate/unstable IDs, substituted subjects, lost roles/origins and unresolved/private construction presented as resolved output. |
+| `compiler/c15/diagnostic-views` | The existing view task derives actual CLI/text, JSON, IDE ranges, CI annotations, localized messages, known-ID explain and remediation/quick-fix results from validated resolved records. Assert every C15 golden field, including fact values, related roles, remediation category/target, redaction and order. Reject view-only rule changes, string-only inputs/goldens, missing origins and mismatched semantic results. |
+| `compiler/c15/diagnostic-redaction` | The same view task implements [all C15 redaction conditions](../../docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md#redaction) together: remove secrets/private model or tool output, preserve useful fixing structure, mark redaction and keep full data only in authorized private stores. Declared policy may hide package producer internals while preserving authorized origin/audit evidence. Reject leaked values, lost useful context/markers/audits, unauthorized access and premature publication; a renderer cannot grant store authority. |
+| `testing/test2/diagnostic-match` | The existing [Release compiler-preservation producer](../release-workflow/tasks.md#testing-and-seed-conformance-task-proposals) already carries this exact witness. It owns actual [TEST2 diagnostic comparisons](../../docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md#requirements), consuming Diag products. Change code/span/profile/target/remediation independently and require mismatches to fail while legitimate wording/localization changes remain permitted. No duplicate testing task or implementation credit is added. |
+
+The selected foundation diagnostic conditions are owned by
+[D0](../../docs/phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md#diagnostics),
+[D1](../../docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md#diagnostics),
+[D2](../../docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md#diagnostics),
+[D3](../../docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md#diagnostics),
+[D4](../../docs/phase-00-foundation-and-thesis/005-d4-universal-computing-coverage-charter.md#diagnostics)
+and [D7](../../docs/phase-00-foundation-and-thesis/008-d7-extensibility-philosophy.md#diagnostics).
+
+Apply every source conjunction attached to these criteria, including the nine
+[C15 diagnostic-system code/predicate associations](../../docs/phase-06-compiler-architecture/094-c15-compiler-diagnostics-specification.md#diagnostics).
+Each refusal has an actual source-qualified fixture; a failure about a
+diagnostic also retains stage, offending ID, schema field, artifact and
+remediation. The schema example's kernel/LLVM/network values are illustrative,
+not defaults. Source headings and draft/PDF attribution are retained context,
+not implementation outcomes or fresh PDF evidence.
+
+Start local record/identity work against the declared schema and representative
+source/fact interfaces. C2/C3/C4 supply actual source/syntax/spans/origins and
+expansion traces; C5-C14 supply actual owning failures and stage artifacts.
+Record validation and identity binding may share an implementation but must
+expose both obligations. Private construction with an unresolved identity is
+not a public result. Views consume validated resolved products, and actual
+tooling/runtime/Build consumers plus Release's fixture runner supply composition
+evidence. This order imposes no whole-component completion prerequisite.
+
+For the selected increment, preserve exact input/producer/compiler/profile/
+target/dependency/grant/policy and schema/rendering identities, actual stream
+and manifest edges, resolved IDs, source/related/generated maps, typed facts,
+consumer parity, redaction/private-audit decisions and positive/refusal results.
+Run focused record/identity/view checks and affected actual producer/consumer
+composition under the existing development workflow. Publication/private-store
+actions and all existing holds retain their authority; none runs here. Real
+execution, independent acceptance, integration and release remain separate.
+
+## Historical task-authority-transfer plan
+
 # Implementation plan: Diagnostics task authority
 
 Spec: [spec.md](spec.md) | Evidence: [evidence.md](evidence.md)

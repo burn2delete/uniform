@@ -1,3 +1,37 @@
+# Standard library implementation planning entry
+
+Select one unresolved [existing task](tasks.md#implementation-tasks) and actual
+export family, preserving compiler-support scope and the historical plan below.
+Read [spec.md](spec.md), complete applicable L13/STD/TEST7 rules and the actual
+language/domain/runtime/provider contract. Resolve current semantic source and
+temporary adapters using [development verification](../../docs/development-verification.md)
+and the [stage ownership table](../../docs/bootstrap/stage-owned-namespaces.md).
+
+Name the actual compiled namespace/export/binding, input/result types and value
+laws, evaluation/transfers, effect/allocation/storage, profile/target/grants,
+provider and real caller. Plan legal examples plus arity/type/value/profile/
+authority/ownership/taint/schema or proof negatives specific to the API. For
+collections preserve full physical validation and precise empty/false/nil,
+ordering and lifetime rules; do not copy superseded quotas or infer unsupported
+shape/presence facts. Compatibility spellings alone are not module-export proof.
+
+Run focused API/property checks and affected compiler/runtime/domain/provider
+composition, with runnable documentation and exact diagnostic/artifact identity.
+Use the existing task authority only, recording absent exports, failed/unrun
+cases, residual host/provider boundaries and actual manifest/stability changes.
+Preserve reserved writers and held live operations. Separate reachable compiler
+support, wider module/profile completion, independent acceptance and release.
+
+## Source memory-model and provider interface
+
+Use the [complete source memory-model and provider criteria](../legality-workflow/plan.md#complete-source-memory-model-and-provider-criteria) with the existing task authority.
+
+The existing resource/concurrency/IO/network task restores the reviewed public allocation criterion and adds complete L18 API/provider-boundary requirements. Execute a real selected allocation/use path with initialized storage or a usable handle and declared layout/alignment/failure/sharing/profile/authority facts; reject missing or incompatible providers and invalid accesses. Runtime owns its actual service and matching release/transfer, while compiler checkers derive safety. Declared-interface fixtures can start independently; no mock, compatibility spelling or record-only implementation establishes a live provider or all seventeen family implementations.
+
+The new whole-source proposal preserves the eight finite review qualifications; current independent review, full cross-component entailment and actual implementation acceptance remain pending. No compiler/provider/native/device/callback/probe/replay/migration/review/signing/publication action runs in this planning increment.
+
+## Historical workflow-transfer plan
+
 # Implementation plan: Standard Library workflow migration
 
 Spec: [spec.md](spec.md) | Migration owner: documentation migration maintainer.

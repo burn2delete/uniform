@@ -2,6 +2,7 @@
   "Read-only roadmap dependency audit. Graph edges point to prerequisites.
   No compiler execution, status mutation, receipt authentication or acceptance."
   (:require [clojure.string :as str]
+            [clojure.set :as set]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
             [gravity.tooling.strict-json :as json]))
@@ -140,16 +141,16 @@
                     (.digest (java.security.MessageDigest/getInstance "SHA-256")
                              (.getBytes text java.nio.charset.StandardCharsets/UTF_8)))))
 
-(defn implementation-ids [text component]
-  (let [start (str "<!-- " component "-implementation-tasks:start -->")
-        end (str "<!-- " component "-implementation-tasks:end -->")
+(defn marked-task-ids [text marker]
+  (let [start (str "<!-- " marker ":start -->")
+        end (str "<!-- " marker ":end -->")
         starts (count (re-seq (re-pattern (java.util.regex.Pattern/quote start)) text))
         ends (count (re-seq (re-pattern (java.util.regex.Pattern/quote end)) text))]
     (if (and (zero? starts) (zero? ends))
       nil
       (do
         (require! (and (= 1 starts ends) (< (.indexOf text start) (.indexOf text end)))
-                  (str "Malformed implementation region: " component))
+                  (str "Malformed implementation region: " marker))
         (let [region (subs text (+ (.indexOf text start) (count start)) (.indexOf text end))
               rows (re-seq #"(?m)^- \[[^\n]*" region)
               parsed (mapv #(re-matches #"- \[[ xX]\] `([^\s`]+)`(?: .*)?" %) rows)
@@ -159,8 +160,71 @@
           ;; policy or become a second task authority.
           (require! (and (seq ids) (every? some? parsed)
                          (= (count ids) (count (set ids))))
-                    (str "Missing, duplicate or malformed implementation IDs: " component))
+                    (str "Missing, duplicate or malformed implementation IDs: " marker))
           ids)))))
+
+(defn implementation-ids [text component]
+  (marked-task-ids text (str component "-implementation-tasks")))
+
+(def future-task-regions
+  [["domains" "domains-wider-integration-proposals" 9]
+   ["domains" "domains-math-schema-proposals" 7]
+   ["release" "release-testing-proposals" 13]
+   ["platform" "platform-product-implementation-tasks" 11]])
+
+(def future-dependency-path "docs/acceptance-dependencies.md")
+
+(def selected-parent-consumers
+  #{"domain-ir-boundaries" "math"
+    "evolution/security-review"
+    "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+    "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
+    "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+    "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"
+    "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface"
+    "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance"
+    "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom"
+    "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler"
+    "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate"
+    "release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution"})
+
+(defn future-dependency-routes [text task-ids consumer-ids]
+  (let [marker "future-composition-dependencies"
+        start (str "<!-- " marker ":start -->") end (str "<!-- " marker ":end -->")
+        occurrences #(count (re-seq (re-pattern (java.util.regex.Pattern/quote %)) text))
+        _ (require! (and (= 1 (occurrences start) (occurrences end))
+                         (< (.indexOf text start) (.indexOf text end)))
+                    "Malformed future dependency declaration region")
+        lines (vec (remove str/blank? (str/split-lines
+                 (subs text (+ (.indexOf text start) (count start)) (.indexOf text end)))))
+        _ (require! (= ["| Consumer | Start results | Composition results | Selected output contract |"
+                        "| --- | --- | --- | --- |"] (vec (take 2 lines)))
+                    "Unknown future dependency table syntax")
+        ids (fn [cell]
+              (if (= "none" cell) []
+                (let [parts (str/split cell #", " -1)
+                      parsed (mapv #(second (re-matches #"`([^\s`]+)`" %)) parts)]
+                  (require! (and (seq parsed) (every? some? parsed)
+                                 (= (count parsed) (count (set parsed)))
+                                 (every? task-ids parsed)) "Unknown or malformed future dependency ID")
+                  parsed)))
+        rows (mapv (fn [line]
+                     (let [cells (str/split line #"\|" -1)
+                           _ (require! (and (= 6 (count cells)) (= "" (first cells) (last cells)))
+                                       "Malformed future dependency row")
+                           [consumer start-results results contract] (mapv str/trim (subvec (vec cells) 1 5))
+                           consumers (ids consumer) starts (ids start-results) composition (ids results)]
+                       (require! (and (= 1 (count consumers)) (consumer-ids (first consumers))
+                                      (not (str/blank? contract))
+                                      (empty? (set/intersection (set starts) (set composition))))
+                                 "Invalid future consumer/output declaration")
+                       {:consumer (first consumers) :start-results starts :composition-results composition
+                        :selected-output-contract contract
+                        :source {:path future-dependency-path :sha256 (sha256 text) :declaration line}}))
+                   (drop 2 lines))]
+    (require! (and (seq rows) (= (count rows) (count (set (map :consumer rows)))))
+              "Missing or duplicate future dependency consumer")
+    rows))
 
 (defn component-census [registry read-text exists?]
   (let [components (mapv second (re-seq #"(?m)^\| [^|\n]+ / `([a-z-]+)` \|" registry))]
@@ -291,6 +355,8 @@
             [id {:state (cond
                           (= :accepted (:state row)) :accepted-recorded-scope
                           (= :missing-task-authority (:coverage row)) :missing-task-authority
+                          (= :pending (:dependency-review row)) :dependency-review-pending
+                          (= :unresolved-future-composition (:scope row)) :dependency-review-pending
                           (#{:selected-acceptance-facet :uniform-completion-gate} (:scope row)) :execution-and-review-unassessed
                           (unresolved id) :unknown-condition
                           (some #(not= :accepted (:state (nodes %))) (graph id)) :prerequisite-not-accepted
@@ -360,6 +426,319 @@
    ["release" 3 "cli" 5 nil]
    ["release" 3 "runtime" 2 nil]])
 
+(defn math-output-view [tasks snapshots]
+  (let [rows (vec
+               (for [[task-id task] (sort-by key tasks)
+                     :when (or (= "math" task-id) (str/starts-with? task-id "math/"))
+                     :let [raw (source-raw (:source task) snapshots)
+                           matcher (re-matcher #"(?ms)^Criterion `(math/[^`]+)` \((MATH\d+); Open\)\.\n.*?^Required future evidence: [^\n]*(?:\n|$)" raw)]
+                     row (loop [found []]
+                           (if (.find matcher)
+                             (let [body (.group matcher)
+                                   [_ inputs external] (re-find #"(?m)^Dependencies: (.+)\. (Types/Legality supplies .+)$" body)
+                                   output (second (re-find #"(?m)^Outputs: (.+)$" body))
+                                   roots "declared typed inputs, fixture/oracle policy or exact source contract; no preceding Math producer required"
+                                   dependencies (if (= roots inputs) [] (str/split (or inputs "") #", " -1))]
+                               (require! (and output external
+                                              (contains? (set (map #(str "MATH" %) (range 1 12))) (.group matcher 2))
+                                              (= 1 (count (re-seq #"(?m)^Dependencies:" body))
+                                                   (count (re-seq #"(?m)^Outputs:" body)))
+                                              (every? #(re-matches #"math/[a-z0-9-]+" %) dependencies)
+                                              (= (count dependencies) (count (set dependencies))))
+                                         "Malformed literal Math output dependency")
+                               (recur (conj found
+                                        {:id (.group matcher 1) :canonical-document (.group matcher 2)
+                                         :task-id task-id :state :unassessed :output-declaration output
+                                         :dependency-declaration inputs :external-input-contract external
+                                         :dependencies (vec dependencies)
+                                         :source {:task-source (source-ref (:source task))
+                                                  :source-commit (:source-commit task)
+                                                  :task-relative-byte-start (alength (.getBytes (subs raw 0 (.start matcher)) "UTF-8"))
+                                                  :task-relative-byte-end (alength (.getBytes (subs raw 0 (.end matcher)) "UTF-8"))
+                                                  :sha256 (sha256 body)}})))
+                             found))]
+                 row))
+        by-id (into {} (map (juxt :id identity) rows))
+        ;; This is the preserved source inventory, never a compiler allowance.
+        _ (require! (= 48 (count rows) (count by-id)) "Missing or duplicated preserved Math output")
+        _ (doseq [row rows input (:dependencies row)]
+            (require! (contains? by-id input) "Unknown literal Math output dependency"))
+        graph (into (sorted-map) (map (juxt :id #(set (:dependencies %))) rows))]
+    {:authority :literal-source-output-declarations :outputs rows :adjacency graph :cycles (cycles graph)
+     :cross-task-inputs
+     (vec (for [row rows input (:dependencies row) :let [producer (by-id input)]
+                :when (not= (:task-id row) (:task-id producer))]
+            {:consumer-task (:task-id row) :consumer-output (:id row)
+             :producer-task (:task-id producer) :producer-output input :source (:source row)}))
+     :implementation-acceptance :unassessed
+     :limits [:literal-dependencies-not-all-prose :proof-method-selected-per-claim
+              :output-facts-not-tasks :source-declarations-not-execution]}))
+
+(defn release-source-view [tasks snapshots]
+  (let [rows (vec
+               (mapcat
+                 (fn [task]
+                   (let [raw (source-raw (:source task) snapshots)
+                         baseline (second (re-find #"(?m)^Evidence baseline: (.+)$" raw))
+                         test-id (second (re-find #"\[TEST(\d+)\]" (or baseline "")))
+                         matcher (re-matcher #"(Source|Bootstrap criterion) ([a-z0-9/-]+):" raw)
+                         starts (loop [out []]
+                                  (if (.find matcher)
+                                    (recur (conj out {:id (.group matcher 2) :kind (.group matcher 1) :start (.start matcher)})) out))]
+                     (mapv
+                       (fn [row next-row]
+                         (let [tail (or (str/index-of raw " This producer supplies conformance evidence;" (:start row)) (count raw))
+                               end (or (:start next-row) tail)
+                               body (str/trimr (subs raw (:start row) end))
+                               end (+ (:start row) (count body))
+                               bootstrap? (= "Bootstrap criterion" (:kind row))
+                               allowed? (if bootstrap?
+                                          (and (str/ends-with? (:id task) "implement-declared-seed-compiler-and-native-observations")
+                                               (contains? #{"bootstrap/native-carrier-header" "bootstrap/native-reference-identity"
+                                                            "bootstrap/native-symbol-units" "bootstrap/seed-subset"} (:id row)))
+                                          (or (and test-id (str/starts-with? (:id row) (str "testing/test" test-id "/")))
+                                              (and (= "13" test-id) (contains? #{"bootstrap/release-supply-chain" "bootstrap/trust-reduction"} (:id row)))))]
+                           (require! (and allowed? baseline
+                                          (str/includes? body (if bootstrap? "Required outputs:" "Concrete acceptance:")))
+                                     "Malformed or misowned Release source criterion")
+                           {:id (:id row) :task-id (:id task) :state :unassessed
+                            :declaration-kind (if bootstrap? :bootstrap-criterion :test-source-clause)
+                            :evidence-baseline baseline :baseline-authority :navigation-not-semantic-entailment
+                            :source {:task-source (source-ref (:source task)) :source-commit (:source-commit task)
+                                     :task-relative-byte-start (alength (.getBytes (subs raw 0 (:start row)) "UTF-8"))
+                                     :task-relative-byte-end (alength (.getBytes (subs raw 0 end) "UTF-8"))
+                                     :sha256 (sha256 body)}})) starts (concat (rest starts) [nil])))) tasks))
+        _ (require! (= 77 (count rows) (count (set (map :id rows))))
+                    "Missing or duplicate preserved Release source criterion")]
+    {:authority :literal-resumed-task-criteria :criteria rows :implementation-acceptance :unassessed
+     :limits [:source-criteria-not-tasks :baseline-links-not-canonical-entailment
+              :runner-not-independent-admission :source-declarations-not-execution]}))
+
+(defn future-task-view
+  ([authorities current-tasks snapshots read-text]
+   (future-task-view authorities current-tasks snapshots read-text selected-parent-consumers))
+  ([authorities current-tasks snapshots read-text required-parent-consumers]
+  (let [future-tasks (vec (mapcat val authorities))
+        future-map (into {} (map (juxt :id identity) future-tasks))
+        all-tasks (merge current-tasks future-map)
+        _ (require! (= (set (map second future-task-regions)) (set (keys authorities)))
+                    "Missing or unknown future task authority")
+        _ (require! (= 40 (count future-tasks) (count future-map)) "Changed future task population")
+        _ (require! (= (+ (count current-tasks) (count future-map)) (count all-tasks))
+                    "Future task duplicates a current task authority")
+        _ (doseq [[component region expected] future-task-regions
+                  :let [rows (authorities region) path (str "specs/" component "-workflow/tasks.md")]]
+            (require! (= expected (count rows)) "Changed marked future task population")
+            (require-population! (set (map :id rows)) (marked-task-ids (read-text path) region)
+                                 (str region " live future task"))
+            (doseq [row rows]
+              (require! (= [component region path :component-future-task-ledger]
+                           [(:component row) (:region row) (:path row) (:authority row)])
+                        "Future task owner/region mismatch")
+              (current-task-body! (:source row) snapshots read-text)
+              (let [[_ checked id] (re-find #"^- \[([ xX])\] `([^`]+)`"
+                                          (source-raw (:source row) snapshots))]
+                (require! (and (= id (:id row)) (= (:checked row) (not= " " checked)))
+                          "Future task ID/status differs from authority"))))
+        routes (future-dependency-routes (read-text future-dependency-path) (set (keys all-tasks))
+                                         (set (keys all-tasks)))
+        all-declared (set (map :consumer routes))
+        declared (set/intersection all-declared (set (keys future-map)))
+        unresolved (vec (sort (set/difference
+                               (set/union (set (keys future-map)) (set required-parent-consumers))
+                               all-declared)))
+        math (math-output-view all-tasks snapshots)
+        release (release-source-view (authorities "release-testing-proposals") snapshots)
+        named-inputs (group-by (juxt :consumer-task :producer-task) (:cross-task-inputs math))
+        output-graph (reduce (fn [graph {:keys [consumer start-results composition-results]}]
+                               (assoc graph consumer (set (concat start-results composition-results))))
+                             (zipmap (keys all-tasks) (repeat #{})) routes)
+        selected (for [{:keys [consumer start-results composition-results source selected-output-contract]} routes
+                       producer (concat start-results composition-results)]
+                   {:id (str "result:" consumer ":" producer) :consumer consumer :producer producer
+                    :source source :selected-output-contract selected-output-contract
+                    :named-math-output-inputs (vec (sort (set (map :producer-output (named-inputs [consumer producer])))))
+                    :producer-source (source-ref (:source (all-tasks producer)))})
+        nodes (merge
+                (into {} (for [row (:criteria release)]
+                           [(str "source-criterion:" (:id row)) (assoc row :scope :selected-acceptance-facet)]))
+                (into {} (for [row (:outputs math)]
+                           [(str "output:" (:id row)) (assoc row :scope :selected-acceptance-facet)]))
+                (into {} (for [[id row] future-map]
+                           [(str "task:" id "/interface")
+                            {:state :accepted :scope :declared-interface-only :task-id id :component (:component row)}]))
+                (into {} (for [[id row] future-map]
+                           [(str "task:" id "/implementation")
+                            {:state :unassessed :scope :future-task-implementation :task-id id
+                             :dependency-review (if (declared id) :declared :pending)
+                             :recorded-checked (:checked row) :component (:component row)}]))
+                (into {} (for [[id _] future-map]
+                           [(str "task:" id "/composition")
+                            {:state :unassessed :scope (if (declared id) :actual-selected-producer-consumer
+                                                        :unresolved-future-composition) :task-id id}]))
+                (into {} (for [row selected]
+                           [(:id row) (assoc (dissoc row :id) :state :unassessed :scope :selected-acceptance-facet
+                                            :task-id (:producer row))])))
+        edges (vec (concat
+                (for [row (:criteria release)]
+                  {:from (str "task:" (:task-id row) "/composition") :to (str "source-criterion:" (:id row))
+                   :kind :requires-source-criterion-execution-and-refusals :source (:source row)})
+                (for [row (:outputs math) input (:dependencies row)]
+                  {:from (str "output:" (:id row)) :to (str "output:" input)
+                   :kind :literal-math-output-prerequisite :source (:source row)})
+                (for [row selected input (:named-math-output-inputs row)]
+                  {:from (:id row) :to (str "output:" input)
+                   :kind :named-selected-producer-output :source (:source row)})
+                (for [[id row] future-map]
+                  {:from (str "task:" id "/implementation") :to (str "task:" id "/interface")
+                   :kind :declared-interface :source (source-ref (:source row))})
+                (for [[id row] future-map]
+                  {:from (str "task:" id "/composition") :to (str "task:" id "/implementation")
+                   :kind :actual-implementation :source (source-ref (:source row))})
+                (mapcat (fn [{:keys [consumer start-results composition-results source]}]
+                          (concat
+                            (for [producer (concat start-results composition-results)]
+                              {:from (str "task:" consumer "/implementation") :to (str "task:" producer "/interface")
+                               :kind :declared-producer-interface :source source})
+                            (for [producer start-results]
+                              {:from (str "task:" consumer "/implementation") :to (str "result:" consumer ":" producer)
+                               :kind :adopted-product-contract :source source})
+                            (for [producer (concat start-results composition-results)]
+                              {:from (str "task:" consumer "/composition") :to (str "result:" consumer ":" producer)
+                               :kind :actual-selected-producer-result :source source}))) routes)))]
+    {:nodes nodes :typed-edges edges
+     :dependency-review {:task-count (count future-map) :declared-consumers (vec (sort declared))
+                         :required-parent-consumers (vec (sort required-parent-consumers))
+                         :declared-parent-consumers (vec (sort (set/difference all-declared declared)))
+                         :unresolved-consumers unresolved :routes routes
+                         :math-outputs math
+                         :release-source-criteria release
+                         :declared-output-adjacency output-graph :declared-output-cycles (cycles output-graph)
+                         :authority :source-declarations-not-execution
+                         :future-sh-and-full-language-joins :pending
+                         :implementation-acceptance :unassessed}})))
+
+(defn finish-line-routes [text task-ids consumers]
+  (let [start "<!-- finish-line-dependencies:start -->" end "<!-- finish-line-dependencies:end -->"
+        occurrences #(count (re-seq (re-pattern (java.util.regex.Pattern/quote %)) text))
+        _ (require! (and (= 1 (occurrences start) (occurrences end)) (< (.indexOf text start) (.indexOf text end)))
+                    "Malformed finish-line dependency region")
+        lines (vec (remove str/blank? (str/split-lines (subs text (+ (.indexOf text start) (count start)) (.indexOf text end)))))
+        _ (require! (= ["| Consumer | Selected producers | Condition | Required result contract |" "| --- | --- | --- | --- |"]
+                       (vec (take 2 lines))) "Unknown finish-line dependency syntax")
+        rows (mapv (fn [line]
+                     (let [cells (str/split line #"\|" -1)
+                           _ (require! (and (= 6 (count cells)) (= "" (first cells) (last cells))) "Malformed finish-line row")
+                           [consumer producers condition contract] (mapv str/trim (subvec (vec cells) 1 5))
+                           id (second (re-matches #"`([^\s`]+)`" consumer))
+                           inputs (dependency-list producers #"`([^\s`]+)`" false)]
+                       (require! (and (consumers id) (every? task-ids inputs)
+                                      (#{"always" "platform-product-adopted"} condition) (not (str/blank? contract)))
+                                 "Unknown finish-line consumer, producer or condition")
+                       {:consumer id :producers (vec (sort inputs))
+                        :condition (when-not (= "always" condition) (keyword condition)) :result-contract contract
+                        :source {:path future-dependency-path :sha256 (sha256 text) :declaration line}})) (drop 2 lines))]
+    (require! (= (count rows) (count (set (map (juxt :consumer :condition) rows)))) "Duplicate finish-line declaration")
+    (require-population! consumers (map :consumer rows) "finish-line consumer")
+    rows))
+
+(defn finish-line-view [sources tasks snapshots read-text]
+  (let [by-id (into {} (map (juxt :id identity) sources))
+        fl-ids full-language-task-ids
+        p18-ids (set (map #(format "P18-T%02d" %) (range 7)))
+        terminal-sh (set (map #(format "SH-%02d" %) (range 21 30)))
+        gates #{"P15-S23" "final-phase-18-completion-gate"}
+        contexts #{"full-language-completion-rule" "full-language-staging-contract"}
+        consumers (set/union fl-ids p18-ids terminal-sh gates)
+        _ (require! (= 56 (count sources) (count by-id)) "Changed finish-line source population")
+        _ (require-population! (set/union consumers contexts) (keys by-id) "finish-line source")
+        _ (doseq [row sources
+                  :let [id (:id row) kind (cond (fl-ids id) :full-language-task (p18-ids id) :phase18-task
+                                                             (terminal-sh id) :self-hosting-milestone (gates id) :existing-terminal-gate
+                                                             (= id "full-language-completion-rule") :shared-proof-contract
+                                                             :else :shared-stage-contract)
+                        path (cond (terminal-sh id) milestone-path
+                                   (or (p18-ids id) (= id "final-phase-18-completion-gate"))
+                                   "docs/phase-18-binary-distribution-and-seedless-release/IMPLEMENTATION-ROADMAP.md"
+                                   :else roadmap-path)]]
+            (require! (= [kind path] [(:kind row) (:path row)]) "Misowned finish-line source")
+            (source-bound! (:source row) snapshots read-text)
+            (let [raw (source-raw (:source row) snapshots)
+                  status (or (second (re-find #"(?m)^Status: ([^\n]+)" raw))
+                             (when-let [[_ checked] (re-find #"^- \[([ xX])\]" raw)]
+                               (if (= " " checked) "open" "checked-at-recorded-scope"))
+                             "source-declared-only")]
+              (require! (= status (:recorded-status row)) "Changed recorded finish-line status")))
+        _ (doseq [[path rows] (group-by :path sources)]
+            (require! (every? #(= (:sha256 %) (sha256 (read-text path))) rows) "Stale finish-line source file"))
+        routes (finish-line-routes (read-text future-dependency-path) (set (keys tasks)) consumers)
+        graph (full-language-graph (read-text roadmap-path))
+        _ (require-population! fl-ids (keys graph) "full-language dependency")
+        staged (merge (staged-graph graph) (staged-graph (zipmap p18-ids (repeat #{}))))
+        stage-node (fn [id facet] (str id "/" facet))
+        nodes (merge
+                (into {} (for [id (set/union fl-ids p18-ids) facet ["interface" "implementation" "composition" "acceptance"]]
+                           [(stage-node id facet) {:state (if (= facet "interface") :accepted :unassessed)
+                                                  :scope (case facet "interface" :declared-interface-only
+                                                                                "implementation" :roadmap-task-implementation
+                                                                                "composition" :actual-selected-producer-consumer
+                                                                                :current-acceptance)
+                                                  :task-id id :recorded-status (:recorded-status (by-id id))
+                                                  :source (source-ref (:source (by-id id)))}]))
+                (into {} (for [id (set/union gates contexts)]
+                           [id {:state (if (= id "full-language-staging-contract") :accepted :unassessed)
+                                :scope (if (= id "full-language-staging-contract") :declared-interface-only :uniform-completion-gate)
+                                :source (source-ref (:source (by-id id)))}]))
+                (into {} (for [id (set/union fl-ids p18-ids)]
+                           [(str "proof:" id) {:state :unassessed :scope :uniform-completion-gate
+                                               :source (source-ref (:source (by-id id)))}]))
+                (into {} (for [{:keys [consumer producers condition result-contract source]} routes producer producers]
+                           [(str "finish-result:" consumer ":" producer ":" (or (some-> condition name) "always"))
+                            {:state :unassessed :scope :selected-acceptance-facet :consumer consumer :task-id producer
+                             :condition condition :result-contract result-contract :source source
+                             :producer-source (source-ref (:source (tasks producer)))
+                             :spec-kit-owner (str/replace (:path (tasks producer)) #"tasks\.md$" "spec.md")}])) )
+        edges (vec (concat
+                (for [[from inputs] staged to inputs]
+                  {:from from :to to :kind :original-roadmap-stage-prerequisite
+                   :source (source-ref (:source (by-id (first (str/split from #"/")))) )})
+                (for [id (set/union fl-ids p18-ids)]
+                  {:from (stage-node id "acceptance") :to (str "proof:" id) :kind :complete-original-task-proof
+                   :source (source-ref (:source (by-id id)))})
+                (for [id fl-ids]
+                  {:from (stage-node id "acceptance") :to "full-language-completion-rule" :kind :original-full-language-completion-rule
+                   :source (source-ref (:source (by-id "full-language-completion-rule")))})
+                (mapcat (fn [{:keys [consumer producers condition source]}]
+                          (concat
+                            (when (or (fl-ids consumer) (p18-ids consumer))
+                              (for [producer producers]
+                                {:from (stage-node consumer "implementation") :to (str "task:" producer "/interface")
+                                 :kind :declared-producer-interface :condition condition :source source}))
+                            (for [producer producers]
+                              {:from (if (or (fl-ids consumer) (p18-ids consumer)) (stage-node consumer "composition") consumer)
+                               :to (str "finish-result:" consumer ":" producer ":" (or (some-> condition name) "always"))
+                               :kind :actual-finish-line-producer-result :condition condition :source source}))) routes)
+                (for [id ["FL-P15-T01" "FL-P15-T02" "FL-P15-T03"]]
+                  {:from "P15-S23" :to (stage-node id "acceptance") :kind :complete-seed-retirement-conjunction
+                   :source (source-ref (:source (by-id "P15-S23")))})
+                (for [id ["P18-T03" "P18-T05" "P18-T06"]]
+                  {:from (stage-node id "acceptance") :to "P15-S23" :kind :actual-p15-retirement-before-final-claim
+                   :source (source-ref (:source (by-id id)))})
+                (for [to (cons "P15-S23" (map #(stage-node % "acceptance") (sort p18-ids)))]
+                  {:from "final-phase-18-completion-gate" :to to :kind :original-phase18-final-conjunction
+                   :source (source-ref (:source (by-id "final-phase-18-completion-gate")))})
+                (for [to (concat (map #(stage-node % "acceptance") (sort (disj fl-ids "FL-P18-T02")))
+                                 ["SH-29" "final-phase-18-completion-gate"])]
+                  {:from "FL-P18-T02/acceptance" :to to :kind :complete-project-finish-line-conjunction
+                   :source (source-ref (:source (by-id "FL-P18-T02")))})))]
+    {:nodes nodes :typed-edges edges :condition-values {:platform-product-adopted :unknown}
+     :summary {:authority :source-declarations-not-acceptance :sources sources :routes routes
+               :full-language-tasks (vec (sort fl-ids)) :phase18-tasks (vec (sort p18-ids))
+               :terminal-sh-milestones (vec (sort terminal-sh)) :existing-terminal-gates (vec (sort gates))
+               :final-root "FL-P18-T02/acceptance" :source-entailment :unassessed :implementation-acceptance :unassessed
+               :limits [:original-task-authorities-retained :historical-status-not-current-execution
+                        :first-seedless-release-not-full-language :selected-results-not-whole-task-start-gates]}}))
+
 (defn task-sh-view [crosswalk read-text]
   (let [requirements (:requirements crosswalk)
         snapshots (:source-snapshots crosswalk)
@@ -391,6 +770,9 @@
               (when (:checked row)
                 (require! (str/includes? (source-text (:source row)) "Accepted;")
                           "Checked task lacks explicit accepted status"))))
+        future (future-task-view (:future-task-authorities crosswalk) task-map snapshots read-text)
+        finish (finish-line-view (:finish-line-sources crosswalk)
+                 (into task-map (for [rows (vals (:future-task-authorities crosswalk)) row rows] [(:id row) row])) snapshots read-text)
         _ (doseq [r requirements]
             (source-bound! (:acceptance-source r) snapshots read-text)
             (source-bound! (:context-source r) snapshots read-text)
@@ -454,14 +836,14 @@
                                        {:state :unassessed :scope :actual-selected-producer-consumer :task-id id}]))
         shared-gate-nodes (into {} (for [n (range 3 30)] [(format "uniform-gate:SH-%02d" n)
                                       {:state :unassessed :scope :uniform-completion-gate :rule (:id shared-rule)}]))
-        nodes (merge interface-nodes implementation-nodes criterion-nodes milestone-nodes facet-nodes sequence-nodes composition-nodes shared-gate-nodes)
+        nodes (merge interface-nodes implementation-nodes criterion-nodes milestone-nodes facet-nodes sequence-nodes composition-nodes shared-gate-nodes (:nodes future) (:nodes finish))
         evidence-applicability (mapv #(evidence-source-state % read-text)
                                     (sort-by (juxt :path :source-commit :sha256)
                                       (distinct (mapcat :evidence-source-locators requirements))))
-        conditions {:optimization-requested :unknown :runtime-service-required :unknown
+        conditions (merge {:optimization-requested :unknown :runtime-service-required :unknown
                     :compiler-artifacts-consumed :unknown :build-command-selected :unknown
-                    :execution-command-selected :unknown :stable-candidate-selection :unknown}
-        edges (vec (concat
+                    :execution-command-selected :unknown :stable-candidate-selection :unknown} (:condition-values finish))
+        edges (vec (concat (:typed-edges future) (:typed-edges finish)
           [{:from "SH-07" :to "SH07-C18" :kind :single-milestone-completion-decision
             :source (source-ref (:source (last sequence)))}]
           (for [n (range 3 30)]
@@ -499,6 +881,8 @@
         adjacency (typed-adjacency nodes edges conditions)]
     (require! (empty? (cycles adjacency)) "SH/task current acceptance cycle")
     {:schema-version 1 :authority :structural-only :nodes nodes :typed-edges edges
+     :future-task-dependencies (:dependency-review future)
+     :finish-line-composition (:summary finish)
      :condition-values conditions
      :evidence-source-applicability evidence-applicability
      :historical-source-applicability historical-source-applicability

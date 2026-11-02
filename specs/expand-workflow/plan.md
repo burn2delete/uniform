@@ -1,3 +1,32 @@
+# Expand implementation planning entry
+
+Select one existing unresolved task from [tasks.md](tasks.md#implementation-tasks)
+and reconcile this plan against the implementation behavior in [spec.md](spec.md).
+The original task-transfer plan below remains preserved. Determine the owning
+Gravity algorithm, temporary Clojure transport and current test selectors from
+the [stage ownership table](../../docs/bootstrap/stage-owned-namespaces.md) and
+actual callers; do not grant semantic authority to a host evaluator or a
+manifest-only compatibility projection.
+
+For the selected task, identify the complete macro/form population, real syntax
+inputs, macro environment/dependencies, source-selected profile/target and any
+build-provider/grant/replay contract. Name the actual expanded products and
+their downstream consumer. Add concrete pure/nested/generated positive cases
+and applicable non-syntax, phase, capture, origin, hidden-effect, taint, unsafe,
+cache-drift and generated-program negative cases with stable diagnostics.
+Preserve existing source provenance and compatibility IDs.
+
+Use [development verification](../../docs/development-verification.md) for
+focused owner checks and affected Syntax/Resolve/Core/legality composition.
+Actual source execution and real verifier/replay behavior are required for the
+claimed outcome; fixture translation, supplied reports and metadata cannot
+replace them. Any restricted provider/replay path or reserved writer remains
+an explicit unfinished acceptance boundary. Record evidence in the existing
+package and update only its authoritative task; do not create a parallel
+implementation checklist. Independent review and integration remain separate.
+
+## Historical task-authority-transfer plan
+
 # Implementation plan: Expand task authority
 
 Spec: [spec.md](spec.md) | Owner role: compiler expand maintainer.

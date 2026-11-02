@@ -1,3 +1,38 @@
+# Core implementation planning entry
+
+Select one existing unresolved task from [tasks.md](tasks.md#implementation-tasks)
+against the implementation specification in [spec.md](spec.md). Preserve the
+original transfer plan below and prior accepted finite receipts. Resolve the
+owning Gravity Core implementation, transport boundary, source mapping and real
+verifier from [development verification](../../docs/development-verification.md)
+and the [stage ownership table](../../docs/bootstrap/stage-owned-namespaces.md).
+
+For the selected task, name the exact primitive/surface/control population,
+expanded-syntax and binding inputs, node/trace/map products and downstream
+consumer. Supply real accepted programs and malformed/order/binding/origin/
+control/metadata/domain negatives as applicable. Match guards, if conditions,
+quote data and exception/resource cleanup retain their distinct source rules.
+Semantic replay and coherent-substitution controls must exercise the actual
+owner, not merely the artifact hash or a supplied verification record.
+
+Use focused semantic checks and affected Resolve/Types/Effects composition.
+Preserve existing writer reservations, the Core-representation ordering
+qualification and restricted domain/source paths. Record actual observations,
+reused unchanged evidence, unrun boundaries and stable diagnostic ownership.
+`speckit-tasks` refines the same marked task authority, with no duplicate
+implementation checklist. Independent acceptance, migration and integration
+remain separate from ordinary development and structural validation.
+
+## Source memory-model and provider interface
+
+Use the [complete source memory-model and provider criteria](../legality-workflow/plan.md#complete-source-memory-model-and-provider-criteria) with the existing task authority.
+
+Core's two existing memory-model criteria preserve defined expression/control outcomes and actual with-open/acquire/body/release lowering. Preserve source/generated/evaluation and regime/resource declarations; Types/Effects/Legality derive later legality and flow, and Runtime executes cleanup. The original broad linear-flow allocation retains Core's desugaring producer while its exact reviewed flow-check predicate remains with Legality. Core creates no second safety classifier or privileged-forget policy. Supply accepted and malformed/lost-cleanup/origin/control cases against real consumers.
+
+The new whole-source proposal preserves the eight finite review qualifications; current independent review, full cross-component entailment and actual implementation acceptance remain pending. No compiler/provider/native/device/callback/probe/replay/migration/review/signing/publication action runs in this planning increment.
+
+## Historical task-authority-transfer plan
+
 # Implementation plan: Core task authority
 
 Spec: [spec.md](spec.md) | Owner role: compiler core maintainer.

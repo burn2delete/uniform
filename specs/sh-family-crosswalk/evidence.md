@@ -1,5 +1,367 @@
 # SH crosswalk evidence and finite gates
 
+## Current implementation-readiness source-version successor
+
+The finish-line continuation binds declaration input
+`0c85be0f758272dfc81d91fb5ae4db6fa4a5ccec`, preserving the complete bridge,
+projection and pending fingerprint at
+`08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d`. The unchanged full-language
+gap map is newly pinned in this crosswalk at that predecessor; the existing
+read-only audit already read it. Other task-file/source pins remain fixed except
+the dependency document's explicit successor. There are now 27 version records:
+twenty task files, five navigation files and the two dependency/full-language
+inputs. Every current/future task body, status, SH/SH07 route and scoped Reader
+receipt remains unchanged.
+
+The projection preserves 56 complete source records: 36 full-language task
+blocks, seven Phase18 task sections, SH21-SH29, the existing P15/Phase18 terminal
+gates and the original completion/staging contracts. Fifty-five declaration rows
+join 54 existing consumers to 425 selected component outputs and existing Spec
+Kit owners. Original FL36 staged prerequisites and task proofs remain intact.
+The final full-language root reaches all original FL/P18 acceptances and the
+separate SH29 boundary. SH29 cannot reach the broader full-language/Phase18
+final gate and retains its first declared seedless subset stop. Conditional
+Platform Product adoption remains unknown and conservative. Historical checked
+audits/hosted packages retain recorded scope; every current proof is unassessed.
+
+Author checks pass: 32 crosswalk tests / 1,266 assertions; 23 dependency tests /
+1,774 assertions; deterministic generation/check and original inventory;
+read-only audit; canonical document/full-language structural checks; and language
+boundary (six tests / eleven assertions). Controls include exact source/status
+and population binding, unknown/missing/duplicate routes, final reachability,
+all original stage edges, acyclicity and conditional-edge behavior. Mapping
+review remains pending at fingerprint
+`a969db9ecb4565f71217702129ae9822fcb85136c5f99014843d355f3280f412`.
+Conservation/navigation passes for 73 changed files, 67 Markdown files, 2,658
+local references, 139 original component routes, 48 historical suffixes and
+all 48 original task/evidence contents after stripping declared additions.
+Changed files are ASCII and whitespace checks pass.
+Source/task entailment, full requirement conjunctions, actual support/evidence,
+material decisions, independent review and integration remain unassessed. No
+compiler/native/C12/provider/device/migration/signing/publication or held
+operation was executed; no other chat was messaged.
+
+### Release dependency checkpoint
+
+The Release dependency continuation binds declaration input
+`8f4f2236509364ebba1d632e9ed6a8420003e487`, preserving the complete
+Math/Schema bridge, projection and pending fingerprint at
+`ea2f6d76ef65caf94305f9044ff8c3461c7812dc`. Only the dependency document's
+applying pin advances. All 149 current records, forty future records, task-file
+pins, original SH/SH07 routes and scoped Reader receipts remain unchanged.
+
+All forty captured future consumers and six existing parent consumers now have
+declarations, with 260 selected producer-result joins. The thirteen Release
+records retain 77 exact literal TEST/BOOT criteria: 73 test clauses and four
+seed/native clauses. The checker preserves their full source spans, byte hashes,
+owners, declaration kinds and primary baseline navigation. Those links and
+source criteria do not prove canonical entailment or executable implementation.
+Each criterion and selected output stays execution/review-unassessed.
+
+Raw candidate construction and lineage, raw comparison, actual suite/rebuild
+results, independent intermediate admission, final distribution and independent
+release remain distinct boundaries within existing authorities. Coarse cycles
+remain for the six Math tasks and the eight Release/Schema consumers; the staged
+graph stays acyclic. Ordinary test development needs no completed final compiler
+or fresh migration admission. All final proof, required signing/custody, TCB,
+native sticky-denial, external-policy and held-execution obligations remain.
+
+Author validation passes: 31 crosswalk tests / 1,179 assertions; 22 dependency
+tests / 1,608 assertions; deterministic generation/check and original inventory;
+read-only dependency audit; canonical document/full-language structural checks;
+and language boundary (six tests / eleven assertions). Exact source reconstruction,
+malformed/unknown/duplicated/misowned criteria, missing declarations, stage-versus-
+admission edges and immutable checkpoint controls are included. Current mapping
+review remains pending at fingerprint
+`97208a8459357873deeda3d2a8ea8a1bf827ce63f04649a377e37eb15398af1f`.
+Focused conservation/navigation passes for 73 changed files, 67 Markdown files,
+2,656 local references, 139 original component routes, 48 historical suffixes
+and all 48 original task/evidence contents after stripping declared additions.
+Changed files are ASCII and whitespace checks pass.
+Full-language/SH finish-line joins, global source/facet/owner conjunctions,
+repartition, independent acceptance and integration remain pending. No compiler,
+native/C12/provider, device, migration, signing, publication or held operation
+was executed and no other chat was messaged.
+
+### Math/Schema dependency checkpoint
+
+The Math/Schema dependency continuation binds declaration input
+`a1c36bf6d78a063bfbec0b44d92339cedd2ce14f` and retains the complete bridge,
+projection and pending fingerprint at
+`eca4d47087a39c9e807d93328b14e7f687dc479a`. Only the dependency document's
+applying pin advances. All 149 current task records, forty future task records,
+task-file pins, original SH/SH07 routes and scoped Reader receipts are identical
+to that checkpoint. No task checkbox, implementation or acceptance is promoted.
+
+The existing dependency table now declares twenty-seven future consumers and
+the Math parent's independent-verdict consumer. Its exact-source Math output
+view retains 48 criterion spans, 67 literal prerequisites and 28 joins between
+their existing task authorities. Selected result nodes connect to their named
+output inputs. Coarse cycles remain visible for six Math producer/checker tasks
+and the two Schema projection/compatibility tasks; declared artifact staging
+separates untrusted construction, independent checking and actual use. The
+literal Math output graph and staged graph are acyclic, with every output still
+execution/review-unassessed. Literal edges do not prove full prose coverage.
+
+Applicable proof methods are selected per claim; this view does not require all
+methods for each claim. Schema generation, checked compatibility/migration,
+actual Runtime/STD10 consumers and Release decisions retain distinct roles,
+including the full qualified C6 conjunction. Thirteen Release suite/seed joins,
+future SH/full-language finish-line links, global source/facet/owner conjunctions,
+current repartition and independent acceptance remain pending. Source validation
+cannot replace proof replay, migration/handler execution or a release decision.
+
+Checkpoint metadata retains primitive input locators; payload references belong
+to the generated snapshot table. The crosswalk regression caught a mixed-format
+metadata attempt and it was corrected before publication. The earlier dependency
+run against the preceding projection also rejected the changed document as
+stale. Neither failed preliminary run receives passing credit. No compiler,
+native/C12/provider, device, migration, signing, publication or held operation
+was executed, and no other chat was messaged.
+
+Final author checks pass: 30 crosswalk tests / 1,154 assertions; 21 dependency
+tests / 957 assertions; deterministic crosswalk and original-inventory checks;
+read-only dependency audit; canonical document and full-language structural
+validators; language boundary (six tests / eleven assertions); and focused
+conservation/navigation (73 changed files, 67 Markdown files, 2,654 local
+references, 139 original component routes, 48 historical suffixes and all 48
+original task/evidence contents after stripping declared additions). Changed
+files are ASCII and whitespace checks pass. Current mapping review remains
+pending at fingerprint
+`26a68ae0f0c95d43466b0fc058968d71fb1d5910a1af59d709bac6f0da4aa223`.
+These checks establish source/graph integrity, not semantic or implementation
+acceptance. The full compiler suite and every held operation remain unrun.
+
+### Platform source-version checkpoint
+
+The Platform continuation binds task-source input
+`0876063f41e2ad3e13f3c332f4877daecb62b45d`, retaining the complete AI bridge
+and projection at `6bc6ee9c83861fe74af2770751e451f7671c16d5`. Its new explicit
+Platform file entry preserves the prior applying pin/hash and exact successor;
+twenty task-file and five navigation versions are recorded. Of the original
+139 bodies, 121 are identical and eighteen Open bodies carry declared additions.
+Current discovery remains 149 keys across 25 authorities; original IDs/statuses,
+SH/SH07 routes and scoped Reader receipts are unchanged.
+
+Four full target parents retain sixteen profile interfaces, eleven Domain
+clauses and the realtime evidence obligation. Only sixteen profile-context
+and eleven Domain-context references change. Eleven future product tasks retain
+exact published bodies, closing criteria, dependencies and Open states outside
+the unchanged four Platform SH keys. The four adoption records and seven
+product implementation/integration/distribution outcomes remain separate from
+target conformance; no ISA, kernel, application or physical scope is adopted.
+
+Author source checks verify 309 distinct profile facets (352 references),
+187 Domain facets, eleven historical product source bindings, eleven preserved
+extension facets over seven residual identities, 29 retained Open role contexts
+and twenty byte-equal governing documents. Two published context files and the
+whole published Platform task source match the frozen aggregate bytes. Existing
+source qualifications are conserved; current source/owner conjunctions,
+repartition, future-product/SH composition and implementation acceptance remain
+unassessed. No compiler, native/C12/device, external tool/service, purchase,
+fabrication, signing or held operation was executed.
+
+Observed Platform continuation checks pass: deterministic generation/check,
+28 crosswalk tests / 936 assertions, 18 dependency tests / 419 assertions,
+canonical document and full-language structural validators, and the language
+boundary gate (6 tests / 11 assertions). Focused navigation/conservation covers
+72 changed files, 67 Markdown files, 2,649 local references, 139 original
+component routes, 48 historical suffixes and all 48 original task/evidence
+contents after removing declared additions. Changed files are ASCII and
+`git diff --check` passes. The dated full-language snapshot remains
+non-authoritative. Current mapping review remains pending at fingerprint
+`a39b2639c5e7f6f25a45bbd4aa707a3d6453299147d5d928e000000f70859f1c`.
+
+### AI source-version checkpoint
+
+The AI continuation binds task-source input
+`92b3917ec51e882338fc221bddde86310815221f`, preserving the complete four-parent
+bridge and projection at `e751cddf4466be51ac071c53d177c35259d756b2`. Of the
+original 139 bodies, 125 are identical and fourteen Open bodies carry declared
+additions. Current discovery remains 149 keys across 25 authorities; original
+task IDs/statuses, SH/SH07 routes and scoped Reader receipts are unchanged.
+
+The complete AI body retains 97 unique literal criteria, three profile
+interfaces, eight SAFE13 allocations, foundation/facet obligations and the D2
+support-triage fixture. Its only changes from the published body are three
+profile-context and one Domain-context reference repairs. Three published AI
+context files match the frozen aggregate bytes. Source checks verify 1,174
+Phase 11 facets, 916 distinct attached residual-interface facets (including
+nineteen TEST5/TEST8 predicates), 95 distinct profile facets (103 references),
+21 Domain facets, 51 retained Open role contexts and 22 byte-equal governing
+documents. The preserved 110 unit and 697 occurrence populations remain
+qualified source views; literal task clauses are not a semantic denominator.
+
+All twenty-one mixed facets and nineteen affected units remain visible under
+the current source-specific accounting disposition. Removed synthetic work
+allowances cannot become a new ordinary-development prerequisite; actual
+external billing/account, provider representability, semantic timeout/retry,
+schema/grant/review/replay and real host restrictions retain their meaning.
+The AI plan keeps general compiler/Schema/Auth checks, Workflow durability,
+backend emission, actual Runtime calls, STD13 and Release Testing distinct.
+Current source/owner conjunctions, concrete cleanup and independent repartition
+review remain unassessed. No live provider/tool/memory, compiler, native, C12,
+held operation or policy acceptance was executed for this continuation.
+
+Observed AI continuation checks pass: deterministic generation/check,
+27 crosswalk tests / 823 assertions, 18 dependency tests / 419 assertions,
+canonical document and full-language structural validators, and the language
+boundary gate (6 tests / 11 assertions). Focused navigation/conservation covers
+71 changed files, 66 Markdown files, 2,593 local references, 139 original
+component routes, 48 historical suffixes and all 48 original task/evidence
+contents after removing declared additions. Changed files are ASCII and
+`git diff --check` passes. The dated full-language snapshot remains
+non-authoritative; current mapping review remains pending at fingerprint
+`8594d4f9e4b70b8999b8f83fbaa876f54f706f247b352e6a104fbe7d55378590`.
+
+### Query, Workflow, GPU and UI source-version checkpoint
+
+The Query/Workflow/GPU/UI continuation binds task-source input
+`deacbfd25ea22e501e8e08f54ff826eaa3d59353`, preserving the complete Release
+bridge and projection at `4c24dd7825ef66efe88a3c525b7e4837a4b53bc9`. Of the
+original 139 bodies, 126 are identical and thirteen Open bodies have declared
+additions. Current discovery remains 149 keys across 25 authorities; task IDs,
+checkboxes, original SH/SH07 routes and scoped Reader receipts are unchanged.
+
+The four complete source bodies match the published Domain predecessor before
+five profile-context and nineteen Domain-context reference repairs. They
+retain nineteen Domain clauses, five profile interfaces and two decision
+criteria. Author source checks verify 156 distinct profile facets (163 attached
+references), 275 Domain facets, 30 retained Open role contexts and byte equality
+of seventeen governing documents. These are source conservation checks, not
+full facet entailment, current repartition review or actual execution evidence.
+The current plan distinguishes semantic admission, backend emission, Runtime
+invocation and library APIs, including separate query production/execution,
+CRDT checking/execution and browser/mobile conformance. Detailed AI source
+resumption, current parent/consumer and future-task/SH composition remain open.
+No target/provider/adapter, policy acceptance or held execution is adopted.
+
+Observed continuation checks pass: deterministic generation/check, 26 crosswalk
+tests / 767 assertions, 18 dependency tests / 419 assertions, canonical document
+and full-language structural validators, and the language boundary gate
+(6 tests / 11 assertions). Focused navigation/conservation passes 71 changed
+files, 66 Markdown files, 2,576 local references, 139 original component routes,
+48 historical suffixes and all 48 original task/evidence contents after removing
+declared additions. Changed files are ASCII and `git diff --check` passes.
+The dated full-language snapshot remains non-authoritative. Mapping review
+remains pending at fingerprint
+`7977e6d2b1de5a281faaae0ceeb202946638f03dd8ab69d973b4ee4cd67b56c8`.
+
+### Release source-version checkpoint
+
+The Release continuation binds task-source input
+`be099c84b68e17e171e67905de64c9053226a083`, retaining the entire Math bridge
+and projection at `d2ecd9d9a14e619477bd17d2bf1d40e753e8377b`. Against the
+original 139 bodies, 130 remain identical and nine Open bodies have declared
+additions. Five Release aggregate clauses and thirteen future testing/seed
+records retain their complete published source criteria. The future records
+stay outside the unchanged five Release SH keys, pending current composition.
+Current task discovery remains 149 keys across 25 authorities. Original SH
+criteria, routes, checkboxes and scoped Reader receipts are conserved.
+
+Source checks retain 104 Open role contexts, 105 named source identities and
+byte equality of thirteen TEST, eight BOOT, ten foundation documents and the
+two Phase 18 extension files. TEST6 execution remains with Backends. Actual
+suite production, comparison, intermediate admission and final release are
+distinct. No test suite, native observation, policy decision or held operation
+ran as part of these source checks. Current source/routing review, broader
+source/facet conjunctions and implementation acceptance remain pending.
+
+Observed Release continuation checks pass: deterministic generation/check,
+25 crosswalk tests / 716 assertions, 18 dependency tests / 419 assertions,
+canonical document and full-language structural validators, and the language
+boundary gate (6 tests / 11 assertions). Focused navigation/conservation passes
+71 changed files, 66 Markdown files, 2,540 local references, 139 original
+component routes, 48 historical suffixes and all 48 original task/evidence
+contents after removing declared additions. Changed files are ASCII and
+`git diff --check` passes. Full-language snapshot figures remain dated,
+non-authoritative observations, not current execution results. At that
+checkpoint mapping review remained pending at fingerprint
+`15de4049d86ad199cd6aede9029559a5132a3d51454bd2b0c61639c091523aa9`.
+
+### Math source-version checkpoint
+
+The Math parent continuation uses task-source input
+`86f194bc693b1eeb39593057284e3b47a713e6f7`, retaining the complete first readiness
+bridge/projection at `d6ab8c4f7776fe32df6d9c725f72d579f28b54fd`. Against the original
+139 captured bodies, 134 remain identical and five Open bodies have declared
+additions. No task ID, checkbox, original SH route or scoped Reader receipt
+changes. Math's 28 parent criterion identities are recorded explicitly; three
+profile and two Domain context references are rebound without changing the
+other criterion text. Source checks retained 36 Open role contexts, verified
+125 distinct profile and 63 Domain facet spans, and confirmed byte equality
+of all eleven Math documents and SAFE9.
+
+GitHub commit checks found the preserved aggregate and final local C6 amendment
+unavailable there. Thirteen published source contexts were checked: twelve
+files match the preserved bytes exactly, and the published Domain task source
+matches 22 of 23 task bodies. The later local difference is confined to the
+C6 conjunction in `schema/checked-consumer-projection`. Corrected links and
+that qualification are recorded in the bridge; citation metadata does not
+become current SH authority. No aggregate publication or stopped handoff was
+attempted. Independent checker reallocation, thirteen future Release Testing
+records and global source/facet composition remain pending.
+
+Math checkpoint checks passed: deterministic crosswalk generation/check,
+24 crosswalk tests / 616 assertions, 18 dependency tests / 419 assertions,
+canonical document validation, full-language structural validation and the
+language-boundary gate (6 tests / 11 assertions). Focused navigation/conservation
+passed for 71 changed files, 66 Markdown files, 2,515 local references and the
+48 original component task/evidence contents after removing declared additions.
+Math source checks preserve the five context rebindings, 28 local dependency
+references and all other parent body text. These are source/projection checks;
+no Math provider, proof engine, compiler or held integration was executed.
+
+### First readiness source-version checkpoint
+
+Source input: `a9fc9b1c63c0eb344f29bb63d985f71e6c24af24`. The
+[explicit bridge](implementation-readiness-source-version.edn) pins the entire
+predecessor projection and its pending review metadata. It records nineteen
+task-file versions, five navigation versions, four source-inspection locators
+and 27 explicit successor pin entries. Every recorded current file version was
+checked against its exact local Git object before generation. Of 139 prior
+task bodies, 135 are identical; the two Build governance consumers, one Release
+consumer and Schema parent change while remaining Open. The resumed Governance
+authority adds its existing ten Open IDs. Current task-key discovery is 149
+across 25 authorities, not an implementation denominator or new milestone.
+
+All 180 original SH criteria, 30 milestones, 18 SH07 rows and their existing
+task-reference routes are retained, as are the three scoped Reader receipts.
+Sixteen future Domain records remain outside this task-key projection. The
+historical ownership source retains commit `c8fd8e437ef921041b181e2f09ee1a37d716d357`
+and SHA-256 `868180b50622c3646deaf1ff25a380eb996db868ae7c8a43f2faf8afbf1522ed`;
+the changed live source is recorded separately and is not adopted as authority.
+No current owner reservation or compiler implementation is changed.
+
+Observed focused checks:
+
+- Original inventory check passed, preserving the 180/30 source identities.
+- Crosswalk generation passed its pre-write Git pin checks, and deterministic
+  `--check` passed. Review remains `pending-source-version-review`.
+- Crosswalk controls passed 24 tests / 569 assertions. The first run reported
+  five failures where historical Reader/navigation and ownership tests still
+  expected live bytes. Historical checks now verify the original Git versions;
+  new successor controls independently verify current versions, task-body and
+  route conservation, pending review and rejection of stale review/pins,
+  missing Governance routing/locators and a changed Schema criterion.
+- Dependency controls passed 18 tests / 419 assertions. The preceding Schema
+  checkpoint's five stale-body errors are preserved in its published history;
+  the exact-body guard was not weakened.
+- Language-boundary controls passed 6 tests / 11 assertions. No genuine Reader,
+  compiler, provider, native, C12, migration or seed-retirement execution ran.
+- Canonical document and full-language structural validators passed. The dated
+  full-language snapshot remains non-authoritative for current execution.
+  Focused conservation/navigation passed for the whole draft: 71 changed files,
+  66 Markdown files, 2,505 local references and all 48 original component
+  task/evidence contents conserved after removing the declared additions.
+  Changed Clojure/EDN files are ASCII; whitespace checks passed.
+
+These are author-observed source/projection controls. Exact independent
+source/routing and affected composition review remain pending, as do every
+current whole-SH acceptance claim and the broader project reconciliation.
+Predecessor review receipts retain their original subjects. No other chats were
+messaged, no review was self-awarded and no integration was performed.
+
 ## Observed source population
 
 The source extractor found 180 unique criteria, SH-00.1 through SH-29.6, and

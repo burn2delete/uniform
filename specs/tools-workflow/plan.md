@@ -1,3 +1,61 @@
+# Developer tools implementation planning entry
+
+Select one of the twelve existing [service records](tasks.md#implementation-tasks),
+preserving its specialist role and complete criteria. Preserve the historical
+transfer plan below. Read [spec.md](spec.md), the complete selected T2-T13
+contract and actual compiler/runtime/package/provider interface rules.
+
+Bind actual source/artifact facts, service request/session/document revision,
+profile/target/grants, protocol/output schema and real consumer. Plan real
+transformation, session, inspection or measurement positives and the selected
+semantic-preservation, stale-state, unsupported-target, missing-evidence,
+authority/redaction or generated-code negatives. Fixture protocols are valid
+local interfaces; actual service acceptance needs its real producer and client.
+
+Use focused specialist tests and proportionate Compiler API/Reader/Syntax/
+Diag/Runtime/Build/CLI composition. Capture exact inputs/outputs, transcript/
+sample/patch artifacts, diagnostics and failed/unrun cases without executing
+held provider or publication paths. Refine only the selected existing service
+record; preserve overlapping writers, product review policy and trust/custody
+boundaries. Independent acceptance, selected compiler scope and wider tool
+completion remain distinct.
+
+## Foundation criteria and source context
+
+The existing Lint and IR Explorer records now retain five previously absent
+foundation criteria from the preserved
+[foundation reconciliation](https://github.com/burn2delete/uniform/blob/df11890b21f71d3f246cc47e9f63d866239a0d68/specs/requirement-reconciliation/foundation-residual-interfaces.edn).
+Their `gravity/...` requirement identities, complete positive/refusal clauses,
+evidence requirements and existing task owners are unchanged. This resumes
+criteria within two Open records; it adds no service or task population and
+confers no source-partition or implementation acceptance.
+
+| Existing requirement | Canonical conditions | Existing task and actual result |
+| --- | --- | --- |
+| `gravity/canonical-concept-vocabulary` | [D3 terms, distinctions and conformance](../../docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md#canonical-terms) | Lint publishes the versioned reference and checks compiler/package/runtime manifests; reject effect/authority, profile/backend and artifact/file conflations with exact fields and concept references. |
+| `gravity/qualify-ambiguous-normative-terms` | [D3 requirements and rejected terminology](../../docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md#requirements) | Lint diagnoses implementation-affecting ambiguous normative spans and competing meanings. Preserve legitimate explicitly narrowed meanings and ordinary nonnormative prose. |
+| `gravity/cross-phase-term-change-control` | [D3 change control](../../docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md#change-control) | Lint checks that the canonical definition, affected schemas/contracts, compatibility decision and invalidated checks follow an actual concept change before downstream reliance. The governing owners make the decision; Lint consumes it. |
+| `gravity/domain-concept-layer-map` | [D0 requirements](../../docs/phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md#requirements), [D1 layers and semantic anchors](../../docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md#architectural-layers), [D3 domain mapping](../../docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md#requirements) | Lint checks each declared concept against source/Core/domain IR/artifact/effect/capability meanings and a representative real product. Compiler API's existing `pipeline` task supplies actual versioned stage/fact/origin products; no whole-component completion prerequisite. |
+| `gravity/tooling-semantic-consistency` | [D2 tooling exit gates](../../docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md#milestone-7---standard-library-and-tooling), [D3 concept consistency](../../docs/phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md#requirements), [T10 real stage views](../../docs/phase-13-tooling-and-developer-experience/186-t10-compiler-explorer-and-ir-inspector-design.md#purpose) | IR Explorer compares actual tool/compiler syntax, diagnostics and legality on identical accepted/rejected inputs. Formatter, Language Server and REPL retain their own transformation/session tasks; this comparison consumes their results without duplicating implementation ownership. |
+
+The full D3 obligation also includes backend/runtime separation, declared
+portability, stable diagnostics and compatibility migration/deprecation. Apply
+these meanings when checking the declared manifests; the examples in an
+individual refusal clause are not an exhaustive substitute for D3. T4 owns
+fact-based rule metadata, reproducible configuration, checked fixes and exports;
+T10 owns actual stage views. Keep those complete contracts in scope.
+
+Local work can begin with versioned representative manifest/stage interfaces.
+Composition needs actual current compiler/package/runtime facts and tool
+outputs. Preserve source/compiler/profile/target, consumed fact and contract
+versions, exact offending fields/spans and generated origins, rule IDs,
+comparison results and required invalidation/compatibility records. Negative
+fixtures cover missing facts, stale definitions/checks, conflated concepts,
+unknown domain mappings, changed syntax, stale diagnostics and bypassed grants.
+No text match or passing report grants semantic correctness or policy authority.
+
+## Historical workflow-transfer plan
+
 # Implementation plan: Developer Tools workflow migration
 
 Spec: [spec.md](spec.md) | Migration owner: documentation migration maintainer.

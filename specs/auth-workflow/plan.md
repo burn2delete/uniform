@@ -1,3 +1,38 @@
+# Auth implementation planning entry
+
+Select one unresolved record from [tasks.md](tasks.md#implementation-tasks),
+preserving the historical transfer plan below and current source-family owner
+refinements. Read [spec.md](spec.md) and the complete selected rules in
+[contract alignment](#contract-alignment). Locate current semantic source,
+temporary transports and action consumers through
+[development verification](../../docs/development-verification.md) and the
+[stage ownership table](../../docs/bootstrap/stage-owned-namespaces.md).
+
+Name the actual principal, effects, requested/denied/granted capabilities,
+provider, phase/lifetime and package/build/deployment policy. For trust work
+name exact canonical subject/source/compiler/dependency/recipe inputs, schema,
+trust roots, required evidence and real consumer. Construct an allowed case and
+selected denial/tamper/stale/mismatch cases that reach that consumer; observe
+that no externally visible action occurs after denial. Fixture handles carry
+no unrequested live authority, and logs must exercise redaction.
+
+Use focused owner tests plus affected Effects/Legality and actual runtime/build
+or artifact consumer composition. Keep signing custody and policy decisions
+with their existing owners, and do not retry any denied operation. Refine only
+the selected authoritative task. Record exact passed, failed and unrun evidence,
+residual host/trust assumptions, independent review and integration separately.
+A structurally valid manifest or supplied verdict does not close enforcement.
+
+## Source memory-model and provider interface
+
+Use the [complete source memory-model and provider criteria](../legality-workflow/plan.md#complete-source-memory-model-and-provider-criteria) with the existing task authority.
+
+The existing provider-declaration/selection task validates L18's seventeen families, nine declared safety contracts, concrete enforcing mechanisms and complete allocation/layout/init/release/sharing/foreign/interrupt behavior. A replacement changes implementation without weakening safe semantics. Compatible deterministic selection, actual grant derivation, provider conformance and execution remain separate products; the actual checker/runtime/library owns its operation. Exercise missing/ambiguous/incompatible or semantics-weakening providers and wrong-source evidence without live authority.
+
+The new whole-source proposal preserves the eight finite review qualifications; current independent review, full cross-component entailment and actual implementation acceptance remain pending. No compiler/provider/native/device/callback/probe/replay/migration/review/signing/publication action runs in this planning increment.
+
+## Historical task-authority-transfer plan
+
 # Implementation plan: Auth task authority
 
 Spec: [spec.md](spec.md) | Evidence: [evidence.md](evidence.md)
