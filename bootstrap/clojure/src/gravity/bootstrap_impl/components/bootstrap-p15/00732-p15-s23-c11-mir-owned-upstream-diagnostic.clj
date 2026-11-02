@@ -161,6 +161,16 @@
     (throw (ex-info "Unknown C11 source contract version"
                     {:id "C11-VERIFY" :missing-fact :reviewed-c11-source-contract}))))
 
+(defn- p15-s23-c11-mir-current-source-input?
+  [version source-mode]
+  (and (= 2 version) (= :development-current source-mode)))
+
+(defn- p15-s23-c11-mir-source-contract-for
+  [version source-mode]
+  (if (p15-s23-c11-mir-current-source-input? version source-mode)
+    c11-source-contract/v2-current-source-contract-abi
+    (p15-s23-c11-mir-contract version)))
+
 (defn p15-s23-c11-mir-versioned-record
   [record version]
   (p15-s23-c11-mir-contract version)
@@ -194,13 +204,24 @@
   boundary; public artifacts receive hashes and function shapes, not a mutable
   plan that can be substituted after authentication."
   ([request-source requested-target]
-   (p15-s23-c11-mir-source-binding!* request-source requested-target 1))
+   (p15-s23-c11-mir-source-binding!* request-source requested-target 1 nil))
   ([request-source requested-target version]
-  (let [contract (p15-s23-c11-mir-contract version)
-        required-functions (:required-functions contract)
-        builder-function (p15-s23-c11-mir-selected-builder-function version)
-        verifier-function (p15-s23-c11-mir-selected-verifier-function version)
-        source-path (p15-s23-c11-mir-resolve-source-path)]
+   (p15-s23-c11-mir-source-binding!* request-source requested-target version nil))
+  ([request-source requested-target version source-mode]
+  (let [current-source? (p15-s23-c11-mir-current-source-input?
+                         version source-mode)]
+    (when (and (some? source-mode) (not current-source?))
+      (p15-s23-c11-mir-fail!
+       "C11-VERIFY" request-source {}
+       {:missing-fact :explicit-current-source-selection
+        :requested-target requested-target}))
+    (let [contract (p15-s23-c11-mir-source-contract-for version source-mode)
+          required-functions (:required-functions contract)
+          builder-function (or (:builder-function contract)
+                               (p15-s23-c11-mir-selected-builder-function version))
+          verifier-function (or (:verifier-function contract)
+                                (p15-s23-c11-mir-selected-verifier-function version))
+          source-path (p15-s23-c11-mir-resolve-source-path)]
     (when-not (.isFile (java.io.File. source-path))
       (p15-s23-c11-mir-fail!
        "C11-MODULE" request-source {}
@@ -208,7 +229,8 @@
         :requested-target requested-target}))
     (let [source-file (java.io.File. source-path)
           nofollow (into-array java.nio.file.LinkOption [java.nio.file.LinkOption/NOFOLLOW_LINKS])
-          ^java.nio.file.attribute.BasicFileAttributes source-before (when (= 3 version)
+          ^java.nio.file.attribute.BasicFileAttributes source-before (when (or current-source?
+                                                                              (= 3 version))
                           (java.nio.file.Files/readAttributes
                            (.toPath source-file) java.nio.file.attribute.BasicFileAttributes nofollow))
           _source-shape
@@ -220,11 +242,14 @@
           observed-file-bytes
           (java.nio.file.Files/size (.toPath source-file))
           _
-          (when-not (= (:source-byte-count contract)
-                       observed-file-bytes)
+          (when-not (or current-source?
+                        (= (:source-byte-count contract)
+                           observed-file-bytes))
             (p15-s23-c11-mir-fail!
              "C11-VERIFY" request-source {}
-             {:missing-fact :pinned-gravity-c11-source-byte-size
+             {:missing-fact (if current-source?
+                              :current-gravity-c11-source-byte-size
+                              :pinned-gravity-c11-source-byte-size)
               :expected-source-bytes (:source-byte-count contract)
               :observed-source-bytes observed-file-bytes
               :requested-target requested-target}))
@@ -244,12 +269,15 @@
                         (java.util.Arrays/equals
                          ^bytes raw-source
                          ^bytes (.getBytes source-text java.nio.charset.StandardCharsets/UTF_8)))
-                     (= (:source-byte-count contract) source-bytes)
-                     (= (:source-content-hash contract)
-                        source-content-hash))
+                     (or current-source?
+                         (and (= (:source-byte-count contract) source-bytes)
+                              (= (:source-content-hash contract)
+                                 source-content-hash))))
         (p15-s23-c11-mir-fail!
          "C11-VERIFY" request-source {}
-         {:missing-fact :pinned-gravity-c11-source-identity
+         {:missing-fact (if current-source?
+                          :current-gravity-c11-source-identity
+                          :pinned-gravity-c11-source-identity)
           :expected-source-bytes (:source-byte-count contract)
           :observed-source-bytes source-bytes
           :expected-source-content-hash
@@ -300,14 +328,15 @@
            {:missing-fact :pinned-gravity-c11-function-shapes
             :observed-function-shapes observed-shapes}))
         (when-not
-         (and (= (:plan-semantic-hash contract)
-                 plan-semantic-hash)
-              (= (:functions-semantic-hash contract)
-                 functions-semantic-hash)
-              (= (:builder-semantic-hash contract)
-                 builder-semantic-hash)
-              (= (:verifier-semantic-hash contract)
-                 verifier-semantic-hash))
+         (or current-source?
+             (and (= (:plan-semantic-hash contract)
+                     plan-semantic-hash)
+                  (= (:functions-semantic-hash contract)
+                     functions-semantic-hash)
+                  (= (:builder-semantic-hash contract)
+                     builder-semantic-hash)
+                  (= (:verifier-semantic-hash contract)
+                     verifier-semantic-hash)))
           (p15-s23-c11-mir-fail!
            "C11-VERIFY" request-source {}
            {:missing-fact :pinned-gravity-c11-function-identity
@@ -315,17 +344,31 @@
             :observed-functions-semantic-hash functions-semantic-hash
             :observed-builder-semantic-hash builder-semantic-hash
             :observed-verifier-semantic-hash verifier-semantic-hash}))
-        (when (= 3 version)
+        (when (or current-source? (= 3 version))
           (let [after-bytes (java.nio.file.Files/readAllBytes (.toPath source-file))
                 ^java.nio.file.attribute.BasicFileAttributes source-after (java.nio.file.Files/readAttributes
                               (.toPath source-file) java.nio.file.attribute.BasicFileAttributes nofollow)]
             (when-not (and (.isRegularFile source-after) (not (.isSymbolicLink source-after))
                            (= (.fileKey source-before) (.fileKey source-after))
-                           (= (.size source-before) (.size source-after) (:source-byte-count contract))
+                           (= (.size source-before) (.size source-after) source-bytes)
                            (= (.lastModifiedTime source-before) (.lastModifiedTime source-after))
                            (java.util.Arrays/equals ^bytes raw-source ^bytes after-bytes))
               (p15-s23-c11-mir-fail! "C11-VERIFY" request-source {}
                 {:missing-fact :stable-selected-c11-source}))))
+        (let [current-program
+              (when current-source?
+                (assoc (select-keys contract
+                                    [:interface :version :source-relative-path
+                                     :builder-function :verifier-function
+                                     :required-functions])
+                       :source-mode :development-current
+                       :source-byte-count source-bytes
+                       :source-content-hash source-content-hash
+                       :plan-semantic-hash plan-semantic-hash
+                       :functions-semantic-hash functions-semantic-hash
+                       :builder-semantic-hash builder-semantic-hash
+                       :verifier-semantic-hash verifier-semantic-hash
+                       :function-count (count functions)))]
         (cond-> {:source-path source-path
          :source-content-hash source-content-hash
          :source-byte-count source-bytes
@@ -335,7 +378,9 @@
          :verifier-semantic-hash verifier-semantic-hash
          :function-shapes observed-shapes
          :plan plan}
+          current-source? (assoc :source-mode :development-current
+                                 :source-program current-program)
           (not= 1 version) (assoc :interface-version version)
           (= 3 version) (assoc :semantic-family (:semantic-family contract)
                               :builder-function builder-function
-                              :verifier-function verifier-function)))))))
+                              :verifier-function verifier-function)))))))))
