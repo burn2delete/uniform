@@ -149,3 +149,25 @@ All existing unsupported and restricted boundaries remain. Independent review
 must accept this exact union; candidate-owned CI/artifacts and immediate clean
 current-main preflight remain mandatory. Neither separate source CI substitutes
 for this integration composition.
+
+## Current three-slice integration
+
+Current base is 32fe90b1e6a41df5a4083d0abe3917e0cb2643e1, tree
+b95a59281e71f741a91e6d93275fd055f8b6c962. Source union
+36d24278fc7efae56fd1019673481ea560d9be1c, tree
+81fef6b06f309aad1da0cd980c7d8f50a9bd516b, preserves reviewed C/JVM source
+and adds the accepted Release file helpers from PR 779. No production edit
+is introduced during composition; the shared map preserves all three rows.
+
+Fresh original JVM before products run exact clean main 32fe in this same
+Runtime checkout and exit before branch restoration. Complete after records
+AND original serialization match again, with source/plan/five byte hashes
+recomputed. Actual host root, command, source spelling and File observations
+remain unchanged. Prior products are retained at
+/tmp/uniform-jvm-output-evidence-e766-history. Backend tests pass 45/958,
+selected Release data/file tests 7/83, language/ownership 47/1154 and nine-path
+exact-base lint has zero warnings and blockers. All six whole production files
+reconstruct under the three slice checks. Shared details and strict unrun
+Release boundaries are in release-file-evidence.md. Exact union acceptance,
+candidate-owned CI/artifacts and immediate clean current-main preflight remain
+required; earlier base/source checks confer no current integration credit.

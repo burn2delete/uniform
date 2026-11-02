@@ -197,3 +197,31 @@ C anonymous-operation sequencing. No native C operation, broker, authority,
 Gate, restricted Reader or release path is invoked. The combined exact commit
 requires independent acceptance, its own CI/artifact receipts and immediate
 clean exact current-main preflight; neither separate CI substitutes for it.
+
+## Current three-slice integration
+
+Current base is 32fe90b1e6a41df5a4083d0abe3917e0cb2643e1, tree
+b95a59281e71f741a91e6d93275fd055f8b6c962. PR 778 changes only macro
+implementation/tests. Source union 36d24278fc7efae56fd1019673481ea560d9be1c
+has tree 81fef6b06f309aad1da0cd980c7d8f50a9bd516b and exact parents
+d248c22a3ae9dbfcc8b53e56e74c7a469e7518ca and
+ffeac716e4a70c05596a868f27a4337a8bbe4344. It preserves the reviewed C/JVM
+source and adds the independently reviewed Release file helpers from PR 779.
+The 13-path union introduces no production edits during composition.
+
+Fresh C before capture runs exact clean main 32fe in the same physical Runtime
+checkout and exits before branch restoration. All four full after records and
+original serialization match, with source/plan and both byte hashes recomputed.
+Native C body/broker/process/staging/toolchain/Gates remain unrun. Earlier Runtime
+e766 records remain at
+/tmp/uniform-c-compile-sequencing-evidence-runtime-e766-history.
+
+Affected backend tests pass 45/958, selected Release data/file tests 7/83 and
+language/ownership 47/1154. Nine-path exact-base lint has zero warnings and
+blockers, archived at /tmp/uniform-backend-release-union-lint. All three
+reconstruction checks preserve six complete production files and C type tags.
+The Release evidence records the shared composition and its separate original
+file/digest probe. Exact union review, its own CI/artifact receipts and immediate
+clean current-main preflight remain mandatory. Earlier e1029fb7/e766 CI passed
+all nine enabled checks only after main advanced; it is historical evidence,
+not this composition's integration credit.

@@ -106,3 +106,39 @@ boundary runs above pass.
 Independent exact acceptance, candidate-owned CI/artifacts and immediate clean
 current-main preflight remain required. These data/file checks do not authorize
 any restricted package/archive/release or native route.
+
+## Current three-slice integration
+
+PR 777 composes the reviewed C/JVM output source with this accepted Release
+source. Current base remains 32fe90b1e6a41df5a4083d0abe3917e0cb2643e1,
+tree b95a59281e71f741a91e6d93275fd055f8b6c962. Normal source union
+36d24278fc7efae56fd1019673481ea560d9be1c has tree
+81fef6b06f309aad1da0cd980c7d8f50a9bd516b and exact parents
+d248c22a3ae9dbfcc8b53e56e74c7a469e7518ca and
+ffeac716e4a70c05596a868f27a4337a8bbe4344. The first incorporates main's
+macro-digest change into the accepted C/JVM union; the second is this exact
+independently reviewed Release source. No production/test edit is introduced
+by composition. The 13 paths are each slice's source, consumer, test and
+evidence plus the shared map.
+
+For this integration, fresh Release before and lookup-probe processes execute
+exact clean main 32fe in the physical Runtime checkout, without added fixtures,
+and exit before restoring the branch and merging the source. All actual source
+paths remain Runtime paths. Both complete after records and original
+serialization agree, with source/plan/file byte hashes recomputed. New Runtime
+product digests are
+214f8e6cc37a5ecf4c9b3ec6fea803156ff1e8dad5fba625f2fb82b0e0903185
+and dc54a6d8585ad8e8b584390500be3a8cb458dba802168bb2aac0687f16c708fd.
+Original and extracted root-lookup probe records/serialization also match.
+Earlier Analysis32 records remain at
+/tmp/uniform-release-files-evidence-analysis32-history. No source path, root,
+mode, pin, callback authority or artifact field is projected or normalized.
+
+Fresh combined backend tests pass 45/958; the exact seven allowed Release
+selectors pass 7/83; language/ownership passes 47/1154. Nine-path contextual
+lint against this exact base has zero warnings and blockers and is archived
+at /tmp/uniform-backend-release-union-lint. All three whole-file reconstruction
+checks pass. Package/archive/release builder tests remain unrun; no restricted
+native, authority, Reader or release route is probed. Fresh exact union review,
+its own CI/artifact verification and immediate clean current-main preflight
+remain gates. Separate-source and earlier-base checks do not transfer.
