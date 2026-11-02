@@ -17063,12 +17063,23 @@
 (deftest sh08-core-shape-graph-and-typing-development-kernel
   (let [core (core-shape-core 2)
         typed (invoke-c7 'sh08-type-core-artifact [core])
+        wide-core (core-shape-core 1025)
+        wide-typed (invoke-c7 'sh08-type-core-artifact [wide-core])
+        wide-invalid (assoc-in wide-core [:nodes 1024 :core-form] :unsupported)
+        wide-rejected (invoke-c7 'sh08-type-core-artifact [wide-invalid])
         roots (:root-core-node-ids core)
         wide-roots (mapv core-shape-sha (range 2000 3025))
         wide-table (zipmap wide-roots (repeat {}))]
     (is (= :accepted (:status (invoke-c7 'sh08-validate-core-shape [core])) (:status typed)))
     (is (= (zipmap roots (repeat :gravity.type/integer)) (:type-table typed)))
     (is (= roots (mapv :core-node-id (:type-facts typed))))
+    (is (= :accepted (:status (invoke-c7 'sh08-validate-core-shape [wide-core])) (:status wide-typed)))
+    (is (= 1025 (count (:type-table wide-typed)) (count (:type-facts wide-typed))))
+    (is (every? #{:gravity.type/integer} (vals (:type-table wide-typed))))
+    (is (= :rejected (:status wide-rejected)))
+    (is (= 1024 (count (:type-table wide-rejected)) (count (:type-facts wide-rejected))))
+    (is (= [[(core-shape-sha 1124) "C7-ANNOTATION" :core-form-outside-bounded-slice]]
+           (mapv (juxt :core-node-id :rule :reason) (:diagnostics wide-rejected))))
     (is (= :coordinator-adapter-required (:authentication-status typed)))
     (is (true? (invoke-c7 'sh08-roots-valid? [wide-roots wide-table])))
     (doseq [bad [(assoc wide-roots 1024 (first wide-roots))
@@ -17096,6 +17107,48 @@
       (is (= (:semantic-span large-source) (get-in result [:type-facts 0 :source-span])))
       (is (= (:origin-chain large-source) (get-in result [:type-facts 0 :origin-chain])))
       (is (= (:syntax-id large-source) (get-in result [:type-facts 0 :syntax-id]))))))
+
+(deftest sh08-primitive-traversal-state-development-kernel
+  ;; Direct helper state controls complement the full normalized Core fixture.
+  (doseq [[values observed expected]
+          [[[] [] true] [[] [1 1] true] [[0 1] [2] true]
+           [[0 1 0] [] false] [[1] [1] false]
+           [(vec (range 1025)) [] true]
+           [(conj (vec (range 1025)) 0) [] false]]]
+    (is (= expected (invoke-c7 'sh08-all-unique? [values observed]))))
+  (let [module {:profile :meta :target :jvm}
+        node (fn [id] {:node-id id :core-form :literal :children []
+                       :attributes {:literal-kind :integer :value 1}
+                       :source {:syntax-id id :semantic-span {} :origin-chain [] :generated-origin []}
+                       :preserved-declarations {:effects [] :capabilities []}})
+        seed-types {:seed :gravity.type/string}
+        seed-facts [{:core-node-id :seed :type :gravity.type/string}]
+        run #(invoke-c7 'sh08-type-nodes [% seed-types seed-facts module])
+        empty-result (run [])
+        prefix (run [(node :first)])
+        failed (run [(node :first) (assoc (node :bad) :core-form :unsupported) (node :unvisited)])]
+    (is (= {:status :accepted :type-table seed-types :type-facts seed-facts :diagnostics []} empty-result))
+    (is (= :accepted (:status prefix)))
+    (is (= {:seed :gravity.type/string :first :gravity.type/integer} (:type-table prefix)))
+    (is (= [:seed :first] (mapv :core-node-id (:type-facts prefix))))
+    (is (= (first seed-facts) (first (:type-facts prefix))))
+    (is (= {:artifact :gravity/c7-type-fact :core-node-id :first :type :gravity.type/integer
+            :producer-rule :literal :dependencies [] :syntax-id :first :profile :meta :target :jvm}
+           (select-keys (second (:type-facts prefix))
+                        [:artifact :core-node-id :type :producer-rule :dependencies :syntax-id :profile :target])))
+    (is (= :rejected (:status failed)))
+    (is (= (:type-table prefix) (:type-table failed)))
+    (is (= (:type-facts prefix) (:type-facts failed)))
+    (is (= [[:bad "C7-ANNOTATION" :core-form-outside-bounded-slice]]
+           (mapv (juxt :core-node-id :rule :reason) (:diagnostics failed))))
+    (is (not (contains? (:type-table failed) :unvisited))))
+  (let [calls (atom 0)
+        foreign (reify clojure.lang.Counted
+                  (count [_] (swap! calls inc) (throw (AssertionError. "product count"))))]
+    (doseq [core [{} {:nodes nil} {:nodes false} {:nodes (list :row)} {:nodes foreign}]]
+      (is (false? (invoke-c7 'sh08-ft-product-vector? [core :nodes]))))
+    (is (true? (invoke-c7 'sh08-ft-product-vector? [{:nodes (vec (repeat 70000 :row))} :nodes])))
+    (is (zero? @calls))))
 
 
 ;; Record/Union descriptor cardinality; normalized authentication only.

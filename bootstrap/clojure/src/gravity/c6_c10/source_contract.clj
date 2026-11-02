@@ -35,9 +35,11 @@
    :required-functions (:required-functions current-compiler-program)
    :function-count 170 :chunk-size 64 :chunk-counts [64 64 42]})
 
-;; Observed through the existing selected-source Reader owner, independently
-;; reviewed as plan identities only. These do not attest a Reader result or an
-;; SH02 envelope and do not replace the historical Reader admission policy.
+;; Observed through the existing selected-source Reader owner at the current
+;; main composition. These do not attest a Reader result or an SH02 envelope
+;; and do not replace the historical Reader admission policy. The owner source
+;; advanced after the earlier review record; v2 binds this exact current
+;; snapshot while v1 remains on its historical pin.
 (def current-reader-program
   {:source-relative-path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"
    :binding
@@ -46,46 +48,48 @@
     :compiled-by :clojure-stage0-seed
     :executed-by :clojure-stage2-generic-rule-runner
     :generic-bridge-residual? true :self-hosted? false
-    :source-byte-count 231666
-    :source-content-hash "sha256:a74e3d1d3bc3d7627493586c78367844b6ba41980cb65b2bee1638fe3273928a"
-    :plan-semantic-hash "sha256:71f5ab0216a0030fa3d78eef5efdb14db58628636f3c430f4eb4e0d7b6b3576a"
-    :functions-semantic-hash "sha256:f2ff5ef5c42e208e519bc2e1df85635982a2710f8626073a748089651d76bacb"
-    :function-count 221
-    :function-names-hash "sha256:2dd178c923bff9433d5c5af59d45d3d20edf2fe6384449c6a0b8c8d30dcebf76"
-    :function-shapes-hash "sha256:4d03f0efe5bf682d51cbb91c783bdd24ca7b738b9a48ef4cab45b6dc3a4f7866"
+    :source-byte-count 246369
+    :source-content-hash "sha256:eec041127cb2785f92e7e2c79d14350d869a0ea8a0194ea3da55f75d52099205"
+    :plan-semantic-hash "sha256:cf23056d9f691c24fc7344445723d69e288dd1b755db3199086d4608323d4aa6"
+    :functions-semantic-hash "sha256:7be1bd97600db2d9cab88e7ac8cbf10e9644fa2e120309a9b892e11c3c83a701"
+    :function-count 232
+    :function-names-hash "sha256:32401a608a596e84fac2663ea87efbfa2c758afa150c8a50242d84a6be92c78a"
+    :function-shapes-hash "sha256:3ccb1d0fc93c71951a1660e3a6a6fe069c3166cce5f08d87bfb07b9d979555ee"
     :entrypoint-semantic-hash "sha256:6dddc9a5a656148c1edd3dde8eb4d31c8962ba5327ba0d60285acc8d40f4bea3"
     :verifier-semantic-hash "sha256:625bbeccf94f75fedbd6232e4a54b1a44435f06bf07352b8d19b1a35196038a7"
     :builtin-functions-hash "sha256:03394c173b55bcb279070adc77d0494ee334c42505d814593f46109000dc1400"
-    :instruction-summary {:let 150 :if 681 :builtin-call 1857 :set-literal 39
-                          :map-literal 271 :recur 105 :vector-literal 195 :loop 77
-                          :literal 3736 :function-call 537 :local 2803}
-    :observed-instruction-nodes 10451 :observed-instruction-depth 20}
+    :instruction-summary {:let 165 :if 743 :builtin-call 2031 :set-literal 50
+                          :map-literal 301 :recur 117 :vector-literal 219 :loop 83
+                          :quote 3 :literal 4222 :function-call 564 :local 2993}
+    :observed-instruction-nodes 11491 :observed-instruction-depth 20}
    :exports
    {'sh03-read-source-unit {:arity 3 :params ['source-unit 'source-bytes 'reader-policy]}
     'sh03-verify-reader-result {:arity 4 :params ['source-unit 'source-bytes 'reader-policy 'result]}}
    :plan-emitter
-   {:source-content-hash "sha256:be4ba46088d413322ba5cf86156bb22bb79aeb7bec1fcf3899d8b081019ef854"
-    :source-byte-count 128447
-    :source-rule-hash "sha256:40c39d9c65d9d23d442eb87f1e0610a87c24daf145e87ec6695f3c4023b3d42c"}
+   {:source-content-hash "sha256:57c13e44b46726a136ecd237dde5e85d86cd55b82bd8ac6033afce2fb87bf527"
+    :source-byte-count 128499
+    :source-rule-hash "sha256:64acc2f135aa947398fb74b395f0135517fc5099bf6412b01a26ef1f2f47394f"}
    ;; These pre-existing plan fields are declared labels, not observations of
    ;; the separately required current expression-lowering emitter program.
    :declared-expression-labels
    {:emitter-source-content-hash "sha256:e273535bc06e5f67eb5a54ddcba0ef726814bc9dbe484df73bf7d3ab56d1e949"
     :emitter-semantic-hash "sha256:2004f388034a182483d7b9c28f4e6d6baa76126d29867c50183b0329fa5e0ddc"}})
 
+;; The expression emitter also advanced in the current main composition. The
+;; v2 handoff binds this observed source snapshot; v1 keeps its legacy route.
 (def current-expression-program
   {:version 2
    :source-relative-path "bootstrap/gravity/p15_s23/emitter.gravity"
-   :source-byte-count 1670330
-   :source-content-hash "sha256:23d49699bf187d56714257f88056bc0805ed158c4a76e7ea85af660c41d39d9c"
-   :semantic-hash "sha256:a9de1c01ed15a2c6a3bf9bef755767efeaf8f7bbca1a7c187c62f3a59f1dab71"
-   :functions-semantic-hash "sha256:dccbfee8f6dd0e5ab6999e0218150e042132e98a1967bc90be340e58d52fdc42"
-   :artifact-hash "sha256:012faac14da10c65740a09b8deddff68c4422f47761ee205c958ab16f0127283"
-   :function-count 692
-   :function-names-hash "sha256:4d4fd4e3de06a6aea26a974d183bb8fe63346356c4b271d05adb2b90764d5410"
-   :instruction-summary {:let 1432 :if 7733 :builtin-call 35831 :set-literal 256
-                         :map-literal 2435 :recur 887 :vector-literal 2334 :loop 815
-                         :quote 471 :literal 49732 :function-call 3273 :local 36322}
+   :source-byte-count 1529728
+   :source-content-hash "sha256:dad556ad561890e4c107144c1160966fd4440a65293ddbc186d47422ab273564"
+   :semantic-hash "sha256:c36b13be7760b21e614ebf2025d84ef9c29343770d5e7d0f01d0a71832c41be2"
+   :functions-semantic-hash "sha256:06c85e6c770abc1b283a0964fdcf92c1ff6ebf5540bbe9a88e8ec28f76609de4"
+   :artifact-hash "sha256:2949abf023ad0b715607f73e77bde01f371ab1ab323bc278d310293c5c60952c"
+   :function-count 699
+   :function-names-hash "sha256:33ec54ac40041f7243f86a9d41ca39208e457a76dbc6a341a296567da440fe85"
+   :instruction-summary {:let 1376 :if 7133 :builtin-call 32058 :set-literal 264
+                         :map-literal 2204 :recur 884 :vector-literal 2335 :loop 811
+                         :quote 474 :literal 44464 :function-call 3232 :local 31664}
    :required-functions
    {'p15-s23-compile-collection {:arity 4 :params ['emitter 'module 'locals 'form]}
     'p15-s23-compile-let {:arity 5 :params ['emitter 'module 'locals 'bindings 'body]}

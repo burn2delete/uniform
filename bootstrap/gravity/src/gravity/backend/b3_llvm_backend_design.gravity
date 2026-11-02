@@ -836,9 +836,7 @@
           (if (= (get function :latent-effects) #{})
             (if (= (get function :capabilities) #{})
               (if (map? (get function :blocks))
-              (if (if (string? (get function :entry))
-                    (<= (count (get function :entry)) 256)
-                    false)
+              (if (string? (get function :entry))
               (if (b3-scalar-carrier-type? (get function :returns))
               (if (map? (get function :source))
               (if (map? (get function :facts))
@@ -848,18 +846,17 @@
                     (= (count (get function :blocks)) 4))
                 (if (= (get (get function :blocks) (get function :entry)) nil)
                   :entry-block-definition
-                  (if (<= (b3-block-instruction-count
-                           (get function :blocks)
-                           (keys (get function :blocks)) 0)
-                          128)
+                  (if (integer? (b3-block-instruction-count
+                                 (get function :blocks)
+                                 (keys (get function :blocks)) 0))
                     nil
-                    :bounded-operation-count))
+                    :block-instructions-vector))
                 :bounded-one-or-four-block-cfg)
               :function-provenance-map)
               :function-facts-map)
               :function-source-map)
               :bounded-scalar-function-return)
-              :bounded-string-entry-block-id)
+              :entry-block-id-type)
               :function-block-map)
               :function-capabilities-unsupported)
             :function-effects-unsupported)
@@ -876,7 +873,7 @@
       (if (vector? instructions)
         (b3-block-instruction-count
          blocks (rest block-ids) (+ total (count instructions)))
-        129))))
+        nil))))
 
 (defn b3-operation-envelope-reason-loop
   [operations index seen]
@@ -886,18 +883,14 @@
           operation-id (get operation :op-id)
           opcode (get operation :opcode)
           type (get operation :type)]
-      (if (> index 127)
-        :bounded-operation-count
-        (if (b3-exact-keys?
+      (if (b3-exact-keys?
              operation
              #{:artifact :op-id :opcode :source-operation :operands :result
                :result-kind :constant-payload :type :effects :capabilities
                :ordering :source :profile :facts :domain-anchor :block-id
                :verifier-status})
           (if (= (get operation :artifact) :gravity/mir-operation)
-            (if (if (string? operation-id)
-                  (<= (count operation-id) 256)
-                  false)
+            (if (string? operation-id)
               (if (= operation-id (get operation :result))
               (if (vector? (get operation :operands))
               (if (= (get operation :effects) #{})
@@ -914,7 +907,7 @@
               (if (= (get operation :verifier-status) :passed)
                 (if (= (get operation :domain-anchor) nil)
                   (if (contains? seen operation-id)
-                    :unique-operation-ids
+                    :duplicate-operation-id
                     (b3-operation-envelope-reason-loop
                      (rest operations) (+ index 1)
                      (conj seen operation-id)))
@@ -930,9 +923,9 @@
               :operation-effects-must-be-empty-set)
               :operation-operands-vector)
               :operation-result-must-equal-id)
-              :bounded-string-operation-id)
+              :operation-id-type)
             :mir-operation-kind)
-          :exact-mir-operation-envelope)))))
+          :exact-mir-operation-envelope))))
 
 (defn b3-operation-envelope-reason
   [operations]
@@ -962,7 +955,7 @@
              :predecessors :successors :dominators :data-flow :source})
         (if (= (get block :artifact) :gravity/mir-block)
           (if (= (get block :block-id) block-id)
-            (if (if (string? block-id) (<= (count block-id) 256) false)
+            (if (string? block-id)
             (if (= (get block :arguments) [])
               (if (vector? (get block :instructions))
                 (if (vector? (get block :predecessors))
@@ -981,7 +974,7 @@
                   :block-predecessors-vector)
                 :block-instructions-vector)
               :block-arguments-unsupported)
-            :bounded-string-block-id)
+            :block-id-type)
             :block-id-map-key-parity)
           :mir-block-kind)
         :exact-mir-block-envelope))))
@@ -1470,7 +1463,7 @@
     (if (= opcode :local-binding)
       (= (count operands) 1)
       (if (> (count operands) 0)
-        (<= (count operands) 128)
+        true
         false))))
 
 (defn b3-scalar-type-supported?
@@ -2019,7 +2012,6 @@
              "define ccc i32 @main() {\n"
              (b3-blocks-text block-records "")
              "}\n")]
-        (if (<= (count ir) 65536)
           {:artifact :gravity/b3-bounded-llvm-x86_64-linux-lowering
            :schema-version 1
            :status :constructed-unverified
@@ -2075,8 +2067,7 @@
                     :public? false
                     :release? false
                     :self-hosted? false
-                    :whole-b3? false}}
-          (b3-rejected "B1-UNSUPPORTED" :bounded-llvm-ir-bytes {})))
+                    :whole-b3? false}})
       (b3-rejected "B1-UNSUPPORTED" :bounded-process-exit-code {}))))
 
 (defn b3-build-validated-operations

@@ -1681,25 +1681,27 @@
    :error "stream capture did not drain before the bounded wait"})
 
 (defn- await-capture
-  [{:keys [promise stream limits closing?]} wait-ms]
-  (let [timeout-marker (Object.)
-        captured (deref promise (long wait-ms) timeout-marker)]
-    (if (identical? captured timeout-marker)
-      (do
-        ;; A timed-out process may have descendants holding the inherited pipe
-        ;; open. Closing our descriptors wakes the capture daemon and prevents
-        ;; a report from waiting forever for EOF.
-        (reset! closing? true)
-        (close-stream! stream)
-        (let [captured (or (deref promise capture-post-close-wait-ms nil)
-                           (capture-timeout-result limits))
-              captured (assoc captured :forced-close? true)]
-          (if-let [fatal (:fatal-throwable captured)]
-            (throw fatal)
-            captured)))
-      (if-let [fatal (:fatal-throwable captured)]
-        (throw fatal)
-        captured))))
+  ([capture wait-ms]
+   (await-capture capture wait-ms capture-post-close-wait-ms))
+  ([{:keys [promise stream limits closing?]} wait-ms post-close-wait-ms]
+   (let [timeout-marker (Object.)
+         captured (deref promise (long wait-ms) timeout-marker)]
+     (if (identical? captured timeout-marker)
+       (do
+         ;; A timed-out process may have descendants holding the inherited pipe
+         ;; open. Closing our descriptors wakes the capture daemon and prevents
+         ;; a report from waiting forever for EOF.
+         (reset! closing? true)
+         (close-stream! stream)
+         (let [captured (or (deref promise (long post-close-wait-ms) nil)
+                            (capture-timeout-result limits))
+               captured (assoc captured :forced-close? true)]
+           (if-let [fatal (:fatal-throwable captured)]
+             (throw fatal)
+             captured)))
+       (if-let [fatal (:fatal-throwable captured)]
+         (throw fatal)
+         captured)))))
 
 (defrecord RetainedProcess
     [process handles discovery-error cleanup-error wait-throwable terminal owner-thread-id])
@@ -1734,6 +1736,25 @@
   (require-retained-process! owned)
   (process-supervision/retained-process-handles owned))
 
+(defn- deadline-remaining-ms
+  [options]
+  (when (integer? (:deadline-ns options))
+    (let [remaining-ns (- (long (:deadline-ns options)) (System/nanoTime))]
+      (if (pos? remaining-ns)
+        (long (quot (+ remaining-ns 999999) 1000000))
+        0))))
+
+(defn- bounded-operation-timeout-ms
+  [options fallback]
+  (let [requested (:timeout-ms options)
+        remaining (deadline-remaining-ms options)]
+    (cond
+      (and (some? requested) (some? remaining))
+      (min (long requested) (long remaining))
+
+      (some? remaining) (long remaining)
+      :else fallback)))
+
 (defn- reap-process-handle!
   [^java.lang.ProcessHandle handle deadline owned]
   (process-supervision/reap-process-handle! handle deadline owned))
@@ -1745,12 +1766,19 @@
   whose required lifecycle scope is these retained handles can consume the
   tracked fact; source-bound creation knowledge belongs to its exact method,
   not to an all-OS registry or an inferred meaning for the unknown field."
-  [owned]
-  (require-retained-process! owned)
-  (process-supervision/finalize-owned-process!
-   owned {:grace-ms process-cleanup-grace-ms
-          :timeout-ms process-cleanup-timeout-ms
-          :reap-fn reap-process-handle!}))
+  ([owned]
+   (finalize-owned-process! owned nil))
+  ([owned options]
+   (require-retained-process! owned)
+   (let [timeout-ms (bounded-operation-timeout-ms
+                     (or options {}) process-cleanup-timeout-ms)
+         grace-ms (when (some? timeout-ms)
+                    (min (long process-cleanup-grace-ms)
+                         (long timeout-ms)))]
+     (process-supervision/finalize-owned-process!
+      owned (cond-> {:reap-fn reap-process-handle!}
+              (some? grace-ms) (assoc :grace-ms grace-ms)
+              (some? timeout-ms) (assoc :timeout-ms timeout-ms))))))
 
 (defn- wait-for-process
   "Waits for a process with an optional bound and never hides interruption.
@@ -1774,11 +1802,14 @@
         stderr-capture (stream-capture stderr-stream
                                        (capture-limits options :stderr))
         {:keys [completed? interrupted? error]}
-        (wait-for-process process (:timeout-ms options) owned)
+        (wait-for-process process
+                          (bounded-operation-timeout-ms options
+                                                        (:timeout-ms options))
+                          owned)
         timed-out? (and (some? (:timeout-ms options)) (not completed?)
                          (not interrupted?) (nil? error))
         containment-needed? (or timed-out? interrupted? (some? error))
-        cleanup (finalize-owned-process! owned)]
+        cleanup (finalize-owned-process! owned options)]
     (when containment-needed?
       ;; Close after descendant termination: this releases pipe readers without
       ;; allowing an inherited child descriptor to hide a live process.
@@ -1788,11 +1819,21 @@
       (close-stream! stderr-stream)
       ;; Never call the unbounded Process.waitFor after cleanup.  The result is
       ;; incomplete if the root remains alive after this bounded wait.
-      (bounded-process-wait process process-post-cleanup-wait-ms))
+      (bounded-process-wait
+       process
+       (long (or (bounded-operation-timeout-ms options
+                                               process-post-cleanup-wait-ms)
+                 0))))
     (let [capture-wait-ms (long (or (:capture-wait-ms options)
                                     default-capture-wait-ms))
-          stdout (await-capture stdout-capture capture-wait-ms)
-          stderr (await-capture stderr-capture capture-wait-ms)
+          capture-wait-ms (long (or (bounded-operation-timeout-ms
+                                     options capture-wait-ms)
+                                    0))
+          post-close-wait-ms (long (or (bounded-operation-timeout-ms
+                                        options capture-post-close-wait-ms)
+                                       0))
+          stdout (await-capture stdout-capture capture-wait-ms post-close-wait-ms)
+          stderr (await-capture stderr-capture capture-wait-ms post-close-wait-ms)
           capture-failed? (or (capture-failure? {:stdout-capture-status
                                                   (:status stdout)
                                                   :stderr-capture-status
@@ -1820,10 +1861,12 @@
                                 (rethrow-fatal! throwable)
                                 (restore-interrupt! throwable)
                                 1)))
+          deadline-expired? (zero? (or (deadline-remaining-ms options) 1))
           status (cond
                    timed-out? :timeout
                    interrupted? :error
                    error :error
+                   deadline-expired? :timeout
                    tracked-failure? :error
                    capture-failed? :error
                    (zero? exit-code) :passed
@@ -1836,6 +1879,7 @@
        :exit-code exit-code
        :wait-error error
        :wait-interrupted? (boolean interrupted?)
+       :deadline-expired? (boolean deadline-expired?)
        :cleanup cleanup
        :cleanup-root-alive? (boolean root-alive?)
        :root-exited? (not root-alive?)
@@ -1844,7 +1888,8 @@
        ;; Timeout containment is inherently unproven: ProcessHandle only
        ;; observes the tree present at the snapshot point.  Preserve nested
        ;; best-effort telemetry without claiming lane cleanliness.
-       :timeout-containment-unproven? (boolean timed-out?)
+       :timeout-containment-unproven? (boolean (or timed-out?
+                                                   deadline-expired?))
        :cleanup-status (if timed-out?
                          :unproven-timeout
                          (if tracked-failure? :failed :unproven-descendant-coverage))
@@ -1852,6 +1897,7 @@
                             false
                             nil)
        :cleanup-failed? (boolean (or timed-out?
+                                     deadline-expired?
                                      interrupted?
                                      tracked-failure?))
        :capture-failed? (boolean capture-failed?)
@@ -1907,7 +1953,7 @@
                          wait-error original)]
            (when-not (identical? primary original) (.addSuppressed primary original))
            (try
-             (finalize-owned-process! owned)
+             (finalize-owned-process! owned options)
              (catch Throwable cleanup-error
                (when-not (identical? primary cleanup-error)
                  (.addSuppressed primary cleanup-error))))
