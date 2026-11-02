@@ -6,9 +6,14 @@ The original PR597 base is `f0be2a55cc348fd1c9ce8eca377b2427541643b7`
 (tree `5f7ed31ee0c2a342b8ee053a3dcaa9f6ef0db2ce`). Its exact head is
 `6a5977cd34d8db438226424fe38618ebe9989498` (tree
 `9de8eeaa08757e5a8e8d03d866b36df69a7e9574`). The authored delta is eight
-paths: four C6 component files, two reports, and two tooling tests. The
-current composition base is `f43e77992fe86b6dfb55df3516b27cfcdea7fa40`
-(tree `a0e433f9f185b651f6f5ebc54340a085a5cd6721`).
+paths: four C6 component files, two reports, and two tooling tests. The PR597
+comparison/source checkpoint is
+`f43e77992fe86b6dfb55df3516b27cfcdea7fa40` (tree
+`a0e433f9f185b651f6f5ebc54340a085a5cd6721`). The reviewed port was later
+normally composed with current main
+`74d2bba143746d7bed6e6ed7758e5d7a14a8de11` (tree
+`6ccfe339ed63c9907ed382714ca6ca30ef12584d`); the bounded controls were
+rerun after that composition.
 
 This review preserves useful behavior without replaying the stale source
 binding implementation from the old PR branch.
