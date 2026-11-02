@@ -1,0 +1,52 @@
+{:kind :safety-current-source-view-receipt
+ :date "2026-11-02"
+ :scope-key "requirement-reconciliation/phase-02-safety"
+ :authority :proposal-only
+ :base {:commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3"
+        :tree "9f464ed0f03866bd4978e4213a488f3b1ae48683"}
+ :candidate {:commit "24c2b6f390cffdff87d0964cdd8dd533838aa333"
+             :tree "402d4c4aa3c85c486da1072ba4ace52a645a046b"}
+ :current-source {:commit "c6044c5eac93d358ca2bf8ff1351d83496767eb0"
+                  :tree "d1691576a3f09d21620e9a28a2a25bea37b080b3"}
+ :artifacts
+ {:source-view {:path "specs/requirement-reconciliation/phase-02-safety/current-source-view.edn"
+                :sha256 "c0b4a5e53649cedcd7fcb5bc498afe35fe4fcf50ae3e42813bd0a2738d6a782c"}
+  :checker {:path "tools/safety_task_source_view.clj"
+            :sha256 "5665e0e03c2bd2fd1166e38dae2af45827fe8a5940fed805584ff93562e5e3f8"}}
+ :conservation {:source-documents 16
+                :source-occurrences 1908
+                :source-dispositions 962
+                :source-facets 1055
+                :inherited-unit-records 119
+                :field-edits 329
+                :task-references 237
+                :unique-task-interfaces 18
+                :task-source-files 6}
+ :source-transition
+ {:historical-candidate-task-bytes :preserved
+  :current-main-composition :authenticated
+  :changed-task-sources [:auth :expand :legality]
+  :unchanged-task-sources [:build :domains :runtime]
+  :status-order-and-identity :verified}
+ :controls {:positive :pass
+            :proposal-hash-tamper :reject
+            :current-source-pair-tamper :reject
+            :task-order-tamper :reject
+            :duplicate-task-id-tamper :reject
+            :closed-task-tamper :reject
+            :canonical-adoption-closure :reject
+            :implementation-closure :reject}
+ :focused-checks {:current-source-view {:command "clojure -M tools/safety_task_source_view.clj --check"
+                                        :result :pass}
+                  :language-boundary {:tests 6 :assertions 11 :failures 0 :errors 0}
+                  :canonical-documents {:documents 240 :phase-indexes 19 :result :pass}
+                  :full-language-roadmap :pass
+                  :diff-check :pass}
+ :historical-checker
+ {:state :preserved-nonpass
+  :reason [:retired-task-projection-loader
+           :external-pr445-applying-manifest-not-available]
+  :required-sha256 "aa7ee8dfa7c7b0b7a9cb0e609944d7dcbcd81791f080708364a0faf8cc2e7980"
+  :action :not-regenerated-or-renewed}
+ :nonclaims [:implementation-acceptance :canonical-adoption :integration
+             :compiler-runtime-or-broker-execution :release :seed-retirement]}

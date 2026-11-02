@@ -50520,11 +50520,18 @@
    :marker "auth-implementation-tasks",
    :historical-ref "d5d8e15c773929337e1d9646da4f32af2d461e17",
    :historical-sha256 "9db81aa1c8ef183a9da8656a343a29fd9104b10e7130fd63ba4e52b75ce2b256",
-   :current-ref "bfc99d626ca31c9094573e03da751ee34da5084f",
-   :current-tree "f6305181e0df2e841c15c752f3e1ee1260bdee17",
-   :current-sha256 "7afee81509aaab0f2787caace71c7966cdb5fe1c0792e1fafbbc12db650a96a1",
-   :change-class :navigation-only,
-   :qualification "The current ledger replaces a retired generated-roadmap sentence with navigation wording. Existing task IDs, status, acceptance boundaries and evidence qualifications remain historical/currently equivalent; no requirement acceptance is inferred."}
+   :current-ref "8e6608856edcde2b57c33951839dfa9b79f2c503",
+   :current-tree "23974efdf7c3fa19160a344f26084ebe051ef1a5",
+   :current-sha256 "67e9a9b93d753ac1c6f1269cf2987c1010ade2331aeba678ff43b3b5930a31aa",
+   :change-class :acceptance-boundary-extension,
+   :qualification "The current ledger preserves the historical task identities and navigation boundary while adding PR560 SAFE10 enforcement criteria to two existing Open records. The exact current source is authenticated at the pre-repair integration checkpoint; no Auth implementation or requirement acceptance is inferred.",
+   :changed-records
+   [{:id "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+     :historical-record-sha256 "c6bfbed5bd51a95693f7ac964a3230f5238e63638a6bc4d086db4d6da120aab8",
+     :current-record-sha256 "c582045a0fb3e7dc093b855ead9a853d6a7ce8ec7e174c6bbafca82c3fc81518"}
+    {:id "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks",
+     :historical-record-sha256 "53e74d05a035ec574a55b511340ed8c9e95bf115c118eb49ad1570d1ac9ce3e4",
+     :current-record-sha256 "8efdc01479b066f7636295567d7295c7b123c605f0507ac3453f00a34b964460"}]}
   {:path "specs/backends-workflow/tasks.md",
    :marker "backends-implementation-tasks",
    :historical-ref "4e12c6a6703223d1f5b2d8a5468fd338864cc518",
@@ -50596,11 +50603,27 @@
    :marker "legality-implementation-tasks",
    :historical-ref "846644db7402c26a421eb7afd52615d52f145590",
    :historical-sha256 "937ed9cf0a8a7272559564344141fff0f1e3db34c9deef4106ab3ca958354f9e",
-   :current-ref "bfc99d626ca31c9094573e03da751ee34da5084f",
-   :current-tree "f6305181e0df2e841c15c752f3e1ee1260bdee17",
-   :current-sha256 "7ea9be2215a02987c86a57bb300fbe948391a46d1464353d1fe588e6a97f0007",
-   :change-class :navigation-only,
-   :qualification "The current ledger replaces generated-roadmap wording with navigation wording. Legality task records and acceptance boundaries remain equivalent; no profile, ownership or safety implementation acceptance is inferred."}
+   :current-ref "8e6608856edcde2b57c33951839dfa9b79f2c503",
+   :current-tree "23974efdf7c3fa19160a344f26084ebe051ef1a5",
+   :current-sha256 "9ca56250bb856a277b4ea2f5d68271c427345f1843a1e82a2865cd3e677090ce",
+   :change-class :acceptance-boundary-extension,
+   :qualification "The current ledger preserves the historical task identities and Open status while adding PR560 SAFE1-SAFE16 profile, ownership, proof and conformance criteria to all five Legality records. The exact current source is authenticated at the pre-repair integration checkpoint; no profile or safety implementation acceptance is inferred.",
+   :changed-records
+   [{:id "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+     :historical-record-sha256 "7a0bcabe93e9e5a7f76700ff374b0080a542c5890d4f6af81d9359f1bb4e918f",
+     :current-record-sha256 "75c9f330182952f0e6cef039c12a2fe5cb70d0d49b4170c1f8ec43fab9df760d"}
+    {:id "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis",
+     :historical-record-sha256 "6d0b50cd707641b1ec1910dd768f571ffcf54b33905bf45fa43dbb24e6f8d88b",
+     :current-record-sha256 "38d822712784b06947898a746d4998ba589854f78ee8c89ed4b452fead533465"}
+    {:id "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+     :historical-record-sha256 "1998850b245addfaaa4611bc800f26028eb34231bc61b42e9b477f7b8fdb4651",
+     :current-record-sha256 "85d45afeca8597bad2f46ae8f1b60da22108db23752574f7bac62169eaf1760e"}
+    {:id "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution",
+     :historical-record-sha256 "edd895c0fe9ae5ab394e7492efb3ac42b244ed94eef4f8dd2fa5a3351558546c",
+     :current-record-sha256 "9eed90d186c90fd238352d7fc06aa4ff81c58200f1efefd15ae64c3e19df6ad4"}
+    {:id "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface",
+     :historical-record-sha256 "56b048f85f2dbb3e42b8ab9d2d14074729a4b9be324ec5c1ca4063db9aa7e895",
+     :current-record-sha256 "c5156259843d92e75b0043be9d183c548e1c2220d617293accf9a193f0e7c269"}]}
   {:path "specs/lower-workflow/tasks.md",
    :marker "lower-implementation-tasks",
    :historical-ref "176c4ee65bb3ceb545f51edfaa599902030a0cb7",
@@ -50670,7 +50693,58 @@
    :current-tree "f6305181e0df2e841c15c752f3e1ee1260bdee17",
    :current-sha256 "13149ad814bebd312dd5c371ff88ff06255848e86d23b02e2d94922c1240f10f",
    :change-class :navigation-only,
-   :qualification "The current ledger replaces generated-roadmap wording with navigation wording. Types task records and acceptance boundaries remain equivalent; no types implementation acceptance is inferred."}]
+   :qualification "The current ledger replaces generated-roadmap wording with navigation wording. Types task records and acceptance boundaries remain equivalent; no types implementation acceptance is inferred."}
+  {:path "specs/runtime-workflow/tasks.md",
+   :marker "runtime-implementation-tasks",
+   :historical-ref "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950",
+   :historical-sha256 "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972",
+   :current-ref "8e6608856edcde2b57c33951839dfa9b79f2c503",
+   :current-tree "23974efdf7c3fa19160a344f26084ebe051ef1a5",
+   :current-sha256 "edbafd3d58f645d74e208eb428b7feb89f6dfd957899ce8c9136287026cbb9c4",
+   :change-class :acceptance-boundary-extension,
+   :qualification "The PR560 safety-source qualification appends SAFE2-SAFE8 runtime boundary criteria to two existing Open records. Historical task identity and acceptance remain pinned; current source is authenticated at the exact pre-repair integration checkpoint. No runtime implementation or requirement acceptance is inferred.",
+   :changed-records
+   [{:id "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
+     :historical-record-sha256 "a959ffa3f2a8e71d03007d32f480e4e0e4706a8185da0e6dfc3d501ebcb91665",
+     :current-record-sha256 "18e3804dca27d058b7c8bf45c68df55ddfbbcb482cfc5f061396b129025d5408"}
+    {:id "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+     :historical-record-sha256 "5e4f1d813c397bb8946a44bd74f80dddd046021d272456a9351e18667ec4ec87",
+     :current-record-sha256 "c0a1d3ad673000a5272fd774b017e2e904cf0f8020ab660d06e46af6bdca6dbc"}]}
+  {:path "specs/build-workflow/tasks.md",
+   :marker "build-implementation-tasks",
+   :historical-ref "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950",
+   :historical-sha256 "6c88f677477ec41d755dbedd39d1e03de7c9ae81cc9a956a48c8cf319bfca1b0",
+   :current-ref "8e6608856edcde2b57c33951839dfa9b79f2c503",
+   :current-tree "23974efdf7c3fa19160a344f26084ebe051ef1a5",
+   :current-sha256 "bc69fa4ed80c90143e843146dabfb567f058f206f16fe6988e6cce63ff55a0d4",
+   :change-class :acceptance-boundary-extension,
+   :qualification "The PR560 safety-source qualification appends SAFE14 build boundary criteria to three existing Open records. Historical task identity and acceptance remain pinned; current source is authenticated at the exact pre-repair integration checkpoint. No Build implementation or requirement acceptance is inferred.",
+   :changed-records
+   [{:id "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+     :historical-record-sha256 "b9e236813f1dcab8b65dda7c8a54fcf24eea341dbdcd23556ccf3b209e87f993",
+     :current-record-sha256 "c4a9b49babea242dbd39bf54e1b300edf4f8070e4193f94edfac9e3f700ccf4c"}
+    {:id "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects",
+     :historical-record-sha256 "8fb18943d675dc477f05953f757fc695293228f23314147c2913b9c62f8df44c",
+     :current-record-sha256 "77ffc84d83ff2ffe62934bd3bff67b9ba47bb596de555e6f94e6b75ff64b012c"}
+    {:id "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+     :historical-record-sha256 "a8c1f10da623479a8d4565f241568d7dfbdcb83644f1be8ced39e0f276230a00",
+     :current-record-sha256 "430352e138c58a788b6fb1917e9e6d41533e0782b79ba1e314bad21befbf00f4"}]}
+  {:path "specs/domains-workflow/tasks.md",
+   :marker "domains-implementation-tasks",
+   :historical-ref "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950",
+   :historical-sha256 "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4",
+   :current-ref "8e6608856edcde2b57c33951839dfa9b79f2c503",
+   :current-tree "23974efdf7c3fa19160a344f26084ebe051ef1a5",
+   :current-sha256 "2da7118e08067ff31e22d74ccfbafacc0cea1673d667c6258fe3ba5c28377162",
+   :change-class :acceptance-boundary-extension,
+   :qualification "The PR560 safety-source qualification appends SAFE9 and SAFE13 domain boundary criteria to the Math and AI Open records. Historical task identity and acceptance remain pinned; current source is authenticated at the exact pre-repair integration checkpoint. No domain implementation or requirement acceptance is inferred.",
+   :changed-records
+   [{:id "math",
+     :historical-record-sha256 "fd5a8ea4fed8cedd5889bb6030359e87b8abefb1a6467470d161800b6387e0c7",
+     :current-record-sha256 "4696449459576064a9b13100f3313cdfb97a92b536bc89362992705fde5c5f2b"}
+    {:id "ai",
+     :historical-record-sha256 "f1646c5fd968cd1cc3b6e4616ccbb69884872a73d682ceaa558932efcfbc3139",
+     :current-record-sha256 "0dd8433702ae07f6cfbabe7acba0c32ddaaf95c09bf35da2537d1ba313991ea4"}]}]
  :stdlib-reconciliation-context
  {:accepted-model
   {:path
