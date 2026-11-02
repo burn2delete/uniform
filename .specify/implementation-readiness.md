@@ -2779,3 +2779,98 @@ pass (240 documents / 19 phase indexes); the language boundary check passes
 six tests / eleven assertions. ASCII and whitespace checks pass. These are
 planning/source/tooling checks, not compiler, provider, target or release
 execution, independent semantic acceptance or integration evidence.
+
+## Memory selected-result dependency continuation
+
+Source-only commit `52c885fd3b4005e97ebc27cdb3cead1340831b89` extends the
+[existing Memory planning order](../specs/legality-workflow/plan.md#memory-producer-and-consumer-order)
+and [sole selected-result table](../docs/acceptance-dependencies.md#future-task-construction-and-composition).
+The five existing Legality routes retain all sixty prior inputs and every
+root/C9/C10 qualification. Nine new joins supply four ownership inputs, four
+handoff inputs and one conformance input. The five selected routes now contain
+69 inputs (profile 8, ownership 9, classification 18, handoff 29, conformance 5).
+All 48 other route meanings remain unchanged. No consumer, implementation task,
+task body, status or evidence receipt changes.
+
+The ownership inputs add actual Core control/evaluation/cleanup products,
+expanded source/generated origins, Auth provider declarations/deterministic
+selection and early Backend target/ABI/layout descriptors. Existing Types
+supplies type/initialization/ownership/resource constraints, call/foreign
+contracts and required layout facts; Effects supplies real behavior, Profile
+support decisions and Auth exact grants. Memory analysis derives actual path and
+state facts rather than inheriting supplied initialized/valid/closed flags.
+Provider declaration, compatibility, selection, authority and execution remain
+separate products. Early profile checking consumes descriptors, not a final
+linked runtime or current-package publication.
+
+Direct C7 review confirms required typed layout facts before safety analysis;
+C14 consumes verified MIR and derives later target layout/provider decisions.
+The plan therefore avoids a final Lower-layout-before-analysis cycle. Required
+bounds/field/range/initialization/padding/alignment/endianness/allocator facts
+must already be available under the actual typed/source/provider/target
+contracts, or the governing rule must refuse or retain its permitted check.
+Later C14 layout changes cannot inherit stale proofs: actual handoff must
+preserve or invalidate/reanalyze affected assumptions before use. A target
+noalias/dereferenceable/alignment declaration is not its own safety proof.
+
+Handoff gains actual Lower ABI/layout and provider decisions, Backend input/
+proof-target/emitted-memory results and Runtime linked/loaded-service agreement,
+composing its existing real check/cleanup/transfer/startup outputs. It requires
+check-before-access, initialized-only drop, at-most-once region cleanup and
+exactly-once linear cleanup/transfer across every modeled exit, under actual
+failure/unwind/cancellation contracts. These are final boundary evidence after
+legal analysis and verified MIR, not whole producer acceptance before local
+compiler development. All original per-rule refusal and preservation obligations
+remain with their existing owners.
+
+Conformance gains the existing resource-library owner's selected STD6 memory/
+resource and STD8 scoped IO consumer results, including actual with-open or
+resource-scope behavior and refused missing/duplicate/wrong-provider/post-transfer
+release. Compiler/Core/Expand products precede compiling those examples; every
+IO/network API and final library release are not fixture-start prerequisites.
+All 43 source diagnostic meanings, generated origins, profile/target/provider
+identities, arena/reset/borrow/initialization, cancellation, cleanup-failure and
+invalidated-proof cases remain. Source-specific unavailable-check refusals,
+permitted audited alternatives, candidate/specialist/final-outcome subjects and
+audit-only policy remain unchanged. Existing Release execution and later
+independent admission consume the family results afterward.
+
+Metadata `:memory-dependency-refinement` preserves predecessor `ca1d539d`, its
+projection/fingerprint, the complete Memory source refinement and all earlier
+source/dependency scopes. It binds five current route witnesses, their earlier
+selected contracts, the nine added inputs, fourteen governing source files and
+the advanced dependency/plan pins. All 149 current keys across 25 authorities,
+forty future records, 31 file records, 84 identical / 55 amended original bodies,
+SH/SH07 routes and three narrow Reader receipts remain. The current source
+projection has 349 selected joins, forty future consumers and thirteen existing
+parents. Its ten-record Math/Formal/Safety/review and eight-record Release/Schema
+coarse cycles remain exposed; staged acyclicity is only a structural result.
+
+This continuation declares selected complete SAFE2-SAFE5 interfaces. It does
+not accept whole L10/L18, Runtime, Backend, library, profile or other SAFE
+contracts, current source entailment, implementation or release. Current
+independent review, global reconciliation and all actual held execution remain
+pending/unassessed. Reader contract coverage remains the first implementation
+preparation increment. No other chat is messaged and no compiler/provider/native/
+foreign/callback/device/probe/replay/migration/review/signing/product-publication
+operation runs here.
+
+Current input fingerprint:
+`77ad77251c5bb2ed96cbda1eefb2e897bfbb22665cc1cb6a9acf02f3106c4447`.
+
+Final validation: SH generation/read-only comparison and dependency audit pass;
+51 crosswalk tests / 10,712 assertions and 23 dependency tests / 2,153 assertions
+pass with zero failures/errors. The initial dependency regression retained the
+old route counts; its expectation now names the actual selected inputs. The new
+missing-row control initially expected inline payloads from source references;
+it now removes exactly one declared consumer row and verifies the unresolved
+result. Both failed preparations remain failed; only the final runs receive
+passing credit. Missing added-input controls preserve the nine required joins.
+Canonical documents (240 / 19 phase indexes), the dated full-language structural
+validator and the language boundary check (six tests / eleven assertions) pass.
+Conservation/navigation passes for 83 changed files, 77 Markdown files, 3,128
+local references, 139 original routes, 48 historical specification/plan suffixes
+and all 48 original task/evidence contents after declared additions are removed.
+ASCII and whitespace checks pass. These checks establish source/projection
+consistency at their stated scope; they do not prove semantic completeness,
+compiler/provider execution, independent acceptance or integration.

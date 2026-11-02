@@ -2458,5 +2458,104 @@
     (is (= :unassessed (:implementation-acceptance refinement) (:global-source-conjunctions refinement)))
     (is (= refinement (get-in view [:implementation-readiness-source-version :memory-refinement])))))
 
+(deftest memory-dependencies-bind-early-facts-and-later-actual-consumers
+  (let [bridge sh-crosswalk/readiness-source-version refinement (:memory-dependency-refinement bridge)
+        previous (:predecessor-readiness-successor refinement)
+        previous-text (sh-crosswalk/git-source (:commit previous) (:path previous))
+        old (edn/read-string previous-text)
+        projection-text (sh-crosswalk/git-source (:commit previous) (:projection-path previous))
+        prior (edn/read-string projection-text) view (sh-crosswalk/build)
+        tasks (into {} (for [rs (vals (:task-authorities view)) r rs] [(:id r) r]))
+        result (acceptance-dependencies/future-task-view (:future-task-authorities view) tasks (:source-snapshots view) slurp)
+        review (:dependency-review result) consumers (set (:consumer-task-ids refinement))
+        selected (filterv #(consumers (:consumer %)) (:routes review))
+        ids (set (concat (keys tasks) (map :id (mapcat val (:future-task-authorities view)))))
+        dep (:dependency-source refinement) plan (:plan-source refinement)
+        old-routes (acceptance-dependencies/future-dependency-routes (sh-crosswalk/git-source (:commit previous) (:path dep)) ids ids)
+        old-selected (filterv #(consumers (:consumer %)) old-routes)
+        old-map (into {} (map (juxt :consumer identity) old-routes))
+        meaning #(select-keys % [:consumer :start-results :composition-results :selected-output-contract])
+        prefix "legality/remaining-tasks-and-evidence/"
+        profile (str prefix "complete-profile-restrictions-and-generated-form-checks")
+        analysis (str prefix "complete-ownership-borrow-initialization-and-lifetime-analysis")
+        classification (str prefix "complete-safe-code-classification-and-taintunsafe-boundaries")
+        handoff (str prefix "preserve-obligations-into-mir-and-runtime-execution")
+        conformance (str prefix "close-conformance-for-the-declared-profile-surface")
+        added {profile [] classification []
+               analysis ["core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses"
+                         "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"
+                         "auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection" "backend-interface"]
+               handoff ["lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout"
+                        "lower/current-evidence-and-remaining-work/lower3-select-explicit-providers" "backend-interface"
+                        "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"]
+               conformance ["stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis"]}
+        complete? (fn [rs] (and (= consumers (set (map :consumer rs)))
+                               (every? (fn [r] (= (set (:composition-results r))
+                                                  (set (concat (:composition-results (old-map (:consumer r))) (added (:consumer r)))))) rs)))]
+    (is (= (:sha256 previous) (sh-inventory/sha256 previous-text)))
+    (is (= (:projection-sha256 previous) (sh-inventory/sha256 projection-text)))
+    (is (= (:task-authorities prior) (:task-authorities view)))
+    (is (= (:future-task-authorities prior) (:future-task-authorities view)))
+    (is (= (:task-comparisons old) (:task-comparisons bridge)))
+    (is (= (:source-input-commit old) (:source-input-commit bridge)))
+    (doseq [k [:memory-refinement :root-safety-refinement :root-safety-dependency-refinement
+               :ownership-refinement :ownership-dependency-refinement :safety-refinement :safety-dependency-refinement]]
+      (is (= (k old) (k bridge)) k))
+    (is (= (mapv :task-references (:requirements prior)) (mapv :task-references (:requirements view))))
+    (is (= (:sh07-sequence prior) (:sh07-sequence view)))
+    (is (= (:accepted-current-scoped-evidence prior) (:accepted-current-scoped-evidence view)))
+    (is (= [] (:changed-task-ids refinement) (:new-task-identities refinement) (:new-consumer-task-ids refinement)))
+    (is (= 5 (count selected) (count consumers) (count old-selected)))
+    (is (= added (:added-composition-inputs refinement)))
+    (is (complete? selected))
+    (is (not (complete? (remove #(= analysis (:consumer %)) selected))))
+    (doseq [[id inputs] added input inputs]
+      (is (not (complete? (mapv #(if (= id (:consumer %)) (update % :composition-results (fn [xs] (vec (remove #{input} xs)))) %) selected)))))
+    (is (= (set (map :consumer old-routes)) (set (map :consumer (:routes review)))))
+    (is (= (:routes refinement) (mapv #(update % :source dissoc :raw) selected)))
+    (is (= (:predecessor-selected-routes refinement) (mapv #(update % :source dissoc :raw) old-selected)))
+    (is (= 48 (:preserved-consumer-route-count refinement) (count (remove #(consumers (:consumer %)) old-routes))))
+    (is (= (into {} (map (juxt :consumer meaning) (remove #(consumers (:consumer %)) old-routes)))
+           (into {} (map (juxt :consumer meaning) (remove #(consumers (:consumer %)) (:routes review))))))
+    (is (= [5 8 9 18 29] (sort (map (comp count :composition-results) selected))))
+    (is (= 60 (:preserved-prior-input-joins refinement) (reduce + (map (comp count :composition-results) old-selected))))
+    (is (= 69 (:selected-consumer-result-joins refinement) (reduce + (map (comp count :composition-results) selected))))
+    (is (= 9 (:new-selected-producer-result-joins refinement) (reduce + (map count (vals added)))))
+    (doseq [r selected :let [o (old-map (:consumer r))]]
+      (is (empty? (:start-results r)))
+      (is (every? (set (:composition-results r)) (:composition-results o)))
+      (is (str/starts-with? (:selected-output-contract r) (:selected-output-contract o)))
+      (let [text (slurp (:path dep))
+            pattern (re-pattern (str "(?m)^\\| `" (java.util.regex.Pattern/quote (:consumer r)) "` \\|[^\\n]*\\n"))
+            without (str/replace text pattern "")
+            missing (acceptance-dependencies/future-task-view (:future-task-authorities view) tasks (:source-snapshots view)
+                      #(if (= % (:path dep)) without (slurp %)))]
+        (is (= 1 (count (re-seq pattern text))))
+        (is (= [(:consumer r)] (get-in missing [:dependency-review :unresolved-consumers]))))
+      (doseq [input (:composition-results r)]
+        (is (some #(= [(str "task:" (:consumer r) "/implementation") (str "task:" input "/interface") :declared-producer-interface]
+                       [(:from %) (:to %) (:kind %)]) (:typed-edges result)))
+        (is (some #(= [(str "task:" (:consumer r) "/composition") (str "result:" (:consumer r) ":" input) :actual-selected-producer-result]
+                       [(:from %) (:to %) (:kind %)]) (:typed-edges result)))))
+    (is (= 349 (:all-selected-result-joins refinement) (count (filter #(= :actual-selected-producer-result (:kind %)) (:typed-edges result)))))
+    (is (= 13 (count (:declared-parent-consumers refinement)) (count (:declared-parent-consumers review))))
+    (is (= (:required-parent-consumers refinement) (:required-parent-consumers review)))
+    (is (empty? (:unresolved-consumers refinement)))
+    (is (= [10 8] (mapv count (:coarse-producer-cycles refinement)) (mapv count (:declared-output-cycles review))))
+    (doseq [r [dep plan] :let [p (:path r) after (:after r) text (slurp p)]]
+      (is (= (:sha256 after) (sh-inventory/sha256 text)))
+      (is (= text (sh-crosswalk/git-source (:commit after) p))))
+    (is (= 14 (count (:canonical-sources refinement))))
+    (doseq [{:keys [path source-commit sha256]} (:canonical-sources refinement)]
+      (is (= sha256 (sh-inventory/sha256 (slurp path)) (sh-inventory/sha256 (sh-crosswalk/git-source source-commit path)))))
+    (is (= :C7-before-analysis-C14-after-MIR-revalidate-changed-assumptions (get-in refinement [:subject-order :layout])))
+    (is (= :early-declaration-then-compatible-selection-and-grants-not-actual-execution (get-in refinement [:subject-order :providers])))
+    (is (= :existing-candidate-specialist-final-outcome-subjects-and-audit-only-policy-preserved (get-in refinement [:subject-order :reviews])))
+    (is (= :declared-interfaces-no-adopted-result-prerequisites (:ordinary-construction refinement)))
+    (is (= :valid-unoptimized-verified-MIR-remains-legal-no-task-completion-gate (:program-legality refinement)))
+    (is (= :pending (:independent-current-review refinement)))
+    (is (= :unassessed (:implementation-acceptance refinement) (:global-source-conjunctions refinement)))
+    (is (= refinement (get-in view [:implementation-readiness-source-version :memory-dependency-refinement])))))
+
 (let [result (run-tests 'sh-crosswalk-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))
