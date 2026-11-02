@@ -191,3 +191,175 @@
     (is (= :not-performed-in-gate-a (:toolchain-verification (c/abi-layout-record b1))))
     (is (nil? (c/process-exit-code nil)) "Preserve the native helper's existing nil boundary")
     (is (= :pending-gate-b-toolchain-execution (:status (c/build-manifest-record {}))))))
+
+;; These units inject anonymous operations and an opaque carrier. They never
+;; invoke the native staging/process broker or Bootstrap compiler-call body.
+(defn- sequencing-unit [execute? carrier process! fail! cleanup!]
+  (c/run-compiler! nil (fn [_ _] carrier) process! fail! cleanup!
+                   "unit.c" "unit-bin" "sequencing-unit.gravity" :unit-target execute?))
+
+(deftest compiler-call-sequence-and-result-metadata
+  (let [carrier (Object.) metadata (Object.) events (atom [])
+        compiled {:exit 0 :out "compiler-out" :err "compiler-err" :caller-metadata metadata}
+        runtime {:exit 0 :out "program-out" :err "program-err"}
+        process! (fn [observed command source target phase]
+                   (is (identical? carrier observed))
+                   (swap! events conj [phase command source target])
+                   (case phase :compile compiled :runtime runtime))
+        cleanup! (fn [observed source target]
+                   (is (identical? carrier observed))
+                   (swap! events conj [:cleanup source target]))
+        fail! (fn [& _] (throw (Exception. "unexpected unit refusal")))
+        result (sequencing-unit true carrier process! fail! cleanup!)]
+    (is (= [:compile :runtime :cleanup] (mapv first @events)))
+    (is (= ["/usr/bin/cc" "-std=c11" "-Wall" "-Werror"
+            (.getAbsolutePath (io/file "unit.c")) "-o" (.getAbsolutePath (io/file "unit-bin"))]
+           (get-in @events [0 1])))
+    (is (= [(.getAbsolutePath (io/file "unit-bin"))] (get-in @events [1 1])))
+    (is (= ["sequencing-unit.gravity" :unit-target] (vec (drop 2 (first @events)))))
+    (is (identical? metadata (:caller-metadata result)))
+    (is (= (assoc compiled :compile-out "compiler-out" :compile-err "compiler-err"
+                  :runtime-out "program-out" :runtime-err "program-err" :runtime-exit 0) result))
+    (doseq [execute? [false nil]]
+      (reset! events [])
+      (is (identical? compiled (sequencing-unit execute? carrier process! fail! cleanup!)))
+      (is (= [:compile :cleanup] (mapv first @events))))))
+
+(deftest compiler-call-default-and-bootstrap-forwarding
+  (let [marker (Object.) calls (atom [])
+        forbidden (fn [& _] (throw (Exception. "unused unit operation invoked")))
+        self! (fn [& args] (reset! calls (vec args)) marker)]
+    (is (identical? marker
+           (c/run-compiler! self! forbidden forbidden forbidden forbidden "a.c" "a-bin" "source.qst" :unit)))
+    (is (= ["a.c" "a-bin" "source.qst" :unit false] @calls))
+    (is (= '([c-source-path executable-path source-path target]
+             [c-source-path executable-path source-path target execute?])
+           (:arglists (meta #'bootstrap/c-backend-run-cc!))))
+    ;; Only the forwarding wrapper runs; the stage is an inert observer.
+    (doseq [arguments [["a.c" "a-bin" "source.qst" :unit]
+                       ["a.c" "a-bin" "source.gravity" :unit true]]]
+      (with-redefs [c/run-compiler! (fn [& args] (reset! calls (vec args)) marker)]
+        (is (identical? marker (apply bootstrap/c-backend-run-cc! arguments))))
+      (is (every? var? (take 5 @calls)))
+      (is (= arguments (vec (drop 5 @calls)))))
+    (let [contract (:gravity/namespace-contract (meta #'c/run-compiler!))]
+      (is (= (set (keys (ns-publics 'gravity.backend.c))) (set (keys (:public-api contract)))))
+      (is (= (:arglists (meta #'c/run-compiler!)) (get-in contract [:public-api 'run-compiler! :arglists])))
+      (is (false? (:authenticates-inputs? contract)))
+      (is (false? (:issues-certificates? contract)))
+      (is (some #{:native-execution} (:unsupported contract))))))
+
+(deftest compiler-and-runtime-nonzero-decisions-precede-cleanup
+  (doseq [[failed-phase fact message]
+          [[:compile :c11-compiler-acceptance "host C compiler rejected generated C11 source"]
+           [:runtime :c-runtime-execution "generated C executable failed at runtime"]]]
+    (let [events (atom []) seen (atom nil) failure (ex-info "unit refusal" {:id :unit})
+          process! (fn [_ _ _ _ phase] (swap! events conj phase)
+                     {:exit (if (= phase failed-phase) 7 0) :out "before-refusal" :err "diagnostic"})
+          fail! (fn [& args] (swap! events conj :refusal) (reset! seen (vec args)) (throw failure))]
+      (is (identical? failure
+             (try (sequencing-unit true (Object.) process! fail!
+                                   (fn [& _] (swap! events conj :cleanup)))
+                  nil (catch clojure.lang.ExceptionInfo ex ex))))
+      (is (= (if (= failed-phase :compile) [:compile :refusal :cleanup]
+                 [:compile :runtime :refusal :cleanup]) @events))
+      (is (= ["B2-DIALECT" message "sequencing-unit.gravity" :unit-target nil] (subvec @seen 0 5)))
+      (is (= fact (get-in @seen [5 :missing-fact])))
+      (is (= "/usr/bin/cc" (get-in @seen [5 :compiler])))
+      (is (= 7 (get-in @seen [5 (if (= failed-phase :compile) :compile-result :runtime-result) :exit]))))))
+
+(deftest compiler-call-preserves-primary-and-cleanup-identities
+  (doseq [primary [(ex-info "unit primary" {:id :primary}) (Error. "unit fatal")]]
+    (let [cleanup (Exception. "unit cleanup") events (atom [])]
+      (is (identical? primary
+             (try (sequencing-unit false (Object.)
+                                   (fn [& _] (swap! events conj :compile) (throw primary))
+                                   (fn [& _] (throw (Exception. "unexpected remapping")))
+                                   (fn [& _] (swap! events conj :cleanup) (throw cleanup)))
+                  nil (catch Throwable observed observed))))
+      (is (= [:compile :cleanup] @events))
+      (is (= 1 (alength (.getSuppressed ^Throwable primary))))
+      (is (identical? cleanup (aget (.getSuppressed ^Throwable primary) 0)))))
+  (let [cleanup (Exception. "cleanup only")]
+    (is (identical? cleanup
+           (try (sequencing-unit false (Object.) (fn [& _] {:exit 0})
+                                 (fn [& _] (throw (Exception. "unexpected remapping")))
+                                 (fn [& _] (throw cleanup)))
+                nil (catch Throwable observed observed))))))
+
+(deftest compiler-call-generic-exception-keeps-original-suppression-boundary
+  (let [primary (java.io.IOException. "unit IO failure") cleanup (Exception. "unit cleanup")
+        transport (ex-info "unit diagnostic transport" {:id :transport}) seen (atom nil)]
+    (is (identical? transport
+           (try (sequencing-unit false (Object.) (fn [& _] (throw primary))
+                                 (fn [& args] (reset! seen (vec args)) (throw transport))
+                                 (fn [& _] (throw cleanup)))
+                nil (catch Throwable observed observed))))
+    (is (= "host C compiler is unavailable" (get @seen 1)))
+    (is (= :c11-compiler (get-in @seen [5 :missing-fact])))
+    (is (= "unit IO failure" (get-in @seen [5 :cause-message])))
+    (is (identical? cleanup (aget (.getSuppressed primary) 0)))
+    (is (zero? (alength (.getSuppressed transport))))))
+
+(deftest compiler-call-interruption-is-restored-before-cleanup
+  (let [thread (Thread/currentThread) prior (.isInterrupted thread)
+        interrupted (InterruptedException. "unit interruption") cleanup (Exception. "unit cleanup")
+        during-cleanup (atom false)]
+    (try
+      (let [observed (try (sequencing-unit false (Object.) (fn [& _] (throw interrupted))
+                                         (fn [& _] (throw (Exception. "unexpected remapping")))
+                                         (fn [& _] (reset! during-cleanup (.isInterrupted thread)) (throw cleanup)))
+                          nil (catch Throwable error error))
+            ;; Capture before reporting an assertion through the test framework.
+            interrupted-after-call? (.isInterrupted thread)]
+        (is (identical? interrupted observed))
+        (is @during-cleanup)
+        (is interrupted-after-call?)
+        (is (identical? cleanup (aget (.getSuppressed interrupted) 0))))
+      (finally (Thread/interrupted) (when prior (.interrupt thread))))))
+
+(deftest compiler-call-staging-refusal-precedes-process-and-cleanup
+  (let [events (atom []) failure (ex-info "unit staging refusal" {:id :unit-staging})
+        forbidden (fn [& _] (swap! events conj :unexpected-native-operation)
+                    (throw (Exception. "unused operation invoked")))]
+    (is (identical? failure
+           (try (c/run-compiler! nil
+                  (fn [source target] (swap! events conj [:staging source target]) (throw failure))
+                  forbidden forbidden forbidden "unit.c" "unit-bin" "source.gravity" :unit-target true)
+                nil (catch clojure.lang.ExceptionInfo observed observed))))
+    (is (= [[:staging "source.gravity" :unit-target]] @events))))
+
+(deftest failure-function-is-selected-before-cause-message
+  (let [events (atom [])
+        diagnostic-arguments (atom nil)
+        original-diagnostic (ex-info "original diagnostic" {:test :original})
+        late-diagnostic (ex-info "late diagnostic" {:test :late})
+        source "source.gravity"
+        target :native
+        cause (proxy [java.io.IOException] []
+                (getMessage []
+                  (swap! events conj :cause-message)
+                  (alter-var-root
+                   #'bootstrap/c-backend-fail!
+                   (constantly (fn [& _]
+                                 (swap! events conj :late-diagnostic)
+                                 (throw late-diagnostic))))
+                  "observed cause"))]
+    (with-redefs [bootstrap/c-backend-fail!
+                  (fn [& arguments]
+                    (reset! diagnostic-arguments arguments)
+                    (swap! events conj :original-diagnostic)
+                    (throw original-diagnostic))]
+      (let [result (try
+                     (c/run-compiler! nil (fn [& _] (Object.))
+                                      (fn [& _] (throw cause))
+                                      #'bootstrap/c-backend-fail!
+                                      (fn [& _] (swap! events conj :cleanup))
+                                      "target/probe.c" "target/probe" source target false)
+                     (catch Throwable error error))]
+        (is (identical? original-diagnostic result))
+        (is (= [:cause-message :original-diagnostic :cleanup] @events))
+        (is (= ["B2-DIALECT" "host C compiler is unavailable" source target nil
+                {:compiler "/usr/bin/cc" :cause-message "observed cause"
+                 :missing-fact :c11-compiler}]
+               (vec @diagnostic-arguments)))))))

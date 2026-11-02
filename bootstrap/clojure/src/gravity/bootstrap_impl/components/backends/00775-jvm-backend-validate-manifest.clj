@@ -202,28 +202,4 @@
 
 (defn jvm-backend-preflight-output!
   [output-path source-path]
-  (when-not (c-backend-output-path-allowed? output-path)
-    (jvm-backend-fail!
-     "C14-INPUT" "JVM artifact directory is outside declared roots"
-     source-path nil
-     {:output-path output-path :missing-fact :output-path-containment}))
-  (let [output (java.io.File. output-path)
-        parent (or (.getParentFile output) (java.io.File. "."))]
-    (when (.exists output)
-      (jvm-backend-fail!
-       "C14-INPUT" "JVM backend requires a fresh artifact directory"
-       source-path nil
-       {:output-path output-path :missing-fact :fresh-output-path}))
-    (when (and (.exists parent) (not (.isDirectory parent)))
-      (jvm-backend-fail!
-       "C14-INPUT" "JVM artifact parent is not a directory"
-       source-path nil
-       {:output-path output-path :output-parent (.getPath parent)
-        :missing-fact :output-parent-directory}))
-    (when (and (not (.exists parent)) (not (.mkdirs parent)))
-      (jvm-backend-fail!
-       "C14-INPUT" "JVM artifact parent directory is unavailable"
-       source-path nil
-       {:output-path output-path :output-parent (.getPath parent)
-        :missing-fact :output-parent-directory}))
-    {:output output :parent parent}))
+  (gravity.backend.jvm/preflight-output! #'c-backend-output-path-allowed? #'jvm-backend-fail! output-path source-path))
