@@ -16,6 +16,10 @@ migration, release, self-hosting, or seed-retirement authority.
 - Selective-port ancestry merge: `8926a1ac4b3eedf6ac660ad1f78e5cac0663da2d`
 - Production quota removal already present through #725:
   `7019c174703d534e8da0341587a172a9214b9f20`
+- Final composition current-main base: `5dfe15c9fad14e5abebf23bf1e645bf9154a2e1e`
+- Final composition merge: `e9342cc705ae832c5551867f7b000c6f0f86bddf`
+- Final composition tree before this report-only update:
+  `0c13cf9c43c52664bcc8c171dddf82e9c5cac378`
 
 The ancestry merge uses the current-main tree and records the original PR as a
 parent only. The PR's old `effects.gravity` production tree is not replayed.
@@ -150,6 +154,18 @@ admission is claimed.
 The old 257-entry rejection in the neighboring import-table test was removed
 because the current predicate is shape-only; its type and collection-shape
 negatives remain.
+
+## Final composition check
+
+The selective port was normally merged with current `origin/main` at
+`5dfe15c9fad14e5abebf23bf1e645bf9154a2e1e` in a clean reusable checkout.
+The merge had no conflicts and did not replay the original PR tree. Focused
+custody, runner UTF-8/capture, Effects adapter, vector, boundary, document,
+and roadmap checks were rerun on the composed tree. The broader SH-01 wiring
+suite still reports its existing standalone ownership/dependency-record
+failure; that remains a nonpass and is not relabeled as PR533 evidence.
+Current-main changes outside the twelve listed port paths are inherited from
+the composition parent and are not attributed to PR533.
 
 ## Acceptance criteria
 
