@@ -120,6 +120,44 @@ New temporary tooling remains Clojure and Gravity remains the destination.
 Independent review and coordinator integration remain separate from author
 validation; no suite result or source-copy check awards itself admission.
 
+## Release dependency projection and first executable boundary
+
+Use the existing
+[suite/admission dependency declarations](../../docs/acceptance-dependencies.md#release-suite-comparison-and-admission-boundaries).
+All thirteen future producers and five existing aggregates now have explicit
+selected-output joins in that representation. The checker preserves their 77
+literal source criteria with exact task-relative UTF8 spans, hashes and owners.
+Those source IDs and baseline links are not new tasks or canonical entailment
+proof. All task bodies, source versions, Open states and narrow receipts remain
+unchanged; current source/facet/repartition review is still required.
+
+Implement a selected runner against declared subject/fixture/oracle interfaces
+before composing actual outputs from the named stage. Reuse the existing focused
+and self-hosting runners. Do not require a completed public self-hosted compiler
+or authoritative migration admission merely to develop tests. Test both real
+accepted execution and missing/stale/wrong-subject/negative-result refusals; label
+partial, mock, recorded, live and actual-target scope accurately. TEST6 retains
+its Backends authority; TEST7's permitted proof alternative and actual external
+cost/credential/retention policy remain intact.
+
+The candidate-build task produces an actual intermediate compiler and lineage;
+the comparison owner computes raw comparison products; TEST13 executes required
+subset suites/rebuild/trust checks; the existing comparison aggregate then owns
+independent intermediate admission/denial. Final distribution and independent
+release acceptance consume the full final artifacts and public command/seedless
+proofs separately. Preserve the coarse cycles and these consumer-specific result
+boundaries. A supplied success flag, runner report or author review cannot
+manufacture its consumed evidence or confer independent acceptance.
+
+The next project implementation preparation remains the existing Reader contract
+coverage increment. A Release implementation increment must select one of these
+existing source predicates and its exact real call path, report unrun/held work,
+and retain compiler/source/fixture/profile/target/backend/runtime/provider/trust
+identities. Future SH/full-language finish-line joins and global requirement
+conjunctions remain pending. This planning work runs no compiler, native probe,
+provider, migration, signing or publication operation and assigns no new person
+or permission to an existing role.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Release workflow migration

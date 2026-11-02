@@ -253,3 +253,28 @@ use boundaries. Preserve historical checkpoint tests against their frozen source
 versions and add current successor tests. Record actual validation in the existing
 evidence/report, leaving Release's thirteen joins, future SH/full-language links,
 global conjunctions, independent review and integration pending.
+
+## Release suite dependency continuation
+
+Preserve the complete Math/Schema bridge/projection and fingerprint before
+advancing only the dependency document's applying version. Add selected-output
+declarations for the thirteen captured Release tasks and five existing aggregates;
+keep every current/future task body, task-file pin, SH route and scoped receipt.
+Derive the 77 literal TEST/BOOT source criteria from their captured bodies with
+exact byte spans, hashes, ownership and full acceptance/refusal text. Baseline
+links remain navigation; do not infer canonical semantic coverage from them.
+
+Connect each runner's composition to its source criteria and actual selected
+subject/oracle results. Keep raw stage construction/comparison, TEST13 execution,
+independent intermediate admission, final distribution and independent release
+acceptance as distinct result boundaries within the existing authorities.
+Retain coarse cycles, implemented-subset applicability, proof alternatives,
+native receipts/sticky denial, real host/provider restrictions and held actions.
+No source criterion or selected output is execution-accepted by this view.
+
+Check exact span reconstruction and positive/negative source grammar/owner
+controls, all forty future declarations, six current parent declarations,
+unchanged task/SH populations, exposed cycles and the advisory/unassessed
+frontier. Preserve earlier checkpoint tests against frozen source versions.
+Global source conjunctions, final SH/full-language joins and independent review
+remain separate required work after this declaration increment.

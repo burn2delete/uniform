@@ -30,6 +30,12 @@ from current SH routing. Its Math/Schema successor records declared task/output
 joins, preserving coarse checker/producer cycles and the exact literal Math
 output dependency graph. These source declarations grant no implementation or
 proof acceptance; Release and final finish-line composition remain pending.
+The Release dependency continuation now declares all thirteen future suite/seed
+producers and five existing aggregate consumers, retaining 77 exact literal
+source criteria. Raw stage results, suite execution, independent intermediate
+admission and final release remain separate. All forty captured future tasks
+have declarations; source entailment, final finish-line composition and actual
+execution/acceptance remain pending.
 
 Status: source-bound routing, dependency mapping, source-pin guard and bounded
 source-version bridge independently reviewed; owner task-boundary integration
