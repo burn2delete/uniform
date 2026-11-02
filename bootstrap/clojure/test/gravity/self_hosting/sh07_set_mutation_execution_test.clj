@@ -89,6 +89,84 @@
   (invoke
    @c6-plan 'verify-c6-set-mutation-execution-request [request]))
 
+(defn- expanded-set-request [extension]
+  (let [base (fixture-request "accepted" extension)
+        namespace (:namespace base)
+        depth 33
+        literal-id "node/deep-literal"
+        set-id (fn [index] (str "node/deep-set-" index))
+        child-id (fn [index]
+                   (if (= index (dec depth))
+                     literal-id
+                     (set-id (inc index))))
+        node-source
+        (fn [syntax-id line]
+          {:syntax-id syntax-id
+           :semantic-span {:line-start line
+                           :column-start 1
+                           :line-end line
+                           :column-end 2}
+           :generated-origin []})
+        literal
+        {:artifact :gravity/sh07-core-node
+         :node-id literal-id
+         :core-form :literal
+         :children []
+         :attributes {:literal-kind :integer :value 7}
+         :source (node-source "syntax/deep-literal" 1)}
+        nodes
+        (vec
+         (cons
+          literal
+          (for [index (range depth)]
+            (let [node-id (set-id index)
+                  child (child-id index)]
+              {:artifact :gravity/sh07-core-node
+               :node-id node-id
+               :core-form :set!
+               :children [child]
+               :attributes {:target-binding-id (str "binding/deep-" index)
+                            :target-evaluation :none
+                            :result-policy :unit
+                            :required-effect :state/write}
+               :source (node-source (str "syntax/deep-set-" index)
+                                    (+ 2 index))
+               :evaluation {:kind :value-then-write
+                            :order [{:index 0 :core-node-id child}]}}))))
+        mutations
+        (vec
+         (for [index (range depth)]
+           (let [node-id (set-id index)
+                 child (child-id index)]
+             {:core-node-id node-id
+              :value-core-node-id child
+              :target-binding-id (str "binding/deep-" index)
+              :target-namespace namespace
+              :target-binding-class :namespace
+              :target-location :top-level-var
+              :target-evaluated-children []
+              :evaluated-children [child]
+              :ordered-steps [:evaluate-value :write-target :yield-unit]
+              :result-policy :unit
+              :required-effect :state/write
+              :type-legality :pending-sh08
+              :effect-registry-legality :pending-sh09
+              :effect-profile-capability-legality :pending-sh09
+              :ownership-legality :pending-sh10
+              :safety-classification :pending-sh11})))
+        store
+        (vec
+         (for [index (range depth)]
+           {:binding-id (str "binding/deep-" index)
+            :namespace namespace
+            :location :top-level-var
+            :value 0}))]
+    (assoc base
+           :root-node-id (set-id 0)
+           :nodes nodes
+           :mutations mutations
+           :store store)))
+
 (defn- l2-execute [verified]
   (invoke @l2-plan 'execute-l2-set-mutation [verified]))
 
@@ -287,6 +365,23 @@
                :value :unit}]
              (filterv #(= :write-target (:step %))
                       (:trace result)))))))
+
+(deftest sh07-set-mutation-accepts-request-beyond-retired-work-ceilings
+  (let [request (expanded-set-request ".gravity")
+        verified (c6-verify request)
+        result (l2-execute verified)]
+    (is (= 34 (count (:nodes request))))
+    (is (= 33 (count (:mutations request))))
+    (is (= 33 (count (:store request))))
+    (is (= :accepted (:status verified)))
+    (is (= :accepted (:status result)))
+    (is (= :unit (:value result)))
+    (is (= 100 (count (:trace result))))
+    (is (= 33
+           (count (filter #(= :write-target (:step %))
+                          (:trace result)))))
+    (is (= 7
+           (get (store-values result) "binding/deep-32")))))
 
 (deftest sh07-set-mutation-present-nil-literal-remains-a-value
   (doseq [extension extensions]

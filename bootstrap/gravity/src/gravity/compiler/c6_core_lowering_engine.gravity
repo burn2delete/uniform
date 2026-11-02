@@ -38,7 +38,7 @@
                              :core-verifier-report
                              :lowering-rule-version-record
                              :core-lowering-diagnostic-catalog
-                             :bounded-set-mutation-execution-preflight]
+                             :set-mutation-execution-preflight]
                :preserves #{:source-spans :syntax-identity
                             :diagnostic-codes :artifact-provenance
                             :origin-chains :generated-origin
@@ -157,9 +157,6 @@
    :result :unit
    :required-effect :state/write
    :verification-carrier :request-bound-substitution-and-staleness-guard
-   :bounds {:maximum-nodes 32
-            :maximum-mutations 16
-            :maximum-store-entries 16}
    :pending-legality {:types :pending-sh08
                       :effects-and-capabilities :pending-sh09
                       :ownership :pending-sh10
@@ -186,9 +183,6 @@
    :result :unit
    :required-effect :state/write
    :verification-carrier :request-bound-substitution-and-staleness-guard
-   :bounds {:maximum-nodes 32
-            :maximum-mutations 16
-            :maximum-store-entries 16}
    :pending-legality {:types :pending-sh08
                       :effects-and-capabilities :pending-sh09
                       :ownership :pending-sh10
@@ -204,8 +198,7 @@
                :sh07-complete]})
 
 (defn c6-set-execution-verification-checks []
-  [:bounded-carriers
-   :unique-node-and-mutation-identities
+  [:unique-node-and-mutation-identities
    :source-and-generated-origin-shape
    :acyclic-root-reachable-node-graph
    :exact-set-mutation-carriers
@@ -245,11 +238,11 @@
 
 (defn c6-set-execution-remediation [rule]
   (if (= rule "C6-CORE-SHAPE")
-    "Provide the bounded SH-07 set-mutation execution request shape."
+    "Provide the SH-07 set-mutation execution request shape."
     (if (= rule "C6-EVAL-ORDER")
       "Preserve evaluate-value, write-target, then yield-unit order."
       (if (= rule "C6-LOWERING-GAP")
-        "Use only literal or nested set! values in this bounded execution slice."
+        "Use only literal or nested set! values supported by this execution slice."
         "Replay the C6 set-mutation preflight without substituting nodes, bindings, or store locations."))))
 
 (defn c6-set-execution-diagnostic [request rule reason node]
@@ -324,23 +317,21 @@
 
 (defn c6-set-execution-store-valid? [store namespace]
   (if (vector? store)
-    (if (<= (count store) 16)
-      (loop [remaining store seen #{}]
-        (if (= (count remaining) 0)
-          true
-          (let [entry (first remaining)
-                binding-id (if (map? entry) (get entry :binding-id) nil)]
-            (if (c6-set-execution-store-entry? entry namespace)
-              (if (contains? seen binding-id)
-                false
-                (recur (rest remaining) (conj seen binding-id)))
-              false))))
-      false)
+    (loop [remaining store seen #{}]
+      (if (= (count remaining) 0)
+        true
+        (let [entry (first remaining)
+              binding-id (if (map? entry) (get entry :binding-id) nil)]
+          (if (c6-set-execution-store-entry? entry namespace)
+            (if (contains? seen binding-id)
+              false
+              (recur (rest remaining) (conj seen binding-id)))
+            false))))
     false))
 
 (defn c6-set-execution-node-index-valid? [nodes]
   (if (vector? nodes)
-    (if (if (> (count nodes) 0) (<= (count nodes) 32) false)
+    (if (> (count nodes) 0)
       (loop [remaining nodes seen #{}]
         (if (= (count remaining) 0)
           true
@@ -366,21 +357,19 @@
 
 (defn c6-set-execution-mutation-index-valid? [mutations]
   (if (vector? mutations)
-    (if (<= (count mutations) 16)
-      (loop [remaining mutations seen #{}]
-        (if (= (count remaining) 0)
-          true
-          (let [mutation (first remaining)
-                node-id
-                (if (map? mutation) (get mutation :core-node-id) nil)]
-            (if (c6-set-execution-mutation-shape? mutation)
-              (if (c6-set-execution-id? node-id)
-                (if (contains? seen node-id)
-                  false
-                  (recur (rest remaining) (conj seen node-id)))
-                false)
-              false))))
-      false)
+    (loop [remaining mutations seen #{}]
+      (if (= (count remaining) 0)
+        true
+        (let [mutation (first remaining)
+              node-id
+              (if (map? mutation) (get mutation :core-node-id) nil)]
+          (if (c6-set-execution-mutation-shape? mutation)
+            (if (c6-set-execution-id? node-id)
+              (if (contains? seen node-id)
+                false
+                (recur (rest remaining) (conj seen node-id)))
+              false)
+            false))))
     false))
 
 (defn c6-set-execution-positive-integer? [value]
