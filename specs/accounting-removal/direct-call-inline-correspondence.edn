@@ -1,0 +1,512 @@
+{:source-corruption-controls
+ [{:case :lost-compatibility-inline,
+   :refused-complete-let-equation true}
+  {:case :lost-arguments-inline, :refused-complete-let-equation true}
+  {:case :changed-input-context, :refused-complete-let-equation true}
+  {:case :changed-retained-budget, :refused-complete-let-equation true}
+  {:case :changed-call-edge, :refused-complete-let-equation true}
+  {:case :changed-argument-source,
+   :refused-complete-let-equation true}],
+ :path "bootstrap/gravity/p15_s23/emitter.gravity",
+ :caller p15-s23-typed-compile-call,
+ :historical-caller-sha256
+ "c9c8d1251afb6f34b2892447b75b67260e8edb8bdef5151599ea09c042c921be",
+ :historical-whole-file-sha256
+ "06f790a4c708d366acd6497256b57a0cafd3ff724d200f170962ca6e1a403eea",
+ :nonclaims
+ [:no-whole-caller-or-DSE-dispatch-equivalence
+  :no-semantic-reachability
+  :no-transitive-historical-behavior-equivalence
+  :no-dynamic-var-callframe-exception-native-runtime-proof
+  :no-retained-accounting-approval
+  :no-old-denied-DSE-review-retry
+  :no-whole-PR569-ACC01-PR502-closure],
+ :execution
+ {:reader-eval false,
+  :Gravity-Bootstrap-compiler-native-runtime :UNRUN},
+ :current-caller-sha256
+ "2102aef6ba63e91e075e8bcc1f497ff793293a80965ed2d325f7939c2e9f27c3",
+ :common-caller-parameters [context node budget],
+ :governing-source-pins
+ [{:path "AGENTS.md",
+   :sha256
+   "05758d7322985d88f8fc31cc25d02c7e5514442df11d67c0517bc96bc5004c93"}
+  {:path
+   "docs/phase-01-core-language/012-l2-core-language-semantics.md",
+   :sha256
+   "22dac156e0bd388d79c6047e14f22aebca214144354579a2b948f274db32552f"}
+  {:path
+   "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md",
+   :sha256
+   "ec3664547f3425cfa994fd0b3c44c37f85e0206fca237b384bac04ef4b07d405"}
+  {:path
+   "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+   :sha256
+   "9defd108707c5359377d11e95d18f751f2de72d8981a3789d905118419c2d56b"}],
+ :assumptions
+ [:pinned-unrebound-source-and-callees
+  :L2-lexical-binding-and-pure-variable-argument-access],
+ :rows
+ [{:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :current-complete-body-path
+   [3
+    3
+    3
+    2
+    3
+    2
+    3
+    2
+    3
+    2
+    3
+    3
+    3
+    3
+    3
+    2
+    3
+    3
+    3
+    3
+    3
+    3
+    3
+    3
+    3
+    3
+    3
+    2
+    3
+    2
+    3
+    1
+    17],
+   :historical-call-path
+   [3
+    3
+    3
+    2
+    3
+    2
+    3
+    2
+    3
+    2
+    3
+    3
+    3
+    3
+    3
+    2
+    3
+    3
+    3
+    3
+    3
+    3
+    3
+    3
+    3
+    3
+    3
+    2
+    3
+    2
+    3
+    1
+    17],
+   :unit [defn p15-s23-typed-direct-call-compatibility],
+   :historical-body-sha256
+   "cd0c70eda98bebd9086c4bfb5a3d982b0f174078d98797b0fd6dc8261873a7dd",
+   :current-top-level-helper :absent,
+   :proposed-disposition
+   :conditional-complete-source-body-incorporation,
+   :historical-call
+   (p15-s23-typed-direct-call-compatibility
+    context
+    call
+    edge
+    callee
+    arguments
+    types
+    parameters
+    budget),
+   :exact-body-occurrences 1,
+   :parameters
+   [context call edge callee arguments types parameters budget],
+   :historical-form-sha256
+   "71d4c4a3df5665181bd37bc24db6e9c619c4838cf1eeac6e4d40dbdd631f1f6f"}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :current-complete-body-path
+   [3
+    3
+    3
+    2
+    3
+    2
+    3
+    2
+    3
+    2
+    3
+    3
+    3
+    3
+    3
+    2
+    3
+    3
+    3
+    3
+    3
+    3
+    3
+    3
+    3
+    3
+    3
+    2
+    3
+    2
+    3
+    2
+    3
+    2],
+   :historical-call-path
+   [3
+    3
+    3
+    2
+    3
+    2
+    3
+    2
+    3
+    2
+    3
+    3
+    3
+    3
+    3
+    2
+    3
+    3
+    3
+    3
+    3
+    3
+    3
+    3
+    3
+    3
+    3
+    2
+    3
+    2
+    3
+    2
+    3
+    2],
+   :unit [defn p15-s23-typed-direct-call-arguments],
+   :historical-body-sha256
+   "5febfe3e7f85c4bb77a158ba41120bc15acdc066ca92f7e2f9a4f2d2491e60e2",
+   :current-top-level-helper :absent,
+   :proposed-disposition
+   :conditional-complete-source-body-incorporation,
+   :historical-call
+   (p15-s23-typed-direct-call-arguments
+    context
+    arguments
+    budget
+    charge
+    name),
+   :exact-body-occurrences 1,
+   :parameters [context arguments budget charge name],
+   :historical-form-sha256
+   "72d95c706f2a83a64a64df32fe842bdd61cc12f0004fb8dcf7a9a8086cbbb713"}],
+ :main-tree "19e6cab1c2cb42d1be1e44c84b988b3ec199c3a8",
+ :direct-dependency-pins
+ [{:name p15-s23-compiler-complete?,
+   :current-form-sha256
+   "6f3dd9ae30ab71d48f887ee2ebecf4194f713547dbf90bc3aa5c4b44f5e00cbf",
+   :historical-form-sha256
+   "6f3dd9ae30ab71d48f887ee2ebecf4194f713547dbf90bc3aa5c4b44f5e00cbf",
+   :historical-form-identical true}
+  {:name p15-s23-compiler-result,
+   :current-form-sha256
+   "a5715290918e147da4bb3a222ec2cbda4cf97eda0cfaa429880157e6f0210068",
+   :historical-form-sha256
+   "a5715290918e147da4bb3a222ec2cbda4cf97eda0cfaa429880157e6f0210068",
+   :historical-form-identical true}
+  {:name p15-s23-lp-compatibility,
+   :current-form-sha256
+   "a575b32d24d8e877ac7ddcafbe6afa2d97bb1c8efc1c66711b9c1b5c33b5cb2a",
+   :historical-form-sha256
+   "9c489e75edd6755aef3682f8bff9f4acc7aab55993bcea4bce8a456166011b46",
+   :historical-form-identical false}
+  {:name p15-s23-typed-compile-node,
+   :current-form-sha256
+   "6b4abe4ef88ab87ac793e090c0c9843f934eeeb5262e73056d9530d23c334a40",
+   :historical-form-sha256
+   "6b4abe4ef88ab87ac793e090c0c9843f934eeeb5262e73056d9530d23c334a40",
+   :historical-form-identical true}],
+ :original-inventory :unchanged,
+ :independent-classification :pending,
+ :complete-enclosing-let
+ {:historical-path
+  [3 3 3 2 3 2 3 2 3 2 3 3 3 3 3 2 3 3 3 3 3 3 3 3 3 3 3 2 3 2 3],
+  :current-path
+  [3 3 3 2 3 2 3 2 3 2 3 3 3 3 3 2 3 3 3 3 3 3 3 3 3 3 3 2 3 2 3],
+  :replacements 2,
+  :historical-let-sha256
+  "2bcff5fe21d458c962371a06e23abcf5acdc7fdaea1460049c715024d05b246a",
+  :expanded-and-current-let-sha256
+  "c48c944c20317b932acd9f6fcc4d477385df06a054d0f6740b7fdbfff54a5cea",
+  :current-occurrences 1,
+  :all-other-source-inside-let :identical},
+ :kind :direct-call-helper-conditional-source-incorporation-proposal,
+ :generator
+ {:path "/tmp/acc01-direct-inline-proposal.clj",
+  :sha256
+  "25cefbc021bd5016a903c148a907e289332da3b50adf2bbbe4e1627266e2fb76"},
+ :original-inventory-sha256
+ "ab1bba9f55312be5cd7c84d2628f54dbd2fe3e23f625764df0a9b757fb4828a0",
+ :production-change :none,
+ :assessed-whole-file-sha256
+ "e49189aa370afcdf7c85a98d68cec02c3462e4f964285941e7f1dd956c5b68ae",
+ :main "c486a4d78f67937deb42b8bfa978e456d583bc32",
+ :outer-let-bindings
+ [{:path [3 3 3],
+   :bindings
+   [lset-descriptor-route?
+    (if
+     (if (map? context) (map? node) false)
+     (if
+      (if
+       (map? (get context :types))
+       (vector? (get node :children))
+       false)
+      (if
+       (p15-s23-sse-ids? [(first (get node :children))] 1)
+       (=
+        :gravity.type/applied-list-set-conversion
+        (get
+         (get (get context :types) (first (get node :children)))
+         :kind))
+       false)
+      false)
+     false)
+    lset-source-route?
+    (if
+     (if (map? context) (map? node) false)
+     (if
+      (if
+       (p15-s23-sse-ids? [(get node :node-id)] 1)
+       (p15-s23-typed-all
+        [(map? (get context :calls))
+         (map? (get context :core))
+         (map? (get context :types))
+         (map? (get context :bindings))
+         (map? (get context :nodes))])
+       false)
+      (p15-s23-lset-entry?
+       node
+       (get (get context :calls) (get node :node-id))
+       (get context :nodes)
+       (get context :bindings)
+       (get context :types)
+       (get (get context :core) :module))
+      false)
+     false)],
+   :historical-and-current-bindings-sha256
+   "6e343c431e2137735faca56d40dbc7f60ea649a3e033487cdd84ddff6f6b8ff7"}
+  {:path [3 3 3 2 3],
+   :bindings
+   [mkeys-descriptor-route?
+    (if
+     (if (map? context) (map? node) false)
+     (if
+      (if
+       (map? (get context :types))
+       (vector? (get node :children))
+       false)
+      (if
+       (p15-s23-sse-ids? [(first (get node :children))] 1)
+       (=
+        :gravity.type/applied-map-keys
+        (get
+         (get (get context :types) (first (get node :children)))
+         :kind))
+       false)
+      false)
+     false)
+    mkeys-source-route?
+    (if
+     (if (map? context) (map? node) false)
+     (if
+      (if
+       (p15-s23-sse-ids? [(get node :node-id)] 1)
+       (p15-s23-typed-all
+        [(map? (get context :calls))
+         (map? (get context :core))
+         (map? (get context :types))
+         (map? (get context :bindings))
+         (map? (get context :nodes))])
+       false)
+      (p15-s23-mkeys-entry?
+       node
+       (get (get context :calls) (get node :node-id))
+       (get context :nodes)
+       (get context :bindings)
+       (get context :types)
+       (get (get context :core) :module))
+      false)
+     false)],
+   :historical-and-current-bindings-sha256
+   "4751ac43e3e2f00ce4ac3d610723ee262243f730e59e0e4fc223a5e019a0b276"}
+  {:path [3 3 3 2 3 2 3],
+   :bindings
+   [vrest-descriptor-route?
+    (if
+     (if (map? context) (map? node) false)
+     (if
+      (if
+       (map? (get context :types))
+       (vector? (get node :children))
+       false)
+      (if
+       (p15-s23-sse-ids? [(first (get node :children))] 1)
+       (=
+        :gravity.type/applied-vector-rest
+        (get
+         (get (get context :types) (first (get node :children)))
+         :kind))
+       false)
+      false)
+     false)
+    vrest-source-route?
+    (if
+     (if (map? context) (map? node) false)
+     (if
+      (if
+       (p15-s23-sse-ids? [(get node :node-id)] 1)
+       (p15-s23-typed-all
+        [(map? (get context :calls))
+         (map? (get context :core))
+         (map? (get context :types))
+         (map? (get context :bindings))
+         (map? (get context :nodes))])
+       false)
+      (p15-s23-vrest-entry?
+       node
+       (get (get context :calls) (get node :node-id))
+       (get context :nodes)
+       (get context :bindings)
+       (get context :types)
+       (get (get context :core) :module))
+      false)
+     false)],
+   :historical-and-current-bindings-sha256
+   "f453736bacb0001cc2c723a0a7546a7f993b3efc3f793ffef87ee4ea93c96de0"}
+  {:path [3 3 3 2 3 2 3 2 3],
+   :bindings
+   [descriptor-route?
+    (if
+     (if (map? context) (map? node) false)
+     (if
+      (if
+       (map? (get context :types))
+       (vector? (get node :children))
+       false)
+      (if
+       (p15-s23-sse-ids? [(first (get node :children))] 1)
+       (=
+        :gravity.type/applied-vector-empty
+        (get
+         (get (get context :types) (first (get node :children)))
+         :kind))
+       false)
+      false)
+     false)
+    source-route?
+    (if
+     (if (map? context) (map? node) false)
+     (if
+      (if
+       (p15-s23-sse-ids? [(get node :node-id)] 1)
+       (p15-s23-typed-all
+        [(map? (get context :calls))
+         (map? (get context :core))
+         (map? (get context :types))
+         (map? (get context :bindings))
+         (map? (get context :nodes))])
+       false)
+      (p15-s23-vemp-entry?
+       node
+       (get (get context :calls) (get node :node-id))
+       (get context :nodes)
+       (get context :bindings)
+       (get context :types)
+       (get (get context :core) :module))
+      false)
+     false)],
+   :historical-and-current-bindings-sha256
+   "d1b8e6e83a18e7798acfca1732866fd8bf7a65980ab94434bce1b3665cb2acf1"}
+  {:path [3 3 3 2 3 2 3 2 3 2 3 3 3 3 3 2 3 3 3 3 3 3 3 3 3 3 3],
+   :bindings
+   [id
+    (get node :node-id)
+    call
+    (get (get context :calls) id)
+    edge
+    (get (get context :edges) id)
+    forms
+    (get context :forms)
+    children
+    (get node :children)
+    owner
+    (get forms (get (get node :source) :form-id))
+    ids
+    (get owner :child-form-ids)
+    callee-record
+    (loop
+     [remaining (get (get context :core) :function-records) found nil]
+     (if
+      (= 0 (count remaining))
+      found
+      (if
+       (=
+        (get (first remaining) :definition-binding-id)
+        (get edge :callee-binding-id))
+       (if
+        (= found nil)
+        (recur (rest remaining) (first remaining))
+        nil)
+       (recur (rest remaining) found))))
+    name
+    (get callee-record :definition-name)
+    joined
+    (p15-s23-typed-definition context name)
+    callee
+    (get (get joined :value) :function)
+    definition-node
+    (get
+     (get context :nodes)
+     (get callee-record :definition-core-node-id))
+    definition-form
+    (get forms (get (get definition-node :source) :form-id))
+    definition-name-form
+    (get forms (get (get definition-form :child-form-ids) 1))
+    caller
+    (get context :current-function)],
+   :historical-and-current-bindings-sha256
+   "0bff86b892a0fa84e2df6e91a81bc453850940301c6b9b5a767195a0d2760984"}],
+ :prior-observation
+ {:path "specs/accounting-removal/dispatch-source-correspondence.edn",
+  :sha256
+  "0b3b4a78c333448990227f1dd6cad6315913cbe295ec514bd909c91c12a62c9f",
+  :scope :two-inline-helper-observations-only,
+  :DSE-mapping :not-adopted-or-reviewed-here},
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01}

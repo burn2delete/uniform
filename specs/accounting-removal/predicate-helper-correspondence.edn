@@ -1,0 +1,201 @@
+{:prior-assessed-main "0f7acce5fc93e019062d84a3fd9dcf05643ba7fd",
+ :consumed-evidence
+ {:path "specs/accounting-removal/predicate-source-disposition.edn",
+  :sha256
+  "b8666c26f1f3935816c3ec2aed6b11e3b0f9743cee2637721fa56dbf6bdca642",
+  :unchanged true,
+  :six-difference-keys-conserved true},
+ :nonclaims
+ [:semantic-equivalence-from-form-identity
+  :all-helpers-equivalent
+  :whole-callgraph-proof
+  :actual-predicate-test-passed
+  :source-authentication
+  :genuine-C7-Effects-emitter-runtime-acceptance
+  :ACC-closure
+  :PR502-closure],
+ :remaining-differences
+ [{:from
+   {:path "bootstrap/gravity/src/gravity/effects.gravity",
+    :name body-all?,
+    :complete-form-sha256
+    "59ecdffce4ac484afcc3264f368613c3e8aa6facf1451ec7f8376051b66d47de",
+    :prior-assessed-form-unchanged true},
+   :to
+   {:path
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+    :name sh08-ft-all-true?,
+    :complete-form-sha256
+    "e490157e9d5ffb1425fd53e173c1ee8697244e32ebba91d6a39b42dc2e4e966a",
+    :prior-assessed-form-unchanged true},
+   :complete-tail-match false,
+   :remaining-difference
+   :loop-versus-recursive-call-and-equality-operand-order,
+   :semantic-equivalence :unproved}
+  {:from
+   {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+    :name p15-s23-typed-all,
+    :complete-form-sha256
+    "91661dc440f7f2bb726c2ca0916d05be087ac8a470300b87ea2d80f110e983ae",
+    :prior-assessed-form-unchanged true},
+   :to
+   {:path
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+    :name sh08-ft-all-true?,
+    :complete-form-sha256
+    "e490157e9d5ffb1425fd53e173c1ee8697244e32ebba91d6a39b42dc2e4e966a",
+    :prior-assessed-form-unchanged true},
+   :complete-tail-match false,
+   :remaining-difference
+   :loop-versus-recursive-call-and-equality-operand-order,
+   :semantic-equivalence :unproved}],
+ :source-files
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :assessed-main-sha256
+   "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142",
+   :prior-assessed-main-sha256
+   "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142"}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :assessed-main-sha256
+   "11ab8e2cb4c74a30d5fd3fe48d86affe87966002f88815037a3253d9b4871f57",
+   :prior-assessed-main-sha256
+   "11ab8e2cb4c74a30d5fd3fe48d86affe87966002f88815037a3253d9b4871f57"}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :assessed-main-sha256
+   "9ea39a7aa26fd53a3683091dd3bf49f3e0517d56e77b5a196c70261b55a43637",
+   :prior-assessed-main-sha256
+   "9ea39a7aa26fd53a3683091dd3bf49f3e0517d56e77b5a196c70261b55a43637"}],
+ :id-validator-boundary
+ {:declared-widths-at-these-callers [2 1 6],
+  :preserved-source-numbers [0 1 2 6 71],
+  :quota-disposition :not-assessed,
+  :all-guards-preserved true},
+ :complete-correspondences
+ [{:kind :complete-form-tail-after-two-parameter-renames,
+   :from
+   {:path "bootstrap/gravity/src/gravity/effects.gravity",
+    :name body-io-child-types,
+    :complete-form-sha256
+    "690f66d1459b27f5b2114868e8ba329eb2eb7e2a70261f08ede55b08244cb529",
+    :prior-assessed-form-unchanged true},
+   :to
+   {:path
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+    :name sh08-ft-ordered-child-types,
+    :complete-form-sha256
+    "08c021d0bccc02bdf623f6e4efad9a9318ef47a2e2a543a54e40dbaa979beed2",
+    :prior-assessed-form-unchanged true},
+   :explicit-symbols {ids children, types type-table},
+   :complete-tail-match true,
+   :numeric-and-keyword-changes false}
+  {:kind :complete-form-tail-after-two-parameter-renames,
+   :from
+   {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+    :name p15-s23-io-child-types,
+    :complete-form-sha256
+    "19dfc3daaba58ed42d0f5e82f8c9d8cd5b3e765d5f623ac0ed90b41510fbf4dc",
+    :prior-assessed-form-unchanged true},
+   :to
+   {:path
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+    :name sh08-ft-ordered-child-types,
+    :complete-form-sha256
+    "08c021d0bccc02bdf623f6e4efad9a9318ef47a2e2a543a54e40dbaa979beed2",
+    :prior-assessed-form-unchanged true},
+   :explicit-symbols {ids children, types type-table},
+   :complete-tail-match true,
+   :numeric-and-keyword-changes false}
+  {:kind :complete-form-tail-after-validated-helper-rename,
+   :from
+   {:path "bootstrap/gravity/src/gravity/effects.gravity",
+    :name body-listp-call-ids?,
+    :complete-form-sha256
+    "e0bae12814cc8c698529663ec29d4e18e2215ff94c95a5eddf076776d5347056",
+    :prior-assessed-form-unchanged true},
+   :to
+   {:path
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+    :name sh08-listp-call-ids?,
+    :complete-form-sha256
+    "6123866a7d461fbf825764c081b0df64b7a61c2b2a786f43f86095f69efc280e",
+    :prior-assessed-form-unchanged true},
+   :explicit-symbols {body-sse-ids? sh08-sse-ids?},
+   :complete-tail-match true,
+   :numeric-and-keyword-changes false,
+   :dependency-form-identity
+   [{:path
+     "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+     :name sh08-sse-ids?,
+     :complete-form-sha256
+     "6b03ead3eeadda7f172c364dbe2b5fee437eea4df97225c6d977dc6c0a379719",
+     :prior-assessed-form-unchanged true}
+    {:path "bootstrap/gravity/src/gravity/effects.gravity",
+     :name body-sse-ids?,
+     :complete-form-sha256
+     "069151bffff3a09750fdf8d81e46bc2ccbb01722f3e7416cd9efbc40a6d56b4c",
+     :prior-assessed-form-unchanged true}
+    {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+     :name p15-s23-sse-ids?,
+     :complete-form-sha256
+     "04679b3790b51b44889473b88a50717a9c2d69979ca66e2c2b700cef20fdc6f4",
+     :prior-assessed-form-unchanged true}]}
+  {:kind :complete-form-tail-after-validated-helper-rename,
+   :from
+   {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+    :name p15-s23-listp-call-ids?,
+    :complete-form-sha256
+    "4aa9fba38395c123b617f667762f52087d97158318c86930f4573ce7ddd4097b",
+    :prior-assessed-form-unchanged true},
+   :to
+   {:path
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+    :name sh08-listp-call-ids?,
+    :complete-form-sha256
+    "6123866a7d461fbf825764c081b0df64b7a61c2b2a786f43f86095f69efc280e",
+    :prior-assessed-form-unchanged true},
+   :explicit-symbols {p15-s23-sse-ids? sh08-sse-ids?},
+   :complete-tail-match true,
+   :numeric-and-keyword-changes false,
+   :dependency-form-identity
+   [{:path
+     "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+     :name sh08-sse-ids?,
+     :complete-form-sha256
+     "6b03ead3eeadda7f172c364dbe2b5fee437eea4df97225c6d977dc6c0a379719",
+     :prior-assessed-form-unchanged true}
+    {:path "bootstrap/gravity/src/gravity/effects.gravity",
+     :name body-sse-ids?,
+     :complete-form-sha256
+     "069151bffff3a09750fdf8d81e46bc2ccbb01722f3e7416cd9efbc40a6d56b4c",
+     :prior-assessed-form-unchanged true}
+    {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+     :name p15-s23-sse-ids?,
+     :complete-form-sha256
+     "04679b3790b51b44889473b88a50717a9c2d69979ca66e2c2b700cef20fdc6f4",
+     :prior-assessed-form-unchanged true}]}],
+ :negative-source-controls
+ [{:mutation :ordered-unknown-fallback, :detected true}
+  {:mutation :ordered-child-selection, :detected true}
+  {:mutation :ordered-append-order, :detected true}
+  {:mutation :ordered-incomplete-parameter-map, :detected true}
+  {:mutation :call-children-width, :detected true}
+  {:mutation :call-source-syntax-field, :detected true}
+  {:mutation :call-argument-list, :detected true}
+  {:mutation :id-vector-guard, :detected true}
+  {:mutation :id-string-shape, :detected true}
+  {:mutation :id-width-equality, :detected true}],
+ :assessed-main "e047157d711652a5624012f0da7d6911ce086718",
+ :kind :predicate-helper-source-correspondence,
+ :generator
+ {:language :clojure,
+  :sha256
+  "f94beb6e1fe9666163f61f937c9e4bcb819b7f277e781db72dce2a34e8b168e3",
+  :preserved-locally true},
+ :validation
+ {:reader-eval false,
+  :Bootstrap-loaded false,
+  :Gravity-code-executed false,
+  :source-comparison :passed,
+  :independent-disposition :pending},
+ :owner :ACC-01}
