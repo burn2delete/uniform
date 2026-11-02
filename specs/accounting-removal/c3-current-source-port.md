@@ -266,3 +266,42 @@ namespace was not rerun after expectation-only edits; the preceding run is
 the evidence that all remaining forms load and execute. No hosted failure
 receipt, native lane, PMK lane or migration claim is inferred from this
 focused repair.
+
+## Final composition with the authenticated owner-prefix witness
+
+The clean SH03 cleanup commit was normally composed with verified main commit
+`2d0844f8f7f21321d920b9245341a2b98adc642e` (tree
+`c5f5941ca3db4ce38695f870276e1b345a323339`, parent
+`d97539762108d7e44024164c61bb120044ef684b`). The normal merge had no
+conflicts. Before the final owner-witness repair, the merge identity was
+`e99f27c094065329181e647577cfbe916011cfc5`, tree
+`13153d4714300d3aadb2834dd1ea08b2a38e6986`, with parents
+`97929ea6c53484a66a20bae8f9b9e43c005991e6` and
+`2d0844f8f7f21321d920b9245341a2b98adc642e`.
+
+The new authenticated owner-prefix witness now carries the explicit
+`:gravity/sh04-development-syntax-selection-v1` selection and
+`:macro-source-mode :development-current` in its full Reader-to-Core
+invocation. SH03's exact Reader invocation contract intentionally receives
+only the Reader plus Syntax selection; SH05 receives the same authenticated
+Reader/Syntax map with the Macro source mode as its explicit source-mode
+argument; SH06 and SH07 retain the full invocation for their downstream
+binding and verification. This is the smallest stage-local adaptation and
+does not widen the default or pinned route. A first run failed closed at C2
+because the full Macro selector was incorrectly forwarded into SH03; that
+failure led directly to the stage-local fix and was not relabeled as a pass.
+The corrected real owner-prefix replay passed 1 test / 35 assertions with
+zero failures and errors. The ten other owner selectors were not run.
+
+The requested fresh semantic witness then passed on this composed source:
+`gravity.self-hosting.sh07-current-map-guard-test/current-map-guard-source-to-core-and-branch-substitution-replay`, 1 test / 131 assertions,
+zero failures and errors, including hostile branch replay rejection.
+Focused negative controls also passed: the two Reader-only source-choice
+refusals in `gravity.resolution.pipeline-test` passed 2 tests / 4 assertions
+(C4 `:exact-pinned-macro-source` and C3
+`:exact-pinned-syntax-source`), and the Syntax pinned/default plus
+selection-mode/source-tamper controls in `gravity.syntax.pipeline-test`
+passed 2 tests / 12 assertions. Pinned clj-kondo 2025.10.23 reported zero
+findings on the changed authenticated owner-prefix test. The full hosted
+lanes, native-C, PMK, broker and migration claims remain outside this
+receipt; no restricted route was retried and no admission hash was refreshed.
