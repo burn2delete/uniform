@@ -12,16 +12,24 @@ whole-PR502 completion.
 | --- | --- | --- |
 | Original PR568 head | `f4c9fdcd5a3ca24be5b8e24a72ad9d908800796a` | `71b343d4cc131ef3be1601c8f8ba12509744b31e` |
 | Original PR568 authored base | `ec085f5feb9f0f9719c6393e8b3f7d9b62d89eec` | `66304198a8c44f59adc4349030541fd26d674e29` |
-| Current-main base | `dbeda7c7dc9a7bb880baa90af1a89046828db327` | `576075197b5b4e815b78bae7d949bfb5fe2d0437` |
-| Current DSE candidate | `0572cc602732d8a6393c3066719f6afb3f4bcc98` | `de165b642e676ce0e118699fad49748472829dc6` |
+| Historical current-main base used for the initial port | `dbeda7c7dc9a7bb880baa90af1a89046828db327` | `576075197b5b4e815b78bae7d949bfb5fe2d0437` |
+| Reviewed DSE source checkpoint (pre-receipt/report wrapper) | `ff480c1e01687b7fa8255a74b92c977d4b738ab7` | `6155ea08b81db661287f30ac2c771aa008e269ed` |
+| Current-main composition input | `f43e77992fe86b6dfb55df3516b27cfcdea7fa40` | `a0e433f9f185b651f6f5ebc54340a085a5cd6721` |
+| Normal composition merge checkpoint (before this receipt update) | `0805f735904e55e315f5048e986354c598adc173` | `9f9769ec6a98f58e8aac8438dda4531eb8e9b2ce` |
 
 The candidate is on `codex/review-568-current` in
 `/Users/matt/.codex/worktrees/review-combined-454-462/uniform`. Its three
 implementation commits are `ce2eb75b7d9b3108c4f7591aa26ee6fa033832f0`,
 `badeb7313116545d2256c746a6d9613ba5de43c5`, and
 `9a000fd9355510ea5d90a5dad8b13d90f4b6db0c`, followed by the focused guard
-test commit `0572cc602`. The branch was created from the exact current-main
-commit; no obsolete production tree was replayed.
+test commit `0572cc602`. The reviewed source checkpoint is `ff480c1e0`;
+its tree is the pre-receipt source/report checkpoint shown above. The branch
+was initially created from `dbeda7c7d` and was then normally merged with the
+current-main composition input `f43e77992`; the merge retained the DSE source
+and focused controls alongside the current main owner changes. No PR502-only
+repair was cherry-picked into this candidate. The report update itself is an
+external receipt wrapper and intentionally does not claim a self-referential
+source hash.
 
 ## Current useful implementation
 
@@ -96,8 +104,9 @@ plans with finite synthetic contexts. They do not establish authenticated
 Reader/Core/C5/C11/C12 composition, paired fixture consumption, native-C or
 restricted host execution, migration authority, release or self-hosting.
 
-The exact candidate tuple is the commit/tree/base shown above. The checkout
-was clean at the final commit before this report was added; after committing
-this report, recompute the final tree and clean-status tuple before integration.
-Coordinator review, current-main integration preflight and any broader
-acceptance remain required.
+The reviewed source checkpoint and composition merge tuple are the immutable
+identities shown above. This receipt is updated after the merge, so its final
+commit/tree must be reported externally rather than embedded as a
+self-referential source identity. The checkout must be clean at that final
+receipt commit. Coordinator review, current-main integration preflight and
+any broader acceptance remain required.
