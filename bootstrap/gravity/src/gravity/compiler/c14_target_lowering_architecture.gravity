@@ -3529,9 +3529,11 @@
        :missing-fact :verified-optimized-mir
        :diagnostics ["C14-INPUT"]})))
 
-; SH-17 bounded target-lowering boundary.  This API is additive to the three
-; historical bounded builders above.  It admits only a small, exact,
-; target-independent MIR surface after an iterative structural preflight.
+; SH-17 exports are development-only target-lowering kernels, additive to the
+; three historical builders above. Raw development calls require finite DATA;
+; the checked owner rejects cyclic or untrusted carriers before composition.
+; These kernels recognize a small, exact target-independent MIR surface after
+; structural preflight and confer no public admission or authority.
 (defn sh17-target-lowering-policy []
   {:artifact :gravity/sh17-target-lowering-policy,
    :schema-version 1,

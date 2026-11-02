@@ -41,6 +41,7 @@
 (declare reader-resource-record!)
 
 (declare sh03-reader-host-bigint! sh03-reader-host-decimal-value! sh03-reader-host-atomic-value!
+         sh03-reader-decode-buffer!
          sh03-reader-host-character-value! sh03-reader-host-values!
          sh03-reader-semantic-value-reference-keys sh03-reader-source-slice-keys
          standard-reader-policy sh03-reader-source-scalar-boundaries!
@@ -52,7 +53,8 @@
 (install! (str reader-root "00811-sh03-reader-plan-validate.clj")
           '[sh03-reader-source-slice-keys sh03-reader-semantic-value-reference-keys])
 (install! (str reader-root "00813-sh03-reader-canonical-identity.clj")
-          '[sh03-reader-decode-raw-bytes! sh03-reader-source-scalar-boundaries!])
+          '[sh03-reader-decode-buffer! sh03-reader-decode-raw-bytes!
+            sh03-reader-source-scalar-boundaries!])
 (install! (str reader-root "00814-sh03-reader-source-slice-text.clj")
           '[sh03-reader-source-slice-text! sh03-reader-accepted-raw-text!
             sh03-reader-codepoints-text! sh03-reader-semantic-reference-value!])
