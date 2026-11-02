@@ -1421,8 +1421,6 @@
      sh04-syntax-plan-identities
      sh04-syntax-public-function-hashes
      sh04-syntax-public-function-shapes
-     sh04-syntax-read-current-source!
-     sh04-syntax-read-pinned-source!
      sha256-hex]
     :as operations}
    source-mode
@@ -1448,95 +1446,91 @@
     (:source-text source))
    identities
    (sh04-syntax-plan-identities raw-plan)]
-  (let [common?
-        (and
-         (= :gravity/stage2-compiler-artifact-plan (:kind raw-plan))
-         (true? (:compiler-artifact-plan? raw-plan))
-         (= 'gravity.bootstrap.syntax (get-in raw-plan [:module :module]))
-         (= :meta (get-in raw-plan [:module :profile]))
-         (= :jvm (get-in raw-plan [:module :target]))
-         (= #{} (get-in raw-plan [:module :effects]))
-         (= #{} (get-in raw-plan [:module :capabilities]))
-         (= :safe (get-in raw-plan [:module :safety]))
-         (= (get-in raw-plan [:source :sha256])
-            (:source-content-hash source)))
-        identity?
-        (if development-current?
-         (= sh04-syntax-public-function-shapes
-            (:public-function-shapes identities))
-         (and
-          (= sh04-syntax-expected-plan-semantic-hash
-             (:plan-semantic-hash identities))
-          (= sh04-syntax-expected-functions-semantic-hash
-             (:functions-semantic-hash identities))
-          (= sh04-syntax-expected-function-count
-             (:function-count identities))
-          (= sh04-syntax-expected-function-names-hash
-             (:function-names-hash identities))
-          (= sh04-syntax-expected-function-shapes-hash
-             (:function-shapes-hash identities))
-          (= sh04-syntax-public-function-hashes
-             (:public-function-hashes identities))
-          (= sh04-syntax-public-function-shapes
-             (:public-function-shapes identities))))
-        valid?
-        (and common? identity?)]
-   (when-not valid?
-    (sh04-syntax-boundary-fail!
-    "C3-ID"
-    request-source
+  (if
+   (and
+    (= :gravity/stage2-compiler-artifact-plan (:kind raw-plan))
+    (true? (:compiler-artifact-plan? raw-plan))
+    (= 'gravity.bootstrap.syntax (get-in raw-plan [:module :module]))
+    (= :meta (get-in raw-plan [:module :profile]))
+    (= :jvm (get-in raw-plan [:module :target]))
+    (= #{} (get-in raw-plan [:module :effects]))
+    (= #{} (get-in raw-plan [:module :capabilities]))
+    (= :safe (get-in raw-plan [:module :safety]))
+    (= (get-in raw-plan [:source :sha256])
+       (:source-content-hash source))
     (if development-current?
-     :current-syntax-plan-and-functions
-     :pinned-syntax-plan-and-functions)
-    identities
-    {:source-mode source-mode,
-     :source-path (:source-path source)}))
-  (let
-   [authenticated-plan-base
-    (assoc-in
-     (dissoc raw-plan :plan-id)
-     [:source :byte-count]
-     (:source-byte-count source))
-    plan
-    (assoc
-     authenticated-plan-base
-     :plan-id
-     (str
-      "sha256:"
-      (sha256-hex
-       (pr-str (c-backend-canonical-value authenticated-plan-base)))))]
-   (merge
-    source
-    identities
-    (cond->
-     {:artifact
-      (if development-current?
-       :gravity/sh04-development-syntax-plan-binding-v1
-       :gravity/sh04-pinned-syntax-plan-binding),
-      :status :complete,
-      :semantic-authority :gravity-source,
-      :compiled-by :clojure-stage0-seed,
-      :executed-by :clojure-stage2-generic-rule-runner,
-      :generic-bridge-residual? true,
-      :self-hosted? false,
-      :plan plan}
-     development-current?
-     (assoc
-      :source-mode :development-current
-      :revision-status :development-unadmitted
-      :admission-status :development-unadmitted
-      :source-authority :development-current
-      :selected-source-path selected-source-path
-      :program-identity
-      (select-keys
-       identities
-       [:plan-semantic-hash
-        :functions-semantic-hash
-        :function-count
-        :function-names-hash
-        :function-shapes-hash
-        :public-function-hashes
-       :public-function-shapes])))))))))
+     (= sh04-syntax-public-function-shapes
+        (:public-function-shapes identities))
+     (and
+      (= sh04-syntax-expected-plan-semantic-hash
+         (:plan-semantic-hash identities))
+      (= sh04-syntax-expected-functions-semantic-hash
+         (:functions-semantic-hash identities))
+      (= sh04-syntax-expected-function-count
+         (:function-count identities))
+      (= sh04-syntax-expected-function-names-hash
+         (:function-names-hash identities))
+      (= sh04-syntax-expected-function-shapes-hash
+         (:function-shapes-hash identities))
+      (= sh04-syntax-public-function-hashes
+         (:public-function-hashes identities))
+      (= sh04-syntax-public-function-shapes
+         (:public-function-shapes identities)))))
+   (let
+    [authenticated-plan-base
+      (assoc-in
+       (dissoc raw-plan :plan-id)
+       [:source :byte-count]
+       (:source-byte-count source))
+      plan
+      (assoc
+       authenticated-plan-base
+       :plan-id
+       (str
+        "sha256:"
+        (sha256-hex
+         (pr-str (c-backend-canonical-value authenticated-plan-base)))))]
+     (merge
+      source
+      identities
+      (cond->
+       {:artifact
+        (if development-current?
+         :gravity/sh04-development-syntax-plan-binding-v1
+         :gravity/sh04-pinned-syntax-plan-binding),
+        :status :complete,
+        :semantic-authority :gravity-source,
+        :compiled-by :clojure-stage0-seed,
+        :executed-by :clojure-stage2-generic-rule-runner,
+        :generic-bridge-residual? true,
+        :self-hosted? false,
+        :plan plan}
+       development-current?
+       (assoc
+        :source-mode :development-current
+        :revision-status :development-unadmitted
+        :admission-status :development-unadmitted
+        :source-authority :development-current
+        :selected-source-path selected-source-path
+        :program-identity
+        (select-keys
+         identities
+         [:plan-semantic-hash
+          :functions-semantic-hash
+          :function-count
+          :function-names-hash
+          :function-shapes-hash
+          :public-function-hashes
+          :public-function-shapes])))))
+    (sh04-syntax-boundary-fail!
+     "C3-ID"
+     request-source
+     (if development-current?
+      :current-syntax-plan-and-functions
+      :pinned-syntax-plan-and-functions)
+     identities
+     {:source-mode source-mode,
+      :source-path (:source-path source)})))))
 
 (defn
  current-plan-binding!

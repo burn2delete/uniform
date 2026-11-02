@@ -216,12 +216,12 @@
 (defn- public-artifact
   [extension]
   (let [source-path
-        (fixture-path "accepted" "source-syntax" extension)]
-    (let [artifact (current-c3-artifact source-path (source-text source-path))]
-      {:path source-path
-       :bytes (source-bytes source-path)
-       :c2-artifact (:c2-reader-artifact artifact)
-       :artifact artifact})))
+        (fixture-path "accepted" "source-syntax" extension)
+        artifact (current-c3-artifact source-path (source-text source-path))]
+    {:path source-path
+     :bytes (source-bytes source-path)
+     :c2-artifact (:c2-reader-artifact artifact)
+     :artifact artifact}))
 
 (def ^:private public-gravity-artifact
   (delay (public-artifact ".gravity")))
@@ -2029,8 +2029,6 @@
         concrete-reader-result-id (:reader-result-id sh03-authentication)
         concrete-envelope-id (:semantic-envelope-id sh03-authentication)
         concrete-envelope (:actual-sh03-authenticated-envelope provenance)
-        concrete-envelope-descriptor
-        (:actual-sh03-envelope-descriptor provenance)
         alternate-envelope-id
         (stable-test-id :emitted-c3-lineage-alteration 0)
         altered
