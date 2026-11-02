@@ -1,26 +1,12 @@
 (ns gravity.p15-native-plan-specialization.plan-validation
   (:require [gravity.bootstrap :as bootstrap]))
 
-(defn instruction-children
-  [source-path instruction unsupported-fail!]
-  (when-not (map? instruction)
-    (unsupported-fail! source-path
-                       "native plan contains a malformed instruction"
-                       {:observed-instruction instruction
-                        :missing-fact :native-instruction-record}))
-  (try
-    (bootstrap/c-backend-instruction-children instruction)
-    (catch Throwable error
-      (unsupported-fail! source-path
-                         "native plan instruction shape is not supported"
-                         {:observed-op (:op instruction)
-                          :missing-fact :native-instruction-children
-                          :cause-message (.getMessage error)}))))
-
-(defn plan-bounds!
-  [source-path plan
-   {:keys [maximum-instructions unsupported-fail! bounds-fail!
-           scalar-value? scalar-bound! instruction-children]}]
+;; The plan shape is semantic admission, not a work allowance.  The public C
+;; backend remains the source of truth for instruction legality; this check
+;; keeps the specialization's narrower one-entrypoint contract explicit before
+;; that validator runs.
+(defn validate-plan-shape!
+  [source-path plan unsupported-fail!]
   (let [functions (:functions plan)]
     (when-not (map? functions)
       (unsupported-fail! source-path
@@ -40,40 +26,18 @@
          {:observed-entrypoint entrypoint
           :observed-function-count (count functions)
           :missing-fact :single-zero-arity-native-entrypoint})))
-    (loop [pending
-           (vec (mapcat (fn [[_ function]]
-                          (when-not (map? function)
-                            (unsupported-fail!
-                             source-path
-                             "native plan function record is malformed"
-                             {:missing-fact :native-plan-function-record}))
-                          (let [instructions (:instructions function)]
-                            (when-not (vector? instructions)
-                              (unsupported-fail!
-                               source-path
-                               "native plan function instructions are malformed"
-                               {:missing-fact :native-plan-instructions}))
-                            instructions))
-                        functions))
-           count 0]
-      (if-let [instruction (peek pending)]
-        (let [pending (pop pending)
-              next-count (inc count)]
-          (when (> next-count maximum-instructions)
-            (bounds-fail! source-path
-                          "native plan exceeds the bounded instruction count"
-                          {:maximum-instructions maximum-instructions
-                           :observed-instructions next-count
-                           :missing-fact :bounded-native-plan-instructions}))
-          (doseq [[key value] instruction]
-            (when (and (= key :value) (scalar-value? value))
-              (scalar-bound! source-path value)))
-          (let [children (instruction-children source-path instruction)]
-            (doseq [child children]
-              (when (and (map? child) (contains? child :value))
-                (scalar-bound! source-path (:value child))))
-            (recur (into pending (remove nil? children)) next-count)))
-        {:instruction-count count}))))
+    (doseq [[_ function] functions]
+      (when-not (map? function)
+        (unsupported-fail!
+         source-path
+         "native plan function record is malformed"
+         {:missing-fact :native-plan-function-record}))
+      (when-not (vector? (:instructions function))
+        (unsupported-fail!
+         source-path
+         "native plan function instructions are malformed"
+         {:missing-fact :native-plan-instructions})))
+    nil))
 
 (defn authenticate!
   [packet context authentication-fail!]

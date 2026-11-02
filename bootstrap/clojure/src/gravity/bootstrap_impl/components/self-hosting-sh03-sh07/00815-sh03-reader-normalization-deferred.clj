@@ -70,19 +70,70 @@
      {:metadata-value metadata-value})))
 
 (defn sh03-reader-host-values!
-  [source-path source-bytes source-content-id scalar-boundaries
-   form-tree semantic-index]
-  (let [forms-by-id (into {} (map (juxt :form-id identity) form-tree))]
+  ([source-path source-bytes source-content-id scalar-boundaries
+    form-tree semantic-index source-unit]
+   (sh03-reader-host-values! source-path source-bytes source-content-id scalar-boundaries
+                            form-tree semantic-index source-unit nil))
+  ([source-path source-bytes source-content-id scalar-boundaries
+    form-tree semantic-index source-unit implementation]
+   (sh03-reader-host-values! source-path source-bytes source-content-id scalar-boundaries
+                            form-tree semantic-index source-unit implementation nil))
+  ([source-path source-bytes source-content-id scalar-boundaries
+    form-tree semantic-index source-unit implementation verified-result]
+  (let [forms-by-id (into {} (map (juxt :form-id identity) form-tree))
+        resource? (reader-resource-options? (:reader-options source-unit))
+        resource-data (when resource?
+                        (into {} (map (juxt :form-id identity)
+                                      (:invocations (reader-resource-record! verified-result)))))
+        sealed? (reader-pure-text/options? (:reader-options source-unit))
+        sealed-data (when sealed? (reader-pure-text/returned-data! verified-result))
+        pure? (reader-dispatch/pure-source? source-unit)
+        tags (mapv #(symbol (sh03-reader-codepoints-text!
+                             source-path (:tag-codepoints %)))
+                   (filter #(= :tagged-literal (:kind %)) form-tree))
+        _ (when (and (seq tags) (not sealed?) (not resource?))
+            (if pure?
+              (reader-dispatch/validate-pure-tags! source-unit tags)
+              (reader-dispatch/validate-standard-tags!
+               source-unit standard-reader-policy tags)))]
     (loop [remaining (reverse form-tree)
-           values {}]
+           values {}
+           observations []]
       (if (empty? remaining)
-        values
+        (if pure?
+          {:values values :extension-dispatch-observations []
+           :pure-extension-results observations}
+          {:values values :extension-dispatch-observations observations})
         (let [form (first remaining)
               kind (:kind form)
               child-values (mapv values (:children form))
               _ (when (some nil? (map #(get forms-by-id %) (:children form)))
                   (sh03-reader-boundary-fail!
                    source-path :sh03-reader-form-child-link form {}))
+              dispatch-result
+              (when (= :tagged-literal kind)
+                (let [tag (symbol (sh03-reader-codepoints-text!
+                                   source-path (:tag-codepoints form)))]
+                  (when-not (= 1 (count child-values))
+                    (sh03-reader-boundary-fail!
+                     source-path :sh03-reader-tag-payload form {}))
+                  (if resource?
+                    (let [invocation (get resource-data (:form-id form))]
+                      (when-not (and (= tag 'resource)
+                                     (= (first child-values) (get-in invocation [:input-seed :datum])))
+                        (sh03-reader-boundary-fail! source-path :original-resource-payload form {}))
+                      {:value (get-in invocation [:returned-seed :datum])})
+                  (if sealed?
+                    (let [datum (get sealed-data (:form-id form))
+                          value (sh03-reader-codepoints-text! source-path (:decoded-codepoints datum))]
+                      (when-not (= value (first child-values))
+                        (sh03-reader-boundary-fail! source-path :sealed-pure-text-payload form {}))
+                      {:value value})
+                  (if pure?
+                    (reader-dispatch/dispatch-pure-tag
+                     source-unit tag form (first child-values) implementation)
+                    (reader-dispatch/dispatch-standard-tag
+                     source-unit standard-reader-policy tag form (first child-values)))))))
               value
               (case kind
                 (:nil :boolean :integer :ratio :decimal :string
@@ -132,22 +183,14 @@
                   (with-meta target (merge (meta target) metadata)))
 
                 :tagged-literal
-                (let [tag (sh03-reader-codepoints-text!
-                           source-path (:tag-codepoints form))
-                      payload (first child-values)]
-                  (when-not (= 1 (count child-values))
-                    (sh03-reader-boundary-fail!
-                     source-path :sh03-reader-tag-payload form {}))
-                  (case tag
-                    "inst" (instant/read-instant-date payload)
-                    "uuid" (java.util.UUID/fromString payload)
-                    (sh03-reader-boundary-fail!
-                     source-path :sh03-reader-registered-tag form
-                     {:tag tag})))
+                (:value dispatch-result)
 
                 (sh03-reader-boundary-fail!
                  source-path :sh03-reader-form-kind form {:kind kind}))]
-          (recur (rest remaining) (assoc values (:form-id form) value)))))))
+          (recur (rest remaining) (assoc values (:form-id form) value)
+                 (cond-> observations (and dispatch-result (not sealed?) (not resource?))
+                   (conj (if pure? (:pure-result dispatch-result)
+                             (:observation dispatch-result)))))))))))
 
 (defn sh03-reader-legacy-trivia-hash
   [token-ids tokens-by-id]

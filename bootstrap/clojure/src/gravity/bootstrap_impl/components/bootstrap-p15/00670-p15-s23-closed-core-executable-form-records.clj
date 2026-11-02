@@ -7,13 +7,12 @@
   left-to-right.  Quote itself is executable but its payload is data, so quote
   records are terminal."
   [form-tree top-level-form-ids]
-  (let [limit (inc p15-s23-closed-core-max-plan-nodes)
-        form-by-id (into {} (map (juxt :form-id identity)) form-tree)
+  (let [form-by-id (into {} (map (juxt :form-id identity)) form-tree)
         function-root (get form-by-id (second top-level-form-ids))
         body-form-ids
         (if (and (seq? (:value function-root))
                  (= 'defn (first (:value function-root))))
-          (vec (take limit (drop 3 (:children function-root))))
+          (vec (drop 3 (:children function-root)))
           [])]
     (loop [pending (vec (reverse body-form-ids))
            ordered []
@@ -40,15 +39,11 @@
                           []))
                       [])
                     [])
-                  next-ordered (conj ordered record)
-                  remaining-capacity (- limit (count next-ordered))]
-              (if (zero? remaining-capacity)
-                next-ordered
-                (recur
-                 (into pending
-                       (reverse (vec (take remaining-capacity child-ids))))
-                 next-ordered
-                 (conj seen form-id))))))
+                  next-ordered (conj ordered record)]
+              (recur
+               (into pending (reverse (vec child-ids)))
+               next-ordered
+               (conj seen form-id)))))
         ordered))))
 
 (defn p15-s23-closed-core-source-surface-validation
@@ -77,12 +72,6 @@
                       :observed-form form
                       :offending-form-id (:form-id record)}]
             (cond
-              (> visited p15-s23-closed-core-max-plan-nodes)
-              {:status :over-limit
-               :missing-fact :bounded-pure-source-form-surface
-               :observed-source-forms visited
-               :offending-form-id (:form-id record)}
-
               (or (nil? form) (string? form) (boolean? form)
                   (number? form) (char? form) (keyword? form)
                   (symbol? form)

@@ -50,114 +50,27 @@
 
 (defn p15-s23-closed-core-forwarded-value-node-ids
   [node]
-  (case (:source-operation node)
-    :local [(first (:operands node))]
-    :let-binding [(first (:operands node))]
-    :if (vec (rest (:operands node)))
-    :do [(last (:operands node))]
-    :let [(last (:operands node))]
-    :function [(last (:operands node))]
-    []))
+  (ownership/forwarded-value-node-ids node))
 
 (defn p15-s23-closed-core-propagate-managed-ownership
   [nodes]
-  (loop [remaining nodes
-         normalized []
-         node-by-id {}]
-    (if-let [node (first remaining)]
-      (let [source-node-ids
-            (p15-s23-closed-core-forwarded-value-node-ids node)
-            managed-forwarding?
-            (some
-             #(= :gravity.reference/jvm-managed-allocator
-                 (get-in node-by-id [% :ownership :provider-id]))
-             source-node-ids)
-            node
-            (if managed-forwarding?
-              (update node :ownership
-                      assoc
-                      :provider-requirement
-                      :gravity.reference/jvm-managed-allocator
-                      :allocator-requirement :memory/allocator
-                      :provider-id :gravity.reference/jvm-managed-allocator
-                      :lifetime :managed-reachability)
-              node)]
-        (recur (next remaining) (conj normalized node)
-               (assoc node-by-id (:node-id node) node)))
-      normalized)))
+  (ownership/propagate-managed-ownership #'p15-s23-closed-core-forwarded-value-node-ids nodes))
 
 (defn p15-s23-closed-core-child-obligation-refs
   [node node-by-id capability-proof-by-node-capability]
-  (mapv
-   (fn [node-id]
-     (let [child (get node-by-id node-id)
-           outcome (get-in child [:safety :outcome])]
-       {:node-id node-id
-        :outcome outcome
-        :safety-proof-id
-        (or (get-in child [:safety :proof :proof-id]) :not-applicable)
-        :runtime-check-id
-        (or (get-in child [:safety :check :check-id]) :not-applicable)
-        :capability-proof-ids
-        (mapv #(get-in capability-proof-by-node-capability
-                       [[node-id %] :proof-id])
-              (sort-by pr-str (:capabilities child)))}))
-   (:operands node)))
+  (gravity.safety/child-obligation-refs node node-by-id capability-proof-by-node-capability))
 
 (defn p15-s23-closed-core-rederive-proven-safety
   [source-content-hash nodes authority-evidence]
-  (let [capability-proof-by-node-capability
-        (into {}
-              (map (fn [proof]
-                     [[(:core-node-id proof) (:capability proof)] proof]))
-              (p15-s23-checked-core-capability-proof-records
-               nodes authority-evidence))]
-    (loop [remaining nodes
-           normalized []
-           final-node-by-id {}]
-      (if-let [node (first remaining)]
-        (let [node
-              (if (= :proven-safe (get-in node [:safety :outcome]))
-                (let [proof
-                      (if (and (empty? (:effects node))
-                               (empty? (:capabilities node)))
-                        (p15-s23-closed-core-pure-safety-proof
-                         source-content-hash (:path node)
-                         (:source-operation node) (:source node)
-                         (:profile node) (:type node) (:effects node)
-                         (:capabilities node) (:ownership node)
-                         (get-in node [:safety :basis]))
-                        (p15-s23-closed-core-structural-safety-proof
-                         source-content-hash (:path node)
-                         (:source-operation node) (:source node)
-                         (:profile node) (:type node) (:effects node)
-                         (:capabilities node) (:ownership node)
-                         (get-in node [:safety :basis])
-                         (p15-s23-closed-core-child-obligation-refs
-                          node final-node-by-id
-                          capability-proof-by-node-capability)))]
-                  (assoc-in node [:safety :proof] proof))
-                node)]
-          (recur (next remaining) (conj normalized node)
-                 (assoc final-node-by-id (:node-id node) node)))
-        normalized))))
+  (gravity.safety/rederive-proven-safety #'p15-s23-checked-core-capability-proof-records #'p15-s23-closed-core-pure-safety-proof #'p15-s23-closed-core-structural-safety-proof #'p15-s23-closed-core-child-obligation-refs source-content-hash nodes authority-evidence))
 
 (defn p15-s23-closed-core-shared-owner-domain-id
   [nodes]
-  (when-let [function-node (first (filter #(= :function (:kind %)) nodes))]
-    (p15-s23-closed-core-digest
-     {:kind :gravity/persistent-shared-owner-domain
-      :function-node-id (:node-id function-node)})))
+  (ownership/shared-owner-domain-id #'p15-s23-closed-core-digest nodes))
 
 (defn p15-s23-closed-core-canonical-owner-id
   [product node]
-  (or (p15-s23-closed-core-shared-owner-domain-id
-       (or (:core-nodes product) (:nodes product)))
-      ;; Stored fact tables are verifier inputs, not an authority.  They are a
-      ;; fallback only for prospective subjects that do not carry the core
-      ;; node set needed for independent owner-domain reconstruction.
-      (get-in product [:ownership-facts (:node-id node) :owner-id])
-      :not-applicable))
+  (ownership/canonical-owner-id #'p15-s23-closed-core-shared-owner-domain-id product node))
 
 (defn p15-s23-closed-core-enriched-node-subject
   "Attach genuine C2/C3 provenance and pass identities to a diagnostic node."

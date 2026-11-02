@@ -1,5 +1,6 @@
 (ns gravity.self-hosting.sh01-parallel-test-runner-test
   (:require [clojure.test :refer [deftest is testing]]
+            [gravity.process-supervision :as process-supervision]
             [gravity.self-hosting.sh01-parallel-test-runner :as runner]))
 
 (defn- plan
@@ -631,6 +632,279 @@
              ["--slice" "SH-01"
               "--normal-parallelism" (str (inc Integer/MAX_VALUE))])))))
 
+(defn- injected-owned-handle [id alive descendants events terminate]
+  (reify java.lang.ProcessHandle
+    (pid [_] (long id))
+    (isAlive [_] @alive)
+    (descendants [_]
+      (java.util.Arrays/stream (into-array java.lang.ProcessHandle (descendants))))
+    (destroy [_] (swap! events conj [id :destroy]) (boolean (terminate false)))
+    (destroyForcibly [_] (swap! events conj [id :force]) (boolean (terminate true)))
+    (onExit [this] (java.util.concurrent.CompletableFuture/completedFuture this))))
+
+(defn- injected-owned-process [handle alive wait-operation]
+  (proxy [Process] []
+    (toHandle []
+      (if (instance? Throwable handle) (throw handle) handle))
+    (getInputStream [] (java.io.ByteArrayInputStream. (byte-array 0)))
+    (getErrorStream [] (java.io.ByteArrayInputStream. (byte-array 0)))
+    (getOutputStream [] (java.io.ByteArrayOutputStream.))
+    (waitFor
+      ([] (wait-operation) 0)
+      ([_ _] (wait-operation)))
+    (exitValue [] (if @alive (throw (IllegalThreadStateException.)) 0))
+    (destroy []
+      (if (instance? Throwable handle) (reset! alive false)
+          (.destroy ^java.lang.ProcessHandle handle)))
+    (destroyForcibly []
+      (if (instance? Throwable handle) (reset! alive false)
+          (.destroyForcibly ^java.lang.ProcessHandle handle))
+      this)
+    (isAlive [] @alive)))
+
+(deftest bounded-descendant-observation-stops-before-realizing-the-stream
+  (let [next-count (atom 0)
+        root-ref (atom nil)
+        root (reify java.lang.ProcessHandle
+               (pid [_] 1)
+               (isAlive [_] false)
+               (descendants [_]
+                 (.limit
+                  (java.util.stream.Stream/generate
+                   (reify java.util.function.Supplier
+                     (get [_]
+                       (swap! next-count inc)
+                       @root-ref)))
+                  5))
+               (destroy [_] false)
+               (destroyForcibly [_] false)
+               (onExit [this]
+                 (java.util.concurrent.CompletableFuture/completedFuture this)))]
+    (reset! root-ref root)
+    (let [result (process-supervision/handle-descendants root 3)]
+      (is (= 3 (count (:handles result))) result)
+      (is (true? (:truncated? result)) result)
+      (is (nil? (:error result)) result)
+      (is (= 4 @next-count)
+          "The bounded iterator may inspect only one handle beyond its limit"))))
+
+(deftest descendant-observation-bound-is-owned-wide-and-retains-known-handles
+  (let [events (atom [])
+        root-alive (atom false)
+        child-alive (atom false)
+        grandchild-alive (atom false)
+        grandchild (injected-owned-handle 3 grandchild-alive (constantly []) events
+                                          (constantly true))
+        child (injected-owned-handle 2 child-alive #(vector grandchild) events
+                                     (constantly true))
+        root (injected-owned-handle 1 root-alive #(vector child) events
+                                    (constantly true))
+        process (injected-owned-process root root-alive (constantly true))
+        owned (process-supervision/retain-owned-process! process)]
+    (process-supervision/observe-owned-process! owned)
+    (is (= [root child]
+           (process-supervision/retained-process-handles owned)))
+    (process-supervision/observe-owned-process!
+     owned {:descendant-limit 1})
+    (is (= [root child]
+           (process-supervision/retained-process-handles owned))
+        "A known native handle remains retained when the owned-wide bound is full")
+    (is (= :process-handle-limit
+           (:id (ex-data @(:discovery-error owned))))
+        "A later child observation cannot expand the owned tree past its bound")))
+
+(deftest one-arity-finalization-keeps-termination-defaults
+  (let [events (atom [])
+        alive (atom false)
+        root (injected-owned-handle 1 alive (constantly []) events (constantly true))
+        process (injected-owned-process root alive (constantly true))
+        owned (process-supervision/retain-owned-process! process)
+        result (process-supervision/finalize-owned-process! owned)]
+    (is (= :tracked-clean (:status result)) result)
+    (is (true? (:tracked-complete? result)) result)
+    (is (identical? result (process-supervision/finalize-owned-process! owned)))))
+
+(deftest retained-handles-survive-natural-exit-and-observe-late-grandchildren
+  (let [events (atom []) root-alive (atom true) child-alive (atom true) late-alive (atom true)
+        late (injected-owned-handle 3 late-alive (constantly []) events
+                                    (fn [_] (reset! late-alive false) true))
+        child (injected-owned-handle 2 child-alive #(if @root-alive [] [late]) events
+                                     (fn [_] (reset! child-alive false) true))
+        root (injected-owned-handle 1 root-alive #(if @root-alive [child] []) events
+                                    (fn [_] (reset! root-alive false) true))
+        process (injected-owned-process root root-alive #(do (reset! root-alive false) true))
+        owned (runner/retain-owned-process! process)
+        result (runner/process-result process {:timeout-ms 100} owned)
+        terminal (runner/finalize-owned-process! owned)]
+    (is (= [root child late] (runner/retained-process-handles owned)))
+    (is (identical? child (second (runner/retained-process-handles owned))))
+    (is (= [[3 :destroy] [2 :destroy]] @events))
+    (is (:root-exited? result))
+    (is (:tracked-owned-processes-terminal? result))
+    (is (= :unknown (:descendant-coverage result)))
+    (is (nil? (:cleanup-complete? result)))
+    (is (:cleanup-failed? result) "Live owned descendants after natural root exit refuse a clean command")
+    (is (= :error (:status result)))
+    (is (identical? terminal (runner/finalize-owned-process! owned)))
+    (is (= 2 (count @events)) "Finalization does not repeat termination")
+    (is (nil? (find-ns 'gravity.bootstrap)))))
+
+(deftest missing-and-unobserved-descendants-never-become-complete
+  (doseq [missing? [false true]]
+    (let [alive (atom false) events (atom []) unobserved-alive (atom true)
+          unobserved (injected-owned-handle 99 unobserved-alive (constantly []) events
+                                            (fn [_] (reset! unobserved-alive false) true))
+          missing (UnsupportedOperationException. "No owned handle observation")
+          root (if missing? missing
+                   (injected-owned-handle 1 alive (constantly []) events (constantly true)))
+          process (injected-owned-process root alive (constantly true))
+          owned (runner/retain-owned-process! process)
+          result (runner/process-result process {} owned)]
+      (is (:root-exited? result))
+      (is (.isAlive ^java.lang.ProcessHandle unobserved)
+          "The interface cannot account for a handle absent from every observation")
+      (is (= :unknown (:descendant-coverage result)))
+      (is (not (true? (:cleanup-complete? result))))
+      (is (not (true? (get-in result [:cleanup :complete?]))))
+      (when missing?
+        (is (not= :passed (:status result)) result)
+        (is (:cleanup-failed? result) result)
+        (is (false? (:tracked-owned-processes-terminal? result)) result)))))
+
+(deftest retained-finalizer-refuses-foreign-token-and-thread
+  (let [alive (atom false) events (atom [])
+        root (injected-owned-handle 1 alive (constantly []) events (constantly true))
+        process (injected-owned-process root alive (constantly true))
+        other (injected-owned-process root alive (constantly true))
+        owned (runner/retain-owned-process! process)]
+    (is (= "SH01-PROCESS-OWNERSHIP"
+           (:id (exception-data #(runner/process-result other {} owned)))))
+    (is (= "SH01-PROCESS-OWNERSHIP"
+           (deref (future (:id (exception-data #(runner/finalize-owned-process! owned))))
+                  1000 :timed-out)))
+    (is (empty? @events))
+    (runner/finalize-owned-process! owned)
+    (is (= "SH01-PROCESS-OWNERSHIP"
+           (:id (exception-data #(runner/process-result process {} owned)))))))
+
+(deftest retained-finalizer-refuses-a-surviving-owned-process
+  (let [events (atom []) alive (atom true)
+        root (injected-owned-handle 1 alive (constantly []) events (constantly false))
+        process (injected-owned-process root alive (constantly false))
+        owned (runner/retain-owned-process! process)
+        result (with-redefs-fn
+                 {(ns-resolve 'gravity.self-hosting.sh01-parallel-test-runner 'process-cleanup-grace-ms) 0
+                  (ns-resolve 'gravity.self-hosting.sh01-parallel-test-runner 'process-cleanup-timeout-ms) 10}
+                 #(runner/finalize-owned-process! owned))]
+    (is (false? (:tracked-complete? result)))
+    (is (false? (:complete? result)))
+    (is (:root-alive? result))
+    (is (= [1] (:survivor-pids result)))
+    (is (= [[1 :destroy] [1 :force]] @events))
+    (is (identical? result (runner/finalize-owned-process! owned)))))
+
+(deftest retained-wait-errors-preserve-original-objects-and-interruption
+  (doseq [failure [(IllegalStateException. "injected wait failure")
+                   (InterruptedException. "injected wait interruption")]]
+    (let [events (atom []) alive (atom true)
+          root (injected-owned-handle 1 alive (constantly []) events
+                                      (fn [_] (reset! alive false) true))
+          process (injected-owned-process root alive #(throw failure))
+          owned (runner/retain-owned-process! process)]
+      (try
+        (let [outcome (try
+                        (let [result (runner/process-result process {:timeout-ms 100} owned)]
+                          {:result result :interrupted? (.isInterrupted (Thread/currentThread))})
+                        (catch Throwable error
+                          {:error error :interrupted? (.isInterrupted (Thread/currentThread))}))
+              result (:result outcome)]
+          (is (identical? failure @(:wait-throwable owned)))
+          (if (instance? InterruptedException failure)
+            (is (identical? failure (:error outcome)))
+            (do (is (= :error (:status result)))
+                (is (false? (:cleanup-complete? result)))))
+          (is (= [[1 :destroy]] @events))
+          (when (instance? InterruptedException failure)
+            (is (:interrupted? outcome))))
+        (finally (Thread/interrupted))))))
+
+(deftest retained-discovery-fatal-is-rethrown-after-owned-cleanup
+  (let [fatal (OutOfMemoryError. "injected owned discovery failure")
+        events (atom []) alive (atom true)
+        root (injected-owned-handle 1 alive #(throw fatal) events
+                                    (fn [_] (reset! alive false) true))
+        process (injected-owned-process root alive (constantly false))
+        owned (runner/retain-owned-process! process)
+        thrown (try (runner/process-result process {:timeout-ms 100} owned) nil
+                    (catch Throwable error error))]
+    (is (identical? fatal thrown))
+    (is (false? @alive))
+    (is (= [[1 :destroy]] @events))
+    (is (identical? fatal (try (runner/finalize-owned-process! owned) nil
+                              (catch Throwable error error))))
+    (is (= 1 (count @events)))))
+
+(deftest retained-discovery-promotes-later-fatal-over-an-earlier-ordinary-error
+  (let [ordinary (UnsupportedOperationException. "first discovery unavailable")
+        fatal (OutOfMemoryError. "later owned discovery fatal")
+        calls (atom 0) events (atom []) root-alive (atom true) child-alive (atom true)
+        child (injected-owned-handle 2 child-alive #(throw fatal) events
+                                     (fn [_] (reset! child-alive false) true))
+        root (injected-owned-handle 1 root-alive
+                                    #(if (= 1 (swap! calls inc)) (throw ordinary) [child])
+                                    events (fn [_] (reset! root-alive false) true))
+        process (injected-owned-process root root-alive (constantly false))
+        owned (runner/retain-owned-process! process)
+        thrown (try (runner/process-result process {:timeout-ms 100} owned) nil
+                    (catch Throwable error error))]
+    (is (identical? fatal thrown))
+    (is (identical? fatal @(:discovery-error owned)))
+    (is (some #(identical? ordinary %) (.getSuppressed fatal)))
+    (is (false? @root-alive))
+    (is (false? @child-alive))
+    (is (= [[2 :destroy] [1 :destroy]] @events))))
+
+(deftest retained-cleanup-attempts-other-handles-before-rethrowing-fatal
+  (doseq [stage [:terminate :alive :reap]]
+    (let [fatal (OutOfMemoryError. (str "injected cleanup " stage))
+          active? (not= :reap stage)
+          root-alive (atom active?) good-alive (atom active?) bad-alive (atom active?)
+          events (atom []) reaped (atom [])
+          bad (reify java.lang.ProcessHandle
+                (pid [_] (long 3))
+                (isAlive [_] (if (= :alive stage) (throw fatal) @bad-alive))
+                (descendants [_] (java.util.stream.Stream/empty))
+                (destroy [_]
+                  (swap! events conj [3 :destroy])
+                  (if (= :terminate stage) (throw fatal) (do (reset! bad-alive false) true)))
+                (destroyForcibly [_] (swap! events conj [3 :force]) (reset! bad-alive false) true)
+                (onExit [this] (if (= :reap stage) (throw fatal)
+                                  (java.util.concurrent.CompletableFuture/completedFuture this))))
+          good (injected-owned-handle 2 good-alive (constantly []) events
+                                      (fn [_] (reset! good-alive false) true))
+          root (injected-owned-handle 1 root-alive (constantly [good bad]) events
+                                      (fn [_] (reset! root-alive false) true))
+          process (injected-owned-process root root-alive (constantly false))
+          owned (runner/retain-owned-process! process)
+          reap-var (ns-resolve 'gravity.self-hosting.sh01-parallel-test-runner 'reap-process-handle!)
+          original-reap @reap-var
+          thrown (with-redefs-fn
+                   {(ns-resolve 'gravity.self-hosting.sh01-parallel-test-runner 'process-cleanup-grace-ms) 0
+                    (ns-resolve 'gravity.self-hosting.sh01-parallel-test-runner 'process-cleanup-timeout-ms) 50
+                    reap-var (fn [handle deadline tracker]
+                               (swap! reaped conj (.pid ^java.lang.ProcessHandle handle))
+                               (original-reap handle deadline tracker))}
+                   #(try (runner/finalize-owned-process! owned) nil (catch Throwable error error)))]
+      (is (identical? fatal thrown) (str stage))
+      (is (false? @root-alive) (str stage))
+      (is (false? @good-alive) (str stage))
+      (is (false? @bad-alive) (str stage))
+      (when (= :reap stage) (is (= [1 2 3] @reaped)))
+      (let [before @events]
+        (is (identical? fatal (try (runner/finalize-owned-process! owned) nil
+                                  (catch Throwable error error))))
+        (is (= before @events))))))
+
 (deftest process-launcher-is-injectable-and-receives-an-argument-vector
   (let [seen (atom nil)
         job {:namespace 'gravity.self-hosting.argument-vector-test
@@ -867,7 +1141,8 @@
     (is (= ['gravity.self-hosting.b-pipe-holder-queued-test
             'gravity.self-hosting.c-pipe-holder-exclusive-test]
            (:skipped-namespaces report)))
-    (is (true? (:capture-failed? report)))
+    (is (or (:capture-failed? report) (:cleanup-failed? report))
+        "Either unobserved pipe capture or a retained live descendant must refuse success")
     (is (= :error (:status (first (:failures report)))))
     (is (= 1 (:exit-code report)))
     (is (false? (:complete? report)))))
@@ -993,6 +1268,34 @@
             (is (= :unsupported (:execution data)))
             (is (= "SH-06" (:slice data)))
             (is (= :sh-resolution (:owner data)))))))
+    (is (zero? @starts))))
+
+(deftest private-collection-chain-generic-entrypoints-never-launch
+  (let [starts (atom 0)
+        options {:working-directory "/tmp"
+                 :worker (fn [_] (swap! starts inc) {:exit-code 0})
+                 :process-launcher (fn [& _] (swap! starts inc) {:exit-code 0})}]
+    (doseq [namespace ['gravity.self-hosting.private-collection-chain-test
+                      "gravity.self-hosting.private-collection-chain-test"]
+            marker [nil :supported]
+            resource [:normal :exclusive]]
+      (let [job (cond-> {:namespace namespace :slice "SH-19" :owner :sh-runtime
+                        :resource-class resource}
+                  marker (assoc :execution marker))
+            impact-plan {:namespaces [namespace] :shards [job]}]
+        (doseq [operation [#(runner/schedule-plan impact-plan)
+                           #(runner/execute-plan impact-plan options)
+                           #(runner/run-namespace-process job options)
+                           #(runner/run-normal-batch-process
+                              [{:namespace 'gravity.self-hosting.ordinary-test
+                                :slice "SH-01" :resource-class :normal} job] options)]]
+          (let [data (exception-data operation)]
+            (is (= "SH01-IMPACT-EXTERNAL-WRAPPER" (:id data)))
+            (is (= :unsupported (:execution data)))
+            (is (= "SH-08" (:slice data)))
+            (is (= :sh-types (:owner data)))
+            (is (= [:common-host-broker :host-exclusive :canonical-heavy-lock]
+                   (:required-guards data)))))))
     (is (zero? @starts))))
 
 (deftest malformed-and-empty-plans-fail-closed

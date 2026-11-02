@@ -1,0 +1,11 @@
+(ns gravity.reader
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [read-input])
+  (:effects #{:build/read-file})
+  (:capabilities #{:fs/read})
+  (:safety :safe))
+
+(defn read-input [seed]
+  (assoc seed :datum
+         (build-read-declared-input (get seed :datum))))

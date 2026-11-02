@@ -1,7 +1,6 @@
 (ns gravity.self-hosting.a1-canonical-schema.ordering
-  "Bounded canonical map ordering for A1."
-  (:require [gravity.self-hosting.a1-canonical-schema.budget :as budget]
-            [gravity.self-hosting.a1-canonical-schema.config :as config]))
+  "Canonical map ordering for A1."
+  (:require [gravity.self-hosting.a1-canonical-schema.config :as config]))
 
 (defn merge-index-pass! [^objects entries ^ints source ^ints target n width]
   (doseq [start (range 0 n (* 2 width))]
@@ -55,22 +54,11 @@
           (merge-index-pass! ordered source target n width)
           (recur (* 2 width) target source))))))
 
-(defn ordered-entries [state value path consume]
-  (let [n (count value)]
-    (budget/work! state n path)
-    (budget/acquire! state :key-slots n path)
-    (try
-      (let [entries (seq value)]
-        (doseq [[key _] entries]
-          (when-not (config/exact-class? key String)
-            (config/fail! "E-TYPE" path))
-          (when-not (config/scalar-string? key) (config/fail! "E-TYPE" path))
-          (when (> (config/utf8-length key) (:string-bytes config/limits))
-            (config/fail! "E-BOUND" path)))
-        (let [key-bytes (reduce + 0 (map #(config/utf8-length (key %)) entries))
-              rounds (loop [size (max 1 n) result 0]
-                       (if (<= size 1) result
-                           (recur (quot (inc size) 2) (inc result))))]
-          (budget/work! state (* (+ n key-bytes) rounds) path)
-          (consume (bottom-up-mergesort entries n))))
-      (finally (budget/release! state :key-slots n)))))
+(defn ordered-entries [value path consume]
+  (let [n (count value)
+        entries (seq value)]
+    (doseq [[key _] entries]
+      (when-not (config/exact-class? key String)
+        (config/fail! "E-TYPE" path))
+      (when-not (config/scalar-string? key) (config/fail! "E-TYPE" path)))
+    (consume (bottom-up-mergesort entries n))))

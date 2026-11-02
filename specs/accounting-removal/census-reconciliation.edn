@@ -1,0 +1,91 @@
+{:kind :source-pinned-census-reconciliation
+ :planning-ref :ACC-01
+ :owner-thread "01a183dd-7208-7d33-a336-7483fd90e358"
+ :authority :attributed-evidence-input-not-outcome-ledger
+ :assessed-source {:commit "8b5d701d36a50cecca652755e7fc2a2b03210769"
+                   :tree "448e666480e328a1ce571fa0ed380045565350cc"}
+ :governing-records ["specs/accounting-removal/spec.md"
+                     "specs/accounting-removal/tasks.md"
+                     "docs/development-verification.md"]
+ :preserved-inputs
+ {:handoff {:name "acc01-preserved-work-handoff.edn"
+            :sha256 "70421f9e82ade6d50cec8d33b797daf6901e0515b035f762c79e3ad8462f92c1"}
+  :census {:name "guard-census.edn"
+           :sha256 "32e5b4009a883b4bc3897499700bbfdb211c529dbe117fbbde5adc6d133ea767"
+           :source "4e443579a95e3273c7b3cd4b931ff84eb6acbe46"
+           :meaning :discovery-candidates-not-reviewed-guards}
+  :owner-intake {:name "owner-disposition-intake.edn"
+                 :sha256 "b3a92bcc16f31ffc96c2f3be285b9372ef76d6f8b2ee468ccf5337db31670664"}
+  :disposition-successor {:name "acc01-blocker-disposition-successor.edn"
+                          :sha256 "f692e74e373334bc1eba3948fef9ab7fd512df2ec986d1e490239be805ed9f04"}
+  :reader-gap-receipt {:name "reader-gap-closure-receipt.edn"
+                       :sha256 "141d3b16ff1ed152576d3fc24473de239be2d3160cfebe9d266b1e7816e8212b"}}
+ :reconciled-facts
+ [{:scope :hosted-C2-depth-policy
+   :disposition :finite-removal-integrated-in-assessed-source
+   :merge "e0f1f50a8009dfd9f9c7487b863a17d7449406b2"
+   :tree "c81a5c6bedda39332a4b1b964fbf82d29fec8f9c"
+   :local-observation :merge-is-ancestor-of-assessed-source
+   :report "docs/artifacts/phase-06/reports/p06-d081-c2-depth-policy-removal-report.md"
+   :supersedes :historical-C2-implementation-missing-entry
+   :removed [:host-token-depth-precheck :formgraph-depth-refusal
+             :C3-integrity-depth-gate :retired-operation-schema-keys]
+   :retained [:acyclicity :lexical-graph-legality :fresh-product-hashes
+              :source-provenance :native-carrier-and-callback-rules
+              :host-stack-failure-containment :obsolete-key-rejection]
+   :evidence-origin :existing-owner-report-not-new-test-execution
+   :nonclaims [:authenticated-deep-source :new-Reader-or-Syntax-admission
+               :C5-C14-composition :whole-accounting-closure]}
+  {:scope :ACC-05-three-inferred-insertion-checkers
+   :candidate "e2149351611311533978b0fb58a0353a896f41b7"
+   :tree "7451881359f08c35c13d995728bf608aa53faaaf"
+   :base "8b5d701d36a50cecca652755e7fc2a2b03210769"
+   :source-sha256 "1c0242ed45983fc974f1aa66b95049b2d47b4ddb7303198bbd631615022ce106"
+   :test-sha256 "8b46e7f7692db3106a48b82215d4a516309eb719559b2676d24ee9e1157761df"
+   :functions [sh08-syin-inferred-call sh08-ksin-inferred-call sh08-ssin-inferred-call]
+   :direct-consumer sh08-tc-products-with-source-forms
+   :disposition :remove-local-accounting-retain-semantic-validation
+   :removed-in-candidate [:budget-argument :function-population-reservation
+                          :insertion-work-limit-reasons :helper-work-count]
+   :retained [:argument-and-child-arity :source-ID-shape :operand-type-validation
+              :complete-descriptor-equality :result-type-equality]
+   :local-observation :candidate-source-and-test-hashes-match-preserved-review
+   :assessed-source-state :old-accounting-still-present
+   :review-origin {:thread "01a18031-af5b-70e4-9bb3-3d76b7acc01c"
+                   :disposition :static-source-accepted-only}
+   :owner-handoff {:thread "01a179eb-a1df-77d5-a60c-af42aa7a203d"
+                   :turn "01a183cd-b0f6-71b4-a62b-b190ef32cb42"}
+   :required-before-acceptance [:restore-three-unrelated-comment-edits
+                                :correct-three-stale-insertion-comments
+                                :outer-pool-boundary-controls
+                                :independent-exact-harness-review
+                                :permitted-semantic-results :exact-head-CI
+                                :independent-composed-integration-review]
+   :validation :semantic-execution-unrun-at-preserved-handoff
+   :nonclaims [:current-successor-state :authenticated-Core :full-ACC-05
+               :outer-pool-removal :runtime-insertion-acceptance]}
+  {:scope :historical-five-reader-gaps
+   :disposition :preserve-finite-structural-discovery-with-owner-dependencies
+   :static-recovery :four-files-inventoried-through-EOF
+   :unrecoverable :missing-intended-B51-test-text-in-pinned-original
+   :qualification "The original malformed snapshot remains historical evidence; later artifact repair does not reconstruct its missing intended bytes."
+   :later-finite-integration {:PR 517
+                              :merge "068de7405b6096d62e1b1636b973e0f250bdc1a6"
+                              :scope :complete-test-artifact-repair-only
+                              :authority :preserved-handoff-attribution}
+   :retained-open [:duplicate-metadata-admission :nested-entry-binding
+                   :fixed-budget-manifest-disposition :actual-runtime-acceptance]
+   :nonclaims [:original-source-validity :runtime-admission
+               :whole-B51-acceptance :whole-reader-gap-semantic-closure]}]
+ :remaining {:original-rows [:ACC-01 :ACC-04 :ACC-05 :ACC-06 :ACC-07 :ACC-08
+                             :ACC-09 :ACC-10 :ACC-11 :ACC-12 :ACC-13]
+             :previously-closed-rows-preserved [:ACC-02 :ACC-03]
+             :unresolved-intake-entries :preserved-unless-explicitly-superseded-above
+             :per-guard-transitive-disposition :incomplete
+             :independent-review-of-this-record :pending
+             :whole-census-closure false}
+ :execution {:compiler-runtime-or-semantic-tests :not-run
+              :broad-census-rerun false :canonical-ledger-edits false
+              :original-files-modified false :unknown-operations-replayed false}
+ :nonclaims [:new-independent-acceptance :remote-main-freshness :release
+             :self-hosting :seed-retirement :percentage-completion]}

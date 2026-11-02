@@ -99,8 +99,7 @@
    :c6-evaluation-order-records c6-evaluation-order-records
    :c6-core-verifier-report c6-core-verifier-report
    :c6-rule-invalidation-record c6-rule-invalidation-record
-   :c6-lowering-capability-proof c6-lowering-capability-proof
-   :c6-lowering-validate! c6-lowering-validate!})
+   :c6-lowering-capability-proof c6-lowering-capability-proof})
 
 (def ^:private ^:dynamic *facade-call?* false)
 (declare ^:private default-flatten-functions)

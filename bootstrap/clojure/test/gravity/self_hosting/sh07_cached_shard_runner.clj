@@ -5,7 +5,7 @@
   Use sh07-authoritative-runner for the fresh-process gate."
   (:require [clojure.string :as str]
             [clojure.test :as test]
-            [gravity.bootstrap :as bootstrap]
+            [gravity.self-hosting.sh07-iteration-cache-runner :as iteration-cache]
             [gravity.self-hosting.unified-execution-plan :as execution-plan]))
 
 (def ^:private cached-route-prefix
@@ -40,15 +40,6 @@
       (execution-plan/route route-id)
       (unknown-shard! shard-name))))
 
-(defn- sha256
-  [value]
-  (let [digest (java.security.MessageDigest/getInstance "SHA-256")]
-    (.update digest
-             (.getBytes (str value)
-                        java.nio.charset.StandardCharsets/UTF_8))
-    (apply str (map #(format "%02x" (bit-and % 0xff))
-                    (.digest digest)))))
-
 (defn- resolve-tests
   [shard-name]
   (let [route (route-for-shard shard-name)
@@ -68,79 +59,25 @@
          test-var))
      symbols)))
 
-(defn- resolution-key
-  [artifact]
-  [(System/identityHashCode artifact)
-   (:artifact-id artifact)
-   (get-in artifact [:provenance :source-path])
-   (get-in artifact
-           [:gravity-resolution-boundary :resolved-analysis
-            :semantic-projection-id])])
+(def ^:private cache-counter-keys
+  [:sh06-hits :sh06-misses :core-hits :core-misses
+   :verification-hits :verification-misses])
+
+(defn- selection-test-vars
+  [shard-name]
+  (let [{:keys [namespace selectors]} (:selection (route-for-shard shard-name))]
+    (mapv #(symbol namespace %) selectors)))
 
 (defn run-shard
   [shard-name]
   (let [tests (resolve-tests shard-name)
-        cache-context
-        {:request-schema-version 15
-         :adapter bootstrap/sh07-core-adapter-contract
-         :checked-core-source-content-hash
-         bootstrap/sh07-core-expected-source-content-hash
-         :checked-core-plan-semantic-hash
-         bootstrap/sh07-core-expected-plan-semantic-hash
-         :java-runtime-version (System/getProperty "java.runtime.version")
-         :clojure-version (clojure-version)}
-        original-sh06 bootstrap/sh06-resolution-source-artifact
-        original-from-resolution
-        bootstrap/sh07-core-from-resolution-artifact
-        original-verification bootstrap/sh07-core-artifact-verification
-        sh06-cache (atom {})
-        core-cache (atom {})
-        verification-cache (atom {})
-        statistics (atom {:sh06-hits 0 :sh06-misses 0
-                          :core-hits 0 :core-misses 0
-                          :verification-hits 0
-                          :verification-misses 0})
-        cached-sh06
-        (fn [path source]
-          (let [key [cache-context path (sha256 source)]]
-            (if-let [entry (find @sh06-cache key)]
-              (do (swap! statistics update :sh06-hits inc)
-                  (val entry))
-              (let [value (original-sh06 path source)]
-                (swap! statistics update :sh06-misses inc)
-                (swap! sh06-cache assoc key value)
-                value))))
-        cached-core
-        (fn [resolution]
-          (let [key [cache-context (resolution-key resolution)]]
-            (if-let [entry (find @core-cache key)]
-              (do (swap! statistics update :core-hits inc)
-                  (val entry))
-              (let [value (original-from-resolution resolution)]
-                (swap! statistics update :core-misses inc)
-                (swap! core-cache assoc key value)
-                value))))
-        cached-verification
-        (fn [artifact]
-          (let [key [(System/identityHashCode artifact)
-                     cache-context
-                     (:artifact-id artifact)
-                     (hash artifact)]]
-            (if-let [entry (find @verification-cache key)]
-              (do (swap! statistics update :verification-hits inc)
-                  (val entry))
-              (let [value (original-verification artifact)]
-                (swap! statistics update :verification-misses inc)
-                (swap! verification-cache assoc key value)
-                value))))
         counters (ref test/*initial-report-counters*)
-        started (System/nanoTime)]
-    (with-redefs [bootstrap/sh06-resolution-source-artifact cached-sh06
-                  bootstrap/sh07-core-from-resolution-artifact cached-core
-                  bootstrap/sh07-core-artifact-verification
-                  cached-verification]
-      (binding [test/*report-counters* counters]
-        (test/test-vars tests)))
+        cached
+        (iteration-cache/with-iteration-cache
+         {:selection {:mode :test-vars
+                      :units (selection-test-vars shard-name)}}
+         #(binding [test/*report-counters* counters]
+            (test/test-vars tests)))]
     (merge
      @counters
      {:artifact :gravity/sh07-cached-shard-result
@@ -148,10 +85,9 @@
       :test-vars (count tests)
       :cache-authoritative? false
       :fresh-authoritative-run-required? true
-      :cache-context cache-context
-      :elapsed-ms
-      (long (/ (- (System/nanoTime) started) 1000000))
-     :cache @statistics})))
+      :cache-context (:cache-context cached)
+      :elapsed-ms (:elapsed-ms cached)
+      :cache (select-keys (:cache cached) cache-counter-keys)})))
 
 (defn check-shards
   []

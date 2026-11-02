@@ -1,0 +1,3251 @@
+{:normative-source
+ {:path
+  "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+  :file-sha256
+  "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+  :coverage
+  :full-document-all30-semantic-paragraph-conjunctions-and15-contexts},
+ :findings [],
+ :facet-verdicts
+ [{:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "fe2425d12fe6a7e4d9603efa22a7cce65db8d83ba8b8cba923516e15ae3acb1a",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 0,
+    :end-byte 51,
+    :raw-sha256
+    "fe2425d12fe6a7e4d9603efa22a7cce65db8d83ba8b8cba923516e15ae3acb1a"},
+   :source-occurrence-id
+   "C17/source/9e9309500eb09653ffbd6e6f6eedd08253ea39cdb727a34066bd7db007e7dbdc",
+   :id "C17/normalized-facet/0-51/fe2425d12fe6a7e4",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "5e49c8257b1fb322e2a381e9f36a6f14e6893ef2e805b4ad96ce2c7c424f6065",
+   :prior-provenance-overlap true,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 52,
+    :end-byte 328,
+    :raw-sha256
+    "5e49c8257b1fb322e2a381e9f36a6f14e6893ef2e805b4ad96ce2c7c424f6065"},
+   :source-occurrence-id
+   "C17/source/30f2a63927627c71179d1762c2d24b564961d14b1f21e30860568a63386bd55c",
+   :id "C17/normalized-facet/52-328/5e49c8257b1fb322",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "994413297a3e95a9b72f5e4c04aa9c306f9009ad88fa0f99453d1963835668b9",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 329,
+    :end-byte 340,
+    :raw-sha256
+    "994413297a3e95a9b72f5e4c04aa9c306f9009ad88fa0f99453d1963835668b9"},
+   :source-occurrence-id
+   "C17/source/230eea9066ff248ef9dd231a31fe70737f0d842fd6c75e97fd2153e6e0247a86",
+   :id "C17/normalized-facet/329-340/994413297a3e95a9",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "41f5aded78ddfeca582537cc571315e22a2c6cb7bfc77f2693347d87f335b6b7",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 341,
+    :end-byte 626,
+    :raw-sha256
+    "41f5aded78ddfeca582537cc571315e22a2c6cb7bfc77f2693347d87f335b6b7"},
+   :source-occurrence-id
+   "C17/source/1fca9177e0e498fd097b5c10207c95c7ab3e8ed47c7c8a4eac2943414d9df992",
+   :id "C17/facet/341-626",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "5ae1e1d722d97d749ec82e8ccfab83dc2121d51773e14a03d06e0e9cb90ef332",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 627,
+    :end-byte 819,
+    :raw-sha256
+    "5ae1e1d722d97d749ec82e8ccfab83dc2121d51773e14a03d06e0e9cb90ef332"},
+   :source-occurrence-id
+   "C17/source/7e782a44de26b4264d6b079358493933a99e880fcc59d9f05e31f224719b879b",
+   :id "C17/facet/627-819",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "d8416f1863ce5290f0f41fa533fb9e10fef5d405c1300c03e276a0a894382b61",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 820,
+    :end-byte 836,
+    :raw-sha256
+    "d8416f1863ce5290f0f41fa533fb9e10fef5d405c1300c03e276a0a894382b61"},
+   :source-occurrence-id
+   "C17/source/0be23529047d8efff53bf1cc7ae0747e2e3afe2fcda55398179ab33c28cd4208",
+   :id "C17/normalized-facet/820-836/d8416f1863ce5290",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :raw-sha256
+   "ea42993d0eccfe824ec5e2160c4b1bf61d7fb281cc5af6813906d0ac4add5e9c",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 837,
+    :end-byte 1052,
+    :raw-sha256
+    "ea42993d0eccfe824ec5e2160c4b1bf61d7fb281cc5af6813906d0ac4add5e9c"},
+   :source-occurrence-id
+   "C17/source/78ecad9350639c7ef3e2818dd325114383fb0632630383034e98b004259c5622",
+   :id "C17/facet/837-1052",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :raw-sha256
+   "b7f7ab026adf8455d5bd1d49de08db2badc770c45ed3d28b7f7cf8785ed99d10",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 1052,
+    :end-byte 1137,
+    :raw-sha256
+    "b7f7ab026adf8455d5bd1d49de08db2badc770c45ed3d28b7f7cf8785ed99d10"},
+   :source-occurrence-id
+   "C17/source/78ecad9350639c7ef3e2818dd325114383fb0632630383034e98b004259c5622",
+   :id "C17/facet/1052-1137",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :raw-sha256
+   "fe6f2a8c3d8829f06c9d0823c10560bf9c7b07fea5e2d2f1874376b892cecae6",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 1137,
+    :end-byte 1224,
+    :raw-sha256
+    "fe6f2a8c3d8829f06c9d0823c10560bf9c7b07fea5e2d2f1874376b892cecae6"},
+   :source-occurrence-id
+   "C17/source/78ecad9350639c7ef3e2818dd325114383fb0632630383034e98b004259c5622",
+   :id "C17/facet/1137-1224",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :raw-sha256
+   "e0e264e7ce7a452958d87cfb36510999829be39d0db25033625ca1eb8f4e290f",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 1224,
+    :end-byte 1390,
+    :raw-sha256
+    "e0e264e7ce7a452958d87cfb36510999829be39d0db25033625ca1eb8f4e290f"},
+   :source-occurrence-id
+   "C17/source/78ecad9350639c7ef3e2818dd325114383fb0632630383034e98b004259c5622",
+   :id "C17/facet/1224-1390",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :raw-sha256
+   "e083e1b883d1ab4fa47736529f707b05fb5ccaf566d0b7feeacd6468a587f18d",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 1390,
+    :end-byte 1463,
+    :raw-sha256
+    "e083e1b883d1ab4fa47736529f707b05fb5ccaf566d0b7feeacd6468a587f18d"},
+   :source-occurrence-id
+   "C17/source/78ecad9350639c7ef3e2818dd325114383fb0632630383034e98b004259c5622",
+   :id "C17/facet/1390-1463",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :raw-sha256
+   "1539148ba1ed793978851d8bbff13931c541311de0911b6c4e6fbd7b5c131e7e",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 1463,
+    :end-byte 1575,
+    :raw-sha256
+    "1539148ba1ed793978851d8bbff13931c541311de0911b6c4e6fbd7b5c131e7e"},
+   :source-occurrence-id
+   "C17/source/78ecad9350639c7ef3e2818dd325114383fb0632630383034e98b004259c5622",
+   :id "C17/facet/1463-1575",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :raw-sha256
+   "98e4f428c1625cbd8b70b845695535761890779f86d9db0a42854b8157bdfb16",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 1575,
+    :end-byte 1639,
+    :raw-sha256
+    "98e4f428c1625cbd8b70b845695535761890779f86d9db0a42854b8157bdfb16"},
+   :source-occurrence-id
+   "C17/source/78ecad9350639c7ef3e2818dd325114383fb0632630383034e98b004259c5622",
+   :id "C17/facet/1575-1639",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "21d1931a332d9b7f509d0637a459922427a666e44b8a7f19d1a912664edf66f7",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 1640,
+    :end-byte 1656,
+    :raw-sha256
+    "21d1931a332d9b7f509d0637a459922427a666e44b8a7f19d1a912664edf66f7"},
+   :source-occurrence-id
+   "C17/source/cc27f1ece559d7203a32d7b71aa1e858a145e1f79d106676c4d8158c0e3980f8",
+   :id "C17/normalized-facet/1640-1656/21d1931a332d9b7f",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :raw-sha256
+   "5b82d042bcc36f202beb69e083a0a07527557eac6f8677390b0ddeacfe398cb7",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 1657,
+    :end-byte 1690,
+    :raw-sha256
+    "5b82d042bcc36f202beb69e083a0a07527557eac6f8677390b0ddeacfe398cb7"},
+   :source-occurrence-id
+   "C17/source/f535793ca2083a5cad1c03aec1c027cd4d9804a2bfbf42c66bad3c8aec6ccdea",
+   :id "C17/facet/1657-1690",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :raw-sha256
+   "4a6866e9f33827d45faabed5bbc0b35ad446c6c6fd62cc3dae79c42e69f66865",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 1690,
+    :end-byte 1759,
+    :raw-sha256
+    "4a6866e9f33827d45faabed5bbc0b35ad446c6c6fd62cc3dae79c42e69f66865"},
+   :source-occurrence-id
+   "C17/source/f535793ca2083a5cad1c03aec1c027cd4d9804a2bfbf42c66bad3c8aec6ccdea",
+   :id "C17/facet/1690-1759",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :raw-sha256
+   "883fdb5ba14f6d2059b2b74cfa6219243faff8e6f93985ca0d6b1d4bca905450",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 1759,
+    :end-byte 1801,
+    :raw-sha256
+    "883fdb5ba14f6d2059b2b74cfa6219243faff8e6f93985ca0d6b1d4bca905450"},
+   :source-occurrence-id
+   "C17/source/f535793ca2083a5cad1c03aec1c027cd4d9804a2bfbf42c66bad3c8aec6ccdea",
+   :id "C17/facet/1759-1801",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :raw-sha256
+   "1242e1da815a8d7348e899b544d4b955c71f65e80945da60e8611d646bbe8913",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 1801,
+    :end-byte 1889,
+    :raw-sha256
+    "1242e1da815a8d7348e899b544d4b955c71f65e80945da60e8611d646bbe8913"},
+   :source-occurrence-id
+   "C17/source/f535793ca2083a5cad1c03aec1c027cd4d9804a2bfbf42c66bad3c8aec6ccdea",
+   :id "C17/facet/1801-1889",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :raw-sha256
+   "367fa23db53479c0ee09f33ba2690a6d9d4b39b1839b982199b139f7c12d7737",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 1889,
+    :end-byte 1929,
+    :raw-sha256
+    "367fa23db53479c0ee09f33ba2690a6d9d4b39b1839b982199b139f7c12d7737"},
+   :source-occurrence-id
+   "C17/source/f535793ca2083a5cad1c03aec1c027cd4d9804a2bfbf42c66bad3c8aec6ccdea",
+   :id "C17/facet/1889-1929",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :raw-sha256
+   "6c66ee8865fca8b7431c5ad7f8a99e35775665d351d5dcea4f4dba237d63a0d1",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 1929,
+    :end-byte 1958,
+    :raw-sha256
+    "6c66ee8865fca8b7431c5ad7f8a99e35775665d351d5dcea4f4dba237d63a0d1"},
+   :source-occurrence-id
+   "C17/source/f535793ca2083a5cad1c03aec1c027cd4d9804a2bfbf42c66bad3c8aec6ccdea",
+   :id "C17/facet/1929-1958",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :raw-sha256
+   "7bcc8c3d46fe650a83bc1e8d7126480a52ab54ea527045afd0da95dc0068f389",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 1958,
+    :end-byte 2034,
+    :raw-sha256
+    "7bcc8c3d46fe650a83bc1e8d7126480a52ab54ea527045afd0da95dc0068f389"},
+   :source-occurrence-id
+   "C17/source/f535793ca2083a5cad1c03aec1c027cd4d9804a2bfbf42c66bad3c8aec6ccdea",
+   :id "C17/facet/1958-2034",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "f4280a4d61a89adc67415f182bd6ae026ebf04a881b9948794b09fe7418ab882",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 2035,
+    :end-byte 2060,
+    :raw-sha256
+    "f4280a4d61a89adc67415f182bd6ae026ebf04a881b9948794b09fe7418ab882"},
+   :source-occurrence-id
+   "C17/source/f064086f47dc720dcbf0e1cd4e5796b00b2ca46f4f4291d0d6ef550234b503ee",
+   :id "C17/normalized-facet/2035-2060/f4280a4d61a89adc",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "e8d313e89c53044b08a11d59b03b7be837df1d8b71b8fd67c66ad8bc5af19d34",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 2061,
+    :end-byte 2080,
+    :raw-sha256
+    "e8d313e89c53044b08a11d59b03b7be837df1d8b71b8fd67c66ad8bc5af19d34"},
+   :source-occurrence-id
+   "C17/source/201a23be921298a9d34783d1255f78a3371d14a6d7b2bab9e4e15d7c2fc03011",
+   :id "C17/facet/2061-2080",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "42dd078237d4b19077ed1f96d85744da207183a63aff752e909371139c4caeba",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 2080,
+    :end-byte 2108,
+    :raw-sha256
+    "42dd078237d4b19077ed1f96d85744da207183a63aff752e909371139c4caeba"},
+   :source-occurrence-id
+   "C17/source/201a23be921298a9d34783d1255f78a3371d14a6d7b2bab9e4e15d7c2fc03011",
+   :id "C17/facet/2080-2108",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "6dc18d747baff1d50ca32dcb4dc3e447770f390f65e49527c77d34ce62cf591e",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 2108,
+    :end-byte 2134,
+    :raw-sha256
+    "6dc18d747baff1d50ca32dcb4dc3e447770f390f65e49527c77d34ce62cf591e"},
+   :source-occurrence-id
+   "C17/source/201a23be921298a9d34783d1255f78a3371d14a6d7b2bab9e4e15d7c2fc03011",
+   :id "C17/facet/2108-2134",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "c0579d101a94cbe70028cf48ca71c5cd843316b15dca330c3dfdce2c49289b52",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 2134,
+    :end-byte 2163,
+    :raw-sha256
+    "c0579d101a94cbe70028cf48ca71c5cd843316b15dca330c3dfdce2c49289b52"},
+   :source-occurrence-id
+   "C17/source/201a23be921298a9d34783d1255f78a3371d14a6d7b2bab9e4e15d7c2fc03011",
+   :id "C17/facet/2134-2163",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "512e0aed31d599a81d215b7ba53651af0654d6fb60a4b64d7b82015575c4ebf1",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 2163,
+    :end-byte 2221,
+    :raw-sha256
+    "512e0aed31d599a81d215b7ba53651af0654d6fb60a4b64d7b82015575c4ebf1"},
+   :source-occurrence-id
+   "C17/source/201a23be921298a9d34783d1255f78a3371d14a6d7b2bab9e4e15d7c2fc03011",
+   :id "C17/facet/2163-2221",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "cfd581b63b00c9428d7a8054d066bffc4d8cbea1d6fad257f6d6a600d40b357b",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 2221,
+    :end-byte 2247,
+    :raw-sha256
+    "cfd581b63b00c9428d7a8054d066bffc4d8cbea1d6fad257f6d6a600d40b357b"},
+   :source-occurrence-id
+   "C17/source/201a23be921298a9d34783d1255f78a3371d14a6d7b2bab9e4e15d7c2fc03011",
+   :id "C17/facet/2221-2247",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "565d36b8dacb6dc7002c313abe8760444ca6056f53244bcf75f8606d411db080",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 2247,
+    :end-byte 2274,
+    :raw-sha256
+    "565d36b8dacb6dc7002c313abe8760444ca6056f53244bcf75f8606d411db080"},
+   :source-occurrence-id
+   "C17/source/201a23be921298a9d34783d1255f78a3371d14a6d7b2bab9e4e15d7c2fc03011",
+   :id "C17/facet/2247-2274",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "ae9efa26882b3e6cf979a2cfff3461045a80676c6c5e61ea964b676179491668",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 2274,
+    :end-byte 2296,
+    :raw-sha256
+    "ae9efa26882b3e6cf979a2cfff3461045a80676c6c5e61ea964b676179491668"},
+   :source-occurrence-id
+   "C17/source/201a23be921298a9d34783d1255f78a3371d14a6d7b2bab9e4e15d7c2fc03011",
+   :id "C17/facet/2274-2296",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "2df91a98c2d63556a24e2d32336cc4be2d6b1032c839f7d17e094dae13ad4786",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 2296,
+    :end-byte 2326,
+    :raw-sha256
+    "2df91a98c2d63556a24e2d32336cc4be2d6b1032c839f7d17e094dae13ad4786"},
+   :source-occurrence-id
+   "C17/source/201a23be921298a9d34783d1255f78a3371d14a6d7b2bab9e4e15d7c2fc03011",
+   :id "C17/facet/2296-2326",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "26c6fc0e284d3c3be0a19f65c106e74b459e68fefc2e787fa932f650493fed31",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 2327,
+    :end-byte 2346,
+    :raw-sha256
+    "26c6fc0e284d3c3be0a19f65c106e74b459e68fefc2e787fa932f650493fed31"},
+   :source-occurrence-id
+   "C17/source/2769e48bc94879b7994b060426a09fedf732ad93974b3de5fc7d59d99c812b17",
+   :id "C17/normalized-facet/2327-2346/26c6fc0e284d3c3b",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "1eb43c315817781b9648ffe45b2ee22b6c1a826c8d36f91e58cc2a2101ae4763",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 2347,
+    :end-byte 2869,
+    :raw-sha256
+    "1eb43c315817781b9648ffe45b2ee22b6c1a826c8d36f91e58cc2a2101ae4763"},
+   :source-occurrence-id
+   "C17/source/1481eb67bbc9e0b89c0712e818d25b53966999d3e85515884bec1fc232ee9896",
+   :id "C17/facet/2347-2869",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "dc6cddd28677f77b322c167b7cd73c65620fd450675a779878279984c70d4c50",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 2870,
+    :end-byte 2995,
+    :raw-sha256
+    "dc6cddd28677f77b322c167b7cd73c65620fd450675a779878279984c70d4c50"},
+   :source-occurrence-id
+   "C17/source/acd011286ffe88c1a8e42fedbd5753e170dde7c1b3e90f614dfd7a7477c49dec",
+   :id "C17/facet/2870-2995",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "9a5bf528840b90417d42d51ea8d4dfa6adc651b655ed145c09e32ff1fdf0891b",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 2996,
+    :end-byte 3021,
+    :raw-sha256
+    "9a5bf528840b90417d42d51ea8d4dfa6adc651b655ed145c09e32ff1fdf0891b"},
+   :source-occurrence-id
+   "C17/source/d3de69740e6d22343d3c3caf2785404a42d29b14fab75ec2545c67da2bad8b12",
+   :id "C17/normalized-facet/2996-3021/9a5bf528840b9041",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "b858aa11097f412d959f80026b37b8e341c3b90badab470b5b4c0cbcbf30c411",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 3022,
+    :end-byte 3098,
+    :raw-sha256
+    "b858aa11097f412d959f80026b37b8e341c3b90badab470b5b4c0cbcbf30c411"},
+   :source-occurrence-id
+   "C17/source/9857a061169b815b0fd518e90122f710d39bf3a60dbd86eeebe47aa8911ae60f",
+   :id "C17/facet/3022-3098",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "4b021bfc7f535989b792e6cc2f335178feeea8726841f2b539b5b8f3b05e2a5c",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 3099,
+    :end-byte 3114,
+    :raw-sha256
+    "4b021bfc7f535989b792e6cc2f335178feeea8726841f2b539b5b8f3b05e2a5c"},
+   :source-occurrence-id
+   "C17/source/10d90d55c270ce679954ac84f861f7896ff312ae0762f5363dd40dfd4f0fa23a",
+   :id "C17/facet/3099-3114",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "be651f2aab2ab6c1f95f8592095d7f978a24f1fdcd846cf66c6cd25336120605",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 3114,
+    :end-byte 3130,
+    :raw-sha256
+    "be651f2aab2ab6c1f95f8592095d7f978a24f1fdcd846cf66c6cd25336120605"},
+   :source-occurrence-id
+   "C17/source/10d90d55c270ce679954ac84f861f7896ff312ae0762f5363dd40dfd4f0fa23a",
+   :id "C17/facet/3114-3130",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "4a99a6744bdd1e34b2f0ea1a2b15194c0f7042af6e290811afd95a7f0af69c0a",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 3130,
+    :end-byte 3149,
+    :raw-sha256
+    "4a99a6744bdd1e34b2f0ea1a2b15194c0f7042af6e290811afd95a7f0af69c0a"},
+   :source-occurrence-id
+   "C17/source/10d90d55c270ce679954ac84f861f7896ff312ae0762f5363dd40dfd4f0fa23a",
+   :id "C17/facet/3130-3149",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "1d32c86ce6c737836906440fcb01e3640aff5f2025727c13f08026d5f1f2be37",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 3149,
+    :end-byte 3169,
+    :raw-sha256
+    "1d32c86ce6c737836906440fcb01e3640aff5f2025727c13f08026d5f1f2be37"},
+   :source-occurrence-id
+   "C17/source/10d90d55c270ce679954ac84f861f7896ff312ae0762f5363dd40dfd4f0fa23a",
+   :id "C17/facet/3149-3169",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "48544366d58e0db0ffee714fbdcc1d3df77b0db5af0beed168ec7e021963a4b9",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 3169,
+    :end-byte 3181,
+    :raw-sha256
+    "48544366d58e0db0ffee714fbdcc1d3df77b0db5af0beed168ec7e021963a4b9"},
+   :source-occurrence-id
+   "C17/source/10d90d55c270ce679954ac84f861f7896ff312ae0762f5363dd40dfd4f0fa23a",
+   :id "C17/facet/3169-3181",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "79013c7fea5f6b6bbe4a80ca79dffe174102d43d412cf4fec0cd1ad97da92b1c",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 3181,
+    :end-byte 3194,
+    :raw-sha256
+    "79013c7fea5f6b6bbe4a80ca79dffe174102d43d412cf4fec0cd1ad97da92b1c"},
+   :source-occurrence-id
+   "C17/source/10d90d55c270ce679954ac84f861f7896ff312ae0762f5363dd40dfd4f0fa23a",
+   :id "C17/facet/3181-3194",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "3da9fd32ed5fc3bc61e48c24ecfb9bcd11f31b66e65dade6cd9c3fccae4b298f",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 3194,
+    :end-byte 3212,
+    :raw-sha256
+    "3da9fd32ed5fc3bc61e48c24ecfb9bcd11f31b66e65dade6cd9c3fccae4b298f"},
+   :source-occurrence-id
+   "C17/source/10d90d55c270ce679954ac84f861f7896ff312ae0762f5363dd40dfd4f0fa23a",
+   :id "C17/facet/3194-3212",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "d9f18ef1df71aa877a08eabd20f48645974afc7de9c63c0a1fbfc235c8d3cf85",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 3212,
+    :end-byte 3231,
+    :raw-sha256
+    "d9f18ef1df71aa877a08eabd20f48645974afc7de9c63c0a1fbfc235c8d3cf85"},
+   :source-occurrence-id
+   "C17/source/10d90d55c270ce679954ac84f861f7896ff312ae0762f5363dd40dfd4f0fa23a",
+   :id "C17/facet/3212-3231",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "96ba3ca76457d0c61e1a21428f0cf27c43d7c9de0cb8f755acaefaf894044277",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 3231,
+    :end-byte 3248,
+    :raw-sha256
+    "96ba3ca76457d0c61e1a21428f0cf27c43d7c9de0cb8f755acaefaf894044277"},
+   :source-occurrence-id
+   "C17/source/10d90d55c270ce679954ac84f861f7896ff312ae0762f5363dd40dfd4f0fa23a",
+   :id "C17/facet/3231-3248",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "879107867f264adec4198c6d336a3052e1ff0f3c0a5a79101257caf7325bb9f3",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 3248,
+    :end-byte 3266,
+    :raw-sha256
+    "879107867f264adec4198c6d336a3052e1ff0f3c0a5a79101257caf7325bb9f3"},
+   :source-occurrence-id
+   "C17/source/10d90d55c270ce679954ac84f861f7896ff312ae0762f5363dd40dfd4f0fa23a",
+   :id "C17/facet/3248-3266",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "8a53e30d345a749c5ee3aedf67a489999843f1d2efbf774672ca437c1ce70104",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 3266,
+    :end-byte 3288,
+    :raw-sha256
+    "8a53e30d345a749c5ee3aedf67a489999843f1d2efbf774672ca437c1ce70104"},
+   :source-occurrence-id
+   "C17/source/10d90d55c270ce679954ac84f861f7896ff312ae0762f5363dd40dfd4f0fa23a",
+   :id "C17/facet/3266-3288",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "c3c475a116f9e4e420b58e79dc2ae35e2f7c7912691d17be19013b9c4cc3dee3",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 3288,
+    :end-byte 3305,
+    :raw-sha256
+    "c3c475a116f9e4e420b58e79dc2ae35e2f7c7912691d17be19013b9c4cc3dee3"},
+   :source-occurrence-id
+   "C17/source/10d90d55c270ce679954ac84f861f7896ff312ae0762f5363dd40dfd4f0fa23a",
+   :id "C17/facet/3288-3305",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "328bbe799a6b90142205b84c29d175fc8e2cdd85f089c22aa04f01d34e19ce59",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 3305,
+    :end-byte 3322,
+    :raw-sha256
+    "328bbe799a6b90142205b84c29d175fc8e2cdd85f089c22aa04f01d34e19ce59"},
+   :source-occurrence-id
+   "C17/source/10d90d55c270ce679954ac84f861f7896ff312ae0762f5363dd40dfd4f0fa23a",
+   :id "C17/facet/3305-3322",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "95bf9580378906ecb86b434e9fbd238acaa9fb8d93ff047e9e8acd26dc646895",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 3322,
+    :end-byte 3342,
+    :raw-sha256
+    "95bf9580378906ecb86b434e9fbd238acaa9fb8d93ff047e9e8acd26dc646895"},
+   :source-occurrence-id
+   "C17/source/10d90d55c270ce679954ac84f861f7896ff312ae0762f5363dd40dfd4f0fa23a",
+   :id "C17/facet/3322-3342",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "05209f9d4a336e09d2d323778b90c9aae722698d06705b7e54a8c7ba3bb3442f",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 3342,
+    :end-byte 3360,
+    :raw-sha256
+    "05209f9d4a336e09d2d323778b90c9aae722698d06705b7e54a8c7ba3bb3442f"},
+   :source-occurrence-id
+   "C17/source/10d90d55c270ce679954ac84f861f7896ff312ae0762f5363dd40dfd4f0fa23a",
+   :id "C17/facet/3342-3360",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "4069b0bf7e81b55d7a91ee15deccfe8a1b28355fa0c93e8ec6d4c31c823d931c",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 3360,
+    :end-byte 3392,
+    :raw-sha256
+    "4069b0bf7e81b55d7a91ee15deccfe8a1b28355fa0c93e8ec6d4c31c823d931c"},
+   :source-occurrence-id
+   "C17/source/10d90d55c270ce679954ac84f861f7896ff312ae0762f5363dd40dfd4f0fa23a",
+   :id "C17/facet/3360-3392",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "0882c41f0aaf981b0a37f6b36a92bae8986369c1f066b3141babe59ec2183470",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 3393,
+    :end-byte 3618,
+    :raw-sha256
+    "0882c41f0aaf981b0a37f6b36a92bae8986369c1f066b3141babe59ec2183470"},
+   :source-occurrence-id
+   "C17/source/79c8e412288dc3c8c0e99ef031ff5dbce9e5432087f21210be60c0c420479aa7",
+   :id "C17/facet/3393-3618",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "b47bd6b33c8d0956666bdcb414a13f0eac631a08b29586c592c24d21a0449a5e",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 3619,
+    :end-byte 3631,
+    :raw-sha256
+    "b47bd6b33c8d0956666bdcb414a13f0eac631a08b29586c592c24d21a0449a5e"},
+   :source-occurrence-id
+   "C17/source/004b7d348894f323a08c95dee9ddd38dd97675e3b38d923915bb112f6fc68d18",
+   :id "C17/normalized-facet/3619-3631/b47bd6b33c8d0956",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :raw-sha256
+   "1a03eb47fd65895c7fe8905aa7ae965c4bd8a0e9d0ff9fe6513dab190e2ff763",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 3632,
+    :end-byte 4016,
+    :raw-sha256
+    "1a03eb47fd65895c7fe8905aa7ae965c4bd8a0e9d0ff9fe6513dab190e2ff763"},
+   :source-occurrence-id
+   "C17/source/cc9bb62d4c5321085f6bc6c13ce569427fb934da5af09ebad08af2265ee54e0d",
+   :id "C17/facet/3632-4016",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "fde146bbeddee3bf2f0f5bdc9c19dee7d80734b84e48020e5714cfad2ab54b92",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 4017,
+    :end-byte 4128,
+    :raw-sha256
+    "fde146bbeddee3bf2f0f5bdc9c19dee7d80734b84e48020e5714cfad2ab54b92"},
+   :source-occurrence-id
+   "C17/source/4d4f37e7dd0881a457c397bc0b35e1fd780ab175a288df72f8cb7bd97416d2b5",
+   :id "C17/facet/4017-4128",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "f2576547a3b46cd826067bf2be89e2cf3a01d29622ea60452b0abcd512ae42e1",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 4129,
+    :end-byte 4150,
+    :raw-sha256
+    "f2576547a3b46cd826067bf2be89e2cf3a01d29622ea60452b0abcd512ae42e1"},
+   :source-occurrence-id
+   "C17/source/ec34279f8d283e5ee78f40d6b34750e973e61a2d6cd384d27c23779617ea1f77",
+   :id "C17/normalized-facet/4129-4150/f2576547a3b46cd8",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "ae23e5bac115aa775bd979888ca44a09eb0fb635cea487a9eaa7bc0cb4b940a8",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 4151,
+    :end-byte 4165,
+    :raw-sha256
+    "ae23e5bac115aa775bd979888ca44a09eb0fb635cea487a9eaa7bc0cb4b940a8"},
+   :source-occurrence-id
+   "C17/source/c21d316a09b8e00c55cd25e16788fbbaee3100a4fe8b39a65184748329301767",
+   :id "C17/facet/4151-4165",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "c76f56da58dd0df97b02370df27668f6950ee7340d2b338343edd78a4654e34b",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 4166,
+    :end-byte 4221,
+    :raw-sha256
+    "c76f56da58dd0df97b02370df27668f6950ee7340d2b338343edd78a4654e34b"},
+   :source-occurrence-id
+   "C17/source/cba8eb2a9416384e408d965243c06a2fcda29caff3548c0be4ff211d54283409",
+   :id "C17/facet/4166-4221",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "28f94b87a3fe0d6cd506277c4d58d4d2b40593fac1d8a2bca7b401445652f7a4",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 4221,
+    :end-byte 4278,
+    :raw-sha256
+    "28f94b87a3fe0d6cd506277c4d58d4d2b40593fac1d8a2bca7b401445652f7a4"},
+   :source-occurrence-id
+   "C17/source/cba8eb2a9416384e408d965243c06a2fcda29caff3548c0be4ff211d54283409",
+   :id "C17/facet/4221-4278",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "94c160f3a0f4ee64a50a68f33f4600560db81d9934051698adb502f656848787",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 4278,
+    :end-byte 4331,
+    :raw-sha256
+    "94c160f3a0f4ee64a50a68f33f4600560db81d9934051698adb502f656848787"},
+   :source-occurrence-id
+   "C17/source/cba8eb2a9416384e408d965243c06a2fcda29caff3548c0be4ff211d54283409",
+   :id "C17/facet/4278-4331",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "1120533a44dfe49ff45928feb5b11285c3ea905ce040b8936116eb79945f05ef",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 4331,
+    :end-byte 4400,
+    :raw-sha256
+    "1120533a44dfe49ff45928feb5b11285c3ea905ce040b8936116eb79945f05ef"},
+   :source-occurrence-id
+   "C17/source/cba8eb2a9416384e408d965243c06a2fcda29caff3548c0be4ff211d54283409",
+   :id "C17/facet/4331-4400",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "acc79056499e8078a929c9afb0af59255ce10338f1712fb1d5c63d7c02aee1c3",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 4400,
+    :end-byte 4438,
+    :raw-sha256
+    "acc79056499e8078a929c9afb0af59255ce10338f1712fb1d5c63d7c02aee1c3"},
+   :source-occurrence-id
+   "C17/source/cba8eb2a9416384e408d965243c06a2fcda29caff3548c0be4ff211d54283409",
+   :id "C17/facet/4400-4438",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "d620c0ef8e4cf85a803a66ec41cc53285c2786f392a7e309fe69913426f9d1c4",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 4439,
+    :end-byte 4651,
+    :raw-sha256
+    "d620c0ef8e4cf85a803a66ec41cc53285c2786f392a7e309fe69913426f9d1c4"},
+   :source-occurrence-id
+   "C17/source/e121743bad77fa22a48a242a4ff6f5d8ca8fdc54830fa9bf1a057f3637f92a53",
+   :id "C17/facet/4439-4651",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "f7f0b8efef9a2e35f2b0efeebf1eb26016d7147fa333901ef122cf893fd8bbd1",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 4652,
+    :end-byte 4683,
+    :raw-sha256
+    "f7f0b8efef9a2e35f2b0efeebf1eb26016d7147fa333901ef122cf893fd8bbd1"},
+   :source-occurrence-id
+   "C17/source/ae4134acb78ec1b37fa53a0873b2e9613ce6f79b1f6945def514747c3176deca",
+   :id "C17/normalized-facet/4652-4683/f7f0b8efef9a2e35",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "79feb43d39da039cae000166e7771564283e5d7a5317a90000a6a8eb66db3980",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 4684,
+    :end-byte 4805,
+    :raw-sha256
+    "79feb43d39da039cae000166e7771564283e5d7a5317a90000a6a8eb66db3980"},
+   :source-occurrence-id
+   "C17/source/644f7e0987fe279aa5cab2cf09aecd938a8abfb7e5d6a0281efb1b700e1890eb",
+   :id "C17/facet/4684-4805",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "709ab8d0b62bbb0902635af2d92addabeef5aec644f2d64d0b2c963e8f2ca27b",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 4806,
+    :end-byte 4816,
+    :raw-sha256
+    "709ab8d0b62bbb0902635af2d92addabeef5aec644f2d64d0b2c963e8f2ca27b"},
+   :source-occurrence-id
+   "C17/source/daa1fffc3109c8258cb4ecfcae29683eacd617d8bd86ee1cc32d5da8e688f91d",
+   :id "C17/facet/4806-4816",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "92f4fc884aa0243e779df2e6cceb0c112c531181ea57d059b42aac853f273ea9",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 4816,
+    :end-byte 4828,
+    :raw-sha256
+    "92f4fc884aa0243e779df2e6cceb0c112c531181ea57d059b42aac853f273ea9"},
+   :source-occurrence-id
+   "C17/source/daa1fffc3109c8258cb4ecfcae29683eacd617d8bd86ee1cc32d5da8e688f91d",
+   :id "C17/facet/4816-4828",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "cf8dc49c904a5cb0a653d0ede87f01d474e2d617ff4161a6ddab00b4d859c8d9",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 4828,
+    :end-byte 4850,
+    :raw-sha256
+    "cf8dc49c904a5cb0a653d0ede87f01d474e2d617ff4161a6ddab00b4d859c8d9"},
+   :source-occurrence-id
+   "C17/source/daa1fffc3109c8258cb4ecfcae29683eacd617d8bd86ee1cc32d5da8e688f91d",
+   :id "C17/facet/4828-4850",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "2b414f10df217b02136722177863c5354bd3634e9a8b5fc4bf3093eebda4fd99",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 4850,
+    :end-byte 4878,
+    :raw-sha256
+    "2b414f10df217b02136722177863c5354bd3634e9a8b5fc4bf3093eebda4fd99"},
+   :source-occurrence-id
+   "C17/source/daa1fffc3109c8258cb4ecfcae29683eacd617d8bd86ee1cc32d5da8e688f91d",
+   :id "C17/facet/4850-4878",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "d515d756456dae1cffbb4ec22bba0e3fb92658b180e16da8b6ef148fd62a949f",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 4878,
+    :end-byte 4896,
+    :raw-sha256
+    "d515d756456dae1cffbb4ec22bba0e3fb92658b180e16da8b6ef148fd62a949f"},
+   :source-occurrence-id
+   "C17/source/daa1fffc3109c8258cb4ecfcae29683eacd617d8bd86ee1cc32d5da8e688f91d",
+   :id "C17/facet/4878-4896",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "30cd0dcb0471f6a92177d53c685e6118bd1ab5135247cfdcc2f4758e8a948946",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 4896,
+    :end-byte 4911,
+    :raw-sha256
+    "30cd0dcb0471f6a92177d53c685e6118bd1ab5135247cfdcc2f4758e8a948946"},
+   :source-occurrence-id
+   "C17/source/daa1fffc3109c8258cb4ecfcae29683eacd617d8bd86ee1cc32d5da8e688f91d",
+   :id "C17/facet/4896-4911",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "c181546c1c17ce3291e2dc2c5775192ca7218e50836f103af7ce827ee60b607b",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 4911,
+    :end-byte 4935,
+    :raw-sha256
+    "c181546c1c17ce3291e2dc2c5775192ca7218e50836f103af7ce827ee60b607b"},
+   :source-occurrence-id
+   "C17/source/daa1fffc3109c8258cb4ecfcae29683eacd617d8bd86ee1cc32d5da8e688f91d",
+   :id "C17/facet/4911-4935",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "733b99ad3f1de929c9b8c36cd5bb8bd409dfce30d2ff16cd5c36738f2729647e",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 4936,
+    :end-byte 4984,
+    :raw-sha256
+    "733b99ad3f1de929c9b8c36cd5bb8bd409dfce30d2ff16cd5c36738f2729647e"},
+   :source-occurrence-id
+   "C17/source/8862e6260894c3c9694157d50939ab3b7d8a5648ec74407cbbb8e6b64aa46d8a",
+   :id "C17/facet/4936-4984",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "83a323fdb7211d071e707e64dee1a8712481530e0767f6efa5a0dc6262b12716",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 4985,
+    :end-byte 5004,
+    :raw-sha256
+    "83a323fdb7211d071e707e64dee1a8712481530e0767f6efa5a0dc6262b12716"},
+   :source-occurrence-id
+   "C17/source/629e36ed15c133a915e56186bcd59ccc440336bafc63f74a1b4e5e7d07cb10c6",
+   :id "C17/normalized-facet/4985-5004/83a323fdb7211d07",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "1ae58fffadd9d4cff7d78766cb1ae5140ecb3d761ec55b47e17aa45d1b3f0ac6",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 5005,
+    :end-byte 5285,
+    :raw-sha256
+    "1ae58fffadd9d4cff7d78766cb1ae5140ecb3d761ec55b47e17aa45d1b3f0ac6"},
+   :source-occurrence-id
+   "C17/source/0933ad9da5b6d44e04494fb5cf7828100eddbc2ca113856889b4e9ec97c2fb56",
+   :id "C17/facet/5005-5285",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "5af2f9305e7a317519802fe5d04581e02544ceff9909a43f7112302cd07048b2",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 5286,
+    :end-byte 5369,
+    :raw-sha256
+    "5af2f9305e7a317519802fe5d04581e02544ceff9909a43f7112302cd07048b2"},
+   :source-occurrence-id
+   "C17/source/81d59cc659102084e9083afa45322da175adba8fef6e29aebb86da03df614a19",
+   :id "C17/facet/5286-5369",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "84b964dab09b580d85bc6c25ae5289e07a178aada1792ed38b72a4e79230f004",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 5370,
+    :end-byte 5385,
+    :raw-sha256
+    "84b964dab09b580d85bc6c25ae5289e07a178aada1792ed38b72a4e79230f004"},
+   :source-occurrence-id
+   "C17/source/6443fb5ed835b9c36203a8d95e52dfbc0852b5e3d75e40ade6299c1e879d0328",
+   :id "C17/normalized-facet/5370-5385/84b964dab09b580d",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "dd5c1ac06f7673ec8fe5b9573a64368735c2d7b1e9fb7e37fa979abae34851e5",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 5386,
+    :end-byte 5428,
+    :raw-sha256
+    "dd5c1ac06f7673ec8fe5b9573a64368735c2d7b1e9fb7e37fa979abae34851e5"},
+   :source-occurrence-id
+   "C17/source/cd72c754d0f42620e9a4025dac3aa44a64a29190db7f6618d72546c5b8877887",
+   :id "C17/facet/5386-5428",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "ac0c5c88b9ca0fec1139ff602a27081cce7720a6f614a94c91ab2d015fa90f45",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 5429,
+    :end-byte 5478,
+    :raw-sha256
+    "ac0c5c88b9ca0fec1139ff602a27081cce7720a6f614a94c91ab2d015fa90f45"},
+   :source-occurrence-id
+   "C17/source/a919618d6cac75fb404cbf717cedfbbc02ffad9d5a2171b9ac1861b0f43bfcf7",
+   :id "C17/facet/5429-5478",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "9417c2aaee70dc5648f43bf8a719f57da7b216befe3bc5fabbd3cd64b08b708c",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 5478,
+    :end-byte 5530,
+    :raw-sha256
+    "9417c2aaee70dc5648f43bf8a719f57da7b216befe3bc5fabbd3cd64b08b708c"},
+   :source-occurrence-id
+   "C17/source/a919618d6cac75fb404cbf717cedfbbc02ffad9d5a2171b9ac1861b0f43bfcf7",
+   :id "C17/facet/5478-5530",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "bd82318903e000a26e55c6c853dcbadde6749b7572dc721bf8515ee09d8d84a1",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 5530,
+    :end-byte 5597,
+    :raw-sha256
+    "bd82318903e000a26e55c6c853dcbadde6749b7572dc721bf8515ee09d8d84a1"},
+   :source-occurrence-id
+   "C17/source/a919618d6cac75fb404cbf717cedfbbc02ffad9d5a2171b9ac1861b0f43bfcf7",
+   :id "C17/facet/5530-5597",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "bb99b61f3c7ac7ed824f98e691245a5bbba63b4d8aeb4aa24a1f7523f8ff5d5b",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 5597,
+    :end-byte 5647,
+    :raw-sha256
+    "bb99b61f3c7ac7ed824f98e691245a5bbba63b4d8aeb4aa24a1f7523f8ff5d5b"},
+   :source-occurrence-id
+   "C17/source/a919618d6cac75fb404cbf717cedfbbc02ffad9d5a2171b9ac1861b0f43bfcf7",
+   :id "C17/facet/5597-5647",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "aaf66dd901c105765f9aac07371c8d8167bdafab7283054bba43fe57e7936cee",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 5647,
+    :end-byte 5687,
+    :raw-sha256
+    "aaf66dd901c105765f9aac07371c8d8167bdafab7283054bba43fe57e7936cee"},
+   :source-occurrence-id
+   "C17/source/a919618d6cac75fb404cbf717cedfbbc02ffad9d5a2171b9ac1861b0f43bfcf7",
+   :id "C17/facet/5647-5687",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "1097d9b17378dfd84a09ecdb3903192a2cecb55c4cfe7f4138caa4bd022d6158",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 5687,
+    :end-byte 5737,
+    :raw-sha256
+    "1097d9b17378dfd84a09ecdb3903192a2cecb55c4cfe7f4138caa4bd022d6158"},
+   :source-occurrence-id
+   "C17/source/a919618d6cac75fb404cbf717cedfbbc02ffad9d5a2171b9ac1861b0f43bfcf7",
+   :id "C17/facet/5687-5737",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "8275907db52dc3dd793959214859348202f7ebb330f1bfac7efcd51ec500a58d",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 5737,
+    :end-byte 5792,
+    :raw-sha256
+    "8275907db52dc3dd793959214859348202f7ebb330f1bfac7efcd51ec500a58d"},
+   :source-occurrence-id
+   "C17/source/a919618d6cac75fb404cbf717cedfbbc02ffad9d5a2171b9ac1861b0f43bfcf7",
+   :id "C17/facet/5737-5792",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "12e6f476fb75d6d8d72a69aeb1fdeef56a898b0d7510b7fb908db8fa65b822f3",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 5792,
+    :end-byte 5843,
+    :raw-sha256
+    "12e6f476fb75d6d8d72a69aeb1fdeef56a898b0d7510b7fb908db8fa65b822f3"},
+   :source-occurrence-id
+   "C17/source/a919618d6cac75fb404cbf717cedfbbc02ffad9d5a2171b9ac1861b0f43bfcf7",
+   :id "C17/facet/5792-5843",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "eb1c7ea9aa94df467386794b906dc0503776117afa9a7b40dd755f8e250a255a",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 5843,
+    :end-byte 5889,
+    :raw-sha256
+    "eb1c7ea9aa94df467386794b906dc0503776117afa9a7b40dd755f8e250a255a"},
+   :source-occurrence-id
+   "C17/source/a919618d6cac75fb404cbf717cedfbbc02ffad9d5a2171b9ac1861b0f43bfcf7",
+   :id "C17/facet/5843-5889",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "a007ab5f41b5e38ed19a954f89c32b69817bd0b518f7ca866964d00bde9b379f",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 5889,
+    :end-byte 5945,
+    :raw-sha256
+    "a007ab5f41b5e38ed19a954f89c32b69817bd0b518f7ca866964d00bde9b379f"},
+   :source-occurrence-id
+   "C17/source/a919618d6cac75fb404cbf717cedfbbc02ffad9d5a2171b9ac1861b0f43bfcf7",
+   :id "C17/facet/5889-5945",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "5ea6da62639987c1f0ff020887dd3ee700c18a26e44c4f63887d153a85e933e4",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 5946,
+    :end-byte 6133,
+    :raw-sha256
+    "5ea6da62639987c1f0ff020887dd3ee700c18a26e44c4f63887d153a85e933e4"},
+   :source-occurrence-id
+   "C17/source/d884c00c85d10d99b514a5de7b3645fa76ac9fa9668d3422f021f9674144df99",
+   :id "C17/facet/5946-6133",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "81a99744c82b0f200a1b23f569815e25e994ddb3455b81be46a31fd7408dcd80",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 6134,
+    :end-byte 6154,
+    :raw-sha256
+    "81a99744c82b0f200a1b23f569815e25e994ddb3455b81be46a31fd7408dcd80"},
+   :source-occurrence-id
+   "C17/source/4d1c029efea4a00c7f4e5702dae44123420d30f6357f0c1d20ae35b4a4663a29",
+   :id "C17/normalized-facet/6134-6154/81a99744c82b0f20",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "f947f62f9215d53f0ab7600d85c7c803bd43cb159dd459f7f5de9962b35627d2",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 6155,
+    :end-byte 6214,
+    :raw-sha256
+    "f947f62f9215d53f0ab7600d85c7c803bd43cb159dd459f7f5de9962b35627d2"},
+   :source-occurrence-id
+   "C17/source/5b0615a69e2829378599ffb62995bac6abcb481ac14faf4a58485277ca785ea8",
+   :id "C17/facet/6155-6214",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "9b41784bc771cfeec886efc9fd99eac11b553fc93d19455ba9b7cced803fabaa",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 6215,
+    :end-byte 6265,
+    :raw-sha256
+    "9b41784bc771cfeec886efc9fd99eac11b553fc93d19455ba9b7cced803fabaa"},
+   :source-occurrence-id
+   "C17/source/10cd64f67ab01414c560b54b19a008e15a14510a1349949fa29069580cd3ba78",
+   :id "C17/facet/6215-6265",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "dc56fb6b6543626224ada9937bcf27d4b05b570f2eb4d074d74b423b396c9a84",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 6266,
+    :end-byte 6337,
+    :raw-sha256
+    "dc56fb6b6543626224ada9937bcf27d4b05b570f2eb4d074d74b423b396c9a84"},
+   :source-occurrence-id
+   "C17/source/0e83598d0046cb66bd52c4e828238f2282f14d7c8535bce7307928fc4d09fb1c",
+   :id "C17/facet/6266-6337",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "0c3cd33161fa23ec839d504b44fedc46bbf5160d8e59d8ec0a2ef7f4088236a7",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 6338,
+    :end-byte 6400,
+    :raw-sha256
+    "0c3cd33161fa23ec839d504b44fedc46bbf5160d8e59d8ec0a2ef7f4088236a7"},
+   :source-occurrence-id
+   "C17/source/f6bb44902584bd80171b4768204b497300ff973bc1a7219bad14707f8172669a",
+   :id "C17/facet/6338-6400",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "4380fe542e7c3c7bd4ea4dce32ea92be5a7b99d715639d7382a7e3458e0136b3",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 6401,
+    :end-byte 6453,
+    :raw-sha256
+    "4380fe542e7c3c7bd4ea4dce32ea92be5a7b99d715639d7382a7e3458e0136b3"},
+   :source-occurrence-id
+   "C17/source/c7f703050b0a367adff495bc60b9b3e019ef20d643b1427e1511c27b492c7709",
+   :id "C17/facet/6401-6453",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "4cea7efb2bd3a140f2517b9e6a6e71fc6809db54e3f8158b9ed8f31c3ae7eae2",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 6454,
+    :end-byte 6478,
+    :raw-sha256
+    "4cea7efb2bd3a140f2517b9e6a6e71fc6809db54e3f8158b9ed8f31c3ae7eae2"},
+   :source-occurrence-id
+   "C17/source/7360e273b53d01936e097e9b9c893ac369c4e179f4d143fa7325a71529bffff7",
+   :id "C17/normalized-facet/6454-6478/4cea7efb2bd3a140",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :raw-sha256
+   "a800c403c27773e2560df527fd79e660308c56c7813d6d266007d33a6c5fb3ee",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 6479,
+    :end-byte 6524,
+    :raw-sha256
+    "a800c403c27773e2560df527fd79e660308c56c7813d6d266007d33a6c5fb3ee"},
+   :source-occurrence-id
+   "C17/source/5551d0b9ea14b8f870859d6563714eba57016ddcc159cf6fc32938258e13d723",
+   :id "C17/facet/6479-6524",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :raw-sha256
+   "8d6de82fcf03813f7cbd9291f11cb78572e44e9691b052c0d8092237929f7b49",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 6525,
+    :end-byte 6565,
+    :raw-sha256
+    "8d6de82fcf03813f7cbd9291f11cb78572e44e9691b052c0d8092237929f7b49"},
+   :source-occurrence-id
+   "C17/source/4d1e34aa0e978b8d793153c4e8a65405bbd7109b857b60b7b82ed6db84acca35",
+   :id "C17/facet/6525-6565",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :raw-sha256
+   "c22db3a49e4acab4c874f907c4861d620656e6593725a857ec82efbfb46c3e20",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 6565,
+    :end-byte 6593,
+    :raw-sha256
+    "c22db3a49e4acab4c874f907c4861d620656e6593725a857ec82efbfb46c3e20"},
+   :source-occurrence-id
+   "C17/source/4d1e34aa0e978b8d793153c4e8a65405bbd7109b857b60b7b82ed6db84acca35",
+   :id "C17/facet/6565-6593",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :raw-sha256
+   "1a483c1f88c3cade0045d6382dbcca16687c284364ed2430d4bcf30b3fb5a251",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 6593,
+    :end-byte 6635,
+    :raw-sha256
+    "1a483c1f88c3cade0045d6382dbcca16687c284364ed2430d4bcf30b3fb5a251"},
+   :source-occurrence-id
+   "C17/source/4d1e34aa0e978b8d793153c4e8a65405bbd7109b857b60b7b82ed6db84acca35",
+   :id "C17/facet/6593-6635",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :raw-sha256
+   "994c75864bd89a3b38b030a523bbf92319b6ef473beb4603afa910495a233570",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 6635,
+    :end-byte 6666,
+    :raw-sha256
+    "994c75864bd89a3b38b030a523bbf92319b6ef473beb4603afa910495a233570"},
+   :source-occurrence-id
+   "C17/source/4d1e34aa0e978b8d793153c4e8a65405bbd7109b857b60b7b82ed6db84acca35",
+   :id "C17/facet/6635-6666",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :raw-sha256
+   "0e8fb8a1c1f56387f753d9a847038e9999e3daad7bd3af465e6ad8b351a4a17b",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 6666,
+    :end-byte 6694,
+    :raw-sha256
+    "0e8fb8a1c1f56387f753d9a847038e9999e3daad7bd3af465e6ad8b351a4a17b"},
+   :source-occurrence-id
+   "C17/source/4d1e34aa0e978b8d793153c4e8a65405bbd7109b857b60b7b82ed6db84acca35",
+   :id "C17/facet/6666-6694",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :raw-sha256
+   "1707d54d457a96b1c5bfb2b86eb769a58ee5cdd3f1d7a61ea6715c356842f8d4",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 6694,
+    :end-byte 6728,
+    :raw-sha256
+    "1707d54d457a96b1c5bfb2b86eb769a58ee5cdd3f1d7a61ea6715c356842f8d4"},
+   :source-occurrence-id
+   "C17/source/4d1e34aa0e978b8d793153c4e8a65405bbd7109b857b60b7b82ed6db84acca35",
+   :id "C17/facet/6694-6728",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :raw-sha256
+   "49416b1ce5c4550a05fff06ea38bea39f4136a5086fa8c76e01d1330a95c53d5",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 6728,
+    :end-byte 6789,
+    :raw-sha256
+    "49416b1ce5c4550a05fff06ea38bea39f4136a5086fa8c76e01d1330a95c53d5"},
+   :source-occurrence-id
+   "C17/source/4d1e34aa0e978b8d793153c4e8a65405bbd7109b857b60b7b82ed6db84acca35",
+   :id "C17/facet/6728-6789",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :raw-sha256
+   "70762226e34bcc566b8b6432aba241efa9d313d1571ebba14a882df4c6947793",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 6789,
+    :end-byte 6829,
+    :raw-sha256
+    "70762226e34bcc566b8b6432aba241efa9d313d1571ebba14a882df4c6947793"},
+   :source-occurrence-id
+   "C17/source/4d1e34aa0e978b8d793153c4e8a65405bbd7109b857b60b7b82ed6db84acca35",
+   :id "C17/facet/6789-6829",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :raw-sha256
+   "37b8bb71efeff03b9ae32e1b6037542b20fc6924de068ac952686516d3d95efb",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 6829,
+    :end-byte 6881,
+    :raw-sha256
+    "37b8bb71efeff03b9ae32e1b6037542b20fc6924de068ac952686516d3d95efb"},
+   :source-occurrence-id
+   "C17/source/4d1e34aa0e978b8d793153c4e8a65405bbd7109b857b60b7b82ed6db84acca35",
+   :id "C17/facet/6829-6881",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :raw-sha256
+   "288aced8f6dac35a37d522dbc5a87298755a5b92d0068cede0fbb0394baa5bef",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :start-byte 6881,
+    :end-byte 6946,
+    :raw-sha256
+    "288aced8f6dac35a37d522dbc5a87298755a5b92d0068cede0fbb0394baa5bef"},
+   :source-occurrence-id
+   "C17/source/4d1e34aa0e978b8d793153c4e8a65405bbd7109b857b60b7b82ed6db84acca35",
+   :id "C17/facet/6881-6946",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}],
+ :captured-review-byte-continuity
+ {:path
+  "specs/requirement-reconciliation/plugin-captured-review-byte-continuity.edn",
+  :source-set-sha256
+  "494e26d8a4c1aaaa32024fe7f149555b9a32039bd787c72f1a6fc1b4aff073e3",
+  :changed-path "specs/compiler-api-workflow/tasks.md",
+  :joins 65,
+  :implementation-credit :none,
+  :review-subjects-scopes-receipt-hashes-and-exclusions :unchanged,
+  :authentication
+  :captured-files-and-rawspans-plus-unique-exact-current-files-and-rawspans,
+  :changed-filepins 2,
+  :verdict :exact-byte-continuity-only,
+  :whole-current-head :not-accepted,
+  :old-review-renewal :none,
+  :sha256
+  "aea28fd58a94e2f494b9fbee87a7c9378393cf5ccd8089e9335a257706cf43f5",
+  :source-set
+  :multiset-equals-witnesses-in-five-unchanged-BOOT15-batch-C11-compiler-C16-adoption-artifacts,
+  :new-C17-clause-acceptance :none},
+ :canonical-writes :none,
+ :schema-version 1,
+ :exclusions
+ [:implementation
+  :plugin-execution
+  :callbacks
+  :sandbox-execution
+  :compiler
+  :domain-checker
+  :proof-provider
+  :runtime
+  :native-target
+  :publication
+  :readiness
+  :migration
+  :release
+  :integration
+  :final-count-or-denominator
+  :entire-PR-approval
+  :full-dependency-documents
+  :pipeline-order-adjudication
+  :later-main70dcb222
+  :later-composition
+  :held-scope-acceptance
+  :outbound-delivery],
+ :source-entailment
+ {:pass-contract
+  :input-output-required-preserved-invalidated-regenerated-facts-proof-obligations-and-emitted-artifacts-match-builtins,
+  :diagnostics
+  :all10-C17-meanings-and-plugin-package-version-pass-manifestspanorentry-requestedcapability-trust-API-sourceorartifact-remediation-context,
+  :pass-producer
+  :unchanged-actual-Pipeline-registration-invocation-implementation-version-and-before-after-verification-conjoined-with-PluginHost,
+  :output-verifier
+  :declared-output-verifier-runs-and-failure-stops-downstream-consumption,
+  :ordinary-checks
+  :unsafe-capabilities-effects-domainIR-targetmetadata-generatedcode-retain-owning-Gravity-artifacts-and-checks,
+  :scope-families
+  :all16-readwrite-syntax-typedcore-MIR-domainIR-registerpass-facet-domain-requestprovideproof-emitdiagnostics-artifacts-queryconfiguration,
+  :pipeline-order
+  :unchanged-unadjudicated-governing-source-question-not-chosen-or-accepted-here,
+  :authority
+  :approval-trust-label-or-packageidentity-alone-not-a-capabilitygrant,
+  :trace
+  :actual-plugin-package-version-pass-input-output-grant-effects-decisions-diagnostics-verifier-identities,
+  :manifest
+  :all-required-plugin-package-version-API-compiler-compatibility-trust-meta-profile-build-effects-capability-scopes-passes-domains-facets-emits-conformance-record-fields,
+  :lifecycle
+  :existing-applicable-resource-lifetime-attenuation-revocation-ordering-provider-checker-model-policy-and-cleanup-invalidation-criteria-preserved,
+  :sandbox
+  :filesystem-network-process-environment-compilerIR-modeltool-artifactwrite-operations-reject-before-ungranted-effects-including-hostescape,
+  :reuse
+  :package-version-manifest-grant-dependency-replay-policy-identity-required-incremental-and-selfhosting-inputs-stale-reuse-refuses-clean-versus-reused-equivalence-required,
+  :load-boundary
+  :manifest-policy-version-trust-and-capability-validation-before-any-code-or-initialization-effects,
+  :scope-limit
+  :source-entailment-only-no-plugin-callback-sandbox-or-compiler-execution-or-implementation-credit,
+  :scope-boundary
+  :artifact-kind-namespace-passphase-packagepolicy-readonlyfacts-and-explicit-writeauthority-no-readMIR-to-writeMIR-escalation,
+  :trust
+  :all5-builtin-signed-policytrusted-sandboxed-auditrequired-humanorgovernance-approval-rejected-distinct,
+  :future-conformance
+  :actual-positive-and-refused-loader-sandbox-trusted-scope-passcontract-output-registration-hermeticeffect-trace-cache-diagnostic-results-required,
+  :registration
+  :actual-schema-verifier-callbacks-profile-effect-capability-lowering-diagnostic-conformance-artifacts-reject-opaque-conflicting-or-unauthorized-registrations-owning-domain-semantics-retained,
+  :dependencies
+  :authentic-L14-L15-L12-C1-C13-C16-C12-C15-package-governance-interfaces-retain-distinct-producer-verifier-consumer-scopes,
+  :example-values
+  :loopfuser-names-versions-grants-and-passed-trace-sample-confer-no-default-compatibility-authority-or-execution},
+ :conservation
+ {:Pipeline-producer :unchanged-raw-bytes,
+  :inventory-inverse
+  {:path "/tmp/c17-independent-45fa1763/inventory-inverse.edn",
+   :sha256
+   "03468b5d91b27e9a4d75acd3c8e7bebb94128007c0a5e79d8d75966e7f117d21",
+   :checker-sha256
+   "9f86e5ef6a80dc002aef8763adb23c811b0fd06d1386288964802e6a7a0732f1"},
+  :task-baseline :identity-status-routing-conserved,
+  :all833
+  :full-record-hashes-and-Open-statuses-unchanged-931-current-witnesses-authenticated,
+  :overlap
+  {:ids ["C17/normalized-facet/52-328/5e49c8257b1fb322"],
+   :count 1,
+   :state :retained-pending-provenance-context,
+   :promotion :none,
+   :unique-proposal-delta 107},
+  :owners
+  :all1188-identities-original-obligations-and-unselected-states-conserved,
+  :report-successor
+  :inert-form-and-serialized-report-checks-only-CompilerAPI-sourcepins-digests-taskspans-and-pendingC17-metadata,
+  :unselected
+  :foundation-retirement-metadata-policy-fixedwidth-held-and-other-scope-dispositions-unchanged,
+  :original-corpus
+  :all240-document-identities-bytes-hashes-and-modeblob-objects-preserved,
+  :all561
+  :historical-ID-order-and4819-raw-spans-preserved-40-CompilerAPI-filepins-only-unchanged-predicates,
+  :mode-and-blob-pins
+  {"specs/sh-family-crosswalk/crosswalk.edn"
+   "100644 blob 71d159c3c7ad609abf9f3302b878c8ecdf3b0c2a\tspecs/sh-family-crosswalk/crosswalk.edn",
+   "specs/requirement-reconciliation/all240-current-source-facet-inventory.edn"
+   "100644 blob 933b5548ffcf6233d70859bb89e0a5c60b6aa9ed\tspecs/requirement-reconciliation/all240-current-source-facet-inventory.edn",
+   "specs/requirement-reconciliation/spec.md"
+   "100644 blob ef240eb33bbbde10fabbf9fc8f152bcd05598e04\tspecs/requirement-reconciliation/spec.md",
+   "docs/component-roadmaps/compiler-api.md"
+   "100644 blob 83419e2d8401b3b4f59056a9ee87339bdbb2d573\tdocs/component-roadmaps/compiler-api.md",
+   "specs/requirement-reconciliation/current-criterion-bindings-561-plugin-owner.edn"
+   "100644 blob 4fe47d6dba819b07b3bac3d2372b08c3ba313421\tspecs/requirement-reconciliation/current-criterion-bindings-561-plugin-owner.edn",
+   "specs/requirement-reconciliation/plugin-captured-review-byte-continuity.edn"
+   "100644 blob ae52e8ea946121e5d4085eb13a25e87f8f767f91\tspecs/requirement-reconciliation/plugin-captured-review-byte-continuity.edn",
+   "specs/requirement-reconciliation/plugin-owner-current-witness-applicability.edn"
+   "100644 blob 5cc8093d6f56f95cb68a318458a92a58492b1fa2\tspecs/requirement-reconciliation/plugin-owner-current-witness-applicability.edn",
+   "tools/sh_crosswalk.clj"
+   "100644 blob b0057108c2da39dca422e2a9f80ed3f0312ceb41\ttools/sh_crosswalk.clj",
+   "specs/requirement-reconciliation/plugin-owner-source-refinement.edn"
+   "100644 blob 27898a18d141915c2cb23527b76dec00c62e9469\tspecs/requirement-reconciliation/plugin-owner-source-refinement.edn",
+   "specs/compiler-api-workflow/tasks.md"
+   "100644 blob aa096939ed77e51223502f92e5feff42db7d9bb6\tspecs/compiler-api-workflow/tasks.md",
+   "specs/requirement-reconciliation/all833-plugin-owner-current-criterion-conservation.edn"
+   "100644 blob 6702737fbd033d23c219d3695e428aa44e00865a\tspecs/requirement-reconciliation/all833-plugin-owner-current-criterion-conservation.edn",
+   "specs/requirement-reconciliation/task-baseline.edn"
+   "100644 blob ff4eb30f7a794724c4e0804ade9126dd58a2e10a\tspecs/requirement-reconciliation/task-baseline.edn",
+   "specs/requirement-reconciliation/explicit-extension-source-trace.edn"
+   "100644 blob bfe3ae54510c5c309b1bf828e2fbfce41ba0f387\tspecs/requirement-reconciliation/explicit-extension-source-trace.edn",
+   "specs/requirement-reconciliation/plugin-complete-current-facet-trace.edn"
+   "100644 blob 962543d1f7ffab63c37ce02b4d3ff0e78bd74e46\tspecs/requirement-reconciliation/plugin-complete-current-facet-trace.edn",
+   "specs/requirement-reconciliation/evidence.md"
+   "100644 blob 7d538bba1e67c4e6937e4e2305272c827b4d722c\tspecs/requirement-reconciliation/evidence.md",
+   "specs/requirement-reconciliation/source-dispositions.edn"
+   "100644 blob 8c5d71c0fbeb234e2b15f432697542559a913545\tspecs/requirement-reconciliation/source-dispositions.edn"},
+  :occurrences :all9945-identities-and-source-facet-lineage-preserved,
+  :older-qualified
+  {:count 1362,
+   :includes-superseded-history 2,
+   :exact-IDs-dispositions-subjects-scopes-exclusions-and-artifact-bytes
+   :unchanged,
+   :ids-sha256
+   "7d4da052b96e526305392695c1f372c5c448c2c430a7fe0da00a3d729e9d3500"},
+  :global-plugin-binding-SHA256
+  "4d85a944eaebebe9baa5e9ccc45cd6ff0159eb77106888b0fdf1faf1e5af3d6c",
+  :all108C17-candidate-states
+  :proposal-only-no-canonical-acceptance-mutation,
+  :extensions
+  :byte-provenance-only-source-pointer-successor-no-semantic-promotion,
+  :literal-outcomes
+  ["pipeline"
+   "plugins"
+   "pass-evidence"
+   "domain-ir-boundaries"
+   "development-boundaries"],
+  :facets
+  :all28785-full-records-restorable-by-removing-selected-proposal-delta-and-restoring-authenticated-reference-successor-pointers,
+  :task-and-roadmap-inverse
+  :exact-declared-single-insertion-removal-restores-prior-files,
+  :tables-statuses-and-original-bodies :unchanged-Open},
+ :controls
+ {:result :pass,
+  :negative-count 57,
+  :semantic-mutation-count 41,
+  :results
+  {:approval-is-grant true,
+   :scope-violation-allowed true,
+   :missing-manifest-api true,
+   :skip-output-verifier true,
+   :redefine-domain true,
+   :forged-source-pin true,
+   :audit-without-approval true,
+   :old-scope-renewal true,
+   :diagnostic-lost-trust true,
+   :one-version-all-support true,
+   :new-clause-inherits true,
+   :no-hermetic-refusal true,
+   :trace-label-only true,
+   :no-callback true,
+   :missing-verifier-output true,
+   :unbounded-scope true,
+   :stale-proof-downstream true,
+   :owner-promoted true,
+   :ordinary-checks-bypass true,
+   :postload-compatibility true,
+   :host-escape true,
+   :no-after-check true,
+   :trust-waives-checks true,
+   :missing-dependency true,
+   :rejected-loads true,
+   :missing-pipeline-owner-role true,
+   :cache-missing-replay true,
+   :missing-owner-witness true,
+   :stale-cache-reuse true,
+   :captured-predicate-omitted true,
+   :read-implies-write true,
+   :opaque-registration true,
+   :context-promoted true,
+   :diagnostic-lost-context true,
+   :stale-task true,
+   :missing-query-scope true,
+   :lifecycle-revocation-lost true,
+   :init-before-refusal true,
+   :example-default-authority true,
+   :source-conjunction-shortened true,
+   :flag-only-dependency true,
+   :read-only-write true,
+   :duplicate-append true,
+   :capture-subject-promoted true,
+   :full-dependency-acceptance true,
+   :trace-missing-diagnostic true,
+   :missing-manifest-scopes true,
+   :order-conflict-decided-by-link true,
+   :sandbox-missing-model true,
+   :unsigned-trust true,
+   :missing-proof-scope true,
+   :missing-pass-regenerates true,
+   :forged-captured-pin true,
+   :missing-conformance-manifest true,
+   :forged-current-span true,
+   :new-implementation-inherited true,
+   :stale-facts-reused true},
+  :method
+  :private-mutated-contract-document-rehashed-with-consistent-filehash-bytebounds-rawhashes-ownerwitnesses-and-payloaddigest-before-semanticvalidation-plus-rehashed-continuity-scope-mutations-and-pin-routing-staleappend-controls,
+  :qualification
+  :source-DATA-contract-checks-not-plugin-or-compiler-execution-or-full-regenerated-Git-candidates,
+  :artifact
+  {:path "/tmp/c17-independent-45fa1763/controls.edn",
+   :sha256
+   "f2d8eff58ef61c337549117c8a8465741bd693dc4e2da6153131221e11105cd7"},
+  :checker
+  {:path "/tmp/c17-independent-45fa1763/check.clj",
+   :sha256
+   "9628c40278d91851913b0f92a7eab02faf9360987e562f4ab6da4c4fc96b9d82",
+   :command
+   "clojure -J-Xmx1400m -M /tmp/c17-independent-45fa1763/check.clj"}},
+ :eligibility
+ {:author-publication-turn "01a18bda-1248-7d00-8fba-83be815af385",
+  :fresh-author-activity :different-source-cohort-C17-frozen,
+  :orchestrator-thread "01a18b65-91fa-740a-b712-8a22b3cd000c",
+  :reviewer-thread "01a18528-d38b-71b3-a24c-2d440396fb28",
+  :holds
+  :Metadata372-Policy14-fixedwidth-OWN-ACC08-DSE-unknownops-ACC09v4delivery-531merge-e7UNKNOWN-and-other-exact-holds-still-excluded,
+  :author-current-turn "01a18beb-b978-7352-9812-b5317aedbcb9",
+  :intake
+  {:path "/tmp/c17-independent-45fa1763/goal-intake.json",
+   :sha256
+   "626b2d1197fc5b4417c5033a660d48007ec901679610b16199a7e34dcff0e20c"},
+  :previously-authored-predicates-and-completed-review-scopes
+  :conservation-only-no-renewal,
+  :selected-semantic-selfauthorship :none,
+  :competing-exact-C17-review :none-in-checked-readbacks,
+  :canonical-author-thread "01a18424-d867-7c12-8a04-07484900100c"},
+ :scope
+ {:historical-spans 4819,
+  :task-ids 5,
+  :current-witnesses 931,
+  :overlapping-context-facets 1,
+  :semantic-conjunctions 30,
+  :owner-joins 6,
+  :history 561,
+  :833-records 833,
+  :occurrences 45,
+  :captured-filepin-refreshes 2,
+  :historical-filepin-refreshes 40,
+  :captured-byte-continuity 65,
+  :task-appends 1,
+  :facets 108,
+  :prior-qualified-scopes 1362,
+  :contexts 15,
+  :criterion-spans 3},
+ :inputs
+ {"specs/requirement-reconciliation/all833-plugin-owner-current-criterion-conservation.edn"
+  {:sha256
+   "50335cf0425f41c09784a7cc195a64213fa9a5fae7e5e9a5c56966b0bcbc6e60",
+   :blob "6702737fbd033d23c219d3695e428aa44e00865a"},
+  "specs/requirement-reconciliation/current-criterion-bindings-561-plugin-owner.edn"
+  {:sha256
+   "4d85a944eaebebe9baa5e9ccc45cd6ff0159eb77106888b0fdf1faf1e5af3d6c",
+   :blob "4fe47d6dba819b07b3bac3d2372b08c3ba313421"},
+  "specs/requirement-reconciliation/plugin-captured-review-byte-continuity.edn"
+  {:sha256
+   "aea28fd58a94e2f494b9fbee87a7c9378393cf5ccd8089e9335a257706cf43f5",
+   :blob "ae52e8ea946121e5d4085eb13a25e87f8f767f91"},
+  "specs/requirement-reconciliation/plugin-complete-current-facet-trace.edn"
+  {:sha256
+   "084a0a1d7cccff88074193da58788a06063c5ab86838d04cd16c916dd1874e57",
+   :blob "962543d1f7ffab63c37ce02b4d3ff0e78bd74e46"},
+  "specs/requirement-reconciliation/plugin-owner-current-witness-applicability.edn"
+  {:sha256
+   "3334aac9cd3b07ceff48b23cc2ce7bbd6985b130c1e7fd9e08d05ba96e055850",
+   :blob "5cc8093d6f56f95cb68a318458a92a58492b1fa2"},
+  "specs/requirement-reconciliation/plugin-owner-source-refinement.edn"
+  {:sha256
+   "8065d8bf15adec7e26194d0e9c7027a4e2a2daba4eeaaa85bd378a8e985dbf6d",
+   :blob "27898a18d141915c2cb23527b76dec00c62e9469"}},
+ :kind :independent-C17-source-entailment-review,
+ :private-writes :review-artifacts-only,
+ :verdict :scoped-pass,
+ :owner-verdicts
+ {"compiler/c17/plugin-domain-registration"
+  {:verdict :complete-source-conjunction-scoped-pass,
+   :original-obligation
+   "Allow domain/facet extensions only through owning registration schemas, verifiers, profiles, authority/lowering/diagnostic/conformance interfaces; reject opaque payloads.",
+   :criterion-keys [:existing :records],
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "plugins",
+     :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+     :file-sha256
+     "e8502ac0d040284371def0ddb92dc2b4f53de931833fa55da9680ade904300ae",
+     :start-byte 16703,
+     :end-byte 25488,
+     :raw-sha256
+     "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "plugins",
+     :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+     :file-sha256
+     "e8502ac0d040284371def0ddb92dc2b4f53de931833fa55da9680ade904300ae",
+     :start-byte 25490,
+     :end-byte 29649,
+     :raw-sha256
+     "a471224cdf968360b2da86b73625bd860b16bfa734ec72a2d2c0963d5e847e6b"}],
+   :previous-candidate-state-preserved true,
+   :implementation-credit :none},
+  "compiler/c17/plugin-load-compatibility"
+  {:verdict :complete-source-conjunction-scoped-pass,
+   :original-obligation
+   "Validate plugin manifest/API/compiler/package/trust/grants before loading code and reject incompatible or policy-denied plugins.",
+   :criterion-keys [:existing :records],
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "plugins",
+     :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+     :file-sha256
+     "e8502ac0d040284371def0ddb92dc2b4f53de931833fa55da9680ade904300ae",
+     :start-byte 16703,
+     :end-byte 25488,
+     :raw-sha256
+     "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "plugins",
+     :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+     :file-sha256
+     "e8502ac0d040284371def0ddb92dc2b4f53de931833fa55da9680ade904300ae",
+     :start-byte 25490,
+     :end-byte 29649,
+     :raw-sha256
+     "a471224cdf968360b2da86b73625bd860b16bfa734ec72a2d2c0963d5e847e6b"}],
+   :previous-candidate-state-preserved true,
+   :implementation-credit :none},
+  "compiler/c17/plugin-output-verification"
+  {:verdict :complete-source-conjunction-scoped-pass,
+   :original-obligation
+   "Run the declared artifact verifier on plugin output and reject bypassed or malformed transformed artifacts.",
+   :criterion-keys [:existing :records :pipeline],
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "plugins",
+     :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+     :file-sha256
+     "e8502ac0d040284371def0ddb92dc2b4f53de931833fa55da9680ade904300ae",
+     :start-byte 16703,
+     :end-byte 25488,
+     :raw-sha256
+     "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "plugins",
+     :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+     :file-sha256
+     "e8502ac0d040284371def0ddb92dc2b4f53de931833fa55da9680ade904300ae",
+     :start-byte 25490,
+     :end-byte 29649,
+     :raw-sha256
+     "a471224cdf968360b2da86b73625bd860b16bfa734ec72a2d2c0963d5e847e6b"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "pipeline",
+     :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+     :file-sha256
+     "e8502ac0d040284371def0ddb92dc2b4f53de931833fa55da9680ade904300ae",
+     :start-byte 832,
+     :end-byte 16612,
+     :raw-sha256
+     "d3e89724cc38d9498f0948109167516485480bff8cbebda606ef8c13d557813a"}],
+   :previous-candidate-state-preserved true,
+   :implementation-credit :none},
+  "compiler/c17/plugin-reuse-trace"
+  {:verdict :complete-source-conjunction-scoped-pass,
+   :original-obligation
+   "Trace actual plugin/pass/input/output/grant/effect/decision/verifier identities and bind cache/self-hosting comparisons to package/version/manifest/dependency/replay inputs.",
+   :criterion-keys [:existing :records],
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "plugins",
+     :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+     :file-sha256
+     "e8502ac0d040284371def0ddb92dc2b4f53de931833fa55da9680ade904300ae",
+     :start-byte 16703,
+     :end-byte 25488,
+     :raw-sha256
+     "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "plugins",
+     :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+     :file-sha256
+     "e8502ac0d040284371def0ddb92dc2b4f53de931833fa55da9680ade904300ae",
+     :start-byte 25490,
+     :end-byte 29649,
+     :raw-sha256
+     "a471224cdf968360b2da86b73625bd860b16bfa734ec72a2d2c0963d5e847e6b"}],
+   :previous-candidate-state-preserved true,
+   :implementation-credit :none},
+  "compiler/c17/plugin-scoped-authority"
+  {:verdict :complete-source-conjunction-scoped-pass,
+   :original-obligation
+   "Enforce scoped compiler capabilities and sandbox build effects for untrusted plugins; package trust alone grants no write/phase/namespace or host authority.",
+   :criterion-keys [:existing :records],
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "plugins",
+     :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+     :file-sha256
+     "e8502ac0d040284371def0ddb92dc2b4f53de931833fa55da9680ade904300ae",
+     :start-byte 16703,
+     :end-byte 25488,
+     :raw-sha256
+     "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "plugins",
+     :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+     :file-sha256
+     "e8502ac0d040284371def0ddb92dc2b4f53de931833fa55da9680ade904300ae",
+     :start-byte 25490,
+     :end-byte 29649,
+     :raw-sha256
+     "a471224cdf968360b2da86b73625bd860b16bfa734ec72a2d2c0963d5e847e6b"}],
+   :previous-candidate-state-preserved true,
+   :implementation-credit :none},
+  "meta/pass-contract-execution"
+  {:verdict :complete-source-conjunction-scoped-pass,
+   :original-obligation
+   "Validate pass contracts before execution and verify changed output according to declared required/preserved/invalidated facts.",
+   :criterion-keys [:existing :records :pipeline],
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "plugins",
+     :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+     :file-sha256
+     "e8502ac0d040284371def0ddb92dc2b4f53de931833fa55da9680ade904300ae",
+     :start-byte 16703,
+     :end-byte 25488,
+     :raw-sha256
+     "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "plugins",
+     :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+     :file-sha256
+     "e8502ac0d040284371def0ddb92dc2b4f53de931833fa55da9680ade904300ae",
+     :start-byte 25490,
+     :end-byte 29649,
+     :raw-sha256
+     "a471224cdf968360b2da86b73625bd860b16bfa734ec72a2d2c0963d5e847e6b"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "pipeline",
+     :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+     :file-sha256
+     "e8502ac0d040284371def0ddb92dc2b4f53de931833fa55da9680ade904300ae",
+     :start-byte 832,
+     :end-byte 16612,
+     :raw-sha256
+     "d3e89724cc38d9498f0948109167516485480bff8cbebda606ef8c13d557813a"}],
+   :previous-candidate-state-preserved true,
+   :implementation-credit :none}},
+ :criterion-verdicts
+ {:existing
+  {:verdict :source-conjunction-scoped-pass,
+   :witness
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :marker "compiler-api-implementation-tasks",
+    :task-id "plugins",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "e8502ac0d040284371def0ddb92dc2b4f53de931833fa55da9680ade904300ae",
+    :start-byte 16703,
+    :end-byte 25488,
+    :raw-sha256
+    "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300"},
+   :earlier-body :unchanged-byte-predicate},
+  :records
+  {:verdict :source-conjunction-scoped-pass,
+   :witness
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :marker "compiler-api-implementation-tasks",
+    :task-id "plugins",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "e8502ac0d040284371def0ddb92dc2b4f53de931833fa55da9680ade904300ae",
+    :start-byte 25490,
+    :end-byte 29649,
+    :raw-sha256
+    "a471224cdf968360b2da86b73625bd860b16bfa734ec72a2d2c0963d5e847e6b"},
+   :earlier-body :new-Open-future-criterion},
+  :pipeline
+  {:verdict :source-conjunction-scoped-pass,
+   :witness
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :marker "compiler-api-implementation-tasks",
+    :task-id "pipeline",
+    :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+    :file-sha256
+    "e8502ac0d040284371def0ddb92dc2b4f53de931833fa55da9680ade904300ae",
+    :start-byte 832,
+    :end-byte 16612,
+    :raw-sha256
+    "d3e89724cc38d9498f0948109167516485480bff8cbebda606ef8c13d557813a"},
+   :earlier-body :unchanged-byte-predicate}},
+ :occurrence-verdicts
+ {"C17/source/004b7d348894f323a08c95dee9ddd38dd97675e3b38d923915bb112f6fc68d18"
+  {:index 18,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C17/source/0933ad9da5b6d44e04494fb5cf7828100eddbc2ca113856889b4e9ec97c2fb56"
+  {:index 30,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Execution trace binds actual plugin/pass/input/output/grants/build effects/decisions/diagnostics/verifier result; example empty lists and passed verdict do not prove actual execution or verification.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/0be23529047d8efff53bf1cc7ae0747e2e3afe2fcda55398179ab33c28cd4208"
+  {:index 5,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C17/source/0e83598d0046cb66bd52c4e828238f2282f14d7c8535bce7307928fc4d09fb1c"
+  {:index 39,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate "Reject package identity inferred authority.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/10cd64f67ab01414c560b54b19a008e15a14510a1349949fa29069580cd3ba78"
+  {:index 38,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate "Reject unversioned plugin APIs.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/10d90d55c270ce679954ac84f861f7896ff312ae0762f5363dd40dfd4f0fa23a"
+  {:index 16,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "All sixteen scope families survive: read/write syntax, typed core, MIR and domain IR; register pass/facet/domain IR; request/provide proof; emit diagnostics/artifacts; query configuration.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/1481eb67bbc9e0b89c0712e818d25b53966999d3e85515884bec1fc232ee9896"
+  {:index 12,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Manifest binds actual plugin/package/version/API/compiler compatibility/trust/meta/build effects/compiler grants/scopes/passes/domains/facets/emits/conformance. Loop-fuser names, versions and read/write grants illustrate shape and confer no universal defaults or authority.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/1fca9177e0e498fd097b5c10207c95c7ab3e8ed47c7c8a4eac2943414d9df992"
+  {:index 3,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Plugins are versioned :meta programs extending all named public compiler seams with explicit authority, pass contracts, verifiers and artifacts.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/201a23be921298a9d34783d1255f78a3371d14a6d7b2bab9e4e15d7c2fc03011"
+  {:index 10,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Retain every manifest, compatibility, sandbox/trust grant, pass registration, optional domain/facet registration, execution trace, output, diagnostic and conformance artifact family.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/230eea9066ff248ef9dd231a31fe70737f0d842fd6c75e97fd2153e6e0247a86"
+  {:index 2,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C17/source/2769e48bc94879b7994b060426a09fedf732ad93974b3de5fc7d59d99c812b17"
+  {:index 11,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C17/source/30f2a63927627c71179d1762c2d24b564961d14b1f21e30860568a63386bd55c"
+  {:index 1,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C17/source/4d1c029efea4a00c7f4e5702dae44123420d30f6357f0c1d20ae35b4a4663a29"
+  {:index 36,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C17/source/4d1e34aa0e978b8d793153c4e8a65405bbd7109b857b60b7b82ed6db84acca35"
+  {:index 44,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :predicate
+   "Demonstrate manifest acceptance/refusal, API checks, sandboxed/trusted execution, scoped grants, pass contracts, output failure, domain/facet acceptance/refusal, hermetic effect denial, traces/cache identity and all trust/capability/API/output diagnostics.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/4d4f37e7dd0881a457c397bc0b35e1fd780ab175a288df72f8cb7bd97416d2b5"
+  {:index 20,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Context exposes only granted capabilities and read-only facts unless explicit write authority is present.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/5551d0b9ea14b8f870859d6563714eba57016ddcc159cf6fc32938258e13d723"
+  {:index 43,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :predicate
+   "Conformance requires actual demonstration of the complete following matrix, not source/task presence or proposal acceptance.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/5b0615a69e2829378599ffb62995bac6abcb481ac14faf4a58485277ca785ea8"
+  {:index 37,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate "Reject hidden compiler state mutation.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/629e36ed15c133a915e56186bcd59ccc440336bafc63f74a1b4e5e7d07cb10c6"
+  {:index 29,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C17/source/6443fb5ed835b9c36203a8d95e52dfbc0852b5e3d75e40ade6299c1e879d0328"
+  {:index 32,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C17/source/644f7e0987fe279aa5cab2cf09aecd938a8abfb7e5d6a0281efb1b700e1890eb"
+  {:index 26,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Domain/facet registration uses only authentic L14/C12 registration artifacts and the complete following obligations.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/7360e273b53d01936e097e9b9c893ac369c4e179f4d143fa7325a71529bffff7"
+  {:index 42,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C17/source/78ecad9350639c7ef3e2818dd325114383fb0632630383034e98b004259c5622"
+  {:index 6,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :predicate
+   "All seven requirements conjoin: full manifest, builtin-equivalent pass contracts, sandboxed capabilities/effects, ordinary checks, declared output verifier, complete cache identity and compatibility before any code loads.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/79c8e412288dc3c8c0e99ef031ff5dbce9e5432087f21210be60c0c420479aa7"
+  {:index 17,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Scope grants by artifact kind, namespace, pass phase and package policy; read-MIR alone cannot rewrite MIR without write-MIR.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/7e782a44de26b4264d6b079358493933a99e880fcc59d9f05e31f224719b879b"
+  {:index 4,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Consume declared artifacts and return public transformed artifacts, diagnostics, proof requests, certificates or registrations; hidden internal mutation refuses.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/81d59cc659102084e9083afa45322da175adba8fef6e29aebb86da03df614a19"
+  {:index 31,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Actual execution trace participates in incremental cache identity and self-hosting comparison without conferring either whole implementation claim.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/8862e6260894c3c9694157d50939ab3b7d8a5648ec74407cbbb8e6b64aa46d8a"
+  {:index 28,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate "Opaque payloads without verifiers reject.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/9857a061169b815b0fd518e90122f710d39bf3a60dbd86eeebe47aa8911ae60f"
+  {:index 15,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Compiler ir-transform grants use the complete following standard scope families.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/9e9309500eb09653ffbd6e6f6eedd08253ea39cdb727a34066bd7db007e7dbdc"
+  {:index 0,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C17/source/a919618d6cac75fb404cbf717cedfbbc02ffad9d5a2171b9ac1861b0f43bfcf7"
+  {:index 34,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "All ten malformed manifest/API incompatibility/capability/build effect/sandbox/pass contract/output/domain/facet/trust failures retain named C17 diagnostics and refusal evidence.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/acd011286ffe88c1a8e42fedbd5753e170dde7c1b3e90f614dfd7a7477c49dec"
+  {:index 13,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Load manifest before code; policy, version, trust or capability failure rejects loading without initialization effects.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/ae4134acb78ec1b37fa53a0873b2e9613ce6f79b1f6945def514747c3176deca"
+  {:index 25,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C17/source/c21d316a09b8e00c55cd25e16788fbbaee3100a4fe8b39a65184748329301767"
+  {:index 22,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Preserve the complete following five-level trust classification.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/c7f703050b0a367adff495bc60b9b3e019ef20d643b1427e1511c27b492c7709"
+  {:index 41,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate "Reject opaque domain/facet payloads.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/cba8eb2a9416384e408d965243c06a2fcda29caff3548c0be4ff211d54283409"
+  {:index 23,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Built-in distribution, policy accepted signed trusted-package, capability/effect restricted sandboxed, audit-required human/governance approval and rejected loading remain distinct; approval and identity alone do not grant capabilities.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/cc27f1ece559d7203a32d7b71aa1e858a145e1f79d106676c4d8158c0e3980f8"
+  {:index 7,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C17/source/cc9bb62d4c5321085f6bc6c13ce569427fb934da5af09ebad08af2265ee54e0d"
+  {:index 19,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :predicate
+   "Plugin passes declare actual input/output/requires/preserves/invalidates/regenerates/proof obligations/emits just as builtins; sample MIR/fusion/fact values are illustrative rather than universally required defaults.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/cd72c754d0f42620e9a4025dac3aa44a64a29190db7f6618d72546c5b8877887"
+  {:index 33,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Preserve C17 identifier family and the complete following diagnostic meanings.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/d3de69740e6d22343d3c3caf2785404a42d29b14fab75ec2545c67da2bad8b12"
+  {:index 14,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C17/source/d884c00c85d10d99b514a5de7b3645fa76ac9fa9668d3422f021f9674144df99"
+  {:index 35,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Diagnostics include plugin/package/version/pass, manifest span or entry, requested capability, trust, compiler API, source/artifact and remediation.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/daa1fffc3109c8258cb4ecfcae29683eacd617d8bd86ee1cc32d5da8e688f91d"
+  {:index 27,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Registration supplies schema, verifier, supported profiles, effects/capabilities, lowering paths, diagnostics and conformance fixtures, with actual callback results required for implementation acceptance.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/e121743bad77fa22a48a242a4ff6f5d8ca8fdc54830fa9bf1a057f3637f92a53"
+  {:index 24,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Sandbox filesystem/network/process/environment/compiler IR/model-tool/artifact writes; deterministic transforms of provided inputs remain permitted under actual grants.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/ec34279f8d283e5ee78f40d6b34750e973e61a2d6cd384d27c23779617ea1f77"
+  {:index 21,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C17/source/f064086f47dc720dcbf0e1cd4e5796b00b2ca46f4f4291d0d6ef550234b503ee"
+  {:index 9,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C17/source/f535793ca2083a5cad1c03aec1c027cd4d9804a2bfbf42c66bad3c8aec6ccdea"
+  {:index 8,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :pipeline],
+   :predicate
+   "L14 facets, L15 grants, L12 replay/build effects, C1/C13/C16 passes/optimization/cache, C12 domains, C15 diagnostics and package/governance trust/signing retain authentic separate interfaces without whole dependency acceptance.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C17/source/f6bb44902584bd80171b4768204b497300ff973bc1a7219bad14707f8172669a"
+  {:index 40,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate "Reject outputs bypassing normal verifiers.",
+   :verdict :complete-source-conjunction-scoped-pass}},
+ :subject
+ {:tree "b348ee3b323b06a9712dedadbe6fddea7500bcba",
+  :repository "burn2delete/uniform",
+  :base-qualification
+  :task-refinement-predecessor-not-main-integration-base,
+  :subject-parent "c21cab926933da13962326ed592fff0946e9e870",
+  :task-source "726b04bbb4add5092074876522ced4792584ae30",
+  :commit "45fa1763f939bdad59a9ee78401223a957382454",
+  :predecessor-tree "18daf36fc83b668587edf2e48558955219beddc8",
+  :refinement-predecessor "41270eeab2b2dc9aa91a63df2884f26a5cdb295f",
+  :pr 554},
+ :completion :sealed-frozen-source-review-native-goal-readback-separate}

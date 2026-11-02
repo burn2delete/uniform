@@ -4,6 +4,39 @@
   ([candidate source-path c2-artifact]
    (sh03-c3-precomputed-c2-verify! candidate source-path c2-artifact nil))
   ([candidate source-path c2-artifact invocation]
+  (when (or (reader-pure-text/admission-required? c2-artifact)
+            (reader-resource-admission-required? c2-artifact))
+    (when-not (= :passed (:status (p15-s23-trusted-carrier-validation c2-artifact :default-only)))
+      (c2-reader-fail! "C2-HASH" source-path {:stage :read-source}
+                       {:missing-fields [:native-pure-text-admission-input]})))
+  ;; The host pure companion is produced after Gravity's raw verification.
+  ;; Its presence cannot be authenticated by the standard SH03 envelope.
+  ;; Refuse before source selection or any envelope/registered-literal port.
+  (when (contains? c2-artifact :pure-extension-results)
+    (c2-reader-fail!
+     "C2-HASH" source-path {:stage :read-source}
+     {:missing-fields [:authenticated-pure-extension-results]}))
+  (when (reader-pure-text/admission-required? c2-artifact)
+    (when-not (and (identical? candidate sh03-reader-internal-product-authority)
+                   (some? invocation))
+      (c2-reader-fail! "C2-HASH" source-path {:stage :read-source}
+                       {:missing-fields [:pure-text-fresh-reader-reconstruction]}))
+    (sh03-reader-authenticated-envelope-options source-path invocation)
+    (let [input (get-in c2-artifact [:gravity-reader-boundary :pure-text-reconstruction-input])]
+      (when-not (and (= #{:source-text :project-context} (set (keys input)))
+                     (string? (:source-text input)))
+        (c2-reader-fail! "C2-HASH" source-path {:stage :read-source}
+                         {:missing-fields [:pure-text-original-source-input]}))
+      ;; Re-enter the real producer and raw verifier on all original bytes.
+      ;; Neither the submitted envelope nor caller-recomputed hashes suffice.
+      (let [fresh (reader-pure-source-artifact
+                   source-path (:source-text input) (:project-context input)
+                   (:reader-source-path invocation))]
+        (when-not (= fresh c2-artifact)
+          (c2-reader-fail! "C2-HASH" source-path {:stage :read-source}
+                           {:missing-fields [:pure-text-fresh-reader-product-equality]})))))
+  (when (reader-resource-admission-required? c2-artifact)
+    (reader-resource-consume! candidate source-path c2-artifact invocation))
   (let [context (sh03-reader-verification-invocation! source-path invocation)
         boundary (:gravity-reader-boundary c2-artifact)
         envelope (:authenticated-envelope boundary)
@@ -114,95 +147,101 @@
   :gravity/sh04-syntax-products)
 (def sh04-syntax-envelope-stage :c3-syntax)
 
-(defn sh04-syntax-boundary-fail!
-  [rule source-path missing-field observed facts]
-  (c3-syntax-fail!
-   rule source-path
-   {:source-span (source-span source-path 0)
-    :producer :gravity.bootstrap.syntax
-    :form-kind :syntax-object}
-   {:missing-fields [missing-field]
-    :facts (merge {:sh04-boundary :gravity-syntax-plan} facts)
-    :observed observed}))
+(declare
+ sh04-syntax-boundary-fail!
+ sh04-syntax-resolve-source-path
+ sh04-syntax-read-pinned-source!
+ sh04-syntax-plan-identities
+ sh04-syntax-build-binding!
+ sh04-syntax-current-binding!
+ sh04-syntax-execute!
+ sh04-syntax-require-carrier!
+ sh04-syntax-raise-result!
+ sh04-syntax-resolve-object-template!
+ sh04-syntax-resolve-stream-template!
+ sh04-syntax-resolve-request-preimage!
+ sh04-syntax-resolve-stream-request-preimage!
+ sh04-syntax-resolve-template!)
 
-(defn sh04-syntax-resolve-source-path
-  []
-  (let [anchor (java.io.File.
-                (p15-s23-stage2-compiler-artifact-source-path))
-        start (if (.isDirectory anchor) anchor (.getParentFile anchor))]
-    (or
-     (loop [directory start]
-       (when directory
-         (let [candidate
-               (java.io.File. directory sh04-syntax-source-relative-path)]
-           (if (.isFile candidate)
-             (.getPath candidate)
-             (recur (.getParentFile directory))))))
-     sh04-syntax-source-relative-path)))
+(defn-
+ syntax-stage-runtime-operations
+ []
+ {:p15-s23-stage2-compiler-artifact-plan
+  #'p15-s23-stage2-compiler-artifact-plan,
+  :sh04-syntax-public-function-hashes
+  sh04-syntax-public-function-hashes,
+  :sh04-syntax-public-function-shapes
+  sh04-syntax-public-function-shapes,
+  :source-span #'source-span,
+  :p15-s23-stage2-runtime-execute-function
+  #'p15-s23-stage2-runtime-execute-function,
+  :c3-syntax-fail! #'c3-syntax-fail!,
+  :p15-s23-stage2-compiler-artifact-semantic-input
+  #'p15-s23-stage2-compiler-artifact-semantic-input,
+  :sha256-hex #'sha256-hex,
+  :p15-s23-trusted-carrier-validation
+  #'p15-s23-trusted-carrier-validation,
+  :c-backend-canonical-value #'c-backend-canonical-value,
+  :sh04-syntax-read-pinned-source! #'sh04-syntax-read-pinned-source!,
+  :sh04-syntax-resolve-source-path #'sh04-syntax-resolve-source-path,
+  :sh04-syntax-expected-function-shapes-hash
+  sh04-syntax-expected-function-shapes-hash,
+  :sh04-syntax-build-binding! #'sh04-syntax-build-binding!,
+  :sh04-syntax-resolve-request-preimage!
+  #'sh04-syntax-resolve-request-preimage!,
+  :sh04-syntax-expected-source-byte-count
+  sh04-syntax-expected-source-byte-count,
+  :sh04-syntax-plan-identities #'sh04-syntax-plan-identities,
+  :sh04-syntax-execute! #'sh04-syntax-execute!,
+  :sh04-syntax-expected-function-names-hash
+  sh04-syntax-expected-function-names-hash,
+  :sh04-syntax-expected-functions-semantic-hash
+  sh04-syntax-expected-functions-semantic-hash,
+  :sha256-bytes-hex #'sha256-bytes-hex,
+  :sh04-syntax-expected-function-count
+  sh04-syntax-expected-function-count,
+  :sh04-syntax-expected-plan-semantic-hash
+  sh04-syntax-expected-plan-semantic-hash,
+  :sh04-syntax-source-relative-path sh04-syntax-source-relative-path,
+  :sh04-syntax-raise-result! #'sh04-syntax-raise-result!,
+  :c-backend-stage2-plan-emitter-source-rule!
+  #'c-backend-stage2-plan-emitter-source-rule!,
+  :sh04-syntax-boundary-fail! #'sh04-syntax-boundary-fail!,
+  :sh04-syntax-require-carrier! #'sh04-syntax-require-carrier!,
+  :sh04-syntax-expected-source-content-hash
+  sh04-syntax-expected-source-content-hash,
+  :p15-s23-stage2-compiler-artifact-source-path
+  #'p15-s23-stage2-compiler-artifact-source-path,
+  :p15-s23-c11-mir-digest #'p15-s23-c11-mir-digest,
+  :p15-s23-c6c10-canonical-digest #'p15-s23-c6c10-canonical-digest,
+  :sh04-syntax-resolve-object-template!
+  #'sh04-syntax-resolve-object-template!,
+  :sh04-syntax-strip-host-metadata #'sh04-syntax-strip-host-metadata})
 
-(defn sh04-syntax-read-pinned-source!
-  [request-source]
-  (let [source-path (sh04-syntax-resolve-source-path)
-        nio-path (.toPath (java.io.File. source-path))
-        nofollow (into-array java.nio.file.LinkOption
-                             [java.nio.file.LinkOption/NOFOLLOW_LINKS])
-        attributes
-        (try
-          (java.nio.file.Files/readAttributes
-           nio-path java.nio.file.attribute.BasicFileAttributes nofollow)
-          (catch Exception error
-            (sh04-syntax-boundary-fail!
-             "C3-ID" request-source :pinned-syntax-source-readable
-             source-path {:cause-message (.getMessage error)})))
-        _ (when-not (and attributes
-                         (.isRegularFile attributes)
-                         (= (long sh04-syntax-expected-source-byte-count)
-                            (.size attributes)))
-            (sh04-syntax-boundary-fail!
-             "C3-ID" request-source :exact-pinned-syntax-source
-             source-path
-             {:expected-byte-count sh04-syntax-expected-source-byte-count
-              :observed-byte-count (when attributes (.size attributes))}))
-        bytes
-        (try
-          (java.nio.file.Files/readAllBytes nio-path)
-          (catch Exception error
-            (sh04-syntax-boundary-fail!
-             "C3-ID" request-source :pinned-syntax-source-bytes
-             source-path {:cause-message (.getMessage error)})))
-        content-hash (str "sha256:" (sha256-bytes-hex bytes))]
-    (when-not (and (= sh04-syntax-expected-source-byte-count
-                      (alength bytes))
-                   (= sh04-syntax-expected-source-content-hash content-hash))
-      (sh04-syntax-boundary-fail!
-       "C3-ID" request-source :pinned-syntax-source-identity
-       source-path {:observed-content-hash content-hash
-                    :observed-byte-count (alength bytes)}))
-    {:source-path source-path
-     :source-text (String. bytes java.nio.charset.StandardCharsets/UTF_8)
-     :source-byte-count (alength bytes)
-     :source-content-hash content-hash}))
-
-(defn sh04-syntax-plan-identities
-  [plan]
-  (let [functions (:functions plan)
-        shapes
-        (into (sorted-map)
-              (map (fn [[name function]]
-                     [name (select-keys function [:arity :params])]))
-              functions)]
-    {:plan-semantic-hash
-     (p15-s23-c11-mir-digest
-      (p15-s23-stage2-compiler-artifact-semantic-input plan))
-     :functions-semantic-hash (p15-s23-c11-mir-digest functions)
-     :function-count (count functions)
-     :function-names-hash
-     (p15-s23-c11-mir-digest (vec (keys functions)))
-     :function-shapes-hash (p15-s23-c11-mir-digest shapes)
-     :public-function-hashes
-     (into (sorted-map)
-           (map (fn [name]
-                  [name (p15-s23-c11-mir-digest (get functions name))]))
-           (keys sh04-syntax-public-function-hashes))
-     :public-function-shapes
-     (select-keys shapes (keys sh04-syntax-public-function-shapes))}))
+(defn
+ sh04-syntax-boundary-fail!
+ [rule source-path missing-field observed facts]
+ (gravity.syntax/boundary-fail!
+  rule
+  source-path
+  missing-field
+  observed
+  facts
+  (syntax-stage-runtime-operations)))
+(defn
+ sh04-syntax-resolve-source-path
+ []
+ (gravity.syntax/resolve-plan-source-path
+  (syntax-stage-runtime-operations)))
+(defn
+ sh04-syntax-read-pinned-source!
+ [request-source]
+ (gravity.syntax/read-pinned-plan-source!
+  request-source
+  (syntax-stage-runtime-operations)))
+(defn
+ sh04-syntax-plan-identities
+ [plan]
+ (gravity.syntax/plan-identities
+  plan
+  (syntax-stage-runtime-operations)))

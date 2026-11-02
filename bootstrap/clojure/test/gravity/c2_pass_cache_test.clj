@@ -16,7 +16,7 @@
       (doseq [path (reverse (vec (.toArray paths)))]
         (Files/deleteIfExists ^Path path)))))
 
-(defmacro with-temporary-directory
+(defmacro ^{:clj-kondo/lint-as 'clojure.core/fn} with-temporary-directory
   [[binding] & body]
   `(let [~binding (Files/createTempDirectory
                    "gravity-c2-pass-cache-test-"
@@ -160,25 +160,9 @@
 
 (defn- canonical-census
   [value]
-  (let [state (atom 0)
-        encode-value (var-get (private-var 'encode-value))
-        encode-bytes (var-get (private-var 'encode-canonical-bytes))
-        bytes (encode-bytes value {:reject-metadata? false} Integer/MAX_VALUE)]
-    (encode-value value state 0 {:reject-metadata? false})
-    {:nodes @state :bytes (alength ^bytes bytes)}))
-
-(defn- canonical-depth
-  ([value] (canonical-depth value 0))
-  ([value depth]
-   (let [nested (fn [child] (canonical-depth child (inc depth)))
-         children (cond
-                    (and (instance? clojure.lang.IMeta value)
-                         (seq (meta value)))
-                    [(meta value) (with-meta value nil)]
-                    (map? value) (mapcat identity value)
-                    (or (set? value) (vector? value) (seq? value)) value
-                    :else nil)]
-     (reduce max depth (map nested children)))))
+  (let [encode-bytes (var-get (private-var 'encode-canonical-bytes))
+        bytes (encode-bytes value {:reject-metadata? false} nil)]
+    {:bytes (alength ^bytes bytes)}))
 
 (defn- closed-capacity-ops
   [artifact calls compute]
@@ -248,7 +232,7 @@
       {:error error
        :interrupted? (.isInterrupted (Thread/currentThread))})))
 
-(deftest canonical-semantic-key-is-bounded-type-sensitive-and-path-scoped
+(deftest canonical-semantic-key-is-type-sensitive-and-path-scoped
   (testing "numeric types and collection order cannot alias"
     (is (not= (hash-id 1) (hash-id 1N)))
     (is (= (hash-id {:a 1 :b 2}) (hash-id {:b 2 :a 1})))
@@ -1393,7 +1377,7 @@
           (cache/cache-key
            (key-request (cache/source-snapshot! deep-source)))
           large-payload (byte-array (* 10 1024 1024) (byte 37))
-          deep-payload (nth (iterate #(list %) :leaf) 120)
+          deep-payload (nth (iterate #(list %) :leaf) 700)
           large-artifact (accepted-artifact large-payload)
           deep-artifact (accepted-artifact deep-payload)
           store (cache/open-local-store directory)
@@ -1420,22 +1404,12 @@
       (is (= {:line 7} (meta (:value (:artifact large-hit)))))
       (is (= {:line 7} (meta (:value (:artifact deep-hit))))))))
 
-(deftest c2-envelope-capacity-is-closed-at-node-depth-and-byte-boundaries
-  (doseq [[label artifact bound-var limit resource]
-          (let [node-artifact (accepted-artifact (vec (range 1000)))
-                depth-artifact
-                (accepted-artifact (nth (iterate #(vector %) :leaf) 100))
-                byte-artifact
-                (accepted-artifact (apply str (repeat 65536 "x")))]
-            [[:nodes node-artifact (private-var 'maximum-canonical-nodes)
-              (:nodes (canonical-census node-artifact)) :canonical-nodes]
-             [:depth depth-artifact (private-var 'maximum-canonical-depth)
-              (canonical-depth depth-artifact) :canonical-depth]
-             [:bytes byte-artifact (private-var 'maximum-blob-bytes)
-              (:bytes (canonical-census byte-artifact)) :canonical-bytes]])]
-    (testing (name label)
-      (with-temporary-directory [directory]
-        (let [source (.resolve directory (str (name label) ".gravity"))
+(deftest c2-envelope-capacity-retains-explicit-byte-storage-boundary
+  (let [artifact (accepted-artifact (apply str (repeat 65536 "x")))
+        bound-var (private-var 'maximum-blob-bytes)
+        limit (:bytes (canonical-census artifact))]
+    (with-temporary-directory [directory]
+      (let [source (.resolve directory "bytes.gravity")
               _ (Files/write source (.getBytes "(ns capacity)\n"
                                                StandardCharsets/UTF_8)
                              (into-array OpenOption
@@ -1486,7 +1460,7 @@
           (is (identical? artifact (:artifact first-over)))
           (is (identical? artifact (:artifact second-over)))
           (is (= {:line 7} (meta (:value (:artifact first-over)))))
-          (is (= resource (:resource capacity)))
+          (is (= :canonical-bytes (:resource capacity)))
           (is (= (dec limit) (:maximum capacity)))
           (is (= limit (:observed capacity)))
           (is (= "C16-POLICY" (:id capacity)))
@@ -1497,7 +1471,7 @@
                  (set (keys capacity))))
           (is (= 2 @over-validations))
           (is (= {:blobs 0 :receipts 0 :entries 0 :staging 0}
-                 (candidate-inventory over-store))))))))
+                 (candidate-inventory over-store)))))))
 
 (deftest c2-capacity-retains-rejected-entry-and-direct-store-still-rejects
   (with-temporary-directory [directory]
@@ -1510,9 +1484,9 @@
           key (cache/cache-key
                (key-request (cache/source-snapshot! source)))
           retained (accepted-artifact :retained)
-          fresh (accepted-artifact (vec (range 1000)))
-          limit (:nodes (canonical-census fresh))
-          bound-var (private-var 'maximum-canonical-nodes)
+          fresh (accepted-artifact (apply str (repeat 65536 "x")))
+          limit (:bytes (canonical-census fresh))
+          bound-var (private-var 'maximum-blob-bytes)
           rejected-root (.resolve directory "rejected")
           direct-root (.resolve directory "direct")
           _ (Files/createDirectory

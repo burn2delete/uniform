@@ -158,7 +158,7 @@
                       :proof-authority? :release-authority?
                       :self-hosting-authority? :aggregate-authority?])))))
 
-(deftest pass-contracts-have-bounded-canonical-identities
+(deftest pass-contracts-have-type-sensitive-canonical-identities
   (let [contract (pass-contract :parse 10 #{:source} #{:source} #{:syntax})
         reordered (into (array-map) (reverse (seq contract)))]
     (is (= (execution/pass-contract-id contract)
@@ -173,12 +173,9 @@
     (is (= "C1-PASS-CONTRACT"
            (diagnostic-id #(execution/validate-pass-contract!
                             (assoc contract :unknown true)))))
-    (is (= "C16-KEY"
-           (diagnostic-id
-            #(execution/validate-pass-contract!
-              (into contract
-                    (map (fn [index] [(keyword (str "unknown-" index)) true]))
-                    (range 17000))))))
+    (is (= "C1-PASS-CONTRACT"
+           (diagnostic-id #(execution/validate-pass-contract!
+                            (assoc contract :unknown-field true)))))
     (is (= "C16-KEY"
            (diagnostic-id #(execution/pass-contract-id
                             (with-meta contract {:host-only true})))))
@@ -196,73 +193,14 @@
     (is (= "D1-PIPELINE-ORDER"
            (diagnostic-id #(execution/validate-pass-contract!
                             (assoc contract :order 0)))))
-    (is (= "C16-KEY"
-           (diagnostic-id #(execution/pass-contract-id
-                            (assoc contract :version
-                                   (apply str (repeat 700000 "x")))))))
-    (is (= "C16-KEY"
-           (diagnostic-id
-            #(execution/pass-contract-id
-              (assoc contract :pass
-                     (keyword (apply str (repeat 699000 \u0001))))))))
-    (is (= "C16-KEY"
-           (diagnostic-id
-            #(execution/pass-contract-id
-              (assoc contract :pass
-                     (keyword (apply str (repeat 350000 \u0001))
-                              (apply str (repeat 350000 \u0002))))))))
-    (is (= "C16-KEY"
-           (diagnostic-id
-            #(execution/pass-contract-id
-              (assoc contract :pass
-                     (symbol (apply str (repeat 699000 \u0003))))))))
-    (is (= "C16-KEY"
-           (diagnostic-id
-            #(execution/pass-contract-id
-              (assoc contract :required-evidence
-                     (set (map (comp keyword str) (range 17000))))))))
-    (is (= "C16-KEY"
-           (diagnostic-id
-            #(execution/pass-contract-id
-              (assoc contract :order
-                     (.shiftLeft java.math.BigInteger/ONE 13000000))))))
-    (is (= "C16-KEY"
-           (diagnostic-id
-            #(execution/pass-contract-id
-              (assoc contract :order
-                     (bigint (.shiftLeft java.math.BigInteger/ONE
-                                        13000000)))))))
-    (is (= "C16-KEY"
-           (diagnostic-id
-            #(execution/pass-contract-id
-              (assoc contract :order
-                     (/ (.shiftLeft java.math.BigInteger/ONE 13000000)
-                        3))))))
-    (is (= "C16-KEY"
-           (diagnostic-id
-            #(execution/pass-contract-id
-              (assoc contract :order
-                     (.negate (.shiftLeft java.math.BigInteger/ONE
-                                          13000000)))))))
-    (is (= "C16-KEY"
-           (diagnostic-id
-            #(execution/pass-contract-id
-              (assoc contract :order
-                     (bigint (.negate
-                              (.shiftLeft java.math.BigInteger/ONE
-                                          13000000))))))))
-    (is (= "C16-KEY"
-           (diagnostic-id
-            #(execution/pass-contract-id
-              (assoc contract :order
-                     (/ (.negate (.shiftLeft java.math.BigInteger/ONE
-                                             13000000))
-                        3))))))
-    (is (= "C16-KEY"
-           (diagnostic-id
-            #(execution/pass-contract-id
-              (assoc contract :invalidates
-                     (set (map (comp keyword str) (range 17000))))))))))
+    (let [large-contract
+          (assoc contract :required-evidence
+                 (set (map (comp keyword str) (range 17000))))]
+      (is (string? (execution/pass-contract-id large-contract))
+          "canonical identity accepts evidence above the former node allowance")
+      (is (= large-contract
+             (execution/validate-pass-contract! large-contract))
+          "large semantic evidence sets retain normal contract validation"))))
 
 (deftest execution-is-exact-once-and-receipt-is-complete
   (let [contract (pass-contract :resolve 20 #{:parsed} #{:parsed} #{:resolved})
@@ -336,14 +274,11 @@
     (is (= "C16-ENTRY"
            (diagnostic-id #(execution/execute-pass!
                             base-request (assoc base-ops :extra identity)))))
-    (is (= "C16-KEY"
+    (is (= "C16-ENTRY"
            (diagnostic-id
             #(execution/execute-pass!
               base-request
-              (into base-ops
-                    (map (fn [index]
-                           [(keyword (str "operation-" index)) identity]))
-                    (range 17000))))))
+              (assoc base-ops :operation-extra identity)))))
     (is (= "C16-KEY"
            (diagnostic-id #(execution/execute-pass!
                             (assoc base-request :unknown true) base-ops))))
@@ -359,7 +294,7 @@
                                 (assoc :external-root-inputs {})
                                 (assoc-in [:authority :input-authorities] {}))
                             base-ops))))
-    (is (= "C16-KEY"
+    (is (= "C16-ENTRY"
            (diagnostic-id #(execution/execute-pass!
                             (assoc base-request :input-artifact-ids
                                    (vec (repeat 17000 (:input-a ids))))
@@ -406,18 +341,19 @@
                             (assoc base-request :policy-ids
                                    [(:producer ids) (:policy ids)])
                             base-ops))))
-    (is (= "C16-KEY"
+    (is (= "C16-ENTRY"
            (diagnostic-id #(execution/execute-pass!
                             (assoc base-request :policy-ids
-                                   (vec (repeat 17000 (:policy ids))))
+                                   [(:policy ids) (:policy ids)])
                             base-ops))))
-    (let [too-deep (nth (iterate vector :leaf) 70)]
-      (is (= "C16-KEY"
-             (diagnostic-id
-              #(execution/execute-pass!
-                (assoc-in base-request [:provenance :metadata]
-                          {:nested too-deep})
-                base-ops)))))))
+    (let [deep-metadata (nth (iterate vector :leaf) 70)
+          result (execution/execute-pass!
+                  (assoc-in base-request [:provenance :metadata]
+                            {:nested deep-metadata})
+                  base-ops)]
+      (is (= :executed (get-in result [:receipt :execution-mode]))
+          "deep provenance metadata remains valid when no work depth is charged")
+      (is (= (:output-a ids) (get-in result [:receipt :output-artifact-id]))))))
 
 (deftest execution-does-not-emit-after-a-failed-phase
   (let [contract (pass-contract :resolve 20)
@@ -488,7 +424,7 @@
                        (let [record (first ((:evidence-records base)
                                             artifact request contract))]
                          [record (assoc record :evidence-id (:input-b ids))])))))))
-    (is (= "C16-KEY"
+    (is (= "C18-EVIDENCE"
            (diagnostic-id
             #(execution/execute-pass!
               base-request
@@ -496,10 +432,7 @@
                      (fn [artifact request contract]
                        (let [report (first ((:verifier-reports base)
                                             artifact request contract))]
-                         [(into report
-                                (map (fn [index]
-                                       [(keyword (str "report-" index)) true]))
-                                (range 17000))])))))))))
+                         [(assoc report :report-extra true)])))))))))
 
 (deftest invalidations-require-exact-replacement-evidence
   (let [contract (assoc (pass-contract :optimize 30)
@@ -691,7 +624,7 @@
     (is (= "C16-ENTRY"
            (diagnostic-id #(execution/evidence-root
                             (assoc dag-a :unknown true)))))
-    (is (= "C16-KEY"
+    (is (= "C16-ENTRY"
            (diagnostic-id
             #(execution/evidence-root
               (into dag-a

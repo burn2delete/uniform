@@ -500,7 +500,7 @@
    {:builtin-op :builtin-call
     :function-op :function-call
     :builtin-functions [* + - / < <= = > >= assoc conj count first get
-                        hash-map list pr-str rest second str vector]
+                        hash-map list pr-str rest second str vector build-read-declared-input]
     :compiler-internal-builtin-arities
     {sh07-canonical-text-compare 2
      sh07-declared-digest-hash 1
@@ -894,7 +894,7 @@
                     :arity-diagnostic "L2-FUNCTION-ARITY"}}
 	   :builtin-rules
 	   {:functions [* + - / < <= = > >= assoc conj count first get
-	                hash-map list pr-str rest second str vector]
+	                hash-map list pr-str rest second str vector build-read-declared-input]
 	    :compiler-internal-builtin-arities
 	    {sh07-canonical-text-compare 2
 	     sh07-declared-digest-hash 1

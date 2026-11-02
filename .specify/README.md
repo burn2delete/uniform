@@ -8,6 +8,19 @@ This is a work-artifact layer for bounded changes. The 240 contracts under
 [docs](../docs/README.md), their inventory, roadmap, AGENTS.md and the existing
 [development workflow](../docs/development-verification.md) remain canonical.
 
+## Private rename fast path
+
+The canonical classification and fast-path instructions are in
+[semantic-names.md](semantic-names.md). Apply them before selecting a feature
+directory: a private rename-only change returns to the ordinary branch/PR
+workflow, records its old/new name map, complete reference search and focused
+owner checks, and creates no feature directory or Spec Kit artifact. Public or
+serialized identity, protocol/schema/diagnostic IDs, ownership, semantic
+changes and new acceptance evidence remain outside that fast path. Use only
+the established bounded-workflow artifacts applicable to the change; no
+substantive edit implicitly requires all four. Historical packages remain
+authoritative for their original scope and are not rewritten.
+
 ## Official version and supported customization
 
 Evaluated 2026-10-25: GitHub Spec Kit v1.2.3, commit
