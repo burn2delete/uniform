@@ -125,3 +125,27 @@ independent acceptance, candidate-owned CI/artifacts and immediate exact clean
 current-main preflight remain gates. Earlier 3e2faf06/basea958 acceptance and
 CI are historical and confer no current integration credit. All unsupported
 and restricted boundaries above remain in force.
+
+## Combined integration candidate
+
+PR 777 also incorporates the reviewed C compiler-call sequencing source from
+PR 775. Source composition 4515de37520d9bb4726f7d820969b256f572b9d2 has
+tree 7ec5a468530d12bde1c3c8e53d36df959401963d; base remains exact
+main e766928c above. The normal merge retains both immutable source heads,
+introduces no production edits and preserves both namespace-map rows. The
+combined diff has nine paths, with five owned by each slice sharing the map.
+
+Fresh JVM after products from this composition match both original exact-main
+Runtime before products AND their serialization; source, plan and all five
+artifact hashes recompute. The C slice separately takes a fresh exact-clean-main
+before capture in this same Runtime checkout before composition. Its products
+also match without changing actual source paths or normalizing provenance.
+
+Combined affected backend tests pass 45 / 958, language/ownership 47 / 1154,
+and six-path exact-base contextual lint has zero warnings and blockers. Both
+whole-file reconstruction checks pass. Receipts are retained at
+/tmp/uniform-backend-output-composition-lint-e766 and composition-named logs.
+All existing unsupported and restricted boundaries remain. Independent review
+must accept this exact union; candidate-owned CI/artifacts and immediate clean
+current-main preflight remain mandatory. Neither separate source CI substitutes
+for this integration composition.

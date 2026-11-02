@@ -168,3 +168,32 @@ Contract validators, renewed independent exact acceptance, candidate-owned
 CI/artifacts and immediate exact clean current-main preflight must bind this
 composition. Prior 38e37680/base634 and 12a6ea62/basea958 acceptance and CI are
 historical and confer no current integration credit.
+
+## Combined integration candidate
+
+PR 777 composes this reviewed C source with JVM output preflight. Source
+composition 4515de37520d9bb4726f7d820969b256f572b9d2 has tree
+7ec5a468530d12bde1c3c8e53d36df959401963d, with exact parents
+ea288bab4767cd1e3467ecf5ba371beb898db9b0 and
+9306db21979a8f240e56c42ba25003cd6db696cc. Base remains e766928c above.
+The union contains nine paths: each slice's source, consumer, test and evidence
+plus the shared map. No production edits are added during composition.
+
+For this integration the C before capture is freshly rerun on exact clean
+main e766928c in the physical Runtime checkout, without added fixtures, and
+its process exits before restoring the branch and merging the C source. The
+new complete four-product after capture and original serialization match that
+same-checkout before capture. Source/plan and both C/header hashes recompute;
+actual source paths remain Runtime paths. Earlier Analysis records are retained
+at /tmp/uniform-c-compile-sequencing-evidence-analysis-e766-history.
+
+Combined backend regressions pass 45 tests / 958 assertions. Language/ownership
+passes 47 / 1154. Both slice reconstruction checks preserve all four complete
+production files and the C body's four type tags. Exact-base contextual lint
+covers six source/test paths with zero warnings and blockers, archived at
+/tmp/uniform-backend-output-composition-lint-e766. Both source/data and JVM
+products are checked in this composition; JVM evidence remains separate from
+C anonymous-operation sequencing. No native C operation, broker, authority,
+Gate, restricted Reader or release path is invoked. The combined exact commit
+requires independent acceptance, its own CI/artifact receipts and immediate
+clean exact current-main preflight; neither separate CI substitutes for it.
