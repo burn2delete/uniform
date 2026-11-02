@@ -13,8 +13,8 @@
   "specs/requirement-reconciliation/runtime-current-source-view.edn")
 (def task-marker "runtime-implementation-tasks")
 (def expected-base
-  {:commit "12480d592044cc667ba4908405b463b3de51a2e6"
-   :tree "ab4173148a9a2ffe64a7ac94e74289db0704080a"})
+  {:commit "dbeda7c7dc9a7bb880baa90af1a89046828db327"
+   :tree "576075197b5b4e815b78bae7d949bfb5fe2d0437"})
 (def expected-task-ids
   ["runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
    "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"
@@ -23,7 +23,7 @@
    "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"])
 (def expected-current-task-source
   {:path "specs/runtime-workflow/tasks.md"
-   :sha256 "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972"
+   :sha256 "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06"
    :marker "runtime-implementation-tasks"})
 (def expected-current-contracts
   [{:id :runtime-workflow-spec
@@ -330,6 +330,9 @@
     (require! (= :pending-independent-review
                  (get-in source-view [:qualification-policy :canonical-adoption]))
               "Runtime source-view claims canonical adoption")
+    (require! (= :source-qualified-open
+                 (get-in source-view [:qualification-policy :current-task-acceptance]))
+               "Runtime source-view does not retain the source-qualified Open task status")
     (require! (every? #(and (keyword? %) (not= :accepted %)) (:nonclaims source-view))
               "Runtime source-view nonclaims are missing or assert acceptance")
     {:kind (:kind source-view)
@@ -340,6 +343,7 @@
      :proposal proposal-check
      :authority (:authority source-view)
      :implementation-acceptance :unassessed
+     :current-task-acceptance :source-qualified-open
      :canonical-adoption :pending-independent-review
      :nonclaims (:nonclaims source-view)}))
 
