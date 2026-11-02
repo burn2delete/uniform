@@ -1,0 +1,43 @@
+{:kind :quoted-data-current-source-port
+ :status :development-evidence-only
+ :original-pr {:head "1c0d699f06372fe3c52fa003f53aa38ffd40d07c"
+               :tree "5daf1c0d0f690a4557c362fc7203ebe589570768"
+               :base "b7347f6b1b978dbc318e88dfe50e7917f7b1e318"}
+ :current-base {:commit "a13e148ae5078faa94f69e86a911dbe2df378e29"
+                :tree "28eeb8b082ae21af6339c3a1d994c1007530a41d"}
+ :candidate {:commit "fa88135e6a25671d381ebdc94aef4301d6bb32ab"
+             :tree "d02cddef30fe29391c014341edac1536d607d902"}
+ :source-inputs
+ [{:path "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+   :sha256 "de0432365fe42154536ca2b41f35a8048f11d426590917ce47613300e0a57b24"
+   :delta [:sh08-vf-data-failure :sh08-vf-ancestor?
+           :sh08-vf-header-failure :sh08-vf-original-expand-indexed
+           :sh08-vf-original-data :sh08-qd-node-valid-data
+           :sh08-qd-node :sh08-qd-executable-data
+           :sh08-qd-products-valid-data :sh08-qd-products]}
+  {:path "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
+   :sha256 "6947de97a07c7ca80a54c0529b288906f067420b8bc5de587d97bc51617435ff"
+   :delta [:4097-wide-children :deep-192-path :iterative-executable-scan
+           :duplicate-and-uncountable-id-refusals :opaque-data-callback-guard]}
+  {:path "bootstrap/clojure/test/gravity/self_hosting/sh08_recursive_function_type_test.clj"
+   :sha256 "d7bb1398cb6d11472e1b00bc2becf56a338f6566a5d5023ba8ddafa4888c5629"
+   :delta :already-current-quota-free-cold-quote-adaptation}]
+ :preserved-contracts
+ [:inert-data :source-and-parent-joins :ordered-values-and-types
+  :unique-source-ids :native-metadata :native-carrier-class
+  :foreign-map-comparator :list-tail :ratio-denominator
+  :native-extent :ancestor-identity-cycle :opaque-callback-refusal
+  :executable-payload-rejection]
+ :removed-or-not-restored
+ [:quoted-data-work-count :quote-depth-width-admission
+  :sh08-qd-node-with-budget :sh08-qd-products-with-budget :shape-size]
+ :checks
+ {:selected-quoted-data-jvm {:tests 4 :assertions :passed :exit 0}
+  :recursive-cold-quote-jvm {:tests 1 :assertions :passed :exit 0}
+  :language-boundary {:tests 6 :assertions 11 :failures 0 :errors 0}
+  :full-function-call-namespace {:status :interrupted :exit 130
+                                 :reason :long-running-no-result}
+  :native-compiler-effects-lowering-runtime :UNRUN}
+ :nonclaims [:native-runtime-acceptance :compiler-bootstrap-acceptance
+             :whole-c7-accounting-removal :pr502-closure
+             :release-self-hosting-or-seed-retirement]}
