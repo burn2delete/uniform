@@ -128,3 +128,67 @@ Later main changes, including the landed PR804 C12-C14 quota removal, are not
 part of this frozen source receipt. The coordinator must reconcile that newer
 main against this source and its producer/consumer evidence before any merge;
 this report is not a request to replay or blindly apply overlapping hunks.
+
+## PR370 reconciled current-source receipt
+
+The following receipt records a normal local reconciliation of PR370 against
+the frozen main parent `73df05ab2935c1c4dcf5b48e7d81980cc8446c1d` (tree
+`c906f87024c479d47c691add481c8f0a04efe107`). It does not rewrite the original
+PR370 source evidence above, and it is not a migration or release receipt.
+
+| Identity | Value |
+| --- | --- |
+| Frozen PR370 base | `266da04e8fa734ac5e45aa893440d9082f02e8d4` / tree `63995ea3a1c413c949d312f9eb584f9bfe7f7e35` |
+| Corrected PR370 report head | `63a4a6e1bbe4c5d613b9a15f69e417e84ff1a476` / tree `c3cf951c35ed5b417912bdeae48c0aaa5f42a1ed` |
+| Normal merge source commit | `cc8377115efa8e56c2ec24b377591a1699c43dd5` / tree `fd666b1ce24df11c7e2875371c79afc5ddfced6d` |
+| Final checked source commit | `c5561a06316d3a2062c3485cd8d04c3a321732bb` / tree `6a3e6e827393c5ca3ab747c92d5407dfd81fadad` |
+
+The merge retained main's PR804 C12 quota removal and its semantic carrier and
+sequence checks. It retained PR370's C13 relative flat-bool report shape,
+semantic carrier checks, C14 no-byte-quota and no-follow source checks, and
+the affected negative and positive fixtures. The obsolete C13 adapter that
+filtered semantic carrier labels and the old quota-only assertions were not
+carried forward. The C13 source fingerprint was updated only to the actual
+post-resolution source (`175301` bytes, SHA-256
+`88ed5b2969992306f138e2a5dcea1391fdf5acf78461308f8dcfb6a6ec089ae3`, dynamic
+last line `3724`); the C14 source identity remained `197233` bytes with SHA-256
+`f7bf52be5e41c26e3f4a9474ec7cb56cdf0c924ccdd698dea2882b4939ea27e0`.
+The SH17 suite also retains PR804's 10,000-level nested carrier and 300-key
+map fixtures, without restoring the obsolete long-identifier rejection.
+
+The pinned changed-file lint then found four newly exposed warnings caused by
+the PR370 source rename: `:non-arg-vec-return-type-hint` on the four C6 stream
+helpers in `00703b-p15-s23-c6c10-canonical-stream.clj`. Moving each return hint
+after the function name is syntax-only and preserves the compiled contract.
+With pinned clj-kondo `v2025.10.23`, the rerun reported `3480` unchanged
+baseline warnings and `0` blocking warnings/errors. Receipt:
+`/tmp/uniform-pr370-reconciled-static-lint.log`.
+
+| Check | Result | Receipt |
+| --- | --- | --- |
+| Current B1/B2/B4/C13/C14 source-model controls | 26 tests / 456 assertions, 0 failures, 0 errors | `/tmp/uniform-pr370-reconciled-source-model-controls.log` |
+| Trusted carrier, SH16, relative report, and SH17 dynamic leaves | 79 tests / 6174 assertions, 0 failures, 0 errors | `/tmp/uniform-pr370-reconciled-dynamic-leaves.log` |
+| C13/C14/B1 development composition | 1 test / 21 assertions, 0 failures, 0 errors | `/tmp/uniform-pr370-reconciled-development-composition.log` |
+| Language boundary | 6 tests / 11 assertions, 0 failures, 0 errors | `/tmp/uniform-pr370-reconciled-boundary.log` |
+| Document validator | 240 docs / 19 phase indexes, passed | `/tmp/uniform-pr370-reconciled-docs.log` |
+| Full-language roadmap validator | passed; dated coverage snapshot remains non-authoritative | `/tmp/uniform-pr370-reconciled-roadmap.log` |
+| Workstream governance validator | 185 workstreams, passed | `/tmp/uniform-pr370-reconciled-governance.log` |
+| Whitespace check | passed | `git diff --check` |
+
+The source-model script reports `:native-process-execution false` and
+`:historical-gates-executed false`; its canonical and environment-gated
+selectors remain explicitly unrun. The reflective final-field warning from
+the trusted helper lane is retained as a runtime warning, not a test failure.
+The broad `gravity.bootstrap-test` namespace attempt was not credited: it
+encountered the recorded C2/C6 baseline mismatches and was terminated, so it
+does not change the focused receipts above. The existing mixed source run,
+`b0` snapshot failures, C2 pin mismatch, SH07 B33 mismatch, and resource-
+limited C12 exit 130 remain historical nonpasses and were not retried or
+reclassified.
+
+This receipt is ordinary current-source evidence only. It claims neither
+canonical source migration, C12 success, native-C execution, self-hosting,
+release, nor roadmap completion. It is pinned to the `73df` merge parent;
+later main commits, including subsequent PR513 and root-version changes, are
+outside this frozen reconciliation and require a new coordinator composition
+if they overlap these paths.
