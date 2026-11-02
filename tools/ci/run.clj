@@ -378,6 +378,36 @@
            :clojure-paths []
            :selection-error (str error)})))))
 
+(defn selection-output-lines [selection]
+  (let [modes (if (= :full (:kind selection))
+                (conj semantic-modes "leaves-portable" "leaves-darwin"
+                      "darwin-unsupported")
+                (cond-> (set (:modes selection))
+                  (= :docs-only (:kind selection))
+                  (into #{"static" "contracts" "darwin-unsupported"})
+                  (not= :docs-only (:kind selection))
+                  (conj "leaves-portable" "leaves-darwin"
+                        "darwin-unsupported")))]
+    (into (mapv #(str % "=" (boolean (contains? modes %)))
+                ["static" "contracts" "bootstrap" "macro" "resolution"
+                 "checked-core-runtime" "leaves-portable" "leaves-darwin"
+                 "darwin-unsupported"])
+          [(str "static-tools-required=" (boolean (not= :docs-only (:kind selection))))
+           ;; Downstream jobs use this marker to distinguish a complete
+           ;; selector result from missing or malformed job outputs.
+           "selection-valid=true"])))
+
+(defn- emit-selection-output! [selection]
+  (when-let [path (System/getenv "GITHUB_OUTPUT")]
+    (spit path (str (str/join "\n" (selection-output-lines selection)) "\n")
+          :append true)))
+
+(defn select! []
+  (let [selection (pull-request-selection)]
+    (emit-selection-output! selection)
+    (println "CI selection" (pr-str (select-keys selection [:kind :reason :base :paths :modes])))
+    0))
+
 (defn skip-for-docs-only? [mode selection]
   (and (contains? semantic-modes mode)
        (= :docs-only (:kind selection))
@@ -738,7 +768,7 @@
          :reason :non-pull-request
          :entries (platform-leaf-catalog platform catalog)}))))
 
-(defn run! [mode]
+(defn run-mode! [mode]
   (let [selection (if (or (contains? semantic-modes mode) (leaf-mode? mode))
                     (pull-request-selection)
                     {:kind :full :reason :non-semantic-mode})
@@ -779,6 +809,11 @@
     (when (and docs-only? (= "static" mode))
       (println "CI mode static ran the docs-only whitespace check; remaining semantic checks are retained by the matrix"))
     (if (every? #(contains? #{:passed :skipped} (:status %)) results) 0 1)))
+
+(defn run! [mode]
+  (if (= "select" mode)
+    (select!)
+    (run-mode! mode)))
 
 (when (seq *command-line-args*)
   (System/exit (run! (first *command-line-args*))))
