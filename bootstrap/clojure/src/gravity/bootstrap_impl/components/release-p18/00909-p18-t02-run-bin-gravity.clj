@@ -106,14 +106,14 @@
 
 (defn p18-t02-packaged-jvm-cli-artifact!
   []
-  (let [inventory (p18-t02-source-inventory)
-        _ (p18-t02-build-packaged-jvm-cli! inventory)
-        jar-entries (p18-t02-jar-entries)
-        jar-file-entries (p18-t02-jar-file-entries)
-        jar-source-report
-        (p18-t02-jar-source-inventory-report inventory jar-entries)
-        jar-inventory-report
-        (p18-t02-jar-inventory-report inventory jar-file-entries)
+  (let [build-observation (p18-t02-build-packaged-jvm-cli-observation!)
+        source-observation (:source-observation-after build-observation)
+        inventory (:source-inventory source-observation)
+        jar-observation (:jar-observation build-observation)
+        jar-entries (:jar-entries jar-observation)
+        jar-file-entries (:jar-file-entries jar-observation)
+        jar-source-report (:jar-source-inventory-report build-observation)
+        jar-inventory-report (:jar-inventory-report build-observation)
         jar-entry-frequencies (:entry-frequencies jar-source-report)
         expected-source-entries (:expected jar-source-report)
         jar-hash (p18-file-sha256 p18-t02-jar-path)
@@ -122,12 +122,13 @@
         artifact-manifest (p18-t02-artifact-manifest package-manifest jar-hash)
         reproducible-record
         (p18-t02-reproducible-build-record
-         package-manifest jar-hash inventory)
+         package-manifest jar-hash source-observation)
         provenance-record
         (p18-t02-provenance-record package-manifest dependency-record
-                                   reproducible-record jar-hash inventory)
+                                   reproducible-record jar-hash
+                                   source-observation)
         sbom-record (p18-t02-sbom-record package-manifest dependency-record
-                                         provenance-record inventory)
+                                         provenance-record source-observation)
         signing-record (p18-t02-signing-record artifact-manifest
                                                provenance-record sbom-record)
         command-parity
