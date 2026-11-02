@@ -25,7 +25,8 @@
    #"^specs/requirement-reconciliation/(b6-.+)$"
    #"^specs/requirement-reconciliation/(c18-.+)$"
    #"^specs/requirement-reconciliation/(current-criterion-bindings-561.+\.edn)$"
-   #"^specs/requirement-reconciliation/(domain-gap-completion\.edn|historical-gap-partition\.edn|source-dispositions\.edn|task-baseline\.edn)$"])
+   #"^specs/requirement-reconciliation/(domain-gap-completion\.edn|historical-gap-partition\.edn|source-dispositions\.edn|task-baseline\.edn)$"
+   #"^specs/requirement-reconciliation/(platform-task-interfaces\.edn|evidence\.md)$"])
 (def selected-tool-paths
   #{"tools/sh_crosswalk.clj" "tools/sh_crosswalk_test.clj"
     "tools/task_baseline.clj" "tools/task_baseline_test.clj"})
@@ -90,6 +91,9 @@
         (str/ends-with? path "/source-dispositions.edn")) :source-decisions-and-historical-mappings
     (or (str/ends-with? path "/domain-gap-completion.edn")
         (str/ends-with? path "/historical-gap-partition.edn")) :domain-gap-context
+    (or (str/ends-with? path "/platform-task-interfaces.edn")
+        (= path "specs/requirement-reconciliation/evidence.md"))
+    :platform-task-interface-reconciliation
     (contains? selected-tool-paths path) :read-only-census-tooling
     (str/ends-with? path "/task-baseline.edn") :read-only-census-and-manifest-input
     :else :historical-reconciliation-input))
@@ -134,10 +138,64 @@
     :authority :noncanonical-dispatch-input-only
     :counts {:residual-records 561 :partitions 22 :retained-terminal-history 16}}})
 
+(def platform-interface-receipt-path
+  "specs/requirement-reconciliation/platform-task-interfaces.edn")
+(def platform-evidence-path "specs/requirement-reconciliation/evidence.md")
+(def platform-evidence-pattern
+  #"(?s)(The Platform Product extension has eleven proposed Open task interfaces.*?prior review history\.)")
+
+(defn platform-interface-receipt-summary [text]
+  (let [value (edn/read-string text)]
+    {:kind (:kind value)
+     :schema-version (:schema-version value)
+     :source (select-keys (:source value) [:commit :tree :path :sha256])
+     :task-source (select-keys (:task-source value) [:commit :path :sha256])
+     :scope (:scope value)
+     :scope-relation (:scope-relation value)
+     :qualification (:qualification value)
+     :source-binding-count (count (:source-bindings value))
+     :source-bindings
+     (mapv #(select-keys % [:task-id :status :implementation-acceptance
+                            :source :task-reference]) (:source-bindings value))
+     :conservation (:conservation value)
+     :nonclaims [:historical-source-receipt-only
+                 :not-all-source-provenance
+                 :not-current-denominator
+                 :not-implementation-acceptance]}))
+
+(defn utf8-bytes [text]
+  (alength (.getBytes ^String text "UTF-8")))
+
+(defn platform-evidence-summary [text]
+  (let [paragraph (second (re-find platform-evidence-pattern text))]
+    (require! (string? paragraph) "PR554 Platform evidence paragraph is missing")
+    (let [start (.indexOf ^String text ^String paragraph)
+          prefix (subs text 0 start)
+          start-line (inc (count (re-seq #"\n" prefix)))]
+      {:kind :platform-task-interface-evidence-paragraph
+       :authority :historical-evidence-only
+       :paragraph paragraph
+       :paragraph-sha256 (sha256 paragraph)
+       :span {:start-byte (utf8-bytes prefix)
+              :end-byte (+ (utf8-bytes prefix) (utf8-bytes paragraph))
+              :start-line start-line
+              :end-line (+ start-line (count (re-seq #"\n" paragraph)))}
+       :conservation {:interface-records 11
+                      :architecture-decision-rows 4
+                      :conditional-product-output-rows 7
+                      :platform-target-conformance-records 4
+                      :original-task-file-recovery true}
+       :nonclaims [:historical-source-evidence-only
+                   :no-final-denominator
+                   :not-all-source-provenance
+                   :no-implementation-acceptance]})))
+
 (defn parsed-summary [path text]
-  (if-let [known (get known-large-summaries path)]
-    known
-    (if (str/ends-with? path ".edn")
+  (cond
+    (= path platform-interface-receipt-path) (platform-interface-receipt-summary text)
+    (= path platform-evidence-path) (platform-evidence-summary text)
+    (contains? known-large-summaries path) (get known-large-summaries path)
+    (str/ends-with? path ".edn")
       (try
         (let [value (edn/read-string text)
               fields (into {} (keep (fn [key]
@@ -152,7 +210,7 @@
           {:kind :edn-source-summary :fields fields :collection-counts counts})
         (catch Exception error
           {:kind :unparsed-edn-source :error (bounded-string (.getMessage error))}))
-      {:kind :non-edn-source :format (last (str/split path #"\."))})))
+    :else {:kind :non-edn-source :format (last (str/split path #"\."))}))
 
 (defn current-view [path source-sha]
   (if-let [text (git-show current-main path)]
@@ -197,6 +255,10 @@
     :paths (paths-for entries :domain-gap-context)
     :value "Domain gap proposals and dispatch partitions preserve unresolved criteria, residual identities and proposal-only status."
     :current-disposition :proposal-context-only}
+   {:family :platform-task-interface-reconciliation
+    :paths (paths-for entries :platform-task-interface-reconciliation)
+    :value "The eleven-record Platform task receipt, exact source spans and evidence paragraph preserve a four-row historical conservation proof without becoming current provenance or a denominator."
+    :current-disposition :frozen-historical-receipt-only}
    {:family :read-only-census-tooling
     :paths (paths-for entries :read-only-census-tooling)
     :value "The original census/crosswalk tools are fingerprinted for historical comparison; their stale generated dependencies are not replayed."
@@ -238,6 +300,43 @@
              :denominator-ready? false}
      :qualification "Current manifest bytes are the current reconciliation authority. This comparison does not adopt any PR554 historical receipt, task census, source decision, or mapping snapshot."}))
 
+(def nofollow-links
+  (into-array java.nio.file.LinkOption [java.nio.file.LinkOption/NOFOLLOW_LINKS]))
+
+(defn repository-root []
+  (.toRealPath (.toPath (io/file ".")) (make-array java.nio.file.LinkOption 0)))
+
+(defn safe-output-path-from-root!
+  "Return a relative output path after rejecting symlinked parents and targets."
+  [root path]
+  (let [root (.toRealPath root (make-array java.nio.file.LinkOption 0))
+        relative (.normalize (.toPath (io/file path)))]
+    (require! (and (not (.isAbsolute relative))
+                   (not (.startsWith relative "..")))
+              "Frozen source view output must remain repository-relative")
+    (let [target (.normalize (.resolve root relative))
+          parent (.getParent target)
+          parent-relative (.relativize root parent)]
+      (require! (.startsWith target root)
+                "Frozen source view output escapes repository")
+      (loop [cursor root parts (iterator-seq (.iterator parent-relative))]
+        (when (seq parts)
+          (let [next-path (.resolve cursor (str (first parts)))]
+            (require! (not (java.nio.file.Files/isSymbolicLink next-path))
+                      "Frozen source view output parent is a symbolic link")
+            (recur next-path (next parts)))))
+      (require! (java.nio.file.Files/isDirectory parent nofollow-links)
+                "Frozen source view output parent is not an existing directory")
+      (require! (not (java.nio.file.Files/isSymbolicLink target))
+                "Frozen source view output target is a symbolic link")
+      target)))
+
+(defn write-output! [text]
+  (let [target (safe-output-path-from-root! (repository-root) output-path)]
+    (java.nio.file.Files/write target (.getBytes ^String text "UTF-8")
+                               (make-array java.nio.file.OpenOption 0))
+    target))
+
 (defn build []
   (require! (= source-tree (git-tree source-head)) "PR554 source tree identity changed")
   (require! (= authored-base-tree (git-tree authored-base)) "PR554 authored-base tree identity changed")
@@ -270,7 +369,8 @@
       :not-release-or-self-hosting
       :no-std3-accounting-revival
       :no-blind-hash-refresh
-      :no-denied-action-retry]}))
+      :no-denied-action-retry
+      :not-all-source-provenance]}))
 
 (defn check-static! [actual]
   (require! (= :pr554-frozen-source-view-index (:kind actual)) "Wrong PR554 frozen-view kind")
@@ -295,38 +395,55 @@
                       :not-task-acceptance :not-implementation-credit
                       :not-source-version-admission :not-whole-pr-or-sh-acceptance
                       :not-release-or-self-hosting :no-std3-accounting-revival
-                      :no-blind-hash-refresh :no-denied-action-retry}
+                      :no-blind-hash-refresh :no-denied-action-retry
+                      :not-all-source-provenance}
                     (:nonclaims actual))
             "Frozen-view nonclaims changed")
   true)
 
 (defn verify-source! [actual]
-  (let [available? (= source-tree (try-git-tree source-head))
-        results (if available?
-                  (mapv (fn [{:keys [path source]}]
-                          (let [text (git-show source-head path)]
-                            (require! (string? text) (str "Missing frozen source: " path))
-                            (require! (= (:sha256 source) (sha256 text))
-                                      (str "Frozen source SHA256 changed: " path))
-                            (require! (= (:blob source) (git-blob-id text))
-                                      (str "Frozen source Git blob changed: " path))
-                            :verified))
-                        (:entries actual))
-                  [:source-objects-unavailable])]
-    {:source-objects-available? available?
+  (require! (= source-tree (try-git-tree source-head))
+            "Frozen PR554 source objects are unavailable or resolve to another tree")
+  (let [results
+        (mapv (fn [{:keys [path source current-main]}]
+                (let [text (git-show source-head path)]
+                  (require! (string? text) (str "Missing frozen source: " path))
+                  (require! (= {:commit source-head :tree source-tree}
+                               (select-keys source [:commit :tree]))
+                            (str "Frozen source commit/tree changed: " path))
+                  (require! (= (:sha256 source) (sha256 text))
+                            (str "Frozen source SHA256 changed: " path))
+                  (require! (= (:blob source) (git-blob-id text))
+                            (str "Frozen source Git blob changed: " path))
+                  (require! (= (:bytes source) (utf8-bytes text))
+                            (str "Frozen source byte count changed: " path))
+                  (require! (= current-main (current-view path (:sha256 source)))
+                            (str "Frozen current-main view changed: " path))
+                  :verified))
+              (:entries actual))]
+    (require! (= (count results) (:selected-entry-count actual))
+              "Frozen source verification count differs from selected entries")
+    {:source-objects-available? true
      :verified-count (count (filter #{:verified} results))
      :entry-count (count (:entries actual))}))
+
+(defn check-against! [actual expected]
+  (check-static! actual)
+  (require! (= expected actual)
+            "Frozen source view differs from deterministic source-derived output")
+  (verify-source! actual))
+
+(defn check! [actual]
+  (check-against! actual (build)))
 
 (defn run [args]
   (require! (or (= ["--write"] (vec args)) (= ["--check"] (vec args)))
             "Usage: clojure -M tools/pr554_frozen_source_view.clj --write|--check")
   (if (= ["--write"] (vec args))
     (let [result (build)]
-      (spit output-path (with-out-str (pprint/pprint result)))
+      (write-output! (with-out-str (pprint/pprint result)))
       (println (select-keys result [:selected-entry-count :families :source :comparison])))
     (let [actual (edn/read-string (slurp output-path))]
-      (check-static! actual)
-      (let [verification (verify-source! actual)]
-        (println (assoc verification :result :pass))))))
+      (println (assoc (check! actual) :result :pass)))))
 
 (when (seq *command-line-args*) (run *command-line-args*))

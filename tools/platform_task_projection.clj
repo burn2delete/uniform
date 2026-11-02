@@ -95,7 +95,8 @@
     (fail "Usage: clojure -M tools/platform_task_projection.clj --check|--write"))
   (let [tasks (slurp task-path) roadmap (slurp roadmap-path)]
     (if (= ["--write"] (vec args))
-      (spit roadmap-path (project tasks roadmap))
+      (task-projection-links/write-file! "Platform" roadmap-path
+                                         (project tasks roadmap))
       (check-projection tasks roadmap))
     (println "Platform task projection validated; no target or product acceptance inferred.")))
 (when (seq *command-line-args*) (run *command-line-args*))
