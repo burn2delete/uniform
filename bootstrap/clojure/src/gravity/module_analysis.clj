@@ -41,11 +41,6 @@
   (if (contains? *operations* key) (get *operations* key) fallback))
 (defn- current-operation [key]
   (when-not (contains? *active-operation-keys* key) (get *operations* key)))
-(defn- invoke [key & args]
-  (if-let [operation (current-operation key)]
-    (apply operation args)
-    (throw (ex-info (str "gravity.module-analysis requires operation " key)
-                    {:operation key}))))
 (defn- default-bootstrap-target-supported? [target]
   (contains? (scalar-operation-value :supported-targets supported-targets-default)
              target))
