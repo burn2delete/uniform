@@ -36,7 +36,10 @@
   (is (empty? (ns-aliases 'gravity.mir)))
   (is (= #{'validate-terminator! 'validate-cfg! 'valid-dominance-edge? 'valid-terminator-use?
            'runtime-check-fact-record 'add-runtime-check-facts 'reindex-fact-table
-           'profile-target-table 'capability-proof-table 'safety-proof-table}
+           'profile-target-table 'capability-proof-table 'safety-proof-table
+           'downstream-ids 'expected-block-operation-ids 'expected-data-flow 'expected-uses
+           'expected-terminator-uses 'expected-terminator-value-uses 'expected-value
+           'expected-runtime-check-value}
          (set (keys (ns-publics 'gravity.mir)))))
   (let [contract (:gravity/namespace-contract (meta #'mir/validate-cfg!))]
     (is (= (set (keys (:public-api contract)))
@@ -135,6 +138,86 @@
       (is (= (concat ports arguments) @observed))
       (is (every? true? (map identical? ports (take (count ports) @observed)))))))
 
+(deftest native-use-records-preserve-order-indices-and-guard-edges
+  (let [nodes [{:node-id :late :operands [:middle]} {:node-id :middle :operands [:root]}
+               {:node-id :unrelated :operands []}]]
+    (is (= #{:root :middle :late} (mir/downstream-ids nodes :root)))
+    (is (= (mir/downstream-ids nodes :root) (mir/downstream-ids (reverse nodes) :root))))
+  (let [check {:check-id :check}
+        nodes [{:node-id :node :operands [:first :second] :safety {:check check}}]
+        observed (atom [])
+        flow (mir/expected-data-flow (fn [value] (swap! observed conj value) :token)
+                                     nodes {:node {:block-id :block}})]
+    (is (= [check] @observed))
+    (is (= [:token :first :second] (mapv :from flow)))
+    (is (= [0 1 2] (mapv :operand-index flow)))
+    (is (= [:runtime-check-guard :operand :operand] (mapv :edge-kind flow)))
+    (is (= [{:use-kind :instruction :consumer-kind :operation :consumer-id :node
+             :consumer-block :block :operand-index 2 :edge-kind :operand}]
+           (mir/expected-uses flow :second)))
+    (is (= [] (mir/expected-uses flow :absent)))
+    (is (= [{:use-kind :terminator :consumer-kind :terminator :consumer-id :return
+             :consumer-block :block :operand-index 0 :edge-kind :return-value}]
+           (mir/expected-terminator-value-uses
+            [{:value-id :second :consumer-kind :terminator :consumer-id :return
+              :consumer-block :block :operand-index 0 :edge-kind :return-value}] :second)))))
+
+(deftest native-value-records-retain-source-facts-and-owner-callbacks
+  (let [source {:origin-id :origin :span {:source "value.gravity"} :generated-origin [:macro]}
+        ownership {:model :persistent} effects #{:error/throw} safety {:outcome :runtime-checked}
+        node {:node-id :value :source-operation :literal :attributes {:value false} :type :gravity/bool
+              :source source :ownership ownership :effects effects :safety safety}
+        events (atom []) uses [(Object.)] terminator-uses [(Object.)]
+        opcode (fn [value] (swap! events conj [:opcode value]) :constant)
+        use-op (fn [flow id] (swap! events conj [:uses flow id]) uses)
+        term-op (fn [flow id] (swap! events conj [:terminators flow id]) terminator-uses)
+        value (mir/expected-value opcode use-op term-op node :flow :terminators {:block-id :block})]
+    (is (= [[:opcode node] [:uses :flow :value] [:terminators :terminators :value]] @events))
+    (is (= {:present? true :value false} (:constant-payload value)))
+    (is (= {:value-id :value :operation-id :value :block-id :block} (:defined-by value)))
+    (is (= (vec (concat uses terminator-uses)) (:uses value)))
+    (doseq [[key original] [[:source source] [:ownership ownership] [:effects effects] [:safety safety]]]
+      (is (identical? original (get value key))))
+    (let [definition {:parameter-index 0 :block-id :entry}]
+      (reset! events [])
+      (let [parameter (mir/expected-value opcode use-op term-op node :flow :terminators nil
+                                          {:definition definition})]
+        (is (= :parameter (:kind parameter)))
+        (is (= :not-applicable (:constant-payload parameter)))
+        (is (identical? definition (:defined-by parameter)))
+        (is (= [[:uses :flow :value] [:terminators :terminators :value]] @events))))
+    (let [error (ex-info "owner opcode" {})
+          caught (try (mir/expected-value (fn [_] (throw error)) use-op term-op node nil nil nil)
+                      nil (catch clojure.lang.ExceptionInfo e e))]
+      (is (identical? error caught)))))
+
+(deftest native-use-wrappers-retain-ports-and-optional-parameter-dispatch
+  (doseq [[name arguments ports]
+          [['downstream-ids [:nodes :if] []]
+           ['expected-block-operation-ids [:core]
+            [#'b/p15-s23-c11-mir-entry-parameter! #'b/p15-s23-c11-mir-runtime-check-operation-id
+             #'b/p15-s23-c11-mir-path-prefix?]]
+           ['expected-data-flow [:nodes :operations] [#'b/p15-s23-c11-mir-runtime-check-token-id]]
+           ['expected-uses [:flow :value] []] ['expected-terminator-uses [:core] []]
+           ['expected-terminator-value-uses [:uses :value] []]
+           ['expected-value [:node :flow :uses :operation :parameter]
+            [#'b/p15-s23-c11-mir-node-opcode #'b/p15-s23-c11-mir-expected-uses
+             #'b/p15-s23-c11-mir-expected-terminator-value-uses]]
+           ['expected-runtime-check-value [:node :flow :operation]
+            [#'b/p15-s23-c11-mir-runtime-check-token-id #'b/p15-s23-c11-mir-runtime-check-operation-id
+             #'b/p15-s23-c11-mir-expected-uses #'b/p15-s23-c11-mir-runtime-check-source]]]]
+    (let [stage (ns-resolve 'gravity.mir name)
+          wrapper (ns-resolve 'gravity.bootstrap (symbol (str "p15-s23-c11-mir-" name)))
+          marker (Object.) observed (atom nil)]
+      (with-redefs-fn {stage (fn [& args] (reset! observed args) marker)}
+        #(is (identical? marker (apply wrapper arguments))))
+      (is (= (concat ports arguments) @observed))
+      (is (every? true? (map identical? ports (take (count ports) @observed))))))
+  (let [original b/p15-s23-c11-mir-expected-value observed (atom nil)]
+    (with-redefs [b/p15-s23-c11-mir-expected-value (fn [& args] (reset! observed args) :five-arguments)]
+      (is (= :five-arguments (original :node :flow :uses :operation)))
+      (is (= [:node :flow :uses :operation nil] @observed)))))
+
 (deftest paired-gravity-fixture-emits-mir-and-keeps-native-rule-results
   ;; Actual Gravity fixture/builder execution on normalized data. The fixture's
   ;; proof/status labels do not authenticate source/Core or admit a MIR artifact.
@@ -144,6 +227,10 @@
     (is (= :gravity/mir-module (:artifact emitted)))
     (is (= 4 (count blocks)))
     (is (= :passed (:status ((fixture-helper 'verify-mir) checked emitted))))
+    (let [rejected ((fixture-helper 'verify-mir) checked
+                    (assoc-in emitted [:data-flow-graph :edges 0 :from] "not-defined"))]
+      (is (= :rejected (:status rejected)))
+      (is (= "C11-DOMINANCE" (get-in rejected [:diagnostics 0 :diagnostic-id]))))
     (let [direct (mir/validate-cfg! #'b/p15-s23-c11-mir-require! #'b/p15-s23-c11-mir-validate-terminator!
                                   source checked emitted envelope operation-products)]
       (is (= direct (b/p15-s23-c11-mir-validate-cfg! source checked emitted envelope operation-products)))
