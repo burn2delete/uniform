@@ -586,10 +586,10 @@
     (is (= (:sha256 predecessor) (sh-inventory/sha256 prior-text)))
     (is (= (:review predecessor)
            (select-keys (:mapping-review prior) [:status :input-fingerprint :source-version-bridge])))
-    (is (= 125 (:unchanged-body-count comparisons)))
+    (is (= 121 (:unchanged-body-count comparisons)))
     (is (= (set (map :id (:changed-bodies comparisons))) changed))
-    (is (= 14 (count changed)))
-    (is (= 125 (count (remove changed (keys before)))))
+    (is (= 18 (count changed)))
+    (is (= 121 (count (remove changed (keys before)))))
     (let [refinement (:math-parent-refinement bridge)
           predecessor (:predecessor-readiness-successor refinement)
           previous-text (sh-crosswalk/git-source (:commit predecessor) (:path predecessor))
@@ -795,7 +795,9 @@
         proposal (edn/read-string (sh-crosswalk/git-source (:published-commit proposal-context) (:path proposal-context)))
         plan (slurp "specs/domains-workflow/plan.md")
         before-changed (set (map :id (get-in previous [:task-comparisons :changed-bodies])))
-        after-changed (set (map :id (get-in bridge [:task-comparisons :changed-bodies])))]
+        ai-checkpoint (get-in bridge [:platform-refinement :predecessor-readiness-successor])
+        ai-bridge (edn/read-string (sh-crosswalk/git-source (:commit ai-checkpoint) (:path ai-checkpoint)))
+        after-changed (set (map :id (get-in ai-bridge [:task-comparisons :changed-bodies])))]
     (is (= (:sha256 predecessor) (sh-inventory/sha256 previous-text)))
     (is (= (:projection-sha256 predecessor) (sh-inventory/sha256 previous-projection)))
     (is (= (:input-fingerprint predecessor) (:input-fingerprint previous)))
@@ -825,6 +827,74 @@
     (is (= :unassessed (:implementation-acceptance refinement)))
     (is (= :not-conferred (get-in refinement [:source-inspection :semantic-entailment])))
     (is (= refinement (get-in (sh-crosswalk/source-view) [:implementation-readiness-source-version :ai-parent-refinement])))))
+
+(deftest platform-refinement-preserves-target-bodies-and-conditional-product-records
+  (let [bridge sh-crosswalk/readiness-source-version
+        refinement (:platform-refinement bridge)
+        predecessor (:predecessor-readiness-successor refinement)
+        previous-text (sh-crosswalk/git-source (:commit predecessor) (:path predecessor))
+        previous (edn/read-string previous-text)
+        previous-projection (sh-crosswalk/git-source (:commit predecessor) (:projection-path predecessor))
+        {:keys [path published-commit published-sha256]} (:published-source refinement)
+        published (sh-crosswalk/git-source published-commit path)
+        current (slurp path)
+        region (fn [text marker]
+                 (second (re-find (re-pattern (str "(?s)<!-- " marker ":start -->(.*?)<!-- " marker ":end -->")) text)))
+        records (fn [text]
+                  (into {} (for [body (str/split text #"(?m)(?=^- \[ \])")
+                                 :let [id (second (re-find #"^- \[ \] `([^`]+)`" body))]
+                                 :when id]
+                             [id (str/trim body)])))
+        source-targets (records (region published "platform-implementation-tasks"))
+        source-products (records (region published "platform-product-implementation-tasks"))
+        current-products (records (region current "platform-product-implementation-tasks"))
+        targets (:target-records refinement)
+        products (:future-product-records refinement)
+        plan (slurp "specs/platform-workflow/plan.md")
+        before-changed (set (map :id (get-in previous [:task-comparisons :changed-bodies])))
+        after-changed (set (map :id (get-in bridge [:task-comparisons :changed-bodies])))]
+    (is (= (:sha256 predecessor) (sh-inventory/sha256 previous-text)))
+    (is (= (:projection-sha256 predecessor) (sh-inventory/sha256 previous-projection)))
+    (is (= (:input-fingerprint predecessor) (:input-fingerprint previous)))
+    (is (= 125 (get-in previous [:task-comparisons :unchanged-body-count])))
+    (is (= 14 (count before-changed)))
+    (is (= #{"hardware" "firmware" "kernel" "devices"} (set (map :id targets))))
+    (is (= after-changed (into before-changed (map :id targets))))
+    (is (= published-sha256 (sh-inventory/sha256 published)))
+    (is (= (set (map :id targets)) (set (sh-crosswalk/stable-task-routing-keys "platform"))))
+    (doseq [{:keys [id marker source-body-sha256 current-body-sha256 criterion-ids profile-mapping-ids]} targets
+            :let [b (source-targets id)
+                  raw (str/trim (subs b (.indexOf b "Declared completion and remaining work:")))
+                  carried (second (re-find #"(?s)(Declared completion and remaining work:.*?)\n\nHistorical project paragraph \(unchanged\):" (region current marker)))
+                  expected (-> raw
+                               (str/replace "specs/requirement-reconciliation/profile-system/gap-completion.edn"
+                                            "[the preserved profile-interface context](plan.md#platform-source-context)")
+                               (str/replace "specs/requirement-reconciliation/domain-gap-completion.edn"
+                                            "[the full preserved Domain context](plan.md#platform-source-context)"))]]
+      (is (= source-body-sha256 (sh-inventory/sha256 raw)) id)
+      (is (= current-body-sha256 (sh-inventory/sha256 carried)) id)
+      (is (= expected carried) id)
+      (is (= criterion-ids (mapv second (re-seq #"Criterion `([^`]+)`" carried))) id)
+      (is (= profile-mapping-ids (mapv second (re-seq #"Criterion profile-gap/([^ ]+) \(Open\):" carried))) id))
+    (is (= 11 (reduce + (map #(count (:criterion-ids %)) targets))))
+    (is (= 16 (reduce + (map #(count (:profile-mapping-ids %)) targets))))
+    (is (= 11 (count source-products) (count current-products) (count products)))
+    (is (= (set (keys source-products)) (set (map :id products))))
+    (doseq [{:keys [id body-sha256 status]} products]
+      (is (= (source-products id) (current-products id)) id)
+      (is (= body-sha256 (sh-inventory/sha256 (current-products id))) id)
+      (is (= :open status))
+      (is (str/includes? (current-products id) "Status: Open") id))
+    (doseq [{:keys [path published-commit published-sha256 preserved-sha256 relation]} (:published-source-contexts refinement)]
+      (is (= :exact-file-bytes relation))
+      (is (= published-sha256 preserved-sha256
+             (sh-inventory/sha256 (sh-crosswalk/git-source published-commit path))) path)
+      (is (str/includes? plan (str "https://github.com/burn2delete/uniform/blob/" published-commit "/" path)) path))
+    (is (= :not-performed (:architecture-adoption refinement)))
+    (is (= :pending-independent-current-review (:future-sh-composition refinement)))
+    (is (= :pending-current-repartition-review (:producer-consumer-allocation refinement)))
+    (is (= :unassessed (:implementation-acceptance refinement)))
+    (is (= refinement (get-in (sh-crosswalk/source-view) [:implementation-readiness-source-version :platform-refinement])))))
 
 (deftest readiness-successor-rejects-stale-review-pins-and-missing-source-routes
   (let [source (sh-crosswalk/source-view)

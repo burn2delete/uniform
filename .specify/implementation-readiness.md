@@ -31,7 +31,7 @@ There is no expected one-to-one document/spec relationship.
 | Organization | Foundation, language, safety, profiles, performance, math, compiler, backends, runtimes, domains, schemas, AI, packages, tools, testing, bootstrap, libraries and governance. | Component outcomes and bounded changes, with existing task authorities and dependency projections. |
 | Behavioral detail | Specifies required behavior and evidence regardless of current implementation. | All 24 component packages now have behavior/planning entries above preserved workflow-transfer records. Broad parent outcomes still need finer source/task and interface reconciliation. |
 | Coverage | All substantive requirements remain in scope, including wider support surfaces and final seedless release. | All 240 documents are linked, but global requirement conjunctions and owner/task entailment remain unassessed. Link coverage is not semantic coverage. |
-| Previously missing routes | Includes governance, wider domain operations, conformance execution and seed/release obligations. | Resumes ten Governance records, sixteen future Domain records and thirteen future Release testing/seed records in their existing authorities. Future-task/SH composition remains pending. |
+| Previously missing routes | Includes governance, wider domain operations, conformance execution and seed/release obligations, alongside the existing separate Platform Product extension. | Resumes ten Governance records, sixteen future Domain records, thirteen future Release testing/seed records and eleven future Platform Product records in their existing authorities. Future-task/SH composition remains pending. |
 | Evidence | Requires actual accepted/rejected behavior, applicable proofs, provenance and claim-specific conformance. | Preserves narrow accepted receipts and distinguishes Open, partial, unassessed, held and future work. Source/projection checks cannot establish implementation or acceptance. |
 | Changed policy | Some retained text still contains superseded work/fuel/quota requirements. | Applies the current accounting-removal decision explicitly while preserving semantic validation, real host restrictions and external billing. |
 | Finish line | Full required language/platform scope plus applicable self-hosting, trust and release obligations. | Dependency navigation reaches those outcomes, but detailed global reconciliation and required independent review are unfinished. The first selected increment is Reader contract coverage below. |
@@ -722,3 +722,62 @@ original task/evidence contents after stripping declared additions. Changed
 files are ASCII and whitespace checks pass. This is source/projection evidence;
 no AI/domain/compiler/provider execution, policy acceptance or independent
 review is claimed.
+
+## Platform target and product continuation
+
+The existing four Open Platform target parents now carry their complete
+preserved proposed bodies in the
+[same authority](../specs/platform-workflow/tasks.md#implementation-tasks).
+Sixteen profile interfaces, eleven Domain clauses and the realtime evidence
+obligation retain all source conditions apart from sixteen profile-context
+and eleven Domain-context reference repairs. Their original short paragraphs
+remain historical. The [composition plan](../specs/platform-workflow/plan.md#target-conformance-and-product-composition)
+preserves compiler/Types/Legality/Auth checks, domain IR, Lower/Emit/backend
+production, actual Runtime/device operations and library interfaces. Qualified
+hardware reset, tag destruction, temporal protection, CDC and physical timing
+cases remain explicit; no compiler work allowance replaces them.
+
+The eleven existing [Platform Product tasks](../specs/platform-workflow/tasks.md#product-implementation-task-proposals)
+are now resumed as future records in the original Product scope, preserving
+exact bodies, IDs, Open states, closing evidence and dependencies. Four
+architecture adoption tasks precede their affected selected product claims;
+seven outcomes cover Uniform-authored hardware, firmware, OS, drivers,
+applications, integrated boot-to-application execution and distribution.
+The [product order](../specs/platform-workflow/plan.md#product-decision-and-implementation-order)
+uses versioned boot/driver/service interfaces for independent development while
+requiring real integrated results at acceptance. No ISA, kernel, app inventory
+or physical delivery boundary is adopted by restoring these records. External
+owners/versions/licenses/provenance/availability and conditional fabrication or
+bring-up remain required where the adopted product needs them.
+
+Source checks verify 309 distinct profile facets, 187 Domain facets, eleven
+historical source bindings and eleven extension facets across seven residual
+identities, 29 existing Open role contexts and twenty byte-equal governing
+documents. Two published qualification contexts and the complete published
+Platform task file match the frozen aggregate bytes. These are source
+conservation results; older reviews retain their original subjects and do not
+accept this current composition or any implementation.
+
+The SH bridge binds source input `0876063f41e2ad3e13f3c332f4877daecb62b45d`
+and preserves the complete AI bridge/projection at
+`6bc6ee9c83861fe74af2770751e451f7671c16d5`. Its new explicit Platform file
+entry brings recorded versions to twenty task files plus five navigation
+files. Of the original 139 task bodies, 121 remain identical and eighteen Open
+bodies carry declared additions. No current task key/status, SH/SH07 route,
+scoped Reader receipt or accepted implementation changes. The eleven product
+records remain outside the four-key Platform projection pending exact future
+composition, alongside the previously resumed Domain and Release future work.
+No compiler/native/C12/device/external-service, fabrication, purchase, signing,
+held operation or other-chat messaging occurred in this source/planning work.
+
+Platform continuation checks pass: 28 crosswalk tests / 936 assertions,
+18 dependency tests / 419 assertions, deterministic projection, canonical
+document and full-language structural validators, and the language boundary
+gate (6 tests / 11 assertions). Focused conservation/navigation covers 72
+changed files, 67 Markdown files, 2,649 local references, 139 original component
+routes, 48 historical suffixes and all 48 original task/evidence contents after
+stripping declared additions. Changed files are ASCII and whitespace checks
+pass. The next dependency work must model restored future-task start/interface/
+composition routes in the existing representation, preserving the distinction
+from SH milestone acceptance. Global source entailment, current repartition,
+material product decisions, independent review and integration remain Open.

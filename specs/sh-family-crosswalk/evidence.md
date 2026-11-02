@@ -2,6 +2,46 @@
 
 ## Current implementation-readiness source-version successor
 
+The Platform continuation binds task-source input
+`0876063f41e2ad3e13f3c332f4877daecb62b45d`, retaining the complete AI bridge
+and projection at `6bc6ee9c83861fe74af2770751e451f7671c16d5`. Its new explicit
+Platform file entry preserves the prior applying pin/hash and exact successor;
+twenty task-file and five navigation versions are recorded. Of the original
+139 bodies, 121 are identical and eighteen Open bodies carry declared additions.
+Current discovery remains 149 keys across 25 authorities; original IDs/statuses,
+SH/SH07 routes and scoped Reader receipts are unchanged.
+
+Four full target parents retain sixteen profile interfaces, eleven Domain
+clauses and the realtime evidence obligation. Only sixteen profile-context
+and eleven Domain-context references change. Eleven future product tasks retain
+exact published bodies, closing criteria, dependencies and Open states outside
+the unchanged four Platform SH keys. The four adoption records and seven
+product implementation/integration/distribution outcomes remain separate from
+target conformance; no ISA, kernel, application or physical scope is adopted.
+
+Author source checks verify 309 distinct profile facets (352 references),
+187 Domain facets, eleven historical product source bindings, eleven preserved
+extension facets over seven residual identities, 29 retained Open role contexts
+and twenty byte-equal governing documents. Two published context files and the
+whole published Platform task source match the frozen aggregate bytes. Existing
+source qualifications are conserved; current source/owner conjunctions,
+repartition, future-product/SH composition and implementation acceptance remain
+unassessed. No compiler, native/C12/device, external tool/service, purchase,
+fabrication, signing or held operation was executed.
+
+Observed Platform continuation checks pass: deterministic generation/check,
+28 crosswalk tests / 936 assertions, 18 dependency tests / 419 assertions,
+canonical document and full-language structural validators, and the language
+boundary gate (6 tests / 11 assertions). Focused navigation/conservation covers
+72 changed files, 67 Markdown files, 2,649 local references, 139 original
+component routes, 48 historical suffixes and all 48 original task/evidence
+contents after removing declared additions. Changed files are ASCII and
+`git diff --check` passes. The dated full-language snapshot remains
+non-authoritative. Current mapping review remains pending at fingerprint
+`a39b2639c5e7f6f25a45bbd4aa707a3d6453299147d5d928e000000f70859f1c`.
+
+### AI source-version checkpoint
+
 The AI continuation binds task-source input
 `92b3917ec51e882338fc221bddde86310815221f`, preserving the complete four-parent
 bridge and projection at `e751cddf4466be51ac071c53d177c35259d756b2`. Of the

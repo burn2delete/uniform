@@ -21,6 +21,10 @@ The AI continuation now binds its complete proposed parent body, retaining the
 four-parent checkpoint and its earlier pending-resumption field as history.
 Current source/facet and producer/consumer repartition remain pending review;
 all whole-SH implementation acceptance remains unassessed.
+The Platform continuation binds four enriched target parents and eleven
+preserved product task records, retaining the AI checkpoint. The product
+records stay outside current SH routing; target conformance and selected
+product adoption/execution remain distinct and pending their actual evidence.
 
 Status: source-bound routing, dependency mapping, source-pin guard and bounded
 source-version bridge independently reviewed; owner task-boundary integration

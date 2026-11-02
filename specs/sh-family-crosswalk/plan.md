@@ -100,6 +100,29 @@ code/contract cleanup, source conjunctions and producer/consumer repartition
 remain pending their actual owning work and independent review. No source
 resumption or author disposition grants implementation or current acceptance.
 
+The Platform continuation binds source input
+`0876063f41e2ad3e13f3c332f4877daecb62b45d`. Its `platform-refinement` field
+preserves the entire AI bridge and projection at
+`6bc6ee9c83861fe74af2770751e451f7671c16d5`. A new explicit Platform task-file
+version records the original applying pin/hash and exact successor; twenty
+task files plus five navigation files now have recorded versions. Other pins
+stay fixed. Against the original 139 bodies, 121 remain identical and eighteen
+Open bodies have declared additions. Task IDs/statuses, all original SH/SH07
+routes and scoped Reader receipts are unchanged.
+
+Conserve four full target bodies with sixteen profile interfaces, eleven
+Domain clauses and the realtime evidence obligation; allow only the declared
+sixteen profile-context and eleven Domain-context reference repairs. Keep all
+eleven future product bodies byte-identical to their published source, in the
+existing Product scope outside the current four-key Platform projection. The
+existing four architecture decision outputs do not adopt an ISA, kernel,
+application inventory or physical deliverable. Target checks, backend products,
+actual Runtime/device calls, Uniform-authored product programs, integrated boot
+and conditional physical distribution retain distinct evidence and owners.
+Source conservation does not accept current repartition or future-task/SH
+composition; no external tool, device, fabrication, signing or held execution
+is performed by this continuation.
+
 ## Ownership handoffs
 
 Canonical requirement owner `01a179ad-2198-7392-966a-1e3c31209027` supplied the
