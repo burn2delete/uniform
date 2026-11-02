@@ -154,7 +154,7 @@
     (is (= {:snapshot-provenance :git-commit-tree-blob-and-bytes-verified
             :population :conserved
             :runtime-task-source :authenticated-successor
-            :interpretation :known-pr560-manifest-to-pr561-runtime-successor}
+            :interpretation :pr562-domain-composition-to-pr561-runtime-successor}
            (select-keys (:successor result)
                         [:snapshot-provenance :population :runtime-task-source
                          :interpretation])))

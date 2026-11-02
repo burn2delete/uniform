@@ -81,8 +81,8 @@
                        "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
                        "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"]}]}
  :current-source
- {:commit "374aae5814d4f2027a613d2cd7a249ad2b08b07c"
-  :tree "358c68e3ea6dfe1bf4254448aad16faace470f76"
+ {:commit "19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b"
+  :tree "dc79967f4939df6790c3a16b0a71a71e81191f9e"
   :domain-criteria-transition
   {:historical-commit "2c3eac90b9736873ce7c439cdc9603b1e43249e5"
    :historical-tree "3de79028eeaced10f00c6895f4f5cf446d7304f2"
@@ -137,7 +137,7 @@
     :ordered-task-ids ["hardware" "firmware" "kernel" "devices"]}
    {:path "specs/runtime-workflow/tasks.md"
     :marker "runtime-implementation-tasks"
-    :sha256 "edbafd3d58f645d74e208eb428b7feb89f6dfd957899ce8c9136287026cbb9c4"
+    :sha256 "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c"
     :change-class :current-main-composition
     :ordered-task-ids ["runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
                        "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"
@@ -167,9 +167,9 @@
   :preserved-pr445 {:sha256 "aa7ee8dfa7c7b0b7a9cb0e609944d7dcbcd81791f080708364a0faf8cc2e7980"
                     :availability :historical-external-not-in-current-tree}}
  :current-manifest
- {:commit "c7bd27a6543add21a4b715ba9ed13deb67e8816e"
-  :tree "e783d6ccb3251e4af6c00edc47cb23de918b83fd"
-  :sha256 "88ae5e2254a3553321ab49c493cfa78339207d799fa4976068e2df871a4a281e"
+ {:commit "19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b"
+  :tree "dc79967f4939df6790c3a16b0a71a71e81191f9e"
+  :sha256 "8948438410df7c5b6c2c547e48be16b3ff8b1033ec866fb1bec432e4e3c32007"
   :domain-task-source-bridge
   {:path "specs/domains-workflow/tasks.md"
    :historical-sha256 "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4"
