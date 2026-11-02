@@ -133,7 +133,11 @@ jobs:
     name: ${{ matrix.check }}
     needs: select
     if: ${{ always() && !cancelled() }}
-    runs-on: ${{ matrix.runner }}
+    # The Darwin publication leaf may use Ubuntu only after the selector
+    # completed successfully and explicitly verified that it is unaffected.
+    # Any selected, full, missing, malformed, or failed selection keeps the
+    # platform-specific runner required by the matrix.
+    runs-on: ${{ matrix.platform == 'darwin' && needs.select.result == 'success' && needs.select.outputs.selection-valid == 'true' && needs.select.outputs[matrix.selection-key] == 'false' && 'ubuntu-24.04' || matrix.runner }}
     timeout-minutes: 20
     strategy:
       fail-fast: false
