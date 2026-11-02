@@ -99,13 +99,42 @@
 (defn accepted-carrier []
   (fixture-support/carrier))
 
+(def ^:private isolated-carrier
+  {:domain :gravity/sh07-b51-isolation-carrier
+   :schema-version 4
+   :semantic-root-hash "sha256:isolation"
+   :module-count 7})
+
+(def ^:private isolated-id-hashes
+  {:caller-pin
+   "sha256:6cdbaa48c97d8feca5ea7f58346efb766a82d708058a991d0c15f4d497800b09"
+   :category-root
+   "sha256:2f43891e34c0f742aa925c9f4dd9b9876119bb2f8606028822212fcab54b480c"})
+
+(def ^:private isolated-raw-request-hash
+  "sha256:507d5832ffd4e13e72049e8593959c87df5c5b6346d6590b545e96751b433be0")
+
+(defn- isolated-fixture-observation
+  []
+  (let [raw (fixture-support/raw-request isolated-carrier)]
+    {:carrier isolated-carrier
+     :id-hashes
+     {:caller-pin
+      (fixture-support/test-id :caller-pin)
+      :category-root
+      (fixture-support/test-id [:category-root :roots 8])}
+     :raw-hash (bootstrap/reader-canonical-hash raw)
+     :raw-keys (sort (keys raw))
+     :carrier-identical?
+     (identical? isolated-carrier (:v18-executable-descriptor raw))}))
+
 (def ^:private fresh-load-probe-expression
   "(require '[clojure.test :as test]
              'gravity.self-hosting.sh07-b51-attempt30-producer-compact-verifier-test)
     (let [loaded (set (map ns-name (all-ns)))
           host-namespace 'gravity.self-hosting.sh07-b51-attempt30-linked-carrier-host-test
-          vars [#'gravity.self-hosting.sh07-b51-attempt30-producer-compact-verifier-test/root1-accepts-the-exact-certificate-a-compact-carrier
-                #'gravity.self-hosting.sh07-b51-attempt30-producer-compact-verifier-test/root1-compact-certificate-and-carrier-mutations-fail-closed]
+          vars [#'gravity.self-hosting.sh07-b51-attempt30-producer-compact-verifier-test/attempt30-neutral-fixture-constructors-preserve-canonical-data
+                #'gravity.self-hosting.sh07-b51-attempt30-producer-compact-verifier-test/attempt30-neutral-raw-request-is-consumer-input]
           counters (ref {:test 0 :pass 0 :fail 0 :error 0})]
       (binding [test/*report-counters* counters
                 test/*test-out* (java.io.StringWriter.)]
@@ -159,21 +188,26 @@
                   (.redirectErrorStream true))
         process (.start builder)
         completed? (.waitFor process 60 TimeUnit/SECONDS)]
-    (letfn [(result [terminated?]
+    (letfn [(result [finished? terminated?]
               (with-open [stream (.getInputStream process)]
-                {:completed? (and completed? terminated?)
+                {:completed? (and finished? terminated?)
+                 :timed-out? (not finished?)
+                 :alive? (.isAlive process)
                  :exit (when terminated? (.exitValue process))
-                 :output (if terminated?
+                 :output (if (and terminated? (not (.isAlive process)))
                            (try
                              (String. (.readAllBytes stream)
                                       StandardCharsets/UTF_8)
                              (catch java.io.IOException _ ""))
                            "")}))]
       (if completed?
-        (result true)
+        (result true true)
         (do
           (.destroyForcibly process)
-          (result (.waitFor process 5 TimeUnit/SECONDS)))))))
+          (let [terminated? (.waitFor process 5 TimeUnit/SECONDS)]
+            (when (.isAlive process)
+              (.destroyForcibly process))
+            (result false terminated?)))))))
 
 (defn- fresh-probe-report
   [output]
@@ -184,9 +218,9 @@
                        (edn/read-string (subs line (count marker))))))
              first)))
 
-(def ^:private fresh-semantic-test-names
-  '[root1-accepts-the-exact-certificate-a-compact-carrier
-    root1-compact-certificate-and-carrier-mutations-fail-closed])
+(def ^:private fresh-isolation-test-names
+  '[attempt30-neutral-fixture-constructors-preserve-canonical-data
+    attempt30-neutral-raw-request-is-consumer-input])
 
 (defn- test-inventory []
   (->> (ns-publics *ns*)
@@ -196,54 +230,64 @@
        (sort-by (juxt :name :line))
        vec))
 
-(defn- fixture-observation
-  []
-  (try
-    (let [value (fixture-support/fixture)]
-      {:value value
-       :canonical-hash (bootstrap/reader-canonical-hash value)})
-    (catch Throwable failure
-      {:error {:class (str (class failure))
-               :message (ex-message failure)
-               :data (select-keys (ex-data failure)
-                                  [:id :requested-source
-                                   :expected-semantic-hash
-                                   :actual-semantic-hash])}})))
+(deftest attempt30-neutral-fixture-constructors-preserve-canonical-data
+  (let [{:keys [id-hashes raw-hash raw-keys carrier-identical?] :as observation}
+        (isolated-fixture-observation)]
+    (is (= isolated-id-hashes id-hashes)
+        (pr-str (select-keys observation [:id-hashes])))
+    (is (= isolated-raw-request-hash raw-hash)
+        (pr-str (select-keys observation [:raw-hash])))
+    (is (= [:artifact :authenticated-sh06-request
+            :authenticated-sh06-verification-report :physical-invocation
+            :predecessor-contract-carrier :predecessor-executable-descriptor
+            :predecessor-raw-outcome :schema-version :scope
+            :sh06-resolution-artifact :v18-executable-descriptor]
+           raw-keys)
+        (pr-str (select-keys observation [:raw-keys])))
+    (is carrier-identical?)))
+
+(deftest attempt30-neutral-raw-request-is-consumer-input
+  (let [raw (fixture-support/raw-request isolated-carrier)]
+    (is (= :gravity/sh07-b51-raw-adapter-request-linked-v4 (:artifact raw)))
+    (is (= 4 (:schema-version raw)))
+    (is (= :sh07-b51-vector-destructuring (:scope raw)))
+    (is (identical? isolated-carrier (:v18-executable-descriptor raw)))
+    (is (= isolated-raw-request-hash
+           (bootstrap/reader-canonical-hash raw)))))
 
 (deftest attempt30-compact-consumer-fresh-load-isolated
   (let [loaded-before (set (map ns-name (all-ns)))
-        fixture-before (fixture-observation)
+        fixture-before (isolated-fixture-observation)
         inventory-before (test-inventory)
         probe (fresh-producer-compact-load-probe)
         loaded-after (set (map ns-name (all-ns)))
-        fixture-after (fixture-observation)
+        fixture-after (isolated-fixture-observation)
         inventory-after (test-inventory)
         report (fresh-probe-report (:output probe))
         counters (or (:semantic-counters report) {})]
     (is (= loaded-before loaded-after)
         "The fresh consumer child must not mutate the preloaded parent namespaces")
-    (is (nil? (:error fixture-before))
-        (pr-str (select-keys fixture-before [:error])))
-    (is (= (:error fixture-before) (:error fixture-after))
-        (pr-str (select-keys fixture-after [:error])))
-    (is (identical? (:value fixture-before) (:value fixture-after))
-        "Fixture support must retain one delayed fixture identity in the parent")
-    (is (= (:canonical-hash fixture-before)
-           (:canonical-hash fixture-after))
-        (pr-str {:fixture-hash-before (:canonical-hash fixture-before)
-                 :fixture-hash-after (:canonical-hash fixture-after)}))
+    (is (identical? (:carrier fixture-before) (:carrier fixture-after))
+        "Fixture support must retain the parent preloaded carrier identity")
+    (is (= (dissoc fixture-before :carrier)
+           (dissoc fixture-after :carrier))
+        "Fixture support canonical values must survive the fresh child")
     (is (= inventory-before inventory-after)
         "The fresh consumer child must not alter the parent test inventory")
     (is (:completed? probe)
-        (pr-str (select-keys probe [:completed? :exit])))
+        (pr-str (select-keys probe [:completed? :timed-out? :alive? :exit])))
+    (is (false? (:timed-out? probe))
+        (pr-str (select-keys probe [:completed? :timed-out? :alive? :exit])))
+    (is (false? (:alive? probe))
+        (pr-str (select-keys probe [:completed? :timed-out? :alive? :exit])))
     (is (= 0 (:exit probe))
-        (pr-str (select-keys probe [:completed? :exit])))
+        (pr-str (select-keys probe [:completed? :timed-out? :alive? :exit])))
     (is (map? report)
-        (pr-str (select-keys probe [:completed? :exit])))
+        (pr-str (select-keys probe [:completed? :timed-out? :alive? :exit])))
     (is (false? (:host-namespace-loaded? report)) (pr-str report))
-    (is (= fresh-semantic-test-names (:semantic-test-names report))
+    (is (= fresh-isolation-test-names (:semantic-test-names report))
         (pr-str report))
-    (is (= (count fresh-semantic-test-names) (or (:test counters) 0))
+    (is (= (count fresh-isolation-test-names) (or (:test counters) 0))
         (pr-str report))
     (is (pos? (or (:pass counters) 0)) (pr-str report))
     (is (zero? (or (:fail counters) 0)) (pr-str report))
