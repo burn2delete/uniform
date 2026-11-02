@@ -63,7 +63,8 @@
   :observed-file-bytes :bare-or-prefixed-sha256 :legacy-missing-file-sentinel],
  :clojure-seed-boundary? true,
  :issues-certificates? false,
- :contract-boundary :native-inventory-and-observed-file-data})
+ :contract-boundary :native-jar-inventory-reports
+ :additional-contract-boundaries [:observed-file-bytes-and-digests]})
 
 (defn jar-source-inventory-report
   [packaged-source-entries-var jar-entries]

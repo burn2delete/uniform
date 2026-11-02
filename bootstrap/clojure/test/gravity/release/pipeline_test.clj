@@ -24,7 +24,8 @@
 
 (deftest namespace-boundary-is-native-inventory-data
   (let [contract (:gravity/namespace-contract (meta #'release/jar-inventory-report))]
-    (is (= :native-inventory-and-observed-file-data (:contract-boundary contract)))
+    (is (= :native-jar-inventory-reports (:contract-boundary contract)))
+    (is (= [:observed-file-bytes-and-digests] (:additional-contract-boundaries contract)))
     (is (= '#{jar-source-inventory-report jar-inventory-report file-bytes bytes-sha256 file-sha256}
            (set (keys (:public-api contract)))))
     (is (false? (:authenticates-inputs? contract)))
