@@ -206,3 +206,73 @@
                         (get-in result [:data :facts]))))))
     (is (= {digest [:payload]} (resolve {{:digest-ref 0} [:payload]})))
     (is (= #{digest} (resolve #{{:digest-ref 0}})))))
+
+(defn- resolve-input [value]
+  (bootstrap/p15-s23-c6c10-resolve-digest-references!
+   path value 1 nil [(str "sha256:" (apply str (repeat 64 "a")))]))
+
+(deftest unchanged-native-containers-share-without-skipping-child-validation
+  (doseq [value [[{:a 1}] (array-map :a [1 2])
+                 (into {} (map #(vector (keyword (str "field-" %)) [%]) (range 12)))
+                 #{[1] [2]} (list {:a 1} [2])]]
+    (is (identical? value (resolve-input value))))
+  (let [alias {:leaf [1 2]} value [alias alias]
+        unique (operation 'p15-s23-c6c10-unique-resolved-values!)
+        original @unique visits (atom [])]
+    (with-redefs-fn {unique (fn [source missing values]
+                             (swap! visits conj values) (original source missing values))}
+      #(is (identical? value (resolve-input value))))
+    (is (= [[:leaf] [:leaf]] @visits)))
+  (let [invalid {:nested {:digest-ref 1}}]
+    (is (= :bounded-prior-digest-reference
+           (get-in (capture #(resolve-input [invalid invalid])) [:data :missing-fact])))))
+
+(deftest changed-descendants-rebuild-while-unchanged-siblings-remain-shared
+  (let [stable [1 2] changed [{:digest-ref 0}]
+        value {:stable stable :changed changed} result (resolve-input value)]
+    (is (not (identical? value result)))
+    (is (not (identical? changed (:changed result))))
+    (is (identical? stable (:stable result)))
+    (is (= [(str "sha256:" (apply str (repeat 64 "a")))] (:changed result)))))
+
+(deftest reconstruction-preserves-constructor-class-and-metadata-normalization
+  (doseq [[value expected-class]
+          [[(with-meta [1] {:present true}) (class [])]
+           [(with-meta {:a 1} {:present true}) (class {})]
+           [(sorted-map :a 1) (class {})]
+           [(sorted-set :a :b) (class #{})]
+           [(subvec [1 2] 0 1) (class [])]]]
+    (let [result (resolve-input value)]
+      (is (not (identical? value result)))
+      (is (identical? expected-class (class result)))
+      (is (nil? (meta result)))
+      (is (= value result))))
+  ;; Cons does not enter the legacy resolver's list? branch. Preserve that
+  ;; behavior while checking the sharing guard's constructor-class refusal.
+  (let [value (cons 1 (list 2)) rebuilt (list 1 2)
+        reuse (operation 'p15-s23-c6c10-reuse-resolved-container)]
+    (is (identical? value (resolve-input value)))
+    (is (identical? rebuilt (reuse value rebuilt)))))
+
+(deftest sharing-retains-iteration-order-and-refuses-foreign-class-callbacks
+  (let [reuse (operation 'p15-s23-c6c10-reuse-resolved-container)
+        original (array-map :a 1 :b 2) reordered (array-map :b 2 :a 1)
+        calls (atom 0)
+        foreign (proxy [Object clojure.lang.IMeta] []
+                  (meta [] (swap! calls inc) (throw (AssertionError. "foreign metadata"))))
+        rebuilt []]
+    (is (= original reordered))
+    (is (identical? reordered (reuse original reordered)))
+    (is (identical? rebuilt (reuse foreign rebuilt)))
+    (is (zero? @calls))))
+
+(deftest sharing-does-not-admit-opaque-leaves-or-invoke-their-callbacks
+  (let [calls (atom 0)
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! calls inc) (throw (AssertionError. "opaque hash")))
+                 (equals [_] (swap! calls inc) (throw (AssertionError. "opaque equality")))
+                 (toString [] (swap! calls inc) (throw (AssertionError. "opaque printing"))))
+        result (resolve-input [opaque])
+        rejected (capture #(form result))]
+    (is (= "C6-VERIFY" (get-in rejected [:data :id])))
+    (is (zero? @calls))))

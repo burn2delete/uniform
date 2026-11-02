@@ -95,6 +95,21 @@
         :host-equality-count host-count})))
   values)
 
+(defn- p15-s23-c6c10-reuse-resolved-container [original rebuilt]
+  ;; Recursion and collision checks have already completed. Keep the old
+  ;; constructor's exact class, metadata removal and iteration order; compare
+  ;; children by identity without invoking their equality/hash callbacks.
+  (if (and (identical? (class original) (class rebuilt))
+           (nil? (meta original))
+           (= (count original) (count rebuilt))
+           (if (map? rebuilt)
+             (every? true? (map (fn [left right]
+                                 (and (identical? (key left) (key right))
+                                      (identical? (val left) (val right))))
+                               original rebuilt))
+             (every? true? (map identical? original rebuilt))))
+    original rebuilt))
+
 (defn p15-s23-c6c10-resolve-digest-references!
   [source-path value request-count consumer-ordinal resolved-digests]
   (when-not
@@ -134,19 +149,19 @@
                     keys (mapv first entries)]
                 (p15-s23-c6c10-unique-resolved-values!
                  source-path :collision-free-resolved-map-keys keys)
-                (into {} entries))
+                (p15-s23-c6c10-reuse-resolved-container item (into {} entries)))
 
               (vector? item)
-              (mapv resolve-value item)
+              (p15-s23-c6c10-reuse-resolved-container item (mapv resolve-value item))
 
               (set? item)
               (let [items (mapv resolve-value item)]
                 (p15-s23-c6c10-unique-resolved-values!
                  source-path :collision-free-resolved-set-items items)
-                (into #{} items))
+                (p15-s23-c6c10-reuse-resolved-container item (into #{} items)))
 
               (list? item)
-              (apply list (map resolve-value item))
+              (p15-s23-c6c10-reuse-resolved-container item (apply list (map resolve-value item)))
 
               :else item))]
     (resolve-value value)))
