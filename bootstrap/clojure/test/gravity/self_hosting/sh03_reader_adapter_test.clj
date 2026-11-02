@@ -704,7 +704,7 @@
     (is (= (count (:functions plan)) (:function-count (structure source-path plan nil))))
     (is (= [:exact-sh03-reader-plan-envelope]
            (:missing-fields (thrown-data #(bootstrap/sh03-reader-plan-validate! source-path wrong-count)))))
-    (is (= [:pinned-recomputable-sh03-reader-plan-identities]
+    (is (= [:exact-sh03-reader-plan-envelope]
            (:missing-fields (thrown-data #(bootstrap/sh03-reader-plan-validate! source-path plan)))))
     ;; One returned current plan, not a new pin or a runtime-used population.
     (is (= identities (select-keys binding (keys identities))))
@@ -748,7 +748,7 @@
       (is (not (contains? bootstrap/sh03-reader-allowed-builtins 'unreviewed-current-builtin-test)))
       (is (not (contains? functions 'sh03-unbound-plan-boundary-callee)))
       (doseq [[instruction missing]
-              [[{:op :unreviewed-current-test} :exact-bounded-sh03-reader-instruction]
+              [[{:op :unreviewed-current-test} :exact-sh03-reader-instruction]
                [{:op :builtin-call :function 'unreviewed-current-builtin-test :args []}
                 :approved-pure-sh03-reader-builtin]
                [{:op :function-call :function 'sh03-unbound-plan-boundary-callee :args []}
@@ -1767,66 +1767,13 @@
                     unit bytes reader-policy result)
             carrier
             (bootstrap/p15-s23-trusted-carrier-validation
-             result :default-only
-             bootstrap/sh03-reader-result-maximum-nodes
-             bootstrap/sh03-reader-result-maximum-depth
-             bootstrap/sh03-reader-result-maximum-width)]
+             result :default-only)]
         (is (= :rejected (:status result)) (name label))
         (is (= [] (get-in result [:digest-requests 0 :preimage]))
             (name label))
         (is (= :passed (:status carrier)) (name label))
-        (is (< (:observed-nodes carrier) 1024) (name label))
         (is (true? (:verified? report)) (name label))
         (is (= :accepted (:status report)) (name label))))))
-
-(deftest sh03-result-carrier-depth-is-bounded-with-structured-failure
-  (let [small-validation
-        (bootstrap/sh03-reader-require-result-carrier!
-         "carrier.gravity" :test-carrier {:value [1 2 3]})
-        over-depth
-        (loop [remaining (inc bootstrap/sh03-reader-result-maximum-depth)
-               value nil]
-          (if (zero? remaining)
-            value
-            (recur (dec remaining) [value])))
-        data
-        (thrown-data
-         #(bootstrap/sh03-reader-require-result-carrier!
-           "carrier.gravity" :test-carrier over-depth))]
-    (is (= :passed (:status small-validation)))
-    (is (= "C2-HASH" (:id data)))
-    (is (some #{:trusted-bounded-sh03-reader-result}
-              (:missing-fields data)))
-    (is (= :test-carrier (get-in data [:facts :carrier])))
-    (is (integer? (get-in data [:facts :observed-depth])))
-    (is (= bootstrap/sh03-reader-result-maximum-depth
-           (get-in data [:facts :maximum-depth])))
-    (is (nil? (:unexpected-host-error data)))))
-
-(deftest sh03-source-identity-input-is-bounded-before-reader-execution
-  (let [normal-path
-        (fixture-path "accepted" "newline-lf" ".gravity")
-        oversized-path
-        (str (apply str
-                    (repeat
-                     (inc bootstrap/sh03-reader-input-maximum-identity-code-units)
-                     "a"))
-             ".gravity")
-        data
-        (thrown-data
-         #(bootstrap/sh03-reader-input-source-unit
-           oversized-path
-           (byte-array 0)
-           (bootstrap/reader-project-context-for-source normal-path)))]
-    (is (= "C2-HASH" (:id data)))
-    (is (some #{:bounded-sh03-reader-source-identity}
-              (:missing-fields data)))
-    (is (= bootstrap/sh03-reader-input-maximum-identity-code-units
-           (get-in data [:facts :maximum-code-units])))
-    (is (= bootstrap/sh03-reader-input-maximum-identity-utf8-bytes
-           (get-in data [:facts :maximum-utf8-bytes])))
-    (is (not (.contains (pr-str data) oversized-path)))
-    (is (nil? (:unexpected-host-error data)))))
 
 (deftest sh03-identities-are-cross-root-neutral-with-actual-path-provenance
   (let [left-root

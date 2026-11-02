@@ -218,9 +218,51 @@ Focused checks on the repaired worktree passed:
 - The two explicit source-choice refusals passed 2 tests / 4 assertions, and
   public ingress option/default pinned controls passed 2 tests / 11 assertions.
 
-The SH03 adapter file also contains an unrelated pre-existing compile failure
-(`bootstrap/sh03-reader-result-maximum-nodes` is undefined at its existing
-line 1769); its newly audited current composition is syntactically preserved
-but is not claimed as executed. No native-C, PMK, resource-broker workaround,
-or restricted route was retried. The repaired candidate remains development
-evidence only and needs independent acceptance on its exact final tuple.
+The SH03 adapter namespace is now executable after the retired carrier
+node/depth/width and source-identity quota tests were removed. The
+two-argument trusted-carrier call remains the native-class, cycle and metadata
+validation path; no old limit constants were restored. Unicode, native-shape,
+digest, provenance and tamper controls remain. No native-C, PMK,
+resource-broker workaround, or restricted route was retried. The repaired
+candidate remains development evidence only and needs independent acceptance
+on its exact final tuple.
+
+## Latest-main composition and SH03 stale-quota cleanup
+
+The clean PR512 repair commit `a6e1880f83253e9b3f5634cb5b612b1c0059e6c4`
+was normally merged with main commit
+`d97539762108d7e44024164c61bb120044ef684b` (tree
+`093a9c284a1e2fc4dd360fa677e43f7a0512dfba`), which includes the current MIR
+source-owner extraction and emitter-cycle repair. The merge had no conflicts;
+its composition commit was `f6956ae937baf4280002bfc0b8f1fe8b944360a5`,
+tree `ec2b021d70167a8da782d93f572ddad6383f4ae8`, with parents
+`a6e1880f83253e9b3f5634cb5b612b1c0059e6c4` and
+`d97539762108d7e44024164c61bb120044ef684b`. The MIR/emitter paths do not
+overlap the repaired Reader/Syntax/Core caller paths; the earlier genuine
+current Map-to-Core receipt (1 test / 131 assertions) is reused as prior
+evidence, not relabeled as a fresh d975 execution.
+
+The remaining SH03 test file still referenced constants removed by the reader
+quota-removal source change. The repair removes the budget-only carrier-depth
+and source-identity-size tests, removes the observed-node allowance assertion,
+and calls trusted-carrier validation through its current two-argument contract.
+It also updates two stale diagnostic expectations from
+`:exact-bounded-sh03-reader-instruction` to `:exact-sh03-reader-instruction`
+and from the historical plan-identity diagnostic to the current exact-plan
+envelope diagnostic. No runtime quota, bound, admission hash or pinned/default
+selection changed; the finite depth/stack-safety, Unicode, type/shape, native
+carrier, provenance and tamper tests remain.
+
+Evidence for this cleanup is bounded and attributable. The first post-cleanup
+namespace run (`clojure -M:test --namespace
+gravity.self-hosting.sh03-reader-adapter-test --fail-fast`) loaded and ran 32
+tests / 1079 assertions with no errors and one stale expectation failure. After
+the two expectation updates, the exact owner test
+`sh03-current-reader-plan-checks-keep-historical-priority` passed via
+`clojure -M:dev-test --namespace gravity.self-hosting.sh03-reader-adapter-test
+--exact gravity.self-hosting.sh03-reader-adapter-test/sh03-current-reader-plan-checks-keep-historical-priority
+--fail-fast`: 1 test / 27 assertions, 0 failures, 0 errors. The complete
+namespace was not rerun after expectation-only edits; the preceding run is
+the evidence that all remaining forms load and execute. No hosted failure
+receipt, native lane, PMK lane or migration claim is inferred from this
+focused repair.
