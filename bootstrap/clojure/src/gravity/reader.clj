@@ -190,5 +190,7 @@
               "Rename the source to .qst or .gravity; both are canonical and first-class."}
               bytes-hash (assoc :source-id bytes-hash)))))
 
-(doseq [operation [#'read-source-artifact #'decode-source-bytes #'read-source-text #'reject-source-path!]]
+(doseq
+ [name (keys (:public-api namespace-contract))
+  :let [operation (get (ns-interns *ns*) name)]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

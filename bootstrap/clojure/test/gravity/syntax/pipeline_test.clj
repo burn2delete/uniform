@@ -146,6 +146,14 @@
   (let [contract (:gravity/namespace-contract (meta #'syntax/build))]
     (is (= (set (keys (:public-api contract)))
            (set (keys (ns-publics 'gravity.syntax)))))
+    (is (= (set (keys (:public-api contract)))
+           (set (keep (fn [[name operation]]
+                        (when (:gravity/namespace-contract (meta operation)) name))
+                      (ns-interns 'gravity.syntax)))))
+    (is (every? #(= contract (:gravity/namespace-contract (meta %)))
+                (vals (ns-publics 'gravity.syntax))))
+    (is (every? #(not (:private (meta %)))
+                (vals (ns-publics 'gravity.syntax))))
     (is (= 'gravity.syntax (:namespace contract)))
     (is (= :stage0-syntax-construction-verification-and-pinned-plan-runtime (:contract-boundary contract)))
     (is (= ['clojure.core 'clojure.string 'gravity.reader.pure-text 'gravity.c3-reader-expansions 'gravity.c3-syntax-verification]
