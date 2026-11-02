@@ -1,3 +1,72 @@
+# Self-hosted compiler and release implementation specification
+
+Implementation scope added under the 2026-11-01 request. Existing bootstrap,
+release, trust and governance owners retain their responsibilities. Historical
+workflow migration below does not establish self-hosting or seed retirement.
+
+## Behavior and interfaces
+
+Implement [the Release outcome](../../docs/component-roadmaps/release.md#release-outcome)
+under the retained BOOT1-BOOT8 contracts,
+[TEST13](../../docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md),
+PKG7/10/12, D2/D9, applicable governance and the separate
+[Phase 18 extension](../../docs/phase-18-binary-distribution-and-seedless-release/IMPLEMENTATION-ROADMAP.md).
+Consume the complete declared compiler/generated/runtime/library/package/build
+source closure, actual prior compiler, locked build/environment/target inputs,
+real component conformance and independent trust/review evidence. Produce real
+next-stage compiler artifacts, process/rebuild logs, accepted/rejected execution,
+equivalence and diagnostic comparisons, BOOT5 support/gap records, TCB/lineage,
+verified provenance/SBOM/signatures and the actual public release distribution.
+
+The [existing SH completion plan](../../docs/self-hosting-milestone-completion-plan.md)
+and [SH task crosswalk](../sh-family-crosswalk/spec.md) retain milestone/task
+authority. SH-25 constructs and executes the complete component closure; SH-26
+actually invokes the prior Gravity compiler to build and run the next stage;
+SH-27 compares clean real rebuilds; SH-28 verifies trust and seed boundaries;
+SH-29 delivers and verifies the public executable. These are separate outcomes,
+not a single descriptor-validation step or a new release checklist here.
+
+## Existing implementation routes and acceptance
+
+Use [the sole marked ledger](tasks.md#implementation-tasks) under
+`release/remaining-tasks-and-evidence/`. Preserve its five existing records,
+source-family refinements, status and evidence boundaries.
+
+| Existing suffix | Required accepted behavior | Required rejection and evidence |
+| --- | --- | --- |
+| `bind-each-claimed-component-to-exact-implementation-and-conformance` | Bind the full claimed source/component/dependency closure and each required operation to actual implementations, accepted/rejected programs, producer/consumer composition and exact conformance. Consume the existing governance evidence interfaces with their policy owners. | Reject omitted/replaced components, fixture-only inventories, hidden dependencies, unsupported profile/target claims, missing review/lifecycle evidence and source/fixture mismatch. Accepted narrow modules or historical stage counters cannot close the whole compiler or 240-document language surface. |
+| `complete-stage-compatibilityequivalence-across-the-claimed-compiler` | Use actual stage artifacts and clean controlled rebuilds under declared BOOT7 comparison modes, including content/manifests, diagnostics, conformance, runtime output and applicable IR/performance. Record versioned stage support/gaps, reviewed deltas and residual TCB. | Reject missing output, unexplained semantic/diagnostic drift, overbroad normalization, stale comparison inputs and claimed support without conformance. Supplied comparison records cannot replace the required builds/execution. |
+| `produce-actual-self-hosted-compilerruntime-execution` | Invoke the actual prior Gravity compiler on the complete next-stage compiler/runtime/library/build closure, link/package the result and execute it on legal and illegal compiler/application inputs. Exclude Clojure from candidate compilation/runtime/build paths and retain actual process outcomes and lineage. | Reject simulated rebuilds, substituted builders/components, failed/incomplete output and bootstrap-hosted fallbacks presented as self-hosting. A Gravity-authored record validator or public wrapper alone is insufficient; preserve separate SH-25 construction, SH-26 rebuild, SH-27 comparison and final release acceptance. |
+| `build-reproducible-signed-distributions-with-provenancesbom` | Rebuild real distribution content under the same locked controlled recipe; compare required binary/manifest/provenance/SBOM/signing/command evidence, verify canonical subject-bound signatures/attestations and traverse compiler lineage with explicit trust roots. | Reject tamper, wrong subject/source/compiler, undeclared generated/binary inputs, unreviewed drift, unknown required schema, revoked inputs, incomplete SBOM, stale or policy-incompatible identity/log/root evidence. Signing and publication retain their actual authority and custody boundaries. |
+| `obtain-independent-acceptance-for-the-exact-release-candidate` | Supply the exact supported candidate and complete component/stage/trust/command/governance bundle for coordinator-routed independent acceptance and explicit release disposition. | Reject missing/stale evidence, author-only acceptance, unsupported targets and any remaining Clojure path inside the claimed public compiler/runtime/build/release boundary. Flags and passed structural validators cannot confer release acceptance. |
+
+Final Phase 18 behavior includes real public `check`, `run`, `compile` and
+emitted-program execution for both `.gravity` and `.qst`, a nontrivial
+application, stable feature-specific failures, full claimed conformance and
+successful self-host verification through the self-hosted executable. Keep
+`gravity-bootstrap` explicitly outside that boundary. Existing incomplete
+P15-S23/P18-T03/T05/T06 evidence stays incomplete until those actual conditions
+hold; do not promote early packaged JVM or fail-closed wrapper receipts.
+
+## Starting work, composition and complete-project scope
+
+Ordinary component development uses explicit interfaces and focused real
+fixtures without first completing authoritative migration or final release.
+Stable module admission later supplies its BOOT3 stage comparison and migration
+evidence. Complete component construction precedes actual next-stage rebuilding,
+then equivalence/trust/public release consume the real results under the
+existing dependency representation. Do not impose final-stage acceptance as a
+local start prerequisite or erase a required composition edge.
+
+The selected compiler release uses its required Runtime compiler services,
+Standard Library compiler support and compiler CLI closure. Wider required
+language, library, domain, backend and Platform outcomes remain in scope with
+their own owners and evidence; the first seedless release cannot establish
+240/240 conformance or universal target support. Preserve current restrictions,
+reserved writers, denied operations and coordinator integration responsibility.
+
+## Historical workflow-transfer specification
+
 # Feature specification: Release workflow migration
 
 Status: prepared; review and integration pending.

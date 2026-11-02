@@ -3,6 +3,35 @@
 Source baseline: `063989e153b88c00f3ac3f69c2f7a04b5981ab2d` (2026-10-26).
 Mapping state: proposed for independent review; no replacement accepted.
 
+Current successor, 2026-11-01: the existing
+[Governance and Evolution implementation package](../specs/evolution-workflow/spec.md)
+has been resumed from reconciliation commit
+`55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6`, retaining its ten Open task records
+byte-for-byte. Its [plan](../specs/evolution-workflow/plan.md) and
+[evidence](../specs/evolution-workflow/evidence.md) distinguish governance
+producers from Build/Release consumers and preserve qualified source-review
+limits. The four evolution-package gaps in the historical matrix below now
+have that explicit proposed implementation route; accountable individual
+ownership, exact current composition and independent acceptance remain pending.
+The historical population, dispositions and validation command below retain
+their original bounded candidate scope. They are not current coverage counts
+or a validator for the expanded project-wide change; use the
+[readiness report](implementation-readiness.md) for current observations.
+
+### Package evolution-workflow
+
+[spec](../specs/evolution-workflow/spec.md) | [plan](../specs/evolution-workflow/plan.md) | [tasks](../specs/evolution-workflow/tasks.md) | [evidence](../specs/evolution-workflow/evidence.md)
+
+Accountable component role: language-evolution/governance maintainer, individual
+unassigned. Acceptance boundary: actual subject-bound change/compatibility,
+RFC, experiment, library, namespace, yank, security response/review,
+stabilization and target-tier producer decisions with scoped review and
+consumer evidence. Build/Release remain consumers. This resumed proposed
+authority supplies no governance implementation, policy adoption or independent
+current-composition acceptance.
+
+## Historical mapping population and dispositions
+
 The [240-document inventory](../docs/document-inventory.json) remains semantic
 and implementation-contract authority. This artifact gives every inventory ID
 a deliberate disposition and names the accountable component interfaces and
@@ -625,7 +654,7 @@ link or reassignment is inferred here.
 
 ## Evolution workflow proposal
 
-No current package owns the complete change/RFC/experiment/stabilization
+At this mapping's historical source baseline, no package owned the complete change/RFC/experiment/stabilization
 lifecycle required by these four contracts. The Compiler API owns executable
 passes and extension registration, while Release consumes exact accepted
 outcomes. Neither boundary authorizes language policy decisions. The existing
@@ -638,7 +667,8 @@ stdlib stability workflow is limited to standard-library exports.
 | GOV7 | Owned experiment record with explicit default-off opt-in, profiles, expiry, rollback and stabilization/removal criteria; on/off fixtures and release records must expose every dependency. |
 | GOV8 | Exact stabilization surfaces and conformance/compatibility history, or deprecation replacement/diagnostic/schedule/migration record; preserve tests until governed removal. |
 
-Proposed package key: `evolution-workflow` (not created and not a link target).
+The historical proposed key was `evolution-workflow`. Its existing later
+reconciliation package is now resumed at the current successor link above.
 Suggested accountable role: language-evolution/governance maintainer, with
 contract and conformance specialists. This proposal does not assign a person.
 Its finite first increment would define the owned record interfaces and one
@@ -646,9 +676,9 @@ traceable lifecycle example with accepted/rejected records, using the four
 canonical contracts directly. It would not implement a new approval service,
 scheduler or routine permission gate, nor change any language semantics.
 
-Decisions still needed: confirm that accountable role and cross-component
+Historical proposal decisions: confirm that accountable role and cross-component
 interfaces, choose the initial lifecycle example, and accept the bounded
-package scope. Until then the four IDs remain intentional package gaps, not
+package scope. At that baseline the four IDs remained intentional package gaps, not
 lost contracts or implied implementation completion. Existing authorized
 compiler development continues independently.
 

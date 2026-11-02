@@ -1,3 +1,65 @@
+# Backend family implementation specification
+
+Implementation scope added under the 2026-11-01 request. Existing named family,
+interface, emission and conformance owners retain their responsibilities.
+Historical task transfer below does not establish target support.
+
+## Behavior and interfaces
+
+Implement the independently named [backend outcomes](../../docs/component-roadmaps/backends.md#release-outcome)
+under the complete retained B1-B14 and AI contracts below. Actual verified
+MIR/anchored domain IR plus Lower's explicit profile/target/ABI/runtime/provider
+and proof/effect/capability/safety/source inputs become real target-specific
+artifacts and common B13 evidence consumed by Runtime, Build and tooling.
+Each adapter implements its real target semantics, verifier and failure paths;
+it cannot inherit the host's values, undefined behavior or ambient authority.
+
+The [sole ledger](tasks.md#implementation-tasks) already preserves substantive
+Remaining tasks, acceptance questions, limits, decision owners and integration
+context for all fifteen grouped records. They remain one editable authority,
+with no new clause IDs, progress denominator or copied task status here.
+
+## Existing family routes and acceptance
+
+| Existing record | Behavior and required distinguishing evidence |
+| --- | --- |
+| `backend-interface` | B1/C14 verified-input and per-target ABI/layout/provider/proof interface. Accept real eligible inputs and reject stale/unchecked, unsupported, missing-proof and incompatible-ABI handoffs. |
+| `backend-c` | B2 real declared hosted/freestanding C output, pinned dialect/compiler/layout, explicit numeric/pointer/resource/helper rules. Compile/run positives; reject target UB, invalid shifts/overflow/provenance and hidden libc/allocator dependencies. |
+| `backend-llvm` | B3 selected Linux candidate plus separately declared extensions, pinned target/data layout/features and proof-backed attributes. Run LLVM verification and native positives; reject poison/UB, proofless metadata and target mismatch. |
+| `backend-wasm` | B4 core/component output, typed WIT-like worlds/resources and canonical ABI; preserve import/export grants, memory/lifetime and component composition. Exercise async functions, streams/futures with ownership, completion/cancel/backpressure/replay; reject ambient imports, pointer escape, missing schemas/features and authority-amplifying adapters. |
+| `backend-jvm` | B5 actual class/JAR/module and interop output with declared JVM/classloader/reflection/runtime assumptions. Exercise checked host null/exception translation and deterministic linear cleanup; reject hidden reflection/loading, unchecked host flow and JVM behavior exported as lower-profile semantics. |
+| `backend-js` | B6 actual runtime/module output and matching TypeScript/source/package maps. Exercise numeric representations, nullish/error/promise/event translation and declared host globals/imports; reject lossy exact numerics, ambient globals, prototype/eval and unchecked package/host values. |
+| `backend-mlir` | B7 actual dialect mappings, passes, conversion legality, verification and downstream handoff. Preserve Gravity facts through each conversion; reject lost metadata, unverified effect/numeric/alias changes and remaining illegal operations. MLIR verifier acceptance alone is not Gravity correctness. |
+| `backend-gpu` | B8 real kernels/device artifacts and host launch stubs with linear buffers, explicit transfers, address spaces, synchronization/atomics, geometry/features and numeric certificates. Reject host effects, hidden transfers, invalid aliases/lifetimes, missing sync and uncertified fast math. |
+| `backend-hdl` | B9 actual fixed-width cycle-aware hardware output with clocks/resets/CDC, protocols, timing, state maps, test benches and simulation traces. Reject runtime constructs, unjustified widths/truncation, illegal control flow and unmediated CDC; actual synthesis/provider support remains explicit. |
+| `backend-workflow` | B10 real executable durable graphs with schemas, replay/idempotency/retry/timeout/cancel/compensation and authority/policy edges. Exercise restart/replay and failures; reject unrecorded nondeterminism, missing human-review policy and repeated external effects. |
+| `backend-ai` | Existing AI adapter outcome consumes the AI domain's actual model/prompt/tool/schema/taint/policy identities and Runtime/Workflow/Auth interfaces. Exercise permitted model/tool fixtures and injection/provider/review/output failures with bound evaluation evidence; no live model call becomes a prerequisite for unrelated work. |
+| `backend-query` | B11 declared dialect/schema/provider output with prepared bindings, semantic/null/collation/numeric mappings, validated rows and transaction/migration adapters. Execute or reference-simulate queries; reject tainted SQL, unauthorized writes, schema drift and unapproved loss. |
+| `backend-mobile` | B12 actual platform bundles/bindings/resources/permissions with lifecycle, UI thread/actor, host-null/error and storage/sync policy. Run simulator/device startup and denial/lifecycle cases; reject hidden background work and missing permissions/adapters. Signing/store publication retains separate authority. |
+| `backend-emission` | B13 common versioned kind-specific records bind actual bytes/canonical artifacts, inputs, dependencies, source/debug maps and required safety/proof/authority/reproducibility evidence. Reject tamper, stale/missing/contradictory joins. Coordinate shared requirements with Emit rather than duplicating selected-candidate work. |
+| `backend-conformance` | B14 shared MIR/domain and per-family positive/negative, exact-diagnostic, differential/replay, metadata and manifest checks on actual outputs. Record availability explicitly; execution equality cannot excuse metadata loss, and an unavailable target is not an accepted pass. |
+
+## Starting work, ownership and completion
+
+Versioned verified fixtures and declared runtime/domain/Lower interfaces permit
+independent local adapter development. Composition needs actual relevant
+producers/verifiers, selected runtime/provider and output consumers. Only
+families in the selected compiler recipe are prerequisites of that release;
+all wider required family outcomes remain independently open until evidenced.
+Lower/Emit own the selected candidate handoffs; backend families own concrete
+target implementation and broader matrices; domain owners own source/domain
+semantics. Shared B1/B13/B14 contracts do not create duplicate implementations.
+
+Each claimed family completes only with its full required behavior, real output,
+positive/negative diagnostic and semantic evidence, preservation of provenance,
+proof/safety/effect/capability metadata, and applicable independent acceptance.
+Use target availability records for genuine unavailability while retaining
+shared checks. Preserve all current writers, restricted C12/domain/provider
+operations, signing custody and publication restrictions. Portfolio navigation,
+fixture strings and existing record builders establish no family acceptance.
+
+## Historical task-authority-transfer specification
+
 # Feature specification: Backends family task authority
 
 Status: task-authority candidate; independent review and integration pending.

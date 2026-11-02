@@ -1,3 +1,27 @@
+# Developer tools implementation planning entry
+
+Select one of the twelve existing [service records](tasks.md#implementation-tasks),
+preserving its specialist role and complete criteria. Preserve the historical
+transfer plan below. Read [spec.md](spec.md), the complete selected T2-T13
+contract and actual compiler/runtime/package/provider interface rules.
+
+Bind actual source/artifact facts, service request/session/document revision,
+profile/target/grants, protocol/output schema and real consumer. Plan real
+transformation, session, inspection or measurement positives and the selected
+semantic-preservation, stale-state, unsupported-target, missing-evidence,
+authority/redaction or generated-code negatives. Fixture protocols are valid
+local interfaces; actual service acceptance needs its real producer and client.
+
+Use focused specialist tests and proportionate Compiler API/Reader/Syntax/
+Diag/Runtime/Build/CLI composition. Capture exact inputs/outputs, transcript/
+sample/patch artifacts, diagnostics and failed/unrun cases without executing
+held provider or publication paths. Refine only the selected existing service
+record; preserve overlapping writers, product review policy and trust/custody
+boundaries. Independent acceptance, selected compiler scope and wider tool
+completion remain distinct.
+
+## Historical workflow-transfer plan
+
 # Implementation plan: Developer Tools workflow migration
 
 Spec: [spec.md](spec.md) | Migration owner: documentation migration maintainer.

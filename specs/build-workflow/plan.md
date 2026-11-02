@@ -1,3 +1,47 @@
+# Build and package implementation planning entry
+
+Select one unresolved [existing task](tasks.md#implementation-tasks), preserving
+the transfer plan, reviewed interfaces and yank-policy amendment below. Read
+[spec.md](spec.md), complete selected PKG rules and the actual compiler/provider/
+registry/consumer contracts. Locate current semantic source and temporary
+adapters through [development verification](../../docs/development-verification.md)
+and the [stage ownership table](../../docs/bootstrap/stage-owned-namespaces.md).
+
+Bind actual project/lock/source/dependencies, profile/target/ABI/runtime,
+compiler/tool/environment, policy/grants and package state. Plan a real resolver,
+graph node, package operation or rebuild plus relevant conflict/incomplete-lock,
+undeclared-effect, stale-cache, tamper/revocation, private-disclosure or target
+failure controls. Record actual bytes, process/action outcomes and dependency/
+invalidation/diff evidence; supplied plans and manifests do not prove execution.
+
+Run focused owner checks plus affected Compiler API/Emit/Runtime/Auth/CLI
+composition. Use existing policy/custody owners and preserve held operations.
+Refine only the selected existing task, keeping failed/unrun cases and exact
+input/output identities. Reviewable package mutation behavior, independent
+acceptance, integration and final seedless Build remain distinct.
+
+## Current governance consumer composition
+
+The existing resolution and package/provenance task records now include the
+two proposed governance consumer blocks in [tasks.md](tasks.md#implementation-tasks).
+They preserve the inspected-main task bodies and add actual SAFE14/SAFE15/
+GOV10 policy enforcement and metadata-visibility cases. They continue the
+preserved [Governance/Core source-family composition](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/requirement-reconciliation/governance-core43-current-composition.edn)
+as an explicit current successor, rather than importing its stale whole-file
+overlay or attributing later criteria to an earlier review.
+
+Plan real selection and installation policy enforcement, and actual content/
+signature/provenance verification with denied, quarantined, stale and tampered
+cases. Bind consumed advisory/yank/namespace/library/target/security decisions
+to the [existing governance producer tasks](../evolution-workflow/tasks.md).
+Resolve actual implementation paths and callers for the selected operation;
+changing a task criterion is not execution evidence. No new IDs, statuses,
+external actions or whole-governance prerequisites follow. Current source/task
+and affected receiver composition still need independent review; historical
+receipts and their source-qualified roles retain their original scope.
+
+## Historical workflow-transfer plan
+
 # Implementation plan: Build workflow migration
 
 Spec: [spec.md](spec.md). Owner: backend workflow migration owner.

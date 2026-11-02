@@ -1,3 +1,51 @@
+# Self-hosting and release implementation planning entry
+
+Select one unresolved [existing task](tasks.md#implementation-tasks), preserving
+the historical transfer plan, governance interfaces and source-family work
+below. Read [spec.md](spec.md), the complete applicable BOOT/TEST13/package
+contracts and the selected SH/Phase 18 outcome. Use the existing SH crosswalk
+and dependency representation rather than creating another task or stage graph.
+
+Name the exact complete source/component closure and owners, actual prior and
+next compiler, target/ABI/runtime/build/lock/environment, required real process
+invocations, outputs and comparison mode. Distinguish local implementation,
+stable migration, component construction, actual next-stage rebuild, clean
+equivalence, trust and public delivery. Plans or supplied records are inputs to
+execution machinery, not evidence that a compiler process ran.
+
+Plan real accepted and rejected compiler/application runs plus missing output,
+substituted builder/component, stale/incorrect comparison, seed-boundary and
+required trust/metadata failures relevant to the selected increment. Preserve
+actual process exits, logs, artifacts, diagnostics, exact lineage, conformance
+and residual TCB. Apply focused checks during implementation and the complete
+required stable-candidate suite at admission/release.
+
+Refine only the selected existing authority. Preserve current operation holds,
+signing custody and writer reservations; record failed/unrun work explicitly.
+Independent review and coordinator integration remain separate from author
+validation, and final product acceptance does not close wider language scope.
+
+## Current governance consumer composition
+
+The existing first task now carries the proposed consumer block in
+[tasks.md](tasks.md#implementation-tasks), linking its release evidence to
+[the existing governance producer authority](../evolution-workflow/tasks.md).
+The original task body, IDs, Open states and historical receipts remain intact;
+the additional criteria are a current reconciliation proposal, not accepted
+implementation. The historical four-contract navigation table below keeps its
+original no-amendment scope; it does not describe this later consumer addition.
+
+Select the exact applicable release/change/library/target/experiment/package
+subject and consume real scoped producer/checker outputs and actual conformance,
+including missing/stale/wrong-scope refusals at the real release consumer.
+Retain GOV2 comparison dimensions, GOV7 use/expiry metadata, GOV8 tests/schedules
+and distinct GOV4/GOV9 reviews. Do not require unrelated governance tasks to
+finish before isolated release tooling can develop. Required independent
+current-composition review and exact-candidate release acceptance remain
+separate; no policy approval or final release action is performed here.
+
+## Historical workflow-transfer plan
+
 # Implementation plan: Release workflow migration
 
 Spec: [spec.md](spec.md). Owner: backend workflow migration owner.

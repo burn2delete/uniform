@@ -1,3 +1,62 @@
+# Runtime implementation specification
+
+Implementation scope added under the 2026-11-01 request. Existing runtime,
+memory, concurrency, FFI, workflow/AI and enforcement owners retain their scope.
+Historical workflow migration below supplies no execution or release acceptance.
+
+## Behavior and interfaces
+
+Implement [the Runtime outcome](../../docs/component-roadmaps/runtime.md#release-outcome)
+under the complete R1-R12 contracts retained below and their profile/safety
+inputs. Actual Lower/backend artifacts and explicit runtime/provider/grant/
+schema/safety contracts select and execute declared services. Produce actual
+linked/generated/delegated/external/forbidden service tables, startup/failure/
+cleanup behavior, typed adapters, memory/concurrency/resource state,
+enforcement and replay/audit/diagnostic artifacts with source/generated links.
+
+Runtime enforces compiler facts; it cannot repair illegal source or grant
+authority. A service manifest must agree with actual linked/loaded code and
+invoked helpers. The [compiler-services outcome](../../docs/component-roadmaps/runtime.md#selected-compiler-runtime-outcome)
+selects the exact subset required by the compiler recipe using the same task
+records; wider managed/native/distributed/AI/interactive/device families retain
+their independent full requirements. Compiler bootstrapping does not require
+every runtime family to be complete before ordinary development can start.
+
+## Existing implementation routes and acceptance
+
+Use [the sole marked ledger](tasks.md#implementation-tasks) under
+`runtime/remaining-tasks-and-evidence/`. Existing task criteria/status,
+finer source joins and receipts remain with their owners.
+
+| Existing suffix | Required accepted behavior | Required rejection and evidence |
+| --- | --- | --- |
+| `implement-explicit-family-selection-and-no-runtime-rejection` | Select real profile/target/backend/package-compatible families and classify every required service; inspect actual link/load dependencies. No-runtime artifacts declare startup/reset/sections/memory/stack/failure and actual generated/static support. | Reject hidden GC/allocator/scheduler/reflection/eval/host IO or unsupported dynamic behavior. Required target memory/stack/timing facts remain semantic constraints; no-runtime does not excuse missing safety checks or proofs. |
+| `finish-managednative-execution-startup-panic-and-cleanup` | Execute selected startup/init/teardown, panic/trap/result/unwind and deterministic resource cleanup. Managed adapters preserve Gravity collection/equality/hash/null/error semantics; native helpers declare effects, providers and debug/release behavior. | Reject undeclared helpers, hidden managed dependencies, unchecked nullish/host failures, GC-only linear cleanup and hosted leakage into constrained profiles. Capture actual results and source-bound failures with manifest-to-service agreement. |
+| `implement-memory-concurrency-and-typed-ffi-boundaries` | Implement selected allocation/region/arena/lifetime/transfer/device services, structured tasks/cancellation, atomics/sync/channels/actors and typed foreign calls/handles/callbacks with real provider/ABI/layout/ownership facts. | Exercise invalid lifetime/alias/race/linear/device-sync and foreign null/error/thread/authority cases, wrong allocator/provider and unsupported atomics. Reject raw externs from safe code, missing wrapper invariants and orphan tasks. Cancellation and every relevant exit preserve required cleanup. |
+| `connect-distributedai-replay-and-interactive-execution` | Execute actual durable graphs/services, schema-versioned messages/state and replay/idempotency/retry/cancel/compensation; AI model/tool/prompt/memory/taint/secret/review boundaries; checked REPL forms and captured build-affecting session/hot-reload state. | Reject live external calls in replay, missing/mismatched events, repeated side effects, incompatible schema/log changes, unvalidated generated code, injection/secret leakage and ungranted REPL/debug access. Runtime/domain/backend/Effects owners compose actual handlers and suspension/resume/cleanup behavior. |
+| `close-enforcement-and-observability-integration` | Apply R11 deny/grant/delegate/revoke decisions at real action hooks with principal/source/artifact/provider policy and caller/callee contracts. R12 events retain stable schemas, redaction, source/proof/authority/replay and mandatory audit records. | Observe zero action side effects after denial; reject widening, stale/revoked/wrong-phase handles, ungranted sinks, leaks, lost origins/audit under sampling and observability that changes ordering or replay. A supplied denial or log entry is not actual enforcement. |
+
+R8 and related source text still contain project accounting/budget clauses
+superseded by the current removal decision. Preserve those occurrences and the
+existing accounting-removal route without imposing cost/token/call allowances
+on otherwise valid project work. Real provider/account billing, actual host
+restrictions, capability policy, schema validation, resource lifetime and
+declared target latency requirements remain separate.
+
+## Starting work and completion
+
+Explicit service/ABI/provider interfaces and versioned fixtures permit local
+implementation. Integrated service acceptance needs actual Lower/backend
+products, actual runtime/foreign/provider actions and owning diagnostics;
+selected compiler-service acceptance does not close wider families. Complete
+each claimed family with its required positive/negative execution, actual
+service dependency inspection, cleanup, redaction/replay and artifact evidence.
+Preserve operation holds, reserved writers and trust/custody boundaries.
+Independent acceptance, integration, complete runtime coverage and final
+seedless release remain distinct.
+
+## Historical workflow-transfer specification
+
 # Feature specification: Runtime workflow migration
 
 Status: prepared; review and integration pending.

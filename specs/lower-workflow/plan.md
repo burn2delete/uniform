@@ -1,3 +1,28 @@
+# Target lowering implementation planning entry
+
+Select one unresolved [existing task](tasks.md#implementation-tasks), preserving
+the transfer plan below. Read [spec.md](spec.md), C14/B1 and the actual selected
+backend/runtime/ABI and operation contracts. Locate current semantic source,
+temporary adapters and focused tests through
+[development verification](../../docs/development-verification.md) and the
+[stage ownership table](../../docs/bootstrap/stage-owned-namespaces.md).
+
+Name verified input/fact identities, supported operation, exact target/ABI/
+runtime tuple, provider/grants, target assumptions and actual Emit consumer.
+Provide one real legal lowering and relevant stale/unverified/unsupported,
+layout/service/authority or proof-metadata negatives. Observe emitted decisions,
+diagnostics and preserved check/source/proof edges. Fixtures may establish a
+local interface, while acceptance of actual code generation needs the selected
+real adapter/toolchain and services.
+
+Run focused owner tests and affected MIR/Opt/Emit/Runtime composition; preserve
+existing domain and execution restrictions. Refine only the selected task,
+recording exact passed, failed or unrun cases and residual target/host bounds.
+Do not replace actual layouts or helper linkage with manifest assertions.
+Independent acceptance, other target families and release remain separate.
+
+## Historical task-authority-transfer plan
+
 # Implementation plan: Lower task authority
 
 Spec: [spec.md](spec.md) | Evidence: [evidence.md](evidence.md)

@@ -1,0 +1,415 @@
+{:additional-pinned-evidence-hashes
+ {"docs/phase-02-safety/043-safe14-supply-chain-safety.md"
+  "403faf1d18dab790276e8c5072ca42821e9754856127b73e72eef52ceb28a1f5",
+  "docs/phase-05-mathematical-and-elementary-function-system/README.md"
+  "03e284a061857a0d0fc4a2c2f87ffdc73841fa96bebf36f64a02014aa6a68960",
+  "docs/phase-17-governance-and-evolution/240-gov10-ecosystem-package-governance-policy.md"
+  "aebf4b6087817fd1f5c140868e0225989322c4cfb8f7fa5953ca3fe0f22cf0a3",
+  "specs/lower-workflow/tasks.md"
+  "0ef7630d5e962068e47bfb85cd1028fd070b24656f0dd922148e72976ded84d2"},
+ :stable-task-routing-additions
+ {"evolution"
+  ["evolution/change-review"
+   "evolution/experiment-lifecycle"
+   "evolution/library-admission"
+   "evolution/namespace-decision"
+   "evolution/registry-yank"
+   "evolution/rfc-review"
+   "evolution/security-response"
+   "evolution/security-review"
+   "evolution/stabilization-decision"
+   "evolution/target-support-admission"]},
+ :source-input-commit "a9fc9b1c63c0eb344f29bb63d985f71e6c24af24",
+ :task-comparisons
+ {:unchanged-body-count 135,
+  :changed-bodies
+  [{:id "schema",
+    :path "specs/domains-workflow/tasks.md",
+    :before-sha256
+    "1bd123b4c7d4a0e2bd4e5db7ea35139e20fea0e213fcdde01d410e14a9610491",
+    :after-sha256
+    "090ebddb1a52d1b6a31e836e5af5a2e2b1cb710420c77db2b2890e98fb709ac5",
+    :before-checked false,
+    :after-checked false}
+   {:id
+    "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+    :path "specs/release-workflow/tasks.md",
+    :before-sha256
+    "6ed5c4fd6fb06f3b69f7d23d582da2a7f02c1c54e64355632c3e0583951ea7a8",
+    :after-sha256
+    "d68951f82d2460dffcaa81438b09ffccadf0cfea8c93dcbe8e7e114bb53f72ae",
+    :before-checked false,
+    :after-checked false}
+   {:id
+    "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+    :path "specs/build-workflow/tasks.md",
+    :before-sha256
+    "23ef09b364fb42c5b5a82282754a86aca93485960a84b7f867055d9db121c035",
+    :after-sha256
+    "497f2ff15a9d3f33b238f41ea6d9becc0337fcd6a925fa6e96dfb7207cd6eb3c",
+    :before-checked false,
+    :after-checked false}
+   {:id
+    "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+    :path "specs/build-workflow/tasks.md",
+    :before-sha256
+    "7a7db16975f44a184adf011b3a81830c272cbe00dd5b707f0a375bbed65f6958",
+    :after-sha256
+    "647eccb8560e766ebecabbd7ca9c5e2f6d26f3c08d46b87cd6cf7fe96672b946",
+    :before-checked false,
+    :after-checked false}],
+  :added-ids
+  ["evolution/change-review"
+   "evolution/experiment-lifecycle"
+   "evolution/library-admission"
+   "evolution/namespace-decision"
+   "evolution/registry-yank"
+   "evolution/rfc-review"
+   "evolution/security-response"
+   "evolution/security-review"
+   "evolution/stabilization-decision"
+   "evolution/target-support-admission"],
+  :removed-ids [],
+  :checkbox-states-changed []},
+ :source-files
+ [{:path "specs/auth-workflow/tasks.md",
+   :before
+   {:commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "9db81aa1c8ef183a9da8656a343a29fd9104b10e7130fd63ba4e52b75ce2b256"},
+   :after
+   {:commit "69831d09bc2007844265968b265c493cf064bdf9",
+    :sha256
+    "7afee81509aaab0f2787caace71c7966cdb5fe1c0792e1fafbbc12db650a96a1"},
+   :scope :task-file-version}
+  {:path "specs/backends-workflow/tasks.md",
+   :before
+   {:commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "62635384fb49256f61776d64827abb86b2179cf2f34b8349c4909e9338bb23a0"},
+   :after
+   {:commit "69831d09bc2007844265968b265c493cf064bdf9",
+    :sha256
+    "11a2f0af81732e0f9759a0553d037f304d5aeee0accd26f0a983f233d7f6b54f"},
+   :scope :task-file-version}
+  {:path "specs/build-workflow/tasks.md",
+   :before
+   {:commit "3bd7e21145dfe5d71f45375f6e787b384d361e2e",
+    :sha256
+    "6c88f677477ec41d755dbedd39d1e03de7c9ae81cc9a956a48c8cf319bfca1b0"},
+   :after
+   {:commit "3e34a600c7e139abb0cf51673ef9175dae1b1eba",
+    :sha256
+    "beb27b61e41d554e3bca856cb44eeb6d70221e0f289a04ed5ed87e0e71c31980"},
+   :scope :task-file-version}
+  {:path "specs/core-workflow/tasks.md",
+   :before
+   {:commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "e719f4d797af9e25867f5248a148f7698068e9ef7e50dcc7f1e3c25622dc1e97"},
+   :after
+   {:commit "69831d09bc2007844265968b265c493cf064bdf9",
+    :sha256
+    "40a5b6c724741f3efc6dc3b16780bfb0d0656c649648d6165e328166a24aea95"},
+   :scope :task-file-version}
+  {:path "specs/diag-workflow/tasks.md",
+   :before
+   {:commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "a4b029e285344368079a3120f387217c01468fbc11f24aff8cf219c9284128b4"},
+   :after
+   {:commit "69831d09bc2007844265968b265c493cf064bdf9",
+    :sha256
+    "c3c0c33e30aa33d70afca4b863be94f7412a8d154df566e96f433dfbaacae502"},
+   :scope :task-file-version}
+  {:path "specs/domains-workflow/tasks.md",
+   :before
+   {:commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4"},
+   :after
+   {:commit "a9fc9b1c63c0eb344f29bb63d985f71e6c24af24",
+    :sha256
+    "03ff39f97775b2e976a6ef98adef3a51e78bb8e8e0ed265b18880ecda2824126"},
+   :scope :task-file-version}
+  {:path "specs/effects-workflow/tasks.md",
+   :before
+   {:commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "af28151cd4bd37b7be8293e1a5d5385fc94e7d743a60cd45275bc0687528a3a0"},
+   :after
+   {:commit "69831d09bc2007844265968b265c493cf064bdf9",
+    :sha256
+    "45419d6bc208ae0df187dfe7c0105d3434d19c8d7deed0d7dfc52da7a4e7ad3e"},
+   :scope :task-file-version}
+  {:path "specs/emit-workflow/tasks.md",
+   :before
+   {:commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "9170cd18bcc29ea8d327842e12b0714793e7fe7caffc9d225ec2cec3e9ce261f"},
+   :after
+   {:commit "69831d09bc2007844265968b265c493cf064bdf9",
+    :sha256
+    "c72d61bd0cfd5009b91209f9287d9a17b48b7c47bfd6c9e1395ec8b3ad6b0e1a"},
+   :scope :task-file-version}
+  {:path "specs/expand-workflow/tasks.md",
+   :before
+   {:commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "e1cf578f48991336eb885172b3f829a150dd856de018b47f52fb8e2dfc51b63f"},
+   :after
+   {:commit "69831d09bc2007844265968b265c493cf064bdf9",
+    :sha256
+    "216dbb577f552d65f263bc7943a847b77500de1f50e06f5cb340e5419054ed74"},
+   :scope :task-file-version}
+  {:path "specs/legality-workflow/tasks.md",
+   :before
+   {:commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "937ed9cf0a8a7272559564344141fff0f1e3db34c9deef4106ab3ca958354f9e"},
+   :after
+   {:commit "69831d09bc2007844265968b265c493cf064bdf9",
+    :sha256
+    "7ea9be2215a02987c86a57bb300fbe948391a46d1464353d1fe588e6a97f0007"},
+   :scope :task-file-version}
+  {:path "specs/lower-workflow/tasks.md",
+   :before
+   {:commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "9be5eed80229ee59fe35b2279fe95a40e9aeee977a503739bfa3fdd9e3eea48c"},
+   :after
+   {:commit "69831d09bc2007844265968b265c493cf064bdf9",
+    :sha256
+    "0ef7630d5e962068e47bfb85cd1028fd070b24656f0dd922148e72976ded84d2"},
+   :scope :task-file-version}
+  {:path "specs/mir-workflow/tasks.md",
+   :before
+   {:commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6"},
+   :after
+   {:commit "69831d09bc2007844265968b265c493cf064bdf9",
+    :sha256
+    "866445b8e7591782d51f8646d304ad40652e3bf76643bd4de9f897f0555d9c93"},
+   :scope :task-file-version}
+  {:path "specs/opt-workflow/tasks.md",
+   :before
+   {:commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "8589cf09e8da65fda363f25f01612e3363a8fd4fe70f2adca8a8194baceea908"},
+   :after
+   {:commit "69831d09bc2007844265968b265c493cf064bdf9",
+    :sha256
+    "4422b1927be2fbd877aa5ee9bf208f44a30b5da0b4b14282c5ee58a503113225"},
+   :scope :task-file-version}
+  {:path "specs/reader-workflow/tasks.md",
+   :before
+   {:commit "2e0292c61603aad200df397e397e94e3c7d24818",
+    :sha256
+    "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e"},
+   :after
+   {:commit "69831d09bc2007844265968b265c493cf064bdf9",
+    :sha256
+    "9e278efbe41cc3d6e9f83eca2ea5b670c9cd83641876ce7cb317808bb7314181"},
+   :scope :task-file-version}
+  {:path "specs/release-workflow/tasks.md",
+   :before
+   {:commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "fc53749a4bdd702bf2fa459dec56839a74b030af24856b580c5e4dac88a14d2a"},
+   :after
+   {:commit "3e34a600c7e139abb0cf51673ef9175dae1b1eba",
+    :sha256
+    "b69596d5877efcb89bed17e6e5872d35acfcd9caf15b24ab124a51c964e0ae1d"},
+   :scope :task-file-version}
+  {:path "specs/resolve-workflow/tasks.md",
+   :before
+   {:commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "7c3b0ec9ae3b84b0fab4d58c054660d8e8f1e51532cb537bd5a01e53aa670ce4"},
+   :after
+   {:commit "69831d09bc2007844265968b265c493cf064bdf9",
+    :sha256
+    "17013d1a1ad2f63a5191d5495d5104e93888c31039c7d8537c9504ff74336181"},
+   :scope :task-file-version}
+  {:path "specs/syntax-workflow/tasks.md",
+   :before
+   {:commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "11c3f7c40cd0b8c6364491439d10735a0105a1dbec242566457d293d0dfa1f10"},
+   :after
+   {:commit "69831d09bc2007844265968b265c493cf064bdf9",
+    :sha256
+    "feadfc4136f886d5981efedfb8f52d1a3a3e68a1858af3e7fd31e5924b8be6d5"},
+   :scope :task-file-version}
+  {:path "specs/types-workflow/tasks.md",
+   :before
+   {:commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "9b76c2473d472b2d95a26420c4784837dc36e13a2226043efc7bb4a14a47f72e"},
+   :after
+   {:commit "69831d09bc2007844265968b265c493cf064bdf9",
+    :sha256
+    "13149ad814bebd312dd5c371ff88ff06255848e86d23b02e2d94922c1240f10f"},
+   :scope :task-file-version}
+  {:path "specs/evolution-workflow/tasks.md",
+   :before nil,
+   :after
+   {:commit "b69133db3237dc47c5fce321763ae4a3b0532cc4",
+    :sha256
+    "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31"},
+   :scope :resumed-governance-authority}
+  {:path "docs/component-roadmaps/README.md",
+   :before
+   {:projection-input-sha256
+    "27f7e47b81c81cd08ef336ca31926f5d9e1bcb87698381ef5cd45887f3733f7c",
+    :scope :captured-predecessor-navigation},
+   :after
+   {:commit "b69133db3237dc47c5fce321763ae4a3b0532cc4",
+    :sha256
+    "a2e38e1c61ca5c714a1bcc098fb799e9cbd1a1e1023c4a6d9c6015fa969cab59"},
+   :scope :governance-navigation}
+  {:path "docs/component-roadmaps/evolution.md",
+   :before nil,
+   :after
+   {:commit "b69133db3237dc47c5fce321763ae4a3b0532cc4",
+    :sha256
+    "c4340284ef570e4727664f877106977fcf301db1663b4491c204f4871ee2549e"},
+   :scope :governance-navigation}
+  {:path "docs/component-roadmaps/build.md",
+   :before
+   {:commit "3bd7e21145dfe5d71f45375f6e787b384d361e2e",
+    :sha256
+    "6c323fdbff67d18fd000161d27e44da2a57734f9d4e52c6acde4127eaaf8dc04"},
+   :after
+   {:commit "69831d09bc2007844265968b265c493cf064bdf9",
+    :sha256
+    "b7f0951cbe6350ca02fc8962fbc88621b4fd64620bed4f49bc33456e8988db73"},
+   :scope :navigation-version-only}
+  {:path "docs/component-roadmaps/reader.md",
+   :before
+   {:commit "2e0292c61603aad200df397e397e94e3c7d24818",
+    :sha256
+    "ddb5e1fbcb9fce7e8e6813b37c6608b5844a3dbfdc5f7a2ea6c74ff195f252b4"},
+   :after
+   {:commit "69831d09bc2007844265968b265c493cf064bdf9",
+    :sha256
+    "a65409190dc3fc44e907feb86b80afa8e2c6dd9ef87ba742d8850399d62b4c65"},
+   :scope :navigation-version-only}
+  {:path "docs/component-roadmaps/compiler-api.md",
+   :before
+   {:commit "f25e6f571e610587da8142f5b0fc33e7806d440e",
+    :sha256
+    "ae1de98a3b98f88fd36816c965f89688ed99a8c76dad1d6c24d99226d529ceb8"},
+   :after
+   {:commit "69831d09bc2007844265968b265c493cf064bdf9",
+    :sha256
+    "375affc3a9cb5df192807d07179f2453587c58628af1d6da8451aa802f72446a"},
+   :scope :navigation-version-only}],
+ :inspection-locators
+ {"docs/phase-02-safety/043-safe14-supply-chain-safety.md"
+  {:commit "697917447d70ba0797a096d9427d4706bf5515df",
+   :sha256
+   "403faf1d18dab790276e8c5072ca42821e9754856127b73e72eef52ceb28a1f5",
+   :kind :source-inspection-not-execution},
+  "docs/phase-05-mathematical-and-elementary-function-system/README.md"
+  {:commit "697917447d70ba0797a096d9427d4706bf5515df",
+   :sha256
+   "03e284a061857a0d0fc4a2c2f87ffdc73841fa96bebf36f64a02014aa6a68960",
+   :kind :source-inspection-not-execution},
+  "docs/phase-17-governance-and-evolution/240-gov10-ecosystem-package-governance-policy.md"
+  {:commit "7c408997aedbe79953cac5a60c97d6370ca4c2e1",
+   :sha256
+   "aebf4b6087817fd1f5c140868e0225989322c4cfb8f7fa5953ca3fe0f22cf0a3",
+   :kind :source-inspection-not-execution},
+  "specs/lower-workflow/tasks.md"
+  {:commit "69831d09bc2007844265968b265c493cf064bdf9",
+   :sha256
+   "0ef7630d5e962068e47bfb85cd1028fd070b24656f0dd922148e72976ded84d2",
+   :kind :source-inspection-not-execution}},
+ :source-criteria
+ {:original-sh-criteria 180,
+  :original-milestones 30,
+  :original-sh07-sequence 18,
+  :changed-source-criteria [],
+  :changed-original-routes []},
+ :status :pending-independent-source-version-and-composition-review,
+ :predecessor
+ {:commit "a9fc9b1c63c0eb344f29bb63d985f71e6c24af24",
+  :path "specs/sh-family-crosswalk/crosswalk.edn",
+  :sha256
+  "8ca880401041ef653e7137a25859dfdb1bc8e2c2b0bda4aff5a297408578bf2c",
+  :review
+  {:status :pending-source-version-review,
+   :input-fingerprint
+   "f16680ce6e29658f827e6a50a5bd13fd3c90241aeb01614e4465422c40533f8e",
+   :source-version-bridge
+   "specs/sh-family-crosswalk/resolution-runtime-composition-source-version.edn"}},
+ :kind :implementation-readiness-task-source-version,
+ :retained-historical-source-inputs
+ {"docs/self-hosting-slice-ownership.edn"
+  {:commit "c8fd8e437ef921041b181e2f09ee1a37d716d357",
+   :sha256
+   "868180b50622c3646deaf1ff25a380eb996db868ae7c8a43f2faf8afbf1522ed",
+   :live-inspected-sha256
+   "4ee538fce884ae04d1dbaf22ea54d9aee0e32abbbb071272f7115baf9da141ad",
+   :scope :retained-historical-ownership-not-current-authority}},
+ :qualification
+ "Bind exact task-file versions and the resumed Governance authority. Four Open task bodies add current proposed source/consumer criteria; all other captured task bodies and checkboxes are conserved. Governance is not a compiler pass or new SH milestone. Sixteen separate future Domains records remain outside the current SH task-key projection. Earlier source/routing/implementation receipts remain historical at their exact subjects; no independent acceptance, implementation or seedless credit is renewed.",
+ :applying-source-pins
+ {"specs/release-workflow/tasks.md"
+  "3e34a600c7e139abb0cf51673ef9175dae1b1eba",
+  "docs/component-roadmaps/build.md"
+  "69831d09bc2007844265968b265c493cf064bdf9",
+  "docs/component-roadmaps/README.md"
+  "b69133db3237dc47c5fce321763ae4a3b0532cc4",
+  "specs/opt-workflow/tasks.md"
+  "69831d09bc2007844265968b265c493cf064bdf9",
+  "specs/diag-workflow/tasks.md"
+  "69831d09bc2007844265968b265c493cf064bdf9",
+  "docs/component-roadmaps/evolution.md"
+  "b69133db3237dc47c5fce321763ae4a3b0532cc4",
+  "specs/reader-workflow/tasks.md"
+  "69831d09bc2007844265968b265c493cf064bdf9",
+  "docs/phase-17-governance-and-evolution/240-gov10-ecosystem-package-governance-policy.md"
+  "7c408997aedbe79953cac5a60c97d6370ca4c2e1",
+  "specs/core-workflow/tasks.md"
+  "69831d09bc2007844265968b265c493cf064bdf9",
+  "specs/mir-workflow/tasks.md"
+  "69831d09bc2007844265968b265c493cf064bdf9",
+  "docs/component-roadmaps/reader.md"
+  "69831d09bc2007844265968b265c493cf064bdf9",
+  "docs/component-roadmaps/compiler-api.md"
+  "69831d09bc2007844265968b265c493cf064bdf9",
+  "specs/expand-workflow/tasks.md"
+  "69831d09bc2007844265968b265c493cf064bdf9",
+  "docs/phase-05-mathematical-and-elementary-function-system/README.md"
+  "697917447d70ba0797a096d9427d4706bf5515df",
+  "specs/effects-workflow/tasks.md"
+  "69831d09bc2007844265968b265c493cf064bdf9",
+  "specs/build-workflow/tasks.md"
+  "3e34a600c7e139abb0cf51673ef9175dae1b1eba",
+  "specs/auth-workflow/tasks.md"
+  "69831d09bc2007844265968b265c493cf064bdf9",
+  "specs/resolve-workflow/tasks.md"
+  "69831d09bc2007844265968b265c493cf064bdf9",
+  "specs/legality-workflow/tasks.md"
+  "69831d09bc2007844265968b265c493cf064bdf9",
+  "specs/syntax-workflow/tasks.md"
+  "69831d09bc2007844265968b265c493cf064bdf9",
+  "specs/types-workflow/tasks.md"
+  "69831d09bc2007844265968b265c493cf064bdf9",
+  "specs/domains-workflow/tasks.md"
+  "a9fc9b1c63c0eb344f29bb63d985f71e6c24af24",
+  "docs/phase-02-safety/043-safe14-supply-chain-safety.md"
+  "697917447d70ba0797a096d9427d4706bf5515df",
+  "specs/backends-workflow/tasks.md"
+  "69831d09bc2007844265968b265c493cf064bdf9",
+  "specs/evolution-workflow/tasks.md"
+  "b69133db3237dc47c5fce321763ae4a3b0532cc4",
+  "specs/lower-workflow/tasks.md"
+  "69831d09bc2007844265968b265c493cf064bdf9",
+  "specs/emit-workflow/tasks.md"
+  "69831d09bc2007844265968b265c493cf064bdf9"},
+ :input-fingerprint
+ "16d78e4406ac3b0ee25a8f9a5c70d8b77fedf366beb1607d1914e42a6a201aa3"}

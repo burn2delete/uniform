@@ -1,3 +1,30 @@
+# Auth implementation planning entry
+
+Select one unresolved record from [tasks.md](tasks.md#implementation-tasks),
+preserving the historical transfer plan below and current source-family owner
+refinements. Read [spec.md](spec.md) and the complete selected rules in
+[contract alignment](#contract-alignment). Locate current semantic source,
+temporary transports and action consumers through
+[development verification](../../docs/development-verification.md) and the
+[stage ownership table](../../docs/bootstrap/stage-owned-namespaces.md).
+
+Name the actual principal, effects, requested/denied/granted capabilities,
+provider, phase/lifetime and package/build/deployment policy. For trust work
+name exact canonical subject/source/compiler/dependency/recipe inputs, schema,
+trust roots, required evidence and real consumer. Construct an allowed case and
+selected denial/tamper/stale/mismatch cases that reach that consumer; observe
+that no externally visible action occurs after denial. Fixture handles carry
+no unrequested live authority, and logs must exercise redaction.
+
+Use focused owner tests plus affected Effects/Legality and actual runtime/build
+or artifact consumer composition. Keep signing custody and policy decisions
+with their existing owners, and do not retry any denied operation. Refine only
+the selected authoritative task. Record exact passed, failed and unrun evidence,
+residual host/trust assumptions, independent review and integration separately.
+A structurally valid manifest or supplied verdict does not close enforcement.
+
+## Historical task-authority-transfer plan
+
 # Implementation plan: Auth task authority
 
 Spec: [spec.md](spec.md) | Evidence: [evidence.md](evidence.md)

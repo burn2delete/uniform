@@ -1,3 +1,29 @@
+# Runtime implementation planning entry
+
+Select one unresolved [existing task](tasks.md#implementation-tasks), preserving
+the historical transfer plan below. Read [spec.md](spec.md), the complete
+selected R1-R12 family rules and relevant profile/safety/provider/ABI contracts.
+Locate actual Gravity runtime semantics and temporary service adapters through
+[development verification](../../docs/development-verification.md) and the
+[stage ownership table](../../docs/bootstrap/stage-owned-namespaces.md).
+
+Bind the actual artifact/profile/target, service classifications, linked/loaded
+helpers, provider/grants, resource and failure/cleanup behavior and consumers.
+Define a real allowed operation and relevant forbidden-service, lifetime/race,
+foreign-boundary, denial, redaction, replay or session-invalidation negatives.
+For handlers include suspension/resume/cancel/finalization and actual interpreted
+behavior; metadata alone cannot establish it. Provider fixtures remain explicit
+and cannot waive ordinary legality or held live execution.
+
+Run focused family tests and affected Lower/backend/Effects/Auth/domain/CLI
+composition. Inspect actual dependencies and action side effects, preserve
+source/diagnostic/artifact identities and record failed/unrun work. Refine only
+the existing selected task. Distinguish compiler-service subset acceptance,
+wider families, independent review/integration and release; do not restore
+removed project accounting as a runtime admission requirement.
+
+## Historical workflow-transfer plan
+
 # Implementation plan: Runtime workflow migration
 
 Spec: [spec.md](spec.md). Owner: backend workflow migration owner.

@@ -1,3 +1,30 @@
+# Legality implementation planning entry
+
+Select one unresolved record from [tasks.md](tasks.md#implementation-tasks),
+preserving the historical transfer plan below. Read the complete applicable
+profile, safety and C9/C10 rules in [contract alignment](#contract-alignment)
+and [spec.md](spec.md); retain existing source-family refinements and ownership.
+Locate current semantic source and temporary transport through
+[development verification](../../docs/development-verification.md) and the
+[stage ownership table](../../docs/bootstrap/stage-owned-namespaces.md).
+
+Name actual Core/control-flow inputs, profile/target/provider assumptions,
+effects/grants, memory model, source origins and affected consumer. For each
+selected rule, supply a legal program and a forbidden or missing-evidence case
+whose difference exercises the rule. For memory/continuation work include the
+relevant exit, suspension, cancellation and cleanup paths. For proof or runtime
+checks bind the exact operation and demonstrate changed-input invalidation.
+
+Use focused owner tests and affected Types/Effects/Auth/MIR or runtime/backend
+composition, including an actual retained check where claimed. Do not replace
+semantic analysis with supplied verdicts or turn real target constraints into
+compiler accounting. Refine only the selected existing authoritative task.
+Record exact source/fixture/consumer identities and passed, failed or unrun work;
+preserve operation restrictions and separate author checks, independent
+acceptance, integration and the complete profile/provider matrix.
+
+## Historical task-authority-transfer plan
+
 # Implementation plan: Legality task authority
 
 Spec: [spec.md](spec.md) | Evidence: [evidence.md](evidence.md)

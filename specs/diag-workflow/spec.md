@@ -1,3 +1,51 @@
+# Diagnostic implementation specification
+
+Implementation scope added under the 2026-11-01 request. Producer stages retain
+rule decisions; diagnostic infrastructure retains shared schema, identity,
+ordering and rendering. Historical transfer below confers no semantic acceptance.
+
+## Behavior and interfaces
+
+Implement [the Diagnostics outcome](../../docs/component-roadmaps/diag.md#release-outcome)
+under C15, L9 and R12 retained below. Consume real producer diagnostics and
+source/generated/artifact context, semantic facts and authorized redaction
+policy. Produce schema-valid ordered streams, stable rule/diagnostic identities,
+primary/related/origin maps, typed remediation/quick-fix records, secret-safe
+public views, explain/catalog output and golden fixtures for CLI/editor/CI,
+runtime and Build consumers.
+
+Identity derives from rule, primary artifact, stage and semantic facts, not
+display wording. Preserve actual producer locations and explicit unavailable
+metadata: early Reader profile/target/syntax-id keys remain nil until produced.
+Private construction data or an unresolved digest request cannot become public
+diagnostic identity. Severity and lifecycle stay distinct; suppression retains
+the internal audit record, and rendering cannot legalize a blocking error.
+
+## Existing implementation routes and acceptance
+
+Use [the sole marked ledger](tasks.md#implementation-tasks) under
+`diag/remaining-tasks-and-evidence/`; preserve existing criteria, source joins,
+status and scoped receipts.
+
+| Existing suffix | Required accepted behavior | Required rejection and evidence |
+| --- | --- | --- |
+| `reconcile-stage-carriers-with-canonical-record-schema` | Normalize actual stage carriers to complete C15 fields without fabricating context; preserve producer rule and typed facts, severity/lifecycle and structured remediation. | Reject malformed/missing fields, unstable or duplicate IDs, invalid locations/facts and unsupported schema. Include real early/unavailable and internal-error cases, not supplied complete records alone. |
+| `preserve-primaryrelatedgenerated-origins-and-stable-order` | Carry actual primary/related roles and source/generated/producer chains through macros, optimized IR, lowering and downstream views; order deterministically under fixed semantic inputs. | Reject lost/substituted origins, invalid spans, wording-based IDs and nondeterministic order. Exercise actual generated and optimized-source failures with original locations. |
+| `close-textjsonredaction-and-explain-contracts` | Render text/JSON and explain/remediation/quick-fix views from the same canonical record with compatible rule IDs and policy-safe redaction markers. Retain localization support without wording-based semantic goldens. | Reject secret/private-value leakage, fabricated explain results and text/JSON fact disagreement. Assert rule/severity/span/roles/stage/profile/target/facts/remediation/redaction/order; wording improvements alone do not fail semantic goldens. |
+| `integrate-runtimebuildeditor-consumers-without-rule-drift` | Feed actual runtime/Build/CLI/editor/CI consumers the same diagnostic identity and facts on normal and failure paths, preserving allowed redaction and runtime event/artifact links. | Reject consumer suppression of blocking failures, missing schema/source links and unauthorized diagnostic publication. Actual producer-to-consumer execution is required beyond carrier or projection helpers. |
+
+## Starting work and completion
+
+Canonical carrier and rendering fixtures permit local work while producer
+components mature. Real composition requires actual producer failures and
+consumer views, including generated code and runtime/Build failure paths.
+Completion needs parity across all claimed stages/consumers, stable semantic
+goldens, redaction and exact source/fixture/consumer evidence. Preserve writer
+reservations, publication restrictions and prior scoped evidence; independent
+acceptance, integration and whole compiler release remain separate.
+
+## Historical task-authority-transfer specification
+
 # Feature specification: Diagnostics implementation workflow
 
 Status: task-authority candidate; independent review and integration pending.

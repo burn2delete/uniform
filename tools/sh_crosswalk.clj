@@ -5,9 +5,15 @@
 (binding [*command-line-args* nil] (load-file "tools/sh_inventory.clj") (load-file "tools/acceptance_dependencies.clj"))
 (require '[sh-inventory] '[acceptance-dependencies])
 (def baseline "254a5b50ea5e2825c424248c9216802cc866c0fd")
-(def applying-source-pins
+(def predecessor-applying-source-pins
   {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/component-roadmaps/build.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "docs/component-roadmaps/compiler-api.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "docs/component-roadmaps/reader.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/self-hosting-slice-ownership.edn" "c8fd8e437ef921041b181e2f09ee1a37d716d357", "specs/build-workflow/tasks.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "specs/compiler-api-workflow/tasks.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "specs/reader-workflow/tasks.md" "2e0292c61603aad200df397e397e94e3c7d24818"})
-(def pinned-evidence-hashes
+(def readiness-source-version
+  (edn/read-string
+    (slurp "specs/sh-family-crosswalk/implementation-readiness-source-version.edn")))
+(def applying-source-pins
+  (merge predecessor-applying-source-pins
+         (:applying-source-pins readiness-source-version)))
+(def predecessor-pinned-evidence-hashes
   {"docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
  "6bf8d0fce1744526f500857eedfd03f11138ee4b0941c49ab787e5dacb5ba5d6",
  "bootstrap/clojure/src/gravity/authenticated_artifact_pipeline.clj"
@@ -235,6 +241,9 @@
  "docs/phase-18-binary-distribution-and-seedless-release/README.md"
  "45c126ec6370358245c666a2dda960a4f3d9666433f140552ade73dd52c486b5"}
 )
+(def pinned-evidence-hashes
+  (merge predecessor-pinned-evidence-hashes
+         (:additional-pinned-evidence-hashes readiness-source-version)))
 (defn source-pin [path] (get applying-source-pins path baseline))
 (def original-baseline "15a5499e97798621d270c36dd2546ce98ddd62a9")
 (def output-path "specs/sh-family-crosswalk/crosswalk.edn")
@@ -249,7 +258,7 @@
 
 ;; Integers below select pinned literal IDs, never live document/display order.
 ;; The mapping keys are local routing shorthand, not tasks or completion units.
-(def stable-task-routing-keys
+(def predecessor-stable-task-routing-keys
   {"auth"
  ["auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
   "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
@@ -399,6 +408,10 @@
   "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts"
   "types/current-evidence-and-remaining-work/types5-integrate-typed-core"]}
 )
+
+(def stable-task-routing-keys
+  (merge predecessor-stable-task-routing-keys
+         (:stable-task-routing-additions readiness-source-version)))
 
 (def routes
   [[[["mir" 1] ["lower" 1]] [["backends" "backend-wasm"] ["emit" 2]] [["backends" "backend-conformance"] ["emit" 4]] [["lower" 1] ["backends" "backend-interface"]] [["compiler-api" "pass-evidence"]] [["release" 5]]]
@@ -702,7 +715,7 @@
 (def resolution-runtime-predecessor-review
   (:resolution-runtime-predecessor-review resolution-runtime-current-review))
 
-(def mapping-review
+(def readiness-predecessor-mapping-review
   (assoc resolution-main-predecessor-review
          :input-fingerprint "f16680ce6e29658f827e6a50a5bd13fd3c90241aeb01614e4465422c40533f8e"
          :source-version-bridge "specs/sh-family-crosswalk/resolution-runtime-composition-source-version.edn"
@@ -714,6 +727,18 @@
                       [:status :input-fingerprint :source-version-bridge])
          :resolution-runtime-predecessor-review resolution-runtime-predecessor-review
          :qualification "Native and resolution ownership source composition only; immutable predecessor projections remain pinned, all current states unassessed."))
+
+(def mapping-review
+  (assoc readiness-predecessor-mapping-review
+         :status :pending-source-version-review
+         :input-fingerprint (:input-fingerprint readiness-source-version)
+         :source-version-bridge
+         "specs/sh-family-crosswalk/implementation-readiness-source-version.edn"
+         :implementation-readiness-predecessor-review
+         (select-keys readiness-predecessor-mapping-review
+                      [:status :input-fingerprint :source-version-bridge])
+         :qualification
+         "Exact task-source and Governance routing successor; four Open task bodies changed. Predecessor reviews retain their original subjects. Current source/routing, implementation and whole-SH acceptance remain pending."))
 
 (defn source-view []
   (let [inventory (edn/read-string (slurp "specs/sh-family-crosswalk/original-inventory.edn"))
@@ -752,7 +777,8 @@
                                     "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md"
                                     "docs/phase-18-binary-distribution-and-seedless-release/README.md"
                                     "docs/phase-18-binary-distribution-and-seedless-release/IMPLEMENTATION-ROADMAP.md"]
-                                  (mapcat (fn [[c rows]] (conj (mapv :path rows) (str "docs/component-roadmaps/" c ".md"))) tasks)))
+                                  (mapcat (fn [[c rows]] (conj (mapv :path rows) (str "docs/component-roadmaps/" c ".md"))) tasks)
+                                  (keys (:inspection-locators readiness-source-version))))
         requirements
         (mapv (fn [{:keys [id milestone source]}]
                 (let [n (Long/parseLong (subs milestone 3)) r (dec (Long/parseLong (subs id 6)))
@@ -802,6 +828,11 @@
     {:schema-version 2 :kind :sh-family-derived-crosswalk :authority :read-only-acceptance-rollup
      :applying-task-source-commit baseline :original-inventory-commit original-baseline
      :applying-source-pins applying-source-pins
+     :implementation-readiness-source-version
+     (select-keys readiness-source-version
+                  [:kind :status :source-input-commit :predecessor
+                   :task-comparisons :source-criteria
+                   :retained-historical-source-inputs])
      :pr574-macro-artifacts-composition
      {:path "specs/sh-family-crosswalk/pr574-macro-artifacts-composition.edn" :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/pr574-macro-artifacts-composition.edn"))}
      :pr574-composition-source-version
@@ -847,7 +878,13 @@
      :global-requirement-owner "01a179ad-2198-7392-966a-1e3c31209027"
      :global-requirement-handoff {:sha256 "25be0fe3d53bf133b72f405d50d039ba3ab9fb186499036587ab72a860174954"
                                 :authority :join-proposals-only :accepted-denominator false}
-     :source-digests (into (sorted-map) (map (fn [p] [p (sh-inventory/sha256 (slurp p))]) sources))
+     :source-digests
+     (into (sorted-map)
+       (for [p sources]
+         [p (sh-inventory/sha256
+              (if (acceptance-dependencies/historical-sh-source-path? p)
+                (git-source (source-pin p) p)
+                (slurp p)))]))
      :stable-task-routing-keys stable-task-routing-keys
      :retained-native-history {:path "specs/sh-family-crosswalk/retained-native-evidence.edn"
                               :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/retained-native-evidence.edn"))
@@ -1013,7 +1050,7 @@
   (normalize-source-payloads (adopt-review (source-view) mapping-review)))
 
 (defn rollup [result]
-  (str "# SH acceptance rollup\n\nGenerated by tools/sh_crosswalk.clj; read-only. Edit component task authorities,\nnot this view. Source criteria and sequence IDs are provenance, not additive\nimplementation tasks. Mapping/graph reviewed at c6c80530; implementation and\ncurrent whole-criterion acceptance remain separate and unassessed.\n\n"
+  (str "# SH acceptance rollup\n\nGenerated by tools/sh_crosswalk.clj; read-only. Edit component task authorities,\nnot this view. Source criteria and sequence IDs are provenance, not additive\nimplementation tasks. Historical mapping/graph review at c6c80530 retains its\noriginal subject; current source-version review, implementation and whole-criterion\nacceptance remain separate and unassessed.\n\n"
        "Original source: " original-baseline ". Task authority amendment: " baseline ".\n\n"
        "Source-version adoption: " (name (get-in result [:mapping-review :status])) ". The explicit source-version bridge preserves predecessor pins and new owner-accepted Reader evidence.\n\n"
        "Every requirement retains its complete acceptance/context text, source\nlocators, lines and SHA256; crosswalk.edn stores each distinct source payload once\nin its source-snapshots table and references it by content digest. Current\nacceptance is unassessed unless an exact scoped task receipt explicitly establishes it.\n\n"

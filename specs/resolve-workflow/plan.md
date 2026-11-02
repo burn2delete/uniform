@@ -1,3 +1,29 @@
+# Resolve implementation planning entry
+
+Select one unresolved task from the existing [implementation ledger](tasks.md#implementation-tasks)
+and reconcile this plan against [spec.md](spec.md). Preserve the original
+transfer plan below and the separate frozen owner-verification package.
+Resolve the current owning Gravity implementation, Clojure transport and actual
+callers from the [stage ownership table](../../docs/bootstrap/stage-owned-namespaces.md)
+before selecting edits; a compatibility index is not full name analysis.
+
+Name the complete symbol-position and namespace/module population for the
+selected task, actual expanded syntax and module artifacts, source/package/
+profile/target identities, output graphs and consumer contract. Include actual
+accepted bindings/imports and applicable unresolved, ambiguous, private,
+shadowing, cyclic, stale, foreign and cross-profile negative programs with
+owning diagnostics. Validate the actual graph and producer/consumer joins;
+provided binding tables or passed reports cannot substitute for construction.
+
+Use focused semantic tests and affected Core/Types/diagnostic composition under
+[development verification](../../docs/development-verification.md). Preserve
+the Core-representation ordering qualification and all source/provider holds.
+`speckit-tasks` must refine the selected authoritative record rather than
+duplicate the task ledger. Record scoped results, unchanged evidence reuse and
+remaining boundaries; independent acceptance and integration stay separate.
+
+## Historical task-authority-transfer plan
+
 # Implementation plan: Resolve task authority
 
 Spec: [spec.md](spec.md) | Owner role: compiler resolve maintainer.

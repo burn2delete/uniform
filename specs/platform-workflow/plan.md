@@ -1,3 +1,29 @@
+# Platform implementation planning entry
+
+Select one existing [project record](tasks.md#implementation-tasks) or an
+explicit unresolved record in [product scope](tasks.md#platform-product-scope).
+Preserve those authorities, existing source-family proposal and the historical
+transfer plan below. Read [spec.md](spec.md), complete selected DOM/profile/
+backend/runtime rules and the adopted target/device facts.
+
+Bind actual source/profile/target/ABI/device/provider, memory/register/interrupt/
+clock/reset/ownership assumptions, required artifacts and executable workloads.
+Plan real legal behavior and relevant width/CDC/hidden-service/MMIO/DMA/
+interrupt/syscall/authority/failure negatives on the declared simulation,
+emulation or device boundary. Record unsupported features and unavailable
+external services; a pure register-map simulation cannot establish real MMIO.
+
+For the full product, first record the existing material ISA/kernel/application/
+physical decisions with their accountable roles and required outputs; refine
+the already declared conditional work, not a competing product roadmap. Use
+focused owner checks and actual affected Lower/Emit/Runtime/Auth/library
+composition. Preserve operation holds, custody and writer reservations, with
+exact passed/failed/unrun and source/tool/artifact identities. Do not order
+fabrication, purchase devices or promote partial conformance into product or
+release acceptance through this planning step.
+
+## Historical workflow-transfer plan
+
 # Implementation plan: Platform workflow migration
 
 Spec: [spec.md](spec.md) | Migration owner: documentation migration maintainer.

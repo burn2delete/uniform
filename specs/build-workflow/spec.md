@@ -1,3 +1,61 @@
+# Build and package implementation specification
+
+Implementation scope added under the 2026-11-01 request. Existing build/package,
+trust, policy and release owners retain their boundaries. Historical workflow
+migration below establishes no resolver, graph execution or package acceptance.
+
+## Behavior and interfaces
+
+Implement [the Build outcome](../../docs/component-roadmaps/build.md#release-outcome)
+under the complete PKG1-PKG12 contracts retained below, with actual Compiler
+API/Emit/Runtime, Auth, source-schema and package/governance interfaces.
+Non-executing project normalization, exact source/lock/dependency graph,
+profile/target/features, policy/grants, compiler/toolchain and controlled
+environment inputs produce real selected dependencies and typed graph
+execution, generated-and-rechecked source, per-target artifacts, cache decisions,
+package operation/diff records, reproducible recipes and required verified
+provenance/safety/SBOM/signing evidence.
+
+Project requests and dependency selection never grant authority. Package
+transport/installation and compiler graph execution remain separate operations.
+Auth checks actual grants and trust; Build carries their inputs and enforces
+the selected policy at real fetch/install/action/consumer boundaries. Registry
+publication, signing custody and language/package policy decisions retain their
+existing authority and restrictions.
+
+## Existing implementation routes and acceptance
+
+Use [the sole marked ledger](tasks.md#implementation-tasks) under
+`build/remaining-tasks-and-evidence/`, preserving its exact criteria/status,
+source-family refinements, yank-policy amendment and receipts.
+
+| Existing suffix | Required accepted behavior | Required rejection and evidence |
+| --- | --- | --- |
+| `implement-projectlock-normalization-and-constraint-resolution` | Read project data without executing it; normalize explicit package/source/entry/profile/target/effect/capability/artifact/policy inputs. Deterministically solve actual versions/features/variants with complete transitive locked metadata, explicit registry sources/tie-breakers and actionable conflicts; support genuinely complete offline inputs. | Reject effectful config, invalid profile/target/entry/source roots, incomplete locks/cache, denied authority, missing target variants and ungranted private/latent space. Apply actual yank/revocation/historical-rebuild policy with retained signature/status/history and PKG5006; a resolver result cannot mint grants. |
+| `execute-typed-graph-under-declared-build-effects` | Actually execute declared nodes and capture input/output/tool/effect/diagnostic/provenance edges, generated-source normal-pipeline re-entry and required test/artifact production. Package operations expose structured reviewable policy-relevant diffs before mutation. | Reject hidden shell/network/environment access, missing provenance/evidence and unmarked graph cycles. A declared fixed-point bootstrap cycle must use its existing stage contract, not silently admit arbitrary cycles. Real failure identifies the node/input edge and stops affected production. |
+| `implement-dependency-aware-caching-and-invalidation` | Reuse stage/node artifacts only under actual matching source/manifest/lock/compiler/pass/plugin/profile/target/provider/grant/policy/environment/replay/proof inputs and producing contracts. Compare clean/reused semantics and diagnostics. | Changed inputs revalidate/rebuild affected consumers; reject stale safety/proofs/diagnostics, incomplete keys, timestamp-only reuse and speculative release output. Trace actual dependencies rather than accepting supplied reuse flags. |
+| `produce-and-verify-packageprovenancesigning-records` | Exercise actual package fetch/verify/install/update/audit/publish/yank/mirror/vendor behavior within authorized scope, retaining content/signature verification, registry source, capability/safety/license/target/provenance diffs and review states. Bind actual content to canonical manifests, complete SBOM and subject-bound attestation/signing evidence. | Reject tamper, wrong subject/source/policy, missing summaries/evidence, quarantined/revoked required inputs, secret leaks and policy-incompatible publication. Private metadata requires authorization before disclosure; latent nonpublished candidates do not satisfy ordinary dependencies. Mirrors preserve verified signatures or actual attestations, and yanks preserve rebuild history. |
+| `close-reproducibility-and-target-matrix` | Execute repeated locked builds under the same controlled recipe; compare actual canonical manifests/content and declared output identities. Normalize each concrete profile/backend/target/ABI/runtime/feature/support tuple with its dependency variants, grants, artifacts and conformance. | Reject unrecorded randomness/network/environment/path/time influences, missing generator inputs, implicit host ABI/target, hidden target failures and undeclared fallback. Nonreproducible or unavailable targets stay explicitly classified; passing one target cannot satisfy another. |
+
+PKG8 safety/wrapper/FFI/taint/proof/review metadata and PKG10/12 provenance,
+builder/identity/log/root/revocation and consumer policy are actual verification
+inputs. Required unknown schemas fail closed, and weaker attestations cannot
+downgrade the required level/track. Emit supplies real bytes and common artifact
+evidence; Build packages and consumes them without treating a manifest as
+execution or replacing the owning semantic checker.
+
+## Starting work and completion
+
+Explicit manifest/graph/compiler/provider interfaces and pinned fixtures allow
+local resolver or graph development before a future self-hosted Build exists.
+Real composition needs actual services, fetch/action boundaries and artifact
+consumers for each claim. Completion requires real resolution/graph/package
+operations, complete positive/negative policy fixtures and repeated per-target
+build evidence. Preserve writers, held actions and custody; local development,
+independent acceptance, integration and final self-hosted release stay separate.
+
+## Historical workflow-transfer specification
+
 # Feature specification: Build workflow migration
 
 Status: prepared; review and integration pending.

@@ -1,3 +1,27 @@
+# CLI implementation planning entry
+
+Select one unresolved [existing task](tasks.md#implementation-tasks) and its
+actual command/option surface, preserving the selected compiler scope and
+historical transfer plan below. Read [spec.md](spec.md), T1/C15 and the full
+actual service rule. Locate current dispatcher/adapters and source owners via
+[development verification](../../docs/development-verification.md) and the
+[stage ownership table](../../docs/bootstrap/stage-owned-namespaces.md).
+
+Bind explicit arguments/project/profile/target/format/grants, real service,
+artifact paths, JSON/text facts and T1 exit class. Supply actual public-command
+success/failure cases, both source extensions where relevant, unsupported
+options, authority denial and redaction; run emitted output when claimed.
+Retain service errors and unavailable behavior without pretending a stub or
+metadata report is implementation.
+
+Use focused routing/presentation checks plus affected real service/installed
+entrypoint composition. Refine only the selected existing authority, recording
+exact commands/artifacts, passed/failed/unrun results and host/seed boundaries.
+Preserve current writer and execution restrictions. Selected compiler command,
+wider command-family, independent acceptance and release outcomes stay distinct.
+
+## Historical workflow-transfer plan
+
 # Implementation plan: CLI workflow migration
 
 Spec: [spec.md](spec.md) | Migration owner: documentation migration maintainer.

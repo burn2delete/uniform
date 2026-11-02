@@ -1,3 +1,54 @@
+# MIR implementation specification
+
+Implementation scope added under the 2026-11-01 request. Existing MIR and
+producer/consumer maintainers retain ownership. The historical transfer below
+does not establish semantic construction, verification or downstream admission.
+
+## Behavior and interfaces
+
+Implement [the MIR outcome](../../docs/component-roadmaps/mir.md#release-outcome)
+under [C11](../../docs/phase-06-compiler-architecture/090-c11-gravity-mir-specification.md).
+Actual checked Core, current Types/Effects/Legality/Auth facts, source/generated
+origins and profile/target request become typed target-independent modules,
+functions, blocks, operations, data/control-flow graphs and shared fact tables.
+Produce actual verifier results, domain-anchor links, stable serialization,
+invalidation hooks and owning diagnostics for Opt and Lower.
+
+The full C11 operation family remains required: constants, control flow,
+calls/closures/dispatch, aggregates/numerics, memory/regions/linear resources,
+errors, FFI, atomics/concurrency, workflow suspension, AI and domain anchors.
+A selected subset is an implementation increment, not complete MIR. Target
+instruction selection, ABI layout and host runtime calls belong to lowering;
+domain behavior retains a documented checked-Core/MIR anchor and its actual
+domain verifier. Existing C12 restrictions remain effective.
+
+## Existing implementation routes and acceptance
+
+Use the [sole marked ledger](tasks.md#implementation-tasks) under
+`mir/current-evidence-and-remaining-work/`. Status, finer source joins and
+existing task criteria remain authoritative there.
+
+| Existing suffix | Required accepted behavior | Required rejection and evidence |
+| --- | --- | --- |
+| `mir1-construct-semantic-mir` | Construct real module/function/block/operation records and explicit data-flow joins for the selected complete operation family from checked Core. Preserve evaluation, effects, transfer and exit behavior. | Reject unsupported or malformed inputs and target-specific semantics in generic MIR. Retain source-to-operation maps and actual constructed positive/negative artifacts. |
+| `mir2-attach-fact-tables` | Bind each operation's operands/result/type/effects/profile/origin and applicable ownership/capability/safety/check/proof facts to current producer artifacts. | Reject missing, stale, unrelated or substituted facts, detached checks and unanchored domain artifacts. A caller-supplied table or passed report does not prove the original analyses occurred. |
+| `mir3-verify-graph-and-legality` | Actually check block termination, definitions dominating uses, operand schemas, effect/order constraints, resource and safety facts, intended check guards, profiles and domain anchors. | Mutate each selected invariant and observe the owning C11 refusal before optimization/lowering. A proof-marked unreachable, suspension or tail call still needs its applicable legality facts. |
+| `mir4-serialize-stable-modules` | Round-trip all claimed operations, shared tables, origins and anchor edges with deterministic identity and explicit preserved/invalidated analyses. | Reject corrupted, missing or incoherent references and invalid versions; changed source/facts invalidate affected identities and analyses. Serialize actual modules rather than only example records. |
+| `mir5-gate-downstream-consumption` | Gate actual Opt/Lower consumption on fresh verification of constructed and changed MIR. Preserve checks, source/proof references and actual rejection evidence. | Reject malformed flow, missing/stale facts, target leaks and invalid origins at the real boundary. One graph helper, verified fixture or successful selected family does not close all C11 families. |
+
+## Starting work and completion
+
+Explicit checked-Core/fact schemas and verified fixtures allow local work while
+upstream components mature. Integrated construction requires actual producer
+facts; downstream acceptance uses the real verifier and selected consumer.
+Optimization is not required to produce valid unoptimized MIR for Lower.
+Component completion requires the full C11 families, positive/negative verifier
+population, stable artifacts and real consumer composition. Preserve writer and
+execution restrictions; source checks, independent acceptance, integration and
+release remain distinct.
+
+## Historical task-authority-transfer specification
+
 # Feature specification: MIR implementation workflow
 
 Status: task-authority candidate; independent review and integration pending.

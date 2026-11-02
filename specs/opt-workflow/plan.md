@@ -1,3 +1,27 @@
+# Optimization implementation planning entry
+
+Select one unresolved [existing task](tasks.md#implementation-tasks), preserving
+the historical transfer plan and its reviewed interface appendix below. Read
+[spec.md](spec.md), C13 and each applicable performance/safety/math rule.
+Locate current semantic implementations and temporary transports through
+[development verification](../../docs/development-verification.md) and the
+[stage ownership table](../../docs/bootstrap/stage-owned-namespaces.md).
+
+Name the actual verified input, selected pass and analyses, proof assumptions,
+preserved/invalidated/regenerated facts and real verifier/Lower consumers.
+Supply an actual changed and unchanged positive, plus semantic, stale-fact,
+ordering/check/anchor or target-assumption negatives relevant to that pass.
+Retain exact before/after artifacts and actual verification. Benchmark or PGO
+work must first satisfy correctness and the applicable identity/privacy policy.
+
+Use focused pass/verifier tests and affected MIR/Lower or domain composition;
+do not execute held domain/provider paths. Refine only the selected existing
+task, recording exact evidence, residual checks/work, unavailable target facts
+and unrun cases. A fixture/helper cannot confer whole-pass, performance,
+independent acceptance or release authority.
+
+## Historical task-authority-transfer plan
+
 # Implementation plan: Opt task authority
 
 Spec: [spec.md](spec.md) | Evidence: [evidence.md](evidence.md)

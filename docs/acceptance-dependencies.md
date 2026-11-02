@@ -167,6 +167,18 @@ SH07-C01 through SH07-C18 sequence expands the same six SH-07 criteria. Neither
 population adds implementation completion units. Component tasks retain their
 literal IDs and sole editable marked Spec Kit ledgers.
 
+The project-wide readiness successor binds task-file versions through
+[its explicit source-version record](../specs/sh-family-crosswalk/implementation-readiness-source-version.edn).
+It conserves 135 task bodies, declares four changed Open bodies, and registers
+the resumed ten-task Governance authority. Governance is not another compiler
+pass or SH milestone. The sixteen proposed future Domain records remain outside
+the current SH task-key projection pending their exact composition. Historical
+ownership bytes retain their original pin; live drift is reported as unassessed.
+This successor retains the original SH/SH07 routes and scoped Reader receipts,
+but its new input fingerprint requires its own independent source/routing
+review. Generation or passing structural controls cannot inherit an old review
+or establish current whole-criterion execution.
+
 `tools/sh_inventory.clj --write` extracts the original byte/line/hash-bound
 criteria; `tools/sh_crosswalk.clj --write` derives routing and current task
 records. `--check` refuses a stale projection. The acceptance checker consumes
