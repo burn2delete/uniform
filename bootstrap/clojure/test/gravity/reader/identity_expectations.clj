@@ -75,7 +75,7 @@
    :semantic-resolved-digest (first (:resolved-digests run))
    :resolved-expansion (select-keys (:resolved-expansion run)
                                   [:artifact :schema-version :artifact-id :status :macro :macro-version
-                                   :input-syntax-id :output-syntax-id :semantic-binding :profile :target :phase :bounds])
+                                   :input-syntax-id :output-syntax-id :semantic-binding :profile :target :phase])
    :trace-replay-id (get-in run [:resolved-expansion :macro-expansion-trace 0 :trace-replay-id])
    :template-verification (:template-verification run)
    :resolved-verification (:resolved-verification run)})
@@ -83,7 +83,8 @@
 (def macro-plan-fields
   [:artifact :status :semantic-authority :compiled-by :executed-by
    :generic-bridge-residual? :self-hosted? :source-language :source-byte-count
-   :source-content-hash :plan-semantic-hash :functions-semantic-hash :function-count
+   :source-content-hash :source-mode :revision-status :source-authority
+   :plan-semantic-hash :functions-semantic-hash :function-count
    :function-names-hash :function-shapes-hash :public-function-hashes :public-function-shapes])
 
 (defn macro-preimage [artifact]

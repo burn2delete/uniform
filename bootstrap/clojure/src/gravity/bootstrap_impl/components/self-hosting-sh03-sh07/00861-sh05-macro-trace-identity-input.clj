@@ -27,9 +27,24 @@
 
 (defn
  sh05-macro-gravity-verifier-report
- [source-path boundary]
- (gravity.macro/replay-report
-  source-path
-  boundary
-  ^{:line 148, :column 101}
-  (macro-stage-operations)))
+ ([source-path boundary]
+  (gravity.macro/replay-report
+   source-path
+   boundary
+   ^{:line 148, :column 101}
+   (macro-stage-operations)))
+ ([source-path boundary invocation]
+  (gravity.macro/replay-report
+   source-path
+   boundary
+   invocation
+   ^{:line 148, :column 101}
+   (macro-stage-operations)))
+ ([source-path boundary invocation source-mode]
+  (gravity.macro/replay-report
+   source-path
+   boundary
+   invocation
+   source-mode
+   ^{:line 148, :column 101}
+   (macro-stage-operations))))

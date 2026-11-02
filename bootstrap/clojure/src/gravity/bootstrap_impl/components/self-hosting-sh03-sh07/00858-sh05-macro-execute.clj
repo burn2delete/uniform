@@ -53,15 +53,28 @@
 
 (defn
  sh05-default-macro-request
- [source-path c3-artifact module syntax form]
- (gravity.macro/request
-  source-path
-  c3-artifact
-  module
-  syntax
-  form
-  ^{:line 148, :column 101}
-  (macro-stage-operations)))
+ ([source-path c3-artifact module syntax form]
+  (gravity.macro/request
+   source-path
+   c3-artifact
+   module
+   syntax
+   form
+   ^{:line 148, :column 101}
+   (macro-stage-operations)))
+ ([source-path c3-artifact module syntax form _invocation binding]
+  (gravity.macro/request
+   source-path
+   c3-artifact
+   module
+   syntax
+   form
+   ^{:line 148, :column 101}
+   (macro-stage-operations)
+   (when (= :development-unadmitted (:revision-status binding))
+     {:macro-version
+      (get-in binding [:public-function-hashes 'sh05-expand-macro-template]),
+      :source-byte-count (:source-byte-count binding)}))))
 
 (defn
  sh05-macro-raise-rejection!
