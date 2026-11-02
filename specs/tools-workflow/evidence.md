@@ -55,3 +55,35 @@ Language boundary passed 6 tests / 11 assertions; dependency tests passed
 full-language roadmap and whitespace passed. All commands exited naturally with
 0. Exact committed-tree preflight and independent disposition belong to the
 public PR receipt, without implying executed developer services.
+
+## Current-source tooling requirements check
+
+The current-port checker and its negative fixtures preserve the historical
+Phase 13 proposal as a noncanonical source view. The view is anchored to base
+commit `6218e80e0238cbd071a8837193e7afb5f0b87869` and tree
+`51a615a96828ecaff57824625bb062a9dd2c5f20`, with the historical proposal at
+`2ab753db9a43a5544379cf72c75c91eeab3d23b7` and tree
+`c0610e6ac4dfccc9908273dd3a8aaf705a0fa332`. It pins the historical manifest,
+source snapshot, proposal format, occurrence API and both historical task
+sources, and independently checks current document, manifest, format, API and
+task-source hashes.
+
+`clojure -M tools/tooling_requirements_test.clj` passed 6 tests / 38
+assertions, zero failures/errors. `clojure -M tools/tooling_requirements.clj
+--check` passed 13 source documents, 631 occurrences, 960 facets, 65
+requirements, 200 guarded edits and 16 task references. The checker verifies
+source spans and hashes, exact historical task acceptance-boundary hashes,
+current Open task identity/title boundaries, all primary and additional task
+interfaces, retained normative-facet unit links, contextual refinement state,
+stale/duplicate edit refusal and proposal-only nonclaims.
+
+The language-boundary gate passed 6 tests / 11 assertions. The document
+validator passed 240 documents / 19 phase indexes; the full-language roadmap
+validator and workstream-governance validator also passed. `git diff --check`
+reported no whitespace errors.
+
+Historical task criteria are retained only in
+`specs/tools-workflow/current-source-view.edn`; current task acceptance is not
+replaced, implementation acceptance is unassessed, and independent review and
+integration remain pending. This receipt does not claim canonical adoption,
+global nonoverlap, release completion or seed retirement.
