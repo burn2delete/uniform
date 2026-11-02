@@ -127,7 +127,7 @@ target cost, or provider capability, that choice must appear in the trace.
 
 ## Search Space Manifest
 
-Search is bounded and auditable. A search manifest includes:
+Search is deterministic and auditable. A search manifest includes:
 
 ```clojure
 {:grammar {:basis :exp-minus-log
@@ -137,12 +137,15 @@ Search is bounded and auditable. A search manifest includes:
  :domain {x {:real [-1.0 1.0]}}
  :objective {:kind :equivalence-or-approximation
              :metric [:proof-cost :runtime-cost :error-bound]}
- :fuel {:candidate-limit 20000
-        :time-ms 500}
  :ranking {:primary :proof-simplicity
            :secondary :estimated-runtime}
  :pruning-rules [:domain-empty :branch-mismatch :type-invalid]}
 ```
+
+An implementation may record host or resource fuel when it uses such a
+safeguard, but a project work budget is not required for MATH4 admission.
+Deterministic ordering, tie policy, replayable traces, and proof acceptance
+remain required.
 
 The manifest is part of the build artifact when search affects generated code.
 Two builds with the same source, profile, target, provider set, and manifest
