@@ -79,20 +79,31 @@ controller does not change them or claim that passing a map overrides them.
 
 Started ownership is finalized once; partial guard acquisitions release once
 in reverse order. Original failure objects survive later cleanup, release or
-receipt failures. Both directly thrown interruption and the normal runner's
-returned wait-interruption/error and the broker's wrapped admission interruption
-are preserved after finalization. Nonzero exit,
-timeout, missing refusal flags, capture failure, drift, incomplete/unknown
-owned cleanup and nonfinalized release all prevent success. Atomic output
-reservation prevents a repeated request from launching or publishing again.
+receipt failures. Fatal `ThreadDeath`, VM and linkage errors are never
+converted into a failed publication: cleanup and release still run once, then
+the original fatal object is rethrown. When a fatal cleanup error supersedes
+an ordinary primary, the ordinary error remains suppressed on that fatal
+object; later secondary errors are also attached to the active primary while
+retaining their original identities. Both directly thrown interruption and the
+normal runner's returned wait-interruption/error and the broker's wrapped
+admission interruption are preserved after finalization. Interrupted causes
+are found through an identity-tracked, cycle-safe cause walk without a depth
+quota. Nonzero exit, timeout, missing refusal flags, capture failure, drift,
+incomplete/unknown owned cleanup and nonfinalized release all prevent success.
+Atomic output reservation prevents a repeated request from launching or
+publishing again.
 Launch-attempt state is separate from the returned token: nil and false are
 invalid tokens, do not enter supervision or finalization, still release any
 already-acquired guards, and do not publish a final receipt. A valid started
 token uses an explicit started state for capture-before-release, terminal
 rechecks and finalization rather than token truthiness. The final receipt is
-attempted only after process finalization and all release attempts. An
-uncertain/failed write is not retried; a post-write deadline failure stays
-nonpassing even if tentative metadata reached storage.
+attempted only after process finalization and all release attempts. Authority
+publication is attempted only after a passing terminal observation, an exact
+current observation match, every acquired release has a finalized
+`:released` result and no primary/fatal error remains. A failed history is
+returned as evidence only and is never published. An uncertain/failed write
+is not retried; a post-write deadline failure stays nonpassing even if
+tentative metadata reached storage.
 
 Receipts project only declared metadata. Declared signed-64-bit counters may
 be represented as Longs for receipt encoders, with representability checked;
@@ -105,14 +116,16 @@ handle and any original failure. A metadata receipt alone is never execution acc
 ## Compiler-free evidence and remaining decisions
 
 `parent_controller_test.clj` uses only fake guard/process/clock/receipt ports.
-Nineteen tests and 373 assertions passed, with no real port resolution and
+Twenty-three tests and 497 assertions passed, with no real port resolution and
 Bootstrap, broker and normal runner namespaces absent. Controls cover identity
 and missing coverage before ports, ordering, partial acquisition release,
 denial/no-start, startup/release deadline charging, nonzero/timeout/capture
-failure, unknown owned cleanup, interruption, duplicate reservation/publication,
+failure, unknown owned cleanup, fatal propagation after cleanup, fatal
+precedence and suppression, deep/cyclic interruption, failed-history
+nonpublication, interruption, duplicate reservation/publication,
 release-before-success, false/nil launch-token refusal and preservation of the
-original error, plus current runner source/ABI drift. The corrected
-interruption assertion captures the flag at return.
+original error, plus current runner source/ABI drift. Interruption assertions
+capture the flag at return before reporting.
 
 The following are still unbound operational facts, not implementation credit:
 

@@ -187,16 +187,65 @@
 
 (deftest original-error-survives-cleanup-release-and-publication-errors
   (let [f (fixture) original (Exception. "supervision failed")
+        cleanup-error (Exception. "cleanup unknown")
+        release-error (Exception. "release failed")
+        publications (atom 0)
         r (execute f {:supervise (fn [& _] (throw original))
-                      :finish (fn [& _] (throw (Exception. "cleanup unknown")))
-                      :release (fn [& _] (throw (Exception. "release failed")))
-                      :publish (fn [& _] (throw (Exception. "receipt failed")))})]
+                      :finish (fn [& _] (throw cleanup-error))
+                      :release (fn [& _] (throw release-error))
+                      :publish (fn [& _] (swap! publications inc) (throw (Exception. "receipt failed")))})]
     (is (identical? original (:error r)))
     (is (= :failed (:status r)))
-    (is (= :unknown (:publication r)))
+    (is (= :not-attempted (:publication r)))
+    (is (zero? @publications))
     (is (= 3 (count (:raw-release-attempts r))))
     (is (every? #(and (:lease %) (= :unknown (:status %)) (:error %)) (:raw-release-attempts r)))
+    (is (some #(identical? cleanup-error %) (:secondary-errors r)))
+    (is (some #(identical? release-error %) (:secondary-errors r)))
+    (is (some #(identical? cleanup-error %)
+              (seq (.getSuppressed ^Throwable original))))
     (is (<= 5 (count (:secondary-errors r))))))
+
+(deftest fatal-errors-propagate-after-cleanup-and-never-publish
+  (doseq [fatal [(LinkageError. "linkage failure")
+                 (OutOfMemoryError. "vm failure")
+                 (ThreadDeath.)]]
+    (let [f (fixture)
+          caught (try
+                   (execute f {:supervise (fn [& _] (throw fatal))})
+                   nil
+                   (catch Throwable error error))]
+      (is (identical? fatal caught))
+      (is (= [[:release :canonical] [:release :exclusive] [:release :broker]]
+             (filter #(and (vector? %) (= :release (first %))) @(:events f))))
+      (is (not-any? #(and (vector? %) (= :publish (first %))) @(:events f))))))
+
+(deftest fatal-finalization-dominates-ordinary-primary
+  (let [f (fixture)
+        original (Exception. "ordinary wait")
+        fatal (LinkageError. "fatal cleanup")
+        caught (try
+                 (execute f {:supervise (fn [& _] (throw original))
+                             :finish (fn [& _] (throw fatal))})
+                 nil
+                 (catch Throwable error error))]
+    (is (identical? fatal caught))
+    (is (some #(identical? original %)
+              (seq (.getSuppressed ^Throwable fatal))))
+    (is (= [[:release :canonical] [:release :exclusive] [:release :broker]]
+           (filter #(and (vector? %) (= :release (first %))) @(:events f))))
+    (is (not-any? #(and (vector? %) (= :publish (first %))) @(:events f)))))
+
+(deftest failed-history-never-publishes-authority
+  (doseq [changes [{:supervise (fn [& _] (assoc (:result (fixture)) :exit-code 1))}
+                   {:finish (fn [& _] {:status :unknown})}
+                   {:observe (fn [] {})}
+                   {:release (fn [& _] {:status :unknown})}]]
+    (let [f (fixture) writes (atom 0)
+          r (execute f (assoc changes :publish (fn [& _] (swap! writes inc) {:status :published})))]
+      (is (= :failed (:status r)))
+      (is (zero? @writes))
+      (is (= :not-attempted (:publication r))))))
 
 (deftest interruption-restores-the-flag-after-finalization
   (let [f (fixture)]
@@ -240,9 +289,9 @@
   (let [f (fixture) finishes (atom 0) publications (atom 0)
         r (execute f {:finish (fn [& _] (swap! finishes inc) {:status :unknown})
                       :publish (fn [& _] (swap! publications inc) nil)})]
-    (is (= 1 @finishes)) (is (= 1 @publications))
+    (is (= 1 @finishes)) (is (zero? @publications))
     (is (= :failed (:status r)))
-    (is (= :unknown (:publication r)))))
+    (is (= :not-attempted (:publication r)))))
 
 (deftest denied-or-invalid-guard-never-starts-and-releases-acquired-handles
   (doseq [changes [{:acquire (fn [& _] nil)} {:validate (fn [& _] :foreign-lease)}]]
@@ -264,8 +313,26 @@
   (doseq [changes [{:observe (fn [] {})}
                    {:release (fn [& _] {:status :unknown})}
                    {:publish (fn [& _] (throw (Exception. "receipt codec failed")))}]]
-    (let [f (fixture) r (execute f changes)] (is (= :failed (:status r)))))
+    (let [f (fixture) r (execute f changes)]
+      (is (= :failed (:status r)))
+      (is (zero? (count (filter #(and (vector? %) (= :publish (first %))) @(:events f)))))))
   (let [f (fixture) writes (atom 0)
         r (execute f {:publish (fn [& _] (swap! writes inc) (swap! (:time f) + 101) {:status :published})})]
     (is (= :failed (:status r))) (is (= :whole-deadline (reason r)))
     (is (= 1 @writes)) (is (= :unknown (:publication r)))))
+
+(deftest deeply-wrapped-and-cyclic-interruption-restores-the-flag
+  (let [f (fixture)
+        root (Exception. "root")
+        middle (Exception. "middle")
+        interrupted (InterruptedException. "wrapped")]
+    (.initCause root middle)
+    (.initCause middle interrupted)
+    (.initCause interrupted middle)
+    (try
+      (let [r (execute f {:supervise (fn [& _] (throw root))})
+            flag-at-return (.isInterrupted (Thread/currentThread))]
+        (is (= :failed (:status r)))
+        (is (identical? root (:error r)))
+        (is flag-at-return))
+      (finally (Thread/interrupted)))))

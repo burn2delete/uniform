@@ -31,6 +31,32 @@
   [token]
   (and (some? token) (not (false? token))))
 
+(defn- cause-member
+  "Find a Throwable cause without imposing a depth quota. Identity tracking
+  makes hostile cyclic cause chains terminate without value-based aliasing."
+  [error predicate]
+  (loop [candidate error seen (java.util.IdentityHashMap.)]
+    (cond
+      (nil? candidate) nil
+      (.containsKey seen candidate) nil
+      :else (do
+              (.put seen candidate true)
+              (if (predicate candidate)
+                candidate
+                (recur (.getCause ^Throwable candidate) seen))))))
+
+(defn- interrupted-cause [error]
+  (cause-member error #(instance? InterruptedException %)))
+
+(defn- fatal-cause [error]
+  (cause-member error #(or (instance? ThreadDeath %)
+                           (instance? VirtualMachineError %)
+                           (instance? LinkageError %))))
+
+(defn- suppress! [primary secondary]
+  (when (and primary secondary (not (identical? primary secondary)))
+    (.addSuppressed ^Throwable primary ^Throwable secondary)))
+
 (defn verify-runner-contract!
   "Bind the current runner source bytes and public arities before a caller
   resolves any operational runner Var. This is source evidence, not resolution
@@ -85,6 +111,10 @@
        (= :complete (:status terminal)) (true? (:owned-descendants-complete? terminal))
        (false? (:root-alive? terminal))))
 
+(defn- releases-pass? [held release-attempts]
+  (and (= (count held) (count release-attempts))
+       (every? #(= :released (:status %)) release-attempts)))
+
 (defn run!
   "Run at most one child and publish at most one final receipt. observe must
   return the same authenticated identity projection supplied before entry.
@@ -106,16 +136,33 @@
                          (require! (pos? left) :whole-deadline) left)
             held (atom []) process (atom nil) result (atom nil) terminal (atom nil)
             launch-attempted? (atom false) started? (atom false) reserved? (atom false)
+            observation-matched? (atom false)
             publication (atom :not-attempted)
             primary (atom nil) secondary (atom []) releases (atom []) raw-releases (atom [])
             release-attempts (atom []) interrupted (atom false)
             record-error! (fn [error]
-                            (when (or (instance? InterruptedException error)
-                                      (instance? InterruptedException (.getCause ^Throwable error))
+                            (when (or (interrupted-cause error)
                                       (= "SH01-BROKER-INTERRUPTED" (:id (ex-data error)))
                                       (.isInterrupted (Thread/currentThread)))
-                              (reset! interrupted true))
-                            (if @primary (swap! secondary conj error) (reset! primary error)))
+                              (reset! interrupted true)
+                              (.interrupt (Thread/currentThread)))
+                            (let [current @primary
+                                  incoming-fatal (fatal-cause error)
+                                  current-fatal (fatal-cause current)]
+                              (cond
+                                ;; Preserve the actual fatal object as the
+                                ;; eventual throw value, while retaining the
+                                ;; ordinary primary and wrapper as evidence.
+                                (and incoming-fatal (nil? current-fatal))
+                                (do (suppress! incoming-fatal current)
+                                    (when-not (identical? incoming-fatal error)
+                                      (suppress! incoming-fatal error)
+                                      (swap! secondary conj error))
+                                    (reset! primary incoming-fatal))
+                                current
+                                (do (suppress! current error)
+                                    (swap! secondary conj error))
+                                :else (reset! primary error))))
             metadata-view (fn [raw fields]
                             (try
                               (let [view (select-keys raw fields)]
@@ -167,6 +214,7 @@
                 (try
                   (require! (terminal-pass? @result @terminal) :nonpassing-process-or-cleanup)
                   (require! (= observation (observe)) :source-or-runtime-drift)
+                  (reset! observation-matched? true)
                   (remaining)
                   (catch Throwable error (record-error! error))))
               (doseq [[guard lease] (reverse @held)]
@@ -204,19 +252,25 @@
                          ;; enter this metadata projection or any artifact codec.
                          :errors (mapv #(hash-map :class (.getName (class %)) :message (.getMessage ^Throwable %))
                                        (if @primary (into [@primary] @secondary) @secondary))}]
-            ;; A publication error is not retried or followed by a second write.
-            (when (and @reserved? @started?)
+            ;; A failed history is returned as evidence only. Publication is
+            ;; authority-bearing and requires every lifecycle gate to pass.
+            (when (and @reserved? @started? (nil? @primary)
+                       (terminal-pass? @result @terminal)
+                       @observation-matched?
+                       (releases-pass? @held @release-attempts))
               (reset! publication :unknown)
               (try
                 (require! (= :published (:status (publish (:final (:outputs request)) receipt))) :publication-unknown)
                 (remaining)
                 (reset! publication :published)
                 (catch Throwable error (record-error! error))))
-            {:status (if @primary :failed :passed) :error @primary :secondary-errors @secondary
-             :launch-attempted? @launch-attempted? :started? @started?
-             :publication @publication :receipt receipt
-             :raw-process-result @result :raw-terminal @terminal :raw-releases @raw-releases
-             :raw-release-attempts @release-attempts})
+            (if-let [fatal (fatal-cause @primary)]
+              (throw fatal)
+              {:status (if @primary :failed :passed) :error @primary :secondary-errors @secondary
+               :launch-attempted? @launch-attempted? :started? @started?
+               :publication @publication :receipt receipt
+               :raw-process-result @result :raw-terminal @terminal :raw-releases @raw-releases
+               :raw-release-attempts @release-attempts}))
           (finally (when @interrupted (.interrupt (Thread/currentThread)))))))))
 
 (defn normal-process-bindings
