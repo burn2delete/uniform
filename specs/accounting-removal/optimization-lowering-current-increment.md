@@ -93,9 +93,14 @@ results:
   resource boundary. Diagnostic JFR 70 showed the runtime building large
   maps/vectors for the live SH-03 graph; it did not prove a dominator leak or
   justify restoring an accounting quota. C12 was not retried or reframed.
-- The four static B1/B2 lookup-count failures and two C14 unknown-backend
-  diagnostic failures from the mixed run remain separate audit items. They
-  are not absorbed into the Reader or SH-07 baseline blocks.
+- The initial B1/B2 lookup-count observations and C14 unknown-backend
+  diagnostic observations were independently reviewed and corrected in
+  `b0`/`dcf`: the B1 baseline count is recorded as `1085/1077/8`, the B2
+  quota-removal count as `836/786/50`, and the C14 oracle now uses the correct
+  `TARGET target-contract-mismatch` diagnostic already present in base. The
+  final source-model receipt includes these repaired controls (`26/456`), so
+  they are not unresolved audit items. The historical mixed-run failures stay
+  recorded as history; no production pin or admission behavior was refreshed.
 
 These records preserve the initial nonpasses, the later focused passes and
 their causal limits. They do not create an approval gate for ordinary semantic
@@ -117,7 +122,7 @@ The evidence does not claim:
 - release, seed retirement, self-hosting, native toolchain, or whole-accounting
   completion; or
 - that the historical mixed run, its downstream canonical diagnostics, or the
-  restricted C12 attempt passed.
+  resource-limited C12 attempt passed.
 
 Later main changes, including the landed PR804 C12-C14 quota removal, are not
 part of this frozen source receipt. The coordinator must reconcile that newer
