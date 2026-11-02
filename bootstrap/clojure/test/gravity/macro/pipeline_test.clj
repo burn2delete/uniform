@@ -7,6 +7,9 @@
             [gravity.macro :as macro]))
 
 (defn- operations [] ((ns-resolve 'gravity.bootstrap 'macro-stage-operations)))
+(defn- with-macro-operation [source-path source-mode ops thunk]
+  ((deref (ns-resolve 'gravity.macro 'with-macro-operation))
+   source-path source-mode ops thunk))
 (defn- caught [operation]
   (try (operation) nil (catch clojure.lang.ExceptionInfo error error)))
 (defn- fixture-path
@@ -33,6 +36,32 @@
      :binding binding})))
 (def ^:private gravity-context (delay (context ".gravity")))
 (def ^:private qst-context (delay (context ".qst")))
+
+(defn- current-binding-fixture []
+  (let [source {:source-path "current-macro.gravity"
+                :source-byte-count 7
+                :source-content-hash "sha256:current"}
+        identities {:plan-semantic-hash "sha256:plan"
+                    :functions-semantic-hash "sha256:functions"
+                    :function-count 1
+                    :function-names-hash "sha256:names"
+                    :function-shapes-hash "sha256:shapes"
+                    :public-function-hashes {}
+                    :public-function-shapes {}}
+        plan {:kind :gravity/stage2-compiler-artifact-plan
+              :compiler-artifact-plan? true
+              :module {:module 'gravity.macro
+                       :profile :meta
+                       :target :jvm
+                       :effects #{}
+                       :capabilities #{}
+                       :safety :safe}}
+        binding (merge source
+                       {:revision-status :development-unadmitted
+                        :source-authority :development-current
+                        :plan plan}
+                       identities)]
+    {:source source :binding binding :identities identities}))
 
 (defn- assert-parent-lineage [artifact c3 binding]
   ;; The explicit current Reader implementation is an input, so a whole-artifact
@@ -245,21 +274,165 @@
 
 (deftest current-binding-does-not-reuse-an-interposed-builder
   (let [calls (atom 0)
-        source {:source-path "current-macro.gravity"
-                :source-byte-count 7
-                :source-content-hash "sha256:current"}
-        binding (assoc source
-                       :revision-status :development-unadmitted
-                       :source-authority :development-current)
+        reads (atom 0)
+        {:keys [source binding identities]} (current-binding-fixture)
         ops (assoc (operations)
-                   :sh05-macro-read-pinned-source! (fn [& _] source)
+                   :sh05-macro-read-pinned-source!
+                   (fn [& _] (swap! reads inc) source)
+                   :sh05-macro-plan-identities (fn [_] identities)
                    :sh05-macro-build-binding!
                    (fn [& _] (swap! calls inc) binding))]
     (is (= binding (macro/current-plan-binding!
                     "current-macro.gravity" ops :development-current)))
     (is (= binding (macro/current-plan-binding!
                     "current-macro.gravity" ops :development-current)))
-    (is (= 2 @calls))))
+    (is (= 2 @calls))
+    (is (= 4 @reads))))
+
+(deftest current-binding-reuses-preparation-only-within-one-operation
+  (let [{:keys [source binding identities]} (current-binding-fixture)
+        calls (atom 0)
+        reads (atom 0)
+        ops (assoc (operations)
+                   :sh05-macro-read-pinned-source!
+                   (fn [& _] (swap! reads inc) source)
+                   :sh05-macro-plan-identities (fn [_] identities)
+                   :sh05-macro-build-binding!
+                   (fn [& _] (swap! calls inc) binding))]
+    (with-macro-operation
+      (:source-path source) :development-current ops
+      (fn []
+        (is (= binding (macro/current-plan-binding!
+                        (:source-path source) ops :development-current)))
+        (is (= binding (macro/current-plan-binding!
+                        (:source-path source) ops :development-current)))))
+    (is (= 1 @calls))
+    (is (= 3 @reads))
+    (with-macro-operation
+      (:source-path source) :development-current ops
+      #(is (= binding (macro/current-plan-binding!
+                       (:source-path source) ops :development-current))))
+    (is (= 2 @calls))
+    (is (= 5 @reads))))
+
+(deftest current-binding-rejects-source-drift-within-one-operation
+  (let [{:keys [source binding identities]} (current-binding-fixture)
+        changed-source (assoc source :source-content-hash "sha256:changed")
+        sources (atom [source source changed-source])
+        calls (atom 0)
+        ops (assoc (operations)
+                   :sh05-macro-read-pinned-source!
+                   (fn [& _]
+                     (let [current (first @sources)]
+                       (swap! sources rest)
+                       current))
+                   :sh05-macro-plan-identities (fn [_] identities)
+                   :sh05-macro-build-binding!
+                   (fn [& _] (swap! calls inc) binding))]
+    (with-macro-operation
+      (:source-path source) :development-current ops
+      (fn []
+        (is (= binding (macro/current-plan-binding!
+                        (:source-path source) ops :development-current)))
+        (let [error (caught #(macro/current-plan-binding!
+                              (:source-path source) ops :development-current))]
+          (is (= [:current-macro-source-and-plan-binding]
+                 (:missing-fields (ex-data error)))))))
+    (is (= 1 @calls))))
+
+(deftest current-binding-rejects-source-drift-during-preparation
+  (let [{:keys [source binding identities]} (current-binding-fixture)
+        changed-source (assoc source :source-content-hash "sha256:changed")
+        sources (atom [source changed-source])
+        calls (atom 0)
+        ops (assoc (operations)
+                   :sh05-macro-read-pinned-source!
+                   (fn [& _]
+                     (let [current (first @sources)]
+                       (swap! sources rest)
+                       current))
+                   :sh05-macro-plan-identities (fn [_] identities)
+                   :sh05-macro-build-binding!
+                   (fn [& _] (swap! calls inc) binding))]
+    (with-macro-operation
+      (:source-path source) :development-current ops
+      (fn []
+        (let [error (caught (fn []
+                              (macro/current-plan-binding!
+                               (:source-path source)
+                               ops
+                               :development-current)))]
+          (is (= [:current-macro-source-and-plan-binding]
+                 (:missing-fields (ex-data error)))))))
+    (is (= 1 @calls))))
+
+(deftest current-binding-rejects-operation-interposition-within-one-operation
+  (let [{:keys [source binding identities]} (current-binding-fixture)
+        calls (atom 0)
+        ops (assoc (operations)
+                   :sh05-macro-read-pinned-source! (constantly source)
+                   :sh05-macro-plan-identities (fn [_] identities)
+                   :sh05-macro-build-binding!
+                   (fn [& _] (swap! calls inc) binding))]
+    (with-macro-operation
+      (:source-path source) :development-current ops
+      (fn []
+        (is (= binding (macro/current-plan-binding!
+                        (:source-path source) ops :development-current)))
+        (let [interposed-ops
+              (assoc ops :sh05-macro-build-binding!
+                     (fn [& _] (swap! calls inc) binding))
+              error (caught #(macro/current-plan-binding!
+                              (:source-path source)
+                              interposed-ops
+                              :development-current))]
+          (is (= [:current-macro-operation-interposition]
+                 (:missing-fields (ex-data error)))))
+        (let [helper-var (ns-resolve 'gravity.macro
+                                     'build-plan-binding-from-source!)
+              error (with-redefs-fn
+                      {helper-var (fn [& _] binding)}
+                      (fn []
+                        (caught #(macro/current-plan-binding!
+                                  (:source-path source)
+                                  ops
+                                  :development-current))))]
+          (is (= [:current-macro-operation-interposition]
+                 (:missing-fields (ex-data error)))))))
+    (is (= 1 @calls))))
+
+(deftest forged-macro-operation-context-cannot-supply-a-prepared-binding
+  (let [{:keys [source binding identities]} (current-binding-fixture)
+        calls (atom 0)
+        context-var (ns-resolve 'gravity.macro '*macro-operation-context*)
+        ops (assoc (operations)
+                   :sh05-macro-read-pinned-source! (constantly source)
+                   :sh05-macro-plan-identities (fn [_] identities)
+                   :sh05-macro-build-binding!
+                   (fn [& _] (swap! calls inc) binding))
+        forged-context
+        (atom {:source-path (:source-path source)
+               :source-mode :development-current
+               :source source
+               :binding binding})
+        error (with-bindings
+                {context-var forged-context}
+                (try
+                  (with-macro-operation
+                    (:source-path source)
+                    :development-current
+                    ops
+                    (fn []
+                      (macro/current-plan-binding!
+                       (:source-path source)
+                       ops
+                       :development-current)))
+                  nil
+                  (catch clojure.lang.ExceptionInfo caught-error
+                    caught-error)))]
+    (is (= [:current-macro-operation-context]
+           (:missing-fields (ex-data error))))
+    (is (zero? @calls))))
 
 (deftest unknown-macro-source-mode-is-rejected-before-assembly
   (let [{:keys [source c3 invocation]} @gravity-context

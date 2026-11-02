@@ -427,6 +427,94 @@
     :verification-report],
    :contract-boundary :gravity-macro-artifacts-and-pinned-execution})
 
+(def ^{:private true} macro-operation-owner (ThreadLocal.))
+(def ^{:private true, :dynamic true} *macro-operation-context* nil)
+(declare build-plan-binding! build-plan-binding-from-source!)
+
+(defn-
+ valid-macro-operation-context?
+ [context]
+ (let [state (.get macro-operation-owner)
+       context-value (when (instance? clojure.lang.IAtom context) @context)
+       active (get context-value :active)]
+  (and
+   (instance? clojure.lang.IAtom context)
+   (map? state)
+   (identical? context (:context state))
+   (instance? clojure.lang.IAtom active)
+   (true? @active)
+   (= (.getId (Thread/currentThread))
+      (:owner-thread-id context-value)))))
+
+(defn-
+ operation-fingerprint
+ [operations]
+ (mapv
+  (fn
+   [[key operation]]
+   [key (if (instance? clojure.lang.Var operation) @operation operation)])
+  (sort-by
+   (comp str key)
+   (concat
+    operations
+    [(clojure.lang.MapEntry/create
+      ::build-plan-binding-from-source!
+      #'build-plan-binding-from-source!)
+     (clojure.lang.MapEntry/create
+      ::build-plan-binding!
+      #'build-plan-binding!)]))))
+
+(defn-
+ same-operation-fingerprint?
+ [expected operations]
+ (let [actual (operation-fingerprint operations)]
+  (and
+   (= (mapv first expected) (mapv first actual))
+   (every?
+    (fn
+     [[[expected-key expected-operation]
+       [actual-key actual-operation]]]
+     (and (= expected-key actual-key)
+          (identical? expected-operation actual-operation)))
+    (map vector expected actual)))))
+
+(defn-
+ source-identity
+ [source]
+ (select-keys source [:source-path :source-byte-count :source-content-hash]))
+
+(defn-
+ with-macro-operation
+ [source-path source-mode operations thunk]
+ (if
+  *macro-operation-context*
+  (if
+   (valid-macro-operation-context? *macro-operation-context*)
+   (thunk)
+   ((.valAt ^clojure.lang.ILookup operations :sh05-macro-boundary-fail!)
+    "C4-TRACE"
+    source-path
+    :current-macro-operation-context
+    *macro-operation-context*
+    {:source-mode source-mode}))
+  (let [previous-state (.get macro-operation-owner)
+        context (atom {:source-path source-path,
+                       :source-mode source-mode,
+                       :operation-fingerprint (operation-fingerprint operations),
+                       :owner-thread-id (.getId (Thread/currentThread)),
+                       :active (atom true)})]
+    (.set macro-operation-owner {:context context})
+    (binding [*macro-operation-context* context]
+      (try
+        (thunk)
+        (finally
+          (let [active (:active @context)]
+            (when (instance? clojure.lang.IAtom active)
+              (reset! active false)))
+          (if previous-state
+            (.set macro-operation-owner previous-state)
+            (.remove macro-operation-owner))))))))
+
 (defn
  boundary-fail!
  [rule source-path missing-field observed facts operations]
@@ -702,12 +790,18 @@
    pinned-identities
    (sh05-macro-compute-plan-identities plan))))
 
-(defn
- build-plan-binding!
- ([request-source operations]
-  (build-plan-binding! request-source operations :pinned))
- ([request-source operations source-mode]
-  (let
+(defn-
+ build-plan-binding-from-source!
+ [request-source operations source-mode supplied-source]
+ (when-not
+  (contains? #{:pinned :development-current} source-mode)
+  ((.valAt ^clojure.lang.ILookup operations :sh05-macro-boundary-fail!)
+   "C4-TRACE"
+   request-source
+   :known-macro-source-mode
+   source-mode
+   {:allowed-source-modes [:pinned :development-current]}))
+ (let
    [input
    ^{:line 61, :column 54}
    (.valAt ^clojure.lang.ILookup operations :input)
@@ -736,7 +830,8 @@
    development-current?
    (= :development-current source-mode)
    source
-   (sh05-macro-read-pinned-source! request-source source-mode)
+   (or supplied-source
+       (sh05-macro-read-pinned-source! request-source source-mode))
    emitter
    (:emitter
     (c-backend-stage2-plan-emitter-source-rule!
@@ -814,7 +909,15 @@
      :executed-by :clojure-stage2-generic-rule-runner,
      :generic-bridge-residual? true,
      :self-hosted? false,
-     :plan plan})))))
+     :plan plan}))))
+
+(defn
+ build-plan-binding!
+ ([request-source operations]
+  (build-plan-binding! request-source operations :pinned))
+ ([request-source operations source-mode]
+  (build-plan-binding-from-source!
+   request-source operations source-mode nil)))
 
 (defn
  current-plan-binding!
@@ -847,53 +950,139 @@
      :known-macro-source-mode
      source-mode
      {:allowed-source-modes [:pinned :development-current]}))
-   (if (= :development-current source-mode)
-    (let
-     [fresh
-      (sh05-macro-read-pinned-source! request-source source-mode)
-      binding
-      (sh05-macro-build-binding! request-source source-mode)]
-     (when-not
-      (and
-       (= (:source-byte-count fresh) (:source-byte-count binding))
-       (= (:source-content-hash fresh) (:source-content-hash binding))
-       (= :development-unadmitted (:revision-status binding))
-       (= :development-current (:source-authority binding)))
-      (sh05-macro-boundary-fail!
-       "C4-TRACE"
-       request-source
+   (let
+    [raw-context *macro-operation-context*
+     context (when (valid-macro-operation-context? raw-context) raw-context)
+     context-value (when context @context)
+     expected-fingerprint (:operation-fingerprint context-value)
+     fresh-before
+     (sh05-macro-read-pinned-source! request-source source-mode)
+     cached-source (:source context-value)
+     cached-binding (:binding context-value)]
+    (when (and raw-context (nil? context))
+     (sh05-macro-boundary-fail!
+      "C4-TRACE"
+      request-source
+      :current-macro-operation-context
+      raw-context
+      {:source-mode source-mode}))
+    (when
+     (and context
+          (or
+           (not= request-source (:source-path context-value))
+           (not= source-mode (:source-mode context-value))))
+     (sh05-macro-boundary-fail!
+      "C4-TRACE"
+      request-source
+      :current-macro-operation-context
+      {:source-path request-source,
+       :source-mode source-mode}
+      {:expected-source-path (:source-path context-value),
+       :expected-source-mode (:source-mode context-value)}))
+    (when
+     (and context
+          (not (same-operation-fingerprint?
+                expected-fingerprint
+                operations)))
+     (sh05-macro-boundary-fail!
+      "C4-TRACE"
+      request-source
+      :current-macro-operation-interposition
+      (operation-fingerprint operations)
+      {:source-mode source-mode}))
+    (when
+     (and cached-source
+          (not= (source-identity cached-source)
+                (source-identity fresh-before)))
+     (sh05-macro-boundary-fail!
+      "C4-TRACE"
+      request-source
+      (if (= :development-current source-mode)
        :current-macro-source-and-plan-binding
-       binding
-       {:source-mode source-mode}))
-     binding)
+       :fresh-macro-source-and-plan-binding)
+      fresh-before
+      {:source-mode source-mode,
+       :prepared-source (source-identity cached-source)}))
     (let
-     [fresh
-      (sh05-macro-read-pinned-source! request-source)
-      binding
-      @(input :sh05-macro-cached-binding)
+     [binding
+      (or
+       cached-binding
+       (if (= :development-current source-mode)
+        (sh05-macro-build-binding! request-source source-mode fresh-before)
+        @(input :sh05-macro-cached-binding)))
+      fresh-after
+      (if (and (= :development-current source-mode)
+               (nil? cached-binding))
+       (sh05-macro-read-pinned-source! request-source source-mode)
+       fresh-before)
+      source-snapshot-stable?
+      (= (source-identity fresh-before) (source-identity fresh-after))
       identities
-      (sh05-macro-plan-identities (:plan binding))]
+      (when (:plan binding)
+       (sh05-macro-plan-identities (:plan binding)))
+      plan-valid?
+      (and
+       (map? (:plan binding))
+       (= :gravity/stage2-compiler-artifact-plan (get-in binding [:plan :kind]))
+       (true? (get-in binding [:plan :compiler-artifact-plan?]))
+       (= 'gravity.macro (get-in binding [:plan :module :module]))
+       (= :meta (get-in binding [:plan :module :profile]))
+       (= :jvm (get-in binding [:plan :module :target]))
+       (= #{} (get-in binding [:plan :module :effects]))
+       (= #{} (get-in binding [:plan :module :capabilities]))
+       (= :safe (get-in binding [:plan :module :safety])))
+      binding-identities
+      (select-keys
+       binding
+       [:plan-semantic-hash
+        :functions-semantic-hash
+        :function-count
+        :function-names-hash
+        :function-shapes-hash
+        :public-function-hashes
+        :public-function-shapes])
+      source-valid?
+      (= (source-identity fresh-after) (source-identity binding))
+      metadata-valid?
+      (or
+       (= :pinned source-mode)
+       (and
+        (= :development-unadmitted (:revision-status binding))
+        (= :development-current (:source-authority binding))))
+      identities-valid?
+      (and
+       plan-valid?
+       (map? identities)
+       (every? #(contains? binding %)
+               [:plan-semantic-hash
+                :functions-semantic-hash
+                :function-count
+                :function-names-hash
+                :function-shapes-hash
+                :public-function-hashes
+                :public-function-shapes])
+       (= binding-identities identities))]
      (when-not
       (and
-       (= (:source-byte-count fresh) (:source-byte-count binding))
-       (= (:source-content-hash fresh) (:source-content-hash binding))
-       (=
-        (select-keys
-         binding
-         [:plan-semantic-hash
-          :functions-semantic-hash
-          :function-count
-          :function-names-hash
-          :function-shapes-hash
-          :public-function-hashes
-          :public-function-shapes])
-        identities))
+       source-valid?
+       metadata-valid?
+       identities-valid?
+       source-snapshot-stable?)
       (sh05-macro-boundary-fail!
        "C4-TRACE"
        request-source
-       :fresh-macro-source-and-plan-binding
+       (if (= :development-current source-mode)
+        :current-macro-source-and-plan-binding
+        :fresh-macro-source-and-plan-binding)
        binding
-       {}))
+       {:source-mode source-mode,
+        :source-valid? source-valid?,
+        :metadata-valid? metadata-valid?,
+        :plan-valid? plan-valid?,
+        :identities-valid? identities-valid?,
+        :source-snapshot-stable? source-snapshot-stable?}))
+     (when context
+      (swap! context assoc :source fresh-after :binding binding))
      binding)))))
 
 (defn
@@ -2052,8 +2241,14 @@
  ([source-path boundary invocation operations]
   (replay-report source-path boundary invocation :pinned operations))
  ([source-path boundary invocation source-mode operations]
-  (let
-   [sh05-macro-current-binding!
+  (with-macro-operation
+   source-path
+   source-mode
+   operations
+   (fn
+    []
+    (let
+     [sh05-macro-current-binding!
    (.valAt
     ^clojure.lang.ILookup operations
     :sh05-macro-current-binding!)
@@ -2095,13 +2290,13 @@
    (every?
     (fn* [p1__180#] (= :passed (get-in p1__180# [:resolved :status])))
     reports)]
-  {:template
-   {:status (if template-passed? :passed :failed),
-    :verified-run-count (count reports)},
-   :resolved
-   {:status (if resolved-passed? :passed :failed),
-    :verified-run-count (count reports)},
-   :runs reports})))
+     {:template
+      {:status (if template-passed? :passed :failed),
+       :verified-run-count (count reports)},
+      :resolved
+      {:status (if resolved-passed? :passed :failed),
+       :verified-run-count (count reports)},
+      :runs reports})))))
 
 (defn
  source-snapshot!
@@ -2306,8 +2501,14 @@
  ([source-path c3-artifact legacy? invocation operations]
   (assemble source-path c3-artifact legacy? invocation operations :pinned))
  ([source-path c3-artifact legacy? invocation operations source-mode]
-  (let
-   [input
+  (with-macro-operation
+   source-path
+   source-mode
+   operations
+   (fn
+    []
+    (let
+     [input
    ^{:line 78, :column 42}
    (.valAt ^clojure.lang.ILookup operations :input)
    c3-syntax-validate!
@@ -2629,7 +2830,7 @@
     source-before
     c2-artifact
     legacy?)
-   artifact))))
+     artifact))))))
 
 (defn
  c4-identity-input
@@ -2841,8 +3042,14 @@
  ([artifact allow-missing-proof? invocation operations]
   (verify artifact allow-missing-proof? invocation :pinned operations))
  ([artifact allow-missing-proof? invocation source-mode operations]
-  (letfn
-   [(semantic-late-sh05-macro-artifact-verification*-carrier
+  (with-macro-operation
+   (get-in artifact [:provenance :source-path])
+   source-mode
+   operations
+   (fn
+    []
+    (letfn
+     [(semantic-late-sh05-macro-artifact-verification*-carrier
      [state]
     (let
      [input
@@ -3539,7 +3746,7 @@
      :status (if (empty? failed-checks) :passed :failed),
      :checks checks,
      :failed-checks failed-checks,
-     :gravity-verifiers gravity-verifiers}))))
+     :gravity-verifiers gravity-verifiers}))))))
 
 (doseq
  [operation
