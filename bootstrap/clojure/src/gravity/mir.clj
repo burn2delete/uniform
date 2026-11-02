@@ -266,5 +266,7 @@
          (= expected-edge-kind (:edge-kind use))
          dominates?)))
 
-(doseq [operation [#'validate-terminator! #'validate-cfg! #'valid-dominance-edge? #'valid-terminator-use?]]
+(doseq
+ [name (keys (:public-api namespace-contract))
+  :let [operation (get (ns-interns *ns*) name)]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))
