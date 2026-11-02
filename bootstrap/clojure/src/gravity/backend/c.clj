@@ -1,11 +1,16 @@
 (ns gravity.backend.c
-  "C17 emission data for caller-validated operations; no backend admission.")
+  "C emission data and compiler-call sequencing; no backend admission.")
 
 (def ^:private namespace-contract
   (quote
 {:authenticates-inputs? false,
  :public-api
- {abi-layout-record {:arglists ([b1-record])},
+ {run-compiler!
+  {:arglists
+   ([self! _staging! _process! _fail! _cleanup! c-source-path executable-path source-path target]
+    [_self! staging! process! fail! cleanup! c-source-path executable-path source-path target execute?]),
+   :admission :none},
+  abi-layout-record {:arglists ([b1-record])},
   assert-exact!
   {:arglists
    ([c6c10-strict-first-mismatch
@@ -65,12 +70,14 @@
  [:existing-scalar-c17-data-emission
   :stable-source-and-proof-associations
   :pending-toolchain-manifests
-  :compatibility-var-interposition],
+  :compatibility-var-interposition
+  :existing-c11-compile-runtime-call-order
+  :primary-exception-cleanup-and-suppression-sequencing],
  :dependency-direction
  {:requires [],
   :consumed-by [gravity.bootstrap],
   :forbids [gravity.bootstrap gravity.cli gravity.release]},
- :governing-contracts [D1 D2 D3 D6 D8 D9 C1 C15 B1 B2 B13 B14 TEST2],
+ :governing-contracts [D1 D2 D3 D6 D8 D9 C1 C14 C15 B1 B2 B13 B14 TEST2],
  :unsupported
  [:untrusted-input-validation
   :b1-c11-admission
@@ -90,12 +97,19 @@
   :operation-index
   :b1-shaped-manifest-data
   :source-and-proof-associations
-  :explicit-compatibility-operations],
+  :explicit-compatibility-operations
+  :caller-owned-source-and-executable-paths
+  :source-context-and-target
+  :execution-flag
+  :late-self-staging-process-failure-cleanup-vars],
  :namespace gravity.backend.c,
  :diagnostic-ownership
- {:stage ["B2-MANIFEST" :exact-data-mismatch],
+ {:stage ["B2-MANIFEST" "B2-DIALECT" :exact-data-mismatch
+           :c11-compiler-acceptance :c-runtime-execution :c11-compiler],
   :existing-owner
-  [:diagnostic-construction-and-publication :input-admission]},
+  [:diagnostic-construction-and-publication :input-admission
+   :native-broker-and-staging :process-watchdog-and-capture
+   :cleanup-implementation :native-authority-and-publication]},
  :artifact-outputs
  [:c17-source-text
   :c-header-text
@@ -106,9 +120,11 @@
   :source-debug-map
   :proof-assumption-map
   :discard-cast-records
-  :exact-comparison-or-refusal],
+  :exact-comparison-or-refusal
+  :owner-supplied-compile-runtime-record
+  :original-exception-interruption-or-cleanup-failure],
  :issues-certificates? false,
- :contract-boundary :native-c17-emission-data}
+ :contract-boundary :internal-c-emission-data-and-compiler-call-sequencing}
 ))
 
 (defn build-manifest-record
@@ -412,5 +428,94 @@
                     :missing-key-count :unexpected-key-count])})))
 
 
+(defn run-compiler!
+  ([self! _staging! _process! _fail! _cleanup! c-source-path executable-path source-path target]
+   (self! c-source-path executable-path source-path target false))
+  ([_self! staging! process! fail! cleanup! c-source-path executable-path source-path target execute?]
+   (let [c-source-command-path
+         (.getAbsolutePath (java.io.File. (str c-source-path)))
+         executable-command-path
+         (.getAbsolutePath (java.io.File. (str executable-path)))
+         staging (staging! source-path target)
+         primary-failure (atom nil)
+         cleanup-failure (atom nil)
+         compile-result (atom nil)
+         runtime-result (atom nil)]
+     (try
+       (reset! compile-result
+               (process!
+                staging
+                ["/usr/bin/cc" "-std=c11" "-Wall" "-Werror"
+                 c-source-command-path "-o" executable-command-path]
+                source-path target :compile))
+       (let [result @compile-result]
+         (when-not (zero? (:exit result))
+           (fail! "B2-DIALECT"
+                            "host C compiler rejected generated C11 source"
+                            source-path target nil
+                            {:compiler "/usr/bin/cc"
+                             :compile-result result
+                             :missing-fact :c11-compiler-acceptance})))
+       (when execute?
+         (reset! runtime-result
+                (process!
+                 staging [executable-command-path]
+                 source-path target :runtime))
+         (let [result @runtime-result]
+           (when-not (zero? (:exit result))
+             (fail!
+              "B2-DIALECT"
+              "generated C executable failed at runtime"
+              source-path target nil
+              {:compiler "/usr/bin/cc"
+               :runtime-result result
+               :missing-fact :c-runtime-execution}))))
+       (cond-> @compile-result
+         execute?
+         (assoc :compile-out (:out @compile-result)
+                :compile-err (:err @compile-result)
+                :runtime-out (:out @runtime-result)
+                :runtime-err (:err @runtime-result)
+                :runtime-exit (:exit @runtime-result)))
+       (catch clojure.lang.ExceptionInfo ex
+         (reset! primary-failure ex)
+         (throw ex))
+       (catch InterruptedException interrupted
+         (reset! primary-failure interrupted)
+         (.interrupt (Thread/currentThread))
+         (throw interrupted))
+       (catch Error fatal
+         ;; A fatal compiler/pump error remains the primary identity while
+         ;; staging cleanup failures are attached as suppressed evidence.
+         (reset! primary-failure fatal)
+         (throw fatal))
+       (catch Exception ex
+         (reset! primary-failure ex)
+         (fail! "B2-DIALECT"
+                          "host C compiler is unavailable"
+                          source-path target nil
+                          {:compiler "/usr/bin/cc"
+                           :cause-message (.getMessage ex)
+                           :missing-fact :c11-compiler}))
+       (finally
+         (try
+           (cleanup!
+            staging source-path target)
+           (catch Throwable cleanup
+             (reset! cleanup-failure cleanup)
+             (when-let [error @primary-failure]
+               (.addSuppressed ^Throwable error ^Throwable cleanup))))))
+     (when-let [error @cleanup-failure]
+       (when-not @primary-failure
+         (throw ^Throwable error)))
+     (if-let [error @primary-failure]
+       (throw ^Throwable error)
+       (cond-> @compile-result
+         execute?
+         (assoc :compile-out (:out @compile-result)
+                :compile-err (:err @compile-result)
+                :runtime-out (:out @runtime-result)
+                :runtime-err (:err @runtime-result)
+                :runtime-exit (:exit @runtime-result)))))))
 (doseq [[_ operation] (ns-publics *ns*)]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))
