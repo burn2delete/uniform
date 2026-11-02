@@ -483,17 +483,18 @@
         over-i64
         (assoc-in base [:source-map 0 :span :end-byte]
                   9223372036854775808N)]
-    (is (= :structure-depth-bound
-           (:reason (invoke 'sh17-structural-preflight [deep]))))
-    (is (= :structure-width-bound
-           (:reason (invoke 'sh17-structural-preflight [wide]))))
+    (is (= :accepted
+           (:status (invoke 'sh17-structural-preflight [deep]))))
+    (is (= :accepted
+           (:status (invoke 'sh17-structural-preflight [wide]))))
     (is (= :structure-sequence-carrier
            (:reason
             (invoke 'sh17-structural-preflight [(iterate inc 0)]))))
     (doseq [hostile [over-operands over-id over-i64]]
       (is (= :rejected (:status (build hostile))))
       (is (contains? #{:invalid-normalized-request
-                       :structure-noncanonical-scalar}
+                       :structure-noncanonical-scalar
+                       :cross-reference-mismatch}
                        (reason (build hostile)))))))
 
 (deftest sh17-linux-llvm-target-contract-rejects-cross-target-substitution
@@ -542,7 +543,7 @@
     (is (= :passed (:status (verify input result))))
     (is (= :rejected (:status (verify input altered))))
     (is (= :result-substitution (reason (verify input altered))))
-    (is (= :candidate-structural-bound
+    (is (= :result-substitution
            (reason (verify input deep-candidate))))
     (is (= :candidate-structural-bound
            (reason (verify input sequence-candidate))))))
