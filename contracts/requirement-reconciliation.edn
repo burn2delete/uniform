@@ -50172,30 +50172,238 @@
    "DOM13 owns GPU/Accelerator Computing; DOM14 owns Game Engine/Simulation. Citation only; archived input records, route, source facets, history and acceptance remain unchanged."}],
  :kind :gravity/requirement-reconciliation,
  :source-version-bridges
- [{:live-sha256
-   "8e85760757564c3cf2488fd8c06a340f2357199c2040bb00b64fe14366279364",
+ [{:document-id "platform-product",
+  :path "docs/component-roadmaps/platform.md",
+  :kind :platform-task-authority-current-layout,
+  :review-state :proposed,
+  :baseline-ref "a1b991be499d50579a8b4366976c519ae8949224",
+  :applying-ref "84a929dfa6661e7e4fa8ff16f58767b3652f31f7",
+  :baseline-sha256
+  "03a971d2bf910876352e9555d45679a9fa3d00876710c8233de5f50882349a3f",
+  :live-sha256
+  "179397f1c4751e231981d5e6ffe44bf5d091deb2ae1767dd16aed76f5ea2ab2d",
+  :baseline-blob "91c4d4fcc0094c41c4d73e39fae3006f7c9e44cf",
+  :applying-blob "69520b7864b0e1d47f276eb15bbe5e3ac9712642",
+  :authority
+  "Platform task-ledger authority/layout reconciliation for current main, preserving the historical PR472 source-view receipt.",
+  :qualification
+  "Only the exact current task-authority stanza and two generated-view replacements are projected to the authenticated historical platform source view. The editable ledger, task status/history, platform architecture decisions, target/product semantics and acceptance remain current and open; this bridge confers no implementation or product acceptance and is not accounting equivalence.",
+  :semantic-deltas
+  [{:hunk-id "platform-authority-stanza" :classification :platform-task-ledger-authority-layout}
+   {:hunk-id "platform-project-ledger-view" :classification :platform-generated-view-authority-layout}
+   {:hunk-id "platform-product-ledger-view" :classification :platform-product-scope-authority-layout}],
+  :projection-hunks
+  [{:hunk-id "platform-authority-stanza",
+    :facet-ids ["facet/extension/a82b36fd375fb3fb6a9a5834"],
+    :baseline-start-line 8, :baseline-end-line 7,
+    :live-start-line 8, :live-end-line 9,
+    :baseline-fragment-sha256
+    "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    :live-fragment-sha256
+    "cfafdceb3a2c7341ee317d1d7aa572fe7c63bb1d6168f0e224edac6368ec2b74"}
+   {:hunk-id "platform-project-ledger-view",
+    :facet-ids ["facet/extension/1d2fe279947d9c26d30a6647"
+                "facet/extension/ed7c0ecd3830ac7df77a452a"
+                "facet/extension/70402e8cb232dd79d50ad393"
+                "facet/extension/bd6b008cf43a9d14cf95ea9e"
+                "facet/extension/ee630855078eaef6b70e812c"
+                "facet/extension/db3504f343e95aa12b940c47"
+                "facet/extension/76522348020c9b41fc2ad242"],
+    :baseline-start-line 36, :baseline-end-line 44,
+    :live-start-line 38, :live-end-line 38,
+    :baseline-fragment-sha256
+    "dc0998182542e03f1ff170e1f204936a6d0a34fab69c0601c91d750d5dbda733",
+    :live-fragment-sha256
+    "0cfde92802968b43bc62618dd1a0f0dd96a2582e1f89f696ab87008d54116ded"}
+   {:hunk-id "platform-product-ledger-view",
+    :facet-ids ["facet/extension/3cc23801983338b37e2b1691"
+                "facet/extension/7a4ac84981fb10372a12b34a"
+                "facet/extension/4f69644b193631ea640a86a0"
+                "facet/extension/d4830a671189825882f1eca1"
+                "facet/extension/f097e7a38164c004ececb971"
+                "facet/extension/51e1a50900a57dbb281be48b"
+                "facet/extension/1d6788ee2b3ed049619e2c1e"
+                "facet/extension/4f88c0f9e65b5748fc3086e9"
+                "facet/extension/207f40d7c91d7a397718d38b"
+                "facet/extension/cdadc309efd7cd9b4ef80339"
+                "facet/extension/0c1dbf6de184685dd9d63854"
+                "facet/extension/1b90f6fb7422faa58f1b4440"],
+    :baseline-start-line 74, :baseline-end-line 127,
+    :live-start-line 68, :live-end-line 68,
+    :baseline-fragment-sha256
+    "41d23ca657df36e65bddab892a632ac04d88e77df4efce274e3b8eefd8545bab",
+    :live-fragment-sha256
+    "f263104de6336a0b875805af93eba4d49ff5e95509c718a20d3c4d63354d6b77"}],
+  :historical-application
+  {:applying-ref "5e84b5acb59f605d8f71cc2d5cf21cc24d15a662",
    :applying-blob "2e49f62a9be9c3b06fd99c1610998f0f6525c16b",
+   :live-sha256 "8e85760757564c3cf2488fd8c06a340f2357199c2040bb00b64fe14366279364",
    :review-state :reviewed,
+   :scope :platform-layout-source-view-only,
+   :receipt-sha256 "205c9bf4bc6ffc76416ca30b7462c9afa34f7f5be3fa7b226025be3efe2f3740",
+   :qualification "Historical PR472 marker/stanza source-view receipt only; it does not review the later sole-ledger current-main replacement or confer semantic denominator, implementation or product acceptance."},
+  :review-reference
+  {:head "1ddf714a93222e59055db445ae60a75cfaf9ddda",
+   :tree "42bad72ad713700fd13b57efd1b56f805c1f65c2",
+   :receipt-sha256
+   "205c9bf4bc6ffc76416ca30b7462c9afa34f7f5be3fa7b226025be3efe2f3740",
+   :scope :platform-layout-source-view-only,
+   :result :historical-pr472-receipt-not-current-bridge-acceptance,
+  :qualification
+   "The historical transfer review is preserved as prior evidence only; the current bridge remains proposed pending independent review."}},
+  {:document-id "L4",
+   :path "docs/phase-01-core-language/014-l4-macro-system-specification.md",
+   :kind :l4-macro-expansion-semantic-projection,
+   :review-state :proposed,
    :baseline-ref "a1b991be499d50579a8b4366976c519ae8949224",
-   :authority
-   "Integrated Platform task-authority transfer PR472, preserving all original source clauses and scope.",
-   :review-reference
-   {:head "1ddf714a93222e59055db445ae60a75cfaf9ddda",
-    :tree "42bad72ad713700fd13b57efd1b56f805c1f65c2",
-    :receipt-sha256
-    "205c9bf4bc6ffc76416ca30b7462c9afa34f7f5be3fa7b226025be3efe2f3740",
-    :scope :platform-layout-source-view-only,
-    :result :exact-marker-stanza-and-both-git-snapshots-verified,
-    :qualification
-    "This incorporates only the independently verified Platform transfer source view. The receipt's separate supersession-layout objection remains historical and is resolved by d529deff's distinct guard receipt; no semantic denominator or implementation acceptance is conferred."},
-   :kind :platform-task-authority-layout-only,
-   :document-id "platform-product",
-   :applying-ref "5e84b5acb59f605d8f71cc2d5cf21cc24d15a662",
-   :qualification
-   "Only the exact added navigation stanza and four projection marker lines are removed to recover baseline bytes. New task authority remains in its integrated ledger; no implementation or product decision is accepted by this bridge.",
+   :applying-ref "e766928c0ef6bb5c5b70b7e8feeae11e7b9814be",
    :baseline-sha256
-   "03a971d2bf910876352e9555d45679a9fa3d00876710c8233de5f50882349a3f",
-   :baseline-blob "91c4d4fcc0094c41c4d73e39fae3006f7c9e44cf"}
+   "31c0e04396a99f06680258d7d52023087833762099d81aa69fb6b7e0731875e9",
+   :live-sha256
+   "61107cce6eb93192a49de0a383d7bc95cca44169377d6385da6bcdef568ade76",
+   :baseline-blob "e7455d0a5b528747d58e0056ba9304281313bf1b",
+   :applying-blob "2b09823d88073f7c761c0b9e79f8ef1d1bddf543",
+   :authority "L4 macro-system source audit of current-main quota retirement and retained cycle/host semantics.",
+   :qualification "Only the four exact L4 source hunks are projected to the authenticated baseline view. Recursive-cycle detection, host-containment diagnostics, finite expansion behavior, hygiene, metadata, effects and profile legality remain current semantic obligations; no project depth/body/size quota equivalence or canonical adoption is claimed.",
+   :semantic-deltas
+   [{:hunk-id "L4-84" :classification :mixed-recursive-cycle-host-containment-and-accounting}
+    {:hunk-id "L4-178" :classification :mixed-diagnostic-contract-and-accounting}
+    {:hunk-id "L4-218" :classification :mixed-diagnostic-meaning-and-accounting}
+    {:hunk-id "L4-225" :classification :semantic-finite-nesting-and-cycle-fixtures}],
+   :projection-hunks
+   [{:hunk-id "L4-84",
+     :facet-ids ["facet/language/40374ddb1a080946390d3a73"
+                 "facet/language/840ec7232c44e15db7e6b4b8"
+                 "facet/language/5bba9c6b2116b721dced073b"],
+     :baseline-start-line 84, :baseline-end-line 84,
+     :live-start-line 84, :live-end-line 91,
+     :baseline-fragment-sha256
+     "0c11c7df1dfea35340a4a362ebe7708f65f7b6b88b68a928a37e062a3e10dbfe",
+     :live-fragment-sha256
+     "3c742f7d3576bce421e72dbd404f9cddd5ade666501499136daa25d3830a49c5"}
+    {:hunk-id "L4-178",
+     :facet-ids ["facet/language/f4c46ab57706eeb771eeec35"],
+     :baseline-start-line 178, :baseline-end-line 178,
+     :live-start-line 185, :live-end-line 186,
+     :baseline-fragment-sha256
+     "c9f84ad3c00c0c2be9aa54f7c1734f216d914015152cdbee282694d0f19a50dc",
+     :live-fragment-sha256
+     "eb3439233c0bcf323954b0a8c5a015703766981e6b6128995a155e0c0658bc5b"}
+    {:hunk-id "L4-218",
+     :facet-ids ["facet/language/1bc2e3aefe4345c6715e4b09"],
+     :baseline-start-line 218, :baseline-end-line 218,
+     :live-start-line 226, :live-end-line 228,
+     :baseline-fragment-sha256
+     "573c98342f76eed1a8990cc558f015485d86780ef3f8e54db9a4a3cceb17f300",
+     :live-fragment-sha256
+     "3c7e70e4e7bbca8d80d3b1ef7f26a0536fe1e4338160d498cdb8d6d4173e557e"}
+    {:hunk-id "L4-225",
+     :facet-ids ["facet/language/258add08b50dde3b493a8203"],
+     :baseline-start-line 225, :baseline-end-line 225,
+     :live-start-line 235, :live-end-line 237,
+     :baseline-fragment-sha256
+     "16615da47a72f9afd45e77a9d6948adf5ba4fe11ad2f31c0ad18eea97a8580d0",
+     :live-fragment-sha256
+     "c58dfe29be33f5c30e647c7c938a392091134f612167dbc29024228b28ac9956"}]}
+  {:document-id "C4",
+   :path "docs/phase-06-compiler-architecture/083-c4-macro-expansion-engine-design.md",
+   :kind :c4-macro-expansion-semantic-projection,
+   :review-state :proposed,
+   :baseline-ref "a1b991be499d50579a8b4366976c519ae8949224",
+   :applying-ref "e766928c0ef6bb5c5b70b7e8feeae11e7b9814be",
+   :baseline-sha256
+   "0a2428520a9c5fb23336e9bcd9bd73c4f074426f4cec82b97bf0df140e994cee",
+   :live-sha256
+   "de7259906b87253bb2c34b967755f2bce8f35f060b08de6f2325a8aea7f1733b",
+   :baseline-blob "2c5c8e6539bcdfc99dc193b0f187eb167f35c51e",
+   :applying-blob "722230f06b68f266efa5368b3db8f726063220c5",
+   :authority "C4 macro-expansion-engine source audit of current-main quota retirement and retained termination/diagnostic semantics.",
+   :qualification "Only the five exact C4 source hunks are projected to the authenticated baseline view. Recursive-cycle rejection, phase/hygiene/effect/profile obligations, host safeguards and compatibility diagnostic identifiers remain current semantic obligations; no project depth/size quota equivalence or canonical adoption is claimed.",
+   :semantic-deltas
+   [{:hunk-id "C4-30" :classification :mixed-termination-diagnostic-and-accounting}
+    {:hunk-id "C4-66" :classification :semantic-host-safeguard-schema}
+    {:hunk-id "C4-84" :classification :mixed-recursion-rejection-and-accounting}
+    {:hunk-id "C4-175" :classification :mixed-diagnostic-compatibility-and-accounting}
+    {:hunk-id "C4-207" :classification :semantic-cycle-host-containment-conformance}],
+   :projection-hunks
+   [{:hunk-id "C4-30",
+     :facet-ids ["C4/normalized-facet/1374-1430/0c0690db0b3c3b64"
+                 "C4/normalized-facet/1430-1445/df3e02cd7a3c1169"
+                 "C4/normalized-facet/1445-1487/8cfe6ac873c72363"],
+     :baseline-start-line 30, :baseline-end-line 30,
+     :live-start-line 30, :live-end-line 30,
+     :baseline-fragment-sha256
+     "beb8771be3497f3d4b14801b2a709d5a3e675a0ae910c18105ffd5a23ac0cd7f",
+     :live-fragment-sha256
+     "539e12a4caf7a2e8cca3d1c5eff6ce14407803de4fcd86fc6c1c01db2045e2ca"}
+    {:hunk-id "C4-66",
+     :facet-ids ["C4/normalized-facet/2112-2348/08a0f0551f9983cf"
+                 "C4/normalized-facet/2348-2396/adbbc0fcc8bc2252"
+                 "C4/normalized-facet/2396-2402/9026dbfa763867af"],
+     :baseline-start-line 66, :baseline-end-line 66,
+     :live-start-line 66, :live-end-line 66,
+     :baseline-fragment-sha256
+     "a246d40da2f3c41a8d0e16bb57c9b30a49db57fbbd986af6684e96d09418af7a",
+     :live-fragment-sha256
+     "83eb1de6b08b43f7c03b43763d3cd7faf9cc5c1a21b4d4b29435700cf9460ee5"}
+    {:hunk-id "C4-84",
+     :facet-ids ["C4/normalized-facet/2990-3028/169f9707695c8842"
+                 "C4/normalized-facet/3028-3049/22d9e18e6a0c4070"
+                 "C4/normalized-facet/3049-3051/eb4bd64f7014f7d4"],
+     :baseline-start-line 84, :baseline-end-line 84,
+     :live-start-line 84, :live-end-line 86,
+     :baseline-fragment-sha256
+     "7073dbf329d5bc9ee3deb54655aefe4a31d067edc9c2366843d6d42f2d89eb23",
+     :live-fragment-sha256
+     "9d0b2309c45c3e8d2c1c681dc6c46ac5df1b355be30d08668222730fe23fc49a"}
+    {:hunk-id "C4-175",
+     :facet-ids ["C4/normalized-facet/5866-5869/934fa8d0c0971796"
+                 "C4/normalized-facet/5869-5910/4902048ad50c5fe6"
+                 "C4/normalized-facet/5910-5911/01ba4719c80b6fe9"
+                 "C4/normalized-facet/5911-5914/934fa8d0c0971796"
+                 "C4/normalized-facet/5914-5959/fa42b0f1bf9b4487"
+                 "C4/normalized-facet/5959-5960/01ba4719c80b6fe9"],
+     :baseline-start-line 175, :baseline-end-line 176,
+     :live-start-line 177, :live-end-line 180,
+     :baseline-fragment-sha256
+     "28895308f53fc8a72a901e759d04852bd0af832eb6bb84930f515bbc9726005a",
+     :live-fragment-sha256
+     "ef0b1b024f7d8b840fff82465a1b8cfde556cfdf2af6373e7e941a6bef4801eb"}
+    {:hunk-id "C4-207",
+     :facet-ids ["C4/normalized-facet/7051-7053/e86dd77a7ee765ea"
+                 "C4/normalized-facet/7053-7089/1a12aaf2dc193dbe"
+                 "C4/normalized-facet/7089-7091/beadba836315747f"],
+     :baseline-start-line 207, :baseline-end-line 207,
+     :live-start-line 211, :live-end-line 212,
+     :baseline-fragment-sha256
+     "1936945e5cfb861dfb725aae04178a038dc2348031fb2a0235b80563487bc7e0",
+     :live-fragment-sha256
+     "ff3c90d3b5895adacee3544c2fd24370d8ce286620fbbbc6eb9d5878f6c6c0f5"}]}
+  {:document-id "accounting-policy",
+   :path "AGENTS.md",
+   :kind :governance-lifecycle-policy-semantic-projection,
+   :review-state :proposed,
+   :baseline-ref "a1b991be499d50579a8b4366976c519ae8949224",
+   :applying-ref "60f59d225b03338eb30cdc22850838ecebd07303",
+   :baseline-sha256
+   "52e41ad759618a3837d1f818a9f91427823d2b6461a9cd797544cfcccfed90ac",
+   :live-sha256
+   "05758d7322985d88f8fc31cc25d02c7e5514442df11d67c0517bc96bc5004c93",
+   :baseline-blob "35a8636a2e6c656ba34acc4d96da5cdb46550bab",
+   :applying-blob "ad24f9fa46161ceb2ee633b438cb8d930a2ee632",
+   :authority "AGENTS lifecycle/preflight governance source reconciliation, distinct from project-accounting removal.",
+   :qualification "Only the exact integration-preflight lifecycle paragraph is projected to the authenticated historical policy view. Exact base/commit/tree binding, governed-composition metadata and independent review remain current governance semantics; no quota/accounting equivalence or canonical adoption is claimed.",
+   :semantic-deltas
+   [{:hunk-id "AGENTS-integration-preflight" :classification :governance-lifecycle-and-preflight-binding}],
+   :projection-hunks
+   [{:hunk-id "AGENTS-integration-preflight",
+     :facet-ids ["facet/extension/d3c54bd0a627a0423d27c564"],
+     :baseline-start-line 213, :baseline-end-line 214,
+     :live-start-line 213, :live-end-line 217,
+     :baseline-fragment-sha256
+     "15a4f6954aef7548235631890f67d798cbb1c7b9b6f65a683fc0ab6d41a77bf9",
+     :live-fragment-sha256
+     "36929cc193df07f3ecd0970ee7c06c55bad78f87e1609fed67ecbd399b929ef0"}]}
   {:document-id "STD3",
    :path "docs/phase-16-standard-library/213-std3-collections-library-specification.md",
    :kind :stdlib-accounting-policy-semantic-projection,
@@ -50209,9 +50417,17 @@
    :baseline-blob "ca89df08c128c25d23a4a0781da79dd5e37abd74",
    :applying-blob "19581f5720fea820ff97a1afc392cf3446f44bc3",
    :authority
-   "AGENTS.md project-accounting removal, with STD3 source-bound selective supersession review.",
+   "AGENTS.md#project-accounting-removal, with STD3 source-bound selective supersession review.",
    :qualification
-   "Only the six explicitly reviewed STD3 accounting-policy source regions are projected back to the authenticated baseline view. Physical member validation, allocation, ownership, lifetime, effects, capabilities, profile legality and host restrictions remain unchanged. This proposal is source reconciliation evidence only and does not confer canonical adoption or implementation acceptance.",
+   "Only the six explicitly reviewed STD3 accounting-policy source regions are projected back to the authenticated baseline view. Physical member validation, allocation, ownership, lifetime, effects, capabilities, profile legality and host restrictions remain unchanged. Traversal completeness and validation timing are recorded as mixed semantic deltas, not treated as quota equivalence. This proposal is source reconciliation evidence only and does not confer canonical adoption or implementation acceptance.",
+   :semantic-deltas
+   [{:hunk-id "STD3-112" :classification :accounting-removal-with-complete-traversal-validation}
+    {:hunk-id "STD3-313" :classification :accounting-removal-with-preconstruction-validation}
+    {:hunk-id "STD3-332" :classification :accounting-only-pair-width-quota-removal}
+    {:hunk-id "STD3-353" :classification :accounting-removal-with-validation-timing-change}
+    {:hunk-id "STD3-359" :classification :accounting-removal-with-complete-physical-enumeration}
+    {:hunk-id "STD3-497" :classification :accounting-removal-with-complete-census-validation}],
+   :lineage-record-digest "a6780e4a2514b65d84d84f003b4eb582f5dd66866dc461915ebe72e40885cf7e",
    :projection-hunks
    [{:lineage-id
      "STD3/source/c0d68f7417c5026e583fc882d1ef84f94a93602a1917ee86bafd7bfa24700add",
@@ -50310,6 +50526,7 @@
      "58d096cc16d922ad72d560c5b3e4d60d093c9527a9472c2414d63deb98630e3d",
      :structural-kind :source-block,
      :disposition :mixed-policy-supersession,
+     :review-state :proposed,
      :rationale
      "Only exact project accounting/quota/refusal fragments may be removed under AGENTS; independent operational laws remain acceptance facets.",
      :shared-facet-set-ids [],
@@ -50429,6 +50646,7 @@
      "58d096cc16d922ad72d560c5b3e4d60d093c9527a9472c2414d63deb98630e3d",
      :structural-kind :source-block,
      :disposition :mixed-policy-supersession,
+     :review-state :proposed,
      :rationale
      "Only the obsolete construction-work accounting wording is superseded; operand/member-type support and pre-construction validation remain normative.",
      :shared-facet-set-ids [],
@@ -50459,6 +50677,7 @@
      "58d096cc16d922ad72d560c5b3e4d60d093c9527a9472c2414d63deb98630e3d",
      :structural-kind :source-block,
      :disposition :mixed-policy-supersession,
+     :review-state :proposed,
      :rationale
      "Only exact project accounting/quota/refusal fragments may be removed under AGENTS; independent operational laws remain acceptance facets.",
      :shared-facet-set-ids [],
@@ -50557,6 +50776,7 @@
      "58d096cc16d922ad72d560c5b3e4d60d093c9527a9472c2414d63deb98630e3d",
      :structural-kind :source-block,
      :disposition :mixed-policy-supersession,
+     :review-state :proposed,
      :rationale
      "Only exact project accounting/quota/refusal fragments may be removed under AGENTS; independent operational laws remain acceptance facets.",
      :shared-facet-set-ids [],
@@ -50622,6 +50842,7 @@
      "58d096cc16d922ad72d560c5b3e4d60d093c9527a9472c2414d63deb98630e3d",
      :structural-kind :source-block,
      :disposition :mixed-policy-supersession,
+     :review-state :proposed,
      :rationale
      "Only exact project accounting/quota/refusal fragments may be removed under AGENTS; independent operational laws remain acceptance facets.",
      :shared-facet-set-ids [],
@@ -50737,6 +50958,7 @@
      "58d096cc16d922ad72d560c5b3e4d60d093c9527a9472c2414d63deb98630e3d",
      :structural-kind :source-block,
      :disposition :mixed-policy-supersession,
+     :review-state :proposed,
      :rationale
      "Only exact project accounting/quota/refusal fragments may be removed under AGENTS; independent operational laws remain acceptance facets.",
      :shared-facet-set-ids ["STD3/shared-acceptance"],

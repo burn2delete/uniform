@@ -217,20 +217,24 @@
 
 (defn validate-bridge-projections! [manifest projected-views baseline-texts]
   (doseq [bridge (:source-version-bridges manifest)
-          :when (= requirement-sources/std3-accounting-kind (:kind bridge))]
+          :when (requirement-sources/baseline-projection-kind? (:kind bridge))]
     (let [id (:document-id bridge)
           projected (get-in projected-views [id :text])
           baseline (get baseline-texts id)
           projected-occurrences (source-occurrences id projected)
           baseline-occurrences (source-occurrences id baseline)
           expected-facets (set (mapcat :facet-ids (:projection-hunks bridge)))
-          declared-facets (set (map :id (:source-facets manifest)))]
+          declared-facets (if (= requirement-sources/std3-accounting-kind (:kind bridge))
+                           (set (mapcat :facet-ids
+                                        (get-in manifest [:stdlib-reconciliation-context :accounting-lineage
+                                                          :mixed-std3-paragraphs])))
+                           (set (map :id (:source-facets manifest))))]
       (require! (= baseline projected)
-                "STD3 accounting projection does not recover the authenticated baseline bytes")
+                "Source projection does not recover the authenticated baseline bytes")
       (require! (= (mapv :id baseline-occurrences) (mapv :id projected-occurrences))
-                "STD3 accounting projection changes source occurrence identity")
+                "Source projection changes source occurrence identity")
       (require! (set/subset? expected-facets declared-facets)
-                "STD3 accounting projection references an undeclared source facet"))))
+                "Source projection references an undeclared source facet"))))
 
 (defn audit [root]
   (let [manifest (edn/read-string (read-source (checked-path root manifest-path)))
@@ -258,7 +262,7 @@
                         (:source-version-bridges manifest))
           baseline-texts (into {}
                               (for [bridge bridges
-                                    :when (= requirement-sources/std3-accounting-kind (:kind bridge))]
+                                    :when (requirement-sources/baseline-projection-kind? (:kind bridge))]
                                 [(:document-id bridge)
                                  (requirement-sources/git-source root (:baseline-ref bridge)
                                                                  (:path bridge) require!)]))

@@ -471,6 +471,21 @@
 
 (defn std3-accounting-fixture []
   (let [hunks requirement-sources/std3-accounting-projection-hunks
+        lineage (mapv (fn [{:keys [lineage-id facet-ids baseline-start-line baseline-end-line
+                                   baseline-fragment-sha256]}]
+                        {:id lineage-id :document-id "STD3"
+                         :source-sha256 requirement-sources/std3-accounting-baseline-sha256
+                         :structural-kind :source-block :disposition :mixed-policy-supersession
+                         :review-state :proposed
+                         :start-line baseline-start-line :end-line baseline-end-line
+                         :raw-sha256 baseline-fragment-sha256 :facet-ids facet-ids
+                         :authority-source-occurrence-ids ["fixture/authority"]
+                         :rationale "Fixture lineage retains typed review metadata."
+                         :specific-fragment-proposal {:remove ["fixture accounting"]
+                                                      :retain ["fixture validation"]}
+                         :shared-facet-set-ids [] :unit-ids []})
+                      hunks)
+        digest (rr/sha256 (pr-str ((var requirement-sources/canonical-value) lineage)))
         bridge {:document-id "STD3"
                 :path requirement-sources/std3-accounting-path
                 :kind requirement-sources/std3-accounting-kind
@@ -481,15 +496,11 @@
                 :live-sha256 requirement-sources/std3-accounting-live-sha256
                 :baseline-blob "ca89df08c128c25d23a4a0781da79dd5e37abd74"
                 :applying-blob "19581f5720fea820ff97a1afc392cf3446f44bc3"
-                :projection-hunks hunks}
-        lineage (mapv (fn [{:keys [lineage-id facet-ids baseline-start-line baseline-end-line
-                                   baseline-fragment-sha256]}]
-                        {:id lineage-id :document-id "STD3"
-                         :source-sha256 requirement-sources/std3-accounting-baseline-sha256
-                         :structural-kind :source-block :disposition :mixed-policy-supersession
-                         :start-line baseline-start-line :end-line baseline-end-line
-                         :raw-sha256 baseline-fragment-sha256 :facet-ids facet-ids})
-                      hunks)]
+                :authority requirement-sources/std3-accounting-authority
+                :qualification requirement-sources/std3-accounting-qualification
+                :semantic-deltas requirement-sources/std3-accounting-semantic-deltas
+                :lineage-record-digest digest
+                :projection-hunks hunks}]
     {:scope-version "fixture-stdlib-1"
      :source-baseline requirement-sources/std3-accounting-baseline-ref
      :original-documents [{:id "STD3" :path requirement-sources/std3-accounting-path
@@ -523,6 +534,30 @@
                  (view (assoc-in manifest [:source-version-bridges 0 :baseline-sha256]
                                  (apply str (repeat 64 "0"))) live baseline)))
     (is (thrown? Exception
+                 (view (assoc-in manifest [:source-version-bridges 0 :review-state] :rejected)
+                       live baseline)))
+    (is (thrown? Exception
+                 (view (assoc-in manifest [:source-version-bridges 0 :authority]
+                                 "untrusted authority") live baseline)))
+    (is (thrown? Exception
+                 (view (assoc-in manifest [:source-version-bridges 0 :qualification]
+                                 "blanket quota equivalence") live baseline)))
+    (is (thrown? Exception
+                 (view (assoc-in manifest [:stdlib-reconciliation-context :accounting-lineage
+                                           :mixed-std3-paragraphs 0 :authority-source-occurrence-ids]
+                                  ["forged/authority"])
+                       live baseline)))
+    (is (thrown? Exception
+                 (view (assoc-in manifest [:stdlib-reconciliation-context :accounting-lineage
+                                           :mixed-std3-paragraphs 1 :rationale]
+                                  "forged rationale")
+                       live baseline)))
+    (is (thrown? Exception
+                 (view (assoc-in manifest [:stdlib-reconciliation-context :accounting-lineage
+                                           :mixed-std3-paragraphs 2 :specific-fragment-proposal]
+                                  {:remove ["untrusted"] :retain []})
+                       live baseline)))
+    (is (thrown? Exception
                  (view (assoc-in manifest [:source-version-bridges 0 :path]
                                  "docs/phase-16-standard-library/212-std2-core-library-specification.md")
                        live baseline)))
@@ -548,6 +583,14 @@
     (is (thrown? Exception
                  (requirement-sources/validate-snapshots!
                   (assoc-in (get-in projected [:bridge]) [:live-sha256] (apply str (repeat 64 "0")))
+                  read-ref rr/sha256 rr/require!)))
+    (is (thrown? Exception
+                 (requirement-sources/validate-snapshots!
+                  (assoc-in (get-in projected [:bridge]) [:baseline-blob] (apply str (repeat 40 "0")))
+                  read-ref rr/sha256 rr/require!)))
+    (is (thrown? Exception
+                 (requirement-sources/validate-snapshots!
+                  (assoc-in (get-in projected [:bridge]) [:applying-blob] (apply str (repeat 40 "0")))
                   read-ref rr/sha256 rr/require!)))
     (is (thrown? Exception
                  (requirement-sources/validate-snapshots!
