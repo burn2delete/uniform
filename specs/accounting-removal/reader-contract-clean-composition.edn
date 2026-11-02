@@ -1,0 +1,289 @@
+{:tree
+ {:entries 10080,
+  :base-entries 10075,
+  :all-base-entries-conserved true,
+  :exact-five-reviewed-additions true,
+  :all-production-unchanged-from-main true},
+ :nonclaims
+ [:genuine-owner-acceptance
+  :helper-semantic-equivalence
+  :whole-ACC01
+  :PR502-closure
+  :integration
+  :release
+  :self-hosting],
+ :execution
+ {:read-eval false,
+  :Bootstrap-loaded false,
+  :Gravity-executed false,
+  :genuine-owner-controls :UNRUN},
+ :candidate "b78b221a17684e02415a9317f2b605e78e59ef24",
+ :dependency-report-sha256
+ "41a576abc746d18630aaa7dabc9bdf71cdcfc4bf6e413062d04bb425ae9eb212",
+ :original-query
+ {:result {:test 7, :pass 257, :fail 5, :error 0, :type :summary},
+  :status :NONPASS,
+  :log-sha256
+  "83ce078f24cfc42c158da94f7267db623e2fbf8553130897289a2cacb49dbb80"},
+ :reader-results
+ [{:path
+   "bootstrap/clojure/test/gravity/self_hosting/private_map_route_contract_test.clj",
+   :result {:test 2, :pass 223, :fail 0, :error 0, :type :summary}}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/list_construction_contract_test.clj",
+   :result {:test 4, :pass 167, :fail 0, :error 0, :type :summary}}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/list_query_contract_test.clj",
+   :result {:test 8, :pass 276, :fail 0, :error 0, :type :summary}}],
+ :historical-records
+ :original-base-whole-file-pins-not-current-file-pins,
+ :generator-sha256
+ "83c42cfb4e1dafa53101d810fbde743a49c5a369d996e24254a27aa379da946b",
+ :paths
+ [{:path
+   "bootstrap/clojure/test/gravity/self_hosting/private_map_route_contract_test.clj",
+   :sha256
+   "70d6ba31a1eda4085d522c6c0bf97b3959d74bf7a88cecd9209bed85a8106ced",
+   :entry "100644 blob 0d80baae5669b42600fa0b91839104d73c87d41c"}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/list_construction_contract_test.clj",
+   :sha256
+   "1e80fb01f61bac427efd01d684c558e7263517315b481939966061aa27407ca5",
+   :entry "100644 blob 5044725ee5e26c4a0cc0eadb690ab844d55d021d"}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/list_query_contract_test.clj",
+   :sha256
+   "856886bfada854ca9046cd4c84e236c09db7276e686b29b3fb13c07830ed14f8",
+   :entry "100644 blob 47930197b5bd982690cf6a1bf19a0009f3bf3171"}
+  {:path
+   "specs/accounting-removal/reader-contract-controls-results.edn",
+   :sha256
+   "fe6949f400286ec3b9a31a0c9794e2f4930c940f14c36fba535eecb77915d53d",
+   :entry "100644 blob 88d2a1c35f1f3e064255221a2651e32709c73439"}
+  {:path "specs/accounting-removal/reader-contract-controls.md",
+   :sha256
+   "c119137108392aa4ecc2cf6906159b6d46d1dee1aed84c820a0ca5b2940071de",
+   :entry "100644 blob 59dd2b3bfe494241c11da4468ba79f0498b6d5ff"}],
+ :inspect-preconditions
+ {"all-pass" true,
+  "base-resolved" true,
+  "candidate-identities-match" true,
+  "clean-worktree" true,
+  "named-branch" true,
+  "reconciliation-allowed" true},
+ :totals {:test 14, :pass 666, :fail 0, :error 0},
+ :CI :pending,
+ :kind :reader-contract-clean-current-main-composition,
+ :parents
+ ["70eba308480d5d09e85d1657bf1f3a7473f03228"
+  "2654d155322f7863dd087065f19000b43c877cbe"],
+ :validation
+ {:language-boundary {:tests 6, :assertions 11, :fail 0, :error 0},
+  :docs :pass,
+  :roadmap :pass,
+  :governance-records 185,
+  :whitespace :pass,
+  :lint
+  {:files 4,
+   :errors 0,
+   :warnings 0,
+   :info 0,
+   :cache false,
+   :version "2025.10.23"}},
+ :base "2654d155322f7863dd087065f19000b43c877cbe",
+ :current-composition-independent-review :pending,
+ :pr 626,
+ :dependencies
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :file-sha256
+   "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142",
+   :explicit-aliases {},
+   :direct-contract-consumer-and-guard-pins
+   [{:name sh08-lq-source,
+     :form-sha256
+     "f69e0a50fcf44cdbe34d8afade49ee646239f9502b1109f5fa7552f3a2226e12"}
+    {:name sh08-lq-finish,
+     :form-sha256
+     "e4d9f927fa6ae3e47d22d4bf34c4be74eaa0e32bc014d9800940e759b2563935"}
+    {:name sh08-lq-constraint,
+     :form-sha256
+     "019a037091ca6a56b18ccaefa3f651a2eb5812c897cc9b338e40d8abc8a01171"}
+    {:name sh08-lq-call-fact,
+     :form-sha256
+     "d7ef416e483535bea0348f2f3c15b583af6aed7f94f2a92a6de185e50e72bae8"}
+    {:name sh08-lq-inferred-call-valid?,
+     :form-sha256
+     "eff30cd786bc65d6d03bd6f26d7235e86242385163e71e39d0f06e4442f6b6f2"}
+    {:name sh08-lc-native-map?,
+     :form-sha256
+     "6b2654576b9e5327a5e67a1b4255ee9035d6d3223dfa066391f5a6e97e3c68ab"}],
+   :native-map-guard-body
+   ([value]
+    (let
+     [header
+      (bootstrap-native-carrier-header value)
+      kind
+      (get header 0)]
+     (if
+      (if
+       (= :map kind)
+       true
+       (if
+        (= :tree-map kind)
+        (= :default-comparator (get header 4))
+        false))
+      (if
+       (>= (get header 2) 0)
+       (if
+        (<= (get header 2) 3)
+        (loop
+         [fields (keys value)]
+         (if
+          (= 0 (count fields))
+          true
+          (if (keyword? (first fields)) (recur (rest fields)) false)))
+        false)
+       false)
+      false))),
+   :current-file-sha256
+   "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+   :current-file-identical-to-reviewed false}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :file-sha256
+   "11ab8e2cb4c74a30d5fd3fe48d86affe87966002f88815037a3253d9b4871f57",
+   :explicit-aliases
+   {body-vemp-constraint sh08-vemp-constraint,
+    body-vemp-call-fact sh08-vemp-call-fact,
+    body-mkeys-constraint sh08-mkeys-constraint,
+    body-mkeys-call-fact sh08-mkeys-call-fact,
+    body-io-child-types sh08-ft-ordered-child-types,
+    body-vrest-call-fact sh08-vrest-call-fact,
+    body-lc-native-map? sh08-lc-native-map?,
+    body-vrest-constraint sh08-vrest-constraint,
+    body-all? sh08-ft-all-true?,
+    body-hl-type? sh08-hl-type?,
+    body-lq-binding? sh08-lq-binding?},
+   :direct-contract-consumer-and-guard-pins
+   [{:name body-lq-source,
+     :form-sha256
+     "ecfdcc003f320100c0ee48d255f054138d2dbba1e9dc2902af0c743cdfe09ec7"}
+    {:name body-lq-finish,
+     :form-sha256
+     "06c4d5c8f3e500a3967cdd52edbbfd85c86d3c9e185cbd3e71e44725839463be"}
+    {:name body-lq-constraint,
+     :form-sha256
+     "e270ad8a630aaba147eee13497e2e88b1969619b85362cd2c96b236ae037186a"}
+    {:name body-lq-call-fact,
+     :form-sha256
+     "195916fedb03844e5d4d4d687967c9512ae438a5e1a3f9f18592fc4ea8893fe5"}
+    {:name body-lq-call-valid?,
+     :form-sha256
+     "fb28321d48f799d776b4dae47f9d5f6de165d7e9e78f988eba09456d7d971413"}
+    {:name body-lc-native-map?,
+     :form-sha256
+     "cedb228784ec7be2648c0413d4477d11777d6b9900e90b79d799f8c7b8df49dc"}],
+   :native-map-guard-body
+   ([value]
+    (let
+     [header
+      (bootstrap-native-carrier-header value)
+      kind
+      (get header 0)]
+     (if
+      (if
+       (= :map kind)
+       true
+       (if
+        (= :tree-map kind)
+        (= :default-comparator (get header 4))
+        false))
+      (if
+       (>= (get header 2) 0)
+       (if
+        (<= (get header 2) 3)
+        (loop
+         [fields (keys value)]
+         (if
+          (= 0 (count fields))
+          true
+          (if (keyword? (first fields)) (recur (rest fields)) false)))
+        false)
+       false)
+      false))),
+   :current-file-sha256
+   "a1d6d01540ec67ac3c8aad270f946dfcdc21a94664ee36b4aa8848a18c56f3e5",
+   :current-file-identical-to-reviewed false}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :file-sha256
+   "9ea39a7aa26fd53a3683091dd3bf49f3e0517d56e77b5a196c70261b55a43637",
+   :explicit-aliases
+   {p15-s23-vemp-call-fact sh08-vemp-call-fact,
+    p15-s23-vrest-call-fact sh08-vrest-call-fact,
+    p15-s23-mkeys-constraint sh08-mkeys-constraint,
+    p15-s23-hl-type? sh08-hl-type?,
+    p15-s23-io-child-types sh08-ft-ordered-child-types,
+    p15-s23-vrest-constraint sh08-vrest-constraint,
+    p15-s23-vemp-constraint sh08-vemp-constraint,
+    p15-s23-lc-native-map? sh08-lc-native-map?,
+    p15-s23-typed-all sh08-ft-all-true?,
+    p15-s23-mkeys-call-fact sh08-mkeys-call-fact,
+    p15-s23-lq-binding? sh08-lq-binding?},
+   :direct-contract-consumer-and-guard-pins
+   [{:name p15-s23-lq-source,
+     :form-sha256
+     "d77e0ac059e4138069b7f7b4fb327fbec72fbf69276ecf348e835adff89ebbea"}
+    {:name p15-s23-lq-finish,
+     :form-sha256
+     "004d6f5983d9120e56387aac65e3deea53f4f2b48322c90821bc4ca49740d1c8"}
+    {:name p15-s23-lq-constraint,
+     :form-sha256
+     "215e62f9d4698120782663cf2c445e27d1008abd5d337e2f08fd129ffa67c196"}
+    {:name p15-s23-lq-call-fact,
+     :form-sha256
+     "768aa4b73df808d6571ce24c28b65fd8598fd796ffc665c1087ad961bee8292e"}
+    {:name p15-s23-typed-compile-list-query,
+     :form-sha256
+     "caa2eaae4877ba20e4045da0a98687c773de4bd418d4e78c3da0882c59169242"}
+    {:name p15-s23-lc-native-map?,
+     :form-sha256
+     "d26a4f4dcd377cba235c8d2f8aa48ccf4979aa9efa029d61a2c8fe3bb6748bb3"}],
+   :native-map-guard-body
+   ([value]
+    (let
+     [header
+      (bootstrap-native-carrier-header value)
+      kind
+      (get header 0)]
+     (if
+      (if
+       (= :map kind)
+       true
+       (if
+        (= :tree-map kind)
+        (= :default-comparator (get header 4))
+        false))
+      (if
+       (>= (get header 2) 0)
+       (if
+        (<= (get header 2) 3)
+        (loop
+         [fields (keys value)]
+         (if
+          (= 0 (count fields))
+          true
+          (if (keyword? (first fields)) (recur (rest fields)) false)))
+        false)
+       false)
+      false))),
+   :current-file-sha256
+   "e49189aa370afcdf7c85a98d68cec02c3462e4f964285941e7f1dd956c5b68ae",
+   :current-file-identical-to-reviewed false}],
+ :integration-mode :UNRUN,
+ :owner :ACC-01,
+ :prior-source-review
+ {:candidate "70eba308480d5d09e85d1657bf1f3a7473f03228",
+  :receipt-sha256
+  "096b93e4afec7ea29d51a49fd3ae971a1bf5bec76b59522e8f84db6482f9c963",
+  :extended-to-new-head false},
+ :candidate-tree "c21fbaf86832bd9fa4e3f2ad1f94c50021457c71"}

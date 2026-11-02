@@ -1,0 +1,88 @@
+{:coordinator-integration :pending,
+ :nonclaims
+ [:fresh-independent-composition-acceptance
+  :clean-worktree
+  :integration-preflight-pass
+  :main-integration
+  :genuine-compiler-runtime-result
+  :parent-stack-or-PR569-acceptance
+  :ACC-or-PR502-closure
+  :release
+  :self-hosting],
+ :candidate "c5fc3c57c05a4f94e8513ec86ed197818f2ac668",
+ :source
+ {:path
+  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+  :current-main-sha256
+  "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142",
+  :candidate-and-reviewed-sha256
+  "8ab474154d0d87ab2414296d19badf3539e77b58a5f16ca60574803d92d10cca",
+  :remaining-main-definitions 1087,
+  :remaining-loop-functions 30,
+  :all-other-main-forms-conserved true,
+  :raw-production-byte-identity-to-reviewed true},
+ :consumed-source-review
+ {:candidate "8330e46870de055f3ad4c864921dc83b999d4a06",
+  :receipt-sha256
+  "457ed321acbc06f14651c7bb872a6fe995b0ba7524be8324aae0a3a52e79807f",
+  :scope :exact-source-and-census-only,
+  :new-composition-acceptance-inherited false},
+ :preflight
+ {:preconditions
+  {:base-resolved true,
+   :candidate-identities-match true,
+   :clean-worktree false,
+   :named-branch true,
+   :reconciliation-allowed true,
+   :all-pass false},
+  :observed-identities
+  {:expected-base "7a74f6e3802a81971cb79c8619d04173bcded207",
+   :expected-commit "c5fc3c57c05a4f94e8513ec86ed197818f2ac668",
+   :expected-tree "998aee8ef4c7b18e2ed973318133d3c7badd1dce"},
+  :reconciliation
+  {:relation "descendant",
+   :base-is-ancestor true,
+   :candidate-is-ancestor false,
+   :tree-equivalent false,
+   :recommendation "integrate_candidate"},
+  :mode :inspect,
+  :result :not-integration-eligible,
+  :untracked-relative-paths
+  ["tools/ci/kondo/.cache/v1/clj/gravity.self-hosting.sh01-stage2-runtime-iteration-test.transit.json"
+   "tools/ci/kondo/.cache/v1/clj/gravity.self-hosting.sh09-body-effect-test.transit.json"
+   "tools/ci/kondo/.cache/v1/lock"],
+  :tracked-changes [],
+  :read-only true,
+  :integration-mode :UNRUN},
+ :current-main "7a74f6e3802a81971cb79c8619d04173bcded207",
+ :kind :reconciled-loop-candidate-source-applicability,
+ :generator
+ {:language :clojure,
+  :sha256
+  "c1e7aa8aa672180cc80a0b4e82c1a73a9df41c0fac325c06f4ed88a142cebe2d",
+  :preserved-locally true},
+ :composition
+ {:changed-paths-relative-current-main
+  ["bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+   "specs/accounting-removal/loop-accounting-main-census.edn"
+   "specs/accounting-removal/loop-accounting-main.md"],
+  :reviewed-evidence-bytes-conserved true,
+  :all-other-current-main-tree-paths-conserved true,
+  :tracked-reference-scope
+  ["bootstrap" "tools" ".github" ".agents" ".specify" "deps.edn"],
+  :remaining-source-name-matches 0,
+  :main-is-ancestor true,
+  :tree-identity-equals-precalculated-merge true,
+  :main-ref-unchanged true},
+ :candidate-parents
+ ["8330e46870de055f3ad4c864921dc83b999d4a06"
+  "7a74f6e3802a81971cb79c8619d04173bcded207"],
+ :validation
+ {:source-checks :passed,
+  :reader-eval false,
+  :Bootstrap-loaded false,
+  :genuine-kernels :UNRUN},
+ :cache-cleanup :prior-rejection-not-retried-or-bypassed,
+ :pr 619,
+ :owner :ACC-01,
+ :candidate-tree "998aee8ef4c7b18e2ed973318133d3c7badd1dce"}

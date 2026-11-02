@@ -1,0 +1,20 @@
+{:kind :preserved-List-construction-lowering-controls-CI
+ :owner :ACC-01
+ :pr 636
+ :candidate "db8aaac9851ba287cf189c186703a4f85730903e"
+ :candidate-tree "b218b0cb3d6cfb90d1acabc155d7af123bfc8e12"
+ :parent "c5e9fccdad293b34c290859cc3e4716870241dd6"
+ :parent-pr 623
+ :run 40978066790
+ :successes 7
+ :configured-skips 2
+ :all-completed true
+ :independent-source-review-at-CI-capture :active
+ :independent-source-review :qualified-source-PASS-consumed
+ :parent-acceptance :not-established
+ :current-main-composition :not-established
+ :genuine-kernel-and-target-runtime :UNRUN
+ :integration-preflight-and-main-merge :UNRUN
+ :no-policy-change-or-rerun true
+ :nonclaims [:parent-acceptance :genuine-owner-acceptance :current-main-LC-support
+             :whole-ACC01 :PR502-closure :release :self-hosting]}
