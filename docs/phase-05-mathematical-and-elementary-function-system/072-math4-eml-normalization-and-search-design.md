@@ -206,7 +206,7 @@ EML diagnostics use `MATH4` identifiers:
 - `MATH4-BRANCH` for branch-policy mismatch.
 - `MATH4-COMPLEX` for untracked complex intermediates.
 - `MATH4-TRACE` for unreplayable normalization traces.
-- `MATH4-SEARCH` for nondeterministic or unbounded search.
+- `MATH4-SEARCH` for nondeterministic or incomplete search manifests.
 - `MATH4-CANDIDATE` for candidate use before proof acceptance.
 - `MATH4-PROOF` for missing or rejected proof artifacts.
 
