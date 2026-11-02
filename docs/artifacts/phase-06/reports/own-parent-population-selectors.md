@@ -1,6 +1,8 @@
 # OWN-02 direct-owner population selectors
 
-Base: `149503152d7edab3f7e638c000a553f62c54e679`.
+Historical source base: `149503152d7edab3f7e638c000a553f62c54e679`.
+Current integration base: `d97539762108d7e44024164c61bb120044ef684b`,
+tree `093a9c284a1e2fc4dd360fa677e43f7a0512dfba`.
 Contracts: `docs/end-to-end-contracts.md` OWN-02, C2-C6, C16 and C18.
 Status: source increment only; all ten new genuine selectors are UNRUN.
 
