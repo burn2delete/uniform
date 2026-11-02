@@ -18,7 +18,8 @@
       :sh05-form-contains-legacy-macro-position?]},
     assemble
     {:arglists
-     ([source-path c3-artifact legacy? invocation operations]),
+     ([source-path c3-artifact legacy? invocation operations]
+      [source-path c3-artifact legacy? invocation operations source-mode]),
      :operation-inputs
      [:input
       :c3-syntax-validate!
@@ -56,10 +57,13 @@
     {:arglists ([left right operations]),
      :operation-inputs [:sh05-deep-merge]},
     current-plan-binding!
-    {:arglists ([request-source operations]),
+    {:arglists
+     ([request-source operations]
+      [request-source operations source-mode]),
      :operation-inputs
      [:input
       :sh05-macro-boundary-fail!
+       :sh05-macro-build-binding!
       :sh05-macro-plan-identities
       :sh05-macro-read-pinned-source!]},
     resolve-expansion-template!
@@ -105,7 +109,8 @@
     defn-form? {:arglists ([form]), :operation-inputs []},
     request
     {:arglists
-     ([source-path c3-artifact module syntax form operations]),
+     ([source-path c3-artifact module syntax form operations]
+      [source-path c3-artifact module syntax form operations request-context]),
      :operation-inputs
      [:input :reader-canonical-hash :sh05-semantic-component-id]},
     source-stable!
@@ -152,11 +157,14 @@
       :sh04-syntax-strip-host-metadata
       :sh05-macro-boundary-fail!]},
     read-pinned-plan-source!
-    {:arglists ([request-source operations]),
+    {:arglists
+     ([request-source operations]
+      [request-source operations source-mode]),
      :operation-inputs
      [:input
       :sh05-macro-boundary-fail!
       :sh05-macro-resolve-source-path
+      :sh03-reader-strict-source-text!
       :sha256-bytes-hex]},
     resolve-plan-source-path
     {:arglists ([operations]),
@@ -213,7 +221,10 @@
     {:arglists ([_source-path sh05 operations]),
      :operation-inputs [:input :sh05-c4-compatibility-artifact-id]},
     replay-report
-    {:arglists ([source-path boundary operations]),
+    {:arglists
+     ([source-path boundary operations]
+      [source-path boundary invocation operations]
+      [source-path boundary invocation source-mode operations]),
      :operation-inputs
      [:sh05-macro-current-binding! :sh05-macro-execute!]},
     c4-identity-input {:arglists ([artifact]), :operation-inputs []},
@@ -221,7 +232,9 @@
     {:arglists ([source-path c3-artifact operations]),
      :operation-inputs [:c3-artifact-id :sh05-macro-boundary-fail!]},
     build-plan-binding!
-    {:arglists ([request-source operations]),
+    {:arglists
+     ([request-source operations]
+      [request-source operations source-mode]),
      :operation-inputs
      [:input
       :c-backend-canonical-value
@@ -234,7 +247,8 @@
     verify
     {:arglists
      ^{:line 64, :column 29}
-     ([artifact allow-missing-proof? invocation operations]),
+     ([artifact allow-missing-proof? invocation operations]
+      [artifact allow-missing-proof? invocation source-mode operations]),
      :operation-inputs
      [:input
       :c3-artifact-id
@@ -303,6 +317,7 @@
     :sh05-macro-artifact-verification
     :sh05-macro-boundary-fail!
     :sh05-macro-capability-based-proof-for-construction
+    :sh05-macro-build-binding!
     :sh05-macro-compute-plan-identities
     :sh05-macro-current-binding!
     :sh05-macro-envelope-summary
@@ -313,6 +328,7 @@
     :sh05-macro-read-pinned-source!
     :sh05-macro-resolve-digests!
     :sh05-macro-resolve-source-path
+    :sh03-reader-strict-source-text!
     :sh05-macro-run-semantic-summary
     :sh05-macro-sh02-descriptor
     :sh05-macro-source-artifact
@@ -471,88 +487,160 @@
 
 (defn
  read-pinned-plan-source!
- [request-source operations]
- (let
-  [input
-   ^{:line 61, :column 54}
-   (.valAt ^clojure.lang.ILookup operations :input)
-   sh05-macro-boundary-fail!
-   (.valAt ^clojure.lang.ILookup operations :sh05-macro-boundary-fail!)
-   sh05-macro-resolve-source-path
-   (.valAt
-    ^clojure.lang.ILookup operations
-    :sh05-macro-resolve-source-path)
-   sha256-bytes-hex
-   (.valAt ^clojure.lang.ILookup operations :sha256-bytes-hex)
-   source-path
-   (sh05-macro-resolve-source-path)
-   nio-path
-   (.toPath (java.io.File. source-path))
-   nofollow
-   (into-array
-    java.nio.file.LinkOption
-    [java.nio.file.LinkOption/NOFOLLOW_LINKS])
-   attributes
-   (try
-    (java.nio.file.Files/readAttributes
-     nio-path
-     java.nio.file.attribute.BasicFileAttributes
-     nofollow)
-    (catch
-     Exception
-     error
+ ([request-source operations]
+  (read-pinned-plan-source! request-source operations :pinned))
+ ([request-source operations source-mode]
+  (let
+   [input
+    ^{:line 61, :column 54}
+    (.valAt ^clojure.lang.ILookup operations :input)
+    sh05-macro-boundary-fail!
+    (.valAt ^clojure.lang.ILookup operations :sh05-macro-boundary-fail!)
+    sh05-macro-resolve-source-path
+    (.valAt
+     ^clojure.lang.ILookup operations
+     :sh05-macro-resolve-source-path)
+    sh03-reader-strict-source-text!
+    (.valAt
+     ^clojure.lang.ILookup operations
+     :sh03-reader-strict-source-text!)
+    sha256-bytes-hex
+    (.valAt ^clojure.lang.ILookup operations :sha256-bytes-hex)
+    requested-source-path
+    (sh05-macro-resolve-source-path)
+    development-current?
+    (= :development-current source-mode)
+    current-snapshot
+    (do
+     (when-not
+      (contains? #{:pinned :development-current} source-mode)
+      (sh05-macro-boundary-fail!
+       "C4-TRACE"
+       request-source
+       :known-macro-source-mode
+       source-mode
+       {:allowed-source-modes [:pinned :development-current]}))
+     (when development-current?
+      (try
+       (c2-pass-cache/bounded-source-snapshot! requested-source-path)
+       (catch
+        InterruptedException
+        interrupted
+        (.interrupt (Thread/currentThread))
+        (throw interrupted))
+       (catch
+        Exception
+        error
+        (sh05-macro-boundary-fail!
+         "C4-TRACE"
+         request-source
+         :current-macro-source-readable
+         requested-source-path
+         {:cause-class (some-> error class .getName),
+          :cause-data (ex-data error)})))))
+    source-path
+    (or (:canonical-path current-snapshot) requested-source-path)
+    nio-path
+    (.toPath (java.io.File. source-path))
+    nofollow
+    (into-array
+     java.nio.file.LinkOption
+     [java.nio.file.LinkOption/NOFOLLOW_LINKS])
+    attributes
+    (when-not development-current?
+     (try
+      (java.nio.file.Files/readAttributes
+       nio-path
+       java.nio.file.attribute.BasicFileAttributes
+       nofollow)
+      (catch
+       Exception
+       error
+       (sh05-macro-boundary-fail!
+        "C4-TRACE"
+        request-source
+        :pinned-macro-source-readable
+        source-path
+        {:cause-message (.getMessage error)}))))
+    _
+    (when-not
+     (or
+      development-current?
+      (and
+       attributes
+       (.isRegularFile attributes)
+       (=
+        (long (input :sh05-macro-expected-source-byte-count))
+        (.size attributes))))
      (sh05-macro-boundary-fail!
       "C4-TRACE"
       request-source
-      :pinned-macro-source-readable
+      :exact-pinned-macro-source
       source-path
-      {:cause-message (.getMessage error)})))
-   _
+      {:expected-byte-count
+       (input :sh05-macro-expected-source-byte-count),
+       :observed-byte-count (when attributes (.size attributes)),
+       :source-mode source-mode}))
+    bytes
+    (if development-current?
+     (:bytes current-snapshot)
+     (try
+      (java.nio.file.Files/readAllBytes nio-path)
+      (catch
+       Exception
+       error
+       (sh05-macro-boundary-fail!
+        "C4-TRACE"
+        request-source
+        :pinned-macro-source-bytes
+        source-path
+        {:cause-message (.getMessage error)}))))
+    content-hash
+    (if development-current?
+     (:bytes-hash current-snapshot)
+     (str "sha256:" (sha256-bytes-hex bytes)))]
    (when-not
-    (and
-     attributes
-     (.isRegularFile attributes)
-     (=
-      (long (input :sh05-macro-expected-source-byte-count))
-      (.size attributes)))
+    (or
+     (and development-current?
+          (= (:byte-count current-snapshot) (alength bytes)))
+     (and (not development-current?)
+          attributes
+          (.isRegularFile attributes)
+          (= (.size attributes) (alength bytes))))
     (sh05-macro-boundary-fail!
      "C4-TRACE"
      request-source
-     :exact-pinned-macro-source
+     (if development-current?
+       :current-macro-source-size
+       :exact-pinned-macro-source)
      source-path
-     {:expected-byte-count
-      (input :sh05-macro-expected-source-byte-count),
-      :observed-byte-count (when attributes (.size attributes))}))
-   bytes
-   (try
-    (java.nio.file.Files/readAllBytes nio-path)
-    (catch
-     Exception
-     error
-     (sh05-macro-boundary-fail!
-      "C4-TRACE"
-      request-source
-      :pinned-macro-source-bytes
-      source-path
-      {:cause-message (.getMessage error)})))
-   content-hash
-   (str "sha256:" (sha256-bytes-hex bytes))]
-  (when-not
-   (and
-    (= (input :sh05-macro-expected-source-byte-count) (alength bytes))
-    (= (input :sh05-macro-expected-source-content-hash) content-hash))
-   (sh05-macro-boundary-fail!
-    "C4-TRACE"
-    request-source
-    :pinned-macro-source-identity
-    source-path
-    {:observed-content-hash content-hash,
-     :observed-byte-count (alength bytes)}))
-  {:source-path source-path,
-   :source-text
-   (String. bytes java.nio.charset.StandardCharsets/UTF_8),
-   :source-byte-count (alength bytes),
-   :source-content-hash content-hash}))
+     {:observed-content-hash content-hash,
+      :observed-byte-count (alength bytes),
+      :observed-file-byte-count (when attributes (.size attributes)),
+      :source-mode source-mode}))
+   (when-not
+    (or
+     development-current?
+     (and
+      (= (input :sh05-macro-expected-source-byte-count) (alength bytes))
+      (= (input :sh05-macro-expected-source-content-hash) content-hash)))
+    (sh05-macro-boundary-fail!
+     "C4-TRACE"
+     request-source
+     :pinned-macro-source-identity
+     source-path
+     {:observed-content-hash content-hash,
+      :observed-byte-count (alength bytes)}))
+   (cond->
+    {:source-path source-path,
+     :source-text
+     (if development-current?
+       (sh03-reader-strict-source-text! request-source source-path bytes)
+       (String. bytes java.nio.charset.StandardCharsets/UTF_8)),
+     :source-byte-count (alength bytes),
+     :source-content-hash content-hash}
+    development-current?
+    (assoc :source-mode :development-current)))))
 
 (defn
  compute-plan-identities
@@ -616,9 +704,11 @@
 
 (defn
  build-plan-binding!
- [request-source operations]
- (let
-  [input
+ ([request-source operations]
+  (build-plan-binding! request-source operations :pinned))
+ ([request-source operations source-mode]
+  (let
+   [input
    ^{:line 61, :column 54}
    (.valAt ^clojure.lang.ILookup operations :input)
    c-backend-canonical-value
@@ -643,8 +733,10 @@
     :sh05-macro-read-pinned-source!)
    sha256-hex
    (.valAt ^clojure.lang.ILookup operations :sha256-hex)
+   development-current?
+   (= :development-current source-mode)
    source
-   (sh05-macro-read-pinned-source! request-source)
+   (sh05-macro-read-pinned-source! request-source source-mode)
    emitter
    (:emitter
     (c-backend-stage2-plan-emitter-source-rule!
@@ -656,7 +748,18 @@
     (:source-path source)
     (:source-text source))
    identities
-   (sh05-macro-compute-plan-identities raw-plan)]
+   (sh05-macro-compute-plan-identities raw-plan)
+   plan-shape-valid?
+   (= (input :sh05-macro-public-function-shapes)
+      (:public-function-shapes identities))
+   historical-identities-valid?
+   (and
+    (= (input :sh05-macro-expected-plan-semantic-hash)
+       (:plan-semantic-hash identities))
+    (= (input :sh05-macro-expected-functions-semantic-hash)
+       (:functions-semantic-hash identities))
+    (= (input :sh05-macro-public-function-hashes)
+       (:public-function-hashes identities)))]
   (when-not
    (and
     (= :gravity/stage2-compiler-artifact-plan (:kind raw-plan))
@@ -667,33 +770,16 @@
     (= #{} (get-in raw-plan [:module :effects]))
     (= #{} (get-in raw-plan [:module :capabilities]))
     (= :safe (get-in raw-plan [:module :safety]))
-    (=
-     (input :sh05-macro-expected-plan-semantic-hash)
-     (:plan-semantic-hash identities))
-    (=
-     (input :sh05-macro-expected-functions-semantic-hash)
-     (:functions-semantic-hash identities))
-    (=
-     (input :sh05-macro-expected-function-count)
-     (:function-count identities))
-    (=
-     (input :sh05-macro-expected-function-names-hash)
-     (:function-names-hash identities))
-    (=
-     (input :sh05-macro-expected-function-shapes-hash)
-     (:function-shapes-hash identities))
-    (=
-     (input :sh05-macro-public-function-hashes)
-     (:public-function-hashes identities))
-    (=
-     (input :sh05-macro-public-function-shapes)
-     (:public-function-shapes identities)))
+    plan-shape-valid?
+    (or development-current? historical-identities-valid?))
    (sh05-macro-boundary-fail!
     "C4-TRACE"
     request-source
-    :pinned-macro-plan-and-functions
+    (if development-current?
+      :current-macro-plan-and-functions
+      :pinned-macro-plan-and-functions)
     identities
-    {}))
+    {:source-mode source-mode}))
   (let
    [authenticated-plan-base
     (assoc-in
@@ -707,27 +793,36 @@
      (str
       "sha256:"
       (sha256-hex
-       (pr-str (c-backend-canonical-value authenticated-plan-base)))))]
-   (reset!
-    (input :sh05-macro-pinned-plan-identities)
-    [plan identities])
+       (pr-str (c-backend-canonical-value authenticated-plan-base)))))
+    binding-metadata
+    (if development-current?
+      {:artifact :gravity/sh05-development-macro-plan-binding,
+       :revision-status :development-unadmitted,
+       :source-authority :development-current}
+      {:artifact :gravity/sh05-pinned-macro-plan-binding})]
+   (when-not development-current?
+    (reset!
+     (input :sh05-macro-pinned-plan-identities)
+     [plan identities]))
    (merge
     source
     identities
-    {:artifact :gravity/sh05-pinned-macro-plan-binding,
-     :status :complete,
+    binding-metadata
+    {:status :complete,
      :semantic-authority :gravity-source,
      :compiled-by :clojure-stage0-seed,
      :executed-by :clojure-stage2-generic-rule-runner,
      :generic-bridge-residual? true,
      :self-hosted? false,
-     :plan plan}))))
+     :plan plan})))))
 
 (defn
  current-plan-binding!
- [request-source operations]
- (let
-  [input
+ ([request-source operations]
+  (current-plan-binding! request-source operations :pinned))
+ ([request-source operations source-mode]
+  (let
+   [input
    ^{:line 61, :column 54}
    (.valAt ^clojure.lang.ILookup operations :input)
    sh05-macro-boundary-fail!
@@ -736,38 +831,70 @@
    (.valAt
     ^clojure.lang.ILookup operations
     :sh05-macro-plan-identities)
+   sh05-macro-build-binding!
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh05-macro-build-binding!)
    sh05-macro-read-pinned-source!
    (.valAt
     ^clojure.lang.ILookup operations
-    :sh05-macro-read-pinned-source!)
-   fresh
-   (sh05-macro-read-pinned-source! request-source)
-   binding
-   @(input :sh05-macro-cached-binding)
-   identities
-   (sh05-macro-plan-identities (:plan binding))]
-  (when-not
-   (and
-    (= (:source-byte-count fresh) (:source-byte-count binding))
-    (= (:source-content-hash fresh) (:source-content-hash binding))
-    (=
-     (select-keys
+    :sh05-macro-read-pinned-source!)]
+   (when-not
+    (contains? #{:pinned :development-current} source-mode)
+    (sh05-macro-boundary-fail!
+     "C4-TRACE"
+     request-source
+     :known-macro-source-mode
+     source-mode
+     {:allowed-source-modes [:pinned :development-current]}))
+   (if (= :development-current source-mode)
+    (let
+     [fresh
+      (sh05-macro-read-pinned-source! request-source source-mode)
       binding
-      [:plan-semantic-hash
-       :functions-semantic-hash
-       :function-count
-       :function-names-hash
-       :function-shapes-hash
-       :public-function-hashes
-       :public-function-shapes])
-     identities))
-   (sh05-macro-boundary-fail!
-    "C4-TRACE"
-    request-source
-    :fresh-macro-source-and-plan-binding
-    binding
-    {}))
-  binding))
+      (sh05-macro-build-binding! request-source source-mode)]
+     (when-not
+      (and
+       (= (:source-byte-count fresh) (:source-byte-count binding))
+       (= (:source-content-hash fresh) (:source-content-hash binding))
+       (= :development-unadmitted (:revision-status binding))
+       (= :development-current (:source-authority binding)))
+      (sh05-macro-boundary-fail!
+       "C4-TRACE"
+       request-source
+       :current-macro-source-and-plan-binding
+       binding
+       {:source-mode source-mode}))
+     binding)
+    (let
+     [fresh
+      (sh05-macro-read-pinned-source! request-source)
+      binding
+      @(input :sh05-macro-cached-binding)
+      identities
+      (sh05-macro-plan-identities (:plan binding))]
+     (when-not
+      (and
+       (= (:source-byte-count fresh) (:source-byte-count binding))
+       (= (:source-content-hash fresh) (:source-content-hash binding))
+       (=
+        (select-keys
+         binding
+         [:plan-semantic-hash
+          :functions-semantic-hash
+          :function-count
+          :function-names-hash
+          :function-shapes-hash
+          :public-function-hashes
+          :public-function-shapes])
+        identities))
+      (sh05-macro-boundary-fail!
+       "C4-TRACE"
+       request-source
+       :fresh-macro-source-and-plan-binding
+       binding
+       {}))
+     binding)))))
 
 (defn
  execute-plan!
@@ -1219,9 +1346,11 @@
 
 (defn
  request
- [source-path c3-artifact module syntax form operations]
- (let
-  [input
+ ([source-path c3-artifact module syntax form operations]
+  (request source-path c3-artifact module syntax form operations nil))
+ ([source-path c3-artifact module syntax form operations request-context]
+  (let
+   [input
    ^{:line 78, :column 42}
    (.valAt ^clojure.lang.ILookup operations :input)
    reader-canonical-hash
@@ -1230,6 +1359,12 @@
    (.valAt
     ^clojure.lang.ILookup operations
     :sh05-semantic-component-id)
+   macro-version
+   (or (:macro-version request-context)
+       (input :sh05-macro-version))
+   source-byte-count
+   (or (:source-byte-count request-context)
+       (input :sh05-macro-expected-source-byte-count))
    [_ name parameters & body]
    form
    call-site-syntax-id
@@ -1247,21 +1382,19 @@
     {:domain :gravity/sh05-bootstrap-macro-environment-v1,
      :macros
      [{:name 'defn,
-       :version (input :sh05-macro-version),
+       :version macro-version,
        :phase :macro-expansion,
        :build-effects [],
        :capabilities []}]})
    base-policy
    {:granted-build-effects [],
     :generated-profile (:profile module),
-    :expansion-depth 0,
     :requested-capabilities [],
     :granted-capabilities [],
     :declared-build-effects [],
     :hidden-captures [],
     :generated-unsafe? false,
     :capture-policy :explicit-only,
-    :output-node-count (+ 4 (count body)),
     :requested-build-effects [],
     :allowed-profiles [(:profile module)],
     :unsafe-declared? false,
@@ -1292,7 +1425,7 @@
     (assoc span :source (:file span)))]
   {:call
    {:hygiene (select-keys (:hygiene syntax) [:marks :lexical-scopes]),
-    :macro-version (input :sh05-macro-version),
+    :macro-version macro-version,
     :call-site-syntax-id call-site-syntax-id,
     :origin-chain (vec (:origin syntax)),
     :name-syntax-id
@@ -1300,7 +1433,7 @@
     :definition-span
     {:source (input :sh05-macro-source-relative-path),
      :byte-start 0,
-     :byte-end (input :sh05-macro-expected-source-byte-count)},
+     :byte-end source-byte-count},
     :semantic-call-span semantic-span,
     :body-syntax-ids
     (mapv
@@ -1322,7 +1455,7 @@
     :definition-syntax-id
     (reader-canonical-hash
      {:domain :gravity/sh05-defn-macro-definition-v1,
-      :macro-version (input :sh05-macro-version)}),
+      :macro-version macro-version}),
     :metadata (or (:metadata syntax) {})},
    :reader-source-revision reader-source-revision,
    :schema-version 1,
@@ -1339,7 +1472,7 @@
     :trace-replay-id trace-replay-id},
    :provenance {:actual-source-path source-path},
    :reader-semantic-binding-id (:semantic-binding-id reader-binding),
-   :artifact :gravity/sh05-authenticated-c3-macro-request}))
+   :artifact :gravity/sh05-authenticated-c3-macro-request})))
 
 (defn
  source-syntax-stream
@@ -1552,7 +1685,7 @@
     :builder-function 'sh05-expand-macro-template,
     :builder-semantic-hash
     (get
-     (input :sh05-macro-public-function-hashes)
+     (:public-function-hashes binding)
      'sh05-expand-macro-template),
     :source-byte-count (:source-byte-count binding),
     :functions-semantic-hash (:functions-semantic-hash binding),
@@ -1695,8 +1828,7 @@
      :semantic-binding
      :profile
      :target
-     :phase
-     :bounds]),
+     :phase]),
    :trace-replay-id (:trace-replay-id trace),
    :template-verification (:template-verification run),
    :resolved-verification (:resolved-verification run)}))
@@ -1733,6 +1865,9 @@
       :source-language
       :source-byte-count
       :source-content-hash
+      :source-mode
+      :revision-status
+      :source-authority
       :plan-semantic-hash
       :functions-semantic-hash
       :function-count
@@ -1912,16 +2047,20 @@
 
 (defn
  replay-report
- [source-path boundary operations]
- (let
-  [sh05-macro-current-binding!
+ ([source-path boundary operations]
+  (replay-report source-path boundary nil :pinned operations))
+ ([source-path boundary invocation operations]
+  (replay-report source-path boundary invocation :pinned operations))
+ ([source-path boundary invocation source-mode operations]
+  (let
+   [sh05-macro-current-binding!
    (.valAt
     ^clojure.lang.ILookup operations
     :sh05-macro-current-binding!)
    sh05-macro-execute!
    (.valAt ^clojure.lang.ILookup operations :sh05-macro-execute!)
    binding
-   (sh05-macro-current-binding! source-path)
+   (sh05-macro-current-binding! source-path invocation source-mode)
    reports
    (mapv
     (fn
@@ -1962,7 +2101,7 @@
    :resolved
    {:status (if resolved-passed? :passed :failed),
     :verified-run-count (count reports)},
-   :runs reports}))
+   :runs reports})))
 
 (defn
  source-snapshot!
@@ -2164,9 +2303,11 @@
 
 (defn
  assemble
- [source-path c3-artifact legacy? invocation operations]
- (let
-  [input
+ ([source-path c3-artifact legacy? invocation operations]
+  (assemble source-path c3-artifact legacy? invocation operations :pinned))
+ ([source-path c3-artifact legacy? invocation operations source-mode]
+  (let
+   [input
    ^{:line 78, :column 42}
    (.valAt ^clojure.lang.ILookup operations :input)
    c3-syntax-validate!
@@ -2272,7 +2413,7 @@
     module
     (parse-module source-path forms)
     binding
-    (sh05-macro-current-binding! source-path)
+    (sh05-macro-current-binding! source-path invocation source-mode)
     source-syntax
     (sh05-source-syntax-stream c3-artifact)
     _
@@ -2316,7 +2457,9 @@
            c3-artifact
            module
            syntax
-           form)
+           form
+           invocation
+           binding)
           request-overrides)]
         {:form form,
          :syntax syntax,
@@ -2384,18 +2527,23 @@
      :document-set ["L4" "C4"],
      :governing-document (input :c4-macro-governing-document),
      :execution-boundary
-     {:macro-authority :gravity,
-      :gravity-module 'gravity.macro,
-      :plan-runner :clojure-stage0,
-      :digest-resolver :clojure-stage0,
-      :envelope-binder :clojure-stage0,
-      :c4-stage0-adapter :compatibility-only,
-      :self-hosted? false},
+     (merge
+      {:macro-authority :gravity,
+       :gravity-module 'gravity.macro,
+       :plan-runner :clojure-stage0,
+       :digest-resolver :clojure-stage0,
+       :envelope-binder :clojure-stage0,
+       :c4-stage0-adapter :compatibility-only,
+       :self-hosted? false}
+      (when (= :development-current source-mode)
+       {:macro-source-mode :development-current,
+        :macro-revision-status :development-unadmitted,
+        :macro-source-authority :development-current})),
      :macro-environment
      {:artifact :gravity/sh05-macro-environment,
       :macros
       [{:name 'defn,
-        :version (input :sh05-macro-version),
+        :version (get-in binding [:public-function-hashes 'sh05-expand-macro-template]),
         :phase :macro-expansion}],
       :status :complete},
      :status :accepted,
@@ -2462,11 +2610,12 @@
     proof
     (sh05-macro-capability-based-proof-for-construction
      artifact-with-envelope
-     invocation)
+     invocation
+     source-mode)
     artifact
     (assoc artifact-with-envelope :capability-based-proof proof)
     final-report
-    (sh05-macro-artifact-verification artifact invocation)]
+    (sh05-macro-artifact-verification artifact invocation source-mode)]
    (when-not
     (= :passed (:status final-report))
     (sh05-macro-boundary-fail!
@@ -2480,7 +2629,7 @@
     source-before
     c2-artifact
     legacy?)
-   artifact)))
+   artifact))))
 
 (defn
  c4-identity-input
@@ -2689,10 +2838,12 @@
 
 (defn
  verify
- [artifact allow-missing-proof? invocation operations]
- (letfn
-  [(semantic-late-sh05-macro-artifact-verification*-carrier
-    [state]
+ ([artifact allow-missing-proof? invocation operations]
+  (verify artifact allow-missing-proof? invocation :pinned operations))
+ ([artifact allow-missing-proof? invocation source-mode operations]
+  (letfn
+   [(semantic-late-sh05-macro-artifact-verification*-carrier
+     [state]
     (let
      [input
       ^{:line 48, :column 42}
@@ -2747,9 +2898,32 @@
        (sh03-reader-authenticated-envelope-options
         source-path
         invocation))
+      binding
+      (sh05-macro-current-binding! source-path invocation source-mode)
+      plan-binding
+      (:plan-binding boundary)
+      trusted-source-provenance
+      (select-keys binding [:source-mode :revision-status :source-authority])
+      artifact-source-provenance
+      (select-keys plan-binding [:source-mode :revision-status :source-authority])
+      expected-boundary-provenance
+      (if (= :development-current source-mode)
+       {:macro-source-mode :development-current,
+        :macro-revision-status :development-unadmitted,
+        :macro-source-authority :development-current}
+       {})
+      observed-boundary-provenance
+      (select-keys
+       (:execution-boundary artifact)
+       [:macro-source-mode :macro-revision-status :macro-source-authority])
+      source-provenance-current?
+      (and
+       (= trusted-source-provenance artifact-source-provenance)
+       (= expected-boundary-provenance observed-boundary-provenance))
       gravity-verifiers
       (try
-       (sh05-macro-gravity-verifier-report source-path boundary)
+       (sh05-macro-gravity-verifier-report
+        source-path boundary invocation source-mode)
        (catch
         InterruptedException
         interrupted
@@ -2779,8 +2953,6 @@
         (.interrupt (Thread/currentThread))
         (throw interrupted))
        (catch Throwable _ false))
-      binding
-      (sh05-macro-current-binding! source-path)
       embedded-descriptor
       (:authenticated-envelope-descriptor boundary)
       expected-descriptor
@@ -2845,6 +3017,8 @@
       output-envelope-ok?
       :binding
       binding
+      :source-provenance-current?
+      source-provenance-current?
       :embedded-descriptor
       embedded-descriptor
       :expected-descriptor
@@ -2859,8 +3033,8 @@
       template-passed?
       :resolved-passed?
       resolved-passed?)))
-   (semantic-late-sh05-macro-artifact-verification*-expansion-replay
-    [state]
+    (semantic-late-sh05-macro-artifact-verification*-expansion-replay
+     [state]
     (let
      [input
       ^{:line 48, :column 42}
@@ -2891,6 +3065,7 @@
         boundary
         c3-artifact
         binding
+        source-provenance-current?
         template-passed?
         resolved-passed?]}
       state
@@ -2978,7 +3153,10 @@
          :function-names-hash
          :function-shapes-hash
          :public-function-hashes
-         :public-function-shapes])
+         :public-function-shapes
+         :source-mode
+         :revision-status
+         :source-authority])
        (select-keys
         binding
         [:source-byte-count
@@ -2989,13 +3167,20 @@
          :function-names-hash
          :function-shapes-hash
          :public-function-hashes
-         :public-function-shapes]))
+         :public-function-shapes
+         :source-mode
+         :revision-status
+         :source-authority]))
+      expected-macro-version
+      (if (= :development-unadmitted (:revision-status binding))
+        (get-in binding [:public-function-hashes 'sh05-expand-macro-template])
+        (input :sh05-macro-version))
       pinned-version?
       (every?
        (fn*
         [p1__1276#]
         (=
-         (input :sh05-macro-version)
+         expected-macro-version
          (get-in p1__1276# [:resolved-expansion :macro-version])))
        runs)
       grants-current?
@@ -3068,6 +3253,8 @@
       run-storage-exact?
       :plan-binding-current?
       plan-binding-current?
+      :source-provenance-current?
+      source-provenance-current?
       :pinned-version?
       pinned-version?
       :grants-current?
@@ -3099,6 +3286,7 @@
         source-path
         c3-artifact
         c3-boundary
+        binding
         template-passed?
         resolved-passed?
         runs
@@ -3117,7 +3305,7 @@
       expected-definition-span
       {:source (input :sh05-macro-source-relative-path),
        :byte-start 0,
-       :byte-end (input :sh05-macro-expected-source-byte-count)}
+       :byte-end (:source-byte-count binding)}
       run-provenance-current?
       (every?
        (fn
@@ -3233,6 +3421,7 @@
         run-count-current?
         run-storage-exact?
         plan-binding-current?
+        source-provenance-current?
         pinned-version?
         grants-current?
         trace-current?
@@ -3260,6 +3449,7 @@
        :macro-output-current? output-current?,
        :artifact-id-current? artifact-id-current?,
        :macro-plan-binding-current? plan-binding-current?,
+       :macro-source-provenance-current? source-provenance-current?,
        :build-grants-current? grants-current?,
        :first-run-compatibility-view-current?
        first-run-shortcuts-current?,
@@ -3349,7 +3539,7 @@
      :status (if (empty? failed-checks) :passed :failed),
      :checks checks,
      :failed-checks failed-checks,
-     :gravity-verifiers gravity-verifiers})))
+     :gravity-verifiers gravity-verifiers}))))
 
 (doseq
  [operation
