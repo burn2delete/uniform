@@ -26084,7 +26084,7 @@
                 checked (invoke 'runtime-validate-initializer initializer)
                 census (invoke 'p15-s23-runtime-module-census plan)]
             (is (= :accepted (:status checked) (:status census)) (pr-str checked))
-            (is (= {:set-literal 1} (:constructors checked)))
+            (is (= {:status :accepted :constructors {:set-literal 1}} checked))
             (is (true? (invoke 'p15-s23-runtime-initializer-type? definition initializer)))
             (is (not (contains? census :work-count)))
             (is (= 0 @constructor-calls))
@@ -26135,10 +26135,11 @@
         (let [duplicate {:op :set-literal :items [(lit :same) (lit :same)]}
               result (invoke 'runtime-validate-initializer duplicate)]
           (is (= :unsupported-module-initializer (:reason result)))
-          (is (= :duplicate-set-literal-keyword (:initializer-reason result))))
-        (let [long-key (keyword (apply str (repeat 20000 "x")))
-              accepted (invoke 'runtime-validate-initializer {:op :set-literal :items [(lit long-key)]})]
-          (is (= :accepted (:status accepted))))
+          (is (= :duplicate-set-literal-keyword (:initializer-reason result)))
+          (is (= #{:status :reason :initializer-reason} (set (keys result)))))
+        (let [long-key (keyword (apply str (repeat 80000 "x")))
+              checked (invoke 'runtime-validate-initializer {:op :set-literal :items [(lit long-key)]})]
+          (is (= {:status :accepted :constructors {:set-literal 1}} checked)))
         (let [long-key (keyword (apply str (repeat 20000 "x")))
               {:keys [plan definition root initializer]} (input [long-key])
               unused (assoc (root 3 :literal 'unused) :type (:type definition))
@@ -26148,6 +26149,7 @@
               one (invoke 'runtime-validate-initializer initializer)
               census (invoke 'p15-s23-runtime-module-census two)]
           (is (= :accepted (:status one)))
+          (is (= {:set-literal 1} (:constructors one)))
           (is (= :accepted (:status census)))
           (reset! constructor-calls 0)
           (let [result (execute two)]
@@ -26473,7 +26475,7 @@
                 checked (invoke 'runtime-validate-initializer initializer)
                 census (invoke 'p15-s23-runtime-module-census plan)]
             (is (= :accepted (:status checked) (:status census)) (pr-str checked))
-            (is (= {:set-literal 1} (:constructors checked)))
+            (is (= {:status :accepted :constructors {:set-literal 1}} checked))
             (is (true? (invoke 'p15-s23-runtime-initializer-type? definition initializer)))
             (is (not (contains? census :work-count)))
             (is (= 0 @constructor-calls))
@@ -26526,10 +26528,11 @@
         (let [duplicate {:op :set-literal :items [(lit "same") (lit "same")]}
               result (invoke 'runtime-validate-initializer duplicate)]
           (is (= :unsupported-module-initializer (:reason result)))
-          (is (= :duplicate-set-literal-string (:initializer-reason result))))
-        (let [long-string (apply str (repeat 20000 "x"))
-              accepted (invoke 'runtime-validate-initializer {:op :set-literal :items [(lit long-string)]})]
-          (is (= :accepted (:status accepted))))
+          (is (= :duplicate-set-literal-string (:initializer-reason result)))
+          (is (= #{:status :reason :initializer-reason} (set (keys result)))))
+        (let [long-string (apply str (repeat 80000 "x"))
+              checked (invoke 'runtime-validate-initializer {:op :set-literal :items [(lit long-string)]})]
+          (is (= {:status :accepted :constructors {:set-literal 1}} checked)))
         (let [long-string (apply str (repeat 20000 "x"))
               {:keys [plan definition root initializer]} (input [long-string])
               unused (assoc (root 3 :literal 'unused) :type (:type definition))
@@ -26539,6 +26542,7 @@
               one (invoke 'runtime-validate-initializer initializer)
               census (invoke 'p15-s23-runtime-module-census two)]
           (is (= :accepted (:status one)))
+          (is (= {:set-literal 1} (:constructors one)))
           (is (= :accepted (:status census)))
           (reset! constructor-calls 0)
           (let [result (execute two)]
@@ -26563,6 +26567,7 @@
                                                        (apply original-str args)))]
                        (invoke 'runtime-validate-initializer {:op :set-literal :items [(lit value)]}))]
           (is (= :accepted (:status result)))
+          (is (= {:set-literal 1} (:constructors result)))
           (is (= 0 @calls)))
         (let [{:keys [initializer definition]} (input ["one"])]
           (doseq [type [:gravity.type/set
