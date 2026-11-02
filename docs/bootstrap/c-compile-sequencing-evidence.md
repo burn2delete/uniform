@@ -296,7 +296,7 @@ diagnostic lookup. The other evidence documents record both changes precisely.
 
 Fresh before processes run exact clean supplier-main in this same Runtime
 checkout and finish before restoring the source. All three complete/raw product
-sets, source/plan/byte hashes and the Release lookup probe agree. C++ native,
+sets, source/plan/byte hashes and the Release lookup probe agree. Native C/C11,
 broker/Gate, private authority, default pinned Reader and package/archive/release
 routes remain unrun. Backend tests pass 47/967, eight selected Release tests
 8/94 and boundary 47/1154. Nine-path lint has zero warnings/blockers; receipts
