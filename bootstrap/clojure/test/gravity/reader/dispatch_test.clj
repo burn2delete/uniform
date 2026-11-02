@@ -140,3 +140,9 @@
     (is (= :unicode
            (:reason (failure #(reader/dispatch policy 'text
                                                (assoc seed :datum "\ud800") nil)))))))
+
+(deftest provenance-fields-do-not-expand-the-semantic-dispatch-seed
+  (let [extended (assoc seed :source-path "fixtures/reader.gravity" :origin :source)
+        result (failure #(reader/dispatch policy 'text extended nil))]
+    (is (= :fields (:reason result)))
+    (is (= "C2-EXTENSION" (:id result)))))
