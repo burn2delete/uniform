@@ -21,6 +21,12 @@ recording exact passed, failed or unrun cases and residual target/host bounds.
 Do not replace actual layouts or helper linkage with manifest assertions.
 Independent acceptance, other target families and release remain separate.
 
+## Compile-time evaluation dependency interface
+
+Use the [compile-time evaluation producer and consumer order](../expand-workflow/plan.md#compile-time-evaluation-producer-and-consumer-order) and existing selected-result table. Expose truthful fixed target/ABI/alignment rules before eligible queries, then derive Q layout from actual solved Q types and values. A constant query cannot wait for its own future layout; target representation and canonical data encoding remain separate.
+
+Task bodies/statuses and finite review subjects stay unchanged. Current source/interface entailment and independent acceptance remain pending; preserve all actual holds.
+
 ## Provider and capability source interface
 
 Use the [complete provider and capability source criteria](../auth-workflow/plan.md#complete-provider-and-capability-source-criteria). Preserve actual grant/provider/scope/phase/lifetime/check/source facts in emitted service hooks, invalidating changed assumptions. Lowering cannot widen policy or substitute metadata for an executing boundary.

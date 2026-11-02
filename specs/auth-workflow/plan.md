@@ -23,6 +23,12 @@ the selected authoritative task. Record exact passed, failed and unrun evidence,
 residual host/trust assumptions, independent review and integration separately.
 A structurally valid manifest or supplied verdict does not close enforcement.
 
+## Compile-time evaluation dependency interface
+
+Use the [compile-time evaluation producer and consumer order](../expand-workflow/plan.md#compile-time-evaluation-producer-and-consumer-order) and existing selected-result table. Derive actual scoped build grants and install real gates before action; later evaluator/cache/plugin/diagnostic traces witness enforcement and redaction without granting their own permission. Preserve separately supplied applicable review and private-store policy.
+
+Task bodies/statuses and finite review subjects stay unchanged. Current source/interface entailment and independent acceptance remain pending; preserve all actual holds.
+
 ## Complete compile-time evaluation interface
 
 Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). Supply actual narrow build grants/provider contracts and secret/export policy. Requests or signed lockfiles do not mint wider authority, private-store acceptance does not waive public redaction, and Build/Expand own the actual destination records.

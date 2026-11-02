@@ -23,6 +23,12 @@ provider/replay operations. Refine the existing authoritative task only, record
 exact passed/failed/unrun evidence and retain separate independent acceptance,
 integration and wider-runtime/handler completion boundaries.
 
+## Compile-time evaluation dependency interface
+
+Use the [compile-time evaluation producer and consumer order](../expand-workflow/plan.md#compile-time-evaluation-producer-and-consumer-order) and existing selected-result table. Infer and check real P effects before invocation and Q runtime effects after generation; actual trace results cannot supply earlier authorization. Preserve all13 build/compiler families, exact hermetic premises and the open environment-source issue.
+
+Task bodies/statuses and finite review subjects stay unchanged. Current source/interface entailment and independent acceptance remain pending; preserve all actual holds.
+
 ## Complete compile-time evaluation interface
 
 Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). Infer actual compile-time P effects independently from generated Q runtime effects, preserving all thirteen L12 build/compiler families and real phase/action identities. The recorded L6/L12 environment premise remains unresolved; grants alone waive neither contract.

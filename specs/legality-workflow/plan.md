@@ -23,6 +23,12 @@ Record exact source/fixture/consumer identities and passed, failed or unrun work
 preserve operation restrictions and separate author checks, independent
 acceptance, integration and the complete profile/provider matrix.
 
+## Compile-time evaluation dependency interface
+
+Use the [compile-time evaluation producer and consumer order](../expand-workflow/plan.md#compile-time-evaluation-producer-and-consumer-order) and existing selected-result table. Consume actual candidate P/Q operations and type/effect/grant/profile/capture/allocation facts before the four-outcome decision. Final generated-program comparison follows those decisions; meta or a runtime fallback cannot repair rejected code.
+
+Task bodies/statuses and finite review subjects stay unchanged. Current source/interface entailment and independent acceptance remain pending; preserve all actual holds.
+
 ## Complete compile-time evaluation interface
 
 Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). Check actual compile-time allocation/capture/profile/capability/memory/concurrency/safety legality and validate generated Q normally. Meta/hosted services do not bypass these decisions or grant authority.

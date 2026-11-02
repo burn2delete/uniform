@@ -24,6 +24,12 @@ checklist. Preserve all ownership reservations and actual runtime restrictions.
 Independent semantic acceptance and coordinator integration stay separate from
 local checks, and full Syntax release remains bounded by the component outcome.
 
+## Compile-time evaluation dependency interface
+
+Use the [compile-time evaluation producer and consumer order](../expand-workflow/plan.md#compile-time-evaluation-producer-and-consumer-order) and existing selected-result table. Supply actual construction, immutable transformation, invalidation and graph/verifier interfaces before invocation; later validate returned graphs and complete generated chains before ordinary Q checking.
+
+Task bodies/statuses and finite review subjects stay unchanged. Current source/interface entailment and independent acceptance remain pending; preserve all actual holds.
+
 ## Complete compile-time evaluation interface
 
 Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). Supply verified immutable syntax/lexical context/metadata/spans and retain original/generated chains through phase-specific products; actual returned graphs and binding/hygiene validation remain required.

@@ -23,6 +23,12 @@ reused unchanged evidence, unrun boundaries and stable diagnostic ownership.
 implementation checklist. Independent acceptance, migration and integration
 remain separate from ordinary development and structural validation.
 
+## Compile-time evaluation dependency interface
+
+Use the [compile-time evaluation producer and consumer order](../expand-workflow/plan.md#compile-time-evaluation-producer-and-consumer-order) and existing selected-result table. Core1 consumes early actual expanded syntax; Core4 supplies structural P verification before evaluation and later verifies computed/generated Q; checked Core follows actual analyses. Final Expand5 conformance is not primitive-construction input.
+
+Task bodies/statuses and finite review subjects stay unchanged. Current source/interface entailment and independent acceptance remain pending; preserve all actual holds.
+
 ## Complete compile-time evaluation interface
 
 Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). Supply real candidate/Core value and target-representation contracts, preserving actual generated origins and checked facts. Computed constants and generated forms still require ordinary validation; a type name or declared constant table is insufficient.

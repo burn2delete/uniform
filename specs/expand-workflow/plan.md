@@ -25,6 +25,77 @@ an explicit unfinished acceptance boundary. Record evidence in the existing
 package and update only its authoritative task; do not create a parallel
 implementation checklist. Independent review and integration remain separate.
 
+## Compile-time evaluation producer and consumer order
+
+The [existing selected-result table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition)
+now declares complete L12 selected interface detail for 33 consumers. Eleven
+existing parents gain routes: the five missing Expand2/4/5 and pipeline/plugin
+consumers, plus Syntax5, Resolve5, Core4, Lower2, Schema and diagnostic integration.
+Twenty-two existing routes gain selected detail. Preserve all 267 prior inputs
+of those consumers and all 69 unaffected route meanings. The 242 additions yield
+509 selected inputs and 1,076 total selected producer-result joins across 102
+routes: 62 current parents and the same forty future records. All task bodies,
+identities, statuses and evidence dispositions remain unchanged.
+
+The coarse graph exposes cycles of sixty and eight tasks. The first preserves
+its previous 48 members and adds the eleven newly routed parents plus the
+unchanged Core1 primitive-construction owner. The separate eight-task release/
+schema-projection group is unchanged. These are proposed result interfaces,
+not execution, semantic entailment or independent acceptance. Preserve every
+earlier source/memory/safety/concurrency/provider stage and the distinctions below.
+
+| Boundary | Earlier actual product | Later actual result |
+| --- | --- | --- |
+| Available P and generated Q | Immutable source, macro/type/function/module contracts and actual resolved available P; ordinary P checks before invocation | Evaluated values and Q syntax, then Q's ordinary binding/type/effect/grant/profile/safety validation |
+| Syntax and generated origins | Real versioned immutable graph, hygiene/origin/fact-invalidation and verifier APIs; actual source/definition/call context | Valid returned generated graphs with full generator/input/version/phase/effect/output chains, then downstream handoff |
+| Core construction and verification | Real untyped syntax/expansion products and candidate P structure; early structural verifier/serialization facts with legality still explicit | Computed constant/generated Q construction, actual semantic decisions and checked/serialized Core; final Expand5 comparison follows |
+| Types and target queries | Actual solved P types/captures/allocation/effects and fixed declared target/ABI/alignment rules | Actual values and target-representation checks, generated Q typing and final Q-derived layout; no query waits for its own future layout |
+| Grants, gates and actions | Actual scoped build authority/provider/isolation plus installed phase/IR/operation gates | Actual performed/refused evaluator/plugin/action, replay and redacted diagnostic events; a later trace never authorizes its first action |
+| Compiler API and build graph | Versioned pass/input/output/verifier/invalidation/event contracts before graph node invocation | Actual ordered stage products and node/input-edge failures; immutable prior artifacts remain available through new identities |
+| Cache production and use | Sole Build cache implementation receives authentic stage/value/trace and semantic-input identities, validates the creation trace under current policy | Expand4 consumes the actual hit/deny/miss decision and cached value; evaluation follows misses; later clean-versus-reused results verify the claimed behavior |
+| Canonical records and target constants | Selected schema/format/numeric/string/metadata contracts and real encoder/decoder implementations where used | Actual canonical records and target-compatible constant products under their distinct contracts; target layout is not S3 canonical bytes |
+| Local records and packaging | Real namespace events/constants/origins/action/replay/cache/diagnostic products | Typed graph persistence, actual repeated typed-Core byte comparisons, then policy-required archive/signing/publication as separately authorized consumers |
+| APIs, fallback and suites | Real available eligible callable definitions and actual checked generated or explicitly permitted fallback Q | Real source/API/runtime results where claimed, owner cases, then each independently executed harness with its exact subject and oracle |
+
+Resolve supplies actual lexical/module/graph/index products and distinguishes P's
+preexisting compiled macro environment from Q's later expression bindings. Syntax
+supplies real construction/transform/invalidation/verifier products. Types keeps
+constraints, declared abstractions, checked conversions and invalidated facts
+with their existing owners; this interface adopts neither whole C7 nor its held
+publication. Core1 consumes early real expanded syntax, not final generated-
+program conformance. Structural validity and a target rule are not checked Core
+or a derived Q layout. Actual source recursion still needs a legal governing
+rule or refusal, not a project depth/fuel allowance.
+
+Pipeline supplies actual stage/key-input facts and consumes the existing Build
+cache result. Its broad cache-integration row is not a second key/invalidation
+implementation. A cache hit verifies the creation trace and current inputs; it
+does not repeat an external action to authorize itself. Stricter policy may
+invalidate matching bytes; looser policy never blesses hidden creation effects.
+Selected schema definitions can precede values, while serialized consumption
+requires real codecs; whole schema migration or its later release cycle is no
+prerequisite for local typed data. Diagnostics exposes an early typed interface,
+then renders actual producer refusals without changing rules or leaking secrets.
+
+Preserve all nine L12 profiles and thirteen build/compiler effects, required
+constrained-profile hermeticity, explicit legal runtime fallback and the nine
+active L12 diagnostics. Fuel-only refusal and mandatory replacement totality
+admission remain removed. Keep actual semantic/phase/cycle/target/Unicode and
+host/watchdog/external billing requirements. The existing D1/C1/C5/C6 order and
+L6/L12 environment decisions remain unresolved with their current owners; stage
+labels do not resolve them. PKG2 rejects actual build cycles unless the governing
+marked compiler-bootstrap fixed point applies. Coarse feedback is no permission
+to introduce an unmarked graph cycle.
+
+Declared interfaces and fixtures permit ordinary construction. Claimed
+composition needs the actual selected outputs; final whole-component/suite,
+registration, migration, archive/signing or publication is no generic start gate.
+All source/interface entailment, global conjunctions, implementation and current
+independent acceptance remain pending or unassessed. Preserve every C7/C12,
+paired/provider/plugin/probe/native/callback/device/replay/migration/private-store/
+signing/product-publication hold, all finite review subjects and the stopped
+handoff. No task authority, review consumption or execution permission changes.
+
 ## Complete compile-time evaluation source criteria
 
 Complete L12 is a joint contract for the existing evaluator, compiler and build
@@ -127,9 +198,9 @@ evaluation, target constant encoding, policy-validated cache reuse or hermetic
 reproduction. Existing fuel/depth refusals remain visible accounting cleanup
 under the existing owner, not new acceptance criteria. No compiler runs here.
 
-The existing selected-result table retains 834 joins across 91 routes. Complete
-L12 producer/consumer dependency reconciliation remains a separate required
-source/interface review. No second roadmap or task/status authority is added.
+The [compile-time evaluation producer and consumer order](#compile-time-evaluation-producer-and-consumer-order)
+now declares selected result routes and stages in the existing table. Complete
+source/interface entailment and independent current review remain required. No second roadmap or task/status authority is added.
 Current whole-source/interface review, implementation acceptance and global
 conjunctions remain pending or unassessed. Preserve C7/C12, paired/provider/
 plugin/probe/native/callback/device/replay/migration/private-store/signing/product

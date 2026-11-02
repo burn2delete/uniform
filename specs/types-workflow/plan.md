@@ -23,6 +23,12 @@ publication restriction and existing writer reservations explicit. Refine only
 the same authoritative task and record exact scoped evidence, unrun work and
 independent review/integration separately; do not issue a competing checklist.
 
+## Compile-time evaluation dependency interface
+
+Use the [compile-time evaluation producer and consumer order](../expand-workflow/plan.md#compile-time-evaluation-producer-and-consumer-order) and existing selected-result table. Early actual solved P types and fixed query facts precede evaluation; computed constants/generated Q precede Q's final typing/representability/layout. Existing constraint/abstraction/conversion/invalidation owners supply their products without full C7 adoption.
+
+Task bodies/statuses and finite review subjects stay unchanged. Current source/interface entailment and independent acceptance remain pending; preserve all actual holds.
+
 ## Complete compile-time evaluation interface
 
 Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). Supply actual checkable expression/capability/phase/constant type and target/layout facts before the selected evaluation. Generated Q typechecking follows generation; this interface does not adopt full C7 or change its publication hold.

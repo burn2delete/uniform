@@ -22,6 +22,12 @@ the existing selected task. Distinguish compiler-service subset acceptance,
 wider families, independent review/integration and release; do not restore
 removed project accounting as a runtime admission requirement.
 
+## Compile-time evaluation dependency interface
+
+Use the [compile-time evaluation producer and consumer order](../expand-workflow/plan.md#compile-time-evaluation-producer-and-consumer-order) and existing selected-result table. Only actually source-permitted, normally checked fallback or generated Q uses selected runtime services before later startup/execution/cleanup evidence. Early service/failure contracts precede compiler work; no hidden fallback or full-family start gate is introduced.
+
+Task bodies/statuses and finite review subjects stay unchanged. Current source/interface entailment and independent acceptance remain pending; preserve all actual holds.
+
 ## Provider and capability dependency interface
 
 Use the [provider and capability producer and consumer order](../auth-workflow/plan.md#provider-and-capability-producer-and-consumer-order) and existing selected-result table. Expose truthful support and actual selected primitives first, validate provider presence/version/scope/contracts before user code, then enforce actual actions and redacted audit. Gate installation precedes actions; their traces do not authorize themselves.

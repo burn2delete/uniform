@@ -17,6 +17,12 @@ composition. Preserve exact diagnostic and compatibility IDs, private-data
 boundaries and failed/unrun evidence. Refine only the selected task; a successful
 rendering fixture does not establish all-stage integration or release.
 
+## Compile-time evaluation dependency interface
+
+Use the [compile-time evaluation producer and consumer order](../expand-workflow/plan.md#compile-time-evaluation-producer-and-consumer-order) and existing selected-result table. Expose the early typed rule/origin/redaction interface, then render real producer failures with the same resolved identity across consumers. Preserve nine active L12 meanings and retired fuel accounting; later rendering is no prior action grant.
+
+Task bodies/statuses and finite review subjects stay unchanged. Current source/interface entailment and independent acceptance remain pending; preserve all actual holds.
+
 ## Complete compile-time evaluation interface
 
 Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). Preserve nine active L12 meanings and actual phase/profile/target/span/origin/effect/grant/remediation, keeping secrets out. Historical L12-FUEL is retired accounting, not a replacement resource bound or mandatory totality gate.

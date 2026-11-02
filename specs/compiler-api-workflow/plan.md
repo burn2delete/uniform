@@ -21,6 +21,12 @@ artifacts and counterexamples without changing ownership, accepting pending
 source amendments, refreshing migration evidence or claiming whole-pass/release
 support from local checks.
 
+## Compile-time evaluation dependency interface
+
+Use the [compile-time evaluation producer and consumer order](../expand-workflow/plan.md#compile-time-evaluation-producer-and-consumer-order) and existing selected-result table. Provide actual pass/event/verifier contracts before Build calls stages, and retain actual results afterward. Pipeline integrates the sole Build cache; checked P, generated Q and selected plugin/IR products have distinct phases.
+
+Task bodies/statuses and finite review subjects stay unchanged. Current source/interface entailment and independent acceptance remain pending; preserve all actual holds.
+
 ## Complete compile-time evaluation interface
 
 Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). Expose actual L12 phase/pass boundaries and authorized extension products with preserved/verifier/invalidated facts. Keep checked compile-time P separate from generated caller Q and retain the existing governing-source ordering decision.

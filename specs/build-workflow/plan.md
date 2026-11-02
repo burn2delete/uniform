@@ -22,6 +22,12 @@ acceptance, integration and final seedless Build remain distinct.
 
 Cache key construction, invalidation and reuse stay with the existing dependency-aware caching task. The reproducibility task consumes its actual provider-bound decisions and performs repeat-build comparisons; the selected L15 criterion adds no second cache authority.
 
+## Compile-time evaluation dependency interface
+
+Use the [compile-time evaluation producer and consumer order](../expand-workflow/plan.md#compile-time-evaluation-producer-and-consumer-order) and existing selected-result table. The graph invokes versioned compiler stages and keeps immutable products. The existing cache task alone constructs/invalidates/revalidates entries; Expand consumes the result, reproducibility compares actual builds, and local records precede later authorized archive/signing/publication.
+
+Task bodies/statuses and finite review subjects stay unchanged. Current source/interface entailment and independent acceptance remain pending; preserve all actual holds.
+
 ## Complete compile-time evaluation interface
 
 Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). The graph task schedules immutable phase products; the cache task alone owns keys/invalidation/revalidation; reproducibility consumes those outputs and compares repeated typed Core; packaging persists actual evaluator records under separate archive/signing policy.

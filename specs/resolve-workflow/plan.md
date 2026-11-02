@@ -22,6 +22,12 @@ the Core-representation ordering qualification and all source/provider holds.
 duplicate the task ledger. Record scoped results, unchanged evidence reuse and
 remaining boundaries; independent acceptance and integration stay separate.
 
+## Compile-time evaluation dependency interface
+
+Use the [compile-time evaluation producer and consumer order](../expand-workflow/plan.md#compile-time-evaluation-producer-and-consumer-order) and existing selected-result table. Supply real available P macro/type/function and lexical/module/graph/index facts before use; Q expression bindings follow generation. Preserve profile/foreign boundaries and reject ambient or fabricated host identities.
+
+Task bodies/statuses and finite review subjects stay unchanged. Current source/interface entailment and independent acceptance remain pending; preserve all actual holds.
+
 ## Complete compile-time evaluation interface
 
 Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). Supply actual namespace/import/alias/profile/package and binding/public-name facts, preserving declared replacement rules and generated origins. Keep the existing D1/C1/C5/C6 order decision explicit instead of treating a schedule label as resolution.

@@ -22,6 +22,12 @@ cases, residual host/provider boundaries and actual manifest/stability changes.
 Preserve reserved writers and held live operations. Separate reachable compiler
 support, wider module/profile completion, independent acceptance and release.
 
+## Compile-time evaluation dependency interface
+
+Use the [compile-time evaluation producer and consumer order](../expand-workflow/plan.md#compile-time-evaluation-producer-and-consumer-order) and existing selected-result table. Actual available callable definitions and their pure value/overflow/allocation contracts precede eligible use; later compiled API/source results precede independent library harness execution. Exports alone are not callable implementation.
+
+Task bodies/statuses and finite review subjects stay unchanged. Current source/interface entailment and independent acceptance remain pending; preserve all actual holds.
+
 ## Complete compile-time evaluation interface
 
 Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). Only actually available, eligible compile-time-callable pure functions can supply the claimed constant example; real value/overflow/representation and phase facts remain required. An export declaration or host convenience is not the implementation.

@@ -56,6 +56,12 @@ component acceptance and coordinator integration pending until their exact
 evidence is present. Whole-domain, full-language, self-hosted and release claims
 remain governed by their separate existing outcomes.
 
+## Compile-time evaluation dependency interface
+
+Use the [compile-time evaluation producer and consumer order](../expand-workflow/plan.md#compile-time-evaluation-producer-and-consumer-order) and existing selected-result table. Selected schema/format definitions precede actual codec implementation and encoded record use. Canonical bytes obey explicit type/numeric/string/ordering/metadata rules rather than host iteration or target memory layout; full migration/release projection is no local-value start gate.
+
+Task bodies/statuses and finite review subjects stay unchanged. Current source/interface entailment and independent acceptance remain pending; preserve all actual holds.
+
 ## Complete compile-time evaluation interface
 
 Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). Selected schema loading and generated protocol/serialization/layout products require real declared input/effect/provider and normal generated validation. This interface does not accept full schema/domain sources or authorize a held live service.

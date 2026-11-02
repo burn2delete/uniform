@@ -176,6 +176,17 @@
 
 (def selected-parent-consumers
   #{"domain-ir-boundaries" "math"
+    "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"
+    "expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination"
+    "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"
+    "plugins"
+    "pipeline"
+    "syntax/current-evidence-and-remaining-work/syntax5-integrate-consumers"
+    "resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers"
+    "core/current-evidence-and-remaining-work/core4-verify-and-serialize"
+    "lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout"
+    "schema"
+    "diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift"
     "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"
     "auth/remaining-tasks-and-evidence/publish-conformance-and-remaining-trust-assumptions"
     "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"
