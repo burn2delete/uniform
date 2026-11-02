@@ -12,7 +12,11 @@ main `4ba30149b6a0c3a3c8aa56dd8783a83829e76085` (tree
 final candidate commit and tree during integration preflight. The repair branch
 then normal-merged current main `88131ab85dadf1a7d81eba46c097af1b117be606`
 (tree `8b39b5943cca532022c8f845d6a783180268cf92`) before the C11 consumer
-extension below.
+extension below. It subsequently normal-merged `04b03d1d8138c934e4424be7e537764a1175a277`
+(tree `0bca2d0c074fae65ab15009b1c75f8f6213665f8`), `5dfe15c9fad14e5abebf23bf1e645bf9154a2e1e`
+(tree `643afe5f3b00918fc3de76f2855294481a09b505`), and the final Reader
+composition `6218e80e0238cbd071a8837193e7afb5f0b87869` (tree
+`51a615a96828ecaff57824625bb062a9dd2c5f20`).
 
 The increment supplies only the explicit public C6/C11 interface version 2
 route. It uses the existing source contracts, Reader owner, expression owner,
@@ -88,6 +92,8 @@ The focused real-source producer/consumer and negative controls pass:
   52 assertions.
 - `gravity.self-hosting.sh01-native-unmetered-helpers-test`: 25 tests,
   304 assertions.
+- `gravity.reader.dispatch-test`: 7 tests, 72 assertions.
+- `gravity.reader.normal-dispatch-test`: 11 tests, 95 assertions.
 - `gravity.self-hosting.sh01-language-boundary-test`: 6 tests, 11 assertions.
 - `git diff --check`: passed before this report was added.
 
@@ -97,6 +103,12 @@ contextual verification report consuming that C6 artifact, wrong
 interface/version headers before construction, wrong Reader policy before C2
 production, and forged Core/source-context rejection before C11 source
 construction. It does not claim that a declared oracle is a compiler result.
+
+The final-main dependency stack was inspected for source coupling. The C8
+effect traversal change and C7 iterative traversal change preserve the source
+identities above. The final Reader change adds source-byte/product joins and
+standard dispatch provenance; the Reader-focused receipts above and the full
+handoff receipt pass with those joins active.
 
 The existing legacy v1 C6 binding test fails closed with
 `C6-VERIFY :pinned-gravity-c6-c10-source-bytes` because the current file is
