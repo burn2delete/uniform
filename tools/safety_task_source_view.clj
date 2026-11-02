@@ -88,6 +88,52 @@
               (str "Task source hash drift: " (:path entry)))
     (validate-task-records! text entry)))
 
+(defn validate-versioned-task-source-transition! [view]
+  (let [transitions (get-in view [:current-source :versioned-task-source-transitions])
+        current-commit (get-in view [:current-source :commit])
+        current-tree (get-in view [:current-source :tree])
+        current-entries (into {} (map (juxt :path identity)
+                                      (get-in view [:current-source :task-sources])))]
+    (require! (= 1 (count transitions))
+              "Safety current-source transition population changed")
+    (doseq [{:keys [path from to changed-record-ids]} transitions]
+      (let [entry (get current-entries path)]
+        (require! entry (str "Safety transition has no current task source: " path))
+        (require! (= "specs/runtime-workflow/tasks.md" path)
+                  (str "Safety transition path is not the authenticated Runtime task source: " path))
+        (require! (= "runtime-implementation-tasks" (:marker entry))
+                  (str "Safety transition marker is not the authenticated Runtime task marker: " path))
+        (verify-commit-tree! from)
+        (verify-commit-tree! to)
+        (require! (= (:commit to) current-commit)
+                  (str "Safety transition target commit is not current source: " path))
+        (require! (= (:tree to) current-tree)
+                  (str "Safety transition target tree is not current source: " path))
+        (require! (= (:sha256 to) (:sha256 entry))
+                  (str "Safety transition target hash is not current entry: " path))
+        (let [from-text (git-text (:commit from) path)
+              to-text (git-text (:commit to) path)
+              current-records (task-source-entry! (:commit to) entry)
+              current-record-ids (mapv :id current-records)]
+          (require! (= (:sha256 from) (sha256 from-text))
+                    (str "Safety transition source bytes drifted: " path))
+          (require! (= (:sha256 to) (sha256 to-text))
+                    (str "Safety transition target bytes drifted: " path))
+          (require! (not= from-text to-text)
+                    (str "Safety transition does not identify a source change: " path))
+          (require! (= to-text (slurp path))
+                    (str "Safety transition target is not the working source: " path))
+          (require! (= 5 (count current-record-ids))
+                    (str "Safety Runtime current task row population changed: " path))
+          (require! (= current-record-ids (vec (distinct current-record-ids)))
+                    (str "Safety Runtime current task row identities are not unique: " path))
+          (require! (= current-record-ids changed-record-ids)
+                    (str "Safety Runtime transition IDs do not match authenticated current rows: " path)))))
+    {:count (count transitions)
+     :paths (mapv :path transitions)
+     :historical-intermediate :authenticated
+     :current-target :authenticated}))
+
 (defn unique-by! [rows key message]
   (require! (= (count rows) (count (set (map key rows)))) message))
 
@@ -126,6 +172,7 @@
         proposal-pin (get-in view [:historical-source :proposal])]
     (verify-commit-tree! proposal-pin)
     (verify-commit-tree! {:commit current-commit :tree (get-in view [:current-source :tree])})
+    (validate-versioned-task-source-transition! view)
     (require! (= 6 (count historical) (count base) (count current))
               "Safety task source population changed")
     (unique-by! historical :path "Duplicate historical safety task source")
@@ -215,6 +262,16 @@
      :current-source-pair-tamper
      (rejected? #(validate-view! (assoc-in view [:current-source :task-sources 0 :sha256] zero-hex)
                                  proposal))
+     :runtime-transition-forged-id-tamper
+     (rejected? #(validate-view!
+                  (update-in view [:current-source :versioned-task-source-transitions 0 :changed-record-ids]
+                             assoc 0 "runtime/forged-current-row")
+                  proposal))
+     :runtime-transition-duplicate-id-tamper
+     (rejected? #(validate-view!
+                  (update-in view [:current-source :versioned-task-source-transitions 0 :changed-record-ids]
+                             (fn [ids] (vec (repeat (count ids) (first ids)))))
+                  proposal))
      :task-order-tamper
      (rejected? #(validate-view! (update-in view [:historical-source :task-sources 0 :ordered-task-ids]
                                             (fn [ids] (vec (reverse ids))))

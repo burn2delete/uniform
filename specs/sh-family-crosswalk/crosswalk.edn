@@ -12654,7 +12654,7 @@
  :source-version-bridge
  {:path "specs/sh-family-crosswalk/source-version-bridge.edn",
   :sha256
-  "929afbb7ca378327c2b740078e92d67fb632c61c761f0d4a72543d79ede9e4c0"},
+  "05c7576d1cfb0f3b39ba3b91c5ae61fc89ea7c33716c0817d067760b1d2fc00f"},
  :mapping-review
  {:pr574-predecessor-review
   {:pkg5-source-review
@@ -16040,101 +16040,101 @@
   "runtime"
   [{:path "specs/runtime-workflow/tasks.md",
     :file-sha256
-    "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972",
+    "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/runtime-workflow/tasks.md",
      :start-byte 688,
-     :end-byte 1139,
+     :end-byte 1834,
      :start-line 16,
      :end-line 22,
      :sha256
-     "aab8d166839b35fb798d8fe57d4fdc81d7945f7ac2f6a0988951ab4334be7653",
+     "7786392e851c24c2501d46b345faaef0b83ccfa1ce3e36bb7a0807dc3e75db81",
      :source-snapshot-ref
-     "aab8d166839b35fb798d8fe57d4fdc81d7945f7ac2f6a0988951ab4334be7653"},
+     "7786392e851c24c2501d46b345faaef0b83ccfa1ce3e36bb7a0807dc3e75db81"},
     :owner-source "docs/component-roadmaps/runtime.md",
     :component "runtime",
-    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :source-commit "42c34ab55af0000dfaaf73d96d7ee09ec22c243e",
     :id
     "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection",
     :checked false}
    {:path "specs/runtime-workflow/tasks.md",
     :file-sha256
-    "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972",
+    "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/runtime-workflow/tasks.md",
-     :start-byte 1141,
-     :end-byte 1647,
+     :start-byte 1836,
+     :end-byte 3127,
      :start-line 24,
      :end-line 30,
      :sha256
-     "c6c621a740f7ce6400452641d1aa67b56f5c2216be7603f6c17ddd51ce3c7dd3",
+     "484d2a2da455306f87414415dd661deb645f48d1eab2b022d69d2b56aeb8ec72",
      :source-snapshot-ref
-     "c6c621a740f7ce6400452641d1aa67b56f5c2216be7603f6c17ddd51ce3c7dd3"},
+     "484d2a2da455306f87414415dd661deb645f48d1eab2b022d69d2b56aeb8ec72"},
     :owner-source "docs/component-roadmaps/runtime.md",
     :component "runtime",
-    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :source-commit "42c34ab55af0000dfaaf73d96d7ee09ec22c243e",
     :id
     "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
     :checked false}
    {:path "specs/runtime-workflow/tasks.md",
     :file-sha256
-    "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972",
+    "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/runtime-workflow/tasks.md",
-     :start-byte 1649,
-     :end-byte 2020,
+     :start-byte 3129,
+     :end-byte 5216,
      :start-line 32,
      :end-line 38,
      :sha256
-     "86bceb1d3186fd03c074849fc0fd1cd86c10ea6f81cf00e6c15377aefda92c9c",
+     "55874c4eb5fa49b8f4c2f9b22f7aacc7965f326ed7aaf96583fee2ec488e5912",
      :source-snapshot-ref
-     "86bceb1d3186fd03c074849fc0fd1cd86c10ea6f81cf00e6c15377aefda92c9c"},
+     "55874c4eb5fa49b8f4c2f9b22f7aacc7965f326ed7aaf96583fee2ec488e5912"},
     :owner-source "docs/component-roadmaps/runtime.md",
     :component "runtime",
-    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :source-commit "42c34ab55af0000dfaaf73d96d7ee09ec22c243e",
     :id
     "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
     :checked false}
    {:path "specs/runtime-workflow/tasks.md",
     :file-sha256
-    "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972",
+    "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/runtime-workflow/tasks.md",
-     :start-byte 2022,
-     :end-byte 2393,
+     :start-byte 5218,
+     :end-byte 7991,
      :start-line 40,
      :end-line 46,
      :sha256
-     "ac70c2d8acf15c5049d0f079e7c5278ee492d543ee8f0092da6df093e1815ffb",
+     "ff28ee17bb69ab84019f34ae7bcaf4c5dafbff978a8a496e0cfdd568d3d75b39",
      :source-snapshot-ref
-     "ac70c2d8acf15c5049d0f079e7c5278ee492d543ee8f0092da6df093e1815ffb"},
+     "ff28ee17bb69ab84019f34ae7bcaf4c5dafbff978a8a496e0cfdd568d3d75b39"},
     :owner-source "docs/component-roadmaps/runtime.md",
     :component "runtime",
-    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :source-commit "42c34ab55af0000dfaaf73d96d7ee09ec22c243e",
     :id
     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
     :checked false}
    {:path "specs/runtime-workflow/tasks.md",
     :file-sha256
-    "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972",
+    "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/runtime-workflow/tasks.md",
-     :start-byte 2395,
-     :end-byte 2789,
+     :start-byte 7993,
+     :end-byte 9517,
      :start-line 48,
      :end-line 54,
      :sha256
-     "85e22d94e970765f346152ab4cb9e9ccb97e70bf35ee364fcbc7892e4f4512d4",
+     "4b4b8c1de9bd4253ab800f1bd1c791967819f98e4f4c4f982168266aab074a4b",
      :source-snapshot-ref
-     "85e22d94e970765f346152ab4cb9e9ccb97e70bf35ee364fcbc7892e4f4512d4"},
+     "4b4b8c1de9bd4253ab800f1bd1c791967819f98e4f4c4f982168266aab074a4b"},
     :owner-source "docs/component-roadmaps/runtime.md",
     :component "runtime",
-    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :source-commit "42c34ab55af0000dfaaf73d96d7ee09ec22c243e",
     :id
     "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
     :checked false}],
@@ -18004,7 +18004,7 @@
   "specs/auth-workflow/tasks.md"
   "9db81aa1c8ef183a9da8656a343a29fd9104b10e7130fd63ba4e52b75ce2b256",
   "specs/runtime-workflow/tasks.md"
-  "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972",
+  "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c",
   "docs/component-roadmaps/cli.md"
   "ca5ab6f3bed6fdee1ee66a6019a4078bae622a4451db33d35ffe8f57f4da1b3e",
   "docs/document-inventory.json"
@@ -18092,6 +18092,8 @@
   "f25e6f571e610587da8142f5b0fc33e7806d440e",
   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
   "4325a9f46292472a7f984c5adfef81209874bb5c",
+  "specs/runtime-workflow/tasks.md"
+  "42c34ab55af0000dfaaf73d96d7ee09ec22c243e",
   "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
   "bffefedfada9e3312e68e0a28a69d71db459d0e2",
   "docs/self-hosting-slice-ownership.edn"
@@ -18142,6 +18144,10 @@
   "| SH07-C05 | SH-07.3 | sh-core | C03, C04 | Close `fn`, function values, captures and callable operators used by C01. Record parameter/body/capture bindings, latent body order and operator-before-arguments-once order. Cover lexical shadowing and nested functions. Reject invalid operator/function/capture structure; preserve later capture ownership and call-type obligations explicitly. |",
   "04c51359b6cc39b3ffb8b5c598a8c7fe0ae83f63c25f625639074fa2722e69e7"
   "1. **SH-29.1:** Deliver a real public `gravity` executable produced by the\n   accepted self-hosted path; bootstrap-hosted packaging/fallback cannot stand in.",
+  "55874c4eb5fa49b8f4c2f9b22f7aacc7965f326ed7aaf96583fee2ec488e5912"
+  "- [ ] `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries` Implement memory, concurrency and typed FFI boundaries\n\nStatus: Open\n\nEvidence baseline: [Runtime contracts](../../docs/phase-08-runtime-architecture/README.md)\n\nClosing evidence: Allocation, lifetime, transfer, race and foreign-failure conformance with explicit providers. R3/R5/R6/R10: allocation/deallocation/provider manifests, no-allocation and region/arena escape rejection, linear acquire/transfer/consume ledgers, device address-space/transfer/synchronization/lifetime checks, audited raw-memory wrappers, and agreement of retained checks with exact proof-elision records; atomics with target memory order/scope/alignment, structured task parent or explicit lifecycle owner, cancellation cleanup and failure propagation, actor/channel schemas with ordering/backpressure/transfer policy; FFI symbol/loading policy, ABI/layout conformance, null/handle/lifetime/ownership/error adapters and callbacks re-entering capability/taint/thread-affinity/scheduler checks. Reject mismatched providers, races, orphan tasks, unsupported atomics, schemaless messages, raw extern safe calls and invalid callback entry. Dependencies: ownership and Legality supply compile-time facts, Lower supplies target layouts, Auth supplies grants, and distributed execution supplies replay policy; runtime debug checks cannot substitute for compile-time safety. Execute the [SAFE2-SAFE8 contracts](../../docs/phase-02-safety/README.md): declared allocation and cleanup failures, partial initialization cleanup, region/arena generation and borrow checks, release through the correct allocator/provider, callback lifetime/thread/reentrancy/release and foreign error/exception/promise translation. Reject retained borrows, post-reset access, missing FFI declarations, unsupported atomics and unsynchronized mutable access; validate immutable sharing, lock cleanup, actor/channel transfer and declared backpressure/cancellation. Inspect actual checks and audit records, with no hidden GC or host-thread fallback.",
+  "0521ed3c6f86962bea7bce7089b1d89c84f3b5d7af39758391b31ec232359ea8"
+  "- [ ] `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries` Implement memory, concurrency and typed FFI boundaries\n\nStatus: Open\n\nEvidence baseline: [Runtime contracts](../../docs/phase-08-runtime-architecture/README.md)\n\nClosing evidence: Allocation, lifetime, transfer, race and foreign-failure conformance with explicit providers. R3/R5/R6/R10: allocation/deallocation/provider manifests, no-allocation and region/arena escape rejection, linear acquire/transfer/consume ledgers, device address-space/transfer/synchronization/lifetime checks, audited raw-memory wrappers, and agreement of retained checks with exact proof-elision records; atomics with target memory order/scope/alignment, structured task parent or explicit lifecycle owner, cancellation cleanup and failure propagation, actor/channel schemas with ordering/backpressure/transfer policy; FFI symbol/loading policy, ABI/layout conformance, null/handle/lifetime/ownership/error adapters and callbacks re-entering capability/taint/thread-affinity/scheduler checks. Reject mismatched providers, races, orphan tasks, unsupported atomics, schemaless messages, raw extern safe calls and invalid callback entry. Dependencies: ownership and Legality supply compile-time facts, Lower supplies target layouts, Auth supplies grants, and distributed execution supplies replay policy; runtime debug checks cannot substitute for compile-time safety.",
   "053a3b6922323d11710329f97a30e7da4024c54d171e0c4480ce25547388af8f"
   "3. **SH-00.3:** Independently validate/execute the accepted artifact and compare\n   its observable result with the declared reference behavior.",
   "0664c4603e73f01ff9656c11c8005ae151b793f7a389251a02f63c64c7601588"
@@ -18364,6 +18370,8 @@
   "| SH-04.6 | Public C3/P15 freshness checks and later SH-05 consumption | E04-T/R, E05 | S for declared revisions |",
   "47607b40864376ce6e9dcb964e8baea7f0eb880f184a8a5fc86b61dc67ed0a8c"
   "6. **SH-27.6:** Link reproducible recipes, actual rebuilds, compiler identities,\n   comparisons and accepted deltas into provenance consumed by SH-28.",
+  "484d2a2da455306f87414415dd661deb645f48d1eab2b022d69d2b56aeb8ec72"
+  "- [ ] `runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup` Finish managed/native execution, startup, panic and cleanup\n\nStatus: Open\n\nEvidence baseline: [Development evaluator](../../bootstrap/gravity/src/gravity/runtime.gravity) and [native manifest](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00287-minimal-native-runtime-manifest.clj)\n\nClosing evidence: Executed startup/failure/resource fixtures and manifest-to-service agreement. R1/R3/R4: typed host adapters with effects, capabilities, taint, error and source-map contracts; selected host/version/module/collection/dynamic-state manifests; startup, initialization, handoff and teardown order; explicit panic/trap/abort/unwind/result policy; host null/undefined conversion, exception and rejected-promise translation; Gravity equality/hashing/serialization conformance; deterministic linear cleanup independent of process exit or GC. Reject undeclared helper effects, untranslated/null foreign values and GC-only linear cleanup; debug services must be absent or release-policy marked. Dependencies: Lower supplies ABI and source maps, Legality supplies legal services, and Auth supplies grants; selected compiler services do not close all managed/native targets.",
   "48c6717e752bcf2f9d225b93d4a82e783eef5b18f49f6a5cee4a2eb6f43fdd84"
   "# Lower component roadmap\n\nWorking name: **Lower** (proposed default, not an approved codename).\nSemantic key: `lower`. Status: proposed roadmap; release acceptance open.\nSource baseline: `c21068a6d39259b7110845bbbcefaf9bf6901232` (2026-10-25).\nOwner role: compiler/backend maintainer.\nCurrent owner: not established by this source inspection; Deus assigns or confirms\nthe existing owner before implementation. This page does not transfer ownership.\n",
   "494746fc852eb2b5a59488e7210f5baa9cbb4d33805c141f1cf1e38d5169f978"
@@ -18376,6 +18384,8 @@
   "# Build\n\nWorking name: **Build** (proposed). Semantic key: `build`.\nOwner role: build/package maintainer; current owner unassigned by this proposal.\nBaseline: `c21068a6d39259b7110845bbbcefaf9bf6901232`.\n\nImplementation task authority: [Spec Kit ledger](../../specs/build-workflow/tasks.md#implementation-tasks).\nEdit the ledger and run `clojure -M tools/build_task_projection.clj --write`;\nthe remaining-task table below is generated.\n",
   "4a09875f800d4966895f72e157d7d943a8e4a363b9eb350d5b412a43749f1d76"
   "1. **SH-22.1:** Enumerate all library APIs transitively required by the\n   compiler/runtime/build closure, with signatures and explicit unsupported APIs.",
+  "4b4b8c1de9bd4253ab800f1bd1c791967819f98e4f4c4f982168266aab074a4b"
+  "- [ ] `runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration` Close enforcement and observability integration\n\nStatus: Open\n\nEvidence baseline: [Capability runtime contract](../../docs/phase-08-runtime-architecture/122-r11-runtime-capability-enforcement-design.md)\n\nClosing evidence: Denial at actual service hook, redacted diagnostics and source-map preservation. R1/R11/R12: every authority-bearing action carries principal/package/deployment/artifact/source/effect/capability identity; deny by default and check both caller grant and tool/plugin contract; delegated handles are typed, scoped, provider-bound and revocable where supported, with use-after-revocation rejection; preserve grant/deny/delegate/revoke/audit records without secret disclosure and enforce deployment narrowing. Structured event/log/trace/metric/panic/replay bundles retain stable schemas/IDs, runtime/profile/target/source/generated-origin/artifact links, check/proof/replay references, redaction and remediation; sinks require grants, development services are marked, and sampling retains mandatory audit events without changing ordering, replay or safety. Reject ambient authority, ungranted sinks, secret/tainted/raw-memory leakage and lost required mappings/events. Dependencies: Auth supplies policy and grants, Lower supplies artifact/source maps, each runtime family supplies events, and testing/tooling/incident consumers validate bundles; these records do not grant authority or claim execution acceptance.",
   "4b6b9f1e9eeb87331ec948f60bfe75b4ffa0633e8b2054da6e4639d24b168239"
   "5. **SH-01.5:** Select affected tests correctly, reject unknown selectors and\n   preserve actual failures rather than counting skips as passes.",
   "4c716e64d835666a615b99a1f3b0de13be3d991f2baeb99a15a5baa88241b21f"
@@ -18536,6 +18546,8 @@
   "4. **SH-29.4:** Verify actual delivered content against SH-27/28 reproducibility,\n   equivalence, provenance, SBOM, signatures, revocation and TCB evidence.",
   "740d20aa096e4e9a19751524d36e6b010383b15c279f94dc3b2e61c6f3f5a4e3"
   "3. **SH-18.3:** Emit and independently compile/verify/link for the exact target\n   ABI/toolchain, retaining compiler/runtime/library identities and artifacts.",
+  "7786392e851c24c2501d46b345faaef0b83ccfa1ce3e36bb7a0807dc3e75db81"
+  "- [ ] `runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection` Implement explicit family selection and no-runtime rejection\n\nStatus: Open\n\nEvidence baseline: [Selection validator](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/runtimes/00284-runtime-selection-validate.clj)\n\nClosing evidence: Actual service link/load inspection for every claimed profile/target and forbidden-service rejection. R1/R2/R4: explicit family selection and compatible composition; linked/generated/delegated/external/forbidden service records consumed by backend, package, observability, conformance and self-hosting tools; runtime-none entry/reset/interrupt/ABI, sections, memory map, alignment and required target stack evidence; generated checks and panic helpers with provenance. Reject hidden GC, allocator, scheduler, reflection, eval, host IO and hosted-profile leakage; unsupported dynamic forms reject unless eliminated with evidence. Dependencies: Lower supplies target ABI/artifacts, Legality supplies profile facts, and Build supplies package policy; no product ISA or platform choice is made here.",
   "78676c5df36c7c26dd051a13f03703788b22611d380e12704d0108ed66108790"
   "2. **SH-13.2:** Execute recursion and tail recur with correct state updates;\n   reject invalid arity, target and control transfer.",
   "78c674e0973d010d37694ce793f3acefbf4c55429e7c806498f91f51e8b077a9"
@@ -18932,6 +18944,10 @@
   "| SH-00.6 | Exact committed six-file change and scoped integration record | E00-R, Git | S |",
   "e510ffef518b1a6b04b92f26675bff30e40db4c5f693f9e93b95c9fa18cc069c"
   "| SH-00.1 | Central `authenticated-binary-integer-comparisons-reach-gravity-b4-wasm`, typed MIR/op joins | E00-R/T | S |",
+  "ff28ee17bb69ab84019f34ae7bcaf4c5dafbff978a8a496e0cfdd568d3d75b39"
+  "- [ ] `runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution` Connect distributed/AI replay and interactive execution\n\nStatus: Open\n\nEvidence baseline: [Runtime contracts](../../docs/phase-08-runtime-architecture/README.md)\n\nClosing evidence: Recorded nondeterminism, replay equality, no undeclared duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; R7/R8 replay-required segments return recorded model/tool/retrieval/memory/review decisions or reject a missing record. R6 concurrency fixtures accept an authorized graph-declared replay-safe repetition where no R7/R8 recorded-output obligation applies; the declaration never grants authority or overrides those recorded-output obligations. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject undeclared repeated external calls, live nondeterministic calls in R7/R8 recorded-output segments even with a replay-safe graph declaration, repetitions without required authority, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal. Under [SAFE8/SAFE13](../../docs/phase-02-safety/README.md), retain signal/timer/retry/idempotency/compensation and tool failure records; exact replay consumes recorded model/tool outputs, while audit policy retains digests, schemas, decisions, review events and providers. None is allowed only in interactive or non-safe contexts; workflow and release claims require replay or audit. Execute retention/deletion and secret-tainted memory denial fixtures through the declared provider; prompt text never grants authority.",
+  "e67e7b79d7d7a6cebfac63b607b803adbdf47ebe7d6eed0f7814e7d25452efea"
+  "- [ ] `runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution` Connect distributed/AI replay and interactive execution\n\nStatus: Open\n\nEvidence baseline: [Runtime contracts](../../docs/phase-08-runtime-architecture/README.md)\n\nClosing evidence: Recorded nondeterminism, replay equality, no undeclared duplicated external effect, REPL grant denial. R6/R7/R8/R9: topology/provider/event-log/state/message schemas; durable idempotency, timeout/retry/cancellation/failure/compensation records; migration or rejection of replay-incompatible code/topology/schema changes; model/provider/prompt provenance, output and sink validation, policy-recorded provider substitution, typed tool contracts with caller/callee grants and policy-required human review, memory/retrieval privacy/retention/deletion/taint controls and secret redaction; R7/R8 replay-required segments return recorded model/tool/retrieval/memory/review decisions or reject a missing record. R6 concurrency fixtures accept an authorized graph-declared replay-safe repetition where no R7/R8 recorded-output obligation applies; the declaration never grants authority or overrides those recorded-output obligations. Interactive forms and generated code pass the ordinary compiler checks before execution; session manifests, transcripts, evaluated forms, syntax/core/MIR/source snapshots capture build-affecting state or mark nonhermeticity, and hot reload invalidates stale analysis/backend/runtime/package outputs. Reject undeclared repeated external calls, live nondeterministic calls in R7/R8 recorded-output segments even with a replay-safe graph declaration, repetitions without required authority, unvalidated trusted sinks, forbidden-profile eval, hidden interactive IO and stale reload artifacts. Dependencies: Domains supplies agent/workflow contracts, Schema supplies validators/migrations, Build consumes session inputs and invalidation, Auth supplies grants and review policy. Project work/token/call/time/retry allowances are removed admission requirements; actual provider billing/account limits remain external, and semantic failure/cancellation policy remains required. R8 mixed budget spans retain unresolved qualification in the family proposal.",
   "e72027e8febb7e7f5c9014835f2717d006ce664ce1fb091cc54b47f2efe3800a"
   "## Three boundaries and one shared completion rule\n\nFollow [development verification](development-verification.md), using existing\ncompiler interfaces and direct tests:\n\n| Boundary | What is sufficient for that boundary | What it does not establish |\n| --- | --- | --- |\n| Implementation | Owning implementation changes; real accepted and rejected cases; focused semantic and preservation checks. | Authoritative module migration or milestone completion. |\n| Integration | Affected producer-to-consumer composition, interface, diagnostic and regression checks. | Whole-stage equivalence, all targets or seed retirement. |\n| Authoritative completion | All six requirements, completed dependencies, applicable uniform backlog gates and fresh stable-revision migration evidence independently accepted. | Features, targets or release claims outside the recorded support set. |\n\nBefore marking any SH-03 or later milestone complete:\n\n1. Map every numbered requirement and required variant to its owning contract,\n   implementation entrypoint, accepted `.gravity`/`.qst` fixture pair,\n   rejection-family fixtures, expected artifact/result or diagnostic, and\n   actual selected checks. Missing cases are open work, not implicit passes.\n2. Execute the claimed Gravity implementation. Classifying supplied records,\n   emitting a report, interpreting an unrelated host implementation, or\n   compiling source without exercising the claimed behavior is insufficient.\n3. Preserve or explicitly transform the pass's required source, origin,\n   binding, type, effect, capability, ownership, safety and artifact facts.\n   Test malformed outputs and relevant stale/substituted boundary inputs.\n4. Pass focused checks and affected integration/regressions; preserve failed,\n   interrupted, skipped and unsupported results accurately. A target emission\n   claim additionally needs an independent target tool's validation/execution.\n5. At explicit admission, satisfy BOOT3/TEST13 stage comparison, conformance,\n   source/compiler/dependency provenance, BOOT5 support and TCB accounting,\n   unsafe audits and required independent review for that migration. SH-26\n   through SH-29 additionally require their whole-stage/release checks.\n6. Record an accepted clean verified revision and evidence references in the\n   existing backlog/compatibility records. Keep implementation, integration\n   and authoritative status separate. A stale proof stays stale after edits;\n   it does not prohibit focused testing of those edits.\n\nSH-00 through SH-02 retain their already accepted baseline/process/envelope\nscope. They do not acquire new language obligations from this document.\nRecorded completion is not reopened merely to reissue unchanged evidence.\nReuse valid unchanged expensive evidence; refresh affected evidence when\nsource, compiler, semantic inputs, target, dependencies or policy invalidate it.\nPreserve existing resource limits and admission requirements for heavy runs.\n\n",
   "e76417d3768f768145961a14422db1c463f2de3e7b7548fe3ee06d7dcc7c190c"
