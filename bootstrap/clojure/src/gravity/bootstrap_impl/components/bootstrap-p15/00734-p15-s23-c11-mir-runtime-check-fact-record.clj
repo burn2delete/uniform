@@ -2,151 +2,27 @@
 
 (defn p15-s23-c11-mir-runtime-check-fact-record
   [checked-core node fact-kind]
-  (let [node-id (:node-id node)
-        check (get-in node [:safety :check])
-        fact-id (p15-s23-c11-mir-runtime-check-fact-id check fact-kind)
-        check-op-id (p15-s23-c11-mir-runtime-check-operation-id check)
-        token-id (p15-s23-c11-mir-runtime-check-token-id check)
-        origin-id (get-in node [:source :origin-id])
-        profile (:profile node)]
-    (case fact-kind
-      :type
-      {:fact-id fact-id
-       :core-node-id node-id
-       :mir-operation-id check-op-id
-       :type-id :gravity/runtime-check-token
-       :type :gravity/runtime-check-token
-       :producer-rule :runtime-check-token
-       :dependencies []
-       :source-origin-id origin-id
-       :profile profile
-       :source-target (:source-target checked-core)
-       :constraints []
-       :derived? true}
-
-      :effect
-      {:fact-id fact-id
-       :core-node-id node-id
-       :mir-operation-id check-op-id
-       :direct #{}
-       :latent #{}
-       :transitive #{}
-       :residual #{}
-       :ordering :sequence
-       :non-dce? true
-       :source-origin-id origin-id
-       :profile profile
-       :source-target (:source-target checked-core)
-       :derived? true}
-
-      :capability
-      {:fact-id fact-id
-       :core-node-id node-id
-       :mir-operation-id check-op-id
-       :required #{}
-       :granted #{}
-       :capability-proof-ids [(:capability-proof-id check)]
-       :authority-id (:authority-record-id check)
-       :source-origin-id origin-id
-       :profile profile
-       :source-target (:source-target checked-core)
-       :derived? true}
-
-      :ownership
-      {:fact-id fact-id
-       :core-node-id node-id
-       :mir-operation-id check-op-id
-       :value-id token-id
-       :role :runtime-check-token
-       :storage :compiler-generated-token
-       :model :non-resource-control-token
-       :shareability :single-guard-use
-       :mutation :forbidden
-       :source-origin-id origin-id
-       :profile profile
-       :source-target (:source-target checked-core)
-       :derived? true}
-
-      :safety
-      {:outcome-id fact-id
-       :artifact :gravity/safety-outcome
-       :operation check-op-id
-       :guarded-operation-id node-id
-       :kind :runtime-check
-       :profile profile
-       :target (:source-target checked-core)
-       :outcome :runtime-checked
-       :runtime-check (:check-id check)
-       :proof :not-applicable
-       :failure-behavior (:failure check)
-       :source-origin-id origin-id
-       :derived? true}
-
-      :profile-target
-      {:fact-id fact-id
-       :core-node-id node-id
-       :mir-operation-id check-op-id
-       :profile-fact (get (:profile-facts checked-core) node-id)
-       :profile profile
-       :source-target (:source-target checked-core)
-       :target-request
-       (get-in checked-core [:target-request-metadata :requested-target])
-       :derived? true})))
+  (gravity.mir/runtime-check-fact-record #'p15-s23-c11-mir-runtime-check-fact-id #'p15-s23-c11-mir-runtime-check-operation-id #'p15-s23-c11-mir-runtime-check-token-id checked-core node fact-kind))
 
 (defn p15-s23-c11-mir-add-runtime-check-facts
   [checked-core fact-kind table]
-  (reduce
-   (fn [result node]
-     (if-let [check (get-in node [:safety :check])]
-       (assoc result
-              (p15-s23-c11-mir-runtime-check-fact-id check fact-kind)
-              (p15-s23-c11-mir-runtime-check-fact-record
-               checked-core node fact-kind))
-       result))
-   table
-   (:core-nodes checked-core)))
+  (gravity.mir/add-runtime-check-facts #'p15-s23-c11-mir-runtime-check-fact-id #'p15-s23-c11-mir-runtime-check-fact-record checked-core fact-kind table))
 
 (defn p15-s23-c11-mir-reindex-fact-table
   [nodes table id-key suffix]
-  (into (sorted-map)
-        (map (fn [node]
-               (let [node-id (:node-id node)
-                     record (get table node-id)
-                     fact-id (or (get record id-key)
-                                 (str node-id suffix))]
-                 [fact-id (assoc record id-key fact-id)])))
-        nodes))
+  (gravity.mir/reindex-fact-table nodes table id-key suffix))
 
 (defn p15-s23-c11-mir-profile-target-table
   [checked-core]
-  (into (sorted-map)
-        (map (fn [node]
-               (let [node-id (:node-id node)
-                     fact-id (str node-id ":profile-target-fact")]
-                 [fact-id
-                  {:fact-id fact-id
-                   :core-node-id node-id
-                   :profile-fact (get (:profile-facts checked-core) node-id)
-                   :profile (:profile node)
-                   :source-target (:source-target checked-core)
-                   :target-request
-                   (get-in checked-core
-                           [:target-request-metadata :requested-target])}])))
-        (:core-nodes checked-core)))
+  (gravity.mir/profile-target-table checked-core))
 
 (defn p15-s23-c11-mir-capability-proof-table
   [checked-core]
-  (into (sorted-map)
-        (map (juxt :proof-id identity))
-        (:capability-proof-records checked-core)))
+  (gravity.mir/capability-proof-table checked-core))
 
 (defn p15-s23-c11-mir-safety-proof-table
   [checked-core]
-  (into (sorted-map)
-        (keep (fn [node]
-                (when-let [proof-id (get-in node [:safety :proof :proof-id])]
-                  [proof-id (get-in node [:safety :proof])])) )
-        (:core-nodes checked-core)))
+  (gravity.mir/safety-proof-table checked-core))
 
 (defn p15-s23-c11-mir-pass-contract-record
   []
