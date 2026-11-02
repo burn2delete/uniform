@@ -4,14 +4,18 @@
             [gravity.build.producer-git-observation :as git]
             [gravity.self-hosting.sh01-component-test-dependencies :as dependencies]
             [gravity.self-hosting.sh01-development-loop-wiring :as wiring]
+            [gravity.self-hosting.sh01-parallel-test-runner :as runner]
+            [gravity.process-supervision :as process-supervision]
             [gravity.self-hosting-test-runner :as child-runner])
-  (:import [java.io ByteArrayInputStream ByteArrayOutputStream]
+  (:import [java.io ByteArrayInputStream ByteArrayOutputStream OutputStream]
            [java.nio.charset StandardCharsets]))
 
 (defn- wiring-var [name]
   (ns-resolve 'gravity.self-hosting.sh01-development-loop-wiring name))
 
 (def ^:private temporary-root (.getCanonicalPath (java.io.File. "/tmp")))
+(def ^:private repository-root
+  (.getCanonicalPath (java.io.File. (System/getProperty "user.dir"))))
 
 (defn- fake-process
   ([bytes exit events] (fake-process bytes exit events {}))
@@ -80,6 +84,40 @@
     #(with-bindings {(wiring-var '*producer-git-lifecycle*) lifecycle}
        ((var-get (wiring-var 'run-git-bytes!)) "/tmp" arguments input-bytes))))
 
+(defn- actual-controller-lifecycle [events root]
+  (let [records (atom [])
+        controller {:start (fn [command directory]
+                             (swap! events conj [:start command])
+                             (process-supervision/start-process
+                              command {:working-directory directory}))
+                    :result (fn [process options owned]
+                              (swap! events conj :result)
+                              (runner/process-result process options owned))
+                    :abort (fn [process]
+                             (swap! events conj :abort)
+                             (.destroyForcibly ^Process process))}]
+    {:records records
+     :lifecycle (git/lifecycle {:root root}
+                                records
+                                {:retain runner/retain-owned-process!
+                                 :handles runner/retained-process-handles
+                                 :finalize runner/finalize-owned-process!
+                                 :verify (fn [_] nil)
+                                 :process-controller controller
+                                 :process-options {:capture-wait-ms 500}})}))
+
+(defn- actual-controller-run [root command input-bytes timeout-ms]
+  (let [events (atom [])
+        {:keys [lifecycle records]} (actual-controller-lifecycle events root)
+        deadline (+ (System/nanoTime) (* timeout-ms 1000000))
+        outcome (with-bindings {(wiring-var '*producer-git-lifecycle*) lifecycle
+                                (wiring-var '*operation-deadline*)
+                                {:deadline-ns deadline :timeout-ms timeout-ms}}
+                  (outcome #((var-get (wiring-var 'run-git-with-process-controller!))
+                             (java.io.File. root) command input-bytes lifecycle
+                             (:process-controller lifecycle))))]
+    {:outcome outcome :events @events :records @records}))
+
 (deftest actual-git-protocol-is-preserved-with-owned-token
   (doseq [bytes [(byte-array []) (byte-array [(unchecked-byte 0xff) 0 65])
                 (byte-array (repeat (+ (* 1024 1024) 7) (byte 65)))]
@@ -105,6 +143,182 @@
       (is (= true (:root-wait-exited? @(first @records))))
       (is (nil? (get-in @(first @records) [:finalization :complete?])))
       (is (= :unknown (:descendant-coverage @(first @records)))))))
+
+(defn- complete-controller-result
+  [stdout]
+  {:status :passed :exit-code 0
+   :cleanup {:root-alive? false :tracked-complete? true
+             :descendants-alive 0 :discovery-error nil :cleanup-error nil
+             :descendant-coverage :unknown}
+   :root-exited? true :tracked-owned-processes-terminal? true
+   :cleanup-failed? false :timeout-containment-unproven? false
+   :stdout-capture-status :complete :stderr-capture-status :complete
+   :stdout-capture-forced-close? false :stderr-capture-forced-close? false
+   :output-truncated? false :capture-failed? false
+   :stdout-observed-bytes (count (.getBytes stdout "UTF-8"))
+   :stderr-observed-bytes 0 :stdout-limit-bytes 1024 :stderr-limit-bytes 1024
+   :stdout-captured-bytes (count (.getBytes stdout "UTF-8"))
+   :stderr-captured-bytes 0 :stdout stdout :stderr ""})
+
+(deftest retained-controller-carries-complete-capture-receipt
+  (let [events (atom []) records (atom []) token (Object.)
+        process (fake-process (byte-array []) 0 events)
+        result (complete-controller-result "status\n")
+        controller {:start (fn [command directory]
+                             (swap! events conj [:start command (str directory)])
+                             process)
+                    :retain (fn [p] (swap! events conj [:retain p]) token)
+                    :result (fn [_ options owned]
+                              (swap! events conj [:result (:timeout-ms options)
+                                                   (:deadline-ns options) owned])
+                              result)
+                    :handles (fn [_] [:raw-handle])
+                    :finalize (fn [_]
+                                (swap! events conj :finalize)
+                                {:root-alive? false :tracked-complete? true
+                                 :complete? nil :descendant-coverage :unknown})
+                    :verify (fn [_] (swap! events conj :verify))}
+        lifecycle (git/lifecycle {:root temporary-root} records
+                                 (assoc controller
+                                        :process-controller
+                                        {:start (:start controller)
+                                         :result (:result controller)
+                                         :abort (fn [_] (swap! events conj :abort))}
+                                        :process-options {:capture-wait-ms 7}))
+        deadline (+ (System/nanoTime) (* 1000 1000000))
+        input (.getBytes "identity\u0000input" "UTF-8")
+        bytes (with-bindings {(wiring-var '*producer-git-lifecycle*) lifecycle
+                              (wiring-var '*operation-deadline*)
+                              {:deadline-ns deadline :timeout-ms 1000}}
+                ((var-get (wiring-var 'run-git-bytes!))
+                 temporary-root ["status"] input))
+        record @(first @records)
+        result-event (first (filter #(and (vector? %)
+                                          (= :result (first %))) @events))
+        stdin-event (first (filter #(and (vector? %)
+                                         (= :stdin (first %))) @events))]
+    (is (= "status\n" (String. bytes "UTF-8")))
+    (let [tags (mapv #(if (vector? %) (first %) %) @events)]
+      ;; The runner now starts capture before the concurrent input writer is
+      ;; joined; either :result or :stdin may therefore be observed first.
+      (is (= [:verify :start :retain] (subvec tags 0 3)))
+      (is (= #{:stdin :result} (set (subvec tags 3 5))))
+      (is (= [:finalize :verify] (subvec tags 5))))
+    (is (<= 1 (long (second result-event)) 1000))
+    (is (= token (nth result-event 3)))
+    (is (= :complete (get-in record [:capture-receipt :stdout-capture-status])))
+    (is (true? (get-in record [:capture-receipt :utf8-valid?])))
+    (is (false? (get-in record [:capture-receipt :output-truncated?])))
+    (is (= (vec input) (vec (second stdin-event))))))
+
+(deftest retained-controller-propagates-input-writer-failure
+  (let [events (atom []) records (atom []) token (Object.)
+        process (fake-process (byte-array []) 0 events
+                              {:stdin-error (java.io.IOException. "closed input")})
+        result (complete-controller-result "status\n")
+        ports (assoc (ports token events {})
+                     :process-controller
+                     {:start (fn [_ _] process)
+                      :result (fn [_ _ _] (swap! events conj :result) result)
+                      :abort (fn [_] (swap! events conj :abort))})
+        lifecycle (git/lifecycle {:root temporary-root} records ports)
+        outcome (with-bindings {(wiring-var '*producer-git-lifecycle*) lifecycle}
+                 (outcome #((var-get (wiring-var 'run-git-bytes!))
+                            temporary-root ["status"]
+                            (.getBytes "identity\u0000input" "UTF-8"))))]
+    (is (= "SH01-DEVELOPMENT-LOOP-GIT"
+           (get-in outcome [:data :id])))
+    (is (some? (:writer-error @(first @records))))
+    (is (= 1 (count (filter #{:finalize} @events))))))
+
+(deftest interrupted-input-writer-join-aborts-before-finalization
+  (let [events (atom []) records (atom []) token (Object.)
+        entered (java.util.concurrent.CountDownLatch. 1)
+        released (java.util.concurrent.CountDownLatch. 1)
+        stdin (proxy [OutputStream] []
+                (write
+                  ([_bytes]
+                   (.countDown entered)
+                   (.await released 5 java.util.concurrent.TimeUnit/SECONDS))
+                  ([_bytes _offset _length]
+                   (.countDown entered)
+                   (.await released 5 java.util.concurrent.TimeUnit/SECONDS)))
+                (close [] (.countDown released)))
+        process (proxy [Process] []
+                  (getOutputStream [] stdin)
+                  (getInputStream [] (ByteArrayInputStream. (byte-array 0)))
+                  (getErrorStream [] (ByteArrayInputStream. (byte-array 0)))
+                  (waitFor [] 0)
+                  (exitValue [] 0)
+                  (destroy [] nil)
+                  (destroyForcibly [] nil))
+        result (complete-controller-result "status\n")
+        ports (assoc (ports token events {})
+                     :process-controller
+                     {:start (fn [_ _] process)
+                      :result (fn [_ _ _]
+                                (.await entered 1 java.util.concurrent.TimeUnit/SECONDS)
+                                (.interrupt (Thread/currentThread))
+                                result)
+                      :abort (fn [_] (swap! events conj :abort))})
+        lifecycle (git/lifecycle {:root temporary-root} records ports)
+        outcome (try
+                  (with-bindings {(wiring-var '*producer-git-lifecycle*) lifecycle}
+                    (outcome #((var-get (wiring-var 'run-git-bytes!))
+                               temporary-root ["status"]
+                               (.getBytes "identity\u0000input" "UTF-8"))))
+                  (finally (Thread/interrupted)))]
+    (is (instance? InterruptedException (:error outcome)))
+    (is (some #{:abort} @events))
+    (is (= 1 (count (filter #{:finalize} @events))))
+    (is (.await released 1 java.util.concurrent.TimeUnit/SECONDS))))
+
+(deftest actual-controller-drains-output-while-large-input-is-written
+  (let [input (byte-array
+               (.getBytes (apply str (repeat 16384 "README.md\u0000"))
+                          "UTF-8"))
+        {:keys [outcome events]} (actual-controller-run
+                                  repository-root
+                                  ["git" "check-attr" "-z" "example" "--stdin"]
+                                  input 5000)]
+    (is (nil? (:error outcome)) outcome)
+    (is (.contains (String. (byte-array (:bytes outcome)) "UTF-8")
+                   "README.md"))
+    (is (some #{:result} events))
+    (is (not-any? #{:abort} events))))
+
+(deftest actual-controller-aborts-nonreading-child-after-shared-deadline
+  (let [input (byte-array (repeat (* 4 1024 1024) (unchecked-byte 97)))
+        started (System/nanoTime)
+        {:keys [outcome events]} (actual-controller-run
+                                  repository-root
+                                  ["/bin/sh" "-c" "while true; do :; done"] input 150)
+        elapsed-ms (long (/ (- (System/nanoTime) started) 1000000.0))]
+    (is (some? (:error outcome)) outcome)
+    (is (contains? #{"SH01-DEVELOPMENT-LOOP-GIT-DEADLINE"
+                     "SH01-DEVELOPMENT-LOOP-GIT-CUSTODY"}
+                   (get-in outcome [:data :id])))
+    (is (some #{:abort} events))
+    (is (< elapsed-ms 3000) (str "elapsed-ms=" elapsed-ms))))
+
+(deftest retained-controller-rejects-truncated-or-incomplete-receipt
+  (let [events (atom []) records (atom []) token (Object.)
+        process (fake-process (byte-array []) 0 events)
+        result (assoc (complete-controller-result "status\n")
+                      :stdout-truncated? true :output-truncated? true)
+        ports (assoc (ports token events {})
+                     :process-controller
+                     {:start (fn [_ _] process)
+                      :result (fn [_ _ _] result)
+                      :abort (fn [_] (swap! events conj :abort))})
+        lifecycle (git/lifecycle {:root temporary-root} records ports)
+        outcome (with-bindings {(wiring-var '*producer-git-lifecycle*) lifecycle}
+                 (outcome #((var-get (wiring-var 'run-git-bytes!))
+                            temporary-root ["status"])))]
+    (is (= "SH01-DEVELOPMENT-LOOP-GIT-CUSTODY"
+           (get-in outcome [:data :id])))
+    (is (= 1 (count (filter #{:finalize} @events))))
+    (is (true? (get-in @(first @records) [:capture-receipt :output-truncated?])))))
 
 (deftest launch-retain-wait-and-cleanup-errors-remain-explicit
   (let [token (Object.) root {:root temporary-root}]

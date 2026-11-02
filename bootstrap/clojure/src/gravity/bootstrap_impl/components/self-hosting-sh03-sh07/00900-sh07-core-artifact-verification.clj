@@ -213,7 +213,7 @@
     invocation
     (sh03-reader-authenticated-envelope-options
      (get-in artifact [:provenance :source-path])
-     invocation))
+     (sh07-core-construction-reader-invocation invocation)))
    (let
     [binding @sh07-core-cached-binding]
     (sh07-proof-transaction-report
