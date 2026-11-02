@@ -21,7 +21,7 @@
 (def module-observed (macros/module-contract! (.getBytes module-source-text "UTF-8")))
 (def module-recipe
   (str/join "\n" (subvec (vec (str/split-lines module-source-text))
-                          (dec (:start module-observed)) (:end module-observed))))
+                         (dec (:start module-observed)) (:end module-observed))))
 (def module-header
   (str "(ns gravity.module-analysis)\n"
        "(def ^:dynamic *bypass-next-operation-keys* #{})\n"
