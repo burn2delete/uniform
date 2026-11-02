@@ -150,8 +150,13 @@
           (assoc syntax :phase :macro-definition)
 
           (macro-call-op registry form)
-          (do
-            (when (contains? seen-inputs form)
+          (let [input-key (binding [*print-meta* true
+                                    *print-readably* true
+                                    *print-length* nil
+                                    *print-level* nil]
+                            (pr-str form))]
+            (do
+            (when (contains? seen-inputs input-key)
               (operations/fail!
                ops "L4-EXPANSION-DEPTH"
                "macro expansion repeated a non-progressing form"
@@ -206,7 +211,7 @@
                                    {:macro (:identity macro)
                                     :policy (:hygiene-policy macro)}))
                        (inc depth)
-                       (conj seen-inputs input)))))
+                       (conj seen-inputs input-key))))))
 
           (coll? form)
           (assoc syntax
