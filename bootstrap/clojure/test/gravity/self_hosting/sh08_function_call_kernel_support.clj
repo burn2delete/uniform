@@ -1263,18 +1263,21 @@
   [source-path]
   (let [effects-path (path effects-source-relative-path)
         reader-path (path bootstrap/sh03-reader-source-relative-path)
+        invocation {:reader-source-path reader-path
+                    :authenticated-envelope-options {:source :development-current}
+                    :macro-source-mode :development-current}
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))
-        ;; Development fixtures select current source explicitly; the public
-        ;; file API keeps its historical pinned Reader contract.
+        ;; Development fixtures select current Reader and Macro source
+        ;; explicitly; public file APIs keep their historical pinned contracts.
         dependency (bootstrap/compiler-c5-resolution-source-artifact
                      effects-path (slurp effects-path :encoding "UTF-8")
                      {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
-                     reader-path)
+                     reader-path invocation)
         inputs {:artifact :gravity/sh06-module-inputs
                 :schema-version 1
                 :module-artifacts [dependency]}
         caller (bootstrap/compiler-c5-resolution-source-artifact
-                 source-path (slurp source-path :encoding "UTF-8") inputs reader-path)
+                 source-path (slurp source-path :encoding "UTF-8") inputs reader-path invocation)
         dependency-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan
                          emitter effects-path (slurp effects-path))]
     (bootstrap/p15-s23-stage2-compiler-artifact-plan
