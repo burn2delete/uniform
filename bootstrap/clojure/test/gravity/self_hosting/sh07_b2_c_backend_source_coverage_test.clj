@@ -28,9 +28,9 @@
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
 (def ^:private expected-source-byte-count
-  121694)
+  121866)
 (def ^:private expected-source-revision-id
-  "sha256:5760a2a2b0bfa787840660c4d2845284e6a1c4e6c1ad1390dc2905f7bb36b64d")
+  "sha256:7c1f31bfa7d5fe1324df64c534c57f2d314c5b5cb882a70d935b9863c6394143")
 (def ^:private expected-plan-semantic-id
   "sha256:2c0420eb7695ec26174a1a4f469e3c17412f76211ceb53f9ac8de796381c9886")
 (def ^:private expected-functions-semantic-id
@@ -369,6 +369,9 @@
     (is (true? (invoke 'b2-block-valid? [block id])))
     (is (true? (invoke 'b2-operation-envelope-valid? [operation])))
     (is (true? (invoke 'b2-forwarded-arity-valid? [:sequence (vec (repeat 129 id))])))
+    (is (= 1 (count (invoke 'b2-index-operations [[operation operation] 0 {}]))))
+    (is (re-find #":reason :duplicate-operation-id"
+                 (slurp (path b2-relative-path))))
     (is (false? (invoke 'b2-forwarded-arity-valid? [:sequence []])))
     (is (false? (invoke 'b2-forwarded-arity-valid? [:local [id id]])))
     (is (false? (invoke 'b2-function-valid? [(assoc function :entry "missing")])) )

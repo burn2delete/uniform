@@ -27,9 +27,9 @@
   "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 91077)
+(def ^:private expected-source-byte-count 91138)
 (def ^:private expected-source-revision-id
-  "sha256:3faf6a748485547abd6bd8da917a2214a7a8ba1cc9b3038bbbd3cdadd0562300")
+  "sha256:d2d38a3be4e371a1c1d974ffc652299a55fe5caa95a754ab279573550caa915f")
 (def ^:private expected-sh06-semantic-projection-id
   "sha256:2190dea530d73d9abdff5b64df3eada3992c03583ab6498fc0c783b3f971a732")
 (def ^:private expected-coverage
@@ -261,10 +261,10 @@
         by-name (into {} (map (juxt second identity)) definitions)
         metadata (get-in clauses [:metadata :bootstrap])
         if-calls (mapcat #(collect-calls 'if %) definitions)]
-    (is (= 89 (count forms)))
-    (is (= 88 (count definitions) (count by-name)))
+    (is (= 90 (count forms)))
+    (is (= 89 (count definitions) (count by-name)))
     (is (= 11 (count (filter #(= 'def (first %)) definitions))))
-    (is (= 77 (count (filter #(= 'defn (first %)) definitions))))
+    (is (= 78 (count (filter #(= 'defn (first %)) definitions))))
     (is (= 'gravity.backend.b3-llvm-backend-design (second ns-form)))
     (is (= :meta (:profile clauses)))
     (is (= :jvm (:target clauses)))
@@ -293,7 +293,7 @@
     (is (= expected-diagnostic-ids
            (mapv :id (get-in (nth (get by-name 'b3-diagnostic-catalog) 2)
                              [:diagnostics]))))
-    (is (= 363 (count if-calls)))
+    (is (= 362 (count if-calls)))
     (is (every? #(= 4 (count %)) if-calls))
     (is (= expected-source-byte-count
            (alength (source-bytes (path b3-relative-path)))))
@@ -308,8 +308,8 @@
         dynamic (remove #(keyword? (nth % 2 nil)) gets)
         builder (get by-name 'b3-build-bounded-llvm-x86_64-linux)
         emitted (get by-name 'b3-build-emitted-lowering)]
-    (is (= 377 (count gets)))
-    (is (= 310 (count (filter #(keyword? (nth % 2 nil)) gets))))
+    (is (= 379 (count gets)))
+    (is (= 312 (count (filter #(keyword? (nth % 2 nil)) gets))))
     (is (= 67 (count dynamic)))
     (is (= {:reference 23 :call 44}
            (frequencies (map #(if (symbol? (nth % 2)) :reference :call)
@@ -330,9 +330,7 @@
                               (filter #(and (seq? %)
                                             (#{'def 'defn} (first %)))
                                       forms)))
-        policy (nth (get by-name
-                         'b3-bounded-llvm-x86_64-linux-policy-record)
-                    2)
+        policy (invoke 'b3-bounded-llvm-x86_64-linux-policy-record [])
         policy-text (pr-str policy)
         builder (get by-name 'b3-build-bounded-llvm-x86_64-linux)
         emitted (get by-name 'b3-build-emitted-lowering)]
@@ -361,16 +359,50 @@
     (is (re-find #":gravity/p15-s23-b3-authenticated-llvm-x86_64-linux-artifact"
                  (pr-str emitted)))))
 
+(deftest sh07-b36-b3-input-shapes-have-no-size-quotas-but-retain-semantic-rejections
+  (let [id (apply str (repeat 1025 "x"))
+        facts (zipmap [:type-fact-id :effect-fact-id :capability-fact-id
+                       :capability-proof-ids :ownership-fact-id :safety-outcome-id
+                       :safety-proof-id :profile-target-fact-id :runtime-check-id
+                       :proof-certificate-ids :failure-behavior :source-origin-id]
+                      (repeat nil))
+        operation {:artifact :gravity/mir-operation :op-id id :result id
+                   :opcode :constant :source-operation :literal :operands []
+                   :result-kind :value :constant-payload {:present? true :value 1}
+                   :type :gravity/integer :effects #{} :capabilities #{}
+                   :ordering :none :source {} :profile :hosted :facts facts
+                   :domain-anchor nil :block-id id :verifier-status :passed}
+        block {:artifact :gravity/mir-block :block-id id :arguments []
+               :instructions (vec (repeat 129 operation)) :terminator {}
+               :predecessors [] :successors [] :dominators []
+               :data-flow {:module-data-flow-graph-reference true} :source {}}
+        function {:artifact :gravity/mir-function :fn-id id :name 'main :params []
+                  :returns :gravity/integer :latent-effects #{} :capabilities #{}
+                  :blocks {id block} :entry id :source {} :facts {}
+                  :provenance {}}]
+    (is (nil? (invoke 'b3-function-envelope-reason [function])))
+    (is (nil? (invoke 'b3-operation-envelope-reason [[operation]])))
+    (is (nil? (invoke 'b3-block-envelope-reason [function [id]])))
+    (is (true? (invoke 'b3-forwarded-operand-arity?
+                      [:sequence (vec (repeat 129 id))])))
+    (is (false? (invoke 'b3-forwarded-operand-arity? [:sequence []])))
+    (is (= :duplicate-operation-id
+           (invoke 'b3-operation-envelope-reason [[operation operation]])))
+    (is (= :operation-id-type
+           (invoke 'b3-operation-envelope-reason
+                   [[(assoc operation :op-id 1 :result 1)]])))
+    (is (= :bounded-one-or-four-block-cfg
+           (invoke 'b3-function-envelope-reason
+                   [(assoc function
+                           :blocks (zipmap (map #(str id %) (range 5))
+                                            (repeat 5 block)))])))))
+
 (deftest sh07-b36-b3-claim-boundary-remains-explicit
   (let [forms (source-forms)
         by-name (into {} (map (juxt second identity) (rest forms)))
         contract (nth (get by-name 'b3-llvm-backend-contract) 2)
-        policy (nth (get by-name
-                         'b3-bounded-llvm-x86_64-linux-policy-record)
-                    2)
-        legacy (nth (get by-name
-                         'b3-bounded-arm64-macos-policy-record)
-                    2)
+        policy (invoke 'b3-bounded-llvm-x86_64-linux-policy-record [])
+        legacy (invoke 'b3-bounded-arm64-macos-policy-record [])
         builder (get by-name 'b3-build-bounded-llvm-x86_64-linux)]
     (is (= :not-claimed (:production-backend-status contract)))
     (is (= :source-model-bridge (:scope contract)))

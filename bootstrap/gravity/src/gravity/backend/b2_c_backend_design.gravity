@@ -2386,8 +2386,11 @@
                  :reason :operation-envelope-closure})
               {:status :rejected :kind :input
                :reason :c14-operation-order-parity})
-            {:status :rejected :kind :unsupported
-             :reason :bounded-unique-operation-count}))
+            ; Operation IDs index the validated sequence and must remain
+            ; one-to-one; this parity check is semantic uniqueness, not a
+            ; sequence-size allowance.
+            {:status :rejected :kind :input
+             :reason :duplicate-operation-id}))
         {:status :rejected :kind :input
          :reason :exact-main-function-envelope}))
     {:status :rejected :kind :input
