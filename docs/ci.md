@@ -11,8 +11,11 @@ compiler migration or release acceptance.
 | Check | PR | Main/manual/weekly | Evidence and limits |
 | --- | --- | --- | --- |
 | static | Always | Always | actionlint 1.7.12 workflow syntax; clj-kondo 2025.10.23 on changed Clojure/EDN files and CI tooling; cljfmt 0.13.4 on CI tooling; Git whitespace; harness failure controls. Legacy format adoption remains separate. |
-| projections | Always | Always | Canonical 240-document validator, full-language roadmap schema and negative fixtures, acceptance dependency controls, every existing component task projector and its tests. |
+| contracts (projections) | Always | Always | Canonical 240-document validator, full-language roadmap schema and negative fixtures, acceptance dependency controls, every existing component task projector and its tests. |
 | bootstrap | Always | Always | Fresh process requires Bootstrap without preinstalled aliases; exact decimal/abbreviation Reader regressions; language boundary; strict catalog controls and ownership inventory. No modeled aliases installed by this harness. |
+| macro | Always | Always | Fresh macro pipeline and Bootstrap compatibility regressions in an isolated child process. |
+| checked-core-runtime | Always | Always | Checked-Core pipeline, current-binding and projection-kernel regressions in isolated child processes. |
+| resolution-pipeline, resolution-unmetered, and resolution-invocation-selection | Always | Always | Three fresh Resolution children serialized only within their own pool; one namespace per child, separate logs/receipts and a 600-second command watchdog per child. |
 | fresh-leaf-regressions / portable and / darwin | Markdown-only PRs omit leaves; otherwise the reviewed source/test require-closure selects affected catalog entries. Unknown, cross-cutting, structural, or closure-discovery changes use the full platform catalog. A verified unselected selectable leaf retains its required check and skipped receipt but resolves to Ubuntu; selected and fail-closed leaves retain their matrix runner. | Full fresh catalog | 52 portable namespaces on Ubuntu and one Darwin publication namespace on ARM macOS with its exact JDK 26.0.1 contract. Every selected namespace gets a fresh JVM; the catalog partition is exhaustive and disjoint. No cross-run result cache is used. This is not the full compiler suite. |
 | darwin-unsupported-host | Always runs its tiny refusal probe | Always | Actual macOS 15 kernel must reject required confinement features before any publication open; this negative result grants no positive publication acceptance. |
 | source-Core-readiness | Omitted | Omitted | No source-Core readiness job is enabled: the former constant-failure placeholder did not execute a genuine compiler route. The real public `gravity self-host verify` boundary remains fail-closed with `P18T04007` while the seed boundary is active; no CI check or source-only snapshot substitutes for that release/self-hosting admission. |
@@ -21,19 +24,35 @@ compiler migration or release acceptance.
 
 ### Pull-request stage selection
 
-The six semantic matrix jobs remain present on every pull request. For a
-regular added or modified file in a known stage-owned Reader, Macro,
-Resolution, or checked-Core path, `tools/ci/run.clj` runs that stage and every
-downstream stage, while retaining `static` and `contracts`. Changes spanning
-multiple known stages select the union of those downstream closures. This is
-an execution selection only; it does not change job names, ownership, or the
-portable leaf catalog. The stage table is deliberately allowlisted, so an
+The eight semantic matrix jobs remain present on every pull request: five
+ordinary checks (`static`, `contracts`, `bootstrap`, `macro`, and
+`checked-core-runtime`) plus three serialized Resolution jobs
+(`resolution-pipeline`, `resolution-unmetered`, and
+`resolution-invocation-selection`). The selector preserves the logical
+`resolution` stage and its `resolution` output; the three names are execution
+pool modes only. For a regular added or modified file in a known stage-owned
+Reader, Macro, Resolution, or checked-Core path, `tools/ci/run.clj` runs that
+stage and every downstream stage, while retaining `static` and `contracts`.
+Changes spanning multiple known stages select the union of those downstream
+closures. This is an execution selection only; it does not change ownership or
+the portable leaf catalog. The stage table is deliberately allowlisted, so an
 unknown non-documentation path, a contract/specification change, a dependency
 or workflow change, a tooling change, or any delete/rename/mode/type change
 falls back to the full semantic matrix. If changed-path discovery is missing
 or malformed, the selector also falls back to the full matrix, while `static`
 records an explicit failed selection result so an untrusted diff cannot pass
 without changed-file lint.
+
+Each Resolution mode starts one fresh 600-second child, so the three
+serialized children have 1,800 seconds of command watchdogs in aggregate;
+each matrix job has its own 15-minute hosted-job ceiling. This is not
+equivalent to the former single combined 900-second command, and it is not a
+global parallelism limit or a cost-equivalence claim. The local combined
+`resolution` CLI mode remains available with its 900-second watchdog for
+compatibility. Only the Resolution pool is serialized; the other matrix pools
+retain their existing parallelism. Each child records its own logs and
+receipts, and publication depends on the Resolution pool while retaining the
+existing manual source-publish rule.
 
 Markdown-only pull requests retain the existing static whitespace and contract
 checks. A change to `tools/ci/snapshot.clj` or its `snapshot_test.clj` runs the
