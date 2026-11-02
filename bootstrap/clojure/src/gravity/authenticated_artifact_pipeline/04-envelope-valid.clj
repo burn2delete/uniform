@@ -1,6 +1,6 @@
 
 (defn- envelope-valid?
-  [expected-stage expected-lane expected-key-id expected-key envelope
+  [expected-stage expected-lane expected-key-id envelope
    source-id provenance parents]
   ;; Validate the operational binding as well as the semantic id.  In
   ;; particular, a valid artifact from another stage/lane/pipeline must be a
@@ -26,8 +26,6 @@
            (= :accepted (:status envelope))
            (= expected-lane (:mode envelope))
            (= expected-key-id (:cache-key-id envelope))
-           (= expected-key-id
-              (canonical-id! expected-stage expected-key))
            (= source-id (:source-identity envelope))
            (= provenance (:provenance envelope))
            (= parents (:input-artifact-ids envelope))
@@ -148,7 +146,7 @@
         key [key-id (:actual-path provenance)]]
     (if (and (= lane :fast) (contains? @stage-cache key))
       (let [cached (get @stage-cache key)]
-        (if (and (envelope-valid? stage lane key-id preimage cached source-id
+        (if (and (envelope-valid? stage lane key-id cached source-id
                                   provenance parents)
                  (try
                    (authenticate-embedded-parent! stage (:payload cached) parents)

@@ -1,0 +1,73 @@
+# Types: hosted dynamic, cast, dispatch, schema and layout records
+
+D1, D2, D3, D8, D9, L5, L17, C1, C7, C15, BOOT8 and TEST2 govern this
+increment. Its clean source control is the independently reviewed four-slice
+candidate 9b937e40a512876d2a5dbb633ef7747f77f7d668, tree
+8c9eee1c91f27b625be37c66b46151f89662d03e, in the Analysis checkout.
+That candidate is awaiting integration through PR 777; this follow-on preserves
+its source history and does not confer integration eligibility on it.
+
+Six existing bodies move unchanged from gravity.c7-type-checker.evidence into
+gravity.types: dynamic-boundary-records, cast-records, generic-instantiations,
+protocol-dispatch-table, schema-links and layout-facts. Existing arities and
+explicit classifier callbacks remain. The compatibility namespace forwards
+arguments, and the C7 facade retains its existing interposition policy.
+The stage imports no Bootstrap, C7 consumer or downstream checker.
+
+Inputs are owner-supplied native node/module/domain-boundary data and explicit
+operator/type classifiers. Outputs are the existing hosted record collections,
+identities, source links, unsafe metadata and profile/effect/capability fields.
+These builders introduce no diagnostic rule; existing Types verification owns
+missing-field decisions and C7 retains catalog/source enrichment/construction.
+Fixed types, bounds, checks, schema names, dispatch modes, layout and status
+labels remain legacy data. They prove no generic, protocol, schema, dynamic,
+numeric, ownership, layout, capability or safety legality. Callback/input
+authentication, canonical C7 admission, migration, release, self-hosting and
+seed retirement remain outside this increment.
+
+The before producer freshly compiles current Gravity C7 through the ordinary
+fixed seed and accepts/replays retained paired primitive Core, rejecting its
+tampered type table. Retained source/Core records are historical inputs, not new
+source acquisition or renewed authority. The native builders also consume the
+retained 43-node source view and emit 43 layout records; other collections may
+be empty when the source has no matching operation. Semantic and provenance
+preimages recompute without changing actual paths or fields.
+
+A separate existing bootstrap-free C7 fixture supplies native module/Core data
+to the hosted compatibility assembler. Its synthetic source labels and input
+identity have no canonical authority. The actual assembler emits all six
+record families and a complete native artifact. Making one emitted layout
+record pending makes the existing verifier fail and produces C7-LAYOUT for
+layout-facts-recorded?, without a diagnostic override. Complete before inputs,
+products and refusal payloads are retained in /tmp/uniform-types-records-evidence.
+
+The after producer executes source f5a6f07ba0e201306d65a542535eb6ba9cb4da38,
+tree 1978812a3d09efb32d5e1407b92483f990ff0100. Both complete data and original
+serialization equal the before products. Record hashes are
+6e401ebb55c390290ed9ce55cc77039082cec7c10d6828162c7ed82f1f166582
+and d7caba6d052ac929c6084c3176fe10dc993e30838110a15bd2cac896b52200be.
+Current C7 source, executable-plan and native fixture-artifact hashes recompute,
+as do both retained semantic/provenance preimages. The native fixture artifact
+id is sha256:3924c556d3de55ac5cdab6253a3d2754203b7b4e6abdc98986fea9c4fa235a0e;
+this deterministic test identity is not canonical source authority.
+
+Whole-file reconstruction preserves six bodies and both production files.
+Focused C7 tests pass 12/349, language/ownership passes 47/1154, and cold loading
+exposes 20 public APIs without Bootstrap. Three-path contextual lint has zero
+warnings/blockers, archived at /tmp/uniform-types-records-lint; docs, roadmap and
+governance pass. Final independent acceptance, own CI/artifacts, reconciliation
+against advanced current main and immediate clean integration preflight remain
+required. Neither source-control acceptance nor previous CI confers later-main
+or release/migration eligibility.
+
+## Five-slice metadata-main composition
+
+Fresh clean exact-58dec original record builders and the composed stage run in
+the same Runtime checkout, as recorded in
+[the shared evidence](c-compile-sequencing-evidence.md#five-slice-metadata-main-composition).
+Complete/raw hashes are
+339a203301ffbf0febf2f67de4f5442dc85ca1862183c874a4e81c330862fe89
+and 96e335e1d9d140f692fbe40e4aa6d48872f880ac3b29269d281f610c01695dab.
+All current source/plan/native fixture hashes and historical semantic/provenance
+preimages recompute. Twenty Types bodies remain exact; existing native fixture
+data and fixed record/status labels retain their non-authority boundaries.

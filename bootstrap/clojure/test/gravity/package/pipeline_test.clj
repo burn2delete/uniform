@@ -3,20 +3,20 @@
             [clojure.java.io :as io]
             [clojure.test :refer [deftest is]]
             [gravity.build.package-policy :as policy]
-            [gravity.build.package-policy-test :as policy-test]
+            [gravity.build.package-policy-fixtures :as policy-fixtures]
             [gravity.build.package-selection :as selection]
-            [gravity.build.package-selection-test :as selection-test]
+            [gravity.build.package-selection-fixtures :as selection-fixtures]
             [gravity.digest :as digest]
             [gravity.package :as package]))
 
 (deftest package-owned-api-retains-both-build-compatibility-entry-points
-  (let [request selection-test/request]
+  (let [request selection-fixtures/request]
     (doseq [input [request (assoc request :allowed-capabilities #{})
                    (assoc-in request [:context :visibility] :private)
                    (assoc-in request [:candidates 0 :yank-status] :yanked)]]
       (is (= (selection/select-exact input) (package/select-exact input))))
-    (doseq [input [policy-test/request (dissoc policy-test/request :policy)
-                   (assoc-in policy-test/request [:record :revocation-status] :revoked)]]
+    (doseq [input [policy-fixtures/request (dissoc policy-fixtures/request :policy)
+                   (assoc-in policy-fixtures/request [:record :revocation-status] :revoked)]]
       (is (= (policy/decide input) (package/decide-policy input))))
     (is (= 1 (count (first (:arglists (meta #'policy/decide))))))
     (is (= 1 (count (first (:arglists (meta #'selection/select-exact))))))
@@ -36,16 +36,16 @@
                 :diagnostics [{:diagnostic "PKG5006" :policy-rule :supplied-refusal}]}
         callback (fn [value] (swap! calls conj value) denied)]
     (with-redefs [policy/decide callback]
-      (let [result (selection/select-exact selection-test/request)]
+      (let [result (selection/select-exact selection-fixtures/request)]
         (is (= :rejected (:status result)))
         (is (= [] (:selections result)))
         (is (= (:diagnostics denied) (:diagnostics result)))))
     (with-redefs [package/decide-policy callback]
-      (is (= :rejected (:status (package/select-exact selection-test/request)))))
-    (is (= :rejected (:status (package/select-exact callback selection-test/request))))
+      (is (= :rejected (:status (package/select-exact selection-fixtures/request)))))
+    (is (= :rejected (:status (package/select-exact callback selection-fixtures/request))))
     (is (= 3 (count @calls)))
     (is (apply = @calls))
-    (is (= selection-test/package-record (:record (first @calls))))
+    (is (= selection-fixtures/package-record (:record (first @calls))))
     (is (= [] (:locked-records (first @calls))))))
 
 (deftest real-file-provenance-and-supplied-status-survive-selection-and-rejection
@@ -54,13 +54,13 @@
         hash (str "sha256:" (digest/sha256-hex text))
         ;; These are unsigned development metadata with an unbound variant,
         ;; not published package records or a compiled JVM artifact.
-        record (assoc selection-test/package-record :package "development/c15-source"
+        record (assoc selection-fixtures/package-record :package "development/c15-source"
                        :content-hash hash :provenance (str "development-file:" relative)
                        :signature-status :unverified :provenance-status :unverified
                        :variants [{:profile :hosted :target :jvm-21
                                    :artifact "fixture:unbound-c15-package-variant"}])
-        request (assoc selection-test/request :candidates [record] :locked-records [record record]
-                        :constraints [(assoc selection-test/constraint-record :package (:package record))])
+        request (assoc selection-fixtures/request :candidates [record] :locked-records [record record]
+                        :constraints [(assoc selection-fixtures/constraint-record :package (:package record))])
         before (pr-str request) result (package/select-exact request)
         rejected (package/select-exact (assoc request :allowed-capabilities #{}))]
     (is (= :selected (:status result)))

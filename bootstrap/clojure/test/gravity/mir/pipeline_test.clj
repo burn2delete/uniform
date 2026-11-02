@@ -36,6 +36,15 @@
   (is (empty? (ns-aliases 'gravity.mir)))
   (is (= #{'validate-terminator! 'validate-cfg! 'valid-dominance-edge? 'valid-terminator-use?}
          (set (keys (ns-publics 'gravity.mir)))))
+  (let [contract (:gravity/namespace-contract (meta #'mir/validate-cfg!))]
+    (is (= (set (keys (:public-api contract)))
+           (set (keep (fn [[name operation]]
+                        (when (:gravity/namespace-contract (meta operation)) name))
+                      (ns-interns 'gravity.mir)))))
+    (is (every? #(= contract (:gravity/namespace-contract (meta %)))
+                (vals (ns-publics 'gravity.mir))))
+    (is (every? #(not (:private (meta %)))
+                (vals (ns-publics 'gravity.mir)))))
   (doseq [[name operation] (ns-publics 'gravity.mir)]
     (let [contract (:gravity/namespace-contract (meta operation))]
       (is (= 'gravity.mir (:namespace contract)))
