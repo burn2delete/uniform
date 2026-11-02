@@ -265,6 +265,7 @@
     :sh03-reader-authenticated-envelope-options
     :sh04-syntax-adapter-contract
     :sh04-syntax-boundary-fail!
+    :sh04-development-syntax-context!
     :sh04-syntax-current-binding!
     :sh04-syntax-descriptor-sh03-product-binding
     :sh04-syntax-envelope-stage
@@ -417,6 +418,7 @@
    :sh04-syntax-descriptor-sh03-product-binding
    :p15-s23-stage2-sh02-descriptor-envelope-verify!
    :sh04-syntax-current-binding!
+   :sh04-syntax-verification-binding!
    :sh04-syntax-execute!
    :reader-canonical-hash
    :sh04-syntax-sh02-descriptor
@@ -506,6 +508,7 @@
    :sh04-syntax-adapter-contract
    :sh04-syntax-boundary-fail!
    :sh04-syntax-build-from-fresh-c2!
+   :sh04-development-syntax-context!
    :sh04-syntax-current-binding!
    :sh04-syntax-descriptor-sh03-product-binding
    :sh04-syntax-envelope-stage
@@ -721,8 +724,9 @@
    sh04-result
    (:resolved-result sh04-products)
    gravity-boundary
-   {:plan-binding (:plan-binding sh04-products),
-    :resolved-stream-verification (:stream-verification sh04-products),
+   (cond->
+    {:plan-binding (:plan-binding sh04-products),
+     :resolved-stream-verification (:stream-verification sh04-products),
     :clojure-adapter-residual? true,
     :reader-source-revision (:reader-source-revision sh04-products),
     :authenticated-envelope-descriptor (:descriptor sh04-products),
@@ -742,13 +746,15 @@
      :seed-retirement-credit? false,
      :release-credit? false},
     :reader-semantic-binding (:reader-binding sh04-products),
-    :reader-authentication-provenance
-    (:reader-authentication-provenance sh04-products),
-    :adapter-contract sh04-syntax-adapter-contract,
-    :gravity-syntax-serialization (:serialization sh04-products),
-    :target-source-reread? false,
-    :owner :gravity-source,
-    :authenticated-envelope (:envelope sh04-products)}
+     :reader-authentication-provenance
+     (:reader-authentication-provenance sh04-products),
+     :adapter-contract sh04-syntax-adapter-contract,
+     :gravity-syntax-serialization (:serialization sh04-products),
+     :target-source-reread? false,
+     :owner :gravity-source,
+     :authenticated-envelope (:envelope sh04-products)}
+    (:operation-context sh04-products)
+    (assoc :operation-context (:operation-context sh04-products)))
    serialization
    (c3-syntax-serialization-fixture syntax-stream)
    artifact-base
@@ -858,6 +864,7 @@
     sh04-syntax-descriptor-sh03-product-binding
     p15-s23-stage2-sh02-descriptor-envelope-verify!
     sh04-syntax-current-binding!
+    sh04-syntax-verification-binding!
     sh04-syntax-execute!
     reader-canonical-hash
     sh04-syntax-sh02-descriptor
@@ -998,7 +1005,16 @@
            ae-options
            (conj ae-options)))
          binding
-         (sh04-syntax-current-binding! source-path invocation)
+         (if (and sh04-syntax-verification-binding!
+                  (:operation-context gravity-boundary)
+                  (map? (get-in gravity-boundary [:plan-binding
+                                                   :implementation-projection])))
+          (sh04-syntax-verification-binding!
+           source-path invocation gravity-boundary)
+          ;; A boundary assembled by the legacy reader-only path has no
+          ;; selected implementation projection.  Keep its pinned binding
+          ;; contract; selected verification is stage-owned above.
+          (sh04-syntax-current-binding! source-path))
          requests
          (:stream-digest-requests gravity-boundary)
          digests
@@ -3129,6 +3145,7 @@
   summary
   {:keys
    [p15-s23-c6c10-canonical-digest
+    sh04-syntax-boundary-fail!
     sh04-syntax-public-function-hashes
     sh04-syntax-public-function-shapes
     sh04-syntax-sealed-artifact-kind
@@ -3138,6 +3155,10 @@
    :syntax-product-identities
    development-current?
    (= :development-current (:source-mode binding))
+   implementation-name
+   :syntax-implementation-binding
+   implementation
+   (:implementation-projection binding)
    function-hashes
    (if development-current?
     (:public-function-hashes binding)
@@ -3175,6 +3196,13 @@
    (p15-s23-c6c10-canonical-digest
     source-path
     {:syntax-result (:syntax-result-id summary)})]
+  (when (and development-current? (not (map? implementation)))
+   (sh04-syntax-boundary-fail!
+    "C3-ID"
+    source-path
+    :selected-syntax-implementation-binding
+    implementation
+    {}))
   {:proof-composite
    {:proof-records [{:proof-id evidence-id, :status :checked}],
     :proof-certificate-table {evidence-id {:status :checked}},
@@ -3188,10 +3216,16 @@
     :provider-selections [],
     :grant-scopes []},
    :semantic-projections
-   [{:name projection-name,
-     :role :complete-syntax-product-identities,
-     :entry-count (count summary),
-     :value summary}],
+   (cond->
+    [{:name projection-name,
+      :role :complete-syntax-product-identities,
+      :entry-count (count summary),
+      :value summary}]
+    development-current?
+    (conj {:name implementation-name,
+           :role :development-unadmitted-syntax-implementation,
+           :entry-count (count implementation),
+           :value implementation})),
    :stage :c3-syntax,
    :lineage
    [{:stage :sh04-syntax,
@@ -3206,11 +3240,15 @@
      :preimage identity-preimage,
      :observed-id observed-id}],
    :projection-contract
-   {:contract-kind :gravity/sh04-syntax-product-envelope-contract,
+   {:contract-kind (if development-current?
+                     :gravity/sh04-development-syntax-product-envelope-contract-v1
+                     :gravity/sh04-syntax-product-envelope-contract),
     :contract-version 1,
     :profile :meta,
     :target :jvm,
-    :required-semantic-projections [projection-name],
+    :required-semantic-projections
+    (cond-> [projection-name]
+      development-current? (conj implementation-name)),
     :required-fact-families [fact-name],
     :required-identity-subjects [identity-name]},
    :schema-version 2,
@@ -3276,6 +3314,7 @@
     sh03-reader-authenticated-envelope-options
     sh04-syntax-adapter-contract
     sh04-syntax-boundary-fail!
+    sh04-development-syntax-context!
     sh04-syntax-current-binding!
     sh04-syntax-descriptor-sh03-product-binding
     sh04-syntax-envelope-stage
@@ -3624,23 +3663,27 @@
       :provenance-binding-id]),
     :actual-reader-product-integrity-hash
     (get-in c2-artifact [:reader-product-integrity :integrity-hash])}]
-  {:plan-binding (dissoc binding :plan :source-text),
-   :envelope envelope,
-   :descriptor descriptor,
-   :rich-syntax rich-syntax,
-   :reader-source-revision reader-source-revision,
-   :deserialization deserialization,
-   :stream-verification stream-verification,
-   :reader-binding reader-binding,
-   :summary summary,
-   :serialization-id serialization-id,
-   :stream-resolved-digests stream-digests,
-   :raw-template-results (mapv :raw-result all-products),
-   :stream-digest-requests stream-requests,
-   :reader-authentication-provenance reader-authentication-provenance,
-   :resolved-result resolved-stream,
-   :serialization serialization,
-   :stream-template-result stream-template-result}))
+  (cond->
+   {:plan-binding (dissoc binding :plan :source-text),
+    :envelope envelope,
+    :descriptor descriptor,
+    :rich-syntax rich-syntax,
+    :reader-source-revision reader-source-revision,
+    :deserialization deserialization,
+    :stream-verification stream-verification,
+    :reader-binding reader-binding,
+    :summary summary,
+    :serialization-id serialization-id,
+    :stream-resolved-digests stream-digests,
+    :raw-template-results (mapv :raw-result all-products),
+    :stream-digest-requests stream-requests,
+    :reader-authentication-provenance reader-authentication-provenance,
+    :resolved-result resolved-stream,
+    :serialization serialization,
+    :stream-template-result stream-template-result}
+   (and invocation sh04-development-syntax-context!)
+   (assoc :operation-context
+          (sh04-development-syntax-context! source-path invocation)))))
 
 (defn
  assemble-reader!

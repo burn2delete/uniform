@@ -2,6 +2,8 @@
 
 (declare ^:private c3-current-reader-revision-authentic?)
 (declare ^:private sh04-syntax-reader-expansion-history sh04-syntax-reader-expansions-current?)
+(declare sh04-development-syntax-verification-context!
+         sh04-syntax-verification-binding!)
 (defn-
  syntax-stage-reader-verification-operations
  []
@@ -21,6 +23,7 @@
   #'sh03-reader-authenticated-envelope-options,
   :sh04-syntax-adapter-contract sh04-syntax-adapter-contract,
   :sh04-syntax-current-binding! #'sh04-syntax-current-binding!,
+  :sh04-syntax-verification-binding! #'sh04-syntax-verification-binding!,
   :sh04-syntax-current-sh03-product-binding
   #'sh04-syntax-current-sh03-product-binding,
   :sh04-syntax-descriptor-sh03-product-binding
@@ -43,6 +46,8 @@
   ([syntax-stream c2-artifact gravity-boundary]
    (c3-syntax-stream-reader-products-authentic? syntax-stream c2-artifact gravity-boundary nil))
   ([syntax-stream c2-artifact gravity-boundary invocation]
+   (sh04-development-syntax-verification-context!
+    invocation c2-artifact gravity-boundary)
    (gravity.syntax/reader-products-authentic?
     syntax-stream c2-artifact gravity-boundary invocation
     (syntax-stage-reader-verification-operations))))

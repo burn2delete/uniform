@@ -183,6 +183,17 @@
          #'sh03-reader-invocation-source! #'sh03-reader-current-binding!
          #'sh03-reader-read-selected-source-bytes! #'sh04-syntax-current-binding!
          #'sh04-syntax-selection! #'sh04-syntax-read-current-source!
+         #'sh04-development-syntax-contract #'sh04-development-syntax-diagnostics
+         #'sh04-development-syntax-data! #'sh04-development-syntax-interface!
+         #'sh04-development-syntax-binding! #'sh04-development-syntax-binding?
+         #'sh04-syntax-assembly-binding! #'sh04-development-syntax-context!
+         #'sh04-development-syntax-verification-context!
+         #'sh04-syntax-verification-binding!
+         #'sh04-syntax-public-function-shapes #'sh04-syntax-source-relative-path
+         #'sh04-syntax-resolve-source-path #'sh04-syntax-plan-identities
+         #'p15-s23-c11-mir-digest #'read-forms #'parse-module
+         #'c-backend-canonical-value #'sha256-hex
+         #'c-backend-stage2-plan-emitter-source-rule!
          #'sh04-syntax-read-pinned-source! #'sh05-macro-current-binding!
          #'sh05-macro-read-pinned-source! #'sh06-resolution-current-binding!
          #'sh06-resolution-binding-current! #'sh06-resolution-current-source-key
