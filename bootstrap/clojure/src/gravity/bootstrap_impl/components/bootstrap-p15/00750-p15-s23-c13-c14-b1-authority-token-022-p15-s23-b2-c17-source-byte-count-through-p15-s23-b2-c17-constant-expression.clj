@@ -69,9 +69,7 @@
    :integer-carrier :i64
    :process-result :i32
    :process-result-range [0 255]
-   :maximum-operation-count 128
    :maximum-conditional-count 1
-   :maximum-data-flow-edge-count 256
    :runtime-helpers []
    :supported-opcodes
    [:constant :local :local-binding :sequence :lexical-scope

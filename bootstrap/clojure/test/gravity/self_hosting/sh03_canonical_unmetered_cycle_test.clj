@@ -39,9 +39,9 @@
     value))
 
 (defn- captured-record [value]
-  (let [validated ((operation 'sh03-reader-canonical-stream-validation!) path value)
+  (let [validated ((operation 'p15-s23-c6c10-streaming-validation!) path value)
         writer (java.io.StringWriter.)
-        emitted ((operation 'sh03-reader-canonical-stream-write!) path value writer)]
+        emitted ((operation 'p15-s23-c6c10-streaming-write!) path value writer)]
     {:text (.toString writer) :validation validated :emission emitted}))
 
 (deftest unmetered-canonical-rejects-actual-ancestor-cycles-in-both-passes
@@ -49,8 +49,8 @@
                  (wrapped-cycle vector) (wrapped-cycle list)
                  (wrapped-cycle hash-set) (self-key-map)]]
     (let [native (failure #(bootstrap/p15-s23-c6c10-canonical-record path value))
-          validation (failure #((operation 'sh03-reader-canonical-stream-validation!) path value))
-          emission (failure #((operation 'sh03-reader-canonical-stream-write!)
+          validation (failure #((operation 'p15-s23-c6c10-streaming-validation!) path value))
+          emission (failure #((operation 'p15-s23-c6c10-streaming-write!)
                               path value (java.io.StringWriter.)))]
       ;; Never print/compare the cyclic input: its normal hash/equality or
       ;; printer can recurse. Only finite structured failure data is compared.
@@ -69,8 +69,8 @@
         (is (= (:text expected) (:text actual)))
         (is (= {:status :passed} (:validation actual) (:emission actual)))
         (is (= (str "sha256:" (digest/sha256-hex (:text expected)))
-               ((operation 'sh03-reader-canonical-stream-digest) path value)))))
-    (let [header (ns-resolve 'gravity.bootstrap 'sh03-reader-canonical-stream-header!)
+               ((operation 'p15-s23-c6c10-streaming-digest) path value)))))
+    (let [header (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-streaming-header!)
           original @header visits (atom 0)]
       (with-redefs-fn
         {header (fn [source value]
@@ -85,7 +85,7 @@
         value (with-meta (clojure.lang.PersistentArrayMap. backing) {:present true})]
     (aset backing 1 value)
     (let [native (failure #(bootstrap/p15-s23-c6c10-canonical-record path value))
-          actual (failure #((operation 'sh03-reader-canonical-stream-validation!) path value))]
+          actual (failure #((operation 'p15-s23-c6c10-streaming-validation!) path value))]
       (is (= :metadata-free-canonical-value (:missing-fact native)))
       (is (= native actual))))
   (let [bad (String. (char-array [(char 0xD800)]))
@@ -93,7 +93,7 @@
         value (clojure.lang.PersistentArrayMap. backing)]
     (aset backing 3 value)
     (let [native (failure #(bootstrap/p15-s23-c6c10-canonical-record path value))
-          actual (failure #((operation 'sh03-reader-canonical-stream-validation!) path value))]
+          actual (failure #((operation 'p15-s23-c6c10-streaming-validation!) path value))]
       (is (= :well-formed-unicode-scalar-string (:missing-fact native)))
       (is (= native actual)))))
 
@@ -111,14 +111,14 @@
                                 (throw (ex-info "First semantic refusal"
                                                 {:id rule :source source
                                                  :missing-fact missing :subject subject})))]
-                   (failure #((operation 'sh03-reader-canonical-stream-digest) path value)))]
+                   (failure #((operation 'p15-s23-c6c10-streaming-digest) path value)))]
       (is (= "C6-VERIFY" (:id actual)))
       (is (zero? @opened)))))
 
 (deftest unmetered-canonical-failed-pass-does-not-poison-later-independent-passes
   (dotimes [_ 2]
     (is (= :cyclic-canonical-carrier
-           (:missing-fact (failure #((operation 'sh03-reader-canonical-stream-validation!)
+           (:missing-fact (failure #((operation 'p15-s23-c6c10-streaming-validation!)
                                     path (self-map)))))))
   (let [value (array-map :a [1 2] :b "safe")
         first-pass (captured-record value)
@@ -129,7 +129,7 @@
 
 (deftest unmetered-canonical-passes-own-fresh-identity-contexts-and-clean-up
   (let [context (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-canonical-ancestors)
-        header (ns-resolve 'gravity.bootstrap 'sh03-reader-canonical-stream-header!)
+        header (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-streaming-header!)
         original @header external (java.util.IdentityHashMap.) sentinel (Object.)
         observed (atom []) value (array-map :a [1 2])]
     (.put external sentinel true)
@@ -149,7 +149,7 @@
     (is (= 1 (.size external)))
     (is (.containsKey external sentinel)))
   (let [context (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-canonical-ancestors)
-        header (ns-resolve 'gravity.bootstrap 'sh03-reader-canonical-stream-header!)
+        header (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-streaming-header!)
         original @header observed (atom [])]
     (with-redefs-fn
       {header (fn [source value]
@@ -158,10 +158,10 @@
       (fn []
        (doseq [value [(self-map) (wrapped-cycle hash-set) (self-key-map)]]
          (is (= :cyclic-canonical-carrier
-                (:missing-fact (failure #((operation 'sh03-reader-canonical-stream-validation!)
+                (:missing-fact (failure #((operation 'p15-s23-c6c10-streaming-validation!)
                                          path value)))))
          (is (= :cyclic-canonical-carrier
-                (:missing-fact (failure #((operation 'sh03-reader-canonical-stream-write!)
+                (:missing-fact (failure #((operation 'p15-s23-c6c10-streaming-write!)
                                          path value (java.io.StringWriter.)))))))))
     (is (seq @observed))
     (doseq [active @observed]
@@ -169,7 +169,7 @@
 
 (deftest unmetered-canonical-fallback-preserves-reader-ancestor-markers
   (let [context (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-canonical-ancestors)
-        fallback (ns-resolve 'gravity.bootstrap 'sh03-reader-canonical-fallback-form!)
+        fallback (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-streaming-fallback-form!)
         original @fallback observed (atom [])]
     (with-redefs-fn
       {fallback
@@ -184,8 +184,8 @@
       #(doseq [value [(array-map :parent #{[1] (list 2)})
                      (array-map [:compound :key] :safe)
                      (wrapped-cycle hash-set) (self-key-map)]]
-         (failure (fn [] ((operation 'sh03-reader-canonical-stream-validation!) path value)))
-         (failure (fn [] ((operation 'sh03-reader-canonical-stream-write!)
+         (failure (fn [] ((operation 'p15-s23-c6c10-streaming-validation!) path value)))
+         (failure (fn [] ((operation 'p15-s23-c6c10-streaming-write!)
                           path value (java.io.StringWriter.))))))
     (is (seq @observed))
     (is (every? true? @observed))))
