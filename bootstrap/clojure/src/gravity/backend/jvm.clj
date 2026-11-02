@@ -6,7 +6,9 @@
   (quote
 {:authenticates-inputs? false,
  :public-api
- {classfile-major {:arglists ([path]), :admission :none},
+ {preflight-output!
+  {:arglists ([output-path-allowed? fail! output-path source-path]), :admission :none},
+ classfile-major {:arglists ([path]), :admission :none},
  jar-record {:arglists ([jar-path]), :admission :none},
  run-process!
  {:arglists ([fail! command source-path diagnostic-id message]),
@@ -85,7 +87,8 @@
   :classfile-header-inspection
   :deterministic-stored-jar-output
   :jar-structure-inspection
-  :supplied-content-hash-comparison],
+  :supplied-content-hash-comparison
+  :existing-output-path-and-parent-preflight],
  :dependency-direction
  {:requires [clojure.string],
   :consumed-by [gravity.bootstrap],
@@ -93,7 +96,9 @@
  :governing-contracts
  [D1 D2 D3 D6 D8 D9 C1 C14 C15 B1 B5 B13 B14 P4 TEST2],
  :unsupported
- [:untrusted-input-admission
+ [:filesystem-race-prevention
+  :output-name-reservation
+  :untrusted-input-admission
   :b1-mir-verification
   :full-source-map
   :artifact-publication-eligibility
@@ -114,15 +119,17 @@
   :explicit-compatibility-operations
   :caller-owned-commands-paths-and-class-bytes
   :supplied-content-hashes
-  :late-target-data-vars],
+  :late-target-data-vars
+  :late-output-path-policy-and-diagnostic-vars],
  :namespace gravity.backend.jvm,
  :diagnostic-ownership
- {:stage ["C14-UNSUPPORTED" "B5-TARGET" "B13-HASH"
+ {:stage ["C14-INPUT" "C14-UNSUPPORTED" "B5-TARGET" "B13-HASH"
            :jvm-stage2-lowering-rule :java21-target-toolchain
            :jvm-target-process-completion :jvm-target-tool-acceptance
-           :content-hash-integrity],
+           :content-hash-integrity
+           :output-path-containment :fresh-output-path :output-parent-directory],
   :existing-owner
-  [:scalar-validation :diagnostic-construction :input-admission]},
+  [:shared-output-path-policy :scalar-validation :diagnostic-construction :input-admission]},
  :artifact-outputs
  [:program-java-source
   :module-info-java-source
@@ -135,7 +142,8 @@
   :utf8-file
   :classfile-major
   :deterministic-stored-jar
-  :jar-structure-record],
+  :jar-structure-record
+  :output-and-parent-file-objects],
  :issues-certificates? false,
  :contract-boundary :internal-hosted-java-source-and-output}
 ))
@@ -580,5 +588,32 @@
       :missing-fact :content-hash-integrity}))))
  :passed)
 
+(defn preflight-output!
+  [output-path-allowed? fail! output-path source-path]
+  (when-not (output-path-allowed? output-path)
+    (fail!
+     "C14-INPUT" "JVM artifact directory is outside declared roots"
+     source-path nil
+     {:output-path output-path :missing-fact :output-path-containment}))
+  (let [output (java.io.File. output-path)
+        parent (or (.getParentFile output) (java.io.File. "."))]
+    (when (.exists output)
+      (fail!
+       "C14-INPUT" "JVM backend requires a fresh artifact directory"
+       source-path nil
+       {:output-path output-path :missing-fact :fresh-output-path}))
+    (when (and (.exists parent) (not (.isDirectory parent)))
+      (fail!
+       "C14-INPUT" "JVM artifact parent is not a directory"
+       source-path nil
+       {:output-path output-path :output-parent (.getPath parent)
+        :missing-fact :output-parent-directory}))
+    (when (and (not (.exists parent)) (not (.mkdirs parent)))
+      (fail!
+       "C14-INPUT" "JVM artifact parent directory is unavailable"
+       source-path nil
+       {:output-path output-path :output-parent (.getPath parent)
+        :missing-fact :output-parent-directory}))
+    {:output output :parent parent}))
 (doseq [[_ operation] (ns-publics *ns*)]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

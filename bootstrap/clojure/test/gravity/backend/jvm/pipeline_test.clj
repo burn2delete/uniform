@@ -157,6 +157,7 @@
         java-source (native "java-source" input)
         source-map (native "source-map" source-text java-source)
         work (io/file directory "work")
+        _ (native "preflight-output!" (.getPath work) source-path)
         paths (native "output-paths" (.getPath work))
         _ (native "write-file!" (.toPath (io/file (:java-source paths))) java-source)
         _ (native "write-file!" (.toPath (io/file (:module-source paths))) bootstrap/jvm-backend-module-source)
@@ -391,3 +392,66 @@
                     nil (catch clojure.lang.ExceptionInfo ex ex)))))
       (is (= 2 (count @observed-files)))
       (is (every? #(not (.exists ^java.io.File %)) @observed-files)))))
+
+(deftest real-output-preflight-parent-and-path-refusals
+  (let [root (.toFile (java.nio.file.Files/createTempDirectory
+                       "gravity-jvm-preflight-test-"
+                       (make-array java.nio.file.attribute.FileAttribute 0)))
+        parent (io/file root "new-parent")
+        output (io/file parent "artifact")
+        source "source.qst"]
+    (try
+      (let [result (native "preflight-output!" (.getPath output) source)]
+        (is (= {:output output :parent parent} result))
+        (is (every? #(instance? java.io.File %) (vals result)))
+        (is (.isDirectory parent))
+        (is (not (.exists output))))
+      (.mkdir output)
+      (let [refusal (observe-toolchain #(native "preflight-output!" (.getPath output) source))]
+        (is (= "C14-INPUT" (get-in refusal [:data :id])))
+        (is (= :fresh-output-path (get-in refusal [:data :missing-fact])))
+        (is (= (.getPath output) (get-in refusal [:data :output-path]))))
+      (let [outside (.getCanonicalPath
+                     (io/file (System/getProperty "user.home") "gravity-output-forbidden"))
+            refusal (observe-toolchain #(native "preflight-output!" outside source))]
+        (is (= "C14-INPUT" (get-in refusal [:data :id])))
+        (is (= :output-path-containment (get-in refusal [:data :missing-fact]))))
+      (let [blocked (io/file root "blocked")
+            _ (spit blocked "not a directory")
+            path (.getPath (io/file blocked "artifact"))
+            refusal (observe-toolchain #(native "preflight-output!" path source))]
+        (is (= "C14-INPUT" (get-in refusal [:data :id])))
+        (is (= :output-parent-directory (get-in refusal [:data :missing-fact])))
+        (is (= (.getPath blocked) (get-in refusal [:data :output-parent]))))
+      (finally (remove-test-directory! root)))))
+
+(deftest preflight-wrapper-and-late-policy-diagnostic-order
+  (is (= '([output-path source-path])
+         (:arglists (meta #'bootstrap/jvm-backend-preflight-output!))))
+  (let [output (Object.) source (Object.) token (Object.) calls (atom nil)]
+    (with-redefs [jvm/preflight-output!
+                  (fn [& args] (reset! calls args) token)]
+      (is (identical? token (bootstrap/jvm-backend-preflight-output! output source))))
+    (is (= [#'bootstrap/c-backend-output-path-allowed? #'bootstrap/jvm-backend-fail!]
+           (vec (take 2 @calls))))
+    (is (identical? output (nth @calls 2)))
+    (is (identical? source (nth @calls 3))))
+  (let [output (Object.) source (Object.) calls (atom [])
+        failure (ex-info "original diagnostic transport" {:existing :data})]
+    (with-local-vars [policy nil diagnostic nil]
+      (var-set diagnostic (fn [& _] (throw (AssertionError. "stale diagnostic"))))
+      (var-set policy
+               (fn [value]
+                 (swap! calls conj [:policy value])
+                 (var-set diagnostic
+                          (fn [& args]
+                            (swap! calls conj (into [:diagnostic] args))
+                            (throw failure)))
+                 false))
+      (is (identical? failure
+                     (try (jvm/preflight-output! policy diagnostic output source)
+                          (catch Throwable ex ex))))
+      (is (= [[:policy output]
+              [:diagnostic "C14-INPUT" "JVM artifact directory is outside declared roots"
+               source nil {:output-path output :missing-fact :output-path-containment}]]
+             @calls)))))
