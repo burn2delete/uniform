@@ -1,12 +1,33 @@
 
 
+(defn- p15-s23-c6c10-current-source-input?
+  [value]
+  (and (= 2 (:source-contract-version value))
+       (= :development-current (:source-mode value))))
+
+(defn- p15-s23-c6c10-require-current-source-selection!
+  [request-source version source-mode]
+  (when-not (or (nil? source-mode)
+                (and (= 2 version) (= :development-current source-mode)))
+    (p15-s23-c6c10-host-fail!
+     "C6-VERIFY" request-source :explicit-current-source-selection {})))
+
+(defn- p15-s23-c6c10-source-contract-for
+  [value]
+  (if (p15-s23-c6c10-current-source-input? value)
+    c6-source-contract/current-compiler-program-abi
+    (p15-s23-c6c10-source-program-contract
+     (p15-s23-c6c10-source-program-version value))))
+
 (defn- p15-s23-c6c10-compiled-binding-cache-key
   [inputs]
   (let [{:keys [source-snapshot emitter-rule]} inputs
         version (p15-s23-c6c10-source-program-version inputs)
-        contract (p15-s23-c6c10-source-program-contract version)]
+        current-source? (p15-s23-c6c10-current-source-input? inputs)
+        contract (p15-s23-c6c10-source-contract-for inputs)]
   (cond-> {:schema-version 1
    :owner :gravity/p15-s23-c6-c10-source-binding
+   :source-mode (:source-mode inputs)
    :source-relative-path p15-s23-c6c10-source-relative-path
    :source-path (:canonical-source-path source-snapshot)
    :source-byte-count (:source-byte-count source-snapshot)
@@ -19,16 +40,16 @@
    :emitter-source-content-hash
    p15-s23-stage2-compiler-expected-source-content-hash
    :emitter-source-rule-hash (:source-rule-hash emitter-rule)
-   :expected-plan-semantic-hash
-   (:plan-semantic-hash contract)
-   :expected-functions-semantic-hash
-   (:functions-semantic-hash contract)
+   :expected-plan-semantic-hash (when-not current-source?
+                                  (:plan-semantic-hash contract))
+   :expected-functions-semantic-hash (when-not current-source?
+                                      (:functions-semantic-hash contract))
    :builder-function p15-s23-c6c10-builder-function
-   :expected-builder-semantic-hash
-   (:builder-semantic-hash contract)
+   :expected-builder-semantic-hash (when-not current-source?
+                                    (:builder-semantic-hash contract))
    :verifier-function p15-s23-c6c10-verifier-function
-   :expected-verifier-semantic-hash
-   (:verifier-semantic-hash contract)
+   :expected-verifier-semantic-hash (when-not current-source?
+                                     (:verifier-semantic-hash contract))
    :required-functions (:required-functions contract)}
     (not= 1 version) (assoc :source-contract-version version)
     (= 3 version) (assoc :semantic-family (:semantic-family contract)))))
@@ -44,7 +65,8 @@
               *print-readably* true
               *print-namespace-maps* false]
       (let [version (p15-s23-c6c10-source-program-version inputs)
-            contract (p15-s23-c6c10-source-program-contract version)
+            current-source? (p15-s23-c6c10-current-source-input? inputs)
+            contract (p15-s23-c6c10-source-contract-for inputs)
             {:keys [source-path canonical-source-path
                     source-byte-count source-content-hash source-text]}
             source-snapshot
@@ -90,6 +112,21 @@
                            (get-in plan [:functions function-name])
                            [:arity :params])]))
                   (:required-functions contract))
+            current-program
+            (when current-source?
+              (assoc (select-keys contract [:version :source-relative-path
+                                            :builder-function :verifier-function
+                                            :required-functions])
+                     :source-mode :development-current
+                     :source-byte-count source-byte-count
+                     :source-content-hash source-content-hash
+                     :plan-semantic-hash plan-semantic-hash
+                     :functions-semantic-hash (:root-digest function-manifest)
+                     :builder-semantic-hash builder-semantic-hash
+                     :verifier-semantic-hash verifier-semantic-hash
+                     :function-count (:function-count function-manifest)
+                     :chunk-size (:chunk-size function-manifest)
+                     :chunk-counts (mapv :count (:chunks function-manifest))))
             compiled
             (cond-> {:kind :gravity/p15-s23-c6-c10-source-binding
              :status :complete
@@ -105,6 +142,8 @@
              :function-shapes observed-shapes
              :function-manifest function-manifest
              :plan plan}
+              current-source? (assoc :source-mode :development-current
+                                     :source-program current-program)
               (not= 1 version) (assoc :source-contract-version version)
               (= 3 version) (assoc :semantic-family (:semantic-family contract)))]
         (p15-s23-c6c10-record-compiled-binding-metric!
@@ -120,47 +159,96 @@
 (defn p15-s23-c6c10-compile-source-binding
   ([request-source] (p15-s23-c6c10-compile-source-binding request-source 1))
   ([request-source version]
+   (p15-s23-c6c10-compile-source-binding request-source version nil))
+  ([request-source version source-mode]
+  (p15-s23-c6c10-require-current-source-selection!
+   request-source version source-mode)
   (p15-s23-c6c10-compile-authenticated-source-binding
    request-source
-   (p15-s23-c6c10-authenticated-source-binding-inputs!
-    request-source version))))
+   (if (some? source-mode)
+     (p15-s23-c6c10-authenticated-source-binding-inputs!
+      request-source version source-mode)
+     (p15-s23-c6c10-authenticated-source-binding-inputs!
+      request-source version)))))
 
 (defn- p15-s23-c6c10-source-binding-valid?
   ([binding] (p15-s23-c6c10-source-binding-valid? binding 1))
   ([binding version]
-  (let [contract (p15-s23-c6c10-source-program-contract version)]
+  (let [current-source? (p15-s23-c6c10-current-source-input? binding)
+        current-program (:source-program binding)
+        contract (if current-source?
+                   (or current-program c6-source-contract/current-compiler-program-abi)
+                   (p15-s23-c6c10-source-program-contract version))]
   (and (if (contains? binding :source-contract-version)
          (let [tag (:source-contract-version binding)]
            (and (identical? Long (class tag))
                 (== (.longValue ^Long version) (.longValue ^Long tag))))
          (= 1 version))
-       (if (= 3 version)
-         (identical? (:semantic-family contract) (:semantic-family binding))
-         true)
-       (= :complete (:status binding))
-       (= (:source-byte-count contract)
-          (:source-byte-count binding))
-       (= (:source-content-hash contract)
-          (:source-content-hash binding))
-       (= (:plan-semantic-hash contract)
-          (:plan-semantic-hash binding))
-       (= (:functions-semantic-hash contract)
-          (:functions-semantic-hash binding))
-       (= (:builder-semantic-hash contract)
-          (:builder-semantic-hash binding))
-       (= (:verifier-semantic-hash contract)
-          (:verifier-semantic-hash binding))
-       (= (:required-functions contract)
-          (:function-shapes binding))
-       (= (:function-count contract) (get-in binding [:function-manifest :function-count]))
-       (or (= 1 version)
-           (and (= (:chunk-size contract) (get-in binding [:function-manifest :chunk-size]))
-                (= (:chunk-counts contract)
-                   (mapv :count (get-in binding [:function-manifest :chunks])))))
-       (<= (apply max 0
-                  (map :count
-                       (get-in binding [:function-manifest :chunks])))
-           (:chunk-size contract))))))
+       (if current-source?
+         (and (= 2 version)
+              (= :development-current (:source-mode binding))
+              (map? current-program)
+              (= :development-current (:source-mode current-program))
+              (= p15-s23-c6c10-source-relative-path
+                 (:source-relative-path current-program))
+              (= (:builder-function c6-source-contract/current-compiler-program-abi)
+                 (:builder-function current-program))
+              (= (:verifier-function c6-source-contract/current-compiler-program-abi)
+                 (:verifier-function current-program))
+              (= (:required-functions c6-source-contract/current-compiler-program-abi)
+                 (:required-functions current-program))
+              (= :complete (:status binding))
+              (= (:source-byte-count current-program)
+                 (:source-byte-count binding))
+              (= (:source-content-hash current-program)
+                 (:source-content-hash binding))
+              (= (:plan-semantic-hash current-program)
+                 (:plan-semantic-hash binding))
+              (= (:functions-semantic-hash current-program)
+                 (:functions-semantic-hash binding))
+              (= (:builder-semantic-hash current-program)
+                 (:builder-semantic-hash binding))
+              (= (:verifier-semantic-hash current-program)
+                 (:verifier-semantic-hash binding))
+              (= (:required-functions current-program)
+                 (:function-shapes binding))
+              (= (:function-count current-program)
+                 (get-in binding [:function-manifest :function-count]))
+              (= (:chunk-size current-program)
+                 (get-in binding [:function-manifest :chunk-size]))
+              (= (:chunk-counts current-program)
+                 (mapv :count (get-in binding [:function-manifest :chunks])))
+              (<= (apply max 0
+                         (map :count
+                              (get-in binding [:function-manifest :chunks])))
+                  (:chunk-size current-program)))
+         (and (if (= 3 version)
+                (identical? (:semantic-family contract) (:semantic-family binding))
+                true)
+              (= :complete (:status binding))
+              (= (:source-byte-count contract)
+                 (:source-byte-count binding))
+              (= (:source-content-hash contract)
+                 (:source-content-hash binding))
+              (= (:plan-semantic-hash contract)
+                 (:plan-semantic-hash binding))
+              (= (:functions-semantic-hash contract)
+                 (:functions-semantic-hash binding))
+              (= (:builder-semantic-hash contract)
+                 (:builder-semantic-hash binding))
+              (= (:verifier-semantic-hash contract)
+                 (:verifier-semantic-hash binding))
+              (= (:required-functions contract)
+                 (:function-shapes binding))
+              (= (:function-count contract) (get-in binding [:function-manifest :function-count]))
+              (or (= 1 version)
+                  (and (= (:chunk-size contract) (get-in binding [:function-manifest :chunk-size]))
+                       (= (:chunk-counts contract)
+                          (mapv :count (get-in binding [:function-manifest :chunks])))))
+              (<= (apply max 0
+                         (map :count
+                              (get-in binding [:function-manifest :chunks])))
+                  (:chunk-size contract))))))))
 
 (defn p15-s23-c6c10-validate-source-binding!
   ([binding] (p15-s23-c6c10-validate-source-binding! binding 1))
@@ -206,6 +294,7 @@
          (nil? (meta (:binding entry)))
          (not (contains? (:binding entry) :request-source))
          (not (contains? (:binding entry) :source-path))
+         (= (:source-mode cache-key) (:source-mode (:binding entry)))
          (p15-s23-c6c10-source-binding-valid?
           (:binding entry) (p15-s23-c6c10-source-program-version cache-key))))
 
@@ -249,13 +338,20 @@
 (defn p15-s23-c6c10-source-binding!
   ([request-source] (p15-s23-c6c10-source-binding! request-source 1))
   ([request-source version]
+   (p15-s23-c6c10-source-binding! request-source version nil))
+  ([request-source version source-mode]
   ;; Raw module bytes and the Gravity plan-emitter are authenticated before
   ;; every lookup.  Only the immutable compiled compiler program is reused;
   ;; user ingress, builder/verifier execution, digest sealing, diagnostics,
   ;; and target artifacts remain fresh replay boundaries.
+  (p15-s23-c6c10-require-current-source-selection!
+   request-source version source-mode)
   (let [inputs
-        (p15-s23-c6c10-authenticated-source-binding-inputs!
-         request-source version)
+        (if (some? source-mode)
+          (p15-s23-c6c10-authenticated-source-binding-inputs!
+           request-source version source-mode)
+          (p15-s23-c6c10-authenticated-source-binding-inputs!
+           request-source version))
         cached-binding
         (p15-s23-c6c10-cached-compiled-binding!
          request-source inputs)
