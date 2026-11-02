@@ -208,7 +208,7 @@
                 "Domain family edit crossed field boundary")
       (require! (contains? units (:id e)) "Domain family edit outside assigned unit"))
     (doseq [{:keys [proposed-id current-acceptance nonoverlap equivalence-proposals
-                    task-gaps acceptance-facets task-references original-record-sha256
+                    task-gaps task-references original-record-sha256
                     historical-support]} (vals units)]
       (require! (= :unassessed current-acceptance) (str "Unit promoted acceptance: " proposed-id))
       (require! (= :unreviewed nonoverlap) (str "Unit promoted overlap status: " proposed-id))
@@ -397,7 +397,7 @@
                 (str "Gap new task already exists in current ledger: " (:id t))))
     {:amendment-ids amendment-ids :new-task-ids new-ids}))
 
-(defn validate-gap! [gap family view]
+(defn validate-gap! [gap _family view]
   (require! (= :domain-historical-gap-completion-patch (:kind gap))
             "Wrong domain gap proposal kind")
   (require! (= "requirement-reconciliation/phase-09-domain-specific-computing-coverage"
