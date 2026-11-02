@@ -45,6 +45,7 @@
           (constantly true))
 
 (def reader-path (call 'p15-s23-c6c10-canonical-file-path "synthetic-reader.gravity"))
+(def syntax-path (call 'p15-s23-c6c10-canonical-file-path "synthetic-syntax.gravity"))
 (def emitter {:synthetic-unit-emitter true})
 (def rule-hash (str "sha256:" (digest/sha256-hex (pr-str (call 'c-backend-canonical-value emitter)))))
 (def rule-record {:status :complete :synthetic-unit-rule-record true})
@@ -75,6 +76,7 @@
             (change n (inputs version source-mode))
             (inputs version source-mode))))
       'sh03-reader-resolve-source-path (constantly reader-path)
+      'sh04-syntax-resolve-source-path (constantly syntax-path)
       'sh03-reader-current-binding!
       (fn [_ path]
         (swap! events conj [:reader-owner path])
@@ -172,7 +174,10 @@
 (deftest public-c6-source-version-and-private-default-routing
   (with-reader-oracles {}
     (fn []
-      (call 'p15-s23-c6c10-current-reader-program! "synthetic.gravity")
+      (let [result (call 'p15-s23-c6c10-current-reader-program! "synthetic.gravity")]
+        (is (= syntax-path (get-in result [:invocation :syntax-source-selection :source-path])))
+        (is (= :gravity/sh04-development-syntax-selection-v1
+               (get-in result [:invocation :syntax-source-selection :schema]))))
       (is (= 2 (second (last @events))))))
   (with-envelope-oracle :passed
     (fn []
