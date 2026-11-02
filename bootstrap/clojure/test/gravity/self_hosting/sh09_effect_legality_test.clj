@@ -60,27 +60,27 @@
 
 (def ^:private accepted-gravity-plan
   (delay
-   (compile-plan
-    (fixture-relative-path
-     "accepted" "normalized-effect-requests" ".gravity"))))
+    (compile-plan
+     (fixture-relative-path
+      "accepted" "normalized-effect-requests" ".gravity"))))
 
 (def ^:private accepted-qst-plan
   (delay
-   (compile-plan
-    (fixture-relative-path
-     "accepted" "normalized-effect-requests" ".qst"))))
+    (compile-plan
+     (fixture-relative-path
+      "accepted" "normalized-effect-requests" ".qst"))))
 
 (def ^:private rejected-gravity-plan
   (delay
-   (compile-plan
-    (fixture-relative-path
-     "rejected" "illegal-effect-requests" ".gravity"))))
+    (compile-plan
+     (fixture-relative-path
+      "rejected" "illegal-effect-requests" ".gravity"))))
 
 (def ^:private rejected-qst-plan
   (delay
-   (compile-plan
-    (fixture-relative-path
-     "rejected" "illegal-effect-requests" ".qst"))))
+    (compile-plan
+     (fixture-relative-path
+      "rejected" "illegal-effect-requests" ".qst"))))
 
 (defn- invoke
   [plan function arguments]
@@ -110,7 +110,7 @@
                            (#{'def 'defn} (first form))
                            (symbol? (second form)))
                   [(second form) form]))
-        forms)))
+              forms)))
 
 (defn- c8-kernel-form-symbols
   [form]
@@ -514,7 +514,7 @@
          [(assoc compiler-request :replay-record true)
           "C8-VERIFY" :unexpected-replay-record]
          [(assoc pure-request :provider {:id :ambient}
-                              :grant {:id :ambient})
+                 :grant {:id :ambient})
           "C8-VERIFY" :pure-operation-carries-authority]
          [(assoc pure-request
                  :declared-capabilities #{:ambient/process})
