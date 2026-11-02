@@ -1,8 +1,13 @@
 (ns gravity.self-hosting.sh07-b51-attempt30-producer-compact-verifier-test
-  (:require [clojure.java.io :as io]
+  (:require [clojure.edn :as edn]
+            [clojure.java.io :as io]
             [clojure.test :refer [deftest is testing]]
+            [clojure.string :as str]
             [gravity.bootstrap :as bootstrap]
-            [gravity.self-hosting.sh07-b51-attempt30-linked-carrier-host-test]))
+            [gravity.self-hosting.sh07-b51-attempt30-fixture-support
+             :as fixture-support])
+  (:import [java.nio.charset StandardCharsets]
+           [java.util.concurrent TimeUnit]))
 
 (def producer-paths
   ["bootstrap/gravity/src/gravity/sh07_b51/producer_a.gravity"
@@ -91,15 +96,158 @@
 (defn invoke [function & arguments]
   (apply @(ns-resolve @runtime function) arguments))
 
-(defn private-host-test-value [name]
-  (var-get
-   (or (ns-resolve
-        'gravity.self-hosting.sh07-b51-attempt30-linked-carrier-host-test
-        name)
-       (throw (ex-info "missing Attempt30 host-test fixture" {:name name})))))
-
 (defn accepted-carrier []
-  (:carrier @(private-host-test-value 'accepted-fixture)))
+  (fixture-support/carrier))
+
+(def ^:private fresh-load-probe-expression
+  "(require '[clojure.test :as test]
+             'gravity.self-hosting.sh07-b51-attempt30-producer-compact-verifier-test)
+    (let [loaded (set (map ns-name (all-ns)))
+          host-namespace 'gravity.self-hosting.sh07-b51-attempt30-linked-carrier-host-test
+          vars [#'gravity.self-hosting.sh07-b51-attempt30-producer-compact-verifier-test/root1-accepts-the-exact-certificate-a-compact-carrier
+                #'gravity.self-hosting.sh07-b51-attempt30-producer-compact-verifier-test/root1-compact-certificate-and-carrier-mutations-fail-closed]
+          counters (ref {:test 0 :pass 0 :fail 0 :error 0})]
+      (binding [test/*report-counters* counters
+                test/*test-out* (java.io.StringWriter.)]
+        (test/test-vars vars))
+      (let [result {:host-namespace-loaded? (contains? loaded host-namespace)
+                    :semantic-test-names (mapv (comp :name meta) vars)
+                    :semantic-counters @counters}]
+        (println \"SH07-B51-ATTEMPT30-FRESH-CONSUMER\" (pr-str result))
+        (System/exit (if (and (not (:host-namespace-loaded? result))
+                               (pos? (get-in result [:semantic-counters :test]))
+                               (pos? (get-in result [:semantic-counters :pass]))
+                               (zero? (get-in result [:semantic-counters :fail]))
+                               (zero? (get-in result [:semantic-counters :error])))
+                      0
+                      9)))))")
+
+(defn- repository-root
+  []
+  (let [resource
+        (io/resource
+         "gravity/self_hosting/sh07_b51_attempt30_producer_compact_verifier_test.clj")]
+    (when-not resource
+      (throw
+       (ex-info
+        "SH07-B51 Attempt30 producer compact test is not on the classpath"
+        {:id "SH07-B51-ATTEMPT30-PRODUCER-COMPACT-SOURCE"})))
+    (loop [candidate (.getParent (.toPath (io/file (.toURI resource))))]
+      (cond
+        (nil? candidate)
+        (throw
+         (ex-info
+          "Repository root could not be located"
+          {:id "SH07-B51-ATTEMPT30-REPOSITORY-ROOT"}))
+
+        (.isFile (.toFile (.resolve candidate "deps.edn")))
+        candidate
+
+        :else
+        (recur (.getParent candidate))))))
+
+(defn- fresh-producer-compact-load-probe
+  []
+  (let [command ["clojure"
+                 "-Sdeps"
+                 "{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\"]}"
+                 "-M"
+                 "-e"
+                 fresh-load-probe-expression]
+        builder (doto (ProcessBuilder. ^java.util.List command)
+                  (.directory (io/file (str (repository-root))))
+                  (.redirectErrorStream true))
+        process (.start builder)
+        completed? (.waitFor process 60 TimeUnit/SECONDS)]
+    (letfn [(result [terminated?]
+              (with-open [stream (.getInputStream process)]
+                {:completed? (and completed? terminated?)
+                 :exit (when terminated? (.exitValue process))
+                 :output (if terminated?
+                           (try
+                             (String. (.readAllBytes stream)
+                                      StandardCharsets/UTF_8)
+                             (catch java.io.IOException _ ""))
+                           "")}))]
+      (if completed?
+        (result true)
+        (do
+          (.destroyForcibly process)
+          (result (.waitFor process 5 TimeUnit/SECONDS)))))))
+
+(defn- fresh-probe-report
+  [output]
+  (let [marker "SH07-B51-ATTEMPT30-FRESH-CONSUMER "]
+    (some->> (str/split-lines output)
+             (keep (fn [line]
+                     (when (str/starts-with? line marker)
+                       (edn/read-string (subs line (count marker))))))
+             first)))
+
+(def ^:private fresh-semantic-test-names
+  '[root1-accepts-the-exact-certificate-a-compact-carrier
+    root1-compact-certificate-and-carrier-mutations-fail-closed])
+
+(defn- test-inventory []
+  (->> (ns-publics *ns*)
+       (keep (fn [[symbol value]]
+               (when (:test (meta value))
+                 {:name symbol :line (:line (meta value))})))
+       (sort-by (juxt :name :line))
+       vec))
+
+(defn- fixture-observation
+  []
+  (try
+    (let [value (fixture-support/fixture)]
+      {:value value
+       :canonical-hash (bootstrap/reader-canonical-hash value)})
+    (catch Throwable failure
+      {:error {:class (str (class failure))
+               :message (ex-message failure)
+               :data (select-keys (ex-data failure)
+                                  [:id :requested-source
+                                   :expected-semantic-hash
+                                   :actual-semantic-hash])}})))
+
+(deftest attempt30-compact-consumer-fresh-load-isolated
+  (let [loaded-before (set (map ns-name (all-ns)))
+        fixture-before (fixture-observation)
+        inventory-before (test-inventory)
+        probe (fresh-producer-compact-load-probe)
+        loaded-after (set (map ns-name (all-ns)))
+        fixture-after (fixture-observation)
+        inventory-after (test-inventory)
+        report (fresh-probe-report (:output probe))
+        counters (or (:semantic-counters report) {})]
+    (is (= loaded-before loaded-after)
+        "The fresh consumer child must not mutate the preloaded parent namespaces")
+    (is (nil? (:error fixture-before))
+        (pr-str (select-keys fixture-before [:error])))
+    (is (= (:error fixture-before) (:error fixture-after))
+        (pr-str (select-keys fixture-after [:error])))
+    (is (identical? (:value fixture-before) (:value fixture-after))
+        "Fixture support must retain one delayed fixture identity in the parent")
+    (is (= (:canonical-hash fixture-before)
+           (:canonical-hash fixture-after))
+        (pr-str {:fixture-hash-before (:canonical-hash fixture-before)
+                 :fixture-hash-after (:canonical-hash fixture-after)}))
+    (is (= inventory-before inventory-after)
+        "The fresh consumer child must not alter the parent test inventory")
+    (is (:completed? probe)
+        (pr-str (select-keys probe [:completed? :exit])))
+    (is (= 0 (:exit probe))
+        (pr-str (select-keys probe [:completed? :exit])))
+    (is (map? report)
+        (pr-str (select-keys probe [:completed? :exit])))
+    (is (false? (:host-namespace-loaded? report)) (pr-str report))
+    (is (= fresh-semantic-test-names (:semantic-test-names report))
+        (pr-str report))
+    (is (= (count fresh-semantic-test-names) (or (:test counters) 0))
+        (pr-str report))
+    (is (pos? (or (:pass counters) 0)) (pr-str report))
+    (is (zero? (or (:fail counters) 0)) (pr-str report))
+    (is (zero? (or (:error counters) 0)) (pr-str report))))
 
 (def forbidden-public-functions
   '#{sh07-b51-r1-linked-carrier-replay
