@@ -1,7 +1,8 @@
 (ns gravity.p15-native-plan-specialization.source-snapshot
   (:require [clojure.java.io :as io]
             [gravity.bootstrap :as bootstrap])
-  (:import [java.nio ByteBuffer]
+  (:import [java.io ByteArrayOutputStream]
+           [java.nio ByteBuffer]
            [java.nio.charset CodingErrorAction StandardCharsets]
            [java.nio.file Files LinkOption OpenOption Path Paths]
            [java.nio.file.attribute BasicFileAttributes]))
@@ -93,83 +94,79 @@
 
 (defn helper-source-snapshot!
   [request-source
-   {:keys [helper-source-path! strict-utf8 max-helper-source-bytes
-           no-follow-options helper-contract-fail!]}]
+   {:keys [helper-source-path! strict-utf8 no-follow-options
+           helper-contract-fail!]}]
   (let [{:keys [source-path attributes]} (helper-source-path! request-source)
         before-size (.size ^BasicFileAttributes attributes)]
-    (when (> before-size max-helper-source-bytes)
-      (helper-contract-fail!
-       request-source
-       "Gravity C emitter helper source exceeds its bounded snapshot size"
-       {:maximum-helper-source-bytes max-helper-source-bytes
-        :observed-helper-source-bytes before-size
-        :missing-fact :bounded-helper-source-snapshot}))
-    (let [buffer (ByteBuffer/allocate (inc max-helper-source-bytes))]
-      (try
-        (with-open [channel
-                    (java.nio.channels.FileChannel/open
-                     source-path
-                     (into-array OpenOption
-                                 [java.nio.file.StandardOpenOption/READ
-                                  LinkOption/NOFOLLOW_LINKS]))]
-          (let [channel-size-before (.size channel)
-                observed-byte-count
-                (loop [zero-reads 0]
-                  (if-not (.hasRemaining buffer)
-                    (.position buffer)
-                    (let [read-count (.read channel buffer)]
-                      (cond
-                        (neg? read-count) (.position buffer)
-                        (zero? read-count)
-                        (if (= 8 zero-reads)
-                          (helper-contract-fail!
-                           request-source
-                           "Gravity C emitter helper source did not make progress"
-                           {:missing-fact :bounded-helper-source-read
-                            :source-path (str source-path)})
-                          (recur (inc zero-reads)))
-                        :else (recur 0)))))
-                channel-size-after (.size channel)
-                after
-                (try
-                  (Files/readAttributes source-path BasicFileAttributes
-                                        no-follow-options)
-                  (catch java.io.IOException error
-                    (helper-contract-fail!
-                     request-source
-                     "Gravity C emitter helper source disappeared while reading"
-                     {:missing-fact :stable-helper-source-snapshot
-                      :source-path (str source-path)
-                      :cause-message (.getMessage error)})))
-                bytes (java.util.Arrays/copyOf (.array buffer)
-                                               observed-byte-count)
-                content-hash
-                (str "sha256:" (bootstrap/sha256-bytes-hex bytes))]
-            (when-not
-             (and (= channel-size-before channel-size-after
-                     (long observed-byte-count))
-                  (= (.fileKey ^BasicFileAttributes attributes)
-                     (.fileKey ^BasicFileAttributes after))
-                  (= (.lastModifiedTime ^BasicFileAttributes attributes)
-                     (.lastModifiedTime ^BasicFileAttributes after))
-                  (= (.size ^BasicFileAttributes attributes)
-                     (.size ^BasicFileAttributes after)
-                     (long observed-byte-count))
-                  (<= observed-byte-count max-helper-source-bytes))
-              (helper-contract-fail!
-               request-source
-               "Gravity C emitter helper source changed while being read"
-               {:missing-fact :stable-helper-source-snapshot
-                :source-path (str source-path)
-                :observed-helper-source-bytes observed-byte-count}))
-            {:source-path (str source-path)
-             :source-byte-count observed-byte-count
-             :source-content-hash content-hash
-             :source-text (strict-utf8 request-source source-path bytes)}))
-        (catch java.io.IOException error
-          (helper-contract-fail!
-           request-source
-           "Gravity C emitter helper source cannot be read"
-           {:missing-fact :stable-helper-source-snapshot
-            :source-path (str source-path)
-            :cause-message (.getMessage error)}))))))
+    (try
+      (with-open [channel
+                  (java.nio.channels.FileChannel/open
+                   source-path
+                   (into-array OpenOption
+                               [java.nio.file.StandardOpenOption/READ
+                                LinkOption/NOFOLLOW_LINKS]))]
+        (let [channel-size-before (.size channel)
+              bytes-out (ByteArrayOutputStream.)
+              buffer (ByteBuffer/allocate 8192)
+              observed-byte-count
+              (loop [zero-reads 0
+                     total 0]
+                (.clear buffer)
+                (let [read-count (.read channel buffer)]
+                  (cond
+                    (neg? read-count) total
+                    (zero? read-count)
+                    (if (= 8 zero-reads)
+                      (helper-contract-fail!
+                       request-source
+                       "Gravity C emitter helper source did not make progress"
+                       {:missing-fact :stable-helper-source-read
+                        :source-path (str source-path)})
+                      (recur (inc zero-reads) total))
+                    :else
+                    (do
+                      (.write bytes-out (.array buffer) 0 read-count)
+                      (recur 0 (+ total read-count))))))
+              channel-size-after (.size channel)
+              after
+              (try
+                (Files/readAttributes source-path BasicFileAttributes
+                                      no-follow-options)
+                (catch java.io.IOException error
+                  (helper-contract-fail!
+                   request-source
+                   "Gravity C emitter helper source disappeared while reading"
+                   {:missing-fact :stable-helper-source-snapshot
+                    :source-path (str source-path)
+                    :cause-message (.getMessage error)})))
+              bytes (.toByteArray bytes-out)
+              content-hash
+              (str "sha256:" (bootstrap/sha256-bytes-hex bytes))]
+          (when-not
+           (and (= channel-size-before channel-size-after
+                   (long observed-byte-count))
+                (= (.fileKey ^BasicFileAttributes attributes)
+                   (.fileKey ^BasicFileAttributes after))
+                (= (.lastModifiedTime ^BasicFileAttributes attributes)
+                   (.lastModifiedTime ^BasicFileAttributes after))
+                (= (.size ^BasicFileAttributes attributes)
+                   (.size ^BasicFileAttributes after)
+                   (long observed-byte-count)))
+            (helper-contract-fail!
+             request-source
+             "Gravity C emitter helper source changed while being read"
+             {:missing-fact :stable-helper-source-snapshot
+              :source-path (str source-path)
+              :observed-helper-source-bytes observed-byte-count
+              :initial-helper-source-bytes before-size}))
+          {:source-path (str source-path)
+           :source-byte-count observed-byte-count
+           :source-content-hash content-hash
+           :source-text (strict-utf8 request-source source-path bytes)}))
+      (catch java.io.IOException error
+        (helper-contract-fail!
+         request-source
+         "Gravity C emitter helper source cannot be read"
+         {:missing-fact :stable-helper-source-snapshot
+          :source-path (str source-path)
+          :cause-message (.getMessage error)})))))

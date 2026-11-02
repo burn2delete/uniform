@@ -1,8 +1,11 @@
 (ns gravity.pass-cache.request-key
   "Exact pass request validation and semantic cache-key projection."
   (:require [clojure.set :as set]
-            [gravity.pass-cache.canonical-encode :refer :all]
-            [gravity.pass-cache.policy :refer :all]
+            [gravity.pass-cache.canonical-encode :refer [content-id]]
+            [gravity.pass-cache.policy
+             :refer [canonicalizer-version execution-request-fields fail!
+                     require-keyword-set! require-sha256! schema-version
+                     sha256-id? sorted-sha-vector! validate-authority!]]
             [gravity.pass-execution :as pass-execution]))
 
 (defn pass-request-fields
@@ -118,7 +121,7 @@
          :execution-mode :executed))
 
 (defn stage-cache-key
-  "Build a bounded semantic key over the full pass execution contract."
+  "Build a semantic key over the full pass execution contract."
   [request]
   (let [preimage (key-preimage request)
         semantic-preimage

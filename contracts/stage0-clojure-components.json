@@ -340,6 +340,14 @@
       "test": {"path": "tools/ci/run_test.clj", "namespace": "ci.run-test", "registration": "standalone"}
     },
     {
+      "id": "packaged-jvm-launcher",
+      "kind": "production-verification-helper",
+      "owner": "master-coordinator",
+      "source": {"path": "bootstrap/clojure/src/gravity/cli/packaged_launcher.clj", "namespace": "gravity.cli.packaged-launcher"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/release-p18/00909-p18-t02-run-bin-gravity.clj", "namespace": "gravity.bootstrap", "owner": "master-coordinator"},
+      "test": {"path": "bootstrap/clojure/test/gravity/bootstrap_test.clj", "namespace": "gravity.bootstrap-test", "registration": "coordinator"}
+    },
+    {
       "id": "safety-records",
       "kind": "production-stage-helper",
       "owner": "sh-safety",

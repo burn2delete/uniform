@@ -53,6 +53,14 @@
 	(def p15-s23-stage2-runtime-kernel-required-instructions
 	  p15-s23-stage2-runtime-executor-required-instructions)
 
+	;; Declared-input reads are an authenticated Reader bridge, not a generic
+	;; runtime primitive.  The executor's builtin table still requires the
+	;; symbol, exact arity, and source-authenticated dispatch; the kernel
+	;; primitive inventory must not pretend that this host bridge is implemented
+	;; by the ordinary Gravity primitive table.
+	(def ^:private p15-s23-stage2-runtime-reader-bridge-builtins
+	  #{'build-read-declared-input})
+
 	(def p15-s23-stage2-runtime-kernel-diagnostic-messages
 	  {"P15S23K001" "P15-S23 stage2 runtime kernel contract is missing"
 	   "P15S23K002" "P15-S23 stage2 runtime kernel rule set is incomplete"
@@ -114,7 +122,10 @@
 	         p15-s23-stage2-runtime-kernel-required-instructions
 	         instruction-rules)
 	        missing-primitives
-	        (set/difference stage0-builtin-functions runtime-primitives)
+	        (set/difference
+	         (set/difference stage0-builtin-functions
+                          p15-s23-stage2-runtime-reader-bridge-builtins)
+	         runtime-primitives)
 	        primitive-boundary
 	        (get-in kernel [:runtime-primitives
 	                        :host-primitive-boundary])

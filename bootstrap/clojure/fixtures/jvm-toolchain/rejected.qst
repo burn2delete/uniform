@@ -1,0 +1,2 @@
+(ns fixture.jvm-toolchain.rejected (:profile :hosted) (:target :jvm) (:effects #{:io/write}) (:capabilities #{:io/stdout}))
+(defn main [] (println [1 2]))

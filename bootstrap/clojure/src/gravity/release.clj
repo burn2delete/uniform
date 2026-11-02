@@ -59,7 +59,9 @@
   [packaged-source-entries-var jar-entries]
   (let [expected (vec (sort (map :jar-entry ((deref packaged-source-entries-var)))))
         observed (filterv #(and (string? %)
-                                (str/ends-with? % ".clj"))
+                                (or (str/ends-with? % ".clj")
+                                    (str/ends-with? % ".cljc")
+                                    (str/ends-with? % ".edn")))
                           jar-entries)
         entry-frequencies (frequencies jar-entries)
         valid?

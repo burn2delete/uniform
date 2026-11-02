@@ -2,7 +2,8 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
-            [gravity.bootstrap :as bootstrap]))
+            [gravity.bootstrap :as bootstrap]
+            [gravity.self-hosting.sh08-function-call-kernel-support :as kernel-support]))
 
 (defn- repository-root []
   (let [resource
@@ -200,54 +201,7 @@
                      :recursive-external-operator-node :recursive-external-literal-node
                      :recursive-external-call-node]))))
 
-(defn- private-self-census-data []
-  (require 'gravity.self-hosting.sh08-function-call-type-test)
-  (let [base ((ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'private-entry-get-input))
-        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
-        form (fn [id kind value parent children]
-               {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
-                :kind kind :value value :parent-form-id parent :child-form-ids children})
-        record (assoc (first (get-in base [:core :function-records])) :body-core-node-id :recursive-body)
-        bid (:definition-binding-id record) owner (:function-syntax-id record)
-        operator {:node-id :self-op :core-form :reference :children [] :source (source :self-op)
-                  :attributes {:symbol 'without-path :position :operator :binding-id bid
-                               :binding-class :namespace :definition-syntax-id :helper-name}
-                  :resolved-binding-ids [bid] :evaluation {:owner-function-syntax-id owner}}
-        argument {:node-id :self-arg :core-form :reference :children [] :source (source :self-arg)
-                  :attributes {:binding-id :span-binding} :resolved-binding-ids [:span-binding]
-                  :evaluation {:owner-function-syntax-id owner}}
-        call-node {:node-id :self-call :core-form :call :children [:self-op :self-arg] :source (source :self-call)
-                   :resolved-binding-ids [bid]
-                   :evaluation {:kind :operator-then-arguments :owner-function-syntax-id owner
-                                :order [{:index 0 :core-node-id :self-op} {:index 1 :core-node-id :self-arg}]}}
-        body {:node-id :recursive-body :core-form :do :children [:present-get :self-call]
-              :source (source :recursive-body) :evaluation {:owner-function-syntax-id owner}}
-        call {:core-node-id :self-call :operator-node-id :self-op :operator-binding-id bid
-              :argument-node-ids [:self-arg] :ordered-evaluation-node-ids [:self-op :self-arg]
-              :evaluation-order :operator-then-arguments :result-policy :call-result}
-        edge {:ordinal 3 :call-core-node-id :self-call :caller-function-syntax-id owner :caller-function-core-node-id :helper-fn
-              :callee-binding-id bid :callee-definition-syntax-id :helper-name :callee-function-syntax-id owner
-              :callee-function-core-node-id :helper-fn :argument-core-node-ids [:self-arg]
-              :ordered-evaluation-node-ids [:self-op :self-arg] :evaluation-order :operator-then-arguments :classification :local-function}
-        use {:core-node-id :self-op :form-id :self-op :syntax-id :self-op :symbol 'without-path :position :operator
-             :binding-id bid :binding-class :namespace :definition-syntax-id :helper-name}
-        resolution {:reference-syntax-id :self-op :symbol 'without-path :position :operator :binding-id bid
-                    :upstream-binding-id :helper-upstream :resolution-order 3 :source-span nil}
-        component {:ordinal 0 :kind :self-recursive :function-syntax-ids [owner] :function-core-node-ids [:helper-fn]
-                   :internal-call-edge-ordinals [3]}
-        core (-> (:core base)
-                 (update :nodes #(into (mapv (fn [node] (if (= :helper-fn (:node-id node))
-                                                         (assoc node :children [:recursive-body]) node)) %)
-                                       [operator argument call-node body]))
-                 (assoc-in [:function-records 0] record)
-                 (update :calls conj call) (update :call-edges conj edge)
-                 (update :reference-uses conj use) (update-in [:preserved-resolution :resolution-table] conj resolution)
-                 (assoc :recursion-components [component]))
-        forms (merge (:forms base) {:self-op (form :self-op :symbol 'without-path :self-call [])
-                                   :self-arg (form :self-arg :symbol 'span :self-call [])
-                                   :self-call (form :self-call :list nil :recursive-body [:self-op :self-arg])})]
-    {:core core :record record :nodes (into {} (map (juxt :node-id identity) (:nodes core)))
-     :bindings (:bindings base) :forms forms}))
+(def ^:private private-self-census-data kernel-support/private-self-census-data)
 
 (deftest current-gravity-private-self-census-development-kernel
   (let [{:keys [core record bindings forms]} (private-self-census-data)
@@ -527,38 +481,7 @@
     (is (every? (set (get-in dependent [:cut :excluded-node-ids])) [:inner :outer :alias-read]))
     (is (not-any? #(contains? (get-in dependent [:inference :type-table]) %) [:inner :outer :alias-read]))))
 
-(defn- private-self-string-proof-data []
-  (let [{:keys [core record bindings forms]} (private-self-census-data)
-        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
-        owner (:function-syntax-id record)
-        condition (assoc (node :independent-condition :literal [] {:literal-kind :boolean :value false} owner)
-                         :source (source :independent-condition))
-        base (assoc (node :independent-base :reference [] {:binding-id :span-binding} owner)
-                    :source (source :independent-base) :resolved-binding-ids [:span-binding])
-        core (-> core
-                 (update :calls #(vec (rest %)))
-                 (update :call-edges #(mapv (fn [i edge] (assoc edge :ordinal i)) (range) (rest %)))
-                 (assoc-in [:recursion-components 0 :internal-call-edge-ordinals] [2])
-                 (update :nodes (fn [nodes]
-                                  (conj (mapv (fn [n]
-                                                (cond
-                                                  (contains? #{:input-0 :input-1} (:node-id n))
-                                                  (assoc n :core-form :literal :children []
-                                                           :attributes {:literal-kind :string :value "entry"})
-                                                  (= :recursive-body (:node-id n))
-                                                  (assoc n :core-form :if :children [:independent-condition :self-call :independent-base])
-                                                  (= :self-call (:node-id n))
-                                                  (assoc n :attributes {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1]
-                                                                        :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call})
-                                                  (= :self-arg (:node-id n))
-                                                  (assoc n :attributes {:symbol 'span :position :expression :binding-id :span-binding
-                                                                        :binding-class :lexical :definition-syntax-id nil})
-                                                  :else n))
-                                              (remove #(contains? #{:operator :input :key :present-get} (:node-id %)) nodes))
-                                        condition base))))
-        forms (reduce (fn [out id] (assoc-in (assoc-in (assoc-in out [id :kind] :string) [id :value] "entry")
-                                                       [id :child-form-ids] [])) forms [:input-0 :input-1])]
-    {:core core :record record :bindings (vec (vals bindings)) :forms (vec (vals forms))}))
+(def ^:private private-self-string-proof-data kernel-support/private-self-string-proof-data)
 
 (deftest current-gravity-private-self-proof-development-kernel
   (let [{:keys [core record bindings forms]} (private-self-string-proof-data)
@@ -606,54 +529,7 @@
     (is (nil? (invoke-c7 'sh08-is-private-census
                          [record changed (into {} (map (juxt :node-id identity) (:nodes changed))) bindings forms])))))
 
-(defn- private-self-homogeneous-head-data []
-  (require 'clojure.walk 'gravity.self-hosting.sh08-function-call-type-test)
-  (let [{:keys [core bindings forms]} (private-self-string-proof-data)
-        type {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string}
-        head (clojure.walk/postwalk-replace
-              {:callee :helper-form :parameter :span-binding :function :helper-fn :branch :recursive-body}
-              ((ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'homogeneous-list-head-input) 2))
-        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
-        binding (first (filter #(= :span-binding (:binding-id %)) bindings))
-        reference-attrs {:symbol (:name binding) :position :expression :binding-id :span-binding
-                         :binding-class :lexical :definition-syntax-id (:definition-syntax-id binding)}
-        nodes (-> (:nodes head)
-                  (dissoc :helper-fn :base)
-                  (assoc-in [:recursive-body :children] [:condition :independent-base :head-else])
-                  (assoc-in [:arg0 :attributes] reference-attrs)
-                  (assoc-in [:predicate-receiver :attributes] reference-attrs)
-                  (assoc :head-else (assoc (node :head-else :do [:call :self-call] {} :helper-form)
-                                          :source (source :head-else))))
-        core (-> core
-                 (update :nodes (fn [sequence]
-                                  (let [retained (remove #(contains? (conj (set (keys nodes)) :independent-condition) (:node-id %)) sequence)
-                                        all (merge (into {} (map (juxt :node-id identity) retained)) nodes)
-                                        ;; C6 order: operands before each intrinsic consumer.
-                                        order (concat (map :node-id retained)
-                                                      [:predicate-operator :predicate-receiver :condition :operator :arg0 :call
-                                                       :head-else :recursive-body])]
-                                    (mapv all order))))
-                 (update :function-records
-                         #(mapv (fn [record]
-                                  (case (:function-syntax-id record)
-                                    :caller-0 (assoc record :parameter-binding-ids [:caller-parameter-0] :fixed-arity 1
-                                                            :signature {:parameters [{:type-id type}]})
-                                    :caller-1 (assoc record :parameter-binding-ids [:caller-parameter-1] :fixed-arity 1
-                                                            :signature {:parameters [{:type-id type}]})
-                                    record)) %))
-                 (update :nodes #(mapv (fn [n] (case (:node-id n)
-                                                :input-0 (assoc n :core-form :reference :attributes {:binding-id :caller-parameter-0})
-                                                :input-1 (assoc n :core-form :reference :attributes {:binding-id :caller-parameter-1})
-                                                n)) %))
-                 (update :calls into (get-in head [:core :calls]))
-                 (update :call-edges into
-                         (mapv (fn [i edge] (assoc edge :ordinal (+ 3 i))) (range) (get-in head [:core :call-edges])))
-                 (assoc :control-flow (-> (get-in head [:core :control-flow])
-                                          (assoc-in [0 :branches 0 :core-node-id] :independent-base)
-                                          (assoc-in [0 :branches 1 :core-node-id] :head-else))))
-        forms (merge (into {} (map (juxt :form-id identity) forms)) (:forms head))
-        bindings (merge (into {} (map (juxt :binding-id identity) bindings)) (:bindings head) {:span-binding binding})]
-    {:core core :bindings (vec (vals bindings)) :forms (vec (vals forms)) :head head :type type}))
+(def ^:private private-self-homogeneous-head-data kernel-support/private-self-homogeneous-head-data)
 
 (deftest current-gravity-private-self-homogeneous-head-development-kernel
   (let [{:keys [core bindings forms head type]} (private-self-homogeneous-head-data)
@@ -693,145 +569,7 @@
     (is (true? (invoke-c7 'sh08-lq-inferred-call-valid? [working n call edge nodes (into {} (map (juxt :binding-id identity) bindings)) table])))
     (is (false? (invoke-c7 'sh08-lq-inferred-call-valid? [core n call edge nodes (into {} (map (juxt :binding-id identity) bindings)) table])))))
 
-(defn- indexed-private-self-data []
-  (let [base (private-self-string-proof-data)
-        core0 (:core base) record0 (:record base) owner (:function-syntax-id record0)
-        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
-        form (fn [id kind value parent children]
-               {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
-                :kind kind :value value :parent-form-id parent :child-form-ids children})
-        make (fn [id kind children attrs caller]
-               {:node-id id :core-form kind :children children :attributes attrs :source (source id)
-                :resolved-binding-ids [] :evaluation {:owner-function-syntax-id caller :kind :left-to-right
-                                                      :order (mapv (fn [i child] {:index i :core-node-id child}) (range) children)}})
-        params [:span-binding :needle-binding :index-binding]
-        parameter-bindings [{:binding-id :span-binding :name 'values :kind :local :binding-class :lexical}
-                            {:binding-id :needle-binding :name 'value :kind :local :binding-class :lexical}
-                            {:binding-id :index-binding :name 'index :kind :local :binding-class :lexical}]
-        core-binding (fn [operation]
-                       (-> (get-in ((ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'integral-ordering-input)
-                                    operation []) [:bindings :ordering-binding])
-                           (assoc :binding-id operation :name operation :definition-syntax-id operation)))
-        bindings (into {} (map (juxt :binding-id identity)
-                               (concat (remove #(= :span-binding (:binding-id %)) (:bindings base))
-                                       parameter-bindings (map core-binding '[count = get +]))))
-        reference (fn [id bid]
-                    (-> (make id :reference [] {:symbol (:name (bindings bid)) :position :expression :binding-id bid
-                                                :binding-class :lexical :definition-syntax-id nil} owner)
-                        (assoc :resolved-binding-ids [bid])))
-        core-op (fn [id operation]
-                  (-> (make id :reference [] {:symbol operation :position :operator :binding-id operation
-                                              :binding-class :core :definition-syntax-id operation} owner)
-                      (assoc :resolved-binding-ids [operation])))
-        call (fn [id op args bid]
-               {:core-node-id id :operator-node-id op :operator-binding-id bid :argument-node-ids args
-                :ordered-evaluation-node-ids (into [op] args) :evaluation-order :operator-then-arguments :result-policy :call-result})
-        call-node (fn [c caller]
-                    (-> (make (:core-node-id c) :call (:ordered-evaluation-node-ids c)
-                              {:operator-child-index 0 :argument-count (count (:argument-node-ids c))
-                               :argument-child-indexes (vec (range 1 (inc (count (:argument-node-ids c)))))
-                               :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} caller)
-                        (assoc :resolved-binding-ids [(:operator-binding-id c)])
-                        (assoc-in [:evaluation :kind] :operator-then-arguments)))
-        calls0 [(call :ix-count :ix-count-op [:ix-count-vector] 'count)
-                (call :ix-guard :ix-guard-op [:ix-guard-index :ix-count] '=)
-                (call :ix-get :ix-get-op [:ix-get-vector :ix-get-index] 'get)
-                (call :ix-match :ix-match-op [:ix-match-value :ix-get] '=)
-                (call :ix-step :ix-step-op [:ix-step-index :ix-unit] '+)
-                (call :self-call :self-op [:ix-self-vector :ix-self-value :ix-step] :helper-binding)]
-        by-id (into {} (map (juxt :core-node-id identity) calls0))
-        if-attrs {:condition-child-index 0 :then-child-index 1 :else-child-index 2 :condition-evaluation :always-first
-                  :branch-evaluation :exactly-one :truthiness {:false-values [:nil :false] :other-values :true}}
-        if-node (fn [id children]
-                  (-> (make id :if children if-attrs owner)
-                      (assoc-in [:evaluation :kind] :condition-then-exclusive-branch)
-                      (assoc-in [:evaluation :order] [{:index 0 :core-node-id (first children)}])))
-        self-op (first (filter #(= :self-op (:node-id %)) (:nodes core0)))
-        body-nodes [(core-op :ix-guard-op '=) (reference :ix-guard-index :index-binding)
-                    (core-op :ix-count-op 'count) (reference :ix-count-vector :span-binding) (call-node (by-id :ix-count) owner)
-                    (call-node (by-id :ix-guard) owner) (make :ix-false :literal [] {:literal-kind :boolean :value false} owner)
-                    (core-op :ix-match-op '=) (reference :ix-match-value :needle-binding)
-                    (core-op :ix-get-op 'get) (reference :ix-get-vector :span-binding) (reference :ix-get-index :index-binding)
-                    (call-node (by-id :ix-get) owner) (call-node (by-id :ix-match) owner)
-                    (make :ix-true :literal [] {:literal-kind :boolean :value true} owner)
-                    self-op (reference :ix-self-vector :span-binding) (reference :ix-self-value :needle-binding)
-                    (core-op :ix-step-op '+) (reference :ix-step-index :index-binding)
-                    (make :ix-unit :literal [] {:literal-kind :integer :value 1} owner)
-                    (call-node (by-id :ix-step) owner) (call-node (by-id :self-call) owner)
-                    (if-node :ix-inner [:ix-match :ix-true :self-call])
-                    (if-node :recursive-body [:ix-guard :ix-false :ix-inner])]
-        record (assoc record0 :parameter-binding-ids params :fixed-arity 3)
-        kept (filter #(contains? #{:helper-fn :helper-def} (:node-id %)) (:nodes core0))
-        kept (mapv #(if (= :helper-fn (:node-id %)) (assoc % :resolved-binding-ids params) %) kept)
-        entries (mapv (fn [i]
-                        (let [caller (keyword (str "caller-" i)) id (keyword (str "entry-" i))
-                              input (keyword (str "input-" i)) needle (keyword (str "ix-needle-" i))
-                              zero (keyword (str "ix-zero-" i))
-                              members (mapv #(keyword (str "ix-member-" i "-" %)) (range 7))
-                              old-call (first (filter #(= id (:core-node-id %)) (:calls core0)))
-                              c (assoc old-call :argument-node-ids [input needle zero]
-                                               :ordered-evaluation-node-ids [(:operator-node-id old-call) input needle zero])]
-                          {:call c :caller caller :input input :needle needle :zero zero :members members
-                           :nodes (vec (concat [(first (filter #(= (:operator-node-id c) (:node-id %)) (:nodes core0)))]
-                                               (map #(make % :literal [] {:literal-kind :keyword :value :stored} caller) members)
-                                               [(make input :collection-literal members {:literal-kind :vector :element-count 7} caller)
-                                                (make needle :literal [] {:literal-kind :keyword :value :stored} caller)
-                                                (make zero :literal [] {:literal-kind :integer :value 0} caller)
-                                                (call-node c caller)]))})) [0 1])
-        calls (into calls0 (map :call entries))
-        edges (mapv (fn [i c]
-                      (let [local? (= :helper-binding (:operator-binding-id c))
-                            caller (if (< i 6) owner (:caller (nth entries (- i 6))))]
-                        {:ordinal i :call-core-node-id (:core-node-id c) :caller-function-syntax-id caller
-                         :caller-function-core-node-id (if (= caller owner) :helper-fn caller)
-                         :callee-binding-id (:operator-binding-id c)
-                         :callee-definition-syntax-id (if local? :helper-name (:operator-binding-id c))
-                         :callee-function-syntax-id (when local? owner) :callee-function-core-node-id (when local? :helper-fn)
-                         :argument-core-node-ids (:argument-node-ids c) :ordered-evaluation-node-ids (:ordered-evaluation-node-ids c)
-                         :evaluation-order :operator-then-arguments :classification (if local? :local-function :nonlocal-or-nonfunction)}))
-                    (range) calls)
-        parents {:ix-count :ix-guard :ix-guard :recursive-body :ix-get :ix-match :ix-match :ix-inner :ix-step :self-call
-                 :self-call :ix-inner :ix-false :recursive-body :ix-true :ix-inner :ix-inner :recursive-body}
-        all-nodes (vec (concat body-nodes kept (mapcat :nodes entries)))
-        child-parent (into {} (mapcat (fn [n] (map #(vector % (:node-id n)) (:children n))) body-nodes))
-        forms0 (into {} (map (juxt :form-id identity) (:forms base)))
-        body-forms (into {}
-                         (mapcat (fn [n]
-                                   (let [id (:node-id n) kind (:core-form n) children (:children n) attrs (:attributes n)
-                                         parent (get parents id (get child-parent id))]
-                                     (if (= :if kind)
-                                       (let [op (keyword (str (name id) "-if-op"))]
-                                         [[id (form id :list nil parent (into [op] children))]
-                                          [op (form op :symbol 'if id [])]])
-                                       [[id (form id (case kind :call :list :reference :symbol :literal (:literal-kind attrs))
-                                                       (case kind :reference (:symbol attrs) :literal (:value attrs) nil)
-                                                       parent children)]]))) body-nodes))
-        entry-forms (into {}
-                          (mapcat (fn [{:keys [call input needle zero members]}]
-                                    (let [id (:core-node-id call) op (:operator-node-id call)]
-                                      (concat [[id (form id :list nil nil (:ordered-evaluation-node-ids call))]
-                                               [op (form op :symbol 'without-path id [])]
-                                               [input (form input :vector nil id members)]
-                                               [needle (form needle :keyword :stored id [])]
-                                               [zero (form zero :integer 0 id [])]]
-                                              (map #(vector % (form % :keyword :stored input [])) members)))) entries))
-        forms (merge (select-keys forms0 [:helper-def :helper-name :helper-form]) body-forms entry-forms)
-        forms (assoc-in forms [:recursive-body :parent-form-id] :helper-form)
-        forms (assoc-in forms [:helper-form :child-form-ids] [:ix-fn-op :ix-parameters :recursive-body])
-        forms (assoc forms :ix-fn-op (form :ix-fn-op :symbol 'fn :helper-form [])
-                           :ix-parameters (form :ix-parameters :vector nil :helper-form []))
-        controls (mapv (fn [n]
-                         {:core-node-id (:node-id n) :kind :if :condition-node-id (first (:children n))
-                          :branches [{:role :then :predicate :truthy :core-node-id (second (:children n))}
-                                     {:role :else :predicate :falsey :core-node-id (nth (:children n) 2)}]
-                          :branch-exclusivity :exactly-one :truthiness {:false-values [:nil :false] :other-values :true}
-                          :result-policy :selected-branch}) (filter #(= :if (:core-form %)) body-nodes))
-        core (-> core0 (assoc :nodes all-nodes :calls calls :call-edges edges :control-flow controls)
-                 (assoc-in [:function-records 0] record)
-                 (assoc-in [:recursion-components 0 :internal-call-edge-ordinals] [5])
-                 (assoc-in [:preserved-resolution :binding-table] (vec (vals bindings))))]
-    {:core core :record record :nodes (into {} (map (juxt :node-id identity) all-nodes))
-     :bindings (vec (vals bindings)) :forms (vec (vals forms))}))
+(def ^:private indexed-private-self-data kernel-support/indexed-private-self-data)
 
 (defn- indexed-private-cold-wrapper-data []
   ;; Canonical-shaped normalized inputs. Entry facts come through an unannotated
@@ -1075,68 +813,7 @@
     (is (= :indexed-self-zero-source-entry-required (:reason (prove (first nonzero) (second nonzero)))))
     ))
 
-(defn- private-self-three-parameter-false-base-data []
-  (let [{:keys [core record bindings forms]} (private-self-string-proof-data)
-        owner (:function-syntax-id record)
-        params [:flag-binding :span-binding :tag-binding]
-        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
-        form (fn [id kind value parent children]
-               {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
-                :kind kind :value value :parent-form-id parent :child-form-ids children})
-        make (fn [id kind attrs caller]
-               {:node-id id :core-form kind :children [] :attributes attrs :source (source id)
-                :resolved-binding-ids (if (= kind :reference) [(:binding-id attrs)] [])
-                :evaluation {:owner-function-syntax-id caller :kind :left-to-right :order []}})
-        ref (fn [id bid name] (make id :reference {:symbol name :position :expression :binding-id bid
-                                                   :binding-class :lexical :definition-syntax-id nil} owner))
-        extras (vec (concat [(ref :self-flag :flag-binding 'flag) (ref :self-tag :tag-binding 'tag)]
-                            (mapcat (fn [i]
-                                      [(make (keyword (str "flag-" i)) :literal {:literal-kind :boolean :value true} (keyword (str "caller-" i)))
-                                       (make (keyword (str "tag-" i)) :literal {:literal-kind :keyword :value :tag} (keyword (str "caller-" i)))]) [0 1])))
-        calls (mapv (fn [call]
-                      (let [id (:core-node-id call)
-                            args (if (= id :self-call) [:self-flag :self-arg :self-tag]
-                                     (let [i (if (= id :entry-0) 0 1)]
-                                       [(keyword (str "flag-" i)) (keyword (str "input-" i)) (keyword (str "tag-" i))]))]
-                        (assoc call :argument-node-ids args :ordered-evaluation-node-ids (into [(:operator-node-id call)] args)))) (:calls core))
-        call-by-id (into {} (map (juxt :core-node-id identity) calls))
-        nodes (mapv (fn [n]
-                      (let [id (:node-id n) call (call-by-id id)]
-                        (cond
-                          call (assoc n :children (:ordered-evaluation-node-ids call)
-                                        :attributes {:operator-child-index 0 :argument-count 3 :argument-child-indexes [1 2 3]
-                                                     :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call}
-                                        :evaluation {:owner-function-syntax-id (get-in n [:evaluation :owner-function-syntax-id])
-                                                     :kind :operator-then-arguments
-                                                     :order (mapv #(hash-map :index %1 :core-node-id %2) (range) (:ordered-evaluation-node-ids call))})
-                          (= id :independent-condition) (ref id :flag-binding 'flag)
-                          (= id :independent-base) (make id :literal {:literal-kind :boolean :value false} owner)
-                          (= id :recursive-body) (assoc n :children [:independent-condition :independent-base :self-call])
-                          (= id :helper-fn) (assoc n :resolved-binding-ids params)
-                          (contains? #{:input-0 :input-1} id) (assoc-in n [:attributes :value] "")
-                          :else n))) (:nodes core))
-        bindings (into bindings [{:binding-id :flag-binding :name 'flag :kind :local :binding-class :lexical}
-                                 {:binding-id :tag-binding :name 'tag :kind :local :binding-class :lexical}])
-        record (assoc record :fixed-arity 3 :parameter-binding-ids params)
-        core (-> core (assoc :calls calls :nodes (into extras nodes))
-                 (assoc-in [:function-records 0] record)
-                 (update :call-edges #(mapv (fn [e] (let [call (call-by-id (:call-core-node-id e))]
-                                                    (assoc e :argument-core-node-ids (:argument-node-ids call)
-                                                             :ordered-evaluation-node-ids (:ordered-evaluation-node-ids call)))) %))
-                 (assoc-in [:preserved-resolution :binding-table] bindings))
-        forms (into {} (map (juxt :form-id identity) forms))
-        forms (reduce (fn [out call]
-                        (assoc-in out [(:core-node-id call) :child-form-ids] (:ordered-evaluation-node-ids call))) forms calls)
-        forms (reduce (fn [out n]
-                        (let [id (:node-id n) self? (= owner (get-in n [:evaluation :owner-function-syntax-id]))
-                              parent (if self? :self-call (keyword (str "entry-" (if (= id :flag-0) 0 (if (= id :tag-0) 0 1)))))]
-                          (assoc out id (form id (if self? :symbol (get-in n [:attributes :literal-kind]))
-                                                (if self? (get-in n [:attributes :symbol]) (get-in n [:attributes :value]))
-                                                parent [])))) forms extras)
-        forms (assoc forms :independent-condition (form :independent-condition :symbol 'flag :recursive-body [])
-                           :independent-base (form :independent-base :boolean false :recursive-body []))
-        forms (reduce (fn [out id] (assoc-in out [id :value] "")) forms [:input-0 :input-1])]
-    {:core core :record record :bindings bindings :forms (vec (vals forms))}))
+(def ^:private private-self-three-parameter-false-base-data kernel-support/private-self-three-parameter-false-base-data)
 
 (deftest current-gravity-private-three-parameter-false-base-development-kernel
   (let [{:keys [core bindings forms]} (private-self-three-parameter-false-base-data)

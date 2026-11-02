@@ -3,6 +3,9 @@
  {:gravity
   {:main-opts ["-m" "gravity.cli.launcher"]}
 
+  :packaged-gravity
+  {:main-opts ["-m" "gravity.cli.packaged-launcher"]}
+
   :test
   {:extra-paths ["bootstrap/clojure/test"]
    :main-opts ["-m" "gravity.self-hosting-test-runner"]}

@@ -1,21 +1,16 @@
 (ns gravity.self-hosting.sh09-unary-local-call-census-test
   "ST/LQ census compatibility with current C7 ordinary local-call products."
-  (:require [clojure.test :refer [deftest is testing]]
-            [gravity.bootstrap]
-            [gravity.self-hosting.sh08-function-call-type-test]
-            [gravity.self-hosting.sh09-body-effect-test]))
+  (:require [clojure.test :refer [deftest is]]
+            [gravity.self-hosting.sh08-function-call-kernel-support :as kernel-support]))
 
 (defn- leaf [function & arguments]
-  (apply (var-get (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)) function arguments))
+  (apply kernel-support/leaf function arguments))
 (defn- sha [n] (str "sha256:" (format "%064x" n)))
-(defn- sh08-helper [name]
-  (or (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test name)
-      (throw (ex-info "Missing existing C7 helper" {:name name}))))
 
 (defn- mixed-ordinary-local-call-effect-input [base derive-name constraint-name fact-name]
   ;; Normalize only the family call; the unrelated caller row/fact comes from
   ;; the current owning C7 functions, not a hand-written producer/dispatch tag.
-  (let [c7 (sh08-helper 'invoke-c7) ids (zipmap (keys (:nodes base)) (map sha (range 1600 1610)))
+  (let [c7 kernel-support/invoke-c7 ids (zipmap (keys (:nodes base)) (map sha (range 1600 1610)))
         convert (fn [node] (-> node (update :node-id ids) (update :children #(mapv ids %))
                               (update-in [:evaluation :order] #(mapv (fn [entry] (update entry :core-node-id ids)) %))))
         node-list (mapv convert (get-in base [:core :nodes])) node (last node-list)
@@ -58,11 +53,10 @@
              :constraint-ledger [ordinary-row row] :call-type-facts [ordinary-fact fact]}}))
 
 (deftest body-list-set-local-call-composition-development-kernel
-  (require 'gravity.self-hosting.sh08-function-call-type-test)
-  (let [base ((sh08-helper 'list-set-input) {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword})
+  (let [base (kernel-support/list-set-input {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword})
         {:keys [core node call edge nodes bindings derived descriptor ordinary ordinary-row ordinary-fact row fact request facts]}
         (mixed-ordinary-local-call-effect-input base 'sh08-st-derive 'sh08-st-constraint 'sh08-st-call-fact)
-        c7 (sh08-helper 'invoke-c7) prepare #(leaf 'body-st-context request %1 bindings)
+        c7 kernel-support/invoke-c7 prepare #(leaf 'body-st-context request %1 bindings)
         prepared (prepare facts)
         checked (assoc facts :set-conversion-context (:context prepared))
         valid? #(leaf 'body-st-call-valid? core % bindings node call edge nodes)
@@ -118,12 +112,11 @@
                  (assoc-in bindings [:ordering-binding :definition-syntax-id] :stale) node call edge nodes))))))
 
 (deftest body-map-keys-local-call-composition-development-kernel
-  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (doseq [members [[] [:gravity.type/keyword :gravity.type/integer]]]
-  (let [base ((sh08-helper 'map-keys-input) {:kind :gravity.type/map :shape :literal :member-types members})
+  (let [base (kernel-support/map-keys-input {:kind :gravity.type/map :shape :literal :member-types members})
         {:keys [core node call edge nodes bindings derived descriptor ordinary ordinary-row ordinary-fact row fact request facts]}
         (mixed-ordinary-local-call-effect-input base 'sh08-lq-derive 'sh08-lq-constraint 'sh08-lq-call-fact)
-        c7 (sh08-helper 'invoke-c7) prepare #(leaf 'body-lq-context request %1 bindings)
+        c7 kernel-support/invoke-c7 prepare #(leaf 'body-lq-context request %1 bindings)
         prepared (prepare facts)
         checked (assoc facts :list-query-context (:context prepared))
         valid? #(leaf 'body-lq-call-valid? core % bindings node call edge nodes)

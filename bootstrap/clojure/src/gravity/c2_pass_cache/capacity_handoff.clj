@@ -86,7 +86,7 @@
          (= (capacity-operation-phase operation) (:phase data))
          (identical? token (:invocation-token data))
          (= (:carrier-id carrier) (:carrier-id data))
-         (contains? #{:canonical-nodes :canonical-depth :canonical-bytes}
+         (contains? #{:canonical-bytes}
                     (:resource data))
          (integer? (:maximum data))
          (pos? (:maximum data))
