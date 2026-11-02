@@ -4257,6 +4257,12 @@
      "372d583538739d6925d2ecfd53a3084cd63754a0fea9143c0e8df1194ad87392",
      :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
      :kind :source-inspection-not-execution,
+     :current-applicability :unassessed}
+    {:path "specs/effects-workflow/plan.md",
+     :sha256
+     "3beadb1d7ac7b8a41acd645651dc7b4a520c56468f6de6782f6dda86447ffc41",
+     :source-commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
+     :kind :source-inspection-not-execution,
      :current-applicability :unassessed}],
    :qualification
    "Retain exact source scope, rejects, host boundaries and independently accepted evidence; task mapping grants no completion.",
@@ -4330,6 +4336,12 @@
      :sha256
      "372d583538739d6925d2ecfd53a3084cd63754a0fea9143c0e8df1194ad87392",
      :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+     :kind :source-inspection-not-execution,
+     :current-applicability :unassessed}
+    {:path "specs/effects-workflow/plan.md",
+     :sha256
+     "3beadb1d7ac7b8a41acd645651dc7b4a520c56468f6de6782f6dda86447ffc41",
+     :source-commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
      :kind :source-inspection-not-execution,
      :current-applicability :unassessed}],
    :qualification
@@ -4501,6 +4513,12 @@
      :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
      :kind :source-inspection-not-execution,
      :current-applicability :unassessed}
+    {:path "specs/effects-workflow/plan.md",
+     :sha256
+     "3beadb1d7ac7b8a41acd645651dc7b4a520c56468f6de6782f6dda86447ffc41",
+     :source-commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
+     :kind :source-inspection-not-execution,
+     :current-applicability :unassessed}
     {:path "specs/legality-workflow/plan.md",
      :sha256
      "78d1282c3332fc8f788452c4691634a74d2cee0e0454eab56933d56ae7ba650a",
@@ -4587,6 +4605,12 @@
      "96ed68655996cd72b483602bb9b1ef792d7fdcb61f0f13dcd6d04c1f421d07c5",
      :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
      :kind :source-inspection-not-execution,
+     :current-applicability :unassessed}
+    {:path "specs/effects-workflow/plan.md",
+     :sha256
+     "3beadb1d7ac7b8a41acd645651dc7b4a520c56468f6de6782f6dda86447ffc41",
+     :source-commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
+     :kind :source-inspection-not-execution,
      :current-applicability :unassessed}],
    :qualification
    "Retain exact source scope, rejects, host boundaries and independently accepted evidence; task mapping grants no completion.",
@@ -4667,6 +4691,12 @@
      :sha256
      "3791a95f860d4d8fca8e73d7bb57701cdf1e099c14c2b8d0f1778d8ce1e95f75",
      :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+     :kind :source-inspection-not-execution,
+     :current-applicability :unassessed}
+    {:path "specs/effects-workflow/plan.md",
+     :sha256
+     "3beadb1d7ac7b8a41acd645651dc7b4a520c56468f6de6782f6dda86447ffc41",
+     :source-commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
      :kind :source-inspection-not-execution,
      :current-applicability :unassessed}],
    :qualification
@@ -9758,6 +9788,12 @@
      :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
      :kind :source-inspection-not-execution,
      :current-applicability :unassessed}
+    {:path "specs/effects-workflow/plan.md",
+     :sha256
+     "3beadb1d7ac7b8a41acd645651dc7b4a520c56468f6de6782f6dda86447ffc41",
+     :source-commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
+     :kind :source-inspection-not-execution,
+     :current-applicability :unassessed}
     {:path "specs/legality-workflow/plan.md",
      :sha256
      "78d1282c3332fc8f788452c4691634a74d2cee0e0454eab56933d56ae7ba650a",
@@ -9834,6 +9870,12 @@
      :sha256
      "2d6d39e6818011222f7d5c785d49136b598c376d339f94ea97d7c44e4f2bf29a",
      :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+     :kind :source-inspection-not-execution,
+     :current-applicability :unassessed}
+    {:path "specs/effects-workflow/plan.md",
+     :sha256
+     "3beadb1d7ac7b8a41acd645651dc7b4a520c56468f6de6782f6dda86447ffc41",
+     :source-commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
      :kind :source-inspection-not-execution,
      :current-applicability :unassessed}],
    :qualification
@@ -15065,7 +15107,7 @@
    :source-version-bridge
    "specs/sh-family-crosswalk/macro-runtime-source-version.edn"},
   :input-fingerprint
-  "4880fe8e8a186e4f33bfbaf22277cb78293e0a0b6a276da1554ae51a40a165f1"},
+  "edb5cb310ecea232f4a030dfcbef409ed7beb9ff15b77b566ac2f633e84ef02e"},
  :implementation-readiness-source-version
  {:foundation-tools-refinement
   {:new-task-identities [],
@@ -15298,9 +15340,9 @@
    :independent-review :pending,
    :global-source-conjunctions :unassessed,
    :implementation-acceptance :unassessed},
-  :source-input-commit "7662cb4a4527d4e8d905f88f352428dc3d7867f5",
+  :source-input-commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
   :task-comparisons
-  {:unchanged-body-count 92,
+  {:unchanged-body-count 87,
    :changed-bodies
    [{:id "ai",
      :path "specs/domains-workflow/tasks.md",
@@ -15397,6 +15439,51 @@
      "c0d65bcbe161656ac20e9c8765829e15800f03e70d6293a305f53c30a37fc125",
      :after-sha256
      "0adceb92e6aa504816beda906ed20fb4db595d675d1cf805d3a3b54039caa1b7",
+     :before-checked false,
+     :after-checked false}
+    {:id
+     "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects",
+     :path "specs/effects-workflow/tasks.md",
+     :before-sha256
+     "baef04abf4eaaf0410b8f58992a1aa7bb79b9aa378e85fc1a9a414c508026709",
+     :after-sha256
+     "60a2920c875b188657de2b9a575463e1585a6d6abc913f5d75d9591d29bda3af",
+     :before-checked false,
+     :after-checked false}
+    {:id
+     "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects",
+     :path "specs/effects-workflow/tasks.md",
+     :before-sha256
+     "0a3be335becc28785539c35483823d36fb0070db331069e6f75a50493f3dbf83",
+     :after-sha256
+     "137afc9de07f90d177b0e14fdfe8bce951dee40ed05ed6547c990bc09aad38ee",
+     :before-checked false,
+     :after-checked false}
+    {:id
+     "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
+     :path "specs/effects-workflow/tasks.md",
+     :before-sha256
+     "f19d442e1fcbf7e4de928925aea79538b84f716f7151eeef300826ebd6f73270",
+     :after-sha256
+     "b1601e69b8d6aca3a7f202545269ca8b70884eb3be0432c825c65c13a5235db6",
+     :before-checked false,
+     :after-checked false}
+    {:id
+     "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation",
+     :path "specs/effects-workflow/tasks.md",
+     :before-sha256
+     "6f3074abe4b04ec7f6b23b2ee258fabfc7c57dc135af444241ad4b4cf3a57366",
+     :after-sha256
+     "ab32678cddd65a02fd5be01007ef6b177596fd0706a272f70483145451b78406",
+     :before-checked false,
+     :after-checked false}
+    {:id
+     "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+     :path "specs/effects-workflow/tasks.md",
+     :before-sha256
+     "54b57243aa09727dc59d23d91c2e7aba8c0983f00f449de7dfd4c7a965022456",
+     :after-sha256
+     "e3e36fb40396822d98c8f7ac88c5dcb8cd53b11f56a5c8e5504c921e66a77847",
      :before-checked false,
      :after-checked false}
     {:id "firmware",
@@ -26665,6 +26752,2348 @@
     "916f020c064991fd308550e4e934c0b4443f6d6b"},
    :global-source-conjunctions :unassessed,
    :source-binding-relationship :whole-file-and-span-bytes-unchanged,
+   :implementation-acceptance :unassessed},
+  :effects-refinement
+  {:canonical-sources
+   {"docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md"
+    {:path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-commit "392c6ae6265958ffc73e64ac397bb9e5038b1ee3",
+     :sha256
+     "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7"},
+    "docs/phase-01-core-language/016-l6-effect-system-specification.md"
+    {:path
+     "docs/phase-01-core-language/016-l6-effect-system-specification.md",
+     :source-commit "392c6ae6265958ffc73e64ac397bb9e5038b1ee3",
+     :sha256
+     "a9d41d970d56d20f0fb74f10c280689407e3ab8fe075c5bc3b71925e9ccec1d5"},
+    "docs/phase-08-runtime-architecture/117-r6-concurrency-runtime-design.md"
+    {:path
+     "docs/phase-08-runtime-architecture/117-r6-concurrency-runtime-design.md",
+     :source-commit "392c6ae6265958ffc73e64ac397bb9e5038b1ee3",
+     :sha256
+     "93c9169030340bbade88a61c387f3c16fca2229918400d303a36320711615550"},
+    "docs/phase-08-runtime-architecture/118-r7-distributed-runtime-design.md"
+    {:path
+     "docs/phase-08-runtime-architecture/118-r7-distributed-runtime-design.md",
+     :source-commit "392c6ae6265958ffc73e64ac397bb9e5038b1ee3",
+     :sha256
+     "a0fa8028def3fe35c3494f8a988db46d2bd52f4bcc967e39ec553f258756bf66"},
+    "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md"
+    {:path
+     "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+     :source-commit "392c6ae6265958ffc73e64ac397bb9e5038b1ee3",
+     :sha256
+     "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b"},
+    "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md"
+    {:path
+     "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+     :source-commit "392c6ae6265958ffc73e64ac397bb9e5038b1ee3",
+     :sha256
+     "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3"}},
+   :new-task-identities [],
+   :occurrence-cases
+   {"C8/source/5f402aada4709ea3728040ebb54a4fa4a1d5c25f58a3ba9a06cf2bc423e104be"
+    {:index 37,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:handoff],
+     :predicate
+     "Preserve the declared C8 diagnostic family and meanings."},
+    "C8/source/816158e92d6540c73dc43a13e597eab751c76125e78a1e2f8ec4189683285265"
+    {:index 2,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+    "C8/source/5fbe9427cf57bf172c0ebbb6b1e05ba5eeb28d8b87b147fa9286c60972a08d0b"
+    {:index 14,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+    "C8/source/da09721f9dcb415ace61dd28d8c74f387e2c4bd119a8103d0c6d1ac17217b1f3"
+    {:index 25,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :replay],
+     :predicate
+     "Both macro combinations require independent records: build-effectful/pure-emitted-runtime and pure-build/effectful-runtime."},
+    "C8/source/754860e4fcaa80e220bdb355f12c0077d227f20613207a9404594aa6a9f720b7"
+    {:index 40,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+    "C8/source/036a329ef795e5072ff70202a3062c4a774c7502c5766870935fe31c33bd368e"
+    {:index 11,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+    "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1"
+    {:index 8,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:handoff :propagation :legality :replay],
+     :predicate
+     "Consume actual C7 typed calls, L6 effects, L15 grants, L9 errors, L12 hermetic build policy, profiles and runtime/package/provider/deployment contracts; interfaces are not blanket component-completion gates."},
+    "C8/source/b387e50ffcda3a7ccde4089cc29476a0bf7b6c44c09e1a34f2dd8bb2e9602f86"
+    {:index 19,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality],
+     :predicate
+     "Capability proofs connect actual effect uses to actual scoped grants."},
+    "C8/source/fee632d4a91c90120ca0d842be3b065917d2ae55c6045919d57758d3122c26d6"
+    {:index 24,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :replay],
+     :predicate
+     "Build reader/macro/eval/plugin/probe/generator effects, emitted runtime effects and package resolution/artifact effects retain separate computed records; naming these does not authorize their execution here."},
+    "C8/source/13e3ae999c283ee4cf9daec29bbb9401ef3899cc30bcf991a0c8fe6b6de3cae2"
+    {:index 26,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+    "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7"
+    {:index 10,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff],
+     :predicate
+     "Nine distinct actual outputs survive: graph, latent table, namespace/module summaries, capability proof, build log, replay requirements, ordering, residual report and diagnostics."},
+    "C8/source/fbdb59d60b7ca6c328e79366df9028cc76ec7408efe5c60a37fd29a982ebe25f"
+    {:index 22,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+    "C8/source/a135437ae278c0ee2bc793761176f9f6d9b4aedf93f8d0278be9150a29d2e8b2"
+    {:index 45,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:replay :handoff],
+     :predicate
+     "Replay-sensitive effects without required replay/audit artifacts refuse rather than silently performing live work."},
+    "C8/source/742360aa582a11a285244595913c34ae1f24f4a3e481008402abf0aeb9a1de38"
+    {:index 23,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :replay],
+     :predicate
+     "All following domains remain separate rather than interchangeable labels."},
+    "C8/source/de0699b8b49c054e65eae2aaf72d5de55d6df7cbf6bd0f9cf683bd2cb2fe1785"
+    {:index 46,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff],
+     :predicate
+     "Effectful reorder requires actual ordering evidence consumed by the optimizer."},
+    "C8/source/77044045cede6e67112c4be6c02a653ab44174554efc10a58c5672112565eead"
+    {:index 33,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff],
+     :predicate
+     "Actual optimizers consume ordering before reorder/fusion/elimination; this trace is not optimizer execution."},
+    "C8/source/a67e6eb885fd6e2ce8c4ce946b13665a76b8346a564230cf715037eb211c8f58"
+    {:index 1,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+    "C8/source/633aa14b8a93349c8d278841121edae9e6616faf372575a955d14743b47fef84"
+    {:index 0,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+    "C8/source/b9a2934048e963625573f73204c197195a8a47b8f98cdf2ecf9323fbf83bbc41"
+    {:index 36,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+    "C8/source/07a6459fbccb9577ee2574f6e788d4672fb2158765c95e1f5d8798461d8c687b"
+    {:index 7,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+    "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5"
+    {:index 32,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff],
+     :predicate
+     "Sequence/commutation/no-duplicate/no-eliminate/resource-bracketing/volatile-MMIO-atomic/replay-order constraints remain explicit."},
+    "C8/source/eff94452ef98044d3b28fcc68f36ce1963ea0fa025aba592fb336d2485a803a7"
+    {:index 18,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+    "C8/source/3b6dc78a73533f7e624c7b1dc1610c7dbd114e3dc7d756cd7589c4ddacbe90f5"
+    {:index 42,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :propagation],
+     :predicate
+     "Effect inference must derive actual typed-core behavior, not backend or runtime accidents."},
+    "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263"
+    {:index 6,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff],
+     :predicate
+     "All eight requirements apply together: facts-or-diagnostic for behavior, latent/throws, declarations, complete legality intersection, separate build domain, replay/audit, ordering and missing-grant refusal before MIR."},
+    "C8/source/7b54f9bef0e31dbba05920b790ea404cd9869e55dd4bc6cb9bef55e5312d849a"
+    {:index 34,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+    "C8/source/bdad31c5bc7098bc4cd0a666a5adc338beaafb558bb9bc501a86a68a3f906d59"
+    {:index 41,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality],
+     :predicate
+     "Typing alone cannot legalize effects or grant authority."},
+    "C8/source/9dcbe010c684cb4776cd4b3bae53429d83442453dccede31330f184fc9ac21d2"
+    {:index 16,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff],
+     :predicate
+     "Per-effect records retain source, function/namespace/profile/package/deployment/runtime/safety acceptance, required versus granted capabilities and result; sample true flags are not verification."},
+    "C8/source/2ed000ddfd854672b57052dbb844913a9b100c81532f580bf5b8ae13b0c9dc7f"
+    {:index 31,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality],
+     :predicate
+     "Ordering records include the complete subsequent constraint family."},
+    "C8/source/8dd00dc140bf7d686085644e408320434899d873760d882e67715405e8e2104c"
+    {:index 44,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality],
+     :predicate
+     "An effect name cannot supply its own capability grant."},
+    "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69"
+    {:index 38,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff],
+     :predicate
+     "All nine failure classes retain exact identifiers: declaration/profile/grant/build/replay/order/provider/unknown-label/malformed-artifact, with actual positive/negative fixtures."},
+    "C8/source/40ceef830938fb0ff1a6b1fd2e77f449e0c6a3ec0fd8ea19724c53f85cb26c9a"
+    {:index 5,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+    "C8/source/78add2dfcce75e12d27fefc4b3daf71e1cb8f7cf77a18da1bf140005d4e9eb3b"
+    {:index 30,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+    "C8/source/fca37f6a814ebabec1dab9d843082b14ad3c147f8402e6c270e81373f3bf5ceb"
+    {:index 4,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality],
+     :predicate
+     "Types, effect actions and capability authority remain separate; neither implies the other."},
+    "C8/source/abe1427025016e125ec4745eba9e2470e7f3fdae2963e495495d42f984e3c352"
+    {:index 20,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff],
+     :predicate
+     "Authority records bind effect/source/capability/grant scope-principal-phase/provider/status; filesystem/config/app.server values illustrate one subject, not ambient grants."},
+    "C8/source/16ef91a5084b0bb59a61e14d39a2031406ecd6da8dcfa4bc25d417d3c5b2f0d5"
+    {:index 9,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+    "C8/source/37696ee31b18b63c297a5b5b4b3079b106354c8b5ac9c6584b0ad31c4f722ee9"
+    {:index 48,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff],
+     :predicate
+     "Conformance introduction quantifies the entire following producer/checker/consumer conjunction."},
+    "C8/source/bbb6b9e3ae36d0401441d1254e3680905ba80a903f4dcd708f8e73d6b063d082"
+    {:index 47,
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :predicate
+     "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+    "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300"
+    {:index 49,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff],
+     :predicate
+     "Actual results cover direct/latent/transitive/build/residual computation, function/namespace declarations, profile refusal, capability accept/refuse, hermetic rejection, replay emission, resource/volatile/MMIO/atomic/workflow/AI ordering, MIR preservation and all diagnostic failure classes; none is executed by this source trace."},
+    "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b"
+    {:index 28,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:replay],
+     :predicate
+     "All nine time/random/external-IO/external-DB/workflow/model/tool/human-review/scheduler families produce actual obligations, preserving :ai/human-review."},
+    "C8/source/efba30c4adee8e15b150dbf6e901642c3d228d896be2007887337c25ebca1cd2"
+    {:index 39,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:handoff],
+     :predicate
+     "Diagnostics retain core node/span/generated origins/function/namespace/effect/capability/profile/target/provider/grant/remediation."},
+    "C8/source/3ce9e6d8ab672c48dfb03fa7d5585efec6dd6c5f9ad460bf56f2c4e29cccf2ee"
+    {:index 21,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff],
+     :predicate
+     "Authority evidence is not safety proof; profile/safety/runtime-selection/audit consumers retain distinct actual checks."},
+    "C8/source/1487ce16d900c2d6c71440dc6bf7d6d4926b77bc90c190250d6f8d4fe666f648"
+    {:index 43,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :replay],
+     :predicate
+     "Macro build facts cannot hide emitted runtime effects."},
+    "C8/source/838ac4729ce8713e8a58a36fbf1c0b4a850d948cc454f08a366f205eedcb99b4"
+    {:index 13,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:propagation :legality],
+     :predicate
+     "Branch alternatives may remain for optimization, but all alternatives conservatively contribute to L6 legality."},
+    "C8/source/cd133df563af53bc385aa5833929f78043cc8df2ffa8cec74e9d2cb96b2a844e"
+    {:index 15,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality],
+     :predicate
+     "Every applicable authority must accept the effect; the intersection is conjunctive."},
+    "C8/source/a4ef10e17eeee6946bed4b48b1d484aa2412048ad78184b7b089589cce3ad30f"
+    {:index 3,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff],
+     :predicate
+     "The checker implements actual L6 over typed core for every named expression/function/namespace/module/macro/build/replay/residual domain and validates all governing authority/provider/safety inputs; actual downstream consumers preserve its products."},
+    "C8/source/244c07c3179e2e2570c2b9409378b54fb521aa3dd971ff3fce3b1d7942c90fc0"
+    {:index 17,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality],
+     :predicate
+     "Backend/runtime support may narrow but never grant authority missing from source, package or deployment policy."},
+    "C8/source/348079ecac4865c26d305f83e0b8a62cb469aab2865e0e80d1faa8f2de3be4e1"
+    {:index 35,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :propagation :replay :handoff],
+     :predicate
+     "After proof/specialization, actual runtime checks, dynamic dispatch, fallback-provider calls, residual authority checks and replay logging survive in residual reports and MIR/runtime artifacts."},
+    "C8/source/6fc79d7e9b4abfb28f96b2926099189efe402eea2c428d18104ffcff97bc90fe"
+    {:index 29,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:replay :handoff],
+     :predicate
+     "Workflow/AI/runtime/test consumers must satisfy obligations; profiles forbidding replay gaps reject missing records before target lowering."},
+    "C8/source/4c9dcbd61de7fe16448b61d39f349fb28d1aa3a7bca9093a74f64bd83130a86e"
+    {:index 27,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:replay],
+     :predicate
+     "Replay records apply to the following nondeterministic families under the actual profile and consumer contract."},
+    "C8/source/ba502db242a2b368981c64c887acab5ba6d18861798b111e5db8f1b79f046e3a"
+    {:index 12,
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff],
+     :predicate
+     "Graph fields preserve module/node identity, direct/latent/transitive/order/source, function declared/inferred/latent/throws, namespace declared/inferred, build/replay and diagnostics. HTTP/HttpError and empty example vectors illustrate one graph; they are not universal pure defaults or permission to copy declarations into inference."}},
+   :dependency-joins
+   [{:source "C7/L6/L9",
+     :input
+     "Actual typed calls, effect/handler semantics and thrown-error facts",
+     :consumers [:computation :propagation :handoff]}
+    {:source "L15/profiles/Runtime/Package/L12",
+     :input
+     "Actual scoped grants, runtime/provider support, safety and hermetic build/deployment policies",
+     :consumers [:legality :replay]}
+    {:source "Checked-core/MIR/optimizer/runtime/workflow/AI/test",
+     :input
+     "Actual preserved effect annotations, consumed ordering/replay obligations and consumer results",
+     :consumers [:handoff]}],
+   :predecessor-readiness-successor
+   {:commit "392c6ae6265958ffc73e64ac397bb9e5038b1ee3",
+    :path
+    "specs/sh-family-crosswalk/implementation-readiness-source-version.edn",
+    :sha256
+    "645a1910e41362b83f87b4e6e3d416f7d1962011aed40a18387bc67f2177472d",
+    :projection-path "specs/sh-family-crosswalk/crosswalk.edn",
+    :projection-sha256
+    "3603359115e1cb4f4a172f8b0d776c28583fa57fe8213f5326720dbb2caa2c3e",
+    :input-fingerprint
+    "4880fe8e8a186e4f33bfbaf22277cb78293e0a0b6a276da1554ae51a40a165f1"},
+   :additional-contexts
+   [{:key :replay,
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation",
+     :historical-witness
+     {:commit "94dfa9c535268276765b76366c5c60687fa3807a",
+      :path "specs/effects-workflow/tasks.md",
+      :file-sha256
+      "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+      :source-span
+      {:start-byte 6710,
+       :end-byte 7367,
+       :sha256
+       "0f851c998a5fa6d35793f07a40ac8310f867c5b52331ded2b8bd1782988fca0b"}},
+     :current-witness
+     {:path "specs/effects-workflow/tasks.md",
+      :source-commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
+      :sha256
+      "a61dbf01fc6d1585b4e903481ef9b9b9c2decf886e24f7c1c511d086f99566cd",
+      :source-span
+      {:start-byte 7902,
+       :end-byte 8559,
+       :start-line 69,
+       :end-line 69,
+       :sha256
+       "0f851c998a5fa6d35793f07a40ac8310f867c5b52331ded2b8bd1782988fca0b"}},
+     :acceptance :not-transferred,
+     :scope
+     :selected-replay-or-manifest-interface-not-whole-dependencies}
+    {:key :handoff,
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+     :historical-witness
+     {:commit "94dfa9c535268276765b76366c5c60687fa3807a",
+      :path "specs/effects-workflow/tasks.md",
+      :file-sha256
+      "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+      :source-span
+      {:start-byte 8875,
+       :end-byte 9542,
+       :sha256
+       "afd9430e24dd760ceb2d6dbb98f14740e8aeebe184bb2baed8052dee85157614"}},
+     :current-witness
+     {:path "specs/effects-workflow/tasks.md",
+      :source-commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
+      :sha256
+      "a61dbf01fc6d1585b4e903481ef9b9b9c2decf886e24f7c1c511d086f99566cd",
+      :source-span
+      {:start-byte 10369,
+       :end-byte 11036,
+       :start-line 84,
+       :end-line 84,
+       :sha256
+       "afd9430e24dd760ceb2d6dbb98f14740e8aeebe184bb2baed8052dee85157614"}},
+     :acceptance :not-transferred,
+     :scope
+     :selected-replay-or-manifest-interface-not-whole-dependencies}],
+   :plan-source
+   {:path "specs/effects-workflow/plan.md",
+    :before nil,
+    :after
+    {:commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
+     :sha256
+     "3beadb1d7ac7b8a41acd645651dc7b4a520c56468f6de6782f6dda86447ffc41",
+     :kind :source-inspection-not-execution}},
+   :criteria
+   [{:key :computation,
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects",
+     :historical-witness
+     {:path "specs/effects-workflow/tasks.md",
+      :marker "effects-implementation-tasks",
+      :task-id
+      "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects",
+      :file-sha256
+      "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+      :start-byte 1395,
+      :end-byte 2864,
+      :raw-sha256
+      "e2ee7085c0973bb98594db689cdafe33905e03fb32f316fc8eaf031c4556efb0",
+      :commit "94dfa9c535268276765b76366c5c60687fa3807a"},
+     :current-witness
+     {:path "specs/effects-workflow/tasks.md",
+      :source-commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
+      :sha256
+      "a61dbf01fc6d1585b4e903481ef9b9b9c2decf886e24f7c1c511d086f99566cd",
+      :source-span
+      {:start-byte 1668,
+       :end-byte 3137,
+       :start-line 30,
+       :end-line 30,
+       :sha256
+       "e2ee7085c0973bb98594db689cdafe33905e03fb32f316fc8eaf031c4556efb0"}}}
+    {:key :propagation,
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects",
+     :historical-witness
+     {:path "specs/effects-workflow/tasks.md",
+      :marker "effects-implementation-tasks",
+      :task-id
+      "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects",
+      :file-sha256
+      "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+      :start-byte 3226,
+      :end-byte 4445,
+      :raw-sha256
+      "2c51974bcfae8003f13f5962aeb5ffbb65b28f9a9edce37a86e1b05a2b0487f7",
+      :commit "94dfa9c535268276765b76366c5c60687fa3807a"},
+     :current-witness
+     {:path "specs/effects-workflow/tasks.md",
+      :source-commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
+      :sha256
+      "a61dbf01fc6d1585b4e903481ef9b9b9c2decf886e24f7c1c511d086f99566cd",
+      :source-span
+      {:start-byte 3809,
+       :end-byte 5028,
+       :start-line 43,
+       :end-line 43,
+       :sha256
+       "2c51974bcfae8003f13f5962aeb5ffbb65b28f9a9edce37a86e1b05a2b0487f7"}}}
+    {:key :legality,
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
+     :historical-witness
+     {:path "specs/effects-workflow/tasks.md",
+      :marker "effects-implementation-tasks",
+      :task-id
+      "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
+      :file-sha256
+      "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+      :start-byte 4827,
+      :end-byte 6319,
+      :raw-sha256
+      "bd9ed62d5dbef6e25d8bb781d6b2999fc763ddb8585742c3be6d0819387e193a",
+      :commit "94dfa9c535268276765b76366c5c60687fa3807a"},
+     :current-witness
+     {:path "specs/effects-workflow/tasks.md",
+      :source-commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
+      :sha256
+      "a61dbf01fc6d1585b4e903481ef9b9b9c2decf886e24f7c1c511d086f99566cd",
+      :source-span
+      {:start-byte 5717,
+       :end-byte 7209,
+       :start-line 56,
+       :end-line 56,
+       :sha256
+       "bd9ed62d5dbef6e25d8bb781d6b2999fc763ddb8585742c3be6d0819387e193a"}}}
+    {:key :replay,
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation",
+     :historical-witness
+     {:path "specs/effects-workflow/tasks.md",
+      :marker "effects-implementation-tasks",
+      :task-id
+      "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation",
+      :file-sha256
+      "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+      :start-byte 7368,
+      :end-byte 8501,
+      :raw-sha256
+      "e987cf94e466510ba2a875b93eb2d75be366da66d6e12f04d380888adfd63837",
+      :commit "94dfa9c535268276765b76366c5c60687fa3807a"},
+     :current-witness
+     {:path "specs/effects-workflow/tasks.md",
+      :source-commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
+      :sha256
+      "a61dbf01fc6d1585b4e903481ef9b9b9c2decf886e24f7c1c511d086f99566cd",
+      :source-span
+      {:start-byte 8561,
+       :end-byte 9694,
+       :start-line 71,
+       :end-line 71,
+       :sha256
+       "e987cf94e466510ba2a875b93eb2d75be366da66d6e12f04d380888adfd63837"}}}
+    {:key :handoff,
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+     :historical-witness
+     {:path "specs/effects-workflow/tasks.md",
+      :marker "effects-implementation-tasks",
+      :task-id
+      "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+      :file-sha256
+      "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+      :start-byte 9543,
+      :end-byte 10929,
+      :raw-sha256
+      "69e806f18a9e342b8b6a5f560a3ebe71f448b16c8b9e51816a8454c091e8f0e0",
+      :commit "94dfa9c535268276765b76366c5c60687fa3807a"},
+     :current-witness
+     {:path "specs/effects-workflow/tasks.md",
+      :source-commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
+      :sha256
+      "a61dbf01fc6d1585b4e903481ef9b9b9c2decf886e24f7c1c511d086f99566cd",
+      :source-span
+      {:start-byte 11038,
+       :end-byte 12424,
+       :start-line 86,
+       :end-line 86,
+       :sha256
+       "69e806f18a9e342b8b6a5f560a3ebe71f448b16c8b9e51816a8454c091e8f0e0"}}}],
+   :owner-joins
+   {"compiler/c8/capability-proof"
+    {:id "compiler/c8/capability-proof",
+     :original-obligation
+     "Connect effect use to actual scoped grants/provider evidence and report missing capabilities before MIR, without treating capability evidence as a safety proof.",
+     :criterion-keys [:legality :handoff],
+     :status
+     :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+     :implementation-credit :none},
+    "compiler/c8/effect-computation"
+    {:id "compiler/c8/effect-computation",
+     :original-obligation
+     "Compute direct/latent/transitive/namespace/module and residual effect facts conservatively, including thrown errors, exposing all behavior beyond pure construction.",
+     :criterion-keys [:computation :propagation :handoff],
+     :status
+     :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+     :implementation-credit :none},
+    "compiler/c8/effect-domains"
+    {:id "compiler/c8/effect-domains",
+     :original-obligation
+     "Keep compile-time/build/package effects distinct from generated runtime effects, including macros whose two domains differ.",
+     :criterion-keys [:computation :replay :handoff],
+     :status
+     :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+     :implementation-credit :none},
+    "compiler/c8/effect-order"
+    {:id "compiler/c8/effect-order",
+     :original-obligation
+     "Emit and preserve sequencing/commutation/duplication/elimination/resource/volatile/MMIO/atomic/replay constraints before optimization.",
+     :criterion-keys [:legality :handoff],
+     :status
+     :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+     :implementation-credit :none},
+    "compiler/c8/replay-audit"
+    {:id "compiler/c8/replay-audit",
+     :original-obligation
+     "Emit replay/audit obligations for nondeterministic external/workflow/AI/scheduler effects and reject forbidden gaps before lowering.",
+     :criterion-keys [:replay :handoff],
+     :status
+     :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+     :implementation-credit :none}},
+   :source-entailment
+   :author-assessed-complete-C8-and-selected-context-proposal,
+   :independent-current-review :pending,
+   :source-trace
+   {:path
+    "specs/requirement-reconciliation/c8-complete-current-facet-trace.edn",
+    :commit "94dfa9c535268276765b76366c5c60687fa3807a",
+    :sha256
+    "783919a0db49d25e48c553dc8d28dcc13f8310efc212d5228c3f267d66ada199",
+    :scope :preserved-C8-source-only},
+   :source-facets
+   [{:id "C8/normalized-facet/0-29/ed41993e1ddf0ef4",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/633aa14b8a93349c8d278841121edae9e6616faf372575a955d14743b47fef84",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 0,
+      :end-byte 29,
+      :sha256
+      "ed41993e1ddf0ef48e7c83ce96d49a6c93c3fefc9bc92531729026c6b4291a71"}}
+    {:id "C8/normalized-facet/30-306/e47eb799105c6eee",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/a67e6eb885fd6e2ce8c4ce946b13665a76b8346a564230cf715037eb211c8f58",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 30,
+      :end-byte 306,
+      :sha256
+      "e47eb799105c6eee0413ee995cf5424ecdcdfbafe625144e7c575a152ee080c3"}}
+    {:id "C8/normalized-facet/307-318/994413297a3e95a9",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/816158e92d6540c73dc43a13e597eab751c76125e78a1e2f8ec4189683285265",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 307,
+      :end-byte 318,
+      :sha256
+      "994413297a3e95a9b72f5e4c04aa9c306f9009ad88fa0f99453d1963835668b9"}}
+    {:id "C8/facet/319-678",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/a4ef10e17eeee6946bed4b48b1d484aa2412048ad78184b7b089589cce3ad30f",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 319,
+      :end-byte 678,
+      :sha256
+      "91d0846d891e50307d0d8956ef6d85abac40432e484a71329e50ed58425049f0"}}
+    {:id "C8/facet/679-790",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/fca37f6a814ebabec1dab9d843082b14ad3c147f8402e6c270e81373f3bf5ceb",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 679,
+      :end-byte 790,
+      :sha256
+      "d9fbc866dcf0b31c6ab764575dcc997b5b16e62112a60f9f268ebab7ecd5adf7"}}
+    {:id "C8/normalized-facet/791-807/d8416f1863ce5290",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/40ceef830938fb0ff1a6b1fd2e77f449e0c6a3ec0fd8ea19724c53f85cb26c9a",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 791,
+      :end-byte 807,
+      :sha256
+      "d8416f1863ce5290f0f41fa533fb9e10fef5d405c1300c03e276a0a894382b61"}}
+    {:id "C8/facet/808-915",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff],
+     :owner-requirement-ids ["compiler/c8/effect-computation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 808,
+      :end-byte 915,
+      :sha256
+      "b91ac4b30fa026d9ef223791746813639654e4778954397b95f8a6b242b27758"}}
+    {:id "C8/facet/915-989",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff],
+     :owner-requirement-ids ["compiler/c8/effect-computation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 915,
+      :end-byte 989,
+      :sha256
+      "38746aee18cf62763946d8f34ba3039d596dc029455c9238eb4c2fa82770aca3"}}
+    {:id "C8/facet/989-1068",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff],
+     :owner-requirement-ids
+     ["language/effects/check-narrowest-allowance"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 989,
+      :end-byte 1068,
+      :sha256
+      "fca2de36dcf7f95b9df517f4d17e629a47e8df7a8e62e2ea56a6922753fdc922"}}
+    {:id "C8/facet/1068-1235",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff],
+     :owner-requirement-ids
+     ["language/effects/check-narrowest-allowance"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 1068,
+      :end-byte 1235,
+      :sha256
+      "78e9a37be1693341ca9a8ea9048cf4e0e07a8bb851a14b9cbf8aff2259d69cb3"}}
+    {:id "C8/facet/1235-1291",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff],
+     :owner-requirement-ids ["compiler/c8/effect-domains"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 1235,
+      :end-byte 1291,
+      :sha256
+      "33ed39891c2214caca2aa3fc3dd9c903950e780c4a40825e6e482674fa7f8567"}}
+    {:id "C8/facet/1291-1402",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff],
+     :owner-requirement-ids ["compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 1291,
+      :end-byte 1402,
+      :sha256
+      "30077770ff412ee902ab151e748903a38bac36a6f570a5d9991f5fd5d4906e04"}}
+    {:id "C8/facet/1402-1491",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff],
+     :owner-requirement-ids ["compiler/c8/effect-order"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 1402,
+      :end-byte 1491,
+      :sha256
+      "aab5da38d1a1cf85da83ef1ed86236ac465a63181f3c43143a1e4a7a0d5dd0bc"}}
+    {:id "C8/facet/1491-1556",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff],
+     :owner-requirement-ids ["compiler/c8/capability-proof"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 1491,
+      :end-byte 1556,
+      :sha256
+      "170f351ce96b141e7586fe207d84fe94e3c3737afa5a67aa2e77b748d274acaa"}}
+    {:id "C8/normalized-facet/1557-1573/21d1931a332d9b7f",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/07a6459fbccb9577ee2574f6e788d4672fb2158765c95e1f5d8798461d8c687b",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 1557,
+      :end-byte 1573,
+      :sha256
+      "21d1931a332d9b7f509d0637a459922427a666e44b8a7f19d1a912664edf66f7"}}
+    {:id "C8/facet/1574-1608",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:handoff :propagation :legality :replay],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 1574,
+      :end-byte 1608,
+      :sha256
+      "840349f2ec39ff95b937a443d10a0e039a167028afd3507c73658f7a93d47fc5"}}
+    {:id "C8/facet/1608-1657",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:handoff :propagation :legality :replay],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 1608,
+      :end-byte 1657,
+      :sha256
+      "491c33facb79551bb118bb6843a154db66ca2a51259f914bb757fc16a2521dfd"}}
+    {:id "C8/facet/1657-1697",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:handoff :propagation :legality :replay],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 1657,
+      :end-byte 1697,
+      :sha256
+      "38c2f0cdd8e667e93a498e7bbb98c6881b852cec97fb25f71eb43388920a9069"}}
+    {:id "C8/facet/1697-1744",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:handoff :propagation :legality :replay],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 1697,
+      :end-byte 1744,
+      :sha256
+      "9cb9430652a2617af882b625bc7cb4fbbe740d9aa602413d54e53611a563c673"}}
+    {:id "C8/facet/1744-1791",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:handoff :propagation :legality :replay],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 1744,
+      :end-byte 1791,
+      :sha256
+      "b92258650740625271a1cd926f726b9002909c3b12e123164669b1ae1c80e96d"}}
+    {:id "C8/facet/1791-1851",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:handoff :propagation :legality :replay],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 1791,
+      :end-byte 1851,
+      :sha256
+      "6155345711df625673c1164d0ad1122ff837d7b03b56b57fa1c1b451ab19a902"}}
+    {:id "C8/facet/1851-1943",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:handoff :propagation :legality :replay],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 1851,
+      :end-byte 1943,
+      :sha256
+      "1f24f7cdbafc82f8d0c76c4cb1fc59d8a3f6966d4b17291c02604d1d5e764a48"}}
+    {:id "C8/normalized-facet/1944-1969/f4280a4d61a89adc",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/16ef91a5084b0bb59a61e14d39a2031406ecd6da8dcfa4bc25d417d3c5b2f0d5",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 1944,
+      :end-byte 1969,
+      :sha256
+      "f4280a4d61a89adc67415f182bd6ae026ebf04a881b9948794b09fe7418ab882"}}
+    {:id "C8/facet/1970-1986",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 1970,
+      :end-byte 1986,
+      :sha256
+      "b757caf1340d92257c7f0e8f315e7e4cd5d5546035828e5c9fea86104099222d"}}
+    {:id "C8/facet/1986-2018",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 1986,
+      :end-byte 2018,
+      :sha256
+      "7d05b5c6abd14d79892f795f1259adab3c831ee1b752777881c34ff69dff996e"}}
+    {:id "C8/facet/2018-2059",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 2018,
+      :end-byte 2059,
+      :sha256
+      "f241c48bf0dcda47b6a72bbdbf32ea3b39051591bb2125aa876a9b817a424474"}}
+    {:id "C8/facet/2059-2086",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 2059,
+      :end-byte 2086,
+      :sha256
+      "a02c889246e5a3e6258950f719ce2bafa6e57c4a1a00bd583697246ec99a128d"}}
+    {:id "C8/facet/2086-2106",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 2086,
+      :end-byte 2106,
+      :sha256
+      "6af76e7df658967d73aa5244931fb165b8cc8b59770034a41ab93b1a96328c78"}}
+    {:id "C8/facet/2106-2136",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 2106,
+      :end-byte 2136,
+      :sha256
+      "f09ff3a1457d0fbb8452832f89e308e3787e19543d146058a5e7ff9c125641c6"}}
+    {:id "C8/facet/2136-2167",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 2136,
+      :end-byte 2167,
+      :sha256
+      "03b62224b9a26916fdee5d9f43dd96c1d0d100bb01273dd06d081e32d0b138b0"}}
+    {:id "C8/facet/2167-2193",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 2167,
+      :end-byte 2193,
+      :sha256
+      "627c31dc9ade61b7fe2c8d3525c8bda6fe8c87916abeb33fef25df403c75291c"}}
+    {:id "C8/facet/2193-2215",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 2193,
+      :end-byte 2215,
+      :sha256
+      "60d574837f66d9e69f9f7d907d9733c6b0182bd8bd883d057b7751b1014acb32"}}
+    {:id "C8/normalized-facet/2216-2232/46a7930f8402005f",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/036a329ef795e5072ff70202a3062c4a774c7502c5766870935fe31c33bd368e",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 2216,
+      :end-byte 2232,
+      :sha256
+      "46a7930f8402005fed9cfdbfd694944c1797dd1a74ed08b9b01f6ff11249b85d"}}
+    {:id "C8/facet/2233-2845",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/ba502db242a2b368981c64c887acab5ba6d18861798b111e5db8f1b79f046e3a",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff],
+     :owner-requirement-ids ["compiler/c8/effect-computation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 2233,
+      :end-byte 2845,
+      :sha256
+      "c09743806283591e4255197c59befe4d0a7639c0935a5ee0bd2b8b9617fcb6d7"}}
+    {:id "C8/facet/2846-2976",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/838ac4729ce8713e8a58a36fbf1c0b4a850d948cc454f08a366f205eedcb99b4",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:propagation :legality],
+     :owner-requirement-ids ["compiler/c8/effect-computation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 2846,
+      :end-byte 2976,
+      :sha256
+      "a144f0b4ad456782b71e7b69c717cb787a5a8fdd8bc2d8985c3aa286fbd250c8"}}
+    {:id "C8/normalized-facet/2977-3002/137f13237b7f3de5",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/5fbe9427cf57bf172c0ebbb6b1e05ba5eeb28d8b87b147fa9286c60972a08d0b",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 2977,
+      :end-byte 3002,
+      :sha256
+      "137f13237b7f3de5a9753e69c652f22a5d5e873239bc4f0a7d92f973d94a5d1b"}}
+    {:id "C8/facet/3003-3070",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/cd133df563af53bc385aa5833929f78043cc8df2ffa8cec74e9d2cb96b2a844e",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality],
+     :owner-requirement-ids
+     ["language/effects/check-narrowest-allowance"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 3003,
+      :end-byte 3070,
+      :sha256
+      "392e301cd4444a78bc9ddf72da1289c7301f974fb55d0f35fac96d4372d54ce4"}}
+    {:id "C8/facet/3071-3432",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/9dcbe010c684cb4776cd4b3bae53429d83442453dccede31330f184fc9ac21d2",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff],
+     :owner-requirement-ids
+     ["language/effects/check-narrowest-allowance"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 3071,
+      :end-byte 3432,
+      :sha256
+      "c17cd4ee53640412688cf079efbc20fddaf6f57cc741638a9d1b97b23e08af6d"}}
+    {:id "C8/facet/3433-3567",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/244c07c3179e2e2570c2b9409378b54fb521aa3dd971ff3fce3b1d7942c90fc0",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality],
+     :owner-requirement-ids
+     ["language/effects/check-narrowest-allowance"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 3433,
+      :end-byte 3567,
+      :sha256
+      "66b61eba52dd58a9cb95e6aaae11d8251364c3d628b17d392f1530aa64f7cc1e"}}
+    {:id "C8/normalized-facet/3568-3588/1e7d7850b0cdcb12",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/eff94452ef98044d3b28fcc68f36ce1963ea0fa025aba592fb336d2485a803a7",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 3568,
+      :end-byte 3588,
+      :sha256
+      "1e7d7850b0cdcb12714d9d5b663381070982ed6cc97bd45114477cd636b506f2"}}
+    {:id "C8/facet/3589-3644",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/b387e50ffcda3a7ccde4089cc29476a0bf7b6c44c09e1a34f2dd8bb2e9602f86",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality],
+     :owner-requirement-ids ["compiler/c8/capability-proof"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 3589,
+      :end-byte 3644,
+      :sha256
+      "a38b123a1c30971b4649735e493f26c6eb406dd009cf8a1cf253b8a4f8f35563"}}
+    {:id "C8/facet/3645-3917",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/abe1427025016e125ec4745eba9e2470e7f3fdae2963e495495d42f984e3c352",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff],
+     :owner-requirement-ids ["compiler/c8/capability-proof"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 3645,
+      :end-byte 3917,
+      :sha256
+      "6981916d728266bab110a00d5c91eea6f8ad79078fa83ea2f5513a883f79eceb"}}
+    {:id "C8/facet/3918-4073",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/3ce9e6d8ab672c48dfb03fa7d5585efec6dd6c5f9ad460bf56f2c4e29cccf2ee",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff],
+     :owner-requirement-ids ["compiler/c8/capability-proof"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 3918,
+      :end-byte 4073,
+      :sha256
+      "3b16ab2620729b0dbb79ad8be6713b182236bf5b3e14187da9aef460f13d109c"}}
+    {:id "C8/normalized-facet/4074-4103/a040493e9f1b2ae4",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/fbdb59d60b7ca6c328e79366df9028cc76ec7408efe5c60a37fd29a982ebe25f",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 4074,
+      :end-byte 4103,
+      :sha256
+      "a040493e9f1b2ae47b2233297d43a0efd591e80961ebd647b5641a053c7a0a25"}}
+    {:id "C8/facet/4104-4144",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/742360aa582a11a285244595913c34ae1f24f4a3e481008402abf0aeb9a1de38",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :replay],
+     :owner-requirement-ids ["compiler/c8/effect-domains"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 4104,
+      :end-byte 4144,
+      :sha256
+      "1d7cfde69b1bb6d9ea4aee71fc26a970b414517ccf123b226b9cd81e80c220e4"}}
+    {:id "C8/facet/4145-4274",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/fee632d4a91c90120ca0d842be3b065917d2ae55c6045919d57758d3122c26d6",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :replay],
+     :owner-requirement-ids ["compiler/c8/effect-domains"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 4145,
+      :end-byte 4274,
+      :sha256
+      "584c3026c90ab174f120738ff4d0323d4c9845dbbf87337f1c5acedae598353f"}}
+    {:id "C8/facet/4274-4318",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/fee632d4a91c90120ca0d842be3b065917d2ae55c6045919d57758d3122c26d6",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :replay],
+     :owner-requirement-ids ["compiler/c8/effect-domains"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 4274,
+      :end-byte 4318,
+      :sha256
+      "081d34dcf896f021dbdb795b0c188a72591363080435c3ef1966c28bfbc7fb70"}}
+    {:id "C8/facet/4318-4394",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/fee632d4a91c90120ca0d842be3b065917d2ae55c6045919d57758d3122c26d6",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :replay],
+     :owner-requirement-ids ["compiler/c8/effect-domains"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 4318,
+      :end-byte 4394,
+      :sha256
+      "429bb93fcc27926c67b75c1ad0305485b124b6f91d37a8fdcec2eba2520d21ee"}}
+    {:id "C8/facet/4395-4555",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/da09721f9dcb415ace61dd28d8c74f387e2c4bd119a8103d0c6d1ac17217b1f3",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :replay],
+     :owner-requirement-ids ["compiler/c8/effect-domains"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 4395,
+      :end-byte 4555,
+      :sha256
+      "d982cd3d87d1f890d6e0242d3bfa3c52ca4d196b8dfe1e1076c2882c20fab63c"}}
+    {:id "C8/normalized-facet/4556-4585/e58cd582f73ca1b8",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/13e3ae999c283ee4cf9daec29bbb9401ef3899cc30bcf991a0c8fe6b6de3cae2",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 4556,
+      :end-byte 4585,
+      :sha256
+      "e58cd582f73ca1b8f5bcbde12e737fb4033ebceb7f2f8f98e3f7ef6871226d70"}}
+    {:id "C8/facet/4586-4635",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/4c9dcbd61de7fe16448b61d39f349fb28d1aa3a7bca9093a74f64bd83130a86e",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:replay],
+     :owner-requirement-ids ["compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 4586,
+      :end-byte 4635,
+      :sha256
+      "8ab5347db700243ee6feb15548faf9a3a049a9f6e6bbce31fac338756c8c3ca2"}}
+    {:id "C8/facet/4636-4644",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:replay],
+     :owner-requirement-ids ["compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 4636,
+      :end-byte 4644,
+      :sha256
+      "377f4d94ca2f170de3354bc52631f94c912e8e0c78987b57b7e7735d56486b0f"}}
+    {:id "C8/facet/4644-4658",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:replay],
+     :owner-requirement-ids ["compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 4644,
+      :end-byte 4658,
+      :sha256
+      "69f1441b514f991b54d09ebf913184efb80568362b781f97d9e09906a417698d"}}
+    {:id "C8/facet/4658-4673",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:replay],
+     :owner-requirement-ids ["compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 4658,
+      :end-byte 4673,
+      :sha256
+      "799959d666d93fcad5385da7e0caacaa2cfd3fc7ef9057ef38dba5632d9d85f3"}}
+    {:id "C8/facet/4673-4705",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:replay],
+     :owner-requirement-ids ["compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 4673,
+      :end-byte 4705,
+      :sha256
+      "4852bbc5630a1eafc5e484632f1a7e1bf834ae67db6fa95f45a5f0a9e6a23d4a"}}
+    {:id "C8/facet/4705-4724",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:replay],
+     :owner-requirement-ids ["compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 4705,
+      :end-byte 4724,
+      :sha256
+      "9f77970955df5507ff57675f29dbd574d401342cafd35c569cf4ba68c5b6eba1"}}
+    {:id "C8/facet/4724-4739",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:replay],
+     :owner-requirement-ids ["compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 4724,
+      :end-byte 4739,
+      :sha256
+      "65e2cb15cdf69d0e3c2f57c93d59710b4e8e6529a76749e02292458cd8452765"}}
+    {:id "C8/facet/4739-4753",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:replay],
+     :owner-requirement-ids ["compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 4739,
+      :end-byte 4753,
+      :sha256
+      "7ed8b93335e6abf5f9f752c177825bb880060921ef4313b792adee67b7fd0dbf"}}
+    {:id "C8/facet/4753-4803",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:replay],
+     :owner-requirement-ids ["compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 4753,
+      :end-byte 4803,
+      :sha256
+      "64e664331947b0b37d7c901c6ae7e7c189f0fa542b86e9e7a2902e03defb6c9d"}}
+    {:id "C8/facet/4803-4837",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:replay],
+     :owner-requirement-ids ["compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 4803,
+      :end-byte 4837,
+      :sha256
+      "41c063cbec298c239e1e674bef04392de1e492dd6e2025080173fe06806f87ef"}}
+    {:id "C8/facet/4838-5030",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/6fc79d7e9b4abfb28f96b2926099189efe402eea2c428d18104ffcff97bc90fe",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:replay :handoff],
+     :owner-requirement-ids ["compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 4838,
+      :end-byte 5030,
+      :sha256
+      "78c665b2a562e8688b97326eb0eda165ee44d4d5d632a9586267dc052259689c"}}
+    {:id "C8/normalized-facet/5031-5055/9f824f169210ee8d",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/78add2dfcce75e12d27fefc4b3daf71e1cb8f7cf77a18da1bf140005d4e9eb3b",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 5031,
+      :end-byte 5055,
+      :sha256
+      "9f824f169210ee8d4308b073a0d2a03fd9ab8a340f6b4b9254aaa89e7bcf551a"}}
+    {:id "C8/facet/5056-5089",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/2ed000ddfd854672b57052dbb844913a9b100c81532f580bf5b8ae13b0c9dc7f",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality],
+     :owner-requirement-ids ["compiler/c8/effect-order"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 5056,
+      :end-byte 5089,
+      :sha256
+      "9c2a7f4c6932377c3d0841a407351c6a3aa04500df302898524655e79bc2b4ca"}}
+    {:id "C8/facet/5090-5102",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff],
+     :owner-requirement-ids ["compiler/c8/effect-order"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 5090,
+      :end-byte 5102,
+      :sha256
+      "25a2c93af033b05592b617955e7e6a08a692e00ca3199688e8abd7c091ce1b62"}}
+    {:id "C8/facet/5102-5117",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff],
+     :owner-requirement-ids ["compiler/c8/effect-order"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 5102,
+      :end-byte 5117,
+      :sha256
+      "c85f58f7d67fbb76e6fe7feeb91ef8ac8792baa57792b8840b5e09104693bc54"}}
+    {:id "C8/facet/5117-5139",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff],
+     :owner-requirement-ids ["compiler/c8/effect-order"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 5117,
+      :end-byte 5139,
+      :sha256
+      "ed6f9db3d048c640088f3c833c355e517d07df4fa157303974ebf14efa6056af"}}
+    {:id "C8/facet/5139-5161",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff],
+     :owner-requirement-ids ["compiler/c8/effect-order"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 5139,
+      :end-byte 5161,
+      :sha256
+      "2078a11f24f350c0bf86dcf148b2c11837fd0e27ba041d4043155d5e7854f4db"}}
+    {:id "C8/facet/5161-5202",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff],
+     :owner-requirement-ids ["compiler/c8/effect-order"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 5161,
+      :end-byte 5202,
+      :sha256
+      "e07555151b20388ae9664cc8f70320f652edd00173cec7ba7542654090189090"}}
+    {:id "C8/facet/5202-5249",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff],
+     :owner-requirement-ids ["compiler/c8/effect-order"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 5202,
+      :end-byte 5249,
+      :sha256
+      "6fdbb0e6820afa3cf101bb6cf2a6cb6284264092a6def166fc0fd20e40e90e3f"}}
+    {:id "C8/facet/5249-5279",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff],
+     :owner-requirement-ids ["compiler/c8/effect-order"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 5249,
+      :end-byte 5279,
+      :sha256
+      "44dcd8b9a32e8f066eab451410df56c8160cb726c236403f4d7495477324baaf"}}
+    {:id "C8/facet/5280-5367",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/77044045cede6e67112c4be6c02a653ab44174554efc10a58c5672112565eead",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff],
+     :owner-requirement-ids ["compiler/c8/effect-order"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 5280,
+      :end-byte 5367,
+      :sha256
+      "db477ab3d01440d4e4c254e97851e1108171583fcef05b117fa5b93e45d74953"}}
+    {:id "C8/normalized-facet/5368-5388/539f9381bff11baf",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/7b54f9bef0e31dbba05920b790ea404cd9869e55dd4bc6cb9bef55e5312d849a",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 5368,
+      :end-byte 5388,
+      :sha256
+      "539f9381bff11bafd7a4a39cb3060e9fec2a71a24524d6f6558e1d2d22ac14a2"}}
+    {:id "C8/facet/5389-5674",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/348079ecac4865c26d305f83e0b8a62cb469aab2865e0e80d1faa8f2de3be4e1",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :propagation :replay :handoff],
+     :owner-requirement-ids ["compiler/c8/effect-computation"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 5389,
+      :end-byte 5674,
+      :sha256
+      "96575b8e2913d32203cf63b7cd21e7069bea44c5696624b77c1b64e280f0beb0"}}
+    {:id "C8/normalized-facet/5675-5690/84b964dab09b580d",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/b9a2934048e963625573f73204c197195a8a47b8f98cdf2ecf9323fbf83bbc41",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 5675,
+      :end-byte 5690,
+      :sha256
+      "84b964dab09b580d85bc6c25ae5289e07a178aada1792ed38b72a4e79230f004"}}
+    {:id "C8/facet/5691-5740",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/5f402aada4709ea3728040ebb54a4fa4a1d5c25f58a3ba9a06cf2bc423e104be",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:handoff],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 5691,
+      :end-byte 5740,
+      :sha256
+      "99d9dcf4fa35cdc409d9d2c65c186a74ded9480fd6c284d32adcee42c8052aa2"}}
+    {:id "C8/facet/5741-5801",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 5741,
+      :end-byte 5801,
+      :sha256
+      "d7fa9e15aa9dc08b5fb0e6cdbfc21be810ddcb75343d18a976d272128a85d7e2"}}
+    {:id "C8/facet/5801-5849",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 5801,
+      :end-byte 5849,
+      :sha256
+      "3264bccd66784540b2fcd83df1e0dffba864306f59db382c6e01ea409cab93dc"}}
+    {:id "C8/facet/5849-5914",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 5849,
+      :end-byte 5914,
+      :sha256
+      "a55993a2800217b3277f137ef93d4934232429f3d78e266f75d72486a19e0e79"}}
+    {:id "C8/facet/5914-5956",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 5914,
+      :end-byte 5956,
+      :sha256
+      "9de8f5e4a52db82c85e7bf9e5a7e319fd6569d624920ddbbbb939727973e90c8"}}
+    {:id "C8/facet/5956-6027",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 5956,
+      :end-byte 6027,
+      :sha256
+      "a7324ca9e7960d6c1016e11e139ec6135f935ea403533c4217f903cf736c0d9f"}}
+    {:id "C8/facet/6027-6081",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 6027,
+      :end-byte 6081,
+      :sha256
+      "97fb350023117c91bd021feef622b11b444f1fd9cfe85a835c15ec65ad448f25"}}
+    {:id "C8/facet/6081-6135",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 6081,
+      :end-byte 6135,
+      :sha256
+      "753ce0ee5eed3e9454ee3e762d331776d4cad65d55ad9b5eaa3068a251c9c45a"}}
+    {:id "C8/facet/6135-6181",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 6135,
+      :end-byte 6181,
+      :sha256
+      "6147db1987d3b40e2079a484ad7f45a243f9607fee40122b6092c6a3d266ed0b"}}
+    {:id "C8/facet/6181-6227",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :legality :replay :handoff],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 6181,
+      :end-byte 6227,
+      :sha256
+      "6d7988e5e28a4517ec59c8d3ce00d1a1dcdb5682f5c3ee42ecfb00248abe6785"}}
+    {:id "C8/facet/6228-6396",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/efba30c4adee8e15b150dbf6e901642c3d228d896be2007887337c25ebca1cd2",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:handoff],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 6228,
+      :end-byte 6396,
+      :sha256
+      "ab84d5f06b9805c3b4bd91d8049521a8cc2b35b437601cfa405a53c3bc7e7f5e"}}
+    {:id "C8/normalized-facet/6397-6417/81a99744c82b0f20",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/754860e4fcaa80e220bdb355f12c0077d227f20613207a9404594aa6a9f720b7",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 6397,
+      :end-byte 6417,
+      :sha256
+      "81a99744c82b0f200a1b23f569815e25e994ddb3455b81be46a31fd7408dcd80"}}
+    {:id "C8/facet/6418-6481",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/bdad31c5bc7098bc4cd0a666a5adc338beaafb558bb9bc501a86a68a3f906d59",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality],
+     :owner-requirement-ids
+     ["language/effects/check-narrowest-allowance"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 6418,
+      :end-byte 6481,
+      :sha256
+      "f8de6fc93fe9ebd28d26c574f7c679e7942229ebc9072b981eb2dec25b832db8"}}
+    {:id "C8/facet/6482-6552",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/3b6dc78a73533f7e624c7b1dc1610c7dbd114e3dc7d756cd7589c4ddacbe90f5",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :propagation],
+     :owner-requirement-ids
+     ["language/effects/check-narrowest-allowance"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 6482,
+      :end-byte 6552,
+      :sha256
+      "de78df7d13f67413140fd7766e5b81dd57c6146c28848e8d01fa2bd424517749"}}
+    {:id "C8/facet/6553-6603",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/1487ce16d900c2d6c71440dc6bf7d6d4926b77bc90c190250d6f8d4fe666f648",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:computation :replay],
+     :owner-requirement-ids ["compiler/c8/effect-domains"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 6553,
+      :end-byte 6603,
+      :sha256
+      "b6eb242438f60f5bd1a85596e1e616794516c4797c3491db72c1cb5e104f07c6"}}
+    {:id "C8/facet/6604-6666",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/8dd00dc140bf7d686085644e408320434899d873760d882e67715405e8e2104c",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality],
+     :owner-requirement-ids ["compiler/c8/capability-proof"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 6604,
+      :end-byte 6666,
+      :sha256
+      "57306b6d475214637940d1bbd5086f71301ecd9f0d5ee6e639e45fcc1a59e1ab"}}
+    {:id "C8/facet/6667-6743",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/a135437ae278c0ee2bc793761176f9f6d9b4aedf93f8d0278be9150a29d2e8b2",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:replay :handoff],
+     :owner-requirement-ids ["compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 6667,
+      :end-byte 6743,
+      :sha256
+      "3d2a7ab13a8f50a51e6675649d72102770b7045a2373e94678192bbd965d9027"}}
+    {:id "C8/facet/6744-6820",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/de0699b8b49c054e65eae2aaf72d5de55d6df7cbf6bd0f9cf683bd2cb2fe1785",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys [:legality :handoff],
+     :owner-requirement-ids ["compiler/c8/effect-order"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 6744,
+      :end-byte 6820,
+      :sha256
+      "6e28a58f03de74fa7df6b9d4dc3b521afaa898344368e3a4ac586f592946b8d0"}}
+    {:id "C8/normalized-facet/6821-6845/4cea7efb2bd3a140",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/bbb6b9e3ae36d0401441d1254e3680905ba80a903f4dcd708f8e73d6b063d082",
+     :role :retained-hierarchy-or-provenance-context,
+     :criterion-keys [],
+     :owner-requirement-ids [],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 6821,
+      :end-byte 6845,
+      :sha256
+      "4cea7efb2bd3a140f2517b9e6a6e71fc6809db54e3f8158b9ed8f31c3ae7eae2"}}
+    {:id "C8/facet/6846-6892",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/37696ee31b18b63c297a5b5b4b3079b106354c8b5ac9c6584b0ad31c4f722ee9",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff],
+     :owner-requirement-ids
+     ["compiler/c8/capability-proof"
+      "language/effects/check-narrowest-allowance"
+      "compiler/c8/effect-computation"
+      "compiler/c8/effect-domains"
+      "compiler/c8/effect-order"
+      "compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 6846,
+      :end-byte 6892,
+      :sha256
+      "a56598a841213af107dc06c2c9b5cba5a38216f4f108b3217f3317a863ee05ad"}}
+    {:id "C8/facet/6893-6963",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff],
+     :owner-requirement-ids
+     ["compiler/c8/effect-computation" "compiler/c8/effect-domains"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 6893,
+      :end-byte 6963,
+      :sha256
+      "bbdefcc526f9f35f3fc3f774611094ea8820f130e7329c2a1cfab0dd8279dc0b"}}
+    {:id "C8/facet/6963-7008",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff],
+     :owner-requirement-ids
+     ["language/effects/check-narrowest-allowance"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 6963,
+      :end-byte 7008,
+      :sha256
+      "983f069b4fc403462a716e56321331b10dc351b739311be5c1549a0c5c310994"}}
+    {:id "C8/facet/7008-7045",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff],
+     :owner-requirement-ids
+     ["language/effects/check-narrowest-allowance"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 7008,
+      :end-byte 7045,
+      :sha256
+      "1f56e0a810620135be1f78a7da362affe98f5ac0b348a95432150391a8bf6596"}}
+    {:id "C8/facet/7045-7090",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff],
+     :owner-requirement-ids ["compiler/c8/capability-proof"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 7045,
+      :end-byte 7090,
+      :sha256
+      "d8ab99a7b0bbf465255e89bfe7fe0bb53aabf36776b91b598cc17231c95b17ce"}}
+    {:id "C8/facet/7090-7125",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff],
+     :owner-requirement-ids ["compiler/c8/effect-domains"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 7090,
+      :end-byte 7125,
+      :sha256
+      "9d0db791f76287f26a537aa9787b930c7e6e8af4a026b86768afd1747b9df833"}}
+    {:id "C8/facet/7125-7155",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff],
+     :owner-requirement-ids ["compiler/c8/replay-audit"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 7125,
+      :end-byte 7155,
+      :sha256
+      "a9ee51456ddcccbaa753f80ca6003970c54e4db80cd699156c5b065fa3e9ca5f"}}
+    {:id "C8/facet/7155-7242",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff],
+     :owner-requirement-ids ["compiler/c8/effect-order"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 7155,
+      :end-byte 7242,
+      :sha256
+      "99bfcd4aec3d25dd7bc6dcbcec19efd35621ce615988039e038cee804a0fedcf"}}
+    {:id "C8/facet/7242-7280",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff],
+     :owner-requirement-ids
+     ["compiler/c8/effect-computation" "compiler/c8/effect-order"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 7242,
+      :end-byte 7280,
+      :sha256
+      "91bb614788c0a5d198a8d77b1a11746b8b1202e6345896eb130b6cd5070ee12b"}}
+    {:id "C8/facet/7280-7328",
+     :document-id "C8",
+     :source-occurrence-id
+     "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+     :role :complete-source-predicate-conjunction,
+     :criterion-keys
+     [:computation :propagation :legality :replay :handoff],
+     :owner-requirement-ids
+     ["language/effects/check-narrowest-allowance"],
+     :source-path
+     "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+     :source-span
+     {:start-byte 7280,
+      :end-byte 7328,
+      :sha256
+      "cbbde1ab0d9ea0b652f80c214e679b39ba499ed845f853da55b1692acabc6b2c"}}],
+   :task-source
+   {:path "specs/effects-workflow/tasks.md",
+    :after
+    {:commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
+     :sha256
+     "a61dbf01fc6d1585b4e903481ef9b9b9c2decf886e24f7c1c511d086f99566cd"}},
+   :historical-review
+   {:receipt
+    {:path
+     "specs/requirement-reconciliation/c8-independent-source-review.edn",
+     :sha256
+     "727d289a2cca5ca9f75e769ca7c2b71e5ab33b86327f70f5bc5fd44961151ffb"},
+    :frozen-head "1ecdfa5916da558272961eaab8b1eff5d0aa7b3a",
+    :tree "49603cd38b9d5d58850ac552612a225c85f28a4a",
+    :nonclaims
+    [:implementation
+     :compiler-execution
+     :runtime
+     :provider
+     :model
+     :replay-execution
+     :target-probe
+     :full-L6-entailment
+     :foundation-attached-predicates
+     :whole-project
+     :final-denominator
+     :future-head
+     :canonical-adoption
+     :APPROVE
+     :held-action-clearance],
+    :later-head-applicability :separate-required-no-inheritance,
+    :accepted-scope
+    {:C8-original-facets 103,
+     :C8-original-occurrences 50,
+     :semantic-conjunctions 34,
+     :hierarchy-provenance-contexts 16,
+     :existing-Effects-owner-criteria 5,
+     :original-C8-owner-interfaces 5,
+     :new-task-units 0,
+     :new-decision-ids 0},
+    :current-acceptance :not-transferred,
+    :task-source "94dfa9c535268276765b76366c5c60687fa3807a",
+    :verdict :pass-qualified-frozen-C8-source-conjunctions-only,
+    :held-actions :unchanged-no-equivalent-substitution},
+   :markers
+   {:computation "effects-canonical-computation",
+    :propagation "effects-canonical-propagation",
+    :legality "effects-canonical-legality",
+    :replay "effects-canonical-replay",
+    :handoff "effects-canonical-handoff"},
+   :changed-task-ids
+   ["effects/current-evidence-and-remaining-work/effects1-infer-direct-effects"
+    "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects"
+    "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"
+    "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation"
+    "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers"],
+   :global-source-conjunctions :unassessed,
+   :qualification
+   "Restore five exact C8 predicates and two prior replay/manifest contexts under existing five Effects tasks, preserving short original criteria, statuses and authorities. Full L6/foundation/PKG6/R6-R8 conjunctions remain unassessed. The frozen C8 review grants no current-head or execution acceptance; all holds and the original C7 publication restriction remain.",
+   :newly-amended-original-task-ids
+   ["effects/current-evidence-and-remaining-work/effects1-infer-direct-effects"
+    "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects"
+    "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"
+    "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation"
+    "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers"],
    :implementation-acceptance :unassessed},
   :lower-refinement
   {:canonical-sources
@@ -42407,101 +44836,101 @@
   "effects"
   [{:path "specs/effects-workflow/tasks.md",
     :file-sha256
-    "45419d6bc208ae0df187dfe7c0105d3434d19c8d7deed0d7dfc52da7a4e7ad3e",
+    "a61dbf01fc6d1585b4e903481ef9b9b9c2decf886e24f7c1c511d086f99566cd",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/effects-workflow/tasks.md",
      :start-byte 1037,
-     :end-byte 1400,
+     :end-byte 3180,
      :start-line 20,
-     :end-line 24,
+     :end-line 31,
      :sha256
-     "baef04abf4eaaf0410b8f58992a1aa7bb79b9aa378e85fc1a9a414c508026709",
+     "60a2920c875b188657de2b9a575463e1585a6d6abc913f5d75d9591d29bda3af",
      :source-snapshot-ref
-     "baef04abf4eaaf0410b8f58992a1aa7bb79b9aa378e85fc1a9a414c508026709"},
+     "60a2920c875b188657de2b9a575463e1585a6d6abc913f5d75d9591d29bda3af"},
     :owner-source "docs/component-roadmaps/effects.md",
     :component "effects",
-    :source-commit "69831d09bc2007844265968b265c493cf064bdf9",
+    :source-commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
     :id
     "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects",
     :checked false}
    {:path "specs/effects-workflow/tasks.md",
     :file-sha256
-    "45419d6bc208ae0df187dfe7c0105d3434d19c8d7deed0d7dfc52da7a4e7ad3e",
+    "a61dbf01fc6d1585b4e903481ef9b9b9c2decf886e24f7c1c511d086f99566cd",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/effects-workflow/tasks.md",
-     :start-byte 1402,
-     :end-byte 1761,
-     :start-line 26,
-     :end-line 30,
+     :start-byte 3182,
+     :end-byte 5071,
+     :start-line 33,
+     :end-line 44,
      :sha256
-     "0a3be335becc28785539c35483823d36fb0070db331069e6f75a50493f3dbf83",
+     "137afc9de07f90d177b0e14fdfe8bce951dee40ed05ed6547c990bc09aad38ee",
      :source-snapshot-ref
-     "0a3be335becc28785539c35483823d36fb0070db331069e6f75a50493f3dbf83"},
+     "137afc9de07f90d177b0e14fdfe8bce951dee40ed05ed6547c990bc09aad38ee"},
     :owner-source "docs/component-roadmaps/effects.md",
     :component "effects",
-    :source-commit "69831d09bc2007844265968b265c493cf064bdf9",
+    :source-commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
     :id
     "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects",
     :checked false}
    {:path "specs/effects-workflow/tasks.md",
     :file-sha256
-    "45419d6bc208ae0df187dfe7c0105d3434d19c8d7deed0d7dfc52da7a4e7ad3e",
+    "a61dbf01fc6d1585b4e903481ef9b9b9c2decf886e24f7c1c511d086f99566cd",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/effects-workflow/tasks.md",
-     :start-byte 1763,
-     :end-byte 2142,
-     :start-line 32,
-     :end-line 36,
+     :start-byte 5073,
+     :end-byte 7249,
+     :start-line 46,
+     :end-line 57,
      :sha256
-     "f19d442e1fcbf7e4de928925aea79538b84f716f7151eeef300826ebd6f73270",
+     "b1601e69b8d6aca3a7f202545269ca8b70884eb3be0432c825c65c13a5235db6",
      :source-snapshot-ref
-     "f19d442e1fcbf7e4de928925aea79538b84f716f7151eeef300826ebd6f73270"},
+     "b1601e69b8d6aca3a7f202545269ca8b70884eb3be0432c825c65c13a5235db6"},
     :owner-source "docs/component-roadmaps/effects.md",
     :component "effects",
-    :source-commit "69831d09bc2007844265968b265c493cf064bdf9",
+    :source-commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
     :id
     "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
     :checked false}
    {:path "specs/effects-workflow/tasks.md",
     :file-sha256
-    "45419d6bc208ae0df187dfe7c0105d3434d19c8d7deed0d7dfc52da7a4e7ad3e",
+    "a61dbf01fc6d1585b4e903481ef9b9b9c2decf886e24f7c1c511d086f99566cd",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/effects-workflow/tasks.md",
-     :start-byte 2144,
-     :end-byte 2532,
-     :start-line 38,
-     :end-line 42,
+     :start-byte 7251,
+     :end-byte 9732,
+     :start-line 59,
+     :end-line 72,
      :sha256
-     "6f3074abe4b04ec7f6b23b2ee258fabfc7c57dc135af444241ad4b4cf3a57366",
+     "ab32678cddd65a02fd5be01007ef6b177596fd0706a272f70483145451b78406",
      :source-snapshot-ref
-     "6f3074abe4b04ec7f6b23b2ee258fabfc7c57dc135af444241ad4b4cf3a57366"},
+     "ab32678cddd65a02fd5be01007ef6b177596fd0706a272f70483145451b78406"},
     :owner-source "docs/component-roadmaps/effects.md",
     :component "effects",
-    :source-commit "69831d09bc2007844265968b265c493cf064bdf9",
+    :source-commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
     :id
     "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation",
     :checked false}
    {:path "specs/effects-workflow/tasks.md",
     :file-sha256
-    "45419d6bc208ae0df187dfe7c0105d3434d19c8d7deed0d7dfc52da7a4e7ad3e",
+    "a61dbf01fc6d1585b4e903481ef9b9b9c2decf886e24f7c1c511d086f99566cd",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/effects-workflow/tasks.md",
-     :start-byte 2534,
-     :end-byte 2905,
-     :start-line 44,
-     :end-line 48,
+     :start-byte 9734,
+     :end-byte 12463,
+     :start-line 74,
+     :end-line 87,
      :sha256
-     "54b57243aa09727dc59d23d91c2e7aba8c0983f00f449de7dfd4c7a965022456",
+     "e3e36fb40396822d98c8f7ac88c5dcb8cd53b11f56a5c8e5504c921e66a77847",
      :source-snapshot-ref
-     "54b57243aa09727dc59d23d91c2e7aba8c0983f00f449de7dfd4c7a965022456"},
+     "e3e36fb40396822d98c8f7ac88c5dcb8cd53b11f56a5c8e5504c921e66a77847"},
     :owner-source "docs/component-roadmaps/effects.md",
     :component "effects",
-    :source-commit "69831d09bc2007844265968b265c493cf064bdf9",
+    :source-commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
     :id
     "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
     :checked false}],
@@ -44587,8 +47016,10 @@
   "39d9e38d35fda29045b30e10d24150693823f9a0a1e84de778a94cb768dacafd",
   "specs/domains-workflow/tasks.md"
   "664ae7028db79ac223795dfbe0cfdb3b429f7822fed86a15268c500ddd8bbd7c",
+  "specs/effects-workflow/plan.md"
+  "3beadb1d7ac7b8a41acd645651dc7b4a520c56468f6de6782f6dda86447ffc41",
   "specs/effects-workflow/tasks.md"
-  "45419d6bc208ae0df187dfe7c0105d3434d19c8d7deed0d7dfc52da7a4e7ad3e",
+  "a61dbf01fc6d1585b4e903481ef9b9b9c2decf886e24f7c1c511d086f99566cd",
   "specs/emit-workflow/tasks.md"
   "c72d61bd0cfd5009b91209f9287d9a17b48b7c47bfd6c9e1395ec8b3ad6b0e1a",
   "specs/evolution-workflow/tasks.md"
@@ -44671,7 +47102,7 @@
   "docs/phase-05-mathematical-and-elementary-function-system/README.md"
   "697917447d70ba0797a096d9427d4706bf5515df",
   "specs/effects-workflow/tasks.md"
-  "69831d09bc2007844265968b265c493cf064bdf9",
+  "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
   "specs/domains-workflow/plan.md"
   "cbafeee1f42ef28cbb238b2d823b13b125bae2d3",
   "specs/build-workflow/tasks.md"
@@ -44692,6 +47123,8 @@
   "7662cb4a4527d4e8d905f88f352428dc3d7867f5",
   "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
   "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+  "specs/effects-workflow/plan.md"
+  "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
   "specs/opt-workflow/plan.md"
   "0e1cec28f43d2902032b1786af08f7aa17af8107",
   "specs/tools-workflow/tasks.md"
@@ -46590,8 +49023,6 @@
   "4. **SH-25.4:** Actually compile every component from Gravity sources with the\n   Gravity compiler, recording inputs/outputs and accepted dependency ordering.",
   "0a1b66949878a0ee2853e712617f93f7315989539e2e489eb1a779ade9cf2c28"
   "4. **SH-24.4:** Render structured diagnostics and return defined status codes\n   on rejected source, failed passes/tools, invalid requests and output errors.",
-  "0a3be335becc28785539c35483823d36fb0070db331069e6f75a50493f3dbf83"
-  "- [ ] `effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects` effects/2: Propagate latent effects\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Compute closure, call, dispatch and recursive-function effect summaries to a valid fixed point; distinguish declared from inferred effects.",
   "0a7ccae0bb5c2bbab0ea31da14071d0247186314c7d477a83e424cfb870e91a1"
   "6. **SH-04.6:** Supply real SH-03 -> SH-04 -> SH-05 inputs without host-created\n   syntax facts being mistaken for Gravity construction evidence.",
   "0aa321dced5d3ebba5a01a715faa1e3428ad458fd09fc85d2d5d15cefdf11174"
@@ -46632,6 +49063,8 @@
   "1. **SH-19.1:** Start the compiled compiler/runtime with defined argv, inputs,\n   initialization order, service manifest and process-exit behavior.",
   "13712d888189b22de4c3f720a3450eacf26a80198b5fe2c9d985b0cf54b9a64f"
   "2. **SH-10.2:** Enforce immutable-sharing/exclusive-mutation rules and reject\n   overlapping mutable aliases or moving actively borrowed owners.",
+  "137afc9de07f90d177b0e14fdfe8bce951dee40ed05ed6547c990bc09aad38ee"
+  "- [ ] `effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects` effects/2: Propagate latent effects\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Compute closure, call, dispatch and recursive-function effect summaries to a valid fixed point; distinguish declared from inferred effects.\n\n\n<!-- effects-canonical-propagation:start -->\nApply the [complete effect-checker source criteria](plan.md#complete-effect-checker-source-criteria) within this existing task. Status remains Open; current independent review and implementation acceptance are pending.\n\nC8 propagation criterion (Open): Derive function latent and transitive effects from actual resolved typed call/closure/dispatch/recursive edges, not by copying declared allowances. Preserve ordered evaluation and conservative branch alternatives under L6; every branch contributes to legality even when alternatives remain distinct for optimization. Function/namespace/module summaries distinguish declared, inferred and thrown-error effects; calls consume actual latent effects. Preserve L6 escaping versus handled labels, handler identity/residual effects and separately checked handler type/profile/capability/continuation/replay facts; handling does not erase original labels or grant authority. Required outputs: actual graph/fixed-point derivation, latent/throws and namespace/module tables and positive/rejected higher-order, recursive, dispatch, branch and generated-code fixtures. Reject underreported reachability, missing call/type facts, hidden handler residuals or declaration-only summaries before checked-core handoff. Recompute or invalidate affected summaries when actual calls, types, declarations or governing semantic inputs change; a structurally present graph is not evidence of sound propagation.\n<!-- effects-canonical-propagation:end -->",
   "13959ebfe9dfcb71da46307b710bac0f024c080683089e82a47b209585cedfe9"
   "3. **SH-27.3:** Compare stable diagnostic codes/spans/facts and conformance\n   results for accepted and rejected programs at both stages.",
   "13ead4e463cd4eadf7b0ba0cab5c9450f59d6631cf832c6c835206d344979336"
@@ -46904,8 +49337,6 @@
   "4. **SH-03.4:** Reject each malformed encoding, literal, delimiter, extension\n   and resource-bound family with a stable reader diagnostic and span.",
   "54610469967cc96023e27f94e3495fb1ea661826103eae15cab16e2b205dc7b7"
   "- [ ] `FL-P01-T01` Implement the full source-unit and reader surface in\n  Gravity.\n  - Subtasks:\n    - Preserve `.qst` and `.gravity` as co-canonical source extensions.\n    - Preserve actual input paths and extensions in source units, diagnostics,\n      source maps, artifacts, packages, and proof reports.\n    - Implement reader legality for all L1 forms described by the phase 01\n      documents.\n    - Add accepted `.qst` and `.gravity` parity fixtures for each reader\n      family.\n    - Add rejected fixtures for malformed source, invalid delimiters, invalid\n      literals, and invalid source-unit identity.\n  - Proof gate:\n    - `gravity check` accepts all reader accepted fixtures.\n    - `gravity check` rejects all reader negative fixtures with stable L1\n      diagnostics.\n    - Provenance records preserve original extensions for equivalent `.qst`\n      and `.gravity` inputs.\n",
-  "54b57243aa09727dc59d23d91c2e7aba8c0983f00f449de7dfd4c7a965022456"
-  "- [ ] `effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers` effects/5: Integrate checked-core consumers\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Feed profile/capability/safety validation and MIR with real propagated facts, including generated-code and higher-order negative cases.",
   "551177a2b0e469e75657bc5d119b1613c61568e329343eee5b3251edcb54b743"
   "- [ ] `release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures` Execute compiler preservation fixtures\n\nStatus: Open\n\nEvidence baseline: [TEST2](../../docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md)\n\nClosing evidence: Implement and execute the Execute compiler preservation fixtures runner against actual declared owner interfaces, retaining the exact implementation/compiler/source/fixture/profile/target and applicable runtime/backend/provider identities. Run the named passing and failing cases; missing evidence is failure for the claimed scope, while inapplicable cases are explicitly reported. Source testing/test2/cache-invalidation: Run incremental fixtures that change relevant source/dependency/profile/target/policy/compiler inputs and assert invalidated reuse plus rebuilding exactly affected graph nodes. Concrete acceptance: Mutate source, compiler, dependency, profile, target, policy, grants and other stage-relevant inputs individually; observe exactly the affected rebuild graph and fail a forged reuse result. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test2/development-feedback: Run focused accepted/rejected phase tests and affected pass composition during implementation, recording accurate source/compiler context without claiming proof certification; authoritative migration/release separately requires fresh provenance, stage equivalence and bootstrap evidence after input changes. Concrete acceptance: Change a pass input/output interface and execute focused and affected composition fixtures against current source; fail lost facts or false authoritative-proof labels, without requiring a fresh bootstrap admission merely to run development tests. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test2/diagnostic-match: Match compiler diagnostic code, span, profile, target and remediation with stable tool-usable output. Concrete acceptance: Change code, source span, category, profile, target or remediation independently; fail mismatches even if localized message text differs legitimately. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test2/generated-reentry: Execute generated-code test fixtures through the normal compiler pipeline and assert retained source/generated provenance. Concrete acceptance: Submit generated source that is well shaped but type/effect/profile/capability/safety illegal or lacks producer origins; normal pipeline validation must reject before downstream execution. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test2/optimization-soundness: Reject unsound compiler rewrites and remove safety checks only with evidence that preserves safe semantics. Concrete acceptance: Execute an unsound rewrite and proofless safety-check deletion alongside the valid rewrite; fail preservation and prevent a claimed optimization pass. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test2/plugin-boundaries: Exercise compiler plugin capability, profile and pass-boundary enforcement without ambient authority. Concrete acceptance: Try an ungranted plugin effect, a write outside its pass boundary, incompatible profile or undeclared transformed fact; the fixture must observe denial before effect/consumption. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test2/report: Emit source/compiler-traceable stage goldens, preservation and proof/evidence reports, diagnostic goldens, cache traces, plugin denials and minimized crash fixtures. Concrete acceptance: Remove stage golden, preservation/evidence, diagnostic, incremental trace, plugin-denial or minimized crash outputs required by the executed cases; reject missing or unrelated report artifacts. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. Source testing/test2/stage-preservation: Exercise compiler stages from reader through lowering using golden inputs/outputs and declarations of preserved/transformed facts; preserve source identity, names, types, effects, ownership, capabilities, safety and artifact metadata through composition. Concrete acceptance: For each claimed reader-through-lowering stage mutate source/origin/name/type/effect/ownership/capability/safety/artifact facts; fail the declared golden or preservation check rather than accepting a supplied pass flag. Retain actual input/output and diagnostic identities plus positive and rejected-case artifacts; supplied success flags, proposal delivery and broad parent links are not executable evidence. This producer supplies conformance evidence; independent intermediate admission and final release remain separate consumers. Current implementation acceptance is unassessed.",
   "553f364f6e22249349e4bd9cd75ba36eb7153c38a0ca1c2292f066f4d7a99514"
@@ -46960,6 +49391,8 @@
   "- [ ] `hardware` Hardware / `hardware`\n\nStatus: Open\n\n<!-- platform-hardware-parent:start -->\n### Hardware parent proposed criteria\n\nCurrent refinement of the same Open `hardware` target-conformance task.\nResume the full body from\n[the published reconciliation](https://github.com/burn2delete/uniform/blob/2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc/specs/platform-workflow/tasks.md#implementation-tasks).\nOnly profile/Domain context references change; other proposed text and the\noriginal short paragraph below remain preserved. Existing target maintainers\nretain ownership; no person, target/ABI, device or product is adopted here.\nThe [composition plan](plan.md#target-conformance-and-product-composition)\nkeeps Types/Legality/Auth checks, domain IR, Lower/Emit/backend products,\nactual Runtime/provider calls and target evidence distinct. A target slice\nis not the full Platform Product and does not receive acceptance by linking\nsource criteria. Current source/owner repartition and review remain pending.\n\nDeclared completion and remaining work: Adopt clock/reset/HDL target contract; implement state-machine lowering and simulation; verify timing/reset invariants and reject illegal dynamic/runtime operations; emit traceable hardware artifact. DOM1 acceptance requires fixed synthesis-visible shapes, finite iteration and explicit CDC synchronizer/FIFO/handshake, proof or audit waiver; reject implicit widths/truncation, unsafe CDC, runtime-only constructs and nonfinite loops. Emit HDL, interface/clock/reset/timing records, source maps, testbench and simulation evidence. Exercise FIFO full/empty/reset/backpressure/data order plus counter and bus-peripheral fixtures. Dependencies: profile legality, HDL lowering, no-runtime and safety/proof consumers; target choice remains open ; P8 target conformance requires fixed-width shape/overflow checks, static unroll or structural conversion or rejection, explicit input-only nondeterminism, state-graph emission AND validation (initial/reset/transition/output/illegal-state behavior), clock/reset records (explicit uninitialized state allowed; unsafe power-on needs hardware audit), ports/protocols and CDC synchronizer/FIFO/handshake/proof or audited waiver. Reject runtime services and unmediated CDC. Capability targets must validate bounds/provenance/permissions/sealing/derivation, tags across register/memory/DMA/FIFO/bus/debug/port paths, declared compartment entry/return/shared-state authority and explicit temporal assumptions. Tag-destroying paths are marked and diagnosed unless source explicitly expects destruction; audited authority boundaries retain their conditions. A conforming target may declare no temporal revocation; stronger source requirements then reject or require separate proof. Emit source-mapped hardware IR/HDL, target/layout/tag/clock/reset/timing/port/compartment reports and positive/negative capability-target fixtures. ISA/product/fabrication selection remains unassessed. Criterion profile-gap/domain/hardware-cdc (Open): Input: Typed P8/DOM1 hardware graph with declared source/destination clocks and every cross-clock signal, port, bus or state edge. Accept: Associate each crossing with an explicit synchronizer, asynchronous FIFO, handshake, Gray-coded/equivalent proof or external hardware CDC waiver with audit record; validate the declared mediator and retain its source/proof/audit identity through hardware IR and HDL. Reject: Unmediated or unproven crossing, missing/incompatible clock-domain evidence and runtime synchronization substituted for hardware semantics. Required outputs: CDC graph/report, accepted synchronizer/FIFO/handshake fixtures and rejected unsafe crossing diagnostic with module/signal/state/span/clock/reset/HDL/missing-proof/remediation; preserve simulation, HDL source maps and conformance evidence from the DOM1 consumer. Dependencies: backend-hdl, legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks interface facts, not whole-task completion. Exact source predicates and frozen evidence: [the preserved profile-interface context](plan.md#platform-source-context), mapping domain/hardware-cdc; all attached contextual and negative predicates remain required. No implementation acceptance is inferred. Criterion profile-gap/hardware/capability-representation (Open): Input: Capability-hardware target manifest and typed pointer operation with word/address widths, bounds/granularity, provenance/derivation, permission bits, tag/seal/object/entry metadata. Accept: Select hardware capabilities only through the target manifest; type/layout-check representation and derivations for preserved provenance, enforced bounds and non-widening permissions. A conditional audited hardware authority boundary must retain its explicit preconditions and evidence. Reject: Pointers treated as integers, fabricated provenance, undeclared integer round-trip, unsupported representation or unchecked bounds/permission widening. Required outputs: Capability pointer/layout/metadata target manifest, legal derivation and rejected widening/representation fixtures, P8-CAPABILITY diagnostics identifying metadata field, module/signal/origin and target evidence. Dependencies: types/current-evidence-and-remaining-work/types2-check-declared-abstractions, legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks, backend-hdl interface facts, not whole-task completion. Exact source predicates and frozen evidence: [the preserved profile-interface context](plan.md#platform-source-context), mapping hardware/capability-representation; all attached contextual and negative predicates remain required. No implementation acceptance is inferred. Criterion profile-gap/hardware/capability-tag-paths (Open): Input: Every capability-bearing register, memory, DMA, FIFO, bus/bridge, debug and external-port path with target tag/metadata propagation or destruction declaration. Accept: Preserve tags and capability metadata on all declared carrying paths, or mark a tag-destroying boundary and diagnose unless source explicitly expects destruction; retain audited authority-boundary qualifications. Reject: Unmarked tag/metadata loss, silent ordinary-storage conversion and omitted path/target support evidence; explicit expected destruction is a qualified legal test case rather than an unconditional rejection. Required outputs: Tag-preservation/path report and capability-bearing interface manifests; preserving, marked-destruction, explicitly-expected-destruction and unmarked-loss fixtures with P8-TAG path/origin/target context. Dependencies: types/current-evidence-and-remaining-work/types2-check-declared-abstractions, lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs, backend-hdl interface facts, not whole-task completion. Exact source predicates and frozen evidence: [the preserved profile-interface context](plan.md#platform-source-context), mapping hardware/capability-tag-paths; all attached contextual and negative predicates remain required. No implementation acceptance is inferred. Criterion profile-gap/hardware/clock-reset-contract (Open): Input: Hardware registers/state with clock domain and reset sync/async, active level, value and affected-register declarations. Accept: Assign each register a domain and defined reset or explicitly uninitialized state; require a hardware audit for unsafe/unspecified power-on behavior and preserve the accepted declaration into clock/reset/timing records. Reject: Missing/invalid domain or reset, undeclared power-on behavior and lost initialization evidence. Required outputs: Clock/reset-domain and initialization reports, accepted declared-uninitialized/audited-power-on cases, rejected missing-clock/reset cases and P8-CLOCK/RESET diagnostics. Dependencies: legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks, backend-hdl interface facts, not whole-task completion. Exact source predicates and frozen evidence: [the preserved profile-interface context](plan.md#platform-source-context), mapping hardware/clock-reset-contract; all attached contextual and negative predicates remain required. No implementation acceptance is inferred. Criterion profile-gap/hardware/compartment-boundary (Open): Input: Capability-hardware compartment crossing with compartment IDs, sealed entry/call gates, call/return authority, bounded shared state and transferred-capability lifetime/revocation assumptions. Accept: Validate the explicit authority transfer, legal entry and return paths and permitted sharing/lifetime assumptions at each crossing. Reject: Implicit sharing through wires/debug/untyped maps, undeclared entry or return authority, invalid sealed state and omitted shared-memory/lifetime rules. Required outputs: Compartment/authority-transfer and temporal-assumption report, sealed-entry/call/return/shared-state positive/negative cases and P8-COMPARTMENT boundary/origin/metadata diagnostics. Dependencies: legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks, backend-hdl interface facts, not whole-task completion. Exact source predicates and frozen evidence: [the preserved profile-interface context](plan.md#platform-source-context), mapping hardware/compartment-boundary; all attached contextual and negative predicates remain required. No implementation acceptance is inferred. Criterion profile-gap/hardware/external-port-contract (Open): Input: Hardware port or bus with direction, fixed width, protocol/ready-valid behavior, timing, reset and capability boundary; tag lanes/metadata permissions for capability-bearing interfaces. Accept: Validate the complete external protocol and target shape, allowed permission transitions, compartment status and debug/DMA/bridge capability-observation/destruction rules; preserve interface source/target metadata. Reject: Untyped/incomplete ports, protocol violations, missing timing/reset/capability evidence and undeclared metadata destruction or authority transfer. Required outputs: Port/bus/interface manifest, protocol acceptance/rejection fixtures and P8-PORT/capability diagnostics with signal/module/domain/origin/target context. Dependencies: types/current-evidence-and-remaining-work/types2-check-declared-abstractions, legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks, backend-hdl interface facts, not whole-task completion. Exact source predicates and frozen evidence: [the preserved profile-interface context](plan.md#platform-source-context), mapping hardware/external-port-contract; all attached contextual and negative predicates remain required. No implementation acceptance is inferred. Criterion profile-gap/hardware/state-machine-contract (Open): Input: Hardware state-machine declaration with state type, initial state, transition function, inputs/outputs, reset, illegal-state behavior and required coverage/assertion hooks. Accept: Construct the state graph and separately validate initial/reset/transition/output/illegal-state semantics; retain explicit state and hook identities for verification and diagnostics. Reject: Malformed state/transition/initial/reset or unspecified illegal-state behavior; graph emission alone cannot pass legality. Required outputs: State-machine graph, accepted transition/reset/output fixtures, rejected invalid-state cases, source-mapped verification/diagnostic and required assertion/coverage records. Dependencies: legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks, backend-hdl interface facts, not whole-task completion. Exact source predicates and frozen evidence: [the preserved profile-interface context](plan.md#platform-source-context), mapping hardware/state-machine-contract; all attached contextual and negative predicates remain required. No implementation acceptance is inferred. Criterion profile-gap/hardware/structural-profile-contract (Open): Input: Hardware source of fixed-width bits/enums/bundles/arrays/registers/memory/ports/state and finite structural control with declared overflow and input/environment models. Accept: Admit synthesis-visible width/signedness/packed layout/clock/reset/timing facts; statically unroll, convert to finite structure or reject control; lower accepted structure to typed hardware IR/HDL with source maps and timing/proof/check records. Nondeterminism enters only through declared ports/models. Reject: Heap/GC/runtime dispatch/host IO/threads/reflection/eval/model/tool calls, software pointers, silent host widths/overflow, variable widths unsupported by synthesis and control that cannot lower finitely. Required outputs: Profile/target/fixed-layout manifests, hardware IR/HDL and source maps, width/overflow/finite-control/input-model/runtime-rejection fixtures and P8-WIDTH/NUMERIC/UNBOUNDED/RUNTIME/SYNTHESIS diagnostics. Dependencies: types/current-evidence-and-remaining-work/types2-check-declared-abstractions, legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks, backend-hdl interface facts, not whole-task completion. Exact source predicates and frozen evidence: [the preserved profile-interface context](plan.md#platform-source-context), mapping hardware/structural-profile-contract; all attached contextual and negative predicates remain required. No implementation acceptance is inferred. Criterion profile-gap/hardware/temporal-protection (Open): Input: Capability target's declared hardware/allocator/compiler revocation, epoch/quarantine, static-lifetime or explicitly absent temporal protection and the source's required protection. Accept: Record actual temporal assumptions independently of spatial bounds; admit a conforming no-revocation target where source does not require stronger protection, or consume a separate valid proof satisfying the stronger requirement. Reject: Temporal protection inferred from spatial bounds, omitted temporal assumptions and stronger use-after-free requirements unsupported by the actual target or separate proof. Required outputs: Temporal/compartment assumption manifest, no-revocation acceptance and stronger-required rejection/proof cases, P8-TEMPORAL diagnostic identifying failed assumption and origin. Dependencies: legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks, backend-hdl interface facts, not whole-task completion. Exact source predicates and frozen evidence: [the preserved profile-interface context](plan.md#platform-source-context), mapping hardware/temporal-protection; all attached contextual and negative predicates remain required. No implementation acceptance is inferred. For this target, the architecture owner records the concrete target/ABI, accepted artifact kind, named simulator/device evidence and required service set before implementation scope is claimed. Reject a scope claim missing any required selection or incompatible with the declared profile; no target or product is selected by this task. Target integration consumes the exact Lower/Emit artifact and explicit runtime or no-runtime manifest plus required standard-library adapters. Record actual simulation/execution and applicable layout, clock, interrupt, unsafe-island, grant and source-to-artifact provenance checks; reject forbidden services, missing adapters, unauditable authority or a record-only execution claim. These target gates do not require completion of the full Platform Product.. Criterion `domain/hardware-fifo-integration`: Demonstrate the declared FIFO slice including full/empty/reset/backpressure/data-order behavior and absence of forbidden runtime services. Accepted fixture: Simulate the FIFO full, empty, reset, backpressure and data-order cases using fixed shapes, declared clocks and ready/valid interfaces. Negative fixture: Reject heap/host IO/dynamic dispatch, nonfinite control and missing CDC/timing evidence. Required evidence: HDL, testbench, interface/timing/source maps and simulation trace; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in [the full preserved Domain context](plan.md#platform-source-context). Dependencies consume backend-hdl, legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed. Criterion `domain/hardware-hdl-emission`: Emit traceable HDL, interface/clock/reset/timing records and executable simulation/testbench artifacts for accepted hardware IR. Accepted fixture: Emit HDL and source maps from accepted hardware IR together with interface, clock/reset/timing and simulation/testbench artifacts. Negative fixture: Reject an artifact missing source maps, typed vendor-IP boundary, timing constraints or simulation/equivalence evidence. Required evidence: traceable HDL artifact pack and conformance report; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in [the full preserved Domain context](plan.md#platform-source-context). Dependencies consume backend-hdl, legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed. Criterion `domain/hardware-shape-lowering`: Lower typed fixed-shape hardware values/control to finite hardware/domain IR, rejecting implicit widths/truncation and nonfinite runtime-only operations. Accepted fixture: Lower fixed-width/signed/shape signals, registers, ports, buses, memories and finite state/control under declared clock/reset/layout and truncation contracts. Negative fixture: Reject implicit host widths, undeclared truncation, software-pointer/runtime dependencies and control that cannot become finite hardware. Required evidence: finite hardware IR, shape/clock/reset records and rejected-source diagnostics; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in [the full preserved Domain context](plan.md#platform-source-context). Dependencies consume backend-hdl, legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.\n\nSource basis: [Hardware contract](../../docs/phase-09-domain-specific-computing-coverage/124-dom1-hardware-computing-domain-specification.md)\n\nHistorical project paragraph (unchanged):\n<!-- platform-hardware-parent:end -->\n\nDeclared completion and remaining work: Adopt clock/reset/HDL target contract; implement state-machine lowering and simulation; verify timing/reset invariants and reject illegal dynamic/runtime operations; emit traceable hardware artifact\n\nSource basis: [Hardware contract](../../docs/phase-09-domain-specific-computing-coverage/124-dom1-hardware-computing-domain-specification.md)",
   "5f87ac162e3d934428a9c82c6c2aff7e70279823d9900629e95ad703c5f4fe00"
   "- [ ] `syntax/current-evidence-and-remaining-work/syntax5-integrate-consumers` syntax/5: Integrate consumers\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Exercise Reader -> Syntax -> Expand and Resolve consumption with original/generated diagnostic spans; record source-pinned accepted and rejected artifacts.",
+  "60a2920c875b188657de2b9a575463e1585a6d6abc913f5d75d9591d29bda3af"
+  "- [ ] `effects/current-evidence-and-remaining-work/effects1-infer-direct-effects` effects/1: Infer direct effects\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Classify actual core operations including allocation, IO, FFI, errors, concurrency, model/tool/memory and compile-time behavior with source references.\n\n\n<!-- effects-canonical-computation:start -->\nApply the [complete effect-checker source criteria](plan.md#complete-effect-checker-source-criteria) within this existing task. Status remains Open; current independent review and implementation acceptance are pending.\n\nC8 computation/domain criterion compiler/c8/effect-computation compiler/c8/effect-domains (Open): Compute actual typed-core expression, function, namespace, module and macro-output direct/latent/transitive/build/replay/residual effects under L6; every operation beyond pure construction has effect facts or a diagnostic. Preserve concrete registered labels, thrown-error effects and source/generated identities rather than inferring behavior from declarations or backend/runtime behavior. Maintain distinct reader-extension/macro/compile-time/plugin/probe/generator build effects, emitted-program runtime effects and dependency-resolution/artifact-generation package/build effects. A build-effectful macro can emit pure code and a pure macro can emit runtime effects; neither domain substitutes for the other. Required outputs: source-bound effect graph with module/node identity, direct/latent/transitive/ordering/source facts, function declared/inferred/latent/throws table, namespace declared/inferred and module summaries, build log and residual report. Positive fixtures compute real operation and both macro-domain combinations; reject missing facts, unknown unregistered labels and hidden runtime/build effects with C8-UNKNOWN/BUILD/VERIFY. Preserve runtime checks, dynamic dispatch, fallback-provider calls, residual capability checks and replay logging remaining after proof/specialization, rather than treating a declaration or empty placeholder as inference.\n<!-- effects-canonical-computation:end -->",
   "61006d97a0f57bad328d5a8377f05b72291d0abcb098b4ce33b65acc4c13f897"
   "2. **SH-08.2:** Check function parameters/results, direct/indirect calls,\n   closures, recursive functions and recur parameter compatibility.",
   "61603668b103b1d57c5b114768abb250e21af83523db0895fd5108fc775e74a7"
@@ -47028,8 +49461,6 @@
   "3. **SH-16.3:** Preserve facts or declare invalidation and regenerate analyses\n   before their consumers; relevant stale analysis/cache inputs reject.",
   "6ed03f267fc29f82062c7f58105add9eef034e5ebdf42d783bb7e7499eee40c2"
   "# Expand component roadmap\n\nWorking name: **Expand** (proposed default, not an approved codename).\nSemantic key: `expand`. Status: proposed roadmap; release acceptance open.\nSource baseline: `c21068a6d39259b7110845bbbcefaf9bf6901232` (2026-10-25).\nOwner role: compiler expand maintainer.\nCurrent owner: not established by this source inspection; Deus assigns or confirms\nthe existing owner before implementation. This page does not transfer ownership.\n",
-  "6f3074abe4b04ec7f6b23b2ee258fabfc7c57dc135af444241ad4b4cf3a57366"
-  "- [ ] `effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation` effects/4: Record replay and invalidation\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Track nondeterministic/build effects and replay inputs, rejecting unreplayable hermetic behavior; invalidate summaries on call graph or declaration changes.",
   "6f5167a7ed9ce532b7ea3c8f3f70a6da581f573d03b44901c931a16ae64dd9dc"
   "# Backend Projects\n\nWorking portfolio name: **Backends** (proposed); semantic key `backends`.\nBaseline: `c21068a6d39259b7110845bbbcefaf9bf6901232`. Every project below is\nproposed and its release acceptance is **open**. Current individual owners are\n**unassigned by this proposal**; named roles describe accountability, not an\nownership transfer. Each section is its canonical finite roadmap and outcome.\n",
   "6fd724cffeb11ffef579411f2abacf8323bc05edf85b17679375aa310818a3d7"
@@ -47262,6 +49693,8 @@
   "## SH-22 - Bootstrap standard library\n\nContracts: L13, STD1-STD6/STD8/STD15, TEST7. Owner:\n`bootstrap/gravity/src/gravity/stdlib/self_hosting_core.gravity` and its\ndeclared collection/text/numeric/error/IO/meta providers.\n\n1. **SH-22.1:** Enumerate all library APIs transitively required by the\n   compiler/runtime/build closure, with signatures and explicit unsupported APIs.\n2. **SH-22.2:** Execute required collections, iteration, updates and lookup\n   operations with correct equality, bounds and persistent/mutable semantics.\n3. **SH-22.3:** Execute text/UTF8, symbols/keywords and checked numeric helpers,\n   rejecting malformed data, overflow and invalid conversions.\n4. **SH-22.4:** Execute required error, artifact-data, canonical serialization\n   and compiler syntax/IR/meta helpers with preserved identity/provenance.\n5. **SH-22.5:** Enforce effects, grants, safe wrapper and resource contracts on\n   actual IO/provider operations; denied inputs cannot become ambient actions.\n6. **SH-22.6:** Compile and run compiler clients against these Gravity APIs and\n   paired conformance/rejection cases; a proposed provider request alone does\n   not prove the external operation occurred.\n\nChecks: `sh22_standard_library_test.clj`,\n`sh22_authenticated_library_integration_test.clj` and required real client tests.\nIntegration: compiler calls -> library -> native runtime/provider.\nStop: complete bootstrap API closure, not all 20 standard-library documents.\n\n",
   "aa4fbce4c6f5128c4a8c98c342fd786d95d7a240f01a174e62e1cbcae65940f3"
   "- [ ] `mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir` mir/1: Construct semantic MIR\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Lower checked-core control flow, calls/closures, data, memory/regions/resources, errors, FFI/concurrency and declared domain/workflow/AI operations without target-specific instructions.\n\n<!-- mir-canonical-construction:start -->\nApply the [complete MIR source criteria](plan.md#complete-mir-source-criteria) within this existing task. Status remains Open; current independent review and implementation acceptance are pending.\n\nC11 construction criterion compiler/c11/semantic-mir-construction (Open): Construct the canonical target-independent MIR module/function/block/operation records from checked core, exposing control-flow and data-flow graphs and stable artifact identities. Cover the complete C11 families: constants/locals/block arguments; calls/tail calls/closures and direct/dictionary/vtable/dynamic dispatch; records/structs/tuples/enums/unions and field/index/slice/buffer operations; arithmetic/conversions; allocation/initialization/load/store/move/drop; region/arena and linear-resource lifecycle; branches/loops/matches and errors; FFI/host boundaries; atomics/locks/channels/tasks/synchronization; workflow suspension/resume/events; AI model/tool/memory/policy; domain anchors; runtime checks and proof/certificate references. Every operation has opcode, operands, result, type, effects/order, source/generated origin, profile and verifier status with applicable fact references; no-result operations use nil result and Unit or bottom as appropriate. Blocks have ordered operations and exactly one legal C11 terminator, including proof-qualified unreachable, profile-legal suspend/yield and legal tail call. SSA values or block arguments may represent joins, but public data-flow edges remain explicit. The module references actual checked core, profile, target request, functions/globals and metadata/anchor tables; functions retain parameters, return type, latent effects, entry/blocks and origin. A target request may constrain legality but cannot redefine opcode semantics. Required outputs: actual MIR/CFG/DFG, origin and anchor records plus operation-family/schema coverage fixtures under declared profiles. Reject malformed records/joins, missing required operation fields and target-specific instruction semantics in generic MIR with applicable C11-MODULE/BLOCK/TARGET-LEAK diagnostics. Positive construction produces verifiable artifacts, not a fabricated verifier success.\n<!-- mir-canonical-construction:end -->",
+  "ab32678cddd65a02fd5be01007ef6b177596fd0706a272f70483145451b78406"
+  "- [ ] `effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation` effects/4: Record replay and invalidation\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Track nondeterministic/build effects and replay inputs, rejecting unreplayable hermetic behavior; invalidate summaries on call graph or declaration changes.\n\n\n<!-- effects-canonical-replay:start -->\nApply the [complete effect-checker source criteria](plan.md#complete-effect-checker-source-criteria) within this existing task. Status remains Open; current independent review and implementation acceptance are pending.\n\nDecision criterion interface/language/effects/record-or-replay-nondeterminism: In record mode perform only admitted actions and append typed records; replay consumes the matching recorded result without repeating its external action. Preserve the qualified R6 graph-safe case only where R7/R8 recorded-output obligations do not apply. Reject: Reject missing/mismatched/reordered records, ungranted live actions and live nondeterminism in recorded-output segments; graph declarations do not grant authority. Required outputs: Typed event/effect/replay schema and record-versus-replay traces, qualified R6 case and all missing-record/authority/R7-R8 refusals.\n\nC8 replay/audit criterion compiler/c8/replay-audit (Open): Emit source-bound replay/audit obligations for time, randomness, external IO, external database reads, workflow events, model calls, tool calls, :ai/human-review and scheduler-sensitive operations, including distributed/AI effects. Actual workflow/AI/runtime/test consumers satisfy those obligations; a profile forbidding replay gaps rejects missing records before target lowering. Keep build/runtime/package domains distinct and enforce actual hermetic build grants, refusing ungranted build actions without performing them during this source reconciliation. Preserve the existing record-versus-replay criterion and its qualified R6/R7/R8 scope. Required outputs: build-effect log, replay-effect requirements and residual replay obligations, invalidation records and actual accepted/refused nondeterminism/hermetic fixtures. Reject hidden macro runtime effects, absent required replay/audit records, unreplayable hermetic behavior and ungranted build effects with C8-BUILD/REPLAY; obligation names or supplied success flags cannot replace actual recorded consumer evidence.\n<!-- effects-canonical-replay:end -->",
   "ab898fbacbdd93cbda5eaa66f21df0f7fd722190cdcb66b60013008e59414248"
   "# Platform\n\nWorking name: **Platform** (proposed). Semantic key: `platform`.\nOwner role: platform architecture and target maintainers; current owner\nunassigned by this proposal. Baseline:\n`c21068a6d39259b7110845bbbcefaf9bf6901232`.\n\nImplementation task authority: [Spec Kit platform ledger](../../specs/platform-workflow/tasks.md#implementation-tasks).\n",
   "abb75878f0dbf7a973993cd09eff097fe228c714c5b84d881ae4c42f949a1151"
@@ -47288,6 +49721,8 @@
   "1. **SH-07.1 - Values, quotation and references:** Lower compiler-required\n   literals/constructors, quoted DATA, lexical/top-level references, `def`\n   and `var`, preserving binding identity and source mapping. Accept\n   quoted-symbol data without execution; reject malformed quotation,\n   unrecognized forms and invalid reference/definition targets.",
   "b01b57928b9454e577ae95c85ac14077056c339ea168e9b971306117c06c37b1"
   "## Completion Rule\n\nDo not mark any full-language task complete unless all of these are true:\n\n- a user can exercise the claimed capability through `gravity` or an explicitly\n  appropriate lower-stage command named by the task,\n- accepted fixtures exist and pass,\n- rejected fixtures exist and fail with stable diagnostics,\n- artifacts, source maps, package metadata, provenance, proof reports, or\n  release records preserve the actual source path and extension when required,\n- automated tests cover the accepted and rejected behavior,\n- evidence ledger rows record exact commands, outputs, artifact ids, and\n  residual host boundaries,\n- the claim does not exceed the implemented profile, target, runtime, backend,\n  package, or bootstrap stage.\n\nFor final language completion, lower-stage commands are not sufficient. The\nfinal proof must be produced by the self-hosted public `gravity` executable.\nAn absent command or runner, or a missing, skipped or unexecuted required case,\nmeans NOT ESTABLISHED. Conditional implementation wording is not a waiver of\nfinal execution. Build the real runner while feature implementation proceeds;\ncompletion still requires its actual accepted/rejected execution and replay.\n\n",
+  "b1601e69b8d6aca3a7f202545269ca8b70884eb3be0432c825c65c13a5235db6"
+  "- [ ] `effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering` effects/3: Check legality and ordering\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Reject undeclared effects and forbidden profile behavior, expose capability requirements, and preserve sequencing constraints without granting authority.\n\n\n<!-- effects-canonical-legality:start -->\nApply the [complete effect-checker source criteria](plan.md#complete-effect-checker-source-criteria) within this existing task. Status remains Open; current independent review and implementation acceptance are pending.\n\nC8 legality/capability/order criterion compiler/c8/capability-proof compiler/c8/effect-order (Open): Check the complete applicable intersection of function and namespace declarations, profile, package manifest, build/deployment grants, actual runtime/provider support and safety mode before MIR construction. Effects and capability sets remain distinct: derive required capabilities from registered effects and connect actual use to explicit authority evidence binding effect, core source, capability, provider, grant scope/principal/phase and status; reject missing or insufficient scoped grants before MIR. Backends/runtimes may narrow support but cannot grant authority absent from source/package/deployment. Authority evidence is not a safety proof; profile/safety/runtime-selection/audit consumers retain their own checks. Emit sequence, may-commute, must-not-duplicate, must-not-eliminate, resource acquire/release bracketing, volatile/MMIO/atomic and replay-order constraints; actual optimizers consume them before reordering/fusion/elimination. Required outputs: per-effect legality intersection, capability-proof records, ordering constraints and accepted/refused declaration/profile/grant/provider/safety fixtures, including resource/volatile/MMIO/atomic/workflow/AI order cases. Reject type-only legality, effect-name-derived grants, authority-widening handlers/providers and missing ordering evidence with C8-UNDECLARED/PROFILE/CAPABILITY/RUNTIME/ORDER and contextual diagnostics.\n<!-- effects-canonical-legality:end -->",
   "b1a71b906c1af35d6c2dd138b35388d022cfd6bf6d82a01c78c829a6f0d3208f"
   "6. **SH-03.6:** Execute the Gravity reader over the declared compiler source\n   subset and compare accepted forms/rejected diagnostics with the stage\n   reference; a Clojure reread cannot supply the claimed behavior.",
   "b25a1031ad5c7601756ad3a5b9bc27e638888ea52d7f03c087e0bd6a93cb0d53"
@@ -47332,8 +49767,6 @@
   "2. **SH-22.2:** Execute required collections, iteration, updates and lookup\n   operations with correct equality, bounds and persistent/mutable semantics.",
   "ba8bc4e7ab2bbfd42b182655e684a5629d2e0d1f5153d81e469f1f8c8ca36bed"
   "- [ ] `math/independent-proof-and-certificate-checking` Independent math proof and certificate checking\n\nStatus: Open\n\nProjected task block:\nOutcome: Independent subject-bound certificate, EML/symbolic/interval replay and proof-import verdicts. Remaining tasks, all open: Check the actual producer artifact, source/expression/domain/rounding/target/assumption/trust identity and emit a verdict consumed before promotion/elision.\n\nYes/no acceptance: Check the actual producer artifact, source/expression/domain/rounding/target/assumption/trust identity and emit a verdict consumed before promotion/elision. Reject changed subjects, missing domain coverage, stale or revoked proof/trust, forged traces and self-certified producer success. Required outputs: Independent subject-bound certificate, EML/symbolic/interval replay and proof-import verdicts. Integration: consume actual interface artifacts from pass-evidence, formal, opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors; these are not whole-component completion prerequisites. Decision owner: existing independent math checker maintainer. Independently check MATH5 approximation certificates and MATH10 correctly-rounded inputs against exact EFIR/expression/domain/branch/exceptional/rounding/target subjects. Validate all applicable polynomial/rational/piecewise/table/fused/vector/device assumptions, separate error ledgers, denominator/index bounds, domain coverage, accepted-result intervals and invalidation/trust. Reject unsupported methods, changed subjects, stale or revoked evidence, missing exceptional paths, unsatisfied target assumptions and self-certified synthesis. Emit a deterministic verdict and replay transcript before selection or check erasure; the synthesizer remains a separate producer. Implementation acceptance remains unassessed; sibling identity grants no completion credit.\n\nCriterion `math/eml-independent-trace-replay` (MATH4; Open).\nImplement: Independently and deterministically check a recorded EML normalization trace.\nBoundary: Replay of recorded rules/premises/choices; rerunning the heuristic search is not the checker.\nDone when: Replay each recorded rule, premise, assumption, choice and before/after identity using the independent checker; reproduce preserved and invalidated facts without rerunning heuristic search.\nNegative fixtures: Reject missing/reordered/substituted steps, changed rule/provider/target facts, unsupported assumptions or optimizer self-attestation.\nOutputs: Independent deterministic trace-check report bound to exact input and rule versions.\nDependencies: math/eml-trace-production. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.\nDiagnostics: MATH4-TRACE is an example; require the applicable owning code and its context for each negative case.\nRequired future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.\n\nCriterion `math/interval-partition-replay` (MATH6; Open).\nImplement: Replay the emitted partition deterministically and reject incomplete or unreplayable partitions.\nBoundary: Partition proof artifact, not a second run of the adaptive search.\nDone when: Replay emitted cell order, split points, local assumptions and statuses from the original claim, verifying complete coverage without rerunning adaptive search.\nNegative fixtures: Reject a missing/substituted cell, changed split input/domain/claim or unreplayable ordering.\nOutputs: Independent deterministic partition/coverage replay report.\nDependencies: math/interval-partition-production. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.\nDiagnostics: MATH6-PARTITION is an example; require the applicable owning code and its context for each negative case.\nRequired future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.\n\nCriterion `math/real-proof-provider-import` (MATH6; Open).\nImplement: Import a real-proof provider result only through an accepted checker validating claim/input identities, method, domain, branch, trust, replay and current assumptions.\nBoundary: Opaque provider output may guide search but cannot certify transformations or erase checks.\nDone when: Check exact claim/input hashes, domain/branch/method/trust/replay/proof-object/current assumptions and invalidation conditions independently of the provider or optimizer.\nNegative fixtures: Reject opaque attestations used to certify, unsupported trust/method, stale inputs, branch mismatch or invalidated assumptions.\nOutputs: Accepted-checker import report and SAFE15 proof reference.\nDependencies: math/interval-claim-production, math/interval-partition-replay. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.\nDiagnostics: MATH6-PROVIDER is an example; require the applicable owning code and its context for each negative case.\nRequired future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.\n\nCriterion `math/symbolic-independent-trace-replay` (MATH9; Open).\nImplement: Independently check the symbolic rewrite trace without trusting or rerunning the heuristic optimizer.\nBoundary: Exact registered rules, premises, semantic identities and proof artifacts.\nDone when: Reconstruct the transformation from exact input, registered rule versions, side-condition results and proof artifacts without trusting or rerunning the optimizer/saturation scheduler.\nNegative fixtures: Reject missing/substituted/reordered steps, changed guards or versions, unproved edges and optimizer-generated pass status without checker replay.\nOutputs: Independent rule/edge/premise/identity replay and proof-status report.\nDependencies: math/symbolic-trace-production. Types/Legality supplies checked numeric/profile/effect facts; Compiler supplies typed-core/MIR semantic/source anchors; Lower/Runtime/Stdlib supply declared target/provider interfaces only where consumed. Inputs are interface facts, not whole-component completion prerequisites.\nDiagnostics: MATH9-TRACE is an example; require the applicable owning code and its context for each negative case.\nRequired future evidence: exact source/compiler/pass/profile/target/provider and input/output identities; parsed emitted artifacts; independent checker/oracle results where applicable; positive and negative fixture inputs with expected and actual owning diagnostics, failing node/source span and remediation; invalidation on changed consumed assumptions. Status Open; no execution or implementation acceptance is established by this criterion.",
-  "baef04abf4eaaf0410b8f58992a1aa7bb79b9aa378e85fc1a9a414c508026709"
-  "- [ ] `effects/current-evidence-and-remaining-work/effects1-infer-direct-effects` effects/1: Infer direct effects\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Classify actual core operations including allocation, IO, FFI, errors, concurrency, model/tool/memory and compile-time behavior with source references.",
   "bbab4d4e359d708da09a0a2420381230bab99bdb0f3cc9f84510e8878bb30772"
   "4. **SH-08.4:** Produce pattern narrowing and required closed-match coverage;\n   reject incompatible patterns, missing required cases and non-Bool or\n   unestablished guard results, preserving non-returning paths.",
   "bbce0daddaa0713835b776a9300540a0d42fd05728010f7fecb602c4f360401e"
@@ -47518,6 +49951,8 @@
   "4. **SH-20.4:** Retain actual-path provenance separately and make manifests\n   and maps consumable/verifiable by independent tools.",
   "e373bfc197e50f43f38fd22fc32bccf10bd4e4fe38619bb9d508b5643ef738e1"
   "6. **SH-14.6:** Verify data/layout facts survive MIR -> target/runtime;\n   representative nested compiler syntax/IR data round-trips without loss.",
+  "e3e36fb40396822d98c8f7ac88c5dcb8cd53b11f56a5c8e5504c921e66a77847"
+  "- [ ] `effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers` effects/5: Integrate checked-core consumers\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Feed profile/capability/safety validation and MIR with real propagated facts, including generated-code and higher-order negative cases.\n\n\n<!-- effects-canonical-handoff:start -->\nApply the [complete effect-checker source criteria](plan.md#complete-effect-checker-source-criteria) within this existing task. Status remains Open; current independent review and implementation acceptance are pending.\n\nCriterion behavior/pkg6/derived-capability-manifest: accept Derive deterministic package requests/denials/privileged summaries from actual effect analysis plus explicit declarations; include per-profile/target/dependency/tool/agent/FFI/unsafe/review/handle/audit metadata and provenance/SBOM links. Reject A summary differs from analyzed effects, omits a privileged surface or required capability/SBOM field, or treats a request as a grant. Emit Normalized capability manifest, derivation report, deny tables, dependency diff, deployment requirements, audit schema and SBOM capability fields; PKG6001/PKG6002/PKG6007/PKG6008. Dependencies: L6, L15, SAFE10, PKG6, R11.\n\nC8 checked-core/artifact criterion (Open): Pass actual current effect graph, latent/throws tables, namespace/module summaries, capability proof, build log, replay obligations, ordering constraints, residual report and diagnostics to checked-core/profile/capability/safety validation and MIR; preserve effect annotations through actual MIR/optimizer/runtime/tool consumers. Consume actual C7 typed calls, L6 effect and L15 grant contracts, L9 throws, L12 build/hermetic policy, active profiles and runtime/package/provider/deployment artifacts. Required outputs: versioned source-bound products and actual positive/negative producer-consumer fixtures proving direct/latent/transitive/build/residual computation, function/namespace declarations, profile rejection, capability acceptance/refusal, hermetic rejection, replay emission, all order families and MIR preservation. Validate artifacts and reject malformed/stale or missing semantic facts with C8-VERIFY rather than accepting graph/schema presence alone. Retain all nine diagnostic meanings C8-UNDECLARED/PROFILE/CAPABILITY/BUILD/REPLAY/ORDER/RUNTIME/UNKNOWN/VERIFY and core-node/span/generated-origin/function/namespace/effect/capability/profile/target/provider/grant/remediation context for every failure class. These are future execution requirements, not current compiler/runtime/replay/probe results or independent acceptance.\n<!-- effects-canonical-handoff:end -->",
   "e50942e2c25a591dbd5e729a808ba547662e2fe5d32a8a66bc66edaa2d6bfd85"
   "| SH-00.6 | Exact committed six-file change and scoped integration record | E00-R, Git | S |",
   "e510ffef518b1a6b04b92f26675bff30e40db4c5f693f9e93b95c9fa18cc069c"
@@ -47562,8 +49997,6 @@
   "- [ ] `expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects` expand/3: Authorize compile-time effects\n\nStatus: Open; partial source evidence above is not closure\n\nConcrete exit evidence: Require declared grants, redacted logs and replay inputs for effectful expansion; reject ambient host effects and unreplayable hermetic expansion.",
   "f186005423741cb2dbaf0c44a6835f577087ba59be6fa2497302b5a25f52e838"
   "| SH07-C01 | All six | Coordinator with sh-core | none | Record the exact candidate source/compiler/dependency population, supported profile/target and required variant matrix. Separate the bounded six-owner migration from milestone-wide coverage; name each transitive primitive/import/generated-form dependency and residual seed boundary. Every required use has a C02-C15 owner and accepted/rejected case. No \"current compiler\" or directory count stands in for this selection. |",
-  "f19d442e1fcbf7e4de928925aea79538b84f716f7151eeef300826ebd6f73270"
-  "- [ ] `effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering` effects/3: Check legality and ordering\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Reject undeclared effects and forbidden profile behavior, expose capability requirements, and preserve sequencing constraints without granting authority.",
   "f236db5992ef5d2c8d665da57c878074c2b613c9f8a42e1042330f2b9ff3cfc1"
   "- [ ] `evolution/stabilization-decision` Establish an exact stable contract and compatibility baseline\n\nStatus: Open\n\nSource requirement: `governance/stabilization-decision`\n\nRequired outputs: Stabilization record naming contract/surfaces, evidence and accountable decision Future compatibility baseline, package/tooling metadata and lifecycle release notes Owned deprecation/removal decision and record naming contract/export/profile surfaces, replacement or explicit no-replacement rationale, diagnostic id, warning/error/removal schedule, migration artifacts, retained-until-removal tests and release/package visibility; security emergency links to GOV4 and GOV2.\n\nClosing evidence: Require conformance history, negative fixtures, compatibility analysis, documentation and migration readiness for the exact surfaces; safety/security/library changes include applicable evidence and GOV4/GOV3/STD20 review. Close or update GOV7 experiment records; accepted RFC/module admission alone does not confer stability. Deprecation and removal retain replacement/rationale, diagnostic/schedule/migration and tests until removal under GOV8. Security emergency removals require both GOV4 and GOV2 records; release tooling lists stabilized/deprecated/removed contracts and source-qualified consumer outputs. Actual complete accepted artifact and consumer result for the named source contract, with input/source/policy/tool identity. Historical stage0 records or a passing schema alone do not implement these outcomes. Produce a governed deprecation record with replacement or explicit no-replacement rationale, structured diagnostic, warning/error/removal schedule and migration artifacts. Keep deprecated contracts supported and test-covered until the approved removal window; removal proceeds after that window or an explicit GOV4/GOV2 security emergency. Compiler diagnostics, docs, package warnings/rejection, migration tools or structured fix data and release notes consume the exact record. For standard-library exports preserve declared stability and compatibility dimensions; breaking source/behavior/effect/capability/diagnostic/artifact/profile/conformance changes carry impact analysis, migration, conformance updates and governance approval. Removing profile availability and tightening safety/capability/schema rules are explicitly classified by source/artifact impact; library release compatibility reports and signed provenance remain required inputs. Emit GOV8003-GOV8008 and STD20007 as applicable; historical or compatibility packages do not imply a removed API remains generally available.\n\nRequired rejection evidence: Reject evidence-free stabilization, missing compatibility surfaces, missing security/library review and experiments stabilized without GOV7 closure. Reject omitted lifecycle release metadata, missing migration readiness and premature removal without explicit emergency policy. Malformed/missing/stale/wrong-scope records and each named source rejection produce the original GOV diagnostics at the actual consuming boundary. Reject silent removal, missing replacement or rationale, diagnostic id or schedules, absent migration/fix data, premature removal without the explicit security exception, lost deprecated-contract tests, missing package metadata or lifecycle release notes and hidden profile/stability/compatibility changes. Reject standard-library breaking changes without impact/migration/conformance/governance evidence and emergency removal lacking both GOV4 and GOV2 records.\n\nDependencies: GOV2 compatibility baseline/report; GOV3/STD20 library and GOV4 safety/security review as applicable; GOV7 experiment closure and GOV8 lifecycle evidence; Affected component conformance history/negative fixtures/docs/migration metadata. Dependencies are required artifacts/conditional consumers, not a claim their producer tasks are implemented or a cyclic all-tasks-complete gate. GOV1 accountable change and GOV2 compatibility/migration evidence; GOV4 emergency authorization where applicable; GOV7 experiment closure when relevant; GOV3/STD20 library owner supplies export stability, compatibility reports and signed provenance; affected compiler/docs/package/migration/test/release owners produce actual consumer conformance and retained tests. The accountable lifecycle record does not substitute for their implementations.\n\nExact source criteria: facet/bootstrap-governance/d0e05b1ed2644e1fd2ce4b85, facet/bootstrap-governance/489b4263da8d23ddabd9e3ae, facet/bootstrap-governance/df842eeb4177a968623ac0a8, facet/bootstrap-governance/37be7f5bd2b4ae59e497d1dc, facet/bootstrap-governance/db8be9ed3c06f63372ff70b4, facet/bootstrap-governance/78c3423f45c1be476ad57dd9, facet/bootstrap-governance/2e9f5cf7506d3736da73112e, facet/bootstrap-governance/9cd815d35a827190fb4ea9c6, facet/bootstrap-governance/d2c7dd8882323ca560e37a99, facet/bootstrap-governance/d634d2f511cc86d514a6d273, facet/bootstrap-governance/07242484e572c5187957998e, facet/bootstrap-governance/a14a05f8a4b60af84326df49, facet/bootstrap-governance/ab2f0f63f41575436939bcdb, facet/bootstrap-governance/e77be9411c2e3a5ce64a216a, facet/bootstrap-governance/ae1a409d8759166b0124487b, facet/bootstrap-governance/6cf3e5c475d03002a6a0f926, facet/bootstrap-governance/71851eebba2ef5d5f0332d7d, facet/bootstrap-governance/9c7ba3bc06e4bbd463c47194, facet/bootstrap-governance/3f3bf717df0f53d9b7fa4cf7, facet/bootstrap-governance/214aa4b6095b637daf154a40, facet/bootstrap-governance/849233a58c888af074151884, facet/bootstrap-governance/48ce65ab7cf428db0d10af20, facet/bootstrap-governance/b7c9748e4bb4a4bae11ce067, facet/bootstrap-governance/9d26093d9d0953d512e6227f.",
   "f2dd06e4461f0288a18732201a17ac3b614d2645dacc293316005fa23c8303ca"

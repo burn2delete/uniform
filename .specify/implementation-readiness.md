@@ -2010,3 +2010,113 @@ evidence contents. ASCII and whitespace checks pass. Initial scratch readers
 needed delimiter corrections before their successful reads; these failed reads
 receive no validation credit. No current implementation or independent
 acceptance follows from these source checks.
+
+## Complete effect-checker source review
+
+Direct C8 and L6 review restores five complete historical C8 criterion blocks
+under the [existing five Effects tasks](../specs/effects-workflow/tasks.md#implementation-tasks).
+None was previously literal current text. Their short original criteria and
+Open statuses remain. The [Effects plan](../specs/effects-workflow/plan.md#complete-effect-checker-source-criteria)
+now binds actual typed-Core operation inference, latent/transitive fixed-point
+propagation, the complete pre-MIR legality intersection, all build/runtime/
+package domains, nine replay-sensitive classes, seven ordering families,
+residuals and actual checked-Core/MIR/Opt/Runtime/Tools handoff evidence. All
+nine C8 diagnostic meanings and complete source/generated/semantic/authority/
+profile/target/provider/grant context remain. Declared allowances and graph
+presence cannot substitute for actual inference.
+
+Two earlier clauses referenced by the C8 context were also missing: typed
+record-versus-replay with the qualified R6/R7/R8 case, and PKG6's derived
+capability manifest. Restore their exact bytes under existing Effects replay
+and handoff tasks, separately from C8's frozen review authority. Full R6/R7/R8,
+PKG6, L6 and attached foundation entailment remains unassessed. The R6 exception
+requires actual L6/profile permission and cannot override stricter R7/R8
+recorded-output segments. Graph labels alone do not authorize repeated calls.
+Effects supplies real analysis/derivation and deterministic summary data; Build
+packages manifests/provenance/SBOM, Auth grants authority and Runtime enforces
+handles. Requests, denies and deployment grants remain distinct.
+
+The six L6 handler classes retain typed request/response/result facts, original
+labels, handled/escaping summaries, residual actions and required authority.
+Types, Effects, Auth, Legality and actual Runtime/domain interpreters keep their
+separate work. Affine defaults, permitted multi-shot proof/profile requirements,
+safe suspension transfers, resume/cancel/close/completion and deterministic
+replay remain actual acceptance obligations. Test fakes record fixture identity,
+capability and absent live authority without making forbidden effects legal.
+Current accounting removal supersedes project call/token/work/fuel allowances;
+real runtime timeout/retry/failure semantics, semantic validity, host restrictions
+and external billing remain separate.
+
+The preserved C8 trace at `94dfa9c5` has SHA-256
+`783919a0db49d25e48c553dc8d28dcc13f8310efc212d5228c3f267d66ada199`.
+It binds 103 facets (87 semantic and sixteen context), fifty occurrences,
+34 semantic conjunctions and five original owner joins. Current source spans
+and five exact criterion witnesses preserve that source scope; two additional
+context witnesses retain their own qualifications. Nonwhitespace conservation
+is not semantic acceptance. The frozen review at `1ecdfa59`, tree `49603cd3`,
+passed only qualified frozen C8 source conjunctions. It excludes implementation,
+compiler/runtime/provider/model/replay/probe execution, full L6, attached
+foundation predicates, whole-project/final-count/future-head/canonical-adoption
+and held-action clearance. No independent acceptance transfers to this head.
+
+Source `cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6` changes only the Effects
+spec/plan/tasks. Five original bodies gain declared additions: 87 of 139 remain
+identical and 52 are amended, with original IDs/statuses conserved. No new task
+is created; 149 current keys, 25 authorities, forty future records, 273 selected
+result joins, SH/SH07 routing and three scoped Reader receipts retain their
+scope. The Effects task pin and plan inspection pin advance explicitly;
+predecessor `392c6ae6` retains its complete metadata/projection/review. Earlier
+C16/C17/C12 controls keep that predecessor checkpoint rather than comparing
+those frozen subjects against this later Effects amendment. The current source
+fingerprint is `edb5cb310ecea232f4a030dfcbef409ed7beb9ff15b77b566ac2f633e84ef02e`.
+
+Selected static inspection distinguishes partial code from semantic completion.
+The [hosted effect graph builder](../bootstrap/clojure/src/gravity/effects.clj)
+classifies a small set of supplied facts, copies direct effects to transitive
+sets and function declarations to inferred/latent summaries, and records build
+grants rather than performed build actions. Its contract explicitly excludes
+fixed-point/body inference, handlers/continuations and legality/authority.
+The [C8 evidence builders](../bootstrap/clojure/src/gravity/c8_effect_checker/evidence.clj)
+assign most legality authorities true, construct namespace-shaped grants and
+record replay/order/residual labels. The [verifier](../bootstrap/clojure/src/gravity/c8_effect_checker/verification.clj)
+checks subsets, field/status predicates and presence. Those checks do not
+establish real package/deployment/provider decisions or complete propagation.
+The [hosted contract](../bootstrap/clojure/src/gravity/c8_effect_checker/contract.clj)
+retains compatibility-only, incomplete-legality and non-authority boundaries.
+
+The initial [Gravity C8 constructors](../bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity)
+are quoted record models. Later selected code performs actual normalized-
+operation legality and identity/result recomputation, with a meta/JVM/build
+policy and explicit pending inference, latent/transitive/handled facts,
+namespace/module summaries, runtime-profile policy, general authenticated
+adapters and MIR preservation. This is selected static inspection, not an audit
+of every helper or current execution. Visible structural work/input allowances
+remain superseded cleanup work rather than admission prerequisites. The
+[2026-06-25 report](../docs/artifacts/phase-06/reports/p06-d087-c8-effect-checker-report.md)
+retains stage0 document scope; its historical tests were not rerun or promoted.
+
+Local inference/refusal fixtures may start against declared typed-Core, grant,
+handler and consumer interfaces. Composition needs actual products and real
+interpreter results. No whole dependency release or fresh migration proof is
+an ordinary editing prerequisite. No held C7/C12/compiler/provider/replay/probe,
+native/device/migration/signing/private-store or product-publication action
+runs, and no other chat is messaged. Global substantive reconciliation, current
+implementation assessment and required independent review remain unfinished;
+Reader contract coverage remains the first implementation preparation increment.
+
+C8 validation passes: 43 crosswalk tests / 5,351 assertions; 23 dependency
+tests / 1,831 assertions; deterministic generation/check, read-only dependency
+audit, both document validators and the language boundary (six tests / eleven
+assertions). Controls bind all 103 C8 source spans, five raw criterion hashes and
+two separate earlier context hashes; changed criterion bytes or a removed
+semantic facet fail conservation. All original IDs/statuses, the five changed
+Effects bodies, remaining task bodies, future records, SH/SH07 routes and scoped
+Reader receipts retain their exact dispositions. Source/claim controls preserve
+the frozen review exclusions without current implementation or acceptance credit.
+Conservation passes for 83 changed files, 77 Markdown files, 3,034 local
+references, 139 original routes, 48 historical spec/plan suffixes and all 48
+original task/evidence contents after stripping declared additions. ASCII and
+whitespace checks pass. Scratch reader delimiters and a missing namespace import
+were corrected before successful metadata capture; failed preparation receives
+no passing credit. No compiler/effect-handler/replay/provider/target or other
+held operation ran.

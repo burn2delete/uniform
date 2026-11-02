@@ -250,6 +250,8 @@
   "b25db661156837e5a61d15d745dd612814a5574bc8c74e230536cecd20210735",
   "specs/build-workflow/plan.md"
   "f7918ef386b1e87561348931b9986aa19792eccdab489b26ee967d397be0e7fc",
+  "specs/effects-workflow/plan.md"
+  "3beadb1d7ac7b8a41acd645651dc7b4a520c56468f6de6782f6dda86447ffc41",
   "specs/opt-workflow/plan.md"
   "d0489478bcf66691b3d678de96ced913d23f8e871aa18912cffbd3ef37d9f5ee",
   "specs/legality-workflow/plan.md"
@@ -272,9 +274,9 @@
    "evolution/security-review"
    "evolution/stabilization-decision"
    "evolution/target-support-admission"]},
- :source-input-commit "7662cb4a4527d4e8d905f88f352428dc3d7867f5",
+ :source-input-commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
  :task-comparisons
- {:unchanged-body-count 92,
+ {:unchanged-body-count 87,
   :changed-bodies
   [{:id "ai",
     :path "specs/domains-workflow/tasks.md",
@@ -371,6 +373,51 @@
     "c0d65bcbe161656ac20e9c8765829e15800f03e70d6293a305f53c30a37fc125",
     :after-sha256
     "0adceb92e6aa504816beda906ed20fb4db595d675d1cf805d3a3b54039caa1b7",
+    :before-checked false,
+    :after-checked false}
+   {:id
+    "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects",
+    :path "specs/effects-workflow/tasks.md",
+    :before-sha256
+    "baef04abf4eaaf0410b8f58992a1aa7bb79b9aa378e85fc1a9a414c508026709",
+    :after-sha256
+    "60a2920c875b188657de2b9a575463e1585a6d6abc913f5d75d9591d29bda3af",
+    :before-checked false,
+    :after-checked false}
+   {:id
+    "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects",
+    :path "specs/effects-workflow/tasks.md",
+    :before-sha256
+    "0a3be335becc28785539c35483823d36fb0070db331069e6f75a50493f3dbf83",
+    :after-sha256
+    "137afc9de07f90d177b0e14fdfe8bce951dee40ed05ed6547c990bc09aad38ee",
+    :before-checked false,
+    :after-checked false}
+   {:id
+    "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
+    :path "specs/effects-workflow/tasks.md",
+    :before-sha256
+    "f19d442e1fcbf7e4de928925aea79538b84f716f7151eeef300826ebd6f73270",
+    :after-sha256
+    "b1601e69b8d6aca3a7f202545269ca8b70884eb3be0432c825c65c13a5235db6",
+    :before-checked false,
+    :after-checked false}
+   {:id
+    "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation",
+    :path "specs/effects-workflow/tasks.md",
+    :before-sha256
+    "6f3074abe4b04ec7f6b23b2ee258fabfc7c57dc135af444241ad4b4cf3a57366",
+    :after-sha256
+    "ab32678cddd65a02fd5be01007ef6b177596fd0706a272f70483145451b78406",
+    :before-checked false,
+    :after-checked false}
+   {:id
+    "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+    :path "specs/effects-workflow/tasks.md",
+    :before-sha256
+    "54b57243aa09727dc59d23d91c2e7aba8c0983f00f449de7dfd4c7a965022456",
+    :after-sha256
+    "e3e36fb40396822d98c8f7ac88c5dcb8cd53b11f56a5c8e5504c921e66a77847",
     :before-checked false,
     :after-checked false}
    {:id "firmware",
@@ -7670,9 +7717,9 @@
     :sha256
     "af28151cd4bd37b7be8293e1a5d5385fc94e7d743a60cd45275bc0687528a3a0"},
    :after
-   {:commit "69831d09bc2007844265968b265c493cf064bdf9",
+   {:commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
     :sha256
-    "45419d6bc208ae0df187dfe7c0105d3434d19c8d7deed0d7dfc52da7a4e7ad3e"},
+    "a61dbf01fc6d1585b4e903481ef9b9b9c2decf886e24f7c1c511d086f99566cd"},
    :scope :task-file-version}
   {:path "specs/emit-workflow/tasks.md",
    :before
@@ -7870,6 +7917,11 @@
   {:commit "7662cb4a4527d4e8d905f88f352428dc3d7867f5",
    :sha256
    "f7918ef386b1e87561348931b9986aa19792eccdab489b26ee967d397be0e7fc",
+   :kind :source-inspection-not-execution},
+  "specs/effects-workflow/plan.md"
+  {:commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
+   :sha256
+   "3beadb1d7ac7b8a41acd645651dc7b4a520c56468f6de6782f6dda86447ffc41",
    :kind :source-inspection-not-execution},
   "specs/opt-workflow/plan.md"
   {:commit "0e1cec28f43d2902032b1786af08f7aa17af8107",
@@ -11992,6 +12044,2348 @@
    :historical-task-commit "916f020c064991fd308550e4e934c0b4443f6d6b"},
   :global-source-conjunctions :unassessed,
   :source-binding-relationship :whole-file-and-span-bytes-unchanged,
+  :implementation-acceptance :unassessed},
+ :effects-refinement
+ {:canonical-sources
+  {"docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md"
+   {:path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-commit "392c6ae6265958ffc73e64ac397bb9e5038b1ee3",
+    :sha256
+    "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7"},
+   "docs/phase-01-core-language/016-l6-effect-system-specification.md"
+   {:path
+    "docs/phase-01-core-language/016-l6-effect-system-specification.md",
+    :source-commit "392c6ae6265958ffc73e64ac397bb9e5038b1ee3",
+    :sha256
+    "a9d41d970d56d20f0fb74f10c280689407e3ab8fe075c5bc3b71925e9ccec1d5"},
+   "docs/phase-08-runtime-architecture/117-r6-concurrency-runtime-design.md"
+   {:path
+    "docs/phase-08-runtime-architecture/117-r6-concurrency-runtime-design.md",
+    :source-commit "392c6ae6265958ffc73e64ac397bb9e5038b1ee3",
+    :sha256
+    "93c9169030340bbade88a61c387f3c16fca2229918400d303a36320711615550"},
+   "docs/phase-08-runtime-architecture/118-r7-distributed-runtime-design.md"
+   {:path
+    "docs/phase-08-runtime-architecture/118-r7-distributed-runtime-design.md",
+    :source-commit "392c6ae6265958ffc73e64ac397bb9e5038b1ee3",
+    :sha256
+    "a0fa8028def3fe35c3494f8a988db46d2bd52f4bcc967e39ec553f258756bf66"},
+   "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md"
+   {:path
+    "docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md",
+    :source-commit "392c6ae6265958ffc73e64ac397bb9e5038b1ee3",
+    :sha256
+    "b9d64d7685d8b88c02f31a23049517b37b4eaada3b40a37a25fd243cec1d490b"},
+   "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md"
+   {:path
+    "docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md",
+    :source-commit "392c6ae6265958ffc73e64ac397bb9e5038b1ee3",
+    :sha256
+    "64d7893fa2d5a7c5789703b156a5d95af1c21f103fc83d8bc713fb64dbc943e3"}},
+  :new-task-identities [],
+  :occurrence-cases
+  {"C8/source/5f402aada4709ea3728040ebb54a4fa4a1d5c25f58a3ba9a06cf2bc423e104be"
+   {:index 37,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:handoff],
+    :predicate
+    "Preserve the declared C8 diagnostic family and meanings."},
+   "C8/source/816158e92d6540c73dc43a13e597eab751c76125e78a1e2f8ec4189683285265"
+   {:index 2,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :predicate
+    "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+   "C8/source/5fbe9427cf57bf172c0ebbb6b1e05ba5eeb28d8b87b147fa9286c60972a08d0b"
+   {:index 14,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :predicate
+    "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+   "C8/source/da09721f9dcb415ace61dd28d8c74f387e2c4bd119a8103d0c6d1ac17217b1f3"
+   {:index 25,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :replay],
+    :predicate
+    "Both macro combinations require independent records: build-effectful/pure-emitted-runtime and pure-build/effectful-runtime."},
+   "C8/source/754860e4fcaa80e220bdb355f12c0077d227f20613207a9404594aa6a9f720b7"
+   {:index 40,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :predicate
+    "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+   "C8/source/036a329ef795e5072ff70202a3062c4a774c7502c5766870935fe31c33bd368e"
+   {:index 11,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :predicate
+    "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+   "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1"
+   {:index 8,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:handoff :propagation :legality :replay],
+    :predicate
+    "Consume actual C7 typed calls, L6 effects, L15 grants, L9 errors, L12 hermetic build policy, profiles and runtime/package/provider/deployment contracts; interfaces are not blanket component-completion gates."},
+   "C8/source/b387e50ffcda3a7ccde4089cc29476a0bf7b6c44c09e1a34f2dd8bb2e9602f86"
+   {:index 19,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality],
+    :predicate
+    "Capability proofs connect actual effect uses to actual scoped grants."},
+   "C8/source/fee632d4a91c90120ca0d842be3b065917d2ae55c6045919d57758d3122c26d6"
+   {:index 24,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :replay],
+    :predicate
+    "Build reader/macro/eval/plugin/probe/generator effects, emitted runtime effects and package resolution/artifact effects retain separate computed records; naming these does not authorize their execution here."},
+   "C8/source/13e3ae999c283ee4cf9daec29bbb9401ef3899cc30bcf991a0c8fe6b6de3cae2"
+   {:index 26,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :predicate
+    "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+   "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7"
+   {:index 10,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :legality :replay :handoff],
+    :predicate
+    "Nine distinct actual outputs survive: graph, latent table, namespace/module summaries, capability proof, build log, replay requirements, ordering, residual report and diagnostics."},
+   "C8/source/fbdb59d60b7ca6c328e79366df9028cc76ec7408efe5c60a37fd29a982ebe25f"
+   {:index 22,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :predicate
+    "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+   "C8/source/a135437ae278c0ee2bc793761176f9f6d9b4aedf93f8d0278be9150a29d2e8b2"
+   {:index 45,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:replay :handoff],
+    :predicate
+    "Replay-sensitive effects without required replay/audit artifacts refuse rather than silently performing live work."},
+   "C8/source/742360aa582a11a285244595913c34ae1f24f4a3e481008402abf0aeb9a1de38"
+   {:index 23,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :replay],
+    :predicate
+    "All following domains remain separate rather than interchangeable labels."},
+   "C8/source/de0699b8b49c054e65eae2aaf72d5de55d6df7cbf6bd0f9cf683bd2cb2fe1785"
+   {:index 46,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality :handoff],
+    :predicate
+    "Effectful reorder requires actual ordering evidence consumed by the optimizer."},
+   "C8/source/77044045cede6e67112c4be6c02a653ab44174554efc10a58c5672112565eead"
+   {:index 33,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality :handoff],
+    :predicate
+    "Actual optimizers consume ordering before reorder/fusion/elimination; this trace is not optimizer execution."},
+   "C8/source/a67e6eb885fd6e2ce8c4ce946b13665a76b8346a564230cf715037eb211c8f58"
+   {:index 1,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :predicate
+    "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+   "C8/source/633aa14b8a93349c8d278841121edae9e6616faf372575a955d14743b47fef84"
+   {:index 0,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :predicate
+    "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+   "C8/source/b9a2934048e963625573f73204c197195a8a47b8f98cdf2ecf9323fbf83bbc41"
+   {:index 36,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :predicate
+    "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+   "C8/source/07a6459fbccb9577ee2574f6e788d4672fb2158765c95e1f5d8798461d8c687b"
+   {:index 7,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :predicate
+    "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+   "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5"
+   {:index 32,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality :handoff],
+    :predicate
+    "Sequence/commutation/no-duplicate/no-eliminate/resource-bracketing/volatile-MMIO-atomic/replay-order constraints remain explicit."},
+   "C8/source/eff94452ef98044d3b28fcc68f36ce1963ea0fa025aba592fb336d2485a803a7"
+   {:index 18,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :predicate
+    "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+   "C8/source/3b6dc78a73533f7e624c7b1dc1610c7dbd114e3dc7d756cd7589c4ddacbe90f5"
+   {:index 42,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :propagation],
+    :predicate
+    "Effect inference must derive actual typed-core behavior, not backend or runtime accidents."},
+   "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263"
+   {:index 6,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys
+    [:computation :propagation :legality :replay :handoff],
+    :predicate
+    "All eight requirements apply together: facts-or-diagnostic for behavior, latent/throws, declarations, complete legality intersection, separate build domain, replay/audit, ordering and missing-grant refusal before MIR."},
+   "C8/source/7b54f9bef0e31dbba05920b790ea404cd9869e55dd4bc6cb9bef55e5312d849a"
+   {:index 34,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :predicate
+    "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+   "C8/source/bdad31c5bc7098bc4cd0a666a5adc338beaafb558bb9bc501a86a68a3f906d59"
+   {:index 41,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality],
+    :predicate
+    "Typing alone cannot legalize effects or grant authority."},
+   "C8/source/9dcbe010c684cb4776cd4b3bae53429d83442453dccede31330f184fc9ac21d2"
+   {:index 16,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality :handoff],
+    :predicate
+    "Per-effect records retain source, function/namespace/profile/package/deployment/runtime/safety acceptance, required versus granted capabilities and result; sample true flags are not verification."},
+   "C8/source/2ed000ddfd854672b57052dbb844913a9b100c81532f580bf5b8ae13b0c9dc7f"
+   {:index 31,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality],
+    :predicate
+    "Ordering records include the complete subsequent constraint family."},
+   "C8/source/8dd00dc140bf7d686085644e408320434899d873760d882e67715405e8e2104c"
+   {:index 44,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality],
+    :predicate
+    "An effect name cannot supply its own capability grant."},
+   "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69"
+   {:index 38,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :legality :replay :handoff],
+    :predicate
+    "All nine failure classes retain exact identifiers: declaration/profile/grant/build/replay/order/provider/unknown-label/malformed-artifact, with actual positive/negative fixtures."},
+   "C8/source/40ceef830938fb0ff1a6b1fd2e77f449e0c6a3ec0fd8ea19724c53f85cb26c9a"
+   {:index 5,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :predicate
+    "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+   "C8/source/78add2dfcce75e12d27fefc4b3daf71e1cb8f7cf77a18da1bf140005d4e9eb3b"
+   {:index 30,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :predicate
+    "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+   "C8/source/fca37f6a814ebabec1dab9d843082b14ad3c147f8402e6c270e81373f3bf5ceb"
+   {:index 4,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality],
+    :predicate
+    "Types, effect actions and capability authority remain separate; neither implies the other."},
+   "C8/source/abe1427025016e125ec4745eba9e2470e7f3fdae2963e495495d42f984e3c352"
+   {:index 20,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality :handoff],
+    :predicate
+    "Authority records bind effect/source/capability/grant scope-principal-phase/provider/status; filesystem/config/app.server values illustrate one subject, not ambient grants."},
+   "C8/source/16ef91a5084b0bb59a61e14d39a2031406ecd6da8dcfa4bc25d417d3c5b2f0d5"
+   {:index 9,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :predicate
+    "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+   "C8/source/37696ee31b18b63c297a5b5b4b3079b106354c8b5ac9c6584b0ad31c4f722ee9"
+   {:index 48,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys
+    [:computation :propagation :legality :replay :handoff],
+    :predicate
+    "Conformance introduction quantifies the entire following producer/checker/consumer conjunction."},
+   "C8/source/bbb6b9e3ae36d0401441d1254e3680905ba80a903f4dcd708f8e73d6b063d082"
+   {:index 47,
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :predicate
+    "Retain title/headings, sequence/phase/draft/source attribution and enclosing child scope without implementation credit or weakened normative authority."},
+   "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300"
+   {:index 49,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys
+    [:computation :propagation :legality :replay :handoff],
+    :predicate
+    "Actual results cover direct/latent/transitive/build/residual computation, function/namespace declarations, profile refusal, capability accept/refuse, hermetic rejection, replay emission, resource/volatile/MMIO/atomic/workflow/AI ordering, MIR preservation and all diagnostic failure classes; none is executed by this source trace."},
+   "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b"
+   {:index 28,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:replay],
+    :predicate
+    "All nine time/random/external-IO/external-DB/workflow/model/tool/human-review/scheduler families produce actual obligations, preserving :ai/human-review."},
+   "C8/source/efba30c4adee8e15b150dbf6e901642c3d228d896be2007887337c25ebca1cd2"
+   {:index 39,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:handoff],
+    :predicate
+    "Diagnostics retain core node/span/generated origins/function/namespace/effect/capability/profile/target/provider/grant/remediation."},
+   "C8/source/3ce9e6d8ab672c48dfb03fa7d5585efec6dd6c5f9ad460bf56f2c4e29cccf2ee"
+   {:index 21,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality :handoff],
+    :predicate
+    "Authority evidence is not safety proof; profile/safety/runtime-selection/audit consumers retain distinct actual checks."},
+   "C8/source/1487ce16d900c2d6c71440dc6bf7d6d4926b77bc90c190250d6f8d4fe666f648"
+   {:index 43,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :replay],
+    :predicate
+    "Macro build facts cannot hide emitted runtime effects."},
+   "C8/source/838ac4729ce8713e8a58a36fbf1c0b4a850d948cc454f08a366f205eedcb99b4"
+   {:index 13,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:propagation :legality],
+    :predicate
+    "Branch alternatives may remain for optimization, but all alternatives conservatively contribute to L6 legality."},
+   "C8/source/cd133df563af53bc385aa5833929f78043cc8df2ffa8cec74e9d2cb96b2a844e"
+   {:index 15,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality],
+    :predicate
+    "Every applicable authority must accept the effect; the intersection is conjunctive."},
+   "C8/source/a4ef10e17eeee6946bed4b48b1d484aa2412048ad78184b7b089589cce3ad30f"
+   {:index 3,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys
+    [:computation :propagation :legality :replay :handoff],
+    :predicate
+    "The checker implements actual L6 over typed core for every named expression/function/namespace/module/macro/build/replay/residual domain and validates all governing authority/provider/safety inputs; actual downstream consumers preserve its products."},
+   "C8/source/244c07c3179e2e2570c2b9409378b54fb521aa3dd971ff3fce3b1d7942c90fc0"
+   {:index 17,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality],
+    :predicate
+    "Backend/runtime support may narrow but never grant authority missing from source, package or deployment policy."},
+   "C8/source/348079ecac4865c26d305f83e0b8a62cb469aab2865e0e80d1faa8f2de3be4e1"
+   {:index 35,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :propagation :replay :handoff],
+    :predicate
+    "After proof/specialization, actual runtime checks, dynamic dispatch, fallback-provider calls, residual authority checks and replay logging survive in residual reports and MIR/runtime artifacts."},
+   "C8/source/6fc79d7e9b4abfb28f96b2926099189efe402eea2c428d18104ffcff97bc90fe"
+   {:index 29,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:replay :handoff],
+    :predicate
+    "Workflow/AI/runtime/test consumers must satisfy obligations; profiles forbidding replay gaps reject missing records before target lowering."},
+   "C8/source/4c9dcbd61de7fe16448b61d39f349fb28d1aa3a7bca9093a74f64bd83130a86e"
+   {:index 27,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:replay],
+    :predicate
+    "Replay records apply to the following nondeterministic families under the actual profile and consumer contract."},
+   "C8/source/ba502db242a2b368981c64c887acab5ba6d18861798b111e5db8f1b79f046e3a"
+   {:index 12,
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys
+    [:computation :propagation :legality :replay :handoff],
+    :predicate
+    "Graph fields preserve module/node identity, direct/latent/transitive/order/source, function declared/inferred/latent/throws, namespace declared/inferred, build/replay and diagnostics. HTTP/HttpError and empty example vectors illustrate one graph; they are not universal pure defaults or permission to copy declarations into inference."}},
+  :dependency-joins
+  [{:source "C7/L6/L9",
+    :input
+    "Actual typed calls, effect/handler semantics and thrown-error facts",
+    :consumers [:computation :propagation :handoff]}
+   {:source "L15/profiles/Runtime/Package/L12",
+    :input
+    "Actual scoped grants, runtime/provider support, safety and hermetic build/deployment policies",
+    :consumers [:legality :replay]}
+   {:source "Checked-core/MIR/optimizer/runtime/workflow/AI/test",
+    :input
+    "Actual preserved effect annotations, consumed ordering/replay obligations and consumer results",
+    :consumers [:handoff]}],
+  :predecessor-readiness-successor
+  {:commit "392c6ae6265958ffc73e64ac397bb9e5038b1ee3",
+   :path
+   "specs/sh-family-crosswalk/implementation-readiness-source-version.edn",
+   :sha256
+   "645a1910e41362b83f87b4e6e3d416f7d1962011aed40a18387bc67f2177472d",
+   :projection-path "specs/sh-family-crosswalk/crosswalk.edn",
+   :projection-sha256
+   "3603359115e1cb4f4a172f8b0d776c28583fa57fe8213f5326720dbb2caa2c3e",
+   :input-fingerprint
+   "4880fe8e8a186e4f33bfbaf22277cb78293e0a0b6a276da1554ae51a40a165f1"},
+  :additional-contexts
+  [{:key :replay,
+    :task-id
+    "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation",
+    :historical-witness
+    {:commit "94dfa9c535268276765b76366c5c60687fa3807a",
+     :path "specs/effects-workflow/tasks.md",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :source-span
+     {:start-byte 6710,
+      :end-byte 7367,
+      :sha256
+      "0f851c998a5fa6d35793f07a40ac8310f867c5b52331ded2b8bd1782988fca0b"}},
+    :current-witness
+    {:path "specs/effects-workflow/tasks.md",
+     :source-commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
+     :sha256
+     "a61dbf01fc6d1585b4e903481ef9b9b9c2decf886e24f7c1c511d086f99566cd",
+     :source-span
+     {:start-byte 7902,
+      :end-byte 8559,
+      :start-line 69,
+      :end-line 69,
+      :sha256
+      "0f851c998a5fa6d35793f07a40ac8310f867c5b52331ded2b8bd1782988fca0b"}},
+    :acceptance :not-transferred,
+    :scope
+    :selected-replay-or-manifest-interface-not-whole-dependencies}
+   {:key :handoff,
+    :task-id
+    "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+    :historical-witness
+    {:commit "94dfa9c535268276765b76366c5c60687fa3807a",
+     :path "specs/effects-workflow/tasks.md",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :source-span
+     {:start-byte 8875,
+      :end-byte 9542,
+      :sha256
+      "afd9430e24dd760ceb2d6dbb98f14740e8aeebe184bb2baed8052dee85157614"}},
+    :current-witness
+    {:path "specs/effects-workflow/tasks.md",
+     :source-commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
+     :sha256
+     "a61dbf01fc6d1585b4e903481ef9b9b9c2decf886e24f7c1c511d086f99566cd",
+     :source-span
+     {:start-byte 10369,
+      :end-byte 11036,
+      :start-line 84,
+      :end-line 84,
+      :sha256
+      "afd9430e24dd760ceb2d6dbb98f14740e8aeebe184bb2baed8052dee85157614"}},
+    :acceptance :not-transferred,
+    :scope
+    :selected-replay-or-manifest-interface-not-whole-dependencies}],
+  :plan-source
+  {:path "specs/effects-workflow/plan.md",
+   :before nil,
+   :after
+   {:commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
+    :sha256
+    "3beadb1d7ac7b8a41acd645651dc7b4a520c56468f6de6782f6dda86447ffc41",
+    :kind :source-inspection-not-execution}},
+  :criteria
+  [{:key :computation,
+    :task-id
+    "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects",
+    :historical-witness
+    {:path "specs/effects-workflow/tasks.md",
+     :marker "effects-implementation-tasks",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :start-byte 1395,
+     :end-byte 2864,
+     :raw-sha256
+     "e2ee7085c0973bb98594db689cdafe33905e03fb32f316fc8eaf031c4556efb0",
+     :commit "94dfa9c535268276765b76366c5c60687fa3807a"},
+    :current-witness
+    {:path "specs/effects-workflow/tasks.md",
+     :source-commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
+     :sha256
+     "a61dbf01fc6d1585b4e903481ef9b9b9c2decf886e24f7c1c511d086f99566cd",
+     :source-span
+     {:start-byte 1668,
+      :end-byte 3137,
+      :start-line 30,
+      :end-line 30,
+      :sha256
+      "e2ee7085c0973bb98594db689cdafe33905e03fb32f316fc8eaf031c4556efb0"}}}
+   {:key :propagation,
+    :task-id
+    "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects",
+    :historical-witness
+    {:path "specs/effects-workflow/tasks.md",
+     :marker "effects-implementation-tasks",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :start-byte 3226,
+     :end-byte 4445,
+     :raw-sha256
+     "2c51974bcfae8003f13f5962aeb5ffbb65b28f9a9edce37a86e1b05a2b0487f7",
+     :commit "94dfa9c535268276765b76366c5c60687fa3807a"},
+    :current-witness
+    {:path "specs/effects-workflow/tasks.md",
+     :source-commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
+     :sha256
+     "a61dbf01fc6d1585b4e903481ef9b9b9c2decf886e24f7c1c511d086f99566cd",
+     :source-span
+     {:start-byte 3809,
+      :end-byte 5028,
+      :start-line 43,
+      :end-line 43,
+      :sha256
+      "2c51974bcfae8003f13f5962aeb5ffbb65b28f9a9edce37a86e1b05a2b0487f7"}}}
+   {:key :legality,
+    :task-id
+    "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
+    :historical-witness
+    {:path "specs/effects-workflow/tasks.md",
+     :marker "effects-implementation-tasks",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :start-byte 4827,
+     :end-byte 6319,
+     :raw-sha256
+     "bd9ed62d5dbef6e25d8bb781d6b2999fc763ddb8585742c3be6d0819387e193a",
+     :commit "94dfa9c535268276765b76366c5c60687fa3807a"},
+    :current-witness
+    {:path "specs/effects-workflow/tasks.md",
+     :source-commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
+     :sha256
+     "a61dbf01fc6d1585b4e903481ef9b9b9c2decf886e24f7c1c511d086f99566cd",
+     :source-span
+     {:start-byte 5717,
+      :end-byte 7209,
+      :start-line 56,
+      :end-line 56,
+      :sha256
+      "bd9ed62d5dbef6e25d8bb781d6b2999fc763ddb8585742c3be6d0819387e193a"}}}
+   {:key :replay,
+    :task-id
+    "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation",
+    :historical-witness
+    {:path "specs/effects-workflow/tasks.md",
+     :marker "effects-implementation-tasks",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :start-byte 7368,
+     :end-byte 8501,
+     :raw-sha256
+     "e987cf94e466510ba2a875b93eb2d75be366da66d6e12f04d380888adfd63837",
+     :commit "94dfa9c535268276765b76366c5c60687fa3807a"},
+    :current-witness
+    {:path "specs/effects-workflow/tasks.md",
+     :source-commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
+     :sha256
+     "a61dbf01fc6d1585b4e903481ef9b9b9c2decf886e24f7c1c511d086f99566cd",
+     :source-span
+     {:start-byte 8561,
+      :end-byte 9694,
+      :start-line 71,
+      :end-line 71,
+      :sha256
+      "e987cf94e466510ba2a875b93eb2d75be366da66d6e12f04d380888adfd63837"}}}
+   {:key :handoff,
+    :task-id
+    "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+    :historical-witness
+    {:path "specs/effects-workflow/tasks.md",
+     :marker "effects-implementation-tasks",
+     :task-id
+     "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+     :file-sha256
+     "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+     :start-byte 9543,
+     :end-byte 10929,
+     :raw-sha256
+     "69e806f18a9e342b8b6a5f560a3ebe71f448b16c8b9e51816a8454c091e8f0e0",
+     :commit "94dfa9c535268276765b76366c5c60687fa3807a"},
+    :current-witness
+    {:path "specs/effects-workflow/tasks.md",
+     :source-commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
+     :sha256
+     "a61dbf01fc6d1585b4e903481ef9b9b9c2decf886e24f7c1c511d086f99566cd",
+     :source-span
+     {:start-byte 11038,
+      :end-byte 12424,
+      :start-line 86,
+      :end-line 86,
+      :sha256
+      "69e806f18a9e342b8b6a5f560a3ebe71f448b16c8b9e51816a8454c091e8f0e0"}}}],
+  :owner-joins
+  {"compiler/c8/capability-proof"
+   {:id "compiler/c8/capability-proof",
+    :original-obligation
+    "Connect effect use to actual scoped grants/provider evidence and report missing capabilities before MIR, without treating capability evidence as a safety proof.",
+    :criterion-keys [:legality :handoff],
+    :status
+    :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+    :implementation-credit :none},
+   "compiler/c8/effect-computation"
+   {:id "compiler/c8/effect-computation",
+    :original-obligation
+    "Compute direct/latent/transitive/namespace/module and residual effect facts conservatively, including thrown errors, exposing all behavior beyond pure construction.",
+    :criterion-keys [:computation :propagation :handoff],
+    :status
+    :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+    :implementation-credit :none},
+   "compiler/c8/effect-domains"
+   {:id "compiler/c8/effect-domains",
+    :original-obligation
+    "Keep compile-time/build/package effects distinct from generated runtime effects, including macros whose two domains differ.",
+    :criterion-keys [:computation :replay :handoff],
+    :status
+    :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+    :implementation-credit :none},
+   "compiler/c8/effect-order"
+   {:id "compiler/c8/effect-order",
+    :original-obligation
+    "Emit and preserve sequencing/commutation/duplication/elimination/resource/volatile/MMIO/atomic/replay constraints before optimization.",
+    :criterion-keys [:legality :handoff],
+    :status
+    :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+    :implementation-credit :none},
+   "compiler/c8/replay-audit"
+   {:id "compiler/c8/replay-audit",
+    :original-obligation
+    "Emit replay/audit obligations for nondeterministic external/workflow/AI/scheduler effects and reject forbidden gaps before lowering.",
+    :criterion-keys [:replay :handoff],
+    :status
+    :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+    :implementation-credit :none}},
+  :source-entailment
+  :author-assessed-complete-C8-and-selected-context-proposal,
+  :independent-current-review :pending,
+  :source-trace
+  {:path
+   "specs/requirement-reconciliation/c8-complete-current-facet-trace.edn",
+   :commit "94dfa9c535268276765b76366c5c60687fa3807a",
+   :sha256
+   "783919a0db49d25e48c553dc8d28dcc13f8310efc212d5228c3f267d66ada199",
+   :scope :preserved-C8-source-only},
+  :source-facets
+  [{:id "C8/normalized-facet/0-29/ed41993e1ddf0ef4",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/633aa14b8a93349c8d278841121edae9e6616faf372575a955d14743b47fef84",
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :owner-requirement-ids [],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 0,
+     :end-byte 29,
+     :sha256
+     "ed41993e1ddf0ef48e7c83ce96d49a6c93c3fefc9bc92531729026c6b4291a71"}}
+   {:id "C8/normalized-facet/30-306/e47eb799105c6eee",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/a67e6eb885fd6e2ce8c4ce946b13665a76b8346a564230cf715037eb211c8f58",
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :owner-requirement-ids [],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 30,
+     :end-byte 306,
+     :sha256
+     "e47eb799105c6eee0413ee995cf5424ecdcdfbafe625144e7c575a152ee080c3"}}
+   {:id "C8/normalized-facet/307-318/994413297a3e95a9",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/816158e92d6540c73dc43a13e597eab751c76125e78a1e2f8ec4189683285265",
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :owner-requirement-ids [],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 307,
+     :end-byte 318,
+     :sha256
+     "994413297a3e95a9b72f5e4c04aa9c306f9009ad88fa0f99453d1963835668b9"}}
+   {:id "C8/facet/319-678",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/a4ef10e17eeee6946bed4b48b1d484aa2412048ad78184b7b089589cce3ad30f",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys
+    [:computation :propagation :legality :replay :handoff],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 319,
+     :end-byte 678,
+     :sha256
+     "91d0846d891e50307d0d8956ef6d85abac40432e484a71329e50ed58425049f0"}}
+   {:id "C8/facet/679-790",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/fca37f6a814ebabec1dab9d843082b14ad3c147f8402e6c270e81373f3bf5ceb",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 679,
+     :end-byte 790,
+     :sha256
+     "d9fbc866dcf0b31c6ab764575dcc997b5b16e62112a60f9f268ebab7ecd5adf7"}}
+   {:id "C8/normalized-facet/791-807/d8416f1863ce5290",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/40ceef830938fb0ff1a6b1fd2e77f449e0c6a3ec0fd8ea19724c53f85cb26c9a",
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :owner-requirement-ids [],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 791,
+     :end-byte 807,
+     :sha256
+     "d8416f1863ce5290f0f41fa533fb9e10fef5d405c1300c03e276a0a894382b61"}}
+   {:id "C8/facet/808-915",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys
+    [:computation :propagation :legality :replay :handoff],
+    :owner-requirement-ids ["compiler/c8/effect-computation"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 808,
+     :end-byte 915,
+     :sha256
+     "b91ac4b30fa026d9ef223791746813639654e4778954397b95f8a6b242b27758"}}
+   {:id "C8/facet/915-989",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys
+    [:computation :propagation :legality :replay :handoff],
+    :owner-requirement-ids ["compiler/c8/effect-computation"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 915,
+     :end-byte 989,
+     :sha256
+     "38746aee18cf62763946d8f34ba3039d596dc029455c9238eb4c2fa82770aca3"}}
+   {:id "C8/facet/989-1068",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys
+    [:computation :propagation :legality :replay :handoff],
+    :owner-requirement-ids
+    ["language/effects/check-narrowest-allowance"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 989,
+     :end-byte 1068,
+     :sha256
+     "fca2de36dcf7f95b9df517f4d17e629a47e8df7a8e62e2ea56a6922753fdc922"}}
+   {:id "C8/facet/1068-1235",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys
+    [:computation :propagation :legality :replay :handoff],
+    :owner-requirement-ids
+    ["language/effects/check-narrowest-allowance"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 1068,
+     :end-byte 1235,
+     :sha256
+     "78e9a37be1693341ca9a8ea9048cf4e0e07a8bb851a14b9cbf8aff2259d69cb3"}}
+   {:id "C8/facet/1235-1291",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys
+    [:computation :propagation :legality :replay :handoff],
+    :owner-requirement-ids ["compiler/c8/effect-domains"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 1235,
+     :end-byte 1291,
+     :sha256
+     "33ed39891c2214caca2aa3fc3dd9c903950e780c4a40825e6e482674fa7f8567"}}
+   {:id "C8/facet/1291-1402",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys
+    [:computation :propagation :legality :replay :handoff],
+    :owner-requirement-ids ["compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 1291,
+     :end-byte 1402,
+     :sha256
+     "30077770ff412ee902ab151e748903a38bac36a6f570a5d9991f5fd5d4906e04"}}
+   {:id "C8/facet/1402-1491",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys
+    [:computation :propagation :legality :replay :handoff],
+    :owner-requirement-ids ["compiler/c8/effect-order"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 1402,
+     :end-byte 1491,
+     :sha256
+     "aab5da38d1a1cf85da83ef1ed86236ac465a63181f3c43143a1e4a7a0d5dd0bc"}}
+   {:id "C8/facet/1491-1556",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/87f390ef511236e3c85eebb6f5b00efd16db3ccecde8a3b20eeed4a52fa42263",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys
+    [:computation :propagation :legality :replay :handoff],
+    :owner-requirement-ids ["compiler/c8/capability-proof"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 1491,
+     :end-byte 1556,
+     :sha256
+     "170f351ce96b141e7586fe207d84fe94e3c3737afa5a67aa2e77b748d274acaa"}}
+   {:id "C8/normalized-facet/1557-1573/21d1931a332d9b7f",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/07a6459fbccb9577ee2574f6e788d4672fb2158765c95e1f5d8798461d8c687b",
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :owner-requirement-ids [],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 1557,
+     :end-byte 1573,
+     :sha256
+     "21d1931a332d9b7f509d0637a459922427a666e44b8a7f19d1a912664edf66f7"}}
+   {:id "C8/facet/1574-1608",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:handoff :propagation :legality :replay],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 1574,
+     :end-byte 1608,
+     :sha256
+     "840349f2ec39ff95b937a443d10a0e039a167028afd3507c73658f7a93d47fc5"}}
+   {:id "C8/facet/1608-1657",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:handoff :propagation :legality :replay],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 1608,
+     :end-byte 1657,
+     :sha256
+     "491c33facb79551bb118bb6843a154db66ca2a51259f914bb757fc16a2521dfd"}}
+   {:id "C8/facet/1657-1697",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:handoff :propagation :legality :replay],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 1657,
+     :end-byte 1697,
+     :sha256
+     "38c2f0cdd8e667e93a498e7bbb98c6881b852cec97fb25f71eb43388920a9069"}}
+   {:id "C8/facet/1697-1744",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:handoff :propagation :legality :replay],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 1697,
+     :end-byte 1744,
+     :sha256
+     "9cb9430652a2617af882b625bc7cb4fbbe740d9aa602413d54e53611a563c673"}}
+   {:id "C8/facet/1744-1791",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:handoff :propagation :legality :replay],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 1744,
+     :end-byte 1791,
+     :sha256
+     "b92258650740625271a1cd926f726b9002909c3b12e123164669b1ae1c80e96d"}}
+   {:id "C8/facet/1791-1851",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:handoff :propagation :legality :replay],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 1791,
+     :end-byte 1851,
+     :sha256
+     "6155345711df625673c1164d0ad1122ff837d7b03b56b57fa1c1b451ab19a902"}}
+   {:id "C8/facet/1851-1943",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/0d6406bb3a75c6a5e9ab1a628910d0cdf2eba5f35f98795b4143e4a2026e82a1",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:handoff :propagation :legality :replay],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 1851,
+     :end-byte 1943,
+     :sha256
+     "1f24f7cdbafc82f8d0c76c4cb1fc59d8a3f6966d4b17291c02604d1d5e764a48"}}
+   {:id "C8/normalized-facet/1944-1969/f4280a4d61a89adc",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/16ef91a5084b0bb59a61e14d39a2031406ecd6da8dcfa4bc25d417d3c5b2f0d5",
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :owner-requirement-ids [],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 1944,
+     :end-byte 1969,
+     :sha256
+     "f4280a4d61a89adc67415f182bd6ae026ebf04a881b9948794b09fe7418ab882"}}
+   {:id "C8/facet/1970-1986",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :legality :replay :handoff],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 1970,
+     :end-byte 1986,
+     :sha256
+     "b757caf1340d92257c7f0e8f315e7e4cd5d5546035828e5c9fea86104099222d"}}
+   {:id "C8/facet/1986-2018",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :legality :replay :handoff],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 1986,
+     :end-byte 2018,
+     :sha256
+     "7d05b5c6abd14d79892f795f1259adab3c831ee1b752777881c34ff69dff996e"}}
+   {:id "C8/facet/2018-2059",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :legality :replay :handoff],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 2018,
+     :end-byte 2059,
+     :sha256
+     "f241c48bf0dcda47b6a72bbdbf32ea3b39051591bb2125aa876a9b817a424474"}}
+   {:id "C8/facet/2059-2086",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :legality :replay :handoff],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 2059,
+     :end-byte 2086,
+     :sha256
+     "a02c889246e5a3e6258950f719ce2bafa6e57c4a1a00bd583697246ec99a128d"}}
+   {:id "C8/facet/2086-2106",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :legality :replay :handoff],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 2086,
+     :end-byte 2106,
+     :sha256
+     "6af76e7df658967d73aa5244931fb165b8cc8b59770034a41ab93b1a96328c78"}}
+   {:id "C8/facet/2106-2136",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :legality :replay :handoff],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 2106,
+     :end-byte 2136,
+     :sha256
+     "f09ff3a1457d0fbb8452832f89e308e3787e19543d146058a5e7ff9c125641c6"}}
+   {:id "C8/facet/2136-2167",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :legality :replay :handoff],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 2136,
+     :end-byte 2167,
+     :sha256
+     "03b62224b9a26916fdee5d9f43dd96c1d0d100bb01273dd06d081e32d0b138b0"}}
+   {:id "C8/facet/2167-2193",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :legality :replay :handoff],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 2167,
+     :end-byte 2193,
+     :sha256
+     "627c31dc9ade61b7fe2c8d3525c8bda6fe8c87916abeb33fef25df403c75291c"}}
+   {:id "C8/facet/2193-2215",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/4cee6f4d4b4afb7faa1781f768cdb3b60d325da7d22d29bac7bafde0399007d7",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :legality :replay :handoff],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 2193,
+     :end-byte 2215,
+     :sha256
+     "60d574837f66d9e69f9f7d907d9733c6b0182bd8bd883d057b7751b1014acb32"}}
+   {:id "C8/normalized-facet/2216-2232/46a7930f8402005f",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/036a329ef795e5072ff70202a3062c4a774c7502c5766870935fe31c33bd368e",
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :owner-requirement-ids [],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 2216,
+     :end-byte 2232,
+     :sha256
+     "46a7930f8402005fed9cfdbfd694944c1797dd1a74ed08b9b01f6ff11249b85d"}}
+   {:id "C8/facet/2233-2845",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/ba502db242a2b368981c64c887acab5ba6d18861798b111e5db8f1b79f046e3a",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys
+    [:computation :propagation :legality :replay :handoff],
+    :owner-requirement-ids ["compiler/c8/effect-computation"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 2233,
+     :end-byte 2845,
+     :sha256
+     "c09743806283591e4255197c59befe4d0a7639c0935a5ee0bd2b8b9617fcb6d7"}}
+   {:id "C8/facet/2846-2976",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/838ac4729ce8713e8a58a36fbf1c0b4a850d948cc454f08a366f205eedcb99b4",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:propagation :legality],
+    :owner-requirement-ids ["compiler/c8/effect-computation"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 2846,
+     :end-byte 2976,
+     :sha256
+     "a144f0b4ad456782b71e7b69c717cb787a5a8fdd8bc2d8985c3aa286fbd250c8"}}
+   {:id "C8/normalized-facet/2977-3002/137f13237b7f3de5",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/5fbe9427cf57bf172c0ebbb6b1e05ba5eeb28d8b87b147fa9286c60972a08d0b",
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :owner-requirement-ids [],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 2977,
+     :end-byte 3002,
+     :sha256
+     "137f13237b7f3de5a9753e69c652f22a5d5e873239bc4f0a7d92f973d94a5d1b"}}
+   {:id "C8/facet/3003-3070",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/cd133df563af53bc385aa5833929f78043cc8df2ffa8cec74e9d2cb96b2a844e",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality],
+    :owner-requirement-ids
+    ["language/effects/check-narrowest-allowance"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 3003,
+     :end-byte 3070,
+     :sha256
+     "392e301cd4444a78bc9ddf72da1289c7301f974fb55d0f35fac96d4372d54ce4"}}
+   {:id "C8/facet/3071-3432",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/9dcbe010c684cb4776cd4b3bae53429d83442453dccede31330f184fc9ac21d2",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality :handoff],
+    :owner-requirement-ids
+    ["language/effects/check-narrowest-allowance"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 3071,
+     :end-byte 3432,
+     :sha256
+     "c17cd4ee53640412688cf079efbc20fddaf6f57cc741638a9d1b97b23e08af6d"}}
+   {:id "C8/facet/3433-3567",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/244c07c3179e2e2570c2b9409378b54fb521aa3dd971ff3fce3b1d7942c90fc0",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality],
+    :owner-requirement-ids
+    ["language/effects/check-narrowest-allowance"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 3433,
+     :end-byte 3567,
+     :sha256
+     "66b61eba52dd58a9cb95e6aaae11d8251364c3d628b17d392f1530aa64f7cc1e"}}
+   {:id "C8/normalized-facet/3568-3588/1e7d7850b0cdcb12",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/eff94452ef98044d3b28fcc68f36ce1963ea0fa025aba592fb336d2485a803a7",
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :owner-requirement-ids [],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 3568,
+     :end-byte 3588,
+     :sha256
+     "1e7d7850b0cdcb12714d9d5b663381070982ed6cc97bd45114477cd636b506f2"}}
+   {:id "C8/facet/3589-3644",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/b387e50ffcda3a7ccde4089cc29476a0bf7b6c44c09e1a34f2dd8bb2e9602f86",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality],
+    :owner-requirement-ids ["compiler/c8/capability-proof"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 3589,
+     :end-byte 3644,
+     :sha256
+     "a38b123a1c30971b4649735e493f26c6eb406dd009cf8a1cf253b8a4f8f35563"}}
+   {:id "C8/facet/3645-3917",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/abe1427025016e125ec4745eba9e2470e7f3fdae2963e495495d42f984e3c352",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality :handoff],
+    :owner-requirement-ids ["compiler/c8/capability-proof"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 3645,
+     :end-byte 3917,
+     :sha256
+     "6981916d728266bab110a00d5c91eea6f8ad79078fa83ea2f5513a883f79eceb"}}
+   {:id "C8/facet/3918-4073",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/3ce9e6d8ab672c48dfb03fa7d5585efec6dd6c5f9ad460bf56f2c4e29cccf2ee",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality :handoff],
+    :owner-requirement-ids ["compiler/c8/capability-proof"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 3918,
+     :end-byte 4073,
+     :sha256
+     "3b16ab2620729b0dbb79ad8be6713b182236bf5b3e14187da9aef460f13d109c"}}
+   {:id "C8/normalized-facet/4074-4103/a040493e9f1b2ae4",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/fbdb59d60b7ca6c328e79366df9028cc76ec7408efe5c60a37fd29a982ebe25f",
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :owner-requirement-ids [],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 4074,
+     :end-byte 4103,
+     :sha256
+     "a040493e9f1b2ae47b2233297d43a0efd591e80961ebd647b5641a053c7a0a25"}}
+   {:id "C8/facet/4104-4144",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/742360aa582a11a285244595913c34ae1f24f4a3e481008402abf0aeb9a1de38",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :replay],
+    :owner-requirement-ids ["compiler/c8/effect-domains"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 4104,
+     :end-byte 4144,
+     :sha256
+     "1d7cfde69b1bb6d9ea4aee71fc26a970b414517ccf123b226b9cd81e80c220e4"}}
+   {:id "C8/facet/4145-4274",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/fee632d4a91c90120ca0d842be3b065917d2ae55c6045919d57758d3122c26d6",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :replay],
+    :owner-requirement-ids ["compiler/c8/effect-domains"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 4145,
+     :end-byte 4274,
+     :sha256
+     "584c3026c90ab174f120738ff4d0323d4c9845dbbf87337f1c5acedae598353f"}}
+   {:id "C8/facet/4274-4318",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/fee632d4a91c90120ca0d842be3b065917d2ae55c6045919d57758d3122c26d6",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :replay],
+    :owner-requirement-ids ["compiler/c8/effect-domains"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 4274,
+     :end-byte 4318,
+     :sha256
+     "081d34dcf896f021dbdb795b0c188a72591363080435c3ef1966c28bfbc7fb70"}}
+   {:id "C8/facet/4318-4394",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/fee632d4a91c90120ca0d842be3b065917d2ae55c6045919d57758d3122c26d6",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :replay],
+    :owner-requirement-ids ["compiler/c8/effect-domains"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 4318,
+     :end-byte 4394,
+     :sha256
+     "429bb93fcc27926c67b75c1ad0305485b124b6f91d37a8fdcec2eba2520d21ee"}}
+   {:id "C8/facet/4395-4555",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/da09721f9dcb415ace61dd28d8c74f387e2c4bd119a8103d0c6d1ac17217b1f3",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :replay],
+    :owner-requirement-ids ["compiler/c8/effect-domains"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 4395,
+     :end-byte 4555,
+     :sha256
+     "d982cd3d87d1f890d6e0242d3bfa3c52ca4d196b8dfe1e1076c2882c20fab63c"}}
+   {:id "C8/normalized-facet/4556-4585/e58cd582f73ca1b8",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/13e3ae999c283ee4cf9daec29bbb9401ef3899cc30bcf991a0c8fe6b6de3cae2",
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :owner-requirement-ids [],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 4556,
+     :end-byte 4585,
+     :sha256
+     "e58cd582f73ca1b8f5bcbde12e737fb4033ebceb7f2f8f98e3f7ef6871226d70"}}
+   {:id "C8/facet/4586-4635",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/4c9dcbd61de7fe16448b61d39f349fb28d1aa3a7bca9093a74f64bd83130a86e",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:replay],
+    :owner-requirement-ids ["compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 4586,
+     :end-byte 4635,
+     :sha256
+     "8ab5347db700243ee6feb15548faf9a3a049a9f6e6bbce31fac338756c8c3ca2"}}
+   {:id "C8/facet/4636-4644",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:replay],
+    :owner-requirement-ids ["compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 4636,
+     :end-byte 4644,
+     :sha256
+     "377f4d94ca2f170de3354bc52631f94c912e8e0c78987b57b7e7735d56486b0f"}}
+   {:id "C8/facet/4644-4658",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:replay],
+    :owner-requirement-ids ["compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 4644,
+     :end-byte 4658,
+     :sha256
+     "69f1441b514f991b54d09ebf913184efb80568362b781f97d9e09906a417698d"}}
+   {:id "C8/facet/4658-4673",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:replay],
+    :owner-requirement-ids ["compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 4658,
+     :end-byte 4673,
+     :sha256
+     "799959d666d93fcad5385da7e0caacaa2cfd3fc7ef9057ef38dba5632d9d85f3"}}
+   {:id "C8/facet/4673-4705",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:replay],
+    :owner-requirement-ids ["compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 4673,
+     :end-byte 4705,
+     :sha256
+     "4852bbc5630a1eafc5e484632f1a7e1bf834ae67db6fa95f45a5f0a9e6a23d4a"}}
+   {:id "C8/facet/4705-4724",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:replay],
+    :owner-requirement-ids ["compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 4705,
+     :end-byte 4724,
+     :sha256
+     "9f77970955df5507ff57675f29dbd574d401342cafd35c569cf4ba68c5b6eba1"}}
+   {:id "C8/facet/4724-4739",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:replay],
+    :owner-requirement-ids ["compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 4724,
+     :end-byte 4739,
+     :sha256
+     "65e2cb15cdf69d0e3c2f57c93d59710b4e8e6529a76749e02292458cd8452765"}}
+   {:id "C8/facet/4739-4753",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:replay],
+    :owner-requirement-ids ["compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 4739,
+     :end-byte 4753,
+     :sha256
+     "7ed8b93335e6abf5f9f752c177825bb880060921ef4313b792adee67b7fd0dbf"}}
+   {:id "C8/facet/4753-4803",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:replay],
+    :owner-requirement-ids ["compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 4753,
+     :end-byte 4803,
+     :sha256
+     "64e664331947b0b37d7c901c6ae7e7c189f0fa542b86e9e7a2902e03defb6c9d"}}
+   {:id "C8/facet/4803-4837",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/26cd9dc8489205520b68032b7486a704f46ef5c91a8c70ecfc34a4f85d934e3b",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:replay],
+    :owner-requirement-ids ["compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 4803,
+     :end-byte 4837,
+     :sha256
+     "41c063cbec298c239e1e674bef04392de1e492dd6e2025080173fe06806f87ef"}}
+   {:id "C8/facet/4838-5030",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/6fc79d7e9b4abfb28f96b2926099189efe402eea2c428d18104ffcff97bc90fe",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:replay :handoff],
+    :owner-requirement-ids ["compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 4838,
+     :end-byte 5030,
+     :sha256
+     "78c665b2a562e8688b97326eb0eda165ee44d4d5d632a9586267dc052259689c"}}
+   {:id "C8/normalized-facet/5031-5055/9f824f169210ee8d",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/78add2dfcce75e12d27fefc4b3daf71e1cb8f7cf77a18da1bf140005d4e9eb3b",
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :owner-requirement-ids [],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 5031,
+     :end-byte 5055,
+     :sha256
+     "9f824f169210ee8d4308b073a0d2a03fd9ab8a340f6b4b9254aaa89e7bcf551a"}}
+   {:id "C8/facet/5056-5089",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/2ed000ddfd854672b57052dbb844913a9b100c81532f580bf5b8ae13b0c9dc7f",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality],
+    :owner-requirement-ids ["compiler/c8/effect-order"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 5056,
+     :end-byte 5089,
+     :sha256
+     "9c2a7f4c6932377c3d0841a407351c6a3aa04500df302898524655e79bc2b4ca"}}
+   {:id "C8/facet/5090-5102",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality :handoff],
+    :owner-requirement-ids ["compiler/c8/effect-order"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 5090,
+     :end-byte 5102,
+     :sha256
+     "25a2c93af033b05592b617955e7e6a08a692e00ca3199688e8abd7c091ce1b62"}}
+   {:id "C8/facet/5102-5117",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality :handoff],
+    :owner-requirement-ids ["compiler/c8/effect-order"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 5102,
+     :end-byte 5117,
+     :sha256
+     "c85f58f7d67fbb76e6fe7feeb91ef8ac8792baa57792b8840b5e09104693bc54"}}
+   {:id "C8/facet/5117-5139",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality :handoff],
+    :owner-requirement-ids ["compiler/c8/effect-order"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 5117,
+     :end-byte 5139,
+     :sha256
+     "ed6f9db3d048c640088f3c833c355e517d07df4fa157303974ebf14efa6056af"}}
+   {:id "C8/facet/5139-5161",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality :handoff],
+    :owner-requirement-ids ["compiler/c8/effect-order"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 5139,
+     :end-byte 5161,
+     :sha256
+     "2078a11f24f350c0bf86dcf148b2c11837fd0e27ba041d4043155d5e7854f4db"}}
+   {:id "C8/facet/5161-5202",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality :handoff],
+    :owner-requirement-ids ["compiler/c8/effect-order"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 5161,
+     :end-byte 5202,
+     :sha256
+     "e07555151b20388ae9664cc8f70320f652edd00173cec7ba7542654090189090"}}
+   {:id "C8/facet/5202-5249",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality :handoff],
+    :owner-requirement-ids ["compiler/c8/effect-order"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 5202,
+     :end-byte 5249,
+     :sha256
+     "6fdbb0e6820afa3cf101bb6cf2a6cb6284264092a6def166fc0fd20e40e90e3f"}}
+   {:id "C8/facet/5249-5279",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/065c9e8500716c474965f044849bf8501069836c7fb575f7f7a0c43211f08ea5",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality :handoff],
+    :owner-requirement-ids ["compiler/c8/effect-order"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 5249,
+     :end-byte 5279,
+     :sha256
+     "44dcd8b9a32e8f066eab451410df56c8160cb726c236403f4d7495477324baaf"}}
+   {:id "C8/facet/5280-5367",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/77044045cede6e67112c4be6c02a653ab44174554efc10a58c5672112565eead",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality :handoff],
+    :owner-requirement-ids ["compiler/c8/effect-order"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 5280,
+     :end-byte 5367,
+     :sha256
+     "db477ab3d01440d4e4c254e97851e1108171583fcef05b117fa5b93e45d74953"}}
+   {:id "C8/normalized-facet/5368-5388/539f9381bff11baf",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/7b54f9bef0e31dbba05920b790ea404cd9869e55dd4bc6cb9bef55e5312d849a",
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :owner-requirement-ids [],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 5368,
+     :end-byte 5388,
+     :sha256
+     "539f9381bff11bafd7a4a39cb3060e9fec2a71a24524d6f6558e1d2d22ac14a2"}}
+   {:id "C8/facet/5389-5674",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/348079ecac4865c26d305f83e0b8a62cb469aab2865e0e80d1faa8f2de3be4e1",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :propagation :replay :handoff],
+    :owner-requirement-ids ["compiler/c8/effect-computation"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 5389,
+     :end-byte 5674,
+     :sha256
+     "96575b8e2913d32203cf63b7cd21e7069bea44c5696624b77c1b64e280f0beb0"}}
+   {:id "C8/normalized-facet/5675-5690/84b964dab09b580d",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/b9a2934048e963625573f73204c197195a8a47b8f98cdf2ecf9323fbf83bbc41",
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :owner-requirement-ids [],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 5675,
+     :end-byte 5690,
+     :sha256
+     "84b964dab09b580d85bc6c25ae5289e07a178aada1792ed38b72a4e79230f004"}}
+   {:id "C8/facet/5691-5740",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/5f402aada4709ea3728040ebb54a4fa4a1d5c25f58a3ba9a06cf2bc423e104be",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:handoff],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 5691,
+     :end-byte 5740,
+     :sha256
+     "99d9dcf4fa35cdc409d9d2c65c186a74ded9480fd6c284d32adcee42c8052aa2"}}
+   {:id "C8/facet/5741-5801",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :legality :replay :handoff],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 5741,
+     :end-byte 5801,
+     :sha256
+     "d7fa9e15aa9dc08b5fb0e6cdbfc21be810ddcb75343d18a976d272128a85d7e2"}}
+   {:id "C8/facet/5801-5849",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :legality :replay :handoff],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 5801,
+     :end-byte 5849,
+     :sha256
+     "3264bccd66784540b2fcd83df1e0dffba864306f59db382c6e01ea409cab93dc"}}
+   {:id "C8/facet/5849-5914",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :legality :replay :handoff],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 5849,
+     :end-byte 5914,
+     :sha256
+     "a55993a2800217b3277f137ef93d4934232429f3d78e266f75d72486a19e0e79"}}
+   {:id "C8/facet/5914-5956",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :legality :replay :handoff],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 5914,
+     :end-byte 5956,
+     :sha256
+     "9de8f5e4a52db82c85e7bf9e5a7e319fd6569d624920ddbbbb939727973e90c8"}}
+   {:id "C8/facet/5956-6027",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :legality :replay :handoff],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 5956,
+     :end-byte 6027,
+     :sha256
+     "a7324ca9e7960d6c1016e11e139ec6135f935ea403533c4217f903cf736c0d9f"}}
+   {:id "C8/facet/6027-6081",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :legality :replay :handoff],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 6027,
+     :end-byte 6081,
+     :sha256
+     "97fb350023117c91bd021feef622b11b444f1fd9cfe85a835c15ec65ad448f25"}}
+   {:id "C8/facet/6081-6135",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :legality :replay :handoff],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 6081,
+     :end-byte 6135,
+     :sha256
+     "753ce0ee5eed3e9454ee3e762d331776d4cad65d55ad9b5eaa3068a251c9c45a"}}
+   {:id "C8/facet/6135-6181",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :legality :replay :handoff],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 6135,
+     :end-byte 6181,
+     :sha256
+     "6147db1987d3b40e2079a484ad7f45a243f9607fee40122b6092c6a3d266ed0b"}}
+   {:id "C8/facet/6181-6227",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/27a250693d36354fb3fc033964035cf6441d123c030e55e2e8ae1b80fedeef69",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :legality :replay :handoff],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 6181,
+     :end-byte 6227,
+     :sha256
+     "6d7988e5e28a4517ec59c8d3ce00d1a1dcdb5682f5c3ee42ecfb00248abe6785"}}
+   {:id "C8/facet/6228-6396",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/efba30c4adee8e15b150dbf6e901642c3d228d896be2007887337c25ebca1cd2",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:handoff],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 6228,
+     :end-byte 6396,
+     :sha256
+     "ab84d5f06b9805c3b4bd91d8049521a8cc2b35b437601cfa405a53c3bc7e7f5e"}}
+   {:id "C8/normalized-facet/6397-6417/81a99744c82b0f20",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/754860e4fcaa80e220bdb355f12c0077d227f20613207a9404594aa6a9f720b7",
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :owner-requirement-ids [],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 6397,
+     :end-byte 6417,
+     :sha256
+     "81a99744c82b0f200a1b23f569815e25e994ddb3455b81be46a31fd7408dcd80"}}
+   {:id "C8/facet/6418-6481",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/bdad31c5bc7098bc4cd0a666a5adc338beaafb558bb9bc501a86a68a3f906d59",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality],
+    :owner-requirement-ids
+    ["language/effects/check-narrowest-allowance"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 6418,
+     :end-byte 6481,
+     :sha256
+     "f8de6fc93fe9ebd28d26c574f7c679e7942229ebc9072b981eb2dec25b832db8"}}
+   {:id "C8/facet/6482-6552",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/3b6dc78a73533f7e624c7b1dc1610c7dbd114e3dc7d756cd7589c4ddacbe90f5",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :propagation],
+    :owner-requirement-ids
+    ["language/effects/check-narrowest-allowance"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 6482,
+     :end-byte 6552,
+     :sha256
+     "de78df7d13f67413140fd7766e5b81dd57c6146c28848e8d01fa2bd424517749"}}
+   {:id "C8/facet/6553-6603",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/1487ce16d900c2d6c71440dc6bf7d6d4926b77bc90c190250d6f8d4fe666f648",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:computation :replay],
+    :owner-requirement-ids ["compiler/c8/effect-domains"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 6553,
+     :end-byte 6603,
+     :sha256
+     "b6eb242438f60f5bd1a85596e1e616794516c4797c3491db72c1cb5e104f07c6"}}
+   {:id "C8/facet/6604-6666",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/8dd00dc140bf7d686085644e408320434899d873760d882e67715405e8e2104c",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality],
+    :owner-requirement-ids ["compiler/c8/capability-proof"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 6604,
+     :end-byte 6666,
+     :sha256
+     "57306b6d475214637940d1bbd5086f71301ecd9f0d5ee6e639e45fcc1a59e1ab"}}
+   {:id "C8/facet/6667-6743",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/a135437ae278c0ee2bc793761176f9f6d9b4aedf93f8d0278be9150a29d2e8b2",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:replay :handoff],
+    :owner-requirement-ids ["compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 6667,
+     :end-byte 6743,
+     :sha256
+     "3d2a7ab13a8f50a51e6675649d72102770b7045a2373e94678192bbd965d9027"}}
+   {:id "C8/facet/6744-6820",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/de0699b8b49c054e65eae2aaf72d5de55d6df7cbf6bd0f9cf683bd2cb2fe1785",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:legality :handoff],
+    :owner-requirement-ids ["compiler/c8/effect-order"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 6744,
+     :end-byte 6820,
+     :sha256
+     "6e28a58f03de74fa7df6b9d4dc3b521afaa898344368e3a4ac586f592946b8d0"}}
+   {:id "C8/normalized-facet/6821-6845/4cea7efb2bd3a140",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/bbb6b9e3ae36d0401441d1254e3680905ba80a903f4dcd708f8e73d6b063d082",
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :owner-requirement-ids [],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 6821,
+     :end-byte 6845,
+     :sha256
+     "4cea7efb2bd3a140f2517b9e6a6e71fc6809db54e3f8158b9ed8f31c3ae7eae2"}}
+   {:id "C8/facet/6846-6892",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/37696ee31b18b63c297a5b5b4b3079b106354c8b5ac9c6584b0ad31c4f722ee9",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys
+    [:computation :propagation :legality :replay :handoff],
+    :owner-requirement-ids
+    ["compiler/c8/capability-proof"
+     "language/effects/check-narrowest-allowance"
+     "compiler/c8/effect-computation"
+     "compiler/c8/effect-domains"
+     "compiler/c8/effect-order"
+     "compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 6846,
+     :end-byte 6892,
+     :sha256
+     "a56598a841213af107dc06c2c9b5cba5a38216f4f108b3217f3317a863ee05ad"}}
+   {:id "C8/facet/6893-6963",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys
+    [:computation :propagation :legality :replay :handoff],
+    :owner-requirement-ids
+    ["compiler/c8/effect-computation" "compiler/c8/effect-domains"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 6893,
+     :end-byte 6963,
+     :sha256
+     "bbdefcc526f9f35f3fc3f774611094ea8820f130e7329c2a1cfab0dd8279dc0b"}}
+   {:id "C8/facet/6963-7008",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys
+    [:computation :propagation :legality :replay :handoff],
+    :owner-requirement-ids
+    ["language/effects/check-narrowest-allowance"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 6963,
+     :end-byte 7008,
+     :sha256
+     "983f069b4fc403462a716e56321331b10dc351b739311be5c1549a0c5c310994"}}
+   {:id "C8/facet/7008-7045",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys
+    [:computation :propagation :legality :replay :handoff],
+    :owner-requirement-ids
+    ["language/effects/check-narrowest-allowance"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 7008,
+     :end-byte 7045,
+     :sha256
+     "1f56e0a810620135be1f78a7da362affe98f5ac0b348a95432150391a8bf6596"}}
+   {:id "C8/facet/7045-7090",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys
+    [:computation :propagation :legality :replay :handoff],
+    :owner-requirement-ids ["compiler/c8/capability-proof"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 7045,
+     :end-byte 7090,
+     :sha256
+     "d8ab99a7b0bbf465255e89bfe7fe0bb53aabf36776b91b598cc17231c95b17ce"}}
+   {:id "C8/facet/7090-7125",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys
+    [:computation :propagation :legality :replay :handoff],
+    :owner-requirement-ids ["compiler/c8/effect-domains"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 7090,
+     :end-byte 7125,
+     :sha256
+     "9d0db791f76287f26a537aa9787b930c7e6e8af4a026b86768afd1747b9df833"}}
+   {:id "C8/facet/7125-7155",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys
+    [:computation :propagation :legality :replay :handoff],
+    :owner-requirement-ids ["compiler/c8/replay-audit"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 7125,
+     :end-byte 7155,
+     :sha256
+     "a9ee51456ddcccbaa753f80ca6003970c54e4db80cd699156c5b065fa3e9ca5f"}}
+   {:id "C8/facet/7155-7242",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys
+    [:computation :propagation :legality :replay :handoff],
+    :owner-requirement-ids ["compiler/c8/effect-order"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 7155,
+     :end-byte 7242,
+     :sha256
+     "99bfcd4aec3d25dd7bc6dcbcec19efd35621ce615988039e038cee804a0fedcf"}}
+   {:id "C8/facet/7242-7280",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys
+    [:computation :propagation :legality :replay :handoff],
+    :owner-requirement-ids
+    ["compiler/c8/effect-computation" "compiler/c8/effect-order"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 7242,
+     :end-byte 7280,
+     :sha256
+     "91bb614788c0a5d198a8d77b1a11746b8b1202e6345896eb130b6cd5070ee12b"}}
+   {:id "C8/facet/7280-7328",
+    :document-id "C8",
+    :source-occurrence-id
+    "C8/source/13af6950ff2f7157ec5abdf3d4b0ed3c8dbf5cac4f9f808667e9c3bc35e1f300",
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys
+    [:computation :propagation :legality :replay :handoff],
+    :owner-requirement-ids
+    ["language/effects/check-narrowest-allowance"],
+    :source-path
+    "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+    :source-span
+    {:start-byte 7280,
+     :end-byte 7328,
+     :sha256
+     "cbbde1ab0d9ea0b652f80c214e679b39ba499ed845f853da55b1692acabc6b2c"}}],
+  :task-source
+  {:path "specs/effects-workflow/tasks.md",
+   :after
+   {:commit "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
+    :sha256
+    "a61dbf01fc6d1585b4e903481ef9b9b9c2decf886e24f7c1c511d086f99566cd"}},
+  :historical-review
+  {:receipt
+   {:path
+    "specs/requirement-reconciliation/c8-independent-source-review.edn",
+    :sha256
+    "727d289a2cca5ca9f75e769ca7c2b71e5ab33b86327f70f5bc5fd44961151ffb"},
+   :frozen-head "1ecdfa5916da558272961eaab8b1eff5d0aa7b3a",
+   :tree "49603cd38b9d5d58850ac552612a225c85f28a4a",
+   :nonclaims
+   [:implementation
+    :compiler-execution
+    :runtime
+    :provider
+    :model
+    :replay-execution
+    :target-probe
+    :full-L6-entailment
+    :foundation-attached-predicates
+    :whole-project
+    :final-denominator
+    :future-head
+    :canonical-adoption
+    :APPROVE
+    :held-action-clearance],
+   :later-head-applicability :separate-required-no-inheritance,
+   :accepted-scope
+   {:C8-original-facets 103,
+    :C8-original-occurrences 50,
+    :semantic-conjunctions 34,
+    :hierarchy-provenance-contexts 16,
+    :existing-Effects-owner-criteria 5,
+    :original-C8-owner-interfaces 5,
+    :new-task-units 0,
+    :new-decision-ids 0},
+   :current-acceptance :not-transferred,
+   :task-source "94dfa9c535268276765b76366c5c60687fa3807a",
+   :verdict :pass-qualified-frozen-C8-source-conjunctions-only,
+   :held-actions :unchanged-no-equivalent-substitution},
+  :markers
+  {:computation "effects-canonical-computation",
+   :propagation "effects-canonical-propagation",
+   :legality "effects-canonical-legality",
+   :replay "effects-canonical-replay",
+   :handoff "effects-canonical-handoff"},
+  :changed-task-ids
+  ["effects/current-evidence-and-remaining-work/effects1-infer-direct-effects"
+   "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects"
+   "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"
+   "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation"
+   "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers"],
+  :global-source-conjunctions :unassessed,
+  :qualification
+  "Restore five exact C8 predicates and two prior replay/manifest contexts under existing five Effects tasks, preserving short original criteria, statuses and authorities. Full L6/foundation/PKG6/R6-R8 conjunctions remain unassessed. The frozen C8 review grants no current-head or execution acceptance; all holds and the original C7 publication restriction remain.",
+  :newly-amended-original-task-ids
+  ["effects/current-evidence-and-remaining-work/effects1-infer-direct-effects"
+   "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects"
+   "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"
+   "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation"
+   "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers"],
   :implementation-acceptance :unassessed},
  :lower-refinement
  {:canonical-sources
@@ -23751,7 +26145,7 @@
    "4ee538fce884ae04d1dbaf22ea54d9aee0e32abbbb071272f7115baf9da141ad",
    :scope :retained-historical-ownership-not-current-authority}},
  :qualification
- "Bind exact task versions, Governance routing, all seven Domain and four Platform parent refinements plus Release aggregates. Forty-seven Open original bodies carry declared additions, including eleven foundation owner records; 92 bodies and all original checkboxes are conserved. Preserve each readiness predecessor and qualified review subject. Sixteen Domain, thirteen Release and eleven Platform Product future records retain pending SH composition. Global source entailment, independent current review and implementation acceptance remain unassessed.",
+ "Bind exact task versions, Governance routing, all seven Domain and four Platform parent refinements plus Release aggregates. Fifty-two Open original bodies carry declared additions, including eleven foundation owner records; 87 bodies and all original checkboxes are conserved. Preserve each readiness predecessor and qualified review subject. Sixteen Domain, thirteen Release and eleven Platform Product future records retain pending SH composition. Global source entailment, independent current review and implementation acceptance remain unassessed.",
  :future-dependency-refinement
  {:predecessor-readiness-successor
   {:commit "ea8147fd983a3d7ddb16bd89680af5677b3a636f",
@@ -24442,7 +26836,7 @@
   "docs/phase-05-mathematical-and-elementary-function-system/README.md"
   "697917447d70ba0797a096d9427d4706bf5515df",
   "specs/effects-workflow/tasks.md"
-  "69831d09bc2007844265968b265c493cf064bdf9",
+  "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
   "specs/domains-workflow/plan.md"
   "cbafeee1f42ef28cbb238b2d823b13b125bae2d3",
   "specs/build-workflow/tasks.md"
@@ -24459,6 +26853,8 @@
   "ae9d37bb3e43cc8148319b9fd315366804be80e1",
   "specs/build-workflow/plan.md"
   "7662cb4a4527d4e8d905f88f352428dc3d7867f5",
+  "specs/effects-workflow/plan.md"
+  "cbe44ecaa7fc70139b72b399fa0aeb25fe971dd6",
   "specs/opt-workflow/plan.md"
   "0e1cec28f43d2902032b1786af08f7aa17af8107",
   "specs/tools-workflow/tasks.md"
@@ -26259,4 +28655,4 @@
      "95cb5fa0f1a72e27dc44ca7b64567c312eb2592a33d3811be547e511e485a4ca"}}],
   :implementation-acceptance :unassessed},
  :input-fingerprint
- "4880fe8e8a186e4f33bfbaf22277cb78293e0a0b6a276da1554ae51a40a165f1"}
+ "edb5cb310ecea232f4a030dfcbef409ed7beb9ff15b77b566ac2f633e84ef02e"}
