@@ -234,3 +234,17 @@ one C14 diagnostic call site before argument evaluation. A new regression checks
 replacement during the first classification read remains visible, while
 replacement during the second argument-data read cannot change the selected
 callee. JVM tests pass 12/213 and complete product/hash equality remains.
+
+## Printer and package main composition
+
+The exact-222 source composition, checks and unchanged restrictions are recorded
+in [the C composition evidence](c-compile-sequencing-evidence.md#printer-and-package-main-composition).
+Fresh paired before/after captures retain their actual host temporary directory
+/var/folders/3y/hpny2h8j4jn2qwyxxrzm3hb00000gn/T/gravity-jvm-output-evidence-1246136878570217781.
+Complete/raw record hashes are
+798b46541e014e196e91c26bda470f0074bd2e546e50e1a6fc22eb4f37e291a3
+for .gravity and
+c0141e35374c76c54b3cd1510bde5cdee730dc6f9f9a78f30d69c1bfb17af5e0
+for .qst. Source and plan identity and all five emitted-file hashes recompute;
+real javac/JAR/java products and the existing source, path, integrity and
+CREATE_NEW refusals remain. No private manifest admission or publication runs.

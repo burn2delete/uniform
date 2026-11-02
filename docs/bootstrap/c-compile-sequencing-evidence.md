@@ -304,3 +304,30 @@ are at /tmp/uniform-backend-release-67a-lint. Six production files reconstruct,
 including the explicit equivalent C and JVM diagnostic function retrieval.
 Later main changes must be composed and reviewed before integration; this
 snapshot does not claim latest-main eligibility or transfer earlier CI.
+
+## Printer and package main composition
+
+Declared base 22253adc8fd6096bd6fad97762156fd47df70d22 has tree
+2f51295b36528c70bc1a493cbc0cb1825bc09015. Source composition
+3173492013ebefc1c042813020ed09539d53d10f has tree
+7bb6554cd3e91ef04e4ce6f28886edfc6b77d69a. It preserves all incoming
+ignored-limit removal, Attempt30 fixture separation, package-observation reuse
+and seed-printer changes. The 13 owned-path deltas are unchanged from the
+accepted supplier-main composition. The new package-observation tests invoke
+the restricted builder and remain unrun; current CI does not select them.
+
+Fresh original processes on clean declared main finish before restoration in
+the same Runtime checkout. All complete/raw C, paired JVM and Release records
+agree, including source/plan/file hashes and the Release lookup probe. No
+path, mode, pin or artifact field is normalized. Backend tests pass 47/967,
+eight selected Release tests 8/94, boundary 47/1154 and the incoming seed-printer
+test 1/15. Six whole production files reconstruct; nine-path lint has zero
+warnings/blockers, archived at /tmp/uniform-backend-release-222-lint. Cold stage
+loads expose 19/20/5 public Vars without Bootstrap. An initial cold-load command
+reader error is retained in the cold-load-reader-nonpass log; the corrected
+command and document, roadmap and workstream validators pass.
+
+Exact independent acceptance, candidate-owned CI/artifacts and immediate clean
+current-main preflight remain required. Earlier CI cannot establish eligibility
+for this composition or later main tips. All existing native, authority, pinned
+Reader, package/archive and release restrictions and nonclaims remain.

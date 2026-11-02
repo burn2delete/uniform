@@ -201,3 +201,15 @@ expected-inventory-suppliers-are-called-at-invocation selector, plus the incomin
 inventory-specific-wrappers-preserve-report-refusals test. Package/archive/release
 builder tests remain unrun. Whole-file reconstruction follows main's supplier
 implementation and all file products and lookup behavior still agree.
+
+## Printer and package main composition
+
+The exact-222 source composition, checks and unchanged restrictions are recorded
+in [the C composition evidence](c-compile-sequencing-evidence.md#printer-and-package-main-composition).
+Main's new source/JAR observation reuse remains byte-identical; neither its new
+builder tests nor any package/archive/release builder is executed. Fresh clean
+main and candidate captures preserve the paired source/plan identities,
+emitted-plan hash f795cce4d434fb126aae28ed403b71edcb42331fb89a5ea92db3d6a681c25252,
+complete/raw records and original digest-root lookup order. A missing file still
+raises the original host exception for reads and returns the legacy digest
+sentinel only. Those observations confer no package or release admission.
