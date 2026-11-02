@@ -1,0 +1,81 @@
+{:integration-mode-preflight :UNRUN,
+ :all-production
+ :unchanged-and-byte-identical-to-original-reviewed-source,
+ :execution
+ {:reader-eval false,
+  :Bootstrap-loaded false,
+  :genuine-kernels :UNRUN},
+ :all-twelve-header-and-six-fixture-pins :freshly-verified,
+ :candidate "1ddceb19b5372d1e0c297c8fcb186eb57808e680",
+ :historical-records
+ :original-base-whole-file-pins-retain-historical-meaning,
+ :generator-sha256
+ "7d9ade391f1ba1807c00ceb4c35db0b9690e490ce94f61156ccc62a6182a446b",
+ :paths
+ [{:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+   :entry "100644 blob 90e52703d5814d7d96778320fd3f034dd338c86a",
+   :sha256
+   "35efc4f0352d24edae9c5c197859dfe7ac6ea0415c331e68716f908f073774fc"}
+  {:path
+   "specs/accounting-removal/collection-header-controls-census.edn",
+   :entry "100644 blob 95539951e7895bbfc77960c8fb7ec8223629a496",
+   :sha256
+   "a53dab2ae365d51ea4e8cc6e52262a49f94edcb4a27e4f1232f4641b28f7207d"}
+  {:path "specs/accounting-removal/collection-header-controls.md",
+   :entry "100644 blob 501ffc0017466f948f1c9faba2e2ea70ae035ff8",
+   :sha256
+   "65a923522e96f512ade9ca614c1810546f6a8170e2378d0fd8d0846190d46084"}],
+ :prior-review
+ {:candidate "b745ccee35719dd9f53ec60376e01340d3f5cb08",
+  :receipt-sha256
+  "839487b24fe504a037615b0cc4391e43bd6c7b24eb9428a7151818981f01406c",
+  :checks 293,
+  :corruption-controls 68,
+  :current-head-acceptance :not-inherited},
+ :inspect-preconditions
+ {"all-pass" true,
+  "base-resolved" true,
+  "candidate-identities-match" true,
+  "clean-worktree" true,
+  "named-branch" true,
+  "reconciliation-allowed" true},
+ :all-three-reviewed-file-bytes :identical,
+ :whole-tree
+ {:base-entries 10082,
+  :candidate-entries 10084,
+  :exact-reviewed-overlay true,
+  :one-reviewed-test-replacement-and-two-reviewed-record-additions
+  true},
+ :main-merge :UNRUN,
+ :kind :collection-header-clean-current-main-composition,
+ :parents
+ ["b745ccee35719dd9f53ec60376e01340d3f5cb08"
+  "9c0925085f2a3e1fbb9875e83e4b0f0c6e2c6636"],
+ :validation
+ {:language-boundary {:tests 6, :assertions 11, :fail 0, :error 0},
+  :docs :pass,
+  :roadmap :pass,
+  :whitespace :pass,
+  :lint
+  {:errors 0,
+   :warnings 76,
+   :before-after-complete-multisets :identical,
+   :new-findings 0,
+   :cache false,
+   :version "2025.10.23"}},
+ :base "9c0925085f2a3e1fbb9875e83e4b0f0c6e2c6636",
+ :fixture-whole-file
+ {:historical-reviewed-sha256
+  "48d3fcaa665f273361c098890ab1d326e51fd84eee4f588827cd020f6f698de1",
+  :current-sha256
+  "03207474a0e691a2ba235ac8aefa0132abf0af4b81f7ae8554cac32ab3becd71",
+  :difference :accepted-PR634-two-quoted-data-tests,
+  :six-selected-helper-forms :unchanged},
+ :current-composition-independent-review :pending,
+ :pr 635,
+ :current-head-CI :pending,
+ :accepted-PR626-and-PR634 :all-main-entries-conserved,
+ :owner :ACC-01,
+ :candidate-tree "4c6e069bfd7f8bbd375231fc410f85008ccad850",
+ :current-base-runtime-test :identical-to-original-extraction-base}

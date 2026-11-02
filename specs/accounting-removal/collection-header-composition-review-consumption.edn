@@ -1,0 +1,335 @@
+{:integration-mode-preflight :required,
+ :upstream-pins
+ [{:name list-query-input,
+   :arguments [operation argument-types],
+   :form-sha256
+   "45fbc381ffa611fcd056fade6ca0cc2f0503b8a5eea9a10ff0446c6297bcecfe",
+   :historical-arguments [operation argument-types],
+   :historical-form-sha256
+   "45fbc381ffa611fcd056fade6ca0cc2f0503b8a5eea9a10ff0446c6297bcecfe",
+   :historical-identical true}
+  {:name list-query-derived,
+   :arguments
+   [{:keys [core node call edge nodes bindings types forms]}],
+   :form-sha256
+   "f02f012cd9957a6406b69280fcfc1eb7c6d9097d8732a39726287f7b862f8af9",
+   :historical-arguments
+   [{:keys [core node call edge nodes bindings types forms]}],
+   :historical-form-sha256
+   "f02f012cd9957a6406b69280fcfc1eb7c6d9097d8732a39726287f7b862f8af9",
+   :historical-identical true}
+  {:name vector-rest-input,
+   :arguments [type],
+   :form-sha256
+   "44dbc8c96a67db70be9fb208ece80c252e275b9cec2595cda59c7a02003c601b",
+   :historical-arguments [type],
+   :historical-form-sha256
+   "44dbc8c96a67db70be9fb208ece80c252e275b9cec2595cda59c7a02003c601b",
+   :historical-identical true}
+  {:name list-set-input,
+   :arguments [type],
+   :form-sha256
+   "9f9510184f15c36f1cc34dbf752ee87696f2aa85b842c9136c8f4e6d16c37cd4",
+   :historical-arguments [type],
+   :historical-form-sha256
+   "9f9510184f15c36f1cc34dbf752ee87696f2aa85b842c9136c8f4e6d16c37cd4",
+   :historical-identical true}
+  {:name set-conversion-derived,
+   :arguments
+   [{:keys [core node call edge nodes bindings types forms]} budget],
+   :form-sha256
+   "e566268e05c5c028c624b2a6f939736963757d0fb21e8d1bdb4a62b4c227b0eb",
+   :historical-arguments
+   [{:keys [core node call edge nodes bindings types forms]} budget],
+   :historical-form-sha256
+   "e566268e05c5c028c624b2a6f939736963757d0fb21e8d1bdb4a62b4c227b0eb",
+   :historical-identical true}
+  {:name invoke-c7,
+   :arguments [function arguments],
+   :form-sha256
+   "a239a912a4d78b26ce7ddddb823152bddd50d73ce2af1f10890f8f35e6900a17",
+   :historical-arguments [function arguments],
+   :historical-form-sha256
+   "a239a912a4d78b26ce7ddddb823152bddd50d73ce2af1f10890f8f35e6900a17",
+   :historical-identical true}],
+ :reviewed-files
+ {"bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj"
+  {:sha256
+   "35efc4f0352d24edae9c5c197859dfe7ac6ea0415c331e68716f908f073774fc",
+   :mode-blob "100644 blob 90e52703d5814d7d96778320fd3f034dd338c86a"},
+  "specs/accounting-removal/collection-header-controls-census.edn"
+  {:sha256
+   "a53dab2ae365d51ea4e8cc6e52262a49f94edcb4a27e4f1232f4641b28f7207d",
+   :mode-blob "100644 blob 95539951e7895bbfc77960c8fb7ec8223629a496"},
+  "specs/accounting-removal/collection-header-controls.md"
+  {:sha256
+   "65a923522e96f512ade9ca614c1810546f6a8170e2378d0fd8d0846190d46084",
+   :mode-blob "100644 blob 501ffc0017466f948f1c9faba2e2ea70ae035ff8"}},
+ :tree "4c6e069bfd7f8bbd375231fc410f85008ccad850",
+ :nonclaims
+ [:current-head-CI
+  :fresh-integration-mode-preflight
+  :merge
+  :APPROVE
+  :transitive-helper-equivalence
+  :whole-ACC01
+  :PR502-closure
+  :release
+  :self-hosting],
+ :execution
+ {:reader-eval false,
+  :Bootstrap false,
+  :genuine-owner-helper-Gravity-runtime-native-provider :UNRUN,
+  :target-allocation :UNRUN,
+  :canonical-or-author-writes :none},
+ :header-pins
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :current-file-sha256
+   "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+   :form-sha256
+   "d0b4e505f1b8137394621b04db6c345134ce478bb302b5dd7d1ac5e2d6d252bd",
+   :arguments [core node call edge nodes bindings types module budget],
+   :name sh08-vemp-header,
+   :removed-call-symbols (),
+   :historical-arguments
+   [core node call edge nodes bindings types module budget],
+   :historical-identical false,
+   :added-call-symbols (),
+   :historical-form-sha256
+   "5b60a0d677b354a073a4117b49d914fbbd34abc9e744290c18007b353b4f3a9b"}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :current-file-sha256
+   "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+   :form-sha256
+   "ba7214937348efadff5f7ca66fb42380d693f8dbbdb53c76c1d997394ecc318f",
+   :arguments [core node call edge nodes bindings types module budget],
+   :name sh08-lset-header,
+   :removed-call-symbols (),
+   :historical-arguments
+   [core node call edge nodes bindings types module budget],
+   :historical-identical false,
+   :added-call-symbols (),
+   :historical-form-sha256
+   "f54ea670493b99d1266b65ebf06b9be62cda24b4f67d5aae4c0815a78d7ac93e"}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :current-file-sha256
+   "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+   :form-sha256
+   "8b1da69ebe677bddb16b325a5b54827a55a5e1ff97f52a6ac8c27edafbea4195",
+   :arguments [core node call edge nodes bindings types module budget],
+   :name sh08-mkeys-header,
+   :removed-call-symbols (),
+   :historical-arguments
+   [core node call edge nodes bindings types module budget],
+   :historical-identical false,
+   :added-call-symbols (),
+   :historical-form-sha256
+   "6de506439b1390b3fbefe8908751ac65c31d55e1b44073687fc7d0e54cc3ca63"}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :current-file-sha256
+   "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+   :form-sha256
+   "951b312a2377f09a37089c13ff3e1c034f06c36c7268c62ba8ab203dddc55690",
+   :arguments [core node call edge nodes bindings types module budget],
+   :name sh08-vrest-header,
+   :removed-call-symbols (),
+   :historical-arguments
+   [core node call edge nodes bindings types module budget],
+   :historical-identical false,
+   :added-call-symbols (subvec),
+   :historical-form-sha256
+   "845deaf0b8b2d038ebb3b84301623c1c66ac0436f11e795ace39028e01621915"}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :current-file-sha256
+   "a1d6d01540ec67ac3c8aad270f946dfcdc21a94664ee36b4aa8848a18c56f3e5",
+   :form-sha256
+   "071b9895c23182751414a2b34dd6dc9aa7c9ccd7584932d5b107315996c62532",
+   :arguments [core node call edge nodes bindings types module budget],
+   :name body-vemp-header,
+   :removed-call-symbols (body-lc-type-work),
+   :historical-arguments
+   [core node call edge nodes bindings types module budget],
+   :historical-identical false,
+   :added-call-symbols (body-lc-validate-types),
+   :historical-form-sha256
+   "41543bebfad951af392edbba06b234088127cfadddc34e45028479acd69c726f"}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :current-file-sha256
+   "a1d6d01540ec67ac3c8aad270f946dfcdc21a94664ee36b4aa8848a18c56f3e5",
+   :form-sha256
+   "1c5dd4de19df9b2f254ada967f81b4c3f1e81ddaac95c72b0ea861573efd77ba",
+   :arguments [core node call edge nodes bindings types module budget],
+   :name body-lset-header,
+   :removed-call-symbols (body-lc-type-work),
+   :historical-arguments
+   [core node call edge nodes bindings types module budget],
+   :historical-identical false,
+   :added-call-symbols (body-lc-validate-types),
+   :historical-form-sha256
+   "89d88711caaf56d16251cdf6e469a7cdaafc429c9ec20548f6b1a51cfad55c1f"}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :current-file-sha256
+   "a1d6d01540ec67ac3c8aad270f946dfcdc21a94664ee36b4aa8848a18c56f3e5",
+   :form-sha256
+   "83ecdecc3751c903ad1817efe520bfa2d01c8d17f4f996063049d67eeafa8e97",
+   :arguments [core node call edge nodes bindings types module budget],
+   :name body-mkeys-header,
+   :removed-call-symbols (body-lc-type-work),
+   :historical-arguments
+   [core node call edge nodes bindings types module budget],
+   :historical-identical false,
+   :added-call-symbols (body-lc-validate-types),
+   :historical-form-sha256
+   "e7a34e9b2e110fef582db990435324287055fd99743c8619ac9e3b89b99852cc"}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :current-file-sha256
+   "a1d6d01540ec67ac3c8aad270f946dfcdc21a94664ee36b4aa8848a18c56f3e5",
+   :form-sha256
+   "1e9392ba724607b34dd2262d8e90937fb0b45129a05398aaa847373489c7ceb8",
+   :arguments [core node call edge nodes bindings types module budget],
+   :name body-vrest-header,
+   :removed-call-symbols (body-lc-type-work),
+   :historical-arguments
+   [core node call edge nodes bindings types module budget],
+   :historical-identical false,
+   :added-call-symbols (body-lc-validate-types),
+   :historical-form-sha256
+   "2e7404dcd0b95173390ec1a375194e8d318ed00f79a5b76ca09c3c389177e75a"}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :current-file-sha256
+   "e49189aa370afcdf7c85a98d68cec02c3462e4f964285941e7f1dd956c5b68ae",
+   :form-sha256
+   "e68a3fdaf4ea8d25d8f9fd48eaf87d342e948925f5c4bd2ea2bcf8c35f8803ea",
+   :arguments [core node call edge nodes bindings types module budget],
+   :name p15-s23-vemp-header,
+   :removed-call-symbols (p15-s23-lc-type-work),
+   :historical-arguments
+   [core node call edge nodes bindings types module budget],
+   :historical-identical false,
+   :added-call-symbols (p15-s23-lc-validate-types),
+   :historical-form-sha256
+   "0901288de85ac71a410e5f61937e3dec8e9b6c920e18b195aa2bdc7c4e1f45b6"}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :current-file-sha256
+   "e49189aa370afcdf7c85a98d68cec02c3462e4f964285941e7f1dd956c5b68ae",
+   :form-sha256
+   "1eca150d1cc6a17b167b29ea56fa52e6c88936edcd1d64c6f32981803a6d429b",
+   :arguments [core node call edge nodes bindings types module budget],
+   :name p15-s23-lset-header,
+   :removed-call-symbols (p15-s23-lc-type-work),
+   :historical-arguments
+   [core node call edge nodes bindings types module budget],
+   :historical-identical false,
+   :added-call-symbols (p15-s23-lc-validate-types),
+   :historical-form-sha256
+   "116a9fb0cb566c6af4afab62d849852ae7acbe0959be0717b963d7bfe8cc8629"}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :current-file-sha256
+   "e49189aa370afcdf7c85a98d68cec02c3462e4f964285941e7f1dd956c5b68ae",
+   :form-sha256
+   "beb6347a92c8b9d11833537be42f287cf808dd430a57a490ef862d0a8a13b51a",
+   :arguments [core node call edge nodes bindings types module budget],
+   :name p15-s23-mkeys-header,
+   :removed-call-symbols (p15-s23-lc-type-work),
+   :historical-arguments
+   [core node call edge nodes bindings types module budget],
+   :historical-identical false,
+   :added-call-symbols (p15-s23-lc-validate-types),
+   :historical-form-sha256
+   "2b2d9cb4ce58b41de464350fd2b28597f65fd33e868003f491588978b5d91a00"}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :current-file-sha256
+   "e49189aa370afcdf7c85a98d68cec02c3462e4f964285941e7f1dd956c5b68ae",
+   :form-sha256
+   "338a8df57a2281bddeaf66a42e956b158ae6d4e9d8dadc4d5892df27558467f1",
+   :arguments [core node call edge nodes bindings types module budget],
+   :name p15-s23-vrest-header,
+   :removed-call-symbols (p15-s23-lc-type-work),
+   :historical-arguments
+   [core node call edge nodes bindings types module budget],
+   :historical-identical false,
+   :added-call-symbols (p15-s23-lc-validate-types),
+   :historical-form-sha256
+   "c3930645feeaba28737f77d931e924750857d9fee01ca317f1fc0bc1ce15b2c0"}],
+ :body-control-conservation
+ "All4 current bodies equal exact historical bodies plus only2declared single-occurrence raw adaptations;11original/8parent isforms per kernel retain multiplicity. Full descriptors/owner acceptance/instruction/result/source/binding/call/malformed/callback guards and obsolete0/1/nil forgeries survive. Assertions are source definitions, not genuine executed assertion counts.",
+ :new-genuine-execution false,
+ :header-history
+ "All12 current headers differ from historical complete forms; exact current/historical hashes, arities and direct-call differences are explicit. Upstream differences likewise reported. No transitive helper equivalence or inherited execution acceptance.",
+ :reproduction-sha256s
+ {"check.clj"
+  "8f42f5da87ba57ceca03799ab9cbcd8c6934fdbab709d5c419c8727c59a1d150",
+  "check.log"
+  "ddc7b7105ee76ae47e1f2afe454465e44feb365e515a6bfa19e1530a794a629f",
+  "finalize.clj"
+  "07e4110da9a75b3a558b56e58e8dfc8e6504923f26f96c07fd534a127d3a8a7e"},
+ :prior
+ {:receipt-sha256
+  "839487b24fe504a037615b0cc4391e43bd6c7b24eb9428a7151818981f01406c",
+  :all-harness-artifact-pins :rehashed,
+  :original-source-checks 293,
+  :original-refusals 68,
+  :reexecuted-readonly true},
+ :generator-sha256
+ "95bd9aab33a57bc36860711e2f4f01154dfe38fb2210a32dc98c83f6bd534e02",
+ :current-corruption-refusals 73,
+ :checks 548,
+ :scope :exact-PR635-affected-current-main-SOURCE-DATA-only,
+ :head "1ddceb19b5372d1e0c297c8fcb186eb57808e680",
+ :original-reviewed-head "b745ccee35719dd9f53ec60376e01340d3f5cb08",
+ :whole-tree
+ {:base-entries 10082,
+  :candidate-entries 10084,
+  :runtime-test-replacement 1,
+  :reviewed-record-additions 2,
+  :all-other-main-blob-and-mode-identities :exact},
+ :main-merge :UNRUN,
+ :kind :collection-header-final-composition-review-consumption,
+ :receipt-sha256
+ "96d885e1c8271f1b8e8a9981fd0e23da313641b6db0c3724f1d46f0645f868ab",
+ :current-qualification
+ "PASS applies only to exact1ddceb19/tree4c6e069b on base9c092508. All accepted626/634 entries and production survive. Original census/MD remain byte-identical historical records; the changed SH08 full-file hash cannot be asserted current from that census. No admission-policy endorsement, transitive helper equivalence or inherited genuine acceptance. Applicable current-head CI and final fresh integration-mode preflight/merge remain author/coordinator gates.",
+ :clean-worktree-at-consumption true,
+ :genuine-kernels :UNRUN,
+ :accepted626634
+ {:paths
+  ["bootstrap/clojure/test/gravity/self_hosting/list_construction_contract_test.clj"
+   "bootstrap/clojure/test/gravity/self_hosting/list_query_contract_test.clj"
+   "bootstrap/clojure/test/gravity/self_hosting/private_map_route_contract_test.clj"
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
+   "specs/accounting-removal/quote-fixture-controls-census.edn"
+   "specs/accounting-removal/quote-fixture-controls.md"
+   "specs/accounting-removal/reader-contract-controls-results.edn"
+   "specs/accounting-removal/reader-contract-controls.md"],
+  :all-entries-conserved true,
+  :current-base-runtime-test-identical-to-original-base true},
+ :source-execution-qualification
+ "Only independent Clojure reader/source/DATA review logic ran. No owner test namespace was loaded and no original genuine is assertion, proxy/callback object, Gravity helper, provider, runtime or kernel was executed. Original293source checks/68refusals rerun before current checks; copied owner assertions remain definitions, not runtime results.",
+ :all-twelve-header-six-helper-pins :verified,
+ :base "9c0925085f2a3e1fbb9875e83e4b0f0c6e2c6636",
+ :full-10084-tree-equation :verified,
+ :fixture-whole-file
+ {:original-reviewed-sha256
+  "48d3fcaa665f273361c098890ab1d326e51fd84eee4f588827cd020f6f698de1",
+  :current-sha256
+  "03207474a0e691a2ba235ac8aefa0132abf0af4b81f7ae8554cac32ab3becd71",
+  :six-selected-helpers :identical,
+  :accepted634 :preserved,
+  :old-census-full-file-hash :historical-not-current},
+ :pr 635,
+ :original-refusals-revalidated 68,
+ :owner :ACC-01,
+ :decision :PASS,
+ :outer-budget
+ "Existing caller/header65536 and exact/one-short lowering-work assertions are byte-conserved unresolved source facts. This restoration adds or endorses no admission policy.",
+ :public-source-observation
+ {:commit "cd56264085015494710cf50585ba23618a50167a",
+  :path
+  "specs/accounting-removal/collection-header-clean-composition.edn",
+  :sha256
+  "9e28e272ef078fa93d288e29f0f82cf693a3fe275e0c27ff33809557e87d1bfd",
+  :status :authored-local-checks-not-rerun-here}}

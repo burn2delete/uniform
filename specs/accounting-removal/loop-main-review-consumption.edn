@@ -1,0 +1,97 @@
+{:PR502-closure :not-conferred,
+ :current-main-integration :pending,
+ :CI
+ {:candidate "8330e46870de055f3ad4c864921dc83b999d4a06",
+  :successes 7,
+  :configured-skips 2,
+  :genuine-kernels-covered false},
+ :review
+ {:closed-finding
+  {:path "specs/accounting-removal/loop-accounting-main-census.edn",
+   :fields [[:source :removed-lines] [:generator :sha256]],
+   :status :closed-by-this-exact-successor,
+   :previous 28,
+   :id "PR619/census-deleted-line-count",
+   :trailing-blank-policy :count-every-newline-terminated-line,
+   :actual-Git-production-numstat {:added 0, :deleted 29},
+   :corrected 29,
+   :checker-expression
+   "(count (re-seq #\"\\n\" (:removed main-delta)))"},
+  :tree "6606e4cdd541156117589399ff5d9fb861ff8529",
+  :nonclaims
+  [:no-runtime-producer-Bootstrap-broker-or-probe
+   :no-APPROVE
+   :no-parent-or-whole-ACC01-acceptance
+   :no-PR569-denied-review-retry
+   :no-integration-release-self-hosting-or-performance-acceptance
+   :no-canonical-or-author-write],
+  :original-review
+  {:receipt-sha256
+   "4e9f49959c5e296ac74d0be826a4a0df9c56f740a24a8838c016c63c60e47993",
+   :verdict :changes-required-census-only,
+   :failure-preserved true,
+   :original-controls {:test 5, :pass 127, :fail 1, :error 0}},
+  :candidate "8330e46870de055f3ad4c864921dc83b999d4a06",
+  :remaining
+  {:current-main "e047157d711652a5624012f0da7d6911ce086718",
+   :current-main-applicability :separate-fresh-composition-check,
+   :CI :current-head-CI-separate,
+   :integration-preflight :UNRUN,
+   :parent615-and-dependencies :not-accepted},
+  :reused-production-scope
+  {:namespace-exports-and-all-other-main-bytes :conserved,
+   :reference-scope
+   ["bootstrap" "tools" ".github" ".agents" ".specify" "deps.edn"],
+   :historical-absences :conserved,
+   :candidate-name-matches 0,
+   :source-sha256
+   "8ab474154d0d87ab2414296d19badf3539e77b58a5f16ca60574803d92d10cca",
+   :remaining-loop-functions 30,
+   :remaining-main-definitions 1087,
+   :source-path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :direct-string-quoted-and-scoped-dynamic-source-checks
+   :unchanged-and-reverified,
+   :whole-callgraph-proof :not-conferred,
+   :child-PR616-review
+   "c91616d8e3279d871583f174398f00b649173384c1343d199038df8cd38e6bee"},
+  :base-main "40ecbb97ede5e93c3202c894c4a7ec5e64cdd5bd",
+  :controls {:test 6, :pass 143, :fail 0, :error 0, :type :summary},
+  :author "01a183dd-7208-7d33-a336-7483fd90e358",
+  :kind :independent-pr619-census-affected-successor-review,
+  :verdict :pass-exact-affected-successor,
+  :reviewer "01a18529-dad4-7de1-b68d-3e567c8976a3",
+  :base-tree "d343460804f202f08c9751c1c82eb634f6c38cf4",
+  :exact-delta
+  {:checker-after-sha256
+   "4e5a42e2b5bd34238dfb51bcd6288c6f30ac56702172aa75d421cf55c38ee39e",
+   :census-after-sha256
+   "538244e295641892a5a4b768964b2dba3f5cd2de253dea57696a8bc0ec8e0d36",
+   :checker-before-sha256
+   "6d90b2f9bdbec0bbde7736fd9bc45c13bf76f5d5036cafc0eaecfecdbebeb87c",
+   :author-generator-executed false,
+   :census-before-sha256
+   "2b23acb788e5e16dcf046d5175aa5a39f1003d38ce2d2dee1ee0285ff4ecf83f",
+   :original-review-receipt :byte-identical,
+   :changed-census-fields 2,
+   :production-bytes :identical,
+   :changed-files
+   ["specs/accounting-removal/loop-accounting-main-census.edn"],
+   :main-documentation-bytes :identical,
+   :every-other-census-value :identical,
+   :actual-checker-read-and-hash-verified true},
+  :previous-candidate "ab33cc5fbf97bf6d9b6160ba5e54dae0d7c71acc"},
+ :consumption
+ {:receipt-census-source-and-original-review-hashes :verified,
+  :production-source-changed false,
+  :private-artifact-paths-published false},
+ :kind :verified-loop-main-successor-review-consumption,
+ :receipt-sha256
+ "457ed321acbc06f14651c7bb872a6fe995b0ba7524be8324aae0a3a52e79807f",
+ :generator
+ {:language :clojure,
+  :sha256
+  "22d3e84862406a33a0167644b4ef92554a86cbb58427eb1311f1cb6b60911082",
+  :preserved-locally true},
+ :PR569-successor-acceptance :not-conferred,
+ :owner :ACC-01}

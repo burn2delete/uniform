@@ -1,0 +1,83 @@
+{:nonclaims
+ [:DSE-implementation-acceptance
+  :authenticated-inputs
+  :Effects-emission-runtime-acceptance
+  :whole-original-file-restored
+  :whole-ACC01
+  :PR502-closure
+  :main-integration
+  :release
+  :self-hosting],
+ :direct-source-pins :five-files-nine-definitions-verified,
+ :candidate "df1688b26123247e2c20eaf218ebcf7592481b15",
+ :denied-selector :not-retried,
+ :test-body-correspondence
+ {:complete-descriptors-and-typed-consumers-agree
+  :entire-original-body-identical,
+  :coherent-stale-fields-and-source-tampering-reject
+  {:raw-edits
+   [["{:keys [input descriptor context stem]}"
+     "{:keys [input descriptor context]}"]
+    ["(symbol (str \"sh08-\" stem \"-call-fact\"))"
+     "'types-set-equality-call-fact"]
+    ["(symbol (str \"sh08-\" stem \"-constraint\"))"
+     "'types-set-equality-constraint"]],
+   :all-other-body-bytes :identical}},
+ :test-path
+ "bootstrap/clojure/test/gravity/self_hosting/descriptor_reconstruction_test.clj",
+ :test-file-sha256
+ "efcfd04821060637c2681b6ad1449fd596b7ddc03e6c743c43109a9a1e4f934e",
+ :Bootstrap-loaded false,
+ :main-integration :pending-coordinator,
+ :correction
+ {:one-final-newline-only true,
+  :all-reader-forms-identical true,
+  :final-generator-provenance :verified},
+ :all-parent-tracked-paths :unchanged,
+ :restored-case [:dse [:gravity.type/set :gravity.type/set]],
+ :initial-static-NONPASS
+ {:run 40966217048,
+  :prior-file-sha256
+  "a90d1a594ffda0be3843e4427fc2ea740551a80d5b1541c74d874f527022276a",
+  :generator-sha256
+  "f6cd177cd095697a5c52de8e597ca988c4d331130333285c32d268f2daec3e19",
+  :all-reader-forms-unchanged true,
+  :correction :remove-one-final-newline,
+  :line 78,
+  :predecessor "508e9360b4068f938e3126f7cc15fab09a031800",
+  :verdict :NONPASS,
+  :finding :new-blank-line-at-EOF,
+  :policy-or-configuration-changes false,
+  :changed-file-lint {:errors 0, :warnings 0, :infos 0},
+  :job 123771287698},
+ :independent-source-review :pending,
+ :kind :verified-preserved-DSE-test-draft-disposition,
+ :genuine-tests :UNRUN,
+ :generator
+ {:language :clojure,
+  :sha256
+  "0cad7ccd268b972552306cb18a95e8970b1f545cf9130899438cd479b52da59b",
+  :preserved-locally true},
+ :base-tree "71b343d4cc131ef3be1601c8f8ba12509744b31e",
+ :validation
+ {:language-boundary {:tests 6, :assertions 11, :fail 0, :error 0},
+  :lint {:errors 0, :warnings 0, :infos 0},
+  :docs :pass,
+  :roadmap :pass,
+  :tracked-parent-relative-whitespace :pass},
+ :base "f4c9fdcd5a3ca24be5b8e24a72ad9d908800796a",
+ :only-added-paths
+ ["A\tbootstrap/clojure/test/gravity/self_hosting/descriptor_reconstruction_test.clj"
+  "A\tspecs/accounting-removal/descriptor-set-controls-census.edn"
+  "A\tspecs/accounting-removal/descriptor-set-controls.md"],
+ :pr 631,
+ :current-head-CI
+ {:head "df1688b26123247e2c20eaf218ebcf7592481b15",
+  :run 40966567915,
+  :successes 7,
+  :configured-skips 2,
+  :readback :completed,
+  :genuine-kernel-evidence false},
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01,
+ :candidate-tree "f97d45e232e67cb3097b7c7fc54cd7e447202de5"}
