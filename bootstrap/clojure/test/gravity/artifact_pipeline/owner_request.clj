@@ -344,7 +344,7 @@
   (verify! proposal)
   (let [broker-resource "gravity/self_hosting/sh01_host_resource_broker.clj"
         runner-resource "gravity/self_hosting/sh01_parallel_test_runner.clj"
-        broker-url (source-resource! broker-resource (get normal-sources broker-resource) :normal-loader-source)
+        _broker-url (source-resource! broker-resource (get normal-sources broker-resource) :normal-loader-source)
         runner-url (source-resource! runner-resource (get normal-sources runner-resource) :normal-loader-source)
         ;; The runner source contract is checked before namespace resolution;
         ;; arity checks below then bind the concrete Vars, not source labels.
