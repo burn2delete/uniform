@@ -1665,7 +1665,7 @@
     (doseq [[id row] before] (is (= (select-keys row [:id :checked :status]) (select-keys (after id) [:id :checked :status])) id))
     (is (= #{:existing :records :backend} (set (map :key records))))
     (is (= {:existing true :records false :backend true} (into {} (map (juxt :key :preserved-current-before?) records))))
-    (doseq [{:keys [key task-id historical-witness current-witness]} records
+    (doseq [{:keys [key historical-witness current-witness]} records
             :let [body (source-text (:path current-witness)) span (:source-span current-witness) clause (read-span body span)]]
       (is (= (:raw-sha256 historical-witness) (:sha256 span) (sh-inventory/sha256 clause)) key)
       (is (= (:sha256 current-witness) (sh-inventory/sha256 body))))
@@ -4168,13 +4168,13 @@
       (is (= (:role c) (:role f)))
       (is (= (:criterion-keys c) (:criterion-keys f)))
       (is (= (:section-key c) (:section-key f))))
-    (doseq [[id c] cases]
+    (doseq [[_id c] cases]
       (is (= (get-in c [:source-span :sha256]) (sh-inventory/sha256 (span body (:source-span c)))))
       (is (if (semantic? c) (and (seq (:criterion-keys c)) (every? criterion-keys (:criterion-keys c))) (empty? (:criterion-keys c))))
       (is (= :proposal-pending-independent-review (:current-entailment c))))
     (is (= 20 (count sections)))
     (is (sections-valid? sections))
-    (doseq [[k section] sections]
+    (doseq [[k _section] sections]
       (is (not (sections-valid? (dissoc sections k)))))
     (let [criterion-map (into {} (map (juxt :key identity) criteria))]
       (is (= 15 (count criterion-map)))
@@ -4196,7 +4196,7 @@
       (is (= :pending (:current-composition f))))
     (is (= 8 (count (:owner-joins r))))
     (is (= (set (mapcat :owner-requirement-ids original-facets)) (set (keys (:owner-joins r)))))
-    (doseq [[id owner] (:owner-joins r)]
+    (doseq [[_id owner] (:owner-joins r)]
       (is (contains? after (:task-id owner)))
       (is (every? criterion-keys (:criterion-keys owner)))
       (is (= :unassessed (:whole-attached-owner-predicate owner)))
@@ -5735,9 +5735,9 @@
              (sh-inventory/sha256 (sh-crosswalk/git-source (:source-commit row) (:path row)))))
       (is (= (get-in row [:source :sha256])
              (sh-inventory/sha256 (acceptance-dependencies/source-raw (:source row) (:source-snapshots view))))))
-    (let [future-before (into {} (for [[region records] (:future-task-authorities prior)
+    (let [future-before (into {} (for [[_region records] (:future-task-authorities prior)
                                        row records] [(:id row) row]))
-          future-after (into {} (for [[region records] (:future-task-authorities view)
+          future-after (into {} (for [[_region records] (:future-task-authorities view)
                                       row records] [(:id row) row]))]
       (is (= (set (keys future-before)) (set (keys future-after))))
       (doseq [[id row] future-after]
