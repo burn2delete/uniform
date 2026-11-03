@@ -5938,7 +5938,9 @@
     (doseq [actual actuals]
       (let [{:keys [core call edge callee nodes bindings signature] :as input} (bare-map-parameter-input actual)
             result (bare-list-parameter-constraints input) row (first (:constraints result)) pair (first (:rhs row)) premise (:compatibility pair)
-            scan #(invoke-c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings])]
+            scan #(if (= :gravity.type/map (get (get (get callee :parameters) 0) :type))
+                    (invoke-c7 'sh08-mp-compatibility [core call edge callee 0 actual nodes bindings])
+                    (invoke-c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings]))]
         (is (= [] (:diagnostics result)) (pr-str result))
         (is (= :argument-compatibility (:kind row)))
         (is (= :sh08-map-list-parameter-compatibility-v1 (:compatibility-rule-version row)))
