@@ -128,3 +128,27 @@ test edit had an unmatched delimiter; its nonpass is retained separately from
 the passing corrected run. Independent affected review remains the next
 criterion. No Accounting adoption, selector retry, CI rerun or actual target
 execution was performed, and the separate frozen candidates were untouched.
+
+## Current-source reconciliation
+
+The preceding sections are historical interface receipts. The current bounded
+source/test composition is based on main
+`0e2b37cd2eefbab2f02e5898b960f9bbc4100fef`, with candidate freeze commit
+`82537d2cb6ec3bb0ac51f30e7c53f9ead2b59b96` and tree
+`4c7b0bb1422cb4170624249408a93515a64cad92`. The current injected session
+controls pass 12 tests and 328 assertions; the source/test receipt is recorded
+in `core-session-known-diagnostic.md` and the adjacent EDN/Markdown trace.
+
+An earlier intermediate receipt described an Exception-only expected-build
+catch. That wording is historical and is not the current source contract. The
+current 00899 body catches `Throwable`, scans the complete cause chain by
+identity, rethrows fatal or interrupted control (restoring the interrupt flag),
+and only then records an ordinary failed-session projection. The projection is
+still closed and failed-only: the source-data allowlist permits only the five
+diagnostic codes and listed C6-VERIFY reasons, and it never becomes a product,
+authentication fact, public admission rule or migration fingerprint.
+
+This reconciliation does not claim a real C5/C6 run, Core construction, native
+execution, C7/C8 composition, ACC09 authority, release readiness or
+self-hosting. The unfinished large-result control and previous failed attempts
+remain nonpasses; no retry, heap workaround or source-pin renewal is implied.
