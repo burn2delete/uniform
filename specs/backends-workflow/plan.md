@@ -1,3 +1,44 @@
+# Backend family implementation planning entry
+
+Select one of the fifteen existing grouped records in
+[tasks.md](tasks.md#implementation-tasks), preserving its complete paragraph,
+decision owner and status. Preserve the historical transfer plan and reviewed
+interface appendix below. Read [spec.md](spec.md), B1/B13/B14 and the complete
+selected concrete backend/domain/profile/runtime contracts.
+
+Bind actual verified input, target/version/ABI/layout/features, operation
+families, provider/grants, runtime/helper assumptions, real toolchain/adapter,
+output kinds and consuming Runtime/Build/tooling boundary. Derive positive,
+exact-diagnostic negative and semantic/differential/replay cases from the
+selected family contract; include its host, device, clock, schema, resource or
+lifecycle boundary rather than only a generic manifest test.
+
+Use focused owner tests and actual affected Lower/Emit/runtime/domain
+composition. Validate real output bytes or semantic artifacts, source/proof/
+safety/authority preservation and unrecorded nondeterminism. Record target
+availability, missing behavior and unrun cases without passing exclusions
+yourself. Refine only that existing record, coordinating genuine overlapping
+writers and shared interfaces. Preserve restricted operations and publication/
+signing authority. Independent family acceptance and release remain separate.
+
+## Concurrency dependency interface
+
+Use the [concurrency producer and consumer order](../legality-workflow/plan.md#concurrency-producer-and-consumer-order) and existing selected-result table. GPU/HDL consume actual checked domain/source/layout/synchronization facts and lowered operations before emission. Source definitions precede later device/reference or HDL simulation results; current C12/target/provider/device holds remain.
+
+Task bodies/statuses, source criteria and qualified reviews stay unchanged. Current source/dependency entailment and implementation acceptance remain pending; preserve every actual hold.
+
+## Complete concurrency source interface
+
+Use the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria). Existing GPU/HDL tasks preserve actual synchronization or clocked state in emitted artifacts and target refusals. Selected interfaces do not accept full B8/B9, device execution or current C12/target holds. Historical finite reviews remain scoped; current source composition and implementation acceptance remain pending. Preserve every held operation.
+
+## Complete pattern-matching source interface
+
+Use the [complete pattern-matching source criteria](../core-workflow/plan.md#complete-pattern-matching-source-criteria). Demonstrate representative actual target branch behavior equivalent to checked source decisions, including effectful/false/non-returning guards and source diagnostics. Jump/table/vtable/state/workflow/query representations do not change semantics or imply all families implemented.
+
+Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
+## Historical task-authority-transfer plan
+
 # Implementation plan: Backends family task authority
 
 Spec: [spec.md](spec.md) | Evidence: [evidence.md](evidence.md)
