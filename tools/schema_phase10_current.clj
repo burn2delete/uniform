@@ -31,7 +31,7 @@
 (def candidate-source-git-tree
   "552a2bd0f50d53928aef5dffd085656dbe7bc17a")
 (def candidate-manifest-sha
-  "722cefbbbb3dabb40ae8667b6a5af9ece33f50655dc8bdc0a6bc37f3813be05f")
+  "515a8d623d3ce72d4e61e1a6ef0c56ceb7fa6475d312e014c1480a8683167c19")
 (def current-task-sha
   "3d8989b72d00461931e400b5617b9bea090c63265cfee553e12d7b3cd6bc88dc")
 (def current-plan-sha
@@ -63,6 +63,41 @@
 (def expected-candidate-known-current-main
   {:current-ref "d544539eefaea6b16aecd724b54d61a9b0ec1f3d"
    :current-tree "9fac2c4d1ebfb5294f598860917bc779b2147ebf"})
+(def expected-candidate-math9-bridge
+  {:document-id "MATH9"
+   :path "docs/phase-05-mathematical-and-elementary-function-system/077-math9-symbolic-math-and-rewrite-system-specification.md"
+   :kind :math9-rewrite-termination-semantic-projection
+   :review-state :proposed
+   :baseline-ref "a1b991be499d50579a8b4366976c519ae8949224"
+   :applying-ref "4d8a085a9b68bb8c349869c574b94ee4cea81406"
+   :baseline-tree "5b62819e511bfc7e6b5eba0527d8c9b5883c5572"
+   :applying-tree "2366861f1514b0cb03a7a869b2af365d3816df3c"
+   :baseline-sha256 "ca9ccdcfe25a76de1127d5629d8265f83885481e7334012ee4da8aa1fdbd0410"
+   :live-sha256 "543cfc52291e89d60c0a80c0c056221c098bc9aed11d8fb7f3e45e999322bff3"
+   :baseline-blob "ac364084776e3cd0a2046c224aacd7d65178cc68"
+   :applying-blob "cda65cb93e21f483fc1dafd8dc429f38198940d6"
+   :authority "MATH9 rewrite-system source audit of current termination evidence after mandatory-fuel retirement and unsupported example-claim removal."
+   :qualification "Only the exact Rewrite Rule Form termination region is projected to the authenticated baseline view. Rule/domain/branch/numeric/floating/side-condition/proof/source and invalidation facts, deterministic rule ordering, cost-model tie breaks, equality explanations, proof replay, and well-founded finite termination evidence remain current semantic obligations. The current source removes an unsupported strict tan-occurrence example claim and requires finite termination evidence from the selected strategy; no proof is inferred from the example's omission, and this bridge is source reconciliation evidence only."
+   :current-criteria {:retained [:rule-domain-branch-numeric-floating-side-condition-proof-source-and-invalidation
+                                 :deterministic-rule-ordering-cost-model-tie-breaks-equality-explanation-and-proof-replay
+                                 :well-founded-termination-finite-trace-and-stopped-run-history]
+                      :changed [:unsupported-strict-tan-occurrence-example-claim-removed
+                                :selected-strategy-finite-termination-evidence-required]
+                      :qualification :current-math9-criteria-derived-from-4d8a085a}
+   :historical-applying {:ref "dcf3378130ef92c37105aeda17b3badfec6619dc"
+                         :tree "b0609b39cf93b8c27dbd204b69ca197ef781d8f8"
+                         :blob "5bae82b6d377e64b803dd1c6a7282f4ec179406b"
+                         :live-sha256 "8ee9b9bd7a70508ebac2d74eac64417462c1a18f75e5b2ae2c43b12b96266430"
+                         :qualification "Historical dcf337 MATH9 snapshot retained for provenance only; it is not the current source and is not re-admitted as proof."}
+   :semantic-deltas [{:hunk-id "MATH9-rewrite-termination"
+                      :classification :semantic-termination-evidence-and-unsupported-example-removal}]
+   :projection-hunks [{:hunk-id "MATH9-rewrite-termination"
+                       :facet-ids ["MATH9/partition-facet/f7ea6e89842884748fe59dbe8f51ab1430d943e274be2db887506a777a0977c9"
+                                   "MATH9/partition-facet/e231af9a1d26e177746d45311c38254441b372ff323f06178c5a5777ae4243ad"]
+                       :baseline-start-line 77 :baseline-end-line 78
+                       :live-start-line 77 :live-end-line 82
+                       :baseline-fragment-sha256 "ca061d6ae9dc82e9c5ab1dbba13b05632a62d13a9ce09355452dfd58a444f8f1"
+                       :live-fragment-sha256 "6b1ee5c8781479b2fa274d615fc5107b23f4e230c024885305a17731569133f4"}]})
 (def expected-facet-count 463)
 (def expected-facet-digest
   "9daedb26fb3bbee1ce9994d0cbec96cb8803f9428632cdb1a2f61d208850dcf1")
@@ -326,9 +361,25 @@
                "Candidate manifest changed the authenticated source tree")
      (require! (= (:source-baseline main) (:source-baseline candidate))
                "Candidate manifest changed the authenticated source baseline")
-     (require! (= (:source-version-bridges main)
-                  (:source-version-bridges candidate))
-               "Candidate manifest changed an existing source-version bridge")
+     (let [main-source-bridges (into {} (map (juxt :document-id identity)
+                                             (:source-version-bridges main)))
+           candidate-source-bridges (into {} (map (juxt :document-id identity)
+                                                  (:source-version-bridges candidate)))
+           candidate-math9 (get candidate-source-bridges "MATH9")
+           stable-math9-keys [:document-id :path :kind :review-state :baseline-ref
+                              :baseline-tree :baseline-sha256 :baseline-blob]]
+       (require! (= (set (keys main-source-bridges))
+                    (set (keys candidate-source-bridges)))
+                 "Candidate manifest changed source-version bridge population")
+       (doseq [document-id (set/difference (set (keys main-source-bridges)) #{"MATH9"})]
+         (require! (= (get main-source-bridges document-id)
+                      (get candidate-source-bridges document-id))
+                   (str "Candidate manifest changed an unscoped source-version bridge: " document-id)))
+       (require! (= (select-keys (get main-source-bridges "MATH9") stable-math9-keys)
+                    (select-keys candidate-math9 stable-math9-keys))
+                 "Candidate manifest changed the MATH9 authenticated baseline")
+       (require! (= expected-candidate-math9-bridge candidate-math9)
+                 "Candidate MATH9 source-version bridge is not authenticated"))
      (require! (= (count (:task-source-version-bridges main))
                   (count changed))
                "Candidate manifest changed task-source bridge population")

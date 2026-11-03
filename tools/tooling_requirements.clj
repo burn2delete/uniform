@@ -121,6 +121,38 @@
         [requirement-sources/math4-search-policy-kind
          requirement-sources/math9-rewrite-termination-kind]))
 
+;; PR564 is an immutable predecessor of the PR565 current-source port.  Its
+;; MATH9 row intentionally remains the dcf337 snapshot; the current source
+;; bridge is authenticated only by the later PR565 successor below.
+(def expected-pr564-math9-source-bridge
+  {:path requirement-sources/math9-rewrite-termination-path
+   :kind requirement-sources/math9-rewrite-termination-kind
+   :review-state :proposed
+   :baseline-ref "a1b991be499d50579a8b4366976c519ae8949224"
+   :applying-ref "dcf3378130ef92c37105aeda17b3badfec6619dc"
+   :baseline-tree "5b62819e511bfc7e6b5eba0527d8c9b5883c5572"
+   :applying-tree "b0609b39cf93b8c27dbd204b69ca197ef781d8f8"
+   :baseline-sha256 "ca9ccdcfe25a76de1127d5629d8265f83885481e7334012ee4da8aa1fdbd0410"
+   :live-sha256 "8ee9b9bd7a70508ebac2d74eac64417462c1a18f75e5b2ae2c43b12b96266430"
+   :baseline-blob "ac364084776e3cd0a2046c224aacd7d65178cc68"
+   :applying-blob "5bae82b6d377e64b803dd1c6a7282f4ec179406b"
+   :authority "MATH9 rewrite-system source audit of current termination evidence after mandatory-fuel retirement."
+   :qualification "Only the exact Rewrite Rule Form termination measure is projected to the authenticated baseline view. Rule/domain/branch/numeric/floating/side-condition/proof/source and invalidation facts, deterministic rule ordering, cost-model tie breaks, equality explanations, proof replay, and well-founded finite termination evidence remain current semantic obligations. The current strict tan-occurrence measure is a semantic termination correction, not a project quota or admission allowance; this bridge is source reconciliation evidence only and confers no canonical adoption or implementation acceptance."
+   :current-criteria {:retained [:rule-domain-branch-numeric-floating-side-condition-proof-source-and-invalidation
+                                 :deterministic-rule-ordering-cost-model-tie-breaks-equality-explanation-and-proof-replay
+                                 :well-founded-termination-finite-trace-and-stopped-run-history]
+                      :changed [:strictly-decreasing-tan-occurrence-measure]
+                      :qualification :current-math9-criteria-derived-from-dcf3378130}
+   :semantic-deltas [{:hunk-id "MATH9-rewrite-termination"
+                      :classification :semantic-strict-termination-measure}]
+   :projection-hunks [{:hunk-id "MATH9-rewrite-termination"
+                       :facet-ids ["MATH9/partition-facet/f7ea6e89842884748fe59dbe8f51ab1430d943e274be2db887506a777a0977c9"
+                                   "MATH9/partition-facet/e231af9a1d26e177746d45311c38254441b372ff323f06178c5a5777ae4243ad"]
+                       :baseline-start-line 77 :baseline-end-line 78
+                       :live-start-line 77 :live-end-line 78
+                       :baseline-fragment-sha256 "ca061d6ae9dc82e9c5ab1dbba13b05632a62d13a9ce09355452dfd58a444f8f1"
+                       :live-fragment-sha256 "f35520ec40d85c0f54bbb63e31895c3ad097ed693da79100a56deb0ffa16e404"}]})
+
 (def current-manifest-pr565-transition
   {:kind :tooling-current-manifest-pr565-owner-task-bridge-extension-v2
    :path manifest-path
@@ -132,10 +164,10 @@
     :blob "367905fc9b45001865cc5a2e59b4e3f07c16cb6d"
     :sha256 "c47151307b2dd2e20855f5837053a6a63806f2ed81d0acd5fadaa653c3952a38"}
    :applying
-   {:commit "3e5d74d014a0105a3887dc044ead4da75b1f03ac"
-    :tree "de6f0bccad60c7af68bc7eb53e1d63021f457b6e"
-    :blob "56e70702d8fc4b9244b54f7999a77fbe246e226c"
-    :sha256 "722cefbbbb3dabb40ae8667b6a5af9ece33f50655dc8bdc0a6bc37f3813be05f"}
+   {:commit "4b1302e348059fdc63881f542a926a395b5d909a"
+    :tree "309bd9fda58dc38f8ced8a3ae2fdf1170affaf69"
+    :blob "4a21a0869792e83440c66a2d21ed5591bf1c97a1"
+    :sha256 "515a8d623d3ce72d4e61e1a6ef0c56ceb7fa6475d312e014c1480a8683167c19"}
    :task-source-bridge-extension
    {:updated-paths ["specs/domains-workflow/tasks.md"
                     "specs/runtime-workflow/tasks.md"
@@ -413,7 +445,12 @@
                                               (:source-version-bridges applying-manifest)))
         stdlib-path (:path (:stdlib-task-source-successor transition))
         expected-stdlib (:stdlib-task-source-successor transition)
-        math-documents (set (map :document-id expected-current-math-source-bridges))]
+        math-documents (set (map :document-id expected-current-math-source-bridges))
+        expected-pr564-math-source-bridges
+        (mapv #(if (= "MATH9" (:document-id %))
+                 expected-pr564-math9-source-bridge
+                 %)
+              expected-current-math-source-bridges)]
     (require! (= path (:path current))
               "Tooling PR564 manifest path changed")
     (require! (= (:source-view-baseline-sha256 transition) (:sha256 current))
@@ -444,7 +481,7 @@
                  (set/difference (set (keys applying-source-bridges))
                                  (set (keys baseline-source-bridges))))
               "PR564 math source-version bridge additions drifted")
-    (doseq [expected-bridge expected-current-math-source-bridges]
+    (doseq [expected-bridge expected-pr564-math-source-bridges]
       (let [document-id (:document-id expected-bridge)
             bridge (get applying-source-bridges document-id)]
         (require! (= expected-bridge bridge)
@@ -525,9 +562,32 @@
     (require! (= (manifest-population baseline-manifest)
                  (manifest-population applying-manifest))
               "PR565 changed a required manifest population")
-    (require! (= (:source-version-bridges baseline-manifest)
-                 (:source-version-bridges applying-manifest))
-              "PR565 changed an existing source-version bridge")
+    (let [baseline-source-bridges
+          (into {} (map (juxt :document-id identity)
+                        (:source-version-bridges baseline-manifest)))
+          applying-source-bridges
+          (into {} (map (juxt :document-id identity)
+                        (:source-version-bridges applying-manifest)))
+          math9 (get applying-source-bridges "MATH9")
+          expected-math9 (get (into {} (map (juxt :document-id identity)
+                                            expected-current-math-source-bridges))
+                              "MATH9")]
+      (require! (= (set (keys baseline-source-bridges))
+                   (set (keys applying-source-bridges)))
+                "PR565 changed source-version bridge population")
+      (doseq [document-id (set/difference (set (keys baseline-source-bridges)) #{"MATH9"})]
+        (require! (= (get baseline-source-bridges document-id)
+                     (get applying-source-bridges document-id))
+                  (str "Unauthenticated PR565 source-version bridge change: " document-id)))
+      (require! (= (select-keys (get baseline-source-bridges "MATH9")
+                                [:path :kind :review-state :baseline-ref :baseline-tree
+                                 :baseline-sha256 :baseline-blob])
+                   (select-keys math9
+                                [:path :kind :review-state :baseline-ref :baseline-tree
+                                 :baseline-sha256 :baseline-blob]))
+                "PR565 changed the MATH9 authenticated baseline")
+      (require! (= expected-math9 math9)
+                "PR565 MATH9 current successor is not authenticated"))
     (require! (= (set (keys baseline-task-bridges))
                  (set (keys applying-task-bridges)))
               "PR565 changed task-source bridge population")
