@@ -20,7 +20,8 @@
 ;; and PR560 adds five authenticated task-source bridge changes. PR562 then
 ;; composes the Domain source with its preserved Workflow/UI criteria on a
 ;; named successor checkpoint. PR564 then adds one authenticated Stdlib row
-;; against that serial composition. Accept each named transition only when
+;; and the exact current-main MATH4/MATH9 source-version bridges against that
+;; serial composition. Accept each named transition only when
 ;; both immutable Git snapshots, the complete bridge body, the explicit
 ;; task-bridge delta and every source population agree; a live hash refresh
 ;; alone is never sufficient.
@@ -93,7 +94,7 @@
    :qualification "The current Stdlib task ledger retains the five historical task identities and adds source-specific closing criteria and evidence boundaries. This authenticated source transition preserves historical routing while explicitly conferring no implementation, library-release or requirement acceptance."})
 
 (def pr564-current-manifest-source-transition
-  {:kind :tooling-current-manifest-pr564-stdlib-successor-on-pr561-v1
+  {:kind :tooling-current-manifest-pr564-stdlib-and-math-source-successor-v2
    :path manifest-path
    :source-view-baseline-sha256
    "aa51bfad176edcf7ed75109a68ea1a0bcbcb3eeeedd6311db256bf331ad01ef0"
@@ -103,12 +104,22 @@
     :blob "4dd11c7af6868616b8bdd0c50c96a025c9e9e270"
     :sha256 "8948438410df7c5b6c2c547e48be16b3ff8b1033ec866fb1bec432e4e3c32007"}
    :applying
-   {:commit "c8971ef923154cae61be744585e5d5f1683eee80"
-    :tree "330c021a9cd97dcd8545bba7fd7286c475f6439c"
-    :blob "9025ee7f997814e272fff7030c1d9b6dda621d51"
-    :sha256 "182c7f6c0b5b55a147b68b7b8a56fa148e56fa05f4e62b21e81628846b97cdac"}
+   {:commit "c85b7b2268c2512e574fb2ebd410e8e248d48d5e"
+    :tree "2e9b052554eb55b86600fb0f18bd6965b26749fd"
+    :blob "367905fc9b45001865cc5a2e59b4e3f07c16cb6d"
+    :sha256 "c47151307b2dd2e20855f5837053a6a63806f2ed81d0acd5fadaa653c3952a38"}
    :stdlib-task-source-successor expected-current-stdlib-task-bridge
-   :interpretation :pr561-runtime-successor-to-pr564-stdlib-source-successor})
+   :math-source-version-successors
+   [requirement-sources/math4-search-policy-kind
+    requirement-sources/math9-rewrite-termination-kind]
+   :interpretation :pr561-runtime-successor-to-pr564-stdlib-and-math-source-successor})
+
+(def expected-current-math-source-bridges
+  (mapv (fn [kind]
+          (assoc (get requirement-sources/exact-source-bridge-contracts kind)
+                 :kind kind))
+        [requirement-sources/math4-search-policy-kind
+         requirement-sources/math9-rewrite-termination-kind]))
 
 (def historical-platform-bridge-kind
   :platform-task-authority-current-layout)
@@ -363,8 +374,13 @@
         applying-manifest (edn/read-string applying-text)
         baseline-task-bridges (task-source-bridges baseline-manifest)
         applying-task-bridges (task-source-bridges applying-manifest)
+        baseline-source-bridges (into {} (map (juxt :document-id identity)
+                                              (:source-version-bridges baseline-manifest)))
+        applying-source-bridges (into {} (map (juxt :document-id identity)
+                                              (:source-version-bridges applying-manifest)))
         stdlib-path (:path (:stdlib-task-source-successor transition))
-        expected-stdlib (:stdlib-task-source-successor transition)]
+        expected-stdlib (:stdlib-task-source-successor transition)
+        math-documents (set (map :document-id expected-current-math-source-bridges))]
     (require! (= path (:path current))
               "Tooling PR564 manifest path changed")
     (require! (= (:source-view-baseline-sha256 transition) (:sha256 current))
@@ -381,9 +397,32 @@
               "Tooling PR564 applying blob drifted")
     (require! (= applying-text live-text)
               "Current manifest is not the authenticated PR564 applying source")
-    (require! (= (manifest-population baseline-manifest)
-                 (manifest-population applying-manifest))
+    (require! (= (dissoc (manifest-population baseline-manifest)
+                         :source-version-bridge-identities)
+                 (dissoc (manifest-population applying-manifest)
+                         :source-version-bridge-identities))
               "Tooling PR564 successor changed a required source population")
+    (require! (empty? (set/difference (set (keys baseline-source-bridges))
+                                      (set (keys applying-source-bridges))))
+              "PR564 math successor removed an existing source-version bridge")
+    (doseq [document-id (set (keys baseline-source-bridges))]
+      (require! (= (get baseline-source-bridges document-id)
+                   (get applying-source-bridges document-id))
+                (str "Unauthenticated source-version bridge change: " document-id)))
+    (require! (= math-documents
+                 (set/difference (set (keys applying-source-bridges))
+                                 (set (keys baseline-source-bridges))))
+              "PR564 math source-version bridge additions drifted")
+    (doseq [expected-bridge expected-current-math-source-bridges]
+      (let [document-id (:document-id expected-bridge)
+            bridge (get applying-source-bridges document-id)]
+        (require! (= expected-bridge bridge)
+                  (str "Authenticated Math source-version bridge drifted: " document-id))
+        (requirement-sources/validate-snapshots!
+         bridge
+         (fn [ref path] (git-text ref path))
+         sha256
+         require!)))
     (require! (= #{stdlib-path}
                  (set/difference (set (keys applying-task-bridges))
                                 (set (keys baseline-task-bridges))))
@@ -413,6 +452,7 @@
      :snapshot-provenance :git-commit-tree-blob-and-bytes-verified
      :population :conserved
      :stdlib-task-source :authenticated-successor
+     :math-source-version :authenticated-successors
      :interpretation (:interpretation transition)}))
 
 (defn validate-current-manifest-transition! [source-view]

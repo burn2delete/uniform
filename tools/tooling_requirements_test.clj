@@ -164,9 +164,11 @@
     (is (= {:snapshot-provenance :git-commit-tree-blob-and-bytes-verified
             :population :conserved
             :stdlib-task-source :authenticated-successor
-            :interpretation :pr561-runtime-successor-to-pr564-stdlib-source-successor}
+            :math-source-version :authenticated-successors
+            :interpretation :pr561-runtime-successor-to-pr564-stdlib-and-math-source-successor}
            (select-keys (:stdlib-successor result)
                         [:snapshot-provenance :population :stdlib-task-source
+                         :math-source-version
                          :interpretation])))
     ;; A changed applying body, a mismatched commit/tree pair, and replay of the
     ;; baseline identity must all fail closed even when the source-view digest
