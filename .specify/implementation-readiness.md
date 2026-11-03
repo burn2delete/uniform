@@ -3944,3 +3944,108 @@ local references. It retains 139 original routes, 48 historical spec/plan
 suffixes and all 48 original task/evidence contents after declared amendments
 are removed. ASCII and whitespace checks pass. These checks concern planning/tooling traceability; they
 establish no compiler conformance, independent acceptance or integration.
+
+## Complete macro source continuation
+
+Source `7f689510338834d8b5240cf7e939c093e5817285` adds the
+[complete macro source criteria](../specs/expand-workflow/plan.md#complete-macro-source-criteria)
+for L4, L16, C4 and SAFE12. Twenty-five criteria use sixteen existing tasks in
+ten authorities: twenty-four new clauses refine fifteen bodies, while the exact
+existing Evolution change-review predicate remains unchanged. Sixteen plans and
+five implementation specifications expose the same owning interfaces. All task
+identities/statuses and historical records remain; three previously identical
+original bodies (Syntax1, Syntax2 and Resolve4) now carry criteria, giving
+58 identical and 81 amended original bodies.
+
+The source proposal preserves 374 facets, 230 occurrences, 62 whole-section
+conjunctions and 26 original owners. Its roles distinguish 298 semantic versus
+76 hierarchy/provenance facets and 160 semantic versus seventy contextual
+occurrences. The all-240 census supplies identity/conservation only; neither
+these counts nor current owner links prove whole-source entailment. Seven
+missing safety107 predicates are restored in the already-qualified Expand2/3/5
+consumers; three exact profile74 predicates stay present, including the unchanged
+conditional Evolution predicate. All ten byte witnesses total 14,338 bytes.
+Historical Legality/Auth source references remain visible separately from those
+qualified consumers. No hygiene review receipt is invented, no finite review is
+renewed or consumed, and ordinary downstream safety classification stays with
+Legality.
+
+Actual Gravity macro execution, immutable syntax operations, two-way hygiene,
+marked privileged capture, advertised versus observed behavior, full SAFE6
+metadata, real taint/sink facts and complete origins are required. Checked meta P
+precedes its actual build actions; generated Q goes through the ordinary caller
+pipeline. Alternative representations and scheduling retain eleven observable
+syntax operations, three hygiene modes and seven phase boundaries. Selected
+engine cache machinery and shared Build policy integration remain as corrected
+above. Reference/alternative structural alpha-equivalence is separate from
+same-input hermetic typed-Core byte equality. Real diagnostics, package/tool
+consumers, independently executed suites and seed/Gravity comparisons require
+their actual subjects and results.
+
+The 37 source diagnostic identifiers have 34 active meanings and three retired
+accounting refusals. Nine facets retain superseded depth/size/node/time/work
+conditions, including C4's algorithmic limit stop in addition to the eight
+previously located fragments. Preserve their source bytes and surviving semantic,
+phase, authority, provenance and actual host/process/watchdog conditions without
+renaming quotas or adding mandatory replacement totality admission.
+
+Static inspection of ten selected implementation files finds real hosted macro
+registry/template/policy behavior and a declared narrower Gravity defn kernel.
+Alternative-engine and SAFE12 record producers also assign preserved, hygienic,
+SAFE6-complete, equivalent and positive/negative conformance statuses. Those
+assignments do not prove complete source behavior or actual engine comparison;
+the C4 facade denies authoritative credit. Current whole-source implementation
+acceptance remains unassessed, preserving valid narrower historical evidence.
+
+The first source-pin check correctly refused stale containing-file bindings:
+Release's changed main task shares a file with thirteen future records. An
+explicit current successor now binds all forty future records, proving their
+keys, bodies and statuses unchanged and updating only those thirteen current
+Release file identities. The historical future-dependency subject is preserved.
+This is source conservation, not future-task adoption or implementation credit.
+
+The existing dependency table remains at 1,076 selected joins, 102 routes,
+62 current parents and forty future records. Complete macro-selected result
+staging is still required; source criteria alone cannot establish those producer/
+consumer interfaces or resolve coarse task feedback. Twelve of the sixteen
+selected task consumers currently have routes with 170 selected inputs. Syntax1,
+Syntax2, Resolve4 and diagnostic-origin preservation have no selected-result
+routes yet; the next dependency update must supply their actual producer/consumer
+contracts and reconcile the twelve existing routes with the complete macro
+criteria. Current independent
+source/interface review, global conjunctions, actual implementation and
+integration remain pending or unassessed. Reader contract coverage remains the
+first implementation increment. No other chat is messaged and no held action,
+reviewer wake or aggregate publication occurs.
+
+The pending-proposal fingerprint is
+`d993aae4293000557f1d1538bf63a8f835b5efc8978320a00bf15f80e4e3a0be`.
+The initial focused run exercised three tests with 6,103 passing assertions and
+fifteen failures, all in the new proposal-block reconstruction assertion: parsed
+task bodies trim trailing blank lines, so the last block did not match its
+file-oriented removal pattern. The correction accepts either the original
+trailing newlines or end of the captured body, then still requires exact restored
+body equality. No criterion, source witness, historical review or acceptance
+scope changes. The corrected focused run passes three tests / 6,118 assertions.
+Dependency checks pass 23 tests / 3,711 assertions; both pinned projection checks,
+240-document/19-index and full-language structural checks, plus six language-
+boundary tests / eleven assertions pass. These are traceability/tooling results,
+not actual compiler, provider, engine, replay, self-hosting or release conformance.
+
+The full run exercised 64 crosswalk tests / 34,231 assertions, with twelve
+failures and no errors. All failures were in the historical C15 regression:
+its bridge/projection were frozen at the existing MIR predecessor `b1739785`,
+but task and witness reads still used current files. The correction reads that
+same complete historical subject, without changing any review hash, witness,
+current macro criterion or acceptance scope. Its focused rerun passes one test /
+613 assertions. The other 63 tests passed in the full run. Final source/history/
+conservation checks, including explicit refusal of missing or forged future-task
+source bindings, pass three focused tests / 6,120 assertions. These are separately
+observed runs, not a claimed successful second full-suite run. The final pinned
+projection check and language-boundary gate pass after the correction.
+
+Final navigation/conservation covers ninety changed files, 84 Markdown files,
+3,546 local references, 139 original routes, 48 historical spec/plan suffixes
+and all 48 original task/evidence contents after declared amendments are removed.
+ASCII and whitespace checks pass; current source/implementation acceptance and
+integration remain pending.
