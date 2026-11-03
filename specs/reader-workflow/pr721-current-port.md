@@ -12,22 +12,40 @@ claim whole-project acceptance.
 | --- | --- | --- |
 | Original PR721 base | `43c69654b3f2daefa05e3902cbe78b469af47d96` | `088aa0c632516704aa552a9fa2a046828661fabc` |
 | Original PR721 head | `8cf0651e5d1adaafe4b32325beaf4c47f1d3e894` | `f2b4e596e0ef5f354e2921689d15026710650557` |
-| Current-main base | `d351310d5821a983fac2ad0fee4c0be96711b4b4` | `1d7c95cf054bbc3e1719bc39cb35ac7bbaf13049` |
+| Prior current-main base (historical receipt) | `d351310d5821a983fac2ad0fee4c0be96711b4b4` | `1d7c95cf054bbc3e1719bc39cb35ac7bbaf13049` |
 | Normal PR697 dependency source | `8cad807dbd99317baf0a9da622bb9d9ef99650a1` | `b972c6620b59f753a8c0dca85464e0cfced2a826` |
 | PR697 corrected receipt | `c5ca71cd5c0428af72b423d17ba7d62a613b5d7b` | `c8f917f3701f58d2d168f120dd0550a7e3fb46cf` |
 | PR697 normal composition merge | `6ae40925dec3ae486dc63c4963a1bfa60ce633ec` | `641beb2f3861c1ab08d56626a9d72a8d1e938603` |
 | PR721 source/test checkpoint | `19b7bbe8e6b50d5b74aa3ab3611d81f5ac37c032` | `1510969cd79404f34d6ab1ad8856b1dd96aa4e9f` |
 
+### Current-main composition frame
+
+The candidate was normally composed on the actual PR697 main at
+`78db2bc984bd66de920a4abaef02f759f1108605` (tree
+`9e435a4f3bbfe02a69ddc3dd71119bc381d06041`). The resulting merge is
+`ac07ee623d293a60a6c6c9ad690b9ee587f621e4` (tree
+`b046603a9996b377960c0a878dccadc42073dc7d`), with parents
+`8b5020748fcf14fb67bcf17f8d0958b73020a063` and the current-main base.
+All 17 original paths are represented in this composition; their exact
+current Git blob IDs and SHA-256 values are recorded under
+`:current-main-composition` in the EDN receipt. This frame is a source
+composition checkpoint, not independent acceptance or publication to main.
+The historical `19b7bbe8...` checkpoint and its 17-path frame remain
+unchanged; the final receipt metadata commit is intentionally not self-hashed.
+
 The PR697 merge is an explicit current-owner dependency, not PR721 roadmap
-credit. The source checkpoint was clean before this receipt metadata commit.
+credit. The historical source checkpoint was clean before its receipt metadata
+commit; the current-main composition frame records the later clean source
+merge.
 The final receipt commit/tree must therefore be read externally and is not
 self-hashed here.
 
 ## Complete original-path accounting
 
-The table gives each original Git blob's SHA-256, the current source SHA-256,
-and the disposition. Full Git blob identities are machine-recorded in
-`pr721-current-port.edn` beside this report.
+The table gives each original Git blob's SHA-256, the source-checkpoint current
+SHA-256, and the disposition. Full Git blob identities for the later
+current-main composition are machine-recorded in `pr721-current-port.edn`
+beside this report.
 
 | Original path | Original SHA-256 | Current SHA-256 | Disposition |
 | --- | --- | --- | --- |
@@ -78,6 +96,14 @@ was not retried.
   roadmap validator passed; its dated coverage snapshot remains
   non-authoritative.
 
+The post-composition current-main checks independently pass: reader binding and
+session 19 / 417, scalar-Set controls 3 / 383, CI runner 38 / 366, and the
+facade/context suite 27 / 494, all with zero failures/errors. The current
+`tools/ci` tree has zero pinned-kondo errors or warnings; current boundary,
+document and roadmap logs are recorded in the EDN receipt. These checks are
+bounded Clojure/source/data controls and do not upgrade any hosted-native or
+full C5-C8 claim.
+
 These are finite Clojure source/data/fixture controls. Hosted-native files are
 byte-identical current equivalents; no native execution was performed. No
 actual C5/C6/C7/C8, public admission, migration, release or self-hosting claim
@@ -87,6 +113,7 @@ nonpasses; no retry, heap workaround, or source-pin renewal is implied.
 ## Disposition
 
 The 17 authored paths are fully accounted for and the useful current-source
-delta is frozen, but this candidate remains `HOLD` pending independent review,
-current-main integration preflight, and coordinator publication. The PR697
-owner composition is a dependency only; it is not credited as PR721 work.
+delta is frozen on the current-main composition frame, but this candidate
+remains `HOLD` pending independent review, integration preflight, and
+coordinator publication. The PR697 owner composition is a dependency only; it
+is not credited as PR721 work.

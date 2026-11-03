@@ -26,6 +26,69 @@
   :parent-tree "749e881da3f1238791fa9ce7687689a906be6890"
   :owned-path-count 17
   :worktree-status :clean-before-receipt}
+ :current-main-composition
+ {:base-commit "78db2bc984bd66de920a4abaef02f759f1108605"
+  :base-tree "9e435a4f3bbfe02a69ddc3dd71119bc381d06041"
+  :source-commit "ac07ee623d293a60a6c6c9ad690b9ee587f621e4"
+  :source-tree "b046603a9996b377960c0a878dccadc42073dc7d"
+  :merge-parents
+  ["8b5020748fcf14fb67bcf17f8d0958b73020a063"
+   "78db2bc984bd66de920a4abaef02f759f1108605"]
+  :owned-path-count 17
+  :worktree-status :clean-before-current-receipt
+  :role :current-source-composition-not-independent-acceptance
+  :path-accounting
+  [{:path "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00897-sh07-core-construction-upstream-guard.clj"
+    :current-blob "9c554004e5adf07037cbd0cf5b47aad11f6752da"
+    :current-sha256 "352feb1af8de7500594f16bb1cd2d709e261e20a183db1da16ae4dd51a8b425b"}
+   {:path "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00898-sh07-core-from-authenticated-request.clj"
+    :current-blob "a6245b27af39d973079eb220b5a7f7d5be0b6e39"
+    :current-sha256 "b92924334557b1ee371fee4b771524e4c0a55c15f93d9a510c4d8a4c582e435f"}
+   {:path "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00899-sh07-core-verification-session.clj"
+    :current-blob "99b19bf320b9fb7f73835dbcaa0305d2d038893a"
+    :current-sha256 "f85093054ec85fae612bbc558ec81bb2c19af1b272d077aefa8621aeb234f587"}
+   {:path "bootstrap/clojure/test/gravity/reader/core_construction_binding_test.clj"
+    :current-blob "92d4bc41ec03507455e8b0fdd82fe60779573604"
+    :current-sha256 "53b26dc9d6e625a674ce8f6bf2c8f13e9a3fe0b9ca0ae3678b40104c6e5c24a3"}
+   {:path "bootstrap/clojure/test/gravity/reader/core_session_invocation_test.clj"
+    :current-blob "9f94edd4ca88507db1f3490b5759dbaee45a1242"
+    :current-sha256 "bac87ee1e16f2e18ca15cb2923f0ce696d12bfa85c35da095989cabd620e0b5a"}
+   {:path "bootstrap/clojure/test/gravity/self_hosting/module_census_test.clj"
+    :current-blob "e2f1159795ae42767e371627294e46d1ea4ee0e2"
+    :current-sha256 "e9fc4499e28d2652dfbba152127dae7459fde4eed6a4f41c6f0ddd5d272a6f62"}
+   {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj"
+    :current-blob "45532ab85086f8350beb5a7c085b0c8cb7229452"
+    :current-sha256 "334db9dac3e19bd38e2ad219c4543367a423aa698df7377f3c25e42ee7f92ce5"}
+   {:path "specs/reader-workflow/core-construction-root-binding.md"
+    :current-blob "523ddffd526fee6a285625f601ee73cc290e89ef"
+    :current-sha256 "eae80db0091dd7f9e0b86fa6f4caf33123e40e087f8e357b7c5dd12bb978e2d3"}
+   {:path "specs/reader-workflow/core-session-invocation.md"
+    :current-blob "3b75ed2f54e40c20c6d325d5f90c5d00871b86b0"
+    :current-sha256 "d3d180af2d357861be39d5fb8a412608b1e0bfb6b081c21a3c7d786881005673"}
+   {:path "specs/reader-workflow/core-session-known-diagnostic.md"
+    :current-blob "271144c5095919060c8831d31ddd336211ecdc72"
+    :current-sha256 "df7b3d7aa6ee846b67b5546fbc6c97d8dd6d7268df1cbd92416f6127e797cca9"}
+   {:path "specs/reader-workflow/expected-core-failure-source-trace.edn"
+    :current-blob "9240a4fb10814631bdc224a4442b9d998de08560"
+    :current-sha256 "9068ff7bc776a133642c7934dd352651eac634ccde25ee85ff3fc16efb793b13"}
+   {:path "specs/reader-workflow/expected-core-failure-source-trace.md"
+    :current-blob "64f4cb213b83f2a6f135bd1787ff65d319061a3b"
+    :current-sha256 "7a0a72238bf084268ecc9c5bf8c071933ff90d9116f191ac506a268083d81fdd"}
+   {:path "specs/reader-workflow/pr721-current-port.edn"
+    :current-blob "a4f4b7240edba3b852271241059ef43ff463e4a5"
+    :current-sha256 "a74c003e8464f61ea08ced06c27fab55b2e478ffa2032a0d283560b7664a27a3"}
+   {:path "specs/reader-workflow/pr721-current-port.md"
+    :current-blob "50231a8bd249595ac8ab98178ef4c524cc282e8a"
+    :current-sha256 "a5316b9ac8fbbd7baa05bed51d05457ff386bd9c12ab92c7e3ddec6cb1b6d388"}
+   {:path "tools/ci/lint_context.clj"
+    :current-blob "8db92ebeba338c3a7f1f92580a6b926852e6954f"
+    :current-sha256 "e76ea789088260edd7ac326a0af301f6d1770d913da29f09826024ac1a14a3bc"}
+   {:path "tools/ci/lint_context_test.clj"
+    :current-blob "93ee9ce685e7f10fe7db45c1fb503466964cffec"
+    :current-sha256 "8e03f6beeb0739986cf260a6ca4f24ba24b2217c6ad8208c49531d719283f770"}
+   {:path "tools/ci/run_test.clj"
+    :current-blob "11b1432adb7763b99c739ece02c38094c4d16397"
+    :current-sha256 "c3bf942d086c570471f278b24c2360f14ffe003eae0fbdd7ffd9d8d08cefa3a1"}]}
  :path-accounting
  [{:path "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00897-sh07-core-construction-upstream-guard.clj"
    :original-blob "deade6360a98dcc8480685e78746d29c3f23d793"
@@ -214,6 +277,33 @@
    :log "/tmp/uniform-pr721-roadmap-archival-final.log"}
   {:name :git-diff-check
    :result "passed"}]
+ :post-composition-checks
+ [{:name :current-main-reader-binding-and-session
+   :result "19 tests, 417 assertions, 0 failures, 0 errors"
+   :log "/tmp/pr721-current-main-reader-timing.edn"}
+  {:name :current-main-scalar-set-controls
+   :result "3 tests, 383 assertions, 0 failures, 0 errors"
+   :log "/tmp/pr721-current-main-scalar-timing.edn"}
+  {:name :current-main-ci-runner
+   :result "38 tests, 366 assertions, 0 failures, 0 errors"
+   :log "/tmp/pr721-current-main-ci-runner.log"}
+  {:name :current-main-facade-context
+   :result "27 tests, 494 assertions, 0 failures, 0 errors"
+   :log "/tmp/pr721-current-main-facade.log"}
+  {:name :current-main-tools-ci-kondo
+   :result "0 errors, 0 warnings"
+   :log "/tmp/pr721-current-main-kondo-tools-ci.log"}
+  {:name :current-main-language-boundary
+   :result "6 tests, 11 assertions, 0 failures, 0 errors"
+   :log "/tmp/pr721-current-main-boundary.log"}
+  {:name :current-main-document-validator
+   :result "240 docs, 19 phase indexes, passed"
+   :log "/tmp/pr721-current-main-docs-final.log"}
+  {:name :current-main-roadmap-validator
+   :result "passed; dated coverage remains non-authoritative"
+   :log "/tmp/pr721-current-main-roadmap.log"}
+  {:name :current-main-diff-check
+   :result "passed"}]
  :nonclaims
  [:independent-acceptance
   :current-main-integration
@@ -225,4 +315,4 @@
   :self-hosting
   :large-result-control
   :historical-failed-run-reclassification]
- :status :source-checkpoint-awaiting-independent-review}
+ :status :current-main-composed-awaiting-independent-review}
