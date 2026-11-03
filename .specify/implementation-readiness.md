@@ -7,8 +7,8 @@ another implementation task ledger, acceptance graph or completion denominator.
 Reconciliation remains in progress; independent acceptance and integration of
 this change are pending. No compiler or product completion is claimed.
 
-Latest source continuation: L14 facet source and selected-result dependency
-proposals. The [current checkpoint](#complete-l14-selected-result-dependency-continuation)
+Latest source continuation: L17 alternative type system source proposal.
+The [current checkpoint](#complete-l17-alternative-type-system-source-continuation)
 records checks and remaining work. Whole-project semantic coverage, independent
 acceptance and integration remain unproven.
 
@@ -6242,3 +6242,123 @@ Final conservation/navigation passes 91 changed files, 85 Markdown files,
 and all 48 original task/evidence contents after declared additions are
 removed. ASCII and whitespace checks pass. The current report pointer above
 leads to this checkpoint; earlier population statements keep their source scope.
+
+## Complete L17 alternative type system source continuation
+
+Source proposal `6d467d32d1f8121d2184e3cac759f7efaca63ea4` follows the
+`fa18dfc28ae4083039eb362f042505947b179ff9` dependency checkpoint. The
+[complete alternative type system source criteria](../specs/types-workflow/plan.md#complete-alternative-type-system-source-criteria)
+route complete L17 through 25 criteria over twenty existing tasks and nine
+existing authorities. Twenty-one clauses are new; four current L15/L5/C7
+predicates retain all 7,618 bytes. No finite predicate is restored in this
+continuation. Twenty task bodies change in nine task files, with eighteen
+existing plans and one specification updated. No identity, checkbox, status,
+editable task authority or historical acceptance changes.
+
+Direct source reading accounts for 95 facets, 66 occurrences, fifteen semantic
+section conjunctions and six original owner obligations. The current allocation
+has 65 predicate facets and thirty context facets, over 47 predicate and nineteen
+context occurrences. Two facets classified semantic in the preserved census
+are literal headings retained as context; an earlier context preamble now joins
+the full section predicate. Every actual requirement retains its section
+conditions, example and applicable acceptance joins. Census hashes establish
+local source custody, not current semantic or independent acceptance.
+
+The five declared soundness meanings remain exact. Reference-equivalent means
+the same L5 acceptance/rejection up to diagnostic precision. Strict-extension
+means an L5 subset with stronger facts. Conservative-extension means all L5
+plus additional annotated safe programs. Gradual means partial typing through
+explicit checked boundaries. Domain-specific means a facet/namespace scope
+with common typed-Core exports. A safe-profile claim needs its applicable
+actual theorem, proof, test-suite or audit artifact. No universal L5-equivalence,
+whole Formal completion or stronger evidence method is invented.
+
+The proposal covers thirteen replacement families, eight preserved language/
+safety/authority/layout boundaries, ten provider declaration fields, ten typed
+Core output groups and eight artifact families. Function effects, capabilities,
+panic, allocation and resources survive. Eight used fact families and nine
+ownership analysis families remain explicit, with five gradual-boundary fields
+and legal actual checks, failure types and blame. Unchecked casts remain unsafe
+and cannot prove safe optimizations. Six domain fact families cross boundaries
+through typed artifacts. Six consumer kinds need no knowledge of the entire
+alternative theory. Actual relevant layout facts remain necessary.
+
+Opt consumes selected, serialized, current, transform-stable proof/refinement
+facts; seven changed input categories invalidate affected results. Erased checks
+retain their actual justifying proof references under D9/SAFE15/PERF10/C18.
+Valid unoptimized programs remain possible. All ten diagnostic meanings retain
+ten required context fields, generated origins and actual failed rules.
+A checker without effect modeling remains confined to explicit-effect contexts
+verifiable by the reference effect checker. Delegated ownership analysis need
+not be duplicated; its real consumer facts and profile guarantees remain required.
+
+Original owner joins remain: Auth selects/validates the provider and reports
+soundness conformance, Opt consumes valid refinement proof, and Types4 exports
+typed Core. The inherited Legality dynamic-boundary obligation remains profile
+legality, alongside actual Types3 construction and Runtime2 execution. Types5
+verifies ordinary downstream compatibility and supplies actual checker fixtures;
+existing independent Release harnesses execute applicable conformance. Old
+L15/L5/C7 reviews retain their original scopes. The two selected profile74
+operation/binding queries found no exact soundness/refinement predicate; that
+limited search does not establish absence of all prior clauses or reviews.
+
+Static implementation inspection covers only the entire selected
+`record-alternative-type-call!` function and entire selected
+`alternative-type-conformance-fixture` collector. The former projects arguments
+and assigns selection/lock/downstream/proof/soundness/profile/check flags; the
+latter counts eighteen family tokens from record/status presence. Neither
+selected function supplies an actual alternative checker, deterministic provider
+selection, L5 comparison or profile soundness result. Other implementations
+remain unassessed. No inspected helper or provider was executed.
+
+The dependency declarations remain 2,665 joins over 147 routes, 107 current
+parents and forty future records, with the same 128-task feedback set. Complete
+L17 selected-result staging is next in the sole dependency representation.
+All 149 current keys, 25 task authorities, forty identical / 99 amended original
+bodies and forty future declarations/source bindings remain. Domains, Release
+and Platform task sources do not change, so no future source-binding successor
+is introduced. The first actual implementation increment remains
+`reader/finite-remaining-work/contract-coverage-reconciliation` in the
+[Reader plan](../specs/reader-workflow/plan.md#selected-increment-complete-contract-coverage).
+
+The new regression binds L17 source spans, complete section conjunctions,
+original owner obligations, exact reused predicates, soundness meanings,
+source/task/plan witnesses and task/receipt conservation. The preceding L14
+dependency regression now reads its entire frozen `fa18dfc28` bridge, projection
+and source readers; every other prior test byte remains unchanged. The local
+`55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6` census object remains required.
+Remote availability and fresh-clone reproducibility of that object have not
+been established; it is not aggregate publication/adoption.
+
+Temporary preparation had an extra delimiter and an already-updated anchor;
+reader and pre-write guards rejected them before repository test/tool writes.
+Both were corrected before application. No failed attempt receives passing
+or acceptance credit.
+
+Complete L17 dependency staging, L19 and wider contracts, global current
+source/owner/task and interface entailment, material architecture/product
+choices, implementation acceptance, independent review and integration remain
+open. D1/C1/C5/C6 ordering and L6/L12 hermetic wording retain their existing
+resolution paths. This source proposal grants no current acceptance. No held
+execution, C7 publication, other-chat message, reviewer wake, aggregate
+publication, merge or migration action occurs.
+
+Current proposal fingerprint:
+`b5f30d120fda8a452fb5705b2131543c390fa9ce10867b77ed8095814e0e53f3`.
+All applying source pins verify against local Git. Four focused crosswalk tests
+pass 8,876 assertions with a 512 MB host heap. All 23 dependency tests /
+7,121 assertions, both current projection checks and the language-boundary
+gate (six tests / eleven assertions) pass. Canonical validation passes all 240
+documents / nineteen phase indexes; roadmap structural validation passes with
+its dated counts non-authoritative. The full current 84-test crosswalk suite
+was not rerun. The prior complete 68-test / 44,978-assertion run remains bound
+to `25a96a0c03536270001449c00676e644ea353521`. These checks establish planning
+and traceability properties, not compiler/provider/domain/profile/proof or
+release conformance, independent acceptance or integration.
+
+The first navigation invocation printed passing assertions but exited nonzero
+because shell redirection followed the here-document terminator. The corrected
+read-only invocation exits zero. Final conservation/navigation passes 91 changed
+files, 85 Markdown files, 4,113 local references, 139 original routes, 48
+historical spec/plan suffixes and all 48 original task/evidence contents after
+declared additions are removed. ASCII and whitespace checks pass.
