@@ -478,6 +478,12 @@ Use the [Types producer and consumer order](../types-workflow/plan.md#types-prod
 
 Existing task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Complete pattern-matching source interface
+
+Use the [complete pattern-matching source criteria](../core-workflow/plan.md#complete-pattern-matching-source-criteria). Supply actual expanded source and authentic origins before pattern binding/type analysis; generated matches undergo the same ordinary L7 checks as handwritten forms. Checked macro P is earlier than generated Q's own later match analysis.
+
+Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Expand task authority

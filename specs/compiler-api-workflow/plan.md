@@ -241,6 +241,12 @@ Use the [Types producer and consumer order](../types-workflow/plan.md#types-prod
 
 Existing task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Complete pattern-matching source interface
+
+Use the [complete pattern-matching source criteria](../core-workflow/plan.md#complete-pattern-matching-source-criteria). Expose initial structural patterns and later actual narrowing/coverage/guard/effect/resource/validation/checked decision products as distinct boundaries, preserving artifacts/diagnostics/invalidation across equivalent fused passes. No field-presence or hosted projection establishes semantic checking.
+
+Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
 ## Historical workflow-transfer and source-composition plan
 
 # Implementation plan: Compiler API workflow migration

@@ -268,6 +268,12 @@ Use the [Types producer and consumer order](../types-workflow/plan.md#types-prod
 
 Existing task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Complete pattern-matching source interface
+
+Use the [complete pattern-matching source criteria](../core-workflow/plan.md#complete-pattern-matching-source-criteria). Independent conformance consumes actual owner fixtures for every pattern family/condition and representative target-equivalent behavior, including once-only/false/non-returning guards, totality/defaults, unvalidated shapes, ownership and stale/tampered artifacts. Owner preparation precedes final harness execution; narrow receipts do not close L7.
+
+Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Release workflow migration

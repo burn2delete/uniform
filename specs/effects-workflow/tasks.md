@@ -59,6 +59,14 @@ L6 source algebra/handled-projection criterion (Open): Derive ordered do/let/arg
 <!-- source-effects-algebra:end -->
 
 
+
+<!-- effects-pattern-source-summary:start -->
+
+Apply the [complete pattern-matching source criteria](../core-workflow/plan.md#complete-pattern-matching-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and every actual restriction; current source/interface entailment and implementation acceptance remain pending.
+
+L7 match-effect summary criterion (Open): Infer actual guard and branch effects and observable order from current match/control/call and type facts; guard effects are part of match effects. Preserve structural-failure skipping, guard-after-bindings, true-body/false-continuation and non-returning transfers, alongside L6 conservative legality rather than confusing possible effects with the one runtime-selected branch. Do not erase filesystem/network/model/tool/random or mutation requirements from a typed guard. Required evidence: real branch effect summaries and ordered positive/refusal fixtures; declarations or a branch-effect field do not prove inference.
+<!-- effects-pattern-source-summary:end -->
+
 - [ ] `effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering` effects/3: Check legality and ordering
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -96,6 +104,14 @@ Complete concurrency effects criterion (Open): Check actual task spawning, suspe
 <!-- concurrency-source-effects:end -->
 
 
+
+<!-- effects-pattern-source-guard-legality:start -->
+
+Apply the [complete pattern-matching source criteria](../core-workflow/plan.md#complete-pattern-matching-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and every actual restriction; current source/interface entailment and implementation acceptance remain pending.
+
+L7 guard-effect legality criterion (Open): Check actual inferred guard effects against the active context/profile and declared effect set, with capability grants enforced separately by Auth. Guard mutation that changes later pattern behavior requires the governing effect-order/profile permission; a Boolean result or matching shape grants none. Emit L7-GUARD-EFFECT for undeclared/forbidden actions and preserve the owning context and source. Required evidence: actual allowed/refused guard-action and mutation-order subjects, retaining normal/non-returning control and every real provider/replay execution restriction.
+<!-- effects-pattern-source-guard-legality:end -->
+
 - [ ] `effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation` effects/4: Record replay and invalidation
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -118,6 +134,14 @@ Apply the [complete source effect and handler criteria](plan.md#complete-source-
 L6 source effect-interface and replay criterion (Open): Produce and preserve the effect environment, latent table, namespace/module summaries, build/replay logs, handled-effect table, handler capability/profile report, continuation/replay report, legality report, MIR annotations, diagnostics and conformance fixtures with their actual producer identities. Effects1/2/3 derive action/summary/legality facts; this task records build/replay/interface obligations and Effects5 composes the current products. Keep record-mode admitted live action plus typed append distinct from replay-mode matching-record consumption without repeated time/random/network/database/model/tool/human-review/workflow/scheduler effects. Only the active profile's explicit deterministic replay operation is an exception; retain the qualified R6 case outside stricter R7/R8 recorded-output segments. Stable event IDs and typed payloads are required. Missing, mismatched, reordered or extra records are owning L6 errors. Filesystem/external-content and scheduler nondeterminism remain visible. Emit obligations and invalidation now; actual Runtime/domain/test record/replay results remain separate, never supplied by a declaration or assigned log status.
 <!-- source-effects-records:end -->
 
+
+
+<!-- effects-pattern-source-replay:start -->
+
+Apply the [complete pattern-matching source criteria](../core-workflow/plan.md#complete-pattern-matching-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and every actual restriction; current source/interface entailment and implementation acceptance remain pending.
+
+L7 replay-sensitive guard criterion (Open): Preserve actual selected distributed workflow/state/event guard dependencies and required replay records with current match/clause/call/source identity. Record replay-sensitive guards under the governing L6/runtime replay contract; invalidate affected records when guard/order/policy or matched-state facts change. Distinguish early recording/enforcement contracts from later actual selected execution/replay evidence. Required evidence: current source-bound obligations and admitted/refused recording/reuse cases. A type or replayable flag is insufficient and this criterion authorizes no held live replay/provider action.
+<!-- effects-pattern-source-replay:end -->
 
 - [ ] `effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers` effects/5: Integrate checked-core consumers
 

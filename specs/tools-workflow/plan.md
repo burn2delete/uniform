@@ -114,6 +114,12 @@ Use the [Types producer and consumer order](../types-workflow/plan.md#types-prod
 
 Existing task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Complete pattern-matching source interface
+
+Use the [complete pattern-matching source criteria](../core-workflow/plan.md#complete-pattern-matching-source-criteria). Expose actual current pattern bindings, narrowed types, coverage, effects, resource/schema links and source/generated decision maps only when their owners produced them. Source-only services need no absent later facts; do not fabricate runtime guard observations.
+
+Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Developer Tools workflow migration

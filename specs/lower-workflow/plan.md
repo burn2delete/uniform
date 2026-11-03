@@ -147,6 +147,12 @@ Use the [Types producer and consumer order](../types-workflow/plan.md#types-prod
 
 Existing task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Complete pattern-matching source interface
+
+Use the [complete pattern-matching source criteria](../core-workflow/plan.md#complete-pattern-matching-source-criteria). Consume actual checked decision products and layout/profile/service facts, preserving selected tests, guard calls, branches, moves/borrows and diagnostic/source maps or rejecting unsupported targets. No universal optimizer or future runtime-output prerequisite is introduced.
+
+Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Lower task authority
