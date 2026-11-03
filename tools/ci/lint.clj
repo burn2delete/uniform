@@ -213,6 +213,20 @@
         (into before (cons data-files after)))
       (mapv vector files))))
 
+(defn- lint-model-path? [path]
+  (or (= path "tools/ci/lint_macros.clj")
+      (= path "tools/ci/kondo")
+      (str/starts-with? path "tools/ci/kondo/")
+      (= path ".clj-kondo")
+      (str/starts-with? path ".clj-kondo/")))
+
+(defn- macro-admission-needed? [paths context-requested?]
+  (not (and (seq paths)
+            (not context-requested?)
+            (every? string? paths)
+            (every? #(str/ends-with? % ".edn") paths)
+            (not-any? lint-model-path? paths))))
+
 (defn run-comparison! [execute! output base paths]
   (let [root (io/file output "lint-base")
         _ (when-not (.mkdirs root)
@@ -267,38 +281,54 @@
                            "--config-dir" macros/config-directory
                            "--config" "{:output {:format :edn}}" "--lint"] files))
         module-selected? (some #{macros/module-source} paths)
-        macro-current (context/local-bytes! macros/source)
-        _ (Files/write (.toPath (io/file output "lint-macro-current-source.clj"))
-                       ^bytes macro-current (make-array java.nio.file.OpenOption 0))
-        module-current (when module-selected? (context/local-bytes! macros/module-source))
-        _ (when module-selected?
-            (Files/write (.toPath (io/file output "lint-module-current-source.clj"))
-                         ^bytes module-current (make-array java.nio.file.OpenOption 0)))
-        macro-contract (let [observations (atom {:status :running :base-commit base})]
-                         (try
-                           (swap! observations assoc :model-inputs
-                                  (into (sorted-map)
-                                        (for [path ["tools/ci/lint_macros.clj" "tools/ci/kondo/config.edn"
-                                                    "tools/ci/kondo/hooks/c2.clj"
-                                                    "tools/ci/kondo/hooks/module_analysis.clj"]]
-                                          [path (context/sha256 (context/local-bytes! path))])))
-                           (let [macro-base (run "lint-macro-base-source"
-                                                 ["git" "show" (str base ":" macros/source)] #{0})]
-                             (swap! observations assoc :base (macros/contract! (Files/readAllBytes (.toPath macro-base)))))
-                           (when module-selected?
-                             (let [module-base (get copied macros/module-source)]
-                               (swap! observations assoc :module
-                                      {:base (when module-base
-                                               (macros/module-contract!
-                                                (Files/readAllBytes (.toPath (io/file module-base)))))
-                                       :current (macros/module-contract! module-current)})))
-                           (swap! observations assoc :current (macros/contract! macro-current) :status :admitted)
-                           @observations
-                           (catch Exception error
-                             (swap! observations assoc :status :rejected :error {:message (.getMessage error) :data (ex-data error)})
-                             (throw error))
-                           (finally
-                             (spit (io/file output "lint-macro-contract.edn") (str (pr-str @observations) "\n")))))
+        macro-guard-needed? (macro-admission-needed? paths context-requested?)
+        macro-contract (if-not macro-guard-needed?
+                         (let [observations {:status :not-applicable
+                                             :reason :ordinary-data-only
+                                             :base-commit base}]
+                           (spit (io/file output "lint-macro-contract.edn")
+                                 (str (pr-str observations) "\n"))
+                           observations)
+                         (let [macro-current (context/local-bytes! macros/source)
+                               _ (Files/write
+                                  (.toPath (io/file output "lint-macro-current-source.clj"))
+                                  ^bytes macro-current (make-array java.nio.file.OpenOption 0))
+                               module-current (when module-selected?
+                                                (context/local-bytes! macros/module-source))
+                               _ (when module-selected?
+                                   (Files/write
+                                    (.toPath (io/file output "lint-module-current-source.clj"))
+                                    ^bytes module-current
+                                    (make-array java.nio.file.OpenOption 0)))
+                               observations (atom {:status :running :base-commit base})]
+                           (try
+                             (swap! observations assoc :model-inputs
+                                    (into (sorted-map)
+                                          (for [path ["tools/ci/lint_macros.clj" "tools/ci/kondo/config.edn"
+                                                      "tools/ci/kondo/hooks/c2.clj"
+                                                      "tools/ci/kondo/hooks/module_analysis.clj"]]
+                                            [path (context/sha256 (context/local-bytes! path))])))
+                             (let [macro-base (run "lint-macro-base-source"
+                                                   ["git" "show" (str base ":" macros/source)] #{0})]
+                               (swap! observations assoc :base
+                                      (macros/contract! (Files/readAllBytes (.toPath macro-base)))))
+                             (when module-selected?
+                               (let [module-base (get copied macros/module-source)]
+                                 (swap! observations assoc :module
+                                        {:base (when module-base
+                                                 (macros/module-contract!
+                                                  (Files/readAllBytes (.toPath (io/file module-base)))))
+                                         :current (macros/module-contract! module-current)})))
+                             (swap! observations assoc :current (macros/contract! macro-current)
+                                    :status :admitted)
+                             @observations
+                             (catch Exception error
+                               (swap! observations assoc :status :rejected
+                                      :error {:message (.getMessage error) :data (ex-data error)})
+                               (throw error))
+                             (finally
+                               (spit (io/file output "lint-macro-contract.edn")
+                                     (str (pr-str @observations) "\n"))))))
         contextual (fn [id plan selected]
                      (if-not plan []
                              (let [view (context/assemble! (io/file output id) plan)

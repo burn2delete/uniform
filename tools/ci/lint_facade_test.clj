@@ -481,6 +481,102 @@
     (is (= [["a.clj"] ["b.edn"]]
            (group! ["a.clj" "b.edn"])))))
 
+(deftest macro-admission-is-required-for-context-and-source-inputs
+  (let [needed? (var-get (ns-resolve 'ci.lint 'macro-admission-needed?))]
+    (is (needed? [] false))
+    (is (not (needed? ["deps.edn"] false)))
+    (is (needed? ["source.gravity"] false))
+    (is (needed? ["data.edn" "source.gravity"] false))
+    (is (needed? [nil] false))
+    (is (needed? [".clj-kondo"] false))
+    (is (needed? [context/manifest] true))
+    (is (needed? [macros/source] false))
+    (is (needed? ["tools/ci/kondo/config.edn"] false))))
+
+(deftest contextual-edn-retains-macro-admission-guard
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "uniform-context-edn-lint-"
+                            (make-array java.nio.file.attribute.FileAttribute 0)))
+        output (io/file directory "observations")
+        commands (atom [])
+        local-reads (atom [])
+        read-local context/local-bytes!
+        execute! (fn [id _ argv & [_stdin-path]]
+                   (swap! commands conj [id argv])
+                   (if (= id "lint-macro-base-source")
+                     (java.nio.file.Files/write
+                      (.toPath (io/file output (str id ".log")))
+                      ^bytes (read-local macros/source)
+                      (make-array java.nio.file.OpenOption 0))
+                     (spit (io/file output (str id ".log")) ""))
+                   (spit (io/file output (str id ".edn"))
+                         (pr-str {:status :passed :exit-code 0}))
+                   {:status :passed :exit-code 0})]
+    (try
+      (.mkdir output)
+      ;; Context-plan validation may run before this guard; that phase order is
+      ;; not a contract. Stub it here and assert only guard reachability before Kondo.
+      (let [error (try
+                    (with-redefs [context/selected-plan! (fn [& _] nil)
+                                  context/local-bytes!
+                                  (fn [path]
+                                    (swap! local-reads conj path)
+                                    (if (= path macros/source)
+                                      (utf8 "(ns gravity.c2-artifact-identity)\n")
+                                      (read-local path)))]
+                      (lint/run-comparison! execute! output "fixture-base" [context/manifest]))
+                    nil
+                    (catch Exception exception exception))]
+        (is (instance? Exception error))
+        (is (some #{macros/source} @local-reads))
+        (is (some #(= "lint-macro-base-source" (first %)) @commands))
+        (is (not-any? #(= "clj-kondo" (first (second %))) @commands)))
+      (finally
+        (doseq [file (reverse (file-seq directory))]
+          (.delete file))))))
+
+(deftest ordinary-edn-lint-skips-macro-admission-reads
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "uniform-data-only-lint-"
+                            (make-array java.nio.file.attribute.FileAttribute 0)))
+        output (io/file directory "observations")
+        data-path "deps.edn"
+        data-bytes (java.nio.file.Files/readAllBytes (.toPath (io/file data-path)))
+        commands (atom [])
+        local-reads (atom [])
+        result-edn (pr-str {:findings [] :summary {:error 0 :warning 0}})
+        execute! (fn [id _ argv & [_stdin-path]]
+                   (swap! commands conj [id argv])
+                   (let [log (io/file output (str id ".log"))
+                         receipt (io/file output (str id ".edn"))]
+                     (cond
+                       (= id "lint-base-inventory") (spit log (str data-path "\u0000"))
+                       (= id "lint-base-source-0")
+                       (java.nio.file.Files/write (.toPath log) ^bytes data-bytes
+                                                  (make-array java.nio.file.OpenOption 0))
+                       (#{"lint-baseline" "lint-current"} id) (spit log result-edn)
+                       (= id "lint-config-diff") (spit log "")
+                       :else (spit log ""))
+                     (spit receipt (pr-str {:status :passed :exit-code 0}))
+                     {:status :passed :exit-code 0}))]
+    (try
+      (.mkdir output)
+      (with-redefs [context/local-bytes!
+                    (fn [path]
+                      (swap! local-reads conj path)
+                      (throw (ex-info "ordinary data lint must not read macro inputs"
+                                      {:path path})))]
+        (is (= 0 (lint/run-comparison! execute! output "fixture-base" [data-path])))
+        (let [report (lint/read-one! (io/file output "changed-lint-report.edn"))]
+          (is (= :not-applicable (get-in report [:macro-contract :status])))
+          (is (= :ordinary-data-only (get-in report [:macro-contract :reason])))))
+      (is (empty? @local-reads))
+      (is (not-any? #(= "lint-macro-base-source" (first %)) @commands))
+      (is (not (.exists (io/file output "lint-macro-current-source.clj"))))
+      (finally
+        (doseq [file (reverse (file-seq directory))]
+          (.delete file))))))
+
 (deftest pinned-kondo-data-files-have-equivalent-batched-findings
   (let [directory (.toFile (java.nio.file.Files/createTempDirectory
                             "uniform-data-lint-"
