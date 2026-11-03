@@ -528,21 +528,30 @@
           (is (= 2 (get-in @ctx [:reuses :sh05])))
           (assert-inner-verifier-calls calls artifact invocation))))))
 
-(defn- assert-real-operation-interposition [v]
+(defn- assert-real-operation-interpositions-together []
   (let [{:keys [artifact invocation]} @basic-gravity
-        original @v
-        calls (atom 0)
+        vars [#'macro/verify #'macro/expanded-syntax-object
+              #'bootstrap/sh05-macro-gravity-verifier-report
+              #'macro-run-storage/exact?]
+        originals (into {} (map (fn [v] [v @v]) vars))
+        calls (into {} (map (fn [v] [v (atom 0)]) vars))
+        replacements
+        (into {}
+              (map (fn [v]
+                     [v (fn [& args]
+                          (swap! (calls v) inc)
+                          (apply (originals v) args))])
+                   vars))
         report
         (with-redefs-fn
-          {v (fn [& args]
-               (swap! calls inc)
-               (apply original args))}
+          replacements
           #(bootstrap/sh05-macro-artifact-verification
             artifact invocation :development-current))]
-    ;; This is the genuine source-backed liveness control: the original
-    ;; callback runs on a valid assembled artifact under each interposition.
+    ;; One genuine source-backed verification exercises all four callbacks;
+    ;; the public receipt test above still checks each root invalidation alone.
     (is (= :passed (:status report)))
-    (is (pos? @calls))))
+    (doseq [v vars]
+      (is (pos? @(calls v))))))
 
 (deftest public-receipt-reuse-requires-current-stage-and-seed-operations
   (let [_ @basic-gravity
@@ -579,10 +588,7 @@
        #(with-redefs-fn {version replacement} %)))))
 
 (deftest source-backed-operation-interpositions-stay-live
-  (doseq [v [#'macro/verify #'macro/expanded-syntax-object
-             #'bootstrap/sh05-macro-gravity-verifier-report
-             #'macro-run-storage/exact?]]
-    (assert-real-operation-interposition v)))
+  (assert-real-operation-interpositions-together))
 
 (deftest identical-value-thread-binding-disables-receipt-reuse
   (let [_ @basic-gravity
