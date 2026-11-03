@@ -193,13 +193,12 @@ The final composed tree then reran the affected controls:
 - The final boundary, docs, and roadmap checks passed respectively 6/11,
   240 docs / 19 indexes, and structural validation; logs are
   `/tmp/uniform-pr599-current-merge-boundary.log`,
-  `/tmp/uniform-pr599-current-merge-docs.log`, and
+  `/tmp/uniform-pr599-current-merge-docs-final2.log`, and
   `/tmp/uniform-pr599-current-merge-roadmap.log`.
 
 No native C compiler, C12 execution, broker/restricted process route, full
 namespace suite, release, self-hosting, source-authentication, or migration
 authority was claimed. The passed controls establish only the finite C7 and
-current Syntax handoff behavior described above. After normal composition with
-the specified main input, rerun the three SH08 controls because current-main
-quote guards and source callers are relevant dependencies; reuse the scoped
-Syntax/boundary evidence only where the affected source bytes remain unchanged.
+current Syntax handoff behavior described above. The three SH08 controls were
+rerun after normal composition because current-main quote guards and source
+callers are relevant dependencies; no broad namespace or release claim follows.
