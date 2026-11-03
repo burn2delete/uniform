@@ -98,6 +98,7 @@
   (let [prior (get-in @(:state ctx) [:effects id])]
     (case (:status prior)
       :done (:result prior)
+      :restricted (fail! "Restricted effect cannot be retried" {:effect id :restricted true})
       (:pending :uncertain) (fail! "External effect needs reconciliation; not replaying" {:effect id :prior prior})
       (do
         (update! ctx assoc-in [:effects id] {:status :pending})
@@ -106,8 +107,25 @@
             (update! ctx assoc-in [:effects id] {:status :done :result result})
             result)
           (catch Exception e
-            (update! ctx assoc-in [:effects id] {:status :uncertain :message (.getMessage e)})
+            (update! ctx assoc-in [:effects id] {:status (if (:restricted (ex-data e)) :restricted :uncertain)
+                                               :message (.getMessage e)})
             (throw e)))))))
+
+(defn tracking-effect!
+  "Status may legitimately cycle. An unresolved earlier write must be inspected first."
+  [ctx key operation]
+  (let [state (:state ctx)
+        id (locking state
+             (when-let [prior (get-in @(:state ctx) [:tracking-intents key])]
+               (let [status (get-in @(:state ctx) [:effects prior :status])]
+                 (when-not (= :done status)
+                   (fail! "Tracking effect needs reconciliation; not issuing another write"
+                          {:effect prior :restricted (= :restricted status)}))))
+             (let [n (inc (or (:tracking-sequence @(:state ctx)) 0))
+                   id (str key "/" n)]
+               (update! ctx #(-> % (assoc :tracking-sequence n) (assoc-in [:tracking-intents key] id)))
+               id))]
+    (effect! ctx id operation)))
 
 (defn with-lock [ctx f]
   (with-open [channel (FileChannel/open (.toPath (io/file (:lock-file ctx)))

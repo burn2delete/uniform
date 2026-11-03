@@ -99,6 +99,8 @@
     (assert-identity! ctx t)
     (when-not (= (select-keys t [:base :candidate :tree]) (select-keys result [:base :candidate :tree]))
       (rt/fail! "Reviewer returned a different candidate tuple" {:finding (:key t) :review result}))
+    (when (and (= "changes_requested" (:verdict result)) (empty? (:findings result)))
+      (rt/fail! "Requested changes need actionable findings" {:finding (:key t)}))
     (task! ctx (:key t) :review (assoc result :job job))
     result))
 
@@ -203,11 +205,16 @@
 (defn attention! [ctx key e]
   (task! ctx key :error {:message (.getMessage e) :details (rt/redact (ex-data e))})
   (rt/event! ctx :attention {:finding key :message (.getMessage e) :details (ex-data e)})
-  (try
-    (transition! ctx key :attention)
-    (gh/comment! ctx (:issue (task ctx key)) (str "attention/" (rt/digest (pr-str (:error (task ctx key)))))
-                 (str "Needs attention: " (.getMessage e) "\n\nLocal execution evidence: `" (:state-dir ctx) "`."))
-    (catch Exception reporting (rt/event! ctx :tracking-error {:message (.getMessage reporting)}))))
+  (if (:restricted (ex-data e))
+    (task! ctx key :status :attention)
+    (try
+      (transition! ctx key :attention)
+      (gh/comment! ctx (:issue (task ctx key)) (str "attention/" (rt/digest (pr-str (:error (task ctx key)))))
+                   (str "Needs attention: " (.getMessage e) "\n\nLocal execution evidence: `" (:state-dir ctx) "`."))
+      (catch Exception reporting
+        (when (:restricted (ex-data reporting))
+          (rt/update! ctx assoc-in [:tasks key :error :details :restricted] true))
+        (rt/event! ctx :tracking-error {:message (.getMessage reporting)})))))
 
 (defn pr-info [ctx t]
   (json/read-str
@@ -300,7 +307,7 @@
   (let [milestone (gh/ensure-milestone! ctx round)
         parent (:campaign-issue @(:state ctx))]
     (doseq [raw findings :let [f (update raw :paths #(mapv safe-path! %))]]
-      (let [issue (gh/ensure-issue! ctx (:key f) (:title f)
+      (let [issue (gh/ensure-finding-issue! ctx (:key f) (:title f)
                                    (str "## Evidence\n" (:evidence f) "\n\n## Change\n" (:proposal f)
                                         "\n\n## Preserve\n" (:preserve f) "\n\n## Ownership\n`" (pr-str (:paths f))
                                         "`\n\n## Execution\n- [ ] Implement and check\n- [ ] Independent review\n- [ ] PR and CI\n- [ ] Verify actual merge\n\nAudited base: `" base "`.")

@@ -175,6 +175,8 @@
     (with-redefs [codex/job! (fn [& _] (merge tuple {:candidate "stale" :verdict "approved"}))]
       (is (thrown-with-msg? Exception #"different candidate tuple" (flow/review! ctx t))))
     (is (nil? (:review (flow/task ctx (:key t)))))
+    (with-redefs [codex/job! (fn [& _] (merge tuple {:verdict "changes_requested" :summary "No details" :findings []}))]
+      (is (thrown-with-msg? Exception #"actionable findings" (flow/review! ctx t))))
     (with-redefs [codex/job! (fn [& _] (merge tuple {:verdict "approved" :summary "Exact fixture" :findings []}))]
       (is (= "approved" (:verdict (flow/review! ctx t)))))
     (with-redefs [codex/command! (fn [& _] (rt/git ctx (:worktree t) "commit" "--allow-empty" "-m" "Unexpected check commit"))]
@@ -230,3 +232,26 @@
                             (flow/finish-merge! ctx {:key "bad" :worktree repo :base base :tree tree}
                                                 {:mergeCommit {:oid merged}}))))
     (is (not= :done (:status (flow/task ctx "bad"))))))
+
+(deftest finding-issues-belong-to-their-campaign
+  (let [first-ctx (assoc-in (fixture/context) [:config :campaign] "First campaign")
+        second-ctx (assoc-in (fixture/context) [:config :campaign] "Second campaign")
+        issues (atom [])
+        ensure! #(gh/ensure-finding-issue! % "shared-key" "Finding" "Evidence" nil "simplify:duplication")]
+    (with-redefs [gh/pages (fn [& _] @issues)
+                  gh/api (fn [_ method _ body]
+                           (is (= "POST" method))
+                           (let [issue (assoc body :id (inc (count @issues)))]
+                             (swap! issues conj issue)
+                             issue))]
+      (let [first-issue (ensure! first-ctx)
+            second-issue (ensure! second-ctx)]
+        (is (not= (:id first-issue) (:id second-issue)))
+        (is (= first-issue (ensure! first-ctx)))
+        (is (= second-issue (ensure! second-ctx)))
+        (is (= 2 (count @issues)))
+        ;; Existing same-campaign state remains authoritative for legacy IDs.
+        (rt/update! first-ctx assoc-in [:tasks "shared-key" :issue] {:id "legacy-issue"})
+        (is (= {:id "legacy-issue"} (ensure! first-ctx)))
+        (is (= second-issue (ensure! second-ctx)))
+        (is (= 2 (count @issues)))))))

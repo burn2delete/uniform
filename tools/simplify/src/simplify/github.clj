@@ -16,11 +16,18 @@
 (defn api
   ([ctx endpoint] (api ctx "GET" endpoint nil))
   ([ctx method endpoint body]
-   (let [result (rt/command ctx (get-in ctx [:config :repo-dir])
+   (let [key (rt/digest (pr-str [method endpoint]))
+         _ (when (get-in @(:state ctx) [:restricted-actions key])
+             (rt/fail! "Restricted GitHub action cannot be retried" {:endpoint endpoint :restricted true}))
+         result (rt/command ctx (get-in ctx [:config :repo-dir])
                             (cond-> ["gh" "api" "--method" method endpoint]
                               body (into ["--input" "-"]))
                             (when body (json/write-str body)))]
-     (when-not (zero? (:exit result)) (rt/fail! "GitHub API failed; no automatic mutation retry" {:endpoint endpoint :exit (:exit result) :error (:err result)}))
+     (when-not (zero? (:exit result))
+       (let [restricted (boolean (re-find #"(?i)(HTTP (401|403|429)|resource not accessible|requires authentication|bad credentials|rate limit exceeded|secondary rate limit)" (:err result)))]
+         (when restricted (rt/update! ctx assoc-in [:restricted-actions key] {:method method :endpoint endpoint :error (:err result)}))
+         (rt/fail! "GitHub API failed; no automatic mutation retry"
+                   {:endpoint endpoint :exit (:exit result) :error (:err result) :restricted restricted})))
      (when-not (str/blank? (:out result)) (json/read-str (:out result) :key-fn keyword)))))
 
 (defn graphql [ctx query variables]
@@ -70,15 +77,33 @@
                               {:id (:id view) :name name :layout layout :config {:visibleFieldIds visible} :filter query-filter}))
         (rt/update! ctx assoc-in [:project :views name] (assoc view :name name :layout layout :filter query-filter))))))
 
+(defn project-marker [ctx]
+  (str "<!-- uniform-simplify-project:" (get-in ctx [:config :repository]) " -->"))
+
+(defn verify-project! [ctx project]
+  (when-not (or (= (:id project) (get-in @(:state ctx) [:project :id]))
+                (= (:id project) (get-in @(:state ctx) [:effects "create-project" :result :id])))
+    (let [identity (:node (graphql ctx "query($id:ID!){node(id:$id){... on ProjectV2{id readme repositories(first:100){nodes{nameWithOwner}}}}}"
+                                   {:id (:id project)}))]
+      (when-not (and (= (:id project) (:id identity))
+                     (str/includes? (or (:readme identity) "") (project-marker ctx))
+                     (some #(= (get-in ctx [:config :repository]) (:nameWithOwner %)) (get-in identity [:repositories :nodes])))
+        (rt/fail! "Same-title Project has no verified repository identity; refusing to adopt it" {:project (:id project)})))))
+
 (defn setup! [ctx]
   (let [owner (owner-info ctx)
         title (get-in ctx [:config :project-title])
-        matches (filter #(= title (:title %)) (projects ctx (:id owner)))
+        available (projects ctx (:id owner))
+        known-id (get-in @(:state ctx) [:project :id])
+        known (first (filter #(= known-id (:id %)) available))
+        _ (when (and known-id (not known)) (rt/fail! "Recorded Project is missing; refusing to create a replacement" {:project known-id}))
+        matches (filter #(= title (:title %)) available)
         _ (when (> (count matches) 1) (rt/fail! "Multiple projects share the configured title" {:title title}))
-        project (or (first matches)
+        project (or known (first matches)
                     (rt/effect! ctx "create-project"
                                 #(get-in (graphql ctx "mutation($owner:ID!,$title:String!){createProjectV2(input:{ownerId:$owner,title:$title}){projectV2{id number title url}}}"
                                                   {:owner (:id owner) :title title}) [:createProjectV2 :projectV2])))
+        _ (verify-project! ctx project)
         fs (fields ctx (:id project))
         status-field (first (filter #(= "Status" (:name %)) fs))
         _ (when-not (or (= (set workflow-states) (set (map :name (:options status-field))))
@@ -106,7 +131,7 @@
     (rt/effect! ctx "project-description"
                 #(graphql ctx "mutation($id:ID!,$readme:String!){updateProjectV2(input:{projectId:$id,shortDescription:\"Evidence-backed simplification: audit, implement, review, merge, repeat.\",readme:$readme}){projectV2{id}}}"
                           {:id (:id project)
-                           :readme (str "# Uniform Simplify\n\nOne milestone per audit round; one issue per independently mergeable improvement. Campaign issue is the parent. Checklists describe execution steps; sub-issues are independent deliverables. Labels classify work; Status records execution state.\n\nWorkflow is a board; Audit rounds is a table showing Milestone; Attention filters Status = Attention. Show Parent issue, Sub-issue progress, Linked pull requests, Labels, and Milestone. In the Audit rounds view, group by Milestone using the view menu; the current API does not expose grouping configuration.\n\nOnly the coordinator merges. Done means actual merge verified, not agent completion or green CI. A round closes when every finding has a disposition. Campaign completion requires a fresh audit of main with no new justified findings.\n\nNo language, release, self-hosting, or seed-retirement claims are conferred by this project.")}))
+                           :readme (str "# Uniform Simplify\n\nOne milestone per audit round; one issue per independently mergeable improvement. Campaign issue is the parent. Checklists describe execution steps; sub-issues are independent deliverables. Labels classify work; Status records execution state.\n\nWorkflow is a board; Audit rounds is a table showing Milestone; Attention filters Status = Attention. Show Parent issue, Sub-issue progress, Linked pull requests, Labels, and Milestone. In the Audit rounds view, group by Milestone using the view menu; the current API does not expose grouping configuration.\n\nOnly the coordinator merges. Done means actual merge verified, not agent completion or green CI. A round closes when every finding has a disposition. Campaign completion requires a fresh audit of main with no new justified findings.\n\nNo language, release, self-hosting, or seed-retirement claims are conferred by this project.\n\n" (project-marker ctx))}))
     (rt/event! ctx :project-ready {:project project})
     project))
 
@@ -127,19 +152,27 @@
                                  :labels ["simplify" category]}
                           milestone (assoc :milestone milestone))))))
 
+(defn ensure-finding-issue! [ctx key title body milestone category]
+  ;; Existing state keeps legacy issue identities on resume. New lookups never
+  ;; adopt another campaign's issue merely because a finding key is reused.
+  (or (get-in @(:state ctx) [:tasks key :issue])
+      (ensure-issue! ctx (str "finding/" (rt/digest (pr-str [(get-in ctx [:config :campaign]) key])))
+                     title body milestone category)))
+
 (defn item! [ctx issue]
   ;; addProjectV2ItemById returns the existing item for an issue already in the project.
-  (get-in (graphql ctx "mutation($project:ID!,$content:ID!){addProjectV2ItemById(input:{projectId:$project,contentId:$content}){item{id}}}"
+  (rt/effect! ctx (str "project-item/" (get-in @(:state ctx) [:project :id]) "/" (:node_id issue))
+              #(get-in (graphql ctx "mutation($project:ID!,$content:ID!){addProjectV2ItemById(input:{projectId:$project,contentId:$content}){item{id}}}"
                    {:project (get-in @(:state ctx) [:project :id]) :content (:node_id issue)})
-          [:addProjectV2ItemById :item :id]))
+          [:addProjectV2ItemById :item :id])))
 
 (defn status! [ctx issue status]
   (let [project (:project @(:state ctx))
-        option (first (filter #(= status (:name %)) (get-in project [:workflow :options])))
-        item (item! ctx issue)]
+        option (first (filter #(= status (:name %)) (get-in project [:workflow :options])))]
     (when-not (:id option) (rt/fail! "Unknown workflow status" {:status status}))
-    (graphql ctx "mutation($project:ID!,$item:ID!,$field:ID!,$option:String!){updateProjectV2ItemFieldValue(input:{projectId:$project,itemId:$item,fieldId:$field,value:{singleSelectOptionId:$option}}){projectV2Item{id}}}"
-             {:project (:id project) :item item :field (get-in project [:workflow :id]) :option (:id option)})))
+    (rt/tracking-effect! ctx (str "project-status/" (:id project) "/" (:node_id issue))
+                         #(graphql ctx "mutation($project:ID!,$item:ID!,$field:ID!,$option:String!){updateProjectV2ItemFieldValue(input:{projectId:$project,itemId:$item,fieldId:$field,value:{singleSelectOptionId:$option}}){projectV2Item{id}}}"
+                                   {:project (:id project) :item (item! ctx issue) :field (get-in project [:workflow :id]) :option (:id option)}))))
 
 (defn relation! [ctx issue endpoint id]
   (let [path (repo-path ctx (str "issues/" (:number issue) "/" endpoint))]

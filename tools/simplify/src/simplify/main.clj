@@ -60,7 +60,9 @@
 (defn reconcile! [ctx effect-id result-file]
   (let [effect (get-in @(:state ctx) [:effects effect-id])
         result (rt/read-edn result-file)]
-    (when-not (and (#{:pending :uncertain} (:status effect)) (string? (:evidence result))
+    (when-not (and (or (#{:pending :uncertain} (:status effect))
+                      (and (nil? effect) (some #{effect-id} (vals (:tracking-intents @(:state ctx))))))
+                   (string? (:evidence result))
                    (not (str/blank? (:evidence result))) (contains? result :result))
       (rt/fail! "Reconciliation needs an uncertain effect and inspected external result with evidence" {}))
     (rt/update! ctx assoc-in [:effects effect-id] {:status :done :result (:result result) :reconciliation (:evidence result)})

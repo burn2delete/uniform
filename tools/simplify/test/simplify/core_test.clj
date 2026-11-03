@@ -3,6 +3,7 @@
             [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
             [simplify.codex :as codex]
+            [simplify.github :as gh]
             [simplify.main :as main]
             [simplify.runtime :as rt]
             [simplify.schema :as schema]
@@ -100,3 +101,87 @@
     (is (empty? @(:processes ctx)))
     (is (thrown? Exception (codex/command! (assoc-in ctx [:config :codex-command] (conj command "failed"))
                                           "check-failure" (:state-dir ctx) ["clojure" "-M:test"])))))
+
+(deftest denied-github-actions-are-persistent-and-not-retried
+  (let [ctx (context) calls (atom 0)]
+    (with-redefs [rt/command (fn [& _] (swap! calls inc) {:exit 1 :out "" :err "Forbidden (HTTP 403)"})]
+      (is (thrown? Exception (rt/effect! ctx "denied-status" #(gh/api ctx "POST" "graphql" {:query "write"}))))
+      (is (= :restricted (get-in @(:state ctx) [:effects "denied-status" :status])))
+      (is (thrown? Exception (rt/effect! ctx "denied-status" #(swap! calls inc))))
+      ;; A new body/intent cannot route around the recorded endpoint denial.
+      (is (thrown? Exception (gh/api ctx "POST" "graphql" {:query "different write"})))
+      (is (= 1 @calls)))
+    (with-redefs [gh/status! (fn [& _] (swap! calls inc)) gh/comment! (fn [& _] (swap! calls inc))]
+      (flow/attention! ctx "blocked" (ex-info "Denied" {:restricted true}))
+      (is (= :attention (get-in @(:state ctx) [:tasks "blocked" :status])))
+      (is (= 1 @calls)))
+    (with-redefs [rt/with-lock (fn [_ f] (f))]
+      (is (thrown? Exception (main/dispatch! ctx "retry" ["blocked"]))))))
+
+(deftest tracking-writes-have-durable-intents-and-stop-on-uncertainty
+  (let [ctx (context) calls (atom 0)]
+    (is (= 1 (rt/tracking-effect! ctx "status/item" #(swap! calls inc))))
+    (is (= 2 (rt/tracking-effect! ctx "status/item" #(swap! calls inc))))
+    (is (= 2 (:tracking-sequence @(:state ctx))))
+    (is (thrown? Exception (rt/tracking-effect! ctx "status/item" #(throw (ex-info "Connection lost" {})))))
+    (is (thrown? Exception (rt/tracking-effect! ctx "status/item" #(swap! calls inc))))
+    (is (= 2 @calls))
+    (let [id (get-in @(:state ctx) [:tracking-intents "status/item"])]
+      (is (= :uncertain (get-in (rt/read-edn (:state-file ctx)) [:effects id :status])))
+      (rt/update! ctx assoc-in [:effects id] {:status :done :result "Inspected external result"})
+      (is (= 3 (rt/tracking-effect! ctx "status/item" #(swap! calls inc)))))))
+
+(deftest same-title-project-needs-recorded-or-repository-identity
+  (let [ctx (assoc-in (context) [:config :repository] "fixture/repo")
+        project {:id "project" :title "Uniform Simplify"}]
+    (with-redefs [gh/owner-info (fn [_] {:id "owner"})
+                  gh/projects (fn [& _] [project])
+                  gh/fields (fn [& _] (throw (AssertionError. "Unverified Project must not reach field mutations")))
+                  gh/graphql (fn [_ query _]
+                               (is (str/starts-with? query "query"))
+                               {:node {:id "project" :readme "Unrelated project"
+                                       :repositories {:nodes [{:nameWithOwner "fixture/repo"}]}}})]
+      (is (thrown? Exception (gh/verify-project! ctx project)))
+      (is (thrown? Exception (gh/setup! (assoc-in ctx [:config :project-title] "Uniform Simplify")))))
+    (with-redefs [gh/graphql (fn [& _] {:node {:id "project" :readme (gh/project-marker ctx)
+                                               :repositories {:nodes [{:nameWithOwner "other/repo"}]}}})]
+      (is (thrown? Exception (gh/verify-project! ctx project))))
+    (with-redefs [gh/graphql (fn [& _] {:node {:id "project" :readme (gh/project-marker ctx)
+                                               :repositories {:nodes [{:nameWithOwner "fixture/repo"}]}}})]
+      (is (nil? (gh/verify-project! ctx project))))
+    (rt/update! ctx assoc :project project)
+    (with-redefs [gh/graphql (fn [& _] (throw (ex-info "Recorded Project must not be replaced or probed for adoption" {})))]
+      (is (nil? (gh/verify-project! ctx project))))))
+
+(deftest project-status-and-item-writes-are-recorded
+  (let [ctx (context)
+        issue {:node_id "issue"}
+        calls (atom [])]
+    (rt/update! ctx assoc :project {:id "project" :workflow {:id "status" :options [{:id "ready" :name "Ready"}]}})
+    (with-redefs [gh/graphql (fn [_ query _]
+                              (swap! calls conj query)
+                              (if (str/includes? query "addProjectV2ItemById")
+                                {:addProjectV2ItemById {:item {:id "item"}}}
+                                {:updateProjectV2ItemFieldValue {:projectV2Item {:id "item"}}}))]
+      (gh/status! ctx issue "Ready")
+      (gh/status! ctx issue "Ready"))
+    (is (= 1 (count (filter #(str/includes? % "addProjectV2ItemById") @calls))))
+    (is (= 2 (count (filter #(str/includes? % "updateProjectV2ItemFieldValue") @calls))))
+    (is (= 3 (count (:effects @(:state ctx)))))
+    (is (every? #(= :done (:status %)) (vals (:effects @(:state ctx)))))))
+
+(deftest denied-project-status-cannot-be-reissued-or-reported-remotely
+  (let [ctx (context) calls (atom 0) issue {:node_id "issue"}]
+    (rt/update! ctx assoc :project {:id "project" :workflow {:id "status" :options [{:id "ready" :name "Ready"}]}})
+    (with-redefs [gh/graphql (fn [_ query _]
+                              (swap! calls inc)
+                              (if (str/includes? query "addProjectV2ItemById")
+                                {:addProjectV2ItemById {:item {:id "item"}}}
+                                (throw (ex-info "Forbidden" {:restricted true}))))]
+      (try (gh/status! ctx issue "Ready")
+           (catch Exception e (flow/attention! ctx "blocked" e)))
+      (is (thrown? Exception (gh/status! ctx issue "Ready")))
+      (is (= 2 @calls))
+      (is (some #(= :restricted (:status %)) (vals (:effects @(:state ctx)))))
+      (with-redefs [rt/with-lock (fn [_ f] (f))]
+        (is (thrown? Exception (main/dispatch! ctx "retry" ["blocked"])))))))

@@ -31,6 +31,9 @@ the Project, views, labels and campaign issue; it starts no agents. `run` starts
 autonomous implementation, issue/PR writes and normal squash merging.
 Coordinate the main writer with other active development before starting it.
 It does not take over existing desktop chats.
+Project reuse requires its recorded identity in this repository's state, or
+the harness repository marker and matching repository link. A matching title
+alone cannot authorize adopting or changing an existing Project.
 
 GitHub needs repository access and `project` scope. If needed, authorize with
 `gh auth refresh -h github.com -s project`. The app never changes credentials,
@@ -42,6 +45,8 @@ repository. State/logs are ignored under `target/validation/simplify`; workers
 use worktrees outside the source checkout. Use a distinct campaign and state
 directory for a different objective. `parallelism` controls simultaneous host
 processes, not findings, attempts, input sizes or useful development work.
+New improvement issue markers include the campaign identity. Existing state
+retains recorded issue IDs, including older markers, when resuming a campaign.
 
 ## GitHub organization
 
