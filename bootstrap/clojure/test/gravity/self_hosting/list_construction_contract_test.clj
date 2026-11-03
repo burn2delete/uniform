@@ -8,9 +8,9 @@
   (:import [java.io PushbackReader]))
 
 (def ^:private owners
-  [{:path "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+  [{:path "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity"
     :prefix "sh08-lc-"}
-   {:path "bootstrap/gravity/src/gravity/effects.gravity"
+   {:path "language/compiler/src/gravity/effects.gravity"
     :prefix "body-lc-"}
    {:path "bootstrap/gravity/p15_s23/emitter.gravity"
     :prefix "p15-s23-lc-"}])

@@ -133,7 +133,7 @@
         (doseq [[supplied-invocation missing]
                 [[(assoc invocation :authority :supplied) :explicit-sh03-reader-invocation-source-selection]
                  [(assoc invocation :authenticated-envelope-options {}) :explicit-sh03-reader-invocation-source-selection]
-                 [(assoc invocation :reader-source-path (str (.resolve root "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity")))
+                 [(assoc invocation :reader-source-path (str (.resolve root "language/compiler/src/gravity/compiler/c11_mir_specification.gravity")))
                   :selected-current-sh03-reader-source]]]
           (let [failure (diagnostic #(actual-macro path parent supplied-invocation))]
             (is (= ["C2-HASH" [missing]] ((juxt :id :missing-fields) failure)))))

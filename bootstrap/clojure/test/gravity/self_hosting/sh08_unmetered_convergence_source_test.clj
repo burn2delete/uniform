@@ -3,7 +3,7 @@
   (:require [clojure.test :refer [deftest is]]))
 
 (def ^:private source-path
-  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity")
+  "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity")
 
 (defn- read-forms [text]
   (binding [*read-eval* false]

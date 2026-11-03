@@ -80,7 +80,7 @@
 
 (def ^:private gravity-plan
   (delay
-    (let [source (.getCanonicalPath (io/file "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity"))
+    (let [source (.getCanonicalPath (io/file "language/compiler/src/gravity/backend/b3_llvm_backend_design.gravity"))
           emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source :c))]
       (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source (slurp source)))))
 

@@ -321,7 +321,7 @@
                         {:old-mode "100644" :new-mode "100644" :status "M" :path path})]
       (is (ci/docs-only-change? "pull_request" base
                                 (mapv regular-doc ["README.md" "docs/guide.md"])))
-      (doseq [paths [["bootstrap/gravity/src/gravity/runtime.gravity"]
+      (doseq [paths [["language/runtime/src/gravity/runtime.gravity"]
                      [".github/workflows/ci.yml"]
                      [".github/README.md"]
                      ["tools/ci/README.md"]

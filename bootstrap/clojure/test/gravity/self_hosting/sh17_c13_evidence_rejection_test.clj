@@ -31,7 +31,7 @@
 
 (def ^:private root (delay (repository-root)))
 (def ^:private c14-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity")
+  "language/compiler/src/gravity/compiler/c14_target_lowering_architecture.gravity")
 
 (defn- path
   [relative]

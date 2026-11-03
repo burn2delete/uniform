@@ -37,7 +37,7 @@
      emitter source-path source-text)))
 
 (def ^:private engine-plan
-  (delay (compile-plan "bootstrap/gravity/src/gravity/compiler/c6_call_arity_legality.gravity")))
+  (delay (compile-plan "language/compiler/src/gravity/compiler/c6_call_arity_legality.gravity")))
 (def ^:private accepted-plans
   (delay
     (mapv

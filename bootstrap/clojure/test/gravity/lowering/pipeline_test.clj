@@ -117,7 +117,7 @@
                #'diagnostic-port "caller.qst" (assoc optimized :artifact-id "wrong-c13") policy record record))))
     (is (= [["caller.qst" record record :independent-c14-lowering-reconstruction]] @events))))
 
-(def ^:private gravity-source "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity")
+(def ^:private gravity-source "language/compiler/src/gravity/compiler/c14_target_lowering_architecture.gravity")
 (def ^:private gravity-plan
   (delay
     (let [path (.getCanonicalPath (io/file gravity-source))

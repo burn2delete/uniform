@@ -52,7 +52,7 @@
 (def ^:private engine-plan
   (delay
    (compile-plan
-    "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity")))
+    "language/compiler/src/gravity/compiler/c12_domain_ir_architecture.gravity")))
 
 (def ^:private accepted-gravity-plan
   (delay

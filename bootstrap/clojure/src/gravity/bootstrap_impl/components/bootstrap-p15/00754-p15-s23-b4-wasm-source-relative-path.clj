@@ -5,7 +5,7 @@
 ;; ---------------------------------------------------------------------------
 
 (def p15-s23-b4-wasm-source-relative-path
-  "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity")
+  "language/compiler/src/gravity/backend/b4_wasm_backend_design.gravity")
 (def p15-s23-b4-wasm-builder-function 'b4-build-bounded-wasm32-core)
 (def p15-s23-b4-wasm-source-byte-count 118633)
 (def p15-s23-b4-wasm-expected-source-content-hash
