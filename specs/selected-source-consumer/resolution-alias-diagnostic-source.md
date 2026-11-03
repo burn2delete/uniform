@@ -110,6 +110,46 @@ Independent affected source review remains required. No integration, genuine
 OWN-01 acceptance, release or self-hosting credit is claimed. The original
 blocked genuine OWN-02 goal and all request/denial histories remain unchanged.
 
+## Exact-redaction repair receipt
+
+The prior `3 tests / 103 assertions` alias result remains historical. Its
+negative case changed the source record before constructing C15, so the
+constructed record's private `:redactions` value was nil and the test never
+proved that the changed Gravity field rejected a non-nil vector. The repair
+requires exact nil in `resolution-alias-diagnostic-fields`, exercises that
+field directly with `[]`, keeps the builder rejection, and adds omission of
+`:redactions` to the candidate-ID tamper controls. It changes no public
+dispatch, C5 producer, provenance, callback, or redaction renderer behavior.
+
+The repaired source/test checkpoint is commit
+`d5c91f424c7b04b9bfe150b384217bf47b4fffc7`, tree
+`8fa8c47beb35e2b8996b12727a40cc0d12d2b960`; the earlier port commit
+`86340358c209c88be0b0b8f21c5524758c145da1` and its historical tree remain
+unchanged in the ancestry. Fresh bounded observations are:
+
+```text
+/tmp/uniform-pr647-alias-redactions-repaired.log  3 tests / 108 assertions, 0 failures, 0 errors
+/tmp/uniform-pr647-c5-controls-repaired.log       2 tests / 120 assertions, 0 failures, 0 errors
+/tmp/uniform-pr647-c15-source-shape-repaired.log   1 test  / 12 assertions, 0 failures, 0 errors
+/tmp/uniform-pr647-boundary-repaired.log           6 tests / 11 assertions, 0 failures, 0 errors
+/tmp/uniform-pr647-docs-repaired.log               240 docs / 19 phase indexes, passed
+/tmp/uniform-pr647-roadmap-repaired.log            structural validation, passed
+/tmp/uniform-pr647-kondo-contextual-repaired.log   clj-kondo 2025.10.23, 0 errors / 0 warnings
+```
+
+The separate C15 export/source-identity control remains a stale-baseline
+nonpass at `/tmp/uniform-pr647-c15-source-surface-repaired.log`: it expects
+the older export vector (without `verify-c15-resolved-diagnostic`), 35,228
+bytes, and hash `ffb56f136f13172c1e366ae60a7514402ece009ccb3b018e2c50c9cb96b1d58a`,
+while the current source has the existing export, 71,007 bytes, and hash
+`6ac5af325d4e3a31ecb24d345c28d39a5b348dca1dd3d2180b1cd8d2fb199f9f`.
+Those integrity expectations were not blindly repinned as part of this
+redaction-only repair. Direct pinned lint of the Gravity source is not a
+valid source-language lint: it reports the repository's existing unsupported
+Gravity namespace options and unresolved Gravity helpers; the Clojure test
+file has the zero-finding contextual result above. No native, C14,
+public-dispatch, full-namespace, release, or self-hosting operation was run.
+
 New implementation names describe resolution alias diagnostics. Existing
 numbered source roots, helper dependencies, wire/rule IDs and test namespaces
 are compatibility dependencies, not renamed by this increment. No shared
