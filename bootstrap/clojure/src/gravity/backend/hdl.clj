@@ -5,33 +5,46 @@
 (def ^:private namespace-contract
   '{:authenticates-inputs? false,
  :public-api
- {source-overrides {:arglists ([module]), :admission :none},
-  missing-fact {:arglists ([id]), :admission :none},
-  signal-id {:arglists ([id]), :admission :none},
-  diagnostic-stream
-  {:arglists ([source-path input-id operations]),
-   :admission :none,
-   :required-operations
-   [:source-span :diagnostic-ids :signal-id :missing-fact]},
-  hdl-structurally-valid?
+ {testbench
+  {:value-kind :string,
+   :artifact-role :fixed-native-reference-fixture,
+   :admission :none},
+  timing-structurally-valid?
   {:arglists ([text]),
    :admission :none,
    :validation-scope :native-document-fixture-text},
+  hdl-module
+  {:value-kind :string,
+   :artifact-role :fixed-native-reference-fixture,
+   :admission :none},
+  source-overrides {:arglists ([module]), :admission :none},
   testbench-structurally-valid?
   {:arglists ([text]),
    :admission :none,
    :validation-scope :native-document-fixture-text},
-  timing-structurally-valid?
+  hdl-structurally-valid?
   {:arglists ([text]),
    :admission :none,
-   :validation-scope :native-document-fixture-text}},
+   :validation-scope :native-document-fixture-text},
+  signal-id {:arglists ([id]), :admission :none},
+  timing-constraints
+  {:value-kind :string,
+   :artifact-role :fixed-native-reference-fixture,
+   :admission :none},
+  missing-fact {:arglists ([id]), :admission :none},
+  diagnostic-stream
+  {:arglists ([source-path input-id operations]),
+   :admission :none,
+   :required-operations
+   [:source-span :diagnostic-ids :signal-id :missing-fact]}},
  :supported
  [:existing-native-projection
   :borrowed-identity
   :compatibility-var-interposition
   :native-catalog-assembly
   :explicit-native-operations
-  :existing-native-fixture-recognition],
+  :existing-native-fixture-recognition
+  :fixed-native-reference-text],
  :dependency-direction
  {:requires [clojure.core clojure.string],
   :consumed-by [gravity.bootstrap],
@@ -62,21 +75,24 @@
   :native-operations-as-proof-authority
   :canonical-target-syntax-validation
   :fixture-text-as-verified-ir
-  :fixture-match-as-capability-or-proof-authority],
+  :fixture-match-as-capability-or-proof-authority
+  :fixture-text-as-lowering-or-execution],
  :artifact-inputs
  [:native-module-metadata
   :native-b9-diagnostic-id
   :native-source-path
   :supplied-input-artifact-id
   :native-diagnostic-operations
-  :native-document-fixture-text],
+  :native-document-fixture-text
+  :fixed-native-fixture-definitions],
  :namespace gravity.backend.hdl,
  :diagnostic-ownership
  {:stage
   [:native-override-precedence
    :native-rule-context-defaults
    :native-catalog-assembly
-   :native-fixture-recognition],
+   :native-fixture-recognition
+   :fixed-native-reference-text],
   :existing-owner
   [:b9-refusal-decisions
    :failure-construction
@@ -87,7 +103,8 @@
   :native-missing-fact
   :native-signal-label
   :native-diagnostic-catalog-stream
-  :native-fixture-recognition-result],
+  :native-fixture-recognition-result
+  :fixed-native-reference-text],
  :consumer-component-paths
  ["bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00250-b8-document-source-artifact.clj"
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00251-b9-document-hdl-module.clj"],
@@ -193,5 +210,60 @@
        (str/includes? text "set_input_delay")
        (str/includes? text "set_output_delay")))
 
-(doseq [operation [#'source-overrides #'missing-fact #'signal-id #'diagnostic-stream #'hdl-structurally-valid? #'testbench-structurally-valid? #'timing-structurally-valid?]]
+(def hdl-module
+  (str
+   "module gravity_stage0_hdl(\n"
+   "  input logic clk,\n"
+   "  input logic rst,\n"
+   "  input logic input_valid,\n"
+   "  input logic [31:0] input_data,\n"
+   "  output logic output_ready,\n"
+   "  output logic done\n"
+   ");\n"
+   "  typedef enum logic [1:0] {IDLE, ACCUMULATE, DONE} state_t;\n"
+   "  state_t state;\n"
+   "  logic [31:0] accumulator;\n"
+   "  always_ff @(posedge clk) begin\n"
+   "    if (rst) begin\n"
+   "      state <= IDLE;\n"
+   "      accumulator <= 32'd0;\n"
+   "      done <= 1'b0;\n"
+   "    end else begin\n"
+   "      case (state)\n"
+   "        IDLE: if (input_valid) begin accumulator <= input_data; state <= ACCUMULATE; end\n"
+   "        ACCUMULATE: begin accumulator <= accumulator + 32'd1; state <= DONE; end\n"
+   "        DONE: begin done <= 1'b1; state <= DONE; end\n"
+   "      endcase\n"
+   "    end\n"
+   "  end\n"
+   "  assign output_ready = (state == DONE);\n"
+   "endmodule\n"))
+
+(def testbench
+  (str
+   "module gravity_stage0_hdl_tb;\n"
+   "  logic clk = 1'b0;\n"
+   "  logic rst = 1'b1;\n"
+   "  logic input_valid = 1'b0;\n"
+   "  logic [31:0] input_data = 32'd7;\n"
+   "  logic output_ready;\n"
+   "  logic done;\n"
+   "  gravity_stage0_hdl dut(clk, rst, input_valid, input_data, output_ready, done);\n"
+   "  always #5 clk = ~clk;\n"
+   "  initial begin\n"
+   "    repeat (2) @(posedge clk);\n"
+   "    rst = 1'b0;\n"
+   "    input_valid = 1'b1;\n"
+   "    repeat (4) @(posedge clk);\n"
+   "    $finish;\n"
+   "  end\n"
+   "endmodule\n"))
+
+(def timing-constraints
+  (str
+   "create_clock -name clk -period 10 [get_ports clk]\n"
+   "set_input_delay 1 -clock clk [get_ports input_data]\n"
+   "set_output_delay 1 -clock clk [get_ports done]\n"))
+
+(doseq [operation [#'source-overrides #'missing-fact #'signal-id #'diagnostic-stream #'hdl-structurally-valid? #'testbench-structurally-valid? #'timing-structurally-valid? #'hdl-module #'testbench #'timing-constraints]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

@@ -11,24 +11,13 @@
        {:missing-fields [fail-kind]}))))
 
 (def b11-document-sql-statement
-  "select $1::bigint as gravity_value\n")
+  gravity.backend.query/sql-statement)
 
 (def b11-document-migration-sql
-  (str
-   "-- gravity stage0 schema compatibility migration\n"
-   "-- no data rewrite; schema id remains stage0-v1\n"
-   "select 1 as gravity_stage0_migration_noop;\n"))
+  gravity.backend.query/migration-sql)
 
 (def b11-document-result-adapter-fixture
-  (str
-   "{:adapter :gravity-stage0-value-row\n"
-   " :columns [{:name :gravity_value\n"
-   "            :gravity-type :I64\n"
-   "            :database-type :bigint\n"
-   "            :nullability :nonnull\n"
-   "            :validation :checked}]\n"
-   " :taint-policy :validated\n"
-   " :status :complete}\n"))
+  gravity.backend.query/result-adapter-fixture)
 
 (defn b11-document-sql-structurally-valid?
   [text]

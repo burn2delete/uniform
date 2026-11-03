@@ -20,14 +20,23 @@
   replay-fixture-structurally-valid?
   {:arglists ([text]),
    :admission :none,
-   :validation-scope :native-document-fixture-text}},
+   :validation-scope :native-document-fixture-text},
+  workflow-graph
+  {:value-kind :string,
+   :artifact-role :fixed-native-reference-fixture,
+   :admission :none},
+  replay-fixture
+  {:value-kind :string,
+   :artifact-role :fixed-native-reference-fixture,
+   :admission :none}},
  :supported
  [:existing-native-projection
   :borrowed-identity
   :compatibility-var-interposition
   :native-catalog-assembly
   :explicit-native-operations
-  :existing-native-fixture-recognition],
+  :existing-native-fixture-recognition
+  :fixed-native-reference-text],
  :dependency-direction
  {:requires [clojure.core clojure.string],
   :consumed-by [gravity.bootstrap],
@@ -59,21 +68,24 @@
   :native-operations-as-proof-authority
   :canonical-target-syntax-validation
   :fixture-text-as-verified-ir
-  :fixture-match-as-capability-or-proof-authority],
+  :fixture-match-as-capability-or-proof-authority
+  :fixture-text-as-lowering-or-execution],
  :artifact-inputs
  [:native-module-metadata
   :native-b10-diagnostic-id
   :native-source-path
   :supplied-input-artifact-id
   :native-diagnostic-operations
-  :native-document-fixture-text],
+  :native-document-fixture-text
+  :fixed-native-fixture-definitions],
  :namespace gravity.backend.workflow,
  :diagnostic-ownership
  {:stage
   [:native-override-precedence
    :native-rule-context-defaults
    :native-catalog-assembly
-   :native-fixture-recognition],
+   :native-fixture-recognition
+   :fixed-native-reference-text],
   :existing-owner
   [:b10-refusal-decisions
    :failure-construction
@@ -84,7 +96,8 @@
   :native-missing-policy
   :native-step-label
   :native-diagnostic-catalog-stream
-  :native-fixture-recognition-result],
+  :native-fixture-recognition-result
+  :fixed-native-reference-text],
  :consumer-component-paths
  ["bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00254-b9-document-source-artifact.clj"
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00255-b10-document-workflow-graph.clj"],
@@ -204,5 +217,37 @@
        (str/includes? text ":human-reviewed")
        (str/includes? text ":side-effects-reissued false")))
 
-(doseq [operation [#'source-overrides #'missing-policy #'step-id #'diagnostic-stream #'workflow-graph-structurally-valid? #'replay-fixture-structurally-valid?]]
+(def workflow-graph
+  (str
+   "{:workflow :gravity-stage0-workflow\n"
+   " :runtime :durable-workflow\n"
+   " :nodes [{:id :start :kind :deterministic-computation}\n"
+   "         {:id :call-model :kind :model-call :provider :stage0-model-provider}\n"
+   "         {:id :call-tool :kind :tool-call :provider :stage0-tool-provider}\n"
+   "         {:id :approve-output :kind :human-review-gate :capability :ai/human-review}\n"
+   "         {:id :write-ticket :kind :external-service-call :effect :network/request}\n"
+   "         {:id :compensate-ticket :kind :compensation-handler}\n"
+   "         {:id :done :kind :deterministic-computation}]\n"
+   " :edges [{:from :start :to :call-model :kind :data}\n"
+   "         {:from :call-model :to :call-tool :kind :tool-input}\n"
+   "         {:from :call-tool :to :approve-output :kind :taint-validation}\n"
+   "         {:from :approve-output :to :write-ticket :kind :human-reviewed-write}\n"
+   "         {:from :write-ticket :to :done :kind :success}\n"
+   "         {:from :write-ticket :to :compensate-ticket :kind :compensation}]\n"
+   " :replay-barriers [:call-model :call-tool :write-ticket]\n"
+   " :status :complete}\n"))
+
+(def replay-fixture
+  (str
+   "{:workflow-input-digest \"sha256:workflow-input-stage0\"\n"
+   " :events [{:event :started :step :start :cycle 0}\n"
+   "          {:event :model-output-recorded :step :call-model :digest \"sha256:model-output-stage0\"}\n"
+   "          {:event :tool-output-recorded :step :call-tool :digest \"sha256:tool-output-stage0\"}\n"
+   "          {:event :human-reviewed :step :approve-output :decision :approved}\n"
+   "          {:event :external-write-idempotent :step :write-ticket :idempotency-key \"workflow-input-hash\"}]\n"
+   " :replay-mode :event-log\n"
+   " :side-effects-reissued false\n"
+   " :status :complete}\n"))
+
+(doseq [operation [#'source-overrides #'missing-policy #'step-id #'diagnostic-stream #'workflow-graph-structurally-valid? #'replay-fixture-structurally-valid? #'workflow-graph #'replay-fixture]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

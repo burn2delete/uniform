@@ -148,3 +148,20 @@
                      :observed-native-fixture-match)}
         (fn []
           (is (= :observed-native-fixture-match ((var-get bootstrap-var) text))))))))
+
+(deftest fixed-native-fixture-text-preserves-bytes-and-compatibility-identity
+  (doseq [[stage compatibility expected-sha256]
+        [[#'hdl/hdl-module #'bootstrap/b9-document-hdl-module "bddf15e7fde20828f1a615c9f1fb78c50cecbbd2727a3d27a9f977d2d4858fa5"]
+         [#'hdl/testbench #'bootstrap/b9-document-testbench "9c4c046a82ca2f154c8d373d102cc30194e5b28199c3cbdf05c2172d6c397b1f"]
+         [#'hdl/timing-constraints #'bootstrap/b9-document-timing-constraints "a580b6b5b757d1d50e97c3e8049eaef9855342c7d718630866b4ce22cc527406"]]]
+    (let [text (var-get stage)
+          file (java.io.File/createTempFile "gravity-native-reference-" ".txt")]
+      (try
+        (is (string? text))
+        (is (identical? text (var-get compatibility)))
+        (is (= expected-sha256 (digest/sha256-hex text)))
+        (spit file text :encoding "UTF-8")
+        (is (= text (slurp file :encoding "UTF-8")))
+        (is (= expected-sha256
+               (digest/sha256-bytes-hex (java.nio.file.Files/readAllBytes (.toPath file)))))
+        (finally (.delete file))))))

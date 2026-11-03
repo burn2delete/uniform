@@ -6,13 +6,19 @@
   '{:authenticates-inputs? false,
  :public-api
  {source-overrides {:arglists ([module]), :admission :none},
-  missing-policy {:arglists ([id]), :admission :none},
+  sql-statement
+  {:value-kind :string,
+   :artifact-role :fixed-native-reference-fixture,
+   :admission :none},
+  migration-sql
+  {:value-kind :string,
+   :artifact-role :fixed-native-reference-fixture,
+   :admission :none},
   query-id {:arglists ([id]), :admission :none},
-  diagnostic-stream
-  {:arglists ([source-path input-id operations]),
-   :admission :none,
-   :required-operations
-   [:source-span :diagnostic-ids :query-id :missing-policy]},
+  result-adapter-fixture
+  {:value-kind :string,
+   :artifact-role :fixed-native-reference-fixture,
+   :admission :none},
   sql-structurally-valid?
   {:arglists ([text]),
    :admission :none,
@@ -20,14 +26,21 @@
   result-adapter-structurally-valid?
   {:arglists ([text]),
    :admission :none,
-   :validation-scope :native-document-fixture-text}},
+   :validation-scope :native-document-fixture-text},
+  diagnostic-stream
+  {:arglists ([source-path input-id operations]),
+   :admission :none,
+   :required-operations
+   [:source-span :diagnostic-ids :query-id :missing-policy]},
+  missing-policy {:arglists ([id]), :admission :none}},
  :supported
  [:existing-native-projection
   :borrowed-identity
   :compatibility-var-interposition
   :native-catalog-assembly
   :explicit-native-operations
-  :existing-native-fixture-recognition],
+  :existing-native-fixture-recognition
+  :fixed-native-reference-text],
  :dependency-direction
  {:requires [clojure.core clojure.string],
   :consumed-by [gravity.bootstrap],
@@ -57,21 +70,24 @@
   :native-operations-as-proof-authority
   :canonical-target-syntax-validation
   :fixture-text-as-verified-ir
-  :fixture-match-as-capability-or-proof-authority],
+  :fixture-match-as-capability-or-proof-authority
+  :fixture-text-as-lowering-or-execution],
  :artifact-inputs
  [:native-module-metadata
   :native-b11-diagnostic-id
   :native-source-path
   :supplied-input-artifact-id
   :native-diagnostic-operations
-  :native-document-fixture-text],
+  :native-document-fixture-text
+  :fixed-native-fixture-definitions],
  :namespace gravity.backend.query,
  :diagnostic-ownership
  {:stage
   [:native-override-projection
    :native-rule-context-defaults
    :native-catalog-assembly
-   :native-fixture-recognition],
+   :native-fixture-recognition
+   :fixed-native-reference-text],
   :existing-owner
   [:b11-refusal-decisions
    :failure-construction
@@ -82,7 +98,8 @@
   :native-missing-policy
   :native-query-label
   :native-diagnostic-catalog-stream
-  :native-fixture-recognition-result],
+  :native-fixture-recognition-result
+  :fixed-native-reference-text],
  :consumer-component-paths
  ["bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00258-b10-document-source-artifact.clj"
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00259-b11-document-validate-source-overrides.clj"],
@@ -209,5 +226,25 @@
        (str/includes? text ":validation :checked")
        (str/includes? text ":taint-policy :validated")))
 
-(doseq [operation [#'source-overrides #'missing-policy #'query-id #'diagnostic-stream #'sql-structurally-valid? #'result-adapter-structurally-valid?]]
+(def sql-statement
+  "select $1::bigint as gravity_value\n")
+
+(def migration-sql
+  (str
+   "-- gravity stage0 schema compatibility migration\n"
+   "-- no data rewrite; schema id remains stage0-v1\n"
+   "select 1 as gravity_stage0_migration_noop;\n"))
+
+(def result-adapter-fixture
+  (str
+   "{:adapter :gravity-stage0-value-row\n"
+   " :columns [{:name :gravity_value\n"
+   "            :gravity-type :I64\n"
+   "            :database-type :bigint\n"
+   "            :nullability :nonnull\n"
+   "            :validation :checked}]\n"
+   " :taint-policy :validated\n"
+   " :status :complete}\n"))
+
+(doseq [operation [#'source-overrides #'missing-policy #'query-id #'diagnostic-stream #'sql-structurally-valid? #'result-adapter-structurally-valid? #'sql-statement #'migration-sql #'result-adapter-fixture]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

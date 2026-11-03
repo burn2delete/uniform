@@ -20,14 +20,23 @@
   permission-structurally-valid?
   {:arglists ([text]),
    :admission :none,
-   :validation-scope :native-document-fixture-text}},
+   :validation-scope :native-document-fixture-text},
+  app-bundle
+  {:value-kind :string,
+   :artifact-role :fixed-native-reference-fixture,
+   :admission :none},
+  permission-manifest-fixture
+  {:value-kind :string,
+   :artifact-role :fixed-native-reference-fixture,
+   :admission :none}},
  :supported
  [:existing-native-projection
   :borrowed-identity
   :compatibility-var-interposition
   :native-catalog-assembly
   :explicit-native-operations
-  :existing-native-fixture-recognition],
+  :existing-native-fixture-recognition
+  :fixed-native-reference-text],
  :dependency-direction
  {:requires [clojure.core clojure.string],
   :consumed-by [gravity.bootstrap],
@@ -58,21 +67,24 @@
   :native-operations-as-proof-authority
   :canonical-target-syntax-validation
   :fixture-text-as-verified-ir
-  :fixture-match-as-capability-or-proof-authority],
+  :fixture-match-as-capability-or-proof-authority
+  :fixture-text-as-lowering-or-execution],
  :artifact-inputs
  [:native-module-metadata
   :native-b12-diagnostic-id
   :native-source-path
   :supplied-input-artifact-id
   :native-diagnostic-operations
-  :native-document-fixture-text],
+  :native-document-fixture-text
+  :fixed-native-fixture-definitions],
  :namespace gravity.backend.mobile,
  :diagnostic-ownership
  {:stage
   [:native-override-projection
    :native-rule-context-defaults
    :native-catalog-assembly
-   :native-fixture-recognition],
+   :native-fixture-recognition
+   :fixed-native-reference-text],
   :existing-owner
   [:b12-refusal-decisions
    :failure-construction
@@ -83,7 +95,8 @@
   :native-missing-policy
   :native-domain-anchor
   :native-diagnostic-catalog-stream
-  :native-fixture-recognition-result],
+  :native-fixture-recognition-result
+  :fixed-native-reference-text],
  :consumer-component-paths
  ["bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00262-b11-document-source-artifact.clj"
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00263-b12-document-app-bundle.clj"],
@@ -203,5 +216,27 @@
        (str/includes? text ":denial-policy :return-error")
        (str/includes? text ":hidden-background-work :rejected")))
 
-(doseq [operation [#'source-overrides #'missing-policy #'domain-anchor #'diagnostic-stream #'bundle-structurally-valid? #'permission-structurally-valid?]]
+(def app-bundle
+  (str
+   "{:bundle-id \"org.gravity.stage0\"\n"
+   " :platform :ios\n"
+   " :architecture :arm64\n"
+   " :entrypoint :GravityStage0App\n"
+   " :ui-bridge :swiftui\n"
+   " :status :complete}\n"))
+
+(def permission-manifest-fixture
+  (str
+   "{:permissions [{:name :network\n"
+   "                :capability :network/request\n"
+   "                :runtime-request :declared\n"
+   "                :denial-policy :return-error}\n"
+   "               {:name :notifications\n"
+   "                :capability :notification/send\n"
+   "                :runtime-request :declared\n"
+   "                :denial-policy :disable-feature}]\n"
+   " :hidden-background-work :rejected\n"
+   " :status :complete}\n"))
+
+(doseq [operation [#'source-overrides #'missing-policy #'domain-anchor #'diagnostic-stream #'bundle-structurally-valid? #'permission-structurally-valid? #'app-bundle #'permission-manifest-fixture]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

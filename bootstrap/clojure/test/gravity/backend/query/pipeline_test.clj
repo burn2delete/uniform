@@ -150,3 +150,20 @@
     (let [text (str bootstrap/b11-document-sql-statement suffix)]
       (is (false? (query/sql-structurally-valid? text)))
       (is (false? (bootstrap/b11-document-sql-structurally-valid? text))))))
+
+(deftest fixed-native-fixture-text-preserves-bytes-and-compatibility-identity
+  (doseq [[stage compatibility expected-sha256]
+        [[#'query/sql-statement #'bootstrap/b11-document-sql-statement "488f53e5a89c58015718421c74b313b367ccf31c2fb9c44819b9e63f1559213f"]
+         [#'query/migration-sql #'bootstrap/b11-document-migration-sql "1c8df61ae19adbcb9f36f2ec2754fc9f3f9806f738c866ad940259932ff76daa"]
+         [#'query/result-adapter-fixture #'bootstrap/b11-document-result-adapter-fixture "2cab27ad7bbc56c6d3d0204f5cfc7e90456a98bbd8f94f353a076415fd509334"]]]
+    (let [text (var-get stage)
+          file (java.io.File/createTempFile "gravity-native-reference-" ".txt")]
+      (try
+        (is (string? text))
+        (is (identical? text (var-get compatibility)))
+        (is (= expected-sha256 (digest/sha256-hex text)))
+        (spit file text :encoding "UTF-8")
+        (is (= text (slurp file :encoding "UTF-8")))
+        (is (= expected-sha256
+               (digest/sha256-bytes-hex (java.nio.file.Files/readAllBytes (.toPath file)))))
+        (finally (.delete file))))))

@@ -1,26 +1,10 @@
 
 
 (def b12-document-app-bundle
-  (str
-   "{:bundle-id \"org.gravity.stage0\"\n"
-   " :platform :ios\n"
-   " :architecture :arm64\n"
-   " :entrypoint :GravityStage0App\n"
-   " :ui-bridge :swiftui\n"
-   " :status :complete}\n"))
+  gravity.backend.mobile/app-bundle)
 
 (def b12-document-permission-manifest-fixture
-  (str
-   "{:permissions [{:name :network\n"
-   "                :capability :network/request\n"
-   "                :runtime-request :declared\n"
-   "                :denial-policy :return-error}\n"
-   "               {:name :notifications\n"
-   "                :capability :notification/send\n"
-   "                :runtime-request :declared\n"
-   "                :denial-policy :disable-feature}]\n"
-   " :hidden-background-work :rejected\n"
-   " :status :complete}\n"))
+  gravity.backend.mobile/permission-manifest-fixture)
 
 (defn b12-document-bundle-structurally-valid?
   [text]
