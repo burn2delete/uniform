@@ -10,6 +10,13 @@ whole-repository audit.
 
 ## Purpose and authority
 
+The component portfolio is implemented across two coordinated delivery
+projects. Language components belong to the Uniform language project even when
+their current implementation is executed by the Clojure seed. Bootstrap and
+Release components own rebuild, equivalence, provenance, and seedless-release
+work. The [project structure map](../project-structure.md) records this
+relationship; component pages remain the sole detailed outcome and task owners.
+
 Organize real architectural components into finite, independently reviewable
 projects that compose into the existing overall roadmap. [Reader](reader.md)
 is the first fully worked example. Every component page owns its release
