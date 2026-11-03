@@ -102,12 +102,6 @@
                    {:path (str path)})))
   path)
 
-(defn- verify-store-identity!
-  [store]
-  (doseq [identity (:directory-identities store)]
-    (verify-directory-identity! identity))
-  store)
-
 (defn- ensure-base-directory!
   [^Path base]
   (when-not (Files/exists base nofollow-links)

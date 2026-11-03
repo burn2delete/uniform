@@ -293,6 +293,53 @@
     (is (= [:exact-pinned-syntax-source] (:missing-fields (ex-data error))))
     (is (= path (get-in (ex-data error) [:source-span :source])))))
 
+(deftest pinned-source-guards-byte-count-and-content-hash
+  (let [path (source-path ".gravity")
+        operations (runtime-operations)
+        current-path (syntax-source-path)
+        current-bytes (java.nio.file.Files/readAllBytes
+                       (.toPath (io/file current-path)))
+        current-operations
+        (assoc operations
+               :sh04-syntax-expected-source-byte-count (alength current-bytes)
+               :sh04-syntax-expected-source-content-hash
+               (str "sha256:" ((:sha256-bytes-hex operations) current-bytes)))
+        temporary (java.nio.file.Files/createTempFile
+                   "gravity-syntax-pin-" ".gravity"
+                   (make-array java.nio.file.attribute.FileAttribute 0))
+        selected (assoc current-operations
+                        :sh04-syntax-resolve-source-path
+                        (constantly (str temporary)))]
+    ;; These synthetic expectations only isolate the direct byte/hash guards.
+    ;; The preceding test proves that the frozen pinned record rejects the
+    ;; current source before plan replay; this test never admits a plan.
+    (try
+      (spit (str temporary) "1")
+      (let [error (caught #(syntax/read-pinned-plan-source! path selected))
+            diagnostic (ex-data error)]
+        (is (= "C3-ID" (:id diagnostic)))
+        (is (= [:exact-pinned-syntax-source]
+               (:missing-fields diagnostic)))
+        (is (= (alength current-bytes)
+               (get-in diagnostic [:facts :expected-byte-count])))
+        (is (= 1 (get-in diagnostic [:facts :observed-byte-count])))
+        (is (= path (get-in diagnostic [:source-span :source]))))
+      (let [mutated (aclone current-bytes)]
+        (aset-byte mutated 0 (byte (bit-xor 1 (aget mutated 0))))
+        (java.nio.file.Files/write
+         temporary mutated (make-array java.nio.file.OpenOption 0))
+        (let [error (caught #(syntax/read-pinned-plan-source! path selected))
+              diagnostic (ex-data error)]
+          (is (= "C3-ID" (:id diagnostic)))
+          (is (= [:pinned-syntax-source-identity]
+                 (:missing-fields diagnostic)))
+          (is (= (alength mutated)
+                 (get-in diagnostic [:facts :observed-byte-count])))
+          (is (not= (:sh04-syntax-expected-source-content-hash current-operations)
+                    (get-in diagnostic [:facts :observed-content-hash])))
+          (is (= path (get-in diagnostic [:source-span :source])))))
+      (finally (java.nio.file.Files/deleteIfExists temporary)))))
+
 (deftest real-template-replay-and-digest-resolution-preserve-and-authenticate-products
   (let [{:keys [binding reader-binding revision product]} @runtime-template
         path (source-path ".gravity") operations (runtime-operations) raw (:raw-result product)
