@@ -917,28 +917,27 @@
     (is (str/includes? success-log "success-payload"))
     (is (str/includes? failure-log "xxxxxxxx"))))
 
-(deftest execute-output-preview-counts-characters
-  (let [exact-output
-        (with-out-str
-          (let [result (ci/execute!
-                        "output-unicode-exact" 15
-                        (ci/command "128m" "-M" "-e"
-                                    "(do (print (apply str (repeat 4096 \\u00e9))) (flush) (System/exit 7))"))]
-            (is (= :failed (:status result)))))
-        extra-output
-        (with-out-str
-          (let [result (ci/execute!
-                        "output-unicode-extra" 15
-                        (ci/command "128m" "-M" "-e"
-                                    "(do (print (apply str (repeat 4097 \\u00e9))) (flush) (System/exit 7))"))]
-            (is (= :failed (:status result)))))
+(deftest log-preview-counts-multibyte-characters
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "uniform-ci-output-preview-"
+                            (make-array java.nio.file.attribute.FileAttribute 0)))
+        exact-file (io/file directory "exact.log")
+        extra-file (io/file directory "extra.log")
+        exact-content (apply str (repeat 4096 "\u00e9"))
+        extra-content (str exact-content "\u00e9")
+        preview-fn (ns-resolve 'ci.run 'log-preview)
         marker "[log preview truncated"]
-    (is (str/includes? exact-output
-                       "CI command output-unicode-exact finished :failed exit 7"))
-    (is (not (str/includes? exact-output marker)))
-    (is (str/includes? extra-output
-                       "CI command output-unicode-extra finished :failed exit 7"))
-    (is (str/includes? extra-output marker))))
+    (try
+      (spit exact-file exact-content :encoding "UTF-8")
+      (spit extra-file extra-content :encoding "UTF-8")
+      (let [exact-preview (preview-fn exact-file)
+            extra-preview (preview-fn extra-file)]
+        (is (= 8192 (.length exact-file)))
+        (is (= exact-content exact-preview))
+        (is (str/starts-with? extra-preview exact-content))
+        (is (str/includes? extra-preview marker)))
+      (finally
+        (delete-fixture-tree! directory)))))
 
 (deftest log-preview-reads-short-chunks-without-unbounded-read
   (let [preview-fn (ns-resolve 'ci.run 'read-log-preview)
