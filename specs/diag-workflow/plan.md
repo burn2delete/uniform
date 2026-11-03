@@ -251,6 +251,13 @@ Use the [alternative type system producer and consumer order](../types-workflow/
 Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
 
 
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). All eleven L19 diagnostic meanings retain ten actual context fields, foreign/source/generated origins and wrapper/migration remediation. Real owning failures supply the carrier; a diagnostic catalog or map-preserved label proves no checker, parity or source-map result.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Diagnostics task authority

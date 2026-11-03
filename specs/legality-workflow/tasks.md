@@ -116,6 +116,14 @@ Apply the [complete alternative type system source criteria](../types-workflow/p
 L17 actual alternative-checker profile-soundness criterion (Open): Validate the selected provider's supported profile/facet/feature boundary and its actual profile-specific soundness evidence before safe-profile claims or admitted use. Preserve ordinary source semantics, Effects/Auth/memory/unsafe rules and current provider identity; stronger facts cannot justify weaker safety under the same profile. Gradual checks require permitted metadata/allocation/dynamic representation, and missing required ownership/layout/domain premises receive the governing check/reject/explicit-unsafe disposition. Reject unsupported profiles, a soundness label without applicable evidence and host-only dynamic behavior smuggled into constrained profiles. Required evidence: actual accepted/refused provider/profile tuples with L17-SOUNDNESS/L17-GRADUAL-BOUNDARY and source-bound proof/test/audit references, preserving D8's four outcomes without a new generic approval gate.
 <!-- legality-alternative-types-source-profile:end -->
 
+
+<!-- legality-interop-source-profiles:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 complete interop profile-legality criterion (Open): Admit only actually supported declared boundary/profile/target/provider tuples. Core permits schema data lowering to portable typed Core and no foreign boundary; hosted may use declared host bridges/reflection/dynamic loading/managed objects; native permits explicit provider ABI/FFI/foreign heaps/libraries/system APIs. Kernel/firmware require modeled allocation/blocking/interrupt/MMIO; hardware uses declared descriptions/maps/buses/external modules; distributed and AI use declared service/tool/model/schema/network with replay/audit. Workflow is a distributed facet/target/artifact, not a separate profile. Reject host leakage, unsupported runtime/target and hidden allocation/blocking/reflection before lowering. Required evidence: genuine allowed/refused eight-profile tuples and L19-PROFILE/HOST-LEAK with declared missing-feature behavior, without adopting a device or ISA.
+<!-- legality-interop-source-profiles:end -->
+
 - [ ] `legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis` Complete ownership, borrow, initialization and lifetime analysis
 
 Status: Open
@@ -364,6 +372,14 @@ Apply the [complete alternative type system source criteria](../types-workflow/p
 L17 actual alternative ownership-analysis boundary criterion (Open): When the selected checker owns borrowing, moves, region lifetimes, arena ownership, linear resources, uniqueness, initialization, pinning or foreign-handle lifetimes, consume its actual authentic exported facts for memory safety, release, concurrency transfer and backend layout decisions. Preserve all nine analysis families and their source/provider/schema premises; compatible delegated machinery need not duplicate the same analysis in a second engine. If a required property is unproved, retain a permitted real runtime check, reject, or require the explicit audited unsafe boundary; no unknown-safe outcome exists. Reject incomplete/stale facts, lost release/transfer or a profile forbidding the needed check. Required evidence: actual valid/invalid resource-flow and downstream fact-consumption products, including conditional unsupported families, with actual Runtime/Lower behavior remaining at its owner.
 <!-- legality-alternative-types-source-ownership:end -->
 
+
+<!-- legality-interop-source-ownership:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 complete foreign ownership and pointer-fact criterion (Open): Analyze actual Gravity-owned/foreign-borrowed, foreign-owned/Gravity-borrowed, transfers in either direction, shared immutable, synchronized/atomic shared mutable and named foreign-release handle modes. Preserve all seven ownership modes and pointer nullability, initialization, lifetime, allocator identity, aliasing and thread-affinity facts; foreign pointers are not ordinary safe references. Unrepresentable facts keep the boundary unsafe, with any safe wrapper retaining genuine invariants/checks. Reject missing/incompatible lifetime/allocator/release, use after transfer, double release, illegal shared mutation and thread-affinity/blocking violations. Required evidence: real typed flow/transfer/release and concurrency facts with actual Runtime results at their owner; no allocator manifest or host GC proves cleanup.
+<!-- legality-interop-source-ownership:end -->
+
 - [ ] `legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries` Complete safe-code classification and taint/unsafe boundaries
 
 Status: Open
@@ -505,6 +521,14 @@ Apply the [complete alternative type system source criteria](../types-workflow/p
 L17 actual alternative-checker unsafe-boundary criterion (Open): Preserve explicit unsafe-island metadata, safe API invariants, retained checks/proofs and required audit when a selected checker cannot establish a safety property. Unchecked casts exist only in unsafe code and cannot become safe facts, refinement evidence or a reason to erase a check. Preserve no undefined behavior in safe Gravity and the proved-safe/runtime-checked/rejected/explicit-unsafe alternatives through generated and domain code. Reject a hidden nullable/foreign/resource boundary, cast relabeled proof or unverifiable provider fact accepted as safe. Required evidence: authentic provider/cast/source/profile/invariant/verdict and accepted/refused boundary products; an unsafe flag alone neither supplies an invariant nor authorizes held unsafe/provider execution.
 <!-- legality-alternative-types-source-unsafe:end -->
 
+
+<!-- legality-interop-source-wrappers:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 complete safe foreign-wrapper criterion (Open): Retain the actual unsafe call and complete declared safe API requirements, ensures, no-retain/ownership/layout/profile invariants, source, reason, effects/grants, owner/audit/evidence and governing re-review trigger. Prove or actually check every requirement; a CString wrapper must establish its actual non-null/null-termination/within-buffer and no-retained-pointer obligations rather than copy the illustrative audit label. Record target-specific layout assumptions where used. Reject raw unsafe externs in safe code, unproved/unchecked invariants, hidden authority, stale ABI/CString/layout evidence and an assigned passed audit. Required evidence: actual wrapper/unsafe boundary/proof-or-check/profile artifact and positive/refused invariant/failure/cleanup cases; unsafe implementation does not become safe merely by naming a wrapper.
+<!-- legality-interop-source-wrappers:end -->
+
 - [ ] `legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution` Preserve obligations into MIR and runtime execution
 
 Status: Open
@@ -572,6 +596,14 @@ Apply the [complete provider and capability source criteria](../auth-workflow/pl
 Complete authority preservation criterion (Open): Preserve actual effect/capability separation, provider selection, typed capability scope/lifetime/thread-safety/revocation, grant/policy inputs, required checks, isolation/unsafe/audit and source/generated identities through checked Core, MIR, optimization, Lower, emitted service hooks and Runtime/build consumers. Changed source/provider/version/target/profile/policy/phase/lifetime or transform assumptions invalidate affected facts and restore checks or reprove the exact obligation. Verify that denied operations cannot become permitted after transformation, deployment or older-record composition. Keep secret values out of public diagnostics/code/cache/artifact products. Actual consumer hooks and accepted/refused end-to-end products must witness preservation; copied metadata or a proof/trust/selection label is insufficient.
 <!-- authority-source-handoff:end -->
 
+
+
+<!-- legality-interop-source-handoff:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 actual checked interop obligation handoff criterion (Open): Preserve current declared type/direction/provider/ABI/protocol/schema/profile/target/version, effects/grants, wrapper/unsafe/check/proof, ownership/lifetime/error/threading facts and source/generated/foreign provenance through common Core, MIR and lowering to the real runtime boundary. Actual compiler legality precedes admitted export; Runtime enforces it and cannot repair statically illegal source. Reject erased wrappers, stale proof/layout/host contracts, dropped translation/release and artifact records detached from their source. Required evidence: genuine producer/verifier/consumer accepted/refused artifacts and exact changed-subject preservation; no universal native execution or host bridge gates portable schema Core.
+<!-- legality-interop-source-handoff:end -->
 
 - [ ] `legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface` Close conformance for the declared profile surface
 

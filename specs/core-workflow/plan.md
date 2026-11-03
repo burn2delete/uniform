@@ -371,6 +371,13 @@ Use the [alternative type system producer and consumer order](../types-workflow/
 Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
 
 
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Foreign values and errors enter safe Core only through their actual declared directional typed/check/wrapper boundaries; ordinary Core evaluation is unchanged. Preliminary structural candidates precede combined owner admission, while checked exports retain actual facts and unsafe obligations.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Core task authority

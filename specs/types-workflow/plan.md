@@ -599,6 +599,13 @@ removal and every held operation. This dependency proposal executes no compiler,
 provider, solver, plugin, callback, native, device, replay, migration, private-store,
 signing or publication action and messages no other chat or reviewer.
 
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Types checks complete foreign declarations, six directional mapping families and actual null/error/ownership/layout facts, exports all ten artifact families and verifies ordinary generated consumers. Declared Option absence remains legal; lossy conversions are explicit and fallible conversions return Result or the declared boundary error.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Types task authority

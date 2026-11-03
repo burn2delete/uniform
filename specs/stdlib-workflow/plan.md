@@ -235,6 +235,13 @@ Use the [facet producer and consumer order](../expand-workflow/plan.md#facet-pro
 Task bodies/statuses, source criteria, historical reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending. No held action is enabled.
 
 
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Existing resource APIs own actual safe foreign wrappers, conversions and named release over selected real Runtime/provider services; schema/service adapters own usable typed codecs/validators and declared normal effects/grants. Metadata, function names, host GC and generation-only bundles cannot establish executed value/error/cleanup behavior.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Standard Library workflow migration

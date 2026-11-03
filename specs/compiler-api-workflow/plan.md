@@ -318,6 +318,13 @@ Use the [alternative type system producer and consumer order](../types-workflow/
 Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
 
 
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Ordinary source/pipeline/verifier interfaces preserve complete foreign/schema/generated type/effect/grant/profile/resource/unsafe/provenance contracts. A plugin applies only when selected; no universal callback/plugin or new unsafe host facility follows. Existing C7/C12 and native/callback holds remain.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical workflow-transfer and source-composition plan
 
 # Implementation plan: Compiler API workflow migration

@@ -208,6 +208,14 @@ Apply the [complete library-principles source criteria](plan.md#complete-library
 L13 complete resource and concurrency API criterion (Open): Execute selected public managed/region/arena/stack-static/borrowed/owned/linear/foreign/pinned/MMIO resource APIs through actual permitted providers, preserving initialization, release, aliases, ownership and failure cleanup. Expose runtime check/failure or required proof diagnostics instead of hidden guarantees. Implement actual task/cancellation/channel/actor/immutable-sharing/atomic/structured-scope APIs with declared spawn/block/park/allocate/share/move/atomic/scheduler behavior under L11 and the narrower physical scheduling/queue/interrupt contracts of claimed kernel/firmware/hardware profiles. Filesystem/env/process/network/time/random services require explicit capabilities, declared providers or the expressly permitted hosted convenience context with recorded effects; no hidden globals or target emulation. Required evidence: actual values, normal/failure/cleanup/scheduling/grant-denial and profile-refusal fixtures plus per-profile compiled examples and safe-wrapper evidence. Runtime owns services, Auth grants, Effects admission and Legality safety; fakes do not prove live support and held operations remain unrun.
 <!-- stdlib-library-source-resources:end -->
 
+
+<!-- stdlib-interop-source-library:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 actual standard foreign resource and safe-wrapper API criterion (Open): Implement selected usable FFI/process/network/host/handle APIs over actual declared provider/runtime/type/error/ownership contracts, exposing safe checked wrappers with real invariants and explicit unsafe entry points. Preserve directional string/collection/Option/Result/handle conversions, authentic effects/grants, named release and success/failure/thread/blocking behavior; never hide host null/errors or borrowed pointer lifetimes behind ordinary safe values. Required evidence: real accepted/refused API value/error/cleanup and supported-profile results with wrapper audit and source provenance. Compiler metadata and a release function name do not execute the API; held provider/native/callback operations stay held.
+<!-- stdlib-interop-source-library:end -->
+
 - [ ] `stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters` Complete schema/query/workflow/AI/meta/crypto/UI adapters
 
 Status: Open
@@ -223,6 +231,14 @@ Apply the [complete library-principles source criteria](plan.md#complete-library
 
 L13 complete compiler/domain library API criterion (Open): Implement actual syntax/meta/compiler and selected domain-facing library APIs over their existing compiler/domain/runtime owners. Preserve source spans, hygiene, expansion phase, generated-origin chains, genuine type/effect annotations, profile/target manifests and artifact IDs across inspection and transformation. Generated ordinary Gravity forms undergo the same validation as handwritten forms; a library or intrinsic hook is not privileged. IR inspection declares the L6 :compiler/read-ir effect and an authentic :compiler/ir-transform capability scoped by C17 to the actual read artifact/namespace/phase/package. A read-mir grant does not grant write-mir; transformation needs its actual write scope and effect. Neither metadata nor package identity grants authority. Named auditable hooks preserve specified reductions/lowering and all affected invalidation. Required evidence: actual selected API before/after products, provenance and normal generated checking, missing-grant/phase/metadata/invalid-generated-form refusals and runnable examples. This library facade confers no whole domain/plugin implementation or held callback/provider execution.
 <!-- stdlib-library-source-meta:end -->
+
+
+<!-- stdlib-interop-source-adapters:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 actual schema and service adapter API criterion (Open): Provide selected real generated-schema/query/workflow/AI/tool codecs, typed operations and response validators from authentic schema/provider/source versions under normal compiler, runtime effect/grant, null/error and compatibility contracts. Source generation preserves required fields/provenance and does not authorize a live database/model/tool/service call. Reject schema drift, hidden loss/nullability/error behavior, unvalidated responses and host leakage into portable or constrained consumers. Required evidence: genuine source/type/codec/validator and permitted adapter results/refusals with real producer joins; wider domain and service claims retain their owning tasks and evidence.
+<!-- stdlib-interop-source-adapters:end -->
 
 - [ ] `stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests` Integrate platform modules and close release manifests
 

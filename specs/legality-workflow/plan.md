@@ -962,6 +962,13 @@ Use the [alternative type system producer and consumer order](../types-workflow/
 Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
 
 
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Legality preserves original wrapper-safety ownership, actual invariant proof/checks, seven ownership modes, six foreign pointer facts and eight-profile legality, including Core schema-only portability and Workflow as a distributed facet. Actual D8 outcomes and sufficient owner facts precede safe export; manifests or assigned audits cannot prove safety.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Legality task authority

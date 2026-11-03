@@ -59,6 +59,14 @@ Apply the [complete alternative type system source criteria](../types-workflow/p
 L17 complete type-provider declaration and selection criterion (Open): Validate the actual selected versioned :type-system provider declaration with its supported profiles, language facets, type features, fact/proof schemas, solver dependencies, build effects, capabilities, conformance suites and known restrictions before dependent use. Preserve L15 deterministic source/package/workspace/profile/compiler-default selection and ambiguity refusal; bind the real selected provider/version/schema identity in typed Core metadata and package locks. The refinement-provider example is illustrative, not default profile support or an IR grant. Reject missing/incompatible declarations, unsupported namespace/profile/feature selections, inconsistent metadata/locks and authority inferred from a provider label. Required evidence: genuine declaration/selection and consuming-artifact joins with accepted and missing/ambiguous/incompatible-provider refusals; a flag or provider inventory does not execute a checker or establish soundness.
 <!-- auth-alternative-types-source-provider:end -->
 
+
+<!-- auth-interop-source-provider:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 actual foreign provider selection criterion (Open): Bind every claimed boundary to its real typed declared provider, actual version/ABI/protocol/schema/runtime and profile/target support under the existing deterministic selection rules. Preserve ten boundary families and authentic source/package/lock identities; a provider name or generated import is not installation, execution, authority or safety evidence. Reject missing/ambiguous/incompatible or unsupported providers before affected admitted use. Required evidence: genuine boundary/provider selection and support/refusal records with the exact source/version/target subject; pure schema data lowering to portable Core needs no universal host service or native provider.
+<!-- auth-interop-source-provider:end -->
+
 - [ ] `auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime` Enforce grant intersection, attenuation, revocation, phase and lifetime
 
 Status: Open
@@ -152,6 +160,14 @@ Apply the [complete alternative type system source criteria](../types-workflow/p
 
 L17 actual typed-capability and checker-authority criterion (Open): Preserve capability values as ordinary typed values with authentic authority metadata, exporting claimed linear/affine use facts for L15 checks. Check actual selected checker/solver/compiler build effects and real phase/artifact/namespace/package/lifetime scopes before actions; a read-IR scope under :compiler/ir-transform grants no write. A fact schema, proof provider, package or soundness label neither supplies grants nor erases runtime capability requirements. Reject missing/expired/revoked/wrong-scope authority and capability-erased function types before affected action. Required evidence: real typed authority/fact joins and allowed/denied L17-CAPABILITY-ERASURE or owning cases; pure checking requires no unrelated live service and every held solver/provider operation remains held.
 <!-- auth-alternative-types-source-grants:end -->
+
+
+<!-- auth-interop-source-admission:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 complete foreign-boundary admission criterion (Open): At the original Auth admission role, consume actual Types/Resolve/provider/profile/ownership/error/safety facts establishing the complete declared ABI/protocol boundary, then enforce authentic concrete effect grants, operation scope, phase/lifetime and package/deployment narrowing before actions. Preserve full type/memory/thread/version/safety/support contracts rather than infer authority from a foreign symbol, manifest, shim or wrapper. Auth does not replace inference, wrapper proof, Runtime normalization or profile legality. Reject incomplete/wrong-scope/ungranted/stale/unsupported boundaries and hidden host authority. Required evidence: actual allowed/denied declaration-to-policy-to-hook joins and no action after denial; held native/provider/callback/device/service operations remain held.
+<!-- auth-interop-source-admission:end -->
 
 - [ ] `auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks` Bind compiler decisions to runtime/build enforcement hooks
 

@@ -81,6 +81,14 @@ Apply the [complete facet source criteria](../expand-workflow/plan.md#complete-f
 L14 actual facet lexical-scope criterion (Open): Resolve explicit facet activations in namespace metadata against authentic selected versioned manifests before facet expansion. Imports do not transitively activate the importer's facets; a macro-generated nested activation needs explicit provenance and preserves the declared lexical boundary. Resolve aliases or explicit activation to disambiguate shared surfaces and reject remaining ambiguous or inactive use, unsupported profiles and wrong namespace/version ownership before backend lowering. Preserve normal name/public-private/package graph and source identities. Required evidence: real local/importer/nested/alias activation and ambiguous/inactive/wrong-scope refusals, linked to Expand manifest/dispatch products; a final whole facet or package release is not the first declaration.
 <!-- resolve-facet-source-namespace:end -->
 
+
+<!-- resolve-interop-source-bindings:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 actual foreign import and symbol boundary criterion (Open): Resolve real declared foreign link/symbol/method/endpoint/schema/import paths and generated target namespaces with authentic source/provider/version/profile/target identities. Keep imported host objects and package names behind explicit typed boundaries rather than ambient language meanings; generated bindings preserve source schemas and foreign provenance. Reject undeclared or ambiguous symbols, stale/mismatched imports and a hosted import in an unsupported profile, retaining source/generated diagnostics. Required evidence: actual accepted/refused foreign and generated binding indexes and version-bound namespace/consumer records; resolving a declaration does not invoke its provider or grant a capability.
+<!-- resolve-interop-source-bindings:end -->
+
 - [ ] `resolve/current-evidence-and-remaining-work/resolve3-check-graph-legality` resolve/3: Check graph legality
 
 Current evidence/status: Open; partial source evidence above is not closure

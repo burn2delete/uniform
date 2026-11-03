@@ -62,6 +62,14 @@ Apply the [complete alternative type system source criteria](../types-workflow/p
 L17 actual alternative-type layout consumer criterion (Open): Consume genuine common typed-Core representation, ownership/lifetime/resource and selected provider/profile/target facts to derive and verify required concrete ABI/layout metadata. A provider cannot replace backend layout contracts without exporting the actual facts they require; alternative-theory internals, host defaults and missing type representations cannot stand in for layout evidence. Preserve checked/unsafe/foreign-handle boundaries and reject incompatible/missing/stale facts before affected lowering or calls. Required evidence: actual selected provider-to-layout accepted/refused products, source/fact/schema/target identities and retained boundary obligations, with early ABI rules and preliminary independent types distinguished from later final layouts and runtime execution.
 <!-- lower-alternative-types-source-layout:end -->
 
+
+<!-- lower-interop-source-abi:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 actual ABI and wire-representation lowering criterion (Open): Derive required concrete target ABI/protocol/type/representation/layout/calling-convention metadata from authentic declarations, preliminary type/ownership facts and actual provider/host/runtime contracts. Preserve null/init/allocator/alias/thread/blocking/error and safe-wrapper assumptions, directional conversions and explicitly ABI-safe native exports; host defaults cannot define Gravity safety. Early ABI rules precede concrete layout, actual required admitted layouts precede affected calls, and future runtime traces are not initial layout premises. Reject missing/incompatible ABI/layout/provider/source identities. Required evidence: real selected native/Wasm/host/schema accepted/refused representation products and source mappings; actual backend/target execution remains separately governed.
+<!-- lower-interop-source-abi:end -->
+
 - [ ] `lower/current-evidence-and-remaining-work/lower3-select-explicit-providers` lower/3: Select explicit providers
 
 Current evidence/status: Open; partial source evidence above is not closure

@@ -114,6 +114,14 @@ Apply the [complete alternative type system source criteria](../types-workflow/p
 L17 actual inserted-runtime-check execution criterion (Open): Execute each selected checker-inserted permitted gradual/cast/runtime check against its actual value/expected type and profile/representation/allocation contract, yielding the declared accepted value or typed failure with source span, failure type and blame. Preserve relevant ownership/release/panic behavior and authentic provider/check identity; unchecked casts remain explicit unsafe and never a successful safe check or optimization proof. Reject missing/forged check records, unsupported runtime metadata and mismatched source/failure/blame obligations. Required evidence: real selected accept-json-style success and DecodeError/failure cases plus forbidden-profile/unchecked-cast refusals and actual execution traces. Source-only typing needs no universal live runtime or provider; records saying runtime-checked do not execute the check.
 <!-- runtime-alternative-types-source-runtime:end -->
 
+
+<!-- runtime-interop-source-hosts:start -->
+
+Apply the [complete interoperability and migration source criteria](plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 complete hosted bridge behavior criterion (Open): Execute selected declared bridge runtime version/reflection-or-dynamic-dispatch/object-lifetime-rooting/threading/exception/performance-allocation/missing-feature contracts, preserving all seven host-declaration fields. Host runtime behavior remains behind an explicit boundary artifact measured and replaceable during migration, not part of portable Gravity. Actual null/error conversion and deterministic resource cleanup use their real owners; host GC alone cannot establish linear release. Reject unknown runtime versions, hidden reflection, unsafe roots/thread affinity, unmodeled failures and hosted behavior in unsupported profiles. Required evidence: actual selected host values/errors/roots/cleanup/source maps and non-hosted refusals; a fixed JVM/JS/Wasm adapter manifest does not execute a bridge or establish those results.
+<!-- runtime-interop-source-hosts:end -->
+
 - [ ] `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries` Implement memory, concurrency and typed FFI boundaries
 
 Status: Open
@@ -195,6 +203,14 @@ Apply the [complete error-handling source criteria](../core-workflow/plan.md#com
 Source obligation `language/errors/normalize-foreign-failure`: Normalize a foreign/host call's error, exception, null and failure-resource behavior into an explicit typed Gravity boundary contract before entering safe/non-null source semantics. Accept: Before safe/non-null entry, convert nullable/undefined foreign values through the declared Option/Result, checked-wrapper or opaque-foreign-value contract; declared nullable Option absence may produce None without inventing an error. Separately translate foreign/host error returns, errno-like state, exceptions, panics, rejected promises, signals and exit statuses into declared typed Gravity error contracts. Do not convert a real error or capability denial into absence. Retain host/foreign type identity, ownership transfer on failure, cleanup, abort policy, runtime dependencies and exception/null contracts for hosted dispatch. Reject: Reject an unexpected or undeclared null, null crossing a non-null type, untranslated/untyped foreign failure and a missing mapping or failure-resource contract; report P4-EXCEPTION, L8-HOST-DISPATCH, L9-HOST-ERROR/L9-FFI-ERROR or L19-ERROR-MAP as applicable. Required outputs: Foreign/host dispatch and error-mapping artifacts, hosted conformance, failure-cleanup tests and diagnostics with host/runtime, source/generated origin, requested effect, grant, symbol and deployment policy when relevant. Dependencies consume versioned facts/receipts from runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime, types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts; they do not require blanket component completion. Implementation status remains Open.
 <!-- runtime-error-source-finite-foreign:end -->
 
+
+<!-- runtime-interop-source-execute:start -->
+
+Apply the [complete interoperability and migration source criteria](plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 actual foreign conversion, call and cleanup criterion (Open): At each selected permitted boundary, execute actual declared directional value conversion/call/ownership transfer/borrow/release under real provider/ABI/layout/grant/profile/thread/blocking contracts. Preserve six pointer facts, seven ownership modes and named release behavior across success and failure, with actual synchronized sharing where claimed. Translate foreign exceptions, panics, error codes/errno, rejected promises, signals and process exits into declared Gravity errors before safe entry; unexpected or undeclared null cannot enter non-null types, while declared Option absence remains legal. Reject incomplete maps, wrong allocator/thread/ownership, unmodeled foreign failure and unsafe casts disguised safe. Required evidence: real values/errors/resource and concurrency traces and refusal fixtures; current native/callback/provider/device execution restrictions remain, so manifests and status flags do not close this task.
+<!-- runtime-interop-source-execute:end -->
+
 - [ ] `runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution` Connect distributed/AI replay and interactive execution
 
 Status: Open
@@ -254,6 +270,14 @@ Apply the [complete error-handling source criteria](../core-workflow/plan.md#com
 
 Source obligation `language/errors/emit-durable-workflow-failure`: Emit and replay a durable workflow failure record with its step/input/error identity, retry/compensation policy and external-result/replay provenance. Accept: Persist and replay a workflow failure with step ID, input and output/error schemas, retry/compensation policy, time, external-call results and replay ID; retain source/generated origins and exercise failure plus compensation replay. Reject: Reject workflow failure without durable record, missing required schema/policy/result/replay identity or live re-execution during recorded replay; report L9-WORKFLOW-ERROR. Required outputs: Durable typed failure and compensation records, replay equality/refusal fixtures and source/generated-origin diagnostic artifacts. Dependencies consume versioned facts/receipts from effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime; they do not require blanket component completion. Implementation status remains Open.
 <!-- runtime-error-source-finite-workflow:end -->
+
+
+<!-- runtime-interop-source-replay:start -->
+
+Apply the [complete interoperability and migration source criteria](plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 actual process/network/service and migration execution criterion (Open): For selected distributed/AI/workflow/process/tool boundaries, execute declared typed protocol/schema/provider/effect/grant/error/ownership/threading behavior with genuine required replay/audit and no repeated external side effect in replay. Preserve actual status/signal/exit/promise/exception translation and schema-versioned migration compatibility. Source binding or shim generation alone authorizes no live service, subprocess, model/tool or store; unsupported or held requirements stay explicit. Required evidence: real selected input/output/error/release/replay/audit and denied/unsupported cases tied to provider/schema/target/lock identities without inventing a workflow profile or overriding actual restrictions.
+<!-- runtime-interop-source-replay:end -->
 
 - [ ] `runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration` Close enforcement and observability integration
 

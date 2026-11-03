@@ -218,3 +218,9 @@ Current source/interface entailment and independent acceptance remain pending. P
 Use the [facet producer and consumer order](../expand-workflow/plan.md#facet-producer-and-consumer-order) and existing selected-result table. Early actual affected old/new source/IR/lowering/profile/schema/stability comparisons precede applicable required scoped decisions and checked migration products. Final migration is not a first policy input, and compatible ordinary implementation has no new per-run review gate.
 
 Task bodies/statuses, source criteria, historical reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending. No held action is enabled.
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Existing conditional change-review/stabilization owners consume affected old/new ABI/schema/type/error/resource/profile/target/lock and incumbent parity facts for actual stable changes or shim promotion. Keep compatibility/deprecation and temporary shim state explicit. This adds no task body, review renewal or ordinary per-run approval/migration-proof gate.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.

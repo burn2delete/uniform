@@ -168,6 +168,14 @@ Apply the [complete alternative type system source criteria](../types-workflow/p
 L17 actual alternative-type function-effect admission criterion (Open): Preserve and verify real inferred/refined or explicitly declared function effects and capability requirements together with panic/error/allocation/resource behavior at the ordinary effect boundary. A selected checker that cannot model effects is limited to profiles/namespaces with explicit effects verifiable by the reference effect checker; it cannot erase performed or latent requirements. Admit only under actual caller allowances/profile/service/safety premises and separate authentic grants. Reject effect erasure, hidden checked-cast allocation/panic, declaration-only purity and an alternative theory bypassing reference legality. Required evidence: actual selected-provider/reference-effect products, accepted/refused calls and L17-EFFECT-ERASURE/owning diagnostics; Types exports facts and Effects retains its real legality owner.
 <!-- effects-alternative-types-source-effects:end -->
 
+
+<!-- effects-interop-source-effects:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 actual foreign and generated-binding effect admission criterion (Open): Check performed/latent foreign ABI, host reflection/dynamic dispatch, process/network/hardware/model/tool/package and schema-generation effects under actual caller allowances/profile/service premises, with separate authentic grants. Schema loading and binding generation are L12 compile-time effects; emitted APIs retain their real runtime effects, allocation/blocking/panic/error behavior and capability requirements. Catching or translating failure, a safe-wrapper label and a migration shim erase no performed effect or authority. Reject missing/hidden effects and constrained-profile host leakage before affected use. Required evidence: actual admitted/refused source-to-generated/runtime effect records and L19-EFFECT/owning diagnostics; example db/query labels supply no granted database/network authority.
+<!-- effects-interop-source-effects:end -->
+
 - [ ] `effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation` effects/4: Record replay and invalidation
 
 Current evidence/status: Open; partial source evidence above is not closure
