@@ -854,10 +854,10 @@
                                    (throw (ex-info "Future task population changed" {:region region})))
                                  [region rows])))
         _ (let [captured (into {} (map (juxt :id identity)
-                                      (or (:future-task-records readiness-source-version)
                                       (or (get-in readiness-source-version [:protocol-refinement :future-task-source-successor :after])
                                           (get-in readiness-source-version [:macro-refinement :future-task-source-successor :after])
-                                          (get-in readiness-source-version [:future-dependency-refinement :task-records])))))
+                                          (:future-task-records readiness-source-version)
+                                          (get-in readiness-source-version [:future-dependency-refinement :task-records]))))
                 actual (into {} (for [row (mapcat val future-tasks)]
                                   [(:id row) (assoc (select-keys row [:id :region :component :path :checked :source-commit :file-sha256])
                                                    :body-sha256 (get-in row [:source :sha256]))]))]

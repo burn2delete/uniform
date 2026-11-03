@@ -6868,7 +6868,7 @@
      (get-in result [:nodes (str "result:" t2 ":" layout) :state]))))))
 
 
-(deftest complete-protocol-source-preserves-method-effects-and-owner-conjunctions
+(defn legacy-complete-protocol-source-preserves-method-effects-and-owner-conjunctions []
  (let [bridge sh-crosswalk/readiness-source-version
        r (:protocol-refinement bridge)
        previous (:predecessor-readiness-successor r)
@@ -7021,5 +7021,100 @@
   (is (= :unassessed (:implementation-acceptance r) (:global-source-conjunctions r)))
   (is (= r (get-in view [:implementation-readiness-source-version :protocol-refinement])))))
 
-(let [result (run-tests 'sh-crosswalk-test')]
+(deftest current-protocol-source-bridge-is-current-and-tamper-evident
+  (let [bridge sh-crosswalk/readiness-source-version
+        r (:protocol-refinement bridge)
+        checkpoint (:source-input-commit bridge)
+        previous (:predecessor-readiness-successor r)
+        old-text (sh-crosswalk/git-source (:commit previous) (:path previous))
+        old-projection (sh-crosswalk/git-source (:commit previous) (:projection-path previous))
+        old-source (edn/read-string old-text)
+        old (edn/read-string old-projection)
+        view (sh-crosswalk/source-view)
+        sha (fn [text] (sh-inventory/sha256 text))
+        span-text (fn [body {:keys [start-byte end-byte]}]
+                    (String. (.getBytes body "UTF-8") (int start-byte)
+                              (int (- end-byte start-byte)) "UTF-8"))
+        file-records (concat (:task-sources r) (:plan-sources r) (:specification-sources r))
+        captured (into {} (map (juxt :id identity)
+                               (get-in r [:future-task-source-successor :after])))
+        actual (into {} (map (juxt :id identity)
+                             (mapcat val (:future-task-authorities view))))
+        metadata (fn [row]
+                   (assoc (select-keys row [:id :region :component :path :checked :source-commit :file-sha256])
+                          :body-sha256 (or (:body-sha256 row) (get-in row [:source :sha256]))))
+        expected-owners #{"language/errors/normalize-foreign-failure"
+                          "language/protocol/publish-method-contract"
+                          "language/protocol/review-stable-change"
+                          "language/protocol/select-checked-dispatch"
+                          "language/protocol/specialize-dispatch"}]
+    (is (= checkpoint (:source-commit r)))
+    (is (= checkpoint (get-in bridge [:current-source-checkpoint :commit])))
+    (is (= :complete-L8-cross-component-protocol-source-proposal (:kind r)))
+    (is (str/includes? (:dependency-review r) "2011"))
+    (is (str/includes? (:dependency-review r) "139"))
+    (is (str/includes? (:dependency-review r) "99"))
+    (is (= [50 89]
+           [(get-in r [:task-comparisons :unchanged-body-count])
+            (count (get-in r [:task-comparisons :changed-bodies]))]))
+    (is (= 40 (count captured) (count actual)))
+    (is (= [] (get-in r [:future-task-source-successor :changed-source-binding-task-ids])))
+    (is (= #{"specs/domains-workflow/tasks.md" "specs/platform-workflow/tasks.md"}
+           (set (get-in r [:future-task-source-successor :changed-whole-file-source-paths]))))
+    (is (= 5 (count (:owner-joins r))))
+    (is (= expected-owners (set (keys (:owner-joins r)))))
+    (is (= 16 (count (:criteria r))))
+    (is (= 2 (count (get-in r [:implementation-source-inspection :files]))))
+    (is (= :none (get-in r [:implementation-source-inspection :current-execution])))
+    (is (= :not-claimed (get-in r [:implementation-source-inspection :whole-compiler-inspection])))
+    (is (= :none (get-in r [:implementation-source-inspection :implementation-credit])))
+    (is (= :pending (:independent-current-review r)))
+    (is (= :unassessed (:implementation-acceptance r) (:global-source-conjunctions r)))
+    (is (= (:sha256 previous) (sha old-text)))
+    (is (= (:projection-sha256 previous) (sha (sh-crosswalk/git-source (:commit previous) (:projection-path previous)))))
+    (is (= (:input-fingerprint previous) (:input-fingerprint old-source)))
+    (doseq [record file-records
+            :let [p (:path record) after (:after record) body (slurp p) committed (sh-crosswalk/git-source (:commit after) p)]]
+      (is (= checkpoint (:commit after)))
+      (is (= (:sha256 after) (sha body) (sha committed))))
+    (doseq [source (:canonical-sources r)]
+      (is (= checkpoint (:source-commit source)))
+      (is (= (:sha256 source) (sha (slurp (:path source)))
+             (sha (sh-crosswalk/git-source (:source-commit source) (:path source))))))
+    (doseq [{:keys [path source-commit sha256]} (get-in r [:implementation-source-inspection :files])]
+      (is (= checkpoint source-commit))
+      (is (= sha256 (sha (slurp path)) (sha (sh-crosswalk/git-source source-commit path)))))
+    (doseq [{:keys [current-witness task-id status]} (:criteria r)
+            :let [{:keys [path source-commit sha256 source-span]} current-witness
+                  body (slurp path)
+                  raw (span-text body source-span)]]
+      (is task-id)
+      (is (contains? #{:new-complete-L8-source-criterion-pending-independent-review
+                       :existing-exact-predicate-no-task-amendment}
+                     status)
+          (str "unexpected protocol criterion status for " task-id))
+      (is (= checkpoint source-commit))
+      (is (= sha256 (sha body) (sha (sh-crosswalk/git-source source-commit path))))
+      (is (= (:sha256 source-span) (sha raw)))
+      (is (= (.indexOf body raw) (.lastIndexOf body raw))))
+    (doseq [[id row] (:owner-joins r)]
+      (is (= id (:id row)))
+      (is (= :unassessed (:whole-attached-owner-predicate row)))
+      (is (= :none (:implementation-credit row)))
+      (is (seq (:criterion-task-ids row))))
+    (doseq [[id row] captured]
+      (is (= (metadata row) (metadata (actual id)))))
+    ;; The current protocol successor is the authenticated source for the
+    ;; future rows.  Removing or tampering with it must fail closed rather
+    ;; than silently falling back to an unrelated historical view.
+    (with-redefs [sh-crosswalk/readiness-source-version
+                  (update-in bridge [:protocol-refinement] dissoc :future-task-source-successor)]
+      (is (thrown? Exception (sh-crosswalk/source-view))))
+    (with-redefs [sh-crosswalk/readiness-source-version
+                  (assoc-in bridge [:protocol-refinement :future-task-source-successor :after 0 :body-sha256] "forged")]
+      (is (thrown? Exception (sh-crosswalk/source-view))))
+    (is (= :two-complete-hosted-files-static-only-no-execution
+           (get-in r [:implementation-source-inspection :scope])))))
+
+(let [result (run-tests 'sh-crosswalk-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))
