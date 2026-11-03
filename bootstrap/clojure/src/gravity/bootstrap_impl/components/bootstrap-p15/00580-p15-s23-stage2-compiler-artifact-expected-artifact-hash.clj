@@ -224,7 +224,10 @@
   ([emitter artifact-source artifact-text]
    (p15-s23-stage2-compiler-artifact-plan-raw emitter artifact-source artifact-text nil))
   ([emitter artifact-source artifact-text module-inputs]
-   (p15-s23-stage2-module-bundle emitter artifact-source artifact-text module-inputs)))
+   (p15-s23-stage2-module-bundle emitter artifact-source artifact-text module-inputs))
+  ([emitter artifact-source artifact-text module-inputs reader-invocation]
+   (p15-s23-stage2-module-bundle emitter artifact-source artifact-text module-inputs
+                                 reader-invocation)))
 
 (defn p15-s23-stage2-compiler-artifact-semantic-input
   [plan]
