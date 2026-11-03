@@ -1,7 +1,8 @@
 (ns gravity.c2-pass-cache-test
   (:require [clojure.test :refer [deftest is testing]]
             [clojure.string :as str]
-            [gravity.c2-pass-cache :as cache])
+            [gravity.c2-pass-cache :as cache]
+            [gravity.pass-execution :as pass-execution])
   (:import [java.io IOException]
            [java.nio.channels ClosedByInterruptException]
            [java.nio.charset StandardCharsets]
@@ -1827,3 +1828,192 @@
                ((:artifact-id-of adapted-operations) envelope)))]
       (is (= (:c2-artifact-id envelope) result))
       (is (= 1 @decode-calls)))))
+
+(deftest generic-v2-adapter-public-store-reuses-output-and-preserves-callback-order
+  (with-temporary-directory [directory]
+    (let [source (.resolve directory "public-store.gravity")
+          _ (Files/write source (.getBytes "(ns public-store)\n"
+                                                StandardCharsets/UTF_8)
+                         (into-array OpenOption
+                                     [StandardOpenOption/CREATE_NEW
+                                      StandardOpenOption/WRITE]))
+          key (cache/cache-key
+               (key-request (cache/source-snapshot! source)))
+          artifact (accepted-artifact :public-store)
+          events (atom [])
+          boundary-id (hash-id
+                       {:domain :public-store-boundary
+                        :boundary (:gravity-reader-boundary artifact)})
+          operations
+          (assoc (validation-ops (constantly artifact))
+                 :artifact-id-of
+                 (fn [candidate]
+                   (swap! events conj [:artifact-id
+                                       (identical? candidate artifact)])
+                   (:artifact-id candidate))
+                 :boundary-projection-id-of
+                 (fn [candidate]
+                   (swap! events conj [:boundary
+                                       (identical? candidate artifact)])
+                   boundary-id))
+          decode-var (private-var 'decode-adapter-envelope!)
+          decode (var-get decode-var)
+          decode-calls (atom 0)
+          store (cache/open-local-store directory)
+          result
+          (with-redefs-fn
+            {decode-var
+             (fn [& args]
+               (swap! decode-calls inc)
+               (apply decode args))}
+            #(cache/store! store key artifact operations))]
+      (is (= :stored (get-in result [:cache-evidence :status])))
+      (is (identical? artifact (:artifact result)))
+      (is (= {:line 7} (meta (:value (:artifact result)))))
+      ;; Direct store performs one output validation decode and one publication
+      ;; validation decode. Both identity reads retain artifact-id then boundary
+      ;; callback order; the fast path removes only the duplicate decode between
+      ;; those callbacks.
+      (is (= 2 @decode-calls))
+      (is (= (vec (mapcat (fn [_] [:artifact-id :boundary]) (range 6)))
+             (mapv first @events)))
+      (is (= 6 (count (filter #(= :artifact-id (first %)) @events))))
+      (is (= 6 (count (filter #(= :boundary (first %)) @events)))))))
+
+(deftest generic-v2-adapter-public-store-rejects-callback-divergence
+  (with-temporary-directory [directory]
+    (let [source (.resolve directory "callback-divergence.gravity")
+          _ (Files/write source (.getBytes "(ns callback-divergence)\n"
+                                                StandardCharsets/UTF_8)
+                         (into-array OpenOption
+                                     [StandardOpenOption/CREATE_NEW
+                                      StandardOpenOption/WRITE]))
+          key (cache/cache-key
+               (key-request (cache/source-snapshot! source)))
+          artifact (accepted-artifact :callback-divergence)
+          decoded? (atom false)
+          diverge? (atom false)
+          divergent-id (hash-id :callback-divergence)
+          boundary-id (hash-id
+                       {:domain :callback-divergence-boundary
+                        :boundary (:gravity-reader-boundary artifact)})
+          operations
+          (assoc (validation-ops (constantly artifact))
+                 :artifact-id-of
+                 (fn [candidate]
+                   (if (and @diverge? (not (identical? candidate artifact)))
+                     divergent-id
+                     (do
+                       (when-not (identical? candidate artifact)
+                         (reset! decoded? true))
+                       (:artifact-id candidate))))
+                 :boundary-projection-id-of
+                 (fn [candidate]
+                   ;; The first decoded boundary callback arms the next
+                   ;; identity read; that read must reject the divergence.
+                   (when (and @decoded? (not (identical? candidate artifact)))
+                     (reset! diverge? true))
+                   boundary-id))
+          decode-var (private-var 'decode-adapter-envelope!)
+          decode (var-get decode-var)
+          decode-calls (atom 0)
+          store (cache/open-local-store directory)
+          error
+          (with-redefs-fn
+            {decode-var
+             (fn [& args]
+               (swap! decode-calls inc)
+               (apply decode args))}
+            #(captured-throwable
+              (fn [] (cache/store! store key artifact operations))))]
+      (is (instance? clojure.lang.ExceptionInfo error))
+      (is (= "C16-STALE" (:id (ex-data error))))
+      (is (= "C2 v2 envelope differs from its validated identity"
+             (.getMessage error)))
+      (is (true? @diverge?))
+      ;; Divergence is detected by the invocation-local identity check before
+      ;; any fallback decode or publication can occur.
+      (is (= 1 @decode-calls)))))
+
+(deftest generic-v2-adapter-public-store-rejects-mutated-validated-payload
+  (with-temporary-directory [directory]
+    (let [source (.resolve directory "mutated-output.gravity")
+          _ (Files/write source (.getBytes "(ns mutated-output)\n"
+                                                StandardCharsets/UTF_8)
+                         (into-array OpenOption
+                                     [StandardOpenOption/CREATE_NEW
+                                      StandardOpenOption/WRITE]))
+          key (cache/cache-key
+               (key-request (cache/source-snapshot! source)))
+          artifact (accepted-artifact :mutated-output)
+          decode-var (private-var 'decode-adapter-envelope!)
+          decode (var-get decode-var)
+          decode-calls (atom 0)
+          store (cache/open-local-store directory)
+          error
+          (with-redefs-fn
+            {decode-var
+             (fn [& args]
+               (let [call (swap! decode-calls inc)
+                     result (apply decode args)]
+                 (when (= 1 call)
+                   (let [payload ^bytes (:payload-bytes (first args))]
+                     (aset-byte payload 0
+                                (byte (bit-xor 1 (aget payload 0))))))
+                 result))}
+            #(captured-throwable
+              (fn [] (cache/store! store key artifact
+                                    (validation-ops (constantly artifact))))))]
+      (is (instance? clojure.lang.ExceptionInfo error))
+      (is (= "C16-STALE" (:id (ex-data error))))
+      (is (= "C2 v2 envelope payload identity is stale"
+             (.getMessage error)))
+      ;; The mutated payload misses the fast path's SHA-256 guard and is then
+      ;; rejected by the existing full decoder; it is never accepted as proof.
+      (is (= 2 @decode-calls)))))
+
+(deftest generic-v2-adapter-pass-execution-falls-back-for-distinct-envelope
+  (with-temporary-directory [directory]
+    (let [source (.resolve directory "distinct-envelope.gravity")
+          _ (Files/write source (.getBytes "(ns distinct-envelope)\n"
+                                                StandardCharsets/UTF_8)
+                         (into-array OpenOption
+                                     [StandardOpenOption/CREATE_NEW
+                                      StandardOpenOption/WRITE]))
+          key (cache/cache-key
+               (key-request (cache/source-snapshot! source)))
+          artifact (accepted-artifact :distinct-envelope)
+          operations (validation-ops (constantly artifact))
+          builder (var-get (private-var 'adapter-operations!))
+          adapted (builder key operations (constantly artifact) :store)
+          adapted-operations (:operations adapted)
+          decode-var (private-var 'decode-adapter-envelope!)
+          decode (var-get decode-var)
+          decode-calls (atom 0)
+          execution
+          (with-redefs-fn
+            {decode-var
+             (fn [& args]
+               (swap! decode-calls inc)
+               (apply decode args))}
+            #(pass-execution/execute-pass!
+              (:request adapted)
+              (select-keys adapted-operations
+                           [:produce! :validate-output! :artifact-id-of
+                            :verifier-reports :evidence-records])))
+          envelope (:artifact execution)
+          distinct-envelope (into {} envelope)
+          result
+          (with-redefs-fn
+            {decode-var
+             (fn [& args]
+               (swap! decode-calls inc)
+               (apply decode args))}
+            #((:artifact-id-of adapted-operations) distinct-envelope))]
+      (is (= envelope distinct-envelope))
+      (is (not (identical? envelope distinct-envelope)))
+      (is (= (:c2-artifact-id envelope) result))
+      ;; The public pass-execution path validates the original envelope once;
+      ;; a distinct equal map deliberately takes the existing full-decoder
+      ;; fallback rather than trusting the invocation-local handoff.
+      (is (= 2 @decode-calls)))))
