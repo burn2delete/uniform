@@ -70,8 +70,8 @@
                 "bootstrap/clojure/test/gravity/self_hosting/sh04_"
                 "bootstrap/clojure/fixtures/self-hosting/sh-03"
                 "bootstrap/clojure/fixtures/self-hosting/sh-04"]
-   "macro" ["bootstrap/gravity/src/gravity/macro.gravity"
-            "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity"
+   "macro" ["language/compiler/src/gravity/macro.gravity"
+            "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity"
             "bootstrap/clojure/src/gravity/macro.clj"
             "bootstrap/clojure/src/gravity/macro_run_storage.clj"
             "bootstrap/clojure/src/gravity/macro_expansion"
@@ -83,8 +83,8 @@
             "bootstrap/clojure/test/gravity/self_hosting/sh05_"
             "bootstrap/clojure/test/gravity/self_hosting/macro_run_storage_test.clj"
             "bootstrap/clojure/fixtures/self-hosting/sh-05"]
-   "resolution" ["bootstrap/gravity/src/gravity/resolution.gravity"
-                 "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
+   "resolution" ["language/compiler/src/gravity/resolution.gravity"
+                 "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
                  "bootstrap/clojure/src/gravity/resolution.clj"
                  "bootstrap/clojure/src/gravity/c5_name_resolution"
                  "bootstrap/clojure/src/gravity/c5_name_resolution.clj"
@@ -96,9 +96,9 @@
                  "bootstrap/clojure/test/gravity/self_hosting/resolution_"
                  "bootstrap/clojure/fixtures/self-hosting/sh-06"]
    "checked-core-runtime" ["language/compiler/src/gravity/checked_core.gravity"
-                           "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+                           "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
                            "language/compiler/src/gravity/compiler/c6_call_arity_legality.gravity"
-                           "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
+                           "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
                            "bootstrap/clojure/src/gravity/checked_core.clj"
                            "bootstrap/clojure/src/gravity/checked_core"
                            "bootstrap/clojure/src/gravity/c6_core_lowering"
@@ -312,6 +312,28 @@
            (contains? #{"deps.edn" "deps-lock.edn" "project.clj" "build.boot"
                         "bb.edn" "shadow-cljs.edn"} path))))
 
+;; These files are the reviewed static-lint implementation and its direct
+;; configuration/control surface.  They do not own a compiler stage, but a
+;; change here must still retain the static job so the affected controls and
+;; changed-file lint execute.  Keep this allowlist exact: selector, workflow,
+;; progress, snapshot and other tooling changes remain cross-cutting.
+(def lint-tooling-paths
+  #{".clj-kondo/config.edn"
+    "tools/ci/lint.clj"
+    "tools/ci/lint_context.clj"
+    "tools/ci/lint_facade_test.clj"
+    "tools/ci/lint_macro_test.clj"
+    "tools/ci/lint_macros.clj"
+    "tools/ci/kondo/config.edn"
+    "tools/ci/kondo/hooks/c2.clj"
+    "tools/ci/kondo/hooks/module_analysis.clj"})
+
+(defn lint-tooling-path? [path]
+  (contains? lint-tooling-paths path))
+
+(defn lint-tooling-only? [paths]
+  (and (seq paths) (every? lint-tooling-path? paths)))
+
 (defn docs-only-record? [{:keys [old-mode new-mode status path]}]
   (and (docs-only-path? path)
        (not (or (str/starts-with? path "contracts/")
@@ -377,6 +399,13 @@
       (some contract-or-spec-path? paths)
       {:kind :full :reason :contract-or-spec-change :paths paths}
 
+      (lint-tooling-only? paths)
+      {:kind :selected
+       :reason :lint-tooling-only
+       :paths paths
+       :stages []
+       :modes always-pr-modes}
+
       (some cross-cutting-path? paths)
       {:kind :full :reason :cross-cutting-change :paths paths}
 
@@ -431,13 +460,15 @@
            :selection-error (str error)})))))
 
 (defn selection-output-lines [selection]
-  (let [modes (if (= :full (:kind selection))
+  (let [lint-tooling-only? (= :lint-tooling-only (:reason selection))
+        modes (if (= :full (:kind selection))
                 (conj semantic-modes "leaves-portable" "leaves-darwin"
                       "darwin-unsupported")
                 (cond-> (set (:modes selection))
-                  (= :docs-only (:kind selection))
+                  (or (= :docs-only (:kind selection)) lint-tooling-only?)
                   (into #{"static" "contracts" "darwin-unsupported"})
-                  (not= :docs-only (:kind selection))
+                  (and (not= :docs-only (:kind selection))
+                       (not lint-tooling-only?))
                   (conj "leaves-portable" "leaves-darwin"
                         "darwin-unsupported")))]
     (into (mapv #(str % "=" (boolean (contains? modes %)))
@@ -642,6 +673,9 @@
 
       (some contract-or-spec-path? paths)
       {:kind :full :reason :contract-or-spec-change :paths paths :entries platform-catalog}
+
+      (lint-tooling-only? paths)
+      {:kind :selected :reason :lint-tooling-only :paths paths :entries []}
 
       (some cross-cutting-path? paths)
       {:kind :full :reason :cross-cutting-change :paths paths :entries platform-catalog}

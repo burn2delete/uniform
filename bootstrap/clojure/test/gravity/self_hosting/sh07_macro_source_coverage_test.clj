@@ -30,7 +30,7 @@
 
 (def ^:private root (delay (repository-root)))
 (def ^:private macro-relative-path
-  "bootstrap/gravity/src/gravity/macro.gravity")
+  "language/compiler/src/gravity/macro.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
 (def ^:private expected-macro-source-revision-id
@@ -245,9 +245,9 @@
             :authenticated-envelope
             "language/compiler/src/gravity/compiler/authenticated_envelope.gravity"
             :resolution
-            "bootstrap/gravity/src/gravity/resolution.gravity"
+            "language/compiler/src/gravity/resolution.gravity"
             :c6-c10-pipeline
-            "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+            "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
             :c6-call-arity
             "language/compiler/src/gravity/compiler/c6_call_arity_legality.gravity"
             :checked-core
@@ -255,11 +255,11 @@
             :c3-compat
             "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
             :c6-core
-            "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
+            "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
             :c4-compat
-            "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity"
+            "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity"
             :c5-compat
-            "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
+            "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
             :l2-core
             "language/compiler/src/gravity/compiler/l2_core_language_semantics.gravity"
             :macro macro-relative-path

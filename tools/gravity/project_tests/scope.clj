@@ -20,7 +20,8 @@
     'gravity.c11-mir-test]
 
    :bootstrap
-   ['gravity.self-hosting.w5-stage-equivalence-verifier-test
+   ['gravity.bootstrap.rebuild.inputs-test
+    'gravity.self-hosting.w5-stage-equivalence-verifier-test
     'gravity.self-hosting.w5-compiler-identity-verifier-test
     'gravity.self-hosting.w5-trust-provenance-verifier-test
     'gravity.self-hosting.w5-stage-rebuild-orchestrator-test

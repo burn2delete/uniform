@@ -5,7 +5,7 @@
 ;; ---------------------------------------------------------------------------
 
 (def p15-s23-c6c10-source-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity")
+  "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity")
 
 (def p15-s23-c6c10-builder-function
   'c6-c10-build-checked-core-template)

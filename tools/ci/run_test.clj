@@ -516,11 +516,17 @@
     (is (= expected-all
            (:modes (ci/stage-selection [(change "bootstrap/clojure/src/gravity/reader.clj")]))))
     (is (= expected-macro
-           (:modes (ci/stage-selection [(change "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity")]))))
+           (:modes (ci/stage-selection [(change "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity")]))))
     (is (= expected-resolution
            (:modes (ci/stage-selection [(change "bootstrap/clojure/test/gravity/resolution/pipeline_test.clj")]))))
     (is (= expected-checked
            (:modes (ci/stage-selection [(change "language/compiler/src/gravity/checked_core.gravity")]))))
+    (is (= expected-checked
+           (:modes (ci/stage-selection
+                    [(change "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity")]))))
+    (is (= expected-checked
+           (:modes (ci/stage-selection
+                    [(change "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity")]))))
     (is (= expected-checked
            (:modes (ci/stage-selection
                     [(change "bootstrap/clojure/test/gravity/self_hosting/sh07_var_reference_test.clj")]))))
@@ -559,6 +565,56 @@
                   "src/new-owner.gravity"
                   nil]]
       (is (= :full (:kind (ci/stage-selection [(change path)]))) (pr-str path)))))
+
+(deftest lint-tooling-selection-keeps-only-affected-ci-surfaces
+  (let [change (fn [path] {:old-mode "100644" :new-mode "100644"
+                           :status "M" :path path})
+        compiler-modes ["bootstrap" "macro" "resolution"
+                        "resolution-pipeline" "resolution-unmetered"
+                        "resolution-invocation-selection" "checked-core-runtime"]
+        selection (ci/stage-selection [(change "tools/ci/lint.clj")])
+        output (set (ci/selection-output-lines selection))]
+    (is (= :selected (:kind selection)))
+    (is (= :lint-tooling-only (:reason selection)))
+    (is (= [] (:stages selection)))
+    (is (= #{"static" "contracts"} (:modes selection)))
+    (doseq [mode ["static" "contracts"]]
+      (is (not (ci/skip-for-stage-selection? mode selection)) mode))
+    (doseq [mode compiler-modes]
+      (is (ci/skip-for-stage-selection? mode selection) mode))
+    (is (contains? output "static=true"))
+    (is (contains? output "contracts=true"))
+    (is (contains? output "darwin-unsupported=true"))
+    (doseq [mode ["bootstrap" "macro" "resolution" "checked-core-runtime"
+                  "leaves-portable" "leaves-darwin"]]
+      (is (contains? output (str mode "=false")) mode))
+    (is (contains? output "static-tools-required=true"))
+    (is (contains? output "selection-valid=true"))
+    (let [leaf (ci/leaf-selection-for-changes
+                "portable" [] [(change "tools/ci/lint_facade_test.clj")])]
+      (is (= :selected (:kind leaf)))
+      (is (= :lint-tooling-only (:reason leaf)))
+      (is (empty? (:entries leaf))))
+    (doseq [path ["tools/ci/lint_context.clj"
+                  "tools/ci/lint_facade_test.clj"
+                  "tools/ci/lint_macro_test.clj"
+                  "tools/ci/lint_macros.clj"
+                  "tools/ci/kondo/config.edn"
+                  "tools/ci/kondo/hooks/c2.clj"
+                  "tools/ci/kondo/hooks/module_analysis.clj"
+                  ".clj-kondo/config.edn"]]
+      (is (= :lint-tooling-only
+             (:reason (ci/stage-selection [(change path)])))
+          path))
+    (is (= :full (:kind (ci/stage-selection
+                         [(change "tools/ci/lint.clj")
+                          (change "language/compiler/src/gravity/checked_core.gravity")]))))
+    (doseq [path ["tools/ci/run.clj" "tools/ci/run_test.clj"
+                  "tools/ci/progress_test.clj" "tools/ci/snapshot.clj"
+                  "tools/ci/kondo/hooks/new_hook.clj" ".github/workflows/ci.yml"
+                  "deps.edn" "language/runtime/src/gravity/runtime.gravity"
+                  "src/new-owner.gravity"]]
+      (is (= :full (:kind (ci/stage-selection [(change path)]))) path))))
 
 (deftest stage-selection-fails-closed-for-deletes-renames-modes-and-types
   (let [regular (fn [path] {:old-mode "100644" :new-mode "100644"
