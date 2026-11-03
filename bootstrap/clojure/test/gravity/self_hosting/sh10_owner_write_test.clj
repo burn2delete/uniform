@@ -11,7 +11,7 @@
             (.isFile (.toFile (.resolve p "deps.edn"))) p
             :else (recur (.getParent p))))))
 (defn- path [p] (str (.resolve @root p)))
-(def ^:private source "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity")
+(def ^:private source "language/compiler/src/gravity/compiler/c9_ownership_checker_engine.gravity")
 (defn- fixture [family ext]
   (str "bootstrap/clojure/fixtures/self-hosting/sh-10/" family "/owner-write" ext))
 (defn- compile-plan [relative]

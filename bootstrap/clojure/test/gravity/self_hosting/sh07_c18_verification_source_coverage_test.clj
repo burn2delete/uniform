@@ -28,7 +28,7 @@
 
 (def ^:private root (delay (repository-root)))
 (def ^:private c18-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity")
+  "language/compiler/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
 (def ^:private expected-source-byte-count 30982)

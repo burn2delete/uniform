@@ -125,8 +125,10 @@
                 :rejects stage1-bootstrap-diagnostic-ids}
          :modules module-records
          :accepted-stage1-bootstrap-source-fixtures
-         [{:fixtures ["bootstrap/gravity/src" "language/compiler/src"]
-           :source-roots ["bootstrap/gravity/src" "language/compiler/src"]
+         [{:fixtures ["bootstrap/gravity/src" "language/compiler/src"
+                      "language/runtime/src"]
+           :source-roots ["bootstrap/gravity/src" "language/compiler/src"
+                          "language/runtime/src"]
            :components (vec (sort stage1-bootstrap-required-components))
            :status :accepted}]
          :rejected-stage1-bootstrap-source-fixtures
@@ -157,7 +159,8 @@
 
 (def stage1-reader-bootstrap-source-root
   ["bootstrap/gravity/src"
-   "language/compiler/src"])
+   "language/compiler/src"
+   "language/runtime/src"])
 
 (def stage1-reader-execution-diagnostic-messages
   {"STAGE1READER001" "stage1 reader table rejected an unexpected close delimiter"

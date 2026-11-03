@@ -1184,7 +1184,7 @@
   (let [fixture
         "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/new.gravity"
         module
-        "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+        "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity"
         plan
         (planner/build-plan
          {:changed-paths [module fixture]

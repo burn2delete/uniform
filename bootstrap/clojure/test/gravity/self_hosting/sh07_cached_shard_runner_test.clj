@@ -42,7 +42,7 @@
     "bootstrap/clojure/test/gravity/self_hosting/sh07_cached_shard_runner.clj"
     "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj"
     "bootstrap/clojure/test/gravity/self_hosting/sh07_semantic_carrier.clj"
-    "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
+    "language/compiler/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
     "language/compiler/src/gravity/checked_core.gravity"
     "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_table.clj"
     "bootstrap/clojure/test/gravity/self_hosting/sh07_module_fragment_test.clj"

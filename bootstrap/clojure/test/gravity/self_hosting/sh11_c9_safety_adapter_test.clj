@@ -33,12 +33,12 @@
 (def ^:private c9-plan
   (delay
     (compile-plan
-     "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity")))
+     "language/compiler/src/gravity/compiler/c9_ownership_checker_engine.gravity")))
 
 (def ^:private c10-plan
   (delay
     (compile-plan
-     "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity")))
+     "language/compiler/src/gravity/compiler/c10_safety_analysis_pipeline.gravity")))
 
 ;; Required stable-candidate execution command (the namespace itself does not
 ;; promise deftest order):

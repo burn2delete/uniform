@@ -2785,7 +2785,7 @@
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
-        runtime-path (.getPath (io/file root "bootstrap/gravity/src/gravity/runtime.gravity"))
+        runtime-path (.getPath (io/file root "language/runtime/src/gravity/runtime.gravity"))
         compatibility-path (.getPath (io/file root "bootstrap/gravity/p15_s23/runtime.gravity"))
         compatibility-source {:path compatibility-path :sha256 (str "sha256:" (bootstrap/sha256-hex (slurp compatibility-path)))}
         runtime-text (slurp runtime-path) runtime-forms (bootstrap/read-forms runtime-path runtime-text)
@@ -2873,7 +2873,7 @@
 (defn- typed-catch-runtime-projection []
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        path (.getPath (io/file root "bootstrap/gravity/src/gravity/runtime.gravity")) text (slurp path)
+        path (.getPath (io/file root "language/runtime/src/gravity/runtime.gravity")) text (slurp path)
         compatibility-path (.getPath (io/file root "bootstrap/gravity/p15_s23/runtime.gravity"))
         forms (bootstrap/read-forms path text)
         arities {'p15-s23-runtime-evaluate-arguments 4 'p15-s23-runtime-evaluate-arguments-in-context 8
@@ -11470,7 +11470,7 @@
         (is (= g q))
         (is (= (bootstrap/read-forms g-path g) (bootstrap/read-forms q-path q)))
         (is (= functions (count (filter #(and (seq? %) (= 'defn (first %))) (bootstrap/read-forms g-path g)))))))
-    (let [owner-path (.getPath (io/file root "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"))
+    (let [owner-path (.getPath (io/file root "language/compiler/src/gravity/compiler/c9_ownership_checker_engine.gravity"))
           owner (first (filter #(and (seq? %) (= 'defn (first %)) (= 'sh10-identity-aggregate? (second %)))
                                (bootstrap/read-forms owner-path (slurp owner-path))))
           fixture-path (.getPath (io/file root "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-set-predicate.gravity"))
@@ -11609,7 +11609,7 @@
     (println (pr-str {:bg-set-predicate-positive true :function-table-entry-invocations (count results)
                       :source-products {:g-positive 1 :g-negative 1 :q-typed-products 0}
                       :seed-interpreter-on-emitted-ir-entries 10 :gravity-runtime-transfer-entries 1
-                      :copied-helper-body-control {:owner "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity" :function 'sh10-identity-aggregate?
+                      :copied-helper-body-control {:owner "language/compiler/src/gravity/compiler/c9_ownership_checker_engine.gravity" :function 'sh10-identity-aggregate?
                                                  :parameter-type :gravity.type/set :whole-module-coverage false}
                       :elapsed-ns {:assembly-including-public-c7-verification (- t1 t0) :c8-construction (- t3 t2)
                                    :c8-verification (- t4 t3) :entry-execution-including-expectations-and-reference (- t6 t5)}
@@ -20427,7 +20427,7 @@
   (let [fixture-path (module-fixture "seed-library" ".gravity")
         root (loop [directory (.getParentFile (io/file fixture-path))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        source-path (.getPath (io/file root "bootstrap/gravity/src/gravity/runtime.gravity"))
+        source-path (.getPath (io/file root "language/runtime/src/gravity/runtime.gravity"))
         compatibility-path (.getPath (io/file root "bootstrap/gravity/p15_s23/runtime.gravity"))
         compatibility-source {:path compatibility-path :sha256 (str "sha256:" (bootstrap/sha256-hex (slurp compatibility-path)))}
         text (slurp source-path)

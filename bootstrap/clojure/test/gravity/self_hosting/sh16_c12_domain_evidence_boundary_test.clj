@@ -31,7 +31,7 @@
 (def ^:private c13-plan
   (delay
     (compile-plan
-     "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity")))
+     "language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity")))
 
 (defn- invoke-c13 [function arguments]
   (bootstrap/p15-s23-stage2-runtime-execute-function

@@ -16873,8 +16873,8 @@
   ;; Same real Effects dependency and C8 module-bundle construction as the
   ;; existing C8 test helper, with only explicit current-reader transport.
   (delay
-    (let [source-path (path "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity")
-          effects-path (path "bootstrap/gravity/src/gravity/effects.gravity")
+    (let [source-path (path "language/compiler/src/gravity/compiler/c8_effect_checker_engine.gravity")
+          effects-path (path "language/compiler/src/gravity/effects.gravity")
           emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))
           dependency (function-current-resolution effects-path)
           inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [dependency]}

@@ -31,7 +31,7 @@
   (str (.resolve @root relative)))
 
 (def ^:private envelope-source-relative-path
-  "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity")
+  "language/compiler/src/gravity/compiler/authenticated_envelope.gravity")
 
 (def ^:private fixture-root
   "bootstrap/clojure/fixtures/self-hosting/sh-02")

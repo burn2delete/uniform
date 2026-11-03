@@ -11,7 +11,7 @@
   (:require [clojure.test :refer [deftest is]]))
 
 (def ^:private c7-source-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity")
+  "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity")
 (def ^:private maximum-fragment-forms 1024)
 
 ;; Bounded historical regression fixture.  It is intentionally independent of
