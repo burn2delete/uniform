@@ -93,3 +93,19 @@ release readiness, or canonical source migration. The coordinator must compose
 the latest main, run the ordinary module callee/caller acceptance path with the
 explicit invocation, and independently review the resulting immutable
 candidate before any integration decision.
+
+## Current-main composition note
+
+The follow-through composes current main `77027c72003b636d0c475092fb01309848df9923`
+without replaying the deleted bootstrap compiler source tree. The retained C14
+source and its C13 dependency are now read from their canonical owners:
+
+* `language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity`
+* `language/compiler/src/gravity/compiler/c14_literal_bool_contextual_lowering.gravity`
+
+The Reader/Syntax sources retain their existing bootstrap owners. The optional
+current Reader/Syntax/Macro invocation remains caller-owned and is forwarded
+through the current Stage2 source, bundle, reconstruction and runtime arities;
+the legacy arities remain pinned and fail closed. This composition note does
+not convert the historical diagnosis or the bounded helper evidence into C5 or
+C14 execution evidence.
