@@ -482,7 +482,17 @@
                        (requirement-sources/git-blob-id historical))
                     "Platform historical source commit blob differs from baseline")
         baseline (read-ref (:baseline-ref transition) path)
-        applying (read-ref (:applying-ref transition) path)
+        current-source-ref (or (:current-source-ref transition) (:applying-ref transition))
+        current-source (read-ref current-source-ref path)
+        _ (require! (= (or (:current-source-tree transition) (:applying-tree transition))
+                       (requirement-sources/git-commit-tree "." current-source-ref require!))
+                    "Platform current composition source commit/tree changed")
+        _ (require! (= (or (:current-source-blob transition) (:applying-blob transition))
+                       (requirement-sources/git-blob-id current-source))
+                    "Platform current composition source blob changed")
+        _ (require! (= (or (:current-source-sha256 transition) (:live-sha256 transition))
+                       (sha256 current-source))
+                    "Platform current composition source bytes changed")
         current (read-text path)]
     (doseq [{:keys [id source]} rows]
       (validate-platform-task-locator! transition
@@ -490,11 +500,11 @@
                                         baseline snapshots)
       (let [raw (source-raw source snapshots)
             historical-row (platform-task-row baseline id)
-            applying-row (platform-task-row applying id)
+            current-source-row (platform-task-row current-source id)
             current-row (platform-task-row current id)]
         (require! (= raw historical-row)
                   (str "Historical Platform task body is not the frozen source row: " id))
-        (require! (= current-row applying-row)
+        (require! (= current-row current-source-row)
                   (str "Changed or unauthenticated current Platform task row: " id))))
     {:kind (:kind transition)
      :path path
@@ -505,6 +515,8 @@
      :baseline-tree (:baseline-tree transition)
      :applying-ref (:applying-ref transition)
      :applying-tree (:applying-tree transition)
+     :current-source-ref current-source-ref
+     :current-source-tree (or (:current-source-tree transition) (:applying-tree transition))
      :snapshot-provenance :git-bytes-verified
      :locator-provenance :historical-git-blob-and-utf8-span-verified
      :authority :historical-routing-and-structural-only
@@ -598,18 +610,28 @@
                        (requirement-sources/git-blob-id historical))
                     "Stdlib historical source commit blob differs from baseline")
         baseline (read-ref (:baseline-ref transition) path)
-        applying (read-ref (:applying-ref transition) path)
+        current-source-ref (or (:current-source-ref transition) (:applying-ref transition))
+        current-source (read-ref current-source-ref path)
+        _ (require! (= (or (:current-source-tree transition) (:applying-tree transition))
+                       (requirement-sources/git-commit-tree "." current-source-ref require!))
+                    "Stdlib current composition source commit/tree changed")
+        _ (require! (= (or (:current-source-blob transition) (:applying-blob transition))
+                       (requirement-sources/git-blob-id current-source))
+                    "Stdlib current composition source blob changed")
+        _ (require! (= (or (:current-source-sha256 transition) (:live-sha256 transition))
+                       (sha256 current-source))
+                    "Stdlib current composition source bytes changed")
         current (read-text path)]
     (doseq [{:keys [id source]} rows]
       (validate-stdlib-task-locator!
        transition (first (filter #(= id (:id %)) rows)) baseline snapshots)
       (let [raw (source-raw source snapshots)
             historical-row (stdlib-task-row baseline id)
-            applying-row (stdlib-task-row applying id)
+            current-source-row (stdlib-task-row current-source id)
             current-row (stdlib-task-row current id)]
         (require! (= raw historical-row)
                   (str "Historical Stdlib task body is not the frozen source row: " id))
-        (require! (= current-row applying-row)
+        (require! (= current-row current-source-row)
                   (str "Changed or unauthenticated current Stdlib task row: " id))))
     {:kind (:kind transition)
      :path path
@@ -620,6 +642,8 @@
      :baseline-tree (:baseline-tree transition)
      :applying-ref (:applying-ref transition)
      :applying-tree (:applying-tree transition)
+     :current-source-ref current-source-ref
+     :current-source-tree (or (:current-source-tree transition) (:applying-tree transition))
      :snapshot-provenance :git-bytes-verified
      :locator-provenance :historical-git-blob-and-utf8-span-verified
      :authority :historical-routing-and-structural-only

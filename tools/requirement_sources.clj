@@ -412,6 +412,13 @@
    :live-sha256 "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f"
    :baseline-blob "0c5e17169840e1a5deee71e5733955ff0a41805a"
    :applying-blob "054ee72c93246d88785ed29d82b549428a0d4e64"
+   ;; The current-main composition may add explicitly pending task criteria
+   ;; after the historical PR554 applying blob.  Keep that old bridge intact
+   ;; and authenticate the composed checkout as a separate source view.
+   :current-source-ref "6d964645050b86f0a0a936f88b42177b9553ecd3"
+   :current-source-tree "124a868d1b8152e92fb369ac3ecc45abdcfe3c71"
+   :current-source-blob "536da4ae764a3c985d758fa3f2e8435d06430862"
+   :current-source-sha256 "34035c35f900c7d45a04de2802086608c00605f39cb7c2d17b47b8411966660c"
    :parent-bridge-kind platform-generated-view-kind
    :parent-bridge-applying-ref "2a86a9f1fc56b1eceacf4ca29aac7c95a1a4792b"
    :task-ids ["hardware" "firmware" "kernel" "devices"]
@@ -437,6 +444,13 @@
    :live-sha256 "9ac5d948a4df974051fe15adce874f6bf39074982991d8c6c80201a971142d57"
    :baseline-blob "36551070cb5e0f44318df28f7673773fa0df6984"
    :applying-blob "7a3643c34a3798cffcf4e7f4f539118d9ceec35f"
+   ;; Preserve PR564's historical/applying bridge while binding the current
+   ;; composed task ledger separately; these bytes include only pending source
+   ;; criteria and do not promote implementation or library acceptance.
+   :current-source-ref "6d964645050b86f0a0a936f88b42177b9553ecd3"
+   :current-source-tree "124a868d1b8152e92fb369ac3ecc45abdcfe3c71"
+   :current-source-blob "bdd08edd8b49cdf4444cfe6fd4855cec58b9fa60"
+   :current-source-sha256 "c0f5795d8d827fa9a7fc43f2930e780252c74744da350f02449c2224e1935def"
    :task-ids ["stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
               "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis"
               "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis"

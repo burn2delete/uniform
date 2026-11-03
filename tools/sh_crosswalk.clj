@@ -795,9 +795,25 @@
           :path "specs/stdlib-workflow/tasks.md"
           :baseline-ref "dbeda7c7dc9a7bb880baa90af1a89046828db327"
           :applying-ref "80d8a655cea00218799446986a976ca64043a1f8"
+          :current-source-ref (:current-source-ref acceptance-dependencies/stdlib-task-source-transition)
+          :current-source-tree (:current-source-tree acceptance-dependencies/stdlib-task-source-transition)
+          :current-source-blob (:current-source-blob acceptance-dependencies/stdlib-task-source-transition)
+          :current-source-sha256 (:current-source-sha256 acceptance-dependencies/stdlib-task-source-transition)
           :task-ids (:task-ids acceptance-dependencies/stdlib-task-source-transition)
-          :scope :historical-routing-and-structural-only
-          :qualification "PR564's five Stdlib rows are authenticated against the frozen SH source rows and the applying current task-ledger blob. This successor preserves old locators and rejects changed criteria; it confers no implementation, library-release or whole-SH acceptance."}
+          :scope :historical-routing-current-composition-and-structural-only
+          :qualification "PR564's five Stdlib rows remain authenticated against the frozen SH source rows and its applying task-ledger blob. The current composition is separately bound to the exact current task-ledger source bytes; additive pending criteria do not promote implementation or library-release acceptance."}
+         :platform-task-source-transition
+         {:status :pending-source-version-review
+          :path "specs/platform-workflow/tasks.md"
+          :baseline-ref (:baseline-ref acceptance-dependencies/platform-task-source-transition)
+          :applying-ref (:applying-ref acceptance-dependencies/platform-task-source-transition)
+          :current-source-ref (:current-source-ref acceptance-dependencies/platform-task-source-transition)
+          :current-source-tree (:current-source-tree acceptance-dependencies/platform-task-source-transition)
+          :current-source-blob (:current-source-blob acceptance-dependencies/platform-task-source-transition)
+          :current-source-sha256 (:current-source-sha256 acceptance-dependencies/platform-task-source-transition)
+          :task-ids (:task-ids acceptance-dependencies/platform-task-source-transition)
+          :scope :historical-routing-current-composition-and-structural-only
+          :qualification "The PR554 Platform rows and applying blob remain preserved as an immutable historical bridge. The current composition is separately bound to the exact current task-ledger bytes, including pending additive parent criteria; no implementation or product acceptance is conferred."}
          :qualification "Native and resolution ownership source composition plus the PR564 Stdlib task-ledger source transition; immutable predecessor projections remain pinned, all current states unassessed."))
 
 (def mapping-review
