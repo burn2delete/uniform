@@ -1,11 +1,34 @@
-{:kind :pr650-current-main-port
- :pr 650
+{:report-self-hash :not-recorded,
+ :source-checkpoint
+ {:commit "99200a49ba8fe439dfc1c864c709c9a553bd7a98",
+  :tree "7ee9a7772f0f7ae1c68b171490b28496c397adc0",
+  :source-checkpoint-before-report true,
+  :clean true},
+ :nonclaims
+ [:full-pr650-semantic-equivalence
+  :production-replay
+  :project-accounting
+  :source-pin-renewal
+  :native-c
+  :genuine-compiler
+  :bootstrap
+  :release
+  :self-hosting
+  :main-integration],
+ :evidence
+ {:execution :normalized-current-dev-kernel-tests,
+  :source-authentication :not-established,
+  :genuine-compiler-or-bootstrap-execution :not-established,
+  :native-c :not-run,
+  :release :not-claimed,
+  :independent-acceptance :pending,
+  :integration :pending},
  :original
- {:head "63f461c851032e3d6bf3816bca34917f28530008"
-  :tree "7b3e919f66b7236d49c880eb926379c4838ad9ef"
-  :base "6aa6f827b7c42f4fd896b9329fc9c420d123f2a4"
-  :base-tree "9cd86e0c96fedc2327378908e07ac5eeb1d5e027"
-  :authored-path-count 57
+ {:head "63f461c851032e3d6bf3816bca34917f28530008",
+  :tree "7b3e919f66b7236d49c880eb926379c4838ad9ef",
+  :base "6aa6f827b7c42f4fd896b9329fc9c420d123f2a4",
+  :base-tree "9cd86e0c96fedc2327378908e07ac5eeb1d5e027",
+  :authored-path-count 57,
   :authored-paths
   ["bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj"
    "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
@@ -63,119 +86,116 @@
    "specs/accounting-removal/parameter-source-composition/source-controls.log"
    "specs/accounting-removal/parameter-source-composition/source-equations.edn"
    "specs/accounting-removal/parameter-source-composition/source_forms.clj"
-   "specs/accounting-removal/parameter-source-composition/source_forms_test.clj"]}
-  :route-control-paths
-  ["bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj"
-   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
-   "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj"]
-  :inert-pmk-test-paths
-  ["bootstrap/clojure/test/gravity/types/pmk_carrier_current_source_test.clj"
-   "bootstrap/clojure/test/gravity/types/pmk_carrier_main_source_test.clj"
-   "bootstrap/clojure/test/gravity/types/pmk_carrier_regression_test.clj"]
-  :inert-model-paths
-  ["bootstrap/clojure/test/gravity/types/private_map_cycle_test.clj"
-   "bootstrap/clojure/test/gravity/types/private_map_fact_test.clj"
-   "bootstrap/clojure/test/gravity/types/private_map_metadata_test.clj"
-   "bootstrap/clojure/test/gravity/types/private_map_parameter_test.clj"
-   "bootstrap/clojure/test/gravity/types/private_map_physical_test.clj"
-   "bootstrap/clojure/test/gravity/types/private_map_source_test.clj"]
-  :superseded-production-paths
-  ["bootstrap/gravity/p15_s23/emitter.gravity"
-   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
-   "bootstrap/gravity/src/gravity/effects.gravity"]
-  :historical-path-count 42
-  :historical-paths
-  ["specs/accounting-removal/parameter-649-composition.md"
-   "specs/accounting-removal/parameter-source-composition/README.md"
-   "specs/accounting-removal/parameter-source-composition/applied-selected-deltas.edn"
-   "specs/accounting-removal/parameter-source-composition/check.clj"
-   "specs/accounting-removal/parameter-source-composition/ci-successor.edn"
-   "specs/accounting-removal/parameter-source-composition/handoff.edn"
-   "specs/accounting-removal/parameter-source-composition/history/arity-control-preparation-failure.log"
-   "specs/accounting-removal/parameter-source-composition/history/intake-reader-failure.log"
-   "specs/accounting-removal/parameter-source-composition/history/patch-preparation-reader-failure.log"
-   "specs/accounting-removal/parameter-source-composition/inputs/ACC04-handoff.edn"
-   "specs/accounting-removal/parameter-source-composition/inputs/List-receipt.edn"
-   "specs/accounting-removal/parameter-source-composition/inputs/Map-R1-receipt.edn"
-   "specs/accounting-removal/parameter-source-composition/inputs/Map-original-CR-receipt.edn"
-   "specs/accounting-removal/parameter-source-composition/inputs/cycle-assessment.edn"
-   "specs/accounting-removal/parameter-source-composition/inputs/cycle-freeze.edn"
-   "specs/accounting-removal/parameter-source-composition/inputs/cycle-result.edn"
-   "specs/accounting-removal/parameter-source-composition/inputs/cycle-static-composition.edn"
-   "specs/accounting-removal/parameter-source-composition/inputs/pmk-source-handoff-04ce.md"
-   "specs/accounting-removal/parameter-source-composition/inputs/private-map-construction-conservation.edn"
-   "specs/accounting-removal/parameter-source-composition/inputs/private-map-construction-review-consumption.edn"
-   "specs/accounting-removal/parameter-source-composition/inputs/private-map-facts-conservation.edn"
-   "specs/accounting-removal/parameter-source-composition/inputs/private-map-facts-review-consumption.edn"
-   "specs/accounting-removal/parameter-source-composition/inputs/private-map-metadata-conservation.edn"
-   "specs/accounting-removal/parameter-source-composition/inputs/private-map-metadata-overlap.edn"
-   "specs/accounting-removal/parameter-source-composition/inputs/private-map-metadata-review-consumption.edn"
-   "specs/accounting-removal/parameter-source-composition/inputs/private-map-parameter-carrier.md"
-   "specs/accounting-removal/parameter-source-composition/inputs/private-map-parameter-conservation.edn"
-   "specs/accounting-removal/parameter-source-composition/inputs/private-map-parameter-overlap.edn"
-   "specs/accounting-removal/parameter-source-composition/inputs/private-map-parameter-residual.edn"
-   "specs/accounting-removal/parameter-source-composition/inputs/private-map-parameter-review-consumption.edn"
-   "specs/accounting-removal/parameter-source-composition/inputs/private-map-physical-conservation.edn"
-   "specs/accounting-removal/parameter-source-composition/inputs/private-map-physical-review-consumption.edn"
-   "specs/accounting-removal/parameter-source-composition/inputs/private-map-source-conservation.edn"
-   "specs/accounting-removal/parameter-source-composition/inputs/private-map-source-review-consumption.edn"
-   "specs/accounting-removal/parameter-source-composition/language-boundary.log"
-   "specs/accounting-removal/parameter-source-composition/negative-controls.edn"
-   "specs/accounting-removal/parameter-source-composition/reader-r1.edn"
-   "specs/accounting-removal/parameter-source-composition/source-controls-result.edn"
-   "specs/accounting-removal/parameter-source-composition/source-controls.log"
-   "specs/accounting-removal/parameter-source-composition/source-equations.edn"
-   "specs/accounting-removal/parameter-source-composition/source_forms.clj"
-   "specs/accounting-removal/parameter-source-composition/source_forms_test.clj"]
- :current-base
- {:commit "5fa103d2b384d36b3fc67a0d502f2212d0a225a8"
-  :tree "56b99d048302548a6c73b5385798e62301fdc6fc"}
- :source-checkpoint
- {:commit "99200a49ba8fe439dfc1c864c709c9a553bd7a98"
-  :tree "7ee9a7772f0f7ae1c68b171490b28496c397adc0"
-  :source-checkpoint-before-report true
-  :clean true}
+   "specs/accounting-removal/parameter-source-composition/source_forms_test.clj"]},
+ :historical-source-and-evidence-preserved true,
+ :checks
+ {:focused
+  {:command
+   "clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --namespace gravity.self-hosting.sh08-function-call-type-test --namespace gravity.self-hosting.sh09-body-effect-test --exact current-gravity-mixed-map-list-parameter-development-kernel --exact current-gravity-map-parameter-call-lowering-development-kernel --exact sh08-bare-map-parameter-development-kernel --exact body-mixed-map-list-parameter-development-kernel --fail-fast",
+   :log "/tmp/uniform-pr650-99200-map-routes.log",
+   :tests 4,
+   :assertions 278,
+   :failures 0,
+   :errors 0,
+   :exit 0},
+  :language-boundary
+  {:tests 6, :assertions 11, :failures 0, :errors 0, :exit 0},
+  :docs-validation {:exit 0},
+  :roadmap-validation {:exit 0},
+  :lint {:exit 2, :warnings 189, :errors 0, :changed-line-warnings 0},
+  :diff-check {:exit 0}},
+ :superseded-production-paths
+ ["bootstrap/gravity/p15_s23/emitter.gravity"
+  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+  "bootstrap/gravity/src/gravity/effects.gravity"],
  :current-port
- {:production-changed false
+ {:production-changed false,
   :route-controls
   [:sh01-mixed-map-list-c7-and-emitter-owner-selection
    :sh01-map-lowering-first-and-second-argument-owner-selection
    :sh08-direct-map-compatibility-owner-selection
-   :sh09-map-compatibility-positive-and-malformed-binding-rejection]
-  :model-test-definitions 22
+   :sh09-map-compatibility-positive-and-malformed-binding-rejection],
+  :model-test-definitions 22,
   :reader-preflight-preserved
-  {:path "bootstrap/clojure/test/gravity/reader_host_oracle_test.clj"
-   :commit "fe0ab349ff67d7215a10eef766c5fd95c82b6d4f"
-   :sha256 "5a95e99e4b7710d2af890b6b3748d4d14a7a0ea8bfd7f8fd34913e8f48b0f767"
-   :counted-in-pr650-paths false}}
- :checks
- {:focused
-  {:command "clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh01-stage2-runtime-iteration-test --namespace gravity.self-hosting.sh08-function-call-type-test --namespace gravity.self-hosting.sh09-body-effect-test --exact current-gravity-mixed-map-list-parameter-development-kernel --exact current-gravity-map-parameter-call-lowering-development-kernel --exact sh08-bare-map-parameter-development-kernel --exact body-mixed-map-list-parameter-development-kernel --fail-fast"
-   :log "/tmp/uniform-pr650-99200-map-routes.log"
-   :tests 4 :assertions 278 :failures 0 :errors 0 :exit 0}
-  :language-boundary {:tests 6 :assertions 11 :failures 0 :errors 0 :exit 0}
-  :docs-validation {:exit 0}
-  :roadmap-validation {:exit 0}
-  :lint {:exit 2 :warnings 189 :errors 0 :changed-line-warnings 0}
-  :diff-check {:exit 0}}
- :evidence
- {:execution :normalized-current-dev-kernel-tests
-  :source-authentication :not-established
-  :genuine-compiler-or-bootstrap-execution :not-established
-  :native-c :not-run
-  :release :not-claimed
-  :independent-acceptance :pending
-  :integration :pending}
- :nonclaims
- [:full-pr650-semantic-equivalence
-  :production-replay
-  :project-accounting
-  :source-pin-renewal
-  :native-c
-  :genuine-compiler
-  :bootstrap
-  :release
-  :self-hosting
-  :main-integration]
- :historical-source-and-evidence-preserved true
- :report-self-hash :not-recorded}
+  {:path "bootstrap/clojure/test/gravity/reader_host_oracle_test.clj",
+   :commit "fe0ab349ff67d7215a10eef766c5fd95c82b6d4f",
+   :sha256
+   "5a95e99e4b7710d2af890b6b3748d4d14a7a0ea8bfd7f8fd34913e8f48b0f767",
+   :counted-in-pr650-paths false}},
+ :kind :pr650-current-main-port,
+ :route-control-paths
+ ["bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj"
+  "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
+  "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj"],
+ :inert-pmk-test-paths
+ ["bootstrap/clojure/test/gravity/types/pmk_carrier_current_source_test.clj"
+  "bootstrap/clojure/test/gravity/types/pmk_carrier_main_source_test.clj"
+  "bootstrap/clojure/test/gravity/types/pmk_carrier_regression_test.clj"],
+ :current-base
+ {:commit "5fa103d2b384d36b3fc67a0d502f2212d0a225a8",
+  :tree "56b99d048302548a6c73b5385798e62301fdc6fc"},
+ :current-composition
+ {:source-checkpoint "fbb863229c56522b5ded0811332177a28693109b",
+  :errors 0,
+  :original-history-retained true,
+  :exit 0,
+  :three-Gravity-owner-blobs-unchanged true,
+  :tests 4,
+  :source-tree "16a13f6b6b39f9aa0453faaeb1ed0eb949e770a5",
+  :all-four-test-blobs-unchanged true,
+  :base "0e2b37cd2eefbab2f02e5898b960f9bbc4100fef",
+  :failures 0,
+  :log "/tmp/uniform-pr650-current-main-0e.log",
+  :assertions 278},
+ :pr 650,
+ :historical-path-count 42,
+ :historical-paths
+ ["specs/accounting-removal/parameter-649-composition.md"
+  "specs/accounting-removal/parameter-source-composition/README.md"
+  "specs/accounting-removal/parameter-source-composition/applied-selected-deltas.edn"
+  "specs/accounting-removal/parameter-source-composition/check.clj"
+  "specs/accounting-removal/parameter-source-composition/ci-successor.edn"
+  "specs/accounting-removal/parameter-source-composition/handoff.edn"
+  "specs/accounting-removal/parameter-source-composition/history/arity-control-preparation-failure.log"
+  "specs/accounting-removal/parameter-source-composition/history/intake-reader-failure.log"
+  "specs/accounting-removal/parameter-source-composition/history/patch-preparation-reader-failure.log"
+  "specs/accounting-removal/parameter-source-composition/inputs/ACC04-handoff.edn"
+  "specs/accounting-removal/parameter-source-composition/inputs/List-receipt.edn"
+  "specs/accounting-removal/parameter-source-composition/inputs/Map-R1-receipt.edn"
+  "specs/accounting-removal/parameter-source-composition/inputs/Map-original-CR-receipt.edn"
+  "specs/accounting-removal/parameter-source-composition/inputs/cycle-assessment.edn"
+  "specs/accounting-removal/parameter-source-composition/inputs/cycle-freeze.edn"
+  "specs/accounting-removal/parameter-source-composition/inputs/cycle-result.edn"
+  "specs/accounting-removal/parameter-source-composition/inputs/cycle-static-composition.edn"
+  "specs/accounting-removal/parameter-source-composition/inputs/pmk-source-handoff-04ce.md"
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-construction-conservation.edn"
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-construction-review-consumption.edn"
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-facts-conservation.edn"
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-facts-review-consumption.edn"
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-metadata-conservation.edn"
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-metadata-overlap.edn"
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-metadata-review-consumption.edn"
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-parameter-carrier.md"
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-parameter-conservation.edn"
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-parameter-overlap.edn"
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-parameter-residual.edn"
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-parameter-review-consumption.edn"
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-physical-conservation.edn"
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-physical-review-consumption.edn"
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-source-conservation.edn"
+  "specs/accounting-removal/parameter-source-composition/inputs/private-map-source-review-consumption.edn"
+  "specs/accounting-removal/parameter-source-composition/language-boundary.log"
+  "specs/accounting-removal/parameter-source-composition/negative-controls.edn"
+  "specs/accounting-removal/parameter-source-composition/reader-r1.edn"
+  "specs/accounting-removal/parameter-source-composition/source-controls-result.edn"
+  "specs/accounting-removal/parameter-source-composition/source-controls.log"
+  "specs/accounting-removal/parameter-source-composition/source-equations.edn"
+  "specs/accounting-removal/parameter-source-composition/source_forms.clj"
+  "specs/accounting-removal/parameter-source-composition/source_forms_test.clj"],
+ :inert-model-paths
+ ["bootstrap/clojure/test/gravity/types/private_map_cycle_test.clj"
+  "bootstrap/clojure/test/gravity/types/private_map_fact_test.clj"
+  "bootstrap/clojure/test/gravity/types/private_map_metadata_test.clj"
+  "bootstrap/clojure/test/gravity/types/private_map_parameter_test.clj"
+  "bootstrap/clojure/test/gravity/types/private_map_physical_test.clj"
+  "bootstrap/clojure/test/gravity/types/private_map_source_test.clj"]}

@@ -67,4 +67,14 @@ wrapper, native-C route, genuine compiler/bootstrap execution, or release
 claim. The reader-host parity preflight is retained as a separate inherited
 test artifact and is not counted as one of PR650's 57 authored paths.
 
-Independent review and integration preflight remain pending.
+The later clean current-source checkpoint is
+`fbb863229c56522b5ded0811332177a28693109b`, tree
+`16a13f6b6b39f9aa0453faaeb1ed0eb949e770a5`, composed over main
+`0e2b37cd2eefbab2f02e5898b960f9bbc4100fef`. All four test blobs and
+the three Gravity owner blobs are unchanged. The four owner-route tests
+passed again with 278 assertions and no failures/errors, exit 0; the log is
+`/tmp/uniform-pr650-current-main-0e.log`. This checks compatibility with the
+later registry, cache, runtime, and module-lookup changes without granting
+new source or runtime authority.
+
+Final composition review and integration preflight remain separate.
