@@ -4,7 +4,8 @@
   The existing runners remain responsible for loading and executing tests.  This
   namespace only binds a named project scope to explicit test namespaces, so a
   project command cannot silently fall back to the broad bootstrap catalog."
-  (:require [clojure.string :as str]))
+  (:require [clojure.java.io :as io]
+            [clojure.string :as str]))
 
 (def ^:private scopes
   {:language
@@ -27,12 +28,66 @@
     'gravity.self-hosting.w5-stage-rebuild-orchestrator-test
     'gravity.self-hosting.w5-subsystem-closure-verifier-test]})
 
+(def current-source-test-specs
+  "Optional current-source tests assigned to an existing project scope.
+
+  A source branch may add these files at a different point in the composed
+  history.  Keeping their paths here lets aliases remain valid on a sparse
+  checkout while making the assignment explicit when a file is present."
+  [{:scope :compiler
+    :ci-mode "checked-core-runtime"
+    :path "bootstrap/clojure/test/gravity/self_hosting/c6_core_lowering_source_execution_test.clj"
+    :namespace 'gravity.self-hosting.c6-core-lowering-source-execution-test}
+   {:scope :compiler
+    :ci-mode "checked-core-runtime"
+    :path "bootstrap/clojure/test/gravity/self_hosting/c6_core_lowering_source_classifier_test.clj"
+    :namespace 'gravity.self-hosting.c6-core-lowering-source-classifier-test}
+   {:scope :compiler
+    :ci-mode "checked-core-runtime"
+    :path "bootstrap/clojure/test/gravity/self_hosting/canonical_core_node_source_execution_test.clj"
+    :namespace 'gravity.self-hosting.canonical-core-node-source-execution-test}
+   {:scope :bootstrap
+    :path "bootstrap/clojure/test/gravity/bootstrap/rebuild/component_test.clj"
+    :namespace 'gravity.bootstrap.rebuild.component-test}
+   {:scope :bootstrap
+    :ci-mode "bootstrap"
+    :path "bootstrap/clojure/test/gravity/bootstrap/rebuild/macro_plan_test.clj"
+    :namespace 'gravity.bootstrap.rebuild.macro-plan-test}])
+
+(defn current-source-test-spec-present?
+  "Whether one optional current-source test is present in this checkout."
+  [{:keys [path]}]
+  (.isFile (io/file path)))
+
+(defn current-source-test-specs-for-scope
+  "Return present optional tests assigned to SCOPE.
+
+  PRESENT? is injectable for scope and CI planner tests; normal aliases use
+  the filesystem predicate and therefore never select an absent namespace."
+  ([scope]
+   (current-source-test-specs-for-scope scope current-source-test-spec-present?))
+  ([scope present?]
+   (->> current-source-test-specs
+        (filter #(and (= scope (:scope %)) (present? %)))
+        vec)))
+
+(defn current-source-test-specs-for-ci-mode
+  "Return present optional tests assigned to one existing CI mode."
+  ([mode]
+   (current-source-test-specs-for-ci-mode mode current-source-test-spec-present?))
+  ([mode present?]
+   (->> current-source-test-specs
+        (filter #(and (= mode (:ci-mode %)) (present? %)))
+        vec)))
+
 (defn scope-namespaces
-  "Return the fixed, non-authoritative namespace scope for a project command."
+  "Return the fixed scope plus present optional current-source namespaces."
   [scope]
-  (or (get scopes scope)
-      (throw (ex-info "Unknown test project scope"
-                      {:id "TEST-SCOPE-UNKNOWN" :scope scope}))))
+  (if-let [base (get scopes scope)]
+    (into (vec base)
+          (map :namespace (current-source-test-specs-for-scope scope)))
+    (throw (ex-info "Unknown test project scope"
+                    {:id "TEST-SCOPE-UNKNOWN" :scope scope}))))
 
 (defn- selector-value
   [option value]

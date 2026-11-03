@@ -12,9 +12,9 @@ compiler migration or release acceptance.
 | --- | --- | --- | --- |
 | static | Always | Always | actionlint 1.7.12 workflow syntax; clj-kondo 2025.10.23 on changed Clojure/EDN files and CI tooling; cljfmt 0.13.4 on CI tooling; Git whitespace; harness failure controls. Legacy format adoption remains separate. |
 | contracts (projections) | Always | Always | Canonical 240-document validator, full-language roadmap schema and negative fixtures, acceptance dependency controls, every existing component task projector and its tests. |
-| bootstrap | Always | Always | Fresh process requires Bootstrap without preinstalled aliases; exact decimal/abbreviation Reader regressions; language boundary; strict catalog controls and ownership inventory. No modeled aliases installed by this harness. |
+| bootstrap | Always | Always | Fresh process requires Bootstrap without preinstalled aliases; exact decimal/abbreviation Reader regressions; language boundary; strict catalog controls and ownership inventory. When the persisted macro-plan source test is present, a separate 900-second current-source child uses the existing development runner. No modeled aliases installed by this harness. |
 | macro | Always | Always | Three sequential fresh children: ordinary Macro pipeline cohort, exact receipt/callback controls, and complete Bootstrap C4 compatibility namespace. Each retains its independent 900-second watchdog and normal fixtures. |
-| checked-core-runtime | Always | Always | Checked-Core pipeline, current-binding and projection-kernel regressions in isolated child processes. |
+| checked-core-runtime | Always | Always | Checked-Core pipeline, current-binding and projection-kernel regressions in isolated child processes. When one or more mapped C6/current-source tests are present, a separate 900-second child invokes only those present dedicated self-hosting namespaces. |
 | resolution-pipeline, resolution-unmetered, and resolution-invocation-selection | Always | Always | Three serialized Resolution matrix jobs retain separate logs/receipts. `resolution-pipeline` runs two sequential fresh children (cohort and fresh replay), each with a 600-second command watchdog; the other two modes run one fresh child each. |
 | fresh-leaf-regressions / portable and / darwin | Markdown-only PRs omit leaves; otherwise the reviewed source/test require-closure selects affected catalog entries. Unknown, cross-cutting, structural, or closure-discovery changes use the full platform catalog. A verified unselected selectable leaf retains its required check and skipped receipt but resolves to Ubuntu; selected and fail-closed leaves retain their matrix runner. | Full fresh catalog | 52 portable namespaces on Ubuntu and one Darwin publication namespace on ARM macOS with its exact JDK 26.0.1 contract. Every selected namespace gets a fresh JVM; the catalog partition is exhaustive and disjoint. No cross-run result cache is used. This is not the full compiler suite. |
 | darwin-unsupported-host | Always runs its tiny refusal probe | Always | Actual macOS 15 kernel must reject required confinement features before any publication open; this negative result grants no positive publication acceptance. |
@@ -83,6 +83,27 @@ selector output, or selector failure keeps the matrix runner, so positive
 Darwin publication and the unsupported-host refusal probe always run on their
 actual required macOS/JDK platform. Main, manual, and scheduled runs use the
 full catalog.
+
+### Current-source development children
+
+The CI planner keeps an explicit path-to-namespace map for the current-source
+checks that are being composed with the compiler stages. It filters that map by
+the files present in the checkout before constructing a command: an unmerged
+source test is omitted, not sent to a runner as an invalid namespace. The C6
+and canonical-core-node tests use the existing `:test`
+`gravity.self-hosting-test-runner`, which already discovers dedicated files;
+the Bootstrap macro-plan test uses the existing `:dev-test`
+`gravity.development-test-runner` because it is outside the dedicated
+`gravity/self_hosting` tree. The macro-plan child remains separate from the
+historical bootstrap-input controls and retains its own 900-second watchdog.
+The `:compiler-composition-test` and `:bootstrap-validation-test` project
+aliases use the same scope map, so sparse checkouts remain valid there too.
+
+These are ordinary current-source execution checks. They do not expand the
+frozen development-test catalog, renew historical bootstrap evidence, or claim
+whole-compiler, native, or self-hosting support. Focused planner tests cover
+all-present, partially-present, and absent source populations while asserting
+that the existing bootstrap, checked-core, and Macro controls remain selected.
 
 ### Macro execution cohorts
 
