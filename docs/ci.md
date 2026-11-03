@@ -84,6 +84,23 @@ Darwin publication and the unsupported-host refusal probe always run on their
 actual required macOS/JDK platform. Main, manual, and scheduled runs use the
 full catalog.
 
+### Proposed Macro execution cohorts
+
+The draft Macro orchestration repair retains all current pipeline and Bootstrap
+compatibility test bodies and normal fixtures. It separates the twenty ordinary
+pipeline tests, three receipt/callback controls, and five compatibility tests
+into three sequential fresh JVM children. Each retains a 900-second watchdog;
+only the Macro hosted envelope will cover all three children and setup/cleanup.
+Source-inventory controls must prove exhaustive, disjoint selection, and any
+child failure remains a failed Macro job with its receipt preserved.
+
+The prior combined run 41713342032 timed out in 900071ms after twenty-five
+test returns, during real-paired-macro-expansion-retains-identities-provenance-and-output.
+That nonpass remains bound to its old source/provider. The proposed partition
+is an execution boundary, not a compiler change, performance fix, waived test,
+or retrospective pass. Runner, workflow, tests, own CI and exact integration
+verification remain required before this draft is integrated.
+
 ## Requirements and dependencies
 
 The audited baseline has no checked-in Actions workflow, dependency lockfile,
