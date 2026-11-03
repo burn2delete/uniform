@@ -7027,7 +7027,6 @@
         checkpoint (:source-input-commit bridge)
         previous (:predecessor-readiness-successor r)
         old-text (sh-crosswalk/git-source (:commit previous) (:path previous))
-        old-projection (sh-crosswalk/git-source (:commit previous) (:projection-path previous))
         old-source (edn/read-string old-text)
         view (sh-crosswalk/source-view)
         sha (fn [text] (sh-inventory/sha256 text))
