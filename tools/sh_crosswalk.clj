@@ -247,7 +247,11 @@
 (def pinned-evidence-hashes
   (merge predecessor-pinned-evidence-hashes
          (:additional-pinned-evidence-hashes readiness-source-version)))
-(defn source-pin [path] (get applying-source-pins path baseline))
+(defn source-pin [path]
+  (or (get applying-source-pins path)
+      (when (contains? (set (:current-source-paths readiness-source-version)) path)
+        (:source-input-commit readiness-source-version))
+      baseline))
 (def original-baseline "15a5499e97798621d270c36dd2546ce98ddd62a9")
 (def output-path "specs/sh-family-crosswalk/crosswalk.edn")
 (def rollup-path "specs/sh-family-crosswalk/rollup.md")
@@ -781,10 +785,12 @@
          :status :pending-source-version-review
          :input-fingerprint (:input-fingerprint readiness-source-version)
          :source-version-bridge
-         "specs/sh-family-crosswalk/implementation-readiness-source-version.edn"
+         "specs/sh-family-crosswalk/implementation-readiness-current-source-version.edn"
          :implementation-readiness-predecessor-review
-         (select-keys readiness-predecessor-mapping-review
-                      [:status :input-fingerprint :source-version-bridge])
+         (assoc (select-keys readiness-predecessor-mapping-review
+                             [:status :input-fingerprint :source-version-bridge])
+                :historical-source-version
+                "specs/sh-family-crosswalk/implementation-readiness-source-version.edn")
          :qualification
          "Exact task-source and Governance routing successor, including foundation criteria and Domain/Platform/Release refinements. Original task statuses and predecessor review subjects are preserved. Future Domain, Release and Platform Product records retain pending SH composition. Current source/routing, implementation and whole-SH acceptance remain pending."))
 
