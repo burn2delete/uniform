@@ -180,13 +180,46 @@
     (is (= 19 (count bridges)))
     (is (= 780 (count (filter #(= (:sha256 %) (:historical-sha256 (get by-path (:path %)))) refs))))
     (is (= #{:navigation-only :acceptance-boundary-extension
-             :family-criteria-preserved-plus-current-main-safety-criteria
-             :status-and-development-evidence}
+             :status-and-development-evidence
+             :current-candidate-composition}
            (set (map :change-class bridges))))
     (is (= :acceptance-boundary-extension
            (:change-class (get by-path "specs/stdlib-workflow/tasks.md"))))
-    (is (= "80d8a655cea00218799446986a976ca64043a1f8"
-           (:current-ref (get by-path "specs/stdlib-workflow/tasks.md"))))
+    (is (= {:stdlib {:current-ref "80d8a655cea00218799446986a976ca64043a1f8"}
+            :types {:change-class :current-candidate-composition
+                    :current-ref "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659"
+                    :current-tree "552a2bd0f50d53928aef5dffd085656dbe7bc17a"
+                    :current-sha256 "be4ab3523fcc9532a8f3dc7e36309843b5727cdb9bd5fea2ff8ba08faf07f946"
+                    :known-current-main {:current-ref "d544539eefaea6b16aecd724b54d61a9b0ec1f3d"
+                                         :current-tree "9fac2c4d1ebfb5294f598860917bc779b2147ebf"}}
+            :runtime {:change-class :current-candidate-composition
+                      :current-ref "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659"
+                      :current-tree "552a2bd0f50d53928aef5dffd085656dbe7bc17a"
+                      :current-sha256 "d4b3a3c875f961b5828e8cceda7ecdf106af4527c64fa07ad6c6e1e049d0868d"
+                      :known-current-main {:current-ref "d544539eefaea6b16aecd724b54d61a9b0ec1f3d"
+                                           :current-tree "9fac2c4d1ebfb5294f598860917bc779b2147ebf"}}
+            :domains {:change-class :current-candidate-composition
+                      :current-ref "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659"
+                      :current-tree "552a2bd0f50d53928aef5dffd085656dbe7bc17a"
+                      :current-sha256 "3d8989b72d00461931e400b5617b9bea090c63265cfee553e12d7b3cd6bc88dc"
+                      :known-current-main {:current-ref "d544539eefaea6b16aecd724b54d61a9b0ec1f3d"
+                                           :current-tree "9fac2c4d1ebfb5294f598860917bc779b2147ebf"}}}
+           {:stdlib (select-keys (get by-path "specs/stdlib-workflow/tasks.md") [:current-ref])
+            :types (assoc (select-keys (get by-path "specs/types-workflow/tasks.md")
+                                       [:change-class :current-ref :current-tree :current-sha256])
+                          :known-current-main
+                          (select-keys (:known-current-main (get by-path "specs/types-workflow/tasks.md"))
+                                       [:current-ref :current-tree]))
+            :runtime (assoc (select-keys (get by-path "specs/runtime-workflow/tasks.md")
+                                         [:change-class :current-ref :current-tree :current-sha256])
+                            :known-current-main
+                            (select-keys (:known-current-main (get by-path "specs/runtime-workflow/tasks.md"))
+                                         [:current-ref :current-tree]))
+            :domains (assoc (select-keys (get by-path "specs/domains-workflow/tasks.md")
+                                         [:change-class :current-ref :current-tree :current-sha256])
+                            :known-current-main
+                            (select-keys (:known-current-main (get by-path "specs/domains-workflow/tasks.md"))
+                                         [:current-ref :current-tree]))}))
     (is (= 3 (count (:changed-records (get by-path "specs/compiler-api-workflow/tasks.md")))))
     (is (= [{:id "domain-ir-boundaries"
              :current-record-sha256 "114bda63e653e18999b7dd56542decbcc7c95f9b254ef04db5414b96be679b09"}]
