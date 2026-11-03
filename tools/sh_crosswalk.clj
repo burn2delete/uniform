@@ -1,7 +1,7 @@
 (ns sh-crosswalk
   "Source-bound SH routing projection. Task status is read only from component ledgers."
   (:require [clojure.edn :as edn] [clojure.string :as str] [clojure.pprint :as pp]
-            [clojure.java.io :as io] [clojure.walk :as walk]))
+            [clojure.java.io :as io] [clojure.walk :as walk] [clojure.set :as set]))
 (binding [*command-line-args* nil] (load-file "tools/sh_inventory.clj") (load-file "tools/acceptance_dependencies.clj"))
 (require '[sh-inventory] '[acceptance-dependencies])
 (def baseline "254a5b50ea5e2825c424248c9216802cc866c0fd")
@@ -838,6 +838,89 @@
          :qualification
          "Exact task-source and Governance routing successor, including foundation criteria and Domain/Platform/Release refinements. Original task statuses and predecessor review subjects are preserved. Future Domain, Release and Platform Product records retain pending SH composition. Current source/routing, implementation and whole-SH acceptance remain pending."))
 
+(defn- validate-library-refinement! [ref]
+  (acceptance-dependencies/require! (map? ref) "Missing L13 library source refinement")
+  (acceptance-dependencies/require! (= :complete-L13-library-source-proposal (:kind ref))
+                                    "Changed L13 library source refinement kind")
+  (doseq [[k expected] [[:criteria 26] [:source-facets 125] [:occurrence-cases 84]
+                                   [:section-conjunctions 19] [:owner-joins 13]]]
+    (acceptance-dependencies/require! (= expected (count (get ref k)))
+                                      (str "Changed L13 library refinement population: " (name k))))
+  (acceptance-dependencies/require! (= :unassessed (:implementation-acceptance ref))
+                                    "L13 library refinement cannot confer implementation acceptance")
+  (acceptance-dependencies/require! (= :unassessed (:global-source-conjunctions ref))
+                                    "L13 library refinement cannot confer whole-source acceptance")
+  (acceptance-dependencies/require! (= :pending (:independent-current-review ref))
+                                    "L13 library refinement cannot self-accept")
+  (let [census (:source-census ref)
+        census-text (git-source (:commit census) (:path census))
+        census-data (edn/read-string census-text)
+        census-facets (filter #(= "L13" (:document-id %)) (:facets census-data))
+        census-occurrences (filter #(= "L13" (:document-id %)) (:occurrences census-data))
+        span-text (fn [body span]
+                    (String. (.getBytes body "UTF-8")
+                             (int (:start-byte span))
+                             (int (- (:end-byte span) (:start-byte span)))
+                             "UTF-8"))
+        current-witnesses (map :current-witness (:criteria ref))]
+    (acceptance-dependencies/require! (= (:sha256 census) (sh-inventory/sha256 census-text))
+                                      "L13 source census digest changed")
+    (acceptance-dependencies/require! (= (set (map :id census-facets))
+                                         (set (map :id (:source-facets ref))))
+                                      "L13 source facet identity set changed")
+    (acceptance-dependencies/require! (= (set (map :id census-occurrences))
+                                         (set (keys (:occurrence-cases ref))))
+                                      "L13 source occurrence identity set changed")
+    (doseq [record (:current-source-files ref)]
+      (let [body (git-source (:source-commit record) (:path record))]
+        (acceptance-dependencies/require! (= (:sha256 record) (sh-inventory/sha256 body))
+                                          (str "L13 current source file digest changed: " (:path record)))))
+    (doseq [w current-witnesses]
+      (let [body (git-source (:source-commit w) (:path w))
+            raw (span-text body (:source-span w))]
+        (acceptance-dependencies/require! (= (:sha256 w) (sh-inventory/sha256 body))
+                                          (str "L13 current witness file digest changed: " (:path w)))
+        (acceptance-dependencies/require! (= (get-in w [:source-span :sha256])
+                                             (sh-inventory/sha256 raw))
+                                          (str "L13 current witness span digest changed: " (:path w)))))
+    (acceptance-dependencies/require! (= 26 (count (set (map :key (:criteria ref)))))
+                                      "L13 criterion keys are not unique")
+    (acceptance-dependencies/require! (= 13 (count (set (map :task-id (:criteria ref)))))
+                                      "L13 criterion task owners are not unique")
+    (doseq [[owner row] (:owner-joins ref)]
+      (acceptance-dependencies/require! (= owner (:id row))
+                                        "L13 owner join identity changed")
+      (acceptance-dependencies/require! (= :unassessed (:whole-attached-owner-predicate row))
+                                        "L13 owner join cannot confer entailment")
+      (acceptance-dependencies/require! (= :none (:implementation-credit row))
+                                        "L13 owner join cannot confer implementation credit")))
+  (let [changed (set (:changed-task-ids ref))
+        required #{"stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
+                   "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters"
+                   "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"}
+        plan (slurp "specs/stdlib-workflow/plan.md")
+        tasks (slurp "specs/stdlib-workflow/tasks.md")
+        deps (slurp acceptance-dependencies/future-dependency-path)]
+    (acceptance-dependencies/require! (set/subset? required changed)
+                                      "L13 library refinement omits an existing-task consumer route")
+    (doseq [heading ["## Complete library-principles source criteria"
+                     "L13 complete public library-contract criterion"
+                     "L13 API-classification criterion"
+                     "L13 complete compiler/domain library API criterion"
+                     "L13 library compatibility and release-assembly criterion"]]
+      (acceptance-dependencies/require! (str/includes? plan heading)
+                                        (str "Missing L13 source criterion: " heading)))
+    (doseq [marker ["stdlib-library-source-contracts:start"
+                    "stdlib-library-source-classification:start"
+                    "stdlib-library-source-meta:start"
+                    "stdlib-library-source-release:start"]]
+      (acceptance-dependencies/require! (str/includes? tasks marker)
+                                        (str "Missing L13 task source marker: " marker)))
+    (doseq [id required]
+      (acceptance-dependencies/require! (str/includes? deps (str "| `" id "` |"))
+                                        (str "Missing L13 consumer dependency route: " id))))
+  ref)
+
 (defn source-view []
   (let [inventory (edn/read-string (slurp "specs/sh-family-crosswalk/original-inventory.edn"))
         _ (when-not (= original-sh07-sha256 (sh-inventory/sha256 (slurp sh07-path)))
@@ -846,6 +929,7 @@
             (throw (ex-info "Original source changed; retain lineage before rebinding" {})))
         components (mapv second (re-seq #"(?m)^\| [^|\n]+ / `([a-z-]+)` \|" (slurp "docs/component-roadmaps/README.md")))
         tasks (into (sorted-map) (map (fn [c] [c (task-records c)]) components))
+        _ (validate-library-refinement! (:library-refinement readiness-source-version))
         finish-sources (finish-line-sources)
         future-tasks (into (sorted-map)
                            (for [[component region expected] acceptance-dependencies/future-task-regions

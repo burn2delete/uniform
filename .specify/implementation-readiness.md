@@ -5532,3 +5532,96 @@ The later live PR767 continuation after `f634e58c` remains open and unported,
 including the L13/Stdlib portability block, its three existing consumer routes,
 and later selected-result/protocol additions. This receipt does not claim whole
 live-PR incorporation or ordinary-development migration authority.
+
+## Complete L13 library-principles source continuation
+
+This bounded successor carries the complete L13 source proposal from
+`5e4acae89f2b3c20723c855b791cf5163e8e3325`, following the complete L9
+checkpoint `d272cdda029c3195bca7b5b9bea9f52f48f4b85c`. The governing
+[L13 source](../docs/phase-01-core-language/023-l13-standard-library-design-principles.md)
+is preserved at SHA256
+`c14b680b66c13f20ef383d4e872fe72bf3e707405706396c0d21cb9e1b1268cd`.
+STD1, TEST7, GOV3, C17 and selected L6/L15 clauses are supporting interfaces;
+they do not confer complete source acceptance for those documents or for the
+wider STD1-STD20 library surface.
+
+The proposal conserves 26 criteria, 125 source facets, 84 occurrences, 19
+complete section conjunctions and 13 original owner joins. Its census labels 92
+semantic and 33 context facets, while the current proposal assigns 93 complete
+source predicates and 32 retained hierarchy/dependency predicates over 60
+predicate and 24 context occurrences. These are source identity and
+conservation facts, not an adopted aggregate or a semantic coverage claim.
+
+The existing Library plan routes the criteria through 13 existing tasks across
+the existing authorities: 15 new criteria, 10 exact restored predicates and
+one unchanged generated-program predicate. Twelve task bodies change across
+eight authorities, three of them the existing consumer routes added by this
+successor. The 8 task files, 13 plans and existing Library specification remain
+the 22 authored source paths. No task status, checkbox, historical record or
+evidence file is silently changed. All 149 current task keys, 25 authorities,
+40 future declarations and source bindings retain their identities.
+
+The ten earlier Library predicates (5,758 UTF-8 bytes) remain restored under
+their original tasks and their prior profile-74 review remains historical. The
+exact generated-program predicate remains 857 bytes. No review is renewed,
+consumed or broadened into implementation, whole-library, migration or release
+authority. The later Stdlib source/index review and all later live PR767
+continuations remain separate and pending.
+
+Declarations and callable exports remain distinct products. The source contract
+requires public profile/type/effect/capability/allocation/resource/error/
+panic/blocking/scheduling/nondeterminism/replay/target/stability facts, five
+portability layers and the complete 55-name namespace population. Seven API
+classifications retain their metadata, documentation, lint, check and fixture
+obligations. Labels, signatures, host builtins and provider descriptors do not
+establish behavior, authority or support. Actual dependency checking still
+rejects upward-layer edges and identifies the shipped profile subset.
+
+List, Vector, Map, Set, byte and String contracts, physical capacity,
+region-backed alternatives, numeric modes/proofs, resources and source
+concurrency remain semantic requirements. Fixed capacity, queues, indices,
+arity, layout and target representability are distinct from removed project
+work/cost/input/attempt quotas. Actual selected services, values and cleanup
+establish resource/API support; a declaration cannot substitute for a callable
+implementation.
+
+Resolve owns imports and layer graphs; Types owns declaration/call compatibility;
+Effects owns actual inferred call admission; Auth owns authentic scoped grants;
+Legality owns safe-wrapper/profile/resource verdicts; Opt owns preservation;
+Diag owns failure carriers. Inherited census references remain context and do
+not reassign those roles. L13 IR inspection names L6 `:compiler/read-ir` and
+C17 scoped `:compiler/ir-transform`; a `:read-mir` grant supplies no write
+authority. Safe wrappers retain D8's four outcomes and no undefined behavior.
+
+All six L13 artifact families and nine diagnostic meanings retain actual
+producer, namespace/symbol/profile/target/contract/caller-effect/capability,
+remediation and source/generated identities. Documentation is executable
+conformance: claimed profiles need actual positive examples and forbidden
+profile/capability/allocation negatives. Library fixtures are later consumed by
+the independent TEST7/T7/Release harness; a source table, catalog or class label
+does not close those obligations.
+
+The selected static inspection is limited to the hosted library-artifact builder
+and its artifact/fixture/validator/proof helpers. It is not callable API
+execution, whole-library implementation, provider execution, target behavior,
+native/C execution or migration evidence. Current source composition is bound
+to task/source checkpoint `485cfd2c54c6d1a2695cbd7e8e34495fbeb34799`, tree
+`3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5`, with current applicability pending.
+
+The three existing consumer routes are explicitly present in the current
+dependency graph: export inventory reconciliation, schema/query/workflow/AI/
+metadata/crypto/UI adapters, and platform/release assembly. The current graph
+has 2,156 selected-result joins, 144 routes, 104 current parents and 40 future
+records. These counts are derived from the current route declarations; the
+historical PR767 count of 2,199 joins and 141 routes is retained only as
+historical context and is not reused as current evidence.
+
+The current source view rejects missing or forged L13 criteria, source-census
+identity, current-source file digests, witness spans, owner joins and consumer
+routes. It keeps `:implementation-acceptance` and `:global-source-conjunctions`
+`:unassessed`, and `:independent-current-review` `:pending`. Focused checks for
+this successor are recorded separately from the historical PR767 receipt;
+neither source projection nor route composition confers implementation,
+migration, release or self-hosting authority. Preserve every actual restriction,
+writer reservation and stopped handoff; no held execution, other-chat message,
+aggregate publication or merge is implied.

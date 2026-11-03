@@ -4,6 +4,59 @@
 (binding [*command-line-args* nil] (load-file "tools/sh_crosswalk.clj"))
 (require '[sh-inventory] '[sh-crosswalk] '[acceptance-dependencies])
 
+(deftest l13-library-source-refinement-is-bounded-and-fails-closed
+  (let [view (sh-crosswalk/source-view)
+        refinement (get-in view [:implementation-readiness-source-version :library-refinement])
+        required-routes #{"stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
+                          "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters"
+                          "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"}
+        plan (slurp "specs/stdlib-workflow/plan.md")
+        tasks (slurp "specs/stdlib-workflow/tasks.md")
+        dependencies (slurp acceptance-dependencies/future-dependency-path)
+        forged (assoc-in sh-crosswalk/readiness-source-version
+                         [:library-refinement :criteria] [])
+        forged-census (assoc-in sh-crosswalk/readiness-source-version
+                                [:library-refinement :source-census :sha256] "forged")
+        forged-witness (assoc-in sh-crosswalk/readiness-source-version
+                                 [:library-refinement :criteria 0 :current-witness
+                                  :source-span :sha256] "forged")
+        forged-owner (assoc-in sh-crosswalk/readiness-source-version
+                               [:library-refinement :owner-joins
+                                "language/library/compile-contract-examples"
+                                :whole-attached-owner-predicate]
+                               :accepted)]
+    (is (= :complete-L13-library-source-proposal (:kind refinement)))
+    (is (= {:criteria 26 :source-facets 125 :occurrence-cases 84
+            :section-conjunctions 19 :owner-joins 13}
+           (into {}
+                 (for [k [:criteria :source-facets :occurrence-cases
+                          :section-conjunctions :owner-joins]]
+                   [k (count (get refinement k))]))))
+    (is (= required-routes (set/intersection required-routes
+                                             (set (:changed-task-ids refinement)))))
+    (is (= :unassessed (:implementation-acceptance refinement)))
+    (is (= :unassessed (:global-source-conjunctions refinement)))
+    (is (= :pending (:independent-current-review refinement)))
+    (is (= 125 (count (set (map :id (:source-facets refinement))))))
+    (is (= 84 (count (set (keys (:occurrence-cases refinement))))))
+    (is (= 13 (count (set (keys (:owner-joins refinement))))))
+    (doseq [heading ["## Complete library-principles source criteria"
+                     "L13 complete public library-contract criterion"
+                     "L13 API-classification criterion"
+                     "L13 complete compiler/domain library API criterion"
+                     "L13 library compatibility and release-assembly criterion"]]
+      (is (str/includes? plan heading) heading))
+    (doseq [marker ["stdlib-library-source-contracts:start"
+                    "stdlib-library-source-classification:start"
+                    "stdlib-library-source-meta:start"
+                    "stdlib-library-source-release:start"]]
+      (is (str/includes? tasks marker) marker))
+    (doseq [id required-routes]
+      (is (str/includes? dependencies (str "| `" id "` |")) id))
+    (doseq [forged [forged forged-census forged-witness forged-owner]]
+      (with-redefs [sh-crosswalk/readiness-source-version forged]
+        (is (thrown? Exception (sh-crosswalk/source-view)))))))
+
 (deftest complete-pattern-source-interface-restores-owner-slices-and-rejects-retired-accounting
   (let [read (fn [path] (slurp path))
         core-plan (read "specs/core-workflow/plan.md")
