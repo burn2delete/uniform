@@ -61,15 +61,45 @@
       (fn [envelope _ _]
         ;; Fresh/direct semantic validation already happened before encoding.
         ;; This role validates only the closed envelope and carrier binding.
-        (decode-adapter-envelope! envelope legacy-key operations nil
-                                  (get-in @state [:carrier :carrier-id]))
+        (let [decoded
+              (decode-adapter-envelope!
+               envelope legacy-key operations nil
+               (get-in @state [:carrier :carrier-id]))]
+          ;; Pass execution asks for the output identity immediately after
+          ;; validating the output. Keep this exact envelope bound to its
+          ;; already-derived identity so the callback does not decode and hash
+          ;; the same bytes a second time.
+          (swap! state assoc :validated-output
+                 {:envelope envelope
+                  :artifact (:artifact decoded)
+                  :artifact-id (:artifact-id decoded)
+                  :boundary-projection-id (:boundary-projection-id decoded)
+                  :payload-id (:payload-id decoded)}))
         envelope)
       :artifact-id-of
       (fn [envelope]
-        (:c2-artifact-id
-         (:envelope
-          (decode-adapter-envelope! envelope legacy-key operations nil
-                                    nil))))
+        (let [validated (:validated-output @state)]
+          (if (and validated
+                   (identical? envelope (:envelope validated))
+                   (= (:payload-id validated)
+                      (str "sha256:"
+                           (digest/sha256-bytes-hex
+                            ^bytes (:payload-bytes envelope)))))
+            (let [artifact (:artifact validated)
+                  artifact-id ((:artifact-id-of operations) artifact)
+                  boundary-id ((:boundary-projection-id-of operations) artifact)]
+              (when-not (and (= (:artifact-id validated) artifact-id)
+                             (= (:boundary-projection-id validated)
+                                boundary-id))
+                (cache-fail! "C16-STALE"
+                             "C2 v2 envelope differs from its validated identity"
+                             {:artifact-id artifact-id
+                              :boundary-projection-id boundary-id}))
+              artifact-id)
+            (:c2-artifact-id
+             (:envelope
+              (decode-adapter-envelope! envelope legacy-key operations nil
+                                        nil))))))
       :capacity-failure-handoff!
       (fn [error looked-up]
         (capacity-failure-handoff! state legacy-key generic-key operation
