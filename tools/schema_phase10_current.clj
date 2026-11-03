@@ -14,7 +14,7 @@
 (def historical-task-source
   "86747916c4c876d707a1548113409fb939d854c9")
 (def current-source
-  "2d0844f8f7f21321d920b9245341a2b98adc642e")
+  "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659")
 (def proposal-path
   "specs/requirement-reconciliation/schema-family/decision-allocation.edn")
 (def manifest-path "contracts/requirement-reconciliation.edn")
@@ -25,29 +25,29 @@
 (def historical-task-tree
   "e3f5bb1c91e3ad59ddb64fceef4eccdb07b9960b")
 (def current-manifest-sha
-  "8a41f5aa638ec717b1321a02974e63c6afc8103f498ee5d7bfc5738ebb3ad21e")
+  "c47151307b2dd2e20855f5837053a6a63806f2ed81d0acd5fadaa653c3952a38")
 (def candidate-source
-  "5a93ad9804cc7344cc57f3ecb9293ed3dae58595")
+  "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659")
 (def candidate-source-git-tree
-  "3c28db82c4b751252c2fc8f37e754d5af01cc001")
+  "552a2bd0f50d53928aef5dffd085656dbe7bc17a")
 (def candidate-manifest-sha
-  "f104336a99da819d7a24f89ddcd7e48311b4def36fc45bc28d56444558828316")
+  "722cefbbbb3dabb40ae8667b6a5af9ece33f50655dc8bdc0a6bc37f3813be05f")
 (def current-task-sha
-  "ffbab8d449a74517497b0365b53ae41f767a55ac64134fb65b4f0256dcdf3341")
+  "3d8989b72d00461931e400b5617b9bea090c63265cfee553e12d7b3cd6bc88dc")
 (def current-plan-sha
   "7ca9c4aa25a3961180728c1c75a672a68bf0bd656a3ed258d53a1d56e842e368")
 (def current-source-tree "5b62819e511bfc7e6b5eba0527d8c9b5883c5572")
 (def current-source-git-tree
-  "c5f5941ca3db4ce38695f870276e1b345a323339")
+  "552a2bd0f50d53928aef5dffd085656dbe7bc17a")
 (def current-source-baseline "a1b991be499d50579a8b4366976c519ae8949224")
 (def previous-current-source
-  "585298b5faa75a307c5b06be19a0aebb8b09168c")
+  "d544539eefaea6b16aecd724b54d61a9b0ec1f3d")
 (def previous-current-manifest-sha
-  "d24ed46e2de0c1672a1a37c0eeacb3340452dcf56ce1b511ecc678761909155b")
-(def expected-current-task-bridge-count 18)
+  "c47151307b2dd2e20855f5837053a6a63806f2ed81d0acd5fadaa653c3952a38")
+(def expected-current-task-bridge-count 19)
 (def expected-new-task-bridge-paths
-  #{"specs/runtime-workflow/tasks.md"
-    "specs/build-workflow/tasks.md"
+  #{"specs/types-workflow/tasks.md"
+    "specs/runtime-workflow/tasks.md"
     "specs/domains-workflow/tasks.md"})
 (def expected-candidate-bridge-paths
   #{"specs/types-workflow/tasks.md"
@@ -57,9 +57,12 @@
   {"specs/types-workflow/tasks.md"
    {:current-sha256 "be4ab3523fcc9532a8f3dc7e36309843b5727cdb9bd5fea2ff8ba08faf07f946"}
    "specs/runtime-workflow/tasks.md"
-   {:current-sha256 "644170d21c9015a96da5d3569739f186698933d81abd0e565f372b369f25fde5"}
+   {:current-sha256 "d4b3a3c875f961b5828e8cceda7ecdf106af4527c64fa07ad6c6e1e049d0868d"}
    "specs/domains-workflow/tasks.md"
-   {:current-sha256 "ffbab8d449a74517497b0365b53ae41f767a55ac64134fb65b4f0256dcdf3341"}})
+   {:current-sha256 "3d8989b72d00461931e400b5617b9bea090c63265cfee553e12d7b3cd6bc88dc"}})
+(def expected-candidate-known-current-main
+  {:current-ref "d544539eefaea6b16aecd724b54d61a9b0ec1f3d"
+   :current-tree "9fac2c4d1ebfb5294f598860917bc779b2147ebf"})
 (def expected-facet-count 463)
 (def expected-facet-digest
   "9daedb26fb3bbee1ce9994d0cbec96cb8803f9428632cdb1a2f61d208850dcf1")
@@ -129,7 +132,7 @@
               "`DOM6-SOURCEMAP` for browser diagnostics without source mapping."]}
    {:join :types-schema-static-projection
     :path "specs/types-workflow/tasks.md"
-    :sha256 "13149ad814bebd312dd5c371ff88ff06255848e86d23b02e2d94922c1240f10f"
+    :sha256 "be4ab3523fcc9532a8f3dc7e36309843b5727cdb9bd5fea2ff8ba08faf07f946"
     :markers ["`types/current-evidence-and-remaining-work/types2-check-declared-abstractions`"
               "Validate generics, protocols/dispatch, records and schema-derived types"]}
    {:join :api-client-openapi
@@ -145,7 +148,7 @@
               "actual positive products and negative diagnostics"]}
    {:join :hosted-runtime-source-map
     :path "specs/runtime-workflow/tasks.md"
-    :sha256 "edbafd3d58f645d74e208eb428b7feb89f6dfd957899ce8c9136287026cbb9c4"
+    :sha256 "d4b3a3c875f961b5828e8cceda7ecdf106af4527c64fa07ad6c6e1e049d0868d"
     :markers ["Closing evidence: Denial at actual service hook, redacted diagnostics and source-map preservation"]}])
 
 (def current-join-task-specs
@@ -203,12 +206,19 @@
               "Retain exact source/compiler/profile/target and"]}
    {:owner :runtime-hosted-source-map
     :path "specs/runtime-workflow/tasks.md"
-    :sha256 "644170d21c9015a96da5d3569739f186698933d81abd0e565f372b369f25fde5"
+    :sha256 "d4b3a3c875f961b5828e8cceda7ecdf106af4527c64fa07ad6c6e1e049d0868d"
     :markers ["Hosted source-map boundary"
               "actual hosted runtime failure plus emitted source/generated-origin"
               "runtime version, host symbol and lowered artifact"
               "conditional-unavailable"
-              "P4-SOURCEMAP"]}])
+              "P4-SOURCEMAP"]}
+   {:owner :domains-schema-source-joins
+    :path "specs/domains-workflow/tasks.md"
+    :sha256 "3d8989b72d00461931e400b5617b9bea090c63265cfee553e12d7b3cd6bc88dc"
+    :markers ["Current source-join obligations remain inside the five Open criteria below"
+              "Generate a JSON Schema"
+              "typed `:gravity/artifact-schema`"
+              "schema-static-projection"]}])
 
 (defn require! [condition message]
   (when-not condition
@@ -316,6 +326,9 @@
                "Candidate manifest changed the authenticated source tree")
      (require! (= (:source-baseline main) (:source-baseline candidate))
                "Candidate manifest changed the authenticated source baseline")
+     (require! (= (:source-version-bridges main)
+                  (:source-version-bridges candidate))
+               "Candidate manifest changed an existing source-version bridge")
      (require! (= (count (:task-source-version-bridges main))
                   (count changed))
                "Candidate manifest changed task-source bridge population")
@@ -334,9 +347,9 @@
                       (= candidate-source-git-tree (:current-tree after))
                       (= (:current-sha256 expected) (:current-sha256 after))
                       (= :current-candidate-composition (:change-class after))
-                      (= current-source (:current-ref (get after :known-current-main)))
-                      (= "c5f5941ca3db4ce38695f870276e1b345a323339"
-                         (:current-tree (get after :known-current-main))))
+                      (= expected-candidate-known-current-main
+                         (select-keys (get after :known-current-main)
+                                      [:current-ref :current-tree])))
                  (str "Candidate bridge identity is not authenticated " path)))
      (doseq [path (sort (set/difference (set (keys main-bridges)) changed-paths))]
        (require! (= (get main-bridges path) (get candidate-bridges path))

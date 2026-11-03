@@ -10,7 +10,7 @@
   :tree "01aa18dc4ef8b7c96f35ca549fd01caeaf201611"
   :authored-path-count 18
   :authored-insertions 229119}
- :current-port
+ :historical-port-attempt
  {:base "2d0844f8f7f21321d920b9245341a2b98adc642e"
   :base-tree "c5f5941ca3db4ce38695f870276e1b345a323339"
   :candidate-parent "5a93ad9804cc7344cc57f3ecb9293ed3dae58595"
@@ -57,6 +57,48 @@
   :historical-task-source "86747916c4c876d707a1548113409fb939d854c9"
   :historical-task-tree "e3f5bb1c91e3ad59ddb64fceef4eccdb07b9960b"
   :historical-task-sha256 "5abf39bc1af6040f84b4e4db77ee93ee000dc14112e8f636970833d0f945e382"}
+ :current-port
+ {:base "d544539eefaea6b16aecd724b54d61a9b0ec1f3d"
+  :base-tree "9fac2c4d1ebfb5294f598860917bc779b2147ebf"
+  :candidate-parent :this-receipt-parent
+  :candidate-head :this-receipt-commit
+  :candidate-tree :this-receipt-tree
+  :current-source "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659"
+  :current-source-git-tree "552a2bd0f50d53928aef5dffd085656dbe7bc17a"
+  :current-source-tree "9fac2c4d1ebfb5294f598860917bc779b2147ebf"
+  :current-source-baseline "a1b991be499d50579a8b4366976c519ae8949224"
+  :current-manifest-path "contracts/requirement-reconciliation.edn"
+  :current-manifest-sha256 "722cefbbbb3dabb40ae8667b6a5af9ece33f50655dc8bdc0a6bc37f3813be05f"
+  :current-main-manifest-sha256 "c47151307b2dd2e20855f5837053a6a63806f2ed81d0acd5fadaa653c3952a38"
+  :candidate-source-git-tree "de6f0bccad60c7af68bc7eb53e1d63021f457b6e"
+  :task-paths ["specs/types-workflow/tasks.md"
+               "specs/runtime-workflow/tasks.md"
+               "specs/domains-workflow/tasks.md"]
+  :task-sha256s {"specs/types-workflow/tasks.md" "be4ab3523fcc9532a8f3dc7e36309843b5727cdb9bd5fea2ff8ba08faf07f946"
+                 "specs/runtime-workflow/tasks.md" "d4b3a3c875f961b5828e8cceda7ecdf106af4527c64fa07ad6c6e1e049d0868d"
+                 "specs/domains-workflow/tasks.md" "3d8989b72d00461931e400b5617b9bea090c63265cfee553e12d7b3cd6bc88dc"}
+  :plan-path "specs/domains-workflow/plan.md"
+  :plan-sha256 "7ca9c4aa25a3961180728c1c75a672a68bf0bd656a3ed258d53a1d56e842e368"
+  :source-joins {:normative-paths 9
+                 :join-kinds 5
+                 :task-joins 5
+                 :plan-joins 5
+                 :owner-tasks 3
+                 :source-version-bridges 7
+                 :source-version-authenticated true}
+  :manifest-transition
+  {:from "d544539eefaea6b16aecd724b54d61a9b0ec1f3d"
+   :from-tree "9fac2c4d1ebfb5294f598860917bc779b2147ebf"
+   :from-manifest-sha256 "c47151307b2dd2e20855f5837053a6a63806f2ed81d0acd5fadaa653c3952a38"
+   :to "3e5d74d014a0105a3887dc044ead4da75b1f03ac"
+   :to-tree "de6f0bccad60c7af68bc7eb53e1d63021f457b6e"
+   :to-manifest-sha256 "722cefbbbb3dabb40ae8667b6a5af9ece33f50655dc8bdc0a6bc37f3813be05f"
+   :task-source-bridges [19 19]
+   :changed-task-source-paths ["specs/domains-workflow/tasks.md"
+                               "specs/runtime-workflow/tasks.md"
+                               "specs/types-workflow/tasks.md"]
+   :source-tree-unchanged true
+   :source-baseline-unchanged true}}
  :valuable-slices
  {:task-interface
   {:s1-s9-source-clauses :ported
@@ -86,10 +128,10 @@
    :types-schema-static-projection [:types2-check-declared-abstractions
                                     :schema-identity-and-constraints]
    :api-client-openapi [:openapi-document :typed-client :s5-client :s5-sourcemap]
-   :owner-tasks [:types2-schema-static-projection :runtime-hosted-source-map]
+   :owner-tasks [:types2-schema-static-projection :runtime-hosted-source-map :domains-schema-source-joins]
    :identity-fields [:source :compiler :profile :target :provider :checker]
    :implementation-acceptance :unassessed}}
- :checks
+ :historical-checks
  {:command "clojure -M tools/schema_phase10_current.clj --check"
   :source-pair [463 19 0]
   :decision-allocation [25 25 0]
@@ -145,6 +187,63 @@
                             :manifest-sha256 "f104336a99da819d7a24f89ddcd7e48311b4def36fc45bc28d56444558828316"
                             :result :pass}
   :result :pass
+  :native-runtime-compiler-execution :not-run}
+ :checks
+ {:source-checkpoint
+  {:commit "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659"
+   :tree "552a2bd0f50d53928aef5dffd085656dbe7bc17a"
+   :parents ["b78d03f8df20e216e26e6e4c687eb00301663494"]}
+  :manifest-transition
+  {:from "d544539eefaea6b16aecd724b54d61a9b0ec1f3d"
+   :from-tree "9fac2c4d1ebfb5294f598860917bc779b2147ebf"
+   :from-sha256 "c47151307b2dd2e20855f5837053a6a63806f2ed81d0acd5fadaa653c3952a38"
+   :to "3e5d74d014a0105a3887dc044ead4da75b1f03ac"
+   :to-tree "de6f0bccad60c7af68bc7eb53e1d63021f457b6e"
+   :to-sha256 "722cefbbbb3dabb40ae8667b6a5af9ece33f50655dc8bdc0a6bc37f3813be05f"
+   :task-source-bridges [19 19]
+   :source-version-bridges [7 7]
+   :changed-task-source-paths ["specs/domains-workflow/tasks.md"
+                               "specs/runtime-workflow/tasks.md"
+                               "specs/types-workflow/tasks.md"]}
+  :schema-check
+  {:command "clojure -J-Xmx512m -M tools/schema_phase10_current.clj --check"
+   :source-pair [463 19 0]
+   :source-joins [9 5 5 0]
+   :owner-tasks [3 9 0]
+   :negative-controls 36
+   :result :pass}
+  :domain-source-view
+  {:command "clojure -J-Xmx512m -M tools/domain_current_source_view.clj --check"
+   :controls 14
+   :result :pass}
+  :safety-source-view
+  {:command "clojure -J-Xmx512m -M tools/safety_task_source_view.clj --check"
+   :runtime-transitions 2
+   :controls 11
+   :result :pass}
+  :tooling-consumer
+  {:command "clojure -J-Xmx2g -M tools/tooling_requirements_test.clj"
+   :tests 8 :assertions 54 :failures 0 :errors 0 :result :pass}
+  :profile-consumer
+  {:command "clojure -J-Xmx2g -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\" \"tools\"]}' -M -e '(load-file \"specs/requirement-reconciliation/profile-system/profile_requirements.clj\")'"
+   :requirements 55 :task-source-files 13 :negative-controls 16 :result :pass}
+  :acceptance-dependencies
+  {:command "clojure -J-Xmx512m -M tools/acceptance_dependencies_test.clj"
+   :tests 19 :assertions 441 :failures 0 :errors 0 :result :pass}
+  :reconciliation
+  {:command "clojure -J-Xmx2g -M tools/requirement_reconciliation.clj --check"
+   :source-documents 245 :source-occurrences 19962 :source-facets 29177
+   :result :pass}
+  :boundary
+  {:command "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test"
+   :tests 6 :assertions 11 :failures 0 :errors 0 :result :pass}
+  :documents {:command "clojure -M tools/validate_gravity_docs.clj"
+              :documents 240 :phase-indexes 19 :result :pass}
+  :roadmap {:command "clojure -M tools/validate_full_language_roadmap.clj"
+            :result :pass}
+  :implementation-acceptance :unassessed
+  :canonical-adoption :pending
+  :independent-review :pending
   :native-runtime-compiler-execution :not-run}
  :repair-history
  {:prior-candidate-head "a4ceedaf01ac1754c99bd067e6247b5d7d215870"
@@ -227,6 +326,6 @@
   :no-independent-review-or-canonical-adoption
   :no-implementation-release-self-hosting-or-runtime-claim]
  :integration-note
- "The five Open criteria, five current source joins, and two owning-task joins are a current task-interface increment. The 25 historical decision allocations remain an authenticated, source-facet-conserved proposal until a canonical owner reconciles each operation against the current requirement/task predecessor."
+ "The five Open criteria, five current source joins, and three owning-task joins are a current task-interface increment. The 25 historical decision allocations remain an authenticated, source-facet-conserved proposal until a canonical owner reconciles each operation against the current requirement/task predecessor."
  :receipt-head :this-file-is-bound-by-the-containing-commit
  :receipt-nonclaim :the-containing-commit-hash-is-reported-separately}
