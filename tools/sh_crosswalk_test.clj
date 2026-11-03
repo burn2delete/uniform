@@ -5746,8 +5746,21 @@
 (deftest
  complete-types-source-preserves-independent-inference-and-original-role-conjunctions
  (let
-  [bridge
-   sh-crosswalk/readiness-source-version
+  [checkpoint
+   (get-in
+    sh-crosswalk/readiness-source-version
+    [:types-dependency-refinement :predecessor-readiness-successor])
+   bridge
+   (if
+    checkpoint
+    (edn/read-string
+     (sh-crosswalk/git-source (:commit checkpoint) (:path checkpoint)))
+    sh-crosswalk/readiness-source-version)
+   read-text
+   (if
+    checkpoint
+    (memoize (fn [p] (sh-crosswalk/git-source (:commit checkpoint) p)))
+    slurp)
    r
    (:types-refinement bridge)
    previous
@@ -5763,7 +5776,13 @@
    prior
    (edn/read-string projection-text)
    view
-   (sh-crosswalk/build)
+   (if
+    checkpoint
+    (edn/read-string
+     (sh-crosswalk/git-source
+      (:commit checkpoint)
+      (:projection-path checkpoint)))
+    (sh-crosswalk/build))
    rows
    (fn
     [v]
@@ -5803,13 +5822,13 @@
     [k]
     (let
      [w (:current-witness (by-key k))]
-     (span-text (slurp (:path w)) (:source-span w))))
+     (span-text (read-text (:path w)) (:source-span w))))
    documents
    (into
     {}
     (for
      [d (:canonical-sources r)]
-     [(:document-id d) (slurp (:path d))]))
+     [(:document-id d) (read-text (:path d))]))
    facets
    (:source-facets r)
    cases
@@ -5928,7 +5947,7 @@
     criteria
     :let
     [text
-     (slurp (:path current-witness))
+     (read-text (:path current-witness))
      raw
      (span-text text (:source-span current-witness))
      row
@@ -5958,7 +5977,7 @@
        (if
         (= p1__159# (:path current-witness))
         (str/replace text raw "")
-        (slurp p1__159#)))))))
+        (read-text p1__159#)))))))
   (doseq
    [facet
     facets
@@ -6024,7 +6043,7 @@
      (get-in current-witness [:source-span :sha256])
      (sh-inventory/sha256
       (span-text
-       (slurp (:path current-witness))
+       (read-text (:path current-witness))
        (:source-span current-witness))))))
   (doseq
    [{:keys [path source-span disposition]}
@@ -6032,7 +6051,7 @@
    (is
     (=
      (:sha256 source-span)
-     (sh-inventory/sha256 (span-text (slurp path) source-span))))
+     (sh-inventory/sha256 (span-text (read-text path) source-span))))
    (is (= :superseded-accounting-only-fragment disposition)))
   (doseq
    [record
@@ -6050,7 +6069,7 @@
    (is
     (=
      (:sha256 after)
-     (sh-inventory/sha256 (slurp p))
+     (sh-inventory/sha256 (read-text p))
      (sh-inventory/sha256
       (sh-crosswalk/git-source (:commit after) p)))))
   (doseq
@@ -6059,7 +6078,7 @@
    (is
     (=
      sha256
-     (sh-inventory/sha256 (slurp path))
+     (sh-inventory/sha256 (read-text path))
      (sh-inventory/sha256
       (sh-crosswalk/git-source source-commit path)))))
   (let
@@ -6080,7 +6099,7 @@
           ":end -->\n"))]
        (is (= 1 (count (re-seq pattern text))))
        (str/replace text pattern "")))
-     (slurp p)
+     (read-text p)
      (:markers r))]
    (is (= (sh-crosswalk/git-source (:commit previous) p) restored)))
   (let
@@ -6122,7 +6141,29 @@
    (is (= (:raw-sha256 w) (sh-inventory/sha256 raw)))
    (is (= raw (current-raw k)))
    (is (seq (:qualified-review-adoption record))))
-  (doseq [record [(get-in r [:retained-finite-predicates :schema-static :qualified-review-adoption]) (get-in r [:historical-reviews :schema25])]] (is (= "893bb4b85926a9d7f8953798544b2126baf6ef58" (:reviewed-subject-commit record))) (is (= "65e0704bc180521c3393725b39c284995657a065" (:source-commit record))) (is (= (:sha256 record) (sh-inventory/sha256 (sh-crosswalk/git-source (:source-commit record) (:path record))))))
+  (doseq
+   [record
+    [(get-in
+      r
+      [:retained-finite-predicates
+       :schema-static
+       :qualified-review-adoption])
+     (get-in r [:historical-reviews :schema25])]]
+   (is
+    (=
+     "893bb4b85926a9d7f8953798544b2126baf6ef58"
+     (:reviewed-subject-commit record)))
+   (is
+    (=
+     "65e0704bc180521c3393725b39c284995657a065"
+     (:source-commit record)))
+   (is
+    (=
+     (:sha256 record)
+     (sh-inventory/sha256
+      (sh-crosswalk/git-source
+       (:source-commit record)
+       (:path record))))))
   (let
    [review (get-in r [:historical-reviews :Types])]
    (is
@@ -6170,7 +6211,7 @@
      (task-text prior (before task-id))
      (task-text view (tasks task-id)))))
   (let
-   [text (slurp "specs/core-workflow/plan.md")]
+   [text (read-text "specs/core-workflow/plan.md")]
    (is
     (=
      1
@@ -6183,6 +6224,439 @@
       (re-seq
        #"(?m)^### Historical evidence and current static findings$"
        text)))))))
+
+
+(deftest
+ types-dependencies-preserve-independent-premises-and-real-stage-results
+ (let
+  [bridge
+   sh-crosswalk/readiness-source-version
+   r
+   (:types-dependency-refinement bridge)
+   previous
+   (:predecessor-readiness-successor r)
+   old-text
+   (sh-crosswalk/git-source (:commit previous) (:path previous))
+   old
+   (edn/read-string old-text)
+   projection-text
+   (sh-crosswalk/git-source
+    (:commit previous)
+    (:projection-path previous))
+   prior
+   (edn/read-string projection-text)
+   view
+   (sh-crosswalk/build)
+   rows
+   (fn
+    [v]
+    (into
+     {}
+     (for
+      [records (vals (:task-authorities v)) row records]
+      [(:id row) row])))
+   tasks
+   (rows view)
+   before
+   (rows prior)
+   ids
+   (set
+    (concat
+     (keys tasks)
+     (map :id (mapcat val (:future-task-authorities view)))))
+   result
+   (acceptance-dependencies/future-task-view
+    (:future-task-authorities view)
+    tasks
+    (:source-snapshots view)
+    slurp
+    (:required-parent-consumers r))
+   review
+   (:dependency-review result)
+   routes
+   (:routes review)
+   dep
+   (:dependency-source r)
+   text
+   (slurp (:path dep))
+   old-routes
+   (acceptance-dependencies/future-dependency-routes
+    (sh-crosswalk/git-source (:commit previous) (:path dep))
+    ids
+    ids)
+   consumers
+   (set (:consumer-task-ids r))
+   new-consumers
+   (set (:new-consumer-task-ids r))
+   selected
+   (filterv (fn* [p1__146#] (consumers (:consumer p1__146#))) routes)
+   current-map
+   (into {} (map (juxt :consumer identity) routes))
+   old-map
+   (into {} (map (juxt :consumer identity) old-routes))
+   meaning
+   (fn*
+    [p1__147#]
+    (select-keys
+     p1__147#
+     [:consumer
+      :start-results
+      :composition-results
+      :selected-output-contract]))
+   allowed
+   [:input-fingerprint
+    :types-dependency-refinement
+    :source-files
+    :applying-source-pins
+    :inspection-locators
+    :additional-pinned-evidence-hashes]]
+  (is
+   (= "1ef683ebfa505100ba47b9541d3304f06174bbaa" (:commit previous)))
+  (is (= (:sha256 previous) (sh-inventory/sha256 old-text)))
+  (is
+   (=
+    (:projection-sha256 previous)
+    (sh-inventory/sha256 projection-text)))
+  (is (= (:input-fingerprint previous) (:input-fingerprint old)))
+  (is (= (apply dissoc old allowed) (apply dissoc bridge allowed)))
+  (is (= (:task-comparisons old) (:task-comparisons bridge)))
+  (is (= 149 (count tasks) (count before)))
+  (is (= 25 (count (:task-authorities view))))
+  (is (= (set (keys tasks)) (set (keys before))))
+  (doseq
+   [[id row] tasks]
+   (is (= (:checked row) (:checked (before id))))
+   (is (= (:source-commit row) (:source-commit (before id))))
+   (is (= (:file-sha256 row) (:file-sha256 (before id))))
+   (is
+    (=
+     (get-in row [:source :sha256])
+     (get-in (before id) [:source :sha256]))))
+  (is
+   (=
+    (:future-task-authorities prior)
+    (:future-task-authorities view)))
+  (is (= [] (:changed-task-ids r) (:new-task-identities r)))
+  (is
+   (=
+    [46 0 46 819 932 113 1780 1893 137 97 40 91]
+    [(count consumers)
+     (count new-consumers)
+     (count (:predecessor-selected-routes r))
+     (:preserved-prior-input-joins r)
+     (:selected-consumer-result-joins r)
+     (:new-selected-producer-result-joins r)
+     (:predecessor-all-selected-result-joins r)
+     (:all-selected-result-joins r)
+     (count routes)
+     (count (:declared-parent-consumers review))
+     (count (:declared-consumers review))
+     (:preserved-consumer-route-count r)]))
+  (is (= 46 (count selected) (count (:routes r))))
+  (is
+   (=
+    819
+    (reduce
+     +
+     (map
+      (comp count :composition-results)
+      (:predecessor-selected-routes r)))))
+  (is
+   (= 932 (reduce + (map (comp count :composition-results) selected))))
+  (is
+   (= 113 (reduce + (map count (vals (:added-composition-inputs r))))))
+  (is
+   (=
+    1893
+    (count
+     (filter
+      (fn*
+       [p1__148#]
+       (= :actual-selected-producer-result (:kind p1__148#)))
+      (:typed-edges result)))))
+  (is
+   (=
+    (into
+     {}
+     (map
+      (juxt :consumer meaning)
+      (remove
+       (fn* [p1__149#] (consumers (:consumer p1__149#)))
+       old-routes)))
+    (into
+     {}
+     (map
+      (juxt :consumer meaning)
+      (remove
+       (fn* [p1__150#] (consumers (:consumer p1__150#)))
+       routes)))))
+  (is (= 6 (count (:types-source-consumer-task-ids r))))
+  (is (= 11 (get-in r [:types-source-binding :criteria])))
+  (is
+   (=
+    (get-in bridge [:types-refinement :source-commit])
+    (get-in r [:types-source-binding :source-commit])))
+  (is (every? consumers (:types-source-consumer-task-ids r)))
+  (is (= [] (:unresolved-consumers r) (:unresolved-consumers review)))
+  (doseq
+   [row selected :let [id (:consumer row) old-row (old-map id)]]
+   (is
+    (=
+     (meaning row)
+     (meaning
+      (first
+       (filter
+        (fn* [p1__151#] (= id (:consumer p1__151#)))
+        (:routes r))))))
+   (is (empty? (:start-results row)))
+   (when
+    old-row
+    (is
+     (every?
+      (set (:composition-results row))
+      (:composition-results old-row)))
+    (is
+     (str/starts-with?
+      (:selected-output-contract row)
+      (:selected-output-contract old-row))))
+   (doseq
+    [input (:composition-results row)]
+    (is
+     (some
+      (fn*
+       [p1__152#]
+       (=
+        [(str "task:" id "/implementation")
+         (str "task:" input "/interface")
+         :declared-producer-interface]
+        [(:from p1__152#) (:to p1__152#) (:kind p1__152#)]))
+      (:typed-edges result)))
+    (is
+     (some
+      (fn*
+       [p1__153#]
+       (=
+        [(str "task:" id "/composition")
+         (str "result:" id ":" input)
+         :actual-selected-producer-result]
+        [(:from p1__153#) (:to p1__153#) (:kind p1__153#)]))
+      (:typed-edges result)))
+    (is
+     (=
+      :unassessed
+      (get-in result [:nodes (str "result:" id ":" input) :state])))))
+  (doseq
+   [id
+    (:types-source-consumer-task-ids r)
+    :let
+    [pattern
+     (re-pattern
+      (str
+       "(?m)^\\| `"
+       (java.util.regex.Pattern/quote id)
+       "` \\|[^\\n]*\\n"))
+     missing
+     (acceptance-dependencies/future-task-view
+      (:future-task-authorities view)
+      tasks
+      (:source-snapshots view)
+      (fn*
+       [p1__154#]
+       (if
+        (= p1__154# (:path dep))
+        (str/replace text pattern "")
+        (slurp p1__154#)))
+      (:required-parent-consumers r))]]
+   (is (= 1 (count (re-seq pattern text))))
+   (is
+    (=
+     [id]
+     (get-in missing [:dependency-review :unresolved-consumers]))))
+  (let
+   [prefix
+    "lower/current-evidence-and-remaining-work/"
+    opt5
+    "opt/current-evidence-and-remaining-work/opt5-integrate-reproducible-pipeline"
+    opt4
+    "opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate"]
+   (is
+    (some
+     #{["lower" 5 "opt" 5 :optimization-requested]}
+     acceptance-dependencies/composition-routes))
+   (is
+    (not-any?
+     #{opt5}
+     (:composition-results
+      (current-map (str prefix "lower1-validate-lowering-inputs")))))
+   (is
+    (not-any?
+     #{opt5}
+     (:composition-results
+      (current-map (str prefix "lower5-integrate-target-emission")))))
+   (is
+    (not-any?
+     #{opt4}
+     (:composition-results
+      (current-map (str prefix "lower2-derive-abi-and-layout")))))
+   (is
+    (str/includes?
+     (:selected-output-contract
+      (current-map (str prefix "lower1-validate-lowering-inputs")))
+     "verified unoptimized MIR")))
+  (is
+   (=
+    []
+    (get-in
+     r
+     [:optional-optimization :new-universal-optimizer-joins])))
+  (is
+   (=
+    [95 9]
+    (mapv count (:coarse-producer-cycles r))
+    (mapv count (:declared-output-cycles review))))
+  (is (= (:predecessor-coarse-cycles r) (:coarse-producer-cycles r)))
+  (is
+   (=
+    192
+    (count (:staged-result-subjects r))
+    (count (set (map :result (:staged-result-subjects r))))))
+  (doseq
+   [stage (:staged-result-subjects r)]
+   (is
+    (=
+     (:result stage)
+     (str "result:" (:consumer stage) ":" (:producer stage))))
+   (is
+    (some
+     #{(:producer stage)}
+     (:composition-results (current-map (:consumer stage)))))
+   (is
+    (=
+     :selected-L5-C7-proposal-inputs-not-all-old-route-edges
+     (:route-scope stage)))
+   (is (keyword? (:role stage))))
+  (is (= (:types-refinement old) (:types-refinement bridge)))
+  (is
+   (=
+    (get-in r [:types-source-binding :record-sha256])
+    (sh-inventory/sha256 (pr-str (:types-refinement bridge)))))
+  (is
+   (=
+    :all-finite-subjects-frozen-no-renewal-consumption-adoption-or-new-review
+    (:review-conservation r)))
+  (is
+   (=
+    [11 6 2 3 9 4 258 150 38 20]
+    (mapv
+     (fn* [p1__155#] (get-in r [:types-source-binding p1__155#]))
+     [:criteria
+      :criterion-tasks
+      :criterion-authorities
+      :inherited-role-contexts
+      :joint-tasks
+      :joint-authorities
+      :source-facets
+      :source-occurrences
+      :section-conjunctions
+      :original-owner-joins])))
+  (doseq
+   [record
+    (concat [dep] (:plan-sources r))
+    :let
+    [p (:path record) before (:before record) after (:after record)]]
+   (is
+    (=
+     (:sha256 before)
+     (sh-inventory/sha256
+      (sh-crosswalk/git-source (:commit before) p))))
+   (is
+    (=
+     (:sha256 after)
+     (sh-inventory/sha256 (slurp p))
+     (sh-inventory/sha256
+      (sh-crosswalk/git-source (:commit after) p)))))
+  (is (= 20 (count (:plan-sources r))))
+  (is (= 2 (count (:canonical-sources r))))
+  (doseq
+   [{:keys [path source-commit sha256]} (:canonical-sources r)]
+   (is
+    (=
+     sha256
+     (sh-inventory/sha256 (slurp path))
+     (sh-inventory/sha256
+      (sh-crosswalk/git-source source-commit path)))))
+  (is (= :pending (:independent-current-review r)))
+  (is
+   (=
+    :unassessed
+    (:implementation-acceptance r)
+    (:global-source-conjunctions r)))
+  (is
+   (=
+    r
+    (get-in
+     view
+     [:implementation-readiness-source-version
+      :types-dependency-refinement])))
+  (let
+   [tp
+    "types/current-evidence-and-remaining-work/"
+    t2
+    (str tp "types2-check-declared-abstractions")
+    t5
+    (str tp "types5-integrate-typed-core")
+    t1
+    (str tp "types1-solve-core-constraints")
+    layout
+    "lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout"
+    role
+    (fn
+     [c p]
+     (:role
+      (first
+       (filter
+        (fn*
+         [p1__166#]
+         (= [c p] [(:consumer p1__166#) (:producer p1__166#)]))
+        (:staged-result-subjects r)))))]
+   (is
+    (=
+     :early-fixed-target-ABI-rule-not-future-generated-Q-layout-or-emission
+     (role t2 layout)))
+   (is
+    (=
+     :actual-required-layout-from-early-typed-premises-before-final-typed-verification
+     (role t5 layout)))
+   (is
+    (=
+     :authentic-expanded-versioned-schema-before-actual-static-projection
+     (role t2 "schema")))
+   (is
+    (=
+     :later-real-generated-type-verification-not-initial-source-schema-input
+     (role "schema" t5)))
+   (is
+    (=
+     :available-already-checked-P-not-own-future-generated-Q-typing
+     (role
+      "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+      t5)))
+   (is
+    (str/includes?
+     (:selected-output-contract (current-map t1))
+     "complete private visibility/export/use/call/escape/mutation/original-target re-entry census"))
+   (is
+    (str/includes?
+     (:selected-output-contract (current-map t1))
+     "Expected results, Dynamic defaults, solved flags, circular/vacuous evidence"))
+   (is
+    (str/includes?
+     (:selected-output-contract (current-map t5))
+     "exactly one type or diagnostic per node"))
+   (is
+    (=
+     :unassessed
+     (get-in result [:nodes (str "result:" t2 ":" layout) :state]))))))
 
 (let [result (run-tests 'sh-crosswalk-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))

@@ -4806,3 +4806,96 @@ still the first actual implementation increment. The original C7 operation
 and all other actual restrictions, writer reservations and stopped handoffs
 remain. No other-chat message, reviewer wake, held execution, aggregate
 publication, merge, implementation completion or seed-retirement claim occurs.
+
+## Complete Types producer and consumer dependency continuation
+
+Source `edf2d11101fd6048391b3c2362bca70d485c3ee2` refines 46 existing
+selected-result routes. It preserves all 1,780 earlier joins, every previous
+input and 91 unaffected route meanings; 113 additions yield 1,893 joins across
+the same 137 routes, 97 current parents and forty future records. Selected
+inputs grow from 819 to 932. Twenty existing plans name 192 concrete selected
+input subjects. All eleven direct L5/C7 criteria retain routes for six existing
+tasks, with inherited Legality/Expand roles preserved. These populations
+measure conservation, not semantic coverage or execution.
+
+No task body, status, source criterion, future declaration or earlier review
+subject changes. The 149 current keys, 25 authorities and original 139-body
+44-identical/95-amended split remain. The coarse cycles remain exactly the same
+95- and nine-task sets. Concrete staged subjects expose the feedback without
+claiming complete executable composition or resolving the recorded D1/C1/C5/C6
+ordering and L6/L12 environment-wording issues.
+
+Actual resolved and structurally verified candidate Core, private visibility,
+exports, uses, calls, escapes, mutation and original-target re-entry facts
+precede independent local inference. Preserve actual argument/body/branch/
+initializer/re-entry types and every compatibility premise. Private member
+and whole-key-domain evidence remain distinct; empty normal Map witnesses,
+Never in any argument, complete ignored-value validation, exact/Never branch
+precedence and independently cold Symbol-Set grounding retain their full
+source conditions. Expected results or assigned solved flags replace none.
+
+Authentic expanded schemas precede Types-owned static projection; Expand owns
+ordinary generated-Q checking and Schema retains source/normalization/runtime
+validation. Real fixed ABI/representation rules precede inference; actual
+selected layouts derive from real early typed premises before required final
+typed verification. Q's own future final type/layout cannot be its first query
+input. Already-available checked macro P precedes invocation and generated Q
+is ordinarily checked afterward. Source-only services, carriers and caches need
+no later absent type facts or whole runtime/library completion first.
+
+Dynamic/cast/foreign boundaries preserve actual direction, nullability,
+ownership, encoding/layout, loss and Option versus Result/declared failure
+semantics, with genuine early policy/regime/provider/service contracts. Types
+records required checks and unsafe obligations; actual effect, grant, profile,
+ownership and safety verdicts precede admitted behavior. Typed verification
+checks the actual entire current subject before Effects claims legality,
+including one type or diagnostic per node, complete constraints/function/
+conversion/schema/layout facts and accurate origins. Typed records are not
+grant issuance, installed enforcement or runtime execution.
+
+MIR and target consumers reconstruct required current local/private/transfer
+premises and preserve actual instantiation, tentative versus admitted dispatch,
+conversion/check/resource/schema/layout and source products. Invalidating
+transforms genuinely regenerate affected owner facts and verify the changed
+subject, with required high-risk preservation evidence distinct from structural
+validity. Valid verified raw MIR retains its path and no new universal
+optimizer prerequisite appears. Owner accepted/refusal fixtures precede
+independently executed harnesses; the existing conditional Evolution producer
+retains artifact-schema/fixture/affected-consumer obligations for stable type-
+form changes without creating an ordinary-development permission ceremony.
+
+Current proposal input fingerprint:
+`7ab27e7cc5314885413afee5f9ade88bd56ab20cf18ba10afb03b8b09f53440c`.
+Applying source pins verify against local Git. The complete Types source
+regression now reads its exact frozen `1ef683ebfa505100ba47b9541d3304f06174bbaa`
+bridge, projection and source bytes. All other historical test source remains;
+only the current dependency suite's five-Legality input counts change from
+24/24/31/34/45 to the actual 27/27/32/39/47. Its first 23-test/5,467-assertion
+attempt failed that stale count once with no errors and receives no passing
+credit. Detailed previous-input and route-meaning controls remain unchanged.
+Final validation passes four focused crosswalk tests / 12,566 assertions:
+current selected Types dependency edges and six route-removal controls, complete
+frozen Types source and Core dependency subjects, and global conservation.
+All 23 dependency tests / 5,467 assertions pass after the current count update;
+both pinned projection checks pass. Canonical validation passes 240 documents /
+nineteen phase indexes; full-language roadmap structural validation passes with
+dated counts non-authoritative. The language-boundary gate passes six tests /
+eleven assertions. Navigation/conservation passes 91 changed files, 85 Markdown
+files, 3,754 local references, 139 original task routes, 48 historical spec/plan
+suffixes and all 48 original task/evidence contents after declared additions
+are removed. ASCII and whitespace checks pass. The full current 73-test
+crosswalk suite was not rerun. The previous complete 68-test / 44,978-assertion
+run remains bound to `25a96a0c03536270001449c00676e644ea353521`; no semantic
+compiler, runtime, provider, target, migration or release conformance is claimed.
+
+Next source work is complete L7 pattern matching across its existing owners.
+Direct source inspection and preserved census identity checks identify 92
+facets, 66 occurrences and seven original owner obligations; six remain
+task-reference-only joins and the version-change conjunction still needs its
+exact existing criterion. This is scope discovery, not L7 reconciliation or
+acceptance. Reader contract coverage remains the first actual implementation
+increment. Global source/owner/interface entailment, complete readiness,
+independent current acceptance and integration remain pending or unassessed.
+Every actual operation restriction, writer reservation and stopped handoff
+remains; no held execution, other-chat message, reviewer wake, aggregate
+publication or merge occurs.
