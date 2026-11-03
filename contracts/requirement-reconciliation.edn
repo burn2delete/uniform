@@ -50566,38 +50566,45 @@
    :kind :math9-rewrite-termination-semantic-projection,
    :review-state :proposed,
    :baseline-ref "a1b991be499d50579a8b4366976c519ae8949224",
-   :applying-ref "dcf3378130ef92c37105aeda17b3badfec6619dc",
+   :applying-ref "4d8a085a9b68bb8c349869c574b94ee4cea81406",
    :baseline-tree "5b62819e511bfc7e6b5eba0527d8c9b5883c5572",
-   :applying-tree "b0609b39cf93b8c27dbd204b69ca197ef781d8f8",
+   :applying-tree "2366861f1514b0cb03a7a869b2af365d3816df3c",
    :baseline-sha256
    "ca9ccdcfe25a76de1127d5629d8265f83885481e7334012ee4da8aa1fdbd0410",
    :live-sha256
-   "8ee9b9bd7a70508ebac2d74eac64417462c1a18f75e5b2ae2c43b12b96266430",
+   "543cfc52291e89d60c0a80c0c056221c098bc9aed11d8fb7f3e45e999322bff3",
    :baseline-blob "ac364084776e3cd0a2046c224aacd7d65178cc68",
-   :applying-blob "5bae82b6d377e64b803dd1c6a7282f4ec179406b",
+   :applying-blob "cda65cb93e21f483fc1dafd8dc429f38198940d6",
    :authority
-   "MATH9 rewrite-system source audit of current termination evidence after mandatory-fuel retirement.",
+   "MATH9 rewrite-system source audit of current termination evidence after mandatory-fuel retirement and unsupported example-claim removal.",
    :qualification
-   "Only the exact Rewrite Rule Form termination measure is projected to the authenticated baseline view. Rule/domain/branch/numeric/floating/side-condition/proof/source and invalidation facts, deterministic rule ordering, cost-model tie breaks, equality explanations, proof replay, and well-founded finite termination evidence remain current semantic obligations. The current strict tan-occurrence measure is a semantic termination correction, not a project quota or admission allowance; this bridge is source reconciliation evidence only and confers no canonical adoption or implementation acceptance.",
+   "Only the exact Rewrite Rule Form termination region is projected to the authenticated baseline view. Rule/domain/branch/numeric/floating/side-condition/proof/source and invalidation facts, deterministic rule ordering, cost-model tie breaks, equality explanations, proof replay, and well-founded finite termination evidence remain current semantic obligations. The current source removes an unsupported strict tan-occurrence example claim and requires finite termination evidence from the selected strategy; no proof is inferred from the example's omission, and this bridge is source reconciliation evidence only.",
    :current-criteria
    {:retained [:rule-domain-branch-numeric-floating-side-condition-proof-source-and-invalidation
                :deterministic-rule-ordering-cost-model-tie-breaks-equality-explanation-and-proof-replay
                :well-founded-termination-finite-trace-and-stopped-run-history],
-    :changed [:strictly-decreasing-tan-occurrence-measure],
-    :qualification :current-math9-criteria-derived-from-dcf3378130},
+    :changed [:unsupported-strict-tan-occurrence-example-claim-removed
+              :selected-strategy-finite-termination-evidence-required],
+    :qualification :current-math9-criteria-derived-from-4d8a085a},
+   :historical-applying
+   {:ref "dcf3378130ef92c37105aeda17b3badfec6619dc",
+    :tree "b0609b39cf93b8c27dbd204b69ca197ef781d8f8",
+    :blob "5bae82b6d377e64b803dd1c6a7282f4ec179406b",
+    :live-sha256 "8ee9b9bd7a70508ebac2d74eac64417462c1a18f75e5b2ae2c43b12b96266430",
+    :qualification "Historical dcf337 MATH9 snapshot retained for provenance only; it is not the current source and is not re-admitted as proof."},
    :semantic-deltas
    [{:hunk-id "MATH9-rewrite-termination",
-     :classification :semantic-strict-termination-measure}],
+     :classification :semantic-termination-evidence-and-unsupported-example-removal}],
    :projection-hunks
    [{:hunk-id "MATH9-rewrite-termination",
      :facet-ids ["MATH9/partition-facet/f7ea6e89842884748fe59dbe8f51ab1430d943e274be2db887506a777a0977c9"
                  "MATH9/partition-facet/e231af9a1d26e177746d45311c38254441b372ff323f06178c5a5777ae4243ad"],
-     :baseline-start-line 77, :baseline-end-line 78,
-     :live-start-line 77, :live-end-line 78,
+     :baseline-start-line 76, :baseline-end-line 81,
+     :live-start-line 76, :live-end-line 82,
      :baseline-fragment-sha256
-     "ca061d6ae9dc82e9c5ab1dbba13b05632a62d13a9ce09355452dfd58a444f8f1",
+     "a411bb29a0fb1a407e03b9efafede91b9b3c22f59d58686da75760adfa245983",
      :live-fragment-sha256
-     "f35520ec40d85c0f54bbb63e31895c3ad097ed693da79100a56deb0ffa16e404"}]}],
+     "5f8471f4805c2b97145498313219231f2575826fe580aec51296360fe70aade5"}]}],
  :task-source-version-bridges
  [{:path "specs/stdlib-workflow/tasks.md",
    :marker "stdlib-implementation-tasks",
@@ -50781,20 +50788,32 @@
    :marker "types-implementation-tasks",
    :historical-ref "fcb23737be00f646a74200fc26faaa8908f77164",
    :historical-sha256 "9b76c2473d472b2d95a26420c4784837dc36e13a2226043efc7bb4a14a47f72e",
-   :current-ref "bfc99d626ca31c9094573e03da751ee34da5084f",
-   :current-tree "f6305181e0df2e841c15c752f3e1ee1260bdee17",
-   :current-sha256 "13149ad814bebd312dd5c371ff88ff06255848e86d23b02e2d94922c1240f10f",
-   :change-class :navigation-only,
-   :qualification "The current ledger replaces generated-roadmap wording with navigation wording. Types task records and acceptance boundaries remain equivalent; no types implementation acceptance is inferred."}
+   :current-ref "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659",
+   :current-tree "552a2bd0f50d53928aef5dffd085656dbe7bc17a",
+   :current-sha256 "be4ab3523fcc9532a8f3dc7e36309843b5727cdb9bd5fea2ff8ba08faf07f946",
+   :change-class :current-candidate-composition,
+   :qualification "The current candidate preserves the Types task identity and adds the scoped PR565 schema-static-projection boundary. Source/compiler/profile/target and provider/checker identities remain required; Types implementation and requirement acceptance remain unassessed.",
+   :known-current-main
+   {:current-ref "d544539eefaea6b16aecd724b54d61a9b0ec1f3d",
+    :current-tree "9fac2c4d1ebfb5294f598860917bc779b2147ebf",
+    :current-sha256 "13149ad814bebd312dd5c371ff88ff06255848e86d23b02e2d94922c1240f10f",
+    :change-class :current-main-composition,
+    :qualification "Immutable d544 source checkpoint before the PR565 Types boundary; no Types implementation acceptance is inferred."}}
   {:path "specs/runtime-workflow/tasks.md",
    :marker "runtime-implementation-tasks",
    :historical-ref "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950",
    :historical-sha256 "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972",
-   :current-ref "42c34ab55af0000dfaaf73d96d7ee09ec22c243e",
-   :current-tree "e8f1cc090800f9fcd9e81b7a5bcea32a88101526",
-   :current-sha256 "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c",
-   :change-class :acceptance-boundary-extension,
-   :qualification "The authenticated PR560 intermediate appends SAFE2-SAFE8 runtime boundary criteria to two existing Open records. PR561 preserves those criteria and adds five source-qualified Runtime acceptance boundaries to the same five Open records. Historical task identity and acceptance remain pinned; the current source is authenticated at the exact PR561 composition checkpoint. No runtime implementation or requirement acceptance is inferred.",
+   :current-ref "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659",
+   :current-tree "552a2bd0f50d53928aef5dffd085656dbe7bc17a",
+   :current-sha256 "d4b3a3c875f961b5828e8cceda7ecdf106af4527c64fa07ad6c6e1e049d0868d",
+   :change-class :current-candidate-composition,
+   :qualification "The current candidate preserves the Runtime task identity and adds the scoped PR565 hosted source-map boundary, requiring actual runtime failure and source/generated-origin evidence. Runtime implementation and requirement acceptance remain unassessed.",
+   :known-current-main
+   {:current-ref "d544539eefaea6b16aecd724b54d61a9b0ec1f3d",
+    :current-tree "9fac2c4d1ebfb5294f598860917bc779b2147ebf",
+    :current-sha256 "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c",
+    :change-class :current-main-composition,
+    :qualification "Immutable d544 source checkpoint before the PR565 Runtime boundary; no Runtime implementation acceptance is inferred."},
    :known-pr560-current
    {:current-ref "8e6608856edcde2b57c33951839dfa9b79f2c503",
     :current-tree "23974efdf7c3fa19160a344f26084ebe051ef1a5",
@@ -50847,11 +50866,17 @@
    :marker "domains-implementation-tasks",
    :historical-ref "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950",
    :historical-sha256 "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4",
-   :current-ref "24e7b5e5cd8bc42fa495997870605b596a380678",
-   :current-tree "52a90b3d537f23b3f572ee65ff03edf827c1e29b",
-   :current-sha256 "5378c2c7fba1bb49318fc6cda890c60c77bdbdc57dfe6f5ea42ea8aa23298943",
-   :change-class :family-criteria-preserved-plus-current-main-safety-criteria,
-   :qualification "The authenticated current source is the PR562 family/current-main composition checkpoint: historical Domain Workflow/UI criteria remain present and current main's SAFE9/SAFE13 Math/AI boundary criteria are retained. Historical task identity and acceptance remain pinned; no domain implementation or requirement acceptance is inferred.",
+   :current-ref "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659",
+   :current-tree "552a2bd0f50d53928aef5dffd085656dbe7bc17a",
+   :current-sha256 "3d8989b72d00461931e400b5617b9bea090c63265cfee553e12d7b3cd6bc88dc",
+   :change-class :current-candidate-composition,
+   :qualification "The current candidate preserves the Domain task identity and adds the scoped PR565 schema source joins while retaining the existing Math/AI criteria. Domain implementation and requirement acceptance remain unassessed.",
+   :known-current-main
+   {:current-ref "d544539eefaea6b16aecd724b54d61a9b0ec1f3d",
+    :current-tree "9fac2c4d1ebfb5294f598860917bc779b2147ebf",
+    :current-sha256 "5378c2c7fba1bb49318fc6cda890c60c77bdbdc57dfe6f5ea42ea8aa23298943",
+    :change-class :current-main-composition,
+    :qualification "Immutable d544 source checkpoint before the PR565 Domain joins; no Domain implementation acceptance is inferred."},
    :changed-records
    [{:id "math",
      :historical-record-sha256 "fd5a8ea4fed8cedd5889bb6030359e87b8abefb1a6467470d161800b6387e0c7",

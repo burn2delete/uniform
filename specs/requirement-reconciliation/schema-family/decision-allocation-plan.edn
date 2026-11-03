@@ -1,0 +1,153 @@
+{:kind :schema-current-decision-allocation-plan
+ :new-task-count 0
+ :groups
+ [{:criterion-id "schema/source-manifest-and-validator/decision-interface"
+   :task-path "specs/domains-workflow/tasks.md" :task-id "schema"
+   :marker "domains-implementation-tasks" :field-label "Projected task block"
+   :roles {"interface/schema/expand-authoritative-schema" :producer
+           "interface/schema/generate-source-validator" :producer}
+   :inputs "S1 source schema and resolved type/effect/capability/taint facts, declared refinement class, boundaries and derivation policy."
+   :outputs ["Expanded versioned schema manifest" "Generated runtime validator" "Recursive/refined schema fixtures and source/generated parity report"]
+   :acceptance "Expand records/maps/arrays/sets/tuples/enums/tagged unions/optional/refined/alias/reference/recursive/opaque schemas into an authoritative typed manifest, preserving id/version/hash/span/compatibility/boundary/derivation target. Generate the validator from that manifest; preserve compile-time/runtime/boundary/proof/advisory refinement classes and intended-schema versus stronger-sink trust distinctions. Run accepted and invalid payloads through API/database/message/workflow/AI/config/decoded/FFI/artifact boundary fixtures; documented narrowing projections remain explicit."
+   :refusals ["Malformed shape, unsupported/unclassified refinement or recursion without strategy" "Missing identity/boundary/manifest metadata or generated constraints weaker than source" "External values trusted before intended validator/sink validation or AI output bypass"]
+   :dependencies ["Types resolved schema identities and constraints" "Effects/Auth/Legality authority and taint facts" "S2-S9 consumers receive the expanded schema and validator; no whole-component completion gate"]
+   :diagnostics "Applicable S1-SHAPE/REFINEMENT/BOUNDARY/PROJECTION/TAINT/RECURSION/MANIFEST with schema/version/span/boundary/target/field and remediation."}
+  {:criterion-id "types/schema-static-projection/decision-interface"
+   :task-path "specs/types-workflow/tasks.md"
+   :task-id "types/current-evidence-and-remaining-work/types2-check-declared-abstractions"
+   :marker "types-implementation-tasks" :field-label "Done when (yes/no)"
+   :roles {"interface/language/types/project-schema-static-type" :producer}
+   :inputs "The exact S1 expanded typed/versioned schema manifest and its source identity/refinement/constraint facts."
+   :outputs ["Static type projection artifact with schema identity" "Accepted and rejected source-to-type parity fixtures"]
+   :acceptance "Generate static records/unions/optional/reference/recursive/refined types from the expanded schema, preserve resolved names, schema identity and constraints, and compare declared and generated type legality against the same manifest. Record target representation limitations explicitly."
+   :refusals ["Type projection from a mismatched/stale schema identity" "Dropped nullability/refinement/variant constraint or unrepresentable schema family without explicit policy/rejection" "Schema normalization or validator generation substituted for the static type artifact"]
+   :dependencies ["Schema task supplies the expanded manifest" "Types resolved declarations/constraints supply legality; downstream validators and bindings consume the projected type facts"]
+   :diagnostics "S1-PROJECTION and applicable Types mismatch diagnostics retain schema/version/span/target and remediation."}
+  {:criterion-id "schema/declared-format-codecs/decision-interface"
+   :task-path "specs/domains-workflow/tasks.md" :task-id "schema"
+   :marker "domains-implementation-tasks" :field-label "Projected task block"
+   :roles {"interface/schema/encode-declared-format" :producer
+           "interface/schema/decode-declared-format" :producer-and-boundary-checker}
+   :inputs "S2 schema/version/format representability, field/unknown-field/numeric/string-byte/variant/conversion/trust/canonicalization policy and actual typed values or external bytes."
+   :outputs ["Serializer manifest and encoder/decoder products" "Validation/trust/compatibility records" "Round-trip and invalid-byte/value fixtures tied to schema hashes"]
+   :acceptance "Encode typed values under the declared policies and decode external bytes while checking required/unknown/duplicate fields, variants/refinements, precision, UTF-8/normalization and binary representation legality. Preserve numeric/string/timestamp/decimal/UUID/binary/variant conversions only under explicit compatible loss policy. Round-trip all claimed formats and retain untrusted/authenticated-unvalidated/schema-validated/sink-validated distinctions."
+   :refusals ["Schemaless or unsafe polymorphic decode without a finite declared type set" "Implicit lossy conversion, duplicate/missing/incompatible fields, invalid variants or encoding" "Trusting decoded data before intended validation, missing round-trip evidence, or noncanonical hash/signature use"]
+   :dependencies ["S1 schema/validator and SAFE11 sink-taint facts" "S3 canonical rules when canonical identity is claimed; S7 target representation when binary/ABI format is claimed"]
+   :diagnostics "Applicable S2 format/field/variant/numeric/string/polymorphic/taint/roundtrip/manifest diagnostics bind schema/format/path/span/policy/trust state. Removed work/input quotas are not reinstated by mixed recursion/length text."}
+  {:criterion-id "schema/canonical-codecs-and-identity/decision-interface"
+   :task-path "specs/domains-workflow/tasks.md" :task-id "schema"
+   :marker "domains-implementation-tasks" :field-label "Projected task block"
+   :roles {"interface/schema/encode-canonical-value" :producer
+           "interface/schema/decode-canonical-value" :producer-and-boundary-checker
+           "interface/schema/check-canonical-identity-input" :checker}
+   :inputs "S1 schema hash, format version, canonical domain/policy, typed semantic value or encoded bytes; hash/sign/replay consumers supply their actual identity input."
+   :outputs ["Canonical encoder/decoder and format manifest" "Byte-exact per-type reference vectors" "Hash/sign/replay input admission and rejection records"]
+   :acceptance "Encode equal values identically under the same schema/version/policy, using encoded-byte map/set ordering, type/version tags and explicit absent/null, integer/decimal width, NaN/infinity/signed-zero, timestamp/timezone, UUID/symbol/keyword, union, UTF-8/normalization, byte and metadata rules. Decode against that same version/domain and reference vectors. Actual hash/sign/replay identity consumers require those canonical bytes and reject mismatched or unsupported encodings before use."
+   :refusals ["Host iteration/object identity/target layout/timezone/encoding changing canonical bytes" "Ambiguous values, missing canonical rules, invalid UTF-8/metadata or vector mismatch" "Hashes/signatures over noncanonical or wrong-schema/version bytes; a canonical flag alone is insufficient"]
+   :dependencies ["S1 expanded schema and S2 representation policy" "B13/package/workflow/AI/proof/release consume checked canonical bytes and input records"]
+   :diagnostics "S3-NONCANONICAL/ORDER/NUMERIC/STRING/METADATA/HASH/VECTOR/MANIFEST bind schema/value-path/rule/version/consumer context and remediation."}
+  {:criterion-id "schema/binary-layout-codecs-and-vectors/decision-interface"
+   :task-path "specs/domains-workflow/tasks.md" :task-id "schema"
+   :marker "domains-implementation-tasks" :field-label "Projected task block"
+   :roles {"interface/schema/emit-explicit-binary-layout" :producer
+           "interface/schema/emit-binary-codec-binding-input" :producer
+           "interface/schema/check-binary-reference-layout" :checker}
+   :inputs "S1/S2 schema and declared target triple/calling convention, explicit field representation, compatibility, pointer ownership/lifetime and target ABI facts."
+   :outputs ["Binary/ABI and layout manifests" "Schema-hash-bound codecs and typed FFI binding input" "Ownership/lifetime map, cross-target report and byte reference fixtures"]
+   :acceptance "Produce field-order/width/alignment/padding/endian/signedness/optional/tag/pointer layouts including struct/union/enum/string/buffer/error/ownership-transfer ABI policy. Generate codecs/binding input from the accepted layout and its schema hash. Check each supported target against byte-exact reference vectors or a declared target-independent encoding, including buffers/handles/callback/bitfield/resource forms where claimed."
+   :refusals ["Implicit host layout/packing/pointer size or ABI/calling-convention mismatch" "Uninitialized/nondeterministic stable bytes or pointers/handles missing ownership/lifetime policy" "Wrong schema hash, unsupported representation, missing vectors or undeclared binary-breaking changes"]
+   :dependencies ["Types/ownership facts and S1/S2 schema contracts" "B2/B3/B4/B9/B12 and SAFE2/SAFE7/SAFE15 layout/proof contracts; R10 consumes binding input, while actual foreign invocation remains a separate runtime consumer"]
+   :diagnostics "Applicable S7 layout/endian/pointer/ABI/variant/fixture/compatibility/manifest diagnostics bind schema/field/target/rule/pointer-or-variant/fixture/proof and remediation."}
+  {:criterion-id "schema/semantic-compatibility-diff/decision-interface"
+   :task-path "specs/domains-workflow/tasks.md" :task-id "schema"
+   :marker "domains-implementation-tasks" :field-label "Projected task block"
+   :roles {"interface/schema/compatibility-diff" :checker-and-artifact-producer}
+   :inputs "Exact old/new schema identities, expanded source and generated projection contracts, and additive/migration-required/binary-stable/reviewed-breaking/append-only/exact compatibility policy."
+   :outputs ["Semantic diff and compatibility report" "Required migration/review decisions" "Accepted and rejected evolution fixtures"]
+   :acceptance "Classify added/removed/renamed fields, changed nullability/enums/variants/refinements/binary layouts and semantic hazards. Include GraphQL resolver policy, HTTP route/error/auth, database dialect/migration, ABI and artifact-schema changes; preserve public schema-library consumer context when those adapters are used. Emit the required compatibility/migration decision for each changed boundary instead of accepting a textual-only diff."
+   :refusals ["Changed schema/projection without declared policy or required migration/review evidence" "Hidden API/client/AI or ABI compatibility breaks and weakened constraints" "Wrong from/to identity, dropped negative condition or schema helper availability substituted for a checked diff"]
+   :dependencies ["S1 old/new schemas and S4/S5/S6/S7/S9 projection/consumer records" "STD10 schema APIs and Build/Query/Workflow/AI/Runtime consume the applicable checked diff, not a new whole-component completion condition"]
+   :diagnostics "Applicable S1-COMPATIBILITY, S4-DIFF, S5-DIFF, S6-MIGRATION/DATA-LOSS, S7-COMPATIBILITY and S9-COMPATIBILITY retain changed path, boundary/policy and remediation."}
+  {:criterion-id "schema/migration-plan-admission-and-validation/decision-interface"
+   :task-path "specs/domains-workflow/tasks.md" :task-id "schema"
+   :marker "domains-implementation-tasks" :field-label "Projected task block"
+   :roles {"interface/schema/emit-typed-migration-plan" :producer
+           "interface/schema/authorize-runtime-migration" :runtime-admission-consumer
+           "interface/schema/validate-migration-change" :checker-execution}
+   :inputs "Checked S1/S6 old/new schema diff, declared dialect, transaction/backfill/rollback-or-forward-only/deployment ordering, data-loss policy and any required review record; runtime supplies actual database write/admin grants."
+   :outputs ["Typed SQL/provider migration and plan/identity manifest" "Data-loss/review/rollback-or-forward-only and API-client compatibility records" "Actual admission/denial and fixture-database or equivalent plan-validation results"]
+   :acceptance "Generate a typed migration with exact from/to identities and all declared policy fields; include shared GraphQL/OpenAPI/client/AI compatibility. At the actual execution boundary admit only with applicable database write/admin grant and required destructive-change policy/review/evidence. Validate generated additive/breaking/destructive changes using fixture databases or equivalent checked plans, binding exact subject, dialect and policy in results."
+   :refusals ["String-only migration without schema diff or wrong from/to/dialect" "Destructive change lacking explicit data-loss decision or policy-required review/evidence" "Missing write/admin grant, missing rollback/forward-only policy, hidden API break or missing/mismatched validation fixture"]
+   :dependencies ["S1 schema/diff and B11 relational artifacts" "SAFE10/SAFE11/P9/R7 authority, taint, deployment and replay records; runtime actual execution/admission is not established by plan generation"]
+   :diagnostics "Applicable S6-MIGRATION/DATA-LOSS/ROLLBACK/CAPABILITY/FIXTURE/MANIFEST bind schema/path/dialect/migration/effect/grant/data-loss and remediation."}
+  {:criterion-id "schema/executed-http-contract-parity/decision-interface"
+   :task-path "specs/domains-workflow/tasks.md" :task-id "schema"
+   :marker "domains-implementation-tasks" :field-label "Projected task block"
+   :roles {"interface/schema/run-http-contract-tests" :checker-execution}
+   :inputs "Pinned generated OpenAPI/request/response/error schemas, schema/operation/route identities and actual handler/provider/version with declared effects/grants/auth/idempotency policy."
+   :outputs ["Executed handler contract-test report" "Accepted/invalid request/response/error fixtures and stable source-mapped diagnostics"]
+   :acceptance "Execute generated contract tests against the actual declared handlers and compare request/response/error/status/nullability/constraint/auth behavior to the authoritative route/schema contract; bind handler/provider, schema/operation and source/compiler identities in results. Retain raw external-input taint until intended validation."
+   :refusals ["Invalid request/response/error admitted, drifted operation/schema/handler identity or weakened source constraint" "Undeclared effect/grant/auth/idempotency requirement and unvalidated HTTP input" "Generated test source or OpenAPI document substituted for actual execution results"]
+   :dependencies ["S1-S3 schema/identity and generated S5 document/validators/client contracts" "DOM8/B11/R11/R12 actual handler, authority and observation interfaces"]
+   :diagnostics "Applicable S5 route/schema/taint/capability/idempotency/diff/client/source-map diagnostics retain route/method/path/span/schema/effect/grant/compatibility and remediation."}
+  {:criterion-id "runtime/deployment-provider-authority/decision-interface"
+   :task-path "specs/runtime-workflow/tasks.md"
+   :task-id "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"
+   :marker "runtime-implementation-tasks" :field-label "Closing evidence"
+   :roles {"interface/safety/safe10/runtime-authority" :runtime-consumer-and-checker}
+   :inputs "Compiler-accepted effect/capability facts, package/deployment grants and actual deployment-specific provider identity, presence, scope, phase/lifetime and revocation state under the declared error/panic/audit policy."
+   :outputs ["Actual service-hook allow/deny/delegate/revoke records" "Provider presence/scope and error/panic fixtures" "Policy-required redacted telemetry/audit and source/identity diagnostics"]
+   :acceptance "At actual HTTP/GraphQL/migration and other applicable authority-bearing runtime boundaries, check provider presence and deployment narrowing plus caller/tool-contract grant scope and supported lifetime/revocation before the action. Preserve declared error/panic and required audit/telemetry behavior, source/generated origins and principal/package/deployment/artifact/effect/capability identity; keep secrets redacted. Conditional provider/family/source contexts remain conditional, not blanket new authority."
+   :refusals ["Missing/wrong-scope provider, undeclared/ungranted action, widened deployment authority or supported use after revocation" "Missing policy-required audit/source mappings, secret leakage or ungranted observation sink" "Compiler legality, Auth policy text or generated wrapper metadata substituted for actual runtime hook checks"]
+   :dependencies ["Auth supplies typed policy/grants, compiler/Legality supplies accepted facts, Lower supplies emitted source/identity maps" "Each applicable runtime/provider supplies actual hook results; S4/S5/S6 consumers preserve admission decisions and R12 consumers check required redacted records"]
+   :diagnostics "Applicable SAFE10/R11/R12 and S4/S5/S6 boundary diagnostics include provider/deployment/scope/effect/grant/source and declared error/panic/remediation without secret disclosure."}]
+ :existing-bindings
+ [{:id "interface/schema/emit-graphql-sdl" :role :producer
+   :outputs ["GraphQL SDL, generation manifest, auth and source-map metadata"]
+   :dependencies ["S1 expanded source schemas/validators and Types facts" "S2/S3 schema identities and declared S4 mapping/pagination/error/compatibility policy"]
+   :positive ["Generate SDL, resolver adapters, typed clients, query validation, auth metadata, source maps"]
+   :negative ["unsupported mappings require explicit validated adapters or rejection" "Reject missing auth/origin metadata"]
+   :criterion-prefixes ["Criterion `schema/graphql-generation/full-source-interface`"]}
+  {:id "interface/schema/emit-graphql-resolver-adapter" :role :producer
+   :outputs ["Typed resolver adapter bundle, source maps and grant-fixture results"]
+   :dependencies ["S1 source schema and typed resolver declaration" "Runtime actual grant enforcement and S4 effect/error/auth policy; generated adapters alone do not prove invocation"]
+   :positive ["Generate SDL, resolver adapters" "Execute resolver fixtures with allowed grants"]
+   :negative ["reject hidden IO/model/tool effects or missing grants"]
+   :criterion-prefixes ["Criterion `schema/graphql-generation/full-source-interface`"]}
+  {:id "interface/schema/emit-database-structure" :role :producer
+   :outputs ["Declared-dialect table/view/constraint/index structures and mapping manifest"]
+   :dependencies ["S1 source schema and B11 relational mapping inputs" "Declared dialect/representation/compatibility policy and SAFE10/SAFE11 boundary facts"]
+   :positive ["mapping into tables, views, column types, constraints, indexes, primary/foreign/composite keys"]
+   :negative ["Reject lossy mappings/adapters, unsupported dialect features"]
+   :criterion-prefixes ["Criterion `schema/database-mapping/full-source-interface`"]}
+  {:id "interface/schema/emit-typed-row-adapter" :role :producer
+   :outputs ["Typed row adapters and source/row validation-parity results"]
+   :dependencies ["S1 source validator and declared database row representation" "B11 relational result identities and SAFE11 intended-sink taint facts"]
+   :positive ["typed row adapters" "Compare each generated row validator to its source schema"]
+   :negative ["external rows remain tainted until intended validation" "Reject lossy mappings/adapters"]
+   :criterion-prefixes ["Criterion `schema/database-mapping/full-source-interface`"]}
+  {:id "interface/schema/emit-typed-api-client" :role :producer
+   :outputs ["Typed API client/declaration/validator artifacts bound to schema and operation hashes"]
+   :dependencies ["S4/S5 pinned schema/operation/server request-response-error contract" "Types dynamic-boundary legality and Emit generated client/validator artifacts"]
+   :positive ["Generate typed API clients tied to schema/operation hashes"]
+   :negative ["Reject stale schema/version/hash, missing validators, invalid runtime data and silent schema drift"]
+   :criterion-prefixes ["Criterion `schema/api-client-generation`" "Criterion `schema/graphql-generation/full-source-interface`"]}
+  {:id "interface/schema/check-client-operation" :role :checker
+   :outputs ["Accepted/rejected concrete operation validation and client/server parity results"]
+   :dependencies ["Actual operation and pinned client/server schema/version/hash" "S1/S4/S5 validators and Types boundary facts; emission alone does not validate an operation"]
+   :positive ["validate operations against the declared server contract"]
+   :negative ["Reject stale schema/version/hash, missing validators, invalid runtime data and silent schema drift"]
+   :criterion-prefixes ["Criterion `schema/api-client-generation`" "Criterion `schema/graphql-generation/full-source-interface`"]}
+  {:id "interface/schema/emit-openapi-document" :role :producer
+   :outputs ["Source-faithful OpenAPI document, operation/schema identity and provenance metadata"]
+   :dependencies ["S1-S3 source schema/identity plus authoritative S5 route/error/auth declarations" "Types facts and Emit real generated document artifacts"]
+   :positive ["Generate source-faithful route/schema/request/response/error/auth OpenAPI artifacts"]
+   :negative ["Reject incompatible operation/schema identity, weakened validation, invalid requests/responses"]
+   :criterion-prefixes ["Criterion `schema/openapi-generation`"]}
+  {:id "interface/schema/emit-http-boundary-validators" :role :producer
+   :outputs ["Generated request/response/error validators with route/schema/taint/authority metadata"]
+   :dependencies ["Authoritative S5 request/response/error route contract and S1 validator" "Types/taint/grant metadata and emitted operation identities; actual handler test execution remains separate"]
+   :positive ["with runtime validators and handler parity tests"]
+   :negative ["Reject incompatible operation/schema identity, weakened validation, invalid requests/responses"]
+   :criterion-prefixes ["Criterion `schema/openapi-generation`"]}]
+ :qualification "These are current-decision allocation proposals, not additional historical mappings or implementation tasks. Existing criterion reuse preserves accepted review scope; supplements remain Open and require independent review/adoption. Every attached facet/context and unresolved metadata item is retained separately from the required-output witness."}
