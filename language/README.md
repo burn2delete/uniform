@@ -37,15 +37,47 @@ bootstrap-project outcomes consumed by the release project.
 
 ## Current source paths
 
-The initial split is an ownership boundary, not a bulk relocation. Existing
-implementation paths remain valid while coherent modules are moved with their
-callers, tests, manifests, and provenance references. Current Gravity modules
-are classified by behavior rather than directory. Compiler passes and runtime
-semantics under `bootstrap/gravity/src/gravity/` are language-owned, while
-stage rebuild, trust, and equivalence modules under
-`bootstrap/gravity/src/gravity/self_hosting/` are bootstrap-owned. The mixed
-`bootstrap/gravity/p15_s23/compiler.gravity`
-source requires extraction before relocation; see the project structure map.
+The permanent implementation roots are now explicit:
+
+- `language/compiler/src/gravity/` owns the relocated compiler semantics,
+  including checked core, effects, compiler contracts, and backend families.
+- `language/runtime/src/gravity/` owns the relocated runtime semantics.
+
+These roots now contain 35 byte-identical Gravity modules: 12 backend modules,
+18 compiler modules, four compiler-root modules (`checked_core`, `effects`,
+`macro`, and `resolution`), and one runtime module. The physical split is
+real; the remaining bootstrap paths below are mixed by behavior and are not a
+bulk language ownership claim.
+
+These roots are language-owned even when the temporary Clojure seed loads or
+executes the files. Legacy filenames and APIs remain compatibility surfaces;
+the host does not change semantic ownership. Further reader/syntax slices join
+the same language owner only as each coherent module is extracted with its
+callers, fixtures, manifests, and provenance references.
+
+The remaining bootstrap paths are mixed by behavior, not owned wholesale by a
+directory:
+
+- `bootstrap/gravity/src/gravity/bootstrap/` still contains reader, syntax,
+  diagnostic, and bootstrap-adapter portions. Permanent language semantics are
+  extracted separately; stage, rebuild, release, and seed-boundary portions
+  remain bootstrap-owned until extracted.
+- `bootstrap/gravity/src/gravity/self_hosting/` owns stage rebuild
+  orchestration, equivalence, trust, provenance, and evidence, including
+  `w5_stage_rebuild_orchestrator.gravity` and
+  `w5_stage_equivalence_verifier.gravity`.
+- `bootstrap/gravity/p15_s23/compiler.gravity` is mixed: compiler rule
+  inventories require extraction from stage inventories, rebuild orchestration,
+  and seed-retirement evidence before either side can own the resulting files.
+- `bootstrap/clojure/` owns the temporary Clojure seed and its adapters and
+  tooling. A seed function that implements a permanent language rule moves to
+  its Uniform successor's ownership; the `.clj` seed file stays here until its
+  boundary is actually retired.
+
+The project structure map records the complete behavior-based classification
+and relocation order. This entrypoint records the current physical split and
+behavior-based ownership; it does not claim complete language relocation,
+self-hosting, or Clojure retirement.
 
 See [the project structure map](../docs/project-structure.md) for the current
 path classification and relocation order.
@@ -60,13 +92,31 @@ scope and ownership. The [development verification guide](../docs/development-ve
 is the current command authority; its task and evidence records are not
 duplicated here.
 
-The focused language-development entrypoint is:
+Project-scoped aliases keep focused development selection explicit. The
+language and compiler catalogs are selected with `--namespace` and `--exact`:
+
+```bash
+clojure -M:language-test \
+  --namespace gravity.reader.normal-dispatch-test \
+  --exact actual-path-provenance-does-not-change-semantic-hashes --fail-fast
+
+clojure -M:compiler-composition-test \
+  --namespace gravity.checked-core.pipeline-test \
+  --exact projection-binding-input-excludes-only-the-existing-nonsemantic-envelope-fields --fail-fast
+```
+
+For the broader current-reader development command, use the existing
+`:dev-test` entrypoint:
 
 ```bash
 clojure -J-Xmx2g -M:dev-test \
   --namespace gravity.self-hosting.sh07-var-reference-test \
   --exact sh07-b5-qualified-var-development-kernel --fail-fast
 ```
+
+The [development verification guide](../docs/development-verification.md)
+remains the command authority and defines the selected catalog scope; these
+aliases do not create a second task or evidence ledger.
 
 For current-reader development, use either co-canonical extension:
 

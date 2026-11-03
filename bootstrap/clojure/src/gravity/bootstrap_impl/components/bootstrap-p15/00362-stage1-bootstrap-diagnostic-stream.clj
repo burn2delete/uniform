@@ -128,6 +128,8 @@
          [{:fixture "bootstrap/gravity/src"
            :source-roots ["bootstrap/gravity/src"
                           "language/compiler/src/gravity/checked_core.gravity"
+                          "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+                          "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
                           "language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity"
                           "language/compiler/src/gravity/backend/b2_c_backend_design.gravity"
                           "language/compiler/src/gravity/backend/b3_llvm_backend_design.gravity"
@@ -155,7 +157,11 @@
                           "language/compiler/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"
                           "language/compiler/src/gravity/compiler/l2_core_language_semantics.gravity"
                           "language/compiler/src/gravity/effects.gravity"
-                          "language/runtime/src/gravity/runtime.gravity"]
+                          "language/runtime/src/gravity/runtime.gravity"
+                          "language/compiler/src/gravity/macro.gravity"
+                          "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity"
+                          "language/compiler/src/gravity/resolution.gravity"
+                          "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"]
            :components (vec (sort stage1-bootstrap-required-components))
            :status :accepted}]
          :rejected-stage1-bootstrap-source-fixtures
@@ -190,6 +196,8 @@
 (def stage1-reader-bootstrap-source-roots
   ["bootstrap/gravity/src"
    "language/compiler/src/gravity/checked_core.gravity"
+   "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+   "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
    "language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity"
    "language/compiler/src/gravity/backend/b2_c_backend_design.gravity"
    "language/compiler/src/gravity/backend/b3_llvm_backend_design.gravity"
@@ -217,7 +225,11 @@
    "language/compiler/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"
    "language/compiler/src/gravity/compiler/l2_core_language_semantics.gravity"
    "language/compiler/src/gravity/effects.gravity"
-   "language/runtime/src/gravity/runtime.gravity"])
+   "language/runtime/src/gravity/runtime.gravity"
+   "language/compiler/src/gravity/macro.gravity"
+   "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity"
+   "language/compiler/src/gravity/resolution.gravity"
+   "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"])
 
 (def stage1-reader-execution-diagnostic-messages
   {"STAGE1READER001" "stage1 reader table rejected an unexpected close delimiter"

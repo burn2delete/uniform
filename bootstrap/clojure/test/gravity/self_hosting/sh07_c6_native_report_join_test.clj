@@ -13,7 +13,7 @@
       (loop [directory (.getParentFile (io/file (.toURI resource)))]
         (if (.isFile (io/file directory "deps.edn"))
           (.getCanonicalPath
-           (io/file directory "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"))
+           (io/file directory "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"))
           (if-let [parent (.getParentFile directory)]
             (recur parent)
             (throw (ex-info "Repository root absent" {}))))))))
