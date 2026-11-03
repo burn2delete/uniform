@@ -321,7 +321,31 @@
                  #(c11-interface/public-interface-version!
                    {:interface :gravity/c11-mir :version 1})))))))
 
-(let [result (run-tests 'current-flat-bool-public-transaction-test)
+(defn- bounded-test-report
+  [event]
+  (case (:type event)
+    :begin-test-var (println {:test-start (:name event)})
+    :end-test-var (println {:test-end (:name event)})
+    :fail (println {:test-failure (:name event)
+                    :line (:line event)
+                    :message (:message event)
+                    :expected-type (some-> (:expected event) type str)
+                    :actual-type (some-> (:actual event) type str)})
+    :error (let [actual (:actual event)
+                 data (when (instance? clojure.lang.ExceptionInfo actual)
+                        (ex-data actual))]
+             (println {:test-error (:name event)
+                       :line (:line event)
+                       :message (:message event)
+                       :error-class (some-> actual class .getName)
+                       :diagnostic-id (or (:diagnostic-id data) (:id data))
+                       :missing-fact (:missing-fact data)}))
+    :summary (println {:test-summary
+                       (select-keys event [:test :pass :fail :error])})
+    nil))
+
+(let [result (with-redefs [clojure.test/report bounded-test-report]
+               (run-tests 'current-flat-bool-public-transaction-test))
       {:keys [left-path right-path v2-path]} @fixture*]
   (doseq [file [left-path right-path v2-path]]
     (java.nio.file.Files/deleteIfExists
