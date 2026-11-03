@@ -118,7 +118,7 @@
    "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_runner.clj"]
   :forbidden
   ["bootstrap/clojure/src/gravity/bootstrap.clj"
-   "bootstrap/gravity/src/gravity/checked_core.gravity"
+   "language/compiler/src/gravity/checked_core.gravity"
    "bootstrap/clojure/fixtures"
    "docs/artifacts"
    "tools"]}
@@ -233,7 +233,7 @@
   :c6-call-arity
   "bootstrap/gravity/src/gravity/compiler/c6_call_arity_legality.gravity"
   :checked-core
-  "bootstrap/gravity/src/gravity/checked_core.gravity"
+  "language/compiler/src/gravity/checked_core.gravity"
   :c3-compat
   "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
   :c6-core

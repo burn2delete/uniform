@@ -18,7 +18,7 @@
 
 (def ^:private intended-closure-paths
   #{"bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
-    "bootstrap/gravity/src/gravity/checked_core.gravity"
+    "language/compiler/src/gravity/checked_core.gravity"
     "bootstrap/clojure/test/gravity/self_hosting/sh07_vector_pattern_test.clj"
     "bootstrap/clojure/fixtures/self-hosting/sh-07-b11"
     "contracts/stage0-incremental-test-dependencies.edn"

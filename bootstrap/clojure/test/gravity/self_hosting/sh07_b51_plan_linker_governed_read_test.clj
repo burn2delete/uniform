@@ -83,7 +83,7 @@
            (mapv :module-ordinal specs)))
     (is (= ["docs/phase-01-core-language/011-l1-surface-syntax-specification.md"
             "docs/phase-01-core-language/012-l2-core-language-semantics.md"
-            "bootstrap/gravity/src/gravity/checked_core.gravity"]
+            "language/compiler/src/gravity/checked_core.gravity"]
            (mapv :path (subvec specs 0 3))))
     (is (= {:ordinal 12 :kind :sh06-resolution :module-ordinal nil
             :path "bootstrap/gravity/src/gravity/resolution.gravity"}

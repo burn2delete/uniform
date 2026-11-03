@@ -134,7 +134,8 @@
          (slurp (path "docs/self-hosting-slice-ownership.edn")))
         owned-paths
         (set
-         (filter #(str/starts-with? % "bootstrap/gravity/src/")
+         (filter #(or (str/starts-with? % "bootstrap/gravity/src/")
+                      (str/starts-with? % "language/compiler/src/"))
                  (keys (:module-owners ownership))))
         runtime-path
         "bootstrap/clojure/fixtures/self-hosting/sh-19/minimal_runtime_engine.gravity"
