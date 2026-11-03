@@ -133,6 +133,31 @@
              (:unsafe-metadata source-node)))
       (is (true? (:generated? source-node))))))
 
+(deftest source-canonical-node-preserves-sequential-generated-origin
+  (let [list-origin-syntax
+        (assoc syntax
+               :generated-origin
+               (list {:kind :macro-expansion
+                      :from-syntax-id "macro-list-1"}
+                     {:kind :macro-expansion
+                      :from-syntax-id "macro-list-2"}))
+        source-node
+        (invoke-source
+         'construct-canonical-core-node
+         ["node-list-origin" :if list-origin-syntax module data effects])
+        host-node
+        (lowering/c6-core-node "node-list-origin" :if list-origin-syntax module
+                               (assoc data :effects effects))]
+    (testing "Stage2 retains list/seq generated origins in hosted order"
+      (is (= host-node source-node))
+      (is (= [{:kind :source}
+              {:kind :macro-expansion
+               :from-syntax-id "macro-list-1"}
+              {:kind :macro-expansion
+               :from-syntax-id "macro-list-2"}]
+             (get-in source-node [:source :origin-chain])))
+      (is (true? (:generated? source-node))))))
+
 (deftest source-canonical-node-preserves-data-merge-and-arity-refusal
   (let [overridden
         (invoke-source

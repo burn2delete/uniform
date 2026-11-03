@@ -6085,8 +6085,11 @@
 (defn construct-canonical-core-node
   [node-id form syntax module data effects]
   (let [generated-origin (get syntax :generated-origin)
+        origin-values (if (vector? generated-origin)
+                        generated-origin
+                        (if (seq? generated-origin) generated-origin []))
         origin-chain
-        (loop [remaining (if (vector? generated-origin) generated-origin [])
+        (loop [remaining origin-values
                result (if (get syntax :origin)
                         [{:kind (get syntax :origin)}]
                         [])]
@@ -6116,9 +6119,7 @@
               :effects effects
               :capabilities (get module :capabilities)
               :unsafe-metadata unsafe-metadata
-              :generated? (> (count (if (vector? generated-origin)
-                                       generated-origin
-                                       [])) 0)}]
+              :generated? (> (count origin-values) 0)}]
     (if (map? data)
       (loop [remaining (keys data) result base]
         (if (= 0 (count remaining))
