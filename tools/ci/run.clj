@@ -720,6 +720,9 @@
                            "--namespace" "gravity.self-hosting.sh04-fresh-c2-construction-test"
                            "--namespace" "gravity.self-hosting.sh04-form-index-test"
                            "--namespace" "gravity.self-hosting.sh04-literal-index-test")]
+                 ["bootstrap-input-controls" 600
+                  (command "2g" "-M:dev-test"
+                           "--namespace" "gravity.bootstrap.rebuild.inputs-test")]
                  ["language-boundary" 90
                   (command "512m" "-M:test" "--namespace"
                            "gravity.self-hosting.sh01-language-boundary-test")]
