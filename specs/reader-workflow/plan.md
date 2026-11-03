@@ -120,6 +120,12 @@ remain unrun here. Do not dispatch those tests, reassign their owned paths or
 retry the held transaction under this selected task. The independent review
 and coordinator integration boundaries remain open.
 
+## Macro dependency interface
+
+Use the [macro producer and consumer order](../expand-workflow/plan.md#macro-producer-and-consumer-order) and existing selected-result table. Supply authentic source/token/form/seed/origin products before Syntax construction. Formatting does not invoke macros, and later macro/tool/release outcomes do not gate the existing Reader contract-coverage increment.
+
+Task bodies/statuses and frozen review subjects stay unchanged. Declared interfaces permit local construction; actual composition, acceptance and release retain their separate required results. Current independent source/interface acceptance is pending and every actual restriction remains.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Reader task authority

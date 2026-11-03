@@ -146,6 +146,12 @@ Use the [complete macro source criteria](../expand-workflow/plan.md#complete-mac
 
 Existing task identities/statuses, historical reviews, actual restrictions and ordinary construction versus composition/acceptance boundaries remain. These are source-backed current criteria proposals; full source/interface entailment and independent current acceptance are pending.
 
+## Macro dependency interface
+
+Use the [macro producer and consumer order](../expand-workflow/plan.md#macro-producer-and-consumer-order) and existing selected-result table. Schedule real versioned stages, integrate permitted engine-specific and shared cache results and compare actual repeated typed-Core bytes; persistence and separately authorized publication follow authentic products.
+
+Task bodies/statuses and frozen review subjects stay unchanged. Declared interfaces permit local construction; actual composition, acceptance and release retain their separate required results. Current independent source/interface acceptance is pending and every actual restriction remains.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration

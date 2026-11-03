@@ -107,6 +107,12 @@ remain unassessed; these four foundation clauses cannot discharge their full
 source conjunctions by alias. All native/provider/callback holds and exact
 class rules remain in force; no operation is executed by this reconciliation.
 
+## Macro dependency interface
+
+Use the [macro producer and consumer order](../expand-workflow/plan.md#macro-producer-and-consumer-order) and existing selected-result table. Supply actual selected adapters, session/invalidation/replay and authority products where macro-generated runtime or tool sessions are claimed; inspection records do not prove live frames or full family support.
+
+Task bodies/statuses and frozen review subjects stay unchanged. Declared interfaces permit local construction; actual composition, acceptance and release retain their separate required results. Current independent source/interface acceptance is pending and every actual restriction remains.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Runtime workflow migration

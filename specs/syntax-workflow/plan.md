@@ -42,6 +42,12 @@ Use the [complete macro source criteria](../expand-workflow/plan.md#complete-mac
 
 Existing task identities/statuses, historical reviews, actual restrictions and ordinary construction versus composition/acceptance boundaries remain. These are source-backed current criteria proposals; full source/interface entailment and independent current acceptance are pending.
 
+## Macro dependency interface
+
+Use the [macro producer and consumer order](../expand-workflow/plan.md#macro-producer-and-consumer-order) and existing selected-result table. Consume actual C2 products for immutable syntax and provide early real operations before selected expansion; later verify actual generated origin/hygiene/metadata/serialization products.
+
+Task bodies/statuses and frozen review subjects stay unchanged. Declared interfaces permit local construction; actual composition, acceptance and release retain their separate required results. Current independent source/interface acceptance is pending and every actual restriction remains.
+
 ## Historical task-authority-transfer plan
 
 # Plan: Syntax task authority and roadmap navigation

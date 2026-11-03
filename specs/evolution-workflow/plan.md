@@ -111,3 +111,9 @@ from the carried task file or source checks.
 Use the [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria). Reuse the exact existing conditional macro-semantics change-review predicate; affected syntax schema, formatter/LSP, safety fixtures, diagnostics and bootstrap comparisons follow actual adopted semantic change.
 
 Existing task identities/statuses, historical reviews, actual restrictions and ordinary construction versus composition/acceptance boundaries remain. These are source-backed current criteria proposals; full source/interface entailment and independent current acceptance are pending.
+
+## Macro dependency interface
+
+Use the [macro producer and consumer order](../expand-workflow/plan.md#macro-producer-and-consumer-order) and existing selected-result table. Keep tracked candidate/prototype/implementation rules before affected exposure and actual compatibility/stage evidence before later stable adoption. Ordinary compatible implementation has no new review ceremony; applicable real decisions and independent acceptance remain required.
+
+Task bodies/statuses and frozen review subjects stay unchanged. Declared interfaces permit local construction; actual composition, acceptance and release retain their separate required results. Current independent source/interface acceptance is pending and every actual restriction remains.

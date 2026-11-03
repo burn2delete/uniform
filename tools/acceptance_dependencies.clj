@@ -176,6 +176,17 @@
 
 (def selected-parent-consumers
   #{"domain-ir-boundaries" "math"
+    "syntax/current-evidence-and-remaining-work/syntax1-construct-canonical-syntax"
+    "syntax/current-evidence-and-remaining-work/syntax2-preserve-transformations"
+    "resolve/current-evidence-and-remaining-work/resolve4-publish-stable-indexes"
+    "diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order"
+    "tools/finite-service-outcomes-and-remaining-work/format-formatter-maintainer"
+    "tools/finite-service-outcomes-and-remaining-work/language-server-editor-maintainer"
+    "tools/finite-service-outcomes-and-remaining-work/debug-debugger-maintainer"
+    "tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer"
+    "tools/finite-service-outcomes-and-remaining-work/repl-interactive-runtime-tooling-maintainer"
+    "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema"
+    "diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts"
     "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"
     "expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination"
     "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"

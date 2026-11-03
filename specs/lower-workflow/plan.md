@@ -117,6 +117,12 @@ Source reconciliation, implementation, independent acceptance, integration and
 seedless release remain separate. No native/provider/domain/proof execution is
 authorized or claimed by restoring these criteria.
 
+## Macro dependency interface
+
+Use the [macro producer and consumer order](../expand-workflow/plan.md#macro-producer-and-consumer-order) and existing selected-result table. Preserve actual generated checked-Q origins, safety and caller target facts into selected lowering; early fixed target rules are distinct from later derived Q layout and release comparison.
+
+Task bodies/statuses and frozen review subjects stay unchanged. Declared interfaces permit local construction; actual composition, acceptance and release retain their separate required results. Current independent source/interface acceptance is pending and every actual restriction remains.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Lower task authority
