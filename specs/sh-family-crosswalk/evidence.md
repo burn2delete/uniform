@@ -1,5 +1,57 @@
 # SH crosswalk evidence and finite gates
 
+## PR767 current-main selective port
+
+The original authored comparison is frozen as the actual merge-base
+`867554942e3dc1f08ed5a712e8c249ded84908a3` (tree
+`19cdf2a1a711f9b6eb770f28a067c2f70d7ec650`) to head
+`313bb6fd12f639d45774b4de39a672d7d060fe1c` (tree
+`a8557908237e1c36ec2147eeb3b3616f42eb27d3`): 90 paths, +333450/-3728, with
+sorted path-list SHA256
+`d1e77b7a6fd80c56559d98825ecb9ea3803ba39473ab176894ed1ab96c241eca`.
+The current-main selective port starts at
+`a5b6427cab15f40a8e1d61a6562a04b4a0f63efb` (tree
+`351293cea53364a2a6c2ff7d36efd73e9cd0fad1`) and conserves all 90 authored
+paths. Its two additional current-owner paths are
+`specs/sh-family-crosswalk/implementation-readiness-current-source-version.edn`
+and `tools/requirement_sources.clj`; the 92-path source candidate path-list
+SHA256 is
+`f269cfd7870b1bd0cd8b1c89d3553119bd51ae8d778ce01a07fa1f2f7a9942e8`.
+
+The clean source/test checkpoint before this evidence update is
+`82bf135d6` (tree `71f724fe9333147a0fefed30229d76b638034738`). The scoped
+current source frame remains independently bound to commit
+`e9ef2a6dc4b73518b8a9ff182ae7ac96eab56baa`, tree
+`db2239aa57777b22b20aabf052dd11f93783e13c`, with source-frame fingerprint
+`93c62709de0040fa6ed10990f9ba179cf2048447017ea1c88def06b18f003b74` and
+input fingerprint
+`6fb55bee2fe96b9a21a8fc7205d0fd923c43c4c8284f3998a74868494aac384e`.
+Mapping status remains `:pending-source-version-review`, current source status
+remains `:pending-current-source-and-composition-review`, all 180 requirements
+remain `:unassessed`, and the 18 SH07 sequence rows are conserved. The route
+test repair accepts byte-identical bodies despite a changed whole-file source
+commit and validates old bridge bytes through their immutable pins; it does
+not renew a source pin or grant implementation, compiler, self-hosting,
+release, migration, or public-admission authority.
+
+Focused evidence for this checkpoint:
+
+- `tools/acceptance_dependencies_test.clj`: 24 tests / 4441 assertions, zero
+  failures/errors; this current namespace contains the PR's 23 dependency
+  controls plus one inherited Stdlib transition control
+  (`/tmp/uniform-pr767-acceptance-dependencies.log`).
+- `tools/sh_crosswalk_test.clj`: 67 tests / 42864 assertions, zero
+  failures/errors (`/tmp/uniform-pr767-crosswalk-after-repair.log`).
+- Deterministic projection `clojure -M tools/sh_crosswalk.clj --check` passed
+  (`/tmp/uniform-pr767-crosswalk-check.log`).
+- Boundary passed 6 tests / 11 assertions; document validation passed 240
+  documents / 19 phase indexes; full-language roadmap structure passed; pinned
+  facade lint passed 13 tests / 290 assertions with zero blocking diagnostics.
+
+No native/C, compiler migration, self-hosted release, public admission,
+whole-SH acceptance, or held/restricted route was executed. Historical
+nonpasses and mapping/review pending states remain evidence, not credit.
+
 ## Current implementation-readiness source-version successor
 
 The finish-line continuation binds declaration input
