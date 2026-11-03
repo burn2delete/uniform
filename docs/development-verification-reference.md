@@ -7562,15 +7562,20 @@ there is no new caller-supplied proof input. No-import dependencies are also
 reconstructed with the current source-order context: incompatible legacy raw
 plans reject.
 
-The module subset supports distinct literal String or Keyword keys, including
-mixed Maps, in evaluated function-body Maps. Computed, numeric, Symbol and
-collection keys remain unsupported here, not forbidden by L2. This supersedes
-the initial Keyword-only module restriction; it does not widen the separate
-canonical typed-Gravity Map subset. Quoted Maps remain inert. Remove the
-traversal depth and visit quotas. Raw three-argument/B51 behavior and
-public bundle interfaces remain unchanged. This Map-order-only correction did
-not enable imports inside Maps; the subsequent Map-value increment is below.
-Neither increment establishes checked effects or Effects token-bound fit.
+The historical Keyword/String-only attempt represented by the preceding
+records supported distinct literal String or Keyword keys, including mixed
+Maps, in evaluated function-body Maps. Its computed, numeric, Symbol and
+collection-key cases remained unsupported there, not forbidden by L2. A
+subsequent narrow temporary module-development repair (`5db6eb11f`) adds exact
+native Symbol keys when the authenticated C2 source key and host key are equal
+and form a complete source permutation; the same source/reference-key checks
+remain in force. This does not widen the separate canonical typed-Gravity Map
+subset. Quoted Maps remain inert. Remove the traversal depth and visit quotas.
+Raw three-argument/B51 behavior and public bundle interfaces remain unchanged.
+This Map-order-only correction did not enable imports inside Maps; the
+subsequent Map-value increment is below. Neither increment establishes checked
+effects or Effects token-bound fit, module admission, a full C14 consumer,
+native execution, self-hosting, migration, or release support.
 
 For qualified imported calls in supported Map values, change the same
 `00575` Map-order component and existing `00580` module-source/module-bundle
