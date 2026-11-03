@@ -110,7 +110,7 @@
      :live-sha256 "543cfc52291e89d60c0a80c0c056221c098bc9aed11d8fb7f3e45e999322bff3"
      :historical-applying-ref "dcf3378130ef92c37105aeda17b3badfec6619dc"
      :semantic-delta :semantic-termination-evidence-and-unsupported-example-removal
-     :qualification :source-reconciliation-only}}}
+     :qualification :source-reconciliation-only}}}}
  :valuable-slices
  {:task-interface
   {:s1-s9-source-clauses :ported
