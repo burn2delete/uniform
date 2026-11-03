@@ -5625,3 +5625,22 @@ neither source projection nor route composition confers implementation,
 migration, release or self-hosting authority. Preserve every actual restriction,
 writer reservation and stopped handoff; no held execution, other-chat message,
 aggregate publication or merge is implied.
+
+### Bounded current evidence
+
+The current source-view/build reports 180 requirements, 40 future declarations
+and `:pending-source-version-review`; the L13 refinement reports 2,156 joins,
+144 routes, 104 current parents and 40 future records. The focused L13 guard
+test (`clojure -J-Xmx512m -M /tmp/l13-focused-test.clj`) exits 0. The focused
+acceptance-dependency suite exits 0 with 24 tests and 6,052 assertions. The
+normalized projection check exits 0 with 180 criteria and 18 sequence rows.
+The document validator, full-language roadmap validator, six-test/eleven-
+assertion language-boundary gate and workstream-governance validator all exit 0.
+
+The complete crosswalk namespace was attempted once and stopped after roughly
+six minutes while traversing unrelated historical Git source rows; it produced
+no passing result and receives no credit. The pinned cljfmt check also remains
+non-passing for the same two pre-existing files in an unchanged base checkout;
+this increment does not claim a formatter repair. These planning and
+traceability checks do not establish callable implementation, compiler/runtime,
+provider/target, native/C, proof, migration or release conformance.
