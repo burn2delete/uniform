@@ -1,0 +1,188 @@
+{:nonclaims
+ [:source-admission
+  :authoritative-migration
+  :public-C7-B47
+  :complete-PR512-acceptance
+  :native-target
+  :release
+  :self-hosting],
+ :current-source
+ {:base "0e2b37cd2eefbab2f02e5898b960f9bbc4100fef",
+  :checkpoint "83c458c1866889b0ac428e8436c3cc9f728753e4",
+  :tree "611e48ff155a1fc40fa2c62a00e57c0a10b23dd4",
+  :inputs
+  [{:path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/compiler/00842-c3-syntax-stream-reader-products-authentic.clj",
+    :byte-count 3524,
+    :sha256
+    "e1dbca68391fb6c4e3d8c509517c9f7fd460622a3c956ba6d504d61aeec81945"}
+   {:path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00851-sh04-syntax-build-binding.clj",
+    :byte-count 12886,
+    :sha256
+    "e07db98caafaaa60faa605f457eacc95ddfac8b3e797e611b33f91cddcca2a58"}
+   {:path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00852-sh04-syntax-resolve-template.clj",
+    :byte-count 5443,
+    :sha256
+    "3e786f0de62be3ff1d819551cddbe356d8310786458352ababd85a3bff2f72df"}
+   {:path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/resolution-construction-inputs.clj",
+    :byte-count 15330,
+    :sha256
+    "6691893b9543e7b55b42ad332c8e1aa527a9d5b6b26161af54811c02d2fc9b81"}
+   {:path "bootstrap/clojure/src/gravity/syntax.clj",
+    :byte-count 121400,
+    :sha256
+    "28806a90a4a9aae8aa5a51e2e47fb3870f0bcc18d876f82b31641eadba313a35"}
+   {:path
+    "bootstrap/clojure/test/gravity/self_hosting/sh03_reader_adapter_test.clj",
+    :byte-count 106226,
+    :sha256
+    "10c2a3d405b8962bc52c7e4bf396cfa4caceb9444735ff1bd23ba02bf88c806d"}
+   {:path
+    "bootstrap/clojure/test/gravity/self_hosting/sh04_syntax_selection_test.clj",
+    :byte-count 10308,
+    :sha256
+    "d52da59d4b43d5bfb9af746e35633ea6b8355d6fb669d6e783275658cd2da11b"}
+   {:path "bootstrap/clojure/test/gravity/syntax/pipeline_test.clj",
+    :byte-count 51633,
+    :sha256
+    "335d69977f50cda10d9040c76939cdd820e762b38e3e6257917b9e9748b0de94"}]},
+ :authority :development-source-only,
+ :original
+ {:base "68a127520c2465a90a4a9b06742cb58ebaffca77",
+  :head "e73520fd810184689af72469931400fabff40b6f",
+  :tree "86eb534f45a91525354896c56178a5d1fd9f1e33",
+  :authored-paths
+  [{:path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/compiler/00842-c3-syntax-stream-reader-products-authentic.clj",
+    :disposition :ported-current-reader-authentication}
+   {:path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/compiler/00856-compiler-c3-syntax-source-artifact.clj",
+    :disposition :consolidated-into-gravity-syntax}
+   {:path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00813-sh03-reader-canonical-identity.clj",
+    :disposition :already-current-selection-and-closed-invocation}
+   {:path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00841-sh04-syntax-current-binding.clj",
+    :disposition :declarations-consolidated-in-current-owner}
+   {:path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00851-sh04-syntax-build-binding.clj",
+    :disposition :ported-current-source-binding}
+   {:path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00854-sh04-syntax-rich-object.clj",
+    :disposition :consolidated-into-gravity-syntax}
+   {:path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00855-sh04-syntax-resolved-result.clj",
+    :disposition :consolidated-into-gravity-syntax}
+   {:path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/resolution-construction-inputs.clj",
+    :disposition :ported-current-explicit-invocation}
+   {:path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/sh04-development-syntax-binding.clj",
+    :disposition :consolidated-into-00851}
+   {:path
+    "bootstrap/clojure/src/gravity/bootstrap_impl/load_order.edn",
+    :disposition :consolidated-owner-already-in-load-order}
+   {:path
+    "bootstrap/clojure/test/gravity/resolve/selected_source_harness.clj",
+    :disposition :already-current-byte-conserved}
+   {:path
+    "bootstrap/clojure/test/gravity/resolve/selected_source_harness_test.clj",
+    :disposition :already-current-byte-conserved}
+   {:path
+    "bootstrap/clojure/test/gravity/self_hosting/sh04_syntax_adapter_test.clj",
+    :disposition :all-22-tests-retained-quota-only-assertions-retired}
+   {:path
+    "bootstrap/clojure/test/gravity/self_hosting/sh04_syntax_selection_test.clj",
+    :disposition :seven-controls-retained-with-actual-owner-separation}
+   {:path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity",
+    :disposition
+    :quota-removal-already-current-with-unmetered-revision}
+   {:path
+    "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity",
+    :disposition :already-current-byte-conserved}
+   {:path "specs/selected-source-consumer/README.md",
+    :disposition :historical-preparation-harness-only}
+   {:path "specs/selected-source-consumer/evidence.edn",
+    :disposition :historical-preparation-harness-only}
+   {:path "specs/selected-source-consumer/reconciliation.edn",
+    :disposition :historical-preparation-harness-only}]},
+ :checks
+ [{:errors 0,
+   :exit 0,
+   :checkpoint "83c458c1866889b0ac428e8436c3cc9f728753e4",
+   :tests 6,
+   :selectors
+   [genuine-paired-products-use-the-stage-and-preserve-identity
+    development-current-syntax-binding-is-explicit-and-unadmitted
+    selected-registered-products-require-the-authenticated-syntax-owner
+    projection-and-revision-verification-reject-tampered-native-views
+    real-template-replay-and-digest-resolution-preserve-and-authenticate-products
+    genuine-source-file-retains-metadata-hygiene-origins-and-unicode],
+   :failures 0,
+   :namespace gravity.syntax.pipeline-test,
+   :log "/tmp/uniform-pr544-lint-clean-source-coupling.log",
+   :assertions 86}
+  {:namespaces
+   [gravity.self-hosting.sh04-syntax-selection-test
+    gravity.self-hosting.sh01-language-boundary-test],
+   :checkpoint "7ee80ec222cfd5d73744c2f1b533bcffa37a1344",
+   :tests 13,
+   :assertions 96,
+   :failures 0,
+   :errors 0,
+   :exit 0,
+   :log "/tmp/uniform-pr544-final-main-selection-boundary.log"}],
+ :lint
+ {:direct
+  {:checkpoint "83c458c1866889b0ac428e8436c3cc9f728753e4",
+   :errors 0,
+   :warnings 0,
+   :info 0,
+   :log "/tmp/uniform-pr544-lint-clean-direct.log"},
+  :contextual
+  {:base "438978627bce8ceb9bdc82bb2bc1385a645a2fec",
+   :code-composition "7ee80ec222cfd5d73744c2f1b533bcffa37a1344",
+   :exit 0,
+   :blocking 0,
+   :baseline-source-warnings 0,
+   :log "/tmp/uniform-pr544-final-contextual-lint.log"},
+  :earlier-changed-source
+  {:status :failed,
+   :blocking-warnings 3,
+   :corrected-at "83c458c1866889b0ac428e8436c3cc9f728753e4"},
+  :earlier-context-baseline
+  {:status :timeout,
+   :exit 124,
+   :seconds 120,
+   :base "0e2b37cd2eefbab2f02e5898b960f9bbc4100fef",
+   :log "/tmp/uniform-pr544-current-contextual-lint-fixed-v2.log"}},
+ :final-integration-identity :reported-separately,
+ :kind :current-selected-syntax-owner-port,
+ :development-check-scope
+ {:source-and-test-inputs :exactly-recorded,
+  :uncommitted-report-files
+  ["specs/selected-source-consumer/README.md"
+   "specs/selected-source-consumer/current-port.edn"
+   "specs/selected-source-consumer/current-port.md"],
+  :whole-worktree-cleanliness-not-claimed true,
+  :final-clean-integration-preflight :separate},
+ :preserves
+ [:owner-produced-operation-context
+  :actual-public-DATA-exports-and-emitter-projection
+  :source-byte-hash-rule-before-and-after
+  :fresh-C2-native-projection-authentication
+  :selected-syntax-owner-binding-for-registered-literals
+  :same-artifact-id-does-not-excuse-forged-implementation
+  :missing-selection-does-not-fall-back-to-pinned
+  :default-pinned-source-refusal
+  :unicode-metadata-origin-and-type-validation],
+ :composition
+ {:base "438978627bce8ceb9bdc82bb2bc1385a645a2fec",
+  :checkpoint "7ee80ec222cfd5d73744c2f1b533bcffa37a1344",
+  :tree "f388e758b24f2ac55b0d937160df32c0e1fda61f",
+  :all-eight-owned-source-and-test-blobs-conserved true,
+  :original-history-retained-without-tree-replay true},
+ :historical-documents [:README.md :evidence.edn :reconciliation.edn]}

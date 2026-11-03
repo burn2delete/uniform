@@ -1,5 +1,48 @@
 # All-SH acceptance crosswalk
 
+Current project-wide successor: reconcile exact task-source versions and the
+resumed Governance authority through the existing
+[source-version plan](plan.md#implementation-readiness-source-version-successor).
+The earlier review statements below retain their historical subjects. The new
+composition remains pending independent review, with every current whole-SH
+criterion unassessed. Governance adds task routes, not a compiler stage or SH
+milestone; the original acceptance and sequence populations remain unchanged.
+The same bridge now also binds the Math parent refinement, preserving the
+initial readiness successor as an immutable predecessor and leaving the
+independent checker allocation and future Release Testing composition explicit.
+The Release continuation preserves that Math checkpoint and binds the five
+aggregate refinements plus thirteen resumed future testing/seed records. The
+future records remain outside current SH routing pending exact composition;
+all current whole-criterion acceptance remains unassessed.
+The next continuation binds the four Query/Workflow/GPU/UI parent refinements,
+preserving that Release checkpoint. It retains the same task IDs and statuses
+and records only declared context-reference changes to their source bodies.
+The AI continuation now binds its complete proposed parent body, retaining the
+four-parent checkpoint and its earlier pending-resumption field as history.
+Current source/facet and producer/consumer repartition remain pending review;
+all whole-SH implementation acceptance remains unassessed.
+The Platform continuation binds four enriched target parents and eleven
+preserved product task records, retaining the AI checkpoint. The product
+records stay outside current SH routing; target conformance and selected
+product adoption/execution remain distinct and pending their actual evidence.
+The future-task continuation captures forty source-bound records separately
+from current SH routing. Its Math/Schema successor records declared task/output
+joins, preserving coarse checker/producer cycles and the exact literal Math
+output dependency graph. These source declarations grant no implementation or
+proof acceptance; Release and final finish-line composition remain pending.
+The Release dependency continuation now declares all thirteen future suite/seed
+producers and five existing aggregate consumers, retaining 77 exact literal
+source criteria. Raw stage results, suite execution, independent intermediate
+admission and final release remain separate. All forty captured future tasks
+have declarations; source entailment, final finish-line composition and actual
+execution/acceptance remain pending.
+The finish-line continuation connects the existing FL36, seven Phase18 tasks,
+SH21-SH29 and P15/Phase18 terminal source gates to selected component outputs.
+Original scopes, proof rules and historical status remain source-bound. SH29
+still closes its declared first seedless subset; the full-language final proof
+also requires the broader task and Phase18 conjunctions. Conditional Product
+adoption stays unknown, and no graph route establishes execution or acceptance.
+
 Status: source-bound routing, dependency mapping, source-pin guard and bounded
 source-version bridge independently reviewed; owner task-boundary integration
 is complete. Publication receipts are recorded in PR490. This is an acceptance view,

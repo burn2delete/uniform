@@ -23,7 +23,7 @@
 
 (def ^:private root (delay (repository-root)))
 (def ^:private source-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity")
+  "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity")
 
 (defn- source-path []
   (str (.resolve @root source-relative-path)))

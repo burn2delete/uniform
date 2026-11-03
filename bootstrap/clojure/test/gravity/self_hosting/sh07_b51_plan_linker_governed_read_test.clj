@@ -86,7 +86,7 @@
             "language/compiler/src/gravity/checked_core.gravity"]
            (mapv :path (subvec specs 0 3))))
     (is (= {:ordinal 12 :kind :sh06-resolution :module-ordinal nil
-            :path "bootstrap/gravity/src/gravity/resolution.gravity"}
+            :path "language/compiler/src/gravity/resolution.gravity"}
            (nth specs 12)))
     (is (= 40 (count events)))
     (is (= (vec (range 40)) (mapv :ordinal events)))

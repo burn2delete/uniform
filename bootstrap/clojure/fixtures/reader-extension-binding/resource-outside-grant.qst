@@ -1,0 +1,2 @@
+#resource "bootstrap/clojure/fixtures/accepted/reader-extension-input.txt"
+#resource "outside-explicit-grant"
