@@ -1,10 +1,14 @@
 {:record-kind :pr502-current-owner-guards-port
  :purpose "Port the accepted quota-free mixed List/Set, Map/keys, and bare Set owner guards, preserved fixtures, and PR641 complete-product comparisons onto exact current main without claiming public C8/L5 authority."
- :receipt-revision 1
+ :receipt-revision 2
  :integration-base
+ {:commit "6f6cc71be14ecb3dffa18a7566f2205d2ceb5b05"
+  :tree "41687b2b95f67d775684f06eb7cb52e09f51e107"
+  :ref "origin/main"}
+ :historical-port-integration-base
  {:commit "7e59c5cf6437f1c4b769415340c6608c1fc21341"
   :tree "c6f034179a37d3518a422035b1a7c0b82db16a8f"
-  :ref "origin/main"}
+  :role :historical-port-base}
  :source-checkpoint
  {:commit "b21cdceae032d0fb6a6ca2302c35bec7bfa23356"
   :tree "6172113850f732faa513ed1d2745cbe2ceb33acd"
@@ -12,6 +16,93 @@
   :branch "codex/review-mixed-collection-owner-guards"
   :worktree "/Users/matt/.codex/worktrees/review-pr-659-recheck/uniform"
   :status :clean-before-receipt}
+ :post-relocation-adoption
+ {:schema :pr502-current-owner-guards-post-relocation-v1
+  :status :bounded-current-owner-adoption
+  :normal-merge
+  {:base-commit "6f6cc71be14ecb3dffa18a7566f2205d2ceb5b05"
+   :base-tree "41687b2b95f67d775684f06eb7cb52e09f51e107"
+   :candidate-source-checkpoint
+   {:commit "16131511017a375bc483fafbb2f4e2479c565ee9"
+    :tree "3000e1742b37973398be75655b6e054ff61defad"
+    :parents
+    ["b6b8587533dc6b0bd1025fe01d050ae57f246acb"
+     "6f6cc71be14ecb3dffa18a7566f2205d2ceb5b05"]}}
+  :canonical-owner-paths
+  [{:owner :effects
+    :historical-path "bootstrap/gravity/src/gravity/effects.gravity"
+    :historical-blob "e9ea23710ea9070da4ecfa142af4b0ba82467327"
+    :current-path "language/compiler/src/gravity/effects.gravity"
+    :current-blob "e9ea23710ea9070da4ecfa142af4b0ba82467327"
+    :historical-path-present false
+    :mapping :main-relocation-preserves-source-blob}
+   {:owner :emitter
+    :current-path "bootstrap/gravity/p15_s23/emitter.gravity"
+    :current-blob "49265674a8f79b573ed54242d83b1087158eba8c"
+    :mapping :canonical-path-unchanged}]
+  :current-owner-helper
+  {:path "bootstrap/clojure/test/gravity/types/ordinary_test_support.clj"
+   :blob "57da806b9303c9eb481cd86fd6ee891ec049c5b9"
+   :effects-path "language/compiler/src/gravity/effects.gravity"
+   :emitter-path "bootstrap/gravity/p15_s23/emitter.gravity"}
+  :current-test-inputs
+  [{:path "bootstrap/clojure/test/gravity/types/pr502_mixed_collection_joins_test.clj"
+    :blob "e1ac04c6d42ab276acca2b2bd7881ec0e4559601"}
+   {:path "bootstrap/clojure/test/gravity/types/bare_set_equality_mixed_ledger_test.clj"
+    :blob "efd61129392703ae52ed3fd52d8aa59daae5cf8a"}
+   {:path "bootstrap/clojure/test/gravity/types/pr598_mixed_collection_joins_test.clj"
+    :blob "68c37de5ffa742a6b9aa9e0a9b186b456c2e4b01"}
+   {:path "bootstrap/clojure/test/gravity/types/pr502_preserved_fixtures_test.clj"
+    :blob "81625771f209c3bf8a457c0b78ba225e7ade3b99"}
+   {:path "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/local-runtime-bare-set-equality.gravity"
+    :blob "d86e9f560969d8e04738950c897f495c08516621"}
+   {:path "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/local-runtime-bare-set-equality.qst"
+    :blob "d86e9f560969d8e04738950c897f495c08516621"}]
+  :checks
+  {:c7-list-set-map-keys
+   {:command "clojure -M:dev-test --namespace gravity.types.pr502-mixed-collection-joins-test"
+    :tests 2 :assertions 174 :failures 0 :errors 0 :exit 0}
+   :c7-bare-set
+   {:command "clojure -M:dev-test --namespace gravity.types.bare-set-equality-mixed-ledger-test"
+    :tests 2 :assertions 83 :failures 0 :errors 0 :exit 0}
+   :pr598-mixed-joins
+   {:command "clojure -M:dev-test --namespace gravity.types.pr598-mixed-collection-joins-test"
+    :tests 3 :assertions 216 :failures 0 :errors 0 :exit 0}
+   :preserved-fixture-pair
+   {:command "clojure -M:dev-test --namespace gravity.types.pr502-preserved-fixtures-test"
+    :tests 1 :assertions 25 :failures 0 :errors 0 :exit 0}
+   :effects-three-selectors
+   {:command "clojure -M:dev-test --namespace gravity.self-hosting.sh09-body-effect-test --exact body-list-set-development-kernel --exact body-map-keys-development-kernel --exact body-bare-keyword-anchor-set-equality-development-kernel"
+    :tests 3 :assertions 778 :failures 0 :errors 0 :exit 0}
+   :boundary
+   {:command "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test"
+    :tests 6 :assertions 11 :failures 0 :errors 0 :exit 0}
+   :docs
+   {:command "clojure -M tools/validate_gravity_docs.clj"
+    :result :passed :exit 0}
+   :roadmap
+   {:command "clojure -M tools/validate_full_language_roadmap.clj"
+    :result :passed :exit 0}
+   :pinned-clojure-lint
+   {:command "PATH=/tmp/acc08-controls-01a183dd/kondo-2025.10.23:$PATH clojure -M tools/ci/lint.clj origin/main bootstrap/clojure/test/gravity/types/bare_set_equality_mixed_ledger_test.clj bootstrap/clojure/test/gravity/types/pr502_mixed_collection_joins_test.clj bootstrap/clojure/test/gravity/types/pr502_preserved_fixtures_test.clj bootstrap/clojure/test/gravity/types/pr598_mixed_collection_joins_test.clj"
+    :changed-file-blocking-warnings 0 :changed-file-errors 0 :exit 0}}
+  :qualification
+  {:ordinary-current-owner-source-and-data :bounded
+   :source-relocation-consumer-check :passed
+   :current-c7-source-admission :UNRUN
+   :current-effects-c8-authority :UNRUN
+   :public-c8-positive-and-l5 :UNRUN
+   :native-callback-runtime :UNRUN
+   :migration-release-self-hosting :UNRUN}
+  :nonclaims
+  [:no-public-c8-or-l5-acceptance
+   :no-source-admission
+   :no-authenticated-reader-core-c5-c11-composition
+   :no-native-callback-or-runtime-proof
+   :no-migration-release-self-hosting-or-seed-retirement
+   :no-pr502-or-pr598-closure
+   :no-old-payment-or-work-accounting
+   :no-new-project-quota-or-allowance]}
  :historical-pr502
  {:source-cohort-commit "d15538d704a0dc198a0b6e9cfdd8ee27542f974c"
   :source-cohort-tree "5b3d4a45ef402db22fb2fb45dc6e64c86f0adc69"
@@ -38,7 +129,7 @@
   :budget-arguments :none}
  :changed-paths
  ["bootstrap/gravity/p15_s23/emitter.gravity"
-  "bootstrap/gravity/src/gravity/effects.gravity"
+  "language/compiler/src/gravity/effects.gravity"
   "bootstrap/clojure/test/gravity/types/pr502_mixed_collection_joins_test.clj"
   "bootstrap/clojure/test/gravity/types/bare_set_equality_mixed_ledger_test.clj"
   "bootstrap/clojure/test/gravity/types/pr502_preserved_fixtures_test.clj"
@@ -47,7 +138,7 @@
   "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/local-runtime-bare-set-equality.qst"]
  :blobs
  {"bootstrap/gravity/p15_s23/emitter.gravity" "49265674a8f79b573ed54242d83b1087158eba8c"
-  "bootstrap/gravity/src/gravity/effects.gravity" "e9ea23710ea9070da4ecfa142af4b0ba82467327"
+  "language/compiler/src/gravity/effects.gravity" "e9ea23710ea9070da4ecfa142af4b0ba82467327"
   "bootstrap/clojure/test/gravity/types/pr502_mixed_collection_joins_test.clj" "e1ac04c6d42ab276acca2b2bd7881ec0e4559601"
   "bootstrap/clojure/test/gravity/types/bare_set_equality_mixed_ledger_test.clj" "efd61129392703ae52ed3fd52d8aa59daae5cf8a"
   "bootstrap/clojure/test/gravity/types/pr502_preserved_fixtures_test.clj" "81625771f209c3bf8a457c0b78ba225e7ade3b99"

@@ -2,17 +2,22 @@
 
 This candidate ports the bounded quota-free mixed collection owner source,
 producer/fact guards, preserved fixture pair, and PR641 complete-product
-comparisons onto exact current main. It is ordinary current-owner development
-evidence only. It does not close PR502 or PR598 and does not claim public C8,
-L5, source admission, native/runtime, migration, release, or self-hosting
-authority.
+comparisons onto exact current main. The post-relocation adoption composes the
+port with current main after the Effects source moved to its canonical
+`language/compiler/src/gravity/effects.gravity` path; the emitter remains at
+`bootstrap/gravity/p15_s23/emitter.gravity`. It is ordinary current-owner
+development evidence only. It does not close PR502 or PR598 and does not claim
+public C8, L5, source admission, native/runtime, migration, release, or
+self-hosting authority.
 
 ## Immutable identities
 
 | Item | Commit | Tree |
 | --- | --- | --- |
-| Current integration base | `7e59c5cf6437f1c4b769415340c6608c1fc21341` | `c6f034179a37d3518a422035b1a7c0b82db16a8f` |
+| Current post-relocation integration base | `6f6cc71be14ecb3dffa18a7566f2205d2ceb5b05` | `41687b2b95f67d775684f06eb7cb52e09f51e107` |
+| Historical port integration base | `7e59c5cf6437f1c4b769415340c6608c1fc21341` | `c6f034179a37d3518a422035b1a7c0b82db16a8f` |
 | Source/test checkpoint | `b21cdceae032d0fb6a6ca2302c35bec7bfa23356` | `6172113850f732faa513ed1d2745cbe2ceb33acd` |
+| Normal-merge source checkpoint | `16131511017a375bc483fafbb2f4e2479c565ee9` | `3000e1742b37973398be75655b6e054ff61defad` |
 | Historical PR502 source cohort | `d15538d704a0dc198a0b6e9cfdd8ee27542f974c` | `5b3d4a45ef402db22fb2fb45dc6e64c86f0adc69` |
 | Accepted PR641 port | `2f24c4aea6487fb81195e583fad186d32b443829` | `65806a397c5eba9182d8e1261843ff5ec317688b` |
 | PR641 source checkpoint | `b20adf393667166f75572c6812f4ee9ba75cd2aa` | `7c46a757d962429d4280e0b7dddbec603391e703` |
@@ -20,7 +25,10 @@ authority.
 The historical PR502 record at `1d048c9d...` accounts for all 29 authored
 paths and preserves their old blobs. The current port carries only the
 quota-free owner/provenance delta and explicitly preserves historical
-source-only/non-equivalent status.
+source-only/non-equivalent status. The old Effects path is retained only as a
+historical mapping; it is absent from the current tree and has the same Git
+blob as the canonical path. Current test helpers read the canonical Effects
+and emitter paths directly.
 
 ## Ported paths and semantics
 
@@ -28,8 +36,11 @@ source-only/non-equivalent status.
   malformed producer/dispatch, known/foreign provenance, mixed List-Set,
   Map-Keys and bare-Set census composition, application and higher-order edge
   guards.
-- `effects.gravity`: matching body-level carrier/provenance and mixed-consumer
-  guards.
+- `language/compiler/src/gravity/effects.gravity`: matching body-level
+  carrier/provenance and mixed-consumer guards; the prior
+  `bootstrap/gravity/src/gravity/effects.gravity` path is historical only.
+- `bootstrap/gravity/p15_s23/emitter.gravity`: matching emitter-level
+  carrier/provenance and mixed-consumer guards.
 - Four current-owner Clojure test namespaces, including PR641's six exact
   comparisons across two families, two ledger orders, and row/fact/compiler
   products. No allowance/payment arguments were restored.
@@ -38,11 +49,14 @@ source-only/non-equivalent status.
 
 ## Evidence
 
-Focused C7/emitter, Effects, preserved-fixture, boundary, docs, roadmap,
-governance, pinned-lint, and whitespace checks all passed. The focused PR598/641
-namespace is `3 tests / 216 assertions`; the largest Effects selector is
-`1 test / 497 assertions`. These are bounded development checks, not public
-C8/L5 or source-admission proof.
+The current post-relocation checks passed: PR502 six comparisons are covered by
+`2 tests / 174 assertions`, the bare-Set owner controls are `2 tests / 83
+assertions`, PR598 mixed joins are `3 tests / 216 assertions`, and the exact
+preserved fixture pair is `1 test / 25 assertions`. The three Effects selectors
+are `3 tests / 778 assertions`. Boundary validation passed `6 tests / 11
+assertions`; documentation and roadmap validators passed; pinned changed-file
+Clojure lint reported zero blocking warnings/errors. These are bounded
+development checks, not public C8/L5 or source-admission proof.
 
 The receipt is
 `specs/accounting-removal/pr502-current-owner-guards-port.edn`. Independent
