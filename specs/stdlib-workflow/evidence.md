@@ -232,3 +232,49 @@ an explicit nonpass: its fail-closed source-version-pin guard stops before
 producing a SH-wide result; no SH-wide acceptance is claimed. No
 implementation, provider execution, canonical adoption, release,
 self-hosting or denominator authority is inferred from this receipt.
+
+### PR564 current-main composition refresh
+
+The PR564 branch was normally merged with current main. The exact main parent
+is `dcf3378130ef92c37105aeda17b3badfec6619dc`, tree
+`b0609b39cf93b8c27dbd204b69ca197ef781d8f8`; the PR564 composition parent is
+`bc7ba7eaf7bcb1e05f7578fb69664112ba5ad147`, tree
+`c24e183f2fcb7d0bcaa4e96fc6e34e92904b29b5`. The normal merge result is
+`57fae3e39d7688152c2c2f7bcf0bb4e7c60cb53e`, tree
+`99751873ce355615310d2ed63d4681c7bd8fbbae`, before this receipt-only update;
+the final candidate remained clean after the update. The manifest blob remains
+`9025ee7f997814e272fff7030c1d9b6dda621d51` with UTF-8 SHA256
+`182c7f6c0b5b55a147b68b7b8a56fa148e56fa05f4e62b21e81628846b97cdac`; it has
+19 task-source bridges, with the Stdlib bridge as the sole 19th row. All 18
+Runtime/Domain predecessor bridges remain byte-for-byte unchanged, and the
+frozen source-view baseline was not renewed. The current Stdlib task source is
+still `80d8a655cea00218799446986a976ca64043a1f8` / tree
+`8c7e533bed9536a760254754e26dbb75db0b0f55` / SHA256
+`9ac5d948a4df974051fe15adce874f6bf39074982991d8c6c80201a971142d57`.
+
+The final Domain current-source-view artifact hash is
+`9022e800814587888ae7c69caaa9fb6e01b2130ef1c38ad50175ebd389bcb31e`, its
+checker hash remains `d0e3ac50609469fd5217ad8d6c7a07b5c9c6128d42ab94f64d6bb75e0dea0647`,
+and the preserved Domain evidence hash is
+`bee7e00ce45f471c2375f001464a253845282e8518c38074dc74f1a517715f75`. The
+Safety current-source-view artifact hash is
+`7387d1d8c8b545e571eccd21ed862080b44174c1fe30d5834be2995f4c97face`.
+
+On the composed tree, the Profile current-task-source checker passed with
+`-J-Xmx2g` (13 documents, 1,254 occurrences, 1,506 facets, 631 dispositions,
+55 units, 14 amendments, 55 requirement-field edits and 27 unique references,
+with negative controls passing). Domain (21 documents, 1,533 occurrences,
+1,838 facets, 139 family units, 14 controls) and Safety (six task sources, 237
+references, 18 interfaces, 11 controls) passed. The exact task-source bridge
+check reports 19 bridges and 780 historical-reference matches; the direct
+tooling checker passed (13 documents, 631 occurrences, 960 facets, 65 edits,
+16 references). Acceptance dependencies passed 19 tests / 441 assertions and
+Platform projection passed 5 / 90; the language boundary passed 6 / 11,
+documentation 240 / 19 indexes, and the full-language roadmap passed.
+The full reconciliation test remains a known current-main baseline nonpass:
+its audit stops on missing exact support for the newly current-main `MATH4`
+source, while the bounded bridge assertions pass (31 tests reached, 266
+assertions, one baseline error). This is outside the PR564-owned manifest row
+and no attempt was made to relabel or route around it. No implementation,
+provider, canonical-adoption, release, self-hosting, denominator, or
+integration claim is made by this receipt.

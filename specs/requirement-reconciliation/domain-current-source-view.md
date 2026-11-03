@@ -18,9 +18,10 @@ denominator, or claim implementation or product completion.
   tree `dc79967f4939df6790c3a16b0a71a71e81191f9e`, with parents
   `b35a7004f20f8dab1ba7183fc1c591dc8df2da1c` and `a13e148ae5078faa94f69e86a911dbe2df378e29`.
 - This checkpoint is historical source evidence, not an integration claim. The
-  latest current-main composition base for integration is
-  `f43e77992fe86b6dfb55df3516b27cfcdea7fa40`, tree
-  `a0e433f9f185b651f6f5ebc54340a085a5cd6721`, a descendant of `a13e148a`.
+  current-main composition checkpoint for this receipt is
+  `97445f364d938004618f2ac13d4d4c6e1ca32946`, tree
+  `bde2ef38e3ff53c9a61a88b9ea2ff5d2be1a7bc2`, a descendant of `a13e148a`.
+  The coordinator binds the actual final integration tuple separately.
 - Historical PR562 candidate: `2c3eac90b9736873ce7c439cdc9603b1e43249e5`,
   tree `3de79028eeaced10f00c6895f4f5cf446d7304f2`.
 - Historical family source: `6276c94b0b753c888ef8fecc794bcc81245ea3b3`,

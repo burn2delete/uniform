@@ -8,16 +8,16 @@
              :tree "402d4c4aa3c85c486da1072ba4ace52a645a046b"}
  :current-source {:commit "19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b"
                   :tree "dc79967f4939df6790c3a16b0a71a71e81191f9e"}
- :integration-base {:commit "f43e77992fe86b6dfb55df3516b27cfcdea7fa40"
-                    :tree "a0e433f9f185b651f6f5ebc54340a085a5cd6721"
-                    :role :latest-current-main-composition-base}
+ :integration-base {:commit "97445f364d938004618f2ac13d4d4c6e1ca32946"
+                    :tree "bde2ef38e3ff53c9a61a88b9ea2ff5d2be1a7bc2"
+                    :role :current-main-composition-checkpoint}
  :source-checkpoint-qualification :historical-source-evidence-not-integration
  :original-pr562-ancestry {:commit "2c3eac90b9736873ce7c439cdc9603b1e43249e5"
                            :present-in-final-candidate true
                            :tree-imported false}
  :artifacts
   {:source-view {:path "specs/requirement-reconciliation/phase-02-safety/current-source-view.edn"
-                :sha256 "bce4de982ee35223ba20362ab38de5b4ae31ee24debc9636a6836d7e4bc0720e"}
+                :sha256 "7387d1d8c8b545e571eccd21ed862080b44174c1fe30d5834be2995f4c97face"}
   :checker {:path "tools/safety_task_source_view.clj"
             :sha256 "6e5e9981becf27c80f0a34e832137abe6e083d2dec62af6895fb45737199063b"}}
  :conservation {:source-documents 16
@@ -36,9 +36,9 @@
   :unchanged-task-sources [:build]
   :current-manifest-task-transition
   {:path "contracts/requirement-reconciliation.edn"
-   :commit "19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b"
-   :tree "dc79967f4939df6790c3a16b0a71a71e81191f9e"
-   :sha256 "8948438410df7c5b6c2c547e48be16b3ff8b1033ec866fb1bec432e4e3c32007"
+   :commit "c8971ef923154cae61be744585e5d5f1683eee80"
+   :tree "330c021a9cd97dcd8545bba7fd7286c475f6439c"
+   :sha256 "182c7f6c0b5b55a147b68b7b8a56fa148e56fa05f4e62b21e81628846b97cdac"
    :domain-current-ref "24e7b5e5cd8bc42fa495997870605b596a380678"
    :domain-current-tree "52a90b3d537f23b3f572ee65ff03edf827c1e29b"
    :domain-current-sha256 "5378c2c7fba1bb49318fc6cda890c60c77bdbdc57dfe6f5ea42ea8aa23298943"

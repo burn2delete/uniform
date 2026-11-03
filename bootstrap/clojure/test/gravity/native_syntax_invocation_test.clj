@@ -67,10 +67,13 @@
   (let [canonical #(.getCanonicalPath (java.io.File. %))
         path (canonical "bootstrap/clojure/fixtures/self-hosting/sh-12/branch-join/accepted/zero_arity_bool_true_source.gravity")
         reader (canonical "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        syntax (canonical "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
         invocation {:reader-source-path reader
-                    :authenticated-envelope-options {:source :development-current}}
+                    :authenticated-envelope-options {:source :development-current}
+                    :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                              :source-path syntax}}
         raw (b/p15-s23-stage2-c2-c3-front-end-products
-             path (slurp path) (b/reader-project-context-for-source path) true reader)
+             path (slurp path) (b/reader-project-context-for-source path) true reader invocation)
         authentication (b/p15-s23-c6c10-literal-authentication path raw invocation)
         projection (b/p15-s23-c6c10-project-front-end path raw invocation)]
     (is (vector? (:records authentication)))

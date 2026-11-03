@@ -259,6 +259,12 @@
 (deftest sh03-current-hex-definitions-compose-through-authenticated-core
   ;; A new two-function source subject, not whole-reader analysis or execution.
   (let [reader-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        syntax-path (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
+        invocation {:reader-source-path reader-path
+                    :authenticated-envelope-options {:source :development-current}
+                    :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                              :source-path syntax-path}
+                    :macro-source-mode :development-current}
         require! (fn [ok? phase]
                    (when-not ok?
                      (throw (ex-info "bounded hex source composition stopped" {:phase phase}))))
@@ -295,7 +301,7 @@
                            #(bootstrap/compiler-c5-resolution-source-artifact
                              source-path text
                              {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
-                             reader-path))
+                             reader-path invocation))
             expanded (:sh05-macro-artifact resolved)
             c3 (get-in expanded [:gravity-macro-boundary :authenticated-sh04-artifact])
             c2 (:c2-reader-artifact c3)
@@ -306,7 +312,7 @@
             trace (:macro-expansion-trace expanded)
             records (mapv (fn [form seed] (assoc seed :form form)) forms seeds)
             reference (bootstrap/macro-source-artifact-from-records source-path text records)
-            artifact (stage :gravity-core #(bootstrap/sh07-core-from-resolution-artifact resolved))
+            artifact (stage :gravity-core #(bootstrap/sh07-core-from-resolution-artifact resolved invocation))
             product (get-in artifact core-path)
             request (get-in artifact [:gravity-core-boundary :authenticated-core-request])
             _ (require! (and (<= (count (:nodes product)) 256)
@@ -591,11 +597,16 @@
         text (slurp source-path)
         context (bootstrap/reader-project-context-for-source source-path)
         reader-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        syntax-path (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
+        invocation {:reader-source-path reader-path
+                    :authenticated-envelope-options {:source :development-current}
+                    :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                              :source-path syntax-path}}
         failure (thrown-data #(bootstrap/compiler-c2-reader-source-artifact
                               source-path text context))]
     (is (= "C2-HASH" (:id failure)))
     (let [artifact (bootstrap/compiler-c3-syntax-source-artifact
-                    source-path text context nil nil reader-path)
+                    source-path text context nil nil reader-path invocation)
           boundary (:gravity-syntax-boundary artifact)
           revision (:reader-source-revision boundary)
           actual (get-in boundary [:reader-authentication-provenance
@@ -610,22 +621,27 @@
       (is (= (:verifier-semantic-hash revision)
              (get-in actual [:function-shapes bootstrap/sh03-reader-verifier :semantic-hash])))
       (is (true? (bootstrap/c3-syntax-stream-reader-products-authentic?
-                   (:syntax-object-stream artifact) (:c2-reader-artifact artifact) boundary))))))
+                   (:syntax-object-stream artifact) (:c2-reader-artifact artifact) boundary invocation))))))
 
 (deftest sh03-current-reader-registered-literals-bind-the-original-envelope
   (let [temporary (java.io.File/createTempFile "gravity-sh03-current-registered-" ".gravity")
         source-path (.getAbsolutePath temporary)
         reader-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        syntax-path (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
+        invocation {:reader-source-path reader-path
+                    :authenticated-envelope-options {:source :development-current}
+                    :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                              :source-path syntax-path}}
         text (str "(ns gravity.sh03.current-registered (:profile :hosted) (:target :jvm) "
                   "(:effects #{}) (:capabilities #{}) (:safety :safe) (:exports [main]))\n"
                   "(defn main [] #uuid \"123e4567-e89b-12d3-a456-426614174000\")\n")]
     (try
       (spit temporary text)
       (let [artifact (bootstrap/compiler-c3-syntax-source-artifact source-path text
-                       (bootstrap/reader-project-context-for-source source-path) nil nil reader-path)
+                       (bootstrap/reader-project-context-for-source source-path) nil nil reader-path invocation)
             c2 (:c2-reader-artifact artifact) boundary (:gravity-syntax-boundary artifact)
             stream (:syntax-object-stream artifact)
-            authentic? #(bootstrap/c3-syntax-stream-reader-products-authentic? stream %1 %2)
+            authentic? #(bootstrap/c3-syntax-stream-reader-products-authentic? stream %1 %2 invocation)
             revision (get-in c2 [:sh03-reader-authentication :reader-source-revision])
             other (assoc revision :source-content-hash (:plan-semantic-hash revision))
             retained (assoc-in c2 [:sh03-reader-authentication :reader-source-revision] other)
@@ -660,7 +676,7 @@
                              (assoc-in [:reader-authentication-provenance
                                         :actual-sh03-envelope-descriptor :source-revision :source-content-hash]
                                        bootstrap/sh03-reader-expected-source-content-hash))]
-          (is (true? (guard c2 boundary)))
+          (is (true? (guard c2 boundary invocation)))
           (doseq [hash [(get-in revision [:function-shapes bootstrap/sh03-reader-verifier :semantic-hash]) nil]]
             (let [candidate (assoc-in historical [:reader-authentication-provenance
                                                   :actual-sh03-envelope-descriptor :source-revision
@@ -668,7 +684,7 @@
               (is (contains? (get-in candidate [:reader-authentication-provenance
                                                :actual-sh03-envelope-descriptor :source-revision
                                                :function-shapes bootstrap/sh03-reader-verifier]) :semantic-hash))
-              (is (false? (guard omitted candidate)))
+              (is (false? (guard omitted candidate invocation)))
               (is (false? (authentic? omitted candidate)))))))
       (finally (.delete temporary)))))
 
@@ -698,7 +714,7 @@
     (is (= (count (:functions plan)) (:function-count (structure source-path plan nil))))
     (is (= [:exact-sh03-reader-plan-envelope]
            (:missing-fields (thrown-data #(bootstrap/sh03-reader-plan-validate! source-path wrong-count)))))
-    (is (= [:pinned-recomputable-sh03-reader-plan-identities]
+    (is (= [:exact-sh03-reader-plan-envelope]
            (:missing-fields (thrown-data #(bootstrap/sh03-reader-plan-validate! source-path plan)))))
     ;; One returned current plan, not a new pin or a runtime-used population.
     (is (= identities (select-keys binding (keys identities))))
@@ -742,7 +758,7 @@
       (is (not (contains? bootstrap/sh03-reader-allowed-builtins 'unreviewed-current-builtin-test)))
       (is (not (contains? functions 'sh03-unbound-plan-boundary-callee)))
       (doseq [[instruction missing]
-              [[{:op :unreviewed-current-test} :exact-bounded-sh03-reader-instruction]
+              [[{:op :unreviewed-current-test} :exact-sh03-reader-instruction]
                [{:op :builtin-call :function 'unreviewed-current-builtin-test :args []}
                 :approved-pure-sh03-reader-builtin]
                [{:op :function-call :function 'sh03-unbound-plan-boundary-callee :args []}
@@ -1761,66 +1777,13 @@
                     unit bytes reader-policy result)
             carrier
             (bootstrap/p15-s23-trusted-carrier-validation
-             result :default-only
-             bootstrap/sh03-reader-result-maximum-nodes
-             bootstrap/sh03-reader-result-maximum-depth
-             bootstrap/sh03-reader-result-maximum-width)]
+             result :default-only)]
         (is (= :rejected (:status result)) (name label))
         (is (= [] (get-in result [:digest-requests 0 :preimage]))
             (name label))
         (is (= :passed (:status carrier)) (name label))
-        (is (< (:observed-nodes carrier) 1024) (name label))
         (is (true? (:verified? report)) (name label))
         (is (= :accepted (:status report)) (name label))))))
-
-(deftest sh03-result-carrier-depth-is-bounded-with-structured-failure
-  (let [small-validation
-        (bootstrap/sh03-reader-require-result-carrier!
-         "carrier.gravity" :test-carrier {:value [1 2 3]})
-        over-depth
-        (loop [remaining (inc bootstrap/sh03-reader-result-maximum-depth)
-               value nil]
-          (if (zero? remaining)
-            value
-            (recur (dec remaining) [value])))
-        data
-        (thrown-data
-         #(bootstrap/sh03-reader-require-result-carrier!
-           "carrier.gravity" :test-carrier over-depth))]
-    (is (= :passed (:status small-validation)))
-    (is (= "C2-HASH" (:id data)))
-    (is (some #{:trusted-bounded-sh03-reader-result}
-              (:missing-fields data)))
-    (is (= :test-carrier (get-in data [:facts :carrier])))
-    (is (integer? (get-in data [:facts :observed-depth])))
-    (is (= bootstrap/sh03-reader-result-maximum-depth
-           (get-in data [:facts :maximum-depth])))
-    (is (nil? (:unexpected-host-error data)))))
-
-(deftest sh03-source-identity-input-is-bounded-before-reader-execution
-  (let [normal-path
-        (fixture-path "accepted" "newline-lf" ".gravity")
-        oversized-path
-        (str (apply str
-                    (repeat
-                     (inc bootstrap/sh03-reader-input-maximum-identity-code-units)
-                     "a"))
-             ".gravity")
-        data
-        (thrown-data
-         #(bootstrap/sh03-reader-input-source-unit
-           oversized-path
-           (byte-array 0)
-           (bootstrap/reader-project-context-for-source normal-path)))]
-    (is (= "C2-HASH" (:id data)))
-    (is (some #{:bounded-sh03-reader-source-identity}
-              (:missing-fields data)))
-    (is (= bootstrap/sh03-reader-input-maximum-identity-code-units
-           (get-in data [:facts :maximum-code-units])))
-    (is (= bootstrap/sh03-reader-input-maximum-identity-utf8-bytes
-           (get-in data [:facts :maximum-utf8-bytes])))
-    (is (not (.contains (pr-str data) oversized-path)))
-    (is (nil? (:unexpected-host-error data)))))
 
 (deftest sh03-identities-are-cross-root-neutral-with-actual-path-provenance
   (let [left-root

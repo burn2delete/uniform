@@ -11,9 +11,13 @@
 (defn- path [extension] (.getCanonicalPath (io/file (str fixture-base extension))))
 (defn- reader-path []
   (.getCanonicalPath (io/file b/sh03-reader-source-relative-path)))
+(defn- syntax-path []
+  (.getCanonicalPath (io/file b/sh04-syntax-source-relative-path)))
 (defn- invocation []
   {:reader-source-path (reader-path)
-   :authenticated-envelope-options {:source :development-current}})
+   :authenticated-envelope-options {:source :development-current}
+   :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                             :source-path (syntax-path)}})
 (defn- current-emitter []
   @(var-get (ns-resolve 'gravity.self-hosting.sh12-zero-arity-bool-diamond-test
                         'current-emitter)))

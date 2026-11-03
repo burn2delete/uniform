@@ -81,7 +81,6 @@
          :current-sha256 "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c"}
     :changed-record-count 5}
    :interpretation :pr562-domain-composition-to-pr561-runtime-successor})
-
 (def expected-current-stdlib-task-bridge
   {:path "specs/stdlib-workflow/tasks.md"
    :marker "stdlib-implementation-tasks"
