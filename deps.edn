@@ -49,4 +49,19 @@
   :project-structure-runner-unit
   {:extra-paths ["bootstrap/clojure/test"]
    :main-opts ["-m" "gravity.development-test-runner"
-               "--namespace" "gravity.project-structure-test-runner-test"]}}}
+               "--namespace" "gravity.project-structure-test-runner-test"]}
+
+  ;; Project-scoped development entrypoints.  Each wrapper requires explicit
+  ;; namespaces for non-empty selections and rejects the broad bootstrap
+  ;; default, while reusing the existing runners and their fixtures.
+  :language-test
+  {:extra-paths ["bootstrap/clojure/test"]
+   :main-opts ["-m" "gravity.language-test-runner"]}
+
+  :compiler-composition-test
+  {:extra-paths ["bootstrap/clojure/test"]
+   :main-opts ["-m" "gravity.compiler-composition-test-runner"]}
+
+  :bootstrap-validation-test
+  {:extra-paths ["bootstrap/clojure/test"]
+   :main-opts ["-m" "gravity.bootstrap-validation-test-runner"]}}}
