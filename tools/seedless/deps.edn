@@ -1,0 +1,6 @@
+{:paths ["src" "../simplify/src"]
+ :deps {org.clojure/clojure {:mvn/version "1.12.0"}
+        org.clojure/data.json {:mvn/version "2.5.2"}}
+ :aliases {:run {:main-opts ["-m" "seedless.main"]}
+           :test {:extra-paths ["test"]
+                  :main-opts ["-m" "seedless.test-runner"]}}}
