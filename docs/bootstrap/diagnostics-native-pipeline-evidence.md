@@ -108,6 +108,30 @@ Fresh current-source checks/capture, exact independent composition review,
 own CI and immediate current-main preflight remain required. Historical source
 or CI results do not transfer to this composition.
 
+## Complete native stage composition
+
+PR892 normally composes reviewed Diagnostics source
+173e366101ea41d6e8ae78e93242c6b3e6264f12 with the reviewed 47-path native
+stage cohort and actual main05df36d8535afef03d3f3ebea2b7c80eaab26a76.
+Merge 0809510a89ec571403f3c234380bde523aafcde4, tree
+44728241ecba5c0c1aba869df5c196fbdfe6ec09, preserves the full 54-path union.
+All six Diagnostics implementation/test paths remain byte-identical to 173e,
+and its original C15 test remains unchanged. Only this later composition note
+changes the seven-path slice. Incoming Runtime, Effects/emitter, private Core
+construction/session and CI context changes remain main's exact source.
+
+Diagnostics own run41717160196 passed all eleven applicable artifact jobs.
+Audited actual checkout60ee31015b0b1570f77e67ac9ab22aa3cfb722fc, tree
+59a1d1e6d6ddb0d1d40c11feafa076049083b8f3, has parents main5040 and 173e.
+All bundle checksums, checkout/run identities, mutations and 41 exact command
+vectors pass. Macro returns all 28 tests/495 assertions in 661955ms; the two
+Resolution children return all 43/2203 in 534320ms and 512445ms. Experimental
+skips are not passes. This is historical evidence for that checkout, not new
+54-path acceptance, a provider adoption or current-main integration credit.
+Require fresh clean captures and source checks, complete independent review,
+own CI/artifact audit and immediate current-main preflight before integration.
+PR901 retains its history until actual verified successor integration.
+
 ## Unsupported boundaries
 
 Existing complete/passed/public-safe/rendering/golden labels remain native

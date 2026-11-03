@@ -121,6 +121,32 @@ immediate exact clean current-main preflight. PR892 carries the complete
 cohort; predecessor drafts remain until actual verified integration and gain
 no separate or duplicate credit.
 
+## Current-main Diagnostics composition
+
+Normal merge 80f88568dc1148d2b3bdb8e6becba23aa53b73e2, tree
+e577c5e65922a07ce9115f449c83f710d51b5b35, preserves actual main
+05df36d8535afef03d3f3ebea2b7c80eaab26a76, tree
+947423b0d9cb270d719446cdcb35fcc1b12bbc5b. Normal merge
+0809510a89ec571403f3c234380bde523aafcde4, tree
+44728241ecba5c0c1aba869df5c196fbdfe6ec09, adds the reviewed seven-path
+Diagnostics source 173e366101ea41d6e8ae78e93242c6b3e6264f12. The union is
+54 paths: all implementation, tests, policies and registries remain exact
+reviewed source; only the two existing composition evidence notes change.
+Incoming Runtime, Effects/emitter, Core construction/session and CI context
+paths remain exact main. Inherited source and fixture labels grant no new
+authentication, execution or migration authority.
+
+The preceding 47-path source da024bc1 retained a Macro timeout in own run
+41713342032 (900071ms/124), with 26 entries and 25 returns, last entered
+real-paired-macro-expansion-retains-identities-provenance-and-output. All
+eleven bundles and 41 command/watchdog vectors are audited; ten other
+applicable jobs passed. Diagnostics source 173e passed own run41717160196,
+whose actual provider parents are main5040 and 173e; its eleven bundles and
+41 vectors are audited. Neither observation transfers to this composition.
+Fresh five-group captures, affected current-source checks, complete exact
+review, own CI and immediate clean current-main preflight remain required.
+The separate Macro orchestration repair PR909 is not part of this source.
+
 ## Residual boundaries
 
 No new general SAFE classification, source/Core authentication, proof-provider
