@@ -33,8 +33,11 @@
   ;; stripping it at the exact SH03 Reader boundary.
   (let [source-path (path relative)
         reader-path (path bootstrap/sh03-reader-source-relative-path)
+        syntax-path (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
         c5-invocation {:reader-source-path reader-path
                        :authenticated-envelope-options {:source :development-current}
+                       :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                                 :source-path syntax-path}
                        :macro-source-mode :development-current}
         c5 (bootstrap/compiler-c5-resolution-source-artifact
             source-path (slurp source-path :encoding "UTF-8")

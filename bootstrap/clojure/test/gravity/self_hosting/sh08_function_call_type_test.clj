@@ -40,18 +40,21 @@
 (def ^:private verification-reports (atom {}))
 
 (defn- b47-verification
-  [artifact]
-  (or (get @verification-reports artifact)
-      (let [verifier
-            (or (ns-resolve 'gravity.bootstrap
-                            'sh07-core-artifact-verification)
-                (throw
-                 (ex-info
-                  "Required SH-07-B47 verification is absent"
-                  {:id "SH08-B47-VERIFICATION-ABSENT"})))
-            report (verifier artifact)]
-        (swap! verification-reports assoc artifact report)
-        report)))
+  ([artifact] (b47-verification artifact nil))
+  ([artifact invocation]
+   (let [verifier
+         (or (ns-resolve 'gravity.bootstrap
+                         'sh07-core-artifact-verification)
+             (throw
+              (ex-info
+               "Required SH-07-B47 verification is absent"
+               {:id "SH08-B47-VERIFICATION-ABSENT"})))]
+     (if invocation
+       (verifier artifact invocation)
+       (or (get @verification-reports artifact)
+           (let [report (verifier artifact)]
+             (swap! verification-reports assoc artifact report)
+             report))))))
 
 (defn- coordinator-verification
   [artifact report]
@@ -70,23 +73,24 @@
   (java.util.IdentityHashMap.))
 
 (defn- function-request
-  [artifact]
-  (locking *function-request-cache*
-    (if (.containsKey *function-request-cache* artifact)
-      (.get *function-request-cache* artifact)
-      (let [report (b47-verification artifact)
-            coordinator (coordinator-verification artifact report)
-            context (b47-context artifact report coordinator)
-            request
-            {:canonical-core-artifact (:canonical-core-artifact context)
-             :b47-context context
-             :coordinator-verification coordinator}]
-        ;; Failed receipts are diagnostic inputs, not reusable verification
-        ;; evidence.  Rebuild them on every call so mutation-focused tests keep
-        ;; exercising the verifier rather than a cached failure carrier.
-        (when (= :passed (:status report))
-          (.put *function-request-cache* artifact request))
-        request))))
+  ([artifact] (function-request artifact nil))
+  ([artifact invocation]
+   (locking *function-request-cache*
+     (if (and (nil? invocation) (.containsKey *function-request-cache* artifact))
+       (.get *function-request-cache* artifact)
+       (let [report (b47-verification artifact invocation)
+             coordinator (coordinator-verification artifact report)
+             context (b47-context artifact report coordinator)
+             request
+             {:canonical-core-artifact (:canonical-core-artifact context)
+              :b47-context context
+              :coordinator-verification coordinator}]
+         ;; Failed receipts are diagnostic inputs, not reusable verification
+         ;; evidence.  Rebuild them on every call so mutation-focused tests keep
+         ;; exercising the verifier rather than a cached failure carrier.
+         (when (and (nil? invocation) (= :passed (:status report)))
+           (.put *function-request-cache* artifact request))
+         request)))))
 
 (deftest sh08-imported-function-types-development-kernel
   ;; Normalized DATA exercises Gravity's joins and inference, not B47 authority.
@@ -3200,12 +3204,24 @@
                                     :elapsed-ms (quot (- (System/nanoTime) started) 1000000)})) value))
         text (slurp source-path)
         reader-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        syntax-path (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
+        invocation {:reader-source-path reader-path
+                    :authenticated-envelope-options {:source :development-current}
+                    :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                              :source-path syntax-path}
+                    :macro-source-mode :development-current}
+        reader-invocation (dissoc invocation :macro-source-mode)
         context (bootstrap/reader-project-context-for-source source-path)
-        syntax (stage :c3 #(bootstrap/compiler-c3-syntax-source-artifact source-path text context nil nil reader-path))
-        expanded (stage :sh05 #(bootstrap/sh05-macro-artifact-from-c3-artifact source-path syntax))
-        resolved (stage :sh06 #(bootstrap/sh06-resolution-artifact-from-sh05-artifact source-path expanded))
-        core (stage :sh07 #(bootstrap/sh07-core-from-resolution-artifact resolved))
-        request (stage :c7-request #(function-request core))]
+        syntax (stage :c3 #(bootstrap/compiler-c3-syntax-source-artifact
+                            source-path text context nil nil reader-path reader-invocation))
+        expanded (stage :sh05 #(bootstrap/sh05-macro-artifact-from-c3-artifact
+                                source-path syntax reader-invocation :development-current))
+        resolved (stage :sh06 #(bootstrap/sh06-resolution-artifact-from-sh05-artifact
+                                source-path expanded
+                                {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+                                reader-path invocation))
+        core (stage :sh07 #(bootstrap/sh07-core-from-resolution-artifact resolved invocation))
+        request (stage :c7-request #(function-request core invocation))]
     {:request request :core core :syntax syntax :expanded expanded :resolved resolved}))
 
 (deftest sh08-parameter-vector-count-slice-current-source-composition
@@ -16816,15 +16832,23 @@
   ([source-path text module-inputs stage]
    ;; Decompose the original 00884 four-arity body, retaining its real guard,
    ;; parent artifacts, module inputs and selected-reader checks in SH06.
-   (let [reader-source-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")]
+   (let [reader-source-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+         syntax-source-path (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
+         invocation {:reader-source-path reader-source-path
+                     :authenticated-envelope-options {:source :development-current}
+                     :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                               :source-path syntax-source-path}
+                     :macro-source-mode :development-current}
+         reader-invocation (dissoc invocation :macro-source-mode)]
      (when-not (string? reader-source-path)
        ((ns-resolve 'gravity.bootstrap 'sh03-reader-read-selected-source-bytes!) source-path reader-source-path))
      (let [syntax (stage :c3 (fn [] (bootstrap/compiler-c3-syntax-source-artifact
                                      source-path text (bootstrap/reader-project-context-for-source source-path)
-                                     nil nil reader-source-path)))
-           parent (stage :sh05 (fn [] (bootstrap/sh05-macro-artifact-from-c3-artifact source-path syntax)))]
+                                     nil nil reader-source-path reader-invocation)))
+           parent (stage :sh05 (fn [] (bootstrap/sh05-macro-artifact-from-c3-artifact
+                                         source-path syntax reader-invocation :development-current)))]
        (stage :sh06 (fn [] (bootstrap/sh06-resolution-artifact-from-sh05-artifact
-                            source-path parent module-inputs reader-source-path)))))))
+                            source-path parent module-inputs reader-source-path invocation)))))))
 
 (defn- function-current-source
   ([source-path]
@@ -16834,8 +16858,15 @@
    (function-current-source source-path text module-inputs (fn [_ operation] (operation))))
   ([source-path text module-inputs stage]
    (let [resolved (function-current-resolution source-path text module-inputs stage)
-         core (stage :sh07 (fn [] (bootstrap/sh07-core-from-resolution-artifact resolved)))
-         request (stage :c7-request (fn [] (function-request core)))]
+         reader-source-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+         syntax-source-path (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
+         invocation {:reader-source-path reader-source-path
+                     :authenticated-envelope-options {:source :development-current}
+                     :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                               :source-path syntax-source-path}
+                     :macro-source-mode :development-current}
+         core (stage :sh07 (fn [] (bootstrap/sh07-core-from-resolution-artifact resolved invocation)))
+         request (stage :c7-request (fn [] (function-request core invocation)))]
      {:resolved resolved :core core :request request})))
 
 (def ^:private function-current-c8-plan
@@ -16926,8 +16957,15 @@
           (spit temporary source :encoding "UTF-8")
           (let [temporary-path (.getCanonicalPath temporary)
                 c5 (function-current-resolution temporary-path source inputs)
-                artifact (bootstrap/sh07-core-from-resolution-artifact c5)
-                q (assoc (function-request artifact) :module-type-inputs (:module-type-inputs request))
+                reader-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+                syntax-path (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
+                invocation {:reader-source-path reader-path
+                            :authenticated-envelope-options {:source :development-current}
+                            :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                                      :source-path syntax-path}
+                            :macro-source-mode :development-current}
+                artifact (bootstrap/sh07-core-from-resolution-artifact c5 invocation)
+                q (assoc (function-request artifact invocation) :module-type-inputs (:module-type-inputs request))
                 rejected (invoke-c7 'sh08-function-type-core-artifact [q])
                 diagnostic (first (:diagnostics rejected))]
             (is (= :accepted (:status artifact)))

@@ -1267,11 +1267,14 @@
   [source-path]
   (let [effects-path (path effects-source-relative-path)
         reader-path (path bootstrap/sh03-reader-source-relative-path)
+        syntax-path (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
         invocation {:reader-source-path reader-path
                     :authenticated-envelope-options {:source :development-current}
+                    :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                              :source-path syntax-path}
                     :macro-source-mode :development-current}
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))
-        ;; Development fixtures select current Reader and Macro source
+        ;; Development fixtures select current Reader, Syntax, and Macro source
         ;; explicitly; public file APIs keep their historical pinned contracts.
         dependency (bootstrap/compiler-c5-resolution-source-artifact
                      effects-path (slurp effects-path :encoding "UTF-8")

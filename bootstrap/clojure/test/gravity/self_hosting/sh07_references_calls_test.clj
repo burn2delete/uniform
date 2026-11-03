@@ -746,17 +746,26 @@
 
 (defn- required-primitive-current-artifact []
   (let [source-path (fixture-path "accepted" "required-primitive-call-arities" ".gravity")
+        reader-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        syntax-path (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
+        invocation {:reader-source-path reader-path
+                    :authenticated-envelope-options {:source :development-current}
+                    :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                              :source-path syntax-path}
+                    :macro-source-mode :development-current}
         resolved
         (required-primitive-stage
          :current-reader-c5
          #(bootstrap/compiler-c5-resolution-source-artifact
            source-path (source-text source-path)
            {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
-           (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")))]
+           reader-path invocation))]
     ;; Preserve the ordinary helper's historical pins and cache. Only this
-    ;; explicit development composition selects the actual current reader.
-    (required-primitive-stage
-     :gravity-core #(bootstrap/sh07-core-from-resolution-artifact resolved))))
+    ;; explicit development composition selects the actual current Reader,
+    ;; Syntax, and Macro sources.
+    [(required-primitive-stage
+      :gravity-core #(bootstrap/sh07-core-from-resolution-artifact resolved invocation))
+     invocation]))
 
 (defn- rewrite-required-call-arguments [artifact call arguments]
   (let [call-id (:core-node-id call)
@@ -789,7 +798,7 @@
                merge (select-keys (core candidate) [:nodes :calls :call-edges :evaluation-order]))))
 
 (deftest sh07-b2-required-primitive-arities-current-gravity-composition
-  (let [artifact (required-primitive-current-artifact)
+  (let [[artifact invocation] (required-primitive-current-artifact)
         product (core artifact)
         input (request artifact)
         index (node-index artifact)
@@ -803,7 +812,7 @@
         default-id (last (:argument-node-ids get-call))
         default-node (get index default-id)
         report (required-primitive-stage
-                :fresh-public-verification #(bootstrap/sh07-core-artifact-verification artifact))]
+                :fresh-public-verification #(bootstrap/sh07-core-artifact-verification artifact invocation))]
     (is (= :accepted (:status artifact)))
     (is (= :passed (:status report)) (pr-str (:failed-checks report)))
     (is (= '#{assoc get} (set (keys calls))))
@@ -856,7 +865,8 @@
     (is (= (:source-map product) (:source-map (identity-input artifact))))
     (let [session (required-primitive-stage
                    :original-verification-session
-                   #(bootstrap/sh07-core-verification-session (:sh06-resolution-artifact artifact)))
+                   #(bootstrap/sh07-core-verification-session
+                     (:sh06-resolution-artifact artifact) invocation))
           verify #(bootstrap/sh07-core-artifact-verification-against-expected % session)
           assoc-arguments (:argument-node-ids assoc-call)
           get-arguments (:argument-node-ids get-call)

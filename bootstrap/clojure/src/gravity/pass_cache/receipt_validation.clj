@@ -2,9 +2,12 @@
   "Cache operation, artifact, and historical receipt validation."
   (:require [clojure.set :as set]
             [gravity.digest :as digest]
-            [gravity.pass-cache.canonical-encode :refer :all]
-            [gravity.pass-cache.policy :refer :all]
-            [gravity.pass-cache.request-key :refer :all]
+            [gravity.pass-cache.canonical-encode :refer [content-id]]
+            [gravity.pass-cache.policy
+             :refer [execution-request-fields fail! require-sha256!
+                     schema-version sha256-id?]]
+            [gravity.pass-cache.request-key
+             :refer [key-id validate-stage-request!]]
             [gravity.pass-execution :as pass-execution]))
 
 (def cache-operation-fields
@@ -79,6 +82,15 @@
              (sha256-id? (:artifact-id artifact)) (:artifact-id artifact)
              :else (content-id :gravity/pass-cache-artifact-v2 artifact))]
     (require-sha256! :artifact-id id)))
+
+(defn envelope-artifact-id
+  "Return the content id carried by a validated cache envelope.
+
+  Cache adapters use this named, pure operation so receipt validation can
+  retain its result for the immediately following derived-entry checks.
+  Replaced or wrapped operations continue through the ordinary callback path."
+  [artifact]
+  (require-sha256! :artifact-id (:artifact-id artifact)))
 
 (defn validate-artifact!
   [operations artifact context]
@@ -165,7 +177,9 @@
     (when-not (= id (:output-artifact-id receipt))
       (fail! "C16-STALE" "artifact identity differs from producer receipt"
              {:observed id :expected (:output-artifact-id receipt)}))
-    artifact))
+    (if (:retain-artifact-id? context)
+      {:artifact artifact :artifact-id id}
+      artifact)))
 
 (defn entry-id
   [entry]
