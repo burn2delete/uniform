@@ -272,12 +272,12 @@
                          #(bootstrap/p15-s23-stage2-c11-mir-artifact
                            (java.util.Date.) left-context c11-v3-header))
       (assert-rejected! :crossed-context
-                         #(bootstrap/p15-s23-stage2-c11-mir-artifact
-                           core right-context c11-v3-header))
+                         #(bootstrap/p15-s23-c11-mir-validate-final-artifact!
+                           mir core right-context 3))
       (assert-rejected! :forged-core-id
-                         #(bootstrap/p15-s23-stage2-c11-mir-artifact
-                           (assoc core :artifact-id "sha256:forged-core")
-                           left-context c11-v3-header)))
+                         #(bootstrap/p15-s23-c11-mir-validate-final-artifact!
+                           mir (assoc core :artifact-id "sha256:forged-core")
+                           left-context 3)))
     (testing "source metadata and independently coherent IR changes fail closed"
       (assert-rejected!
        :tampered-source-rule
