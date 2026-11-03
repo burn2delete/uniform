@@ -164,3 +164,15 @@ Existing task bodies/statuses, source criteria, frozen review scopes and actual 
 Use the [complete pattern-matching source criteria](../core-workflow/plan.md#complete-pattern-matching-source-criteria). Retain the exact existing conditional pattern-semantic change producer and unchanged profile74 predicate. Update each affected pattern family and its Core/type/effect/ownership/schema/workflow/AI/formal/backend conformance consumers before stable adoption; ordinary unchanged-contract development gains no new ceremony.
 
 Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
+## Pattern-matching dependency interface
+
+Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#pattern-matching-producer-and-consumer-order) and existing selected-result table. Keep the exact unchanged conditional pattern-semantic adoption producer and 977-byte predicate. Actual affected-family/consumer fixtures and required review precede stable adoption; ordinary unchanged-contract implementation gains no new ceremony or held action permission.
+
+Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
+## Complete protocol and dispatch source interface
+
+Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Retain the exact 1,011-byte conditional stable-protocol-change predicate and qualified profile74 scope. Stable changes consume affected type/effect/performance/ABI/host/library/AI/formal compatibility/conformance results; unchanged-contract development gains no new ceremony.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.

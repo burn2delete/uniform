@@ -176,7 +176,9 @@
 (def future-dependency-path "docs/acceptance-dependencies.md")
 
 (def selected-parent-consumers
-  #{"types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit"
+  #{"backend-conformance"
+    "query"
+    "types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit"
     "mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir"
     "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables"
     "mir/current-evidence-and-remaining-work/mir4-serialize-stable-modules"

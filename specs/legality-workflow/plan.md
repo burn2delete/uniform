@@ -891,6 +891,18 @@ Use the [complete pattern-matching source criteria](../core-workflow/plan.md#com
 
 Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Pattern-matching dependency interface
+
+Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#pattern-matching-producer-and-consumer-order) and existing selected-result table. Consume real narrowed/validated/control/effect facts for actual move/borrow/linear, layout/profile and required formal totality/partiality verdicts. Early policy/regime contracts and selected flow premises precede combined legality; defaults, Bool and shape success waive no proof or authority.
+
+Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
+## Complete protocol and dispatch source interface
+
+Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Derive concrete portable/hosted/native/constrained/distributed/AI/formal legality from actual selected facts. Preserve required constrained bounded-behavior or total-coverage proof without restoring compiler quotas; no runtime/backend-only check substitutes.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Legality task authority

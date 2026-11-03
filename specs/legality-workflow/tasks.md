@@ -84,6 +84,14 @@ Apply the [complete pattern-matching source criteria](../core-workflow/plan.md#c
 L7 profile and totality criterion (Open): Apply real selected profile rules: portable pure core matching, hosted typed wrappers/checked interop, native known record/union layouts, and governing kernel/firmware/hardware collection/allocation/dynamic restrictions. AI matching follows validation; distributed matching retains replay-sensitive guard records. Formal closed matches require totality or explicit partiality proof, and defaults cannot conceal required safety proof. Enforce concrete profile/representation/ownership requirements before admitted use without replacing them with project work quotas. Required evidence: actual supported-profile positives and rejected missing layout/validation/proof or forbidden pattern cases; unsupported implementation slices remain required work.
 <!-- legality-pattern-source-profiles:end -->
 
+
+<!-- legality-protocol-source-profiles:start -->
+
+Apply the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L8 concrete profile-dispatch criterion (Open): Derive profile legality from actual dispatch/type/effect/runtime facts. Core admits statically resolved, dictionary or portable-interface contracts; hosted dynamic/reflection still requires effects and capabilities. Native admits monomorphization/dictionaries/vtables and rejects reflection unless a native runtime provider declares it, with actual provider/admission facts. Kernel/firmware/hardware reject reflection, hidden allocation, open-world dispatch and runtime lookup unless a constrained artifact proves the required bounded behavior; this is a concrete semantic/profile proof, not retired compiler work accounting. Distributed boundaries use actual schema/artifact contracts; AI tools require actual schema validation and grants; formal needs closed dispatch or proof of total coverage. Required evidence: source-bound profile decisions, applicable constrained/closed/coverage proofs and accepted/refused profile fixtures with L8-DYNAMIC-FORBIDDEN; no runtime/backend-only legality substitution.
+<!-- legality-protocol-source-profiles:end -->
+
 - [ ] `legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis` Complete ownership, borrow, initialization and lifetime analysis
 
 Status: Open

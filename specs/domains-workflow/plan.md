@@ -582,6 +582,18 @@ Use the [complete pattern-matching source criteria](../core-workflow/plan.md#com
 
 Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Pattern-matching dependency interface
+
+Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#pattern-matching-producer-and-consumer-order) and existing selected-result table. Supply real source/schema/query/workflow/hardware/proof interfaces before consumers; later actual checked-Core/MIR/target or value anchors preserve decisions and validation. The existing future Formal authority checks exact property/source/kernel/assumptions after preliminary coverage and before proof-dependent use, without full Formal/ZK or cost-accounting adoption.
+
+Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
+## Complete protocol and dispatch source interface
+
+Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Distributed workflow/service boundaries use real schema/artifact contracts and AI/tool invocation uses actual schema validation plus authentic grants and effects. Formal dispatch needs real closedness/coverage proof; source preparation precedes held execution.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Domains workflow migration

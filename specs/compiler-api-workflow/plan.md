@@ -247,6 +247,18 @@ Use the [complete pattern-matching source criteria](../core-workflow/plan.md#com
 
 Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Pattern-matching dependency interface
+
+Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#pattern-matching-producer-and-consumer-order) and existing selected-result table. Expose real structural, typed/coverage, effect/resource/validation, checked-decision, MIR and target products with equivalent observable boundaries across fused passes. Reuse actual proof checking and preserve all artifacts/diagnostics/invalidation; no supplied checked flag replaces an operation.
+
+Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
+## Complete protocol and dispatch source interface
+
+Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Expose structural source contracts, tentative typed selection, actual effects/admission and later interface/runtime products as distinct stage boundaries, preserving equivalent fused-pass observability and actual invalidated facts.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
 ## Historical workflow-transfer and source-composition plan
 
 # Implementation plan: Compiler API workflow migration

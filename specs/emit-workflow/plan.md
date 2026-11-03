@@ -25,6 +25,12 @@ Use the [resolution producer and consumer order](../resolve-workflow/plan.md#res
 
 Existing task bodies/statuses, source predicates, frozen evidence and actual restrictions remain unchanged. Current source/interface entailment, independent acceptance and final release require their own applicable evidence; no held action is enabled.
 
+## Pattern-matching dependency interface
+
+Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#pattern-matching-producer-and-consumer-order) and existing selected-result table. Supply real early artifact writer/manifest/source-map contracts, then actual selected target bytes and readback/provenance for backend and compiler comparisons. Metadata presence or a declaration cannot establish branch behavior, and final conformance is not the first emitter input.
+
+Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Emit task authority
