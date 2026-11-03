@@ -271,6 +271,10 @@
 (def ^:private llvm-data-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_llvm/005-lowering-reconstruction-and-builder.clj")
 (def ^:private llvm-data-stage-test "bootstrap/clojure/test/gravity/backend/llvm/pipeline_test.clj")
 
+(def ^:private mlir-diagnostic-data-stage-path "bootstrap/clojure/src/gravity/backend/mlir.clj")
+(def ^:private mlir-diagnostic-data-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00242-b6-document-source-artifact.clj")
+(def ^:private mlir-diagnostic-data-stage-test "bootstrap/clojure/test/gravity/backend/mlir/pipeline_test.clj")
+
 (def ^:private c-emission-stage-path "bootstrap/clojure/src/gravity/backend/c.clj")
 (def ^:private c-emission-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00750-p15-s23-c13-c14-b1-authority-token-023-p15-s23-b2-c17-operation-expression-through-p15-s23-b2-c17-discard-cast-records.clj")
 (def ^:private c-emission-stage-test "bootstrap/clojure/test/gravity/backend/c/pipeline_test.clj")
@@ -386,6 +390,9 @@
              llvm-data-stage-path
              {:namespace 'gravity.backend.llvm :owner :sh-target-llvm :slice "SH-18"
               :consumer-path llvm-data-stage-consumer :test-path llvm-data-stage-test}
+             mlir-diagnostic-data-stage-path
+             {:namespace 'gravity.backend.mlir :owner :sh-target-mlir :slice "SH-18"
+              :consumer-path mlir-diagnostic-data-stage-consumer :test-path mlir-diagnostic-data-stage-test}
              optimization-stage-path
              {:namespace 'gravity.optimization :owner :sh-optimization :slice "SH-16"
               :consumer-path optimization-stage-consumer :test-path optimization-stage-test}
@@ -477,6 +484,9 @@
          (= :sh-target-llvm (get-in record [:module-owners llvm-data-stage-path]))
          (= {:namespace 'gravity.backend.llvm.pipeline-test :slice "SH-18" :owner :sh-target-llvm}
             (get-in record [:standalone-test-owners llvm-data-stage-test]))
+         (= :sh-target-mlir (get-in record [:module-owners mlir-diagnostic-data-stage-path]))
+         (= {:namespace 'gravity.backend.mlir.pipeline-test :slice "SH-18" :owner :sh-target-mlir}
+            (get-in record [:standalone-test-owners mlir-diagnostic-data-stage-test]))
          (= :sh-target-js (get-in record [:module-owners js-source-stage-path]))
          (= {:namespace 'gravity.backend.js.pipeline-test :slice "SH-00" :owner :sh-target-js}
             (get-in record [:standalone-test-owners js-source-stage-test]))
@@ -556,6 +566,11 @@
               "source" {"path" llvm-data-stage-path "namespace" "gravity.backend.llvm"}
               "consumer" {"path" llvm-data-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-target-llvm"}
               "test" {"path" llvm-data-stage-test "namespace" "gravity.backend.llvm.pipeline-test"
+                      "registration" "standalone"}}
+             {"id" "mlir-diagnostic-data" "kind" "production-stage-helper" "owner" "sh-target-mlir"
+              "source" {"path" mlir-diagnostic-data-stage-path "namespace" "gravity.backend.mlir"}
+              "consumer" {"path" mlir-diagnostic-data-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-target-mlir"}
+              "test" {"path" mlir-diagnostic-data-stage-test "namespace" "gravity.backend.mlir.pipeline-test"
                       "registration" "standalone"}}
              {"id" "c-emission" "kind" "production-stage-helper" "owner" "sh-target-c"
               "source" {"path" c-emission-stage-path "namespace" "gravity.backend.c"}

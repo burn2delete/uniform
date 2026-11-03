@@ -20,6 +20,7 @@
             [gravity.backend.wasm]
             [gravity.backend.c]
             [gravity.backend.llvm]
+            [gravity.backend.mlir]
             [gravity.types]
             [gravity.resolution]
             [gravity.macro-run-storage :as macro-run-storage]

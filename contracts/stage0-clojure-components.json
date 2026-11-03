@@ -228,6 +228,14 @@
       "test": {"path": "bootstrap/clojure/test/gravity/backend/llvm/pipeline_test.clj", "namespace": "gravity.backend.llvm.pipeline-test", "registration": "standalone"}
     },
     {
+      "id": "mlir-diagnostic-data",
+      "kind": "production-stage-helper",
+      "owner": "sh-target-mlir",
+      "source": {"path": "bootstrap/clojure/src/gravity/backend/mlir.clj", "namespace": "gravity.backend.mlir"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00242-b6-document-source-artifact.clj", "namespace": "gravity.bootstrap", "owner": "sh-target-mlir"},
+      "test": {"path": "bootstrap/clojure/test/gravity/backend/mlir/pipeline_test.clj", "namespace": "gravity.backend.mlir.pipeline-test", "registration": "standalone"}
+    },
+    {
       "id": "c-emission",
       "kind": "production-stage-helper",
       "owner": "sh-target-c",
