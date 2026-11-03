@@ -149,6 +149,9 @@
         stdlib-successor tooling-requirements/pr564-current-manifest-source-transition
         wrong-stdlib-successor (assoc-in stdlib-successor [:applying :sha256]
                                           (:sha256 (:baseline stdlib-successor)))
+        pr565-successor tooling-requirements/current-manifest-pr565-transition
+        wrong-pr565-successor (assoc-in pr565-successor [:applying :sha256]
+                                        (:sha256 (:baseline pr565-successor)))
         result (tooling-requirements/validate-current-manifest-transition! source-view)]
     (is (= {:snapshot-provenance :git-commit-tree-blob-and-bytes-verified
             :population :conserved
@@ -170,6 +173,13 @@
                         [:snapshot-provenance :population :stdlib-task-source
                          :math-source-version
                          :interpretation])))
+    (is (= {:snapshot-provenance :git-commit-tree-blob-and-bytes-verified
+            :population :conserved
+            :source-version-bridges :conserved
+            :interpretation :pr565-current-owner-task-source-bridge-extension}
+           (select-keys (:pr565-successor result)
+                        [:snapshot-provenance :population :source-version-bridges
+                         :interpretation])))
     ;; A changed applying body, a mismatched commit/tree pair, and replay of the
     ;; baseline identity must all fail closed even when the source-view digest
     ;; remains frozen.
@@ -182,6 +192,10 @@
                       source-view))))
     (with-redefs [tooling-requirements/pr564-current-manifest-source-transition
                   wrong-stdlib-successor]
+      (is (refuses? #(tooling-requirements/validate-current-manifest-transition!
+                      source-view))))
+    (with-redefs [tooling-requirements/current-manifest-pr565-transition
+                  wrong-pr565-successor]
       (is (refuses? #(tooling-requirements/validate-current-manifest-transition!
                       source-view))))))
 
