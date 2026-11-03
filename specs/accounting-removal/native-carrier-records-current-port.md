@@ -7,9 +7,9 @@ main. C7 requires complete current verification records; D8 and D9 preserve
 native class, metadata, callback, cycle, identity and tamper checks when project
 accounting is removed. Native DATA validity is distinct from B47 authority.
 
-The clean source checkpoint is `e857f603c6167181b7a12574a4cbb73c990496df`,
-tree `2ed513b4948dc606cf17dd48d109e88e527e2d9b`, composed over main
-`4d8a085a9b68bb8c349869c574b94ee4cea81406`. The accompanying EDN records
+The clean source checkpoint is `bc86db6b485d8091e4a18a9be57392991174eebe`,
+tree `ea1bce1936f6c2ba60f9a91ea3ebf5c2f1119653`, composed over main
+`7201ddcc82ab3bf778f65f9f1f6e6ac821632128`. The accompanying EDN records
 the source hashes and exact commands. No frozen compiler pin is renewed.
 
 ## Original path accounting
@@ -22,8 +22,14 @@ PR613, `5ebff5cae276ddd93b002a28806a1c363687f7c9`, authored five paths:
   imported results, using the existing `sh08-vf-original-data` directly. The
   original invalid-carrier diagnostics remain distinct from authentication
   failure, and rejected Core stops before producer traversal and inference.
-- The source-coverage file already omits the four retired accounting helpers;
-  it is unchanged.
+- Remove the four aggregate accounting helpers from the source-coverage
+  expectations, conserving PR613's unique change in that file. Also remove
+  the remaining retired allowance/preflight names, twelve allowance fields,
+  and budget-only top-level form-node checks. Preserve the frozen source
+  byte/hash, plan and census identities as historical migration checkpoints;
+  they are not renewed and do not pass for current source. A separate current
+  source policy check confirms that the removed accounting definitions and
+  allowance fields remain absent.
 - The SH08 tests are ported into a focused namespace instead of rewriting the
   shared fixture file. Native safety/extents inputs are preserved, including
   depth 192, width 65,537, shared acyclic occurrences and a 16,777,217-character
@@ -51,7 +57,8 @@ replacement work allowance is restored.
 
 ## Current evidence
 
-The focused current namespace passed naturally with a 2 GiB heap:
+The focused current namespace passed naturally with a 2 GiB heap, including
+after composition with PR593's source-product helpers:
 
 ```text
 clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.native-carrier-record-current-test --fail-fast
@@ -67,6 +74,15 @@ ordering, memo transitions and callback refusal execute the Gravity code.
 The existing imported-module validation/routing controls separately passed
 2 tests / 18 assertions. They retain the 1,025-entry memo/input cases, producer
 identity refusal, authentication refusal and current four-argument inference.
+That receipt belongs to the earlier clean source checkpoint
+`e857f603c6167181b7a12574a4cbb73c990496df`; it is retained as history.
+
+At the current checkpoint, the source accounting-removal policy and source
+`if` arity controls passed 2 tests / 5 assertions. These static checks do not
+compile the complete C7 plan or establish SH-07-B47 migration authority. The
+frozen 284,176-byte source identity and its associated migration fingerprints
+remain unchanged. Exact byte counts authenticate source identity; they do not
+grant an input work allowance.
 
 The language-boundary gate passed 6 tests / 11 assertions. Canonical document
 validation passed 240 documents and 19 indexes; roadmap structural validation

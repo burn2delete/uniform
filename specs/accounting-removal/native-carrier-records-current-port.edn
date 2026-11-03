@@ -1,4 +1,11 @@
 {:role :development-source-checkpoint,
+ :source-coverage
+ {:scope :static-current-source-policy-and-if-arity,
+  :migration-authority :not-established,
+  :frozen-source-byte-count 284176,
+  :frozen-source-revision-id
+  "sha256:e33a54b8cf202399a1f7dfae23221f653a8d43387566539fb026a54d2f44b275",
+  :frozen-fingerprints-renewed false},
  :nonclaims
  [:public-c7
   :b47-authority
@@ -10,34 +17,69 @@
   :self-hosting],
  :oracles
  [:normalized-authentication-result :normalized-inference-result],
- :source-tree "2ed513b4948dc606cf17dd48d109e88e527e2d9b",
+ :source-tree "ea1bce1936f6c2ba60f9a91ea3ebf5c2f1119653",
  :checks
  [{:namespace gravity.self-hosting.native-carrier-record-current-test,
    :tests 7,
    :assertions 111,
    :exit 0,
-   :log "/tmp/uniform-pr613-615-current-complete.log"}
-  {:namespace gravity.self-hosting.sh08-function-call-type-test,
+   :log "/tmp/uniform-pr613-615-post593-complete.log"}
+  {:namespace gravity.self-hosting.sh07-c7-type-source-coverage-test,
    :selectors
-   [sh08-imported-module-validation-development-kernel
-    sh08-imported-module-control-routing-development-kernel],
+   [c7-accounting-removal-source-development-kernel
+    sh07-b47-c7-source-control-form-arities-are-exact],
    :tests 2,
-   :assertions 18,
+   :assertions 5,
    :exit 0,
-   :log "/tmp/uniform-pr613-615-existing-import-final.log"}],
- :source-commit "e857f603c6167181b7a12574a4cbb73c990496df",
+   :log "/tmp/uniform-pr613-615-post593-source-coverage.log"}],
+ :source-commit "bc86db6b485d8091e4a18a9be57392991174eebe",
  :inputs
  [{:path
    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
-   :byte-count 1863407,
+   :byte-count 1936277,
    :sha256
-   "04f4f2102071802bfb0e7d233d3aaa004a2cfd50cec64fd8d489f9e9b594e5ff"}
+   "040e6749f6974aa33448297f9c55a1ad653ab5ab873bae7368c56b0b098d64de"}
   {:path
    "bootstrap/clojure/test/gravity/self_hosting/native_carrier_record_current_test.clj",
    :byte-count 13640,
    :sha256
-   "a116350ef3f3c29516fb015b459a858c355dc01ea943a0dbdccc9705cd036ae6"}],
+   "a116350ef3f3c29516fb015b459a858c355dc01ea943a0dbdccc9705cd036ae6"}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh07_c7_type_source_coverage_test.clj",
+   :byte-count 39767,
+   :sha256
+   "12b5c8aea66bc6654fc0796897144a7ab930ecc8ed0a034bd04df7e9e6737082"}],
+ :historical-checkpoints
+ [{:source-commit "e857f603c6167181b7a12574a4cbb73c990496df",
+   :source-tree "2ed513b4948dc606cf17dd48d109e88e527e2d9b",
+   :base-commit "4d8a085a9b68bb8c349869c574b94ee4cea81406",
+   :inputs
+   [{:path
+     "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+     :byte-count 1863407,
+     :sha256
+     "04f4f2102071802bfb0e7d233d3aaa004a2cfd50cec64fd8d489f9e9b594e5ff"}
+    {:path
+     "bootstrap/clojure/test/gravity/self_hosting/native_carrier_record_current_test.clj",
+     :byte-count 13640,
+     :sha256
+     "a116350ef3f3c29516fb015b459a858c355dc01ea943a0dbdccc9705cd036ae6"}],
+   :checks
+   [{:namespace
+     gravity.self-hosting.native-carrier-record-current-test,
+     :tests 7,
+     :assertions 111,
+     :exit 0,
+     :log "/tmp/uniform-pr613-615-current-complete.log"}
+    {:namespace gravity.self-hosting.sh08-function-call-type-test,
+     :selectors
+     [sh08-imported-module-validation-development-kernel
+      sh08-imported-module-control-routing-development-kernel],
+     :tests 2,
+     :assertions 18,
+     :exit 0,
+     :log "/tmp/uniform-pr613-615-existing-import-final.log"}]}],
  :kind :native-carrier-record-current-port,
  :original-pr613 "5ebff5cae276ddd93b002a28806a1c363687f7c9",
- :base-commit "4d8a085a9b68bb8c349869c574b94ee4cea81406",
+ :base-commit "7201ddcc82ab3bf778f65f9f1f6e6ac821632128",
  :original-pr615 "bb3a9acfbb5dd683d6df0403867a179a5fdc51bc"}
