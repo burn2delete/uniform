@@ -124,6 +124,8 @@
    "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity"
    "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
    "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
+   "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
+   "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
    "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity"
    "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"

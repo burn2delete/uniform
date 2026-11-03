@@ -6065,7 +6065,7 @@
         (first
          (bootstrap/p15-s23-source-module-records
           {:source-modules [{:component :hdl-backend :path declared}]}))]
-    (is (= 26 (count bootstrap/p15-s23-compiler-source-relocation-map)))
+    (is (= 27 (count bootstrap/p15-s23-compiler-source-relocation-map)))
     (is (= actual
            (get bootstrap/p15-s23-compiler-source-relocation-map declared)))
     (is (= declared (:path record)))
@@ -6080,7 +6080,10 @@
                 "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity")))
     (is (= "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
            (get bootstrap/p15-s23-compiler-source-relocation-map
-                "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"))))
+                "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity")))
+    (is (= "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
+           (get bootstrap/p15-s23-compiler-source-relocation-map
+                "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"))))
 
 (deftest p15-s23-unmapped-source-does-not-fallback-to-relocated-file
   (let [declared
