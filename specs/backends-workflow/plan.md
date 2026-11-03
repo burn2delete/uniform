@@ -61,6 +61,12 @@ Use the [complete error-handling source criteria](../core-workflow/plan.md#compl
 
 Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Error-handling dependency interface
+
+Use the [error-handling producer and consumer order](../core-workflow/plan.md#error-handling-producer-and-consumer-order) and existing selected-result table. Early truthful error-representation/service/availability interfaces precede selected artifacts; representative actual normal/failure/cleanup/audit/metadata/diagnostic comparisons follow. Unavailable execution is unrun and shared manifest/refusal checks still run.
+
+Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Backends family task authority

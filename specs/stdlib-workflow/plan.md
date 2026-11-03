@@ -148,6 +148,12 @@ Use the [complete error-handling source criteria](../core-workflow/plan.md#compl
 
 Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Error-handling dependency interface
+
+Use the [error-handling producer and consumer order](../core-workflow/plan.md#error-handling-producer-and-consumer-order) and existing selected-result table. Actual early Some/None/Ok/Err and recoverable API/resource/failure declarations precede real callable behavior, exhaustiveness and cleanup. Preserve actual profile-specific throw rationale without a universal ban; panic cannot be ordinary stable-API control flow.
+
+Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Standard Library workflow migration

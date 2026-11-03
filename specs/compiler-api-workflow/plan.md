@@ -271,6 +271,12 @@ Use the [complete error-handling source criteria](../core-workflow/plan.md#compl
 
 Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Error-handling dependency interface
+
+Use the [error-handling producer and consumer order](../core-workflow/plan.md#error-handling-producer-and-consumer-order) and existing selected-result table. Expose actual structural error control, typed source-error potential, admitted owner facts, verified MIR and later target/runtime/durable/AI failures as distinct boundaries. Compiler diagnostics remain structured API outcomes; early checker interfaces precede actual selected preservation proofs.
+
+Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
 ## Historical workflow-transfer and source-composition plan
 
 # Implementation plan: Compiler API workflow migration

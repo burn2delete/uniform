@@ -383,7 +383,7 @@
           routes (filter #(c9 (:consumer %)) (:routes review))]
       (is (= 5 (count c9) (count routes)))
       (is (= c9 (set (get-in altered [:dependency-review :unresolved-consumers]))))
-      (is (= [29 31 32 43 50] (sort (map (comp count :composition-results) routes))))
+      (is (= [30 34 36 46 50] (sort (map (comp count :composition-results) routes))))
       (doseq [{:keys [consumer start-results composition-results]} routes]
         (is (empty? start-results))
         (doseq [producer composition-results]
