@@ -1,6 +1,7 @@
 (ns gravity.c17-c18-pass-cache.cache-operation
   "Generic cache-operation adapters for C17 and C18 artifacts."
   (:require [gravity.c17-c18-pass-cache.envelope :as envelope]
+            [gravity.pass-cache.receipt-validation :as receipt-validation]
             [gravity.c17-c18-pass-cache.validation :as validation]))
 
 (def ^:private decoded-handoff-context-key
@@ -27,8 +28,7 @@
                  :operations operations}))
        encoded))
    :artifact-id-of
-   (fn [encoded]
-     (validation/require-sha256! :artifact-id (:artifact-id encoded)))
+   receipt-validation/envelope-artifact-id
    :validation-binding-id (get-in context [:validation-binding-ids stage])
    :verifier-reports (fn [& _] [])
    :evidence-records (fn [& _] [])
