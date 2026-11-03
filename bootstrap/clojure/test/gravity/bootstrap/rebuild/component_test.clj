@@ -1,5 +1,6 @@
 (ns gravity.bootstrap.rebuild.component-test
-  (:require [clojure.test :refer [deftest is]]
+  (:require [clojure.edn :as edn]
+            [clojure.test :refer [deftest is]]
             [gravity.bootstrap.rebuild.component :as component])
   (:import [java.nio.file Files LinkOption Path]))
 
@@ -105,3 +106,31 @@
       (is error)
       (is (= "BOOT-COMPONENT-BUILD" (:diagnostic (ex-data error))))
       (is (= :plan-readback-shape (:reason (ex-data error)))))))
+
+(deftest substituted-persisted-plan-source-is-rejected
+  (with-output-root [output-root]
+    (let [writer-var (ns-resolve 'gravity.bootstrap.rebuild.component
+                                 'write-new!)
+          original-writer @writer-var
+          error (try
+                  (with-redefs-fn
+                    {writer-var
+                     (fn [file value]
+                       (let [result (original-writer file value)]
+                         (when (= "native-plan-c-emitter.plan.edn"
+                                  (.getName ^java.io.File file))
+                           (spit file
+                                 (pr-str
+                                  (assoc-in (edn/read-string
+                                             (slurp file))
+                                            [:source :sha256]
+                                            "sha256:0000000000000000000000000000000000000000000000000000000000000000"))))
+                         result))}
+                    #(component/run-seed-built-component!
+                      "." manifest-path (component/seed-built-component)
+                      (.toString output-root)))
+                  nil
+                  (catch clojure.lang.ExceptionInfo error error))]
+      (is error)
+      (is (= "BOOT-COMPONENT-BUILD" (:diagnostic (ex-data error))))
+      (is (= :plan-readback-source-binding (:reason (ex-data error)))))))

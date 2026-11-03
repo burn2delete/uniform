@@ -253,7 +253,7 @@
 
   The compiler child creates the plan in the authenticated source snapshot.
   A second child process reloads that exact EDN file and invokes its exported
-  function on accepted and rejected runtime-derived compiler plans.  The
+  function on accepted and rejected stage0-compiled compiler plans.  The
   output is seed-hosted component evidence, not a whole-compiler rebuild."
   ([project-root manifest-path component]
    (run-seed-built-component! project-root manifest-path component project-root))
@@ -314,6 +314,17 @@
                           {:reason :plan-identity
                            :summary (get-in compile-run [:summary :plan-id])
                            :plan (:plan-id plan)}))
+               _ (when-not (= source-sha256
+                              (get-in compile-run [:summary :source-content-hash]))
+                   (fail! "compiler child source identity differs from the authenticated source"
+                          {:reason :source-plan-binding
+                           :expected source-sha256
+                           :actual (get-in compile-run [:summary :source-content-hash])}))
+               _ (when-not (= source-sha256 (get-in plan [:source :sha256]))
+                   (fail! "persisted compiler plan source identity differs"
+                          {:reason :plan-source-binding
+                           :expected source-sha256
+                           :actual (get-in plan [:source :sha256])}))
                _ (when-not (= (get-in compile-run [:summary :plan-sha256])
                               plan-sha256)
                    (fail! "persisted compiler plan hash differs from child output"
@@ -376,6 +387,8 @@
                                  :exit-code (:exit-code compile-run)
                                  :stdout-sha256 (:stdout-sha256 compile-run)
                                  :stderr-sha256 (:stderr-sha256 compile-run)
+                                 :source-content-sha256
+                                 (get-in compile-run [:summary :source-content-hash])
                                  :plan-id (:plan-id plan)
                                  :plan-sha256 plan-sha256}
                 :execution-child {:command (:command execute-run)
@@ -392,6 +405,7 @@
                 :plan {:path (:plan-output-path component)
                        :kind (:kind plan)
                        :id (:plan-id plan)
+                       :source-sha256 (get-in plan [:source :sha256])
                        :sha256 plan-sha256}
                 :generated-c {:path (:source-output-path component)
                               :dialect :c11
@@ -438,6 +452,11 @@
                           {:reason :plan-readback-identity
                            :expected (:plan-id plan)
                            :actual (:plan-id public-plan)}))
+               _ (when-not (= source-sha256 (get-in public-plan [:source :sha256]))
+                   (fail! "persisted plan readback source identity differs"
+                          {:reason :plan-readback-source-binding
+                           :expected source-sha256
+                           :actual (get-in public-plan [:source :sha256])}))
                _ (when-not (= plan-sha256 public-plan-sha256)
                    (fail! "persisted plan readback hash differs"
                           {:reason :plan-readback
