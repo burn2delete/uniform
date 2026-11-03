@@ -696,3 +696,38 @@ This continuation claims no compiler/runtime/native/C7 execution, complete L7
 implementation, migration or release authority, public admission,
 self-hosting, or integration. Independent review and coordinator integration
 remain pending.
+
+## PR767 protocol and Effects current-source continuation
+
+This continuation accounts for the unique PR767 protocol slice after the
+accepted pattern/Core/Types work. The dependency/source-control commits are
+`bc8639e09c` and `fa1866623a`; the protocol owner/source proposal is
+`0aff3e592e`, and the later refinement is `b7499ce860`. Their useful value is
+preserved selectively: the dependency view retains 2,011 joins, 139 routes,
+99 current parent consumers and 40 future records; the protocol view retains
+the L8 method/effect/dispatch/profile/host/tool criteria, five explicit owner
+joins, sixteen source criteria, and the two selected hosted C7 source files.
+The generated maps from those historical commits are not treated as current
+source authority.
+
+The source composition is a normal merge of current main
+`2c5742ea00c0840ad4be842d971de9652ba8457f` (tree
+`11320981c4126366c518b39b07c7a35354202ae2`) with the accepted continuation
+history. The clean source/test checkpoint before generated readiness metadata
+is `103485cd2e8c0c0e8f20e4d8904c7ea8c5f3d5df` (tree
+`428eb58b654fbce4b2c06102e86a532eb1f1b46f`); the current-source successor
+precedence and the compact protocol source/tamper controls are part of this
+checkpoint. The readiness map is regenerated only after this checkpoint and
+binds current files to their actual commit/tree/blob bytes; its 50 unchanged,
+89 changed and 10 added task-body comparison counts are conservation data,
+not implementation or migration authority.
+
+The bounded protocol control executes `source-view` against the current
+successor and checks predecessor bridge/projection hashes, current task/plan/
+specification and criterion byte spans, future-task row identity/body hashes,
+owner joins, selected source-file hashes, and fail-closed rejection of a
+removed or forged protocol successor. It is source/data integrity evidence
+only. The historical PR767 source frames remain historical; all task rows,
+implementation, compiler, runtime, migration, release, self-hosting and
+public-admission states remain open, pending or unassessed. No native/C,
+compiler migration, held route or restricted operation was executed.
