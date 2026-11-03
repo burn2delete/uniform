@@ -2,22 +2,40 @@
  :schema-version 1
  :authority :evidence-only
  :source-freeze
- {:commit "4cd471becfe16eae5aab1557cecae18e79a46cfc"
-  :tree "1fbcb7c954bf3579525f3e253750965bbd1700fc"
-  :parent "aaed5c9899ed6c9a121eafe2eddc78249987845b"
+ {:commit "032baed5b0cf4a30447c8ee160ee8cf234eca4cd"
+  :tree "33e8439a556b1d9a85421b2900e7078b8ef51b61"
+  :parent "8692d94d983264533ee2cfc859407bc261dc945d"
   :worktree-clean-before-run? true}
  :composition
- {:source-input-transport-commit
-  "e61d452c3ab5ebc2d989588f58b0a1c2651818ef"
+ {:current-main "a5b6427cab15f40a8e1d61a6562a04b4a0f63efb"
   :normal-composition-merge
-  "e0cdfd55cfb1bb9ec4fb31dc78eebb74a6d043a3"
-  :composition-base "f5db48b06148077162c20fe47aca5b782c594eed"
+  "8692d94d983264533ee2cfc859407bc261dc945d"
+  :historical
+  {:source-input-transport-commit
+   "e61d452c3ab5ebc2d989588f58b0a1c2651818ef"
+   :normal-composition-merge
+   "e0cdfd55cfb1bb9ec4fb31dc78eebb74a6d043a3"
+   :composition-base "f5db48b06148077162c20fe47aca5b782c594eed"}
   :transport-bound-before-proof? true}
+ :historical-proof
+ {:source-freeze
+  {:commit "4cd471becfe16eae5aab1557cecae18e79a46cfc"
+   :tree "1fbcb7c954bf3579525f3e253750965bbd1700fc"
+   :parent "aaed5c9899ed6c9a121eafe2eddc78249987845b"}
+  :process
+  {:pid 73742
+   :log "/tmp/uniform-flat-bool-public-transaction-4cd471bec.log"
+   :exit 0
+   :tests 3
+   :assertions 74
+   :failures 0
+   :errors 0}
+  :status :historical}
  :command
  "clojure -J-Xmx4g -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\" \"tools\"]}' -M tools/current_flat_bool_public_transaction_test.clj"
  :process
- {:pid 73742
-  :log "/tmp/uniform-flat-bool-public-transaction-4cd471bec.log"
+ {:pid 26465
+  :log "/tmp/uniform-flat-bool-public-transaction-032baed5b.log"
   :exit 0
   :tests 3
   :assertions 74
@@ -73,9 +91,9 @@
   :forged-core-id
   :tampered-source-rule
   :tampered-builder-metadata
-  :coherent-type-fact
-  :coherent-origin-chain
-  :coherent-data-flow-edge]
+  :type-fact
+  :origin-chain
+  :data-flow-edge]
  :version-boundaries
  {:v1-and-default :unchanged-and-fail-closed
   :c6-data-version 2
