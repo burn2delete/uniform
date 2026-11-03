@@ -87,4 +87,4 @@
              :host-boundaries [:clojure :jvm :filesystem]
              :network :denied}
  :comparison {:modes [:manifest :conformance :diagnostics]
-              :artifact-kinds [:compiler-artifact :diagnostic-stream]}}
+              :artifact-kinds [:gravity/stage0-core-artifact :diagnostic-stream]}}
