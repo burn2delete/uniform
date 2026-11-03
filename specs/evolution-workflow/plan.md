@@ -206,3 +206,9 @@ Current source/interface entailment and independent acceptance remain pending. T
 Use the [library producer and consumer order](../stdlib-workflow/plan.md#library-producer-and-consumer-order) and existing selected-result table. Early scoped policy and real candidate evidence support actual library review and promotion; final released-module admission also consumes actual stability and signed provenance. Library/PKG final assembly is not its first review schema, and an early schema or scoped review cannot substitute for required final decisions.
 
 Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Preserve the single existing conditional change-review authority for semantic/compatibility changes and actual policy decisions. Expand owns stable-facet migration products and checked feasible rewrites; Build owns actual locks. An early schema or version comparison is not final approval, while compatible ordinary local development acquires no new per-run permission gate.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.

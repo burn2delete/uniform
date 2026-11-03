@@ -403,6 +403,13 @@ Use the [library producer and consumer order](../stdlib-workflow/plan.md#library
 
 Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Consume early authentic versioned facet manifests and explicit lexical activations. Namespace imports do not activate their facets in importers; macro-introduced nested activation requires provenance and aliases/explicit activation resolve ambiguity. Later built availability is separate from the first declaration.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Resolve task authority

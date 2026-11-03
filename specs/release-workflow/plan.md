@@ -317,6 +317,13 @@ Use the [library producer and consumer order](../stdlib-workflow/plan.md#library
 
 Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Consume actual owner facet fixtures through the existing independent compiler/language/profile/safety/domain harness tasks as applicable. Real at-least-two-facet composition and zk/schema/security/formal privacy cases, actual examples and eleven diagnostic families remain distinct from artifact inventories and final release/self-hosting acceptance. Held/unavailable required cases stay Open.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Release workflow migration

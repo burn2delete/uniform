@@ -73,6 +73,13 @@ Use the [library producer and consumer order](../stdlib-workflow/plan.md#library
 
 Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Keep the exact existing 1,238-byte hardware-parallel-state/counter predicate and its original HDL owner. Actual circuit/state/timing/register/overflow/source-map products and forbidden host-service refusals remain required, with Platform and compiler owners supplying their distinct actual inputs. No product ISA/device is selected.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Backends family task authority

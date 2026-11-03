@@ -62,6 +62,14 @@ Apply the [complete syntax source criteria](plan.md#complete-syntax-source-crite
 Complete C3 transformation criterion (Open): Produce new immutable syntax values linked to prior syntax ids, preserving complete source maps/origin chains and metadata unless the actual transformation records an explicit metadata change. Generated origins retain source/generated spans, producer kind/id/version, input syntax ids, generation reason, expansion step and relevant build effects. Preserve inspectable marks, lexical scopes, renames, introduced identifiers, explicit capture declarations and macro definition/call namespaces. Intentional capture names the identifier and requesting macro API; reject accidental or undeclared capture, broken/forged origins, hidden hygiene and implicit metadata loss. Carry generated syntax under the caller's profile unless its producing contract explicitly authorizes a different transition. Syntax carries/verifies these products; Expand produces expansion-specific facts and Auth enforces actual authority.
 <!-- syntax-source-transformations:end -->
 
+
+<!-- syntax-facet-source-syntax:start -->
+
+Apply the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 actual facet syntax-provenance criterion (Open): Preserve original syntax identity, source spans, hygiene/lexical context, metadata, generated-origin chains and profile assumptions when base macros introduce facet forms, facets parse permitted external syntax, or facet outputs cross back into ordinary Gravity. Types/effects/grants/proof facts remain producer- and version-bound; changed subjects invalidate affected facts instead of copying successful labels. Preserve original external-source and macro definition/call/generated locations for diagnostic consumers. Reject opaque string payloads as the primary facet representation, fabricated origins, lost hygiene and stale annotations. Required evidence: actual transformed and serialized syntax/origin products with external/nested/generated round-trip and tamper/loss negatives; domain payload verification remains with its actual owner.
+<!-- syntax-facet-source-syntax:end -->
+
 - [ ] `syntax/current-evidence-and-remaining-work/syntax3-invalidate-facts` syntax/3: Invalidate facts
 
 Current evidence/status: Open; partial source evidence above is not closure

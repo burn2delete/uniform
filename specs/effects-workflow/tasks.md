@@ -152,6 +152,14 @@ Apply the [complete library-principles source criteria](../stdlib-workflow/plan.
 L13 actual public library effect-admission criterion (Open): Admit each selected library call only after actual inferred body/latent/transitive requirements fit the caller's declared effect allowance and applicable profile/runtime/safety conditions, with Auth independently checking authentic capability grants. Preserve allocation, blocking, panic, nondeterminism, resource and provider requirements even behind pure-looking facade or target-specific implementation. Emit L13-EFFECT and owning legality diagnostics for real failures; a published class/signature, caught Result, permitted hosted convenience context or exported name cannot hide an effect or widen authority. Required evidence: actual accepted/refused call summaries, current context/profile/service premises and source-bound diagnostics, with the inherited Auth owner retained as grant context rather than inference/admission ownership.
 <!-- effects-library-source-effects:end -->
 
+
+<!-- effects-facet-source-effects:start -->
+
+Apply the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 actual facet effect-admission criterion (Open): Derive and preserve real runtime, build and compiler effects at each facet boundary, including generated wrappers, agent/tool/query composition, schema decoder allocation/decode and external solver/synthesizer/model/package-tool actions. Admit only when actual inferred requirements fit the caller allowance and applicable profile/service/safety rules, with Auth independently checking authentic grants. Compiler IR read/write and artifact generation remain explicit effects; declaring a facet or hiding an operation inside IR cannot widen authority or erase effects. Reject undeclared/hidden/transitive effects and incompatible caller context before affected action or backend lowering. Required evidence: actual accepted/refused summaries and source-bound L14/owning diagnostics, with pure source transport distinct from later effectful use.
+<!-- effects-facet-source-effects:end -->
+
 - [ ] `effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation` effects/4: Record replay and invalidation
 
 Current evidence/status: Open; partial source evidence above is not closure

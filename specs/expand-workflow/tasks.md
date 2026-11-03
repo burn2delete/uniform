@@ -67,6 +67,30 @@ Complete alternative engine criterion (Open): Execute the selected compatible en
 <!-- macro-source-engine:end -->
 
 
+
+<!-- expand-facet-source-manifest:start -->
+
+Apply the [complete facet source criteria](plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 complete facet-manifest criterion (Open): Load and validate each explicitly selected versioned facet manifest before expanding its dependent namespace. Bind facet id/version, owned surface, supported profiles, required facets, distinct runtime and build effects, capabilities, declared Core/domain lowerings, emitted artifacts, stability and conformance fixtures to authentic source/package identity. The workflow manifest is an illustrative declaration, not a default grant or a requirement to use its sample version/effects. Reject absent/incompatible manifests, inactive or unsupported forms, conflicting surfaces, undeclared requirements and authority inferred from a facet/package label before dependent expansion. Required evidence: actual manifest loading/validation and source-bound accepted/refused activation products, with no held plugin/provider execution inferred.
+<!-- expand-facet-source-manifest:end -->
+
+
+<!-- expand-facet-source-dispatch:start -->
+
+Apply the [complete facet source criteria](plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 complete facet-dispatch criterion (Open): Expose the actual nine read-syntax, resolve-activation, base-macro, owning-facet-dispatch, facet-local-type/domain-check, form-or-IR emission, normal generated-code validation, facet-IR verification and provenance-bound artifact boundaries. Permit declared checked Core, declared domain IR or both according to preserved semantics; structured external syntax keeps original-source diagnostics and cannot become an opaque independent language. Preserve equivalent observable products when phases interleave or fuse, and keep the existing D1/C1/C5/C6 ordering decision explicit. Reject ambiguous/wrong-owner dispatch, skipped checks, unregistered lowering and a successful expander whose actual generated result fails normal checks. Required evidence: real selected source-through-output products and negative dispatch/check/lowering cases; final whole compiler acceptance is not its first interface.
+<!-- expand-facet-source-dispatch:end -->
+
+
+<!-- expand-facet-source-finite-activate-declared-extension:start -->
+
+Apply the [complete facet source criteria](plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+Decision criterion interface/language/facet/activate-declared-extension: Validate and load the explicitly selected versioned facet manifest before namespace expansion; activate its surface only in declared lexical scope and profile. Reject: Reject unsupported/ambiguous forms, undeclared/inactive facet use, incompatible manifest versions and authority inferred from a facet label. Required outputs: Facet activation/version/scope manifest, expanded syntax/provenance and accepted/rejected lexical/profile fixtures.
+<!-- expand-facet-source-finite-activate-declared-extension:end -->
+
 - [ ] `expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety` expand/2: Record hygiene and safety
 
 Status: Open; partial source evidence above is not closure
@@ -268,6 +292,54 @@ Apply the [complete macro source criteria](plan.md#complete-macro-source-criteri
 Complete macro conformance criterion (Open): Join real user-defined simple/nested macros, quote/unquote/metadata, two-way hygiene and intentional capture, valid syntax adapters, declared/granted versus refused build actions, phase capture refusals, actual generated caller checks and audited unsafe/taint/facet cases. Compare deterministic repeated traces, unchanged/invalidated cache reuse, reference/alternative structural equivalence and seed/Gravity expansion trace results at their actual subjects. Cover all 34 active diagnostics across L4/L16/C4/SAFE12 with definition/call/generated/phase/profile/provider/effect/grant/missing-fact context; preserve the three retired limit diagnostics as superseded source history. Independently executed Release suites and whole-source/current implementation acceptance remain separate from owner fixtures and finite source reviews.
 <!-- macro-source-conformance:end -->
 
+
+
+<!-- expand-facet-source-composition:start -->
+
+Apply the [complete facet source criteria](plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 complete facet-composition criterion (Open): Compose only through declared typed, effectful and capability-scoped boundaries, preserving normal memory/profile/safety checks and source provenance. Keep the six named workflow/schema, agent/query, UI/schema, hardware/schema, compiler/EFIR and zk/schema/security/formal interfaces visible with their actual owning producers. An agent tool using a query retains model, tool and query effects and separate authority rather than hiding them behind a generated wrapper. Demonstrate actual composition of at least two facets and the separately required zk/schema/security/formal privacy cases; no manifest, provider flag or fake/live label substitutes for their real products. Reject hidden effects, undeclared edges, privilege bypass and privacy erasure with the owning diagnostic. Required evidence: exact selected boundary products, accepted/refused fixtures and preserved source/fact/effect/grant/privacy identities; unavailable or held composition remains Open.
+<!-- expand-facet-source-composition:end -->
+
+
+<!-- expand-facet-source-artifacts:start -->
+
+Apply the [complete facet source criteria](plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 complete facet-artifact criterion (Open): Assemble the actual facet manifest, lexical activation records, generated Gravity forms with provenance, versioned source-mapped domain IR, genuine facet diagnostics and compatibility/migration records. Bind each product to facet/version/source/package/profile/target and actual checker/consumer identities. Preserve source spans, hygiene, generated-origin chains, types/effects, grants, memory/safety obligations and build provenance or invalidate and regenerate changed facts before reuse. Consumers including optimizers, verifiers, generators, package tools, visualizers and runtimes retain original-source diagnostic mappings. Reject missing, stale, incompatible, forged or flag-only products and lost identity at Core/IR/artifact boundaries. Required evidence: authentic six-family products, round-trip and changed-subject/refusal cases; emitting a record does not accept a facet implementation.
+<!-- expand-facet-source-artifacts:end -->
+
+
+<!-- expand-facet-source-stability:start -->
+
+Apply the [complete facet source criteria](plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 complete facet-stability criterion (Open): Preserve experimental, draft, stable, deprecated and removed behavior through actual activation and generated-program consumers. Deprecated accepted forms produce migration diagnostics; removed forms reject under new compilers. Treat source syntax, domain IR shape, lowering semantics, supported profiles and artifact-schema changes as compatibility events, with actual stable-contract migration diagnostics/records and feasible checked rewrites or explicit justified infeasibility. Consume authentic version/lock inputs and applicable existing Governance decisions; package/compiler labels do not approve a change. Reject silent stable drift, incompatible reuse and unchecked semantics-changing rewrites. Required evidence: old/new actual client/IR/profile/artifact results, stability/version refusals and migration products, without renewing historical review or introducing ordinary per-run permission.
+<!-- expand-facet-source-stability:end -->
+
+
+<!-- expand-facet-source-examples:start -->
+
+Apply the [complete facet source criteria](plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 actual facet example-and-conformance criterion (Open): Consume actual existing Schema owner products for the User descriptor, validation code, requested JSON codec metadata, tool schema artifact and field diagnostics; generated parse-user remains normally typed with allocation/decode effects. Consume actual Hardware/HDL counter products retaining clock/reset/enable/register/timing/width/overflow semantics and forbidden-host-service refusals, and the existing AI SupportAgent source-bound prompt/tool/model/evaluation/trace/guardrail bundle and declared bounded-memory configuration (the example's 32 stored items, not a compiler input/work quota) without treating it as permission for live calls. Demonstrate authentic manifest loading, lexical activation, ambiguity/profile/authority refusal, normal generated checking, versioned mapped IR, at-least-two-facet composition, separately required zk/schema/security/formal privacy cases, compatibility/migration and opaque/untracked/privilege negatives. Preserve specific producer and later independent harness ownership; whole final Release is not a first fixture. Required evidence: real named source/example/compiler/checker/diagnostic products and explicit missing/held/unavailable cases, never source inventory or assigned success flags as conformance.
+<!-- expand-facet-source-examples:end -->
+
+
+<!-- expand-facet-source-finite-migrate-stable-contract:start -->
+
+Apply the [complete facet source criteria](plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+Source obligation `language/facet/migrate-stable-contract`: Emit compatibility and migration diagnostics, and feasible automatic rewrites, when stable facet source/IR/lowering/profile/artifact contracts change. Accept: For a stable facet change to source syntax, domain IR, lowering, profile support or artifact schema, emit version compatibility and migration diagnostics and records, plus an automatic rewrite where feasible; record an explicit feasibility decision when a rewrite cannot preserve semantics. Reject: Reject silent stable contract drift, missing compatibility/migration evidence and an unchecked or semantics-changing proposed rewrite. Required outputs: Old/new facet/version/schema identities, migration diagnostics/records, checked rewrite or justified infeasibility and positive/negative fixtures. Dependencies consume versioned facts/receipts from build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects, types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts, effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering; they do not require blanket component completion. Implementation status remains Open.
+<!-- expand-facet-source-finite-migrate-stable-contract:end -->
+
+
+<!-- expand-facet-source-finite-preserve-disclosure-boundary:start -->
+
+Apply the [complete facet source criteria](plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+Source obligation `language/facet/preserve-disclosure-boundary`: Preserve private witness/value/credential/proof disclosure labels and provenance across facet conversions unless a checked boundary explicitly declassifies them. Accept: Carry privacy labels, witness-generation provenance, reveal reason and public-output schema through conversions of private witnesses/encrypted values/credentials/proofs unless a checked boundary explicitly declassifies them. Facet IR exposes the relation, public/private split, custody, disclosure policy, provider trust and verification-artifact shape; test zk composition with schema/security/formal artifacts as source data. Reject: Reject an opaque proof/private-computation backend call or any erased custody/label/provenance/disclosure field; L14-PRIVACY-BOUNDARY includes witness/value ID, public schema, reveal reason when present and erasing edge. Required outputs: Typed facet privacy/declassification records, relation/custody/provider/verifier schema, preserved/erased-boundary fixtures and structured diagnostics. Dependencies consume versioned facts/receipts from auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime, types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts, effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering; they do not require blanket component completion. Implementation status remains Open.
+<!-- expand-facet-source-finite-preserve-disclosure-boundary:end -->
 
 <!-- expand-implementation-tasks:end -->
 

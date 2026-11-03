@@ -618,6 +618,13 @@ Use the [library producer and consumer order](../stdlib-workflow/plan.md#library
 
 Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Reuse current Schema/Math/Workflow/AI/UI/Query and explicit future Crypto/Formal producers for the ten-facet population. The existing exact SupportAgent clause remains unchanged. Actual schema User/decoder products, source-mapped payloads and declared private/reveal/checker boundaries remain their owners' behavior; this interface accepts no whole supporting domain or live model/crypto result.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Domains workflow migration

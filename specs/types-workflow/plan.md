@@ -283,6 +283,13 @@ Use the [library producer and consumer order](../stdlib-workflow/plan.md#library
 
 Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Check actual facet-local and generated-source premises and consume real domain facts/proofs rather than inventing shape, replay, disclosure or EFIR evidence. The exact existing L5/C7 schema-abstraction criterion remains unchanged; Expand's inherited schema-generated owner is retained alongside Types and Schema's actual roles.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Types task authority

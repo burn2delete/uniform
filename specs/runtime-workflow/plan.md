@@ -179,6 +179,13 @@ Use the [library producer and consumer order](../stdlib-workflow/plan.md#library
 
 Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Retain actual selected service, provider, FFI ownership/error/ABI and execution boundaries for facets that require them. A portable Core-only facet needs no invented host runtime or native binary. Agent/model/tool/IO/FFI manifests do not execute services, grant authority or accept a live provider.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Runtime workflow migration

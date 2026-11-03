@@ -249,6 +249,13 @@ Use the [library producer and consumer order](../stdlib-workflow/plan.md#library
 
 Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Resolve authentic facet identity/version/range/source/schema locks before compilation, integrating selected-engine/shared semantic cache boundaries and actual current-policy reuse. Syntax/IR/lowering/profile/schema/privacy/grant changes invalidate affected products before owner regeneration; version metadata alone is not compatibility acceptance.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration

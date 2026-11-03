@@ -50,6 +50,14 @@ These criteria implement the package-policy consumer, not governance production
 or a whole-governance completion prerequisite. Status remains Open.
 <!-- build-governance-resolution:end -->
 
+
+<!-- build-facet-source-lock:start -->
+
+Apply the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 actual facet lock-and-version criterion (Open): Resolve and record each selected facet identity, version, compatibility range, source hash and artifact-schema version in the actual package lock graph before dependent compilation/reuse. Preserve required facet and namespace boundaries, standard/package parity and source/compiler/profile/target identity. Reject missing/contradictory lock entries, incompatible versions, changed source/schema masquerading as the old facet and implicit activation from dependency presence. Required evidence: genuine normalized resolved locks, source-bound accepted/refused version/schema cases and downstream compiler inputs; the illustrative facet version is not a global default or package trust grant.
+<!-- build-facet-source-lock:end -->
+
 - [ ] `build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects` Execute typed graph under declared build effects
 
 Status: Open
@@ -123,6 +131,14 @@ Apply the [complete macro source criteria](../expand-workflow/plan.md#complete-m
 Complete macro shared cache criterion (Open): Preserve the L16 replacement boundary in the existing Build cache task: own shared/default cache construction, complete semantic-input/current-policy admission and invalidation/revalidation integration, consuming real selected-engine expansion key/entry/trace/replay/policy results. Engine-specific storage/key construction/invalidation/scheduling remains permitted; Build need not duplicate that machinery. Reject incomplete source/macro/provider/dependency/profile/target/facet/grant/compiler/reader/namespace/replay inputs, stale traces, stricter-policy mismatch, hidden creation effects and secret leakage. Produce authentic admitted/refused/miss and recomputed graph/artifact/diagnostic products for actual consumers rather than record-only success.
 <!-- macro-source-cache-shared:end -->
 
+
+
+<!-- build-facet-source-reuse:start -->
+
+Apply the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 actual facet invalidation criterion (Open): Include authentic selected facet identity/version/source/schema/surface/activation, required facets, profile/target, lowering/checker/provider and declared effect/grant/build-input identities in the applicable semantic cache dependency graph. Changed syntax, IR, lowering, profiles, schema, privacy policy or grants invalidates affected expansion, typed/domain verification, proof, artifacts and diagnostics before real owner regeneration and current-policy admission. Preserve the existing selected-engine/shared-Build cache boundary; source-only inspection can precede semantic products. Reject stale facet proof/validation reuse, hidden build inputs and silent stable compatibility drift. Required evidence: actual unchanged hit, changed-input miss/refusal and clean/rebuilt products; identical keys or assigned preserved flags alone do not establish current validity.
+<!-- build-facet-source-reuse:end -->
 
 - [ ] `build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records` Produce and verify package/provenance/signing records
 

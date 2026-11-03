@@ -223,6 +223,13 @@ Use the [library producer and consumer order](../stdlib-workflow/plan.md#library
 
 Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Transport genuine eleven-family L14 failures with facet/version/profile/source/generated/effect/grant/rule identity. Privacy records retain witness/value id, public schema, reveal reason when present and erasing edge under redaction; Diag does not invent a producer failure or disclose private contents.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Diagnostics task authority

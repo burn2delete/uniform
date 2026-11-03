@@ -934,6 +934,13 @@ Use the [library producer and consumer order](../stdlib-workflow/plan.md#library
 
 Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Check actual supported profiles and ordinary ownership/memory/safety obligations before backend lowering, including generated and domain outputs. Nine L14 named profiles preserve their distinct services and provenance; hardware uses explicit modeled constructs. Current project work/input quotas stay removed.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Legality task authority

@@ -38,6 +38,14 @@ Apply the [complete library-principles source criteria](../stdlib-workflow/plan.
 L13 complete library diagnostic-carrier criterion (Open): Preserve real owning L13-PROFILE, L13-EFFECT, L13-CAPABILITY, L13-ALLOC, L13-RESOURCE, L13-NUMERIC-MODE, L13-UNSAFE-INVARIANT, L13-EXAMPLE and L13-COMPAT failures with namespace, symbol, active profile, target, declared contract, caller effects, capability context and a concrete alternative when available. Source/generated provenance, stable structured/text representations and redaction survive transport. Compiler, library, conformance and Governance owners produce their actual failures; Diag neither guesses an API outcome nor manufactures a requested diagnostic. Required evidence: genuine failures with complete fields, stable round-trip/origin/order and refused missing/stale/tampered/substituted records across actual selected consumers.
 <!-- diag-library-source-diagnostics:end -->
 
+
+<!-- diag-facet-source-diagnostics:start -->
+
+Apply the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 complete facet diagnostic-carrier criterion (Open): Preserve actual owning L14-FACET-NOT-ACTIVE, L14-FACET-AMBIGUOUS, L14-PROFILE, L14-BUILD-EFFECT, L14-CAPABILITY, L14-LOWERING, L14-DOMAIN-CHECK, L14-GENERATED-CODE, L14-IR-SCHEMA, L14-COMPOSITION and L14-PRIVACY-BOUNDARY meanings. Each record carries facet id/version, active profile, original source span, generated-origin chain when present, requested effects/capabilities and failed domain rule. Privacy failures also carry value/witness id, public-output schema id, reveal reason when present and the erasing facet edge, preserving redaction rather than leaking private contents. Owners produce genuine failures; Diag transports stable structured/text/origin records without fabricating outcomes. Required evidence: actual positive/refused carrier round-trips, source/generated/external mapping and missing/stale/tampered/privacy-field controls.
+<!-- diag-facet-source-diagnostics:end -->
+
 - [ ] `diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order` Preserve primary/related/generated origins and stable order
 
 Status: Open
