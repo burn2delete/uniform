@@ -4899,3 +4899,116 @@ independent current acceptance and integration remain pending or unassessed.
 Every actual operation restriction, writer reservation and stopped handoff
 remains; no held execution, other-chat message, reviewer wake, aggregate
 publication or merge occurs.
+
+## Complete pattern-matching source continuation
+
+Source `a4f6d9b543bb47db8ba5438f39db8c1cbe2b8726` adds thirteen L7
+criteria to eleven existing Open tasks in five authorities. The exact earlier
+977-byte pattern-change predicate remains unchanged with Evolution: fourteen
+criteria name twelve existing tasks across six authorities. Five task files,
+twenty-one existing plans and the Core specification are refined; no new
+feature or task identity is created. All 149 current keys, 25 authorities and
+forty future records remain. The original 139 bodies retain 44 identical and
+95 explicitly amended bodies; this continuation amends no previously identical
+body. Statuses, checkboxes and historical evidence retain their scope.
+
+Direct complete L7 review preserves 92 facet identities, 66 source occurrences,
+fifteen full section conjunctions and seven original owner obligations. The
+preserved census labels seventy facets semantic and 22 context. This proposal
+separately classifies 69 facets as complete source predicates and 23 as
+hierarchy/dependency context, over 46 semantic and twenty context occurrences.
+Two headings are retained as context and the rejection-list preamble remains
+joined to its full list; original census identities/labels are not rewritten.
+Preambles, lists, examples and following conditions are conjoined by complete
+source section. These populations establish conservation, not independent
+semantic acceptance or a coverage percentage.
+
+Resolve owns lexical pattern/branch/guard identities and duplicate-name
+refusal. Types owns actual scrutinee/branch narrowing, closed-domain coverage,
+normally returning Boolean guards and trusted-shape evidence. Legality derives
+real move/borrow/linear-flow and profile results. The inherited check-and-bind
+allocation retains its original Legality task plus Resolve/Types witnesses;
+it does not move lexical resolution or type inference to ownership analysis.
+Whole attached-owner entailment remains unassessed.
+
+Keep all fourteen pattern families in scope under their actual governing
+profile/runtime/ownership conditions. An unsupported implementation refusal
+does not complete a required family. Actual Result constructor bindings retain
+their source types; canonical-if-only List/nil joins do not widen match joins.
+Normally returning guards establish Bool; nil, nil-or-Bool, numeric/text,
+unknown or Dynamic results do not become truthy guards. Structural failure
+skips guard/body, success makes bindings available before once-only guard
+evaluation, false continues and non-returning transfers survive. Effects owns
+real guard/branch summaries, mutation-sensitive order and replay records, with
+actual legality and separate grants before admitted operations.
+
+Closed enum/union, formal, opted-in safety-critical and sound internal-analysis
+coverage needs actual domain/constructor/clause/guard evidence. Defaults retain
+governing compatibility policy and cannot suppress required safety proof;
+formal closed matches require totality or explicit partiality proof. Matching
+does not validate untrusted network/filesystem/database/AI/tool values. Actual
+authentic schema/typed-boundary dataflow and surviving checks precede trusted
+closed shapes, variant constructors and required keys. Schema/Runtime own the
+actual validators/checks rather than a type annotation or nonempty link.
+
+Initial structural candidate Core precedes analysis. The actual checked
+decision product later joins owner narrowing/coverage/effect/resource/schema/
+profile results, preserving all seven artifact families, eight L7 diagnostic
+meanings and every pattern/branch source/generated span. Deterministic lowered
+tests/bindings/guards/branches and representative backend behavior preserve
+observable order and diagnostics. Stale/coherently substituted facts, hidden
+validation/proof or changed guard behavior reject. Changed premises invalidate
+affected consumers. Owner fixtures precede independent harnesses, and the
+unchanged Evolution producer consumes affected-family/consumer conformance
+only for the existing conditional stable pattern-semantic adoption.
+
+Scoped static inspection covers two complete hosted C6 files and selected
+Gravity checked_core/C7 ranges. Hosted C6 retains raw patterns and lowered
+bodies with general structural/presence checking. The inspected Gravity Core
+route builds authentic quoted-symbol/map/guard/binding records and duplicate
+refusals, with explicit nested-guard/variable-width/other-leaf deferrals in that
+path. Selected C7 code performs real Boolean domain subtraction, structural
+narrowing and Bool/Never guard analysis with actual clause/source/invalidation
+records; unsupported/partial cases retain explicit refusals. Evaluation labels
+and carried declarations are not effect legality or runtime proof. No complete
+11,346-line checked_core/25,894-line C7 review, absence of other real behavior,
+fresh semantic execution or full-family implementation claim is made.
+
+The existing profile74 witness remains byte-identical at source
+`45fc1420cfe4373e5a20b1fcd80d46f87e4edb63`, raw SHA-256
+`5219e50e9ed8ebc8c230ddde2da452aa76288edfc24dadad6f6de2dfd4344349`.
+Its original predicate/dependencies and qualified review scope remain; no
+receipt is renewed or consumed and no full L7 review is inferred. The Types
+dependency regression now reads its complete frozen
+`b47b8ddbc10f68e44bba23708568fa3abb1a46c9` subject, including all source
+reads and function-valued readers. Other historical test source is unchanged.
+
+Current proposal input fingerprint:
+`7545c1e9913a75ec97101bcababb67dc512db7dc7bf30205202335b288d2696f`.
+All applying source pins verify against local Git. Final validation passes
+four focused crosswalk tests / 9,523 assertions: complete current pattern
+source/owner conjunctions, entire frozen Types dependency/source subjects and
+global task/history conservation. All 23 dependency tests / 5,467 assertions
+and both pinned projection checks pass. Canonical validation passes 240
+documents / nineteen phase indexes, and full-language roadmap structural
+validation passes with dated counts non-authoritative. The language-boundary
+gate passes six tests / eleven assertions. Navigation/conservation passes
+91 changed files, 85 Markdown files, 3,789 local references, 139 original task
+routes, 48 historical spec/plan suffixes and all 48 original task/evidence
+contents after declared additions are removed. The first conservation attempt
+rejected unrecognized new block framing in the temporary comparator; the
+corrected exact byte comparison passes without altering the source additions
+or earlier task text. ASCII and whitespace checks pass. The full current
+74-test crosswalk suite was not rerun; the previous complete 68-test /
+44,978-assertion run remains bound to
+`25a96a0c03536270001449c00676e644ea353521`. These planning and source checks
+confer no compiler/runtime/provider/target/migration/release conformance.
+
+The existing 1,893 dependency joins, 137 routes, 97 current parents, forty
+future records and 95-/nine-task coarse cycles are unchanged. Complete L7
+selected-result producer/consumer staging is next. Reader contract coverage
+remains the first actual implementation increment. Current complete source/
+owner/interface entailment, implementation acceptance, independent current
+review and integration remain pending or unassessed. Every actual restriction,
+writer reservation and stopped handoff remains; no held execution, other-chat
+message, reviewer wake, aggregate publication or merge occurs.
