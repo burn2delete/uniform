@@ -1,0 +1,3 @@
+(ns example.resolution-alias (:profile :hosted) (:target :jvm)
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+(defn inspect-value [value] (missing.qualifier/inspect value))

@@ -948,6 +948,76 @@
   (is (= :launch-error (:status (ci/execute! "negative-launch" 1
                                              ["/nonexistent/ci-command"])))))
 
+(deftest execute-output-keeps-success-quiet-and-failure-bounded
+  (let [success-output
+        (with-out-str
+          (let [result (ci/execute!
+                        "output-success-bounded" 15
+                        (ci/command "128m" "-M" "-e"
+                                    "(println \"success-payload\")"))]
+            (is (= :passed (:status result)))))
+        failure-output
+        (with-out-str
+          (let [result (ci/execute!
+                        "output-failure-bounded" 15
+                        (ci/command "128m" "-M" "-e"
+                                    "(do (println (apply str (repeat 10000 \\x))) (System/exit 7))"))]
+            (is (= :failed (:status result)))))
+        success-log (slurp "target/ci/output-success-bounded.log")
+        failure-log (slurp "target/ci/output-failure-bounded.log")]
+    (is (str/includes? success-output "CI command output-success-bounded finished :passed exit 0"))
+    (is (not (str/includes? success-output "success-payload")))
+    (is (< (count success-output) 1000))
+    (is (str/includes? failure-output "CI command output-failure-bounded finished :failed exit 7"))
+    (is (str/includes? failure-output "CI log preview:"))
+    (is (str/includes? failure-output "[log preview truncated"))
+    (is (< (count failure-output) 6000))
+    (is (str/includes? success-log "success-payload"))
+    (is (str/includes? failure-log "xxxxxxxx"))))
+
+(deftest log-preview-counts-multibyte-characters
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "uniform-ci-output-preview-"
+                            (make-array java.nio.file.attribute.FileAttribute 0)))
+        exact-file (io/file directory "exact.log")
+        extra-file (io/file directory "extra.log")
+        exact-content (apply str (repeat 4096 "\u00e9"))
+        extra-content (str exact-content "\u00e9")
+        preview-fn (ns-resolve 'ci.run 'log-preview)
+        marker "[log preview truncated"]
+    (try
+      (spit exact-file exact-content :encoding "UTF-8")
+      (spit extra-file extra-content :encoding "UTF-8")
+      (let [exact-preview (preview-fn exact-file)
+            extra-preview (preview-fn extra-file)]
+        (is (= 8192 (.length exact-file)))
+        (is (= exact-content exact-preview))
+        (is (str/starts-with? extra-preview exact-content))
+        (is (str/includes? extra-preview marker)))
+      (finally
+        (delete-fixture-tree! directory)))))
+
+(deftest log-preview-reads-short-chunks-without-unbounded-read
+  (let [preview-fn (ns-resolve 'ci.run 'read-log-preview)
+        source (apply str (repeat 10000 "x"))
+        source-length (count source)
+        offset (atom 0)
+        reader (proxy [java.io.Reader] []
+                 (read [buffer start _length]
+                   (let [position @offset]
+                     (if (= position source-length)
+                       -1
+                       (do
+                         (aset-char buffer start (.charAt source position))
+                         (swap! offset inc)
+                         1))))
+                 (close [] nil))
+        preview (preview-fn reader "short-read.log")]
+    (is (= 4097 @offset))
+    (is (str/starts-with? preview (apply str (repeat 4096 "x"))))
+    (is (str/includes? preview
+                       "[log preview truncated; full log: short-read.log]"))))
+
 (deftest timeout-is-a-failure
   (let [result (ci/execute! "negative-timeout" 1
                             (ci/command "128m" "-M" "-e" "(Thread/sleep 30000)"))]
