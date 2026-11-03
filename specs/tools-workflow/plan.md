@@ -96,6 +96,12 @@ Use the [complete Core source criteria](../core-workflow/plan.md#complete-core-s
 
 Task identities/statuses, prior source/review subjects and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held execution or task transfer is authorized.
 
+## Core dependency interface
+
+Use the [Core producer and consumer order](../core-workflow/plan.md#core-producer-and-consumer-order) and existing selected-result table. Consume actual selected Core/MIR/transform/source-map or runtime/session facts; source-only editing/docs need no later facts absent from their subject. Report missing or optimized-away data honestly and keep inspection distinct from execution/mutation authority.
+
+Existing task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current selected-interface entailment and independent acceptance remain pending; no held operation is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Developer Tools workflow migration

@@ -460,6 +460,12 @@ Use the [complete Core source criteria](../core-workflow/plan.md#complete-core-s
 
 Task identities/statuses, prior source/review subjects and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held execution or task transfer is authorized.
 
+## Core dependency interface
+
+Use the [Core producer and consumer order](../core-workflow/plan.md#core-producer-and-consumer-order) and existing selected-result table. Available P invocation and early expanded Q precede ordinary Core lowering/checking. Final handwritten/generated parity consumes actual checked subjects and cannot gate its own candidate.
+
+Existing task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current selected-interface entailment and independent acceptance remain pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Expand task authority

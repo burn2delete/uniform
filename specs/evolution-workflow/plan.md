@@ -140,3 +140,9 @@ Existing task bodies/statuses, source predicates, frozen evidence and actual res
 Use the [complete Core source criteria](../core-workflow/plan.md#complete-core-source-criteria). Retain the exact existing profile74 Core semantic-change predicate and conditional affected-consumer/schema/conformance adoption. Ordinary unchanged-contract development gains no new generic admission gate.
 
 Task identities/statuses, prior source/review subjects and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held execution or task transfer is authorized.
+
+## Core dependency interface
+
+Use the [Core producer and consumer order](../core-workflow/plan.md#core-producer-and-consumer-order) and existing selected-result table. Consume actual affected Core/desugaring/type/effect/safety/MIR/target/runtime/test/documentation results only for the existing conditional semantic-change/adoption boundary. Ordinary unchanged-contract development gains no new review ceremony.
+
+Existing task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current selected-interface entailment and independent acceptance remain pending; no held operation is enabled.
