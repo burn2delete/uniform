@@ -189,7 +189,7 @@
      {:ordinal 11 :kind :emitter :module-ordinal nil
       :path "bootstrap/gravity/p15_s23/emitter.gravity"}
      {:ordinal 12 :kind :sh06-resolution :module-ordinal nil
-      :path "bootstrap/gravity/src/gravity/resolution.gravity"}])))
+      :path "language/compiler/src/gravity/resolution.gravity"}])))
 
 (def ^:private p15-s23-sh07-b51-source-event-plan
   (vec

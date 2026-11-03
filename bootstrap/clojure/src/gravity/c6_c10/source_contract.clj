@@ -29,7 +29,8 @@
    only these exported names and shapes are fixed here.  This is not a source
    pin and does not select the historical DATA record above."
   {:version 2
-   :source-relative-path (:source-relative-path current-compiler-program)
+   :source-relative-path
+   "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
    :builder-function 'c6-c10-build-checked-core-template
    :verifier-function 'c6-c10-verify-checked-core-template
    :required-functions (:required-functions current-compiler-program)})
