@@ -45,6 +45,37 @@ existing Optimization pipeline suite. Run affected composition, boundary,
 lint and contract checks, independent exact-source review, own CI/artifact
 verification and immediate exact clean current-main preflight.
 
+## Implemented pipeline and local checks
+
+All eight whole bodies now live in the stage. The three former algorithm
+leaves retain compatibility wrappers and the original private span, digest,
+failure and presence helpers as late supplied operations. Exact text checks
+conserve all moved bodies apart from their declared names/arguments/port
+references, all three wrapper files, and the original six reconstruction
+algorithms. The stage remains Bootstrap-free with no namespace imports.
+The native C13 contract declares its new Optimization dependency; its public
+facade and dynamic operations context remain unchanged.
+
+The original C13 tests pass 4 tests/71 assertions. Added callback-root and
+refusal-order controls bring that suite to 8/115. The unchanged real Gravity
+fold/output-drift tests and updated API contract pass 5/158. Language and
+ownership checks pass 48/1190 with no skipped namespace. Independent original
+observations execute in clean D066 source whose complete native C13 sources
+match the baseline exactly: invoke lookup precedes file argument reading, and
+the original digest root is captured before serialization mutates it. The
+ported tests retain those observations, late validation rebinding, all fifteen
+returning-refusal callbacks in order, and original thrown exception identity.
+
+Initial extraction helper compilation errors occurred before implementation
+body writes. Metadata/test declarations were edited separately before the
+bodies were installed, and a premature pipeline run reported one missing-API
+expectation failure (5/110); it is retained. Corrected extraction and focused
+runs pass without production workarounds. An atomic patch with mismatched
+context was rejected before application. Original helper/error records remain
+under /tmp/uniform-optimization-native-pipeline-*. Fresh clean candidate
+capture, committed lint, validators, independent review and own CI remain
+integration requirements.
+
 ## Unsupported boundaries
 
 This owns the complete existing native artifact pipeline, not a canonical C13
