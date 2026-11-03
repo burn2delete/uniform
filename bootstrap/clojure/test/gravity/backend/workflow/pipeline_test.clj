@@ -1,5 +1,6 @@
 (ns gravity.backend.workflow.pipeline-test
   (:require [clojure.edn :as edn]
+            [clojure.string :as str]
             [clojure.java.io :as io]
             [clojure.test :refer [deftest is]]
             [gravity.backend.workflow :as workflow]
@@ -129,3 +130,20 @@
     (is (identical? error (capture #(workflow/diagnostic-stream "failure.gravity" "native-input" operations))))
     (with-redefs [bootstrap/source-span (fn [_ _] (throw error))]
       (is (identical? error (capture #(bootstrap/b10-document-diagnostic-stream "failure.gravity" "native-input")))))))
+
+(deftest native-fixture-recognition-retains-reference-text-and-late-wrapper-calls
+  (doseq [[stage-var bootstrap-var text required]
+          [[#'workflow/workflow-graph-structurally-valid? #'bootstrap/b10-document-workflow-graph-structurally-valid? bootstrap/b10-document-workflow-graph ":replay-barriers"]
+           [#'workflow/replay-fixture-structurally-valid? #'bootstrap/b10-document-replay-fixture-structurally-valid? bootstrap/b10-document-replay-fixture ":model-output-recorded"]]]
+    (let [missing (str/replace text required "")]
+      (is (not= text missing))
+      (doseq [recognize [(var-get stage-var) (var-get bootstrap-var)]]
+        (is (true? (recognize text)))
+        (is (false? (recognize "")))
+        (is (false? (recognize missing))))
+      (with-redefs-fn
+        {stage-var (fn [actual]
+                     (is (identical? text actual))
+                     :observed-native-fixture-match)}
+        (fn []
+          (is (= :observed-native-fixture-match ((var-get bootstrap-var) text))))))))

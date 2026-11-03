@@ -32,19 +32,11 @@
 
 (defn b11-document-sql-structurally-valid?
   [text]
-  (and (str/includes? text "$1::bigint")
-       (str/includes? text "gravity_value")
-       (not (str/includes? text "||"))
-       (not (str/includes? text "${"))
-       (not (str/includes? text "concat("))))
+  (gravity.backend.query/sql-structurally-valid? text))
 
 (defn b11-document-result-adapter-structurally-valid?
   [text]
-  (and (str/includes? text ":gravity-type :I64")
-       (str/includes? text ":database-type :bigint")
-       (str/includes? text ":nullability :nonnull")
-       (str/includes? text ":validation :checked")
-       (str/includes? text ":taint-policy :validated")))
+  (gravity.backend.query/result-adapter-structurally-valid? text))
 
 (defn b11-document-diagnostic-stream
   [source-path input-id]

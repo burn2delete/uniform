@@ -1,5 +1,5 @@
 (ns gravity.backend.query
-  "Native B11 diagnostic context and catalog data; no backend or input admission authority."
+  "Native B11 diagnostic context, catalog and fixture data; no backend or input admission authority."
   (:require [clojure.string :as str]))
 
 (def ^:private namespace-contract
@@ -12,13 +12,22 @@
   {:arglists ([source-path input-id operations]),
    :admission :none,
    :required-operations
-   [:source-span :diagnostic-ids :query-id :missing-policy]}},
+   [:source-span :diagnostic-ids :query-id :missing-policy]},
+  sql-structurally-valid?
+  {:arglists ([text]),
+   :admission :none,
+   :validation-scope :native-document-fixture-text},
+  result-adapter-structurally-valid?
+  {:arglists ([text]),
+   :admission :none,
+   :validation-scope :native-document-fixture-text}},
  :supported
  [:existing-native-projection
   :borrowed-identity
   :compatibility-var-interposition
   :native-catalog-assembly
-  :explicit-native-operations],
+  :explicit-native-operations
+  :existing-native-fixture-recognition],
  :dependency-direction
  {:requires [clojure.core clojure.string],
   :consumed-by [gravity.bootstrap],
@@ -45,19 +54,24 @@
   :seed-retirement
   :canonical-c15-conformance
   :catalog-as-observed-semantic-findings
-  :native-operations-as-proof-authority],
+  :native-operations-as-proof-authority
+  :canonical-target-syntax-validation
+  :fixture-text-as-verified-ir
+  :fixture-match-as-capability-or-proof-authority],
  :artifact-inputs
  [:native-module-metadata
   :native-b11-diagnostic-id
   :native-source-path
   :supplied-input-artifact-id
-  :native-diagnostic-operations],
+  :native-diagnostic-operations
+  :native-document-fixture-text],
  :namespace gravity.backend.query,
  :diagnostic-ownership
  {:stage
   [:native-override-projection
    :native-rule-context-defaults
-   :native-catalog-assembly],
+   :native-catalog-assembly
+   :native-fixture-recognition],
   :existing-owner
   [:b11-refusal-decisions
    :failure-construction
@@ -67,12 +81,14 @@
  [:borrowed-source-overrides
   :native-missing-policy
   :native-query-label
-  :native-diagnostic-catalog-stream],
+  :native-diagnostic-catalog-stream
+  :native-fixture-recognition-result],
  :consumer-component-paths
  ["bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00258-b10-document-source-artifact.clj"
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00259-b11-document-validate-source-overrides.clj"],
  :issues-certificates? false,
- :contract-boundary :native-b11-diagnostic-context-and-catalog-data})
+ :contract-boundary
+ :native-b11-document-context-catalog-and-fixture-data})
 
 (defn source-overrides
   [module]
@@ -177,5 +193,21 @@
          (range))
    :status :complete})
 
-(doseq [operation [#'source-overrides #'missing-policy #'query-id #'diagnostic-stream]]
+(defn sql-structurally-valid?
+  [text]
+  (and (str/includes? text "$1::bigint")
+       (str/includes? text "gravity_value")
+       (not (str/includes? text "||"))
+       (not (str/includes? text "${"))
+       (not (str/includes? text "concat("))))
+
+(defn result-adapter-structurally-valid?
+  [text]
+  (and (str/includes? text ":gravity-type :I64")
+       (str/includes? text ":database-type :bigint")
+       (str/includes? text ":nullability :nonnull")
+       (str/includes? text ":validation :checked")
+       (str/includes? text ":taint-policy :validated")))
+
+(doseq [operation [#'source-overrides #'missing-policy #'query-id #'diagnostic-stream #'sql-structurally-valid? #'result-adapter-structurally-valid?]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

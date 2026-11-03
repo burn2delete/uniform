@@ -1,5 +1,5 @@
 (ns gravity.backend.mobile
-  "Native B12 diagnostic context and catalog data; no backend or input admission authority."
+  "Native B12 diagnostic context, catalog and fixture data; no backend or input admission authority."
   (:require [clojure.string :as str]))
 
 (def ^:private namespace-contract
@@ -12,13 +12,22 @@
   {:arglists ([source-path input-id operations]),
    :admission :none,
    :required-operations
-   [:source-span :diagnostic-ids :domain-anchor :missing-policy]}},
+   [:source-span :diagnostic-ids :domain-anchor :missing-policy]},
+  bundle-structurally-valid?
+  {:arglists ([text]),
+   :admission :none,
+   :validation-scope :native-document-fixture-text},
+  permission-structurally-valid?
+  {:arglists ([text]),
+   :admission :none,
+   :validation-scope :native-document-fixture-text}},
  :supported
  [:existing-native-projection
   :borrowed-identity
   :compatibility-var-interposition
   :native-catalog-assembly
-  :explicit-native-operations],
+  :explicit-native-operations
+  :existing-native-fixture-recognition],
  :dependency-direction
  {:requires [clojure.core clojure.string],
   :consumed-by [gravity.bootstrap],
@@ -46,19 +55,24 @@
   :seed-retirement
   :canonical-c15-conformance
   :catalog-as-observed-semantic-findings
-  :native-operations-as-proof-authority],
+  :native-operations-as-proof-authority
+  :canonical-target-syntax-validation
+  :fixture-text-as-verified-ir
+  :fixture-match-as-capability-or-proof-authority],
  :artifact-inputs
  [:native-module-metadata
   :native-b12-diagnostic-id
   :native-source-path
   :supplied-input-artifact-id
-  :native-diagnostic-operations],
+  :native-diagnostic-operations
+  :native-document-fixture-text],
  :namespace gravity.backend.mobile,
  :diagnostic-ownership
  {:stage
   [:native-override-projection
    :native-rule-context-defaults
-   :native-catalog-assembly],
+   :native-catalog-assembly
+   :native-fixture-recognition],
   :existing-owner
   [:b12-refusal-decisions
    :failure-construction
@@ -68,12 +82,14 @@
  [:borrowed-source-overrides
   :native-missing-policy
   :native-domain-anchor
-  :native-diagnostic-catalog-stream],
+  :native-diagnostic-catalog-stream
+  :native-fixture-recognition-result],
  :consumer-component-paths
  ["bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00262-b11-document-source-artifact.clj"
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00263-b12-document-app-bundle.clj"],
  :issues-certificates? false,
- :contract-boundary :native-b12-diagnostic-context-and-catalog-data})
+ :contract-boundary
+ :native-b12-document-context-catalog-and-fixture-data})
 
 (defn source-overrides
   [module]
@@ -173,5 +189,19 @@
          (range))
    :status :complete})
 
-(doseq [operation [#'source-overrides #'missing-policy #'domain-anchor #'diagnostic-stream]]
+(defn bundle-structurally-valid?
+  [text]
+  (and (str/includes? text "org.gravity.stage0")
+       (str/includes? text ":platform :ios")
+       (str/includes? text ":architecture :arm64")
+       (str/includes? text ":entrypoint :GravityStage0App")))
+
+(defn permission-structurally-valid?
+  [text]
+  (and (str/includes? text ":capability :network/request")
+       (str/includes? text ":runtime-request :declared")
+       (str/includes? text ":denial-policy :return-error")
+       (str/includes? text ":hidden-background-work :rejected")))
+
+(doseq [operation [#'source-overrides #'missing-policy #'domain-anchor #'diagnostic-stream #'bundle-structurally-valid? #'permission-structurally-valid?]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

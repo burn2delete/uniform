@@ -1,5 +1,6 @@
 (ns gravity.backend.mobile.pipeline-test
   (:require [clojure.edn :as edn]
+            [clojure.string :as str]
             [clojure.java.io :as io]
             [clojure.test :refer [deftest is]]
             [gravity.backend.mobile :as mobile]
@@ -126,3 +127,20 @@
     (is (identical? error (capture #(mobile/diagnostic-stream "failure.gravity" "native-input" operations))))
     (with-redefs [bootstrap/source-span (fn [_ _] (throw error))]
       (is (identical? error (capture #(bootstrap/b12-document-diagnostic-stream "failure.gravity" "native-input")))))))
+
+(deftest native-fixture-recognition-retains-reference-text-and-late-wrapper-calls
+  (doseq [[stage-var bootstrap-var text required]
+          [[#'mobile/bundle-structurally-valid? #'bootstrap/b12-document-bundle-structurally-valid? bootstrap/b12-document-app-bundle ":entrypoint :GravityStage0App"]
+           [#'mobile/permission-structurally-valid? #'bootstrap/b12-document-permission-structurally-valid? bootstrap/b12-document-permission-manifest-fixture ":runtime-request :declared"]]]
+    (let [missing (str/replace text required "")]
+      (is (not= text missing))
+      (doseq [recognize [(var-get stage-var) (var-get bootstrap-var)]]
+        (is (true? (recognize text)))
+        (is (false? (recognize "")))
+        (is (false? (recognize missing))))
+      (with-redefs-fn
+        {stage-var (fn [actual]
+                     (is (identical? text actual))
+                     :observed-native-fixture-match)}
+        (fn []
+          (is (= :observed-native-fixture-match ((var-get bootstrap-var) text))))))))

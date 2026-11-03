@@ -34,19 +34,11 @@
 
 (defn b10-document-workflow-graph-structurally-valid?
   [text]
-  (and (str/includes? text ":workflow :gravity-stage0-workflow")
-       (str/includes? text ":kind :model-call")
-       (str/includes? text ":kind :tool-call")
-       (str/includes? text ":kind :human-review-gate")
-       (str/includes? text ":kind :compensation")
-       (str/includes? text ":replay-barriers")))
+  (gravity.backend.workflow/workflow-graph-structurally-valid? text))
 
 (defn b10-document-replay-fixture-structurally-valid?
   [text]
-  (and (str/includes? text ":model-output-recorded")
-       (str/includes? text ":tool-output-recorded")
-       (str/includes? text ":human-reviewed")
-       (str/includes? text ":side-effects-reissued false")))
+  (gravity.backend.workflow/replay-fixture-structurally-valid? text))
 
 (defn b10-document-diagnostic-stream
   [source-path input-id]

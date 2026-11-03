@@ -24,17 +24,11 @@
 
 (defn b12-document-bundle-structurally-valid?
   [text]
-  (and (str/includes? text "org.gravity.stage0")
-       (str/includes? text ":platform :ios")
-       (str/includes? text ":architecture :arm64")
-       (str/includes? text ":entrypoint :GravityStage0App")))
+  (gravity.backend.mobile/bundle-structurally-valid? text))
 
 (defn b12-document-permission-structurally-valid?
   [text]
-  (and (str/includes? text ":capability :network/request")
-       (str/includes? text ":runtime-request :declared")
-       (str/includes? text ":denial-policy :return-error")
-       (str/includes? text ":hidden-background-work :rejected")))
+  (gravity.backend.mobile/permission-structurally-valid? text))
 
 (defn b12-document-diagnostic-stream
   [source-path input-id]

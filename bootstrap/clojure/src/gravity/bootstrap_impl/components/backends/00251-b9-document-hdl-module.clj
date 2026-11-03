@@ -57,24 +57,15 @@
 
 (defn b9-document-hdl-structurally-valid?
   [text]
-  (and (str/includes? text "module gravity_stage0_hdl")
-       (str/includes? text "typedef enum logic [1:0]")
-       (str/includes? text "always_ff @(posedge clk)")
-       (str/includes? text "if (rst)")
-       (str/includes? text "assign output_ready")))
+  (gravity.backend.hdl/hdl-structurally-valid? text))
 
 (defn b9-document-testbench-structurally-valid?
   [text]
-  (and (str/includes? text "module gravity_stage0_hdl_tb")
-       (str/includes? text "gravity_stage0_hdl dut")
-       (str/includes? text "repeat (")
-       (str/includes? text "$finish")))
+  (gravity.backend.hdl/testbench-structurally-valid? text))
 
 (defn b9-document-timing-structurally-valid?
   [text]
-  (and (str/includes? text "create_clock")
-       (str/includes? text "set_input_delay")
-       (str/includes? text "set_output_delay")))
+  (gravity.backend.hdl/timing-structurally-valid? text))
 
 (defn b9-document-diagnostic-stream
   [source-path input-id]

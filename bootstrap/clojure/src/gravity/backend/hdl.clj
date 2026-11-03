@@ -1,5 +1,5 @@
 (ns gravity.backend.hdl
-  "Native B9 diagnostic context and catalog data; no backend or input admission authority."
+  "Native B9 diagnostic context, catalog and fixture data; no backend or input admission authority."
   (:require [clojure.string :as str]))
 
 (def ^:private namespace-contract
@@ -12,13 +12,26 @@
   {:arglists ([source-path input-id operations]),
    :admission :none,
    :required-operations
-   [:source-span :diagnostic-ids :signal-id :missing-fact]}},
+   [:source-span :diagnostic-ids :signal-id :missing-fact]},
+  hdl-structurally-valid?
+  {:arglists ([text]),
+   :admission :none,
+   :validation-scope :native-document-fixture-text},
+  testbench-structurally-valid?
+  {:arglists ([text]),
+   :admission :none,
+   :validation-scope :native-document-fixture-text},
+  timing-structurally-valid?
+  {:arglists ([text]),
+   :admission :none,
+   :validation-scope :native-document-fixture-text}},
  :supported
  [:existing-native-projection
   :borrowed-identity
   :compatibility-var-interposition
   :native-catalog-assembly
-  :explicit-native-operations],
+  :explicit-native-operations
+  :existing-native-fixture-recognition],
  :dependency-direction
  {:requires [clojure.core clojure.string],
   :consumed-by [gravity.bootstrap],
@@ -46,19 +59,24 @@
   :seed-retirement
   :canonical-c15-conformance
   :catalog-as-observed-semantic-findings
-  :native-operations-as-proof-authority],
+  :native-operations-as-proof-authority
+  :canonical-target-syntax-validation
+  :fixture-text-as-verified-ir
+  :fixture-match-as-capability-or-proof-authority],
  :artifact-inputs
  [:native-module-metadata
   :native-b9-diagnostic-id
   :native-source-path
   :supplied-input-artifact-id
-  :native-diagnostic-operations],
+  :native-diagnostic-operations
+  :native-document-fixture-text],
  :namespace gravity.backend.hdl,
  :diagnostic-ownership
  {:stage
   [:native-override-precedence
    :native-rule-context-defaults
-   :native-catalog-assembly],
+   :native-catalog-assembly
+   :native-fixture-recognition],
   :existing-owner
   [:b9-refusal-decisions
    :failure-construction
@@ -68,12 +86,14 @@
  [:borrowed-source-overrides
   :native-missing-fact
   :native-signal-label
-  :native-diagnostic-catalog-stream],
+  :native-diagnostic-catalog-stream
+  :native-fixture-recognition-result],
  :consumer-component-paths
  ["bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00250-b8-document-source-artifact.clj"
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00251-b9-document-hdl-module.clj"],
  :issues-certificates? false,
- :contract-boundary :native-b9-diagnostic-context-and-catalog-data})
+ :contract-boundary
+ :native-b9-document-context-catalog-and-fixture-data})
 
 (defn source-overrides
   [module]
@@ -152,5 +172,26 @@
          (range))
    :status :complete})
 
-(doseq [operation [#'source-overrides #'missing-fact #'signal-id #'diagnostic-stream]]
+(defn hdl-structurally-valid?
+  [text]
+  (and (str/includes? text "module gravity_stage0_hdl")
+       (str/includes? text "typedef enum logic [1:0]")
+       (str/includes? text "always_ff @(posedge clk)")
+       (str/includes? text "if (rst)")
+       (str/includes? text "assign output_ready")))
+
+(defn testbench-structurally-valid?
+  [text]
+  (and (str/includes? text "module gravity_stage0_hdl_tb")
+       (str/includes? text "gravity_stage0_hdl dut")
+       (str/includes? text "repeat (")
+       (str/includes? text "$finish")))
+
+(defn timing-structurally-valid?
+  [text]
+  (and (str/includes? text "create_clock")
+       (str/includes? text "set_input_delay")
+       (str/includes? text "set_output_delay")))
+
+(doseq [operation [#'source-overrides #'missing-fact #'signal-id #'diagnostic-stream #'hdl-structurally-valid? #'testbench-structurally-valid? #'timing-structurally-valid?]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

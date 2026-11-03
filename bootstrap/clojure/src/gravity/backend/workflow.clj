@@ -1,5 +1,5 @@
 (ns gravity.backend.workflow
-  "Native B10 diagnostic context and catalog data; no backend or input admission authority."
+  "Native B10 diagnostic context, catalog and fixture data; no backend or input admission authority."
   (:require [clojure.string :as str]))
 
 (def ^:private namespace-contract
@@ -12,13 +12,22 @@
   {:arglists ([source-path input-id operations]),
    :admission :none,
    :required-operations
-   [:source-span :diagnostic-ids :step-id :missing-policy]}},
+   [:source-span :diagnostic-ids :step-id :missing-policy]},
+  workflow-graph-structurally-valid?
+  {:arglists ([text]),
+   :admission :none,
+   :validation-scope :native-document-fixture-text},
+  replay-fixture-structurally-valid?
+  {:arglists ([text]),
+   :admission :none,
+   :validation-scope :native-document-fixture-text}},
  :supported
  [:existing-native-projection
   :borrowed-identity
   :compatibility-var-interposition
   :native-catalog-assembly
-  :explicit-native-operations],
+  :explicit-native-operations
+  :existing-native-fixture-recognition],
  :dependency-direction
  {:requires [clojure.core clojure.string],
   :consumed-by [gravity.bootstrap],
@@ -47,19 +56,24 @@
   :seed-retirement
   :canonical-c15-conformance
   :catalog-as-observed-semantic-findings
-  :native-operations-as-proof-authority],
+  :native-operations-as-proof-authority
+  :canonical-target-syntax-validation
+  :fixture-text-as-verified-ir
+  :fixture-match-as-capability-or-proof-authority],
  :artifact-inputs
  [:native-module-metadata
   :native-b10-diagnostic-id
   :native-source-path
   :supplied-input-artifact-id
-  :native-diagnostic-operations],
+  :native-diagnostic-operations
+  :native-document-fixture-text],
  :namespace gravity.backend.workflow,
  :diagnostic-ownership
  {:stage
   [:native-override-precedence
    :native-rule-context-defaults
-   :native-catalog-assembly],
+   :native-catalog-assembly
+   :native-fixture-recognition],
   :existing-owner
   [:b10-refusal-decisions
    :failure-construction
@@ -69,12 +83,14 @@
  [:borrowed-source-overrides
   :native-missing-policy
   :native-step-label
-  :native-diagnostic-catalog-stream],
+  :native-diagnostic-catalog-stream
+  :native-fixture-recognition-result],
  :consumer-component-paths
  ["bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00254-b9-document-source-artifact.clj"
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00255-b10-document-workflow-graph.clj"],
  :issues-certificates? false,
- :contract-boundary :native-b10-diagnostic-context-and-catalog-data})
+ :contract-boundary
+ :native-b10-document-context-catalog-and-fixture-data})
 
 (defn source-overrides
   [module]
@@ -172,5 +188,21 @@
          (range))
    :status :complete})
 
-(doseq [operation [#'source-overrides #'missing-policy #'step-id #'diagnostic-stream]]
+(defn workflow-graph-structurally-valid?
+  [text]
+  (and (str/includes? text ":workflow :gravity-stage0-workflow")
+       (str/includes? text ":kind :model-call")
+       (str/includes? text ":kind :tool-call")
+       (str/includes? text ":kind :human-review-gate")
+       (str/includes? text ":kind :compensation")
+       (str/includes? text ":replay-barriers")))
+
+(defn replay-fixture-structurally-valid?
+  [text]
+  (and (str/includes? text ":model-output-recorded")
+       (str/includes? text ":tool-output-recorded")
+       (str/includes? text ":human-reviewed")
+       (str/includes? text ":side-effects-reissued false")))
+
+(doseq [operation [#'source-overrides #'missing-policy #'step-id #'diagnostic-stream #'workflow-graph-structurally-valid? #'replay-fixture-structurally-valid?]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

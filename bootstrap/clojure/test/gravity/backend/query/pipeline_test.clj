@@ -1,5 +1,6 @@
 (ns gravity.backend.query.pipeline-test
   (:require [clojure.edn :as edn]
+            [clojure.string :as str]
             [clojure.java.io :as io]
             [clojure.test :refer [deftest is]]
             [gravity.backend.query :as query]
@@ -126,3 +127,26 @@
     (is (identical? error (capture #(query/diagnostic-stream "failure.gravity" "native-input" operations))))
     (with-redefs [bootstrap/source-span (fn [_ _] (throw error))]
       (is (identical? error (capture #(bootstrap/b11-document-diagnostic-stream "failure.gravity" "native-input")))))))
+
+(deftest native-fixture-recognition-retains-reference-text-and-late-wrapper-calls
+  (doseq [[stage-var bootstrap-var text required]
+          [[#'query/sql-structurally-valid? #'bootstrap/b11-document-sql-structurally-valid? bootstrap/b11-document-sql-statement "$1::bigint"]
+           [#'query/result-adapter-structurally-valid? #'bootstrap/b11-document-result-adapter-structurally-valid? bootstrap/b11-document-result-adapter-fixture ":validation :checked"]]]
+    (let [missing (str/replace text required "")]
+      (is (not= text missing))
+      (doseq [recognize [(var-get stage-var) (var-get bootstrap-var)]]
+        (is (true? (recognize text)))
+        (is (false? (recognize "")))
+        (is (false? (recognize missing))))
+      (with-redefs-fn
+        {stage-var (fn [actual]
+                     (is (identical? text actual))
+                     :observed-native-fixture-match)}
+        (fn []
+          (is (= :observed-native-fixture-match ((var-get bootstrap-var) text))))))))
+
+(deftest native-sql-fixture-recognition-retains-forbidden-fragment-refusals
+  (doseq [suffix ["||" (str (char 36) (char 123)) "concat("]]
+    (let [text (str bootstrap/b11-document-sql-statement suffix)]
+      (is (false? (query/sql-structurally-valid? text)))
+      (is (false? (bootstrap/b11-document-sql-structurally-valid? text))))))
