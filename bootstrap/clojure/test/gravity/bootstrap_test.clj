@@ -44836,6 +44836,35 @@
           #(bootstrap/math-proof-file-artifact
             (fixture "rejected/math-rewrite-nonincreasing-measure.gravity"))))))
 
+(deftest math-proof-accepts-zero-bounded-fuel
+  (let [artifact (bootstrap/math-proof-file-artifact
+                  (fixture "accepted/math-rewrite-zero-fuel.gravity"))
+        termination (:termination-report artifact)
+        proof (:capability-based-proof artifact)]
+    (is (= :bounded-fuel (:strategy termination)))
+    (is (= 0 (:fuel termination)))
+    (is (= :emit-candidate-trace (:exhaustion-behavior termination)))
+    (is (true? (:termination-bounded? proof)))))
+
+(deftest math-proof-accepts-empty-proof-guided-trace
+  (let [artifact (bootstrap/math-proof-file-artifact
+                  (fixture "accepted/math-rewrite-empty-proof-trace.gravity"))
+        termination (:termination-report artifact)
+        proof (:capability-based-proof artifact)]
+    (is (= :proof-engine-guided (:strategy termination)))
+    (is (= [] (:finite-trace termination)))
+    (is (= :proof/no-rewrite (:proof-ref termination)))
+    (is (true? (:termination-bounded? proof)))))
+
+(deftest math-proof-rejects-invalid-termination-shapes
+  (doseq [fixture-name ["rejected/math-rewrite-negative-fuel.gravity"
+                        "rejected/math-rewrite-nonnumeric-fuel.gravity"
+                        "rejected/math-rewrite-proof-engine-missing-finite-trace.gravity"]]
+    (is (= "MATH9-TERMINATION"
+           (diagnostic-id
+            #(bootstrap/math-proof-file-artifact
+              (fixture fixture-name)))))))
+
 (defn -main
   [& _]
   (let [result (run-tests 'gravity.diagnostics-test

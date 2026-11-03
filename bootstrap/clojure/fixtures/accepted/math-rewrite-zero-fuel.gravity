@@ -1,0 +1,17 @@
+(ns math.rewrite-zero-fuel
+  (:profile :native)
+  (:target :jvm)
+  (:exports [proof-ready])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:proof
+           {:termination-report {:strategy :bounded-fuel
+                                 :fuel 0
+                                 :deterministic? true
+                                 :unbounded? false
+                                 :exhaustion-behavior :emit-candidate-trace}}}}))
+
+(defn proof-ready []
+  true)
