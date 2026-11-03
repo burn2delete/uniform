@@ -170,35 +170,15 @@
 
 (defn b12-document-source-overrides
   [module]
-  (get-in module [:metadata :backend :specialized-lowering] {}))
+  (gravity.backend.mobile/source-overrides module))
 
 (defn b12-document-missing-policy
   [id]
-  (case id
-    "B12-TARGET" :platform-os-architecture-bundle-ui-target
-    "B12-PERMISSION" :permission-capability-runtime-denial-policy
-    "B12-LIFECYCLE" :lifecycle-state-model
-    "B12-THREAD" :main-thread-actor-callback-affinity
-    "B12-NULL" :platform-nullability-adapter
-    "B12-ERROR" :platform-exception-callback-error-map
-    "B12-BACKGROUND" :background-execution-deployment-policy
-    "B12-STORAGE" :local-storage-sync-schema-migration
-    "B12-RESOURCE" :asset-resource-bundle-metadata
-    :mobile-artifact-manifest))
+  (gravity.backend.mobile/missing-policy id))
 
 (defn b12-document-domain-anchor
   [id]
-  (case id
-    "B12-TARGET" :mobile-platform-target
-    "B12-PERMISSION" :platform-api-binding
-    "B12-LIFECYCLE" :app-lifecycle
-    "B12-THREAD" :ui-thread-update
-    "B12-NULL" :platform-null-adapter
-    "B12-ERROR" :platform-error-adapter
-    "B12-BACKGROUND" :background-task
-    "B12-STORAGE" :local-sync-store
-    "B12-RESOURCE" :resource-bundle
-    :mobile-manifest))
+  (gravity.backend.mobile/domain-anchor id))
 
 (defn b12-document-fail!
   [id source-path subject extra]
