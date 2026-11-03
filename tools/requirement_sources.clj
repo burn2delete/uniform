@@ -415,8 +415,8 @@
    ;; The current-main composition may add explicitly pending task criteria
    ;; after the historical PR554 applying blob.  Keep that old bridge intact
    ;; and authenticate the composed checkout as a separate source view.
-   :current-source-ref "6d964645050b86f0a0a936f88b42177b9553ecd3"
-   :current-source-tree "124a868d1b8152e92fb369ac3ecc45abdcfe3c71"
+   :current-source-ref "f9f56c6dffb92d6e8ca5a32ecc5c791d69d1e5db"
+   :current-source-tree "d93d45d8b6c81d229d205569016799b8733b185e"
    :current-source-blob "536da4ae764a3c985d758fa3f2e8435d06430862"
    :current-source-sha256 "34035c35f900c7d45a04de2802086608c00605f39cb7c2d17b47b8411966660c"
    :parent-bridge-kind platform-generated-view-kind
@@ -447,8 +447,8 @@
    ;; Preserve PR564's historical/applying bridge while binding the current
    ;; composed task ledger separately; these bytes include only pending source
    ;; criteria and do not promote implementation or library acceptance.
-   :current-source-ref "6d964645050b86f0a0a936f88b42177b9553ecd3"
-   :current-source-tree "124a868d1b8152e92fb369ac3ecc45abdcfe3c71"
+   :current-source-ref "f9f56c6dffb92d6e8ca5a32ecc5c791d69d1e5db"
+   :current-source-tree "d93d45d8b6c81d229d205569016799b8733b185e"
    :current-source-blob "bdd08edd8b49cdf4444cfe6fd4855cec58b9fa60"
    :current-source-sha256 "c0f5795d8d827fa9a7fc43f2930e780252c74744da350f02449c2224e1935def"
    :task-ids ["stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
