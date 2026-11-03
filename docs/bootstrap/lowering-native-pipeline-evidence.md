@@ -68,6 +68,16 @@ admission. Language/ownership checks pass 48/1190 with zero skipped namespaces.
 Documents, roadmap and governance validators pass. Fresh committed capture,
 lint, independent exact-source review and own CI remain required.
 
+The first committed lint reported one newly located unused source-text
+binding in the moved projection body. The original body does not use that
+argument. Its stage binding and matching API metadata now say _source-text;
+the compatibility wrapper retains its original name/arity and forwards it.
+No body expression, predicate, lint rule or admission behavior changes.
+Initial commit 8673b4722658ee65d2ba95f2188df13bc6f868b4, its matching
+capture and failed lint output remain historical evidence. Conservation
+explicitly accounts for this argument-only rename; a new clean capture,
+checks, review and lint are required for the successor.
+
 ## Unsupported boundaries
 
 This owns native artifact assembly and ordered structural refusals. It does

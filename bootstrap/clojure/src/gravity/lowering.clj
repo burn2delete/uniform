@@ -37,7 +37,7 @@
   native-source-overrides-artifact {:arglists ([overrides]), :admission :none},
   native-diagnostic-catalog {:arglists ([configuration source-path input-id source-span]), :admission :none},
   native-artifact-base
-  {:arglists ([configuration source-path source-text module source-overrides optimization-artifact diagnostics operations]),
+  {:arglists ([configuration source-path _source-text module source-overrides optimization-artifact diagnostics operations]),
    :admission :none},
   native-validate! {:arglists ([configuration source-path artifact operations]), :admission :none},
   native-capability-proof {:arglists ([configuration artifact operations]), :admission :none},
@@ -553,7 +553,7 @@
                             (set (map :diagnostic (get-in artifact [:lowering-diagnostic-stream :diagnostics]))))
    :status :complete})
 
-(defn native-artifact-base [configuration source-path source-text module source-overrides optimization-artifact diagnostics operations]
+(defn native-artifact-base [configuration source-path _source-text module source-overrides optimization-artifact diagnostics operations]
   (let [optimized-mir (:optimized-mir-artifact optimization-artifact)
         input-id (:artifact-id optimization-artifact)
         target {:backend :jvm :triple "jvm-17" :features #{:objects :exceptions :threads}}
