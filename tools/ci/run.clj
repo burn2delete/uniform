@@ -161,17 +161,38 @@
                 (.addSuppressed ^Throwable original cleanup-error)))))
         (throw original)))))
 
+(defn- read-log-preview
+  "Read at most one character past the preview limit without reading the log in full."
+  [reader log-path]
+  (let [buffer (char-array (inc log-preview-max-chars))]
+    (loop [offset 0]
+      (if (= offset (alength buffer))
+        (str (String. buffer 0 log-preview-max-chars)
+             "\n[log preview truncated; full log: " log-path "]")
+        (let [count (.read reader buffer offset (- (alength buffer) offset))]
+          (cond
+            (= -1 count)
+            (when (pos? offset)
+              (String. buffer 0 offset))
+
+            (pos? count)
+            (recur (+ offset count))
+
+            :else
+            (let [character (.read reader)]
+              (if (= -1 character)
+                (when (pos? offset)
+                  (String. buffer 0 offset))
+                (do
+                  (aset-char buffer offset (char character))
+                  (recur (inc offset)))))))))))
+
 (defn- log-preview
   "Read a bounded diagnostic preview while retaining the complete log on disk."
   [^java.io.File log]
   (when (.isFile log)
     (with-open [reader (io/reader log)]
-      (let [buffer (char-array log-preview-max-chars)
-            count (.read reader buffer)]
-        (when (pos? count)
-          (str (String. buffer 0 count)
-               (when (> (.length log) log-preview-max-chars)
-                 (str "\n[log preview truncated; full log: " (.getPath log) "]"))))))))
+      (read-log-preview reader (.getPath log)))))
 
 (defn execute!
   ([id seconds argv] (execute! id seconds argv nil))

@@ -917,6 +917,50 @@
     (is (str/includes? success-log "success-payload"))
     (is (str/includes? failure-log "xxxxxxxx"))))
 
+(deftest execute-output-preview-counts-characters
+  (let [exact-output
+        (with-out-str
+          (let [result (ci/execute!
+                        "output-unicode-exact" 15
+                        (ci/command "128m" "-M" "-e"
+                                    "(do (print (apply str (repeat 4096 \\u00e9))) (flush) (System/exit 7))"))]
+            (is (= :failed (:status result)))))
+        extra-output
+        (with-out-str
+          (let [result (ci/execute!
+                        "output-unicode-extra" 15
+                        (ci/command "128m" "-M" "-e"
+                                    "(do (print (apply str (repeat 4097 \\u00e9))) (flush) (System/exit 7))"))]
+            (is (= :failed (:status result)))))
+        marker "[log preview truncated"]
+    (is (str/includes? exact-output
+                       "CI command output-unicode-exact finished :failed exit 7"))
+    (is (not (str/includes? exact-output marker)))
+    (is (str/includes? extra-output
+                       "CI command output-unicode-extra finished :failed exit 7"))
+    (is (str/includes? extra-output marker))))
+
+(deftest log-preview-reads-short-chunks-without-unbounded-read
+  (let [preview-fn (ns-resolve 'ci.run 'read-log-preview)
+        source (apply str (repeat 10000 "x"))
+        source-length (count source)
+        offset (atom 0)
+        reader (proxy [java.io.Reader] []
+                 (read [buffer start _length]
+                   (let [position @offset]
+                     (if (= position source-length)
+                       -1
+                       (do
+                         (aset-char buffer start (.charAt source position))
+                         (swap! offset inc)
+                         1))))
+                 (close [] nil))
+        preview (preview-fn reader "short-read.log")]
+    (is (= 4097 @offset))
+    (is (str/starts-with? preview (apply str (repeat 4096 "x"))))
+    (is (str/includes? preview
+                       "[log preview truncated; full log: short-read.log]"))))
+
 (deftest timeout-is-a-failure
   (let [result (ci/execute! "negative-timeout" 1
                             (ci/command "128m" "-M" "-e" "(Thread/sleep 30000)"))]
