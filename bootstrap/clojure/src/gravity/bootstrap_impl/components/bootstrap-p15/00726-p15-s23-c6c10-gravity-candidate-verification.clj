@@ -116,17 +116,18 @@
                           :gravity-c6-c10-source])}
        :clojure-seed-boundary? true
        :self-hosted? false}
-        (= 2 version)
-        (assoc :source-interface {:interface :gravity/c6-c10 :version 2}
+        (contains? #{2 3} version)
+        (assoc :source-interface {:interface :gravity/c6-c10 :version version}
                :source-policy-receipt (:source-policy-receipt fresh)
                :source-policy-binding-id
                (p15-s23-c6c10-canonical-digest
-                source-path {:domain :gravity/c6-c10-source-policy-v2
+                source-path {:domain (if (= 3 version) :gravity/c6-c10-source-policy-v3 :gravity/c6-c10-source-policy-v2)
                              :artifact-id (:artifact-id artifact)
                              :context context
                              :policy (:source-policy-receipt fresh)})
                :admission-status (get-in fresh [:source-policy-receipt :admission-status])
-               :verification-scope :selected-current-source-host-seed)))))
+               :verification-scope :selected-current-source-host-seed)
+        (= 3 version) (assoc :semantic-family :closed-flat-bool-literal-sequence)))))
 
 (defn p15-s23-stage2-gravity-checked-core-verification-report
   ([artifact context]

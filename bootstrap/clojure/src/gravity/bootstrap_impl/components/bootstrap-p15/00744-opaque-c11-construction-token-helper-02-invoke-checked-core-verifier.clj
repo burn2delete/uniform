@@ -11,14 +11,14 @@
         (binding [*p15-s23-c11-upstream-diagnostic-owner*
                   opaque-c11-upstream-diagnostic-owner]
           (try
-            (when (and (= 2 version) (not= :gravity-source-pure ingress-mode))
+            (when (and (contains? #{2 3} version) (not= :gravity-source-pure ingress-mode))
               (p15-s23-c11-mir-require! false "C11-MODULE" (:source-path context) {}
                :current-core-pure-ingress-only))
             (case ingress-mode
               :gravity-source-pure
-              (if (= 2 version)
+              (if (contains? #{2 3} version)
                 (p15-s23-stage2-gravity-checked-core-verification-report
-                 checked-core context {:interface :gravity/c6-c10 :version 2})
+                 checked-core context {:interface :gravity/c6-c10 :version version})
                 (p15-s23-stage2-gravity-checked-core-verification-report
                  checked-core context))
 

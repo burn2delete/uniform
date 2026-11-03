@@ -315,27 +315,29 @@
       (finally
         (java.nio.file.Files/deleteIfExists (.toPath (java.io.File. path)))))))
 
-(deftest public-v3-and-native-version-headers-refuse-before-construction
+(deftest public-v3-header-dispatches-and-other-headers-refuse
   (let [{:keys [path context]} (temporary-context)
         fresh-var (private-var 'p15-s23-c6c10-fresh-construction)
         calls (atom 0)
         invoke (fn [header]
                  (try
                    (with-redefs-fn
-                     {fresh-var (fn [& _] (swap! calls inc) (bool-core))}
+                     {fresh-var (fn [& _] (swap! calls inc)
+                                  {:artifact :synthetic-v3-artifact})}
                      #(bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
                        context header))
-                   nil
                    (catch clojure.lang.ExceptionInfo error
                      (ex-data error))))]
     (try
-      (doseq [header [{:interface :gravity/c6-c10 :version 3}
-                      {:interface :gravity/c6-c10 :version (int 3)}
+      (is (= :synthetic-v3-artifact
+             (invoke {:interface :gravity/c6-c10 :version 3})))
+      (is (= 1 @calls))
+      (doseq [header [{:interface :gravity/c6-c10 :version (int 3)}
                       {:interface :gravity/c6-c10 :version 1}
                       {:interface :gravity/c11-mir :version 2}]]
         (let [data (invoke header)]
           (is (= "C6-VERIFY" (:id data)))
-          (is (zero? @calls))))
+          (is (= 1 @calls))))
       (finally
         (java.nio.file.Files/deleteIfExists (.toPath (java.io.File. path)))))))
 

@@ -101,3 +101,17 @@
    :verifier-function 'sh12-verify-flat-bool-sequence-mir
    :verifier-semantic-hash "sha256:7562fc08983f1341bcd8d4d510fe361902f36a7f1cacd917dce3161a3fb3b90f"
    :required-functions flat-bool-required-functions})
+
+(def flat-bool-current-source-contract-abi
+  "Stable ABI for the development-current v3 C11 owner.
+
+   The current source is authenticated and hashed at invocation.  This ABI
+   fixes only the exported function names and shapes required by the closed
+   flat-Bool family; it deliberately carries no historical source pins."
+  {:interface :gravity/c11-mir
+   :version 3
+   :semantic-family :closed-flat-bool-literal-sequence
+   :source-relative-path (:source-relative-path flat-bool-source-contract)
+   :builder-function (:builder-function flat-bool-source-contract)
+   :verifier-function (:verifier-function flat-bool-source-contract)
+   :required-functions (:required-functions flat-bool-source-contract)})

@@ -34,6 +34,20 @@
    :verifier-function 'c6-c10-verify-checked-core-template
    :required-functions (:required-functions current-compiler-program)})
 
+(def flat-bool-current-compiler-program-abi
+  "Stable ABI for the development-current v3 source owner.
+
+   The v3 semantic family uses the same current Gravity C6 builder and
+   verifier, but its source-family selector is distinct from the v2 route.
+   Bytes, plan identities, and function identities are derived from the
+   selected source at invocation; no historical v3 digest is used here."
+  {:version 3
+   :semantic-family :closed-flat-bool-literal-sequence
+   :source-relative-path (:source-relative-path current-compiler-program)
+   :builder-function (:builder-function current-compiler-program-abi)
+   :verifier-function (:verifier-function current-compiler-program-abi)
+   :required-functions (:required-functions current-compiler-program-abi)})
+
 ;; Independently reviewed observation of the changed C6 program. This record is
 ;; not selected by a public version3 route until the complete C6/C11 transaction
 ;; is installed and reviewed. Historical version1/version2 records are unchanged.
