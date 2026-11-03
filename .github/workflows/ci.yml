@@ -134,10 +134,13 @@ jobs:
     needs: select
     if: ${{ always() && !cancelled() }}
     runs-on: ubuntu-24.04
-    # Each serialized child owns an independent 600-second watchdog. The
-    # three jobs are serialized only within this resolution pool; no global
+    # resolution-pipeline owns two sequential fresh children, each with an
+    # independent 600-second watchdog; the other modes own one child each.
+    # The 25-minute hosted envelope leaves setup, cleanup and artifact-upload
+    # time beyond the pipeline's 1,200-second maximum child budget. The three
+    # jobs are serialized only within this resolution pool; no global
     # parallelism or cost equivalence is implied.
-    timeout-minutes: 15
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       max-parallel: 1
