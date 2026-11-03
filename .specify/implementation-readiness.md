@@ -5012,3 +5012,92 @@ owner/interface entailment, implementation acceptance, independent current
 review and integration remain pending or unassessed. Every actual restriction,
 writer reservation and stopped handoff remains; no held execution, other-chat
 message, reviewer wake, aggregate publication or merge occurs.
+
+## Complete L7 selected-result dependency continuation
+
+Source `bc8639e09c53b6f8c6877997a38649d067767a30` refines the sole
+selected-result dependency table for 59 consumers: 57 existing routes plus the
+existing backend-conformance and query tasks. All 1,893 prior result joins,
+every prior input and eighty unaffected route meanings remain. The 118 added
+inputs yield 2,011 joins over 139 routes, 99 current parents and forty unchanged
+future records. Selected inputs grow from 1,014 to 1,132. Twenty-two existing
+plans expose 324 concrete staged input subjects. All fourteen L7 criteria
+remain routed through twelve existing tasks; the unchanged 977-byte conditional
+Evolution pattern-change predicate retains its earlier source and review scope.
+No task, status, source criterion, implementation receipt or future declaration
+changes. The 149 current keys, 25 authorities and original 44 identical / 95
+explicitly amended bodies retain their populations.
+
+The main coarse cycle now has 97 members: all 95 predecessors plus the existing
+backend-conformance and query tasks. The separate nine-member release/schema/
+governance cycle is unchanged. Those visible coarse cycles do not establish an
+executable whole-task order. Actual selected-result contracts distinguish these
+stages rather than hiding the dependencies or inventing acceptance:
+
+- Real source identities and an initial structural Core candidate precede
+  preliminary independent scrutinee/domain/guard inference. Core verification
+  at that stage does not demand a future fully checked decision tree.
+- Early authentic schema, validator and wrapper contracts support Types-owned
+  trusted-shape checking. Actual validation dataflow precedes final trusted
+  coverage; actual runtime validation precedes matching untrusted values.
+- The existing future Formal task and compiler proof checker establish actual
+  property, assumption, kernel and checker interfaces before checking proofs
+  over real preliminary coverage facts. Required current totality or explicit
+  partiality proof precedes proof-dependent admission. A later checked-program
+  anchor cannot be the first property model or checker input. Selected P12/
+  DOM19 interface context confers no whole formal-domain acceptance and adopts
+  no retired work/cost quotas, wider ZK obligation or held solver execution.
+- Actual effect summaries and guard ordering precede allowance/profile/resource
+  verdicts, with separate authentic grants. Bool, defaults and closed shapes
+  confer no authority. Later Core enrichment/export consumes real owner facts.
+- Actual MIR graph/fact/verifier/readback products precede consumption. Optional
+  transforms regenerate affected products and verify the changed subject with
+  the governing preservation evidence. Valid raw MIR retains its path.
+- Existing backend-conformance work establishes early fixtures, matrix and
+  availability interfaces, then compares real checked inputs, emitted bytes,
+  metadata, diagnostics and behavior. Core export precedes that comparison;
+  later representative target evidence is not its first input. B14 unavailable
+  targets do not pass, and shared manifest/refusal checks still apply. The
+  selected B1/B14 contracts do not establish full backend conformance.
+- Existing query source-checker/predicate contracts precede later real Core,
+  MIR and backend anchors. Host filtering cannot substitute for query semantics.
+  Runtime validator/resource/error/session/replay contracts precede actual
+  interpreter or compiled-path execution records; a compiled native artifact
+  is not a prerequisite for every selected path. No held query/runtime action
+  occurs.
+
+Source-only tools/cache work remains possible before later semantic/session
+products exist; consumers claiming those products must use actual current
+owner results. Owner fixtures precede independent harnesses. Conditional stable
+pattern adoption remains conditional rather than a new ordinary-work gate.
+All current result joins remain proposals with implementation/acceptance
+unassessed. Canonical source, task bodies and earlier evidence are preserved.
+
+Current proposal fingerprint:
+`a0bd54b7c5556141b1b415a938a7290b8f80f29ec4119d3b960f620db2809a05`.
+All applying source pins verify against local Git. Four focused crosswalk tests
+/ 12,267 assertions pass: current L7 dependencies, the entire frozen
+L7 source and Types dependency subjects, and global task/history conservation.
+The L7 source regression now reads its complete frozen
+`e7e4adfa6c9dc36dd026d67a5155626103d73023` subject, including all source
+readers; every other earlier test byte remains unchanged. All 23 dependency
+tests / 5,727 assertions and both pinned projection checks pass.
+Canonical validation passes 240 documents / nineteen phase indexes;
+full-language roadmap structural validation passes with dated counts
+non-authoritative. The language-boundary gate passes six tests / eleven
+assertions. Conservation/navigation passes 91 changed files, 85 Markdown files,
+3,812 local references, 139 original routes, 48 historical spec/plan suffixes
+and all 48 original task/evidence contents after declared additions are removed.
+ASCII and whitespace checks pass. The full current 75-test crosswalk suite was
+not rerun; the prior complete 68-test / 44,978-assertion run remains bound to
+`25a96a0c03536270001449c00676e644ea353521`. These checks establish planning/
+traceability consistency, not compiler, runtime, provider, target, proof,
+migration or release conformance.
+
+Complete L8 protocol/dispatch source reconciliation through existing owners
+remains source work to assess next. Reader contract coverage remains the first
+actual implementation increment. Global source/owner/task entailment, complete
+producer/consumer entailment, implementation acceptance, independent current
+review and integration remain pending or unassessed. Every actual restriction,
+writer reservation and stopped handoff remains. No held execution, other-chat
+message, reviewer wake, aggregate publication or merge occurs.
