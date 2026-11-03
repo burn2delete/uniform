@@ -681,9 +681,12 @@
       (is (= (:live-inspected-sha256 record)
              (sh-inventory/sha256 (sh-crosswalk/git-source (:source-input-commit bridge) path)))))
     (is (= :pending-source-version-review (get-in view [:mapping-review :status])))
-    (is (= (select-keys sh-crosswalk/readiness-predecessor-mapping-review
-                        [:status :input-fingerprint :source-version-bridge])
-           (get-in view [:mapping-review :implementation-readiness-predecessor-review])))
+    (let [predecessor-review (get-in view [:mapping-review :implementation-readiness-predecessor-review])]
+      (is (= (select-keys sh-crosswalk/readiness-predecessor-mapping-review
+                          [:status :input-fingerprint :source-version-bridge])
+             (select-keys predecessor-review [:status :input-fingerprint :source-version-bridge])))
+      (is (= "specs/sh-family-crosswalk/implementation-readiness-source-version.edn"
+             (:historical-source-version predecessor-review))))
     (is (= (:input-fingerprint bridge) (sh-crosswalk/review-fingerprint (sh-crosswalk/source-view))))
     (is (= 180 (count (:requirements view))))
     (is (= 18 (count (:sh07-sequence view))))
