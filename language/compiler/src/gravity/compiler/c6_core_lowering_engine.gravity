@@ -10,6 +10,7 @@
              c6-sh07-authenticated-exception-entrypoint
              c6-sh07-independent-exception-verifier
              c6-form->core-form
+             c6-eval-order
              build-c6-core-node
              build-c6-desugaring-trace
              verify-c6-set-mutation-execution-request
@@ -187,6 +188,49 @@
           :declared-primitive
           :call)))
     (if (symbol? form) :symbol :literal)))
+
+; Evaluation order is a source-owned C6 fact.  Keep the variable-length do
+; order construction in Uniform so the hosted caller does not decide it.
+(defn c6-evaluation-order-do [child-count]
+  (loop [remaining child-count index 0 result []]
+    (if (= remaining 0)
+      result
+      (recur (- remaining 1)
+             (+ index 1)
+             (conj result [:expr index])))))
+
+(defn c6-eval-order [form child-count]
+  (if (= form (quote quote))
+    []
+    (if (= form (quote if))
+      [:condition :then-or-else]
+      (if (= form (quote do))
+        (c6-evaluation-order-do child-count)
+        (if (= form (quote let))
+          [:bindings-left-to-right :body-left-to-right]
+          (if (= form (quote fn))
+            [:call-arguments-left-to-right]
+            (if (= form (quote loop))
+              [:loop-bindings-left-to-right :body-left-to-right]
+              (if (= form (quote recur))
+                [:arguments-left-to-right]
+                (if (= form (quote def))
+                  [:initializer]
+                  (if (= form (quote var))
+                    []
+                    (if (= form (quote set!))
+                      [:value]
+                      (if (= form (quote try))
+                        [:body :matching-handler]
+                        (if (= form (quote throw))
+                          [:value]
+                          (if (= form (quote match))
+                            [:scrutinee :selected-clause]
+                            (if (= form :call)
+                              [:operator :arguments-left-to-right]
+                              (if (= form :declared-primitive)
+                                [:operator :arguments-left-to-right]
+                                []))))))))))))))))
 
 (def c6-set-mutation-execution-contract
   {:artifact :gravity/c6-set-mutation-execution-contract

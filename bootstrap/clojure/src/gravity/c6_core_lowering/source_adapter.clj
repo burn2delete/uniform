@@ -12,6 +12,8 @@
 
 (def source-function 'c6-form->core-form)
 
+(def evaluation-order-source-function 'c6-eval-order)
+
 (def ^:private source-engine
   :gravity-c6-core-lowering-source-classifier)
 
@@ -43,6 +45,17 @@
              "Current C6 source classifier has an unexpected ABI"
              {:source-path source-path
               :function source-function
+              :definition (select-keys definition
+                                       [:name :params :arity :definition-form])})))
+  (let [definition (get-in plan [:functions evaluation-order-source-function])]
+    (when-not (and (map? definition)
+                   (= :def-fn (:definition-form definition))
+                   (= 2 (:arity definition))
+                   (= ['form 'child-count] (:params definition)))
+      (fail! "C6-SOURCE-EVAL-ORDER-ABI"
+             "Current C6 source evaluation-order operation has an unexpected ABI"
+             {:source-path source-path
+              :function evaluation-order-source-function
               :definition (select-keys definition
                                        [:name :params :arity :definition-form])})))
   plan)
@@ -98,8 +111,24 @@
      {:engine source-engine :compiler-artifact-plan? true}
      plan source-function [form])))
 
+(defn c6-eval-order-operation
+  "Build one operation that executes the current source evaluation-order leaf."
+  [runtime-execute-function plan]
+  (when-not (fn? runtime-execute-function)
+    (fail! "C6-SOURCE-EVAL-ORDER-RUNTIME-API"
+           "Current C6 source adapter requires the existing runtime function"
+           {:required :p15-s23-stage2-runtime-execute-function}))
+  (validate-source-plan! (get-in plan [:source :path]) plan)
+  (fn [form child-count]
+    (runtime-execute-function
+     {:engine :gravity-c6-core-lowering-source-evaluation-order
+      :compiler-artifact-plan? true}
+     plan evaluation-order-source-function [form child-count])))
+
 (defn source-operations
   "Return the explicit operation override for hosted C6 lowering."
   [runtime-execute-function plan]
   {:c6-form->core-form
-   (c6-form->core-form-operation runtime-execute-function plan)})
+   (c6-form->core-form-operation runtime-execute-function plan)
+   :c6-eval-order
+   (c6-eval-order-operation runtime-execute-function plan)})
