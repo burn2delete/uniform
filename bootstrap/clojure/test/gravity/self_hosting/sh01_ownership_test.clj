@@ -214,7 +214,9 @@
     (testing "coordinator-only integration modules are not assigned to a leaf"
       (doseq [module
               (get-in record [:coordinator-owned :integration-surfaces])
-              :when (str/starts-with? module "bootstrap/gravity/src/")]
+              :when (or (str/starts-with? module "bootstrap/gravity/src/")
+                         (str/starts-with? module "language/compiler/src/")
+                         (str/starts-with? module "language/runtime/src/"))]
         (is (= :master-coordinator (get module-owners module)) module)))
     (testing "reserved Stage0 ids cover exactly the 55 source components"
       (let [reserved (:reserved-leaf-modules record)
