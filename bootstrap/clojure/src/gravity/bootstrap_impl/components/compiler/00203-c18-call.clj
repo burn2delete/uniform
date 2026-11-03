@@ -29,8 +29,9 @@
   (c18-call c18/c18-verification-capability-proof artifact))
 
 (defn compiler-c18-verification-source-artifact [source-path source-text]
-  (c18-call c18/compiler-c18-verification-source-artifact
-            source-path source-text))
+  (source-input/with-context
+   #(c18-call c18/compiler-c18-verification-source-artifact
+              source-path source-text)))
 
 (defn compiler-c18-verification-file-artifact [path]
   (c18-call c18/compiler-c18-verification-file-artifact path))

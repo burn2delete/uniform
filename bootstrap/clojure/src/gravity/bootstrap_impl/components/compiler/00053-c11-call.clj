@@ -68,7 +68,8 @@
 
 (defn compiler-c11-mir-source-artifact
   [source-path source-text]
-  (c11-call c11/compiler-c11-mir-source-artifact source-path source-text))
+  (source-input/with-context
+   #(c11-call c11/compiler-c11-mir-source-artifact source-path source-text)))
 
 (defn compiler-c11-mir-file-artifact
   [path]

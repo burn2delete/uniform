@@ -94,7 +94,8 @@
 
 (defn compiler-c7-type-source-artifact
   [source-path source-text]
-  (c7-call c7/compiler-c7-type-source-artifact source-path source-text))
+  (source-input/with-context
+   #(c7-call c7/compiler-c7-type-source-artifact source-path source-text)))
 
 (defn compiler-c7-type-file-artifact
   [path]
