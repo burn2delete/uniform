@@ -3,8 +3,8 @@
  :current-base {:commit "d59a7df90f91b578c1bb160a59ec1ef865abf25b"
                 :tree "c25b4efebc5fb76befb35edce88857012be236ad"}
  :focused-repair-checkpoint
- {:commit "9b8072f4977fc8f050e9dac1da1d50d5bd62d52d"
-  :tree "832dbc69611c2b34709adb09895c3eece6a8e283"
+ {:commit "1c3534a3b427e34ef004eb148ad32d52d128854a"
+  :tree "6b3e4002f842ff41d41d6963dd37a6e660c3f7d2"
   :production-inputs-unchanged true
   :focused-tests {:tests 3 :assertions 188 :failures 0 :errors 0}}
  :historical-inputs
@@ -47,7 +47,15 @@
   :boundary {:tests 6 :assertions 11 :failures 0 :errors 0}
   :docs {:documents 240 :phase-indexes 19 :status :passed}
   :roadmap {:status :passed :authority :non-authoritative}
-  :static-lint {:status :unavailable :tools [:clj-kondo :cljfmt]}}
+  :static-lint {:status :passed
+                :tool :clj-kondo
+                :version "2025.10.23"
+                :source "/tmp/acc08-controls-01a183dd/kondo-2025.10.23/clj-kondo"
+                :files 1 :warnings 0 :errors 0 :infos 0}
+  :pre-pinned-tool-lookup
+  {:clj-kondo :command-not-found
+   :cljfmt :command-not-found
+   :historical-only true}}
  :nonclaims [:authoritative-source-migration
              :genuine-c7-or-c8-admission
              :complete-pr611

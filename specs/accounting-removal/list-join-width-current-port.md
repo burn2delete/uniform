@@ -54,10 +54,16 @@ structural validator also passed (non-authoritative dated snapshot). Pinned
 `clj-kondo` and `cljfmt` binaries were unavailable locally, so no static-lint
 pass is claimed.
 
-The focused repair is checkpointed at `9b8072f4977fc8f050e9dac1da1d50d5bd62d52d`
-(tree `832dbc69611c2b34709adb09895c3eece6a8e283`). It changes only this test
+The focused repair is checkpointed at `1c3534a3b427e34ef004eb148ad32d52d128854a`
+(tree `6b3e4002f842ff41d41d6963dd37a6e660c3f7d2`). It changes only this test
 namespace; the Effects and emitter source inputs remain byte-identical. The
 receipt records that checkpoint before this metadata update.
+
+Pinned `clj-kondo` 2025.10.23, invoked from
+`/tmp/acc08-controls-01a183dd/kondo-2025.10.23/clj-kondo`, reported zero
+warnings, errors, and infos for the changed namespace. An earlier unpinned
+lookup recorded `clj-kondo` and `cljfmt` as unavailable; that observation is
+historical only. `tools/ci` was unchanged, so no cljfmt check is required.
 
 This is a bounded current-source helper test using normalized List-if inputs.
 It does not establish an authoritative source migration, genuine C7/C8
