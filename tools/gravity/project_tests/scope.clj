@@ -89,9 +89,9 @@
                    (scope-namespaces scope)))
       (if (= ["--list"] args)
         args
-      (let [selected (namespace-selections args)]
-        (ensure-scope! scope selected)
-        args)))))
+        (let [selected (namespace-selections args)]
+          (ensure-scope! scope selected)
+          args)))))
 
 (defn usage
   [scope]
