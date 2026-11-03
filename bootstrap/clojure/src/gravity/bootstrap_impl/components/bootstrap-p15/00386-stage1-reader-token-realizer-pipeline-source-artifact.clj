@@ -3,7 +3,7 @@
 (defn stage1-reader-token-realizer-pipeline-source-artifact
   [source-path source-text]
   (let [stage1-bootstrap-artifact
-        (stage1-bootstrap-source-artifact stage1-reader-bootstrap-source-root)
+        (stage1-bootstrap-source-artifact stage1-reader-bootstrap-source-roots)
         trace (atom {})
         stage1-records
         (binding [*stage1-reader-pipeline-trace* trace]

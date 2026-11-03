@@ -520,7 +520,7 @@
     (is (= expected-resolution
            (:modes (ci/stage-selection [(change "bootstrap/clojure/test/gravity/resolution/pipeline_test.clj")]))))
     (is (= expected-checked
-           (:modes (ci/stage-selection [(change "bootstrap/gravity/src/gravity/checked_core.gravity")]))))
+           (:modes (ci/stage-selection [(change "language/compiler/src/gravity/checked_core.gravity")]))))
     (is (= expected-checked
            (:modes (ci/stage-selection
                     [(change "bootstrap/clojure/test/gravity/self_hosting/sh07_var_reference_test.clj")]))))
@@ -536,7 +536,7 @@
                     "resolution-invocation-selection"]]
         (is (not (ci/skip-for-stage-selection? mode resolution-selection)) mode))
       (let [checked-selection
-            (ci/stage-selection [(change "bootstrap/gravity/src/gravity/checked_core.gravity")])]
+            (ci/stage-selection [(change "language/compiler/src/gravity/checked_core.gravity")])]
         (doseq [mode ["resolution-pipeline" "resolution-unmetered"
                       "resolution-invocation-selection"]]
           (is (ci/skip-for-stage-selection? mode checked-selection) mode)))
