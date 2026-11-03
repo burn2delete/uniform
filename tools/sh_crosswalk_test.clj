@@ -4,6 +4,80 @@
 (binding [*command-line-args* nil] (load-file "tools/sh_crosswalk.clj"))
 (require '[sh-inventory] '[sh-crosswalk] '[acceptance-dependencies])
 
+(deftest complete-pattern-source-interface-restores-owner-slices-and-rejects-retired-accounting
+  (let [read (fn [path] (slurp path))
+        core-plan (read "specs/core-workflow/plan.md")
+        core-tasks (read "specs/core-workflow/tasks.md")
+        core-spec (read "specs/core-workflow/spec.md")
+        types-plan (read "specs/types-workflow/plan.md")
+        types-tasks (read "specs/types-workflow/tasks.md")
+        owner-plans ["specs/auth-workflow/plan.md"
+                     "specs/backends-workflow/plan.md"
+                     "specs/build-workflow/plan.md"
+                     "specs/compiler-api-workflow/plan.md"
+                     "specs/diag-workflow/plan.md"
+                     "specs/domains-workflow/plan.md"
+                     "specs/effects-workflow/plan.md"
+                     "specs/evolution-workflow/plan.md"
+                     "specs/expand-workflow/plan.md"
+                     "specs/legality-workflow/plan.md"
+                     "specs/lower-workflow/plan.md"
+                     "specs/mir-workflow/plan.md"
+                     "specs/opt-workflow/plan.md"
+                     "specs/release-workflow/plan.md"
+                     "specs/resolve-workflow/plan.md"
+                     "specs/runtime-workflow/plan.md"
+                     "specs/stdlib-workflow/plan.md"
+                     "specs/syntax-workflow/plan.md"
+                     "specs/tools-workflow/plan.md"]
+        owner-texts (map read owner-plans)
+        pattern-section (fn [text heading]
+                          (let [start (.indexOf text heading)
+                                rest (if (neg? start) "" (subs text start))
+                                end (.indexOf rest "\n## " 1)]
+                            (if (neg? end) rest (subs rest 0 end))))
+        core-pattern (pattern-section core-plan "## Complete pattern-matching source criteria")
+        evolution-pattern (pattern-section (read "specs/evolution-workflow/plan.md")
+                                           "## Complete pattern-matching source interface")
+        legality-pattern (pattern-section (read "specs/legality-workflow/plan.md")
+                                          "## Complete pattern-matching source interface")
+        owner-ids ["resolve/current-evidence-and-remaining-work/resolve1-resolve-lexical-positions"
+                   "types/current-evidence-and-remaining-work/types1-solve-core-constraints"
+                   "core/current-evidence-and-remaining-work/core1-lower-core-forms"
+                   "core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss"
+                   "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects"
+                   "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"
+                   "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation"
+                   "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
+                   "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+                   "types/current-evidence-and-remaining-work/types2-check-declared-abstractions"
+                   "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses"
+                   "evolution/change-review"]
+        rows (into {} (map (juxt :id identity)
+                           (mapcat val (:task-authorities (sh-crosswalk/source-view)))))]
+    (doseq [phrase ["## Complete pattern-matching source criteria"
+                    "L7 pattern typing and narrowing criterion"
+                    "L7 closed-match coverage criterion"
+                    "L7 Boolean guard criterion"
+                    "L7 trusted-shape boundary criterion"]]
+      (is (str/includes? (str core-plan "\n" types-plan "\n" types-tasks) phrase) phrase))
+    (doseq [marker ["core-pattern-source-selection:start"
+                    "core-pattern-source-tree:start"
+                    "core-pattern-source-artifacts:start"]]
+      (is (str/includes? core-tasks marker) marker))
+    (is (str/includes? core-spec "complete pattern-matching source criteria"))
+    (is (str/includes? types-plan "Complete pattern-matching source interface"))
+    (is (str/includes? types-tasks "types-pattern-source-narrowing:start"))
+    (is (str/includes? types-tasks "types-pattern-source-coverage:start"))
+    (is (str/includes? types-tasks "types-pattern-source-guard:start"))
+    (is (str/includes? types-tasks "types-pattern-source-trusted:start"))
+    (is (str/includes? types-tasks "types-source-schema-static:start"))
+    (is (= 19 (count (filter #(str/includes? % "Complete pattern-matching source interface") owner-texts))))
+    (doseq [text [core-pattern evolution-pattern legality-pattern]]
+      (is (not (re-find #"977-byte|check-and-bind allocation" text))))
+    (doseq [id owner-ids]
+      (is (contains? rows id) id))))
+
 (deftest exact-original-inventory-and-negative-population-controls
   (let [source (slurp sh-inventory/plan-path) rows (sh-inventory/inventory source)
         pinned (edn/read-string (slurp "specs/sh-family-crosswalk/original-inventory.edn"))]
