@@ -368,6 +368,13 @@ Use the [facet producer and consumer order](../expand-workflow/plan.md#facet-pro
 Task bodies/statuses, source criteria, historical reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending. No held action is enabled.
 
 
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Validate actual selected type-provider declarations/identity/feature/profile/schema/solver restrictions and preserve deterministic L15 choice. Actual checker/corpus/profile/proof owners supply soundness evidence; Auth admits and reports claims, with real scoped grants and exported linear/affine capability facts. The five L17 claim meanings remain exact.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Auth task authority

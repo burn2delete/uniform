@@ -153,6 +153,13 @@ Use the [facet producer and consumer order](../expand-workflow/plan.md#facet-pro
 Task bodies/statuses, source criteria, historical reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending. No held action is enabled.
 
 
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Carry actual common selected-provider type/effect/grant/resource/profile/check/proof/source facts into verified MIR and downstream consumers. Missing or stale exports and unchecked casts cannot become safe optimization evidence; source/provider/facet/grant changes invalidate dependent subjects.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: MIR task authority

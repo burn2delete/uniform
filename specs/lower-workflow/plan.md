@@ -196,6 +196,13 @@ Use the [facet producer and consumer order](../expand-workflow/plan.md#facet-pro
 Task bodies/statuses, source criteria, historical reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending. No held action is enabled.
 
 
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Derive actual concrete layout/ABI from authentic common typed-Core representation/ownership/resource facts and current target assumptions. An alternative checker cannot replace layout contracts without exported facts. Early type/ABI contracts, final layouts and actual runtime calls remain separate products.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Lower task authority

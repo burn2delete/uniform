@@ -632,6 +632,13 @@ Use the [facet producer and consumer order](../expand-workflow/plan.md#facet-pro
 Task bodies/statuses, source criteria, historical reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending. No held action is enabled.
 
 
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Keep actual Schema/EFIR/Hardware/Workflow/Agent/Query fact producers and six family meanings. Their typed artifacts carry record/validator, numeric domain/range/differentiability/proof, width/clock/bus/reset, durable/replay/signal/retry, prompt/tool/model-shape/guardrail and row/cardinality/nullability/transaction facts across boundaries. This interface does not accept whole domain implementations.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Domains workflow migration
