@@ -1,0 +1,16 @@
+{:repository "burn2delete/uniform"
+ :repo-dir "../.."
+ :project-title "Uniform Simplify"
+ :campaign "Uniform simplification"
+ :state-dir "../../target/validation/simplify"
+ :worktree-root "../../../uniform-simplify-worktrees"
+ :scope ["."]
+ ;; Host concurrency, not an allowance on findings or attempts.
+ :parallelism 3
+ :poll-ms 15000
+ ;; Process watchdog for check commands, matching the CI job's host window.
+ :check-timeout-ms 1200000
+ ;; Use the installed Codex model default and existing Codex login.
+ :codex-command ["codex" "app-server" "--listen" "stdio://"]
+ :check-executables #{"clojure"}
+ :checks [["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]]}
