@@ -544,10 +544,11 @@
     expected-source-revision))
 
 (defn- archive-paths
-  [manifest]
+  [manifest extra-paths]
   (->> (concat (map :path (:source-roots manifest))
                (map :path (:direct-inputs manifest))
-               (map :path (:fixture-inputs manifest)))
+               (map :path (:fixture-inputs manifest))
+               extra-paths)
        distinct
        vec))
 
@@ -562,35 +563,37 @@
         (Files/deleteIfExists child)))))
 
 (defn- materialize-source!
-  [project-root manifest]
-  (verify-revision! project-root)
-  (let [snapshot (Files/createTempDirectory "gravity-bootstrap-source-"
-                                            (make-array java.nio.file.attribute.FileAttribute 0))
-        archive (Files/createTempFile "gravity-bootstrap-source-" ".tar"
-                                      (make-array java.nio.file.attribute.FileAttribute 0))
-        archive-command (into ["git" "archive" "--format=tar"
-                               "--output" (.toString archive)
-                               (:commit expected-source-revision) "--"]
-                              (archive-paths manifest))]
-    (try
-      (let [archive-result (command-result project-root archive-command)]
-        (when-not (zero? (:exit-code archive-result))
-          (fail! :revision "bootstrap source archive failed"
-                 (select-keys archive-result [:command :exit-code :stdout-sha256 :stderr-sha256])))
-        (let [extract-result (command-result project-root
-                                             ["tar" "-xf" (.toString archive)
-                                              "-C" (.toString snapshot)])]
-          (when-not (zero? (:exit-code extract-result))
-            (fail! :revision "bootstrap source archive extraction failed"
-                   (select-keys extract-result [:command :exit-code :stdout-sha256 :stderr-sha256])))
-          {:root snapshot
-           :archive archive
-           :archive-sha256 (sha256-file (.toFile archive))
-           :revision expected-source-revision}))
-      (catch Exception error
-        (delete-tree! snapshot)
-        (Files/deleteIfExists archive)
-        (throw error)))))
+  ([project-root manifest]
+   (materialize-source! project-root manifest []))
+  ([project-root manifest extra-paths]
+   (verify-revision! project-root)
+   (let [snapshot (Files/createTempDirectory "gravity-bootstrap-source-"
+                                             (make-array java.nio.file.attribute.FileAttribute 0))
+         archive (Files/createTempFile "gravity-bootstrap-source-" ".tar"
+                                       (make-array java.nio.file.attribute.FileAttribute 0))
+         archive-command (into ["git" "archive" "--format=tar"
+                                "--output" (.toString archive)
+                                (:commit expected-source-revision) "--"]
+                               (archive-paths manifest extra-paths))]
+     (try
+       (let [archive-result (command-result project-root archive-command)]
+         (when-not (zero? (:exit-code archive-result))
+           (fail! :revision "bootstrap source archive failed"
+                  (select-keys archive-result [:command :exit-code :stdout-sha256 :stderr-sha256])))
+         (let [extract-result (command-result project-root
+                                              ["tar" "-xf" (.toString archive)
+                                               "-C" (.toString snapshot)])]
+           (when-not (zero? (:exit-code extract-result))
+             (fail! :revision "bootstrap source archive extraction failed"
+                    (select-keys extract-result [:command :exit-code :stdout-sha256 :stderr-sha256])))
+           {:root snapshot
+            :archive archive
+            :archive-sha256 (sha256-file (.toFile archive))
+            :revision expected-source-revision}))
+       (catch Exception error
+         (delete-tree! snapshot)
+         (Files/deleteIfExists archive)
+         (throw error))))))
 
 (defn- classpath-entry-file
   [snapshot-root entry]

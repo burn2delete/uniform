@@ -56,7 +56,20 @@
           input (source value [":tag" :tag "\uD83D\uDE00" "\uD83D\uDE01"])
           order (:p15-s23-stage2-map-order (definition input)) row (get order ['main [0]])]
       (is (= [":tag" :tag "\uD83D\uDE00" "\uD83D\uDE01"] (mapv #(get (:host-keys row) %) (:entry-order row))))
-      (is (= 4 (count (:host-keys row)))))))
+      (is (= 4 (count (:host-keys row)))))
+    (let [keys ['entry 'choice]
+          body (list 'let ['entry :entry 'choice :choice]
+                     {'entry (list 'leaf/identity :a)
+                      'choice (list 'leaf/identity :b)})
+          input (source body keys)
+          [caller syntax] ((ns-resolve 'gravity.self-hosting.stage2-module-map-call-test 'reference-input)
+                           input body)
+          index (bootstrap/p15-s23-stage2-module-map-reference-index caller syntax (definition input))]
+      ;; Dynamic Symbol keys remain source-bijected when an imported call is
+      ;; nested in the map; key classes are not silently treated as literals.
+      (is (= 2 (count index)))
+      (is (= 2 (count (filter #(= 'leaf/identity (:symbol %))
+                              (get-in caller [:request :references]))))))))
 
 (deftest stage2-module-literal-map-key-rejections-development-kernel
   (let [input (source {"a" :first "b" :second :tag :keyword} ["a" "b" :tag])
@@ -78,9 +91,22 @@
       (is (= "BOOT2006" (:id (diagnostic #(definition changed)))) label))
     (is (= :map-source-distinct-literal-key-bijection
            (get-in (diagnostic #(definition (assoc-in input (conj records-path (key-index "b") :value) "a"))) [:facts :reason]))))
-  (doseq [key [0 'local [:key] {:key :value} '(str "computed")]]
+  (doseq [key [0 [:key] {:key :value} '(str "computed")]]
     (is (= :map-source-distinct-literal-key-bijection
            (get-in (diagnostic #(definition (source {key :value} []))) [:facts :reason]))))
+  (let [keys ['entry 'choice 'other 'join]
+        value {'entry ['entry] 'choice ['entry 'choice]
+               'other ['other] 'join ['entry 'choice 'join]}
+        input (source value keys)
+        row (get (:p15-s23-stage2-map-order (definition input)) ['main [0]])
+        symbol-index (first (keep-indexed #(when (= 'entry (:value %2)) %1)
+                                          (get-in input records-path)))]
+    (is (= keys (mapv #(get (:host-keys row) %) (:entry-order row))))
+    (is (= keys (:host-keys row)))
+    (is (= :map-source-distinct-literal-key-bijection
+           (get-in (diagnostic #(definition
+                                 (assoc-in input (conj records-path symbol-index :value) 'other)))
+                   [:facts :reason]))))
   (doseq [body ['#{ {"key" (leaf/identity :blocked)} } '(fn [] {"key" (leaf/identity :blocked)})]]
     (is (= :unsupported-nested-module-call
            (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-call-sites (definition (source body ["key"])))) [:facts :reason]))))
