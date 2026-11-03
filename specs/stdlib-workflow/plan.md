@@ -154,6 +154,56 @@ Use the [error-handling producer and consumer order](../core-workflow/plan.md#er
 
 Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Complete library-principles source criteria
+
+The complete [L13](../../docs/phase-01-core-language/023-l13-standard-library-design-principles.md) governs these existing tasks. The earlier ten exact profile74 library predicates are restored (5,758 bytes) under their original Library roles and declared dependencies. Current whole-source criteria add the omitted public-contract, classification, byte/resource/compiler API, profile/authority/safety, diagnostic, preservation and composition conditions. The unchanged existing complete macro generated-program predicate retains Expand's normal revalidation role. Original task identities/statuses, narrow review subjects and actual restrictions survive; none of those reviews is renewed or expanded into whole L13, STD1-STD20 or current implementation acceptance.
+
+| Criterion | Existing task | Required source outcome |
+| --- | --- | --- |
+| `contracts` | `stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations` | L13 complete public library-contract criterion (Open) |
+| `classification` | `stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations` | L13 API-classification criterion (Open) |
+| `data` | `stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis` | L13 complete portable-data API criterion (Open) |
+| `numeric` | `stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis` | L13 complete public numeric-mode API criterion (Open) |
+| `resources` | `stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis` | L13 complete resource and concurrency API criterion (Open) |
+| `meta` | `stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters` | L13 complete compiler/domain library API criterion (Open) |
+| `release` | `stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests` | L13 library compatibility and release-assembly criterion (Open) |
+| `import` | `resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries` | L13 real library import-boundary criterion (Open) |
+| `typed` | `types/current-evidence-and-remaining-work/types2-check-declared-abstractions` | L13 actual public library type-contract criterion (Open) |
+| `effects` | `effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering` | L13 actual public library effect-admission criterion (Open) |
+| `grants` | `auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime` | L13 actual library authority criterion (Open) |
+| `wrappers` | `legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries` | L13 real safe-wrapper boundary criterion (Open) |
+| `preservation` | `opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors` | L13 library numeric and safe-API preservation criterion (Open) |
+| `diagnostics` | `diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema` | L13 complete library diagnostic-carrier criterion (Open) |
+| `composition` | `stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations` | L13 complete library artifact and conformance composition criterion (Open) |
+| `finite-access-ordered-vector` | `stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis` | Restore exact finite predicate; retain original review scope. |
+| `finite-access-persistent-list` | `stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis` | Restore exact finite predicate; retain original review scope. |
+| `finite-compile-contract-examples` | `stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis` | Restore exact finite predicate; retain original review scope. |
+| `finite-enforce-portability-layers` | `stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations` | Restore exact finite predicate; retain original review scope. |
+| `finite-execute-declared-numeric-mode` | `stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis` | Restore exact finite predicate; retain original review scope. |
+| `finite-maintain-set-uniqueness` | `stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis` | Restore exact finite predicate; retain original review scope. |
+| `finite-publish-public-contract` | `stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations` | Restore exact finite predicate; retain original review scope. |
+| `finite-record-compatibility-event` | `stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests` | Restore exact finite predicate; retain original review scope. |
+| `finite-traverse-map-associations` | `stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis` | Restore exact finite predicate; retain original review scope. |
+| `finite-validate-and-slice-string` | `stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis` | Restore exact finite predicate; retain original review scope. |
+| `generated-existing` | `expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs` | Unchanged complete generated-source checking predicate. |
+
+
+Read each complete L13 preamble, list, example and following condition. The source occurrence/facet census locates the full conjunction; a document link, owner match or finite earlier predicate alone cannot establish it. Supporting STD1, TEST7, GOV3, C17 and selected L6/L15 interfaces retain their own larger source obligations.
+
+The library keeps five portability layers: compiler core (0), portable data (1), memory/resources/concurrency (2), capability-backed host/platform (3) and domain/compiler libraries (4). Bind the complete source namespace inventory and actual dependency edges; reject a lower-to-higher edge and report exactly the shipped subset in each profile manifest. A compiler-support closure may complete earlier than wider application modules. Neither the full library nor final Build/release is the first interface prerequisite for a callable pure function or a declared namespace.
+
+Every public export carries real type, effect/capability, allocation/resource, failure/panic, blocking/scheduling/nondeterminism/replay, profile/target and stability facts. Preserve all seven API classifications in metadata/docs/lints/checks/fixtures; labels grant no authority or behavior. Library owns declarations and actual APIs. Resolve validates real imports/layer graphs, Types derives compatibility, Effects actual call admission, Auth authentic scoped grants, Legality safety/wrappers, and Opt preservation. The inherited Auth references for generated checking and effect admission remain historical context with the actual Expand/Effects witnesses; the inherited Opt numeric owner supplies preservation while Library supplies callable numeric behavior.
+
+IR inspection declares the L6 `:compiler/read-ir` effect and C17's scoped `:compiler/ir-transform` capability. A `:read-mir` scope grants no `:write-mir`; artifact kind, namespace, pass phase and package policy still apply. All emitted forms undergo ordinary handwritten-source checks with complete source span/hygiene/phase/origin/type/effect/profile/target/artifact identity. Named intrinsic hooks are auditable and specified, not privileged.
+
+Retain precise List/Vector/Map/Set/byte/String contracts, physical fixed-capacity/region-backed alternatives, numeric modes and required proofs, ten memory/resource distinctions and source concurrency/scheduler behavior. Physical capacity, queue, memory layout, index/arity and target representability rules survive current project accounting removal; no work/input allowance or failure-attempt quota returns. Actual selected Runtime/provider values and cleanup establish service support; fakes or host builtins do not accept every API or profile.
+
+Safe wrappers isolate unsafe namespaces and own actual invariants, tests/proofs/checks, permitted profiles, cleanup and release/safety-critical audits under D8's four outcomes. Preserve failure/check/diagnostic/audit behavior through selected transformations, with required exact-subject evidence and changed-owner regeneration. Valid raw MIR remains usable; no universal optimizer or future full Formal gate is added.
+
+All six L13 artifact families and nine diagnostics retain actual producing owners and required namespace/symbol/profile/target/contract/caller-effects/capability/remediation fields. Examples compile with real imports under every claimed major profile; missing imports, hidden globals, untracked authority, profile mismatch or false expected diagnostics fail. Library owns actual examples and API fixtures; the existing independent TEST7/T7/Release harness consumes them later. Unavailable or held required cases remain Open. Compatibility events include profile removal and obey existing Governance/STD20/GOV2/GOV8 policy; Library assembles the affected records rather than granting stabilization or release approval.
+
+Early real namespace/export/schema/provider/profile/ABI/checker contracts support construction; actual selected compiler/service/domain results support callable behavior and later conformance. The sole dependency graph still needs the complete L13 selected-result interface staging; this source proposal does not silently amend its 2,199 joins, 141 routes, 101 current parents, forty future records or coarse cycles. Current source/owner/interface entailment, independent acceptance and integration remain pending. Reader contract coverage remains the first actual implementation increment. Preserve all writer reservations, original C7/C12 and paired/provider/plugin/native/callback/device/probe/replay/migration/private-store/signing/publication restrictions and stopped handoffs. No held operation, other-chat message, reviewer wake, aggregate publication or merge occurs.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Standard Library workflow migration

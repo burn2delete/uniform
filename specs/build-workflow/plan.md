@@ -236,6 +236,13 @@ Use the [error-handling producer and consumer order](../core-workflow/plan.md#er
 
 Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Complete library-principles source interface
+
+Use the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria). Consume authentic library manifests and later actual compiled export/profile/example/audit/compatibility evidence under current package policy. Early selected source/graph contracts support local development; full Build or whole-library release is not its own initial interface.
+
+Current source/interface entailment and independent acceptance remain pending. Task identities/statuses, finite historical reviews and actual restrictions survive; no held action is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration

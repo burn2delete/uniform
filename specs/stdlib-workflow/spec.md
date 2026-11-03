@@ -70,6 +70,8 @@ evidence and accurate manifests/docs/compatibility. Preserve writer/operation
 holds and custody; independent acceptance, integration, wider module completion
 and final seedless compiler release remain separate.
 
+The [complete library-principles source criteria](plan.md#complete-library-principles-source-criteria) bind full L13 public contracts, five layers, seven API classes, actual data/numeric/resource/compiler behavior, profile/type/effect/grant/safety checks, all artifacts/diagnostics and executable examples to existing owners. Ten earlier exact predicates are restored without review renewal; generated-source checking remains with Expand. Wider STD1-STD20 source/task entailment, implementation acceptance and current independent review remain pending.
+
 ## Historical workflow-transfer specification
 
 # Feature specification: Standard Library workflow migration

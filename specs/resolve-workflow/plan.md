@@ -390,6 +390,13 @@ Use the [error-handling producer and consumer order](../core-workflow/plan.md#er
 
 Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Complete library-principles source interface
+
+Use the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria). Consume early authentic namespace/export/profile/layer declarations, then validate actual library imports and upward/downward dependencies with source identity. Later actual built availability confirms shipped claims; a future full library release is not the first import interface.
+
+Current source/interface entailment and independent acceptance remain pending. Task identities/statuses, finite historical reviews and actual restrictions survive; no held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Resolve task authority

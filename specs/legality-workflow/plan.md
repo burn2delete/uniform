@@ -921,6 +921,13 @@ Use the [error-handling producer and consumer order](../core-workflow/plan.md#er
 
 Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Complete library-principles source interface
+
+Use the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria). Check actual library allocation/resource/safe-wrapper/profile facts with surviving invariants, proof/checks and audits. Separate unsafe namespaces and callable wrapper behavior remain library responsibilities.
+
+Current source/interface entailment and independent acceptance remain pending. Task identities/statuses, finite historical reviews and actual restrictions survive; no held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Legality task authority

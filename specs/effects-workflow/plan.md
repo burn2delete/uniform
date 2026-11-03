@@ -418,6 +418,13 @@ Use the [error-handling producer and consumer order](../core-workflow/plan.md#er
 
 Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Complete library-principles source interface
+
+Use the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria). Admit actual inferred library call effects under real allowance/profile/service/safety premises, with Auth separately checking grants. The inherited Auth owner remains grant context and does not own inference or effect admission.
+
+Current source/interface entailment and independent acceptance remain pending. Task identities/statuses, finite historical reviews and actual restrictions survive; no held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Effects task authority

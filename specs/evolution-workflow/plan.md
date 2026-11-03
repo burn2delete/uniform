@@ -194,3 +194,9 @@ Task identities/statuses, historical review scopes and actual restrictions remai
 Use the [error-handling producer and consumer order](../core-workflow/plan.md#error-handling-producer-and-consumer-order) and existing selected-result table. Retain exact unchanged error-representation change, typed-outcome and recovered Runtime predicates/roles/review scopes. Actual affected compatibility/conformance precedes stable adoption only; ordinary unchanged-contract work gains no ceremony or held-action authority.
 
 Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete library-principles source interface
+
+Use the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria). Retain actual library admission, compatibility/deprecation/stabilization and unsafe/security policy ownership. Library assembles affected per-release records and profile-change events; a report or signature does not confer approval.
+
+Current source/interface entailment and independent acceptance remain pending. Task identities/statuses, finite historical reviews and actual restrictions survive; no held action is enabled.
