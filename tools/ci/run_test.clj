@@ -9,6 +9,7 @@
 (binding [*command-line-args* nil] (load-file "tools/ci/lint.clj"))
 (require '[ci.lint :as lint])
 (require '[ci.lint-context :as context])
+(binding [*command-line-args* nil] (load-file "tools/ci/lint_context_test.clj"))
 
 (defn fixture-tool!
   ([directory argv input allowed-exits]
@@ -1059,5 +1060,5 @@
                               "(def missing ::unknown/key)\n")))))
     (is (nil? (find-ns source-ns)))))
 
-(let [result (run-tests)]
+(let [result (run-tests 'ci.run-test 'ci.lint-context-test)]
   (System/exit (if (zero? (+ (:fail result) (:error result))) 0 1)))

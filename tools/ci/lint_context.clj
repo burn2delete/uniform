@@ -436,7 +436,26 @@
   ([archive inventory selected]
    (let [modes (into {} (for [entry (remove str/blank? (str/split (slurp inventory) #"\u0000"))
                               :let [[header path] (str/split entry #"\t" 2)]]
-                          [path (first (str/split header #" "))]))]
+                          [path (first (str/split header #" "))]))
+         selected (vec (distinct
+                        (concat
+                         (when (some #(or (= bootstrap %)
+                                          (str/starts-with? % (str source-root "gravity/bootstrap_impl/")))
+                                    selected)
+                           [bootstrap])
+                         (when (some #(or (= facade %)
+                                          (str/starts-with? % facade-prefix))
+                                    selected)
+                           [facade])
+                         (when (some #(or (= checker %)
+                                          (str/starts-with? % checker-prefix))
+                                    selected)
+                           [checker])
+                         (when (some #(or (= c2-pass-cache %)
+                                          (str/starts-with? % c2-pass-cache-prefix))
+                                    selected)
+                           [c2-pass-cache])
+                         (filter #(contains? modes %) selected))))]
      (with-open [zip (ZipFile. (io/file archive))]
        (let [read-archived (fn [path]
                              (when-not (#{"100644" "100755"} (get modes path))
