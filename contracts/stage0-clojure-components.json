@@ -228,6 +228,22 @@
       "test": {"path": "bootstrap/clojure/test/gravity/backend/llvm/pipeline_test.clj", "namespace": "gravity.backend.llvm.pipeline-test", "registration": "standalone"}
     },
     {
+      "id": "mlir-diagnostic-data",
+      "kind": "production-stage-helper",
+      "owner": "sh-target-mlir",
+      "source": {"path": "bootstrap/clojure/src/gravity/backend/mlir.clj", "namespace": "gravity.backend.mlir"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00242-b6-document-source-artifact.clj", "namespace": "gravity.bootstrap", "owner": "sh-target-mlir"},
+      "test": {"path": "bootstrap/clojure/test/gravity/backend/mlir/pipeline_test.clj", "namespace": "gravity.backend.mlir.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "gpu-diagnostic-data",
+      "kind": "production-stage-helper",
+      "owner": "sh-target-gpu",
+      "source": {"path": "bootstrap/clojure/src/gravity/backend/gpu.clj", "namespace": "gravity.backend.gpu"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00246-b7-document-source-artifact.clj", "namespace": "gravity.bootstrap", "owner": "sh-target-gpu"},
+      "test": {"path": "bootstrap/clojure/test/gravity/backend/gpu/pipeline_test.clj", "namespace": "gravity.backend.gpu.pipeline-test", "registration": "standalone"}
+    },
+    {
       "id": "c-emission",
       "kind": "production-stage-helper",
       "owner": "sh-target-c",
