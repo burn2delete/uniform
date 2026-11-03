@@ -42,10 +42,10 @@ With the pinned `clj-kondo` 2025.10.23 directory on `PATH`, the facade/context
 controls passed 26 tests/488 assertions with zero failures/errors and zero
 blocking warnings/errors. The language-boundary gate passed 6 tests/11
 assertions. The supplied repository-wide `cljfmt` check remains nonzero for
-the three original PR697 control files (`progress_test.clj`,
-`progress_isolation_test.clj`, and `resolution_interval_test.clj`); the two
-files changed by this repair pass it. These are finite source/data controls:
-they do not load Bootstrap, execute a genuine Reader, run native code,
-dispatch hosted CI, or reclassify the historical PR697 static failure.
+the three original PR697 control files in its pre-format source checkpoint;
+the formatter-only repair now passes all `tools/ci` files. The prior nonpass is
+retained as historical evidence in the receipt. These are finite source/data
+controls: they do not load Bootstrap, execute a genuine Reader, run native
+code, dispatch hosted CI, or reclassify the historical PR697 static failure.
 Independent acceptance of this exact checkpoint and normal changed-head CI
 remain required.

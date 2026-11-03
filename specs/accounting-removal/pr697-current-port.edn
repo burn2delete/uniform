@@ -15,9 +15,9 @@
  {:commit "5fa103d2b384d36b3fc67a0d502f2212d0a225a8"
   :tree "56b99d048302548a6c73b5385798e62301fdc6fc"}
  :source-checkpoint
- {:commit "ff22c2c70dfd2748a53050ed783472cfe20686ab"
-  :tree "ad5aa67a21553ea001dddd6a20e5f2acc7345ac3"
-  :parent "407d17a537544299c2667dfbaa72e971f0e69134"
+ {:commit "4d8a73d7010c4007e3bea1c843865b914ad08084"
+  :tree "fa0d2420c17691424d53151182ce5a4206e6f5c8"
+  :parent "a6e11578e6faff59508e672e811384833b5c68db"
   :paths
   {"bootstrap/clojure/test/gravity/development_test_runner.clj"
    "e66336203aec9b1d120bf637a65b940541c33238"
@@ -28,11 +28,11 @@
    "tools/ci/lint_facade_test.clj"
    "7363e30a34318046928acbaee732d6284ff5f475"
    "tools/ci/progress_isolation_test.clj"
-   "3f059b708f3a879fdb7d87b7bc9764f0c93b6a8b"
+   "06b40909c6119f5c2fa03a2c55c031f29c31f3f8"
    "tools/ci/progress_test.clj"
-   "9b95b9ccdafdf78de9a1428ae2f28c5e9394c12a"
+   "17e3a98bb82102be8047fabc098a2670c68634b7"
    "tools/ci/resolution_interval_test.clj"
-   "3986c7b8703b755b07b5a48190bc41f551b815a7"
+   "3787a7ae4cdd0b7cc13c4e6361888a54243e6ded"
    "tools/ci/run.clj"
    "e675daa543fedc9515afdf5b0ae43ea04e2951df"}}
  :current-owner-ids
@@ -45,15 +45,15 @@
  :focused-checks
  [{:name :progress-runner
    :command "clojure -J-Xmx256m -M tools/ci/progress_test.clj"
-   :log "/tmp/uniform-pr697-progress-repair.log"
+   :log "/tmp/uniform-pr697-progress-format.log"
    :result "5 tests, 20 assertions, 0 failures, 0 errors"}
   {:name :resolution-intervals
    :command "clojure -J-Xmx256m -M tools/ci/resolution_interval_test.clj"
-   :log "/tmp/uniform-pr697-resolution-interval-repair.log"
+   :log "/tmp/uniform-pr697-resolution-interval-format.log"
    :result "4 tests, 15 assertions, 0 failures, 0 errors"}
   {:name :progress-isolation
    :command "clojure -J-Xmx256m -M tools/ci/progress_isolation_test.clj"
-   :log "/tmp/uniform-pr697-progress-isolation-repair.log"
+   :log "/tmp/uniform-pr697-progress-isolation-format.log"
    :result "2 tests, 7 assertions, 0 failures, 0 errors"}
   {:name :facade-context
    :command "PATH=/tmp/acc08-controls-01a183dd/kondo-2025.10.23:$PATH clojure -J-Xmx768m -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\" \"tools\"]}' -M tools/ci/lint_facade_test.clj"
@@ -71,8 +71,11 @@
   :source-evaluation false}
  :formatting-check
  {:command "clojure -J-Xmx256m -Sdeps '{:deps {dev.weavejester/cljfmt {:mvn/version \"0.13.4\"}}}' -M -m cljfmt.main check tools/ci"
-  :log "/tmp/uniform-pr697-cljfmt-tools-ci-repair.log"
-  :result "exit 1; three original PR697 control files still require cljfmt formatting: tools/ci/progress_test.clj, tools/ci/progress_isolation_test.clj, tools/ci/resolution_interval_test.clj; lint_context.clj and lint_facade_test.clj pass"}
+  :log "/tmp/uniform-pr697-cljfmt-tools-ci-fixed.log"
+  :result "exit 0; all source files formatted correctly"
+  :previous
+  {:log "/tmp/uniform-pr697-cljfmt-tools-ci-repair.log"
+   :result "exit 1; progress_test.clj, progress_isolation_test.clj, and resolution_interval_test.clj required mechanical formatting"}}
  :nonclaims
  [:no-native-execution
   :no-bootstrap-or-selected-macro-workload
