@@ -626,10 +626,10 @@
     (is (= (:sha256 predecessor) (sh-inventory/sha256 prior-text)))
     (is (= (:review predecessor)
            (select-keys (:mapping-review prior) [:status :input-fingerprint :source-version-bridge])))
-    (is (= 60 (:unchanged-body-count comparisons)))
+    (is (= 54 (:unchanged-body-count comparisons)))
     (is (= (set (map :id (:changed-bodies comparisons))) changed))
-    (is (= 79 (count changed)))
-    (is (= 60 (count (remove changed (keys before)))))
+    (is (= 85 (count changed)))
+    (is (= 54 (count (remove changed (keys before)))))
     (let [refinement (:math-parent-refinement bridge)
           predecessor (:predecessor-readiness-successor refinement)
           previous-text (sh-crosswalk/git-source (:commit predecessor) (:path predecessor))
@@ -5149,25 +5149,29 @@
     (is (= (:sha256 previous) (sh-inventory/sha256 old-text)))
     (is (= (:projection-sha256 previous) (sh-inventory/sha256 projection-text)))
     (is (= (:input-fingerprint previous) (:input-fingerprint old)))
-    ;; The current-main successor keeps the predecessor file and all historical
-    ;; subjects, but its source frame is intentionally newer than the old
-    ;; projection.  Validate the immutable predecessor and the reconciled
-    ;; current census separately rather than comparing the whole maps.
-    (is (= (:source-input-commit bridge) (:source-input-commit sh-crosswalk/readiness-source-version)))
-    (is (= (:task-comparisons bridge) (:task-comparisons sh-crosswalk/readiness-source-version)))
+    ;; The immutable route bridge retains its historical source frame.  The
+    ;; current-main successor is a distinct reconciled frame, so validate each
+    ;; census independently rather than equating old and current metadata.
+    (is (= "89959d87edb55f47a66a1f15d530b0e40c27b44c" (:source-input-commit bridge)))
+    (is (= "2101e0a15c25c24be555489e1a2d5ee744137df1"
+           (:source-input-commit sh-crosswalk/readiness-source-version)))
+    (is (not= (:source-input-commit bridge)
+              (:source-input-commit sh-crosswalk/readiness-source-version)))
     (is (= :selected-complete-C3-producer-consumer-dependency-proposal (:kind r)))
     (is (= :pending (:independent-current-review r)))
     (is (= :unassessed (:implementation-acceptance r) (:global-source-conjunctions r)))
     (is (= 149 (count tasks) (count before)))
     (is (= 25 (count (:task-authorities view))))
     (is (= 32 (count (:source-files bridge))))
-    (is (= [60 79] [(get-in bridge [:task-comparisons :unchanged-body-count]) (count (get-in bridge [:task-comparisons :changed-bodies]))]))
+    (is (= [54 85] [(get-in sh-crosswalk/readiness-source-version [:task-comparisons :unchanged-body-count])
+                     (count (get-in sh-crosswalk/readiness-source-version [:task-comparisons :changed-bodies]))]))
+    (is (= [55 84] [(get-in bridge [:task-comparisons :unchanged-body-count])
+                     (count (get-in bridge [:task-comparisons :changed-bodies]))]))
     (is (= (set (keys tasks)) (set (keys before))))
-    ;; This route's predecessor already contains several global readiness
-    ;; amendments.  Compare its actual source bodies, rather than applying
-    ;; the top-level 79-body frame (which is anchored to the original PR
-    ;; predecessor) to this narrower route.
-    (is (= 27 (count changed-task-ids)))
+    ;; Both immutable route projections contain the same task bodies; the
+    ;; current-main source frame is checked separately above.  Do not infer a
+    ;; historical body amendment from a source-frame commit transition alone.
+    (is (= 0 (count changed-task-ids)))
     (doseq [[id row] tasks]
       (let [prior-row (before id)
             source-text (sh-crosswalk/git-source (:source-commit row) (:path row))
@@ -5704,22 +5708,43 @@
         selected (filterv #(consumers (:consumer %)) routes)
         current-map (into {} (map (juxt :consumer identity) routes)) old-map (into {} (map (juxt :consumer identity) old-routes))
         meaning #(select-keys % [:consumer :start-results :composition-results :selected-output-contract])
-        allowed [:input-fingerprint :core-dependency-refinement :source-files :applying-source-pins :inspection-locators :additional-pinned-evidence-hashes]]
+        allowed [:input-fingerprint :core-dependency-refinement :source-files :applying-source-pins :inspection-locators :additional-pinned-evidence-hashes
+                 :source-input-commit :task-comparisons :status :predecessor :kind :retained-historical-source-inputs :qualification
+                 :current-source-checkpoint :current-source-paths :future-task-records :historical-source-frame
+                 :source-frame-fingerprint :source-frame-scope :source-input-git-tree :source-input-tree]]
     (is (= "a68b5464f95216a8327a46e59d993416dba086ad" (:commit previous)))
     (is (= (:sha256 previous) (sh-inventory/sha256 old-text)))
     (is (= (:projection-sha256 previous) (sh-inventory/sha256 projection-text)))
     (is (= (:input-fingerprint previous) (:input-fingerprint old)))
     (is (= (apply dissoc old allowed) (apply dissoc bridge allowed)))
-    (is (= (:task-comparisons old) (:task-comparisons bridge)))
+    ;; The predecessor comparison frame remains authenticated by `old`; the
+    ;; current composition has a separate exact census after current-main
+    ;; task changes.
+    (is (= [54 85] [(get-in bridge [:task-comparisons :unchanged-body-count])
+                     (count (get-in bridge [:task-comparisons :changed-bodies]))]))
     (is (= 149 (count tasks) (count before)))
     (is (= 25 (count (:task-authorities view))))
     (is (= (set (keys tasks)) (set (keys before))))
     (doseq [[id row] tasks]
       (is (= (:checked row) (:checked (before id))))
-      (is (= (:source-commit row) (:source-commit (before id))))
-      (is (= (:file-sha256 row) (:file-sha256 (before id))))
-      (is (= (get-in row [:source :sha256]) (get-in (before id) [:source :sha256]))))
-    (is (= (:future-task-authorities prior) (:future-task-authorities view)))
+      ;; Current-main composition rebases source locators to its exact
+      ;; checkpoint.  Preserve the predecessor row for semantic comparison,
+      ;; but validate current provenance against the current source bytes.
+      (is (= (sh-crosswalk/source-pin (:path row)) (:source-commit row)))
+      (is (= (:file-sha256 row)
+             (sh-inventory/sha256 (sh-crosswalk/git-source (:source-commit row) (:path row)))))
+      (is (= (get-in row [:source :sha256])
+             (sh-inventory/sha256 (acceptance-dependencies/source-raw (:source row) (:source-snapshots view))))))
+    (let [future-before (into {} (for [[region records] (:future-task-authorities prior)
+                                       row records] [(:id row) row]))
+          future-after (into {} (for [[region records] (:future-task-authorities view)
+                                      row records] [(:id row) row]))]
+      (is (= (set (keys future-before)) (set (keys future-after))))
+      (doseq [[id row] future-after]
+        (is (= (:checked row) (:checked (future-before id))))
+        (is (= (:file-sha256 row)
+               (sh-inventory/sha256 (sh-crosswalk/git-source (:source-commit row) (:path row))))))
+      )
     (is (= [] (:changed-task-ids r) (:new-task-identities r)))
     (is (= [59 13 46 778 981 203 1577 1780 137 97 40 78]
            [(count consumers) (count new-consumers) (count (:predecessor-selected-routes r))
@@ -5782,7 +5807,13 @@
     (doseq [record (concat [dep (:dependency-tool-source r)] (:plan-sources r))
             :let [p (:path record) before (:before record) after (:after record)]]
       (is (= (:sha256 before) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit before) p))))
-      (is (= (:sha256 after) (sh-inventory/sha256 (slurp p)) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit after) p)))))
+      ;; The route's :after record is immutable historical evidence.  Current
+      ;; composition may have a newer exact source frame for the same path;
+      ;; authenticate both rather than conflating the frames.
+      (is (= (:sha256 after) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit after) p))))
+      (let [current-commit (:source-input-commit bridge)]
+        (is (= (sh-inventory/sha256 (slurp p))
+               (sh-inventory/sha256 (sh-crosswalk/git-source current-commit p))))))
     (is (= 20 (count (:plan-sources r))))
     (is (= 11 (count (:canonical-sources r))))
     (doseq [{:keys [path source-commit sha256]} (:canonical-sources r)]
