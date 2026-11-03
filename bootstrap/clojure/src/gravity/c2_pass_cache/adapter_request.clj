@@ -35,6 +35,36 @@
    :build-effect-binding :capability-binding :facet-binding
    :profile-binding :target-binding :boundary-binding])
 
+(defn- lookup-evidence
+  [key status reason extra]
+  (merge
+   {:artifact :gravity/c2-local-pass-cache-evidence
+    :schema-version cache-schema-version
+    :stage cache-stage
+    :semantic-key-id (:semantic-key-id key)
+    :storage-key-id (:storage-key-id key)
+    :status status
+    :reason reason
+    :local-development-only? true
+    :release-authority? false
+    :proof-authority? false
+    :equivalence-authority? false
+    :self-hosting-credit? false}
+   extra))
+
+(defn- required-validation-ops!
+  [ops]
+  (when-not (and (map? ops)
+                 (map? (:current-binding ops))
+                 (ifn? (:artifact-id-of ops))
+                 (ifn? (:boundary-projection-id-of ops))
+                 (ifn? (:validate-artifact! ops)))
+    (cache-fail! "C16-KEY" "cache validation operations are incomplete"
+                 {:required [:current-binding :artifact-id-of
+                             :boundary-projection-id-of
+                             :validate-artifact!]}))
+  ops)
+
 (defn- validated-legacy-key-request!
   [key]
   (when-not (map? key)
