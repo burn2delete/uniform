@@ -275,6 +275,10 @@
 (def ^:private mlir-diagnostic-data-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00242-b6-document-source-artifact.clj")
 (def ^:private mlir-diagnostic-data-stage-test "bootstrap/clojure/test/gravity/backend/mlir/pipeline_test.clj")
 
+(def ^:private gpu-diagnostic-data-stage-path "bootstrap/clojure/src/gravity/backend/gpu.clj")
+(def ^:private gpu-diagnostic-data-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00246-b7-document-source-artifact.clj")
+(def ^:private gpu-diagnostic-data-stage-test "bootstrap/clojure/test/gravity/backend/gpu/pipeline_test.clj")
+
 (def ^:private c-emission-stage-path "bootstrap/clojure/src/gravity/backend/c.clj")
 (def ^:private c-emission-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00750-p15-s23-c13-c14-b1-authority-token-023-p15-s23-b2-c17-operation-expression-through-p15-s23-b2-c17-discard-cast-records.clj")
 (def ^:private c-emission-stage-test "bootstrap/clojure/test/gravity/backend/c/pipeline_test.clj")
@@ -399,6 +403,9 @@
              mlir-diagnostic-data-stage-path
              {:namespace 'gravity.backend.mlir :owner :sh-target-mlir :slice "SH-18"
               :consumer-path mlir-diagnostic-data-stage-consumer :test-path mlir-diagnostic-data-stage-test}
+             gpu-diagnostic-data-stage-path
+             {:namespace 'gravity.backend.gpu :owner :sh-target-gpu :slice "SH-18"
+              :consumer-path gpu-diagnostic-data-stage-consumer :test-path gpu-diagnostic-data-stage-test}
              optimization-stage-path
              {:namespace 'gravity.optimization :owner :sh-optimization :slice "SH-16"
               :consumer-path optimization-stage-consumer :test-path optimization-stage-test}
@@ -497,6 +504,9 @@
          (= :sh-target-mlir (get-in record [:module-owners mlir-diagnostic-data-stage-path]))
          (= {:namespace 'gravity.backend.mlir.pipeline-test :slice "SH-18" :owner :sh-target-mlir}
             (get-in record [:standalone-test-owners mlir-diagnostic-data-stage-test]))
+         (= :sh-target-gpu (get-in record [:module-owners gpu-diagnostic-data-stage-path]))
+         (= {:namespace 'gravity.backend.gpu.pipeline-test :slice "SH-18" :owner :sh-target-gpu}
+            (get-in record [:standalone-test-owners gpu-diagnostic-data-stage-test]))
          (= :sh-target-js (get-in record [:module-owners js-source-stage-path]))
          (= {:namespace 'gravity.backend.js.pipeline-test :slice "SH-00" :owner :sh-target-js}
             (get-in record [:standalone-test-owners js-source-stage-test]))
@@ -583,6 +593,11 @@
               "source" {"path" mlir-diagnostic-data-stage-path "namespace" "gravity.backend.mlir"}
               "consumer" {"path" mlir-diagnostic-data-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-target-mlir"}
               "test" {"path" mlir-diagnostic-data-stage-test "namespace" "gravity.backend.mlir.pipeline-test"
+                      "registration" "standalone"}}
+             {"id" "gpu-diagnostic-data" "kind" "production-stage-helper" "owner" "sh-target-gpu"
+              "source" {"path" gpu-diagnostic-data-stage-path "namespace" "gravity.backend.gpu"}
+              "consumer" {"path" gpu-diagnostic-data-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-target-gpu"}
+              "test" {"path" gpu-diagnostic-data-stage-test "namespace" "gravity.backend.gpu.pipeline-test"
                       "registration" "standalone"}}
              {"id" "c-emission" "kind" "production-stage-helper" "owner" "sh-target-c"
               "source" {"path" c-emission-stage-path "namespace" "gravity.backend.c"}
