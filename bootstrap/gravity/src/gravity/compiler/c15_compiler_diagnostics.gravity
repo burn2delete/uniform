@@ -470,6 +470,68 @@
        (get fields 0) (get fields 1) (get fields 2) (get fields 3) (get fields 4)
        (get fields 5) (get fields 6) (get fields 7) (get fields 8) (get fields 9) (get fields 10)))))
 
+; Selected generated reference only. Shape/linkage is not source authentication;
+; the C5 producer retains its actual parent/request and causal-reference checks.
+(defn resolution-alias-diagnostic-fields [original]
+  (if (if (map? original) (c15-carrier-valid? original) false)
+    (let [facts (get original :facts)
+          details (if (map? facts) (get facts :rule-specific) nil)
+          origins (get original :origin-chain)
+          generated-call-site?
+          (if (vector? origins)
+            (loop [index 0]
+              (if (= index (count origins)) false
+                (let [origin (get origins index)]
+                  (if (if (c15-c5-generated-origin-valid? origin)
+                        (= (get (get original :source-span) :primary)
+                           (get (get origin :call-site-span) :primary)) false)
+                    true (recur (+ index 1)))))) false)]
+      (if (= [:c5-name-resolution "C5-ALIAS" :name-resolution :error
+              true true true true true true true false true
+              :unknown-namespace-alias :unknown-namespace-alias
+              true true true true true 0 [] true]
+             [(get original :diagnostic-family) (get original :id) (get original :stage)
+              (get original :severity) (symbol? (get original :symbol))
+              (symbol? (get original :namespace)) (keyword? (get original :profile))
+              (keyword? (get original :target)) (sh15-sha256-shape? (get original :syntax-id))
+              (sh15-sha256-shape? (get original :diagnostic-id))
+              (string? (get original :remediation)) (contains? original :redactions)
+              (c15-c5-origin-chain-valid? origins)
+              (get facts :reason) (get details :reason)
+              (symbol? (get details :qualifier)) (symbol? (get details :name))
+              (keyword? (get details :position)) (vector? (get details :scope-chain))
+              (integer? (get details :candidate-count))
+              (get details :candidate-count) (get original :candidate-bindings)
+              (if (= (str (get original :symbol))
+                     (str (get details :qualifier) "/" (get details :name)))
+                generated-call-site? false)])
+        [(get original :id) (get original :severity) (get original :stage)
+         {:span (get original :source-span) :syntax-id (get original :syntax-id)
+          :artifact (get (get (get original :source-span) :primary) :file)}
+         (loop [remaining origins related []]
+           (if (= 0 (count remaining)) related
+             (let [origin (first remaining)]
+               (recur (rest remaining)
+                      (if (= :generated (get origin :kind))
+                        (conj (conj related
+                                    {:role :generated-by :span (get origin :definition-span)
+                                     :artifact (get (get origin :producer) :definition-syntax-id)})
+                              {:role :macro-call-site :span (get origin :call-site-span)
+                               :artifact (get (get origin :generated-span) :call-site-syntax-id)}) related)))))
+         origins (get original :profile) (get original :target) facts
+         [{:kind :declare-namespace-alias
+           :binding {:qualifier (get details :qualifier) :namespace (get original :namespace)}
+           :message (get original :remediation) :source-diagnostic original}]
+         nil] nil)) nil))
+
+(defn build-resolution-alias-diagnostic [original]
+  (let [fields (resolution-alias-diagnostic-fields original)]
+    (if (= nil fields)
+      (c15-construction-failure "C15-SCHEMA" :source-diagnostic :unsupported-c5-diagnostic)
+      (build-c15-diagnostic
+       (get fields 0) (get fields 1) (get fields 2) (get fields 3) (get fields 4)
+       (get fields 5) (get fields 6) (get fields 7) (get fields 8) (get fields 9) (get fields 10)))))
+
 (defn c15-digest-request [fields]
   {:ordinal 0 :purpose :c15-diagnostic-id :domain :gravity/c15-diagnostic-id-v1
    :preimage {:rule (get fields 0) :primary-artifact (get (get fields 3) :artifact)
