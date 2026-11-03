@@ -10,7 +10,7 @@
 (def ^:private c15-plan (delay (compile-plan c15-path)))
 (def ^:private c12-plan
   (delay (compile-plan
-          "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity")))
+          "language/compiler/src/gravity/compiler/c12_domain_ir_architecture.gravity")))
 (defn- fixture-path [family extension]
   (str "bootstrap/clojure/fixtures/self-hosting/sh-15/" family
        "/coordinator-result-carrier." extension))

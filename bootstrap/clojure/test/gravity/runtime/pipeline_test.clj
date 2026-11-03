@@ -10,7 +10,7 @@
         emitter (:emitter (b/c-backend-stage2-plan-emitter-source-rule! path :jvm))]
     {:path path :plan (b/p15-s23-stage2-compiler-artifact-plan emitter path text)}))
 (def ^:private hello-plans (delay (mapv #(compile-source (str "examples/hello" %)) [".gravity" ".qst"])))
-(def ^:private runtime-plan (delay (compile-source "bootstrap/gravity/src/gravity/runtime.gravity")))
+(def ^:private runtime-plan (delay (compile-source "language/runtime/src/gravity/runtime.gravity")))
 (def ^:private context {:engine :stage-owned-runtime-pipeline-test})
 (defn- diagnostic [f]
   (try (f) nil (catch clojure.lang.ExceptionInfo error (ex-data error))))

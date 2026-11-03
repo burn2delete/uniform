@@ -90,6 +90,70 @@
 (def p15-s23-compiler-source-path
   "bootstrap/gravity/p15_s23/compiler.gravity")
 
+;; P15-S23/compiler.gravity is a frozen source inventory whose declared
+;; module paths remain historical input. Keep that logical inventory intact
+;; while resolving only the relocated Uniform modules for current development
+;; reads. The map is deliberately explicit: unmapped paths still resolve to
+;; their declared location and retain the existing missing-file diagnostics.
+(def p15-s23-compiler-source-relocation-map
+  {"bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity"
+   "language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity"
+   "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity"
+   "language/compiler/src/gravity/backend/b2_c_backend_design.gravity"
+   "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity"
+   "language/compiler/src/gravity/backend/b3_llvm_backend_design.gravity"
+   "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity"
+   "language/compiler/src/gravity/backend/b4_wasm_backend_design.gravity"
+   "bootstrap/gravity/src/gravity/backend/b5_jvm_backend_design.gravity"
+   "language/compiler/src/gravity/backend/b5_jvm_backend_design.gravity"
+   "bootstrap/gravity/src/gravity/backend/b6_javascript_typescript_backend_design.gravity"
+   "language/compiler/src/gravity/backend/b6_javascript_typescript_backend_design.gravity"
+   "bootstrap/gravity/src/gravity/backend/b7_mlir_backend_design.gravity"
+   "language/compiler/src/gravity/backend/b7_mlir_backend_design.gravity"
+   "bootstrap/gravity/src/gravity/backend/b8_gpu_backend_design.gravity"
+   "language/compiler/src/gravity/backend/b8_gpu_backend_design.gravity"
+   "bootstrap/gravity/src/gravity/backend/b9_hdl_backend_design.gravity"
+   "language/compiler/src/gravity/backend/b9_hdl_backend_design.gravity"
+   "bootstrap/gravity/src/gravity/backend/b10_workflow_graph_backend_design.gravity"
+   "language/compiler/src/gravity/backend/b10_workflow_graph_backend_design.gravity"
+   "bootstrap/gravity/src/gravity/backend/b11_query_relational_backend_design.gravity"
+   "language/compiler/src/gravity/backend/b11_query_relational_backend_design.gravity"
+   "bootstrap/gravity/src/gravity/backend/b12_mobile_backend_design.gravity"
+   "language/compiler/src/gravity/backend/b12_mobile_backend_design.gravity"
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+   "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity"
+   "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"
+   "language/compiler/src/gravity/compiler/c8_effect_checker_engine.gravity"
+   "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"
+   "language/compiler/src/gravity/compiler/c9_ownership_checker_engine.gravity"
+   "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"
+   "language/compiler/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"
+   "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
+   "language/compiler/src/gravity/compiler/c11_mir_specification.gravity"
+   "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity"
+   "language/compiler/src/gravity/compiler/c12_domain_ir_architecture.gravity"
+   "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity"
+   "language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity"
+   "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity"
+   "language/compiler/src/gravity/compiler/c14_target_lowering_architecture.gravity"
+   "bootstrap/gravity/src/gravity/compiler/c16_incremental_compilation_design.gravity"
+   "language/compiler/src/gravity/compiler/c16_incremental_compilation_design.gravity"
+   "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
+   "language/compiler/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
+   "bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"
+   "language/compiler/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"
+   "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"
+   "language/compiler/src/gravity/compiler/l2_core_language_semantics.gravity"})
+
+(defn p15-s23-compiler-source-path-resolution
+  [declared-path]
+  (let [actual-path (get p15-s23-compiler-source-relocation-map
+                         declared-path
+                         declared-path)]
+    {:logical-path declared-path
+     :actual-path actual-path
+     :relocated? (not= declared-path actual-path)}))
+
 (def p15-s23-canonical-compiler-pipeline
   [:read-source
    :build-syntax
@@ -212,6 +276,7 @@
 
 (defn p15-s23-source-module-present?
   [source-module]
-  (let [path (:path source-module)]
-    (and (string? path)
-         (.isFile (java.io.File. path)))))
+  (let [{:keys [actual-path]}
+        (p15-s23-compiler-source-path-resolution (:path source-module))]
+    (and (string? actual-path)
+         (.isFile (java.io.File. actual-path)))))

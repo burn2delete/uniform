@@ -8,7 +8,7 @@
             [clojure.test :refer [deftest is testing]]))
 
 (def ^:private source-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity")
+  "language/compiler/src/gravity/compiler/c12_domain_ir_architecture.gravity")
 
 ;; Keep this admission lane independent of the C12 compiler and bounded before
 ;; decoding/parsing.  512 KiB permits the moving source while remaining a

@@ -19,7 +19,7 @@
 
 (def ^:private root (delay (repository-root)))
 (def ^:private c9-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity")
+  "language/compiler/src/gravity/compiler/c9_ownership_checker_engine.gravity")
 
 (defn- compile-c9-plan
   []

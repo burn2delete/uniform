@@ -42,7 +42,7 @@
      emitter source-path source-text)))
 
 (def ^:private c9-source
-  "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity")
+  "language/compiler/src/gravity/compiler/c9_ownership_checker_engine.gravity")
 
 (def ^:private fixture-root
   "bootstrap/clojure/fixtures/self-hosting/sh-10/initialization-move")

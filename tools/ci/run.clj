@@ -97,7 +97,7 @@
                  "bootstrap/clojure/fixtures/self-hosting/sh-06"]
    "checked-core-runtime" ["language/compiler/src/gravity/checked_core.gravity"
                            "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
-                           "bootstrap/gravity/src/gravity/compiler/c6_call_arity_legality.gravity"
+                           "language/compiler/src/gravity/compiler/c6_call_arity_legality.gravity"
                            "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
                            "bootstrap/clojure/src/gravity/checked_core.clj"
                            "bootstrap/clojure/src/gravity/checked_core"
@@ -727,6 +727,10 @@
                         ["clojure-lint" 60 ["clj-kondo" "--lint" "tools/ci"]]
                         ["clojure-format" 60 ["cljfmt" "check" "tools/ci"]]
                         ["harness-controls" 60 (command "256m" "-M" "tools/ci/run_test.clj")]
+                        ["project-scope-runner-controls" 120
+                         (command "1g" "-M:dev-test"
+                                  "--namespace" "gravity.project-tests.test-scope-runner-test"
+                                  "--fail-fast")]
                         ["progress-controls" 60 (command "128m" "-M" "tools/ci/progress_test.clj")]
                         ["macro-context-controls" 60 (command "256m" "-M" "tools/ci/lint_macro_test.clj")]
                         ["facade-context-controls" 60 (command "256m" "-M" "tools/ci/lint_facade_test.clj")]]

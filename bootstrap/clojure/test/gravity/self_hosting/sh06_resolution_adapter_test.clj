@@ -2318,7 +2318,7 @@
 (deftest sh06-b1-authoritative-module-retains-fresh-verification
   (let [source-path
         (path
-         "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity")
+         "language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity")
         artifact (sh06-file-artifact source-path)]
     (is (= :gravity/sh06-resolution-artifact (:kind artifact)))
     (is (= :accepted (:status artifact)))
