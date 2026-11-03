@@ -9,6 +9,12 @@ comparisons, provenance records, and seed-retirement evidence. It must consume
 the language project's compiler interfaces and artifacts rather than define
 language semantics of its own.
 
+Thirty-five byte-identical Gravity modules now have physical homes under
+`language/compiler/src/gravity/` and `language/runtime/src/gravity/`. This
+project retains the Clojure seed, transport adapters, rebuild and equivalence
+evidence, and mixed stage material; a path move does not retire the seed or
+transfer bootstrap evidence to language ownership.
+
 ## Scope
 
 - the Clojure stage0 seed while it remains required;
@@ -80,10 +86,14 @@ clojure -M:packaged-gravity run examples/core-app.gravity
 clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
 
 clojure -M:bootstrap-validation-test \
-  --namespace gravity.self-hosting.w5-stage-equivalence-verifier-test \
-  --exact w5-stage-equivalence-rejected-fixture-covers-every-mode-and-control \
+  --namespace gravity.bootstrap.rebuild.inputs-test \
   --fail-fast
 ```
+
+The focused input-boundary namespace currently passes 8 tests and 59
+assertions. W5 selectors remain available in the development verification
+guide for their recorded baseline, including known nonpassing evidence; this
+focused input check does not replace that baseline.
 
 The first command is read-only and remains fail-closed while final seed
 retirement is incomplete. Use the explicit export path documented in

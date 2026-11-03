@@ -43,10 +43,16 @@ The permanent implementation roots are now explicit:
   including checked core, effects, compiler contracts, and backend families.
 - `language/runtime/src/gravity/` owns the relocated runtime semantics.
 
+These roots now contain 35 byte-identical Gravity modules: 12 backend modules,
+18 compiler modules, four compiler-root modules (`checked_core`, `effects`,
+`macro`, and `resolution`), and one runtime module. The physical split is
+real; the remaining bootstrap paths below are mixed by behavior and are not a
+bulk language ownership claim.
+
 These roots are language-owned even when the temporary Clojure seed loads or
 executes the files. Legacy filenames and APIs remain compatibility surfaces;
-the host does not change semantic ownership. Frontend and reader/syntax slices
-join the same language owner only as each coherent module is extracted with its
+the host does not change semantic ownership. Further reader/syntax slices join
+the same language owner only as each coherent module is extracted with its
 callers, fixtures, manifests, and provenance references.
 
 The remaining bootstrap paths are mixed by behavior, not owned wholesale by a
@@ -69,7 +75,8 @@ directory:
   boundary is actually retired.
 
 The project structure map records the complete behavior-based classification
-and relocation order. This entrypoint does not claim bulk relocation,
+and relocation order. This entrypoint records the current physical split and
+behavior-based ownership; it does not claim complete language relocation,
 self-hosting, or Clojure retirement.
 
 See [the project structure map](../docs/project-structure.md) for the current
@@ -91,11 +98,11 @@ language and compiler catalogs are selected with `--namespace` and `--exact`:
 ```bash
 clojure -M:language-test \
   --namespace gravity.reader.normal-dispatch-test \
-  --exact exact-normal-decoder-dispatches-real-standard-handlers --fail-fast
+  --exact actual-path-provenance-does-not-change-semantic-hashes --fail-fast
 
 clojure -M:compiler-composition-test \
   --namespace gravity.checked-core.pipeline-test \
-  --exact request-gateway-preserves-context-and-invocation-dispatch --fail-fast
+  --exact projection-binding-input-excludes-only-the-existing-nonsemantic-envelope-fields --fail-fast
 ```
 
 For the broader current-reader development command, use the existing
