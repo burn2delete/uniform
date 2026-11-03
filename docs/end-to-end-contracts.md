@@ -260,7 +260,7 @@ dependency remains a blocker, not an excluded passing path.
 The accepted Bool path has one concrete fused producer, not six independently
 observed public analysis calls. The Native Core owner is accountable for the
 public C6-v2 constructor and fresh verification (`00724a`/`00726`), which execute
-`bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity`.
+`language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity`.
 That source has SHA-256
 `0e7e30e15bc68dabdcee3cfea4c91740d82808204c5fe322d67ccd0ffdb76b98`.
 `c6-c10-build-checked-core-template` calls `c6c10-build-fact-tables` and

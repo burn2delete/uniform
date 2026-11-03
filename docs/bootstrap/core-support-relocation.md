@@ -37,6 +37,8 @@ Current consumers updated by this increment include:
 - the checked-core-runtime stage selector and its unit assertions;
 - current source-coverage, component-build, execution, and bootstrap tests;
 - the SH-25 component catalog fixtures that carry current source paths.
+- the current C6 rows in `docs/self-hosting-slice-ownership.edn` and
+  `bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn`.
 
 ## Dependencies and evidence boundaries
 
@@ -44,9 +46,10 @@ The increment is stacked on the checked-core relocation. It depends on the
 existing Clojure stage0 seed, P15 bridge, and current CI selector contract.
 The historical `current-compiler-program` and `flat-bool-compiler-program`
 records in `bootstrap/clojure/src/gravity/c6_c10/source_contract.clj` retain
-their original bootstrap path and recorded identity. The frozen
+their original bootstrap path and recorded identity. Historical fields in
 `sh07_proof_contract.edn`, workstream ledgers and terminal records, archived
-reports, and other historical artifacts are not rewritten or renewed.
+reports, and other historical artifacts are not rewritten or renewed; only
+the current C6 source rows in the proof contract are wired to the new path.
 The moved lowering source also retains its pre-existing embedded fixture-path
 string as part of the byte-preserved source; that string is not a filesystem
 selector.
@@ -79,7 +82,14 @@ currently fails its pre-existing static-shape and source-identity pins: the
 source has 176 forms, 170 functions, and 185620 bytes while that test records
 the older 145-form, 139-function, 141562-byte snapshot. This relocation does
 not alter those historical pins. Full-suite, authoritative migration, and
-release validation remain unrun and unclaimed here.
+release validation remain unrun and unclaimed here. The C6 core-lowering
+coverage and native-report-join tests also reach the relocated source but stop
+at the existing P15 stage2 emitter pin (`P15S23Q001`) because the current
+`bootstrap/gravity/p15_s23/compiler.gravity` inventory path update changes its
+observed source hash; dependent generated artifacts are intentionally not
+regenerated in this source relocation. The focused stage1 bootstrap bridge
+test is independently blocked by the pre-existing `STAGE1001` owner omission
+in `bootstrap/gravity/src/gravity/backend/w5_b13_artifact_emitter.gravity`.
 
 This increment accepts the physical ownership move and current path wiring;
 it does not claim a complete compiler, self-hosting, Clojure seed retirement,
