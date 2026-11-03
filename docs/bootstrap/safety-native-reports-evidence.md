@@ -41,7 +41,34 @@ wrapper conservation; run affected C10 composition, language/ownership,
 proportionate lint and contract checks. Independent exact-source review, own
 CI/artifact verification and current-main preflight remain integration gates.
 
-## Unsupported boundaries
+## Implemented extraction and local checks
+
+The three original whole bodies now live in gravity.safety under the declared
+names. Exact text checks reconstruct the original bodies and compatibility
+wrappers; no native predicate is strengthened. The stage contract declares
+all twelve APIs, trusted input/output data, the seven retained refusal ids,
+diagnostic ownership and dependency direction. The C10 facade, policy,
+catalogs, assembly and Gravity classifier remain unchanged.
+
+Focused C10/native tests pass 7 tests/224 assertions. The retained paired
+Gravity/qst Safety pipeline passes 5/147, including actual normalized-request
+classification, deterministic plan identities and C10-NUMERIC rejection.
+Language/ownership checks pass 48/1197 with no skipped namespace. Documents,
+roadmap and governance validators pass. Fresh clean candidate capture,
+committed lint, independent acceptance and CI remain pending.
+
+The initial focused report test had one failed expectation: it expected the
+original overall status to fail when inventory status is missing. The
+corrected test preserves the observed report inconsistency and verifies that
+the subsequent validator still refuses. The first extraction helper had an
+extra parenthesis and failed compilation before source writes; its original
+file and error record remain. A duplicate-target patch was rejected before
+application. No production guard, pin, identity or report field was changed
+to force a passing result. Helpers/logs use uniform-safety-native-reports-*
+under /tmp. The PR attachment attempt failed at the existing 100-identity
+limit and is not retried.
+
+## Residual boundaries
 
 No new general SAFE classification, source/Core authentication, proof-provider
 trust, certificate verification, profile legality, capability grants, unsafe
@@ -50,6 +77,8 @@ admission, performance, release, migration, self-hosting or seed retirement.
 Existing report completeness and proof labels remain native data. In
 particular, the original set comparison does not establish uniqueness of
 duplicate outcome records, and vacuous predicates remain compatibility
-behavior. This extraction must not strengthen those predicates or silently
+behavior. Overall report status also omits the inventory-status predicate;
+the subsequent validator still rejects its false completeness field.
+This extraction must not strengthen those predicates or silently
 claim canonical C10 conformance. Historical held routes, guards, source pins
 and denied attempts remain unchanged.
