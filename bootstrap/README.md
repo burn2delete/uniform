@@ -9,6 +9,12 @@ comparisons, provenance records, and seed-retirement evidence. It must consume
 the language project's compiler interfaces and artifacts rather than define
 language semantics of its own.
 
+Thirty-five byte-identical Gravity modules now have physical homes under
+`language/compiler/src/gravity/` and `language/runtime/src/gravity/`. This
+project retains the Clojure seed, transport adapters, rebuild and equivalence
+evidence, and mixed stage material; a path move does not retire the seed or
+transfer bootstrap evidence to language ownership.
+
 ## Scope
 
 - the Clojure stage0 seed while it remains required;
@@ -54,14 +60,40 @@ Use the [Phase 15 bootstrap contracts](../docs/phase-15-bootstrap-and-self-hosti
 pages and ledgers own task status and evidence; this entrypoint does not
 duplicate them.
 
-The current bootstrap-hosted and fail-closed development commands are:
+For the pinned-input development build, follow the [bootstrap compiler input
+boundary](../docs/bootstrap/compiler-inputs.md). From the repository root, the
+bounded build can print only its key identities:
+
+```bash
+clojure -Srepro -M -e '
+(require (quote [gravity.bootstrap.rebuild.inputs :as inputs]))
+(prn (select-keys
+      (:result (inputs/run-development-build! "." "contracts/bootstrap-inputs.edn"))
+      [:artifact-id :manifest-sha256 :source-revision :source-graph-sha256]))'
+```
+
+This consumes the declared compiler and seed inputs for a development check;
+it is not a compiler rebuild, self-hosting proof, seed-retirement result, or
+release claim. The [development verification guide](../docs/development-verification.md)
+remains the authority for its focused namespace and evidence scope.
+
+The current bootstrap-hosted and fail-closed verification commands are:
 
 ```bash
 clojure -M:gravity self-host verify
 clojure -M:packaged-gravity --version
 clojure -M:packaged-gravity run examples/core-app.gravity
 clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
+
+clojure -M:bootstrap-validation-test \
+  --namespace gravity.bootstrap.rebuild.inputs-test \
+  --fail-fast
 ```
+
+The focused input-boundary namespace currently passes 8 tests and 59
+assertions. W5 selectors remain available in the development verification
+guide for their recorded baseline, including known nonpassing evidence; this
+focused input check does not replace that baseline.
 
 The first command is read-only and remains fail-closed while final seed
 retirement is incomplete. Use the explicit export path documented in
