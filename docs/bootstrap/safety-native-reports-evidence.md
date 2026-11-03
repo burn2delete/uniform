@@ -145,7 +145,28 @@ whose actual provider parents are main5040 and 173e; its eleven bundles and
 41 vectors are audited. Neither observation transfers to this composition.
 Fresh five-group captures, affected current-source checks, complete exact
 review, own CI and immediate clean current-main preflight remain required.
-The separate Macro orchestration repair PR909 is not part of this source.
+The 54-path checkpoint above predates the Macro orchestration repair PR909.
+
+## Complete CI orchestration composition
+
+Normal merge 96a918f19caff7e90b7963ffa18ace06c9838011, tree
+259460b93c8c6cbf621d79449a166846295091b3, composes the reviewed four-path
+CI repair 1c31441ec7781babecbd1a6beb53f3c34aa47d01 with the reviewed
+54-path stage source ee4bcfbd281c6f8d604528742bb1038149d648b6. The complete
+union is 58 paths against main05df. The CI paths remain exact reviewed source;
+all stage implementation, test, policy and registry paths remain unchanged.
+Only this evidence note records the later composition. Full CI selection is
+required because the orchestration paths cross stage boundaries.
+
+Macro retains all 23 pipeline and five compatibility tests in three fresh
+processes: twenty ordinary tests, three exact receipt/callback controls and the
+whole compatibility namespace. Each child retains 900 seconds; the aggregate
+is 2700 seconds and the hosted Macro envelope is 50 minutes. No compiler or
+test body changes, causal performance fix, previous failure reclassification,
+new execution authority or migration/release claim accompanies this repair.
+The local three-child run belongs to source1c; final composition captures,
+runner checks, lint, independent exact review, own CI/artifact audit and an
+immediate clean exact-current-main preflight remain separate requirements.
 
 ## Residual boundaries
 
