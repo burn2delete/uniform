@@ -163,12 +163,17 @@
 
 (defn- p15-s23-c11-mir-current-source-input?
   [version source-mode]
-  (and (= 2 version) (= :development-current source-mode)))
+  (and (identical? Long (class version))
+       (or (== 2 (.longValue ^Long version))
+           (== 3 (.longValue ^Long version)))
+       (= :development-current source-mode)))
 
 (defn- p15-s23-c11-mir-source-contract-for
   [version source-mode]
   (if (p15-s23-c11-mir-current-source-input? version source-mode)
-    c11-source-contract/v2-current-source-contract-abi
+    (if (= 3 version)
+      c11-source-contract/flat-bool-current-source-contract-abi
+      c11-source-contract/v2-current-source-contract-abi)
     (p15-s23-c11-mir-contract version)))
 
 (defn p15-s23-c11-mir-versioned-record
@@ -360,7 +365,7 @@
                 (assoc (select-keys contract
                                     [:interface :version :source-relative-path
                                      :builder-function :verifier-function
-                                     :required-functions])
+                                     :required-functions :semantic-family])
                        :source-mode :development-current
                        :source-byte-count source-bytes
                        :source-content-hash source-content-hash

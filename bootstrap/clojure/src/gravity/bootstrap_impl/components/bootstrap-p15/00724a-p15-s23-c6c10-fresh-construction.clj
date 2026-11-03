@@ -18,9 +18,10 @@
         source-path (:source-path context)
         source-binding (p15-s23-c6c10-source-binding!
                         source-path version
-                        (when (= 2 version) :development-current))
-        reader (when (= 2 version) (p15-s23-c6c10-current-reader-program! source-path))
-        _ (when (= 2 version)
+                        (when (contains? #{2 3} version) :development-current))
+        reader (when (contains? #{2 3} version)
+                 (p15-s23-c6c10-current-reader-program! source-path))
+        _ (when (contains? #{2 3} version)
             (when-not
              (and (p15-s23-c6c10-current-source-snapshot-matches-binding?
                    source-binding (get-in reader [:c6-source-snapshot :before]))
@@ -34,20 +35,20 @@
                 :reader-snapshot
                 (select-keys (get-in reader [:c6-source-snapshot :after])
                              [:source-byte-count :source-content-hash])})))
-        expression (when (= 2 version)
+        expression (when (contains? #{2 3} version)
                      (p15-s23-stage2-current-expression-development-binding!
                       source-path))
         ingress
-        (if (= 2 version)
+        (if (contains? #{2 3} version)
           (binding [*p15-s23-stage2-compiler-artifact-binding* expression]
             (p15-s23-c6c10-private-ingress-products
-             source-path (:source-text context) (get-in reader [:invocation :reader-source-path]) 2
+             source-path (:source-text context) (get-in reader [:invocation :reader-source-path]) version
              (dissoc (:binding reader) :plan) (:invocation reader)))
           (p15-s23-c6c10-private-ingress-products source-path (:source-text context)))
         current-source-before-builder
-        (when (= 2 version)
+        (when (contains? #{2 3} version)
           (p15-s23-c6c10-read-current-source-snapshot! source-path))
-        _ (when (= 2 version)
+        _ (when (contains? #{2 3} version)
             (when-not
              (p15-s23-c6c10-current-source-snapshot-matches-binding?
               source-binding current-source-before-builder)
@@ -76,10 +77,10 @@
           (p15-s23-c6c10-gravity-replay-verification!
            source-path source-binding envelope raw-result)
           current-source-after-verification
-          (when (= 2 version)
+          (when (contains? #{2 3} version)
             (p15-s23-c6c10-read-current-source-snapshot! source-path))
           _
-          (when (= 2 version)
+          (when (contains? #{2 3} version)
             (when-not
              (p15-s23-c6c10-current-source-snapshot-matches-binding?
               source-binding current-source-after-verification)
@@ -98,6 +99,10 @@
                  (not (bool-branch-join/source-family?
                        artifact (= [:gravity/bool] (get-in (last (:core-nodes artifact)) [:type :params])))))
         (p15-s23-c6c10-host-fail! "C6-VERIFY" source-path :v2-bool-branch-join-source-family {}))
+      (when (= 3 version)
+        (p15-s23-c6c10-require-trusted-carrier! source-path :flat-bool-constructed-core artifact)
+        (when-not (bool-branch-join/flat-sequence-source-family? artifact)
+          (p15-s23-c6c10-host-fail! "C6-VERIFY" source-path :v3-flat-bool-sequence-source-family {})))
       (cond-> {:artifact artifact
        :context context
        :private-envelope envelope
@@ -110,7 +115,7 @@
        :gravity-verification
        (select-keys gravity-verification
                     [:status :request-count :semantic-authority :checks])}
-        (= 2 version)
+        (contains? #{2 3} version)
         (assoc :source-policy-receipt
                (let [receipt (assoc (:source-policy-receipt ingress)
                               :expression-binding
