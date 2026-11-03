@@ -8,8 +8,10 @@
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.string :as str]
+            [gravity.bootstrap]
             [gravity.bootstrap.rebuild.inputs]
-            [gravity.digest :as digest])
+            [gravity.digest :as digest]
+            [gravity.macro :as macro])
   (:import [java.io File]
            [java.nio.charset StandardCharsets]
            [java.nio.file Files LinkOption]))
@@ -30,6 +32,13 @@
    :plan-semantic-hash :functions-semantic-hash :function-count
    :function-names-hash :function-shapes-hash :public-function-hashes
    :public-function-shapes])
+(def ^:private plan-identity-keys
+  [:plan-semantic-hash :functions-semantic-hash :function-count
+   :function-names-hash :function-shapes-hash :public-function-hashes
+   :public-function-shapes])
+(def ^:private recomputed-plan-identity-keys
+  [:plan-semantic-hash :functions-semantic-hash :function-count
+   :function-shapes-hash :public-function-hashes :public-function-shapes])
 
 (def ^:private accepted-fixture
   {:path "bootstrap/clojure/fixtures/self-hosting/sh-05/accepted/defn-basic.gravity"
@@ -56,8 +65,8 @@
    :host-language :clojure
    :output-plan-path "target/bootstrap-macro-plan/macro-plan.edn"
    :output-record-path "target/bootstrap-macro-plan/macro-record.edn"
-   :comparison-modes [:plan-identity :artifact-identity :diagnostic-equivalence]
-   :conformance {:accepted :macro-expansion-artifact
+   :comparison-modes [:plan-identity :macro-template-result :diagnostic-equivalence]
+   :conformance {:accepted :macro-template-result
                  :rejected :structured-c4-diagnostic
                  :native-target :unrun}
    :nonclaims [:whole-compiler-rebuild
@@ -97,6 +106,23 @@
              "bootstrap macro child command failed"
              (select-keys result [:command :exit-code :stdout-sha256 :stderr-sha256])))
     result))
+
+(defn- macro-operations
+  []
+  (if-let [operations (ns-resolve 'gravity.bootstrap 'macro-stage-operations)]
+    (@operations)
+    (fail! :bootstrap "existing macro stage operations are unavailable" {})))
+
+(defn- recomputed-plan-identities
+  [plan]
+  (try
+    (select-keys (macro/compute-plan-identities plan (macro-operations))
+                 plan-identity-keys)
+    (catch Exception error
+      (fail! :plan-identities
+             "existing macro identity computation could not consume the persisted plan"
+             {:cause-class (some-> error class .getName)
+              :cause-message (.getMessage error)}))))
 
 (defn- bytes-text
   [bytes]
@@ -201,6 +227,7 @@
       (fail! :source-declaration "persisted macro plan source declaration drifted"
              {:observed source}))
     (when-not (and (map? identities)
+                   (not (forbidden-plan-value? identities))
                    (= macro-source-sha256 (:source-content-hash identities))
                    (= :development-current (:source-mode identities))
                    (= macro-source-byte-count (:source-byte-count identities))
@@ -225,6 +252,17 @@
     (when-not (= plan (edn/read-string (pr-str plan)))
       (fail! :plan-edn-roundtrip
              "persisted macro plan is not an EDN data value" {}))
+    (let [recomputed (recomputed-plan-identities plan)]
+      ;; The existing builder hashes the insertion order of a function-name
+      ;; map.  EDN map reload does not preserve that incidental order; the
+      ;; semantic plan/function hashes and shape/public identities remain
+      ;; stable and bind the persisted body.
+      (when-not (= (select-keys identities recomputed-plan-identity-keys)
+                   (select-keys recomputed recomputed-plan-identity-keys))
+        (fail! :plan-identities
+               "persisted macro plan identities do not match the existing compiler identity computation"
+               {:declared (select-keys identities plan-identity-keys)
+                :recomputed recomputed})))
     payload))
 
 (defn- source-identity!
@@ -247,16 +285,24 @@
 
 (defn- compiler-revision!
   [project-root]
-  {:commit (str/trim
-            (bytes-text (:stdout-bytes
-                         (command-output! project-root
-                                          ["git" "rev-parse" "HEAD"]
-                                          :compiler-revision))))
-   :tree (str/trim
-          (bytes-text (:stdout-bytes
-                       (command-output! project-root
-                                        ["git" "rev-parse" "HEAD^{tree}"]
-                                        :compiler-revision))))})
+  (let [commit (str/trim
+                (bytes-text (:stdout-bytes
+                             (command-output! project-root
+                                              ["git" "rev-parse" "HEAD"]
+                                              :compiler-revision))))
+        tree (str/trim
+              (bytes-text (:stdout-bytes
+                           (command-output! project-root
+                                            ["git" "rev-parse" "HEAD^{tree}"]
+                                            :compiler-revision))))
+        status (command-output! project-root
+                                ["git" "status" "--porcelain"]
+                                :compiler-revision)
+        status-text (bytes-text (:stdout-bytes status))]
+    {:commit commit
+     :tree tree
+     :tracked-source-state (if (str/blank? status-text) :clean :dirty)
+     :tracked-source-status status-text}))
 
 (defn- classpath-entry
   [root raw]
@@ -325,24 +371,38 @@
    " :sha256 " (literal macro-source-sha256) "}"
    " :identities (select-keys binding " (literal binding-identity-keys) ")"
    " :plan plan}"
-   " text (pr-str payload)]"
-   " (io/make-parents " (literal plan-path) ")"
-   " (spit " (literal plan-path) " text)"
+   " text (pr-str payload)"
+   " plan-bytes (.getBytes text java.nio.charset.StandardCharsets/UTF_8)]"
+   " (when-let [parent (.getParentFile (io/file " (literal plan-path) "))]"
+   " (java.nio.file.Files/createDirectories (.toPath parent)"
+   " (make-array java.nio.file.attribute.FileAttribute 0)))"
+   " (java.nio.file.Files/write (.toPath (io/file " (literal plan-path) "))"
+   " plan-bytes (into-array java.nio.file.StandardOpenOption"
+   " [java.nio.file.StandardOpenOption/CREATE_NEW"
+   " java.nio.file.StandardOpenOption/WRITE]))"
    " (println (pr-str {:status :complete"
    " :plan-id (:plan-id plan)"
    " :source-content-hash (:source-content-hash binding)"
    " :plan-sha256 (str \"sha256:\" (b/sha256-hex text))}))))"))
 
 (defn- execution-expression
-  [plan-path record-path]
+  [plan-path record-path expected-plan-sha256 expected-plan-id]
   (str
    "(do "
    "(require '[clojure.edn :as edn] '[clojure.java.io :as io] "
    "'[gravity.bootstrap :as b] '[gravity.macro :as m]) "
-   "(let [payload (edn/read-string (slurp " (literal plan-path) "))"
+   "(let [plan-bytes (java.nio.file.Files/readAllBytes"
+   " (.toPath (io/file " (literal plan-path) ")))"
+   " plan-text (String. plan-bytes java.nio.charset.StandardCharsets/UTF_8)"
+   " _ (when-not (= " (literal expected-plan-sha256)
+   " (str \"sha256:\" (b/sha256-bytes-hex plan-bytes)))"
+   " (throw (ex-info \"persisted macro plan bytes changed before execution\""
+   " {:reason :plan-file-digest})))"
+   " payload (edn/read-string plan-text)"
    " plan (:plan payload) identities (:identities payload)"
    " _ (when-not (and (= " (literal schema) " (:schema payload))"
    " (= " (literal component-id) " (:component-id payload))"
+   " (= " (literal expected-plan-id) " (:plan-id plan))"
    " (= " (literal macro-source-sha256) " (get-in plan [:source :sha256]))"
    " (= " macro-source-byte-count " (get-in plan [:source :byte-count]))"
    " (= {:arity 1 :params ['request]}"
@@ -364,7 +424,13 @@
    " :source-path syntax-source}}"
    " operations ((ns-resolve 'gravity.bootstrap 'macro-stage-operations))"
    " run-fixture (fn [fixture]"
-   " (let [source (.getCanonicalPath (io/file (:path fixture)))"
+   " (let [fixture-file (.getCanonicalFile (io/file (:path fixture)))"
+   " fixture-bytes (java.nio.file.Files/readAllBytes (.toPath fixture-file))"
+   " _ (when-not (= (:sha256 fixture)"
+   " (str \"sha256:\" (b/sha256-bytes-hex fixture-bytes)))"
+   " (throw (ex-info \"macro fixture bytes do not match its declaration\""
+   " {:reason :fixture-identity :fixture fixture})))"
+   " source (.getCanonicalPath fixture-file)"
    " c3 (b/compiler-c3-syntax-source-artifact source (slurp source)"
    " (b/reader-project-context-for-source source) nil nil reader invocation)"
    " forms (get-in c3 [:c2-reader-artifact :parsed-semantic-values])"
@@ -378,37 +444,40 @@
    " (contains? compiler-metadata :sh05-request))"
    " (:sh05-request compiler-metadata) {})"
    " request (b/sh05-deep-merge base-request request-overrides)"
-   " run (m/expand source binding request operations)"
-   " resolved (:resolved-expansion run)]"
-   " {:status :accepted :fixture (select-keys fixture [:path :sha256])"
-   " :run-artifact (get-in run [:raw-template-result :artifact])"
-   " :run-status (get-in run [:raw-template-result :status])"
-   " :resolved-artifact (:artifact resolved)"
-   " :resolved-status (:status resolved)"
-   " :template-status (get-in run [:template-verification :status])"
-   " :resolved-verification-status (get-in run [:resolved-verification :status])"
-   " :macro (:macro resolved) :phase (:phase resolved)"
-   " :expanded-syntax-recipe (:expanded-syntax-recipe resolved)"
-   " :output-syntax-id (:output-syntax-id resolved)"
-   " :macro-version (:macro-version resolved)}))"
+   " result (m/execute-plan! source binding 'sh05-expand-macro-template"
+   " [request] operations)"
+   " template (:expansion-template result)]"
+   " {:status (:status result) :fixture (select-keys fixture [:path :sha256])"
+   " :artifact (:artifact result) :schema-version (:schema-version result)"
+   " :digest-request-count (count (:digest-requests result))"
+   " :expansion-template? (map? template)"
+   " :macro (:macro template) :macro-version (:macro-version template)"
+   " :expanded-syntax-recipe (:expanded-syntax-recipe template)"
+   " :diagnostic (get-in result [:diagnostics 0 :rule])"
+   " :diagnostics (select-keys (first (:diagnostics result)) [:rule :severity :stage])}))"
    " accepted (run-fixture " (literal (select-keys accepted-fixture [:path :sha256])) ")"
-   " rejected (try (run-fixture " (literal (select-keys rejected-fixture [:path :sha256])) ")"
-   " {:status :unexpected-acceptance}"
-   " (catch clojure.lang.ExceptionInfo error"
-   " (let [data (ex-data error)]"
-   " {:status :rejected :fixture " (literal (select-keys rejected-fixture [:path :sha256]))
-   " :diagnostic (:id data)"
-   " :source-span (:source-span data) :facts (:facts data)})))"
+   " rejected (run-fixture " (literal (select-keys rejected-fixture [:path :sha256])) ")"
    " record {:schema " (literal schema)
    " :component-id " (literal component-id)
    " :execution-child {:loaded-plan? true :fresh-c3-request? true"
    " :fresh-operations? true :source-mode :development-current}"
    " :accepted accepted :rejected rejected"
    " :boundary {:host-language :clojure :seed-hosted? true"
+   " :compiled-by :clojure-stage0-seed"
+   " :executed-by :clojure-stage2-generic-rule-runner"
    " :self-hosted? false :native-conformance :unrun"
-   " :network :not-enforced} }]"
-   " (io/make-parents " (literal record-path) ")"
-   " (spit " (literal record-path) " (pr-str record))"
+   " :network :not-enforced"
+   " :observation :sh05-expand-macro-template-via-stage2-runtime"
+   " :authority :non-authoritative} }"
+   " record-text (pr-str record)"
+   " record-bytes (.getBytes record-text java.nio.charset.StandardCharsets/UTF_8)]"
+   " (when-let [parent (.getParentFile (io/file " (literal record-path) "))]"
+   " (java.nio.file.Files/createDirectories (.toPath parent)"
+   " (make-array java.nio.file.attribute.FileAttribute 0)))"
+   " (java.nio.file.Files/write (.toPath (io/file " (literal record-path) "))"
+   " record-bytes (into-array java.nio.file.StandardOpenOption"
+   " [java.nio.file.StandardOpenOption/CREATE_NEW"
+   " java.nio.file.StandardOpenOption/WRITE]))"
    " (println (pr-str {:status :complete :record-path "
    (literal record-path) " :accepted (:status accepted)"
    " :rejected (:diagnostic rejected)}))))"))
@@ -435,30 +504,48 @@
   [record]
   (let [accepted (:accepted record)
         rejected (:rejected record)]
-    (when-not (and (= :accepted (:status accepted))
+    (when-not (and (= {:loaded-plan? true
+                       :fresh-c3-request? true
+                       :fresh-operations? true
+                       :source-mode :development-current}
+                      (:execution-child record))
+                   (= {:host-language :clojure
+                       :seed-hosted? true
+                       :compiled-by :clojure-stage0-seed
+                       :executed-by :clojure-stage2-generic-rule-runner
+                       :self-hosted? false
+                       :native-conformance :unrun
+                       :network :not-enforced
+                       :observation :sh05-expand-macro-template-via-stage2-runtime
+                       :authority :non-authoritative}
+                      (:boundary record))
+                   (= :accepted (:status accepted))
                    (= (select-keys accepted-fixture [:path :sha256])
                       (:fixture accepted))
-                   (= :gravity/sh05-macro-template-result (:run-artifact accepted))
-                   (= :accepted (:run-status accepted))
-                   (= :gravity/sh05-macro-expansion-artifact (:resolved-artifact accepted))
+                   (= :gravity/sh05-macro-template-result (:artifact accepted))
+                   (= 1 (:schema-version accepted))
+                   (= 2 (:digest-request-count accepted))
+                   (true? (:expansion-template? accepted))
                    (= 'gravity.core/defn (:macro accepted))
-                   (= :macro-expanded (:phase accepted))
-                   (= :accepted (:resolved-status accepted))
-                   (= :passed (:template-status accepted))
-                   (= :passed (:resolved-verification-status accepted))
+                   (sha256-id? (:macro-version accepted))
                    (map? (:expanded-syntax-recipe accepted))
                    (seq (get-in accepted [:expanded-syntax-recipe :children]))
-                   (sha256-id? (:output-syntax-id accepted))
                    (= :rejected (:status rejected))
                    (= (select-keys rejected-fixture [:path :sha256])
                       (:fixture rejected))
+                   (= :gravity/sh05-macro-template-result (:artifact rejected))
+                   (= 1 (:schema-version rejected))
+                   (= 1 (:digest-request-count rejected))
+                   (false? (:expansion-template? rejected))
                    (= (:diagnostic rejected-fixture) (:diagnostic rejected)))
       (fail! :conformance "macro execution child produced unexpected fixture outcomes"
              {:accepted (select-keys accepted
-                                     [:status :run-artifact :run-status :resolved-artifact
-                                      :macro :phase :template-status :resolved-status
-                                      :resolved-verification-status :output-syntax-id])
-              :rejected (select-keys rejected [:status :diagnostic])}))))
+                                     [:status :artifact :schema-version
+                                      :digest-request-count :expansion-template?
+                                      :macro :macro-version])
+              :rejected (select-keys rejected [:status :artifact :schema-version
+                                               :digest-request-count
+                                               :expansion-template? :diagnostic])}))))
 
 (defn run-development-macro-plan!
   "Build, persist, reload, and execute the current macro plan.
@@ -481,24 +568,60 @@
        (when (.exists file)
          (fail! :output-exists "bootstrap macro output already exists"
                 {:path (.getPath file)})))
-     (run-child! project-root (producer-expression (.getPath plan-file)) :producer)
-     (let [payload (validate-persisted-plan! (read-edn-file! plan-file "macro plan"))]
-       (when-not (= (:sha256 source) (get-in payload [:plan :source :sha256]))
-         (fail! :source-plan-binding "persisted plan source hash drifted"
-                {:source source :plan-source (get-in payload [:plan :source])}))
-       (run-child! project-root
-                   (execution-expression (.getPath plan-file) (.getPath record-file))
-                   :execution)
-       (let [record (read-edn-file! record-file "macro execution record")]
-         (validate-fixture-record! record)
-         {:component component
-          :source source
-          :compiler-revision revision
-          :toolchain toolchain
-          :plan {:plan-id (get-in payload [:plan :plan-id])
-                 :identities (:identities payload)}
-          :record record
-          :output-sha256 {:plan (file-sha256 plan-file)
-                          :record (file-sha256 record-file)}
-          :plan-path (.getPath plan-file)
-          :record-path (.getPath record-file)})))))
+     (let [succeeded? (atom false)]
+       (try
+         (let [producer (run-child! project-root
+                                    (producer-expression (.getPath plan-file))
+                                    :producer)
+               payload (validate-persisted-plan! (read-edn-file! plan-file "macro plan"))
+               producer-summary (:summary producer)
+               plan-sha256 (file-sha256 plan-file)
+               canonical-source-path (.getPath
+                                      (canonical-file project-root macro-source-path))]
+           (when-not (and (= :complete (:status producer-summary))
+                          (= (get-in payload [:plan :plan-id])
+                             (:plan-id producer-summary))
+                          (= macro-source-sha256
+                             (:source-content-hash producer-summary))
+                          (= plan-sha256 (:plan-sha256 producer-summary)))
+             (fail! :producer-summary
+                    "producer summary does not bind the persisted plan bytes and source"
+                    {:summary producer-summary
+                     :plan-sha256 plan-sha256
+                     :plan-id (get-in payload [:plan :plan-id])}))
+           (when-not (= canonical-source-path
+                        (get-in payload [:identities :source-path]))
+             (fail! :source-plan-binding
+                    "persisted plan identity points at a different source path"
+                    {:expected canonical-source-path
+                     :observed (get-in payload [:identities :source-path])}))
+           (when-not (= (:sha256 source) (get-in payload [:plan :source :sha256]))
+             (fail! :source-plan-binding "persisted plan source hash drifted"
+                    {:source source :plan-source (get-in payload [:plan :source])}))
+           (run-child! project-root
+                       (execution-expression (.getPath plan-file)
+                                             (.getPath record-file)
+                                             plan-sha256
+                                             (get-in payload [:plan :plan-id]))
+                       :execution)
+           (let [record (read-edn-file! record-file "macro execution record")
+                 result (do
+                          (validate-fixture-record! record)
+                          {:component component
+                           :source source
+                           :compiler-revision revision
+                           :toolchain toolchain
+                           :producer-summary producer-summary
+                           :plan {:plan-id (get-in payload [:plan :plan-id])
+                                  :identities (:identities payload)}
+                           :record record
+                           :output-sha256 {:plan (file-sha256 plan-file)
+                                           :record (file-sha256 record-file)}
+                           :plan-path (.getPath plan-file)
+                           :record-path (.getPath record-file)})]
+             (reset! succeeded? true)
+             result))
+         (finally
+           (when-not @succeeded?
+             (doseq [^File file [plan-file record-file]]
+               (Files/deleteIfExists (.toPath file))))))))))
