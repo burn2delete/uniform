@@ -564,6 +564,12 @@ Use the [Core producer and consumer order](../core-workflow/plan.md#core-produce
 
 Existing task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current selected-interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Complete Types source interface
+
+Use the [complete Types source criteria](../types-workflow/plan.md#complete-types-source-criteria). Supply authentic expanded schema and selected domain contracts for type projection, preserving source identity/constraints. Actual projection, validator, domain checker and typed-Core/MIR anchor products stay distinct.
+
+Current task identities/statuses, historical review subjects and original C7 publication/other actual restrictions remain unchanged. This source proposal grants no implementation or current independent acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Domains workflow migration

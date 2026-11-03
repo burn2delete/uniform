@@ -102,6 +102,12 @@ Use the [Core producer and consumer order](../core-workflow/plan.md#core-produce
 
 Existing task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current selected-interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Complete Types source interface
+
+Use the [complete Types source criteria](../types-workflow/plan.md#complete-types-source-criteria). Use actual current type environments, dependency/compatibility premises and diagnostics at the selected editing/debug/session stage. Source-only services require no later absent facts; never manufacture a type from display metadata.
+
+Current task identities/statuses, historical review subjects and original C7 publication/other actual restrictions remain unchanged. This source proposal grants no implementation or current independent acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Developer Tools workflow migration

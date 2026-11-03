@@ -135,6 +135,12 @@ Use the [Core producer and consumer order](../core-workflow/plan.md#core-produce
 
 Existing task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current selected-interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Complete Types source interface
+
+Use the [complete Types source criteria](../types-workflow/plan.md#complete-types-source-criteria). Use actual checked type/dispatch/ABI/layout/schema facts and explicit target representation limits. Early target-query contracts precede Q inference; derived Q layouts follow it, with no host-default or future-layout circular premise.
+
+Current task identities/statuses, historical review subjects and original C7 publication/other actual restrictions remain unchanged. This source proposal grants no implementation or current independent acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Lower task authority

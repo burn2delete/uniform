@@ -55,6 +55,8 @@ C7 publication restrictions. Component release, alternative type-provider
 conformance, self-hosting and seed retirement retain their separate complete
 evidence obligations and independent acceptance.
 
+The [complete Types source criteria](plan.md#complete-types-source-criteria) restore five published L5/C7 clauses and five earlier finite predicates in the existing tasks, with unchanged conditional Evolution and inherited Legality/Expand role contexts. They preserve complete source conjunctions and owner history without adopting the original C7 publication or conferring current implementation/acceptance.
+
 ## Historical task-authority-transfer specification
 
 # Feature specification: Types implementation workflow

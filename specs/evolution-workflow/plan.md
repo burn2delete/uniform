@@ -146,3 +146,9 @@ Task identities/statuses, prior source/review subjects and actual restrictions r
 Use the [Core producer and consumer order](../core-workflow/plan.md#core-producer-and-consumer-order) and existing selected-result table. Consume actual affected Core/desugaring/type/effect/safety/MIR/target/runtime/test/documentation results only for the existing conditional semantic-change/adoption boundary. Ordinary unchanged-contract development gains no new review ceremony.
 
 Existing task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current selected-interface entailment and independent acceptance remain pending; no held operation is enabled.
+
+## Complete Types source interface
+
+Use the [complete Types source criteria](../types-workflow/plan.md#complete-types-source-criteria). Retain the exact existing conditional type-form schema/fixture/consumer adoption predicate in evolution/change-review. Restore no second governance authority or ordinary-development approval gate.
+
+Current task identities/statuses, historical review subjects and original C7 publication/other actual restrictions remain unchanged. This source proposal grants no implementation or current independent acceptance.

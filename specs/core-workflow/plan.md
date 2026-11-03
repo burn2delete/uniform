@@ -133,7 +133,13 @@ All surface forms lower to Core, an explicitly declared primitive or an owned do
 
 Produce all eight L2 and seven C6 artifacts and all seven L2/eight C6 owning diagnostic families. Verify every node/child/source/generated/binding/profile/target/domain reference before Types and reconstruct complete graph/context/declarations during serialization. A nonempty binding table, assigned passed/complete/surface-absent field or summary payload cannot establish that gate. Domain transitions name actual source/owner/checker, source and later typed-Core/MIR anchors, profile/target/effect/capability and fallback. EFIR/schema/workflow/HDL/agent IR examples do not bypass ordinary checking or imply all domains implemented. Tamper/lost-fact/origin/order/illegal-control and stale-rule cases need real failure subjects and preserved owning diagnostics.
 
-### Core producer and consumer order
+### Historical evidence and current static findings
+
+The accepted finite Reader-to-Core/SH07 and frozen C6 source receipts retain exact subjects. Current L2/C6 source/task entailment, whole original owner predicates, actual composition and independent acceptance remain pending. Existing conditional semantic changes retain the unchanged Evolution producer; restoring these requirements adds no new ordinary-development review ceremony. Every task stays Open, with source reservations and C7/C12/paired/provider/native/callback/device/probe/replay/migration/private-store/signing/publication restrictions intact. No held execution, other-chat message, reviewer wake, aggregate publication or merge occurs.
+
+Selected static inspection finds real hosted recursive form construction and some checks, alongside positional ids, pending C5 bindings, nonempty-table/field-presence verification, declared future domain anchors and assigned conformance fields. Gravity checked_core has real quote/if/do/call/recur construction and refusals under its declared partial SH07 boundary, with later analyses and broader forms explicitly pending. The L2/C6 modules include quoted builder/verifier-contract records, real narrow mutation execution and scoped exception admission/verification functions; those limited behaviors do not prove general L2/C6 execution. Existing project step/node/store allowances remain accounting-removal debt. No compiler semantic suite runs or current acceptance is inferred here.
+
+## Core producer and consumer order
 
 Use the [complete Core source criteria](#complete-core-source-criteria) and [sole selected-result table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition). This continuation refines 59 consumers: thirteen missing Types/MIR/Opt/Lower routes and 46 existing routes. Preserve all 1,577 previous result joins, every previous input and 78 unaffected route meanings; 203 added inputs yield 1780 total joins across 137 routes, 97 current parents and forty unchanged future records. All fifteen Core criteria retain routes for nine existing tasks. Counts describe graph conservation, not semantic coverage or execution.
 
@@ -164,11 +170,11 @@ All current task bodies/statuses, source criteria, future records and finite his
 
 Keep every C7/C12/paired/provider/plugin/native/callback/device/probe/replay/migration/private-store/signing/publication restriction, writer reservation and stopped handoff. No held execution, other-chat message, reviewer wake, aggregate publication or merge occurs. Reader contract coverage remains the first actual implementation increment. Current source/interface entailment, global source conjunctions, implementation acceptance and integration remain pending/unassessed.
 
-## Historical evidence and current static findings
+## Complete Types source interface
 
-The accepted finite Reader-to-Core/SH07 and frozen C6 source receipts retain exact subjects. Current L2/C6 source/task entailment, whole original owner predicates, actual composition and independent acceptance remain pending. Existing conditional semantic changes retain the unchanged Evolution producer; restoring these requirements adds no new ordinary-development review ceremony. Every task stays Open, with source reservations and C7/C12/paired/provider/native/callback/device/probe/replay/migration/private-store/signing/publication restrictions intact. No held execution, other-chat message, reviewer wake, aggregate publication or merge occurs.
+Use the [complete Types source criteria](../types-workflow/plan.md#complete-types-source-criteria). Supply actual verified candidate and binding/order facts before Types; consume actual later type/dispatch/layout facts in checked Core. Source declarations and expected results are not inferred witnesses.
 
-Selected static inspection finds real hosted recursive form construction and some checks, alongside positional ids, pending C5 bindings, nonempty-table/field-presence verification, declared future domain anchors and assigned conformance fields. Gravity checked_core has real quote/if/do/call/recur construction and refusals under its declared partial SH07 boundary, with later analyses and broader forms explicitly pending. The L2/C6 modules include quoted builder/verifier-contract records, real narrow mutation execution and scoped exception admission/verification functions; those limited behaviors do not prove general L2/C6 execution. Existing project step/node/store allowances remain accounting-removal debt. No compiler semantic suite runs or current acceptance is inferred here.
+Current task identities/statuses, historical review subjects and original C7 publication/other actual restrictions remain unchanged. This source proposal grants no implementation or current independent acceptance.
 
 ## Historical task-authority-transfer plan
 
