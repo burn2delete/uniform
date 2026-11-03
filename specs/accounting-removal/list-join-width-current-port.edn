@@ -1,0 +1,42 @@
+{:schema :gravity/list-join-width-current-port-v1
+ :authority :non-authoritative
+ :current-base {:commit "d59a7df90f91b578c1bb160a59ec1ef865abf25b"
+                :tree "c25b4efebc5fb76befb35edce88857012be236ad"}
+ :historical-inputs
+ {:pr611 {:head "edef2c00c103df4b5222cf44124c6e1d707820e4"
+          :tree "7f12fa541cf26179ac59b6bdb95c666674ecdfb2"
+          :base "e9ec1c599614a99e3779b5e3a329e8d9a4b8fa80"
+          :paths 6}
+  :pr637 {:head "c7a4d959d319e0e1bbaef059e41fc5c059497af8"
+          :tree "49c42b821a44305b6dcd0bc7c54acb61cb5516d5"
+          :base "99893151b3d0b7c3c435d5c2e6e90c03255b5951"
+          :paths 4}
+  :pr638 {:head "5d2984976ed6070471fa9ddec3b03bc2479945b6"
+          :tree "8f067c7c2c3a65537ff317b79050ce101a5b478b"
+          :base "c7a4d959d319e0e1bbaef059e41fc5c059497af8"
+          :paths 4}}
+ :current-source
+ {:effects.gravity "104cdb9b4ca7d9e19e4eec3b46e470d09c6d6f4b"
+  :emitter.gravity "7f5c4678e96dac944417bb6c9a0441afb85f7052"}
+ :port
+ {:path "bootstrap/clojure/test/gravity/self_hosting/list_join_width_current_port_test.clj"
+  :behavior [:finite-list-widths
+             :effects-emitter-result-agreement
+             :wide-list-if-join-branch-compatibility
+             :invalid-member-representation
+             :forged-checked-member-count]
+  :source-input :current-main
+  :historical-census-authority :history-only}
+ :checks
+ {:command "clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.list-join-width-current-port-test"
+  :tests 2
+  :assertions 54
+  :failures 0
+  :errors 0}
+ :nonclaims [:authoritative-source-migration
+             :genuine-c7-or-c8-admission
+             :complete-pr611
+             :complete-pr637
+             :complete-pr638
+             :release
+             :self-hosting]}

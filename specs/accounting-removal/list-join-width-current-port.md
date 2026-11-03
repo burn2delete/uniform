@@ -1,0 +1,44 @@
+# Current List-join width controls
+
+This is a non-authoritative development receipt for the useful semantic slice
+of PRs 611, 637, and 638. It is bound to current main
+`d59a7df90f91b578c1bb160a59ec1ef865abf25b` (tree
+`c25b4efebc5fb76befb35edce88857012be236ad`). The historical PR identities and
+path counts are recorded in the adjacent EDN receipt; their old source and
+census snapshots are not silently treated as current authority.
+
+## Preserved value
+
+Current main already contains the two production predicate changes from PR611
+and PR638. The current `effects.gravity` and `emitter.gravity` source blobs are
+recorded in the EDN receipt, so this port does not replay or overwrite those
+changes.
+
+The new focused namespace carries the missing executable controls from the
+three historical proposals:
+
+- finite positional widths `0`, `1`, `1024`, `1025`, and `2049` remain accepted
+  when all atomic members agree;
+- Effects and emitter element reconstruction agree, including homogeneous-list
+  identity and empty-list results;
+- both sides of a wide `if` List join report the exact checked-member count;
+- changed atomic members, extra fields, non-vector member collections, unknown
+  atoms, and forged checked-member counts are rejected or not applicable by the
+  current C7, Effects, and emitter consumers.
+
+The controls are in
+`bootstrap/clojure/test/gravity/self_hosting/list_join_width_current_port_test.clj`
+so the active SH09/SH01 test files owned by another workstream remain
+unchanged. The historical PR census and Markdown files remain history-only
+evidence; no stale source hash or work-budget assertion was refreshed.
+
+## Check
+
+```text
+clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.list-join-width-current-port-test
+2 tests, 54 assertions, 0 failures, 0 errors
+```
+
+This is a bounded current-source helper test using normalized List-if inputs.
+It does not establish an authoritative source migration, genuine C7/C8
+admission, complete PR closure, release readiness, or self-hosting.
