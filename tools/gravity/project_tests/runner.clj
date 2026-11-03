@@ -1,4 +1,4 @@
-(ns gravity.project-test-runner
+(ns gravity.project-tests.runner
   "Scoped development entrypoint shared by language, compiler and bootstrap.
 
   Aliases bind one project scope through --scope.  The existing development
@@ -7,7 +7,7 @@
   widening to the old bootstrap default."
   (:require [clojure.string :as str]
             [gravity.development-test-runner :as development]
-            [gravity.test-scope-runner :as scope]))
+            [gravity.project-tests.scope :as scope]))
 
 (defn- parse-scope
   [args]
@@ -64,6 +64,6 @@
     (System/exit (run-cli! args))
     (catch clojure.lang.ExceptionInfo ex
       (binding [*out* *err*]
-        (println (str "project-test-runner: " (.getMessage ex)))
+        (println (str "project-tests.runner: " (.getMessage ex)))
         (println "Try --help for usage."))
       (System/exit 2))))

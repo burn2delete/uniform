@@ -1,4 +1,4 @@
-(ns gravity.test-scope-runner
+(ns gravity.project-tests.scope
   "Small selection boundary shared by the language and bootstrap test entrypoints.
 
   The existing runners remain responsible for loading and executing tests.  This

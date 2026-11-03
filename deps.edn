@@ -56,12 +56,12 @@
   ;; development runner's selectors and fixtures.
   :language-test
   {:extra-paths ["bootstrap/clojure/test"]
-   :main-opts ["-m" "gravity.project-test-runner" "--scope" "language"]}
+   :main-opts ["-m" "gravity.project-tests.runner" "--scope" "language"]}
 
   :compiler-composition-test
   {:extra-paths ["bootstrap/clojure/test"]
-   :main-opts ["-m" "gravity.project-test-runner" "--scope" "compiler"]}
+   :main-opts ["-m" "gravity.project-tests.runner" "--scope" "compiler"]}
 
   :bootstrap-validation-test
   {:extra-paths ["bootstrap/clojure/test"]
-   :main-opts ["-m" "gravity.project-test-runner" "--scope" "bootstrap"]}}}
+   :main-opts ["-m" "gravity.project-tests.runner" "--scope" "bootstrap"]}}}

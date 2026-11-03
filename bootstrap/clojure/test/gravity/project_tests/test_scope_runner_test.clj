@@ -1,7 +1,7 @@
 (ns gravity.project-tests.test-scope-runner-test
   (:require [clojure.set :as set]
             [clojure.test :refer [deftest is]]
-            [gravity.test-scope-runner :as scope]))
+            [gravity.project-tests.scope :as scope]))
 
 (defn- throws-message?
   [pattern thunk]

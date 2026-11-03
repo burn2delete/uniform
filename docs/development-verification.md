@@ -148,7 +148,7 @@ The catalogs are an explicit initial subset, not a claim of full language,
 compiler or bootstrap conformance. Assign a new test by the assertions it
 checks: a file under the historical `self_hosting` path is not bootstrap
 validation merely because of its path. Extend the named scope in
-`bootstrap/clojure/test/gravity/test_scope_runner.clj` when a test's owning
+`tools/gravity/project_tests/scope.clj` when a test's owning
 boundary is clear, and keep its focused positive and rejected cases visible.
 The shared entrypoint is intentionally only a scope binding; the existing
 development runner still applies `--exact`, `--regex`, `--prefix`, `--list` and
