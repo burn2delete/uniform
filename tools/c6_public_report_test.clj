@@ -76,15 +76,17 @@
         {:interface :gravity/c6-c10 :version version}))
 
 (deftest separately-fresh-report-preserves-version-policy-and-real-data-mechanisms
-  (doseq [version [2]]
+  (doseq [version [2 3]]
     (with-report version {}
       (fn []
         (let [value (artifact version) first-report (report version value)
               second-report (report version value)
-              policy (call 'p15-s23-c11-mir-core-policy-projection value context first-report)
+              policy (call 'p15-s23-c11-mir-core-policy-projection value context first-report version)
               expected-id (call 'p15-s23-c6c10-canonical-digest
                                 "synthetic.gravity"
-                                {:domain :gravity/c6-c10-source-policy-v2
+                                {:domain (if (= 3 version)
+                                           :gravity/c6-c10-source-policy-v3
+                                           :gravity/c6-c10-source-policy-v2)
                                  :artifact-id digest-value :context context :policy (:source-policy-receipt (fresh version))})
               calls (filter #(and (vector? %) (= :gravity-candidate (first %))) @events)]
           (is (= first-report second-report))
@@ -99,29 +101,31 @@
           (is (= :passed (get-in first-report [:semantic-structure :status])))
           (is (= :passed (get-in first-report [:target-request-metadata :status])))
           (is (= :passed (get-in first-report [:physical-provenance :status])))
-          (is (identical? policy (call 'p15-s23-c11-mir-require-core-policy-data! value context policy)))
+          (is (identical? policy (call 'p15-s23-c11-mir-require-core-policy-data! value context policy version)))
           (is (not= (:source-policy-binding-id policy)
                     (:source-policy-hash (call 'p15-s23-c11-mir-core-policy-binding version policy))))
           (is (= (= 3 version) (contains? first-report :semantic-family))))))))
 
 (deftest candidate-semantic-target-and-provenance-substitutions-refuse
-  (doseq [[mutate fact]
+  (doseq [version [2 3]
+          [mutate fact]
           [[#(assoc % :synthetic-payload (list 1 true)) :fresh-type-sensitive-semantic-artifact-zipper]
            [#(assoc % :synthetic-payload [1.0M true]) :fresh-type-sensitive-semantic-artifact-zipper]
            [#(assoc % :artifact-id "changed-root") :fresh-type-sensitive-semantic-artifact-zipper]
            [#(assoc-in % [:target-request-metadata :requested-target] :c) :exact-physical-target-request-metadata]
            [#(assoc-in % [:physical-provenance :actual-paths :gravity-c6-c10-source] "other.gravity")
             :exact-physical-source-provenance]]]
-    (with-report 2 {}
-      #(is (= fact (:missing-fact (diagnostic (fn [] (report 2 (mutate (artifact 2)))))))))))
+    (with-report version {}
+      #(is (= fact (:missing-fact (diagnostic (fn [] (report version (mutate (artifact version)))))))))))
 
 (deftest candidate-carrier-and-raw-reference-refusals-precede-fresh-owner
-  (doseq [[value fact] [[(assoc (artifact 2) :unsealed {:digest-ref 0}) :public-candidate-free-of-raw-digest-refs]
-                        [(with-meta (artifact 2) {:foreign true}) :trusted-gravity-checked-core-carrier]
-                        [(assoc (artifact 2) :foreign (fn [] :unreachable)) :trusted-gravity-checked-core-carrier]]]
-    (with-report 2 {}
+  (doseq [version [2 3]
+          [value fact] [[(assoc (artifact version) :unsealed {:digest-ref 0}) :public-candidate-free-of-raw-digest-refs]
+                        [(with-meta (artifact version) {:foreign true}) :trusted-gravity-checked-core-carrier]
+                        [(assoc (artifact version) :foreign (fn [] :unreachable)) :trusted-gravity-checked-core-carrier]]]
+    (with-report version {}
       (fn []
-        (is (= fact (:missing-fact (diagnostic #(report 2 value)))))
+        (is (= fact (:missing-fact (diagnostic #(report version value)))))
         (is (= [:context] @events))))))
 
 (deftest malformed-header-refuses-before-context-or-candidate
@@ -129,19 +133,31 @@
                      p15-s23-stage2-gravity-checked-core-verify! p15-s23-stage2-gravity-checked-core-authentic?]
           header [nil {} {:interface :gravity/c6-c10 :version 1}
                   {:interface :gravity/c6-c10 :version (int 2)}
-                  {:interface :gravity/c6-c10 :version 3}]]
+                  {:interface :gravity/c6-c10 :version (int 3)}]]
     (with-report 2 {}
       (fn []
         (is (= :versioned-c6-source-interface
                (:missing-fact (diagnostic #(call function (fn [] :unreachable) context header)))))
         (is (empty? @events))))))
 
+(deftest explicit-v3-report-verify-and-authentic-routing-is-current
+  (with-report 3 {}
+    (fn []
+      (let [header {:interface :gravity/c6-c10 :version 3}]
+        (is (= {:interface :gravity/c6-c10 :version 3}
+               (:source-interface (report 3 (artifact 3)))))
+        (is (= :passed (call 'p15-s23-stage2-gravity-checked-core-verify!
+                             (artifact 3) context header)))
+        (is (true? (call 'p15-s23-stage2-gravity-checked-core-authentic?
+                         (artifact 3) context header)))))))
+
 (deftest candidate-verifier-report-is-checked-before-public-success
-  (doseq [change [{:request-count 99} {:semantic-authority :host-seed} {:checks [:forged]}
+  (doseq [version [2 3]
+          change [{:request-count 99} {:semantic-authority :host-seed} {:checks [:forged]}
                   {:artifact-template {:forged true}} {:digest-graph-roots []}]]
-    (with-report 2 {:candidate-report change}
+    (with-report version {:candidate-report change}
       #(is (= :fresh-gravity-candidate-verifier-replay
-              (:missing-fact (diagnostic (fn [] (report 2 (artifact 2))))))))))
+              (:missing-fact (diagnostic (fn [] (report version (artifact version))))))))))
 
 (deftest predicates-legacy-routing-and-interruption-retain-their-contracts
   (with-report 1 {}
@@ -150,27 +166,28 @@
         (is (not (contains? result :source-interface)))
         (is (not (contains? result :source-policy-receipt)))
         (is (some #{[:fresh context 1]} @events)))))
-  (with-report 2 {}
-    (fn []
-      (is (= :passed (call 'p15-s23-stage2-gravity-checked-core-verify! (artifact 2) context
-                          {:interface :gravity/c6-c10 :version 2})))
-      (is (true? (call 'p15-s23-stage2-gravity-checked-core-authentic? (artifact 2) context
-                       {:interface :gravity/c6-c10 :version 2})))
-      (is (false? (call 'p15-s23-stage2-gravity-checked-core-authentic? (assoc (artifact 2) :synthetic-payload []) context
-                        {:interface :gravity/c6-c10 :version 2})))
-      (is (false? (call 'p15-s23-stage2-gravity-checked-core-authentic? (artifact 2))))))
-  (try
-    (with-report 2 {:fresh-error (InterruptedException. "Synthetic interruption")}
+  (doseq [version [2 3]]
+    (with-report version {}
       (fn []
-        ;; Capture before test reporting can perform interruptible output.
-        (let [observed (try
-                         (call 'p15-s23-stage2-gravity-checked-core-authentic? (artifact 2) context
-                               {:interface :gravity/c6-c10 :version 2})
-                         :not-thrown
-                         (catch InterruptedException _ {:interrupted? (.isInterrupted (Thread/currentThread))}))]
-          (Thread/interrupted)
-          (is (= {:interrupted? true} observed)))))
-    (finally (Thread/interrupted))))
+        (let [header {:interface :gravity/c6-c10 :version version}]
+          (is (= :passed (call 'p15-s23-stage2-gravity-checked-core-verify! (artifact version) context header)))
+          (is (true? (call 'p15-s23-stage2-gravity-checked-core-authentic? (artifact version) context header)))
+          (is (false? (call 'p15-s23-stage2-gravity-checked-core-authentic?
+                            (assoc (artifact version) :synthetic-payload []) context header)))
+          (is (false? (call 'p15-s23-stage2-gravity-checked-core-authentic? (artifact version))))))))
+  (doseq [version [2 3]]
+    (try
+      (with-report version {:fresh-error (InterruptedException. "Synthetic interruption")}
+        (fn []
+          ;; Capture before test reporting can perform interruptible output.
+          (let [observed (try
+                           (call 'p15-s23-stage2-gravity-checked-core-authentic? (artifact version) context
+                                 {:interface :gravity/c6-c10 :version version})
+                           :not-thrown
+                           (catch InterruptedException _ {:interrupted? (.isInterrupted (Thread/currentThread))}))]
+            (Thread/interrupted)
+            (is (= {:interrupted? true} observed)))))
+      (finally (Thread/interrupted)))))
 
 (let [result (run-tests 'c6-public-report-test)]
   (assert (nil? (find-ns 'gravity.bootstrap)))
