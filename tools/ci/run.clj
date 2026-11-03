@@ -16,6 +16,16 @@
 (def resolution-modes #{"resolution" "resolution-pipeline" "resolution-unmetered"
                         "resolution-invocation-selection"})
 
+;; Keep the existing full Resolution pipeline namespace in two fresh JVM
+;; processes.  The final verifier performs its own current-product replay and
+;; can consume the whole child watchdog; the other vars remain one ordinary
+;; cohort.  The runner's --regex/--exact selectors are the only partition
+;; mechanism so each child retains the normal namespace loading and fixtures.
+(def resolution-pipeline-final-test
+  "verifier-requires-fresh-replay-current-products-and-public-proof")
+(def resolution-pipeline-cohort-regex
+  "^(?!.*verifier-requires-fresh-replay-current-products-and-public-proof$).+")
+
 ;; These are the existing owner boundaries exposed by the CI matrix.  Keep
 ;; this table deliberately small: an unlisted path is cross-cutting and must
 ;; retain the full matrix rather than being guessed into one stage.
@@ -59,8 +69,8 @@
                 "bootstrap/clojure/test/gravity/self_hosting/sh04_"
                 "bootstrap/clojure/fixtures/self-hosting/sh-03"
                 "bootstrap/clojure/fixtures/self-hosting/sh-04"]
-   "macro" ["bootstrap/gravity/src/gravity/macro.gravity"
-            "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity"
+   "macro" ["language/compiler/src/gravity/macro.gravity"
+            "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity"
             "bootstrap/clojure/src/gravity/macro.clj"
             "bootstrap/clojure/src/gravity/macro_run_storage.clj"
             "bootstrap/clojure/src/gravity/macro_expansion"
@@ -72,8 +82,8 @@
             "bootstrap/clojure/test/gravity/self_hosting/sh05_"
             "bootstrap/clojure/test/gravity/self_hosting/macro_run_storage_test.clj"
             "bootstrap/clojure/fixtures/self-hosting/sh-05"]
-   "resolution" ["bootstrap/gravity/src/gravity/resolution.gravity"
-                 "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
+   "resolution" ["language/compiler/src/gravity/resolution.gravity"
+                 "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
                  "bootstrap/clojure/src/gravity/resolution.clj"
                  "bootstrap/clojure/src/gravity/c5_name_resolution"
                  "bootstrap/clojure/src/gravity/c5_name_resolution.clj"
@@ -86,7 +96,7 @@
                  "bootstrap/clojure/fixtures/self-hosting/sh-06"]
    "checked-core-runtime" ["language/compiler/src/gravity/checked_core.gravity"
                            "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
-                           "bootstrap/gravity/src/gravity/compiler/c6_call_arity_legality.gravity"
+                           "language/compiler/src/gravity/compiler/c6_call_arity_legality.gravity"
                            "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
                            "bootstrap/clojure/src/gravity/checked_core.clj"
                            "bootstrap/clojure/src/gravity/checked_core"
@@ -679,6 +689,7 @@
                         ["clojure-lint" 60 ["clj-kondo" "--lint" "tools/ci"]]
                         ["clojure-format" 60 ["cljfmt" "check" "tools/ci"]]
                         ["harness-controls" 60 (command "256m" "-M" "tools/ci/run_test.clj")]
+                        ["progress-controls" 60 (command "128m" "-M" "tools/ci/progress_test.clj")]
                         ["macro-context-controls" 60 (command "256m" "-M" "tools/ci/lint_macro_test.clj")]
                         ["facade-context-controls" 60 (command "256m" "-M" "tools/ci/lint_facade_test.clj")]]
                        (when (some #{"tools/ci/snapshot.clj" "tools/ci/snapshot_test.clj"} paths)
@@ -716,21 +727,32 @@
                            "gravity.self-hosting.sh01-ownership-test")]]
     "macro" [["macro-regression" 900
               (command "2g" "-M:dev-test"
+                       "--progress"
                        "--namespace" "gravity.macro.pipeline-test"
                        "--namespace" "gravity.bootstrap-compatibility.c4-test")]]
     "resolution" [["resolution-regression" 900
                    (command "2g" "-M:dev-test"
+                            "--progress"
                             "--namespace" "gravity.resolution.pipeline-test"
                             "--namespace" "gravity.self-hosting.sh06-unmetered-resolution-test"
                             "--namespace" "gravity.self-hosting.sh06-invocation-selection-test")]]
     "resolution-pipeline" [["resolution-pipeline" 600
                             (command "2g" "-M:dev-test"
-                                     "--namespace" "gravity.resolution.pipeline-test")]]
+                                     "--progress"
+                                     "--namespace" "gravity.resolution.pipeline-test"
+                                     "--regex" resolution-pipeline-cohort-regex)]
+                           ["resolution-pipeline-fresh-replay" 600
+                            (command "2g" "-M:dev-test"
+                                     "--progress"
+                                     "--namespace" "gravity.resolution.pipeline-test"
+                                     "--exact" resolution-pipeline-final-test)]]
     "resolution-unmetered" [["resolution-unmetered" 600
                              (command "2g" "-M:dev-test"
+                                      "--progress"
                                       "--namespace" "gravity.self-hosting.sh06-unmetered-resolution-test")]]
     "resolution-invocation-selection" [["resolution-invocation-selection" 600
                                         (command "2g" "-M:dev-test"
+                                                 "--progress"
                                                  "--namespace" "gravity.self-hosting.sh06-invocation-selection-test")]]
     "checked-core-runtime" [["checked-core-runtime-regression" 180
                              (command "2g" "-M:dev-test"
