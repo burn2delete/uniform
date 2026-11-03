@@ -5464,3 +5464,109 @@ interface entailment, implementation acceptance, independent current review and
 integration remain pending/unassessed. All actual restrictions, writer
 reservations and stopped handoffs remain; no held execution, other-chat message,
 reviewer wake, aggregate publication or merge occurs.
+
+## Complete L9 selected-result dependency continuation
+
+The error dependency proposal applies source commit
+`4836f4210b63077b61751988caaf7d8a215274f5` after the complete L9 source checkpoint
+`f634e58c3228544a76476758cc9d3ca679193a88`. It changes the
+[sole selected-result table](../docs/acceptance-dependencies.md#future-task-construction-and-composition)
+and twenty-two existing plans. The dependency tool has unchanged bytes; its
+current regression expectation records the actual changed C9 input population.
+No implementation task body, status, source criterion, future declaration or
+historical evidence subject changes.
+
+Seventy existing consumer routes preserve all 2,128 earlier joins and 71
+unaffected route meanings. Seventy-one added inputs yield 2,199 joins over the
+same 141 routes, 101 current parents and forty future records. Selected-route
+inputs increase from 1,364 to 1,435. All 23 L9 criteria retain nineteen existing
+task routes across ten authorities. The plans identify 533 selected input
+subjects; these counts establish conservation rather than semantic acceptance.
+Coarse 99-task and nine-task feedback sets remain exactly unchanged, with no
+new cycle member or unresolved consumer. Staged subjects expose early interfaces
+and later actual composition; whole tasks are not thereby topologically ordered.
+
+Use the [Core error producer/consumer plan](../specs/core-workflow/plan.md#error-handling-producer-and-consumer-order).
+Actual source, lexical and generated identities precede structural try/throw,
+protected/handler/source-order/nonreturn and cleanup construction and verification.
+Early genuine outcome/error/constructor declarations precede independent payload,
+handler, normal-result, call and Result/Option coverage facts. Preliminary typed
+verification precedes actual direct/latent/transitive thrown, handler-raised and
+residual effect derivation. Source-error potential and catch coverage do not
+themselves discharge effects, profile restrictions or authority. Actual error
+allowances and independent profile/check/resource/service premises precede
+combined admission with separately authentic grants.
+
+Early concrete profile, panic/trap/check-failure, eight-field FFI mapping,
+wrapper, ABI and service contracts precede caller checking. Later actual selected
+owner verdicts precede checked export/MIR/target use; actual normalization and
+failure-resource behavior precede safe/non-null runtime consumption. Real
+triggered check failures follow specified typed failure or profile/runtime/safety
+trap obligations under D8's four outcomes. A future failure trace is not the
+first service contract. Selected checked-Core interpretation needs no universal
+native artifact; actual compiled observations use the selected emitted input.
+
+Actual workflow step/input/output-error/retry/compensation/time/external-result
+and replay schemas, and structured AI model/tool/schema/policy/defense/review
+failure contracts, precede recording and execution. Later actual durable failure,
+compensation replay and AI audit establish claimed behavior. Required R7/R8
+replay uses recorded outcomes without live re-execution. Retry, timeout and
+cancellation semantics remain distinct from removed project attempt allowances.
+The selected R7/R8/R10/L19 and C8/C13/C14 interfaces grant no whole support-contract
+acceptance. The original mixed policy facet retains pending independent review:
+actual external billing/account failures survive, while historical R8 work/input
+quotas, counters, traces and exhaustion gates are not restored.
+
+Valid raw MIR remains available before optional transformations. Actual selected
+error/control/resource transforms preserve failure, cleanup, diagnostics, audit
+and replay behavior, obtain required exact-subject evidence, regenerate affected
+owners and verify the changed subject. Normal-value equality is insufficient;
+no universal optimizer or full future Formal gate is introduced. Compiler
+diagnostics remain structured API outcomes distinct from program exceptions.
+Source-only tools can work earlier; claimed semantic views and debugging consume
+actual current owner and program/session products. Owner fixtures precede the
+independent harness; held or unavailable required cases remain open.
+
+The entire complete L9 source record is unchanged, including all five restored
+Runtime predicates (6,269 bytes), the 534-byte Types predicate, the 1,032-byte
+conditional Evolution predicate, original roles and qualified reviews. All forty
+future declarations and the sixteen explicit Domains source bindings remain
+unchanged. Their preservation grants no renewal, consumption or current
+implementation acceptance. The entire preceding L9 source regression now reads
+its exact frozen `f634e58c3228544a76476758cc9d3ca679193a88` bridge, projection
+and source readers; every other prior test byte is conserved.
+
+Current proposal fingerprint:
+`79e5b40fb45ff1c5452dc22bf8b5059fbcf18ffb1aaf49b3e3b5b65ae169112f`.
+All applying pins verify against local Git. Four focused crosswalk tests /
+16,631 assertions pass: current L9 dependencies, entire frozen complete L9
+source/owner/finite predicates, entire frozen L8 dependencies and global task/
+history conservation. All 23 dependency tests / 6,137 assertions and both
+pinned projection checks pass. Canonical validation passes 240 documents /
+nineteen phase indexes; full-language roadmap structural validation passes with
+dated counts non-authoritative. The language-boundary gate passes six tests /
+eleven assertions. ASCII/whitespace checks pass. The full current 79-test
+crosswalk suite was not rerun; the prior complete 68-test / 44,978-assertion run
+remains bound to `25a96a0c03536270001449c00676e644ea353521`. These are planning/
+traceability checks, not compiler/runtime/provider/target/proof/migration/release
+conformance.
+
+The initial dependency-suite invocation ran before projection regeneration and
+rejected five stale plan-source hashes (23 tests / 5,833 assertions, zero failures,
+five errors). The regenerated projection and rerun produce the passing result
+above. The stale-input attempt receives no passing credit. Temporary preparation
+parse failures were corrected before the affected mutators ran.
+
+Conservation/navigation passes 91 changed files, 85 Markdown files, 3,940 local
+references, 139 original routes, 48 historical spec/plan suffixes and all 48
+original task/evidence contents after declared additions are removed.
+
+Complete L13 standard-library principles and finer library source/task
+entailment remain the next source work to assess through the existing library
+authority; the direct L13 read here alone confers no complete source allocation
+or acceptance. Global source/owner/task and complete interface entailment,
+implementation acceptance, independent current review and integration remain
+pending/unassessed. Reader contract coverage remains the first actual
+implementation increment. All actual restrictions, writer reservations and
+stopped handoffs remain; no held execution, other-chat message, reviewer wake,
+aggregate publication or merge occurs.
