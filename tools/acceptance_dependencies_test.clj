@@ -367,7 +367,7 @@
           route (first (filter #(= "domain-ir-boundaries" (:consumer %)) (:routes review)))]
       (is (= ["domain-ir-boundaries"] (get-in altered [:dependency-review :unresolved-consumers])))
       (is (empty? (:start-results route)))
-      (is (= 27 (count (:composition-results route))))
+      (is (= 36 (count (:composition-results route))))
       (doseq [producer (:composition-results route)]
         (is (some #(= ["task:domain-ir-boundaries/implementation" (str "task:" producer "/interface") :declared-producer-interface]
                       [(:from %) (:to %) (:kind %)]) edges))
