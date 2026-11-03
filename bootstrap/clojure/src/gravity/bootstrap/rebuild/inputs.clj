@@ -112,11 +112,11 @@
     :artifact-kind :gravity/stage0-core-artifact
     :diagnostic-code nil
     :required-artifact-fields [:kind :pass :module :macro-expansion-trace
-                                :expanded-syntax-object-stream :expanded-core-ast
-                                :core-node-source-map :core-form-kind-records
-                                :evaluation-order-metadata
-                                :latent-function-effect-records :call-records
-                                :diagnostics]
+                               :expanded-syntax-object-stream :expanded-core-ast
+                               :core-node-source-map :core-form-kind-records
+                               :evaluation-order-metadata
+                               :latent-function-effect-records :call-records
+                               :diagnostics]
     :sha256 "sha256:1fdcf2d990c377f332a36c2442dd8efbdd903093932f833dbb391a6d0d4b1627"}
    {:path "bootstrap/clojure/fixtures/rejected/core-unknown-form.gravity"
     :role :rejected-fixture
@@ -339,7 +339,7 @@
     (fail! :malformed "invalid bootstrap comparison declaration"
            {:comparison (:comparison manifest)}))
   (when-not (= expected-manifest-sha256
-             (sha256-id (canonical-bytes manifest)))
+               (sha256-id (canonical-bytes manifest)))
     (fail! :malformed "bootstrap manifest identity does not match declaration"
            {:expected expected-manifest-sha256
             :actual (sha256-id (canonical-bytes manifest))}))
@@ -368,7 +368,7 @@
              {:path path :role role}))
     (let [root-path (.toPath root)]
       (with-open [stream (Files/walk root-path
-                                  (make-array java.nio.file.FileVisitOption 0))]
+                                     (make-array java.nio.file.FileVisitOption 0))]
         (->> (.iterator stream)
              iterator-seq
              (map (fn [^Path file]
@@ -519,7 +519,7 @@
 (defn- extract-diagnostic-codes
   [bytes]
   (->> (re-seq #"\b[A-Z][A-Z0-9]+(?:-[A-Z0-9]+)+\b"
-                (command-text bytes))
+               (command-text bytes))
        distinct
        vec))
 
@@ -555,7 +555,7 @@
   [path]
   (when (and path (Files/exists path (make-array LinkOption 0)))
     (with-open [stream (Files/walk path
-                                  (make-array java.nio.file.FileVisitOption 0))]
+                                   (make-array java.nio.file.FileVisitOption 0))]
       (doseq [^Path child (sort-by #(.getNameCount ^Path %)
                                    >
                                    (iterator-seq (.iterator stream)))]
@@ -578,7 +578,7 @@
           (fail! :revision "bootstrap source archive failed"
                  (select-keys archive-result [:command :exit-code :stdout-sha256 :stderr-sha256])))
         (let [extract-result (command-result project-root
-                                              ["tar" "-xf" (.toString archive)
+                                             ["tar" "-xf" (.toString archive)
                                               "-C" (.toString snapshot)])]
           (when-not (zero? (:exit-code extract-result))
             (fail! :revision "bootstrap source archive extraction failed"

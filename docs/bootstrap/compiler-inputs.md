@@ -39,6 +39,23 @@ temporary directory with `git archive` and the host `tar` extractor. It then
 walks that snapshot and compares the complete source graph with the declared
 SHA-256 identity.
 
+The input-boundary tests are an opt-in development check, not part of ordinary
+`-M:test` or default namespace selection. The CI `bootstrap-input-controls`
+command invokes this namespace explicitly against the same bounded historical
+snapshot. Run the focused check with:
+
+```bash
+clojure -Srepro -M:dev-test \
+  --namespace gravity.bootstrap.rebuild.inputs-test \
+  --fail-fast
+```
+
+The declaration is a trusted, versioned VCS input for this bounded check. Its
+source graph and direct-input digests authenticate the selected bytes; the
+executor remains responsible for process, filesystem, publication, and other
+host policy. The check does not refresh the d351 historical snapshot or claim
+current-checkout, full-compiler, self-hosting, or release conformance.
+
 Before any fixture runs, the child `clojure -Spath` output is parsed. Its
 source directories must match the declared classpath, its Clojure jar digest
 must match `:seed-artifact-id`, and every other selected jar must match the

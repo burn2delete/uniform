@@ -1,8 +1,9 @@
 (ns gravity.bootstrap.rebuild.inputs-test
   (:require [clojure.edn :as edn]
+            [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap.rebuild.inputs :as inputs])
-  (:import [java.nio.file Files]))
+  (:import [java.nio.file Files LinkOption Path]))
 
 (def ^:private manifest-path "contracts/bootstrap-inputs.edn")
 
@@ -24,6 +25,31 @@
 (defn- manifest
   []
   (edn/read-string (slurp manifest-path)))
+
+(defn- delete-tree!
+  [^Path root]
+  (when (Files/exists root (make-array LinkOption 0))
+    (with-open [paths (Files/walk root (make-array java.nio.file.FileVisitOption 0))]
+      (doseq [path (reverse (vec (.toArray paths)))]
+        (Files/deleteIfExists ^Path path)))))
+
+(defmacro ^{:clj-kondo/lint-as 'clojure.core/fn} with-temporary-directory
+  [[binding] & body]
+  `(let [~binding (Files/createTempDirectory
+                   "gravity-bootstrap-inputs-test-"
+                   (make-array java.nio.file.attribute.FileAttribute 0))]
+     (try
+       ~@body
+       (finally
+         (delete-tree! ~binding)))))
+
+(defn- source-root-manifest
+  []
+  {:source-roots [{:path "src"
+                   :role :test-source
+                   :extensions [".gravity"]}]
+   :direct-inputs []
+   :fixture-inputs []})
 
 (defn- with-pinned-root
   [manifest-path f]
@@ -94,6 +120,12 @@
            ["execution backend"
             (assoc-in (manifest) [:execution :backend] :wasm)
             "BOOT-INPUTS-INCOMPATIBLE"]
+           ["toolchain network"
+            (assoc-in (manifest) [:toolchain :network] :allowed)
+            "BOOT-INPUTS-MALFORMED"]
+           ["execution network"
+            (assoc-in (manifest) [:execution :network] :allowed)
+            "BOOT-INPUTS-INCOMPATIBLE"]
            ["direct input inventory"
             (assoc-in (manifest) [:direct-inputs 0 :path] "README.md")
             "BOOT-INPUTS-MALFORMED"]
@@ -119,6 +151,70 @@
                         (catch clojure.lang.ExceptionInfo error error))]
             (is error)
             (is (= expected (:diagnostic (ex-data error))))))))))
+
+(deftest source-root-accepts-nested-regular-file
+  (with-temporary-directory [workspace]
+    (let [^Path source-file (.resolve ^Path workspace
+                                      "project/src/nested/accepted.gravity")]
+      (Files/createDirectories
+       (.getParent source-file)
+       (make-array java.nio.file.attribute.FileAttribute 0))
+      (spit (.toFile source-file) "(module accepted)\n")
+      (let [entries (inputs/source-graph
+                     (.toString (.resolve workspace "project"))
+                     (source-root-manifest))]
+        (is (= ["src/nested/accepted.gravity"] (mapv :path entries)))
+        (is (= :test-source (:role (first entries))))
+        (is (= (count "(module accepted)\n") (:bytes (first entries))))))))
+
+(deftest source-root-rejects-missing-root
+  (with-temporary-directory [workspace]
+    (let [project-root (.resolve ^Path workspace "project")
+          error (try
+                  (inputs/source-graph (.toString project-root)
+                                       (source-root-manifest))
+                  nil
+                  (catch clojure.lang.ExceptionInfo error error))]
+      (is error)
+      (is (= "BOOT-INPUTS-MISSING-ROOT"
+             (:diagnostic (ex-data error))))
+      (is (= "src" (:path (ex-data error)))))))
+
+(deftest source-root-rejects-symlinked-file-and-directory
+  (doseq [[label directory?]
+          [["a symlinked file" false]
+           ["a symlinked directory" true]]]
+    (testing label
+      (with-temporary-directory [workspace]
+        (let [^Path project-root (.resolve ^Path workspace "project")
+              ^Path source-root (.resolve project-root "src")
+              ^Path target (if directory?
+                             (.resolve ^Path workspace "outside-directory")
+                             (.resolve ^Path workspace "outside.gravity"))
+              ^Path link (.resolve source-root "escape")]
+          (Files/createDirectories
+           source-root
+           (make-array java.nio.file.attribute.FileAttribute 0))
+          (if directory?
+            (do
+              (Files/createDirectories
+               target
+               (make-array java.nio.file.attribute.FileAttribute 0))
+              (spit (.toFile (.resolve target "nested.gravity"))
+                    "(module outside)\n"))
+            (spit (.toFile target) "(module outside)\n"))
+          (Files/createSymbolicLink
+           link target
+           (make-array java.nio.file.attribute.FileAttribute 0))
+          (let [error (try
+                        (inputs/source-graph (.toString project-root)
+                                             (source-root-manifest))
+                        nil
+                        (catch clojure.lang.ExceptionInfo error error))]
+            (is error)
+            (is (= "BOOT-INPUTS-PATH" (:diagnostic (ex-data error))))
+            (is (str/ends-with? (:path (ex-data error))
+                                "/project/src/escape"))))))))
 
 (deftest child-selected-classpath-substitution-fails-before-fixtures
   (let [declaration (inputs/read-manifest manifest-path)
