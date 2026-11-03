@@ -324,11 +324,10 @@
 (defn- bounded-test-report
   [event]
   (case (:type event)
-    :begin-test-var (println {:test-start (:name event)})
-    :end-test-var (println {:test-end (:name event)})
-    :fail (println {:test-failure (:name event)
+    :begin-test-var (println {:test-start true})
+    :end-test-var (println {:test-end true})
+    :fail (println {:test-failure true
                     :line (:line event)
-                    :message (:message event)
                     :expected-type (some-> (:expected event) type str)
                     :actual-type (some-> (:actual event) type str)})
     :error (let [actual (:actual event)
@@ -336,7 +335,6 @@
                         (ex-data actual))]
              (println {:test-error (:name event)
                        :line (:line event)
-                       :message (:message event)
                        :error-class (some-> actual class .getName)
                        :diagnostic-id (or (:diagnostic-id data) (:id data))
                        :missing-fact (:missing-fact data)}))
