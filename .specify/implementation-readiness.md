@@ -5214,3 +5214,121 @@ interface entailment, implementation acceptance, independent current review and
 integration remain pending/unassessed. All actual restrictions, writer
 reservations and stopped handoffs remain; no held execution, other-chat message,
 reviewer wake, aggregate publication or merge occurs.
+
+## Complete L8 selected-result dependency continuation
+
+Source `14cf692ed5951fcda637c870dcabdbe6baa3fcbc` refines seventy
+consumers in the sole selected-result table: 68 existing routes plus two missing
+routes for the existing backend-interface and pass-evidence tasks. Preserve all
+2,011 prior result joins, every prior input and 71 unaffected route meanings.
+The 117 added inputs yield 2,128 joins across 141 routes, 101 current parents
+and forty future records. Selected inputs grow from 1,227 to 1,344. Twenty-two
+existing plans expose 443 concrete staged input subjects. All sixteen L8
+criteria retain twelve existing task routes. Task bodies, statuses, source
+criteria, historical receipts and forty future declarations are unchanged,
+including the existing explicit sixteen-binding Domains source successor.
+The 149 current keys, 25 authorities and original 44 identical / 95 amended
+bodies retain their populations; no new task or feature is created.
+
+The main coarse cycle has 99 members: all 97 predecessors plus backend-interface
+and pass-evidence. The separate nine-member release/schema/governance cycle is
+unchanged. Whole tasks still do not form a topological implementation order;
+the actual selected subjects distinguish construction, checking, composition,
+independent acceptance and release:
+
+- Actual source/generated protocol/type/method/implementation/case and call
+  identities precede structural Core and whole structural verification. Later
+  typed selection/effect/profile facts are not the first structural input.
+- Types derives independent receiver/argument/result premises, then publishes
+  actual nine-field method contracts and preliminary applicable implementation/
+  mode sets. Missing candidates or ambiguity without declared priority reject;
+  no new default/coherence/priority policy is invented.
+- Actual preliminary typed call/implementation edges feed real body/call effect
+  inference: selected-implementation effects or the declared upper bound when
+  selection is not statically known. Later implementation effect compatibility
+  and real effect admission consume those actual summaries with separate grants
+  and concrete service/profile/resource facts. Final admitted dispatch cannot
+  gate its own first tentative typed candidate or call graph.
+- Early actual ABI/layout requirements, provider declarations, runtime support
+  and independent flow/policy contracts precede checking. Later combined
+  verdicts precede admitted use. Core portable static/dictionary/interfaces
+  cannot hide a foreign runtime under L19. Native reflection and constrained
+  lookup/allocation retain actual declared-provider and bounded-behavior proof
+  requirements, without restoring compiler work/cost quotas.
+- Early authentic host identity/nullability/exception/ownership/lifetime/
+  affinity/wrapper/ABI and schema/validator contracts precede Types boundary
+  checking. Later actual admitted selected calls perform real validation,
+  null/exception/failure-resource normalization before safe core consumption.
+  Concrete layout evidence precedes affected adapters; final emitted callers
+  cannot be the first wrapper signature. This selected R10/L19 interface
+  adopts no full-document acceptance or new class/callback execution.
+- Real checked dispatch precedes actual MIR construction, owner tables,
+  verification and round-trip. Optional specialization uses real checker/pass/
+  preservation contracts and surviving exact-subject proof, preserves source
+  diagnostics and fallback or proves fallback unreachable, then regenerates
+  affected owner facts and verifies the changed subject. High-risk correctness
+  evidence exceeds structural validity. Valid unspecialized programs compile
+  earlier; complete L8 acceptance still needs its required optimizer fixtures.
+- Early method/representation/support contracts precede later actual admitted
+  program/interface layouts, target artifacts and readback or refusal. Source
+  protocols remain semantic authority across all required selected interface
+  representations; Lower cannot legalize source-rejected dispatch or introduce
+  hidden effects, authority or runtime behavior.
+- Actual closed dispatch suffices for the applicable formal route; required
+  total-coverage proof is checked against real preliminary method/case/type/
+  effect facts before dependent use. Later checked-Core/MIR anchors cannot be
+  the first property model or checker. Existing future Formal and pass-evidence
+  authorities remain distinct, without a universal full-Formal prerequisite,
+  wider DOM19/ZK/cost-quota adoption or held solver action.
+
+Early execution/error/session/recording and owner fixture contracts precede
+callers; later actual checked-Core interpreter or emitted compiled input
+precedes real call/fallback/normalization/resource/tool observations. No universal
+native artifact or optimizer is added. Source-only tools/caches remain available
+before absent semantic products; claimed semantic/debug facts require real
+current producers and program/session observations. Changed assumptions require
+actual affected regeneration with current file/source provenance. Owner fixtures
+precede independent harnesses; unavailable targets are unrun and shared rejection/
+manifest checks still run. All nine artifacts and seven L8 diagnostic meanings
+retain actual subjects and producer dependencies.
+
+The unchanged 1,011-byte Evolution stable-protocol-change predicate and earlier
+Types selection criterion retain their exact source and qualified review scope.
+Conditional adoption consumes affected type/effect/performance/ABI/host/library/
+AI/formal compatibility/conformance; unchanged-contract development gains no new
+ceremony. No review is renewed, consumed or self-conferred.
+
+Current proposal fingerprint:
+`c48a01a26af096fd4f12748584d69941c8d5534813c3339eaeee54dff0e02005`.
+All applying pins verify against local Git. Four focused crosswalk tests /
+14,702 assertions pass: current L8 dependencies, the entire frozen L8
+source and L7 dependency subjects, and global task/history conservation. The L8
+source regression now reads its complete frozen
+`b7499ce86055682167401c45a85b25782e91b51d` subject including every source
+reader; all other earlier test bytes remain unchanged. All 23 dependency tests /
+5,973 assertions and both pinned projection checks pass. Canonical
+validation passes 240 documents / nineteen phase indexes; full-language roadmap
+structural validation passes with dated counts non-authoritative. The language-
+boundary gate passes six tests / eleven assertions. Conservation/navigation
+passes 91 changed files, 85 Markdown files, 3,871 local references, 139 original
+routes, 48 historical spec/plan suffixes and all 48 original task/evidence
+contents after declared additions are removed. ASCII/whitespace checks pass.
+The full current 77-test crosswalk suite was not rerun; the prior complete
+68-test / 44,978-assertion run remains bound to
+`25a96a0c03536270001449c00676e644ea353521`. These checks establish planning/
+traceability consistency, not compiler/runtime/provider/target/proof/migration/
+release conformance.
+
+The first focused run failed one new regression assertion because a numeric
+conversion changed the preserved conditional Lower5/Opt5 route to Lower6/Opt6.
+The actual composition route remained correct and unchanged. Correcting only
+that new assertion yields the passing focused result above; the failed run
+receives no passing credit.
+
+Complete L9 error-handling source reconciliation through existing owners is the
+next source work to assess. Reader contract coverage remains the first actual
+implementation increment. Global source/owner/task and complete interface
+entailment, implementation acceptance, independent current review and integration
+remain pending/unassessed. All actual restrictions, writer reservations and
+stopped handoffs remain; no held execution, other-chat message, reviewer wake,
+aggregate publication or merge occurs.
