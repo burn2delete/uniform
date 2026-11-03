@@ -247,11 +247,20 @@
 (def pinned-evidence-hashes
   (merge predecessor-pinned-evidence-hashes
          (:additional-pinned-evidence-hashes readiness-source-version)))
+(def historical-task-transition-paths
+  ;; Platform and Stdlib have an explicit authenticated historical-to-applying
+  ;; source transition.  Their task rows must continue to point at the frozen
+  ;; historical blob; a current-source frame must not silently relabel those
+  ;; rows as ordinary current-source observations.
+  #{(:path acceptance-dependencies/platform-task-source-transition)
+    (:path acceptance-dependencies/stdlib-task-source-transition)})
 (defn source-pin [path]
-  (or (get applying-source-pins path)
-      (when (contains? (set (:current-source-paths readiness-source-version)) path)
-        (:source-input-commit readiness-source-version))
-      baseline))
+  (if (contains? historical-task-transition-paths path)
+    baseline
+    (or (get applying-source-pins path)
+        (when (contains? (set (:current-source-paths readiness-source-version)) path)
+          (:source-input-commit readiness-source-version))
+        baseline)))
 (def original-baseline "15a5499e97798621d270c36dd2546ce98ddd62a9")
 (def output-path "specs/sh-family-crosswalk/crosswalk.edn")
 (def rollup-path "specs/sh-family-crosswalk/rollup.md")
