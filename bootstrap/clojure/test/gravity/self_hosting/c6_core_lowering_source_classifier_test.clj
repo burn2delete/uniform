@@ -122,7 +122,7 @@
   (is (thrown? clojure.lang.ArityException
                (@source-evaluation-order-operation (quote if)))))
 
-(deftest current-source-classifier-is-used-by-c6-lowering-caller
+(deftest current-source-leaves-are-used-by-c6-lowering-caller
   (let [classification-calls (atom [])
         evaluation-calls (atom [])
         classify (fn [form]
