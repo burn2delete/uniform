@@ -77,7 +77,7 @@ operation.
 ## Default SH-07 workflow: three boundaries
 
 For SH-07, edit the owning Gravity implementation
-`bootstrap/gravity/src/gravity/checked_core.gravity`. The Clojure adapter at
+`language/compiler/src/gravity/checked_core.gravity`. The Clojure adapter at
 `bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00885-sh07-core-source-relative-path.clj`
 preserves transport and compatibility; it does not own language semantics.
 

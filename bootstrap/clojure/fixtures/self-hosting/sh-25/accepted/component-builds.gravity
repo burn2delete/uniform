@@ -210,7 +210,7 @@
     [:core-semantics] 10)
    (sh25-component
     :checked-core :checked-core
-    "bootstrap/gravity/src/gravity/checked_core.gravity"
+    "language/compiler/src/gravity/checked_core.gravity"
     [:core-lowering :authenticated-envelope] 11)
    (sh25-component
     :checked-core-pipeline :checked-core

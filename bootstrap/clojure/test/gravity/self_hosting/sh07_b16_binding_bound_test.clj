@@ -45,7 +45,7 @@
 (def ^:private checked-core-plan
   (delay
    (compile-plan
-    "bootstrap/gravity/src/gravity/checked_core.gravity")))
+    "language/compiler/src/gravity/checked_core.gravity")))
 
 (defn- invoke
   [function arguments]
@@ -72,7 +72,7 @@
 (defn- checked-core-binding-decomposition
   []
   (let [source-relative-path
-        "bootstrap/gravity/src/gravity/checked_core.gravity"
+        "language/compiler/src/gravity/checked_core.gravity"
         source-path (path source-relative-path)
         forms (source-forms source-relative-path)
         module (bootstrap/parse-module source-path forms)
