@@ -51,7 +51,7 @@
                                 'p15-s23-c6c10-compile-source-binding)]
     (try
       (let [data (failure-data
-                  #(@compile-var path 3 :development-current))]
+                  #(@compile-var path 4 :development-current))]
         (is (= "C6-VERIFY" (:id data)))
         (is (= :explicit-current-source-selection (:missing-fact data))))
       (finally
@@ -65,7 +65,7 @@
               (fn [] (with-redefs-fn
                  {resolver-var (fn [] (swap! resolutions inc) "unreachable.gravity")}
                  #(bootstrap/p15-s23-c11-mir-source-binding!
-                   "pr453-c11-unsupported-current.gravity" :jvm 3
+                   "pr453-c11-unsupported-current.gravity" :jvm 4
                    :development-current))))]
     (is (= "C11-VERIFY" (:id data)))
     (is (= :explicit-current-source-selection (:missing-fact data)))
@@ -349,7 +349,7 @@
       (finally
         (java.nio.file.Files/deleteIfExists (.toPath (java.io.File. path)))))))
 
-(deftest public-v2-headers-reject-unsupported-routes-before-construction
+(deftest public-source-headers-dispatch-v3-and-reject-unsupported-routes-before-construction
   (let [calls (atom 0)
         fresh-var (ns-resolve 'gravity.bootstrap
                               'p15-s23-c6c10-fresh-construction)
@@ -359,30 +359,37 @@
                    (with-redefs-fn
                      {fresh-var (fn [& args]
                                   (swap! calls inc)
-                                  (apply fresh args))}
+                                  (if (= 3 (second args))
+                                    {:artifact :synthetic-v3-artifact}
+                                    (apply fresh args)))}
                      #(bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
                        {:source-path "/tmp/pr453.invalid.gravity"
                         :source-text (source-text)
                         :requested-target :jvm}
                        header))
-                   nil
                    (catch clojure.lang.ExceptionInfo error
                      (ex-data error))))]
+    (is (= :synthetic-v3-artifact
+           (invoke {:interface :gravity/c6-c10 :version 3})))
+    (is (= 1 @calls))
     (doseq [[header expected]
             [[{:interface :gravity/c6-c10 :version 1} :explicit-interface-version]
-             [{:interface :gravity/c6-c10 :version 3} :interface-version-class-or-value]
              [{:interface :gravity/c11-mir :version 2} :interface-id]]]
       (is (= expected (:reason (invoke header))))
-      (is (zero? @calls)))
+      (is (= 1 @calls)))
     (is (= 2 (c6-source-interface/interface-version!
               {:interface :gravity/c6-c10 :version 2})))
+    (is (= 3 (c6-source-interface/interface-version!
+              {:interface :gravity/c6-c10 :version 3})))
     (is (= 2 (c11-source-interface/public-interface-version!
               {:interface :gravity/c11-mir :version 2})))))
 
-(deftest public-c11-v2-route-rejects-unsupported-header-before-ingress
+(deftest public-c11-source-headers-dispatch-v3-and-reject-foreign-headers
+  (is (= 3 (c11-source-interface/public-interface-version!
+            {:interface :gravity/c11-mir :version 3})))
   (doseq [[header expected]
           [[{:interface :gravity/c11-mir :version 3}
-            :interface-version-class-or-value]
+            :explicit-interface-version]
            [{:interface :gravity/c6-c10 :version 2}
             :interface-id]]]
     (let [data

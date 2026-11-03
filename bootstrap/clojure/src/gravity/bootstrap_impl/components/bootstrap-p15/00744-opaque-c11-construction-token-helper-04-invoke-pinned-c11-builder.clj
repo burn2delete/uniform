@@ -8,13 +8,17 @@
          "C11-VERIFY" (:source-path context) {}
          {:missing-fact :opaque-c11-construction-token}))
       (try
-        (let [result
+        (let [version (get binding :interface-version 1)
+              result
               (p15-s23-stage2-runtime-execute-function
                {:engine :gravity-c11-pinned-builder-host-runner
                 :compiler-artifact-plan? true}
                (:plan binding)
-               p15-s23-c11-mir-builder-function
+               (p15-s23-c11-mir-selected-builder-function version)
                [checked-core])]
+          (when (= 3 version)
+            (p15-s23-c11-mir-require-trusted-carrier!
+             (:source-path context) :flat-bool-builder-result result :reject))
           (when (= :rejected (:status result))
             (p15-s23-c11-mir-fail!
              (if (and (= #{:status :diagnostic :missing-fact
@@ -29,6 +33,8 @@
              {:missing-fact (or (:missing-fact result)
                                 :gravity-c11-builder-rejection)
               :conditional-count (:conditional-count result)}))
+          (when (= 3 version)
+            (p15-s23-c11-mir-verify-flat-produced! (:source-path context) binding checked-core result))
           result)
         (catch InterruptedException interrupted
           (.interrupt (Thread/currentThread))
