@@ -111,6 +111,28 @@
             (is error)
             (is (= expected (:diagnostic (ex-data error))))))))))
 
+(deftest child-selected-classpath-substitution-fails-before-fixtures
+  (let [declaration (inputs/read-manifest manifest-path)
+        toolchain-record! (deref (resolve 'gravity.bootstrap.rebuild.inputs/toolchain-record!))]
+    (doseq [[label changed]
+            [["child-selected seed jar"
+              (assoc-in declaration [:toolchain :seed-artifact-id]
+                        "sha256:0000000000000000000000000000000000000000000000000000000000000000")]
+             ["child dependency jar"
+              (assoc-in declaration [:toolchain :dependency-jars 0 :sha256]
+                        "sha256:0000000000000000000000000000000000000000000000000000000000000000")]]]
+      (testing label
+        (with-pinned-root
+          manifest-path
+          (fn [root]
+            (let [error (try
+                          (toolchain-record! root changed)
+                          nil
+                          (catch clojure.lang.ExceptionInfo error error))]
+              (is error)
+              (is (= "BOOT-INPUTS-TOOLCHAIN-MISMATCH"
+                     (:diagnostic (ex-data error)))))))))))
+
 (deftest development-build-consumes-real-compiler-fixtures
   (let [{:keys [inputs result]} (inputs/run-development-build! "." manifest-path)
         fixtures (:fixtures result)
@@ -122,6 +144,10 @@
            (get-in result [:source-revision :commit])))
     (is (= "sha256:dfdee131460216a84fef22e537bb0d0579965f8f70338d748323dff26f8e5a8b"
            (get-in result [:toolchain :seed-artifact-id])))
+    (is (= ["core.specs.alpha-0.4.74.jar" "spec.alpha-0.5.238.jar"]
+           (mapv :file (get-in result [:toolchain :dependency-jars]))))
+    (is (= [:directory :directory :jar :jar :jar]
+           (mapv :kind (get-in result [:toolchain :classpath-entries]))))
     (is (= 0 (:exit-code accepted)))
     (is (= :gravity/stage0-core-artifact (:artifact-kind accepted)))
     (is (re-matches #"sha256:[0-9a-f]{64}" (:artifact-id accepted)))

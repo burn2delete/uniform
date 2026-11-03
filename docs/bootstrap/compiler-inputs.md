@@ -16,8 +16,9 @@ release claim.
 - The compiler revision is pinned by both commit and tree identity.
 - Source, tooling, lockfile, load-order, and fixture inputs are content
   addressed. The observed graph has one canonical entry per path.
-- The Clojure seed jar and CLI version are pinned; the run records the observed
-  Clojure description and resolved classpath identities.
+- The Clojure seed jar, dependency jars, and CLI version are pinned; the run
+  records the child process's observed Clojure description and resolved
+  classpath identities.
 - The exact `deps.edn` classpath and six bootstrap load-order files are named.
 - Compiler source profiles and tested program profiles, target, supported
   compiler modules, accepted fixture bytes, and rejected fixture bytes are
@@ -35,6 +36,12 @@ lockfile, load orders, tooling root, and fixture files into an isolated
 temporary directory with `git archive` and the host `tar` extractor. It then
 walks that snapshot and compares the complete source graph with the declared
 SHA-256 identity.
+
+Before any fixture runs, the child `clojure -Spath` output is parsed. Its
+source directories must match the declared classpath, its Clojure jar digest
+must match `:seed-artifact-id`, and every other selected jar must match the
+declared dependency-jars vector. The parent JVM classpath is not used as the
+seed identity.
 
 The development build invokes the existing stage0 command
 `clojure -Srepro -M:gravity core <fixture>` from that snapshot. The accepted

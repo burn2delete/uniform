@@ -72,6 +72,10 @@
  :toolchain {:command "clojure"
              :version "1.12.5.1654"
              :seed-artifact-id "sha256:dfdee131460216a84fef22e537bb0d0579965f8f70338d748323dff26f8e5a8b"
+             :dependency-jars [{:file "core.specs.alpha-0.4.74.jar"
+                                :sha256 "sha256:eb73ac08cf49ba840c88ba67beef11336ca554333d9408808d78946e0feb9ddb"}
+                               {:file "spec.alpha-0.5.238.jar"
+                                :sha256 "sha256:94cd99b6ea639641f37af4860a643b6ed399ee5a8be5d717cff0b663c8d75077"}]
              :runtime :jvm
              :network :denied}
  :source-graph {:sha256 "sha256:c78ccb773f2e89ee3c7aaf7190703d2a3ed23f301ed76fd0bf75135a08556c50"}

@@ -63,6 +63,11 @@
 (def ^:private expected-clojure-version "1.12.5.1654")
 (def ^:private expected-seed-artifact-id
   "sha256:dfdee131460216a84fef22e537bb0d0579965f8f70338d748323dff26f8e5a8b")
+(def ^:private expected-dependency-jars
+  [{:file "core.specs.alpha-0.4.74.jar"
+    :sha256 "sha256:eb73ac08cf49ba840c88ba67beef11336ca554333d9408808d78946e0feb9ddb"}
+   {:file "spec.alpha-0.5.238.jar"
+    :sha256 "sha256:94cd99b6ea639641f37af4860a643b6ed399ee5a8be5d717cff0b663c8d75077"}])
 
 (def ^:private expected-fixtures
   [{:path "bootstrap/clojure/fixtures/accepted/profile-accepted-meta.gravity"
@@ -104,7 +109,7 @@
     :required-artifact-fields :sha256})
 (def ^:private allowed-classpath-keys #{:paths :deps-file :alias})
 (def ^:private allowed-toolchain-keys
-  #{:command :version :seed-artifact-id :runtime :network})
+  #{:command :version :seed-artifact-id :dependency-jars :runtime :network})
 
 (def ^:private diagnostic-codes
   {:malformed "BOOT-INPUTS-MALFORMED"
@@ -272,6 +277,8 @@
                  (= expected-clojure-version (get-in manifest [:toolchain :version]))
                  (= expected-seed-artifact-id
                     (get-in manifest [:toolchain :seed-artifact-id]))
+                 (= expected-dependency-jars
+                    (get-in manifest [:toolchain :dependency-jars]))
                  (= :jvm (get-in manifest [:toolchain :runtime]))
                  (= :denied (get-in manifest [:toolchain :network]))
                  (map? (:source-graph manifest))
@@ -549,15 +556,96 @@
         (Files/deleteIfExists archive)
         (throw error)))))
 
-(defn- clojure-jar
-  []
-  (let [separator (re-pattern (java.util.regex.Pattern/quote File/pathSeparator))
-        paths (str/split (System/getProperty "java.class.path") separator)
-        candidate (some #(when (re-find #"/clojure-[^/]+\.jar$" %) %) paths)]
-    (when-not candidate
-      (fail! :toolchain "the running seed Clojure jar is not on the classpath"
-             {:classpath (System/getProperty "java.class.path")}))
-    (.getCanonicalFile (io/file candidate))))
+(defn- classpath-entry-file
+  [snapshot-root entry]
+  (let [file (io/file entry)]
+    (.getCanonicalFile
+     (if (.isAbsolute file)
+       file
+       (io/file (str snapshot-root) entry)))))
+
+(defn- child-classpath-entries
+  [snapshot-root bytes]
+  (let [classpath (str/trim (command-text bytes))
+        separator (re-pattern (java.util.regex.Pattern/quote File/pathSeparator))]
+    (when (str/blank? classpath)
+      (fail! :toolchain "child Clojure -Spath returned an empty classpath" {}))
+    (let [entries (->> (str/split classpath separator)
+                       (map str/trim)
+                       (remove str/blank?)
+                       (map #(classpath-entry-file snapshot-root %))
+                       vec)]
+      (when-not (= (count entries) (count (set entries)))
+        (fail! :toolchain "child Clojure -Spath returned duplicate entries"
+               {:classpath classpath}))
+      (doseq [^File entry entries]
+        (when-not (.exists entry)
+          (fail! :toolchain "child Clojure -Spath named a missing entry"
+                 {:path (.getPath entry)})))
+      entries)))
+
+(defn- relative-classpath-path
+  [snapshot-root ^File entry]
+  (let [root (.toPath (.getCanonicalFile (io/file (str snapshot-root))))
+        path (.toPath (.getCanonicalFile entry))]
+    (if (.startsWith path root)
+      (str/replace (.toString (.relativize root path)) File/separator "/")
+      (.getPath (.getCanonicalFile entry)))))
+
+(defn- child-classpath-record
+  [snapshot-root classpath-bytes manifest]
+  (let [entries (child-classpath-entries snapshot-root classpath-bytes)
+        directories (filter #(.isDirectory ^File %) entries)
+        jars (filter #(and (.isFile ^File %)
+                           (str/ends-with? (.getName ^File %) ".jar"))
+                     entries)
+        unsupported (remove #(or (.isDirectory ^File %)
+                                 (and (.isFile ^File %)
+                                      (str/ends-with? (.getName ^File %) ".jar")))
+                            entries)
+        expected-directories (mapv #(classpath-entry-file snapshot-root %)
+                                   (get-in manifest [:classpath :paths]))]
+    (when-not (= (set expected-directories) (set directories))
+      (fail! :toolchain "child Clojure classpath directories differ from declaration"
+             {:expected (mapv #(.getPath ^File %) expected-directories)
+              :actual (mapv #(.getPath ^File %) directories)}))
+    (when (seq unsupported)
+      (fail! :toolchain "child Clojure classpath contains an unsupported entry"
+             {:entries (mapv #(.getPath ^File %) unsupported)}))
+    (let [jar-records (mapv (fn [^File jar]
+                              {:file (.getName jar)
+                               :sha256 (sha256-file jar)})
+                            jars)
+          seeds (filter #(re-matches #"clojure-[^/]+\.jar" (:file %))
+                        jar-records)]
+      (when-not (= 1 (count seeds))
+        (fail! :toolchain "child Clojure classpath did not select one seed jar"
+               {:jars jar-records}))
+      (let [seed (first seeds)
+            dependency-jars (vec (remove #(= seed %) jar-records))]
+        (when-not (= (get-in manifest [:toolchain :seed-artifact-id])
+                     (:sha256 seed))
+          (fail! :toolchain "child-selected Clojure seed identity does not match declaration"
+                 {:expected (get-in manifest [:toolchain :seed-artifact-id])
+                  :actual (:sha256 seed)
+                  :file (:file seed)}))
+        (when-not (= (get-in manifest [:toolchain :dependency-jars])
+                     dependency-jars)
+          (fail! :toolchain "child dependency jar identities do not match declaration"
+                 {:expected (get-in manifest [:toolchain :dependency-jars])
+                  :actual dependency-jars}))
+        {:seed-artifact-id (:sha256 seed)
+         :dependency-jars dependency-jars
+         :classpath-entries
+         (mapv (fn [^File entry]
+                 (if (.isDirectory entry)
+                   {:kind :directory
+                    :path (relative-classpath-path snapshot-root entry)}
+                   (let [jar (some #(when (= (:file %) (.getName entry)) %) jar-records)]
+                     {:kind :jar
+                      :file (:file jar)
+                      :sha256 (:sha256 jar)})))
+               entries)}))))
 
 (defn- toolchain-record!
   [snapshot-root manifest]
@@ -576,17 +664,16 @@
              {:describe (select-keys describe [:exit-code :stdout-sha256 :stderr-sha256])
               :classpath (select-keys classpath [:exit-code :stdout-sha256 :stderr-sha256])
               :version (:version describe-data)}))
-    (let [seed-artifact-id (sha256-file (clojure-jar))]
-      (when-not (= (get-in manifest [:toolchain :seed-artifact-id]) seed-artifact-id)
-        (fail! :toolchain "Clojure seed artifact identity does not match declaration"
-               {:expected (get-in manifest [:toolchain :seed-artifact-id])
-                :actual seed-artifact-id}))
+    (let [{:keys [seed-artifact-id dependency-jars classpath-entries]}
+          (child-classpath-record snapshot-root (:stdout-bytes classpath) manifest)]
       {:command "clojure"
        :version (:version describe-data)
        :seed-artifact-id seed-artifact-id
+       :dependency-jars dependency-jars
        :runtime :jvm
        :sdescribe-sha256 (:stdout-sha256 describe)
-       :classpath-sha256 (:stdout-sha256 classpath)})))
+       :classpath-sha256 (:stdout-sha256 classpath)
+       :classpath-entries classpath-entries})))
 
 (defn- run-fixture!
   [snapshot-root manifest fixture]
