@@ -1,0 +1,94 @@
+{:kind :current-flat-bool-public-transaction
+ :schema-version 1
+ :authority :evidence-only
+ :source-freeze
+ {:commit "4cd471becfe16eae5aab1557cecae18e79a46cfc"
+  :tree "1fbcb7c954bf3579525f3e253750965bbd1700fc"
+  :parent "aaed5c9899ed6c9a121eafe2eddc78249987845b"
+  :worktree-clean-before-run? true}
+ :composition
+ {:source-input-transport-commit
+  "e61d452c3ab5ebc2d989588f58b0a1c2651818ef"
+  :normal-composition-merge
+  "e0cdfd55cfb1bb9ec4fb31dc78eebb74a6d043a3"
+  :composition-base "f5db48b06148077162c20fe47aca5b782c594eed"
+  :transport-bound-before-proof? true}
+ :command
+ "clojure -J-Xmx4g -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\" \"tools\"]}' -M tools/current_flat_bool_public_transaction_test.clj"
+ :process
+ {:pid 73742
+  :log "/tmp/uniform-flat-bool-public-transaction-4cd471bec.log"
+  :exit 0
+  :tests 3
+  :assertions 74
+  :failures 0
+  :errors 0
+  :reporting-note
+  "The bounded reporter suppresses full artifact values; assertion count is the exact runtime count from the three test vars, including the looped rejection controls."}
+ :positive
+ {:v3
+  {:c6-interface {:interface :gravity/c6-c10 :version 3}
+   :c11-interface {:interface :gravity/c11-mir :version 3}
+   :source-mode :development-current
+   :semantic-family :closed-flat-bool-literal-sequence
+   :fresh-c6-report? true
+   :fresh-c11-report? true
+   :public-constructor? true
+   :source-input-transport :gravity-source-input-context}
+  :v2
+  {:c6-interface {:interface :gravity/c6-c10 :version 2}
+   :c11-interface {:interface :gravity/c11-mir :version 2}
+   :source-mode :development-current
+   :fresh-c6-report? true
+   :fresh-c11-report? true
+   :public-constructor? true}}
+ :current-source
+ {:c6
+  {:path "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+   :bytes 185620
+   :sha256 "sha256:c5433537cf9423b14a0456696d9f7c3eb5953f88a9535787ef9c53af883bc6b8"
+   :abi-version 3
+   :builder 'c6-c10-build-checked-core-template
+   :verifier 'c6-c10-verify-checked-core-template}
+  :c11
+  {:path "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
+   :bytes 593009
+   :sha256 "sha256:8f5e1949f84e02604919d3fb6acad7721673c53ae9a3aa2d517fdeceac90e9db"
+   :abi-version 3
+   :builder 'sh12-build-flat-bool-sequence-mir
+   :verifier 'sh12-verify-flat-bool-sequence-mir}
+  :reader
+  {:path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"
+   :bytes 246369
+   :sha256 "sha256:eec041127cb2785f92e7e2c79d14350d869a0ea8a0194ea3da55f75d52099205"}
+  :expression-emitter
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity"
+   :bytes 1555571
+   :sha256 "sha256:5a28aebe715e65dbaad5a62e041cbf94757d919abd050f492ae0729a71e712c8"}}
+ :negative-controls
+ [:missing-core
+  :foreign-core
+  :native-core-class
+  :crossed-context
+  :forged-core-id
+  :tampered-source-rule
+  :tampered-builder-metadata
+  :coherent-type-fact
+  :coherent-origin-chain
+  :coherent-data-flow-edge]
+ :version-boundaries
+ {:v1-and-default :unchanged-and-fail-closed
+  :c6-data-version 2
+  :c11-data-version 2
+  :public-v3-not-a-historical-pin? true}
+ :nonclaims
+ [:native-c
+  :real-producer
+  :self-hosting
+  :migration
+  :release
+  :backend-completion
+  :full-sh12
+  :full-pr453]
+ :source-contract-note
+ "C6/C11 bytes and plans are authenticated from development-current source at invocation. The receipt records source provenance and ABI joins; it does not grant migration, release, or self-hosting authority."}

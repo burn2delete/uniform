@@ -49,6 +49,16 @@ positive, v2 regression and fail-closed mutation matrix are recorded in
 `current-flat-bool-public-transaction-receipt.edn` after the source-freeze
 commit and independent review.
 
+That receipt binds the current public transaction to source-freeze commit
+`4cd471becfe16eae5aab1557cecae18e79a46cfc` (tree
+`1fbcb7c954bf3579525f3e253750965bbd1700fc`) and records the exact bounded
+`-J-Xmx4g` run: 3 test vars, 74 assertions, zero failures and zero errors.
+The run includes one genuine v3 C6-to-C11 transaction, one genuine current-v2
+regression, and ten missing, foreign, crossed-context, native-class, source,
+metadata and coherent-IR mutation refusals. The log and source byte hashes
+are part of the receipt; the bounded run does not claim Native-C, full SH12 or
+PR453, migration, release or self-hosting.
+
 C6/C11 source-contract DATA versions 1/2/3 are not interchangeable with the
 public interface versions. Legacy default/v1 routing remains unchanged and
 explicit unsupported headers still fail closed.
