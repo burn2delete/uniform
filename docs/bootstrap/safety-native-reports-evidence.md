@@ -168,6 +168,25 @@ The local three-child run belongs to source1c; final composition captures,
 runner checks, lint, independent exact review, own CI/artifact audit and an
 immediate clean exact-current-main preflight remain separate requirements.
 
+## Later current-main composition
+
+Normal merge 65cd4a60623bfad34617ac72f986ff2cf7a28e41, tree
+2e586f57882c3417e43af35a25af7f399f46bf1d, preserves actual main
+b67fe14ee255a83c4a2968524f7719eb890585e4, tree
+e0c3b74e6f08ba76b094adfa63c761b9ee3be962. All five incoming paths retain
+their exact blobs: narrow native Symbol module-map keys and their source
+bijection, Runtime char? dispatch and controls, and the development note.
+No owned stage or CI path overlaps. These current development behaviors grant
+no native admission, execution or migration authority.
+
+The first final-cohort runner-control command omitted the pinned linter from
+PATH and ended with 48 tests/479 assertions, zero failures and three errors
+because clj-kondo could not launch. That environment nonpass is retained;
+the corrected environment requires no source or test change. Fresh current
+captures, affected checks, exact review, own CI and immediate preflight remain
+required for this later composition. Earlier accepted source tuples and local
+runtime observations remain bound to their original checkouts.
+
 ## Residual boundaries
 
 No new general SAFE classification, source/Core authentication, proof-provider
