@@ -5909,3 +5909,162 @@ invocation printed passing counts but then parsed its misplaced shell
 redirection/delimiter as Clojure and exited nonzero; the corrected read-only
 invocation exited zero with the same counts. Only that terminal success
 receives final validation credit.
+
+## Complete L14 facet-source continuation
+
+The L14 source proposal applies commit
+`89538a10ed958dd08955d1dfa0d22fc5546f5980` after checkpoint
+`2c5cb658f67ebd106212986f9f0f4bf6a3528ba8`. Read the
+[complete facet source criteria](../specs/expand-workflow/plan.md#complete-facet-source-criteria)
+and its existing task routes. This is full L14 source/owner reconciliation,
+not whole supporting-domain acceptance, actual facet implementation, current
+independent acceptance or integration. No new task identity or authority is
+introduced, and all statuses/checkboxes remain unchanged.
+
+Direct complete L14 reading binds 114 preserved source facets, 87 occurrences,
+nineteen section conjunctions and eight original obligations. The census has
+80 semantic / 34 context facets; the current proposal has 81 predicate / 33
+context facets and 63 predicate / 24 context occurrences. Whole preambles,
+lists, examples and following qualifications remain joined, not inferred from
+a document link. Source identity is checked against the preserved local census;
+remote availability of that unpublished/unadopted aggregate is not established.
+Current whole-source entailment still needs independent review.
+
+Twenty-five criteria use fifteen existing tasks across twelve authorities:
+eighteen new clauses, three exact restored finite predicates and four unchanged
+current predicates. Thirteen task bodies in ten authorities change, sixteen
+existing plans gain interfaces, and Expand's spec gains navigation. The
+previously identical original `domain-ir-boundaries` task is now amended:
+139 original bodies are forty identical / 99 amended. All 149 current keys,
+25 authorities and forty future declarations/source bindings remain. No Domains,
+Release or Platform task source changes or future binding successor occurs.
+
+The restored activation, stable migration and disclosure predicates total
+3,180 bytes (515 / 1,201 / 1,464) under the original Expand tasks. Published
+Expand source `45fc1420cfe4373e5a20b1fcd80d46f87e4edb63` was fetched and matched
+all 14,549 UTF-8 characters with local Git, hash
+`036ad7a35059a4d34456b4be1ea011de8b5c21dee1eeb0f03891adc9d5d86f39`.
+The current complete generated-program (857 bytes), L5/C7 schema abstraction
+(2,050), AI SupportAgent (1,217) and HDL counter (1,238) predicates stay exact.
+Historical profile74, Types, macro, domain/plugin and hardware reviews retain
+their actual frozen source/role/dependency qualifications. No review is renewed,
+consumed or promoted to complete L14/current composition acceptance.
+
+The inherited Auth allowance owner remains authority context alongside actual
+Effects admission. The inherited Expand schema-generation owner remains normal
+generated-program composition alongside actual Types and Schema products.
+The existing HDL owner retains counter emission, with Platform/source/typing
+producers separate. These are explicit role joins, not silent owner transfers.
+
+All ten L14 initial facets remain: schema, efir, zk, hardware, workflow, agent,
+ui, query, compiler and ffi. Existing Domain/Math/Schema, Crypto/Formal future,
+Platform/HDL, compiler/plugin and Runtime/ABI owners supply their real products;
+the registry task composes rather than implements their semantics. Ten L14
+facets are distinct from nine C12 baseline IR families. Core-only facets need
+no invented domain IR. Additional package facets obey the same contracts.
+No registry inventory, single demonstration or source wrapper completes them.
+
+The nine stages retain actual syntax, lexical activation, base macro expansion,
+owner dispatch, local type/domain checking, forms/IR emission, ordinary generated
+validation, owning IR verification and provenance-bound artifact production.
+Early source/structural/type interfaces are distinct from later checked outputs,
+independent suites and final release. Imports never implicitly activate their
+facets in importers; provenance is required for generated nested activation,
+and aliases/explicit activation disambiguate shared surfaces. External syntax
+becomes structured source-mapped syntax/IR, not an opaque independent language.
+Equivalent boundaries survive interleaving/fusion without resolving the existing
+D1/C1/C5/C6 ordering decision here.
+
+Eight fact examples retain actual schema presence, signal width, replay safety,
+query shape, public-only disclosure, tool schema, UI handler context and EFIR
+proof owners. Real runtime/build/compiler effects and separate authentic grants
+survive composition. Model/tool/query effects cannot hide behind a wrapper;
+IR read/write scopes remain separate, file generation and external solver/model/
+package-tool actions stay explicit. Nine named profiles preserve their actual
+portable/hosted/native/constrained/replay/AI/meta conditions and source diagnostics
+before backend lowering. D8 safety outcomes, actual storage/capacity, semantic
+validation and real host restrictions remain; project work/input quotas stay
+removed. The agent example's bounded memory concerns stored runtime data.
+
+All ten IR field groups, six artifact families, five stability levels, six named
+composition interfaces and eleven L14 diagnostic meanings remain explicit.
+Privacy transformations preserve labels, witness provenance, reveal reason and
+public schema unless an actual checked boundary declassifies. Relation,
+public/private split, custody, disclosure, provider trust and verifier shape
+cannot disappear behind opaque proof/private-computation calls. Privacy failures
+identify witness/value, public schema, optional reveal reason and erasing edge
+under redaction. Source/generated/external diagnostic identity stays intact.
+
+The actual User schema/validator/codec/tool/field products, width-aware overflow-
+defined counter and SupportAgent artifact bundle remain required examples.
+Conformance requires real at-least-two-facet composition plus separate required
+zk/schema/security/formal privacy cases, generated checking, versioned mapped IR,
+compatibility/migration and inactive/ambiguous/profile/effect/grant/opaque/
+privilege negatives. Owner fixtures, actual independent harness results and
+final release retain distinct stages; unavailable/held requirements stay Open.
+Build owns real facet locks and affected cache invalidation; Expand supplies
+checked feasible migration rewrites or justified infeasibility; Governance
+retains actual applicable decisions without a new ordinary per-run gate.
+
+Static inspection covers only complete hosted `record-facet-call!` in the
+selected foundation leaf. It projects arguments/context and assigns successful
+normal-check, domain-validation, privacy-preserved and compatibility fields.
+This is not actual loader, expander, normal checker, domain verifier, private
+operation or checked rewrite evidence. Callers, helpers and other implementations
+remain unassessed; neither whole absence nor whole implementation is claimed.
+
+Current proposal fingerprint:
+`852191a7a1544adf175034deca5501d4915d37ac293fe6abbe721b13c0cf33e3`.
+All applying pins verify against local Git. The source commit's conservation
+checks passed 91 changed files, 85 Markdown files, 4,043 local references,
+139 original routes, 48 historical suffixes and all 48 task/evidence contents
+after declared additions are removed. Validation covers planning traceability,
+not compiler/domain/provider/native/proof/migration/release conformance.
+
+Temporary capture/test preparation delimiters were corrected before their
+mutators. A temporary profile clause's managed-runtime wording and the agent
+memory clarification were corrected before source application. The first
+projection generation was started while the fingerprint check was still
+running and rejected the older fingerprint; it receives no passing credit.
+Generation was repeated only after that check finished and wrote the verified
+current fingerprint. No historical source or review was relabeled.
+
+The current dependency source stays at 2,486 joins, 146 routes, 106 current
+parents, forty future records and one genuine 126-task feedback set. Complete
+L14 selected-result staging is next in the existing sole dependency table;
+source criteria do not prove a whole-task executable order or resolve its
+feedback. Global remaining source/task and complete interface entailment,
+L17/L19 and wider support contracts, implementation acceptance, required current
+independent review and integration remain pending. Reader contract coverage
+remains the first actual implementation increment. No held operation, other-chat
+message, reviewer wake, aggregate publication or merge occurs.
+
+Current validation passes four focused crosswalk tests / 12,928 assertions,
+all 23 dependency tests / 6,733 assertions, both pinned projection checks and
+all applying local Git source pins. Canonical validation passes 240 documents /
+nineteen phase indexes, full-language roadmap structural validation passes
+with dated counts non-authoritative, and the language-boundary gate passes six
+tests / eleven assertions. ASCII/whitespace checks pass. The full current
+82-test crosswalk suite was not rerun; the prior complete 68-test / 44,978-
+assertion run remains bound to `25a96a0c03536270001449c00676e644ea353521`.
+These checks establish planning conservation, not actual implementation.
+
+The complete L13 dependency regression reads its entire frozen
+`2c5cb658f67ebd106212986f9f0f4bf6a3528ba8` bridge, projection and source readers.
+All other prior test bytes remain unchanged except the three current global
+census assertions recording forty identical / 99 amended original bodies.
+The current L14 regression checks all source/census/owner identities, complete
+section conjunctions, exact restored/unchanged criteria, original task/status
+conservation, actual source pins and unchanged supporting review records.
+Its census comparison retains the same local-object custody limitation.
+
+A direct dependency-table identity check finds existing routes for all fifteen
+L14 criterion consumers; no new missing route is inferred. Their concrete L14
+producer/input/early-versus-late entailment still needs the selected-result
+continuation. A passing identity check is not that semantic dependency review.
+
+Final conservation/navigation passes 91 changed files, 85 Markdown files,
+4,044 local references, 139 original routes, 48 historical spec/plan suffixes
+and all 48 original task/evidence contents after declared additions are
+removed. ASCII/whitespace checks pass. Reconciliation, implementation,
+independent acceptance, integration and seedless release remain distinct.
