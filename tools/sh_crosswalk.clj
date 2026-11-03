@@ -477,7 +477,9 @@
   ([component] (task-records component (str component "-implementation-tasks")))
   ([component region]
   (let [path (str "specs/" component "-workflow/tasks.md") text (slurp path)
-        source-text (if (contains? historical-task-transition-paths path)
+        historical-row-source? (and (contains? historical-task-transition-paths path)
+                                    (= region (str component "-implementation-tasks")))
+        source-text (if historical-row-source?
                       (git-source baseline path)
                       text)
         marker (str "<!-- " region ":")
@@ -492,7 +494,8 @@
             (let [stop (or (:start next-row) end) raw (str/trimr (subs source-text (:start row) stop))]
               (cond-> {:id (:id row) :component component :path path :checked (:checked row)
                :authority :component-implementation-ledger
-               :source-commit (source-pin path) :file-sha256 (sh-inventory/sha256 source-text)
+               :source-commit (if historical-row-source? baseline (source-pin path))
+               :file-sha256 (sh-inventory/sha256 source-text)
                :source (sh-inventory/source-span path source-text (:start row) (+ (:start row) (count raw)))
                :owner-source (str "docs/component-roadmaps/" component ".md")}
                 (not= region (str component "-implementation-tasks"))
