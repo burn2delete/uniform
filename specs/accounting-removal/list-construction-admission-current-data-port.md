@@ -23,6 +23,15 @@ tuple is reported separately after the receipt is committed. The checkout is
 `/Users/matt/.codex/worktrees/review-pr-659-recheck/uniform` on
 `codex/review-623-current`.
 
+The later clean source composition checkpoint is
+`c013fd4db9ba9889e55e21503b0811ec3a289ee4`, tree
+`a85544f0bf2e91ba97aef8d21a97aaf4aeb9f4fd`, over main
+`5fa103d2b384d36b3fc67a0d502f2212d0a225a8`. The test and all three
+production inputs are unchanged by the intervening schema and test ports.
+Original PR623 history is retained without importing its old tree. The
+current receipt corrects a missing digit in its development C7 hash; no
+compiler authority pin or source is changed.
+
 ## Current-source scope
 
 Current main already contains the PR623 production width-removal behavior:

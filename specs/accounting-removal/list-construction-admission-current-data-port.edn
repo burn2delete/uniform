@@ -25,7 +25,7 @@
   :unchanged-vs-frozen-main true
   :sha256
   {"bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
-   "492a607688c6c5be2bbd13520b065c1b9af8cf88c7ffa0f773039d4c64ca74f"
+   "492a6076887c6c5be2bbd13520b065c1b9af8cf88c7ffa0f773039d4c64ca74f"
    "bootstrap/gravity/src/gravity/effects.gravity"
    "48dc1df3ca7c05f9c9a57eb5b7b0c3350053b6fdbb8e50f658a2a73b777a12cd"
    "bootstrap/gravity/p15_s23/emitter.gravity"
@@ -48,6 +48,13 @@
           "specs/accounting-removal/list-construction-lowering-review-consumption.edn"]
   :reinterpreted-as-current-acceptance false
   :original-production-delta :already-incorporated-on-frozen-main}
+ :current-composition
+ {:base "5fa103d2b384d36b3fc67a0d502f2212d0a225a8"
+  :source-checkpoint "c013fd4db9ba9889e55e21503b0811ec3a289ee4"
+  :source-tree "a85544f0bf2e91ba97aef8d21a97aaf4aeb9f4fd"
+  :test-and-production-source-unchanged true
+  :original-history-retained true
+  :c7-hash-transcription-corrected true}
  :execution
  {:mode :ordinary-clojure-jvm-normalized-data
   :authenticated-source :UNRUN
