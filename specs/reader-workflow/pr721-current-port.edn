@@ -79,7 +79,7 @@
   {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj"
    :original-blob "2d5929b9473c7260f2b52160f4633e263b78b56a"
    :original-sha256 "32144ed245cc7fb708d17f61230ece6fa2601197ce3e7368a66e13ac2a3db513"
-   :current-blob "210f499f2aa49c3365c8ab4c71319393ad827e9f"
+   :current-blob "1b8162eb7308cf7150c64dc039e2dc051f64b4d8"
    :current-sha256 "ccdc5ecafe4b781b75f4f702d1c7e1010b98ac675dfd5db906db9b25c4a3ce52"
    :disposition :current-port
    :reason :scalar-set-identity-native-metadata-and-construction-controls}
@@ -93,7 +93,7 @@
   {:path "specs/reader-workflow/core-construction-root-binding.md"
    :original-blob "cd56ea1db9df0e696d3038461ec401e8b737ed2b"
    :original-sha256 "34ffa6e546a73b3d7c0b016eb94ffd0e29e01d6d3a7d3c05b6f32c4a4f69c4b8"
-   :current-blob "b052f5b574cb8cce105ab76fe292cc148d7ba087"
+   :current-blob "b5283cd3b803986778ae2483ab515c76506d2c52"
    :current-sha256 "eae80db0091dd7f9e0b86fa6f4caf33123e40e087f8e357b7c5dd12bb978e2d3"
    :disposition :current-receipt
    :reason :current-base-and-set-evidence-reconciled}
@@ -142,7 +142,7 @@
   {:path "tools/ci/run_test.clj"
    :original-blob "04824dcdff4843610c8aca94df0cd05616c0dbf9"
    :original-sha256 "3ffe66ffb6eadd10015df32550b0e4cca125e27fc1254eace42f486547c94c67"
-   :current-blob "c3bf942d086c570471f278b24c2360f14ffe003e"
+   :current-blob "11b1432adb7763b99c739ece02c38094c4d16397"
    :current-sha256 "c3bf942d086c570471f278b24c2360f14ffe003eae0fbdd7ffd9d8d08cefa3a1"
    :disposition :current-port
    :reason :loads-and-runs-current-archival-test-namespace}
