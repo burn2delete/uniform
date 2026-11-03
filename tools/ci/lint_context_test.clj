@@ -76,8 +76,8 @@
         (is (not (contains? (:inputs plan) new-path)))))
     (is (= [context/bootstrap old-path new-path]
            (:paths (context/selected-plan! (reader-for bootstrap-current)
-                                          [context/manifest new-path]
-                                          loader-sha))))))
+                                           [context/manifest new-path]
+                                           loader-sha))))))
 
 (deftest archived-current-owner-prefixes-include-resources
   (doseq [{:keys [owner prefix plan fragment]} (owner-cases)]
@@ -92,8 +92,8 @@
           (is (not (contains? (set (:paths archived)) missing)))))
       (is (= (:paths plan)
              (:paths (context/selected-plan! context/local-bytes!
-                                            [fragment]
-                                            (context/sha256 (context/local-bytes! context/loader)))))))))
+                                             [fragment]
+                                             (context/sha256 (context/local-bytes! context/loader)))))))))
 
 (deftest archived-loader-and-prefix-boundaries-fail-closed
   (let [changed-loader (assoc bootstrap-base context/loader (utf8 "(def changed-loader true)\n"))

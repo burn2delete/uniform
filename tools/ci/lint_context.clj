@@ -441,19 +441,19 @@
                         (concat
                          (when (some #(or (= bootstrap %)
                                           (str/starts-with? % (str source-root "gravity/bootstrap_impl/")))
-                                    selected)
+                                     selected)
                            [bootstrap])
                          (when (some #(or (= facade %)
                                           (str/starts-with? % facade-prefix))
-                                    selected)
+                                     selected)
                            [facade])
                          (when (some #(or (= checker %)
                                           (str/starts-with? % checker-prefix))
-                                    selected)
+                                     selected)
                            [checker])
                          (when (some #(or (= c2-pass-cache %)
                                           (str/starts-with? % c2-pass-cache-prefix))
-                                    selected)
+                                     selected)
                            [c2-pass-cache])
                          (filter #(contains? modes %) selected))))]
      (with-open [zip (ZipFile. (io/file archive))]
