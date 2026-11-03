@@ -289,16 +289,18 @@
                                                               (not (contains? selected (:filename finding))))]
                                  (throw (ex-info "Syntax failure in lint context dependency" finding)))
                                (filterv #(contains? selected (:filename %)) all))))
-        normal (fn [id files]
-                 (vec (mapcat (fn [[index path]]
-                                (let [log (run (str id "-" index) (lint-argv [path]) #{0 2 3})]
-                                  (findings! log #{path} #(get (set/map-invert copied) % %))))
-                              (map-indexed vector files))))
+        normal (fn [id files rename]
+                 (let [files (vec files)]
+                   (if (seq files)
+                     (let [log (run id (lint-argv files) #{0 2 3})]
+                       (findings! log (set files) rename))
+                     [])))
         whole-context? (some context/whole-context-path? paths)
-        baseline (into (normal "lint-baseline" (vals (apply dissoc copied context-paths)))
+        baseline (into (normal "lint-baseline" (vals (apply dissoc copied context-paths))
+                               #(get (set/map-invert copied) % %))
                        (contextual "lint-context-baseline" base-plan
                                    (if whole-context? (set (:paths base-plan)) (set (keys copied)))))
-        current (into (normal "lint-current" (remove context-paths paths))
+        current (into (normal "lint-current" (remove context-paths paths) identity)
                       (contextual "lint-context-current" current-plan
                                   (if whole-context? context-paths (set paths))))
         source-paths (source-paths-for-warnings paths current-plan whole-context? current)

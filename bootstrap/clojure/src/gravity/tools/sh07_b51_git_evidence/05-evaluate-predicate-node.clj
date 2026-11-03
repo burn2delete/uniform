@@ -1,11 +1,8 @@
 
 (defn- evaluate-predicate-node!
-  [node env item-bound? depth budget id]
+  [node env item-bound? id]
   (when-not (and (vector? node) (seq node))
     (fail! id :predicate-bool-node {:node node}))
-  (swap! budget inc)
-  (when (or (> @budget 100000) (> depth 256))
-    (fail! id :predicate-fuel {:depth depth :nodes @budget}))
   (case (first node)
     :and
     (do
@@ -14,7 +11,7 @@
       (loop [children (next node)]
         (if-let [child (first children)]
           (if (true? (evaluate-predicate-node!
-                      child env item-bound? (inc depth) budget id))
+                      child env item-bound? id))
             (recur (next children))
             false)
           true)))
@@ -23,19 +20,15 @@
     (do
       (when-not (= 3 (count node))
         (fail! id :predicate-equal-node {:node node}))
-      (= (predicate-term! (second node) env item-bound?
-                          (inc depth) budget id)
-         (predicate-term! (nth node 2) env item-bound?
-                          (inc depth) budget id)))
+      (= (predicate-term! (second node) env item-bound? id)
+         (predicate-term! (nth node 2) env item-bound? id)))
 
     :exact-keys
     (do
       (when-not (= 3 (count node))
         (fail! id :predicate-exact-keys-node {:node node}))
-      (let [value (predicate-term! (second node) env item-bound?
-                                   (inc depth) budget id)
-            keys-value (predicate-term! (nth node 2) env item-bound?
-                                        (inc depth) budget id)]
+      (let [value (predicate-term! (second node) env item-bound? id)
+            keys-value (predicate-term! (nth node 2) env item-bound? id)]
         (when-not (and (map? value) (vector? keys-value)
                        (every? keyword? keys-value)
                        (= (count keys-value) (count (distinct keys-value))))
@@ -46,14 +39,10 @@
     (do
       (when-not (= 5 (count node))
         (fail! id :predicate-h-equal-node {:node node}))
-      (let [domain (predicate-term! (second node) env item-bound?
-                                    (inc depth) budget id)
-            value (predicate-term! (nth node 2) env item-bound?
-                                   (inc depth) budget id)
-            expected (digest-term! (nth node 3) env item-bound?
-                                   (inc depth) budget id)
-            omit-paths (predicate-term! (nth node 4) env item-bound?
-                                        (inc depth) budget id)]
+      (let [domain (predicate-term! (second node) env item-bound? id)
+            value (predicate-term! (nth node 2) env item-bound? id)
+            expected (digest-term! (nth node 3) env item-bound? id)
+            omit-paths (predicate-term! (nth node 4) env item-bound? id)]
         (when-not (keyword? domain)
           (fail! id :predicate-h-domain {:domain domain}))
         (= expected
@@ -63,10 +52,8 @@
     (do
       (when-not (= 3 (count node))
         (fail! id :predicate-r-equal-node {:node node}))
-      (let [value (predicate-term! (second node) env item-bound?
-                                   (inc depth) budget id)
-            expected (digest-term! (nth node 2) env item-bound?
-                                   (inc depth) budget id)
+      (let [value (predicate-term! (second node) env item-bound? id)
+            expected (digest-term! (nth node 2) env item-bound? id)
             bytes (cond
                     (instance? (Class/forName "[B") value) value
                     (and (vector? value)
@@ -81,14 +68,13 @@
         (fail! id :predicate-every-node {:node node}))
       (when item-bound?
         (fail! id :predicate-item-shadowing))
-      (let [items (predicate-term! (second node) env item-bound?
-                                   (inc depth) budget id)]
+      (let [items (predicate-term! (second node) env item-bound? id)]
         (when-not (and (vector? items) (seq items))
           (fail! id :predicate-every-type))
         (every? true?
                 (map #(evaluate-predicate-node!
                        (nth node 2) (assoc env :item %) true
-                       (inc depth) budget id)
+                       id)
                      items))))
 
     :not
@@ -96,16 +82,14 @@
       (when-not (= 2 (count node))
         (fail! id :predicate-not-node {:node node}))
       (not (evaluate-predicate-node!
-            (second node) env item-bound? (inc depth) budget id)))
+            (second node) env item-bound? id)))
 
     :lte
     (do
       (when-not (= 3 (count node))
         (fail! id :predicate-lte-node {:node node}))
-      (let [left (predicate-term! (second node) env item-bound?
-                                  (inc depth) budget id)
-            right (predicate-term! (nth node 2) env item-bound?
-                                   (inc depth) budget id)]
+      (let [left (predicate-term! (second node) env item-bound? id)
+            right (predicate-term! (nth node 2) env item-bound? id)]
         (when-not (and (integer? left) (not (neg? left))
                        (integer? right) (not (neg? right)))
           (fail! id :predicate-lte-type))
@@ -134,7 +118,7 @@
     (fail! "SH07-B51-CONTRACT-DISCHARGE" :predicate-spec-or-env))
   (boolean
    (evaluate-predicate-node!
-   (:program spec) env false 0 (atom 0)
+    (:program spec) env false
     "SH07-B51-CONTRACT-DISCHARGE")))
 
 (defn resolve-contract-phase!
