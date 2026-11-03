@@ -43,7 +43,11 @@
   :tests 3
   :assertions 188
   :failures 0
-  :errors 0}
+  :errors 0
+  :boundary {:tests 6 :assertions 11 :failures 0 :errors 0}
+  :docs {:documents 240 :phase-indexes 19 :status :passed}
+  :roadmap {:status :passed :authority :non-authoritative}
+  :static-lint {:status :unavailable :tools [:clj-kondo :cljfmt]}}
  :nonclaims [:authoritative-source-migration
              :genuine-c7-or-c8-admission
              :complete-pr611

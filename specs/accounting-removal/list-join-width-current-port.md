@@ -48,6 +48,12 @@ clojure -J-Xmx1g -M:dev-test --namespace gravity.self-hosting.list-join-width-cu
 3 tests, 188 assertions, 0 failures, 0 errors
 ```
 
+The language-boundary gate passed 6 tests and 11 assertions. The document
+validator passed 240 documents and 19 phase indexes; the full-language roadmap
+structural validator also passed (non-authoritative dated snapshot). Pinned
+`clj-kondo` and `cljfmt` binaries were unavailable locally, so no static-lint
+pass is claimed.
+
 The focused repair is checkpointed at `9b8072f4977fc8f050e9dac1da1d50d5bd62d52d`
 (tree `832dbc69611c2b34709adb09895c3eece6a8e283`). It changes only this test
 namespace; the Effects and emitter source inputs remain byte-identical. The
