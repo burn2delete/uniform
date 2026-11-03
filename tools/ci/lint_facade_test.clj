@@ -12,6 +12,9 @@
 (def actual (context/facade-plan! context/local-bytes!))
 (def c2-fragment (str context/c2-pass-cache-prefix "source_snapshot.clj"))
 (def c2-actual (context/c2-pass-cache-plan! context/local-bytes!))
+(def git-evidence-fragment
+  (str context/git-evidence-prefix "04-predicate-spec-vector.clj"))
+(def git-evidence-actual (context/git-evidence-plan! context/local-bytes!))
 (defn utf8 [text] (.getBytes ^String text "UTF-8"))
 (defn c2-entry [resources]
   (utf8 (str "(ns gravity.c2-pass-cache)\n"
@@ -60,6 +63,22 @@
                               (#{:warning :error} (:level %))) findings)) (pr-str findings)))
   (is (nil? (find-ns 'gravity.bootstrap)))
   (is (nil? (find-ns 'gravity.c2-pass-cache))))
+
+(deftest actual-git-evidence-facade-resolves-the-selected-fragment
+  (is (= 25 (count (:paths git-evidence-actual))))
+  (is (= context/git-evidence (first (:paths git-evidence-actual))))
+  (is (= (str context/git-evidence-prefix "23-cleanup-unpublished.clj")
+         (last (:paths git-evidence-actual))))
+  (is (= (:paths git-evidence-actual)
+         (:paths (context/selected-plan! context/local-bytes!
+                                         [git-evidence-fragment]))))
+  (let [findings (observe! git-evidence-actual)]
+    (is (not-any? #(= :error (:level %)) findings) (pr-str findings))
+    (is (empty? (filter #(and (= git-evidence-fragment (:filename %))
+                              (#{:warning :error} (:level %))) findings))
+        (pr-str findings)))
+  (is (nil? (find-ns 'gravity.bootstrap)))
+  (is (nil? (find-ns 'gravity.tools.sh07-b51-git-evidence))))
 
 (deftest historical-c2-facade-recipe-remains-readable
   (let [read-inputs (fn [path] (or (get historical-c2-inputs path)
@@ -139,6 +158,35 @@
     (is (thrown? Exception (context/selected-plan! (read-inputs inputs)
                                                    [(str context/c2-pass-cache-prefix
                                                          "unregistered.clj")])))))
+
+(deftest unsupported-or-malformed-git-evidence-load-context-fails-closed
+  (let [entry (String. ^bytes (get-in git-evidence-actual [:inputs context/git-evidence]) "UTF-8")
+        inputs (:inputs git-evidence-actual)
+        read-inputs (fn [data]
+                      (fn [path]
+                        (or (get data path)
+                            (throw (ex-info "Missing resource" {:path path})))))]
+    (doseq [changed [(str/replace entry "gravity.tools.sh07-b51-git-evidence"
+                                  "gravity.wrong-git-evidence")
+                     (str/replace entry "04-predicate-spec-vector"
+                                  "04-different-resource")
+                     (str entry "\n(load \"/gravity/tools/sh07_b51_git_evidence/unreviewed\")")]]
+      (is (thrown? Exception
+                   (context/git-evidence-plan!
+                    (read-inputs (assoc inputs context/git-evidence (utf8 changed)))))))
+    (is (thrown? Exception
+                 (context/git-evidence-plan!
+                  (read-inputs (dissoc inputs git-evidence-fragment)))))
+    (doseq [body ["(def broken ["
+                  "(in-ns 'gravity.other)"
+                  "(load \"/gravity/tools/sh07_b51_git_evidence/unreviewed\")"]]
+      (is (thrown? Exception
+                   (context/git-evidence-plan!
+                    (read-inputs (assoc inputs git-evidence-fragment (utf8 body)))))))
+    (is (thrown? Exception
+                 (context/selected-plan! (read-inputs inputs)
+                                         [(str context/git-evidence-prefix
+                                               "unregistered.clj")])))))
 
 (deftest archived-context-rejects-unknown-loader-hash
   (let [directory (.toFile (java.nio.file.Files/createTempDirectory
