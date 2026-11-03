@@ -87,7 +87,7 @@
                       (str/starts-with? job "implement-")
                       (do (spit (io/file cwd "work.edn") "{:value 1}\n")
                           {:outcome "ready" :summary "Removed duplicate" :checks []})
-                      :else review-result))]
+                      :else (merge review-result (select-keys (first (flow/tasks ctx)) [:base :candidate :tree]))))]
       (flow/campaign! ctx))
     {:state @(:state ctx) :calls @calls :merges @merge-count :audits @audits :repo repo :ctx ctx}))
 
@@ -158,3 +158,75 @@
       (is (thrown? Exception (flow/finish-merge! ctx {:key "bad" :worktree repo :base "unexpected" :tree "unexpected"}
                                                {:mergeCommit {:oid commit}}))))
     (is (not= :done (get-in @(:state ctx) [:tasks "bad" :status])))))
+
+(deftest checks-and-reviews-reject-candidate-identity-drift
+  (let [ctx (fixture/context)
+        {:keys [repo]} (repository! ctx)
+        base (rt/git ctx repo "rev-parse" "HEAD")
+        ctx (assoc ctx :config {:repo-dir repo :worktree-root (str (io/file (:state-dir ctx) "workers"))
+                                :checks [["clojure" "-M:test"]] :check-executables #{"clojure"}})
+        wt (flow/worktree! ctx "identity" base)
+        t (merge finding wt {:base base :candidate base :tree (rt/git ctx repo "rev-parse" "HEAD^{tree}")})
+        tuple (select-keys t [:base :candidate :tree])]
+    (rt/update! ctx assoc-in [:tasks (:key t)] t)
+    (is (nil? (flow/assert-identity! ctx t)))
+    (is (thrown? Exception (flow/assert-identity! ctx (assoc t :branch "other"))))
+    (is (thrown? Exception (flow/assert-identity! ctx (assoc t :tree "other"))))
+    (with-redefs [codex/job! (fn [& _] (merge tuple {:candidate "stale" :verdict "approved"}))]
+      (is (thrown-with-msg? Exception #"different candidate tuple" (flow/review! ctx t))))
+    (is (nil? (:review (flow/task ctx (:key t)))))
+    (with-redefs [codex/job! (fn [& _] (merge tuple {:verdict "approved" :summary "Exact fixture" :findings []}))]
+      (is (= "approved" (:verdict (flow/review! ctx t)))))
+    (with-redefs [codex/command! (fn [& _] (rt/git ctx (:worktree t) "commit" "--allow-empty" "-m" "Unexpected check commit"))]
+      (is (thrown-with-msg? Exception #"identity differs" (flow/checks! ctx t []))))
+    (is (nil? (:checks (flow/task ctx (:key t)))))
+    (is (thrown? Exception (flow/worktree! ctx "identity" base)))))
+
+(deftest dependent-authoring-base-includes-verified-prerequisite
+  (let [ctx (fixture/context)
+        {:keys [repo]} (repository! ctx)
+        base (rt/git ctx repo "rev-parse" "HEAD")
+        ctx (assoc ctx :config {:repo-dir repo :remote "origin" :base-branch "main"
+                                :worktree-root (str (io/file (:state-dir ctx) "workers"))})
+        wt (flow/worktree! ctx "dependent" base)
+        t (merge finding wt {:base base :dependencies ["prerequisite"] :checks {:old true} :review {:old true}})]
+    (spit (io/file repo "api.edn") "{:new-api true}\n")
+    (rt/git ctx repo "add" "api.edn")
+    (rt/git ctx repo "commit" "-m" "Merged prerequisite")
+    (rt/git ctx repo "push" "origin" "main")
+    (let [merged (rt/git ctx repo "rev-parse" "HEAD")]
+      (rt/update! ctx assoc :tasks {(:key t) t "prerequisite" {:status :done :merged merged}})
+      (flow/prepare-base! ctx t)
+      (is (= merged (:base (flow/task ctx (:key t)))))
+      (is (= merged (rt/git ctx (:worktree t) "rev-parse" "HEAD")))
+      (is (.exists (io/file (:worktree t) "api.edn")))
+      (is (nil? (:checks (flow/task ctx (:key t)))))
+      (is (nil? (:review (flow/task ctx (:key t)))))
+      ;; A repair keeps its existing implementation while incorporating new main.
+      (spit (io/file (:worktree t) "work.edn") "{:value 1}\n")
+      (rt/git ctx (:worktree t) "commit" "-am" "Candidate before repair")
+      (flow/task! ctx (:key t) :candidate (rt/git ctx (:worktree t) "rev-parse" "HEAD")
+                  :tree (rt/git ctx (:worktree t) "rev-parse" "HEAD^{tree}"))
+      (spit (io/file repo "later.edn") "{:later true}\n")
+      (rt/git ctx repo "add" "later.edn")
+      (rt/git ctx repo "commit" "-m" "Later main")
+      (rt/git ctx repo "push" "origin" "main")
+      (flow/prepare-base! ctx (flow/task ctx (:key t)))
+      (is (= "{:value 1}\n" (slurp (io/file (:worktree t) "work.edn"))))
+      (is (.exists (io/file (:worktree t) "later.edn")))
+      (flow/task! ctx "prerequisite" :merged (rt/git ctx (:worktree t) "rev-parse" "HEAD"))
+      (is (thrown? Exception (flow/prepare-base! ctx (flow/task ctx (:key t))))))))
+
+(deftest merge-commit-cannot-count-as-reviewed-squash
+  (let [ctx (fixture/context)
+        {:keys [repo]} (repository! ctx)
+        ctx (assoc-in ctx [:config :repo-dir] repo)
+        base (rt/git ctx repo "rev-parse" "HEAD")
+        tree (rt/git ctx repo "rev-parse" "HEAD^{tree}")
+        second-parent (rt/git ctx repo "commit-tree" tree "-p" base "-m" "Second parent")
+        merged (rt/git ctx repo "commit-tree" tree "-p" base "-p" second-parent "-m" "Not a squash")]
+    (with-redefs [flow/fresh-main! (fn [_] merged)]
+      (is (thrown-with-msg? Exception #"differs from reviewed composition"
+                            (flow/finish-merge! ctx {:key "bad" :worktree repo :base base :tree tree}
+                                                {:mergeCommit {:oid merged}}))))
+    (is (not= :done (:status (flow/task ctx "bad"))))))

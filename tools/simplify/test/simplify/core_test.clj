@@ -60,6 +60,9 @@
   (is (= :pending (flow/check-state [{:status "IN_PROGRESS"}])))
   (is (= :failed (flow/check-state [{:status "COMPLETED" :conclusion "CANCELLED"}])))
   (is (= :failed (flow/check-state [{:state "ERROR"}])))
+  (is (= :missing (flow/check-state [{:status "COMPLETED" :conclusion "SKIPPED"}
+                                    {:status "COMPLETED" :conclusion "NEUTRAL"}])))
+  (is (= :missing (flow/check-state [{:status "COMPLETED" :conclusion "SKIPPED"}])))
   (is (= :passed (flow/check-state [{:status "COMPLETED" :conclusion "SUCCESS"}
                                    {:status "COMPLETED" :conclusion "SKIPPED"} {:state "SUCCESS"}]))))
 

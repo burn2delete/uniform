@@ -60,12 +60,28 @@
     (rt/git ctx repo-dir "fetch" remote (str "refs/heads/" base-branch ":refs/simplify/main"))
     (rt/git ctx repo-dir "rev-parse" "refs/simplify/main")))
 
+(defn common-directory [ctx cwd]
+  (let [path (io/file (rt/git ctx cwd "rev-parse" "--git-common-dir"))]
+    (rt/canonical (if (.isAbsolute path) path (io/file cwd (str path))))))
+
+(defn assert-identity! [ctx t]
+  (let [cwd (:worktree t)
+        expected (or (:candidate t) (:base t))]
+    (when-not (and (= (rt/canonical cwd) (rt/canonical (rt/git ctx cwd "rev-parse" "--show-toplevel")))
+                   (= (common-directory ctx cwd) (common-directory ctx (get-in ctx [:config :repo-dir])))
+                   (= (:branch t) (rt/git ctx cwd "symbolic-ref" "--short" "HEAD"))
+                   (= expected (rt/git ctx cwd "rev-parse" "HEAD"))
+                   (= (or (:tree t) (rt/git ctx cwd "rev-parse" (str expected "^{tree}")))
+                      (rt/git ctx cwd "rev-parse" "HEAD^{tree}")))
+      (rt/fail! "Worktree identity differs from recorded candidate" {:finding (:key t) :worktree cwd}))))
+
 (defn worktree! [ctx name base]
   (let [{:keys [repo-dir worktree-root]} (:config ctx)
         path (str (io/file worktree-root name))
         branch (str "codex/simplify-" name)]
     (when-not (.exists (io/file path))
       (rt/git ctx repo-dir "worktree" "add" "-b" branch path base))
+    (assert-identity! ctx {:worktree path :branch branch :base base})
     {:worktree path :branch branch}))
 
 (defn next-job! [ctx role]
@@ -73,16 +89,21 @@
     (str (name role) "-" n)))
 
 (defn review! [ctx t]
+  (assert-identity! ctx t)
   (let [job (next-job! ctx :review)
         result (codex/job! ctx job (:worktree t) :read instructions
                           (str "Independently review this immutable candidate. Do not edit files.\n"
                                (pr-str (select-keys t [:key :title :evidence :proposal :preserve :paths :base :candidate :tree :checks]))
                                "\nInspect git diff BASE CANDIDATE and relevant contracts directly. Check required behavior, positive/negative evidence, scope and simplification benefit. "
                                "Approve only this exact base/commit/tree. Return approved, changes_requested with actionable findings, or needs_input.") schema/review)]
-    (task! ctx (:key t) :review (assoc result :job job :base (:base t) :candidate (:candidate t) :tree (:tree t)))
+    (assert-identity! ctx t)
+    (when-not (= (select-keys t [:base :candidate :tree]) (select-keys result [:base :candidate :tree]))
+      (rt/fail! "Reviewer returned a different candidate tuple" {:finding (:key t) :review result}))
+    (task! ctx (:key t) :review (assoc result :job job))
     result))
 
 (defn checks! [ctx t proposed]
+  (assert-identity! ctx t)
   (let [commands (vec (distinct (concat (get-in ctx [:config :checks]) proposed)))]
     (when (empty? commands) (rt/fail! "No verification commands were selected" {:finding (:key t)}))
     (doseq [argv commands]
@@ -90,6 +111,7 @@
                      (contains? (get-in ctx [:config :check-executables]) (first argv)))
         (rt/fail! "Check command is outside the configured toolset" {:argv argv}))
       (codex/command! ctx (next-job! ctx :check) (:worktree t) argv))
+    (assert-identity! ctx t)
     (let [result {:candidate (:candidate t) :tree (:tree t) :commands commands :result :passed}]
       (task! ctx (:key t) :checks result)
       result)))
@@ -108,9 +130,12 @@
     (rt/fail! "Candidate worktree is dirty; generated output must be outside tracked inputs" {:worktree cwd})))
 
 (defn publish! [ctx t]
+  (assert-clean! ctx (:worktree t))
+  (assert-identity! ctx t)
   (let [{:keys [remote repository base-branch]} (:config ctx)
         owner (first (str/split repository #"/"))
-        _ (rt/effect! ctx (str "push/" (:candidate t)) #(rt/git ctx (:worktree t) "push" remote (:branch t)))
+        _ (rt/effect! ctx (str "push/" (:candidate t))
+                      #(rt/git ctx (:worktree t) "push" remote (str (:candidate t) ":refs/heads/" (:branch t))))
         existing (first (gh/api ctx (gh/repo-path ctx (str "pulls?state=all&head=" owner ":" (:branch t)))))
         _ (when (and existing (not= "open" (:state existing))) (rt/fail! "Existing PR is terminal; preserving its history" {:pr (:html_url existing)}))
         pr (or existing
@@ -127,8 +152,25 @@
                       "\n\nChecks: `" (pr-str (get-in (task ctx (:key t)) [:checks :commands])) "`.\n\nPR: " (:html_url pr)))
     (transition! ctx (:key t) :ci)))
 
+(defn prepare-base! [ctx t]
+  (assert-clean! ctx (:worktree t))
+  (assert-identity! ctx t)
+  (let [base (fresh-main! ctx)]
+    (doseq [key (:dependencies t)
+            :let [dependency (task ctx key)]]
+      (when-not (and (= :done (:status dependency)) (:merged dependency))
+        (rt/fail! "Dependency has no verified merge" {:dependency key}))
+      (rt/git ctx (:worktree t) "merge-base" "--is-ancestor" (:merged dependency) base))
+    (when-not (= base (:base t))
+      (rt/git ctx (:worktree t) "merge-base" "--is-ancestor" (:base t) base)
+      (rt/git ctx (:worktree t) "merge" "--no-edit" base)
+      (task! ctx (:key t) :base base :candidate (rt/git ctx (:worktree t) "rev-parse" "HEAD")
+             :tree (rt/git ctx (:worktree t) "rev-parse" "HEAD^{tree}") :checks nil :review nil))
+    (assert-identity! ctx (task ctx (:key t)))))
+
 (defn prepare! [ctx key]
   (loop []
+    (prepare-base! ctx (task ctx key))
     (let [t (task ctx key)
           job (next-job! ctx :implement)
           _ (transition! ctx key :implementing)
@@ -139,6 +181,7 @@
                                   "Return specific Clojure check argument vectors, and report missing authority or semantic ambiguity explicitly.")
                              schema/implementation)]
       (when-not (= "ready" (:outcome output)) (rt/fail! "Implementation requires attention" {:output output :restricted (= "restricted" (:outcome output))}))
+      (assert-identity! ctx t)
       (let [paths (changed-paths ctx (:worktree t))]
         (when (empty? paths) (rt/fail! "Implementation made no progress" {:finding key}))
         (doseq [path paths]
@@ -179,10 +222,13 @@
     (some #(or (= "FAILURE" (:state %)) (= "ERROR" (:state %))
                 (and (= "COMPLETED" (:status %)) (not (#{"SUCCESS" "SKIPPED" "NEUTRAL"} (:conclusion %))))) checks) :failed
     (every? #(or (= "SUCCESS" (:state %))
-                 (and (= "COMPLETED" (:status %)) (#{"SUCCESS" "SKIPPED" "NEUTRAL"} (:conclusion %)))) checks) :passed
+                 (and (= "COMPLETED" (:status %)) (#{"SUCCESS" "SKIPPED" "NEUTRAL"} (:conclusion %)))) checks)
+    (if (some #(or (= "SUCCESS" (:state %)) (= "SUCCESS" (:conclusion %))) checks) :passed :missing)
     :else :pending))
 
 (defn compose! [ctx t base]
+  (assert-clean! ctx (:worktree t))
+  (assert-identity! ctx t)
   (rt/git ctx (:worktree t) "merge" "--no-edit" base)
   (task! ctx (:key t) :base base :candidate (rt/git ctx (:worktree t) "rev-parse" "HEAD") :tree (rt/git ctx (:worktree t) "rev-parse" "HEAD^{tree}"))
   (checks! ctx (task ctx (:key t)) (get-in t [:checks :commands]))
@@ -201,8 +247,9 @@
         main (fresh-main! ctx)
         _ (rt/git ctx cwd "merge-base" "--is-ancestor" commit main)
         actual-tree (rt/git ctx cwd "rev-parse" (str commit "^{tree}"))
-        parent (rt/git ctx cwd "rev-parse" (str commit "^1"))]
-    (when-not (and (= actual-tree (:tree t)) (= parent (:base t)))
+        parents (rest (str/split (rt/git ctx cwd "rev-list" "--parents" "-n" "1" commit) #"\s+"))
+        parent (first parents)]
+    (when-not (and (= 1 (count parents)) (= actual-tree (:tree t)) (= parent (:base t)))
       (rt/fail! "Actual merge differs from reviewed composition" {:expected (select-keys t [:base :tree]) :actual {:base parent :tree actual-tree :commit commit}}))
     (task! ctx (:key t) :merged commit)
     (transition! ctx (:key t) :done)
@@ -229,9 +276,12 @@
           (let [{:keys [repo-dir repository]} (:config ctx)]
             (when-not (and (= "approved" (get-in t [:review :verdict]))
                            (= (select-keys t [:base :candidate :tree]) (select-keys (:review t) [:base :candidate :tree]))
-                           (= (:candidate t) (get-in t [:checks :candidate])))
+                           (= (:candidate t) (get-in t [:checks :candidate]))
+                           (= (:tree t) (get-in t [:checks :tree]))
+                           (= :passed (get-in t [:checks :result])))
               (rt/fail! "Review/check evidence does not match candidate" {}))
             (assert-clean! ctx (:worktree t))
+            (assert-identity! ctx t)
             (transition! ctx (:key t) :merge)
             (rt/run! ctx (:worktree t)
                      ["clojure" "-M" "tools/check_worktree_preflight.clj"

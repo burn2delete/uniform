@@ -84,16 +84,20 @@ platform/sub-issue limits remain external restrictions and are not bypassed.
    workspace-write with no network; auditors/reviewers get read-only access.
    Workers do not commit, push, merge or spawn more agents. The controller owns
    those actions. App-server sandboxes are filesystem policies, not full VMs.
+   Before authoring, incorporate current main and verify each prerequisite's
+   recorded merge is present. Repairs retain their existing candidate changes.
 4. Run configured checks plus author-selected Clojure command vectors through
    app-server's sandboxed `command/exec` without inference. Model-selected argv
    is never executed on the unsandboxed controller. The check-process watchdog
    is configurable separately from semantic admission and accounting. Commit
    locally and obtain independent review of the exact base/commit/tree in a
    fresh thread. Requested changes return to implementation; no-change repairs
-   stop for attention.
+   stop for attention. The reviewer returns the exact base/commit/tree, and
+   worktree identity is checked across workers, checks, review and publication.
 5. Push without force; create/reuse the PR. Failed CI returns to repair. Skipped
    checks remain skipped, not executed-test evidence. Required GitHub human
-   reviews remain required.
+   reviews remain required. A rollup containing only skipped/neutral checks
+   does not provide successful-check evidence.
 6. Serialize merges. When main moves, compose it into the candidate, rerun checks,
    obtain fresh review and await the new head's CI. Run the repository's exact
    integration preflight immediately before merging.
@@ -120,6 +124,9 @@ waiting reasons and failures. Common credential fields and known token patterns
 are redacted; logs still contain repository content. Keep logs local.
 `state.edn` is replaced atomically. A repository-wide file lock prevents two
 harness coordinators from running.
+The check watchdog does not impose a deadline on model turns or controller
+Git/GitHub calls. A stalled call requires host/operator interruption; pause
+takes effect at scheduler boundaries, after active operations finish.
 
 ```text
 clojure -M:run status config.edn

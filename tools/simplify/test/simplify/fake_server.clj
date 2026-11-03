@@ -19,6 +19,8 @@
                        (emit! {:id id :result {:turn {:id "fixture-turn"}}})
                        (emit! {:method "item/completed"
                                :params {:item {:type "agentMessage" :phase "final_answer"
-                                               :text (if (= mode "malformed") "{}" "{\"verdict\":\"approved\",\"summary\":\"Fixture only\",\"findings\":[]}")}}})
+                                               :text (if (= mode "malformed") "{}"
+                                                         (json/write-str {:verdict "approved" :base "fixture-base" :candidate "fixture-candidate"
+                                                                          :tree "fixture-tree" :summary "Fixture only" :findings []}))}}})
                        (emit! {:method "turn/completed" :params {:turn {:id "fixture-turn" :status (case mode "failed" "failed" "interrupted" "interrupted" "completed")}}}))
         nil))))

@@ -15,6 +15,7 @@
 (def implementation (object-of {:outcome {:type "string" :enum ["ready" "needs_input" "restricted"]} :summary text
                                 :checks (array-of (assoc (array-of text) :minItems 1))}))
 (def review (object-of {:verdict {:type "string" :enum ["approved" "changes_requested" "needs_input"]}
+                       :base text :candidate text :tree text
                        :summary text :findings (array-of text)}))
 
 (defn validate!
