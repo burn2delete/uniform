@@ -44,6 +44,40 @@
     :role :bootstrap-tooling-source
     :extensions [".clj" ".cljc" ".edn"]}])
 
+;; Load-order files deliberately overlap the seed source root.  They remain
+;; direct inputs as well as source-root entries because their role is both
+;; source content and an ordered build input.
+(def ^:private expected-direct-inputs
+  [{:path "deps.edn"
+    :role :build-lock
+    :sha256 "sha256:a578c91e5980690b28f92f1f324abf55bca56e2386dc384fe3368f204b6628d2"}
+   {:path "bootstrap/clojure/src/gravity/bootstrap_impl/load_order.edn"
+    :role :load-order
+    :sha256 "sha256:b17383213ccc7eb95b6acf038ba63f2163ada45809f88159e11d11e1b48b8c66"}
+   {:path "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_early_order.edn"
+    :role :load-order
+    :sha256 "sha256:5206a4347700e91d8f852181bf2c5077119060587287f3bdba352dea02074699"}
+   {:path "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_mid_order.edn"
+    :role :load-order
+    :sha256 "sha256:9965cc33a27d60eac78b07de9e6a8ccabcf2c2f54a5d3ca3128e0948e4a5a07b"}
+   {:path "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_late_order.edn"
+    :role :load-order
+    :sha256 "sha256:a8412e332493fde52bcebf349b441887811ef95d1f06f2b085c7cb6d58ee31e9"}
+   {:path "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_tail_order.edn"
+    :role :load-order
+    :sha256 "sha256:2ae1d76a2feefb39afbe7c571c4c4b0bd4e158963a279f5ae4e671dc4c60965d"}
+   {:path "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_llvm_order.edn"
+    :role :load-order
+    :sha256 "sha256:4be1a0c9205b198566ed239d43837c848acd9f45dbfbdefce69d650a5d199a5e"}])
+
+(def ^:private expected-source-graph-sha256
+  "sha256:c78ccb773f2e89ee3c7aaf7190703d2a3ed23f301ed76fd0bf75135a08556c50")
+
+;; This binds every field of the checked-in declaration, including nested
+;; inventories and boundary data, before any source path is consumed.
+(def ^:private expected-manifest-sha256
+  "sha256:ced6c4ac05c3215a627f1bdac5d8e6f3cd966ad9be0f35fe9dbb555457c6b808")
+
 (def ^:private expected-classpath
   {:paths ["bootstrap/clojure/src" "tools"]
    :deps-file "deps.edn"
@@ -263,9 +297,7 @@
                  (= expected-source-revision (:source-revision manifest))
                  (vector? (:source-roots manifest))
                  (= expected-source-roots (:source-roots manifest))
-                 (vector? (:direct-inputs manifest))
-                 (seq (:direct-inputs manifest))
-                 (every? map? (:direct-inputs manifest))
+                 (= expected-direct-inputs (:direct-inputs manifest))
                  (vector? (:fixture-inputs manifest))
                  (= expected-fixtures (:fixture-inputs manifest))
                  (= expected-load-orders (:load-orders manifest))
@@ -283,9 +315,8 @@
                  (= :denied (get-in manifest [:toolchain :network]))
                  (map? (:source-graph manifest))
                  (= #{:sha256} (set (keys (:source-graph manifest))))
-                 (and (string? (get-in manifest [:source-graph :sha256]))
-                      (re-matches #"sha256:[0-9a-f]{64}"
-                                  (get-in manifest [:source-graph :sha256])))
+                 (= expected-source-graph-sha256
+                    (get-in manifest [:source-graph :sha256]))
                  (= expected-scope (:scope manifest))
                  (map? (:execution manifest))
                  (= expected-comparison (:comparison manifest)))
@@ -315,10 +346,15 @@
                  (seq (get-in manifest [:comparison :artifact-kinds])))
     (fail! :malformed "invalid bootstrap comparison declaration"
            {:comparison (:comparison manifest)}))
+  (when-not (= expected-manifest-sha256
+             (sha256-id (canonical-bytes manifest)))
+    (fail! :malformed "bootstrap manifest identity does not match declaration"
+           {:expected expected-manifest-sha256
+            :actual (sha256-id (canonical-bytes manifest))}))
   manifest)
 
 (defn read-manifest
-  "Read and structurally validate an EDN bootstrap input declaration." 
+  "Read and structurally validate an EDN bootstrap input declaration."
   [manifest-path]
   (let [file (.getCanonicalFile (io/file manifest-path))]
     (when-not (.isFile file)
@@ -393,15 +429,17 @@
            (direct-files project-root (:fixture-inputs manifest)))))
 
 (defn source-graph-sha256
-  "Hash a source graph after canonical ordering and serialization." 
+  "Hash a source graph after canonical ordering and serialization."
   [entries]
   (sha256-id (canonical-bytes entries)))
 
-(defn load-inputs!
-  "Authenticate a manifest and all files under the supplied root."
-  [project-root manifest-path]
-  (let [manifest (read-manifest manifest-path)
-        entries (source-graph project-root manifest)
+(defn- manifest-sha256
+  [manifest]
+  (sha256-id (canonical-bytes manifest)))
+
+(defn- load-inputs-from-manifest!
+  [project-root manifest]
+  (let [entries (source-graph project-root manifest)
         actual (source-graph-sha256 entries)
         expected (get-in manifest [:source-graph :sha256])]
     (when-not (= expected actual)
@@ -410,12 +448,18 @@
               :input-id (:input-id manifest)
               :entry-count (count entries)}))
     {:manifest manifest
+     :manifest-sha256 (manifest-sha256 manifest)
      :project-root (.getCanonicalPath (io/file project-root))
      :source-graph {:sha256 actual :entries entries}
      :compiler (:compiler manifest)
      :scope (:scope manifest)
      :execution (:execution manifest)
      :comparison (:comparison manifest)}))
+
+(defn load-inputs!
+  "Authenticate a manifest and all files under the supplied root."
+  [project-root manifest-path]
+  (load-inputs-from-manifest! project-root (read-manifest manifest-path)))
 
 (defn- command-result
   [working-root command]
@@ -725,7 +769,7 @@
         snapshot (materialize-source! project-root manifest)]
     (try
       (let [snapshot-root (.toString ^Path (:root snapshot))
-            inputs (load-inputs! snapshot-root manifest-path)
+            inputs (load-inputs-from-manifest! snapshot-root manifest)
             toolchain (toolchain-record! snapshot-root manifest)
             fixtures (mapv #(run-fixture! snapshot-root manifest %)
                            (:fixture-inputs manifest))
@@ -735,6 +779,7 @@
                  {:fixtures (mapv #(select-keys % [:path :expect :exit-code]) fixtures)}))
         {:inputs inputs
          :result {:artifact-id accepted
+                  :manifest-sha256 (:manifest-sha256 inputs)
                   :source-graph-sha256 (get-in inputs [:source-graph :sha256])
                   :source-revision (:revision snapshot)
                   :source-archive-sha256 (:archive-sha256 snapshot)

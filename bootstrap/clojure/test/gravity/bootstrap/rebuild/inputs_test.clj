@@ -47,6 +47,8 @@
                (get-in loaded [:manifest :schema])))
         (is (= "d351310d5821a983fac2ad0fee4c0be96711b4b4"
                (get-in loaded [:manifest :source-revision :commit])))
+        (is (= "sha256:ced6c4ac05c3215a627f1bdac5d8e6f3cd966ad9be0f35fe9dbb555457c6b808"
+               (:manifest-sha256 loaded)))
         (is (= "sha256:c78ccb773f2e89ee3c7aaf7190703d2a3ed23f301ed76fd0bf75135a08556c50"
                (get-in loaded [:source-graph :sha256])))
         (is (< 2000 (count entries)))
@@ -54,32 +56,32 @@
                (inputs/source-graph-sha256 entries)))))))
 
 (deftest missing-and-substituted-inputs-fail-closed
-  (testing "a changed lockfile digest is observed in the pinned snapshot"
-    (let [changed (assoc-in (manifest) [:direct-inputs 0 :sha256]
-                            (str "sha256:" (apply str (repeat 64 "0"))))]
-      (with-temporary-manifest
-        changed
-        (fn [path]
-          (let [error (try
-                        (with-pinned-root path #(inputs/load-inputs! % path))
-                        nil
-                        (catch clojure.lang.ExceptionInfo error error))]
-            (is error)
-            (is (= "BOOT-INPUTS-DIRECT-DIGEST-MISMATCH"
-                   (:diagnostic (ex-data error)))))))))
+  (testing "a changed lockfile byte is observed in the pinned snapshot"
+    (with-pinned-root
+      manifest-path
+      (fn [root]
+        (spit (str root "/deps.edn")
+              (str (slurp (str root "/deps.edn")) "\n"))
+        (let [error (try
+                      (inputs/load-inputs! root manifest-path)
+                      nil
+                      (catch clojure.lang.ExceptionInfo error error))]
+          (is error)
+          (is (= "BOOT-INPUTS-DIRECT-DIGEST-MISMATCH"
+                 (:diagnostic (ex-data error))))))))
   (testing "a changed source graph identity is rejected"
-    (let [changed (assoc-in (manifest) [:source-graph :sha256]
-                            (str "sha256:" (apply str (repeat 64 "f"))))]
-      (with-temporary-manifest
-        changed
-        (fn [path]
-          (let [error (try
-                        (with-pinned-root path #(inputs/load-inputs! % path))
-                        nil
-                        (catch clojure.lang.ExceptionInfo error error))]
-            (is error)
-            (is (= "BOOT-INPUTS-SOURCE-GRAPH-MISMATCH"
-                   (:diagnostic (ex-data error))))))))))
+    (with-pinned-root
+      manifest-path
+      (fn [root]
+        (spit (str root "/bootstrap/gravity/source-graph-drift.gravity")
+              "(ns source-graph-drift)\n")
+        (let [error (try
+                      (inputs/load-inputs! root manifest-path)
+                      nil
+                      (catch clojure.lang.ExceptionInfo error error))]
+          (is error)
+          (is (= "BOOT-INPUTS-SOURCE-GRAPH-MISMATCH"
+                 (:diagnostic (ex-data error)))))))))
 
 (deftest declaration-substitution-fails-before-development-build
   (doseq [[label changed expected]
@@ -92,6 +94,13 @@
            ["execution backend"
             (assoc-in (manifest) [:execution :backend] :wasm)
             "BOOT-INPUTS-INCOMPATIBLE"]
+           ["direct input inventory"
+            (assoc-in (manifest) [:direct-inputs 0 :path] "README.md")
+            "BOOT-INPUTS-MALFORMED"]
+           ["source graph declaration"
+            (assoc-in (manifest) [:source-graph :sha256]
+                      "sha256:0000000000000000000000000000000000000000000000000000000000000000")
+            "BOOT-INPUTS-MALFORMED"]
            ["comparison artifact kind"
             (assoc-in (manifest) [:comparison :artifact-kinds]
                       [:compiler-artifact :diagnostic-stream])
@@ -142,6 +151,8 @@
            (:source-graph-sha256 result)))
     (is (= "d351310d5821a983fac2ad0fee4c0be96711b4b4"
            (get-in result [:source-revision :commit])))
+    (is (= "sha256:ced6c4ac05c3215a627f1bdac5d8e6f3cd966ad9be0f35fe9dbb555457c6b808"
+           (:manifest-sha256 result)))
     (is (= "sha256:dfdee131460216a84fef22e537bb0d0579965f8f70338d748323dff26f8e5a8b"
            (get-in result [:toolchain :seed-artifact-id])))
     (is (= ["core.specs.alpha-0.4.74.jar" "spec.alpha-0.5.238.jar"]

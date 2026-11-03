@@ -14,6 +14,8 @@ release claim.
 
 - The source language and temporary seed language are explicit.
 - The compiler revision is pinned by both commit and tree identity.
+- The complete declaration is content-addressed; changing its direct-input
+  inventory or source-graph identity is rejected before source consumption.
 - Source, tooling, lockfile, load-order, and fixture inputs are content
   addressed. The observed graph has one canonical entry per path.
 - The Clojure seed jar, dependency jars, and CLI version are pinned; the run
@@ -73,6 +75,9 @@ are represented by hashes rather than copied into the provenance record. For an
 accepted fixture, `:artifact-id` is the canonical hash of the parsed Core EDN
 artifact and `:stdout-sha256` separately identifies the process observation;
 the latter is not treated as the artifact identity.
+The returned `:manifest-sha256` binds the full declaration used for the run;
+the run does not reread a caller-controlled declaration after snapshot
+materialization.
 
 ## Conformance criteria
 
@@ -81,6 +86,8 @@ the latter is not treated as the artifact identity.
   `BOOT-INPUTS-DIRECT-DIGEST-MISMATCH`.
 - A changed source graph is rejected with
   `BOOT-INPUTS-SOURCE-GRAPH-MISMATCH`.
+- A substituted direct-input inventory or declared graph identity is rejected
+  with `BOOT-INPUTS-MALFORMED`.
 - A substituted revision or seed/toolchain identity is rejected before the
   development build.
 - Symlinked source inputs cannot extend the authenticated root.
