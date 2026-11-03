@@ -16136,17 +16136,17 @@
     "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis"
     "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters"
     "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"],
-   :current-source-tree "d93d45d8b6c81d229d205569016799b8733b185e",
+   :current-source-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
    :baseline-ref "dbeda7c7dc9a7bb880baa90af1a89046828db327",
    :scope :historical-routing-current-composition-and-structural-only,
-   :current-source-ref "f9f56c6dffb92d6e8ca5a32ecc5c791d69d1e5db",
+   :current-source-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
    :status :pending-source-version-review,
-   :current-source-blob "bdd08edd8b49cdf4444cfe6fd4855cec58b9fa60",
+   :current-source-blob "256b28deeca97929fe7240c1b8672ce42dbf3d2a",
    :applying-ref "80d8a655cea00218799446986a976ca64043a1f8",
    :qualification
    "PR564's five Stdlib rows remain authenticated against the frozen SH source rows and its applying task-ledger blob. The current composition is separately bound to the exact current task-ledger source bytes; additive pending criteria do not promote implementation or library-release acceptance.",
    :current-source-sha256
-   "c0f5795d8d827fa9a7fc43f2930e780252c74744da350f02449c2224e1935def"},
+   "3c863b16b7798f72aa50b9297ed126c044d7357b7002bc0ef789d65fba261055"},
   :compiler-domain-predecessor-review
   {:pkg5-source-review
    {:reviewed-commit "023a28488f8f161c68cbe57aa29fa48247197d62",
