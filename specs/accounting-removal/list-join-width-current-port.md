@@ -1,7 +1,7 @@
 # Current List-join width controls
 
 This is a non-authoritative development receipt for the useful semantic slice
-of PRs 611, 637, and 638. It is bound to current main
+of PRs 611, 637, and 638. Its original development base was
 `d59a7df90f91b578c1bb160a59ec1ef865abf25b` (tree
 `c25b4efebc5fb76befb35edce88857012be236ad`). The historical PR identities and
 path counts are recorded in the adjacent EDN receipt; their old source and
@@ -50,9 +50,7 @@ clojure -J-Xmx1g -M:dev-test --namespace gravity.self-hosting.list-join-width-cu
 
 The language-boundary gate passed 6 tests and 11 assertions. The document
 validator passed 240 documents and 19 phase indexes; the full-language roadmap
-structural validator also passed (non-authoritative dated snapshot). Pinned
-`clj-kondo` and `cljfmt` binaries were unavailable locally, so no static-lint
-pass is claimed.
+structural validator also passed (non-authoritative dated snapshot).
 
 The focused repair is checkpointed at `1c3534a3b427e34ef004eb148ad32d52d128854a`
 (tree `6b3e4002f842ff41d41d6963dd37a6e660c3f7d2`). It changes only this test
@@ -64,6 +62,24 @@ Pinned `clj-kondo` 2025.10.23, invoked from
 warnings, errors, and infos for the changed namespace. An earlier unpinned
 lookup recorded `clj-kondo` and `cljfmt` as unavailable; that observation is
 historical only. `tools/ci` was unchanged, so no cljfmt check is required.
+
+The current clean source composition checkpoint is
+`40c08ae890e73e372e380066c4176b1caaacfc15`, tree
+`993b8190288c512375021f60194a4c65e61d575f`, over main
+`a5b6427cab15f40a8e1d61a6562a04b4a0f63efb`. The accepted test source
+is unchanged by this composition; the Effects and emitter blobs still match.
+The complete focused namespace passed again on that source checkpoint:
+
+```text
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.list-join-width-current-port-test --fail-fast
+3 tests, 188 assertions, 0 failures, 0 errors. Exit 0.
+```
+
+The log is `/tmp/uniform-pr611-current-main-a5b.log`. A later history-only
+commit, `3df7b4f0cd00654071a8b0bc9bd64e866597ba3b`, retains all three
+original PR heads with exactly the same tree. No historical parent tree is
+replayed. The final integration identity is reported separately from this
+source checkpoint and receipt update.
 
 This is a bounded current-source helper test using normalized List-if inputs.
 It does not establish an authoritative source migration, genuine C7/C8

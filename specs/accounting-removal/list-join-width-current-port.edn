@@ -1,12 +1,23 @@
 {:schema :gravity/list-join-width-current-port-v1
  :authority :non-authoritative
- :current-base {:commit "d59a7df90f91b578c1bb160a59ec1ef865abf25b"
+ :current-base {:role :original-development-base
+                :commit "d59a7df90f91b578c1bb160a59ec1ef865abf25b"
                 :tree "c25b4efebc5fb76befb35edce88857012be236ad"}
  :focused-repair-checkpoint
  {:commit "1c3534a3b427e34ef004eb148ad32d52d128854a"
   :tree "6b3e4002f842ff41d41d6963dd37a6e660c3f7d2"
   :production-inputs-unchanged true
   :focused-tests {:tests 3 :assertions 188 :failures 0 :errors 0}}
+ :current-composition
+ {:base "a5b6427cab15f40a8e1d61a6562a04b4a0f63efb"
+  :source-checkpoint "40c08ae890e73e372e380066c4176b1caaacfc15"
+  :source-tree "993b8190288c512375021f60194a4c65e61d575f"
+  :history-checkpoint "3df7b4f0cd00654071a8b0bc9bd64e866597ba3b"
+  :original-pr-history-retained [611 637 638]
+  :effects-and-emitter-blobs-unchanged true
+  :command "clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.list-join-width-current-port-test --fail-fast"
+  :log "/tmp/uniform-pr611-current-main-a5b.log"
+  :tests 3 :assertions 188 :failures 0 :errors 0 :exit 0}
  :historical-inputs
  {:pr611 {:head "edef2c00c103df4b5222cf44124c6e1d707820e4"
           :tree "7f12fa541cf26179ac59b6bdb95c666674ecdfb2"
