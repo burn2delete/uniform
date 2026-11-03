@@ -667,7 +667,7 @@ and main's later source/tooling changes. The clean source/test checkpoint
 before generated metadata is `05f11aba381d49124b8c9ddeb509f4d05791dff2`
 (tree `d257282dd6860fc79b8d827f606bd389ad5dacc7`). Its generated current
 source map records input fingerprint
-`6fb3d272314c6014ce9910f308e0db61e58982fe7c5b2b1f8f74d4ecfda37b94`,
+`d7ca71b0265ec05ba0da5868d42a331e85fb8634fc322deb02e8fa3998db9f0c`,
 50 unchanged task bodies, 89 changed bodies, 10 added Evolution IDs, 149
 current task keys, and 40 future records. Those are conservation counts, not
 implementation or authority claims.

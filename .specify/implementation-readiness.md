@@ -4920,7 +4920,7 @@ This current composition normally merges main
 `cb11dbe4ad4225132e477abd2945f2f98dae3aa1`). The source/test checkpoint
 before generated metadata is `05f11aba381d49124b8c9ddeb509f4d05791dff2`
 (tree `d257282dd6860fc79b8d827f606bd389ad5dacc7`), with current-map input
-fingerprint `6fb3d272314c6014ce9910f308e0db61e58982fe7c5b2b1f8f74d4ecfda37b94`.
+fingerprint `d7ca71b0265ec05ba0da5868d42a331e85fb8634fc322deb02e8fa3998db9f0c`.
 The map reports 50 unchanged bodies, 89 changed bodies, 10 added Evolution
 IDs, 149 current keys and 40 future records; these are conservation counts,
 not implementation, readiness or authority.
