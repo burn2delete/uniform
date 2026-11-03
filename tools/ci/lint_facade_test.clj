@@ -449,6 +449,10 @@
   (let [needed? (var-get (ns-resolve 'ci.lint 'macro-admission-needed?))]
     (is (needed? [] false))
     (is (not (needed? ["deps.edn"] false)))
+    (is (needed? ["source.gravity"] false))
+    (is (needed? ["data.edn" "source.gravity"] false))
+    (is (needed? [nil] false))
+    (is (needed? [".clj-kondo"] false))
     (is (needed? [context/manifest] true))
     (is (needed? [macros/source] false))
     (is (needed? ["tools/ci/kondo/config.edn"] false))))

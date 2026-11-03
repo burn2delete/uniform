@@ -213,21 +213,19 @@
         (into before (cons data-files after)))
       (mapv vector files))))
 
-(defn- clojure-source-path? [path]
-  (boolean (re-find #"\.(?:clj|cljc|cljs)$" path)))
-
 (defn- lint-model-path? [path]
   (or (= path "tools/ci/lint_macros.clj")
       (= path "tools/ci/kondo")
       (str/starts-with? path "tools/ci/kondo/")
+      (= path ".clj-kondo")
       (str/starts-with? path ".clj-kondo/")))
 
 (defn- macro-admission-needed? [paths context-requested?]
-  (or (empty? paths)
-      context-requested?
-      (boolean (some #(or (clojure-source-path? %)
-                          (lint-model-path? %))
-                     paths))))
+  (not (and (seq paths)
+            (not context-requested?)
+            (every? string? paths)
+            (every? #(str/ends-with? % ".edn") paths)
+            (not-any? lint-model-path? paths))))
 
 (defn run-comparison! [execute! output base paths]
   (let [root (io/file output "lint-base")
