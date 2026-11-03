@@ -1,0 +1,28 @@
+{:contract :reader/expected-core-construction-source-trace-v1
+ :scope :selected-source-and-injected-session-controls
+ :status :development-source-control-only
+ :code-proposal
+ {:code-whitelist ["C2-HASH" "C3-ID" "C4-TRACE" "C6-ORIGIN" "C6-VERIFY"]
+  :C6-VERIFY-top-level-reason-whitelist
+  [:checked-core-operation-revision-drift
+   :checked-core-source-drift
+   :checked-core-toolchain-drift
+   :construction-check-catalog-drift
+   :construction-dependency-drift
+   :construction-selected-reader-drift
+   :envelope-source-location
+   :sh06-binding-projection-not-bijective
+   :sh06-lexical-scope-projection-mismatch
+   :sh06-projected-resolution-dangling
+   :sh06-reference-projection-mismatch
+   :sh06-resolution-projection-incomplete
+   :trusted-artifact-carrier
+   :trusted-semantic-components
+   :unexpanded-defn]
+  :root-only true
+  :optional-field :known-diagnostic
+  :unknown-code-or-rejected-carrier :omit-new-field-retain-class-only-failed-session
+  :unknown-reason :omit-reason-retain-known-code
+  :status :not-implementation-authority}
+ :nonclaims [:compiler-acceptance :runtime-execution :public-admission
+             :release :self-hosting :migration-authority]}
