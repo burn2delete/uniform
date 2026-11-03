@@ -176,6 +176,8 @@
 
 (def selected-parent-consumers
   #{"domain-ir-boundaries" "math"
+    "syntax/current-evidence-and-remaining-work/syntax3-invalidate-facts"
+    "syntax/current-evidence-and-remaining-work/syntax4-serialize-and-verify"
     "syntax/current-evidence-and-remaining-work/syntax1-construct-canonical-syntax"
     "syntax/current-evidence-and-remaining-work/syntax2-preserve-transformations"
     "resolve/current-evidence-and-remaining-work/resolve4-publish-stable-indexes"

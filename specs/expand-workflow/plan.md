@@ -294,9 +294,9 @@ Selected implementation inspection finds real hosted template/registry/policy be
 
 ## Macro producer and consumer order
 
-The [sole selected-result table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition) now gives complete joint L4/L16/C4/SAFE12 detail to 47 consumers. Eleven existing parents gain routes: the four missing Syntax1/Syntax2/Resolve4/diagnostic-origin consumers, diagnostic record/views and five formatter/LSP/debugger/REPL/IR-inspector consumers. Thirty-six existing routes gain detail. Preserve all 562 previous inputs of those consumers and 66 unaffected route meanings; 255 additions yield 817 selected inputs and 1,331 total joins across 113 routes, 73 current parents and forty unchanged future records. No task body, identity, status, source review or implementation acceptance changes.
+At macro dependency source `f5fe58427947156d31f033a8e52b514bfbfa055d`, the [sole selected-result table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition) recorded complete joint L4/L16/C4/SAFE12 detail for 47 consumers. Eleven existing parents gain routes: the four missing Syntax1/Syntax2/Resolve4/diagnostic-origin consumers, diagnostic record/views and five formatter/LSP/debugger/REPL/IR-inspector consumers. Thirty-six existing routes gain detail. Preserve all 562 previous inputs of those consumers and 66 unaffected route meanings; 255 additions yield 817 selected inputs and 1,331 total joins across 113 routes, 73 current parents and forty unchanged future records. No task body, identity, status, source review or implementation acceptance changes.
 
-The coarse graph has cycles of 71 and nine tasks. The first preserves its sixty predecessors and adds the eleven newly routed parents. The second preserves all eight release/schema-projection predecessors and adds conditional Evolution change-review. Candidate comparison production, governance state and stable release admission are different products; removing that backedge to keep an earlier cycle count would hide a required conjunction. The table below annotates real selected edges in the existing authority; it is no second dependency graph or task ledger.
+At that macro checkpoint, the coarse graph had cycles of 71 and nine tasks. The first preserves its sixty predecessors and adds the eleven newly routed parents. The second preserves all eight release/schema-projection predecessors and adds conditional Evolution change-review. Candidate comparison production, governance state and stable release admission are different products; removing that backedge to keep an earlier cycle count would hide a required conjunction. The table below annotates real selected edges in the existing authority; it is no second dependency graph or task ledger.
 
 | Consumer | Selected producer | Concrete result order |
 | --- | --- | --- |
@@ -435,6 +435,12 @@ Owner products precede independently run suites. Current source/interface entail
 Use the [complete syntax source criteria](../syntax-workflow/plan.md#complete-syntax-source-criteria). Consume actual verified immutable Syntax operations and returned-graph validation; expansion-specific hygiene/trace facts remain Expand products, not Syntax-assigned results.
 
 Task identities/statuses, prior source/review subjects and actual restrictions remain unchanged. Construction, actual composition, independent acceptance and release require their respective real subjects; these source interfaces confer no implementation acceptance.
+
+## Syntax dependency interface
+
+Use the [syntax producer and consumer order](../syntax-workflow/plan.md#syntax-producer-and-consumer-order) and existing selected-result table. Use early real carrier/transform/lifecycle/verifier APIs before invocation, then verify actual returned macro graphs and preserve caller profile/origins/metadata; later conformance is not its own initial input.
+
+All task identities/statuses and historical review subjects remain unchanged. Actual selected products, independent acceptance and final release retain their own requirements; no held operation is enabled.
 
 ## Historical task-authority-transfer plan
 

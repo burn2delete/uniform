@@ -132,6 +132,12 @@ Use the [complete syntax source criteria](../syntax-workflow/plan.md#complete-sy
 
 Task identities/statuses, prior source/review subjects and actual restrictions remain unchanged. Construction, actual composition, independent acceptance and release require their respective real subjects; these source interfaces confer no implementation acceptance.
 
+## Syntax dependency interface
+
+Use the [syntax producer and consumer order](../syntax-workflow/plan.md#syntax-producer-and-consumer-order) and existing selected-result table. Expose early record/origin/redaction contracts, then consume actual verifier and stale-fact failures with every C3 field and generated/producing anchors; requested failures and catalogs are insufficient.
+
+All task identities/statuses and historical review subjects remain unchanged. Actual selected products, independent acceptance and final release retain their own requirements; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Diagnostics task authority

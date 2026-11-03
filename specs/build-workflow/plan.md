@@ -158,6 +158,12 @@ Use the [complete syntax source criteria](../syntax-workflow/plan.md#complete-sy
 
 Task identities/statuses, prior source/review subjects and actual restrictions remain unchanged. Construction, actual composition, independent acceptance and release require their respective real subjects; these source interfaces confer no implementation acceptance.
 
+## Syntax dependency interface
+
+Use the [syntax producer and consumer order](../syntax-workflow/plan.md#syntax-producer-and-consumer-order) and existing selected-result table. Use actual complete syntax subjects and producer-conditioned invalidation/revalidation before cache use; preserve stage/current-policy completeness, permitted engine machinery and separate persistence/hermetic/seed results.
+
+All task identities/statuses and historical review subjects remain unchanged. Actual selected products, independent acceptance and final release retain their own requirements; no held operation is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration

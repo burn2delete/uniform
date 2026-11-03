@@ -83,6 +83,12 @@ Use the [macro producer and consumer order](../expand-workflow/plan.md#macro-pro
 
 Task bodies/statuses and frozen review subjects stay unchanged. Declared interfaces permit local construction; actual composition, acceptance and release retain their separate required results. Current independent source/interface acceptance is pending and every actual restriction remains.
 
+## Syntax dependency interface
+
+Use the [syntax producer and consumer order](../syntax-workflow/plan.md#syntax-producer-and-consumer-order) and existing selected-result table. Preserve actual syntax-derived source/generated/hygiene context and valid facts in Core's own graph/verifier and ordinary semantic handoff; C3 does not replace Core semantics or later checks.
+
+All task identities/statuses and historical review subjects remain unchanged. Actual selected products, independent acceptance and final release retain their own requirements; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Core task authority

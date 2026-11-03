@@ -117,3 +117,9 @@ Existing task identities/statuses, historical reviews, actual restrictions and o
 Use the [macro producer and consumer order](../expand-workflow/plan.md#macro-producer-and-consumer-order) and existing selected-result table. Keep tracked candidate/prototype/implementation rules before affected exposure and actual compatibility/stage evidence before later stable adoption. Ordinary compatible implementation has no new review ceremony; applicable real decisions and independent acceptance remain required.
 
 Task bodies/statuses and frozen review subjects stay unchanged. Declared interfaces permit local construction; actual composition, acceptance and release retain their separate required results. Current independent source/interface acceptance is pending and every actual restriction remains.
+
+## Syntax dependency interface
+
+Use the [syntax producer and consumer order](../syntax-workflow/plan.md#syntax-producer-and-consumer-order) and existing selected-result table. Consume actual affected syntax/fact/schema/identity/diagnostic compatibility only at the existing conditional semantic-change boundary; unchanged-contract implementation gains no generic new review gate.
+
+All task identities/statuses and historical review subjects remain unchanged. Actual selected products, independent acceptance and final release retain their own requirements; no held operation is enabled.
