@@ -37,5 +37,32 @@ The release project consumes this project's exact rebuild and trust evidence;
 bootstrap progress alone does not claim self-hosting, seed retirement, or a
 seedless public release.
 
-See [the project structure map](../docs/project-structure.md) for ownership,
-dependency direction, and the staged relocation policy.
+See [the project structure map](../docs/project-structure.md) for behavior-based
+ownership, dependency direction, and the staged relocation policy. In
+particular, a Clojure seed function that implements a permanent language rule
+is replaced by a Uniform-owned successor; the original `.clj` remains in this
+project until its seed boundary is retired.
+
+## Roadmap and development commands
+
+Use the [Phase 15 bootstrap contracts](../docs/phase-15-bootstrap-and-self-hosting/README.md),
+[self-hosting completion plan](../docs/self-hosting-milestone-completion-plan.md),
+[self-hosting slice backlog](../docs/self-hosting-slice-backlog.md),
+[Phase 18 release roadmap](../docs/phase-18-binary-distribution-and-seedless-release/README.md),
+[Release component outcome](../docs/component-roadmaps/release.md), and the
+[development verification guide](../docs/development-verification.md). Those
+pages and ledgers own task status and evidence; this entrypoint does not
+duplicate them.
+
+The current bootstrap-hosted and fail-closed development commands are:
+
+```bash
+clojure -M:gravity self-host verify
+clojure -M:packaged-gravity --version
+clojure -M:packaged-gravity run examples/core-app.gravity
+clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
+```
+
+The first command is read-only and remains fail-closed while final seed
+retirement is incomplete. Use the explicit export path documented in
+`docs/development-verification.md` when regeneration is intentional.

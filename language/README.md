@@ -40,8 +40,40 @@ bootstrap-project outcomes consumed by the release project.
 The initial split is an ownership boundary, not a bulk relocation. Existing
 implementation paths remain valid while coherent modules are moved with their
 callers, tests, manifests, and provenance references. Current Gravity modules
-under `bootstrap/gravity/` are language-owned even though their present path
-contains the historical bootstrap label.
+are classified by behavior rather than directory. Compiler passes and runtime
+semantics under `bootstrap/gravity/src/gravity/` are language-owned, while
+stage rebuild, trust, and equivalence modules under `src/gravity/self_hosting/`
+are bootstrap-owned. The mixed `bootstrap/gravity/p15_s23/compiler.gravity`
+source requires extraction before relocation; see the project structure map.
 
 See [the project structure map](../docs/project-structure.md) for the current
 path classification and relocation order.
+
+## Roadmap and development commands
+
+Use the [implementation roadmap](../docs/implementation-roadmap.md),
+[full-language gap map](../docs/full-language-implementation-gap-map.md),
+[component roadmaps](../docs/component-roadmaps/README.md), and [compiler
+architecture phase](../docs/phase-06-compiler-architecture/README.md) for
+scope and ownership. The [development verification guide](../docs/development-verification.md)
+is the current command authority; its task and evidence records are not
+duplicated here.
+
+The focused language-development entrypoint is:
+
+```bash
+clojure -J-Xmx2g -M:dev-test \
+  --namespace gravity.self-hosting.sh07-var-reference-test \
+  --exact sh07-b5-qualified-var-development-kernel --fail-fast
+```
+
+For current-reader development, use either co-canonical extension:
+
+```bash
+bin/gravity sh07-core /absolute/canonical/path/module.gravity --development-current-reader
+bin/gravity sh07-core /absolute/canonical/path/module.qst --development-current-reader
+```
+
+Run the repository language-boundary and documentation checks when the changed
+paths require them; their commands remain documented in the [development
+guide](../docs/development-verification.md).

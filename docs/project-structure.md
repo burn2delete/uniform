@@ -37,8 +37,13 @@ does not grant authority that either project has not proved.
 
 | Current path | Initial owner | Notes |
 | --- | --- | --- |
-| `bootstrap/gravity/` | Uniform language | Existing Gravity source modules are semantic implementation, despite the historical path. Relocate by coherent dependency group. |
-| `bootstrap/clojure/src/gravity/` | Bootstrap replacement | Stage0 implementation, adapters, and temporary host composition. A file that implements a permanent language rule should move to the language owner before its seed wrapper is retired. |
+| `bootstrap/gravity/src/gravity/compiler/` | Uniform language | Compiler pass semantics and their Uniform-authored contracts. The directory name is historical; a pass remains language-owned when Clojure executes it. |
+| `bootstrap/gravity/src/gravity/reader.gravity`, `macro.gravity`, `resolution.gravity`, `checked_core.gravity`, `effects.gravity`, `runtime.gravity` | Uniform language | Language and compiler behavior. Their temporary seed transport stays bootstrap-owned. |
+| `bootstrap/gravity/src/gravity/bootstrap/` | Mixed, by behavior | C2/C3 reader, syntax, and diagnostic semantics are language-owned; stage executors, release-attestation, and seed-retirement entrypoints in the same files remain bootstrap-owned until extracted. The directory name alone does not decide ownership. |
+| `bootstrap/gravity/src/gravity/self_hosting/` | Bootstrap replacement, by behavior | Stage rebuild orchestration, compiler identity, equivalence, trust, and evidence modules such as `w5_stage_rebuild_orchestrator.gravity`, `w5_stage_equivalence_verifier.gravity`, and `w5_trust_provenance_verifier.gravity` belong to bootstrap. A module that implements a permanent compiler rule is language-owned after behavior review. |
+| `bootstrap/gravity/p15_s23/compiler.gravity` | Mixed; extraction required | This source combines compiler rule inventories with stage/rebuild/seed-retirement records. Extract permanent compiler behavior to the language project and keep stage inventory, rebuild orchestration, and retirement evidence in bootstrap. Do not assign the whole file to either project. |
+| `bootstrap/gravity/p15_s23/` | Mixed, by behavior | Review each file before relocation. Target lowering/runtime semantics can be language-owned; stage drivers, seed-boundary publication, and rebuild evidence remain bootstrap-owned. |
+| `bootstrap/clojure/src/gravity/bootstrap_impl/` | Bootstrap replacement | Stage0 implementation, adapters, and temporary host composition. If a Clojure function embodies a permanent language rule, its ownership moves to the Uniform successor; this does not mean moving the `.clj` seed file into the language tree or hiding the remaining seed debt. |
 | `bootstrap/clojure/test/` | Split by assertion | Language conformance and compiler composition tests follow their owner; stage/equivalence/retirement tests remain bootstrap-owned. |
 | `docs/` | Normative documentation | Remains in place; project pages link to the governing documents. |
 | `tools/` | Shared repository tooling | Tool ownership follows whether a command validates language behavior, bootstrap evidence, or repository policy. |
@@ -61,7 +66,9 @@ Relocation is incremental and preserves runnable development paths:
 The first candidate is `bootstrap/gravity/src/gravity/checked_core.gravity`,
 whose semantic ownership and temporary Clojure transport boundary are already
 documented in `docs/development-verification.md`. This candidate is a future
-relocation slice; this map does not claim it has moved.
+relocation slice; this map does not claim it has moved. The mixed
+`bootstrap/gravity/p15_s23/compiler.gravity` and self-hosting orchestrators
+must be split by behavior before they are candidates for relocation.
 
 ## Separate progress claims
 
@@ -79,6 +86,17 @@ for any later migration or release claim.
 
 ## Governing contracts
 
-This map follows D0, D1, D2, D3, C1, BOOT1, BOOT3, BOOT7, BOOT8, GOV1, and the
-existing component roadmaps. It is navigation and ownership metadata, not a
-replacement for those contracts or for the workstream lifecycle.
+This map follows [D0](phase-00-foundation-and-thesis/001-d0-gravity-vision-and-design-thesis.md),
+[D1](phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md),
+[D2](phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md),
+[D3](phase-00-foundation-and-thesis/004-d3-terminology-and-concept-model.md),
+[C1](phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md),
+[BOOT1](phase-15-bootstrap-and-self-hosting/203-boot1-bootstrap-strategy.md),
+[BOOT3](phase-15-bootstrap-and-self-hosting/205-boot3-self-hosted-compiler-plan.md),
+[BOOT7](phase-15-bootstrap-and-self-hosting/209-boot7-self-hosting-validation-and-equivalence-plan.md),
+[BOOT8](phase-15-bootstrap-and-self-hosting/210-boot8-bootstrap-artifact-provenance-specification.md),
+[GOV1](phase-17-governance-and-evolution/231-gov1-language-evolution-process.md),
+the [component roadmaps](component-roadmaps/README.md), and the existing
+[development verification guide](development-verification.md). It is navigation
+and ownership metadata, not a replacement for those contracts or for the
+workstream lifecycle.
