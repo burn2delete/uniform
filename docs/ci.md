@@ -15,7 +15,7 @@ compiler migration or release acceptance.
 | bootstrap | Always | Always | Fresh process requires Bootstrap without preinstalled aliases; exact decimal/abbreviation Reader regressions; language boundary; strict catalog controls and ownership inventory. No modeled aliases installed by this harness. |
 | macro | Always | Always | Fresh macro pipeline and Bootstrap compatibility regressions in an isolated child process. |
 | checked-core-runtime | Always | Always | Checked-Core pipeline, current-binding and projection-kernel regressions in isolated child processes. |
-| resolution-pipeline, resolution-unmetered, and resolution-invocation-selection | Always | Always | Three fresh Resolution children serialized only within their own pool; one namespace per child, separate logs/receipts and a 600-second command watchdog per child. |
+| resolution-pipeline, resolution-unmetered, and resolution-invocation-selection | Always | Always | Three serialized Resolution matrix jobs retain separate logs/receipts. `resolution-pipeline` runs two sequential fresh children (cohort and fresh replay), each with a 600-second command watchdog; the other two modes run one fresh child each. |
 | fresh-leaf-regressions / portable and / darwin | Markdown-only PRs omit leaves; otherwise the reviewed source/test require-closure selects affected catalog entries. Unknown, cross-cutting, structural, or closure-discovery changes use the full platform catalog. A verified unselected selectable leaf retains its required check and skipped receipt but resolves to Ubuntu; selected and fail-closed leaves retain their matrix runner. | Full fresh catalog | 52 portable namespaces on Ubuntu and one Darwin publication namespace on ARM macOS with its exact JDK 26.0.1 contract. Every selected namespace gets a fresh JVM; the catalog partition is exhaustive and disjoint. No cross-run result cache is used. This is not the full compiler suite. |
 | darwin-unsupported-host | Always runs its tiny refusal probe | Always | Actual macOS 15 kernel must reject required confinement features before any publication open; this negative result grants no positive publication acceptance. |
 | source-Core-readiness | Omitted | Omitted | No source-Core readiness job is enabled: the former constant-failure placeholder did not execute a genuine compiler route. The real public `gravity self-host verify` boundary remains fail-closed with `P18T04007` while the seed boundary is active; no CI check or source-only snapshot substitutes for that release/self-hosting admission. |
@@ -43,16 +43,22 @@ or malformed, the selector also falls back to the full matrix, while `static`
 records an explicit failed selection result so an untrusted diff cannot pass
 without changed-file lint.
 
-Each Resolution mode starts one fresh 600-second child, so the three
-serialized children have 1,800 seconds of command watchdogs in aggregate;
-each matrix job has its own 15-minute hosted-job ceiling. This is not
+The `resolution-pipeline` mode starts two fresh 600-second children
+sequentially: one cohort and one fresh current-product replay. The other two
+Resolution modes each start one fresh 600-second child. Each child records its
+own log and receipt, while the three matrix jobs are serialized only within
+their Resolution pool. Each matrix job has a 25-minute hosted-job ceiling so
+the two-child pipeline has room for its 1,200 seconds of command watchdogs
+plus checkout, toolchain setup, cleanup and artifact upload. The hosted
+ceiling is an orchestration envelope; it does not replace or extend either
+600-second child watchdog, and a child timeout remains a failed result with
+its receipt preserved. This is not
 equivalent to the former single combined 900-second command, and it is not a
 global parallelism limit or a cost-equivalence claim. The local combined
 `resolution` CLI mode remains available with its 900-second watchdog for
 compatibility. Only the Resolution pool is serialized; the other matrix pools
-retain their existing parallelism. Each child records its own logs and
-receipts, and publication depends on the Resolution pool while retaining the
-existing manual source-publish rule.
+retain their existing parallelism. Publication depends on the Resolution pool
+while retaining the existing manual source-publish rule.
 
 Markdown-only pull requests retain the existing static whitespace and contract
 checks. A change to `tools/ci/snapshot.clj` or its `snapshot_test.clj` runs the
