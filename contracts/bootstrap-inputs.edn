@@ -1,0 +1,30 @@
+{:schema :gravity/bootstrap-inputs-v1
+ :input-id "uniform-bootstrap-stage0-inputs-v1"
+ :stage :stage0
+ :compiler {:source-language :gravity
+            :seed-language :clojure
+            :seed-artifact-id "clojure-stage0-bootstrap"}
+ :source-roots [{:path "bootstrap/gravity"
+                 :role :gravity-compiler-source
+                 :extensions [".gravity" ".qst"]}
+                {:path "bootstrap/clojure/src"
+                 :role :clojure-seed-source
+                 :extensions [".clj" ".cljc" ".cljs" ".edn"]}]
+ :direct-inputs [{:path "deps.edn"
+                  :role :build-lock
+                  :sha256 "sha256:a578c91e5980690b28f92f1f324abf55bca56e2386dc384fe3368f204b6628d2"}]
+ :source-graph {:sha256 "sha256:343513ac2bad1327c30090a60746266aa971079d137439bfa65d8575117def67"}
+ :scope {:profiles [:meta]
+         :targets [:jvm]
+         :supported-modules [:reader :syntax :expand :resolve :core]
+         :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/core-semantics.gravity"
+                             "bootstrap/clojure/fixtures/accepted/core-semantics.qst"]
+         :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/core-invalid-profile.gravity"
+                             "bootstrap/clojure/fixtures/rejected/core-invalid-profile.qst"]}
+ :execution {:target :jvm
+             :backend :jvm
+             :runtime :clojure-stage0
+             :host-boundaries [:clojure :jvm :filesystem]
+             :network :denied}
+ :comparison {:modes [:manifest :conformance :diagnostics]
+              :artifact-kinds [:compiler-artifact :diagnostic-stream]}}
