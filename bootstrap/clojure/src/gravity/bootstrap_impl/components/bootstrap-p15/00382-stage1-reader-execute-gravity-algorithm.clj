@@ -63,7 +63,7 @@
 (defn stage1-reader-algorithm-source-artifact
   [source-path source-text]
   (let [stage1-bootstrap-artifact
-        (stage1-bootstrap-source-artifact stage1-reader-bootstrap-source-root)
+        (stage1-bootstrap-source-artifact stage1-reader-bootstrap-source-roots)
         stage1-records (stage1-reader-execute-gravity-algorithm
                         stage1-reader-source-path source-path source-text)
         stage0-records (read-source-form-records source-path source-text)

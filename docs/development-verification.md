@@ -77,7 +77,7 @@ operation.
 ## Default SH-07 workflow: three boundaries
 
 For SH-07, edit the owning Gravity implementation
-`bootstrap/gravity/src/gravity/checked_core.gravity`. The Clojure adapter at
+`language/compiler/src/gravity/checked_core.gravity`. The Clojure adapter at
 `bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00885-sh07-core-source-relative-path.clj`
 preserves transport and compatibility; it does not own language semantics.
 
@@ -85,13 +85,13 @@ Use the owning path for the behavior under test:
 
 | Behavior | Owning implementation |
 | --- | --- |
-| Canonical source/Core shape and legality | `bootstrap/gravity/src/gravity/checked_core.gravity` |
+| Canonical source/Core shape and legality | `language/compiler/src/gravity/checked_core.gravity` |
 | Namespace and reference binding | `bootstrap/gravity/src/gravity/resolution.gravity` |
 | Reader literal transport | `bootstrap/clojure/src/gravity/c3_literal_projection.clj` and its SH-04 consumer |
-| Function and expression types | `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` |
-| Body and latent effects | `bootstrap/gravity/src/gravity/effects.gravity` |
+| Function and expression types | `language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity` |
+| Body and latent effects | `language/compiler/src/gravity/effects.gravity` |
 | Typed Core to executable development IR | `bootstrap/gravity/p15_s23/emitter.gravity` |
-| Development IR evaluation | `bootstrap/gravity/src/gravity/runtime.gravity` |
+| Development IR evaluation | `language/runtime/src/gravity/runtime.gravity` |
 
 Start with an exact kernel test:
 
@@ -134,6 +134,54 @@ Use a fresh JVM after compiler source changes. `--list` discovers selectors;
 it does not execute tests. A namespace that combines cheap kernels with
 authenticated composition should be selected by exact variable so ordinary
 feedback does not build a large product unnecessarily.
+
+The project-scoped aliases make the language/bootstrap boundary explicit while
+preserving those selectors and the existing fixtures:
+
+| Alias | Initial assertion-based scope |
+| --- | --- |
+| `:language-test` | Reader, syntax, resolution and type-semantics tests. |
+| `:compiler-composition-test` | Reader/core handoffs, effect checking and MIR composition tests. |
+| `:bootstrap-validation-test` | W5 stage equivalence, compiler identity, trust/provenance, rebuild and subsystem-closure tests. |
+
+The catalogs are an explicit initial subset, not a claim of full language,
+compiler or bootstrap conformance. Assign a new test by the assertions it
+checks: a file under the historical `self_hosting` path is not bootstrap
+validation merely because of its path. Extend the named scope in
+`tools/gravity/project_tests/scope.clj` when a test's owning
+boundary is clear, and keep its focused positive and rejected cases visible.
+The shared entrypoint is intentionally only a scope binding; the existing
+development runner still applies `--exact`, `--regex`, `--prefix`, `--list` and
+`--fail-fast` for all three aliases.
+
+For example, these commands execute one language test, one compiler-composition
+test, and one accepted and one rejected W5 assertion respectively:
+
+```bash
+clojure -J-Xmx2g -M:language-test \
+  --namespace gravity.reader.normal-dispatch-test \
+  --exact gravity.reader.normal-dispatch-test/actual-path-provenance-does-not-change-semantic-hashes \
+  --fail-fast
+
+clojure -J-Xmx2g -M:compiler-composition-test \
+  --namespace gravity.reader.composition-test \
+  --exact gravity.reader.composition-test/identity-view-conserves-companion-without-conferring-admission \
+  --fail-fast
+
+clojure -J-Xmx2g -M:bootstrap-validation-test \
+  --namespace gravity.self-hosting.w5-stage-equivalence-verifier-test \
+  --exact gravity.self-hosting.w5-stage-equivalence-verifier-test/w5-stage-equivalence-accepts-static-record-but-blocks-completion \
+  --fail-fast
+
+clojure -J-Xmx2g -M:bootstrap-validation-test \
+  --namespace gravity.self-hosting.w5-stage-equivalence-verifier-test \
+  --exact gravity.self-hosting.w5-stage-equivalence-verifier-test/w5-stage-equivalence-rejected-fixture-covers-every-mode-and-control \
+  --fail-fast
+```
+
+Use `clojure -M:<alias> --list` to inspect an alias's initial namespace
+catalog. These runs provide development feedback only; they do not establish
+release, seed-retirement, self-hosting or migration authority.
 
 The resource broker, bounded development runners and warm JVM are optional
 host safeguards for genuinely heavy work. They are not semantic admission

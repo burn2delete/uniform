@@ -23,7 +23,7 @@
 
 (def ^:private root (delay (repository-root)))
 (def ^:private c14-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity")
+  "language/compiler/src/gravity/compiler/c14_target_lowering_architecture.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
 (def ^:private expected-source-byte-count

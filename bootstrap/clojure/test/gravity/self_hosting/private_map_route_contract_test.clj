@@ -9,8 +9,8 @@
   (:import [java.io PushbackReader]))
 
 (def ^:private owners
-  [["bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity" "sh08-pmk-"]
-   ["bootstrap/gravity/src/gravity/effects.gravity" "body-pmk-"]
+  [["language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity" "sh08-pmk-"]
+   ["language/compiler/src/gravity/effects.gravity" "body-pmk-"]
    ["bootstrap/gravity/p15_s23/emitter.gravity" "p15-s23-pmk-"]])
 
 (defn- read-forms [path]

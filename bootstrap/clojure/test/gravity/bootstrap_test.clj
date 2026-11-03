@@ -3054,8 +3054,48 @@
               #(bootstrap/run-compiled-file fixture)))))))
 
 (deftest stage1-bootstrap-source-artifact-preserves-self-hosting-bridge
+  (is (= "bootstrap/gravity/src"
+         bootstrap/stage1-reader-bootstrap-source-root))
+  (is (= 30 (count bootstrap/stage1-reader-bootstrap-source-roots)))
+  (is (= #{"language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity"
+           "language/compiler/src/gravity/backend/b2_c_backend_design.gravity"
+           "language/compiler/src/gravity/backend/b3_llvm_backend_design.gravity"
+           "language/compiler/src/gravity/backend/b4_wasm_backend_design.gravity"
+           "language/compiler/src/gravity/backend/b5_jvm_backend_design.gravity"
+           "language/compiler/src/gravity/backend/b6_javascript_typescript_backend_design.gravity"
+           "language/compiler/src/gravity/backend/b7_mlir_backend_design.gravity"
+           "language/compiler/src/gravity/backend/b8_gpu_backend_design.gravity"
+           "language/compiler/src/gravity/backend/b9_hdl_backend_design.gravity"
+           "language/compiler/src/gravity/backend/b10_workflow_graph_backend_design.gravity"
+           "language/compiler/src/gravity/backend/b11_query_relational_backend_design.gravity"
+           "language/compiler/src/gravity/backend/b12_mobile_backend_design.gravity"
+           "language/compiler/src/gravity/compiler/authenticated_envelope.gravity"
+           "language/compiler/src/gravity/compiler/c6_call_arity_legality.gravity"
+           "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity"
+           "language/compiler/src/gravity/compiler/c8_effect_checker_engine.gravity"
+           "language/compiler/src/gravity/compiler/c9_ownership_checker_engine.gravity"
+           "language/compiler/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"
+           "language/compiler/src/gravity/compiler/c11_mir_specification.gravity"
+           "language/compiler/src/gravity/compiler/c12_domain_ir_architecture.gravity"
+           "language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity"
+           "language/compiler/src/gravity/compiler/c14_target_lowering_architecture.gravity"
+           "language/compiler/src/gravity/compiler/c16_incremental_compilation_design.gravity"
+           "language/compiler/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
+           "language/compiler/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"
+           "language/compiler/src/gravity/compiler/l2_core_language_semantics.gravity"
+           "language/compiler/src/gravity/effects.gravity"
+           "language/runtime/src/gravity/runtime.gravity"}
+         (set/difference
+          (set bootstrap/stage1-reader-bootstrap-source-roots)
+          #{"bootstrap/gravity/src"
+            "language/compiler/src/gravity/checked_core.gravity"})))
+  (is (= "STAGE1006"
+         (diagnostic-id
+          #(bootstrap/stage1-bootstrap-source-file-artifact
+            (conj bootstrap/stage1-reader-bootstrap-source-roots
+                  "language/runtime/src/gravity/missing.gravity")))))
   (let [artifact (bootstrap/stage1-bootstrap-source-file-artifact
-                  "bootstrap/gravity/src")
+                  bootstrap/stage1-reader-bootstrap-source-roots)
         proof (:capability-based-proof artifact)
         components (set (map :component (:modules artifact)))
         source-frontend (first (filter #(= :source-frontend (:component %))
@@ -3157,6 +3197,9 @@
                               (get-in artifact
                                       [:stage1-diagnostic-stream
                                        :diagnostics])))]
+    (is (= bootstrap/stage1-reader-bootstrap-source-roots
+           (get-in artifact
+                   [:accepted-stage1-bootstrap-source-fixtures 0 :source-roots])))
     (is (= :gravity/stage1-bootstrap-source-artifact (:kind artifact)))
     (is (= :clojure-stage0 (get-in artifact [:seed-boundary :verified-by])))
     (is (true? (get-in artifact [:seed-boundary :still-trusted?])))
@@ -3193,7 +3236,7 @@
              :mobile-backend}
            components))
     (is (= 35 (count (:modules artifact))))
-    (is (= "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity"
+    (is (= "language/compiler/src/gravity/compiler/authenticated_envelope.gravity"
            (:source-path authenticated-envelope)))
     (is (some #{"D9"} (:documents authenticated-envelope)))
     (is (some #{'authenticated-envelope-build-template}
@@ -3223,7 +3266,7 @@
     (is (some #{"C5"} (:documents name-resolution)))
     (is (some #{'verify-c5-resolution}
               (map :name (:definitions name-resolution))))
-    (is (= "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"
+    (is (= "language/compiler/src/gravity/compiler/l2_core_language_semantics.gravity"
            (:source-path core-semantics)))
     (is (some #{"L2"} (:documents core-semantics)))
     (is (some #{'verify-l2-core-semantics}
@@ -3233,42 +3276,42 @@
     (is (some #{"C6"} (:documents core-lowering)))
     (is (some #{'verify-c6-core-lowering}
               (map :name (:definitions core-lowering))))
-    (is (= "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+    (is (= "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity"
            (:source-path type-checker)))
     (is (some #{"C7"} (:documents type-checker)))
     (is (some #{'verify-c7-type-checker}
               (map :name (:definitions type-checker))))
-    (is (= "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"
+    (is (= "language/compiler/src/gravity/compiler/c8_effect_checker_engine.gravity"
            (:source-path effect-checker)))
     (is (some #{"C8"} (:documents effect-checker)))
     (is (some #{'verify-c8-effect-checker}
               (map :name (:definitions effect-checker))))
-    (is (= "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"
+    (is (= "language/compiler/src/gravity/compiler/c9_ownership_checker_engine.gravity"
            (:source-path ownership-checker)))
     (is (some #{"C9"} (:documents ownership-checker)))
     (is (some #{'verify-c9-ownership-checker}
               (map :name (:definitions ownership-checker))))
-    (is (= "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"
+    (is (= "language/compiler/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"
            (:source-path safety-analysis)))
     (is (some #{"C10"} (:documents safety-analysis)))
     (is (some #{'verify-c10-safety-analysis}
               (map :name (:definitions safety-analysis))))
-    (is (= "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
+    (is (= "language/compiler/src/gravity/compiler/c11_mir_specification.gravity"
            (:source-path mir-specification)))
     (is (some #{"C11"} (:documents mir-specification)))
     (is (some #{'verify-c11-mir-module}
               (map :name (:definitions mir-specification))))
-    (is (= "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity"
+    (is (= "language/compiler/src/gravity/compiler/c12_domain_ir_architecture.gravity"
            (:source-path domain-ir-architecture)))
     (is (some #{"C12"} (:documents domain-ir-architecture)))
     (is (some #{'verify-c12-domain-ir-architecture}
               (map :name (:definitions domain-ir-architecture))))
-    (is (= "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity"
+    (is (= "language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity"
            (:source-path mir-optimization)))
     (is (some #{"C13"} (:documents mir-optimization)))
     (is (some #{'verify-c13-mir-optimization-passes}
               (map :name (:definitions mir-optimization))))
-    (is (= "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity"
+    (is (= "language/compiler/src/gravity/compiler/c14_target_lowering_architecture.gravity"
            (:source-path target-lowering)))
     (is (some #{"C14"} (:documents target-lowering)))
     (is (some #{'verify-c14-target-lowering}
@@ -3278,77 +3321,77 @@
     (is (some #{"C15"} (:documents compiler-diagnostics)))
     (is (some #{'verify-c15-diagnostic-stream}
               (map :name (:definitions compiler-diagnostics))))
-    (is (= "bootstrap/gravity/src/gravity/compiler/c16_incremental_compilation_design.gravity"
+    (is (= "language/compiler/src/gravity/compiler/c16_incremental_compilation_design.gravity"
            (:source-path incremental-compilation)))
     (is (some #{"C16"} (:documents incremental-compilation)))
     (is (some #{'verify-c16-incremental-compilation}
               (map :name (:definitions incremental-compilation))))
-    (is (= "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
+    (is (= "language/compiler/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
            (:source-path compiler-plugin-pass-api)))
     (is (some #{"C17"} (:documents compiler-plugin-pass-api)))
     (is (some #{'verify-c17-compiler-plugin-pass-api}
               (map :name (:definitions compiler-plugin-pass-api))))
-    (is (= "bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"
+    (is (= "language/compiler/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"
            (:source-path compiler-verification)))
     (is (some #{"C18"} (:documents compiler-verification)))
     (is (some #{'verify-c18-compiler-verification}
               (map :name (:definitions compiler-verification))))
-    (is (= "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity"
+    (is (= "language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity"
            (:source-path backend-interface)))
     (is (some #{"B1"} (:documents backend-interface)))
     (is (some #{'verify-b1-backend-interface}
               (map :name (:definitions backend-interface))))
-    (is (= "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity"
+    (is (= "language/compiler/src/gravity/backend/b2_c_backend_design.gravity"
            (:source-path c-backend)))
     (is (some #{"B2"} (:documents c-backend)))
     (is (some #{'verify-b2-c-backend-design}
               (map :name (:definitions c-backend))))
-    (is (= "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity"
+    (is (= "language/compiler/src/gravity/backend/b3_llvm_backend_design.gravity"
            (:source-path llvm-backend)))
     (is (some #{"B3"} (:documents llvm-backend)))
     (is (some #{'verify-b3-llvm-backend-design}
               (map :name (:definitions llvm-backend))))
-    (is (= "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity"
+    (is (= "language/compiler/src/gravity/backend/b4_wasm_backend_design.gravity"
            (:source-path wasm-backend)))
     (is (some #{"B4"} (:documents wasm-backend)))
     (is (some #{'verify-b4-wasm-backend-design}
               (map :name (:definitions wasm-backend))))
-    (is (= "bootstrap/gravity/src/gravity/backend/b5_jvm_backend_design.gravity"
+    (is (= "language/compiler/src/gravity/backend/b5_jvm_backend_design.gravity"
            (:source-path jvm-backend)))
     (is (some #{"B5"} (:documents jvm-backend)))
     (is (some #{'verify-b5-jvm-backend-design}
               (map :name (:definitions jvm-backend))))
-    (is (= "bootstrap/gravity/src/gravity/backend/b6_javascript_typescript_backend_design.gravity"
+    (is (= "language/compiler/src/gravity/backend/b6_javascript_typescript_backend_design.gravity"
            (:source-path js-ts-backend)))
     (is (some #{"B6"} (:documents js-ts-backend)))
     (is (some #{'verify-b6-javascript-typescript-backend-design}
               (map :name (:definitions js-ts-backend))))
-    (is (= "bootstrap/gravity/src/gravity/backend/b7_mlir_backend_design.gravity"
+    (is (= "language/compiler/src/gravity/backend/b7_mlir_backend_design.gravity"
            (:source-path mlir-backend)))
     (is (some #{"B7"} (:documents mlir-backend)))
     (is (some #{'verify-b7-mlir-backend-design}
               (map :name (:definitions mlir-backend))))
-    (is (= "bootstrap/gravity/src/gravity/backend/b8_gpu_backend_design.gravity"
+    (is (= "language/compiler/src/gravity/backend/b8_gpu_backend_design.gravity"
            (:source-path gpu-backend)))
     (is (some #{"B8"} (:documents gpu-backend)))
     (is (some #{'verify-b8-gpu-backend-design}
               (map :name (:definitions gpu-backend))))
-    (is (= "bootstrap/gravity/src/gravity/backend/b9_hdl_backend_design.gravity"
+    (is (= "language/compiler/src/gravity/backend/b9_hdl_backend_design.gravity"
            (:source-path hdl-backend)))
     (is (some #{"B9"} (:documents hdl-backend)))
     (is (some #{'verify-b9-hdl-backend-design}
               (map :name (:definitions hdl-backend))))
-    (is (= "bootstrap/gravity/src/gravity/backend/b10_workflow_graph_backend_design.gravity"
+    (is (= "language/compiler/src/gravity/backend/b10_workflow_graph_backend_design.gravity"
            (:source-path workflow-backend)))
     (is (some #{"B10"} (:documents workflow-backend)))
     (is (some #{'verify-b10-workflow-graph-backend-design}
               (map :name (:definitions workflow-backend))))
-    (is (= "bootstrap/gravity/src/gravity/backend/b11_query_relational_backend_design.gravity"
+    (is (= "language/compiler/src/gravity/backend/b11_query_relational_backend_design.gravity"
            (:source-path query-backend)))
     (is (some #{"B11"} (:documents query-backend)))
     (is (some #{'verify-b11-query-relational-backend-design}
               (map :name (:definitions query-backend))))
-    (is (= "bootstrap/gravity/src/gravity/backend/b12_mobile_backend_design.gravity"
+    (is (= "language/compiler/src/gravity/backend/b12_mobile_backend_design.gravity"
            (:source-path mobile-backend)))
     (is (some #{"B12"} (:documents mobile-backend)))
     (is (some #{'verify-b12-mobile-backend-design}
@@ -6006,6 +6049,39 @@
                    bootstrap/p15-s23-compiler-source-path
                    candidate)))]
     (is (contains? diagnostics "P15S23C005"))))
+
+(deftest p15-s23-explicit-relocation-preserves-logical-source-authorship
+  (let [declared
+        "bootstrap/gravity/src/gravity/backend/b9_hdl_backend_design.gravity"
+        actual
+        "language/compiler/src/gravity/backend/b9_hdl_backend_design.gravity"
+        record
+        (first
+         (bootstrap/p15-s23-source-module-records
+          {:source-modules [{:component :hdl-backend :path declared}]}))]
+    (is (= 24 (count bootstrap/p15-s23-compiler-source-relocation-map)))
+    (is (= actual
+           (get bootstrap/p15-s23-compiler-source-relocation-map declared)))
+    (is (= declared (:path record)))
+    (is (= declared (:logical-path record)))
+    (is (= actual (:actual-path record)))
+    (is (true? (:relocated? record)))
+    (is (= :hdl-backend (:component record)))
+    (is (= :present (:status record)))
+    (is (re-find #"^sha256:" (:source-hash record)))))
+
+(deftest p15-s23-unmapped-source-does-not-fallback-to-relocated-file
+  (let [declared
+        "bootstrap/gravity/src/gravity/compiler/c6_call_arity_legality.gravity"
+        resolution (bootstrap/p15-s23-compiler-source-path-resolution declared)]
+    (is (= declared (:logical-path resolution)))
+    (is (= declared (:actual-path resolution)))
+    (is (false? (:relocated? resolution)))
+    (is (false? (bootstrap/p15-s23-source-module-present?
+                 {:component :unmapped :path declared})))
+    (is (false? (bootstrap/p15-s23-source-module-present?
+                 {:component :missing
+                  :path "bootstrap/gravity/src/gravity/compiler/not-listed.gravity"})))))
 
 (deftest p15-s23-compiler-pipeline-manifest-records-canonical-pipeline
   (let [artifact
@@ -25660,7 +25736,7 @@
 (deftest public-check-accepts-gravity-authored-l2-core-language-semantics
   (bootstrap/p18-t06-write-final-release-artifacts!)
   (let [source-path
-        "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"
+        "language/compiler/src/gravity/compiler/l2_core_language_semantics.gravity"
         artifact (bootstrap/check-file-artifact source-path)
         cli-result (run-bin "bin/gravity" "check" source-path)
         release-result (run-bin bootstrap/p18-t06-release-binary-path
@@ -25745,7 +25821,7 @@
 
 (deftest public-check-accepts-gravity-authored-c7-type-checker-engine
   (let [source-path
-        "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+        "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity"
         artifact (bootstrap/check-file-artifact source-path)
         cli-result (run-bin "bin/gravity" "check" source-path)]
     (is (= :gravity/stage0-module-artifact (:kind artifact)))
@@ -25761,7 +25837,7 @@
 
 (deftest public-check-accepts-gravity-authored-c8-effect-checker-engine
   (let [source-path
-        "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"
+        "language/compiler/src/gravity/compiler/c8_effect_checker_engine.gravity"
         artifact (bootstrap/check-file-artifact source-path)
         cli-result (run-bin "bin/gravity" "check" source-path)]
     (is (= :gravity/stage0-module-artifact (:kind artifact)))
@@ -25777,7 +25853,7 @@
 
 (deftest public-check-accepts-gravity-authored-c9-ownership-checker-engine
   (let [source-path
-        "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"
+        "language/compiler/src/gravity/compiler/c9_ownership_checker_engine.gravity"
         artifact (bootstrap/check-file-artifact source-path)
         cli-result (run-bin "bin/gravity" "check" source-path)]
     (is (= :gravity/stage0-module-artifact (:kind artifact)))
@@ -25793,7 +25869,7 @@
 
 (deftest public-check-accepts-gravity-authored-c10-safety-analysis-pipeline
   (let [source-path
-        "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"
+        "language/compiler/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"
         artifact (bootstrap/check-file-artifact source-path)
         cli-result (run-bin "bin/gravity" "check" source-path)]
     (is (= :gravity/stage0-module-artifact (:kind artifact)))
@@ -25809,7 +25885,7 @@
 
 (deftest public-check-accepts-gravity-authored-c11-mir-specification
   (let [source-path
-        "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
+        "language/compiler/src/gravity/compiler/c11_mir_specification.gravity"
         artifact (bootstrap/check-file-artifact source-path)
         cli-result (run-bin "bin/gravity" "check" source-path)]
     (is (= :gravity/stage0-module-artifact (:kind artifact)))
@@ -25825,7 +25901,7 @@
 
 (deftest public-check-accepts-gravity-authored-c12-domain-ir-architecture
   (let [source-path
-        "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity"
+        "language/compiler/src/gravity/compiler/c12_domain_ir_architecture.gravity"
         artifact (bootstrap/check-file-artifact source-path)
         cli-result (run-bin "bin/gravity" "check" source-path)]
     (is (= :gravity/stage0-module-artifact (:kind artifact)))
@@ -25841,7 +25917,7 @@
 
 (deftest public-check-accepts-gravity-authored-c13-mir-optimization-passes
   (let [source-path
-        "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity"
+        "language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity"
         artifact (bootstrap/check-file-artifact source-path)
         cli-result (run-bin "bin/gravity" "check" source-path)]
     (is (= :gravity/stage0-module-artifact (:kind artifact)))
@@ -25857,7 +25933,7 @@
 
 (deftest public-check-accepts-gravity-authored-c14-target-lowering-architecture
   (let [source-path
-        "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity"
+        "language/compiler/src/gravity/compiler/c14_target_lowering_architecture.gravity"
         artifact (bootstrap/check-file-artifact source-path)
         cli-result (run-bin "bin/gravity" "check" source-path)]
     (is (= :gravity/stage0-module-artifact (:kind artifact)))
@@ -25889,7 +25965,7 @@
 
 (deftest public-check-accepts-gravity-authored-c16-incremental-compilation-design
   (let [source-path
-        "bootstrap/gravity/src/gravity/compiler/c16_incremental_compilation_design.gravity"
+        "language/compiler/src/gravity/compiler/c16_incremental_compilation_design.gravity"
         artifact (bootstrap/check-file-artifact source-path)
         cli-result (run-bin "bin/gravity" "check" source-path)]
     (is (= :gravity/stage0-module-artifact (:kind artifact)))
@@ -25905,7 +25981,7 @@
 
 (deftest public-check-accepts-gravity-authored-c17-compiler-plugin-pass-api
   (let [source-path
-        "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
+        "language/compiler/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
         artifact (bootstrap/check-file-artifact source-path)
         cli-result (run-bin "bin/gravity" "check" source-path)]
     (is (= :gravity/stage0-module-artifact (:kind artifact)))
@@ -25921,7 +25997,7 @@
 
 (deftest public-check-accepts-gravity-authored-c18-compiler-verification-pass-correctness
   (let [source-path
-        "bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"
+        "language/compiler/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"
         artifact (bootstrap/check-file-artifact source-path)
         cli-result (run-bin "bin/gravity" "check" source-path)]
     (is (= :gravity/stage0-module-artifact (:kind artifact)))
@@ -25937,7 +26013,7 @@
 
 (deftest public-check-accepts-gravity-authored-b1-backend-interface-specification
   (let [source-path
-        "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity"
+        "language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity"
         artifact (bootstrap/check-file-artifact source-path)
         cli-result (run-bin "bin/gravity" "check" source-path)]
     (is (= :gravity/stage0-module-artifact (:kind artifact)))
@@ -25953,7 +26029,7 @@
 
 (deftest public-check-accepts-gravity-authored-b2-c-backend-design
   (let [source-path
-        "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity"
+        "language/compiler/src/gravity/backend/b2_c_backend_design.gravity"
         artifact (bootstrap/check-file-artifact source-path)
         cli-result (run-bin "bin/gravity" "check" source-path)]
     (is (= :gravity/stage0-module-artifact (:kind artifact)))
@@ -25969,7 +26045,7 @@
 
 (deftest public-check-accepts-gravity-authored-b3-llvm-backend-design
   (let [source-path
-        "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity"
+        "language/compiler/src/gravity/backend/b3_llvm_backend_design.gravity"
         artifact (bootstrap/check-file-artifact source-path)
         cli-result (run-bin "bin/gravity" "check" source-path)]
     (is (= :gravity/stage0-module-artifact (:kind artifact)))
@@ -25985,7 +26061,7 @@
 
 (deftest public-check-accepts-gravity-authored-b4-wasm-backend-design
   (let [source-path
-        "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity"
+        "language/compiler/src/gravity/backend/b4_wasm_backend_design.gravity"
         artifact (bootstrap/check-file-artifact source-path)
         cli-result (run-bin "bin/gravity" "check" source-path)]
     (is (= :gravity/stage0-module-artifact (:kind artifact)))
@@ -26001,7 +26077,7 @@
 
 (deftest public-check-accepts-gravity-authored-b5-jvm-backend-design
   (let [source-path
-        "bootstrap/gravity/src/gravity/backend/b5_jvm_backend_design.gravity"
+        "language/compiler/src/gravity/backend/b5_jvm_backend_design.gravity"
         artifact (bootstrap/check-file-artifact source-path)
         cli-result (run-bin "bin/gravity" "check" source-path)]
     (is (= :gravity/stage0-module-artifact (:kind artifact)))
@@ -26017,7 +26093,7 @@
 
 (deftest public-check-accepts-gravity-authored-b6-javascript-typescript-backend-design
   (let [source-path
-        "bootstrap/gravity/src/gravity/backend/b6_javascript_typescript_backend_design.gravity"
+        "language/compiler/src/gravity/backend/b6_javascript_typescript_backend_design.gravity"
         artifact (bootstrap/check-file-artifact source-path)
         cli-result (run-bin "bin/gravity" "check" source-path)]
     (is (= :gravity/stage0-module-artifact (:kind artifact)))
@@ -26034,7 +26110,7 @@
 (deftest public-check-accepts-gravity-authored-b7-mlir-backend-design
   (bootstrap/p18-t06-write-final-release-artifacts!)
   (let [source-path
-        "bootstrap/gravity/src/gravity/backend/b7_mlir_backend_design.gravity"
+        "language/compiler/src/gravity/backend/b7_mlir_backend_design.gravity"
         artifact (bootstrap/check-file-artifact source-path)
         cli-result (run-bin "bin/gravity" "check" source-path)
         release-result (run-bin bootstrap/p18-t06-release-binary-path
@@ -26056,7 +26132,7 @@
 (deftest public-check-accepts-gravity-authored-b8-gpu-backend-design
   (bootstrap/p18-t06-write-final-release-artifacts!)
   (let [source-path
-        "bootstrap/gravity/src/gravity/backend/b8_gpu_backend_design.gravity"
+        "language/compiler/src/gravity/backend/b8_gpu_backend_design.gravity"
         artifact (bootstrap/check-file-artifact source-path)
         cli-result (run-bin "bin/gravity" "check" source-path)
         release-result (run-bin bootstrap/p18-t06-release-binary-path
@@ -26078,7 +26154,7 @@
 (deftest public-check-accepts-gravity-authored-b9-hdl-backend-design
   (bootstrap/p18-t06-write-final-release-artifacts!)
   (let [source-path
-        "bootstrap/gravity/src/gravity/backend/b9_hdl_backend_design.gravity"
+        "language/compiler/src/gravity/backend/b9_hdl_backend_design.gravity"
         artifact (bootstrap/check-file-artifact source-path)
         cli-result (run-bin "bin/gravity" "check" source-path)
         release-result (run-bin bootstrap/p18-t06-release-binary-path
@@ -26100,7 +26176,7 @@
 (deftest public-check-accepts-gravity-authored-b10-workflow-graph-backend-design
   (bootstrap/p18-t06-write-final-release-artifacts!)
   (let [source-path
-        "bootstrap/gravity/src/gravity/backend/b10_workflow_graph_backend_design.gravity"
+        "language/compiler/src/gravity/backend/b10_workflow_graph_backend_design.gravity"
         artifact (bootstrap/check-file-artifact source-path)
         cli-result (run-bin "bin/gravity" "check" source-path)
         release-result (run-bin bootstrap/p18-t06-release-binary-path
@@ -26122,7 +26198,7 @@
 (deftest public-check-accepts-gravity-authored-b11-query-relational-backend-design
   (bootstrap/p18-t06-write-final-release-artifacts!)
   (let [source-path
-        "bootstrap/gravity/src/gravity/backend/b11_query_relational_backend_design.gravity"
+        "language/compiler/src/gravity/backend/b11_query_relational_backend_design.gravity"
         artifact (bootstrap/check-file-artifact source-path)
         cli-result (run-bin "bin/gravity" "check" source-path)
         release-result (run-bin bootstrap/p18-t06-release-binary-path
@@ -26144,7 +26220,7 @@
 (deftest public-check-accepts-gravity-authored-b12-mobile-backend-design
   (bootstrap/p18-t06-write-final-release-artifacts!)
   (let [source-path
-        "bootstrap/gravity/src/gravity/backend/b12_mobile_backend_design.gravity"
+        "language/compiler/src/gravity/backend/b12_mobile_backend_design.gravity"
         artifact (bootstrap/check-file-artifact source-path)
         cli-result (run-bin "bin/gravity" "check" source-path)
         release-result (run-bin bootstrap/p18-t06-release-binary-path

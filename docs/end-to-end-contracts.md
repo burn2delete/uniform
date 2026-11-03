@@ -217,7 +217,7 @@ Exact interfaces: `bootstrap/clojure/src/gravity/authenticated_artifact_pipeline
 and `04-envelope-valid.clj`; Gravity `c3_syntax_object_model.gravity`,
 `c4_macro_expansion_engine.gravity`, `c5_name_resolution_namespace_analyzer.gravity`,
 `c6_core_lowering_engine.gravity` under `bootstrap/gravity/src/gravity/compiler/`,
-and `bootstrap/gravity/src/gravity/checked_core.gravity`.
+and `language/compiler/src/gravity/checked_core.gravity`.
 
 Dependency: OWN-01 for real source cases. The ordinary authenticated pipeline
 exposes only source/Reader/Syntax/expansion/resolution/checked-Core stages; its
@@ -235,7 +235,7 @@ Remaining population and its source-to-Core results stay open under the
 
 Accountable join: ownership maintainer coordinates Types/Effects/Legality/Auth
 with the existing MIR producer owner. Contracts: C7-C11 and L15.
-Source: `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity`,
+Source: `language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity`,
 `c8_effect_checker_engine.gravity`, `c9_ownership_checker_engine.gravity`,
 `c10_safety_analysis_pipeline.gravity`, `c6_c10_checked_core_pipeline.gravity`
 and `c11_mir_specification.gravity`. Consumer fixtures include
@@ -460,9 +460,9 @@ follows from this finite acceptance and unsupported-capability record.
 
 Accountable join: Opt #370 owner, Reader/C14 #374 owner and Native/Lower owners.
 Contracts: C11/C13/C14/B1. Source:
-`bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity`,
+`language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity`,
 `c14_target_lowering_architecture.gravity`,
-`bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity`;
+`language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity`;
 fixtures include `sh16_checked_mir_identity_bridge_test.clj` and
 `sh17_c13_optimized_mir_carrier_test.clj` in the self-hosting test directory.
 
