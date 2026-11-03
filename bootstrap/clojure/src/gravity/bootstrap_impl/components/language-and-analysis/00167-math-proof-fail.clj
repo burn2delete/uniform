@@ -61,7 +61,7 @@
   (case (:strategy termination)
     :bounded-fuel
     (and (integer? (:fuel termination))
-         (pos? (:fuel termination))
+         (not (neg? (:fuel termination)))
          (perf-present? (:exhaustion-behavior termination)))
 
     :decreasing-measure
@@ -85,7 +85,6 @@
     :proof-engine-guided
     (and (true? (:finite-trace? termination))
          (vector? (:finite-trace termination))
-         (seq (:finite-trace termination))
          (perf-present? (:proof-ref termination)))
 
     false))

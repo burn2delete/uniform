@@ -70,33 +70,39 @@
    {:path "specs/runtime-workflow/tasks.md" :sha256 "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972"}]}
  :current-source
 
- {:commit "c85b7b2268c2512e574fb2ebd410e8e248d48d5e"
-  :tree "2e9b052554eb55b86600fb0f18bd6965b26749fd"
+ {:commit "2cbafb8c23588c299b28c36f315b3105e1270cd5"
+  :tree "29dd8a9c669b92af5ba5bcdbec954a1b190e28df"
   :domain-task-source-transition
   {:path "specs/domains-workflow/tasks.md"
-   :manifest-commit "c85b7b2268c2512e574fb2ebd410e8e248d48d5e"
-   :manifest-tree "2e9b052554eb55b86600fb0f18bd6965b26749fd"
-   :manifest-sha256 "c47151307b2dd2e20855f5837053a6a63806f2ed81d0acd5fadaa653c3952a38"
-   :current-ref "24e7b5e5cd8bc42fa495997870605b596a380678"
-   :current-tree "52a90b3d537f23b3f572ee65ff03edf827c1e29b"
-   :current-sha256 "5378c2c7fba1bb49318fc6cda890c60c77bdbdc57dfe6f5ea42ea8aa23298943"
-   :change-class :family-criteria-preserved-plus-current-main-safety-criteria
+   :manifest-commit "2cbafb8c23588c299b28c36f315b3105e1270cd5"
+   :manifest-tree "29dd8a9c669b92af5ba5bcdbec954a1b190e28df"
+   :manifest-sha256 "d08d0f24edf90bce081d123e4d6d1de29fb3e263fef3f62d8a1fd4aff173964e"
+   :current-ref "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659"
+   :current-tree "552a2bd0f50d53928aef5dffd085656dbe7bc17a"
+   :current-sha256 "3d8989b72d00461931e400b5617b9bea090c63265cfee553e12d7b3cd6bc88dc"
+   :change-class :current-candidate-composition
    :bridge
    {:path "specs/domains-workflow/tasks.md"
     :historical-sha256 "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4"
     :historical-ref "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950"
-    :change-class :family-criteria-preserved-plus-current-main-safety-criteria
+    :change-class :current-candidate-composition
     :marker "domains-implementation-tasks"
-    :current-tree "52a90b3d537f23b3f572ee65ff03edf827c1e29b"
+    :current-tree "552a2bd0f50d53928aef5dffd085656dbe7bc17a"
     :changed-records [{:id "math"
                        :historical-record-sha256 "fd5a8ea4fed8cedd5889bb6030359e87b8abefb1a6467470d161800b6387e0c7"
                        :current-record-sha256 "4696449459576064a9b13100f3313cdfb97a92b536bc89362992705fde5c5f2b"}
                       {:id "ai"
                        :historical-record-sha256 "f1646c5fd968cd1cc3b6e4616ccbb69884872a73d682ceaa558932efcfbc3139"
                        :current-record-sha256 "0dd8433702ae07f6cfbabe7acba0c32ddaaf95c09bf35da2537d1ba313991ea4"}]
-    :qualification "The authenticated current source is the PR562 family/current-main composition checkpoint: historical Domain Workflow/UI criteria remain present and current main's SAFE9/SAFE13 Math/AI boundary criteria are retained. Historical task identity and acceptance remain pinned; no domain implementation or requirement acceptance is inferred."
-    :current-sha256 "5378c2c7fba1bb49318fc6cda890c60c77bdbdc57dfe6f5ea42ea8aa23298943"
-    :current-ref "24e7b5e5cd8bc42fa495997870605b596a380678"}}
+    :qualification "The current candidate preserves the Domain task identity and adds the scoped PR565 schema source joins while retaining the existing Math/AI criteria. Domain implementation and requirement acceptance remain unassessed."
+    :current-sha256 "3d8989b72d00461931e400b5617b9bea090c63265cfee553e12d7b3cd6bc88dc"
+    :current-ref "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659"
+    :known-current-main
+    {:current-ref "d544539eefaea6b16aecd724b54d61a9b0ec1f3d"
+     :current-tree "9fac2c4d1ebfb5294f598860917bc779b2147ebf"
+     :current-sha256 "5378c2c7fba1bb49318fc6cda890c60c77bdbdc57dfe6f5ea42ea8aa23298943"
+     :change-class :current-main-composition
+     :qualification "Immutable d544 source checkpoint before the PR565 Domain joins; no Domain implementation acceptance is inferred."}}}
   :versioned-task-source-transitions
   [{:path "specs/runtime-workflow/tasks.md"
     :from {:commit "8e6608856edcde2b57c33951839dfa9b79f2c503"
@@ -111,7 +117,21 @@
      "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
      "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
      "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"]
-    :qualification "Versioned current-source bridge from the authenticated PR560 Runtime source to the PR561 current task composition. Historical safety source and all non-Runtime current pins remain unchanged; this source transition confers no implementation or safety acceptance."}]
+    :qualification "Versioned current-source bridge from the authenticated PR560 Runtime source to the PR561 current task composition. Historical safety source and all non-Runtime current pins remain unchanged; this source transition confers no implementation or safety acceptance."}
+   {:path "specs/runtime-workflow/tasks.md"
+    :from {:commit "42c34ab55af0000dfaaf73d96d7ee09ec22c243e"
+           :tree "e8f1cc090800f9fcd9e81b7a5bcea32a88101526"
+           :sha256 "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c"}
+    :to {:commit "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659"
+         :tree "552a2bd0f50d53928aef5dffd085656dbe7bc17a"
+         :sha256 "d4b3a3c875f961b5828e8cceda7ecdf106af4527c64fa07ad6c6e1e049d0868d"}
+    :changed-record-ids
+    ["runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
+     "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"
+     "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+     "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"]
+    :qualification "Versioned successor source bridge for the PR565 Runtime schema join. The PR561 transition remains preserved as historical evidence; this candidate adds only the authenticated current task-source delta and confers no implementation or safety acceptance."}]
 
   :task-sources
   [{:path "specs/auth-workflow/tasks.md"
@@ -134,8 +154,8 @@
                        "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix"]}
    {:path "specs/domains-workflow/tasks.md"
     :marker "domains-implementation-tasks"
-    :sha256 "5378c2c7fba1bb49318fc6cda890c60c77bdbdc57dfe6f5ea42ea8aa23298943"
-    :change-class :family-criteria-preserved-plus-current-main-safety-criteria
+    :sha256 "3d8989b72d00461931e400b5617b9bea090c63265cfee553e12d7b3cd6bc88dc"
+    :change-class :current-candidate-composition
     :ordered-task-ids ["math" "schema" "query" "workflow" "ai" "gpu" "ui"]}
    {:path "specs/expand-workflow/tasks.md"
     :marker "expand-implementation-tasks"
@@ -157,8 +177,8 @@
                        "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface"]}
    {:path "specs/runtime-workflow/tasks.md"
     :marker "runtime-implementation-tasks"
-    :sha256 "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c"
-    :change-class :current-main-composition
+    :sha256 "d4b3a3c875f961b5828e8cceda7ecdf106af4527c64fa07ad6c6e1e049d0868d"
+    :change-class :current-candidate-composition
     :ordered-task-ids ["runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
                        "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"
                        "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
