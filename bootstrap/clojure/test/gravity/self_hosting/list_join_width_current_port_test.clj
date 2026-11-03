@@ -174,7 +174,7 @@
             (is (= :rejected (:status forged-lowered)) (pr-str forged-lowered))))))))
 
 (defn- typed-join-context [data facts]
-  (let [{:keys [core node nodes bindings forms nids refs]} data
+  (let [{:keys [core nodes bindings forms nids refs]} data
         checked (stage2 'p15-s23-ij-context [core facts bindings forms])
         types (:type-table facts)]
     {:checked checked
@@ -197,7 +197,7 @@
     (doseq [[left right branch ordinal]
             [[wide empty 0 41] [empty wide 1 42]]]
       (let [data (checked-join left right ordinal)
-            {:keys [core node types bindings forms facts derived nids]} data
+            {:keys [core node types bindings forms facts derived]} data
             {:keys [checked context]} (typed-join-context data facts)
             lowered (stage2 'p15-s23-typed-compile-node [context (:node-id node)])
             wide-value (vec (repeat 1025 :wide-value))
