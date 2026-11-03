@@ -11809,7 +11809,7 @@
         (is (= g q))
         (is (= (bootstrap/read-forms g-path g) (bootstrap/read-forms q-path q)))
         (is (= functions (count (filter #(and (seq? %) (= 'defn (first %))) (bootstrap/read-forms g-path g)))))))
-    (let [owner-path (.getPath (io/file root "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"))
+    (let [owner-path (.getPath (io/file root "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"))
           owner (first (filter #(and (seq? %) (= 'defn (first %)) (= 'c6-sh07-independent-exception-post-reader-scalar? (second %)))
                                (bootstrap/read-forms owner-path (slurp owner-path))))
           fixture-path (.getPath (io/file root "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-boolean-predicate.gravity"))
@@ -13113,7 +13113,7 @@
     (println (pr-str {:bi-boolean-predicate-positive true :function-table-entry-invocations (count results)
                       :source-products {:g-positive 1 :g-negative 1 :q-typed-products 0}
                       :seed-interpreter-on-emitted-ir-entries 14 :gravity-runtime-transfer-entries 1
-                      :copied-helper-body-control {:owner "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity" :function 'c6-sh07-independent-exception-post-reader-scalar?
+                      :copied-helper-body-control {:owner "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity" :function 'c6-sh07-independent-exception-post-reader-scalar?
                                                  :incoming-domain :gravity.type/bool :false-and-true-cases 2 :whole-module-coverage false}
                       :whole-consumer-module-coverage false
                       :elapsed-ns {:assembly-including-public-c7-verification (- t1 t0) :c8-construction (- t3 t2)

@@ -3198,7 +3198,7 @@
     (is (some #{"D9"} (:documents authenticated-envelope)))
     (is (some #{'authenticated-envelope-build-template}
               (map :name (:definitions authenticated-envelope))))
-    (is (= "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+    (is (= "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
            (:source-path c6-c10-checked-core)))
     (is (some #{"C6"} (:documents c6-c10-checked-core)))
     (is (some #{'c6-c10-build-checked-core-template}
@@ -3228,7 +3228,7 @@
     (is (some #{"L2"} (:documents core-semantics)))
     (is (some #{'verify-l2-core-semantics}
               (map :name (:definitions core-semantics))))
-    (is (= "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
+    (is (= "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
            (:source-path core-lowering)))
     (is (some #{"C6"} (:documents core-lowering)))
     (is (some #{'verify-c6-core-lowering}
@@ -25729,7 +25729,7 @@
 
 (deftest public-check-accepts-gravity-authored-c6-core-lowering-engine
   (let [source-path
-        "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
+        "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
         artifact (bootstrap/check-file-artifact source-path)
         cli-result (run-bin "bin/gravity" "check" source-path)]
     (is (= :gravity/stage0-module-artifact (:kind artifact)))

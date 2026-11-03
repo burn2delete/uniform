@@ -50,7 +50,7 @@
 (def ^:private c6-plan
   (delay
     (compile-plan
-     "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity")))
+     "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity")))
 (def ^:private l2-plan
   (delay
     (compile-plan

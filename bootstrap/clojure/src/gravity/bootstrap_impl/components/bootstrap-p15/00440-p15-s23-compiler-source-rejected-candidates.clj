@@ -45,7 +45,7 @@
                  {:component :core-semantics
                   :path "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"}
                  {:component :core-lowering
-                  :path "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"}
+                  :path "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"}
                  {:component :type-checker
                   :path "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"}
                  {:component :effect-checker
@@ -123,7 +123,7 @@
                  {:component :core-semantics
                   :path "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"}
                  {:component :core-lowering
-                  :path "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"}
+                  :path "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"}
                  {:component :type-checker
                   :path "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"}
                  {:component :effect-checker

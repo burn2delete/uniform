@@ -150,7 +150,7 @@
     (is (= {:component-id :checked-core-pipeline
             :category :checked-core
             :source-path
-            "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+            "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
             :dependencies [:checked-core]}
            (nth catalog 12)))
     (is (= {:component-id :call-arity
