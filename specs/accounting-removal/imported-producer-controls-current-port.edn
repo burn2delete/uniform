@@ -1,0 +1,67 @@
+{:kind :current-imported-producer-controls-port
+ :owner :ACC-01
+ :pr 621
+ :original
+ {:head "6c8d70290a52789ba57d5f7c95e5c700cc7ce89c"
+  :tree "f2b5fbcc0a7fa8b2d4ac70cccad72fe874f62f2d"
+  :base "3a1a553dbb1b3eb0ae472f5bf806171c02a71109"
+  :base-tree "c8600e2c52f4ba47f1366fae4035248d23365623"
+  :authored-paths
+  ["bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
+   "specs/accounting-removal/imported-producer-controls-census.edn"
+   "specs/accounting-removal/imported-producer-controls.md"]
+  :original-control-counts {:test-added-lines 33
+                            :census-added-lines 117
+                            :report-added-lines 61}}
+ :current-base
+ {:commit "7201ddcc82ab3bf778f65f9f1f6e6ac821632128"
+  :tree "b1703faa759a7bf0daa79b03258737d1dab80012"
+  :production
+  {:path "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+   :sha256 "492a6076887c6c5be2bbd13520b065c1b9af8cf88c7ffa0f773039d4c64ca74f"
+   :unchanged true}}
+ :test
+ {:path "bootstrap/clojure/test/gravity/self_hosting/sh08_imported_producer_controls_test.clj"
+  :namespace gravity.self-hosting.sh08-imported-producer-controls-test
+  :names
+  [imported-producer-identity-and-schema-controls-current
+   imported-producer-finite-data-does-not-authenticate-current]
+  :sha256 "d539b8c6a206fb8478530ba83becc2ab42fc19b367b9adf8d2c7382208fec035"
+  :line-count 81
+  :tests 2
+  :assertions 12
+  :failures 0
+  :errors 0}
+ :retained-controls
+ [:memoized-request-equality
+  :substituted-request-rejection
+  :active-cycle-rejection
+  :retained-producer-membership
+  :forged-producer-membership-rejection
+  :duplicate-producer-rejection
+  :schema-version-vector-and-extra-key-rejection
+  :requests-4097
+  :finite-data-scalar-16777217
+  :finite-data-is-not-producer-authentication]
+ :current-api-adaptation
+ {:producer-arity 4
+  :retired-entrypoint :sh08-carrier-preflight
+  :replacement :sh08-im-inputs-check
+  :production-changed false
+  :allowance-api-restored false}
+ :evidence
+ {:execution :normalized-c7-kernel-data
+  :source-authentication :not-established
+  :public-c7-acceptance :not-established
+  :independent-acceptance :pending
+  :integration :pending}
+ :nonclaims
+ [:whole-imported-accounting
+  :authenticated-producer
+  :genuine-compiler-runtime-acceptance
+  :PR502-closure
+  :main-integration
+  :release
+  :self-hosting]
+ :historical-source-report-preserved true
+ :report-self-hash :not-recorded}
