@@ -35,7 +35,7 @@
  :source-commit "bc86db6b485d8091e4a18a9be57392991174eebe",
  :inputs
  [{:path
-   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity",
    :byte-count 1936277,
    :sha256
    "040e6749f6974aa33448297f9c55a1ad653ab5ab873bae7368c56b0b098d64de"}

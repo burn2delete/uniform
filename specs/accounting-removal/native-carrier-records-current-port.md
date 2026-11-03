@@ -10,7 +10,11 @@ accounting is removed. Native DATA validity is distinct from B47 authority.
 The clean source checkpoint is `bc86db6b485d8091e4a18a9be57392991174eebe`,
 tree `ea1bce1936f6c2ba60f9a91ea3ebf5c2f1119653`, composed over main
 `7201ddcc82ab3bf778f65f9f1f6e6ac821632128`. The accompanying EDN records
-the source hashes and exact commands. No frozen compiler pin is renewed.
+the historical source hashes and exact commands. After the current main
+relocation, the active C7 source is
+`language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity`; the
+older bootstrap path remains historical input only. No frozen compiler pin is
+renewed.
 
 ## Original path accounting
 
