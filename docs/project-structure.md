@@ -63,10 +63,11 @@ Relocation is incremental and preserves runnable development paths:
 6. repeat by compiler dependency order, then runtime, library, build, and
    tooling dependencies.
 
-The first candidate is `bootstrap/gravity/src/gravity/checked_core.gravity`,
-whose semantic ownership and temporary Clojure transport boundary are already
-documented in `docs/development-verification.md`. This candidate is a future
-relocation slice; this map does not claim it has moved. The mixed
+The first relocated candidate is
+`language/compiler/src/gravity/checked_core.gravity`, whose semantic ownership
+and temporary Clojure transport boundary are documented in
+`docs/development-verification.md`. Its legacy bootstrap path is retired as a
+current source path; historical evidence continues to retain the old path. The mixed
 `bootstrap/gravity/p15_s23/compiler.gravity` and self-hosting orchestrators
 must be split by behavior before they are candidates for relocation.
 

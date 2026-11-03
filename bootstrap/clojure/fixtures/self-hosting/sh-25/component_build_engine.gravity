@@ -210,7 +210,7 @@
     :dependencies [:core-semantics]}
    {:component-id :checked-core
     :category :checked-core
-    :source-path "bootstrap/gravity/src/gravity/checked_core.gravity"
+    :source-path "language/compiler/src/gravity/checked_core.gravity"
     :dependencies [:core-lowering :authenticated-envelope]}
    {:component-id :checked-core-pipeline
     :category :checked-core

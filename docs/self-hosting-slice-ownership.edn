@@ -256,7 +256,7 @@
   "bootstrap/gravity/src/gravity/bootstrap/reader.gravity" :sh-reader
   "bootstrap/gravity/src/gravity/reader.gravity" :sh-reader
   "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity" :sh-syntax
-  "bootstrap/gravity/src/gravity/checked_core.gravity" :sh-core
+  "language/compiler/src/gravity/checked_core.gravity" :sh-core
   "bootstrap/gravity/src/gravity/effects.gravity" :sh-effects
   "bootstrap/gravity/src/gravity/runtime.gravity" :sh-runtime
   "bootstrap/gravity/src/gravity/sh07_b51/producer_a.gravity" :sh-core
