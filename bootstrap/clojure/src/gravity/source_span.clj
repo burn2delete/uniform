@@ -51,7 +51,7 @@
                    :reader-state]}
    :dependency-direction
    {:requires ['clojure.core 'java.lang.String
-               'java.nio.charset.StandardCharsets]
+               'java.nio.charset.StandardCharsets 'java.util.regex.Pattern]
     :forbids ['gravity.bootstrap 'gravity.diagnostics]}
    :test-owner
    'gravity.source-span-test/source-position-namespace-contract-is-narrow-and-acyclic
@@ -107,6 +107,9 @@
   (alength (.getBytes ^String text
                       java.nio.charset.StandardCharsets/UTF_8)))
 
+(def ^:private ^java.util.regex.Pattern non-ascii-prefix-pattern
+  (java.util.regex.Pattern/compile "[^\\x00-\\x7f]"))
+
 (defn- utf8-prefix-byte-count
   [^String text end]
   ;; Match Java's UTF-8 replacement byte for an unpaired surrogate, including
@@ -115,7 +118,9 @@
   (if (or (nil? text) (neg? end))
     (utf8-byte-count (subs text 0 end))
     (let [end (int end)]
-      (loop [index 0 total 0]
+      (if (not (.find (.region (.matcher non-ascii-prefix-pattern text) 0 end)))
+        (long end)
+        (loop [index 0 total 0]
         (if (= index end)
           total
           (let [unit (int (.charAt text index))]
@@ -126,7 +131,7 @@
                    (<= 0xdc00 (int (.charAt text (inc index))) 0xdfff))
               (recur (+ index 2) (+ total 4))
               (<= 0xd800 unit 0xdfff) (recur (inc index) (inc total))
-              :else (recur (inc index) (+ total 3)))))))))
+              :else (recur (inc index) (+ total 3))))))))))
 
 (defn source-location
   "Build a source location with one-based coordinates and prefix offsets."

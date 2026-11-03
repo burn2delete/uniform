@@ -143,6 +143,17 @@
   (is (= {:line 1 :column 2.5 :char 1.5 :byte 1}
          (source-span/source-location "abc" [0] 1 2.5))))
 
+(deftest ascii-and-nonascii-boundaries-retain-offset-values-and-native-type
+  (let [ascii (apply str (map char (range 128)))]
+    (doseq [text [ascii (str ascii "\u0080") (str ascii "\uD83D\uDE42")
+                  (str ascii "\uD800")]
+            index (range (inc (count text)))]
+      (let [byte-offset (:byte (source-span/source-location text [0] 1 (inc index)))]
+        (is (= (alength (.getBytes ^String (subs text 0 index)
+                                  java.nio.charset.StandardCharsets/UTF_8))
+               byte-offset))
+        (is (= Long (class byte-offset)))))))
+
 (deftest source-position-namespace-contract-is-narrow-and-acyclic
   (let [contract-var
         (get (ns-interns 'gravity.source-span) 'namespace-contract)
