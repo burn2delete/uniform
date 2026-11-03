@@ -27,9 +27,8 @@
                          (=
                            :valid
                            (:status
-                             (p15-s23-reference-runtime-bounded-utf8-count
-                               (:source-text context)
-                               p15-s23-reference-runtime-max-context-source-bytes)))
+                             (p15-s23-reference-runtime-unbounded-utf8-count
+                               (:source-text context))))
                          (keyword? (:requested-target context))
                          (contains?
                            stage2-runtime-derived-source-targets
