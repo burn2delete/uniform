@@ -5,7 +5,9 @@
 This port removes the C3 graph and container accounting ceilings while
 preserving shape, arity, reference order, uniqueness, Unicode, metadata,
 provenance, source identity, native-class, callback, cycle, and tamper checks.
-The two Gravity source files are byte-identical to original PR512.
+At the historical composed-source tuple recorded below, the two Gravity source
+files were byte-identical to original PR512. That historical statement is not
+the reviewed immutable PR512 source tuple recorded at the end.
 
 | Item | Commit | Tree |
 | --- | --- | --- |
@@ -44,6 +46,10 @@ main's Core/C11 alias cleanups and CI changes. The source evidence is reused
 with this explicit conservation; no repeated execution is implied.
 
 ## Source identities
+
+The following table is the historical source-port tuple for the composed
+candidate recorded above. Its byte counts and hashes are immutable historical
+observations; they are not the reviewed immutable source identity at the end.
 
 | Source | Bytes | SHA-256 |
 | --- | --- | --- |
@@ -116,10 +122,18 @@ comparison, and the pinned/default refusal cases remain part of the record.
 
 ## Remaining work and nonclaims
 
-The Reader revision byte ceiling `1048576` remains in this source and is the
-separate PR566 delta. The structural projection control does not prove
-acceptance above that ceiling. PR544's additional selected-interface controls
-and PR580's selected-revision/process evidence remain separately reviewable.
+The historical source-port tuple above recorded that the Reader revision byte
+ceiling `1048576` remained in that historical source and deferred its removal
+to the separate PR566 delta. That statement is historical. At the reviewed
+immutable PR512 source tuple `c46ddb408e9503e6960fd12ff6daedf403ee895c`
+(tree `e71c1899a3f3c5985f1084895b9204764c4bca07`), C3 Syntax no longer enforces
+`source-byte-count <= 1048576` in `c3-reader-source-revision?`; it retains the
+nonnegative-integer and identity/schema checks. The existing PR566 evidence
+remains separately scoped to its Reader revision-length controls and does not
+prove large-source construction, whole-pipeline acceptance, canonical
+admission, release, self-hosting, or seed-retirement. PR544's additional
+selected-interface controls and PR580's selected-revision/process evidence
+remain separately reviewable.
 
 This receipt grants the finite C3 development evidence above. It grants no
 canonical admission, C12, large-Wasm, native-C, migration, release,
@@ -305,3 +319,26 @@ passed 2 tests / 12 assertions. Pinned clj-kondo 2025.10.23 reported zero
 findings on the changed authenticated owner-prefix test. The full hosted
 lanes, native-C, PMK, broker and migration claims remain outside this
 receipt; no restricted route was retried and no admission hash was refreshed.
+
+## Reviewed immutable PR512 source identity
+
+The reviewed immutable PR512 source tuple is commit
+`c46ddb408e9503e6960fd12ff6daedf403ee895c`, tree
+`e71c1899a3f3c5985f1084895b9204764c4bca07`. At this exact tuple, the Gravity
+source identities are:
+
+| Source | Bytes | SHA-256 |
+| --- | --- | --- |
+| `bootstrap/gravity/src/gravity/bootstrap/syntax.gravity` | 78643 | `a9252e729c2bf830c157708352b9f760e6cb959bf621eb4d5893fdc968074ffa` |
+| `bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity` | 4062 | `31241b6fafa5ff7ab7eefad272397b6141d9c1166cb12c3529bf6803147cb585` |
+
+At this reviewed source tuple, Syntax removes the
+`source-byte-count <= 1048576` admission check from
+`c3-reader-source-revision?` while retaining its nonnegative integer, exact-key,
+schema, artifact, function, digest, and binding/revision identity checks. The
+historical table and ceiling statement above remain preserved as evidence for
+their original tuple. The existing PR566 report at
+`docs/artifacts/phase-06/reports/syntax-reader-revision-length-current-port.md`
+is evidence only for its separately owned Reader revision-length controls and
+their focused negative cases; it is not a claim of whole-pipeline,
+canonical-admission, release, self-hosting, or seed-retirement authority.

@@ -11,6 +11,7 @@
 
 (def view-path "specs/requirement-reconciliation/phase-02-safety/current-source-view.edn")
 (def proposal-path "specs/requirement-reconciliation/phase-02-safety/proposal.edn")
+(def manifest-path "contracts/requirement-reconciliation.edn")
 (def zero-hex (apply str (repeat 64 "0")))
 
 (defn require! [condition message]
@@ -105,10 +106,11 @@
                   (str "Safety transition marker is not the authenticated Runtime task marker: " path))
         (verify-commit-tree! from)
         (verify-commit-tree! to)
-        (require! (= (:commit to) current-commit)
-                  (str "Safety transition target commit is not current source: " path))
-        (require! (= (:tree to) current-tree)
-                  (str "Safety transition target tree is not current source: " path))
+        (require! (= (:sha256 to)
+                     (sha256 (git-text current-commit path)))
+                  (str "Safety transition target bytes are not present in composed current source: " path))
+        (require! (string? current-tree)
+                  (str "Safety composed current source tree is missing: " path))
         (require! (= (:sha256 to) (:sha256 entry))
                   (str "Safety transition target hash is not current entry: " path))
         (let [from-text (git-text (:commit from) path)
@@ -119,6 +121,8 @@
                     (str "Safety transition source bytes drifted: " path))
           (require! (= (:sha256 to) (sha256 to-text))
                     (str "Safety transition target bytes drifted: " path))
+          (require! (= to-text (git-text current-commit path))
+                    (str "Safety transition target differs from composed current source: " path))
           (require! (not= from-text to-text)
                     (str "Safety transition does not identify a source change: " path))
           (require! (= to-text (slurp path))
@@ -149,6 +153,42 @@
     :aggregate-adoption :denominator :release :seed-retirement
     :current-task-criteria :independent-review :integration})
 
+(defn validate-domain-manifest-transition! [view]
+  (let [transition (get-in view [:current-source :domain-task-source-transition])
+        path (:path transition)
+        manifest-text (slurp manifest-path)
+        pinned-manifest (git-text (:manifest-commit transition) manifest-path)
+        manifest (edn/read-string manifest-text)
+        bridge (first (filter #(= path (:path %))
+                              (:task-source-version-bridges manifest)))
+        current-entry (first (filter #(= path (:path %))
+                                    (get-in view [:current-source :task-sources])))]
+    (require! (= "specs/domains-workflow/tasks.md" path)
+              "Safety Domain transition path changed")
+    (verify-commit-tree! {:commit (:manifest-commit transition)
+                          :tree (:manifest-tree transition)})
+    (require! (= (:manifest-sha256 transition)
+                 (sha256 pinned-manifest)
+                 (sha256 manifest-text))
+              "Safety current manifest transition bytes drifted")
+    (require! (= (:bridge transition) bridge)
+              "Safety Domain manifest bridge drifted")
+    (require! (= (:current-ref transition)
+                 (:current-ref bridge))
+              "Safety Domain bridge current source commit is not authenticated")
+    (require! (= (:current-tree transition)
+                 (:current-tree bridge))
+              "Safety Domain bridge current source tree is not authenticated")
+    (require! (= (:current-sha256 transition)
+                 (:current-sha256 bridge)
+                 (:sha256 current-entry)
+                 (sha256 (git-text (:current-ref transition) path))
+                 (sha256 (git-text (get-in view [:current-source :commit]) path)))
+              "Safety Domain current source bytes are not authenticated")
+    (require! (= (:change-class transition) (:change-class bridge))
+              "Safety Domain current transition qualification drifted")
+    true))
+
 (defn validate-view! [view proposal]
   (require! (= :gravity/noncanonical-safety-current-source-view (:kind view))
             "Wrong safety current-source-view kind")
@@ -172,6 +212,7 @@
         proposal-pin (get-in view [:historical-source :proposal])]
     (verify-commit-tree! proposal-pin)
     (verify-commit-tree! {:commit current-commit :tree (get-in view [:current-source :tree])})
+    (validate-domain-manifest-transition! view)
     (validate-versioned-task-source-transition! view)
     (require! (= 6 (count historical) (count base) (count current))
               "Safety task source population changed")
@@ -262,6 +303,11 @@
      :current-source-pair-tamper
      (rejected? #(validate-view! (assoc-in view [:current-source :task-sources 0 :sha256] zero-hex)
                                  proposal))
+     :current-domain-manifest-transition-tamper
+     (rejected? #(validate-view!
+                  (assoc-in view [:current-source :domain-task-source-transition
+                                  :bridge :current-sha256] zero-hex)
+                  proposal))
      :runtime-transition-forged-id-tamper
      (rejected? #(validate-view!
                   (update-in view [:current-source :versioned-task-source-transitions 0 :changed-record-ids]
@@ -307,4 +353,5 @@
           :unique-task-interfaces (get-in view [:expected :unique-task-interfaces])
           :implementation-acceptance :unassessed
           :canonical-adoption :pending
-          :independent-review :pending})))
+          :independent-review :pending}))
+  (shutdown-agents))
