@@ -39,13 +39,17 @@ in `../accounting-removal/pr697-current-port.edn`.
 ## Conformance and acceptance limits
 
 With the pinned `clj-kondo` 2025.10.23 directory on `PATH`, the facade/context
-controls passed 26 tests/488 assertions with zero failures/errors and zero
-blocking warnings/errors. The language-boundary gate passed 6 tests/11
+controls passed 27 tests/494 assertions with zero failures/errors and zero
+blocking warnings/errors. The progress runner composition controls passed 6
+tests/28 assertions, including timing/result-delivery chaining; the interval
+and isolation controls passed 4/15 and 2/7. The selected sh06 digest hook
+passed 1 test/5 assertions. The language-boundary gate passed 6 tests/11
 assertions. The supplied repository-wide `cljfmt` check remains nonzero for
 the three original PR697 control files in its pre-format source checkpoint;
-the formatter-only repair now passes all `tools/ci` files. The prior nonpass is
-retained as historical evidence in the receipt. These are finite source/data
-controls: they do not load Bootstrap, execute a genuine Reader, run native
-code, dispatch hosted CI, or reclassify the historical PR697 static failure.
+the formatter-only repair now passes all `tools/ci` files. The prior nonpass
+is retained as historical evidence in the receipt. These are finite
+source/data controls: they do not load Bootstrap, execute a genuine Reader,
+run native code, dispatch hosted CI, or reclassify the historical PR697 static
+failure.
 Independent acceptance of this exact checkpoint and normal changed-head CI
 remain required.

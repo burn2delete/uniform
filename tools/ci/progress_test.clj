@@ -1,5 +1,6 @@
 (ns ci.progress-test
   (:require [clojure.edn :as edn]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.test :refer [deftest is run-tests]]))
 
@@ -124,6 +125,53 @@
     (is (not-any? #{"--progress"}
                   (mapcat #(nth (first (ci/commands %)) 2)
                           ["bootstrap" "checked-core-runtime" "static"])))))
+
+(deftest composition-preserves-timing-and-single-result-delivery
+  (let [name 'gravity.progress-composition-test
+        fixture (create-ns name)
+        events (atom [])
+        directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "uniform-progress-composition-"
+                            (make-array java.nio.file.attribute.FileAttribute 0)))
+        receipt (io/file directory "timing.edn")
+        result-file (io/file directory "result.edn")
+        test-vars [(str name "/a") (str name "/b")]
+        selection {:namespaces [(str name)] :test-vars test-vars :fail-fast? false}
+        delivery {:file (.getAbsolutePath result-file)
+                  :limit-bytes 100000
+                  :request {:id "composition"
+                            :source {:kind :synthetic}
+                            :selection selection}}]
+    (doseq [symbol '[a b]]
+      (let [v (intern fixture symbol nil)]
+        (alter-meta! v assoc :test (fn [] (swap! events conj symbol)))))
+    (try
+      (let [exit-code
+            (binding [*out* (java.io.StringWriter.)
+                      *err* (java.io.StringWriter.)
+                      runner/*machine-result-sink* nil]
+              (with-redefs-fn
+                {#'runner/selected-namespace-records
+                 (fn [_] [{:namespace name :path "synthetic-only"}])
+                 #'clojure.core/require
+                 (fn [requested] (assert (= name requested)) (swap! events conj :load))}
+                #(runner/run-cli! ["--namespace" (str name) "--progress"
+                                   "--timing-receipt" (.getAbsolutePath receipt)
+                                   "--machine-result" (pr-str delivery)])))]
+        (is (= 0 exit-code))
+        (is (= [:load 'a 'b] @events))
+        (is (.isFile receipt))
+        (is (.isFile result-file))
+        (let [timing (edn/read-string (slurp receipt))
+              delivered (edn/read-string (slurp result-file))]
+          (is (= selection (:selection timing)))
+          (is (= :passed (get-in timing [:outcome])))
+          (is (= :passed (get-in delivered [:result :outcome])))
+          (is (= selection (get-in delivered [:request :selection])))))
+      (finally
+        (remove-ns name)
+        (doseq [file (reverse (file-seq directory))]
+          (.delete file))))))
 
 (let [result (run-tests)]
   (System/exit (if (zero? (+ (:fail result) (:error result))) 0 1)))
