@@ -22,6 +22,7 @@
             [gravity.backend.llvm]
             [gravity.backend.mlir]
             [gravity.backend.gpu]
+            [gravity.backend.hdl]
             [gravity.types]
             [gravity.resolution]
             [gravity.macro-run-storage :as macro-run-storage]

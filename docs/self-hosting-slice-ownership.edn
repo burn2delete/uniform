@@ -162,6 +162,10 @@
   {:namespace gravity.backend.gpu :owner :sh-target-gpu :slice "SH-18"
    :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00246-b7-document-source-artifact.clj"
    :test-path "bootstrap/clojure/test/gravity/backend/gpu/pipeline_test.clj"}
+  "bootstrap/clojure/src/gravity/backend/hdl.clj"
+  {:namespace gravity.backend.hdl :owner :sh-target-hdl :slice "SH-18"
+   :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00250-b8-document-source-artifact.clj"
+   :test-path "bootstrap/clojure/test/gravity/backend/hdl/pipeline_test.clj"}
   "bootstrap/clojure/src/gravity/optimization.clj"
   {:namespace gravity.optimization :owner :sh-optimization :slice "SH-16"
    :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00750-p15-s23-c13-comparison-fold-reconstruction.clj"
@@ -237,6 +241,7 @@
   "bootstrap/clojure/src/gravity/backend/llvm.clj" :sh-target-llvm
   "bootstrap/clojure/src/gravity/backend/mlir.clj" :sh-target-mlir
   "bootstrap/clojure/src/gravity/backend/gpu.clj" :sh-target-gpu
+  "bootstrap/clojure/src/gravity/backend/hdl.clj" :sh-target-hdl
   "bootstrap/clojure/src/gravity/optimization.clj" :sh-optimization
   "bootstrap/gravity/src/gravity/backend/b10_workflow_graph_backend_design.gravity" :sh-target-workflow
   "bootstrap/gravity/src/gravity/backend/b11_query_relational_backend_design.gravity" :sh-target-query
@@ -492,6 +497,8 @@
   {:namespace gravity.backend.mlir.pipeline-test :slice "SH-18" :owner :sh-target-mlir}
   "bootstrap/clojure/test/gravity/backend/gpu/pipeline_test.clj"
   {:namespace gravity.backend.gpu.pipeline-test :slice "SH-18" :owner :sh-target-gpu}
+  "bootstrap/clojure/test/gravity/backend/hdl/pipeline_test.clj"
+  {:namespace gravity.backend.hdl.pipeline-test :slice "SH-18" :owner :sh-target-hdl}
   "bootstrap/clojure/test/gravity/optimization/pipeline_test.clj"
   {:namespace gravity.optimization.pipeline-test :slice "SH-16" :owner :sh-optimization}
   "bootstrap/clojure/test/gravity/runtime/pipeline_test.clj"

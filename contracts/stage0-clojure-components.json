@@ -244,6 +244,14 @@
       "test": {"path": "bootstrap/clojure/test/gravity/backend/gpu/pipeline_test.clj", "namespace": "gravity.backend.gpu.pipeline-test", "registration": "standalone"}
     },
     {
+      "id": "hdl-diagnostic-data",
+      "kind": "production-stage-helper",
+      "owner": "sh-target-hdl",
+      "source": {"path": "bootstrap/clojure/src/gravity/backend/hdl.clj", "namespace": "gravity.backend.hdl"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00250-b8-document-source-artifact.clj", "namespace": "gravity.bootstrap", "owner": "sh-target-hdl"},
+      "test": {"path": "bootstrap/clojure/test/gravity/backend/hdl/pipeline_test.clj", "namespace": "gravity.backend.hdl.pipeline-test", "registration": "standalone"}
+    },
+    {
       "id": "c-emission",
       "kind": "production-stage-helper",
       "owner": "sh-target-c",
