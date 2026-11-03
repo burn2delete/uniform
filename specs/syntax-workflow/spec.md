@@ -51,6 +51,8 @@ specification changes do not enable or reroute a restricted live invocation.
 
 The [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria) route L4/L16/C4/SAFE12 through real macro/syntax/provider/safety/equivalence outcomes in existing tasks. They preserve the selected-engine cache replacement boundary and finite historical review scopes; current independent source/interface acceptance and complete implementation remain pending.
 
+The [complete syntax source criteria](plan.md#complete-syntax-source-criteria) refine all C3 construction, transformation, fact-lifecycle, verifier/serialization, artifact and diagnostic obligations in the five existing tasks. The shared Pipeline evidence owner is preserved; current source/interface acceptance and actual implementation remain unassessed.
+
 ## Historical task-authority-transfer specification
 
 # Feature specification: Syntax implementation task authority

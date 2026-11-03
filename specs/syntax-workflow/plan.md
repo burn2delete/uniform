@@ -48,6 +48,39 @@ Use the [macro producer and consumer order](../expand-workflow/plan.md#macro-pro
 
 Task bodies/statuses and frozen review subjects stay unchanged. Declared interfaces permit local construction; actual composition, acceptance and release retain their separate required results. Current independent source/interface acceptance is pending and every actual restriction remains.
 
+## Complete syntax source criteria
+
+Direct review of the complete [C3 contract](../../docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md) refines all five existing Syntax tasks; it does not adopt all L1/L3/L4/type/effect/safety behavior by association. The existing `pipeline` evidence-preservation criterion remains unchanged and consumes actual Syntax facts. Retain all five original C3 owner identities, including that shared pipeline owner; full attached owner predicates and current independent acceptance remain unassessed.
+
+| Existing task | Complete source outcome |
+| --- | --- |
+| `syntax/current-evidence-and-remaining-work/syntax1-construct-canonical-syntax` | Actual immutable construction, all fifteen source form families, context and semantic identity. |
+| `syntax/current-evidence-and-remaining-work/syntax2-preserve-transformations` | New linked values, complete generated/source origins, visible hygiene/capture and explicit metadata changes. |
+| `syntax/current-evidence-and-remaining-work/syntax3-invalidate-facts` | Actual producer/version/condition-bound attachment, preservation, invalidation and stale-use refusal. |
+| `syntax/current-evidence-and-remaining-work/syntax4-serialize-and-verify` | Real field/reference/context/phase verification and complete source/generated/shared-origin round-trip. |
+| `syntax/current-evidence-and-remaining-work/syntax5-integrate-consumers` | All eight actual artifacts, nine diagnostic families and selected producer/consumer execution. |
+| `pipeline` | Existing unchanged cross-stage evidence-preservation and replacement/refusal contract. |
+
+### Source construction and generated transformation
+
+Actual C2 tokens, form trees, seeds and source units/maps precede source construction. Source namespace shape is structural context; later resolved bindings and type/effect/safety facts come from their actual owners. Available immutable carrier, transformation, fact-invalidation, serializer/verifier and diagnostic interfaces precede macro invocation. Later actual generated products exercise those operations; their final conformance receipt cannot be their own construction input. Use the [existing macro result order](../expand-workflow/plan.md#macro-producer-and-consumer-order), preserving the D1/C1/C5/C6 order decision.
+
+Transformation cases must vary producer/version/input/step/reason/build context, source/generated spans, caller profile, metadata and explicit capture. Compare unchanged input values and linked successors. Cover reader/macro/compiler-pass/provider/tool origin kinds where claimed. Generated syntax stays in caller profile unless the producing contract explicitly defines a transition. Actual privileged capture and build grants remain with Expand/Auth; carried declarations do not issue authority.
+
+### Facts, identity and verification cases
+
+Exercise all ten named fact categories with real producer/version/invalidation conditions: tentative namespace; declared profile, effects and capabilities; safety mode; resolved binding; type, effect and ownership facts; proof obligations. Change an affecting input or transformation, show stale use rejected before consumption, and show unaffected facts retained only when valid. Regenerated facts require actual owner computation. A recorded invalidation request, fixed demonstration ledger or status=:current is insufficient. Do not turn the example's version=1 into a universal fact-version restriction.
+
+Identity cases distinguish semantic field/origin changes from tooling-only trivia; an artifact kind may require trivia in its identity, so no universal trivia-insensitive rule is invented. Round-trip every required form family and genuine source/generated/shared-origin graph through the selected real serializer/deserializer and verifier. Compare reconstructed semantics, identities and complete context; a summary payload that omits hygiene or full origins cannot establish artifact round-trip. Alternative observable-equivalent representations may use different physical encodings. Preserve actual reference and type/arity/index/Unicode/target rules; remove quota-only allowances rather than raising or renaming them.
+
+### Actual artifacts, diagnostics and evidence
+
+Supply the syntax schema, object stream, hygiene map, origin graph, metadata ledger, generated report, verification report and serialization fixture as actual products. Exercise each of the nine C3 diagnostic families against the faulty artifact, including loss/substitution of id/span/producer/origin/hygiene/capture/metadata/fact/version/phase and failed round-trip. Verifier failures stop expansion and analysis. Retain syntax id, form kind, phase, producer, source span, origin chain, hygiene summary and remediation, and both producing and generated locations. Fixture metadata requesting a refusal is not evidence that malformed syntax was detected.
+
+Actual selected Reader -> Syntax -> Expand/Resolve runs are composition evidence. Pipeline consumes real preserved/invalidated facts; Build consumes actual semantic keys and invalidation decisions; diagnostics/tools consume actual syntax/generated anchors and failures; bootstrap comparison consumes actual serialized subjects. Declared interfaces allow local construction without completed Build, every tool/runtime family, seed retirement or final release. Preserve all source reservations, the Reader/paired/provider/native/probe/replay/migration/private-store/signing/publication holds and the stopped handoff. No restricted operation is run or transferred.
+
+Selected static inspection finds real Gravity construction, generated templates, reference verification and serializer/deserializer operations within the declared SH-04 slice, alongside hosted positional projection, fixed demo metadata/fact ledgers and finite-field verifier checks. The C3 facade disclaims authoritative credit. Existing Gravity source retains project node/depth/width/entry/byte limits as accounting-removal debt. These findings neither erase narrow accepted evidence nor establish general C3 conformance. Current source/task entailment is an author proposal; independent current review, implementation acceptance and global reconciliation remain pending.
+
 ## Historical task-authority-transfer plan
 
 # Plan: Syntax task authority and roadmap navigation

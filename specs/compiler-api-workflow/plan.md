@@ -193,6 +193,12 @@ Use the [macro producer and consumer order](../expand-workflow/plan.md#macro-pro
 
 Task bodies/statuses and frozen review subjects stay unchanged. Declared interfaces permit local construction; actual composition, acceptance and release retain their separate required results. Current independent source/interface acceptance is pending and every actual restriction remains.
 
+## Complete syntax source interface
+
+Use the [complete syntax source criteria](../syntax-workflow/plan.md#complete-syntax-source-criteria). Keep the unchanged pipeline evidence-preservation criterion and actual preserved/invalidated/replaced Syntax facts; equivalent fused-pass boundaries and the recorded source-order decision remain required.
+
+Task identities/statuses, prior source/review subjects and actual restrictions remain unchanged. Construction, actual composition, independent acceptance and release require their respective real subjects; these source interfaces confer no implementation acceptance.
+
 ## Historical workflow-transfer and source-composition plan
 
 # Implementation plan: Compiler API workflow migration

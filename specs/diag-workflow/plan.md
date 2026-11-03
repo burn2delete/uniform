@@ -126,6 +126,12 @@ Use the [macro producer and consumer order](../expand-workflow/plan.md#macro-pro
 
 Task bodies/statuses and frozen review subjects stay unchanged. Declared interfaces permit local construction; actual composition, acceptance and release retain their separate required results. Current independent source/interface acceptance is pending and every actual restriction remains.
 
+## Complete syntax source interface
+
+Use the [complete syntax source criteria](../syntax-workflow/plan.md#complete-syntax-source-criteria). Consume actual Syntax verifier failures with all C3 fields and both generated/source origins; a diagnostic catalog or fixture-requested failure is not detection of the faulty graph.
+
+Task identities/statuses, prior source/review subjects and actual restrictions remain unchanged. Construction, actual composition, independent acceptance and release require their respective real subjects; these source interfaces confer no implementation acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Diagnostics task authority

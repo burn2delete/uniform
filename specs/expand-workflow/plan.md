@@ -430,6 +430,12 @@ Preserve L16 engine-specific keys/storage/invalidation/scheduling with shared Bu
 
 Owner products precede independently run suites. Current source/interface entailment, implementation, independent acceptance and global readiness remain pending or unassessed. Preserve all actual C7/C12/paired/provider/plugin/probe/native/callback/device/replay/migration/private-store/signing/publication holds and the stopped handoff. No held operation, reviewer wake, other-chat message or aggregate publication occurs. The first existing implementation increment remains Reader contract coverage.
 
+## Complete syntax source interface
+
+Use the [complete syntax source criteria](../syntax-workflow/plan.md#complete-syntax-source-criteria). Consume actual verified immutable Syntax operations and returned-graph validation; expansion-specific hygiene/trace facts remain Expand products, not Syntax-assigned results.
+
+Task identities/statuses, prior source/review subjects and actual restrictions remain unchanged. Construction, actual composition, independent acceptance and release require their respective real subjects; these source interfaces confer no implementation acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Expand task authority
