@@ -37,7 +37,7 @@
        (catch clojure.lang.ExceptionInfo error error)))
 
 (deftest malformed-native-artifact-emits-an-actual-owner-refusal
-  (let [path (.getCanonicalPath (io/file "bootstrap/gravity/src/gravity/backend/b10_workflow_graph_backend_design.gravity"))
+  (let [path (.getCanonicalPath (io/file "language/compiler/src/gravity/backend/b10_workflow_graph_backend_design.gravity"))
         error (actual-refusal path)
         data (ex-data error)
         file (java.io.File/createTempFile "gravity-workflow-native-diagnostic-" ".edn")]
