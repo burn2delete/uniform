@@ -52,6 +52,18 @@ Status: Open
 Evidence baseline: [Capability runtime contract](../../docs/phase-08-runtime-architecture/122-r11-runtime-capability-enforcement-design.md)
 
 Closing evidence: Denial at actual service hook, redacted diagnostics and source-map preservation. R1/R11/R12: every authority-bearing action carries principal/package/deployment/artifact/source/effect/capability identity; deny by default and check both caller grant and tool/plugin contract; delegated handles are typed, scoped, provider-bound and revocable where supported, with use-after-revocation rejection; preserve grant/deny/delegate/revoke/audit records without secret disclosure and enforce deployment narrowing. Structured event/log/trace/metric/panic/replay bundles retain stable schemas/IDs, runtime/profile/target/source/generated-origin/artifact links, check/proof/replay references, redaction and remediation; sinks require grants, development services are marked, and sampling retains mandatory audit events without changing ordering, replay or safety. Reject ambient authority, ungranted sinks, secret/tainted/raw-memory leakage and lost required mappings/events. Dependencies: Auth supplies policy and grants, Lower supplies artifact/source maps, each runtime family supplies events, and testing/tooling/incident consumers validate bundles; these records do not grant authority or claim execution acceptance.
+
+Hosted source-map boundary (Open; part of this existing Runtime closing task;
+see the [P4 hosted profile contract](../../docs/phase-03-profile-system/049-p4-hosted-profile-specification.md)):
+the input is an actual hosted runtime failure plus emitted source/generated-origin
+mapping for the claimed runtime version, host symbol and lowered artifact. Where
+the declared runtime/profile supports the mapping, resolve the failure to Gravity
+source and the generated-origin chain; where support is conditional, record
+conditional-unavailable explicitly. Reject a missing required map or an
+incorrect origin chain, and do not substitute compiler diagnostic emission for
+actual host-failure evidence. Closing evidence is an executed source-mapping
+fixture with runtime/version/symbol/origin/policy context and the P4-SOURCEMAP
+diagnostic; implementation acceptance remains open.
 <!-- runtime-implementation-tasks:end -->
 
 ## Historical workflow migration record
