@@ -177,7 +177,9 @@
                      (:requirements manifest))]
     (is (= 18 (count bridges)))
     (is (= 608 (count (filter #(= (:sha256 %) (:historical-sha256 (get by-path (:path %)))) refs))))
-    (is (= #{:navigation-only :acceptance-boundary-extension :status-and-development-evidence}
+    (is (= #{:navigation-only :acceptance-boundary-extension
+             :family-criteria-preserved-plus-current-main-safety-criteria
+             :status-and-development-evidence}
            (set (map :change-class bridges))))
     (is (= 3 (count (:changed-records (nth bridges 2)))))
     (is (= [{:id "domain-ir-boundaries"

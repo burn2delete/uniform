@@ -67,16 +67,23 @@
         owner-namespace (binding [*read-eval* false] (read-string owner-text))
         exports (some #(when (= :exports (first %)) (second %)) (drop 2 owner-namespace))
         source-path (path "bootstrap/clojure/fixtures/self-hosting/sh-07/compiler-collection-kind.gravity")
-        source (slurp source-path :encoding "UTF-8")]
+        source (slurp source-path :encoding "UTF-8")
+        reader (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        syntax (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
+        invocation {:reader-source-path reader
+                    :authenticated-envelope-options {:source :development-current}
+                    :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                              :source-path syntax}
+                    :macro-source-mode :development-current}]
     (is (str/ends-with? source (str declaration "\n")))
     (is (= source (slurp (path "bootstrap/clojure/fixtures/self-hosting/sh-07/compiler-collection-kind.qst") :encoding "UTF-8")))
     (is (not (some #{'sh07-collection-kind?} exports)))
     (println {:set-order-phase :current-reader-c5}) (flush)
     (let [resolved (b/compiler-c5-resolution-source-artifact source-path source
                      {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
-                     (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
+                     reader invocation)
           _ (println {:set-order-phase :gravity-core})
-          artifact (b/sh07-core-from-resolution-artifact resolved)
+          artifact (b/sh07-core-from-resolution-artifact resolved invocation)
           boundary (:gravity-core-boundary artifact)
           core (:canonical-core-artifact boundary)
           request (:authenticated-core-request boundary)

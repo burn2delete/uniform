@@ -89,6 +89,122 @@
   (invoke
    @c6-plan 'verify-c6-set-mutation-execution-request [request]))
 
+(defn- expanded-set-request [extension]
+  (let [base (fixture-request "accepted" extension)
+        namespace (:namespace base)
+        depth 33
+        literal-id "node/deep-literal"
+        set-id (fn [index] (str "node/deep-set-" index))
+        child-id (fn [index]
+                   (if (= index (dec depth))
+                     literal-id
+                     (set-id (inc index))))
+        node-source
+        (fn [syntax-id line]
+          {:syntax-id syntax-id
+           :semantic-span {:line-start line
+                           :column-start 1
+                           :line-end line
+                           :column-end 2}
+           :generated-origin []})
+        literal
+        {:artifact :gravity/sh07-core-node
+         :node-id literal-id
+         :core-form :literal
+         :children []
+         :attributes {:literal-kind :integer :value 7}
+         :source (node-source "syntax/deep-literal" 1)}
+        nodes
+        (vec
+         (cons
+          literal
+          (for [index (range depth)]
+            (let [node-id (set-id index)
+                  child (child-id index)]
+              {:artifact :gravity/sh07-core-node
+               :node-id node-id
+               :core-form :set!
+               :children [child]
+               :attributes {:target-binding-id (str "binding/deep-" index)
+                            :target-evaluation :none
+                            :result-policy :unit
+                            :required-effect :state/write}
+               :source (node-source (str "syntax/deep-set-" index)
+                                    (+ 2 index))
+               :evaluation {:kind :value-then-write
+                            :order [{:index 0 :core-node-id child}]}}))))
+        mutations
+        (vec
+         (for [index (range depth)]
+           (let [node-id (set-id index)
+                 child (child-id index)]
+             {:core-node-id node-id
+              :value-core-node-id child
+              :target-binding-id (str "binding/deep-" index)
+              :target-namespace namespace
+              :target-binding-class :namespace
+              :target-location :top-level-var
+              :target-evaluated-children []
+              :evaluated-children [child]
+              :ordered-steps [:evaluate-value :write-target :yield-unit]
+              :result-policy :unit
+              :required-effect :state/write
+              :type-legality :pending-sh08
+              :effect-registry-legality :pending-sh09
+              :effect-profile-capability-legality :pending-sh09
+              :ownership-legality :pending-sh10
+              :safety-classification :pending-sh11})))
+        store
+        (vec
+         (for [index (range depth)]
+           {:binding-id (str "binding/deep-" index)
+            :namespace namespace
+            :location :top-level-var
+            :value 0}))]
+    (assoc base
+           :root-node-id (set-id 0)
+           :nodes nodes
+           :mutations mutations
+           :store store)))
+
+(defn- long-identifier-request [extension]
+  (let [request (fixture-request "accepted" extension)
+        long-id (fn [prefix]
+                  (str prefix (apply str (repeat 257 "x"))))
+        ids (into {}
+                  (map (fn [value] [value (long-id value)])
+                       ["node/literal" "node/inner-set" "node/outer-set"
+                        "syntax/literal" "syntax/inner-set" "syntax/outer-set"
+                        "binding/inner" "binding/outer"]))
+        remap (fn [value] (get ids value value))
+        remap-node
+        (fn [node]
+          (let [node (update node :node-id remap)
+                node (update node :children #(mapv remap %))
+                node (update-in node [:source :syntax-id] remap)]
+            (if (= :set! (:core-form node))
+              (-> node
+                  (update-in [:attributes :target-binding-id] remap)
+                  (update-in [:evaluation :order]
+                             (fn [order]
+                               (mapv #(update % :core-node-id remap)
+                                     order))))
+              node)))
+        remap-mutation
+        (fn [mutation]
+          (-> mutation
+              (update :core-node-id remap)
+              (update :value-core-node-id remap)
+              (update :target-binding-id remap)
+              (update :evaluated-children #(mapv remap %))))
+        remap-store
+        (fn [entry] (update entry :binding-id remap))]
+    (-> request
+        (update :root-node-id remap)
+        (update :nodes #(mapv remap-node %))
+        (update :mutations #(mapv remap-mutation %))
+        (update :store #(mapv remap-store %)))))
+
 (defn- l2-execute [verified]
   (invoke @l2-plan 'execute-l2-set-mutation [verified]))
 
@@ -288,6 +404,48 @@
              (filterv #(= :write-target (:step %))
                       (:trace result)))))))
 
+(deftest sh07-set-mutation-accepts-request-beyond-retired-work-ceilings
+  (let [request (expanded-set-request ".gravity")
+        verified (c6-verify request)
+        result (l2-execute verified)]
+    (is (= 34 (count (:nodes request))))
+    (is (= 33 (count (:mutations request))))
+    (is (= 33 (count (:store request))))
+    (is (= :accepted (:status verified)))
+    (is (= :accepted (:status result)))
+    (is (= :unit (:value result)))
+    (is (= 100 (count (:trace result))))
+    (is (= 33
+           (count (filter #(= :write-target (:step %))
+                          (:trace result)))))
+    (is (= 7
+           (get (store-values result) "binding/deep-32")))))
+
+(deftest sh07-set-mutation-accepts-long-authenticated-identifiers
+  (let [request (long-identifier-request ".gravity")
+        verified (c6-verify request)
+        result (l2-execute verified)]
+    (is (every? #(> (count %) 256)
+                (concat [(:root-node-id request)]
+                        (map :node-id (:nodes request))
+                        (map #(get-in % [:source :syntax-id]) (:nodes request))
+                        (map :core-node-id (:mutations request))
+                        (map :target-binding-id (:mutations request))
+                        (map :binding-id (:store request)))))
+    (is (= :accepted (:status verified)))
+    (is (= :accepted (:status result)))
+    (is (= :unit (:value result)))))
+
+(deftest sh07-set-mutation-rejects-empty-and-nonstring-identifiers
+  (let [request (fixture-request "accepted" ".gravity")]
+    (doseq [[name malformed]
+            [[:empty (assoc request :root-node-id "")]
+             [:nonstring (assoc request :root-node-id 7)]]]
+      (testing (str name)
+        (let [result (c6-verify malformed)]
+          (is (= :rejected (:status result)))
+          (is (= :execution-request-shape
+                 (get-in result [:diagnostics 0 :facts :reason]))))))))
 (deftest sh07-set-mutation-present-nil-literal-remains-a-value
   (doseq [extension extensions]
     (let [request

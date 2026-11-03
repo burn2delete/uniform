@@ -30,7 +30,14 @@
    resolution-artifact
    context
    invocation
-   (checked-core-stage-operations))))
+   (assoc (checked-core-stage-operations)
+          :sh03-reader-authenticated-envelope-options
+          (fn [source-path selected-invocation]
+            (sh03-reader-authenticated-envelope-options
+             source-path
+             (if (map? selected-invocation)
+               (dissoc selected-invocation :macro-source-mode)
+               selected-invocation)))))))
 (defn
  sh07-core-digest-reference-ordinal
  [value]

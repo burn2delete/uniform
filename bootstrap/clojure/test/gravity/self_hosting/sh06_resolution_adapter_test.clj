@@ -157,6 +157,13 @@
 (deftest sh06-current-reader-module-source-and-parent-composition
   ;; New ordinary transport only, not B51 or authoritative reader admission.
   (let [reader (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        syntax (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
+        invocation {:reader-source-path reader
+                    :authenticated-envelope-options {:source :development-current}
+                    :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                              :source-path syntax}
+                    :macro-source-mode :development-current}
+        reader-invocation (dissoc invocation :macro-source-mode)
         library-path (fixture-path "modules" "values" ".gravity")
         caller-path (fixture-path "modules" "consumer" ".gravity")
         empty-inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
@@ -166,7 +173,7 @@
                   (println (pr-str {:current-module-stage label :event :complete
                                     :elapsed-ms (quot (- (System/nanoTime) start) 1000000)})) value))
         observed (try {:value (stage :library #(bootstrap/compiler-c5-resolution-source-artifact
-                                                library-path (slurp library-path) empty-inputs reader))}
+                                                library-path (slurp library-path) empty-inputs reader invocation))}
                       (catch clojure.lang.ArityException error {:arity-error (.getMessage error)}))
         library (:value observed)]
     (is (= :accepted (:status library)) (pr-str (dissoc observed :value)))
@@ -175,13 +182,15 @@
             text (slurp caller-path)
             syntax (stage :caller-c3 #(bootstrap/compiler-c3-syntax-source-artifact
                                       caller-path text (bootstrap/reader-project-context-for-source caller-path)
-                                      nil nil reader))
-            parent (stage :caller-sh05 #(bootstrap/sh05-macro-artifact-from-c3-artifact caller-path syntax))
+                                      nil nil reader reader-invocation))
+            parent (stage :caller-sh05 #(bootstrap/sh05-macro-artifact-from-c3-artifact
+                                         caller-path syntax reader-invocation :development-current))
             caller (stage :caller-from-parent #(bootstrap/sh06-resolution-artifact-from-sh05-artifact
-                                                caller-path parent inputs reader))
+                                                caller-path parent inputs reader invocation))
             replay (stage :caller-from-source #(bootstrap/compiler-c5-resolution-source-artifact
-                                                caller-path text inputs reader))
-            report (stage :fresh-c5 #(bootstrap/sh06-resolution-artifact-verification caller))
+                                                caller-path text inputs reader invocation))
+            report (stage :fresh-c5 #(bootstrap/sh06-resolution-artifact-verification
+                                      caller :gravity.bootstrap/legacy invocation))
             exported (first (filter #(and (= :namespace (:binding-class %)) (= 'identity-i64 (:name %)))
                                     (get-in library [:binding-table :bindings])))
             imported (first (filter #(and (= :import (:binding-class %)) (= 'identity-i64 (:name %)))
