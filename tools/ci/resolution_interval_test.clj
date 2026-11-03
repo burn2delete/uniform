@@ -20,7 +20,7 @@
         invoke (fn [interval body] (helper interval body))]
     (binding [*err* output]
       (with-bindings {#'runner/*progress-state* state
-                     #'runner/*progress-test-context* context}
+                      #'runner/*progress-test-context* context}
         (doseq [interval intervals]
           (invoke interval #(do (swap! events conj interval) :value)))))
     {:events @events :rows (rows output)}))
@@ -65,8 +65,8 @@
         events (atom [])
         result (binding [*err* output]
                  (with-bindings {#'runner/*progress-state* state
-                                #'runner/*progress-test-context*
-                                {:state state :namespace digest-ns :test-var digest-var}}
+                                 #'runner/*progress-test-context*
+                                 {:state state :namespace digest-ns :test-var digest-var}}
                    (try
                      (runner/observe-resolution-digest-interval!
                       :positive-resolve #(swap! events conj :body))
@@ -84,8 +84,8 @@
         calls (atom 0)]
     (binding [*err* output]
       (with-bindings {#'runner/*progress-state* state
-                     #'runner/*progress-test-context*
-                     {:state state :namespace "other" :test-var digest-var}}
+                      #'runner/*progress-test-context*
+                      {:state state :namespace "other" :test-var digest-var}}
         (runner/observe-resolution-digest-interval! :positive-resolve #(swap! calls inc))
         (with-bindings {#'runner/*progress-state* other}
           (runner/observe-resolution-digest-interval! :positive-resolve #(swap! calls inc)))

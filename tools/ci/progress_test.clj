@@ -28,9 +28,9 @@
                (close []))}))
 
 (defn- exercise [{:keys [progress? once-fixture each-fixture body]
-                 :or {once-fixture (fn [f] (f))
-                      each-fixture (fn [f] (f))
-                      body (fn [] nil)}}]
+                  :or {once-fixture (fn [f] (f))
+                       each-fixture (fn [f] (f))
+                       body (fn [] nil)}}]
   (let [name 'gravity.progress-fixture-test
         fixture (create-ns name)
         events (atom [])
@@ -55,7 +55,7 @@
                              (catch Throwable error error))))]
         {:result result :events @events :output output
          :rows (mapv edn/read-string
-                     (remove str/blank? (str/split-lines (str (:text output)))) )})
+                     (remove str/blank? (str/split-lines (str (:text output)))))})
       (finally (remove-ns name)))))
 
 (deftest opt-in-progress-preserves-default-call-sites
@@ -75,8 +75,8 @@
   (let [output (writer false)
         result (with-redefs-fn {#'runner/progress-state
                                 (fn [] (throw (AssertionError. "disabled allocation")))}
-                #(binding [*err* (:writer output)]
-                   (exercise {})))]
+                 #(binding [*err* (:writer output)]
+                    (exercise {})))]
     (is (= 0 (:result result)))
     (is (zero? @(:calls (:output result))))))
 
