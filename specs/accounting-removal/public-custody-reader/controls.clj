@@ -156,4 +156,3 @@
 (assert (zero? (+ (:fail result) (:error result))))
 (assert (nil? (find-ns 'gravity.bootstrap)))
 (prn {:scope :fresh-public-namespace-source-injected-controls :actual-process-C-L-provider-runtime 0})
-

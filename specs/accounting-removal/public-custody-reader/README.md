@@ -38,4 +38,3 @@ behavior, local phase/error/interrupt handling, deferred catalog and reader
 refusals. They start no process and acquire no broker or canonical lock.
 Source acceptance does not establish effective selected configuration, semantic
 execution, creation coverage, original-L authority or terminal containment.
-

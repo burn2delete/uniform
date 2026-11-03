@@ -169,4 +169,3 @@
               {:status :retired :identity identity :receipt-sha256 receipt})))]
     (require! (= :retired (:status result)) :transaction-unconfirmed)
     result))
-
