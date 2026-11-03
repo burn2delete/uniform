@@ -29,6 +29,10 @@
    :accepted-fixtures ["bootstrap/clojure/fixtures/accepted/profile-accepted-meta.gravity"]
    :rejected-fixtures ["bootstrap/clojure/fixtures/rejected/core-unknown-form.gravity"]})
 
+(def ^:private expected-comparison
+  {:modes [:manifest :conformance :diagnostics]
+   :artifact-kinds [:gravity/stage0-core-artifact :diagnostic-stream]})
+
 (def ^:private expected-source-roots
   [{:path "bootstrap/gravity"
     :role :gravity-compiler-source
@@ -277,7 +281,7 @@
                                   (get-in manifest [:source-graph :sha256])))
                  (= expected-scope (:scope manifest))
                  (map? (:execution manifest))
-                 (map? (:comparison manifest)))
+                 (= expected-comparison (:comparison manifest)))
     (fail! :malformed "invalid pinned bootstrap input manifest shape"
            {:manifest manifest}))
   (doseq [root (:source-roots manifest)]

@@ -92,6 +92,10 @@
            ["execution backend"
             (assoc-in (manifest) [:execution :backend] :wasm)
             "BOOT-INPUTS-INCOMPATIBLE"]
+           ["comparison artifact kind"
+            (assoc-in (manifest) [:comparison :artifact-kinds]
+                      [:compiler-artifact :diagnostic-stream])
+            "BOOT-INPUTS-MALFORMED"]
            ["seed artifact"
             (assoc-in (manifest) [:toolchain :seed-artifact-id]
                       "sha256:0000000000000000000000000000000000000000000000000000000000000000")
