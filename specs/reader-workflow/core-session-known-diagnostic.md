@@ -4,9 +4,9 @@
 
 This bounded source increment preserves failed-session control flow while
 making expected-construction outcomes distinguishable. It is based on current
-main `a5b6427cab15f40a8e1d61a6562a04b4a0f63efb`, and the frozen implementation
-is commit `c0bb8f0a8518e1ab535078e6830c87c566782039`, tree
-`2a1ca714446f56c04fd1a9e4483872f024bf2ab2`.
+main `0e2b37cd2eefbab2f02e5898b960f9bbc4100fef`, and the candidate source/test
+freeze is commit `82537d2cb6ec3bb0ac51f30e7c53f9ead2b59b96`, tree
+`4c7b0bb1422cb4170624249408a93515a64cad92`.
 
 The session records an optional `:expected-build-failure` only when expected
 construction returns nil or an ordinary caught Exception. Its closed forms are
@@ -48,17 +48,18 @@ upstream containment.
 
 The source contract EDN declares the five literal diagnostic codes, the
 top-level C6-VERIFY reason allowlist, fail-closed unknown handling and the
-development-only nonclaims. Pinned clj-kondo reports zero errors and warnings
-for the changed tests, and the language-boundary gate passes 6 tests and 11
-assertions.
+development-only nonclaims. Pinned clj-kondo reports zero errors; the large
+SH01 file has 52 existing warnings in unchanged portions and no finding on the
+added ranges, while the smaller changed tests have no warnings. The
+language-boundary gate passes 6 tests and 11 assertions.
 
 ## Conformance, acceptance and limits
 
-The frozen source tuple is base `a5b6427cab15f40a8e1d61a6562a04b4a0f63efb`,
-commit `c0bb8f0a8518e1ab535078e6830c87c566782039`, tree
-`2a1ca714446f56c04fd1a9e4483872f024bf2ab2`. The worktree was clean before
-this documentation commit. Independent affected review and current-main
-composition remain required.
+The frozen source/test tuple is base `0e2b37cd2eefbab2f02e5898b960f9bbc4100fef`,
+commit `82537d2cb6ec3bb0ac51f30e7c53f9ead2b59b96`, tree
+`4c7b0bb1422cb4170624249408a93515a64cad92`. The worktree was clean before
+this documentation metadata commit. Independent affected review and
+current-main composition remain required.
 
 This increment does not claim an actual C5/C6/Core result, ACC09 authority,
 native execution, migration acceptance, release readiness or self-hosting. It

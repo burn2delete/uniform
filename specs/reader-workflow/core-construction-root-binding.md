@@ -4,10 +4,11 @@
 
 This bounded source increment records the private construction invariant needed
 when the selected execution binding is dynamically thread-bound. It is based on
-current main `a5b6427cab15f40a8e1d61a6562a04b4a0f63efb`, and the frozen source
-implementation is commit `c0bb8f0a8518e1ab535078e6830c87c566782039`, tree
-`2a1ca714446f56c04fd1a9e4483872f024bf2ab2`. It changes only the 00897 guard,
-the private 00898 construction fact, and their focused controls.
+current main `0e2b37cd2eefbab2f02e5898b960f9bbc4100fef`, and the candidate
+source/test freeze is commit `82537d2cb6ec3bb0ac51f30e7c53f9ead2b59b96`, tree
+`4c7b0bb1422cb4170624249408a93515a64cad92`. It changes only the 00897 guard,
+the private 00898 construction fact, their focused controls, and the current
+scalar-Set controls recorded below.
 
 The guard still tracks every protected Var and still compares raw roots for all
 ordinary protected Vars. The execution Var now records both its raw root and
@@ -45,24 +46,36 @@ outer identity, raw-root replacement, masked execution-root tampering, another
 dynamic Var and source-hash/legality controls. It also checks that the private
 facts expression records the selected object without changing the outer facts.
 
-The two affected scalar Set controls pass separately: native set rejection is
-42 assertions and conversion rejection, including a foreign `Seqable`, is 55
-assertions. Rejected results expose no partial result or removed accounting
-counter. The existing large-result control remains unchanged; its optional
-local run was stopped after more than five minutes without a result and is not
-claimed as evidence.
+The current SH01 scalar-Set controls pass independently: the list-set runtime
+kernel is 1 test and 100 assertions, the keyword-set membership kernel is 1
+test and 147 assertions, and the literal keyword-set kernel is 1 test and 87
+assertions. They cover explicit helper arities, same-printed-name keyword
+identity, long representable values, raw-native membership, benign metadata,
+cyclic metadata refusal, duplicate native storage, immutability and
+construction observation. These are semantic/native-shape controls, not work
+or input-budget checks. The module census controls remain 1 test and 42
+assertions for native-set rejection and 1 test and 55 assertions for conversion
+rejection, including a foreign `Seqable`; rejected results expose no partial
+result or removed accounting counter.
 
-Pinned clj-kondo reports zero errors and warnings for the changed test files;
-the source fragments retain the repository's existing unresolved cross-file
-symbols when linted in isolation. The language-boundary gate passes 6 tests and
-11 assertions. These are source and injected-fixture controls only.
+The existing large-result control remains unchanged; its optional local run was
+stopped after more than five minutes without a result and is not claimed as
+evidence.
+
+Pinned clj-kondo reports zero errors; the large SH01 file has 52 existing
+warnings in unchanged portions and no finding on the added ranges. The smaller
+changed reader and module-census files have no warnings. The source fragments
+retain the repository's existing unresolved cross-file symbols when linted in
+isolation. The language-boundary gate passes 6 tests and 11 assertions. These
+are source and injected-fixture controls only.
 
 ## Conformance, acceptance and limits
 
-The frozen tuple is base `a5b6427cab15f40a8e1d61a6562a04b4a0f63efb`, source
-commit `c0bb8f0a8518e1ab535078e6830c87c566782039`, and source tree
-`2a1ca714446f56c04fd1a9e4483872f024bf2ab2`. The worktree was clean before
-this documentation commit. An independent affected review is still required.
+The frozen source/test tuple is base `0e2b37cd2eefbab2f02e5898b960f9bbc4100fef`,
+commit `82537d2cb6ec3bb0ac51f30e7c53f9ead2b59b96`, and tree
+`4c7b0bb1422cb4170624249408a93515a64cad92`. The worktree was clean before
+this documentation metadata commit. An independent affected review is still
+required.
 
 The controls do not prove a real Core construction, C5/C6 acceptance, C7/C8
 composition, native behavior, migration authority, release readiness or

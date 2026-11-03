@@ -1,6 +1,11 @@
 {:contract :reader/expected-core-construction-source-trace-v1
  :scope :selected-source-and-injected-session-controls
  :status :development-source-control-only
+ :source-checkpoint
+ {:base "0e2b37cd2eefbab2f02e5898b960f9bbc4100fef"
+  :candidate "82537d2cb6ec3bb0ac51f30e7c53f9ead2b59b96"
+  :tree "4c7b0bb1422cb4170624249408a93515a64cad92"
+  :role :current-development-source-data-only}
  :code-proposal
  {:code-whitelist ["C2-HASH" "C3-ID" "C4-TRACE" "C6-ORIGIN" "C6-VERIFY"]
   :C6-VERIFY-top-level-reason-whitelist
