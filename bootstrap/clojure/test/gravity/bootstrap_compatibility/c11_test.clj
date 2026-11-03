@@ -12,6 +12,28 @@
   [name]
   (str "bootstrap/clojure/fixtures/" name))
 
+(defn- reviewed-c6-fixture
+  [source-path module-name]
+  ;; Reuse the reviewed C6 input shape owned by the C7 tests.  This is a
+  ;; bounded C6 boundary seam: C7 through C11 still execute their real
+  ;; source-artifact pipelines below.
+  (let [fixture-ns (do (require 'gravity.c7-type-checker-test)
+                       (find-ns 'gravity.c7-type-checker-test))
+        artifact @(ns-resolve fixture-ns 'c6-artifact)]
+    (-> artifact
+        (assoc-in [:core-ast-module :module] module-name)
+        (update :core-node-table
+                (fn [nodes]
+                  (mapv (fn [node]
+                          (assoc node
+                                 :source
+                                 {:syntax-id (str "c6-" (:node-id node))
+                                  :span {:source source-path :form-index 0}
+                                  :origin-chain [{:kind :source}]}
+                                 :profile :hosted
+                                 :target :jvm))
+                        nodes))))))
+
 (deftest c11-mir-compatibility-wrappers-preserve-interposition
   (is (= '([module span outcome-by-index index family])
          (:arglists (meta #'bootstrap/c11-mir-operation))))
@@ -206,6 +228,72 @@
                                     [:mir-diagnostic-stream :diagnostics]))))))))
       (is (= 2 @redefined-reader-calls))
       (is (= 2 @redefined-parser-calls)))))
+
+(deftest c11-five-stage-composition-preserves-full-artifact-with-reuse
+  (let [source-path "c11-five-stage.gravity"
+        source-text "(ns c11.five.stage (:profile :hosted) (:target :jvm) (:effects #{:runtime/dynamic-dispatch}))"
+        module-name 'c11.five.stage
+        c6-artifact (reviewed-c6-fixture source-path module-name)
+        default-reader-calls (atom 0)
+        default-parser-calls (atom 0)
+        original-reader bootstrap/read-source-form-records-host-oracle
+        original-parser module-leaf/parse-module
+        default-artifact
+        (with-redefs-fn
+          {#'bootstrap/read-source-form-records-host-oracle
+           (fn [path text]
+             (swap! default-reader-calls inc)
+             (original-reader path text))
+           #'module-leaf/parse-module
+           (fn [& args]
+             (swap! default-parser-calls inc)
+             (apply original-parser args))
+           #'bootstrap/compiler-c6-lowering-source-artifact
+           (fn [_ _] c6-artifact)}
+          (fn []
+            (source-input/with-context
+             #(bootstrap/compiler-c11-mir-source-artifact
+               source-path source-text))))
+        default-diagnostics (:mir-diagnostic-stream default-artifact)
+        default-identity (:artifact-id default-artifact)
+        custom-reader-calls (atom 0)
+        custom-parser-calls (atom 0)
+        default-reader @(ns-resolve 'gravity.bootstrap
+                                   'bootstrap-default-read-source-form-records)
+        default-parser @(ns-resolve 'gravity.bootstrap
+                                   'bootstrap-default-parse-module)
+        custom-reader (fn [path text]
+                        (swap! custom-reader-calls inc)
+                        (default-reader path text))
+        custom-parser (fn [path forms]
+                        (swap! custom-parser-calls inc)
+                        (default-parser path forms))
+        uncached-artifact
+        (with-redefs-fn
+          {#'bootstrap/read-source-form-records custom-reader
+           #'bootstrap/parse-module custom-parser
+           #'bootstrap/compiler-c6-lowering-source-artifact
+           (fn [_ _] c6-artifact)}
+          (fn []
+            (source-input/with-context
+             #(bootstrap/compiler-c11-mir-source-artifact
+               source-path source-text))))]
+    ;; The normal C11 -> C10 -> C9 -> C8 -> C7 chain has five source-artifact
+    ;; entries, but one invocation-local default reader/parser product.
+    (is (= 1 @default-reader-calls))
+    (is (= 1 @default-parser-calls))
+    (is (= :gravity/stage0-c11-mir-spec-artifact
+           (:kind default-artifact)))
+    (is (vector? (:diagnostics default-diagnostics)))
+    (is (re-matches #"sha256:[0-9a-f]{64}" default-identity))
+    ;; Replacing only the source callbacks disables reuse, so every one of the
+    ;; five real stage entries executes its pass-through callback.  The C6
+    ;; boundary remains the reviewed fixture above; C7-C11 are not replaced.
+    (is (= 5 @custom-reader-calls))
+    (is (= 5 @custom-parser-calls))
+    (is (= default-artifact uncached-artifact))
+    (is (= default-diagnostics (:mir-diagnostic-stream uncached-artifact)))
+    (is (= default-identity (:artifact-id uncached-artifact)))))
 
 (deftest hosted-source-products-fall-back-for-injected-and-redefined-callbacks
   (let [source-path "c11-source-input-custom.gravity"
