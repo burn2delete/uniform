@@ -12,6 +12,15 @@
 (def ^:private dependencies
   ["bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
    "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity"])
+(def ^:private current-reader-invocation
+  (let [reader (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        syntax (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")]
+    {:reader-source-path (.getCanonicalPath (java.io.File. reader))
+     :authenticated-envelope-options {:source :development-current}
+     :syntax-source-selection
+     {:schema :gravity/sh04-development-syntax-selection-v1
+      :source-path (.getCanonicalPath (java.io.File. syntax))}
+     :macro-source-mode :development-current}))
 (def ^:private bundle
   (delay
     ;; Ordinary C5 module artifacts and source plans own dependency resolution;
@@ -19,22 +28,14 @@
     (let [source (path c14-path)
           emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source :jvm))
           files (mapv path dependencies)
-          reader (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
-          syntax (str (.getCanonicalPath
-                       (java.io.File.
-                        (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"))))
           empty-inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
           resolve-source (fn [file module-inputs]
                            (let [start (System/nanoTime)]
                              (prn {:development-phase :c5-start :source file})
                              (let [artifact (bootstrap/compiler-c5-resolution-source-artifact
-                                             file (slurp file) module-inputs reader
-                                             {:reader-source-path reader
-                                              :authenticated-envelope-options {:source :development-current}
-                                              :syntax-source-selection
-                                              {:schema :gravity/sh04-development-syntax-selection-v1
-                                               :source-path syntax}
-                                              :macro-source-mode :development-current})]
+                                             file (slurp file) module-inputs
+                                             (:reader-source-path current-reader-invocation)
+                                             current-reader-invocation)]
                                (prn {:development-phase :c5-complete :source file
                                      :elapsed-nanoseconds (- (System/nanoTime) start)})
                                artifact)))
@@ -43,12 +44,13 @@
           caller (resolve-source source inputs)
           plans (mapv #(bootstrap/p15-s23-stage2-compiler-artifact-plan emitter % (slurp %)) files)]
       (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source (slurp source)
-        {:caller-resolution-artifact caller :dependency-plans plans}))))
+        {:caller-resolution-artifact caller :dependency-plans plans}
+        current-reader-invocation))))
 
 (defn- invoke [function arguments]
   (bootstrap/p15-s23-stage2-module-execute-function
    {:engine :sh17-literal-bool-input-boundary-development :compiler-artifact-plan? true}
-   @bundle function arguments))
+   @bundle function arguments current-reader-invocation))
 (defn- lower [context] (invoke 'c14-build-literal-bool-contextual-lowering [context]))
 (def ^:private required-diagnostic-fields
   [:input-artifact-id :mir-operation-or-domain-anchor :source-span :origin-chain
