@@ -62,6 +62,22 @@
     (is (= 'p15-s23-c11-mir-verifier-function (:verifier-function rule)))
     (is (= :clojure-stage0-seed (:compiled-by rule)))))
 
+(deftest selected-builder-and-verifier-matrix-preserves-legacy-and-v3-owners
+  ;; Selection is a pure contract lookup.  It does not execute a builder,
+  ;; verifier, source reader, or native callback.
+  (let [legacy-builder (call 'p15-s23-c11-mir-selected-builder-function 1)
+        legacy-verifier (call 'p15-s23-c11-mir-selected-verifier-function 1)
+        v3-contract (call 'p15-s23-c11-mir-contract 3)]
+    (doseq [version [1 2]]
+      (is (= legacy-builder (call 'p15-s23-c11-mir-selected-builder-function version)))
+      (is (= legacy-verifier (call 'p15-s23-c11-mir-selected-verifier-function version))))
+    (is (= (:builder-function v3-contract)
+           (call 'p15-s23-c11-mir-selected-builder-function 3)))
+    (is (= (:verifier-function v3-contract)
+           (call 'p15-s23-c11-mir-selected-verifier-function 3)))
+    (is (not= legacy-builder (:builder-function v3-contract)))
+    (is (not= legacy-verifier (:verifier-function v3-contract)))))
+
 (deftest closed-version-and-artifact-discriminants
   (doseq [bad [nil 0 4 (int 3) 3.0 "3"]]
     (is (thrown? clojure.lang.ExceptionInfo (call 'p15-s23-c11-mir-contract bad))))

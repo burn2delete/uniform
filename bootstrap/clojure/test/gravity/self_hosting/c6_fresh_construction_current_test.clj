@@ -62,8 +62,10 @@
                                 :source-content-hash (:source-content-hash source-snapshot)
                                 :plan :synthetic-c6-plan
                                 :function-manifest :synthetic-c6-functions}
-                         (= 2 source-version)
-                         (assoc :source-mode :development-current))
+                         (contains? #{2 3} source-version)
+                         (assoc :source-mode :development-current)
+                         (= 3 source-version)
+                         (assoc :semantic-family :closed-flat-bool-literal-sequence))
         reader-binding {:artifact :gravity/sh03-current-source-reader-plan-binding
                         :status :complete
                         :source-path "reader.gravity"
@@ -77,12 +79,14 @@
                              "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
                              :plan :synthetic-expression-plan}
                             (:expression options))
-        receipt (merge
-                 {:source-interface {:interface :gravity/c6-c10 :version 2}
-                  :admission-status :development-unadmitted
-                  :envelope-verification :passed
-                  :self-hosted? false}
-                 (:receipt options))
+        receipt (cond-> (merge
+                        {:source-interface {:interface :gravity/c6-c10 :version source-version}
+                         :admission-status :development-unadmitted
+                         :envelope-verification :passed
+                         :self-hosted? false}
+                        (:receipt options))
+                  (= 3 source-version)
+                  (assoc :semantic-family :closed-flat-bool-literal-sequence))
         reads (atom 0)
         compiler-binding-var
         (ns-resolve 'gravity.bootstrap
@@ -110,7 +114,8 @@
                           {:id (or (:reader-error-id options)
                                    "SYNTHETIC-READER")}))
           {:binding reader-binding
-           :invocation {:reader-source-path "reader.gravity"}
+           :invocation (cond-> {:reader-source-path "reader.gravity"}
+                         (:arity options) (assoc :arity (:arity options)))
            :c6-source-snapshot {:before source-snapshot :after source-snapshot}}))
       'p15-s23-c6c10-read-current-source-snapshot!
       current-snapshot
@@ -125,7 +130,11 @@
                               (var-get compiler-binding-var))])
         {:front-end-products {:source-unit-id "synthetic-source"
                               :c3-artifact-id "synthetic-c3"}
-         :source-policy-receipt receipt})
+         :source-policy-receipt (assoc receipt :source-interface
+                                       {:interface :gravity/c6-c10
+                                        :version (if (>= (count args) 4)
+                                                   (nth args 3)
+                                                   1)})})
       'p15-s23-c6c10-private-builder-envelope
       (fn [& _]
         (swap! events conj :builder-envelope)
@@ -213,6 +222,31 @@
         (is (nil? (get-in receipt [:expression-binding :plan])))
         (is (nil? (get-in value [:source-binding :function-manifest])))
         (is (nil? compiler-binding-after)))
+      (finally
+        (java.nio.file.Files/deleteIfExists (.toPath (java.io.File. path)))))))
+
+(deftest current-v3-parameterized-non-flat-family-refuses-after-authenticated-construction
+  ;; A v3 parameterized ingress is not admitted merely because its current
+  ;; source header is valid.  The closed flat-bool family remains the actual
+  ;; v3 contract; this fixture deliberately returns the v2 branch-shaped
+  ;; product and records the contract-backed refusal.
+  (let [{:keys [path context]} (temporary-context)]
+    (try
+      (let [{:keys [value events]}
+            (current-fakes
+             context {:source-version 3 :arity 1}
+             (fn []
+               (failure-data
+                #((private-var 'p15-s23-c6c10-fresh-construction)
+                  context 3))))]
+        (is (= "C6-VERIFY" (:id value)))
+        (is (= :v3-flat-bool-sequence-source-family (:missing-fact value)))
+        (let [ingress (first (filter #(and (vector? %)
+                                           (= :private-ingress (first %)))
+                                     events))]
+          (is (= 3 (nth (second ingress) 3)))
+          (is (= 1 (get-in (last (second ingress)) [:arity]))))
+        (is (some #{:builder :gravity-replay :public-artifact} events)))
       (finally
         (java.nio.file.Files/deleteIfExists (.toPath (java.io.File. path)))))))
 
@@ -315,27 +349,29 @@
       (finally
         (java.nio.file.Files/deleteIfExists (.toPath (java.io.File. path)))))))
 
-(deftest public-v3-and-native-version-headers-refuse-before-construction
+(deftest public-v3-header-dispatches-and-other-headers-refuse
   (let [{:keys [path context]} (temporary-context)
         fresh-var (private-var 'p15-s23-c6c10-fresh-construction)
         calls (atom 0)
         invoke (fn [header]
                  (try
                    (with-redefs-fn
-                     {fresh-var (fn [& _] (swap! calls inc) (bool-core))}
+                     {fresh-var (fn [& _] (swap! calls inc)
+                                  {:artifact :synthetic-v3-artifact})}
                      #(bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
                        context header))
-                   nil
                    (catch clojure.lang.ExceptionInfo error
                      (ex-data error))))]
     (try
-      (doseq [header [{:interface :gravity/c6-c10 :version 3}
-                      {:interface :gravity/c6-c10 :version (int 3)}
+      (is (= :synthetic-v3-artifact
+             (invoke {:interface :gravity/c6-c10 :version 3})))
+      (is (= 1 @calls))
+      (doseq [header [{:interface :gravity/c6-c10 :version (int 3)}
                       {:interface :gravity/c6-c10 :version 1}
                       {:interface :gravity/c11-mir :version 2}]]
         (let [data (invoke header)]
           (is (= "C6-VERIFY" (:id data)))
-          (is (zero? @calls))))
+          (is (= 1 @calls))))
       (finally
         (java.nio.file.Files/deleteIfExists (.toPath (java.io.File. path)))))))
 
