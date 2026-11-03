@@ -13165,7 +13165,7 @@
   "docs/artifacts/phase-01/fixtures/core/rejected-lowering-gap.gravity"
   "013e0f9c9ca47c5c74f9630d40f49b7c742f1532617ea8edf5c2f0d10e5792e7",
   "specs/mir-workflow/plan.md"
-  "9772389d29d25abdd49b766eab719ac910c7db6c4c1405f62687b169a3924219",
+  "c71f735bfa56c896bfc9411f9f5a8a74437b0207bd126a28aee695ca80188be2",
   "docs/artifacts/phase-15/reports/private-core-ingress-current-port.md"
   "1da1df9572ac7bf7c715b941932f8eaaf5ef8aaad555980f93415ac96568e587",
   "docs/artifacts/phase-05/math/stage0-math4-document-coverage-proof.edn"
@@ -13181,7 +13181,7 @@
   "docs/artifacts/phase-02/reports/p02-d045-safe16-document-coverage-report.md"
   "8a0a2a09ebf0fabec2c85681aac064b41a28d8e2b402f15c6421bd3f80b6fbc1",
   "specs/lower-workflow/plan.md"
-  "4f18c7647b54fb25fac85d5fb03f8724ba35672b11a7ff88555334468f9bef30",
+  "67c25d95512b7dfa98ec31ea98794da7e884bda49e128938de08230f56a4e919",
   "docs/phase-01-core-language/IMPLEMENTATION-ROADMAP.md"
   "03561263c988bb004e6904ca888e99c8f01c2b35f63aacbefbbb1cb60a65d6e7",
   "docs/self-hosting-slice-backlog.md"
@@ -13385,7 +13385,7 @@
   "docs/self-hosting-current-migration-cohort.md"
   "689b480e2854920d1f24520a590c0aff798307af0ef803591f49ef6421dda9a2",
   "docs/development-verification.md"
-  "d685d291b3bc4da89c7f056921e7dc4e46ac334b6996cedfcaee36d62eaf4b59",
+  "5cddb1c03c7023a5b49b0ad44c5b7fa854f775d4f28ac995905e3a1be7efece8",
   "docs/artifacts/phase-11/fixtures/document-coverage/accepted-ai-document-coverage.json"
   "13e7bdb06a1c4cd27d5e67cc668be49d4e13a5011da20f673763a4f24d007847",
   "docs/phase-03-profile-system/IMPLEMENTATION-ROADMAP.md"
@@ -13395,7 +13395,7 @@
   "docs/artifacts/phase-01/fixtures/l18/rejected-provider.json"
   "0c8149724dbd36cb4d135f6979e03b7243ff2b08e54c8a5df56627d6899ef334",
   "specs/sh-family-crosswalk/crosswalk.edn"
-  "f1be8cd53435020b7ef5852930313f6763129ef8602039d6de7298febfbbc146",
+  "7ee88fba495801ea0f6ec3f263bbd8eb96cbe6cb0d2187a22c5c1261128c395e",
   "docs/phase-03-profile-system/046-p1-profile-system-specification.md"
   "3fe9fcaf0e9c6fca4e0fba40fcbc3241eca3f5b2a24b956a6a40e73c42f2806b",
   "docs/artifacts/phase-01/facets/stage0-l14-document-coverage-proof.edn"
@@ -13607,7 +13607,7 @@
   "docs/phase-16-standard-library/219-std9-network-and-http-library-specification.md"
   "fbcdf804d9f956f3f0dfb9dc81342f738fde0be9ee066707978307af2dd9e992",
   "specs/compiler-api-workflow/plan.md"
-  "514403097bdae3777b47f0181f2a587910da790cbe6772a053cea4927289c415",
+  "74aaf38a4ee8cde59eaf43c28bf1013683adb0054bb4785bad3239fdf4c3f8ef",
   "docs/artifacts/phase-04/reports/p04-t05-performance-governance-report.md"
   "d03f8316e1f613a5ff6bb59f8ada2ec4a10ca14f3c1ecc1ce8e49a6e39ed3ceb",
   "docs/artifacts/phase-06/reports/p06-d094-c15-diagnostics-report.md"
@@ -13741,7 +13741,7 @@
   "docs/bootstrap/types-current-runtime-core-composition.md"
   "cf74aeeb4fd72829986a6c6a2bb6607feff6e4d4bb816bb8fd3051f26dfeea21",
   "specs/sh-family-crosswalk/evidence.md"
-  "a945dc90dd981262ee82f28d72fd948a3f63df251dc49198841695cc50fdccb5",
+  "6b8135f9f8102c629f04f1b78cbb0599449e20e9929dfd53fd844b2606047cc9",
   "docs/artifacts/phase-01/fixtures/l10/rejected-use-after-move.gravity"
   "41d522cc63c83ecf8085146c05d66833c2fab24fa3258c92cc327a8ee8c6bd00",
   "docs/artifacts/phase-18/jvm-cli/p18-t02-packaged-jvm-cli-proof.edn"
@@ -13805,7 +13805,7 @@
   "docs/artifacts/phase-14/conformance/stage0-hosted-core-compiled-conformance-proof.edn"
   "35c5bba3a9cd79e21bad03c7b48510b229f777fc6ed6eb1175640e0b97ad5adf",
   "specs/resolve-workflow/plan.md"
-  "952d27ebc4aff5869aa27c38080f64f75ab47dac80512a009c8d08cca9079f10",
+  "b8d4ec57190f39fdd9b339fe53798ab707448b8c9c7206bda2a3a00260e727c3",
   "docs/artifacts/phase-15/reports/stage1-reader-executor-pipeline-proof-report.md"
   "2f669f452b8aeb30e4c6af220330176d12a8539c88e114d9429791627c44b246",
   "docs/artifacts/phase-15/reports/p15-s23-stage2-compiler-nucleus-report.md"
@@ -13919,7 +13919,7 @@
   "docs/artifacts/phase-09/fixtures/domain/accepted-domain-coverage.json"
   "4c7feefdc23290017fc6e8f45864553ff6fa3a0f4b419f40c0d715085f0dacba",
   "specs/core-workflow/tasks.md"
-  "94fbabd1463c5fceae164999bebfc4211fa5536a1fa8e86089b04bfe8ae95124",
+  "7081ef8894616daf87e8b70c48679a12fb7d9c04fe820183ef2eb401c9bd029e",
   "specs/mir-workflow/tasks.md"
   "62c38cf3a309e67992bc38256aae5fe0678b5a8c717eb59629a46e1f8bb0aebf",
   "docs/component-roadmaps/reader.md"
@@ -13965,7 +13965,7 @@
   "docs/phase-17-governance-and-evolution/239-gov9-unsafe-code-governance-policy.md"
   "bbbdde5659ff2bb6305511c8df81ba75b4d3870f6f160cd4c2644d47e6b63ead",
   "specs/release-workflow/plan.md"
-  "7c010561fdb84646d3c3218934f172bdc98e8e1afd25c84a6ddb783e494b3eb0",
+  "ffe8bdd896123aeb51b67dc107fc936a6b9111ed468f82fbf1de91e2e77f371d",
   "docs/phase-01-core-language/016-l6-effect-system-specification.md"
   "a9d41d970d56d20f0fb74f10c280689407e3ab8fe075c5bc3b71925e9ccec1d5",
   "specs/accounting-removal/predicate-family-clean-composition.edn"
@@ -14087,7 +14087,7 @@
   "docs/artifacts/phase-08/reports/p08-d114-r3-minimal-native-report.md"
   "8a9d62a473537e94dfd26badeda29bc85158bc74f4547024abd946ecc1302b67",
   "docs/full-language-implementation-gap-map.md"
-  "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+  "00782e886f21cac591a2a15d0bc46b8f3f77643355c9546a082f87338fa74508",
   "docs/artifacts/phase-15/reports/sh07-b51-retained-origin-pure-reader-architecture-v1.md"
   "24856a74349b21f6c2d182a42cef657ea452103f17932a4ed289006a2a977a6c",
   "docs/artifacts/phase-01/fixtures/reader/rejected-delimiter.gravity"
@@ -14141,7 +14141,7 @@
   "docs/artifacts/phase-02/reports/phase-02-proof-report.md"
   "fd726cc70801ac87b430fc6bbeb986e4b55aa6ee16dde602107f0f1ea153d4f1",
   "specs/runtime-workflow/plan.md"
-  "110bd5b63ec993c563ef3fae8c90fc466545a69a78c1d5cd135565ea317f996f",
+  "d730a7be86d1d87e2c65834accf01e879e9c9868500664a017d03763b38d937d",
   "specs/accounting-removal/effects-current-port-report.md"
   "fb6464794a36b3f2a4fab12946e8ebda11f27f4cb788290229cf332f7c06b0b4",
   "docs/artifacts/phase-15/reports/p15-s23-provenance-attestation-report.md"
@@ -14215,7 +14215,7 @@
   "docs/artifacts/phase-17/fixtures/governance/rejected-gov4-security-review.json"
   "03a962f9d88179493f26c6d514630d6c864e097f87a2104cb11b85077e8d6c3c",
   "specs/evolution-workflow/plan.md"
-  "c7c3904c30f51f45e06dda7f942c29805b1c5e8849feeb17f0d9df8a2b9f0fa5",
+  "f917b81586b9d4274fa5e83b21f1c92f27e04ca6a28ce4c7d9ca082b92a9c2c3",
   "docs/artifacts/phase-06/reports/phase-06-proof-report.md"
   "da85ce11d1caf3b9e80e5b4fd483cd440f17c5f395f920602f114a7222acdfbc",
   "docs/artifacts/phase-15/reports/stage1-reader-formal-release-governance-seed-retirement-proof-report.md"
@@ -14235,7 +14235,7 @@
   "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md"
   "ef9a50aabbf60ecb1927ae86a77a54d40248ea759ab82df80bef70e794e39e63",
   "specs/effects-workflow/tasks.md"
-  "8155363265822328474901ea371b3ef40eb7597542dd9ecaa380f42bb24c0159",
+  "ea3988679cd506f627103354f3c819c8671c4fa84e1d720f83e613fef3a76cde",
   "specs/release-workflow/spec.md"
   "0ce61399536e24573c08bbd1b69d8837c96c4fb08cfecf86bf6892c775f6f085",
   "docs/artifacts/phase-05/math/stage0-p05-t04-approximation-proof.edn"
@@ -14325,7 +14325,7 @@
   "docs/artifacts/phase-15/fixtures/bootstrap/rejected-boot6-environment.json"
   "777f580202f46b4223e2e8b53824cf17ff2904c6f1aecc79fa61ed37ee36bf88",
   "specs/types-workflow/plan.md"
-  "dbcc8b2533bad207deee11021e8e0c4740618d887e6f9624758cdd7e631b10dd",
+  "6ec7829a10b0e56c5090dd51eaded1c1ef25f7027d977d425eca0ef9ca5d5d72",
   "specs/auth-workflow/evidence.md"
   "ba3447b29a9bda52705d9798bf4c45d83554233190f8d526d0f7490e092c714d",
   "docs/phase-01-core-language/015-l5-type-system-specification.md"
@@ -14409,7 +14409,7 @@
   "docs/artifacts/phase-15/fixtures/bootstrap/accepted-bootstrap-self-hosting.json"
   "93ab5bb245b331b7e10588af7074a0acb2a50b98909296b7fb9494b70505ea97",
   "specs/domains-workflow/plan.md"
-  "90aac69b02673a1f791e0489cb03b85de77b5cbfd31de8f789f6adacb21e49c1",
+  "dc4d7ef4275a91901ee94704c6d1c535bd00243f6cce1807948e458cf2365958",
   "docs/artifacts/phase-15/bootstrap/stage1-reader-runtime-pipeline-proof.edn"
   "3202b58ab0ef83342fd0ccf68d3417cc215060d77bd128bf9a993d23e7f4140f",
   "specs/build-workflow/tasks.md"
@@ -14447,7 +14447,7 @@
   "specs/accounting-removal/source-contract-results.edn"
   "6f31663bf2890f422063742491bb532814061fdc1eeb264991c345b075f0651c",
   "docs/roadmap-capability-audit.md"
-  "5c01cf49449143535309fcc4838d219183ad8a339cebbe45bb871e3adcce5533",
+  "09a26c23d0c78c0b22f2fdcd851cab643a151c217b7b4340c4c78f88ab51540f",
   "docs/phase-01-core-language/README.md"
   "c17446310650c2f2ce6a3c7cdbf7e9f6a8248a6ab89c306bfbd4123b2b7d6bdf",
   "docs/bootstrap/types-products-main-composition.md"
@@ -14503,7 +14503,7 @@
   "docs/phase-08-runtime-architecture/115-r4-managed-runtime-design.md"
   "16b665c5e65532775242b02d7faf0fba3ab35e93abbb58b720e8031539106297",
   "specs/diag-workflow/plan.md"
-  "af1cc6ec935478363a004a1c676857d1c11c3707e7ca7f5a5bab2cdaf7bdfee3",
+  "768d741040e6150cb314b8a92c9b38bfcb999384ee275b7ea2e7eb6f4f2c023f",
   "docs/artifacts/phase-01/fixtures/l6/rejected-build-effect.gravity"
   "960fac49d9aed7138dcb68440ea800105d0c33d584e45867d512050c1474d34f",
   "docs/phase-13-tooling-and-developer-experience/187-t11-profiler-and-performance-inspector-design.md"
@@ -14927,7 +14927,7 @@
   "docs/artifacts/phase-08/runtime/stage0-hosted-core-compiled-runtime-proof.edn"
   "183801b73c545375de93a82ad9bb020f4c5cb870cb764061ceffa2649bcfbbbc",
   "specs/auth-workflow/plan.md"
-  "fa0cccd6addfd734707d3a0361adc0511154e7c388b3487d30db387e238abac7",
+  "f1890883dcbdf6eddf407268502f905f1c0b2522b739dcf2c253cd9896f549be",
   "docs/artifacts/phase-01/fixtures/l14/rejected-facet-not-active.json"
   "17fb7f5fbf424909ad611de040dfa155378c409b91a191e487f3dee6fd493cd8",
   "docs/artifacts/phase-00/fixtures/contract-traceability/accepted-minimal.json"
@@ -14945,7 +14945,7 @@
   "docs/artifacts/phase-15/reports/stage1-reader-release-attestation-seed-retirement-proof-report.md"
   "eedb35f10aef88c9f6b974231edc31f4e49bdb4a48952a2983e4321f8e25372f",
   "specs/build-workflow/plan.md"
-  "1da081289c6ba9989027f3ca273e9ea5a33e4a7de6a3f82a0a50f64913819f19",
+  "40a69b4ef88e185ccfd1c0977fc51a99e9a5bab929dca95400d84a10df938da7",
   "docs/phase-09-domain-specific-computing-coverage/135-dom12-scientific-and-numeric-computing-domain-specification.md"
   "735e242b98a13d31adfc2d2f28f18505d9c561f95a355b634f0a22b9e0d06a8e",
   "docs/phase-09-domain-specific-computing-coverage/127-dom4-drivers-and-device-interaction-domain-specification.md"
@@ -15155,7 +15155,7 @@
   "specs/accounting-removal/list-join-width-composition-publication.edn"
   "d5a17387c2f92ab1de16b755ee2f324f2ee0bcaa9dbc1c03e9740b2b54cd9ede",
   "specs/effects-workflow/plan.md"
-  "17db9d18b3bf9c099f0046ab8fe9df80d8921acda0847898adb7504afd2a2514",
+  "bea3ac66280237a1c2f134bdbc1ad5e16c795d458def8a0e3578f88b2f42f604",
   "specs/resolve-owner-source-core-verification/evidence.md"
   "b2262dd3024cf2e30a608b1876b5a8ed30db1a28fd423e08e503ff7e5eeb3252",
   "docs/component-roadmaps/platform.md"
@@ -15247,7 +15247,7 @@
   "specs/reader-workflow/normal-dispatch-evidence.md"
   "c9aae4a96d29bc839ff7f7e336060b5a406f1b36489cf96f24e3768055080dda",
   "specs/opt-workflow/plan.md"
-  "d6d2ef58abe734930a0030126a5b976cf878c551f504a9a0762a3c2e8ff6e120",
+  "686113d8082ffb0cc8ec9c241712b51849c4e67ed0afd67055bee7dac353b16f",
   "docs/artifacts/phase-15/reports/sh07-b51-vector-destructuring-architecture-decision-v18-attempt-6.md"
   "da260deb7f3803e581b1c532bac13d732e20ed91c5e7fdfd1633fd36c5161a64",
   "docs/phase-04-performance-model/060-perf2-zero-cost-abstractions-specification.md"
@@ -15309,7 +15309,7 @@
   "specs/accounting-removal/reader-contract-clean-composition.edn"
   "f71060ad19918e6c2205cfa6a5f42a8bf6013032ef6098b8a1ad4b7f6a2d64dd",
   "specs/stdlib-workflow/plan.md"
-  "196325c239f384ec067f9b7ee040720161adcec085dd0c07aba6450eb8c65be7",
+  "77c4530466114cd68132baa3fc5c7a933b512bcb8b9d0726564f69811e74f9ef",
   "docs/artifacts/phase-15/reports/pass-execution-canonical-sort-work-v1/pass-sort-cand-2.edn"
   "7a7010c97023aa9dba5c4e1f200242e3da6c5fb28911ee237ec8aa0e0cb984f6",
   "docs/artifacts/phase-13/fixtures/tooling/rejected-t9-hidden-capability-diff.json"
@@ -15429,7 +15429,7 @@
   "specs/backends-workflow/evidence.md"
   "f46f022fcae6a41d107a35a4312582cf5b44bf79fd2dcadf2f148e2e09f874f1",
   "specs/resolve-workflow/tasks.md"
-  "a7242fbbb46e7c4c08bceabe213ffcda0b2ea93056f563fc9eb4cc30d306c6a0",
+  "226a95f25d40367b897db1aa2935bc45d545ab673ae4084a71181b6f5fd9e838",
   "docs/artifacts/phase-13/document-coverage/tooling-document-coverage.accepted.json"
   "0b5b3cc42525ed3cb190d3e7028c308c5f9733855512f72e7f440535f93b5c45",
   "docs/artifacts/phase-15/native-runtime/p15-s23-native-plan-specialization.edn"
@@ -15603,7 +15603,7 @@
   "docs/artifacts/phase-02/fixtures/document-coverage/accepted-safe-document-coverage.json"
   "cf88bccd11da37b539da039ba8c824b7e1fb756195d5037c2f44822d74e006d0",
   "specs/tools-workflow/plan.md"
-  "911d3aad63da4ca74df4d7f79a36cce89bf1bf0bc163063ec386ccbb4a003c18",
+  "e78579f407487ac5d4f97a231361ccf84ce80d004a4fc8679cef60cd67d85c7e",
   "docs/artifacts/phase-15/bootstrap/stage1-reader-form-builder-pipeline-proof.edn"
   "9587d9b39851e73b580d935ccb5537b7a8a9947631d7aabf0131b704b50b5a53",
   "docs/artifacts/phase-06/fixtures/compiler/rejected-c9-linear.json"
@@ -15643,7 +15643,7 @@
   "docs/phase-11-ai-and-agentic-programming/158-a5-agent-definition-specification.md"
   "92a4ff266eddc156152c59b35d58d75786d041afb7d394d09a76ea4192a8d86a",
   "docs/self-hosting-slice-ownership.edn"
-  "e85a5e3d83bed7ae8dd1faab7740c79fd291bb19393442c705c1869b581d677a",
+  "b5588a29f2fa25f6681c6d884d4c0230e6462a59232658b4f551d409390080a9",
   "specs/reader-workflow/effectful-provider-boundary.md"
   "5fdca1a3744d073ebdb7b9162c13761b67af07eb93fdb32147178bd3bb0eda25",
   "specs/accounting-removal/process-lease-custody/README.md"
@@ -15817,7 +15817,7 @@
   "docs/artifacts/phase-18/reports/p18-t00-co-canonical-source-extensions-report.md"
   "b500c8a75f315704451e886b0f2007fc9d942a3d99da420ef4523b1b6bc1b079",
   "specs/legality-workflow/tasks.md"
-  "b3fd70f8538bf28b85d4731eb0616d1122d00c7cd9d39f6d579ee390a8de8b0b",
+  "91d27324a800c1393533ef94bc6bf49827f402be57dabd7a127c150965a12f13",
   "docs/phase-01-core-language/011-l1-surface-syntax-specification.md"
   "e31900e670779fdc908d2059e43df84dd9f5543b73aefa88114cc13d0bcc9c39",
   "specs/sh-family-crosswalk/macro-artifacts-source-version.edn"
@@ -15895,7 +15895,7 @@
   "docs/artifacts/phase-14/fixtures/conformance/rejected-test1-metadata.json"
   "fb0e9157b6e98d05358681b5524f9a623fe6adaa6f9f0cc109c7a2130f883a2c",
   "specs/types-workflow/tasks.md"
-  "bff1f46d1fd9f9e54a3bdfff511d11017c84a8dae84385849fb8a5ec2f64d421",
+  "1d4a97e09f3aa02ea87d249de02f0153eba29eba5d5f781e757ec27b996d837f",
   "docs/artifacts/phase-03/document-coverage/profile-document-coverage.accepted.json"
   "5a31255f705896202659b250019361a94d03b3e30f26c24da632bad12c542f2a",
   "specs/requirement-reconciliation/compiler-consolidation-receipt.edn"
@@ -15997,7 +15997,7 @@
   "docs/artifacts/phase-02/fixtures/capability-supply-chain/rejected-unsafe-summary.json"
   "3e4afc913579b845417dcfe34cde395ec18281ec671fb500c8af2fcb5e3c6813",
   "specs/legality-workflow/plan.md"
-  "ec751317fe36ecb41359ec0aedd7b02c95349b6eb8b240aca06c7ba273eba9f8",
+  "f6ca3737bcef24d65cc03f318ad8c65210a33c03a654b250237d9809ff3a40c6",
   "docs/artifacts/phase-02/fixtures/memory-safety/rejected-raw-outside-unsafe.json"
   "6a29b9adbb7e9e5160db10ac097e87988626900f8ba15e379839797685a2faae",
   "docs/phase-16-standard-library/211-std1-standard-library-architecture.md"
@@ -16007,7 +16007,7 @@
   "docs/artifacts/phase-14/fixtures/conformance/rejected-test5-unsafe-audit.json"
   "699423369d8b7b24e6fda7effbc2ab6d4ca21564c546098b6da8f16966865a30",
   "specs/backends-workflow/plan.md"
-  "522cfe5d83ebbfd662add277ed5edb641188b33a77a3019c43c31eaec022a603",
+  "85241d384cbdbb4a47713d7060a99988ec2485ad34eda813191583400b445e3a",
   "docs/artifacts/phase-15/reports/sh07-b51-nonadmitting-source-evidence-entrypoint-architecture-v1.md"
   "b8be4deb30ecdd175c481c46679649ed74edb2e15fd19fb4ec57e15b1afbdce5",
   "docs/artifacts/phase-02/fixtures/domain-safety/rejected-taint-secret-leak.json"
@@ -16833,7 +16833,7 @@
   "docs/artifacts/phase-01/fixtures/core/accepted-core-forms.gravity"
   "7e5fbd344f37f799bcea116a3d72ab11ed23674aa0ee9c75f22321552688ac3d",
   "specs/syntax-workflow/plan.md"
-  "57442a6b1364606bdeb9de0b6cb8f83ae1717e7dbba378a5e3a942347de6fb97",
+  "d7b4ce352d81af61d7303fa448515297feadb0bf917bec7178f02b65c7965fdb",
   "docs/artifacts/phase-14/reports/p14-document-coverage-report.md"
   "f844843d1d518e57806f8227fa52b1c685234693914555be9283d3825d918435",
   "docs/bootstrap/checked-core-requests-evidence.md"
@@ -16905,7 +16905,7 @@
   "docs/artifacts/phase-04/performance/stage0-perf10-document-coverage-proof.edn"
   "1daa165f283b04ac754ea654d18320db39612c5a15fe89118867bc0ed8b8c2ce",
   "specs/expand-workflow/plan.md"
-  "3218a34aa019620ebc18645e02700891c02ea2483ea37404fd5aefac31f57bfe",
+  "ec7fa809668140d3211335faa9b53ad1781e6859e4c82cd6e6b38ebc11684e74",
   "docs/bootstrap/effects-assembly-evidence.md"
   "4e29de0ec09f4df79b8e99360286063817e0b7487739d09a3a82318ac3a6a1b5",
   "docs/bootstrap/effects-reports-evidence.md"
@@ -16927,7 +16927,7 @@
   "docs/artifacts/phase-06/compiler/stage0-hosted-core-compiled-compiler-proof.edn"
   "f58c56e7ff81e2f45f4241a117ae3b3a89b39d323485da2a3f8241e1bb67d4ec",
   "docs/end-to-end-contracts.md"
-  "ea9b3f007bbf77d1904b3b519348cad18bc96b27ec5ac3532111320ef5871222",
+  "5612e92780b917ad150a37d23a831185421b5aa7145fd338df4a0b65a30dbab5",
   "docs/artifacts/phase-01/reports/p01-d011-l1-document-coverage-report.md"
   "dd069cf6cf29d8a8cdf81232cca62506f385646f17b39223a6ab38b502d093f2",
   "docs/artifacts/phase-05/math/stage0-math10-document-coverage-proof.edn"
@@ -16995,7 +16995,7 @@
   "docs/artifacts/phase-02/reports/p02-document-coverage-report.md"
   "fbad189cfd079bed30bf814a5039cd1cec1ea355d204eaf1109cadf636d1fd0f",
   "specs/core-workflow/spec.md"
-  "d4a95d707dd481143c84171df0bcf218b71828640f56f8c0775775e8b32edc97",
+  "a9216c3f69fffb01ae6b43bd62d3a0f920adb01539e740ba4f68a9344865ffc9",
   "docs/artifacts/phase-02/fixtures/safety/rejected-unsafe-metadata.json"
   "511dd44b993f0ff281cd61c6fa372458f073ad50fe54f4a7a6d295c7814b8c93",
   "docs/phase-04-performance-model/068-perf10-performance-safety-check-elision-rules.md"
@@ -17245,7 +17245,7 @@
   "docs/artifacts/phase-06/reports/c2-pass-cache-capacity-withholding-architecture-v1.md"
   "70c99c3b207ef8654b3cbfb752f1b2d88aec7c8b0249d5ca3f6c6349c09a2f42",
   "specs/core-workflow/plan.md"
-  "5b17e23142d00aa0d8ac30df5ed553852b5b1b46359f2b4efbd5bbfdfdeb4c9b",
+  "298d97e5529f7fcd651e2a5a16489c01f1e2ca8831dab4a17eaff34ca5ea4866",
   "docs/artifacts/phase-12/fixtures/package/rejected-pkg8-unsafe-audit.json"
   "873bdf0504309891f8715c018453aa1a71b66aa56b00949d6fdb12ac4d7a6c44",
   "docs/artifacts/phase-01/reports/p01-d025-l15-document-coverage-report.md"
@@ -17292,7 +17292,7 @@
    "evolution/security-review"
    "evolution/stabilization-decision"
    "evolution/target-support-admission"]},
- :source-input-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+ :source-input-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
  :task-comparisons
  {:unchanged-body-count 50,
   :changed-bodies
@@ -17425,7 +17425,7 @@
     :before-sha256
     "1039f707b4d8e9831a1dcde2c433a2612914a43ccebffbee9f8852385ac5825d",
     :after-sha256
-    "572ab73e0ac335b5c3dc5ede22266f684c178f8f0d3ec0b84eab111433b4c9d8",
+    "27d3a21a1a6b9f50ea103af0709b50514ae4dd50ee3dc19f178bc701903b698a",
     :before-checked false,
     :after-checked false}
    {:id
@@ -17443,7 +17443,7 @@
     :before-sha256
     "15db35b4ebd301fb0a4fe0914bffee71f5fcce4de905de289c90ec700c7d594e",
     :after-sha256
-    "1d9d5cd03d1623edfe4b7cc7ba7a6a642adedf7329f729b9d0857bb326b5ea1c",
+    "59c62a3a74c752050e92b79297890a0473a85ce3c51186bf9ec6966db19a8c98",
     :before-checked false,
     :after-checked false}
    {:id
@@ -17461,7 +17461,7 @@
     :before-sha256
     "b25a1031ad5c7601756ad3a5b9bc27e638888ea52d7f03c087e0bd6a93cb0d53",
     :after-sha256
-    "c5ea1083e25d5eefcf29d443628bdd597243b1806b9c3b9ffcdf905df9c25b6c",
+    "c671e860153f83d6a9b07f647a8bb9d274281046566830691cdc37f777137b3b",
     :before-checked false,
     :after-checked false}
    {:id
@@ -17515,7 +17515,7 @@
     :before-sha256
     "0a3be335becc28785539c35483823d36fb0070db331069e6f75a50493f3dbf83",
     :after-sha256
-    "125404264757c58654987496ca3487920fc4bd70bdd34212ae8d4d89a03eb31d",
+    "b5df01ea629bb38b3d7021178d0c3df9d41e23a3009a2824bfdfeab4bfdbc427",
     :before-checked false,
     :after-checked false}
    {:id
@@ -17524,7 +17524,7 @@
     :before-sha256
     "f19d442e1fcbf7e4de928925aea79538b84f716f7151eeef300826ebd6f73270",
     :after-sha256
-    "84e193ca69de119927849f19a7e191cc5b56dce7e3073772850a9f51a014fc66",
+    "6f48adddf4503bf1f71191480094891310cbe14a0da2d8c5dd64d07f690cb9a5",
     :before-checked false,
     :after-checked false}
    {:id
@@ -17533,7 +17533,7 @@
     :before-sha256
     "6f3074abe4b04ec7f6b23b2ee258fabfc7c57dc135af444241ad4b4cf3a57366",
     :after-sha256
-    "69d9230cc2f4a064663483207db6bc040f1cf9fa1eca8de9af0629f7aa0b6f45",
+    "de948b36cdf6fc267de9ea4a63c6dc2959ccf31e34edaf18218c8afc938229ab",
     :before-checked false,
     :after-checked false}
    {:id
@@ -17613,7 +17613,7 @@
     :before-sha256
     "d45a044d24757dc2bd87c437f4bba206e3023c0e0681376d445bfb32f5c1db8a",
     :after-sha256
-    "dffff16129eeca7f9880b3ff2038bdad350fe0b3a0010620c8072c37263438d2",
+    "303d5cb0dc00b71c90a3d4152f1bc168a840adb4ad54c86bc95e3cf455199e99",
     :before-checked false,
     :after-checked false}
    {:id
@@ -17622,7 +17622,7 @@
     :before-sha256
     "0bca8126d43acf042bf255a7a28721d7767ef9b0515c23638a194585cec03b51",
     :after-sha256
-    "4fba3747f84fa00d22992a069787e443988a667ddec03dedf2e9cb005e4bd9b3",
+    "e601a6042f3c72a0684b3547ffe89d96969d383f637beed70f5444a813e9a8bf",
     :before-checked false,
     :after-checked false}
    {:id
@@ -17869,7 +17869,7 @@
     :before-sha256
     "0664c4603e73f01ff9656c11c8005ae151b793f7a389251a02f63c64c7601588",
     :after-sha256
-    "fe155bfcbfa3e3571882691206f59c2a06110bd4a157fd23eebe83aadc8608c0",
+    "07d9706152f52d97bee44c05fc83a76b66b96929c2291dbfb0cd34afbe8be2f8",
     :before-checked false,
     :after-checked false}
    {:id
@@ -18030,7 +18030,7 @@
     :before-sha256
     "a794f77307bb1b6110061de5dcd5d5b7e88253cb96d0018ee512fce84c64c4b9",
     :after-sha256
-    "675ab25da89dd20b274b54815f62c80a03f427032035186bfdb25eb02cebaac0",
+    "d12e1fb598f0e6490232740d3a998c18a0881606890e0cad2acd9f6a24c1a333",
     :before-checked false,
     :after-checked false}
    {:id
@@ -18039,7 +18039,7 @@
     :before-sha256
     "b9b6f16ff0cbf9a5fe48c56a58bc6fc7775b03fda28151fb957e072bc9eca4e4",
     :after-sha256
-    "21130bb1b5a6f52f8ecacf4e4eeccfc47001f8a8acdb9713cbff18b720a87b4b",
+    "0ca900129a161b7acb39fc44d3fa6821f83b94a634e5ee68e2272e5e736ab938",
     :before-checked false,
     :after-checked false}
    {:id
@@ -21928,10 +21928,10 @@
    "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface"],
   :implementation-acceptance :unassessed},
  :current-source-checkpoint
- {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-  :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+ {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+  :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
   :scope :reconciled-source-before-metadata},
- :source-input-tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+ :source-input-tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
  :source-frame-fingerprint
  "41440d796764036e17dd1fdb887284eca5121e2def01829fa8c22f96bf5aeeec",
  :release-dependency-refinement
@@ -48381,8 +48381,8 @@
     "3487862f9c4c6bf19b71a4dd7052ec8e9e0b068ad594e5ea7567cd69f6c20eb6",
     :prior-explicit-applying-pin nil},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
     :blob "2a5a3ae731f8e8530cac1cc74f7bc6e6820f0ee8",
     :sha256
     "01d600fbae92197d6d7cbbe79bcddd0cce4eeb1bdeb236ce46d219b33e5e3f99",
@@ -48398,8 +48398,8 @@
     "27f7e47b81c81cd08ef336ca31926f5d9e1bcb87698381ef5cd45887f3733f7c",
     :scope :captured-predecessor-navigation},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
     :blob "f002790de839205b4d0dfd51c371ab5be78a1f3d",
     :sha256
     "513736f04404599e034992d7d1e9f8283e8aca65df290c3cf24e0c7a0adf402e",
@@ -48415,8 +48415,8 @@
     :sha256
     "6c323fdbff67d18fd000161d27e44da2a57734f9d4e52c6acde4127eaaf8dc04"},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
     :blob "49a0b21fa4264e94fd82360424ad9ae06d100369",
     :sha256
     "b7f0951cbe6350ca02fc8962fbc88621b4fd64620bed4f49bc33456e8988db73",
@@ -48432,8 +48432,8 @@
     :sha256
     "ae1de98a3b98f88fd36816c965f89688ed99a8c76dad1d6c24d99226d529ceb8"},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
     :blob "778083262c8082dfab07082a36b6f0af2ca50294",
     :sha256
     "375affc3a9cb5df192807d07179f2453587c58628af1d6da8451aa802f72446a",
@@ -48446,8 +48446,8 @@
   {:path "docs/component-roadmaps/evolution.md",
    :before nil,
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
     :blob "688e35b4bab9c34508418eafc24276da83e822ea",
     :sha256
     "c4340284ef570e4727664f877106977fcf301db1663b4491c204f4871ee2549e",
@@ -48463,8 +48463,8 @@
     :sha256
     "ddb5e1fbcb9fce7e8e6813b37c6608b5844a3dbfdc5f7a2ea6c74ff195f252b4"},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
     :blob "b442b07a837defb62da02f50c6270d826ebfbcba",
     :sha256
     "a65409190dc3fc44e907feb86b80afa8e2c6dd9ef87ba742d8850399d62b4c65",
@@ -48477,11 +48477,11 @@
   {:path "docs/full-language-implementation-gap-map.md",
    :before {:source-version-state :not-previously-projected},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
-    :blob "16e29591e879f91eddfc5fdf52a2303915cd3857",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
+    :blob "b2d11a50dce8d86ee9caf92701e58309be604834",
     :sha256
-    "cfb606357fd8f732736f1ad5e606ec04f29273736520cdedcb4eaafe9983b7ac",
+    "00782e886f21cac591a2a15d0bc46b8f3f77643355c9546a082f87338fa74508",
     :scope :task-file-version},
    :scope :full-language-source-version,
    :historical-after
@@ -48494,8 +48494,8 @@
     :sha256
     "9db81aa1c8ef183a9da8656a343a29fd9104b10e7130fd63ba4e52b75ce2b256"},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
     :blob "241eb5468bd97181c6eaf299ba352e0e1aafbfed",
     :sha256
     "b9b22eaea2eabca78bd66c4fe2b1c101c9885238c6cc711e43a99b36ac1b6326",
@@ -48511,8 +48511,8 @@
     :sha256
     "62635384fb49256f61776d64827abb86b2179cf2f34b8349c4909e9338bb23a0"},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
     :blob "773418646ad3b6ce28257f512092992c917d7e92",
     :sha256
     "297a126b5817ef484cb2c49fced2335d9e63796b253abd7a74b7f8bc0f64717d",
@@ -48528,8 +48528,8 @@
     :sha256
     "6c88f677477ec41d755dbedd39d1e03de7c9ae81cc9a956a48c8cf319bfca1b0"},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
     :blob "3fb8e3a3832de4dd68e2a9981a3e484726ef8e56",
     :sha256
     "5bf868e7d95cdbbf4e50978a0fa7e6dd552e16841a6b20cde56025de479709e8",
@@ -48545,8 +48545,8 @@
     :sha256
     "75300e2d2d3c9a44e0799ee203d3126eeba690adbbd89f0dcc8b4bbf4c7a88c7"},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
     :blob "fcd44645e75b3b0c17abb964c2fb18ca0831cb34",
     :sha256
     "4e98c91c8beeb40ef78c8305db99f11b05b3095bbf9076204b55f319d854b73b",
@@ -48562,8 +48562,8 @@
     :sha256
     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26"},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
     :blob "e2f8643687ad06daf2d154657153024f6002286d",
     :sha256
     "d607f992d31ae6c80b424c60c932c3b6249c4246fe8807cf5a8714737c77c55e",
@@ -48578,11 +48578,11 @@
     :sha256
     "e719f4d797af9e25867f5248a148f7698068e9ef7e50dcc7f1e3c25622dc1e97"},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
-    :blob "b47b562e5da7561dbc932fde285e53d0eb3d7245",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
+    :blob "f1ae00132813fb6148fcbe0fce0d8f194b1f8342",
     :sha256
-    "94fbabd1463c5fceae164999bebfc4211fa5536a1fa8e86089b04bfe8ae95124",
+    "7081ef8894616daf87e8b70c48679a12fb7d9c04fe820183ef2eb401c9bd029e",
     :scope :task-file-version},
    :scope :task-file-version,
    :historical-after
@@ -48595,8 +48595,8 @@
     :sha256
     "a4b029e285344368079a3120f387217c01468fbc11f24aff8cf219c9284128b4"},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
     :blob "f3c4685dfa534e7ed8ff88040bc66917ebaf5c53",
     :sha256
     "0ab4aa75a0f694cfad605b7f959acc89d471ee7eb1cfc231b190a27f8c1a5dbd",
@@ -48612,8 +48612,8 @@
     :sha256
     "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4"},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
     :blob "bbfc00bf48c140e5fbc9c5b1e163d0cfb4da40a5",
     :sha256
     "0a52781dc198138daa0c3e3dd98b661574a2bc533609510a525d73e01d0e79dd",
@@ -48629,11 +48629,11 @@
     :sha256
     "af28151cd4bd37b7be8293e1a5d5385fc94e7d743a60cd45275bc0687528a3a0"},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
-    :blob "1e1b3921251f1f565b26b73a80f219502d0995dd",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
+    :blob "905858b03becccc7dcdbe5a159f3d10a66841d84",
     :sha256
-    "8155363265822328474901ea371b3ef40eb7597542dd9ecaa380f42bb24c0159",
+    "ea3988679cd506f627103354f3c819c8671c4fa84e1d720f83e613fef3a76cde",
     :scope :task-file-version},
    :scope :task-file-version,
    :historical-after
@@ -48646,8 +48646,8 @@
     :sha256
     "9170cd18bcc29ea8d327842e12b0714793e7fe7caffc9d225ec2cec3e9ce261f"},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
     :blob "f6a2657e63d380af446314a557f48d2f3548c350",
     :sha256
     "c72d61bd0cfd5009b91209f9287d9a17b48b7c47bfd6c9e1395ec8b3ad6b0e1a",
@@ -48660,8 +48660,8 @@
   {:path "specs/evolution-workflow/tasks.md",
    :before nil,
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
     :blob "aa1a43733badbf51f20222cadfd0e347b16bea0c",
     :sha256
     "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
@@ -48677,8 +48677,8 @@
     :sha256
     "e1cf578f48991336eb885172b3f829a150dd856de018b47f52fb8e2dfc51b63f"},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
     :blob "da75e4257cdb19d1f293fa26e3fc95f1da24fb87",
     :sha256
     "f65ed4253e1ff6b3ac1589b87d3cb55401ed85491f19750c0e29faed488588cf",
@@ -48694,11 +48694,11 @@
     :sha256
     "937ed9cf0a8a7272559564344141fff0f1e3db34c9deef4106ab3ca958354f9e"},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
-    :blob "61244fc06e119b3cee8d3eeacb9ea90a31e05ee4",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
+    :blob "5f563486a0566d118ab204a97fdbcba1b99294f7",
     :sha256
-    "b3fd70f8538bf28b85d4731eb0616d1122d00c7cd9d39f6d579ee390a8de8b0b",
+    "91d27324a800c1393533ef94bc6bf49827f402be57dabd7a127c150965a12f13",
     :scope :task-file-version},
    :scope :task-file-version,
    :historical-after
@@ -48711,8 +48711,8 @@
     :sha256
     "9be5eed80229ee59fe35b2279fe95a40e9aeee977a503739bfa3fdd9e3eea48c"},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
     :blob "64cac53e3baee7781e3e557aa9560f9f3175f1ce",
     :sha256
     "ac1dc30feed87d469e056450592dff54c02c3682f177ee14b3903ed7bed9ca96",
@@ -48728,8 +48728,8 @@
     :sha256
     "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6"},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
     :blob "e30a0c2a72407cb3c516ad5f021d780c2ed1c455",
     :sha256
     "62c38cf3a309e67992bc38256aae5fe0678b5a8c717eb59629a46e1f8bb0aebf",
@@ -48745,8 +48745,8 @@
     :sha256
     "8589cf09e8da65fda363f25f01612e3363a8fd4fe70f2adca8a8194baceea908"},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
     :blob "708fc35430686c48928b7457292021b9b31b3a42",
     :sha256
     "80d056dbf9858137c7d0779a7ed7c6e82c4bd7dad2dc0b3fa0a72e4cbd1c614e",
@@ -48762,8 +48762,8 @@
     :sha256
     "789f8482bf8212e68c978daaaa2487f39f66a46467385ba0b0350df82a78e39f"},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
     :blob "536da4ae764a3c985d758fa3f2e8435d06430862",
     :sha256
     "34035c35f900c7d45a04de2802086608c00605f39cb7c2d17b47b8411966660c",
@@ -48778,8 +48778,8 @@
     :sha256
     "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e"},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
     :blob "baa601bdf1c7f8ae481ab9f78534a777899107f2",
     :sha256
     "9e278efbe41cc3d6e9f83eca2ea5b670c9cd83641876ce7cb317808bb7314181",
@@ -48795,8 +48795,8 @@
     :sha256
     "fc53749a4bdd702bf2fa459dec56839a74b030af24856b580c5e4dac88a14d2a"},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
     :blob "0211923613a7eb2c8014295ebaed2b760ac66ccd",
     :sha256
     "f804b343a27f3d2c65a4fe48448856ac2601446447e6ab8353177ca5ddce570b",
@@ -48812,11 +48812,11 @@
     :sha256
     "7c3b0ec9ae3b84b0fab4d58c054660d8e8f1e51532cb537bd5a01e53aa670ce4"},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
-    :blob "4e949a5cefe77f5d2202a4abaa87d46286965bab",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
+    :blob "177f74794a67b2cc2f16ab1c45ec8da83dbb7407",
     :sha256
-    "a7242fbbb46e7c4c08bceabe213ffcda0b2ea93056f563fc9eb4cc30d306c6a0",
+    "226a95f25d40367b897db1aa2935bc45d545ab673ae4084a71181b6f5fd9e838",
     :scope :task-file-version},
    :scope :task-file-version,
    :historical-after
@@ -48829,8 +48829,8 @@
     :sha256
     "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972"},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
     :blob "c5c96a58d0d0e8f5c7f2d520c45bafd55cd1c556",
     :sha256
     "1bbda853d0d1786b366d09a5b2e17596885a7436dc74f080c4e279db0ff66e16",
@@ -48847,8 +48847,8 @@
     "69ac9a7163838c4cb297c94174d0b3061b0e7686f2378c45aa30e6320b6f6d94",
     :prior-explicit-applying-pin nil},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
     :blob "bdd08edd8b49cdf4444cfe6fd4855cec58b9fa60",
     :sha256
     "c0f5795d8d827fa9a7fc43f2930e780252c74744da350f02449c2224e1935def",
@@ -48864,8 +48864,8 @@
     :sha256
     "11c3f7c40cd0b8c6364491439d10735a0105a1dbec242566457d293d0dfa1f10"},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
     :blob "1ba5391d81155ca0f632d5bcd979978f6f7b0715",
     :sha256
     "185c42f823edfa92a65b181751d8745ac36bb4c4cee3391ec825660494c8e529",
@@ -48881,8 +48881,8 @@
     :sha256
     "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54"},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
     :blob "b414b0a0008450882853a5400b5b559ddefd0758",
     :sha256
     "dcc9b5eb9885b1c8c3608034cfad1e8ddcc0ea916c5be8a260ec5d1af93f8bf2",
@@ -48898,11 +48898,11 @@
     :sha256
     "9b76c2473d472b2d95a26420c4784837dc36e13a2226043efc7bb4a14a47f72e"},
    :after
-   {:commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
-    :tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
-    :blob "2a921ca778bac89d71cc1f38d39cbb88930f1522",
+   {:commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
+    :tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
+    :blob "7f81f635553d592dc4f73d5b40b4f9491a5c69db",
     :sha256
-    "bff1f46d1fd9f9e54a3bdfff511d11017c84a8dae84385849fb8a5ec2f64d421",
+    "1d4a97e09f3aa02ea87d249de02f0153eba29eba5d5f781e757ec27b996d837f",
     :scope :task-file-version},
    :scope :task-file-version,
    :historical-after
@@ -106044,7 +106044,7 @@
   :source-clarification-commits
   ["6dfaf54be773f7eece444c2e73ac08ec4ae4368a"],
   :implementation-acceptance :unassessed},
- :source-input-git-tree "c10c4ac723da10c70231cc31da944946ca0fd5e1",
+ :source-input-git-tree "d257282dd6860fc79b8d827f606bd389ad5dacc7",
  :opt-refinement
  {:canonical-sources
   {"docs/phase-06-compiler-architecture/092-c13-mir-optimization-passes-design.md"
@@ -157717,7 +157717,7 @@
    :sha256
    "868180b50622c3646deaf1ff25a380eb996db868ae7c8a43f2faf8afbf1522ed",
    :live-inspected-sha256
-   "e85a5e3d83bed7ae8dd1faab7740c79fd291bb19393442c705c1869b581d677a",
+   "b5588a29f2fa25f6681c6d884d4c0230e6462a59232658b4f551d409390080a9",
    :scope :retained-historical-ownership-not-current-authority}},
  :future-task-records
  [{:id "platform-product/distribute-product",
@@ -157725,7 +157725,7 @@
    :component "platform",
    :path "specs/platform-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "34035c35f900c7d45a04de2802086608c00605f39cb7c2d17b47b8411966660c",
    :body-sha256
@@ -157735,7 +157735,7 @@
    :component "platform",
    :path "specs/platform-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "34035c35f900c7d45a04de2802086608c00605f39cb7c2d17b47b8411966660c",
    :body-sha256
@@ -157745,7 +157745,7 @@
    :component "domains",
    :path "specs/domains-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "0a52781dc198138daa0c3e3dd98b661574a2bc533609510a525d73e01d0e79dd",
    :body-sha256
@@ -157756,7 +157756,7 @@
    :component "release",
    :path "specs/release-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "f804b343a27f3d2c65a4fe48448856ac2601446447e6ab8353177ca5ddce570b",
    :body-sha256
@@ -157766,7 +157766,7 @@
    :component "domains",
    :path "specs/domains-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "0a52781dc198138daa0c3e3dd98b661574a2bc533609510a525d73e01d0e79dd",
    :body-sha256
@@ -157777,7 +157777,7 @@
    :component "release",
    :path "specs/release-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "f804b343a27f3d2c65a4fe48448856ac2601446447e6ab8353177ca5ddce570b",
    :body-sha256
@@ -157787,7 +157787,7 @@
    :component "platform",
    :path "specs/platform-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "34035c35f900c7d45a04de2802086608c00605f39cb7c2d17b47b8411966660c",
    :body-sha256
@@ -157797,7 +157797,7 @@
    :component "domains",
    :path "specs/domains-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "0a52781dc198138daa0c3e3dd98b661574a2bc533609510a525d73e01d0e79dd",
    :body-sha256
@@ -157807,7 +157807,7 @@
    :component "domains",
    :path "specs/domains-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "0a52781dc198138daa0c3e3dd98b661574a2bc533609510a525d73e01d0e79dd",
    :body-sha256
@@ -157817,7 +157817,7 @@
    :component "domains",
    :path "specs/domains-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "0a52781dc198138daa0c3e3dd98b661574a2bc533609510a525d73e01d0e79dd",
    :body-sha256
@@ -157827,7 +157827,7 @@
    :component "platform",
    :path "specs/platform-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "34035c35f900c7d45a04de2802086608c00605f39cb7c2d17b47b8411966660c",
    :body-sha256
@@ -157837,7 +157837,7 @@
    :component "domains",
    :path "specs/domains-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "0a52781dc198138daa0c3e3dd98b661574a2bc533609510a525d73e01d0e79dd",
    :body-sha256
@@ -157847,7 +157847,7 @@
    :component "platform",
    :path "specs/platform-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "34035c35f900c7d45a04de2802086608c00605f39cb7c2d17b47b8411966660c",
    :body-sha256
@@ -157857,7 +157857,7 @@
    :component "domains",
    :path "specs/domains-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "0a52781dc198138daa0c3e3dd98b661574a2bc533609510a525d73e01d0e79dd",
    :body-sha256
@@ -157868,7 +157868,7 @@
    :component "release",
    :path "specs/release-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "f804b343a27f3d2c65a4fe48448856ac2601446447e6ab8353177ca5ddce570b",
    :body-sha256
@@ -157879,7 +157879,7 @@
    :component "release",
    :path "specs/release-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "f804b343a27f3d2c65a4fe48448856ac2601446447e6ab8353177ca5ddce570b",
    :body-sha256
@@ -157889,7 +157889,7 @@
    :component "platform",
    :path "specs/platform-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "34035c35f900c7d45a04de2802086608c00605f39cb7c2d17b47b8411966660c",
    :body-sha256
@@ -157899,7 +157899,7 @@
    :component "domains",
    :path "specs/domains-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "0a52781dc198138daa0c3e3dd98b661574a2bc533609510a525d73e01d0e79dd",
    :body-sha256
@@ -157910,7 +157910,7 @@
    :component "release",
    :path "specs/release-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "f804b343a27f3d2c65a4fe48448856ac2601446447e6ab8353177ca5ddce570b",
    :body-sha256
@@ -157920,7 +157920,7 @@
    :component "domains",
    :path "specs/domains-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "0a52781dc198138daa0c3e3dd98b661574a2bc533609510a525d73e01d0e79dd",
    :body-sha256
@@ -157930,7 +157930,7 @@
    :component "domains",
    :path "specs/domains-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "0a52781dc198138daa0c3e3dd98b661574a2bc533609510a525d73e01d0e79dd",
    :body-sha256
@@ -157941,7 +157941,7 @@
    :component "release",
    :path "specs/release-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "f804b343a27f3d2c65a4fe48448856ac2601446447e6ab8353177ca5ddce570b",
    :body-sha256
@@ -157952,7 +157952,7 @@
    :component "release",
    :path "specs/release-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "f804b343a27f3d2c65a4fe48448856ac2601446447e6ab8353177ca5ddce570b",
    :body-sha256
@@ -157962,7 +157962,7 @@
    :component "platform",
    :path "specs/platform-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "34035c35f900c7d45a04de2802086608c00605f39cb7c2d17b47b8411966660c",
    :body-sha256
@@ -157972,7 +157972,7 @@
    :component "domains",
    :path "specs/domains-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "0a52781dc198138daa0c3e3dd98b661574a2bc533609510a525d73e01d0e79dd",
    :body-sha256
@@ -157983,7 +157983,7 @@
    :component "release",
    :path "specs/release-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "f804b343a27f3d2c65a4fe48448856ac2601446447e6ab8353177ca5ddce570b",
    :body-sha256
@@ -157993,7 +157993,7 @@
    :component "domains",
    :path "specs/domains-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "0a52781dc198138daa0c3e3dd98b661574a2bc533609510a525d73e01d0e79dd",
    :body-sha256
@@ -158003,7 +158003,7 @@
    :component "domains",
    :path "specs/domains-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "0a52781dc198138daa0c3e3dd98b661574a2bc533609510a525d73e01d0e79dd",
    :body-sha256
@@ -158014,7 +158014,7 @@
    :component "release",
    :path "specs/release-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "f804b343a27f3d2c65a4fe48448856ac2601446447e6ab8353177ca5ddce570b",
    :body-sha256
@@ -158025,7 +158025,7 @@
    :component "release",
    :path "specs/release-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "f804b343a27f3d2c65a4fe48448856ac2601446447e6ab8353177ca5ddce570b",
    :body-sha256
@@ -158036,7 +158036,7 @@
    :component "release",
    :path "specs/release-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "f804b343a27f3d2c65a4fe48448856ac2601446447e6ab8353177ca5ddce570b",
    :body-sha256
@@ -158046,7 +158046,7 @@
    :component "platform",
    :path "specs/platform-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "34035c35f900c7d45a04de2802086608c00605f39cb7c2d17b47b8411966660c",
    :body-sha256
@@ -158056,7 +158056,7 @@
    :component "platform",
    :path "specs/platform-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "34035c35f900c7d45a04de2802086608c00605f39cb7c2d17b47b8411966660c",
    :body-sha256
@@ -158067,7 +158067,7 @@
    :component "release",
    :path "specs/release-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "f804b343a27f3d2c65a4fe48448856ac2601446447e6ab8353177ca5ddce570b",
    :body-sha256
@@ -158078,7 +158078,7 @@
    :component "release",
    :path "specs/release-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "f804b343a27f3d2c65a4fe48448856ac2601446447e6ab8353177ca5ddce570b",
    :body-sha256
@@ -158088,7 +158088,7 @@
    :component "platform",
    :path "specs/platform-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "34035c35f900c7d45a04de2802086608c00605f39cb7c2d17b47b8411966660c",
    :body-sha256
@@ -158098,7 +158098,7 @@
    :component "domains",
    :path "specs/domains-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "0a52781dc198138daa0c3e3dd98b661574a2bc533609510a525d73e01d0e79dd",
    :body-sha256
@@ -158108,7 +158108,7 @@
    :component "domains",
    :path "specs/domains-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "0a52781dc198138daa0c3e3dd98b661574a2bc533609510a525d73e01d0e79dd",
    :body-sha256
@@ -158118,7 +158118,7 @@
    :component "domains",
    :path "specs/domains-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "0a52781dc198138daa0c3e3dd98b661574a2bc533609510a525d73e01d0e79dd",
    :body-sha256
@@ -158128,7 +158128,7 @@
    :component "platform",
    :path "specs/platform-workflow/tasks.md",
    :checked false,
-   :source-commit "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+   :source-commit "05f11aba381d49124b8c9ddeb509f4d05791dff2",
    :file-sha256
    "34035c35f900c7d45a04de2802086608c00605f39cb7c2d17b47b8411966660c",
    :body-sha256
@@ -186198,115 +186198,115 @@
  {"specs/syntax-workflow/spec.md"
   "e9ef2a6dc4b73518b8a9ff182ae7ac96eab56baa",
   "specs/mir-workflow/plan.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/lower-workflow/plan.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/release-workflow/tasks.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/stdlib-workflow/tasks.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "docs/component-roadmaps/build.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "docs/component-roadmaps/README.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/opt-workflow/tasks.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/compiler-api-workflow/plan.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/diag-workflow/tasks.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "docs/component-roadmaps/evolution.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/reader-workflow/tasks.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/resolve-workflow/plan.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "docs/phase-17-governance-and-evolution/240-gov10-ecosystem-package-governance-policy.md"
   "e9ef2a6dc4b73518b8a9ff182ae7ac96eab56baa",
   "specs/core-workflow/tasks.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/mir-workflow/tasks.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "docs/component-roadmaps/reader.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "docs/component-roadmaps/compiler-api.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/release-workflow/plan.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/platform-workflow/plan.md"
   "e9ef2a6dc4b73518b8a9ff182ae7ac96eab56baa",
   "docs/full-language-implementation-gap-map.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/expand-workflow/tasks.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/runtime-workflow/plan.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "docs/phase-05-mathematical-and-elementary-function-system/README.md"
   "e9ef2a6dc4b73518b8a9ff182ae7ac96eab56baa",
   "specs/reader-workflow/plan.md"
   "e9ef2a6dc4b73518b8a9ff182ae7ac96eab56baa",
   "specs/evolution-workflow/plan.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/effects-workflow/tasks.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/resolve-workflow/spec.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/types-workflow/plan.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/domains-workflow/plan.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/build-workflow/tasks.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/diag-workflow/plan.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/cli-workflow/plan.md"
   "e9ef2a6dc4b73518b8a9ff182ae7ac96eab56baa",
   "specs/legality-workflow/spec.md"
   "e9ef2a6dc4b73518b8a9ff182ae7ac96eab56baa",
   "specs/compiler-api-workflow/tasks.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/backends-workflow/spec.md"
   "e9ef2a6dc4b73518b8a9ff182ae7ac96eab56baa",
   "specs/auth-workflow/tasks.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/runtime-workflow/tasks.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/auth-workflow/plan.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/build-workflow/plan.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/auth-workflow/spec.md"
   "e9ef2a6dc4b73518b8a9ff182ae7ac96eab56baa",
   "specs/effects-workflow/plan.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/opt-workflow/plan.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/stdlib-workflow/plan.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/tools-workflow/tasks.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/resolve-workflow/tasks.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/effects-workflow/spec.md"
   "e9ef2a6dc4b73518b8a9ff182ae7ac96eab56baa",
   "specs/tools-workflow/plan.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/legality-workflow/tasks.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/syntax-workflow/tasks.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/types-workflow/tasks.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/legality-workflow/plan.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/backends-workflow/plan.md"
-  "e9ef2a6dc4b73518b8a9ff182ae7ac96eab56baa",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/domains-workflow/tasks.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "docs/phase-02-safety/043-safe14-supply-chain-safety.md"
   "e9ef2a6dc4b73518b8a9ff182ae7ac96eab56baa",
   "docs/acceptance-dependencies.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/expand-workflow/spec.md"
   "e9ef2a6dc4b73518b8a9ff182ae7ac96eab56baa",
   "specs/build-workflow/spec.md"
@@ -186314,25 +186314,25 @@
   "specs/runtime-workflow/spec.md"
   "e9ef2a6dc4b73518b8a9ff182ae7ac96eab56baa",
   "specs/platform-workflow/tasks.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/syntax-workflow/plan.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/backends-workflow/tasks.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/evolution-workflow/tasks.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/expand-workflow/plan.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/lower-workflow/tasks.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/cli-workflow/tasks.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/compiler-api-workflow/spec.md"
   "e9ef2a6dc4b73518b8a9ff182ae7ac96eab56baa",
   "specs/emit-workflow/tasks.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3",
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2",
   "specs/core-workflow/plan.md"
-  "5d34b1e50ebd5b2ef27df0db2c4833c11054dfd3"},
+  "05f11aba381d49124b8c9ddeb509f4d05791dff2"},
  :current-source-paths
  ["docs/README.md"
   "docs/acceptance-dependencies.md"
@@ -204346,4 +204346,4 @@
   :newly-amended-original-task-ids [],
   :implementation-acceptance :unassessed},
  :input-fingerprint
- "554a5363fd513f4462f595a2bc26167a11ecf47678ce9eeb4cd64b5294a18759"}
+ "d7ca71b0265ec05ba0da5868d42a331e85fb8634fc322deb02e8fa3998db9f0c"}

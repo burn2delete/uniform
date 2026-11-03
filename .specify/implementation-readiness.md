@@ -4899,3 +4899,39 @@ independent current acceptance and integration remain pending or unassessed.
 Every actual operation restriction, writer reservation and stopped handoff
 remains; no held execution, other-chat message, reviewer wake, aggregate
 publication or merge occurs.
+
+## PR767 complete pattern current-main continuation
+
+The historical pattern continuation from `a4f6d9b543bb47db8ba5438f39db8c1cbe2b8726`
+(tree `59027bc470a796a1886dbaa02c2689c951d8ed83`) is selectively restored in
+the existing owner artifacts: 27 plan/spec/task files and 265 additions. The
+restored value includes the Core pattern criteria/spec/task sections, the Types
+plan and four task blocks (narrowing, coverage, Boolean guards and trusted
+shape), and the complete-pattern interface section in each other existing
+owner plan/task. No new task identity is introduced and the current Schema
+static-projection block is preserved. The live PR767 head
+`b47b8ddbc10f68e44bba23708568fa3abb1a46c9` has no later pattern-specific
+addition beyond that slice.
+
+This current composition normally merges main
+`6f6cc71be14ecb3dffa18a7566f2205d2ceb5b05` (tree
+`41687b2b95f67d775684f06eb7cb52e09f51e107`) at composition commit
+`6b4bc2f5e76482ed51345cf5492b9460298f7f52` (tree
+`cb11dbe4ad4225132e477abd2945f2f98dae3aa1`). The source/test checkpoint
+before generated metadata is `05f11aba381d49124b8c9ddeb509f4d05791dff2`
+(tree `d257282dd6860fc79b8d827f606bd389ad5dacc7`), with current-map input
+fingerprint `6fb3d272314c6014ce9910f308e0db61e58982fe7c5b2b1f8f74d4ecfda37b94`.
+The map reports 50 unchanged bodies, 89 changed bodies, 10 added Evolution
+IDs, 149 current keys and 40 future records; these are conservation counts,
+not implementation, readiness or authority.
+
+Earlier `313bb6fd12f639d45774b4de39a672d7d060fe1c` and
+`9e8e1be3d570ef214e5a65864a5f744c5cd39596` source frames remain historical,
+not current authority or renewed pins. Retired project-accounting wording is
+removed only where it would reintroduce a quota/admission requirement; actual
+ownership, profile, type, coverage, guard, provenance and rejection semantics
+remain. Focused positive/negative source controls and the existing Types/Core
+dependency/source controls are bounded evidence only. Runtime C2-HASH baseline
+nonpasses remain visible; no pin change, compiler/runtime/native/C7 execution,
+complete L7 implementation, migration/release authority, or integration is
+claimed. Independent review remains pending.

@@ -643,3 +643,56 @@ final PR receipt. No runner, catalog or CI-owner file was changed here.
 At the candidate freeze, integration and dashboard handoff had not yet run;
 their actual subsequent dispositions belong in the public PR record and the
 accepted-input handoff. The collector remains the sole store/Site writer.
+
+## PR767 complete pattern current-main continuation
+
+The complete-pattern slice is restored from the immutable original commit
+`a4f6d9b543bb47db8ba5438f39db8c1cbe2b8726` (tree
+`59027bc470a796a1886dbaa02c2689c951d8ed83`), whose parent is the live PR767
+head `b47b8ddbc10f68e44bba23708568fa3abb1a46c9` (tree
+`5b1e0e1e0191ea480e5f00eb483403cca99eb4985`). That slice owns 27 existing
+plan/spec/task files and 265 additions: the Core pattern criteria/spec/task
+blocks, the Types plan plus narrowing/coverage/Boolean-guard/trusted-shape
+task blocks, and one complete pattern interface section in each of the other
+existing owner plans/tasks. It creates no task identity and preserves the
+existing Schema-static-projection block. The live PR head adds no later
+pattern-specific source beyond that immutable slice.
+
+The current-main composition is a normal merge of main
+`6f6cc71be14ecb3dffa18a7566f2205d2ceb5b05` (tree
+`41687b2b95f67d775684f06eb7cb52e09f51e107`) at composition commit
+`6b4bc2f5e76482ed51345cf5492b9460298f7f52` (tree
+`cb11dbe4ad4225132e477abd2945f2f98dae3aa1`), retaining current relocations
+and main's later source/tooling changes. The clean source/test checkpoint
+before generated metadata is `05f11aba381d49124b8c9ddeb509f4d05791dff2`
+(tree `d257282dd6860fc79b8d827f606bd389ad5dacc7`). Its generated current
+source map records input fingerprint
+`6fb3d272314c6014ce9910f308e0db61e58982fe7c5b2b1f8f74d4ecfda37b94`,
+50 unchanged task bodies, 89 changed bodies, 10 added Evolution IDs, 149
+current task keys, and 40 future records. Those are conservation counts, not
+implementation or authority claims.
+
+The historical source frames in preceding receipts, including
+`313bb6fd12f639d45774b4de39a672d7d060fe1c` and
+`9e8e1be3d570ef214e5a65864a5f744c5cd39596`, remain historical inputs; this
+continuation does not relabel them as current source authority or renew their
+pins. Pattern wording that treated a 977-byte predicate or check-and-bind
+allocation as an admission requirement is removed only where the restored
+criteria would otherwise repeat project accounting; semantic ownership,
+profile, type, coverage, guard, provenance and rejection conditions remain.
+
+Focused source controls pass the positive/negative pattern-interface test in
+`tools/sh_crosswalk_test.clj` (1 test / 31 assertions, zero failures/errors),
+including all 19 owner interfaces, Core selection/tree/artifact markers, the
+four Types task blocks, the preserved Schema block, and refusal of the retired
+accounting wording. The prior eight current Types/Core source/dependency
+controls remain the intended focused regression set and are rerun against the
+final generated map. The current runtime pattern probes retain the known
+main-baseline C2-HASH nonpass (expected 231576, observed 246369); no pin
+change or blocked canonical route was retried. Structural document, roadmap,
+boundary and pinned-lint checks are reported separately at freeze.
+
+This continuation claims no compiler/runtime/native/C7 execution, complete L7
+implementation, migration or release authority, public admission,
+self-hosting, or integration. Independent review and coordinator integration
+remain pending.
