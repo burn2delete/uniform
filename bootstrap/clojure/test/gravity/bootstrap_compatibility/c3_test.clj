@@ -160,6 +160,74 @@
               (:span (bootstrap/c3-identity-input
                       seed [] {} {} :list))))))))
 
+(deftest c3-syntax-verification-production-default-identity-is-scoped
+  (let [operations-var
+        (ns-resolve 'gravity.bootstrap 'c3-syntax-verification-ops)
+        marker :gravity.c3-syntax-verification/default-serialization-token
+        production-operations (@operations-var nil)
+        production-token
+        (get (meta (:c3-syntax-serialization-fixture production-operations))
+             marker)]
+    (is (some? production-token))
+    (is (not (boolean? production-token)))
+    (with-redefs [bootstrap/c3-syntax-serialization-fixture
+                  (fn [_] {:roundtrip? true :sentinel :injected})]
+      (is (nil? (get (meta (:c3-syntax-serialization-fixture
+                            (@operations-var nil)))
+                     marker))))
+    (let [serialization-operation
+          (:c3-syntax-serialization-fixture production-operations)
+          artifact
+          {:syntax-object-stream []
+           :syntax-serialization-fixture (serialization-operation [])}
+          calls (atom 0)
+          marked-operation
+          ((deref (ns-resolve 'gravity.c3-syntax-verification
+                              'mark-production-default-serialization-operation))
+           (fn [stream]
+             (swap! calls inc)
+             (serialization-operation stream))
+           (constantly true))
+          operations
+          (assoc (dissoc production-operations
+                         :c3-syntax-verification-report
+                         :c3-syntax-capability-proof)
+                 :c3-syntax-serialization-fixture marked-operation)
+          proof
+          (c3-syntax-verification/with-operations
+            operations
+            #(c3-syntax-verification/c3-syntax-capability-proof artifact))]
+      (is (= :failed (:status proof)))
+      (is (= 1 @calls))
+      (let [fallback-calls (atom 0)
+            fallback-operations
+            (assoc operations
+                   :c3-syntax-serialization-fixture
+                   (fn [stream]
+                     (swap! fallback-calls inc)
+                     (serialization-operation stream)))
+            fallback-proof
+            (c3-syntax-verification/with-operations
+              fallback-operations
+              #(c3-syntax-verification/c3-syntax-capability-proof artifact))]
+        (is (= :failed (:status fallback-proof)))
+        (is (= 2 @fallback-calls)))
+      (let [live-report-operations
+            (assoc (dissoc production-operations
+                           :c3-syntax-capability-proof)
+                   :c3-syntax-verification-report
+                   (fn [stream supplied-serialization c2 boundary]
+                     (with-redefs [bootstrap/reader-canonical-hash
+                                   (fn [_] "sha256:changed")]
+                       (c3-syntax-verification/c3-syntax-verification-report
+                        stream supplied-serialization c2 boundary))))
+            live-proof
+            (c3-syntax-verification/with-operations
+              live-report-operations
+              #(c3-syntax-verification/c3-syntax-capability-proof artifact))]
+        (is (= :failed (:status live-proof)))
+        (is (false? (:syntax-verifier-passed? live-proof)))))))
+
 (deftest c3-syntax-verification-compatibility-wrappers-preserve-interposition
   (let [stream [{:syntax/id "sha256:compatibility"
                  :form {:kind :symbol}
