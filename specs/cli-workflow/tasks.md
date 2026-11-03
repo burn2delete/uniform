@@ -27,6 +27,13 @@ Evidence baseline: [Compile dispatcher](../../bootstrap/clojure/src/gravity/cli/
 
 Closing evidence: Executed success/failure fixtures and artifact paths at public command boundary
 
+<!-- cli-foundation-hosted-hello:start -->
+Apply the [foundation source criteria](plan.md#foundation-source-criteria) within this existing task. Status remains Open; implementation acceptance is unassessed.
+
+Foundation requirement gravity/hosted-hello-execution: Compile the D2 hosted hello source through actual Reader, Syntax, macro expansion and hosted execution, preserving stage/source identities and recording the declared stdout effect and granted authority with the produced output. Refusals: Reject malformed source and the same program without stdout authority; a static hello manifest, host-language print or supplied output string cannot establish execution. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): pipeline - Versioned stage contracts and actual compiler stage/fact/origin products; legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks - Expanded source profile/effect/grant facts and checked/delegated/rejected legality products; runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection - Selected runtime/provider service contracts and actual link/load/service-use evidence.
+<!-- cli-foundation-hosted-hello:end -->
+
+
 - [ ] `cli/remaining-tasks-and-evidence/connect-replformatlintdocinspectprofileauditairegistryexplain-services` Connect REPL/format/lint/doc/inspect/profile/audit/AI/registry/explain services
 
 Status: Open
