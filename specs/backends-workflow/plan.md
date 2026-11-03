@@ -31,6 +31,12 @@ Task bodies/statuses, source criteria and qualified reviews stay unchanged. Curr
 
 Use the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria). Existing GPU/HDL tasks preserve actual synchronization or clocked state in emitted artifacts and target refusals. Selected interfaces do not accept full B8/B9, device execution or current C12/target holds. Historical finite reviews remain scoped; current source composition and implementation acceptance remain pending. Preserve every held operation.
 
+## Complete pattern-matching source interface
+
+Use the [complete pattern-matching source criteria](../core-workflow/plan.md#complete-pattern-matching-source-criteria). Demonstrate representative actual target branch behavior equivalent to checked source decisions, including effectful/false/non-returning guards and source diagnostics. Jump/table/vtable/state/workflow/query representations do not change semantics or imply all families implemented.
+
+Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Backends family task authority

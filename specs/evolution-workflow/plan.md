@@ -158,3 +158,9 @@ Current task identities/statuses, historical review subjects and original C7 pub
 Use the [Types producer and consumer order](../types-workflow/plan.md#types-producer-and-consumer-order) and existing selected-result table. Keep the unchanged conditional type-form change producer. Actual artifact-schema updates, fixtures and affected type/effect/memory/profile/MIR/backend/schema/AI/library/documentation products precede stable adoption; ordinary unchanged-contract development gains no permission ceremony.
 
 Existing task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
+## Complete pattern-matching source interface
+
+Use the [complete pattern-matching source criteria](../core-workflow/plan.md#complete-pattern-matching-source-criteria). Retain the exact existing conditional pattern-semantic change producer and unchanged profile74 predicate. Update each affected pattern family and its Core/type/effect/ownership/schema/workflow/AI/formal/backend conformance consumers before stable adoption; ordinary unchanged-contract development gains no new ceremony.
+
+Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.

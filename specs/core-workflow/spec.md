@@ -57,6 +57,8 @@ reviewed applicable evidence, with residual host and seed boundaries explicit.
 
 The [complete Core source criteria](plan.md#complete-core-source-criteria) restore the five published C6 clauses and add complete L2 expression/control/value/call/order/artifact/checked-consumer requirements in the same five Open tasks. Existing profile74, Effects/Auth/Pipeline and conditional Evolution predicates retain exact roles and historical review scope. Current full L2/C6 source/interface and implementation acceptance remain pending.
 
+The [complete pattern-matching source criteria](plan.md#complete-pattern-matching-source-criteria) route full L7 selection, narrowing, coverage, guards, ownership, validation and artifacts through the existing Core/Resolve/Types/Effects/Legality tasks and unchanged conditional Evolution producer. Required families remain in scope; current source/interface entailment and implementation acceptance are pending.
+
 ## Historical task-authority-transfer specification
 
 # Feature specification: Core implementation workflow

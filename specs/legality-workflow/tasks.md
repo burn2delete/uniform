@@ -76,6 +76,14 @@ Apply the [complete namespace and resolution source criteria](../resolve-workflo
 Decision criterion interface/language/module/validate-namespace-contract: Require the declared namespace contract and one active implementation profile, retaining the explicit bootstrap-seed exception; validate reusable profile sets/exclusions, target requests and clauses separately. Reject: Reject missing/conflicting active profiles, illegal namespace clauses and unioning powers from multiple profile variants. Required outputs: Namespace/profile/target contract and supported-variant manifest, missing/ambiguous/invalid-clause diagnostics.
 <!-- resolve-source-namespace-contract:end -->
 
+
+<!-- legality-pattern-source-profiles:start -->
+
+Apply the [complete pattern-matching source criteria](../core-workflow/plan.md#complete-pattern-matching-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and every actual restriction; current source/interface entailment and implementation acceptance remain pending.
+
+L7 profile and totality criterion (Open): Apply real selected profile rules: portable pure core matching, hosted typed wrappers/checked interop, native known record/union layouts, and governing kernel/firmware/hardware collection/allocation/dynamic restrictions. AI matching follows validation; distributed matching retains replay-sensitive guard records. Formal closed matches require totality or explicit partiality proof, and defaults cannot conceal required safety proof. Enforce concrete profile/representation/ownership requirements before admitted use without replacing them with project work quotas. Required evidence: actual supported-profile positives and rejected missing layout/validation/proof or forbidden pattern cases; unsupported implementation slices remain required work.
+<!-- legality-pattern-source-profiles:end -->
+
 - [ ] `legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis` Complete ownership, borrow, initialization and lifetime analysis
 
 Status: Open
@@ -308,6 +316,14 @@ Decision criterion interface/language/concurrency/check-gpu-parallel-access: Req
 Complete concurrency race/capture fact criterion (Open): Derive conflicting same-mutable-location accesses with at least one write and no valid ordering from actual control, alias, ownership, lifetime and synchronization facts. Prove scoped child borrows end before expiry; detached tasks cannot capture non-static borrows even if a lifecycle owner is declared. Consume the parent value on a move except permitted immutable sharing, synchronized access or explicit cloning; return ownership only through declared join/receive/actor-response/transfer paths. Derive concurrent-safe immutable representation including synchronized or disabled lazy caches and memoization, and expose hidden mutation. Derive GPU shared-memory/ownership/barrier facts from real accesses and synchronization. Emit proof or unresolved/refusal facts rather than accepting caller-supplied race-free, capture-valid or barrier-safe flags.
 <!-- concurrency-source-analysis:end -->
 
+
+
+<!-- legality-pattern-source-resources:start -->
+
+Apply the [complete pattern-matching source criteria](../core-workflow/plan.md#complete-pattern-matching-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and every actual restriction; current source/interface entailment and implementation acceptance remain pending.
+
+L7 pattern ownership criterion (Open): Derive actual move/borrow/consumption facts for owned or linear pattern bindings from real resolved/narrowed types and branch/guard/control flow. A branch may move only when its consumption satisfies governing ownership and linear-resource rules; account for false guards, later clauses and non-returning paths. Emit L7-LINEAR-MOVE on violations and retain source-bound evidence. Resolution owns lexical names and Types owns narrowing; this task does not replace them. Required evidence: legal destructuring and rejected duplicate consumption, invalid moves/borrows/escapes and lost obligations across guard/failure paths.
+<!-- legality-pattern-source-resources:end -->
 
 - [ ] `legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries` Complete safe-code classification and taint/unsafe boundaries
 

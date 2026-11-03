@@ -182,6 +182,45 @@ Use the [Types producer and consumer order](../types-workflow/plan.md#types-prod
 
 Existing task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Complete pattern-matching source criteria
+
+Direct review of complete [L7](../../docs/phase-01-core-language/017-l7-pattern-matching-specification.md) retains its seven original owner obligations and full source conjunctions. Thirteen additional source criteria refine eleven existing Open tasks across Core, Resolve, Types, Effects and Legality. Evolution's existing conditional pattern-change predicate remains unchanged: fourteen criteria name twelve existing tasks across six authorities. No new implementation task or feature is created. The inherited check-and-bind owner assignment retains Legality's task reference plus actual Resolve/Types witnesses; it does not assign lexical resolution or type narrowing to ownership analysis. Earlier finite source predicates/reviews remain frozen and confer no complete L7 or current implementation acceptance.
+
+| Existing task | Actual source outcome |
+| --- | --- |
+| `resolve/current-evidence-and-remaining-work/resolve1-resolve-lexical-positions` | Real lexical branch/guard binding identities and duplicate/out-of-scope refusal. |
+| `types/current-evidence-and-remaining-work/types1-solve-core-constraints` | All fourteen governing pattern families and actual scrutinee/branch narrowing. |
+| `types/current-evidence-and-remaining-work/types1-solve-core-constraints` | Real exhaustive/unreachable cases, defaults and required closed-match evidence. |
+| `types/current-evidence-and-remaining-work/types1-solve-core-constraints` | Established normally returning Bool, distinct from if truthiness. |
+| `core/current-evidence-and-remaining-work/core1-lower-core-forms` | Ordered structural selection, once-only guards and preserved non-returning transfer. |
+| `core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss` | Real deterministic mapped decision tree with stage-appropriate owner facts. |
+| `effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects` | Actual guard/branch effects and observable order. |
+| `effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering` | Real context/profile effect admission, separate from grants. |
+| `effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation` | Current replay-sensitive guard records and affected invalidation. |
+| `legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis` | Actual pattern move/borrow/linear-consumption facts. |
+| `legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks` | Concrete profile/layout/validation/totality or partiality requirements. |
+| `types/current-evidence-and-remaining-work/types2-check-declared-abstractions` | Actual authentic schema/typed-boundary checks before trusted closed shapes. |
+| `core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses` | Seven complete current artifact families, all eight diagnostics and actual consumer evidence. |
+| `evolution/change-review` | Unchanged conditional affected-family/consumer conformance before stable semantic adoption. |
+
+### Complete semantic premises and real cases
+
+Cover wildcard, binding, literal (including quoted symbols), tuple/vector, conditionally supported List, Map, record/struct, tagged-union constructor, enum, type, schema-derived, resource/linear, guarded and default patterns. Every actual pattern is checked against its scrutinee and branches use actual narrowed lexical environments after expansion. Result Ok/Err bindings retain the source T/E types. Duplicate names within one pattern are illegal absent an explicit equality-pattern contract; bindings exist only in their own branch/guard after introduction. Do not substitute expected types, host pattern behavior or the canonical-if-only List/nil join rule. Unsupported required families remain visible implementation work.
+
+A normally returning guard must establish Bool; true selects the body and false continues. Nil, numeric/text, unknown, Dynamic and nil-or-Bool are not silently Boolean. Evaluate the scrutinee once, skip guard/body on structural failure, and evaluate each selected guard once after binding and before its body. Preserve throws and other non-returning transfers. Actual guard/branch effects and mutation-sensitive order follow Effects, with separate Auth grants; a successful type check does not authorize an action. Distributed replay-sensitive guards require their real current records without enabling held replay.
+
+Closed enum/union, formal, opted-in safety-critical and sound compiler analyses require actual coverage evidence. Defaults are allowed only under governing rules and retain applicable future-compatibility policy diagnostics; they cannot hide required safety/totality proof. Formal closed matches retain totality or explicit partiality proof. Open/host/dynamic/untrusted values require actual surviving validation or typed-boundary checks before closed-shape claims. Network/filesystem/database/AI/tool values are not validated by matching; AI variants/required keys preserve declared schema identity. Types checks evidence/dataflow, Schema/Runtime own the actual validator/check, and Legality derives real ownership/profile facts.
+
+Build actual deterministic decision products carrying tested fields/constructors, binding moves/borrows, guard calls, effect summaries, coverage/unreachable results and per-pattern/per-branch spans. Initial structural Core precedes analyses; checked products incorporate actual later owner facts. Jump/if/table/vtable/hardware/workflow/query lowering preserves observable branch behavior and diagnostics or refuses the unsupported target. Keep D1/C1/C5/C6 ordering explicit; no future same-subject semantic result is its own initial candidate input. Preserve all seven artifact families and eight L7 diagnostic meanings with actual failure subjects, source/generated origins and current references.
+
+### Validation and implementation applicability
+
+Owner positive/refusal fixtures cover every family and profile condition, real narrowing and lexical scope, required total/default/missing/unreachable coverage, legal/forbidden/mutating guards, Bool/non-Bool/unknown/non-returning guards, once-only/structural-failure/false-continuation traces, validated/unvalidated external shapes and real move/borrow/linear paths. Compare actual mapped source/generated decision trees and representative backend behavior, rejecting changed observable order, lost spans, stale/coherently substituted owner facts or hidden validation/proof. Early fixture construction and declared interfaces do not wait for final independent harnesses, all runtime/backend families or release acceptance.
+
+Scoped static inspection finds hosted C6 retaining raw patterns and recursively lowered bodies, with general child/field/nonempty-binding verification rather than complete L7 semantic checking. Selected Gravity checked_core definitions build authentic quoted-symbol/map/guard/binding descriptors, reject duplicate bindings and explicitly defer nested guards, variable-width vectors and other leaves in that inspected path. Selected C7 definitions perform real Boolean domain subtraction, structural narrowing and Bool/Never guard handling with clause/source/invalidation records; some unsupported/partial cases remain explicit annotation/refusal paths. Guard evaluation labels and carried declarations are not actual effect legality or runtime proof. These selected ranges do not establish whole 11,346-line checked_core or 25,894-line C7 coverage, all fourteen families, fresh conformance, or absence of other real implementations. No semantic execution ran.
+
+The finite profile74 pattern-change review retains its exact earlier predicate/dependencies and existing Evolution producer; no receipt is renewed or consumed. Complete current L7 source/task/owner/interface entailment, implementation acceptance and integration remain pending/unassessed. Every writer reservation, C7/C12/paired/provider/plugin/native/callback/device/probe/replay/migration/private-store/signing/publication restriction and stopped handoff remains. No held execution, other-chat message, reviewer wake, aggregate publication or merge occurs. Reader contract coverage remains the first actual implementation increment.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Core task authority

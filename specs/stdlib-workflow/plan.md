@@ -118,6 +118,12 @@ Use the [Types producer and consumer order](../types-workflow/plan.md#types-prod
 
 Existing task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Complete pattern-matching source interface
+
+Use the [complete pattern-matching source criteria](../core-workflow/plan.md#complete-pattern-matching-source-criteria). Real Result/Option/record/enum/collection/resource declarations and callable implementations retain pattern binding/narrowing, validation and linear cleanup contracts. Source declarations precede analysis; later callable behavior and consumer fixtures require actual implementations, not a type-shaped table.
+
+Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Standard Library workflow migration

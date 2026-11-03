@@ -35,6 +35,14 @@ Apply the [complete namespace and resolution source criteria](plan.md#complete-n
 C5/L3 binding-position criterion language/module/resolve-binding (Open): Consume actual expanded syntax and its namespace/hygiene/macro context after expansion and before type/effect checking; every executable or declarative symbol resolves to an explicit identity or diagnostic. Use actual lexical stack, recur/function bindings, namespace, aliases, required/foreign tables, profile-allowed core imports, active profile/target, package graph and language facets. Preserve L3 unqualified expression order: lexical, recur/parameter, current namespace, profile-permitted core; macro/special forms use their syntactic positions. Alias-qualified and fully qualified names bypass that unqualified search and resolve through the actual alias/namespace/foreign records. C5's local/recur/namespace/alias-qualified/fully-qualified/core/foreign/intrinsic cases remain distinct eligible contexts; intrinsics require explicit syntax, macro positions prefer macro bindings over expression vars, and type/protocol positions use the type namespace. Required outputs: syntax-to-binding table and scope graph with positive local/namespace/alias/fully-qualified/macro/type/foreign/intrinsic and legal-shadowing fixtures. Reject unresolved/ambiguous names, illegal shadowing, missing/duplicate aliases and invented host bindings with C5-UNRESOLVED/AMBIGUOUS/SHADOW/ALIAS and applicable L3 diagnostics, retaining the actual resolved/candidate identities.
 <!-- resolve-source-binding:end -->
 
+
+<!-- resolve-pattern-source-bindings:start -->
+
+Apply the [complete pattern-matching source criteria](../core-workflow/plan.md#complete-pattern-matching-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and every actual restriction; current source/interface entailment and implementation acceptance remain pending.
+
+L7 lexical pattern-binding criterion (Open): Resolve actual pattern definitions and uses after expansion. Bind names only in their own branch body and guard after introduction; preserve scrutinee, clause, pattern-path and lexical identities. Reject duplicate names within one pattern as L7-DUP-BINDING unless a governing equality-pattern contract explicitly permits them, and reject escaped, cross-branch or fabricated references. Supply real bindings to Types and ownership analysis; resolution does not infer narrowed types or authorize moves. Required evidence: accepted branch/guard uses and rejected duplicate/out-of-scope/substituted bindings with current source/generated spans.
+<!-- resolve-pattern-source-bindings:end -->
+
 - [ ] `resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries` resolve/2: Validate module boundaries
 
 Current evidence/status: Open; partial source evidence above is not closure

@@ -175,6 +175,12 @@ The five Types tasks remain Open and Evolution remains the single conditional ch
 
 Preserve all C7/C12/paired/provider/plugin/native/callback/device/probe/replay/migration/private-store/signing/publication restrictions, writer reservations and stopped handoffs. No held action, other-chat message, reviewer wake, aggregate publication or merge occurs.
 
+## Complete pattern-matching source interface
+
+Use the [complete pattern-matching source criteria](../core-workflow/plan.md#complete-pattern-matching-source-criteria). Own actual scrutinee/branch narrowing, closed-domain coverage, normally returning Bool guards and trusted-shape evidence. Nil-or-Bool/unknown/Dynamic is not established Bool; canonical-if-only joins do not widen match. Preserve actual validation dataflow and source identities without replacing Schema/Runtime checks.
+
+Task IDs/statuses, historical review scopes and actual restrictions remain unchanged. Current complete source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Types task authority

@@ -39,6 +39,30 @@ Apply the [complete Types source criteria](plan.md#complete-types-source-criteri
 Decision criterion interface/language/types/derive-private-keyword-map-domain: Derive the whole Keyword key domain of an immutable bare Map parameter only from a complete finite census of private normal entries; preserve the existing homogeneous Keyword List result for keys. Reject: Reject partial/open/public/mutable or otherwise invalid census assumptions, non-Keyword entries and widening inferred keys from mere observed subsets. Required outputs: Private-entry census and key-domain inference evidence, homogeneous List type result and incomplete/invalid-census refusal fixtures.
 <!-- types-source-private-key-domain:end -->
 
+
+<!-- types-pattern-source-narrowing:start -->
+
+Apply the [complete pattern-matching source criteria](../core-workflow/plan.md#complete-pattern-matching-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and every actual restriction; current source/interface entailment and implementation acceptance remain pending.
+
+L7 pattern typing and narrowing criterion (Open): Check every actual pattern against its independently established scrutinee type, then type each branch in its actual branch-local narrowed environment. Cover all fourteen L7 pattern families subject to their real profile/runtime/ownership conditions; keep unsupported required families visible as remaining work. Preserve literal, tuple/vector, List, Map, record/struct, union/enum/type/schema/resource bindings and actual Result T/E extraction. Reject incompatible patterns as L7-PATTERN-TYPE and retain actual branch types. Canonical-if-only List/nil joins do not widen match joins. Required evidence: real narrowing tables and accepted/refused family fixtures, not expected-type-driven facts or a pattern catalog.
+<!-- types-pattern-source-narrowing:end -->
+
+
+<!-- types-pattern-source-coverage:start -->
+
+Apply the [complete pattern-matching source criteria](../core-workflow/plan.md#complete-pattern-matching-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and every actual restriction; current source/interface entailment and implementation acceptance remain pending.
+
+L7 closed-match coverage criterion (Open): Derive actual exhaustive and unreachable-case results from the current scrutinee domain, constructors, clauses and guards. Require coverage for closed enums/unions, formal and opted-in safety-critical matching and compiler analysis where missing cases are unsound. An explicit default can supply coverage where allowed, retaining applicable future-compatibility warnings/policy diagnostics; it cannot suppress required formal/safety proof. Open/dynamic/host/untrusted shapes require real validation/check premises before closed coverage. Emit L7-NONEXHAUSTIVE and L7-UNREACHABLE with actual missing/unreachable cases. Required evidence: total/default/guarded positives and missing, hidden, stale-domain or unjustified-closedness negatives.
+<!-- types-pattern-source-coverage:end -->
+
+
+<!-- types-pattern-source-guard:start -->
+
+Apply the [complete pattern-matching source criteria](../core-workflow/plan.md#complete-pattern-matching-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and every actual restriction; current source/interface entailment and implementation acceptance remain pending.
+
+L7 Boolean guard criterion (Open): Establish Bool for each normally returning guard from actual checked expression and branch-binding facts, or emit L7-GUARD-TYPE. True selects its body and false continues; nil, numeric, text, nil-or-Bool, unknown or Dynamic results are not silently Boolean. A throw or other non-returning guard retains its control transfer without manufacturing a Bool value. Preserve actual guard type, source and binding dependencies. Required evidence: accepted true/false/non-returning cases and rejected non-Boolean/unestablished results, distinct from L2 if truthiness and without authorizing illegal effects.
+<!-- types-pattern-source-guard:end -->
+
 - [ ] `types/current-evidence-and-remaining-work/types2-check-declared-abstractions` types/2: Check declared abstractions
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -90,6 +114,14 @@ Apply the [complete Types source criteria](plan.md#complete-types-source-criteri
 
 Decision criterion interface/language/protocol/select-checked-dispatch: Resolve a declared profile/target-legal implementation set and dispatch mode with typed method/effect contracts; retain host-boundary metadata when delegated. Reject: Reject missing/ambiguous dispatch, ungranted reflection/open-world assumptions and method/type/effect/profile mismatches. Required outputs: Protocol/implementation/dispatch and target metadata, legal selection and missing/ambiguous/host-boundary refusal fixtures.
 <!-- types-source-dispatch:end -->
+
+
+<!-- types-pattern-source-trusted:start -->
+
+Apply the [complete pattern-matching source criteria](../core-workflow/plan.md#complete-pattern-matching-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and every actual restriction; current source/interface entailment and implementation acceptance remain pending.
+
+L7 trusted-shape boundary criterion (Open): Require actual schema-validation or typed-boundary-check evidence and authentic source identity before external/dynamic/host data is treated as a trusted closed pattern shape. Network/filesystem/database/AI/tool values must cross the real required boundary; AI variants and required keys are checked against their declared schema. Matching itself, a schema-shaped record, a narrowed annotation or a nonempty validation link does not validate a value. Preserve dataflow and surviving checks to selected runtime consumers; Schema/Runtime own actual validators/check execution. Required evidence: accepted validated values and rejected unvalidated, weakened, wrong-source, stale or coherently substituted shape/constructor/key assumptions.
+<!-- types-pattern-source-trusted:end -->
 
 - [ ] `types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit` types/3: Make dynamic boundaries explicit
 
