@@ -5101,3 +5101,116 @@ producer/consumer entailment, implementation acceptance, independent current
 review and integration remain pending or unassessed. Every actual restriction,
 writer reservation and stopped handoff remains. No held execution, other-chat
 message, reviewer wake, aggregate publication or merge occurs.
+
+## Complete L8 source and owner continuation
+
+Source `0aff3e592e1d3e7e7d6323e86b057f2be394d0fe` adds fourteen L8
+criteria to eleven existing Open tasks in seven authorities, with twenty-one
+existing plans and the Types specification refined. The earlier Types
+select-checked-dispatch criterion and exact 1,011-byte conditional Evolution
+stable-change predicate remain unchanged: sixteen criteria name twelve tasks
+across eight authorities. No feature, task identity, status or acceptance is
+created. All 149 current keys, 25 authorities and forty future declarations
+remain. Original task-body accounting stays 44 identical / 95 explicitly amended;
+no previously identical original body becomes amended in this continuation.
+
+Direct complete L8 review conserves 81 facets, sixty source occurrences,
+fourteen complete section conjunctions and five original owner obligations.
+The preserved census labels 61 facets semantic and twenty context; this
+proposal separately classifies 59 as source predicates and 22 as retained
+hierarchy/dependency context, over 41 semantic and nineteen context occurrences.
+Four originally semantic heading facets are retained as context, while the two
+originally contextual requires/rejects preambles join their complete lists as
+source predicates. Earlier identities and census labels are not rewritten.
+Complete preambles, lists, examples and following conditions remain
+conjoined by section. Counts establish conservation, not independent semantic
+acceptance or a coverage percentage.
+
+Types owns actual nine-field method contracts, checked extensions and real
+implementation sets/modes; Effects owns selected-implementation or declared-
+upper-bound call effects and actual allowance. The inherited selection owner
+retains Effects2 plus Types selection and Effects3 admission witnesses, rather
+than transferring inference to propagation. Separate Auth grants remain real
+authority. The foreign-error owner gains explicit Types boundary and Runtime
+normalization witnesses without an invented prior full-owner acceptance.
+
+Keep all eight dispatch modes visible under governing conditions. Conditional
+multimethod support preserves declared dispatch functions/cases, hosted open
+behavior or actual generated profile-specific coverage tables, and closed
+matching/jump-table behavior. Missing selection and ambiguity without a declared
+priority reject; L8 does not supply a new global priority/coherence policy or
+universal default-method allowance. Source examples do not implement methods,
+prove effects or grant filesystem authority.
+
+Core, hosted, native, constrained, distributed, AI and formal rules remain
+concrete: actual portable interfaces, declared native reflection providers,
+required bounded-behavior artifacts, schema/artifact boundaries, real schema
+validation and separate grants, and closed dispatch or actual total-coverage
+proof. Constrained semantic/profile proofs do not revive removed compiler
+work/cost quotas. No method/table may hide allocation, IO, FFI, network/database,
+model/tool, unsafe or reflection effects. An indeterminate safe implementation
+set rejects or follows an actually supported checked provider with explicit
+effects/capabilities and surviving checks.
+
+Source protocols remain semantic authority while Lower produces actual selected
+direct/vtable/dictionary/host/C-ABI/Wasm/profile-defined-HDL interfaces. Runtime
+executes actual host null/exception/failure-resource normalization before safe
+core entry; Types boundary metadata does not execute conversion. AI/tool
+invocation requires actual schema validation dataflow and authentic grants.
+Optimization performs actual dispatch specialization under surviving governing
+proof and preserves source diagnostics and fallback, or proves fallback
+unreachable. Changed assumptions invalidate affected facts and require real
+regeneration/verification. Valid unspecialized portable dispatch needs no
+universal optimizer or native artifact.
+
+Retain all nine artifact families, seven L8 diagnostic meanings, actual failure
+subjects and current producer/source/generated/binding/type/effect/grant/profile/
+target/ABI/schema/provider/proof references. Owner fixtures cover real method/
+extension/dispatch behavior, visible call effects, constrained refusals, host
+normalization, specialization and diagnostic/fallback preservation, and actual
+mode/implementation identity. Fixture construction precedes independent final
+harnesses; a complete flag, table or representative receipt cannot close L8.
+
+Scoped static inspection of two complete hosted C7 files finds protocol/value
+recognition emitting fixed Displayable/String/hosted-dynamic records and copied
+node effects/capabilities, with typed/complete labels. The verifier checks the
+dispatch container's complete status rather than all actual L8 method,
+implementation, profile, ABI and host-normalization relations. This is neither
+fresh execution, whole-compiler inspection nor proof that no other real
+implementation exists; implementation credit remains none.
+
+The first source-pin refresh correctly rejected changed future-record file
+provenance after the existing Domains AI task criterion moved later text. An
+explicit protocol-source successor now conserves all forty literal declarations
+and records sixteen changed Domains whole-file/source bindings. Removing that
+successor or forging a captured body hash rejects. The historical Macro
+successor stays unchanged; no earlier receipt is renewed or consumed.
+
+Current proposal fingerprint:
+`db180122aa26733d8838b1a4a68f88ba14cbf49fc09d4d6db9f34eab373bdeff`.
+All applying pins verify against local Git. Four focused crosswalk tests /
+9,489 assertions pass: complete current L8 source/owner conjunctions,
+entire frozen L7 dependency/source subjects and global task/history conservation.
+The L7 dependency regression now reads its complete frozen
+`fa1866623a979758ead8e2bd9e522c01db2d10d4` subject including every source
+reader. All other earlier test bytes remain unchanged. All 23 dependency tests /
+5,727 assertions and both pinned projection checks pass. Canonical validation
+passes 240 documents / nineteen phase indexes; full-language roadmap structural
+validation passes with dated counts non-authoritative. The final language-
+boundary gate passes six tests / eleven assertions. Conservation/navigation
+passes 91 changed files, 85 Markdown files, 3,848 local references, 139 original
+routes, 48 historical spec/plan suffixes and all 48 original task/evidence
+contents after declared additions are removed. ASCII/whitespace checks pass.
+The full current 76-test suite was not rerun; the prior complete 68-test /
+44,978-assertion run remains bound to
+`25a96a0c03536270001449c00676e644ea353521`. These are planning/traceability
+checks, not compiler/runtime/provider/target/proof/migration/release conformance.
+
+The existing 2,011 joins, 139 routes, 99 current parents, forty future records
+and 97-/nine-task coarse cycles retain their meanings. Complete L8 selected-
+result producer/consumer staging is next; Reader contract coverage remains the
+first actual implementation increment. Global source/owner/task and complete
+interface entailment, implementation acceptance, independent current review and
+integration remain pending/unassessed. All actual restrictions, writer
+reservations and stopped handoffs remain; no held execution, other-chat message,
+reviewer wake, aggregate publication or merge occurs.
