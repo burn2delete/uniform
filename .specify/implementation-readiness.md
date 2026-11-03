@@ -6490,3 +6490,11 @@ Final conservation/navigation passes 91 changed files, 85 Markdown files,
 and all 48 original task/evidence contents after declared additions are removed.
 ASCII and whitespace checks pass. Reconciliation, implementation, independent
 acceptance and integration remain distinct and unfinished.
+
+The metadata commit command's pre-commit guard had an unmatched delimiter,
+and the shell continued to create `6ba744cba5c205e8aa6e69f6db7d58d7f5544ce8`.
+A separately parsed read-only audit then verified its exact
+`3d4854762252741c302a9c5367a124114fe9547c` parent, all five owned changed
+paths, exact committed/workspace bytes, clean workspace, ASCII, whitespace and
+source/fingerprint identity. The failed guard is not passing evidence. This
+report-only follow-up records that distinction; no source, join or test changes.
