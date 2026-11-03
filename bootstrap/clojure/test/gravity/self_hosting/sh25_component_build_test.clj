@@ -135,7 +135,8 @@
         owned-paths
         (set
          (filter #(or (str/starts-with? % "bootstrap/gravity/src/")
-                      (str/starts-with? % "language/compiler/src/"))
+                      (str/starts-with? % "language/compiler/src/")
+                      (str/starts-with? % "language/runtime/src/"))
                  (keys (:module-owners ownership))))
         runtime-path
         "bootstrap/clojure/fixtures/self-hosting/sh-19/minimal_runtime_engine.gravity"
