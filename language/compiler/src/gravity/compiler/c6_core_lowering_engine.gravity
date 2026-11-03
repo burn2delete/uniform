@@ -11,6 +11,7 @@
              c6-sh07-independent-exception-verifier
              c6-form->core-form
              c6-eval-order
+             construct-canonical-core-node
              build-c6-core-node
              build-c6-desugaring-trace
              verify-c6-set-mutation-execution-request
@@ -6081,6 +6082,49 @@
 ; :gravity/c6-core-node and :gravity/c6-desugaring-trace records are not the
 ; canonical C6 artifact interface, and they are not wired into the hosted C6
 ; lowering path by this slice.
+(defn construct-canonical-core-node
+  [node-id form syntax module data effects]
+  (let [generated-origin (get syntax :generated-origin)
+        origin-chain
+        (loop [remaining (if (vector? generated-origin) generated-origin [])
+               result (if (get syntax :origin)
+                        [{:kind (get syntax :origin)}]
+                        [])]
+          (if (= 0 (count remaining))
+            result
+            (recur (rest remaining) (conj result (first remaining)))))
+        surface-form (get data :surface-form)
+        unsafe-metadata
+        (if (if (seq? surface-form)
+              (= 'unsafe (first surface-form))
+              false)
+          {:unsafe-island :declared
+           :safety-outcome :pending-safe6}
+          nil)
+        base {:artifact :gravity/core-node
+              :node-id node-id
+              :form form
+              :children {}
+              :source {:syntax-id (get syntax :syntax-id)
+                       :span (get syntax :span)
+                       :origin-chain origin-chain}
+              :binding-context :namespace-root
+              :profile (get module :profile)
+              :target (get module :target)
+              :metadata (get syntax :metadata)
+              :facts {:resolved-bindings :pending-c5-binding-table}
+              :effects effects
+              :capabilities (get module :capabilities)
+              :unsafe-metadata unsafe-metadata
+              :generated? (> (count origin-chain) 0)}]
+    (if (map? data)
+      (loop [remaining (keys data) result base]
+        (if (= 0 (count remaining))
+          result
+          (let [key (first remaining)]
+            (recur (rest remaining) (assoc result key (get data key))))))
+      base)))
+
 (defn build-c6-core-node
   [node-id form children syntax-id source-span origin-chain binding-context profile target metadata facts generated?]
   {:artifact :gravity/c6-core-node
