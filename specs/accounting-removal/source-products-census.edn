@@ -1,4 +1,52 @@
-{:test-definitions
+{:legacy-fields-role :historical-source-review-checkpoint
+ :current-composition {:role :current-source-composition-checkpoint,
+ :executed-fixtures
+ ["compact-source-proof-minimum.gravity"
+  "compact-source-proof-interval.gravity"],
+ :source-tree "c604b7c22155b16833b2bb5a968cfb2bd7212df3",
+ :source-inputs
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :byte-count 1935313,
+   :sha256
+   "492a6076887c6c5be2bbd13520b065c1b9af8cf88c7ffa0f773039d4c64ca74f"}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :byte-count 1701709,
+   :sha256
+   "7108c2b375efdca7b9f639fd53b82e139540aba9b19b98ff1de403ef1c8bc02a"}],
+ :checks
+ {:source-product-after-hosted-source-reuse
+  {:tests 1,
+   :assertions 28,
+   :failures 0,
+   :errors 0,
+   :exit 0,
+   :log "/tmp/uniform-pr593-post844-source.log"},
+  :private-native-kernels
+  {:source-commit "2969dc22fe6ea8b286b1a1943fe2168dc464d0eb",
+   :tests 4,
+   :assertions 117,
+   :failures 0,
+   :errors 0,
+   :owned-source-files-byte-conserved true}},
+ :source-commit "a49c5b8ef6cca27a7e1e71f840404227560b375b",
+ :metadata-review :pending-independent-review,
+ :public-c7-routing false,
+ :byte-compared-only-fixtures
+ ["compact-source-proof-minimum.qst"
+  "compact-source-proof-interval.qst"],
+ :test-form-adaptations
+ [{:name gis3-current-source-Core-products,
+   :change :explicit-current-reader-syntax-macro-source-handoff,
+   :identity :bound-by-current-source-file-hash,
+   :historical-form-hash :retained-in-legacy-test-definitions}],
+ :base-tree "2a66ff230e7befa2ad2266847163d20578424dc0",
+ :base-commit "e61d452c3ab5ebc2d989588f58b0a1c2651818ef",
+ :numeric-proof-established false,
+ :b47-verification-complete false}
+
+ :test-definitions
  [{:name gis3-current-source-Core-products,
    :kind defn-,
    :adaptations [:fixture-directory-accepted-to-preserved],

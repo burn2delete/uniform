@@ -4,7 +4,33 @@ This receipt binds the finite private source-product reconstruction to the
 current main source that was actually reviewed. It does not promote the
 historical PR593 review record or a source fixture into C7/B47 authority.
 
-## Identities and ancestry
+## Current composition and evidence
+
+The clean source checkpoint is `a49c5b8ef6cca27a7e1e71f840404227560b375b`,
+tree `c604b7c22155b16833b2bb5a968cfb2bd7212df3`, over main
+`e61d452c3ab5ebc2d989588f58b0a1c2651818ef`, tree
+`2a66ff230e7befa2ad2266847163d20578424dc0`. It includes the hosted
+source-product reuse change from PR844. The current-composition section of
+`source-products-census.edn` records the complete current source-file byte
+counts and hashes, and explicitly records the Reader/Syntax/Macro handoff
+adaptation of `gis3-current-source-Core-products`.
+
+The other census fields are historical source-review inputs. Their old whole
+file and test-form hashes, static-only results and pending statuses are not
+the current composition's identities or results. All 45 private definitions
+and 15 external dependencies were independently checked for form conservation.
+The separate metadata commit and integration preflight bind the later final
+candidate without rewriting this clean source checkpoint.
+
+After PR844, the real source-product control passed naturally: 1 test / 28
+assertions, zero failures/errors, exit 0, recorded in
+`/tmp/uniform-pr593-post844-source.log`. The four native DATA/index/comparison
+controls passed 4/117 at `2969dc22fe6ea8b286b1a1943fe2168dc464d0eb`; their
+owned source files are byte-identical at this checkpoint. Only the minimum and
+interval `.gravity` files executed in the source-product check. Their `.qst`
+companions were byte-compared, not independently executed.
+
+## Historical port identities and ancestry
 
 - current-main base: `f43e77992fe86b6dfb55df3516b27cfcdea7fa40`
   (tree `a0e433f9f185b651f6f5ebc54340a085a5cd6721`)
@@ -18,14 +44,14 @@ historical PR593 review record or a source fixture into C7/B47 authority.
   (tree `3b6adbf90cd25bae217dc1acbded11148b38d08f`), composed from the
   reviewed current Syntax owner handoff and the explicit development-current
   Reader/Syntax/Macro invocation in the SH08 fixture.
-- the current branch has the original PR593 head as its second parent; the
-  current tree retains current-main quota-free owners and the current test
-  transport rather than replaying the historical parent tree.
+- the ancestry-preserving merge retains the original PR593 head as its second
+  parent. Later compositions retain that ancestry and the current quota-free
+  owners rather than replaying the historical parent tree.
 
 ## Conserved scope
 
-The original eight changed paths are conserved: four byte-identical
-`compact-source-proof-{minimum,interval}` `.gravity`/`.qst` pairs under a
+The original eight changed paths are conserved: four fixture files forming two
+byte-identical `compact-source-proof-{minimum,interval}` `.gravity`/`.qst` pairs under a
 `preserved/` development-fixture directory, the SH08 focused controls, the C7
 engine, and the source-product census/description. The C7 port contains the
 39 private `sh08-gis3-*` definitions, five native arena/comparison definitions,

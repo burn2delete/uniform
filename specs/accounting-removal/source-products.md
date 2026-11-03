@@ -1,5 +1,11 @@
 # Private source-product successor
 
+This file preserves the historical proposal and its original validation scope.
+Later current-source composition and execution are recorded separately in
+`source-products-current-port.md` and the current-composition section of
+`source-products-census.edn`. Pending and UNRUN statements below belong to the
+historical source tuple.
+
 Planning: ACC-01/04/07/12/13. Accountable implementation owner: ACC-01,
 thread `01a183dd-7208-7d33-a336-7483fd90e358`. This draft preserves the finite
 GIS3/private source-product family from PR502. It is stacked on quoted-data
