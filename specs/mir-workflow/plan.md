@@ -128,6 +128,12 @@ Use the [protocol and dispatch producer and consumer order](../types-workflow/pl
 
 Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Complete error-handling source interface
+
+Use the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria). Carry actual error-control/typed-outcome/effect/profile/resource/check/host/schema/replay/policy facts through real graph construction, verification and round-trip. Runtime/target failure behavior needs actual producers, not complete/error flags.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: MIR task authority

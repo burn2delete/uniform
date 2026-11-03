@@ -182,3 +182,9 @@ Task identities/statuses, historical review scopes and actual restrictions remai
 Use the [protocol and dispatch producer and consumer order](../types-workflow/plan.md#protocol-and-dispatch-producer-and-consumer-order) and existing selected-result table. Keep the exact 1,011-byte conditional protocol-change producer and earlier typed-selection predicate; actual affected consumer compatibility/conformance precedes stable change without gating ordinary unchanged-contract development.
 
 Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete error-handling source interface
+
+Use the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria). Retain the exact unchanged 1,032-byte stable-error-representation predicate and existing producer. Actual affected core/type/effect/profile/runtime/FFI/workflow/AI/library/diagnostic/test compatibility/conformance precedes stable representation change; unchanged-contract development gains no new ceremony.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.

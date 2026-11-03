@@ -113,6 +113,14 @@ Complete L12 secret boundary criterion (Open): Derive and enforce actual effect/
 <!-- compile-time-source-secrets:end -->
 
 
+
+<!-- auth-error-source-policy:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L9 authentic denial/error boundary criterion (Open): Preserve actual capability denial, policy denial and required human-review denial as their declared typed/audited failures with principal, action, effect, capability, provider, scope, source/generated and applicable policy identity. Check authority before the actual action; a caught error, Result/Option wrapper, panic path or handler cannot issue a grant, suppress required audit or convert denied behavior into successful nil/absence. Required evidence: actual allowed/denied/revoked or missing-grant selected-boundary fixtures and typed denial/audit products consumed by Runtime/AI, with existing action restrictions unchanged and no new ordinary-work approval gate.
+<!-- auth-error-source-policy:end -->
+
 - [ ] `auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks` Bind compiler decisions to runtime/build enforcement hooks
 
 Status: Open

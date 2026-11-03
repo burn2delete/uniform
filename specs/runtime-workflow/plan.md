@@ -161,6 +161,12 @@ Use the [protocol and dispatch producer and consumer order](../types-workflow/pl
 
 Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Complete error-handling source interface
+
+Use the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria). Restore the five exact earlier panic/check/foreign/workflow/AI predicates to their same three Open Runtime tasks, totaling 6,269 bytes. Early real service/error/cleanup/wrapper contracts precede callers; later actual selected execution/normalization/durable replay products establish behavior, without renewing earlier reviews or enabling held actions.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Runtime workflow migration

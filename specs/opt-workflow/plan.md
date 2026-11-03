@@ -138,6 +138,12 @@ Use the [protocol and dispatch producer and consumer order](../types-workflow/pl
 
 Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Complete error-handling source interface
+
+Use the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria). Preserve real error/handler/cleanup order, required checks, diagnostic/source/proof and panic/foreign/workflow/AI outcomes under governing preservation evidence. Regenerate changed-subject owner facts; equal normal values do not prove preserved failures or audit/replay behavior.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Opt task authority

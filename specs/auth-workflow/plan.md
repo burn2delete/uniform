@@ -329,6 +329,12 @@ Use the [protocol and dispatch producer and consumer order](../types-workflow/pl
 
 Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Complete error-handling source interface
+
+Use the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria). Preserve actual typed/audited capability/policy/human-review denial with principal/action/grant/provider/source identity. Authority is checked before action; catch/Result/panic paths cannot issue grants or convert denial into nil/absence.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Auth task authority

@@ -258,6 +258,12 @@ The actual staged subjects below expose remaining coarse feedback without preten
 
 Current task bodies/statuses, source criteria, forty future declarations and every finite review subject remain unchanged, including the explicit sixteen-binding Domains source successor. This selected L8/C8/C13/C14/R10/L19 interface does not accept those complete support contracts. Whole source/owner/interface entailment, actual implementation, independent current acceptance and integration remain pending/unassessed. Reader contract coverage remains the first actual implementation increment. Preserve all writer reservations, C7/C12/paired/provider/plugin/native/callback/device/probe/replay/migration/private-store/signing/publication restrictions and stopped handoffs. No held execution, other-chat message, reviewer wake, aggregate publication or merge occurs.
 
+## Complete error-handling source interface
+
+Use the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria). Keep all eleven outcome families distinct and derive actual throw/catch/call/normal-result and Result/Option domain facts. Preserve the unchanged 534-byte typed-outcome predicate; source coverage does not discharge effects, profile or authority.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Types task authority

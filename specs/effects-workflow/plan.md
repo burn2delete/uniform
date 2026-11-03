@@ -406,6 +406,12 @@ Use the [protocol and dispatch producer and consumer order](../types-workflow/pl
 
 Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Complete error-handling source interface
+
+Use the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria). Derive actual direct/latent/transitive thrown, handler-raised and residual error requirements and visible function contracts. Actual checked allowance, handler/profile/service conditions and separate grants precede admission; ordinary try/catch does not imply resumable continuation authority.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Effects task authority

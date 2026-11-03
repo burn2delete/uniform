@@ -92,6 +92,14 @@ Apply the [complete protocol and dispatch source criteria](../types-workflow/pla
 L8 concrete profile-dispatch criterion (Open): Derive profile legality from actual dispatch/type/effect/runtime facts. Core admits statically resolved, dictionary or portable-interface contracts; hosted dynamic/reflection still requires effects and capabilities. Native admits monomorphization/dictionaries/vtables and rejects reflection unless a native runtime provider declares it, with actual provider/admission facts. Kernel/firmware/hardware reject reflection, hidden allocation, open-world dispatch and runtime lookup unless a constrained artifact proves the required bounded behavior; this is a concrete semantic/profile proof, not retired compiler work accounting. Distributed boundaries use actual schema/artifact contracts; AI tools require actual schema validation and grants; formal needs closed dispatch or proof of total coverage. Required evidence: source-bound profile decisions, applicable constrained/closed/coverage proofs and accepted/refused profile fixtures with L8-DYNAMIC-FORBIDDEN; no runtime/backend-only legality substitution.
 <!-- legality-protocol-source-profiles:end -->
 
+
+<!-- legality-error-source-profiles:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L9 concrete profile-failure criterion (Open): Define and check the active profile's throw/try/panic disposition from actual error/type/effect/service facts: permitted host exceptions, explicit Result rewriting, panic, trap, workflow failure or rejection where governed. Preserve hosted exception/task-abort, native handler, kernel trap/platform panic, firmware reset/halt, hardware runtime-panic rejection or permitted synthesis-time unreachable/trap artifact, distributed durable failure state and AI policy/orchestration failure records. Reject unsupported/undeclared dispositions and panic used as ordinary stable-API control flow with L9-PANIC-PROFILE. Required evidence: actual source-bound profile/error/panic lowering matrix, lawful positive/refusal cases and selected service/layout/proof conditions; a profile label, host default or constrained target does not supply semantics or authority.
+<!-- legality-error-source-profiles:end -->
+
 - [ ] `legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis` Complete ownership, borrow, initialization and lifetime analysis
 
 Status: Open
@@ -448,6 +456,14 @@ Apply the [complete macro source criteria](../expand-workflow/plan.md#complete-m
 Complete macro safety consumer criterion (Open): Consume actual expanded forms, declarations versus observed behavior, hygiene/capture, phase/build authority, taint/sink metadata, full SAFE6 records and origins before issuing the ordinary safety verdict. Reject declaration mismatch, unadvertised or incomplete unsafe, privileged/runtime capture, taint loss, skipped generated checks or weakened alternative-engine provenance. Classify dangerous operations only as :proven-safe, :runtime-checked, :rejected or :unsafe-island with surviving evidence and caller-profile restrictions. Expand owns macro analysis/products; this task owns ordinary downstream safety classification and preservation, not duplicate macro execution or self-acceptance from supplied flags.
 <!-- macro-source-legality:end -->
 
+
+
+<!-- legality-error-source-failure:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L9 specified safety-check-failure criterion (Open): For every actual retained bounds, initialization, numeric, capability, taint or replay check, require its current typed failure record or profile/runtime/safety-mode-defined trap and preserve the real check/source/generated identity to Runtime and Lower. A failing retained check is specified behavior rather than target undefined behavior, proof of success or an implicit fifth D8 outcome. Preserve proven-safe/runtime-checked/rejected/explicit audited unsafe classification and surviving checks under their own contracts. Required evidence: actual check-to-failure/trap obligations and accepted/refused missing/changed/erased behavior fixtures; Runtime executes triggered failure and cleanup, not this static declaration or supplied safe flag.
+<!-- legality-error-source-failure:end -->
 
 - [ ] `legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution` Preserve obligations into MIR and runtime execution
 
