@@ -125,7 +125,7 @@
                 :rejects stage1-bootstrap-diagnostic-ids}
          :modules module-records
          :accepted-stage1-bootstrap-source-fixtures
-         [{:fixtures ["bootstrap/gravity/src" "language/compiler/src"]
+         [{:fixture "bootstrap/gravity/src"
            :source-roots ["bootstrap/gravity/src" "language/compiler/src"]
            :components (vec (sort stage1-bootstrap-required-components))
            :status :accepted}]
@@ -156,6 +156,9 @@
   "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
 
 (def stage1-reader-bootstrap-source-root
+  "bootstrap/gravity/src")
+
+(def stage1-reader-bootstrap-source-roots
   ["bootstrap/gravity/src"
    "language/compiler/src"])
 
