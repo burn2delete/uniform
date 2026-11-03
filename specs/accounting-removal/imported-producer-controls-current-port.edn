@@ -14,7 +14,8 @@
                             :census-added-lines 117
                             :report-added-lines 61}}
  :current-base
- {:commit "7201ddcc82ab3bf778f65f9f1f6e6ac821632128"
+ {:role :port-development-base
+  :commit "7201ddcc82ab3bf778f65f9f1f6e6ac821632128"
   :tree "b1703faa759a7bf0daa79b03258737d1dab80012"
   :production
   {:path "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
@@ -47,7 +48,7 @@
  :current-api-adaptation
  {:producer-arity 4
   :retired-entrypoint :sh08-carrier-preflight
-  :replacement :sh08-im-inputs-check
+  :replacement [:sh08-vf-original-data :sh08-im-inputs-check]
   :production-changed false
   :allowance-api-restored false}
  :evidence
@@ -56,6 +57,15 @@
   :public-c7-acceptance :not-established
   :independent-acceptance :pending
   :integration :pending}
+ :current-composition
+ {:base "ae887f80a8c8f0731bc32951f6a208f654e3b6db"
+  :source-checkpoint "bf2d883060ffb8183b312d2657146fe79c77ed35"
+  :source-tree "60b569467b77639c3683c64430d6d39f14f1fcb8"
+  :test-command "clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh08-imported-producer-controls-test --fail-fast"
+  :log "/tmp/uniform-pr621-ae887-focused.log"
+  :tests 2 :assertions 13 :failures 0 :errors 0 :exit 0
+  :original-history-retained true
+  :production-unchanged true}
  :nonclaims
  [:whole-imported-accounting
   :authenticated-producer

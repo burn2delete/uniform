@@ -11,7 +11,7 @@ equality, active-cycle and producer-membership checks, malformed input shape,
 
 ## Current-main adaptation
 
-This port starts at current main `7201ddcc82ab3bf778f65f9f1f6e6ac821632128`,
+This port's recorded development base is `7201ddcc82ab3bf778f65f9f1f6e6ac821632128`,
 tree `b1703faa759a7bf0daa79b03258737d1dab80012`. Production remains byte
 unchanged: the current C7 source is
 `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity`,
@@ -23,9 +23,9 @@ The controls live in the new focused namespace
 writer is added to the shared SH08 test file. The current main kernel exposes
 the four-argument `sh08-im-producers` path and no longer exposes the retired
 `sh08-carrier-preflight` wrapper. The port therefore uses the current input
-schema check for the finite DATA acceptance and the current producer path for
-the authentication refusal; it does not restore an old wrapper or allowance
-API.
+native `sh08-vf-original-data` validator for finite DATA acceptance, a separate
+input-schema check, and the current producer path for authentication refusal;
+it does not restore an old wrapper or allowance API.
 
 The two tests retain all independent semantic cases:
 
@@ -43,6 +43,24 @@ EDN receipt. It passed 2 tests / 13 assertions with zero failures and errors. Th
 normalized C7 kernel controls, not genuine authenticated source or public C7
 acceptance. No production change, allowance replacement, source pin refresh,
 native-C route, or main integration is claimed.
+
+The clean source composition checkpoint is
+`bf2d883060ffb8183b312d2657146fe79c77ed35`, tree
+`60b569467b77639c3683c64430d6d39f14f1fcb8`, over main
+`ae887f80a8c8f0731bc32951f6a208f654e3b6db`. All three port paths were
+conserved across the disjoint schema and verifier-fixture changes, and the
+original PR history was retained without replaying its parent tree. The
+unchanged test source passed again at that checkpoint:
+
+```text
+clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh08-imported-producer-controls-test --fail-fast
+Ran 2 tests containing 13 assertions.
+0 failures, 0 errors. Exit 0.
+```
+
+The execution log is `/tmp/uniform-pr621-ae887-focused.log`. The source
+checkpoint precedes this receipt update; the final integration identity is
+reported separately.
 
 ## Evidence boundary
 
