@@ -128,6 +128,36 @@
       (is (thrown? Exception (gh/graphql ctx "mutation changed" {})))
       (is (= 1 @calls)))))
 
+(deftest controller-push-and-merge-denials-block-successor-intents
+  (doseq [[first-command successor error]
+          [[["git" "push" "origin" "first:refs/heads/codex/task"]
+            ["git" "push" "other-alias" "successor:refs/heads/codex/other-task"]
+            "remote: Permission to fixture/repo denied to fixture-user."]
+           [["gh" "pr" "merge" "1" "--match-head-commit" "first"]
+            ["gh" "pr" "merge" "2" "--match-head-commit" "successor"]
+            "GraphQL: Resource not accessible by integration (HTTP 403)"]]]
+    (let [ctx (assoc-in (context) [:config :repository] "fixture/repo") calls (atom 0)]
+      (with-redefs [rt/command (fn [& _] (swap! calls inc) {:exit 1 :out "" :err error})]
+        (try (rt/effect! ctx "first-intent" #(rt/run! ctx (:state-dir ctx) first-command))
+             (catch Exception e (flow/attention! ctx "blocked" e)))
+        (is (= :restricted (get-in @(:state ctx) [:effects "first-intent" :status])))
+        (is (thrown? Exception (rt/effect! ctx "new-candidate-intent" #(rt/run! ctx (:state-dir ctx) successor))))
+        (is (= :restricted (get-in @(:state ctx) [:effects "new-candidate-intent" :status])))
+        (is (seq (:restricted-commands (rt/read-edn (:state-file ctx)))))
+        (is (= 1 @calls))
+        (with-redefs [rt/with-lock (fn [_ f] (f))]
+          (is (thrown? Exception (main/dispatch! ctx "retry" ["blocked"]))))))))
+
+(deftest ordinary-source-and-stale-head-failures-are-not-authorization-denials
+  (doseq [error ["! [rejected] codex/task -> codex/task (non-fast-forward)"
+                 "Pull request is not mergeable: the head commit changed"]]
+    (let [ctx (context)]
+      (with-redefs [rt/command (fn [& _] {:exit 1 :out "" :err error})]
+        (try (rt/run! ctx (:state-dir ctx) ["git" "push" "origin" "candidate:refs/heads/codex/task"])
+             (is false "Expected the ordinary command failure")
+             (catch Exception e (is (false? (:restricted (ex-data e)))))))
+      (is (empty? (:restricted-commands @(:state ctx)))))))
+
 (deftest tracking-writes-have-durable-intents-and-stop-on-uncertainty
   (let [ctx (context) calls (atom 0)]
     (is (= 1 (rt/tracking-effect! ctx "status/item" #(swap! calls inc))))

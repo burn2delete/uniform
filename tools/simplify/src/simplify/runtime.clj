@@ -85,9 +85,23 @@
        (event! ctx :command-end {:argv argv :exit exit :elapsed-ms (quot (- (System/nanoTime) started) 1000000)})
        result))))
 
+(defn authorization-denied? [message]
+  (boolean (re-find #"(?i)(HTTP (401|403|429)|requested URL returned error: (401|403|429)|permission denied|permission to .+ denied|write access .+ not granted|authentication failed|resource not accessible|requires authentication|bad credentials|rate limit exceeded|secondary rate limit|not authorized)"
+                    (or message ""))))
+
 (defn run! [ctx cwd argv]
-  (let [result (command ctx cwd argv)]
-    (when-not (zero? (:exit result)) (fail! "Command failed" (assoc result :argv argv)))
+  (let [action (cond
+                 (= ["git" "push"] (vec (take 2 argv))) ["git-push" (get-in ctx [:config :repository])]
+                 (= ["gh" "pr" "merge"] (vec (take 3 argv))) ["gh-pr-merge" (get-in ctx [:config :repository])]
+                 :else argv)
+        key (digest (pr-str action))
+        _ (when (get-in @(:state ctx) [:restricted-commands key])
+            (fail! "Restricted controller command cannot be retried" {:argv argv :restricted true}))
+        result (command ctx cwd argv)]
+    (when-not (zero? (:exit result))
+      (let [restricted (authorization-denied? (str (:err result) "\n" (:out result)))]
+        (when restricted (update! ctx assoc-in [:restricted-commands key] {:argv argv :error (:err result)}))
+        (fail! "Command failed" (assoc result :argv argv :restricted restricted))))
     (str/trim (:out result))))
 
 (defn git [ctx cwd & args] (run! ctx cwd (into ["git"] args)))

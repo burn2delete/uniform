@@ -24,7 +24,7 @@
                               body (into ["--input" "-"]))
                             (when body (json/write-str body)))]
      (when-not (zero? (:exit result))
-       (let [restricted (boolean (re-find #"(?i)(HTTP (401|403|429)|resource not accessible|requires authentication|bad credentials|rate limit exceeded|secondary rate limit)" (:err result)))]
+       (let [restricted (rt/authorization-denied? (str (:err result) "\n" (:out result)))]
          (when restricted (rt/update! ctx assoc-in [:restricted-actions key] {:method method :endpoint endpoint :error (:err result)}))
          (rt/fail! "GitHub API failed; no automatic mutation retry"
                    {:endpoint endpoint :exit (:exit result) :error (:err result) :restricted restricted})))
