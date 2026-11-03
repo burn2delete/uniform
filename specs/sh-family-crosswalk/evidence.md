@@ -714,8 +714,8 @@ The source composition is a normal merge of current main
 `2c5742ea00c0840ad4be842d971de9652ba8457f` (tree
 `11320981c4126366c518b39b07c7a35354202ae2`) with the accepted continuation
 history. The clean source/test checkpoint before generated readiness metadata
-is `103485cd2e8c0c0e8f20e4d8904c7ea8c5f3d5df` (tree
-`428eb58b654fbce4b2c06102e86a532eb1f1b46f`); the current-source successor
+is `e79416eb004ffd8107fe5c664c5b5f5e7fe54e9f` (tree
+`274ee7a1b9f713ebcd6586d6891caf3e4bc28810`); the current-source successor
 precedence and the compact protocol source/tamper controls are part of this
 checkpoint. The readiness map is regenerated only after this checkpoint and
 binds current files to their actual commit/tree/blob bytes; its 50 unchanged,
@@ -726,8 +726,9 @@ The bounded protocol control executes `source-view` against the current
 successor and checks predecessor bridge/projection hashes, current task/plan/
 specification and criterion byte spans, future-task row identity/body hashes,
 owner joins, selected source-file hashes, and fail-closed rejection of a
-removed or forged protocol successor. It is source/data integrity evidence
-only. The historical PR767 source frames remain historical; all task rows,
+removed or forged protocol successor. The pinned current-main comparison lint
+also passes with zero unchanged warnings and zero blocking diagnostics. It is
+source/data integrity evidence only. The historical PR767 source frames remain historical; all task rows,
 implementation, compiler, runtime, migration, release, self-hosting and
 public-admission states remain open, pending or unassessed. No native/C,
 compiler migration, held route or restricted operation was executed.
