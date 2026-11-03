@@ -163,6 +163,41 @@
   {:log "/tmp/uniform-pr697-cljfmt-tools-ci-repair.log",
    :result
    "exit 1; progress_test.clj, progress_isolation_test.clj, and resolution_interval_test.clj required mechanical formatting"}},
+ :subsequent-composition
+ {:base "9381b2dbf6270f28368c939a479971baae1a8381",
+  :code-checkpoint "fbd27cd790b5657c48d21c5e8838beb64d2de529",
+  :code-tree "7d4ee6b51e8b1fa15be46a8304e97d5fa26f3e41",
+  :owned-paths-conserved-from
+  "362ca5ecfac25f51ec5f752f5a742be638a8c4bc",
+  :executed-source-checkpoint
+  "17c6b1b122d58f43aa546621ffe7679a8c62b663",
+  :prior-complete-ci
+  {:head "362ca5ecfac25f51ec5f752f5a742be638a8c4bc",
+   :success 12,
+   :configured-skips 2},
+  :focused-checks
+  [{:name :facade,
+    :tests 27,
+    :assertions 494,
+    :failures 0,
+    :errors 0,
+    :exit 0,
+    :log "/tmp/uniform-pr697-9381-facade.log"}
+   {:name :progress,
+    :tests 12,
+    :assertions 165,
+    :failures 0,
+    :errors 0,
+    :exit 0,
+    :log "/tmp/uniform-pr697-9381-progress.log"}
+   {:name :isolation,
+    :tests 3,
+    :assertions 16,
+    :failures 0,
+    :errors 0,
+    :exit 0,
+    :log "/tmp/uniform-pr697-9381-isolation.log"}],
+  :hosted-ci-for-later-head :not-claimed},
  :repair-controls
  {:ambiguous-binding-refusal
   [:distinct-require-alias :distinct-refer :same-simple-name-import],
