@@ -1,5 +1,5 @@
 (ns gravity.self-hosting.c6-fresh-construction-current-test
-  (:require [clojure.test :refer [deftest is run-tests]]
+  (:require [clojure.test :refer [deftest is]]
             [gravity.bootstrap :as bootstrap]))
 
 (defn- private-var [name]
@@ -53,31 +53,40 @@
                          :source-byte-count 33
                          :source-content-hash
                          "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
-        source-binding {:kind :gravity/p15-s23-c6-c10-source-binding
-                        :status :complete
-                        :source-path source-path
-                        :source-contract-version 2
-                        :source-mode :development-current
-                        :source-byte-count 33
-                        :source-content-hash (:source-content-hash source-snapshot)
-                        :plan :synthetic-c6-plan
-                        :function-manifest :synthetic-c6-functions}
+        source-version (or (:source-version options) 2)
+        source-binding (cond-> {:kind :gravity/p15-s23-c6-c10-source-binding
+                                :status :complete
+                                :source-path source-path
+                                :source-contract-version source-version
+                                :source-byte-count 33
+                                :source-content-hash (:source-content-hash source-snapshot)
+                                :plan :synthetic-c6-plan
+                                :function-manifest :synthetic-c6-functions}
+                         (= 2 source-version)
+                         (assoc :source-mode :development-current))
         reader-binding {:artifact :gravity/sh03-current-source-reader-plan-binding
                         :status :complete
                         :source-path "reader.gravity"
                         :plan :synthetic-reader-plan}
-        expression-binding {:artifact :gravity/p15-s23-current-expression-binding
-                            :status :complete
-                            :source-path "emitter.gravity"
-                            :source-mode :development-current
-                            :source-content-hash
-                            "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-                            :plan :synthetic-expression-plan}
-        receipt {:source-interface {:interface :gravity/c6-c10 :version 2}
-                 :admission-status :development-unadmitted
-                 :envelope-verification :passed
-                 :self-hosted? false}
+        expression-binding (merge
+                            {:artifact :gravity/p15-s23-current-expression-binding
+                             :status :complete
+                             :source-path "emitter.gravity"
+                             :source-mode :development-current
+                             :source-content-hash
+                             "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                             :plan :synthetic-expression-plan}
+                            (:expression options))
+        receipt (merge
+                 {:source-interface {:interface :gravity/c6-c10 :version 2}
+                  :admission-status :development-unadmitted
+                  :envelope-verification :passed
+                  :self-hosted? false}
+                 (:receipt options))
         reads (atom 0)
+        compiler-binding-var
+        (ns-resolve 'gravity.bootstrap
+                    '*p15-s23-stage2-compiler-artifact-binding*)
         current-snapshot
         (fn [_]
           (let [read-number (swap! reads inc)]
@@ -89,8 +98,6 @@
     (redefine
      {'p15-s23-c6c10-validate-public-context!
       (fn [value] (swap! events conj :validate-context) value)
-      'p15-s23-c6c10-require-trusted-carrier!
-      (fn [_ reason value] (swap! events conj [:trusted-carrier reason]) value)
       'p15-s23-c6c10-source-binding!
       (fn [path version source-mode]
         (swap! events conj [:source-binding path version source-mode])
@@ -98,9 +105,13 @@
       'p15-s23-c6c10-current-reader-program!
       (fn [path]
         (swap! events conj [:reader-owner path])
-        {:binding reader-binding
-         :invocation {:reader-source-path "reader.gravity"}
-         :c6-source-snapshot {:before source-snapshot :after source-snapshot}})
+        (if (:reader-fails? options)
+          (throw (ex-info "Synthetic Reader refusal"
+                          {:id (or (:reader-error-id options)
+                                   "SYNTHETIC-READER")}))
+          {:binding reader-binding
+           :invocation {:reader-source-path "reader.gravity"}
+           :c6-source-snapshot {:before source-snapshot :after source-snapshot}}))
       'p15-s23-c6c10-read-current-source-snapshot!
       current-snapshot
       'p15-s23-stage2-current-expression-development-binding!
@@ -109,7 +120,9 @@
         expression-binding)
       'p15-s23-c6c10-private-ingress-products
       (fn [& args]
-        (swap! events conj [:private-ingress args])
+        (swap! events conj [:private-ingress args
+                            (when compiler-binding-var
+                              (var-get compiler-binding-var))])
         {:front-end-products {:source-unit-id "synthetic-source"
                               :c3-artifact-id "synthetic-c3"}
          :source-policy-receipt receipt})
@@ -129,6 +142,15 @@
       'p15-s23-c6c10-throw-sealed-rejection!
       (fn [& _]
         (throw (ex-info "Synthetic sealed rejection" {:id "SYNTHETIC-SEALED"})))
+      'p15-s23-c6c10-require-trusted-carrier!
+      (fn [_ reason value]
+        (swap! events conj [:trusted-carrier reason])
+        (if (and (:reject-expression-callback? options)
+                 (fn? (get-in value [:expression-binding :foreign-callback])))
+          (throw (ex-info "Synthetic opaque callback refusal"
+                          {:id "C6-VERIFY"
+                           :missing-fact :trusted-current-reader-owner-metadata}))
+          value))
       'p15-s23-c6c10-gravity-replay-verification!
       (fn [& _]
         (swap! events conj :gravity-replay)
@@ -137,25 +159,32 @@
       'p15-s23-c6c10-public-artifact
       (fn [& _]
         (swap! events conj :public-artifact)
-        (bool-core))
+        (or (:artifact options) (bool-core)))
       'p15-s23-c6c10-project-expression-owner-metadata
       (fn [_ binding]
         ;; The production helper is exercised by the current-main C6 tests;
         ;; this seam proves the constructor keeps the public projection plan-free.
         (select-keys binding [:artifact :status :source-path :source-mode
-                              :source-content-hash]))}
-     (fn [] {:value (f) :events @events}))))
+                              :source-content-hash :foreign-callback]))}
+      (fn [] {:value (f)
+              :events @events
+              :compiler-binding-after
+              (when compiler-binding-var (var-get compiler-binding-var))}))))
 
 (deftest current-v2-construction-routes-current-owners-and-projects-plan-free
   (let [{:keys [path context]} (temporary-context)]
     (try
-      (let [{:keys [value events]}
+      (let [{:keys [value events compiler-binding-after]}
             (current-fakes
              context {}
              #((private-var 'p15-s23-c6c10-fresh-construction) context 2))
             receipt (:source-policy-receipt value)]
         (is (= :synthetic-proof (:graph-proof value)))
         (is (not (contains? (:source-binding value) :plan)))
+        (is (= {:interface :gravity/c6-c10 :version 2}
+               (:source-interface receipt)))
+        (is (= :development-unadmitted (:admission-status receipt)))
+        (is (false? (:self-hosted? receipt)))
         (is (= :development-current
                (get-in receipt [:expression-binding :source-mode])))
         (is (= "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
@@ -163,6 +192,13 @@
         (is (some #{[:source-binding path 2 :development-current]} events))
         (is (some #{[:reader-owner path]} events))
         (is (some #{[:expression-owner path]} events))
+        (let [ingress (first (filter #(and (vector? %)
+                                           (= :private-ingress (first %)))
+                                     events))]
+          (is (= :development-current
+                 (get-in (nth ingress 2) [:source-mode])))
+          (is (= :synthetic-expression-plan
+                 (get-in (nth ingress 2) [:plan]))))
         (is (some #(and (vector? %)
                         (= :private-ingress (first %))
                         (= path (first (second %)))
@@ -175,10 +211,35 @@
           (is (<= 0 artifact-index))
           (is (< replay-index artifact-index)))
         (is (nil? (get-in receipt [:expression-binding :plan])))
-        (is (nil? (get-in value [:source-binding :function-manifest]))))
+        (is (nil? (get-in value [:source-binding :function-manifest])))
+        (is (nil? compiler-binding-after)))
       (finally
         (java.nio.file.Files/deleteIfExists (.toPath (java.io.File. path)))))))
 
+(deftest public-v2-overloads-forward-context-and-path-text-target
+  (let [{:keys [path context source]} (temporary-context)
+        header {:interface :gravity/c6-c10 :version 2}]
+    (try
+      (doseq [invoke [(fn []
+                        (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+                         context header))
+                      (fn []
+                        (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+                         path source :jvm header))]]
+        (let [{:keys [value events]}
+              (current-fakes context {} invoke)]
+          (is (= :gravity/bool
+                 (get-in (last (:core-nodes value)) [:type :return])))
+          (is (some #{[:source-binding path 2 :development-current]} events))
+          (is (some #(and (vector? %)
+                          (= :private-ingress (first %))
+                          (= path (first (second %)))
+                          (= source (second (second %)))
+                          (= "reader.gravity" (nth (second %) 2))
+                          (= 2 (nth (second %) 3)))
+                    events))))
+      (finally
+        (java.nio.file.Files/deleteIfExists (.toPath (java.io.File. path)))))))
 (deftest current-source-bookends-reject-before-and-after-mutation
   (doseq [[mutate-at expected-fact forbidden-events]
           [[1 :stable-current-c6-source-before-builder
@@ -202,6 +263,57 @@
             (is (not (some #{event} events)))))
         (finally
           (java.nio.file.Files/deleteIfExists (.toPath (java.io.File. path))))))))
+
+(deftest current-v2-rejects-wrong-family-and-opaque-expression-carrier
+  (let [{:keys [path context]} (temporary-context)
+        wrong-family {:core-nodes []}
+        callback (fn [] :foreign-callback)]
+    (try
+      (let [{:keys [value events compiler-binding-after]}
+            (current-fakes
+             context {:artifact wrong-family}
+             (fn []
+               (failure-data
+                #(bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+                  context {:interface :gravity/c6-c10 :version 2}))))]
+        (is (= "C6-VERIFY" (:id value)))
+        (is (= :v2-bool-branch-join-source-family (:missing-fact value)))
+        (is (some #{:gravity-replay} events))
+        (is (some #{:public-artifact} events))
+        (is (nil? compiler-binding-after)))
+      (let [{:keys [value events compiler-binding-after]}
+            (current-fakes
+             context {:reject-expression-callback? true
+                      :expression {:foreign-callback callback}}
+             (fn []
+               (failure-data
+                #((private-var 'p15-s23-c6c10-fresh-construction)
+                  context 2))))]
+        (is (= "C6-VERIFY" (:id value)))
+        (is (= :trusted-current-reader-owner-metadata (:missing-fact value)))
+        (is (some #{:gravity-replay :public-artifact} events))
+        (is (nil? compiler-binding-after)))
+      (finally
+        (java.nio.file.Files/deleteIfExists (.toPath (java.io.File. path)))))))
+
+(deftest current-reader-upstream-refusal-stops-before-builder-and-replay
+  (let [{:keys [path context]} (temporary-context)]
+    (try
+      (let [{:keys [value events compiler-binding-after]}
+            (current-fakes
+             context {:reader-fails? true}
+             (fn []
+               (failure-data
+                #((private-var 'p15-s23-c6c10-fresh-construction)
+                  context 2))))]
+        (is (= "SYNTHETIC-READER" (:id value)))
+        (is (some #{[:reader-owner path]} events))
+        (doseq [event [:builder-envelope :builder :seal :gravity-replay
+                       :public-artifact]]
+          (is (not (some #{event} events))))
+        (is (nil? compiler-binding-after)))
+      (finally
+        (java.nio.file.Files/deleteIfExists (.toPath (java.io.File. path)))))))
 
 (deftest public-v3-and-native-version-headers-refuse-before-construction
   (let [{:keys [path context]} (temporary-context)
@@ -243,12 +355,25 @@
       (finally
         (java.nio.file.Files/deleteIfExists (.toPath (java.io.File. path)))))))
 
-(let [result (run-tests 'gravity.self-hosting.c6-fresh-construction-current-test)]
-  (println {:scope :current-v2-fresh-construction-routing
-            :source-bookends :actual-with-synthetic-owner-seams
-            :native-version-refusal :actual
-            :sealed-rejection-order :actual
-            :construction-products :declared-oracles
-            :v3-public-construction :not-enabled
-            :bootstrap-loaded true})
-  (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))
+(deftest legacy-v1-overloads-retain-positive-route-without-current-policy
+  (let [{:keys [path context source]} (temporary-context)]
+    (try
+      (doseq [invoke [(fn []
+                        (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+                         context))
+                      (fn []
+                        (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
+                         path source :jvm))]]
+        (let [{:keys [value events]}
+              (current-fakes context {:source-version 1} invoke)]
+          (is (= :gravity/bool
+                 (get-in (last (:core-nodes value)) [:type :return])))
+          (is (some #{[:source-binding path 1 nil]} events))
+          (is (not-any? #(and (vector? %)
+                              (#{:reader-owner :expression-owner} (first %)))
+                        events))
+          (is (nil? (:source-policy-receipt value)))))
+      (finally
+        (java.nio.file.Files/deleteIfExists (.toPath (java.io.File. path)))))))
+;; End of focused current-v2 tests.
+;; The development test runner owns namespace execution.

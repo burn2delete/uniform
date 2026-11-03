@@ -43,17 +43,29 @@ The focused current-v2 harness covers:
 - explicit v2 dispatch to the current source owner with
   :development-current, followed by the current Reader and expression
   owners;
+- both public v2 entry shapes (validated context/header and
+  path/text/target/header), including Reader-path and source-text forwarding;
 - Reader source path/version and private-ingress argument forwarding;
 - removal of private plans and function manifests from the public binding and
   expression projection;
 - source mutation refusal before builder execution and after replay;
-- sealed-result refusal before replay and public artifact publication; and
+- current-v2 rejection of a wrong semantic Core family and a synthetic opaque
+  expression callback at the final trusted-carrier seam;
+- upstream Reader refusal before builder, sealing, replay and publication;
+- sealed-result refusal before replay and public artifact publication;
 - v3, native integer-version, legacy-header and foreign-interface refusal
-  before the fresh constructor is called.
+  before the fresh constructor is called;
+- positive legacy v1 context and path/text/target entrypoints without the
+  current Reader/expression policy route; and
+- restoration of the dynamic expression binding after successful and failed
+  construction attempts, plus the source-policy receipt's interface,
+  admission and self-hosting fields.
 
 The test uses synthetic owner seams for products and replay ordering. It does
 not substitute those seams for the existing current-main C6/C11 production
-evidence.
+evidence. The callback refusal proves that the constructor reaches and does
+not bypass the final carrier seam, but is not an independent authentication
+result.
 
 ## Focused evidence
 
@@ -61,7 +73,7 @@ Command:
 
     clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.c6-fresh-construction-current-test
 
-Observed: 4 tests, 34 assertions, 0 failures, 0 errors. git diff --check
+Observed: 8 tests, 71 assertions, 0 failures, 0 errors. git diff --check
 also passes for the candidate.
 
 The current-main C6/C11 source-authentication and genuine replay results
