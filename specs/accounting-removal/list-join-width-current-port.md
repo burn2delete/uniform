@@ -81,6 +81,15 @@ original PR heads with exactly the same tree. No historical parent tree is
 replayed. The final integration identity is reported separately from this
 source checkpoint and receipt update.
 
+After the component-registry, cache-v1 removal, reference-runtime quota
+removal, and module-lookup changes reached main, this namespace passed again
+at clean source checkpoint `965672b6dd82829b72058b5a76e576b073321dfb`,
+tree `a609846ade1b498e21403dd2b5668f22bbfee4de`, composed over
+`0e2b37cd2eefbab2f02e5898b960f9bbc4100fef`. The test and Gravity owner
+sources are unchanged. The result remains 3 tests / 188 assertions / zero
+failures or errors, exit 0, in `/tmp/uniform-pr611-current-main-0e.log`.
+The earlier main composition remains historical evidence in the EDN receipt.
+
 This is a bounded current-source helper test using normalized List-if inputs.
 It does not establish an authoritative source migration, genuine C7/C8
 admission, complete PR closure, release readiness, or self-hosting.
