@@ -189,7 +189,6 @@
               ;; is intentionally absent from the semantic artifact identity;
               ;; provenance and lane policy are operational, not semantics.
               :payload-integrity-id payload-integrity-id
-              :payload-size-witness (payload-size-witness stage payload)
               :source-identity source-id
               :provenance provenance
               :pass {:id (get stage-pass-ids stage)

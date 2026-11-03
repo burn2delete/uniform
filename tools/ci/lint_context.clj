@@ -52,52 +52,164 @@
       (throw (ex-info "Unsupported lone CR in lint context source" {:path path})))
     text))
 
-(declare require-spec)
+(defn- source-libspecs [spec]
+  (let [spec (if (and (seq? spec) (= 'quote (first spec))) (second spec) spec)]
+    (cond
+      (symbol? spec) [[spec]]
+      (vector? spec) [spec]
+      (and (seq? spec) (symbol? (first spec)))
+      (for [child (rest spec) expanded (source-libspecs child)]
+        (assoc expanded 0 (symbol (str (first spec) "." (first expanded)))))
+      :else (throw (ex-info "Unsupported lint source libspec" {:spec spec})))))
 
-(defn- source-reader
-  [source-ns aliases]
-  (reify clojure.lang.LispReader$Resolver
-    (currentNS [_] source-ns)
-    (resolveAlias [_ alias] (get aliases alias))
-    (resolveVar [_ _] nil)
-    (resolveClass [_ _] nil)))
+(defn- source-bind! [scope path value kind]
+  (let [existing (get-in scope path)]
+    (when (and (some? existing) (not= existing value))
+      (throw (ex-info "Ambiguous lint source binding"
+                      {:kind kind :path path :existing existing :incoming value})))
+    (assoc-in scope path value)))
 
-(defn- ns-reader-context
-  [form]
-  (when (and (seq? form)
-             (#{'ns 'clojure.core/ns} (first form))
-             (symbol? (second form)))
-    (let [specs (mapcat rest
-                        (filter #(and (seq? %) (= :require (first %)))
-                                (drop 2 form)))
-          aliases (into {}
-                        (keep (fn [spec]
-                                (when-let [{:keys [namespace alias]}
-                                           (require-spec spec true)]
-                                  (when alias [alias namespace])))
-                              specs))]
-      {:namespace (second form) :aliases aliases})))
+(defn- source-core-refers [options]
+  (let [options (apply hash-map options)
+        names (if-let [only (:only options)] only (keys (ns-publics 'clojure.core)))
+        excluded (set (:exclude options)) renames (:rename options)]
+    (reduce (fn [scope name]
+              (if (contains? excluded name)
+                scope
+                (source-bind! scope [(get renames name name)]
+                              (symbol "clojure.core" (str name)) :core-refer)))
+            {} names)))
+
+(defn- source-reader-defaults [namespace]
+  {:namespace namespace :aliases {} :locals #{} :refers (source-core-refers [])
+   :imports (into {} (map (fn [[name type]] [name (symbol (.getName ^Class type))])
+                          clojure.lang.RT/DEFAULT_IMPORTS))})
+
+(defn- source-reader-imports [scope specs]
+  (reduce (fn [scope spec]
+            (let [spec (if (and (seq? spec) (= 'quote (first spec))) (second spec) spec)
+                  classes (if (symbol? spec) [spec]
+                              (when (and (sequential? spec) (every? symbol? spec))
+                                (map #(symbol (str (first spec) "." %)) (rest spec))))]
+              (when-not (seq classes)
+                (throw (ex-info "Unsupported lint source import" {:spec spec})))
+              (reduce (fn [scope name]
+                        (source-bind! scope
+                                      [:imports (symbol (last (str/split (str name) #"\.")))]
+                                      name :import))
+                      scope classes)))
+          scope specs))
+
+(defn- source-declaration-operation [scope form]
+  (let [head (when (seq? form) (first form))
+        resolved-head (when (symbol? head)
+                        ;; def is a compiler form, not a referred Var.
+                        (cond (= 'def head) 'clojure.core/def
+                              (namespace head)
+                              (let [prefix (symbol (namespace head))]
+                                (symbol (str (get (:aliases scope) prefix prefix)) (name head)))
+                              :else
+                              (when-not (contains? (:locals scope) head)
+                                (get-in scope [:refers head]))))
+        operation (when (and resolved-head (= "clojure.core" (namespace resolved-head)))
+                    (symbol (name resolved-head)))]
+    operation))
+
+(defn- source-alias-pair! [form]
+  (let [quoted-symbol (fn [value]
+                        (when (and (or (identical? clojure.lang.PersistentList (class value))
+                                       ;; The quote reader emits a native Cons
+                                       ;; with a native one-element list tail.
+                                       (and (identical? clojure.lang.Cons (class value))
+                                            (identical? clojure.lang.PersistentList (class (.more ^clojure.lang.Cons value)))))
+                                   (= 2 (count value))
+                                   (identical? clojure.lang.Symbol (class (first value)))
+                                   (= 'quote (first value))
+                                   (identical? clojure.lang.Symbol (class (second value)))
+                                   (nil? (namespace (second value))) (nil? (meta (second value))))
+                          (second value)))
+        pair (when (and (identical? clojure.lang.PersistentList (class form)) (= 3 (count form)))
+               (mapv quoted-symbol (rest form)))]
+    (when-not (and pair (every? some? pair))
+      (throw (ex-info "Unsupported lint source alias declaration" {})))
+    pair))
+
+(defn- source-reader-scope [scope form]
+  ;; Declarations are DATA. Never require a library or mutate a Namespace to
+  ;; teach the reader aliases; baseline and current inputs have separate scopes.
+  (let [operation (source-declaration-operation scope form)
+        _ (when (contains? #{'refer 'use 'refer-clojure 'in-ns} operation)
+            (throw (ex-info "Unsupported lint source scope declaration" {:operation operation})))
+        scope (if (= 'alias operation)
+                (let [[alias target] (source-alias-pair! form)
+                      existing (get-in scope [:aliases alias])]
+                  (when (or (contains? (:imports scope) alias)
+                            (and existing (not= existing target)))
+                    (throw (ex-info "Unsupported lint source alias conflict" {})))
+                  (source-bind! scope [:aliases alias] target :alias)) scope)
+        ns? (contains? #{'ns 'clojure.core/ns} operation)
+        scope (if ns? (source-reader-defaults (second form)) scope)
+        clauses (when ns? (filter seq? (drop 2 form)))
+        _ (when (some #(= :use (first %)) clauses)
+            (throw (ex-info "Unsupported lint source use declaration" {})))
+        scope (if-let [refer (first (filter #(= :refer-clojure (first %)) clauses))]
+                (assoc scope :refers (source-core-refers (rest refer))) scope)
+        scope (source-reader-imports scope
+                                     (if ns? (mapcat rest (filter #(= :import (first %)) clauses))
+                                         (when (contains? #{'import 'clojure.core/import} operation) (rest form))))
+        locals (cond (contains? #{'def 'defonce 'defn 'defn- 'defmacro} operation) [(second form)]
+                     (= 'declare operation) (rest form))
+        _ (when (some #(contains? (:imports scope) %) locals)
+            (throw (ex-info "Unsupported lint source class shadowing" {:names locals})))
+        scope (update scope :locals into (filter symbol? locals))
+        specs (cond ns? (mapcat rest (filter #(and (seq? %) (= :require (first %))) (drop 2 form)))
+                    (contains? #{'require 'clojure.core/require} operation) (rest form))]
+    (reduce
+     (fn [scope spec]
+       (if (and (vector? spec) (symbol? (first spec)) (even? (count (rest spec))))
+         (let [options (apply hash-map (rest spec)) alias (or (:as options) (:as-alias options))
+               _ (when (= :all (:refer options))
+                   (throw (ex-info "Unsupported lint source refer-all declaration" {:spec spec})))
+               _ (when (some #(contains? (:imports scope) (get (:rename options) % %)) (:refer options))
+                   (throw (ex-info "Unsupported lint source class shadowing" {:spec spec})))
+               scope (if (symbol? alias)
+                       (do
+                         (when (contains? (:imports scope) alias)
+                           (throw (ex-info "Unsupported lint source alias conflict" {:alias alias})))
+                         (source-bind! scope [:aliases alias] (first spec) :require-alias))
+                       scope)]
+           (reduce (fn [scope name]
+                     (source-bind! scope
+                                   [:refers (get (:rename options) name name)]
+                                   (symbol (str (first spec)) (str name))
+                                   :require-refer))
+                   scope (:refer options)))
+         scope))
+     scope (mapcat source-libspecs specs))))
 
 (defn source-forms! [path bytes]
-  (binding [*read-eval* false *data-readers* {}
-            *default-data-reader-fn* (fn [tag _] (throw (ex-info "Unsupported source tag" {:tag tag :path path})))]
-    (with-open [reader (clojure.lang.LineNumberingPushbackReader.
-                        (java.io.StringReader. (source-text! path bytes)))]
-      (let [eof (Object.)
-            first-form (read {:eof eof} reader)]
-        (if (identical? eof first-form)
-          []
-          (let [{:keys [namespace aliases]} (ns-reader-context first-form)
-                read-more (fn []
-                            (loop [forms [first-form]]
-                              (let [form (read {:eof eof} reader)]
-                                (if (identical? eof form)
-                                  forms
-                                  (recur (conj forms form))))))]
-            (if namespace
-              (binding [*reader-resolver* (source-reader namespace aliases)]
-                (read-more))
-              (read-more))))))))
+  (let [scope (atom (source-reader-defaults (ns-name *ns*)))
+        refuse-tag (fn [tag _] (throw (ex-info "Unsupported source tag" {:tag tag :path path})))
+        resolver (reify clojure.lang.LispReader$Resolver
+                   (currentNS [_] (:namespace @scope))
+                   (resolveAlias [_ alias] (get-in @scope [:aliases alias]))
+                   (resolveClass [_ name]
+                     (or (get-in @scope [:imports name])
+                         (when (str/includes? (str name) ".") name)))
+                   (resolveVar [_ name]
+                     (if (contains? (:locals @scope) name)
+                       (symbol (str (:namespace @scope)) (str name))
+                       (get-in @scope [:refers name]))))]
+    (binding [*read-eval* false *data-readers* {'inst #(refuse-tag 'inst %) 'uuid #(refuse-tag 'uuid %)}
+              *default-data-reader-fn* refuse-tag *reader-resolver* resolver]
+      (with-open [reader (clojure.lang.LineNumberingPushbackReader.
+                          (java.io.StringReader. (source-text! path bytes)))]
+        (let [eof (Object.)]
+          (loop [forms []]
+            (let [form (read {:eof eof} reader)]
+              (if (identical? eof form) forms
+                  (do (swap! scope source-reader-scope form)
+                      (recur (conj forms form)))))))))))
 
 (defn manifest! [bytes]
   (with-open [reader (java.io.PushbackReader.
@@ -356,6 +468,9 @@
             :alias (or (:as options)
                        (when reader-alias? (:as-alias options)))}))))))
 
+(defn- require-specs [value]
+  (keep require-spec (source-libspecs value)))
+
 (declare ^:private call-references)
 
 (defn- binding-references [bindings locals aliases]
@@ -439,17 +554,22 @@
         (doseq [path paths :let [bytes (get inputs path) digest (sha256 bytes)]
                 :when (str/ends-with? path ".clj")]
           (loop [forms (source-forms! path bytes)
-                 current-ns (get namespace-by-path path 'gravity.bootstrap)]
+                 current-ns (get namespace-by-path path 'gravity.bootstrap)
+                 reader-scope (source-reader-defaults (ns-name *ns*))]
             (when-let [form (first forms)]
-              (let [operation (when (seq? form) (core-operation (first form)))
+              (let [operation (source-declaration-operation reader-scope form)
+                    next-reader-scope (source-reader-scope reader-scope form)
                     current-ns (if (= 'ns operation) (second form) current-ns)
                     specs (cond (= 'ns operation) (mapcat rest (filter #(and (seq? %) (= :require (first %))) (drop 2 form)))
                                 (= 'require operation) (rest form))]
                 (when (= 'ns operation) (swap! scopes assoc current-ns {:aliases {} :required {} :defined #{}}))
-                (doseq [{target :namespace alias :alias} (keep require-spec specs)]
+                (doseq [{target :namespace alias :alias} (mapcat require-specs specs)]
                   (swap! scopes assoc-in [current-ns :required target]
                          {:namespace target :alias alias :path path :row (:line (meta form)) :sha256 digest})
                   (when alias (swap! scopes assoc-in [current-ns :aliases alias] target)))
+                (when (= 'alias operation)
+                  (let [[alias target] (source-alias-pair! form)]
+                    (swap! scopes assoc-in [current-ns :aliases alias] target)))
                 (when (and (#{'def 'defonce 'defn 'defn- 'defmacro} operation) (symbol? (second form)))
                   (swap! scopes update-in [current-ns :defined] (fnil conj #{}) (second form)))
                 (let [{:keys [aliases required defined]} (get @scopes current-ns)]
@@ -466,7 +586,7 @@
                                        :reference reference :alias (when (contains? aliases prefix) prefix)
                                        :require (get required target)
                                        :sha256 digest})))
-                (recur (next forms) current-ns)))))))
+                (recur (next forms) current-ns next-reader-scope)))))))
     (let [by-name (group-by (juxt :namespace :name) @definitions)]
       (vec (for [[key definitions] by-name :when (= 1 (count definitions))
                  :let [callers (filterv #(= key ((juxt :namespace :name) %)) @calls)]
