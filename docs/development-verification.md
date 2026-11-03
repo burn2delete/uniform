@@ -77,7 +77,7 @@ operation.
 ## Default SH-07 workflow: three boundaries
 
 For SH-07, edit the owning Gravity implementation
-`bootstrap/gravity/src/gravity/checked_core.gravity`. The Clojure adapter at
+`language/compiler/src/gravity/checked_core.gravity`. The Clojure adapter at
 `bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00885-sh07-core-source-relative-path.clj`
 preserves transport and compatibility; it does not own language semantics.
 
@@ -85,7 +85,7 @@ Use the owning path for the behavior under test:
 
 | Behavior | Owning implementation |
 | --- | --- |
-| Canonical source/Core shape and legality | `bootstrap/gravity/src/gravity/checked_core.gravity` |
+| Canonical source/Core shape and legality | `language/compiler/src/gravity/checked_core.gravity` |
 | Namespace and reference binding | `bootstrap/gravity/src/gravity/resolution.gravity` |
 | Reader literal transport | `bootstrap/clojure/src/gravity/c3_literal_projection.clj` and its SH-04 consumer |
 | Function and expression types | `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` |

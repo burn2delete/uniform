@@ -95,7 +95,7 @@
                  "bootstrap/clojure/test/gravity/self_hosting/sh06_"
                  "bootstrap/clojure/test/gravity/self_hosting/resolution_"
                  "bootstrap/clojure/fixtures/self-hosting/sh-06"]
-   "checked-core-runtime" ["bootstrap/gravity/src/gravity/checked_core.gravity"
+   "checked-core-runtime" ["language/compiler/src/gravity/checked_core.gravity"
                            "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
                            "bootstrap/gravity/src/gravity/compiler/c6_call_arity_legality.gravity"
                            "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
@@ -754,6 +754,9 @@
                            "--namespace" "gravity.self-hosting.sh04-fresh-c2-construction-test"
                            "--namespace" "gravity.self-hosting.sh04-form-index-test"
                            "--namespace" "gravity.self-hosting.sh04-literal-index-test")]
+                 ["bootstrap-input-controls" 600
+                  (command "2g" "-M:dev-test"
+                           "--namespace" "gravity.bootstrap.rebuild.inputs-test")]
                  ["language-boundary" 90
                   (command "512m" "-M:test" "--namespace"
                            "gravity.self-hosting.sh01-language-boundary-test")]

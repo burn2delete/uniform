@@ -30,7 +30,7 @@
   ;; the separate fixture; this never authenticates the full production module.
   (let [root (repository-root)
         path #(str (io/file root %))
-        owner-path (path "bootstrap/gravity/src/gravity/checked_core.gravity")
+        owner-path (path "language/compiler/src/gravity/checked_core.gravity")
         reader-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
         syntax-path (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
         invocation {:reader-source-path reader-path
