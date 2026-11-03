@@ -494,7 +494,11 @@
             (let [stop (or (:start next-row) end) raw (str/trimr (subs source-text (:start row) stop))]
               (cond-> {:id (:id row) :component component :path path :checked (:checked row)
                :authority :component-implementation-ledger
-               :source-commit (if historical-row-source? baseline (source-pin path))
+               :source-commit (cond
+                                historical-row-source? baseline
+                                (contains? historical-task-transition-paths path)
+                                (:source-input-commit readiness-source-version)
+                                :else (source-pin path))
                :file-sha256 (sh-inventory/sha256 source-text)
                :source (sh-inventory/source-span path source-text (:start row) (+ (:start row) (count raw)))
                :owner-source (str "docs/component-roadmaps/" component ".md")}
