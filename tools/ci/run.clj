@@ -16,6 +16,16 @@
 (def resolution-modes #{"resolution" "resolution-pipeline" "resolution-unmetered"
                         "resolution-invocation-selection"})
 
+;; Keep the existing full Resolution pipeline namespace in two fresh JVM
+;; processes.  The final verifier performs its own current-product replay and
+;; can consume the whole child watchdog; the other vars remain one ordinary
+;; cohort.  The runner's --regex/--exact selectors are the only partition
+;; mechanism so each child retains the normal namespace loading and fixtures.
+(def resolution-pipeline-final-test
+  "verifier-requires-fresh-replay-current-products-and-public-proof")
+(def resolution-pipeline-cohort-regex
+  "^(?!.*verifier-requires-fresh-replay-current-products-and-public-proof$).+")
+
 ;; These are the existing owner boundaries exposed by the CI matrix.  Keep
 ;; this table deliberately small: an unlisted path is cross-cutting and must
 ;; retain the full matrix rather than being guessed into one stage.
@@ -725,7 +735,12 @@
                             "--namespace" "gravity.self-hosting.sh06-invocation-selection-test")]]
     "resolution-pipeline" [["resolution-pipeline" 600
                             (command "2g" "-M:dev-test"
-                                     "--namespace" "gravity.resolution.pipeline-test")]]
+                                     "--namespace" "gravity.resolution.pipeline-test"
+                                     "--regex" resolution-pipeline-cohort-regex)]
+                           ["resolution-pipeline-fresh-replay" 600
+                            (command "2g" "-M:dev-test"
+                                     "--namespace" "gravity.resolution.pipeline-test"
+                                     "--exact" resolution-pipeline-final-test)]]
     "resolution-unmetered" [["resolution-unmetered" 600
                              (command "2g" "-M:dev-test"
                                       "--namespace" "gravity.self-hosting.sh06-unmetered-resolution-test")]]
