@@ -35,7 +35,7 @@
 (def current-task-sha
   "3d8989b72d00461931e400b5617b9bea090c63265cfee553e12d7b3cd6bc88dc")
 (def current-plan-sha
-  "77ebba019b2bb25c2d62ef99db107178fecd0a677116b2a253c195919f84574c")
+  "acbeb7863fc5000af2eb2c3e61cf261dcf083f0ed02b3ef41be7f9a5e2dee94a")
 (def current-source-tree "5b62819e511bfc7e6b5eba0527d8c9b5883c5572")
 (def current-source-git-tree
   "552a2bd0f50d53928aef5dffd085656dbe7bc17a")
@@ -94,10 +94,10 @@
    :projection-hunks [{:hunk-id "MATH9-rewrite-termination"
                        :facet-ids ["MATH9/partition-facet/f7ea6e89842884748fe59dbe8f51ab1430d943e274be2db887506a777a0977c9"
                                    "MATH9/partition-facet/e231af9a1d26e177746d45311c38254441b372ff323f06178c5a5777ae4243ad"]
-                       :baseline-start-line 77 :baseline-end-line 78
-                       :live-start-line 77 :live-end-line 82
-                       :baseline-fragment-sha256 "ca061d6ae9dc82e9c5ab1dbba13b05632a62d13a9ce09355452dfd58a444f8f1"
-                       :live-fragment-sha256 "6b1ee5c8781479b2fa274d615fc5107b23f4e230c024885305a17731569133f4"}]})
+                       :baseline-start-line 76 :baseline-end-line 81
+                       :live-start-line 76 :live-end-line 82
+                       :baseline-fragment-sha256 "a411bb29a0fb1a407e03b9efafede91b9b3c22f59d58686da75760adfa245983"
+                       :live-fragment-sha256 "5f8471f4805c2b97145498313219231f2575826fe580aec51296360fe70aade5"}]})
 (def expected-facet-count 463)
 (def expected-facet-digest
   "9daedb26fb3bbee1ce9994d0cbec96cb8803f9428632cdb1a2f61d208850dcf1")

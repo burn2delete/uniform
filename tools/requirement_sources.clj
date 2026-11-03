@@ -232,10 +232,10 @@
   [{:hunk-id "MATH9-rewrite-termination"
     :facet-ids ["MATH9/partition-facet/f7ea6e89842884748fe59dbe8f51ab1430d943e274be2db887506a777a0977c9"
                 "MATH9/partition-facet/e231af9a1d26e177746d45311c38254441b372ff323f06178c5a5777ae4243ad"]
-    :baseline-start-line 77 :baseline-end-line 78
-    :live-start-line 77 :live-end-line 82
-    :baseline-fragment-sha256 "ca061d6ae9dc82e9c5ab1dbba13b05632a62d13a9ce09355452dfd58a444f8f1"
-    :live-fragment-sha256 "6b1ee5c8781479b2fa274d615fc5107b23f4e230c024885305a17731569133f4"}])
+    :baseline-start-line 76 :baseline-end-line 81
+    :live-start-line 76 :live-end-line 82
+    :baseline-fragment-sha256 "a411bb29a0fb1a407e03b9efafede91b9b3c22f59d58686da75760adfa245983"
+    :live-fragment-sha256 "5f8471f4805c2b97145498313219231f2575826fe580aec51296360fe70aade5"}])
 
 (def std3-accounting-kind :stdlib-accounting-policy-semantic-projection)
 (defn baseline-projection-kind? [kind]
@@ -278,7 +278,7 @@
     :baseline-blob math9-rewrite-termination-baseline-blob
     :applying-blob math9-rewrite-termination-applying-blob
     :review-state :proposed
-    :authority "MATH9 rewrite-system source audit of current termination evidence after mandatory-fuel retirement."
+    :authority "MATH9 rewrite-system source audit of current termination evidence after mandatory-fuel retirement and unsupported example-claim removal."
     :qualification "Only the exact Rewrite Rule Form termination region is projected to the authenticated baseline view. Rule/domain/branch/numeric/floating/side-condition/proof/source and invalidation facts, deterministic rule ordering, cost-model tie breaks, equality explanations, proof replay, and well-founded finite termination evidence remain current semantic obligations. The current source removes an unsupported strict tan-occurrence example claim and requires finite termination evidence from the selected strategy; no proof is inferred from the example's omission, and this bridge is source reconciliation evidence only."
     :current-criteria math9-rewrite-termination-current-criteria
     :historical-applying
