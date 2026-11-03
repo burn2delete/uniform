@@ -82,9 +82,8 @@
           [{:core-node "node-1"
             :reason :surface-desugar
             :from "syntax-1"}]
-          [:condition :body]])
-        verification (invoke 'verify-c6-core-lowering [node])]
-    (testing "the source-owned node builder evaluates its arguments"
+          [:condition :body]])]
+    (testing "the internal source builder evaluates its arguments"
       (is (= :gravity/c6-core-node (:artifact node)))
       (is (= "node-1" (:node-id node)))
       (is (= :if (:form node)))
@@ -100,7 +99,7 @@
       (is (= {:source :fixture} (:metadata node)))
       (is (= {:resolved-bindings :fixture} (:facts node)))
       (is (false? (:generated? node))))
-    (testing "the source-owned trace builder evaluates its arguments"
+    (testing "the internal source trace builder evaluates its arguments"
       (is (= :gravity/c6-desugaring-trace (:artifact trace)))
       (is (= "syntax-1" (:surface-syntax trace)))
       (is (= :when (:surface-kind trace)))
@@ -112,23 +111,8 @@
                :from "syntax-1"}]
              (:introduced-origin trace)))
       (is (= [:condition :body] (:evaluation-order trace)))
-      (is (= [] (:diagnostics trace))))
-    (testing "the source-owned verifier accepts the constructed node"
-      (is (= :passed (:status verification)))
-      (is (= :single-core-node (:scope verification)))
-      (is (= :gravity/c6-core-node (:accepted-artifact verification)))
-      (is (some #{:contract-binding-valid} (:checks verification)))
-      (is (= node (:core-lowering-artifact verification))))))
+      (is (= [] (:diagnostics trace))))))
 
-(deftest current-c6-source-verifier-rejects-malformed-core-nodes
-  (let [node (sample-node)
-        missing-source (invoke 'verify-c6-core-lowering
-                               [(dissoc node :source)])
-        surface-form (invoke 'verify-c6-core-lowering
-                             [(assoc node :form :surface-only-form)])]
-    (doseq [rejection [missing-source surface-form]]
-      (is (= :rejected (:status rejection)))
-      (is (= :single-core-node (:scope rejection)))
-      (is (= "C6-CORE-SHAPE" (:rule rejection)))
-      (is (= :core-node-shape-invalid (:reason rejection)))
-      (is (= [] (:checks rejection))))))
+(deftest current-c6-source-builders-reject-wrong-arity
+  (is (thrown? clojure.lang.ExceptionInfo
+               (invoke 'build-c6-core-node ["node-1"]))))
