@@ -93,6 +93,8 @@ whole compatibility namespace. Source-inventory controls prove exhaustive,
 disjoint selection; new ordinary pipeline tests join the complement rather than
 being omitted. The reviewed source contains twenty ordinary, three control and
 five compatibility tests. Each fresh child retains a 900-second watchdog.
+The three watchdogs allow up to 2,700 seconds in aggregate; they are different
+from the old single combined 900-second command.
 Only the Macro matrix job has a 50-minute hosted envelope, covering three
 sequential children and setup, cleanup and artifact upload. Other ordinary
 checks retain their 20-minute envelope; Resolution retains its separate
@@ -111,13 +113,22 @@ self-hosting acceptance still require their separate evidence.
 TEST2, C18 and D1/D2/D3/D6/D8/D9 govern this orchestration boundary. Runner
 controls cover source-inventory completeness, disjoint selectors, missing or
 overlapping selection, retained negative fixtures, failure propagation and
-all-child receipt production. They pass 45 tests/487 assertions alongside
+all-child receipt production. They pass 48 tests/509 assertions alongside
 pinned actionlint, clj-kondo and cljfmt checks and the language boundary.
 The first new control had a lexical-scope parenthesis error and failed before
 test execution; that log is retained, and the corrected controls pass without
 altering any compiler or Macro test body. Real execution of all three children,
 exact source review, candidate-owned CI/artifact audit and immediate current-main
 preflight remain separate requirements.
+
+Normal composition preserves main
+05df36d8535afef03d3f3ebea2b7c80eaab26a76, including its archived-owner
+context controls and their runner invocation. The earlier implementation
+source e3ab23ae69f3da89decbd9b7541ac4837526969b and 45/487 control result
+remain historical. The current four-path repair does not change Macro tests,
+their source fixtures, the development runner, or any compiler source. The
+frozen PR894 selector additions are outside this patch and must be preserved
+if they enter main before integration.
 
 ## Requirements and dependencies
 
