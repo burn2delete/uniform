@@ -175,7 +175,20 @@
 (def future-dependency-path "docs/acceptance-dependencies.md")
 
 (def selected-parent-consumers
-  #{"domain-ir-boundaries" "math"
+  #{"types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit"
+    "mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir"
+    "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables"
+    "mir/current-evidence-and-remaining-work/mir4-serialize-stable-modules"
+    "mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption"
+    "opt/current-evidence-and-remaining-work/opt1-execute-pass-contracts"
+    "opt/current-evidence-and-remaining-work/opt2-implement-structural-families"
+    "opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors"
+    "opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate"
+    "opt/current-evidence-and-remaining-work/opt5-integrate-reproducible-pipeline"
+    "lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs"
+    "lower/current-evidence-and-remaining-work/lower3-select-explicit-providers"
+    "lower/current-evidence-and-remaining-work/lower5-integrate-target-emission"
+    "domain-ir-boundaries" "math"
     "resolve/current-evidence-and-remaining-work/resolve1-resolve-lexical-positions"
     "resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries"
     "resolve/current-evidence-and-remaining-work/resolve3-check-graph-legality"

@@ -219,6 +219,12 @@ Use the [complete Core source criteria](../core-workflow/plan.md#complete-core-s
 
 Task identities/statuses, prior source/review subjects and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held execution or task transfer is authorized.
 
+## Core dependency interface
+
+Use the [Core producer and consumer order](../core-workflow/plan.md#core-producer-and-consumer-order) and existing selected-result table. Supply actual source/generated/hygiene carriers before Core construction; later compare real Core/checker consumers and invalidate affected facts without requiring the future consumer first.
+
+Existing task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current selected-interface entailment and independent acceptance remain pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Plan: Syntax task authority and roadmap navigation

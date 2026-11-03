@@ -101,9 +101,9 @@ All five Resolve tasks and the existing shared tasks remain Open. Preserve the f
 
 ## Resolution producer and consumer order
 
-The [sole selected-result table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition) now records complete selected L3/C5 detail for 49 consumers. Nine missing routes cover Resolve1/2/3, Core2, Types1/2/4, Docs and finite Emit2 entrypoints; forty existing routes are extended. Preserve all 641 previous selected inputs and 75 unaffected route meanings; 172 additions yield 813 selected inputs and 1,577 total joins across 124 routes, 84 current parents and forty unchanged future records. All twelve restored/shared source criteria now have selected task routes. These are actual required result subjects, not new tasks, execution receipts or independent entailment acceptance.
+At checkpoint `f6a56aa387adebc511ff0f414bacbb21edb1f530`, the [sole selected-result table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition) recorded complete selected L3/C5 detail for 49 consumers. Nine missing routes covered Resolve1/2/3, Core2, Types1/2/4, Docs and finite Emit2 entrypoints; forty existing routes were extended. That continuation preserved all 641 previous selected inputs and 75 unaffected route meanings; 172 additions yielded 813 selected inputs and 1,577 total joins across 124 routes, 84 current parents and forty unchanged future records. All twelve restored/shared source criteria retained selected task routes. These were required result subjects, not new tasks, execution receipts or independent entailment acceptance.
 
-The coarse cycles are 82 and nine tasks. All 73 main predecessors and the nine existing release/schema/governance members remain; the main set adds the nine newly routed current parents. These selected edges annotate the existing graph rather than creating another editable roadmap.
+At that L3/C5 checkpoint, the coarse cycles contained 82 and nine tasks. All 73 main predecessors and the nine existing release/schema/governance members remained; the main set added the nine newly routed current parents. These selected edges annotate the existing graph rather than creating another editable roadmap. The Core dependency continuation below records the successor graph.
 
 | Consumer | Selected producer | Concrete result order |
 | --- | --- | --- |
@@ -335,6 +335,12 @@ All task bodies, source-criterion records, statuses, future records and finite r
 Use the [complete Core source criteria](../core-workflow/plan.md#complete-core-source-criteria). Supply actual binding/namespace references before semantic Core lowering; keep the D1 representation qualification open and later inferred module summaries distinct from initial binding inputs.
 
 Task identities/statuses, prior source/review subjects and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held execution or task transfer is authorized.
+
+## Core dependency interface
+
+Use the [Core producer and consumer order](../core-workflow/plan.md#core-producer-and-consumer-order) and existing selected-result table. Provide real position-sensitive lexical/recur/call/import seeds before semantic Core. Later verify their actual preservation and inferred namespace summaries without demanding a future complete module as first input.
+
+Existing task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current selected-interface entailment and independent acceptance remain pending; no held operation is enabled.
 
 ## Historical task-authority-transfer plan
 

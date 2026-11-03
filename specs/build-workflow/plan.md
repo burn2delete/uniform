@@ -182,6 +182,12 @@ Use the [complete Core source criteria](../core-workflow/plan.md#complete-core-s
 
 Task identities/statuses, prior source/review subjects and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held execution or task transfer is authorized.
 
+## Core dependency interface
+
+Use the [Core producer and consumer order](../core-workflow/plan.md#core-producer-and-consumer-order) and existing selected-result table. Bind actual stage-specific Core/desugaring/semantic/MIR/transform inputs and affected invalidation before reuse or rebuild. Same-input hermetic bytes, semantic preservation and stage/seed equivalence are separate; source-only caches need no absent later facts.
+
+Existing task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current selected-interface entailment and independent acceptance remain pending; no held operation is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration

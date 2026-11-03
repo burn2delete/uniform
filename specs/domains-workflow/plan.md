@@ -558,6 +558,12 @@ Use the [complete Core source criteria](../core-workflow/plan.md#complete-core-s
 
 Task identities/statuses, prior source/review subjects and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held execution or task transfer is authorized.
 
+## Core dependency interface
+
+Use the [Core producer and consumer order](../core-workflow/plan.md#core-producer-and-consumer-order) and existing selected-result table. Supply actual early owner/schema/checker/source-anchor contracts and selected validation before checked Core use; later typed-Core/MIR/target anchors follow actual producers. Future full target conformance is not the first source checker input.
+
+Existing task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current selected-interface entailment and independent acceptance remain pending; no held operation is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Domains workflow migration
