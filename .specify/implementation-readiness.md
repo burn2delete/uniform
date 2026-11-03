@@ -4702,3 +4702,107 @@ C7/C12/paired/provider/plugin/native/callback/device/probe/replay/migration/
 private-store/signing/publication restriction, writer reservation and stopped
 handoff remains. No held execution, other-chat message, reviewer wake,
 aggregate publication or merge occurs.
+
+## Complete Types source restoration and current applicability
+
+Source `60f29f23c94ab00913d2f22bfa01362fa7d14650` restores five complete
+L5/C7 owner clauses and five earlier finite predicates from published task
+subject `505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea` into the same five
+Open Types tasks. The ten exact additions contain 18,208 bytes. The existing
+conditional type-form-change criterion remains unchanged with Evolution.
+Eleven direct criteria identify six tasks across two authorities. The twenty
+original owner joins additionally retain three Legality/Expand role contexts:
+nine joint tasks across four authorities. Four inherited profile, dynamic,
+memory and schema allocations preserve their original task references and
+additional Types witnesses; they do not transfer inference to Legality or
+static projection to Expand. Whole attached-owner entailment is unassessed.
+
+Direct complete L5/C7 review preserves 258 facets, 150 occurrences and 38
+section conjunctions, including 108 semantic occurrences and 42 context
+occurrences. All five source criterion families and the private-key-domain,
+schema-static, typed-outcome, dispatch and foreign-value predicates retain
+their complete premises. Twenty existing plans expose the source interfaces.
+The 149 current keys, 25 authorities and forty future records are unchanged;
+the original 139 bodies now contain 44 identical and 95 explicitly amended
+bodies. These are conservation populations, not a coverage percentage.
+
+Actual deterministic constraint derivation replaces no required premise with
+an expected result, Dynamic fallback or assigned solved flag. Preserve complete
+normal-entry/call/use/escape/mutation/re-entry evidence, non-invoking Never
+coordinates, independently grounded empty and homogeneous carriers, canonical
+if-only List/nil joins and cold Symbol-Set loop grounding. Unknown or circular
+evidence establishes no invariant. Bare collection boundaries retain actual
+argument and body types and complete ignored-value validation. They create no
+new generic framework, key presence, extent, flow or cardinality facts.
+
+Preserve real declared/generic/protocol/layout contracts, authentic expanded
+schema manifests and actual static projection. Runtime validation is distinct.
+Typed dispatch is tentative until Effects, Auth and profile/ownership/safety
+checks pass; typed facts do not confer grants or target authority. Directional
+dynamic/cast/foreign conversions retain their real checks, loss and failure
+semantics. All nine L5 and nine C7 artifact families, eight L5 and ten C7
+diagnostic meanings, origins and current dependencies remain required. Verify
+exactly one current type or diagnostic per node, actual solved/rejected
+constraints and complete carried facts before claiming Effects legality.
+Changed governing inputs invalidate actual affected consumers. The two
+historical L5 work/validation allowance fragments are explicitly superseded;
+concrete semantic and representation validation remains.
+
+The existing source-review artifact at `8834ac0e33f37faebc9bcc983e247d4dc9491501`
+retains SHA-256
+`f754c97aaea679fd2bf162ecbbb33d706ec2a753ed9341b93dd64de70dad35dc`.
+Its candidate `b8108264f9770e1543942f7f524b58868e553fef` and exact frozen
+258-facet/150-occurrence/twenty-owner/five-Types-role scope are unchanged.
+Profile74 and Schema25 predicates retain their earlier reviews and the
+unchanged Evolution producer. No receipt is renewed or consumed. Two new
+Schema25 locators initially confused the reviewed subject with the later
+artifact publication; pin validation rejected that first attempt. Corrected
+locators name publication `65e0704bc180521c3393725b39c284995657a065`, preserve
+reviewed subject `893bb4b85926a9d7f8953798544b2126baf6ef58` separately and
+verify the unchanged artifact hash. This repair confers no later acceptance.
+
+Scoped static inspection covers five complete hosted C7 files, selected
+definitions in the Types adapter and Gravity checker, and attributed dated
+runtime evidence. Hosted classifiers, assigned solution/example records and
+field/status/set checks do not prove full solving or identity. Selected Gravity
+primitive/function/import routes contain real constraints and recomputation
+with declared authentication/digest/effect and wider-feature gaps. Record and
+union descriptor checks and the narrow descriptor-backed record/access/match
+route retain their separate claims. The final generic checker verification
+body is quoted contract data. The complete 25,894-line engine was not reviewed
+and no semantic execution or whole-component absence claim is made.
+
+Selected-result dependency refinement is the next source task. The earlier
+1,780 joins, 137 routes, 97 current parents, forty future records and 95-/nine-
+task coarse cycles remain unchanged. Earlier source subjects and review
+scopes are preserved. The Core dependency regression now reads its complete
+frozen `3adae6fc72518528ee4c43a0f003b0351aa62d21` bridge, projection and
+source bytes; earlier frozen subjects remain unchanged.
+
+Current proposal input fingerprint:
+`ffe114e7981ec65cdf52c3aa8182ca2f09bb654d9928b3890e6379a19c5395c9`.
+All applying source pins verify against local Git. The refreshed projection
+passes four focused crosswalk tests / 10,512 assertions: complete current
+Types source and review locators, complete frozen Core dependency/source
+subjects and global task/history conservation. All 23 dependency tests /
+5,213 assertions and both pinned projection checks pass. Canonical validation
+passes 240 documents / nineteen phase indexes, and the full-language roadmap
+passes structural validation with dated counts non-authoritative. The language
+boundary gate passes six tests / eleven assertions. Navigation/conservation
+passes 91 changed files, 85 Markdown files, 3,733 local references, 139 original
+task routes, 48 historical spec/plan suffixes and all 48 original task/evidence
+contents after declared additions are removed. ASCII and whitespace checks
+pass. The full current 72-test suite was not rerun; the last complete 68-test /
+44,978-assertion run remains bound to
+`25a96a0c03536270001449c00676e644ea353521`. These planning checks confer no
+compiler/runtime/provider/target, self-hosting or release conformance.
+
+The comparison still exposes a substantive difference between canonical
+contracts and Spec Kit: links and task ownership alone do not establish
+complete rule premises, actual producer/consumer composition or applicable
+acceptance. Global source/owner/interface entailment, complete readiness and
+current independent acceptance remain pending. Reader contract coverage is
+still the first actual implementation increment. The original C7 operation
+and all other actual restrictions, writer reservations and stopped handoffs
+remain. No other-chat message, reviewer wake, held execution, aggregate
+publication, merge, implementation completion or seed-retirement claim occurs.
