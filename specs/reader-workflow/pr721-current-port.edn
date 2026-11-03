@@ -80,7 +80,7 @@
    :original-blob "2d5929b9473c7260f2b52160f4633e263b78b56a"
    :original-sha256 "32144ed245cc7fb708d17f61230ece6fa2601197ce3e7368a66e13ac2a3db513"
    :current-blob "210f499f2aa49c3365c8ab4c71319393ad827e9f"
-   :current-sha256 "2f536c69c27e79a5102227074f474050fb1b5c775e9a91248337d50f1850f068"
+   :current-sha256 "ccdc5ecafe4b781b75f4f702d1c7e1010b98ac675dfd5db906db9b25c4a3ce52"
    :disposition :current-port
    :reason :scalar-set-identity-native-metadata-and-construction-controls}
   {:path "docs/hosted-native-data-preflight.md"
@@ -94,7 +94,7 @@
    :original-blob "cd56ea1db9df0e696d3038461ec401e8b737ed2b"
    :original-sha256 "34ffa6e546a73b3d7c0b016eb94ffd0e29e01d6d3a7d3c05b6f32c4a4f69c4b8"
    :current-blob "b052f5b574cb8cce105ab76fe292cc148d7ba087"
-   :current-sha256 "8f774cf026ca88902728dd99db1286e8999b0f817a5638b65677f4f5eef37947"
+   :current-sha256 "5b8efe0eb8e1f17ef605a1f5eadaa4b22feb68252b5d00e7e0bdfcad7f5ad1e6"
    :disposition :current-receipt
    :reason :current-base-and-set-evidence-reconciled}
   {:path "specs/reader-workflow/core-session-invocation.md"
@@ -185,6 +185,18 @@
   {:name :sh01-literal-keyword-set
    :result "1 test, 87 assertions, 0 failures, 0 errors"
    :log "/tmp/uniform-pr721-sh01-literal-after697.log"}
+  {:name :sh01-scalar-set-helper-arity
+   :result "1 test, 47 assertions, 0 failures, 0 errors"
+   :log "/tmp/pr721-three-controls-timing-v2.edn"
+   :test-var "gravity.self-hosting.sh01-stage2-runtime-iteration-test/current-gravity-scalar-set-helper-arity-development-kernel"}
+  {:name :sh01-scalar-set-native-view
+   :result "1 test, 261 assertions, 0 failures, 0 errors"
+   :log "/tmp/pr721-three-controls-timing-v2.edn"
+   :test-var "gravity.self-hosting.sh01-stage2-runtime-iteration-test/current-gravity-scalar-set-native-view-development-kernel"}
+  {:name :sh01-scalar-set-construction-observation
+   :result "1 test, 75 assertions, 0 failures, 0 errors"
+   :log "/tmp/pr721-three-controls-timing-v2.edn"
+   :test-var "gravity.self-hosting.sh01-stage2-runtime-iteration-test/current-gravity-scalar-set-construction-observation-development-kernel"}
   {:name :pinned-clj-kondo
    :result "0 errors, 0 warnings"
    :log "/tmp/uniform-pr721-kondo-archival-final.log"}

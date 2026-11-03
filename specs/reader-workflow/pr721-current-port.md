@@ -65,7 +65,12 @@ was not retried.
   failures/errors.
 - Core binding/session: 7 / 89 and 12 / 328, zero failures/errors.
 - SH01 list/membership/literal Set selectors: 1 / 100, 1 / 147, and 1 / 87,
-  zero failures/errors.
+  zero failures/errors. The three restored scalar-Set controls also pass:
+  helper arity 1 / 47, direct native view 1 / 261, and construction
+  observation 1 / 75, zero failures/errors. They cover both real helper
+  `L2-FUNCTION-ARITY` entries, direct insertion identity, benign/cyclic
+  metadata refusal, and the `conj` hit/miss construction seam; retired
+  comparison/insertion and work-accounting fields remain absent.
 - Pinned clj-kondo 2025.10.23 on the three changed CI files: 0 errors, 0
   warnings. Pinned cljfmt 0.13.4 reports all `tools/ci` files formatted.
 - Language boundary: 6 tests / 11 assertions, zero failures/errors.

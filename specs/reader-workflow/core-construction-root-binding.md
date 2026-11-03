@@ -49,11 +49,16 @@ facts expression records the selected object without changing the outer facts.
 The current SH01 scalar-Set controls pass independently: the list-set runtime
 kernel is 1 test and 100 assertions, the keyword-set membership kernel is 1
 test and 147 assertions, and the literal keyword-set kernel is 1 test and 87
-assertions. They cover explicit helper arities, same-printed-name keyword
-identity, long representable values, raw-native membership, benign metadata,
-cyclic metadata refusal, duplicate native storage, immutability and
-construction observation. These are semantic/native-shape controls, not work
-or input-budget checks. The module census controls remain 1 test and 42
+assertions. The port also includes a scalar helper-arity kernel (1 test, 47
+assertions), a direct native-view kernel (1 test, 261 assertions), and a
+construction-observation kernel (1 test, 75 assertions). Together they cover
+both real two-argument helper entries and `L2-FUNCTION-ARITY`, same-printed-name
+keyword identity, long representable values, direct contains?/conj insertion
+identity, benign metadata, cyclic and malformed metadata refusal, duplicate
+native storage, immutability, and hit/miss construction observation. The
+current result shapes are checked to omit retired comparison/insertion and
+work-accounting fields. These are semantic/native-shape controls, not work or
+input-budget checks. The module census controls remain 1 test and 42
 assertions for native-set rejection and 1 test and 55 assertions for conversion
 rejection, including a foreign `Seqable`; rejected results expose no partial
 result or removed accounting counter.

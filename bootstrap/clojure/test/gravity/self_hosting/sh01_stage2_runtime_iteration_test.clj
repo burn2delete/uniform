@@ -36720,3 +36720,185 @@ else
     (is (false? (run (assoc cold :work-count 1))))
     (doseq [changed ((helper 'cold-metadata-invalid-inputs) cold)]
       (is (false? (run changed))))))
+
+(deftest current-gravity-scalar-set-helper-arity-development-kernel
+  (let [plan (:plan (typed-catch-runtime-projection))
+        invoke (fn [name args]
+                 (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name args))]
+    ;; Both scalar Set helpers must enforce their real two-argument function
+    ;; contract at the runtime entry, including zero and excess arguments.
+    (doseq [name '[runtime-scalar-set-contains runtime-insert-scalar-set]]
+      (is (= :accepted (:status (invoke name [#{"a"} "a"]))))
+      (doseq [args [[] [#{"a"}] [#{"a"} "a" :extra]]]
+        (let [failure (diagnostic #(invoke name args))]
+          (is (= "L2-FUNCTION-ARITY" (:id failure)))
+          (is (= name (:function failure)))
+          (is (= 2 (:expected-arity failure)))
+          (is (= (count args) (:actual-arity failure))))))
+    (is (= {:status :passed}
+           (bootstrap/p15-s23-stage2-runtime-invoke-builtin
+            plan 'hosted-native-data-preflight [#{"a"}])))
+    (doseq [args [[] [#{"a"} :extra]]]
+      (let [failure (diagnostic #(bootstrap/p15-s23-stage2-runtime-invoke-builtin
+                                 plan 'hosted-native-data-preflight args))]
+        (is (= "L2-BUILTIN-ARITY" (:id failure)))
+        (is (= 'hosted-native-data-preflight (:function failure)))
+        (is (= 1 (:expected-arity failure)))
+        (is (= (count args) (:actual-arity failure)))))
+    (doseq [invalid-plan [(assoc-in plan [:module :profile] :core)
+                          (assoc-in plan [:module :target] :js)
+                          (dissoc plan :compiler-artifact-plan?)] ]
+      (let [failure (diagnostic #(bootstrap/p15-s23-stage2-runtime-invoke-builtin
+                                 invalid-plan 'hosted-native-data-preflight [#{"a"}]))]
+        (is (= "HOSTED-NATIVE-DATA" (:id failure)))
+        (is (= :hosted-jvm-plan-required (:reason failure)))))))
+
+(deftest current-gravity-scalar-set-native-view-development-kernel
+  (let [plan (:plan (typed-catch-runtime-projection))
+        invoke (fn [name & args]
+                 (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        literal (fn [value] {:op :literal :value value})
+        evaluate (fn [name items value]
+                   (invoke 'p15-s23-runtime-evaluate-closed-instruction
+                           {:op :builtin-call :function name :args [(literal items) (literal value)]} {} ""))
+        callbacks (atom 0)
+        deny (fn [] (swap! callbacks inc) (throw (AssertionError. "foreign callback")))
+        opaque (proxy [Object] [] (equals [_] (deny)) (hashCode [] (deny)) (toString [] (deny)))
+        foreign (reify clojure.lang.IPersistentVector
+                  (length [_] (deny)) (nth [_ _] (deny)) (nth [_ _ _] (deny))
+                  (assocN [_ _ _] (deny)) (cons [_ _] (deny)) (count [_] (deny))
+                  (empty [_] (deny)) (equiv [_ _] (deny)) (seq [_] (deny))
+                  (peek [_] (deny)) (pop [_] (deny)) (containsKey [_ _] (deny))
+                  (entryAt [_ _] (deny)) (assoc [_ _ _] (deny))
+                  (valAt [_ _] (deny)) (valAt [_ _ _] (deny)))
+        field! (fn [value name replacement]
+                 (let [field (.getDeclaredField (class value) name)]
+                   (is (.trySetAccessible field)) (.set field value replacement) value))
+        backing (with-meta [opaque :visible opaque] {:unused opaque})
+        visible (subvec backing 1 2)
+        cyclic-view (clojure.lang.APersistentVector$SubVector. nil [] 0 0)
+        _ (field! cyclic-view "v" cyclic-view)]
+    ;; Direct contains?/conj consumers must use the validated carrier view,
+    ;; preserving identity and metadata rather than invoking foreign methods.
+    (doseq [member ["a" :a 'a 7]]
+      (let [metadata {:visible visible} items (with-meta #{member} metadata)
+            contained (invoke 'runtime-scalar-set-contains items member)]
+        (is (= :accepted (:status contained)))
+        (is (true? (:value contained)))
+        (is (= [true "" :normal] (evaluate 'contains? items member)))
+        (is (identical? metadata (meta items)))
+        (when-not (integer? member)
+          (let [inserted (invoke 'runtime-insert-scalar-set items member)]
+            (is (= :accepted (:status inserted)))
+            (is (identical? items (:value inserted)))
+            (let [evaluated (evaluate 'conj items member)]
+              (is (identical? items (first evaluated)))
+              (is (= ["" :normal] (subvec evaluated 1)))))))
+      (doseq [[bad reason]
+              [[opaque :untrusted-scalar-class]
+               [foreign :untrusted-vector-class]
+               [(clojure.lang.APersistentVector$SubVector. nil [1] 0 2) :invalid-vector-view-extent]
+               [(clojure.lang.APersistentVector$SubVector. nil [1] -1 1) :invalid-vector-view-extent]
+               [(clojure.lang.APersistentVector$SubVector. nil foreign 0 0) :untrusted-vector-backing]
+               [cyclic-view :cyclic-vector-backing]]]
+        (let [metadata {:visible bad} items (with-meta #{member} metadata)
+              contained (invoke 'runtime-scalar-set-contains items member)]
+          (is (= :rejected (:status contained)))
+          (is (= reason (:native-reason contained)))
+          (is (not-any? #(contains? contained %)
+                        [:comparison-attempts :insertions :work-count
+                         :work-count-kind :value-work-model :construction-reservation]))
+          (is (= ["" :rejected] (subvec (evaluate 'contains? items member) 1)))
+          (when-not (integer? member)
+            (let [inserted (invoke 'runtime-insert-scalar-set items member)]
+              (is (= :rejected (:status inserted)))
+              (is (= reason (:native-reason inserted)))
+              (is (not-any? #(contains? inserted %)
+                            [:comparison-attempts :insertions :work-count
+                             :work-count-kind :value-work-model :construction-reservation]))
+              (is (= ["" :rejected] (subvec (evaluate 'conj items member) 1)))))
+          (is (identical? metadata (meta items)))))
+      (let [metadata (clojure.lang.PersistentArrayMap. (object-array [:cycle nil]))
+            items (with-meta #{member} metadata)]
+        (field! metadata "array" (object-array [:cycle items]))
+        (let [contained (invoke 'runtime-scalar-set-contains items member)]
+          (is (= :rejected (:status contained)))
+          (is (= :cyclic-carrier (:native-reason contained)))
+          (is (not-any? #(contains? contained %)
+                        [:comparison-attempts :insertions :work-count
+                         :work-count-kind :value-work-model :construction-reservation])))
+        (is (= ["" :rejected] (subvec (evaluate 'contains? items member) 1)))
+        (when-not (integer? member)
+          (let [inserted (invoke 'runtime-insert-scalar-set items member)]
+            (is (= :rejected (:status inserted)))
+            (is (= :cyclic-carrier (:native-reason inserted)))
+            (is (not-any? #(contains? inserted %)
+                          [:comparison-attempts :insertions :work-count
+                           :work-count-kind :value-work-model :construction-reservation]))
+            (is (= ["" :rejected] (subvec (evaluate 'conj items member) 1)))))))
+    (is (identical? backing (.-v ^clojure.lang.APersistentVector$SubVector visible)))
+    (is (zero? @callbacks))))
+
+(deftest current-gravity-scalar-set-construction-observation-development-kernel
+  (let [plan (:plan (typed-catch-runtime-projection))
+        invoke (fn [name & args]
+                 (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        literal (fn [value] {:op :literal :value value})
+        evaluate (fn [items value]
+                   (invoke 'p15-s23-runtime-evaluate-closed-instruction
+                           {:op :builtin-call :function 'conj :args [(literal items) (literal value)]} {} ""))
+        original bootstrap/p15-s23-stage2-runtime-invoke-builtin
+        observe (fn [operation]
+                  (let [calls (atom 0)
+                        result (with-redefs [bootstrap/p15-s23-stage2-runtime-invoke-builtin
+                                            (fn
+                                              ([active-runtime active-plan name args]
+                                               ;; The four-argument entry forwards through the final dispatch seam.
+                                               (original active-runtime active-plan name args))
+                                              ([active-runtime active-plan name args instruction public-invocation-scope]
+                                               ;; Count native Set construction at the final dispatch seam.
+                                               (when (and (= 'conj name)
+                                                          (identical? clojure.lang.PersistentHashSet (class (first args))))
+                                                 (swap! calls inc))
+                                               (original active-runtime active-plan name args instruction public-invocation-scope)))]
+                                 (operation))]
+                    {:result result :set-conj-calls @calls}))
+        native-set (fn [members]
+                     (let [backing (clojure.lang.PersistentArrayMap.
+                                    (object-array (mapcat (fn [x] [x x]) members)))
+                           ctor (.getDeclaredConstructor clojure.lang.PersistentHashSet
+                                 (into-array Class [clojure.lang.IPersistentMap clojure.lang.IPersistentMap]))]
+                       (is (.trySetAccessible ctor))
+                       (.newInstance ctor (object-array [nil backing]))))]
+    (doseq [[member absent] [["a" "b"] [:a :b] ['a 'b]]]
+      (let [items #{member}
+            hit (observe #(invoke 'runtime-insert-scalar-set items member))
+            miss (observe #(invoke 'runtime-insert-scalar-set items absent))
+            evaluated-hit (observe #(evaluate items member))
+            evaluated-miss (observe #(evaluate items absent))]
+        (is (= :accepted (get-in hit [:result :status]) (get-in miss [:result :status])))
+        (is (identical? items (get-in hit [:result :value])))
+        (is (= #{member absent} (get-in miss [:result :value])))
+        (is (= 0 (:set-conj-calls hit) (:set-conj-calls evaluated-hit)))
+        (is (= 2 (:set-conj-calls miss) (:set-conj-calls evaluated-miss)))
+        (is (identical? items (first (:result evaluated-hit))))
+        (is (= [#{member absent} "" :normal] (:result evaluated-miss)))
+        (is (= #{member} items)))
+      (doseq [items [(native-set [member 7])
+                     (native-set [member member])
+                     (with-meta #{member}
+                       {:visible (clojure.lang.APersistentVector$SubVector. nil [1] 0 2)})]]
+        (let [direct (observe #(invoke 'runtime-insert-scalar-set items absent))
+              evaluated (observe #(evaluate items absent))]
+          (is (= :rejected (get-in direct [:result :status])))
+          (is (not-any? #(contains? (:result direct) %)
+                        [:comparison-attempts :insertions :work-count
+                         :work-count-kind :value-work-model :construction-reservation]))
+          (is (= ["" :rejected] (subvec (:result evaluated) 1)))
+          (is (= 0 (:set-conj-calls direct) (:set-conj-calls evaluated))))))
+    (let [rejected (observe #(invoke 'runtime-insert-scalar-set #{1} 2))]
+      (is (= :rejected (get-in rejected [:result :status])))
+      (is (not-any? #(contains? (:result rejected) %)
+                    [:comparison-attempts :insertions :work-count
+                     :work-count-kind :value-work-model :construction-reservation]))
+      (is (= 0 (:set-conj-calls rejected))))))
