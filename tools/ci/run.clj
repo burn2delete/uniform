@@ -738,6 +738,7 @@
                              "tools/ci/lint_context.clj"
                              "tools/ci/lint_macro_test.clj"
                              "tools/ci/lint_macros.clj"
+                             ".clj-kondo/config.edn"
                              "tools/ci/kondo/config.edn"
                              "tools/ci/kondo/hooks/c2.clj"
                              "tools/ci/kondo/hooks/module_analysis.clj"}
@@ -745,6 +746,7 @@
                               "tools/ci/lint_context.clj"
                               "tools/ci/lint_facade_test.clj"
                               "tools/ci/lint_macros.clj"
+                              ".clj-kondo/config.edn"
                               "tools/ci/kondo/config.edn"
                               "tools/ci/kondo/hooks/c2.clj"
                               "tools/ci/kondo/hooks/module_analysis.clj"}})

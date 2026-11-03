@@ -611,6 +611,9 @@
         facade-source {:kind :selected
                        :reason :lint-tooling-only
                        :paths ["tools/ci/lint_facade_test.clj"]}
+        root-kondo-config {:kind :selected
+                           :reason :lint-tooling-only
+                           :paths [".clj-kondo/config.edn"]}
         full {:kind :full :paths []}
         failed {:kind :full :reason :path-discovery-failed :paths []}
         malformed {:kind :selected :paths [nil]}
@@ -629,6 +632,12 @@
     (is (= ["whitespace" "clojure-lint" "clojure-format"
             "facade-context-controls" "changed-clojure-lint"]
            (command-ids facade-source)))
+    ;; tools/ci/kondo/config.edn imports the root Kondo configuration, so a
+    ;; root config change affects both pinned hook/context observations.
+    (is (= ["whitespace" "clojure-lint" "harness-controls"
+            "macro-context-controls" "facade-context-controls"
+            "changed-clojure-lint"]
+           (command-ids root-kondo-config)))
     ;; Non-PR/broad selections and malformed or unknown selected data retain
     ;; the complete control suite instead of guessing a narrower dependency.
     (doseq [selection [full failed malformed unknown]]
