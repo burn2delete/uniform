@@ -20,14 +20,14 @@
 (def ^:private helper-source-sha256
   "sha256:04645a82e66d024c6505ea3ec80c9789a7d0545ef8e7222c5d78cad68fc92adc")
 (def ^:private accepted-fixture
-  {:path "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-print.gravity"
-   :sha256 "sha256:e48614803810895a3ad238eb196699a9fc95218ddb8d2507e3a3b498ef7caad4"
+  {:path "bootstrap/clojure/fixtures/accepted/hello.gravity"
+   :sha256 "sha256:eb28603def64689a2e4d7018c1f356ea0cffd840600588843f29b1b30574b219"
    :expect :accepted
    :expected-output "Hello Gravity\n"
    :expected-source-fragment "Hello Gravity"})
 (def ^:private rejected-fixture
-  {:path "bootstrap/clojure/fixtures/p15-native-plan-specialization/accepted-bool.gravity"
-   :sha256 "sha256:1d0aa672e9d19321426cca966fdf203b3e633cd15ad94562e6fe665f2e7e9ec3"
+  {:path "bootstrap/clojure/fixtures/jvm-toolchain/rejected.gravity"
+   :sha256 "sha256:4ecd02f22528ae06c63a4210c1b7c9a65a9e8f57ff7db73d40c46bb80c179e3d"
    :expect :rejected
    :diagnostic "P15GCE002"})
 (def ^:private default-component
@@ -114,11 +114,14 @@
   (when-let [parent (.getParentFile file)]
     (Files/createDirectories (.toPath parent)
                              (make-array java.nio.file.attribute.FileAttribute 0)))
-  (Files/write (.toPath file)
-               (.getBytes (if (string? value) value (pr-str value))
-                          StandardCharsets/UTF_8)
-               (into-array StandardOpenOption [StandardOpenOption/CREATE_NEW
-                                               StandardOpenOption/WRITE]))
+  (let [bytes (if (instance? (Class/forName "[B") value)
+                ^bytes value
+                (.getBytes (if (string? value) value (pr-str value))
+                           StandardCharsets/UTF_8))]
+    (Files/write (.toPath file)
+                 bytes
+                 (into-array StandardOpenOption [StandardOpenOption/CREATE_NEW
+                                                 StandardOpenOption/WRITE])))
   file)
 
 (defn- component-declaration!
@@ -165,7 +168,8 @@
   [plan-path accepted-path rejected-path record-path]
   (str
    "(do "
-   "(require '[clojure.edn :as edn] '[clojure.string :as str] "
+   "(require '[clojure.edn :as edn] '[clojure.java.io :as io] "
+   "'[clojure.string :as str] "
    "'[gravity.bootstrap :as b] "
    "'[gravity.p15-native-plan-specialization.contract :as c]) "
    "(let [plan-text (slurp " (expression-literal plan-path) ")"
@@ -207,12 +211,12 @@
    " :source (:source first-result)"
    " :source-sha256 (str \"sha256:\" (b/sha256-hex (:source first-result)))"
    " :expected-output accepted-output"
-   " :expected-source-fragment? (str/includes? (:source first-result) \"Hello Gravity\")}" 
+   " :expected-source-fragment? (str/includes? (:source first-result) \"Hello Gravity\")}"
    " :rejected {:status (:status rejected-result)"
    " :diagnostic (:diagnostic rejected-result)"
    " :missing-fact (get-in rejected-result [:facts :missing-fact])}}))"
    " (println (pr-str {:status :complete :record-path "
-   (expression-literal record-path) "})))"))
+   (expression-literal record-path) "}))))"))
 
 (defn- run-child!
   [snapshot expression]
@@ -251,134 +255,215 @@
   A second child process reloads that exact EDN file and invokes its exported
   function on accepted and rejected runtime-derived compiler plans.  The
   output is seed-hosted component evidence, not a whole-compiler rebuild."
-  [project-root manifest-path component]
-  (let [component (component-declaration! component)
-        manifest (inputs/read-manifest manifest-path)
-        extra-paths (mapv :path (:fixtures component))
-        materialize! (private-input-fn 'materialize-source!)
-        delete-tree! (private-input-fn 'delete-tree!)
-        toolchain! (private-input-fn 'toolchain-record!)
-        snapshot (materialize! project-root manifest extra-paths)
-        output-root (.getCanonicalFile (io/file project-root))
-        plan-destination (bounded-file output-root (:plan-output-path component))
-        source-destination (bounded-file output-root (:source-output-path component))
-        record-destination (bounded-file output-root (:record-output-path component))]
-    (when (or (.exists plan-destination)
-              (.exists source-destination)
-              (.exists record-destination))
-      (fail! "seed-built component output already exists"
-             {:reason :output-exists
-              :paths (filter #(.exists ^File %)
-                             [plan-destination source-destination record-destination])}))
-    (try
-      (let [snapshot-root (.getCanonicalFile (.toFile ^java.nio.file.Path
-                                                      (:root snapshot)))
-            loaded (inputs/load-inputs! snapshot-root manifest-path)
-            toolchain (toolchain! snapshot-root manifest)
-            fixture-records (mapv #(check-fixture! snapshot-root %) (:fixtures component))
-            plan-path (str (.getPath snapshot-root) "/target/bootstrap-component.plan.edn")
-            child-record-path (str (.getPath snapshot-root) "/target/bootstrap-component.result.edn")
-            compile-run (run-child! snapshot-root (compile-expression plan-path))
-            plan-file (io/file plan-path)
-            _ (when-not (.isFile plan-file)
-                (fail! "seed child did not persist a compiler plan"
-                       {:reason :plan-missing :path plan-path}))
-            plan-bytes (Files/readAllBytes (.toPath plan-file))
-            plan (read-single-edn plan-bytes "persisted compiler plan")
-            _ (when-not (valid-plan? plan)
-                (fail! "persisted compiler plan has the wrong executable shape"
-                       {:reason :plan-shape :plan-kind (:kind plan)
-                        :entrypoint (:entrypoint plan)}))
-            _ (when-not (= (get-in compile-run [:summary :plan-id])
-                           (:plan-id plan))
-                (fail! "persisted compiler plan identity differs from child output"
-                       {:reason :plan-identity
-                        :summary (get-in compile-run [:summary :plan-id])
-                        :plan (:plan-id plan)}))
-            execute-run (run-child! snapshot-root
-                                    (execution-expression
-                                     plan-path
-                                     (str (.getPath snapshot-root) "/"
-                                          (:path accepted-fixture))
-                                     (str (.getPath snapshot-root) "/"
-                                          (:path rejected-fixture))
-                                     child-record-path))
-            observation-file (io/file child-record-path)
-            observation (read-single-edn
-                         (Files/readAllBytes (.toPath observation-file))
-                         "persisted-plan execution observation")
-            accepted (:accepted observation)
-            rejected (:rejected observation)
-            _ (when-not (and (= :complete (:status accepted))
-                             (true? (:same-invocation? accepted))
-                             (= :p15-s23-native-plan-c-emitter-v1
-                                (:contract accepted))
-                             (= :gravity-source (:implementation accepted))
-                             (string? (:source accepted))
-                             (re-matches #"sha256:[0-9a-f]{64}"
-                                         (:source-sha256 accepted))
-                             (= "Hello Gravity\n" (:expected-output accepted))
-                             (true? (:expected-source-fragment? accepted)))
-                (fail! "persisted compiler plan did not emit the accepted C artifact"
-                       {:reason :accepted-execution :accepted accepted}))
-            _ (when-not (and (= :rejected (:status rejected))
-                             (= "P15NS002" (:diagnostic rejected)))
-                (fail! "persisted compiler plan did not preserve the rejected diagnostic"
-                       {:reason :rejected-execution :rejected rejected}))
-            source (:source accepted)
-            plan-sha256 (sha256-id plan-bytes)
-            source-bytes (.getBytes ^String source StandardCharsets/UTF_8)
-            record
-            {:artifact :gravity/bootstrap-seed-built-component
-             :schema-version 1
-             :status :complete-for-seed-built-plan
-             :component component-id
-             :source {:path (:source-path component)
-                      :sha256 (:source-sha256 component)}
-             :manifest-sha256 (:manifest-sha256 loaded)
-             :source-graph-sha256 (get-in loaded [:source-graph :sha256])
-             :source-revision (:revision snapshot)
-             :source-archive-sha256 (:archive-sha256 snapshot)
-             :toolchain toolchain
-             :compiler-child {:command (:command compile-run)
-                              :exit-code (:exit-code compile-run)
-                              :stdout-sha256 (:stdout-sha256 compile-run)
-                              :stderr-sha256 (:stderr-sha256 compile-run)
-                              :plan-id (:plan-id plan)
-                              :plan-sha256 plan-sha256}
-             :execution-child {:command (:command execute-run)
-                               :exit-code (:exit-code execute-run)
-                               :stdout-sha256 (:stdout-sha256 execute-run)
-                               :stderr-sha256 (:stderr-sha256 execute-run)
-                               :reloaded-plan? true}
-             :inputs {:fixtures fixture-records
-                      :accepted (:path accepted-fixture)
-                      :rejected (:path rejected-fixture)}
-             :plan {:path (:plan-output-path component)
-                    :kind (:kind plan)
-                    :id (:plan-id plan)
-                    :sha256 plan-sha256}
-             :generated-c {:path (:source-output-path component)
-                           :dialect :c11
-                           :sha256 (sha256-id source-bytes)
-                           :bytes (alength source-bytes)
-                           :expected-output (:expected-output accepted)}
-             :diagnostics {:rejected-fixture (:path rejected-fixture)
-                           :code (:diagnostic rejected)}
-             :boundary {:build-language :clojure
-                        :source-language :gravity
-                        :seed-hosted? true
-                        :component-scope :native-plan-emitter
-                        :whole-compiler-rebuild? false
-                        :self-hosted? false
-                        :seed-retired? false}}
-            _ (write-new! plan-destination plan-bytes)
-            _ (write-new! source-destination source)
-            _ (write-new! record-destination record)]
-        {:record record
-         :plan-path (.getPath plan-destination)
-         :source-path (.getPath source-destination)
-         :record-path (.getPath record-destination)})
-      (finally
-        (delete-tree! (:root snapshot))
-        (Files/deleteIfExists (:archive snapshot))))))
+  ([project-root manifest-path component]
+   (run-seed-built-component! project-root manifest-path component project-root))
+  ([project-root manifest-path component output-root]
+   (let [component (component-declaration! component)
+         manifest (inputs/read-manifest manifest-path)
+         extra-paths (mapv :path (:fixtures component))
+         materialize! (private-input-fn 'materialize-source!)
+         delete-tree! (private-input-fn 'delete-tree!)
+         load-inputs! (private-input-fn 'load-inputs-from-manifest!)
+         toolchain! (private-input-fn 'toolchain-record!)
+         output-root (.getCanonicalFile (io/file output-root))
+         plan-destination (bounded-file output-root (:plan-output-path component))
+         source-destination (bounded-file output-root (:source-output-path component))
+         record-destination (bounded-file output-root (:record-output-path component))]
+     (when (or (.exists plan-destination)
+               (.exists source-destination)
+               (.exists record-destination))
+       (fail! "seed-built component output already exists"
+              {:reason :output-exists
+               :paths (filter #(.exists ^File %)
+                              [plan-destination source-destination record-destination])}))
+     (let [snapshot (atom nil)
+           output-files [plan-destination source-destination record-destination]]
+       (try
+         (let [materialized (materialize! project-root manifest extra-paths)
+               _ (reset! snapshot materialized)
+               snapshot-root (.getCanonicalFile (.toFile ^java.nio.file.Path
+                                                 (:root materialized)))
+               loaded (load-inputs! snapshot-root manifest)
+               toolchain (toolchain! snapshot-root manifest)
+               fixture-records (mapv #(check-fixture! snapshot-root %) (:fixtures component))
+               source-file (regular-file snapshot-root (:source-path component))
+               source-sha256 (file-sha256 source-file)
+               _ (when-not (= (:source-sha256 component) source-sha256)
+                   (fail! "component source digest does not match its declaration"
+                          {:reason :source-digest
+                           :path (:source-path component)
+                           :expected (:source-sha256 component)
+                           :actual source-sha256}))
+               plan-path (str (.getPath snapshot-root) "/target/bootstrap-component.plan.edn")
+               child-record-path (str (.getPath snapshot-root) "/target/bootstrap-component.result.edn")
+               compile-run (run-child! snapshot-root (compile-expression plan-path))
+               plan-file (io/file plan-path)
+               _ (when-not (.isFile plan-file)
+                   (fail! "seed child did not persist a compiler plan"
+                          {:reason :plan-missing :path plan-path}))
+               plan-bytes (Files/readAllBytes (.toPath plan-file))
+               plan (read-single-edn plan-bytes "persisted compiler plan")
+               plan-sha256 (sha256-id plan-bytes)
+               _ (when-not (valid-plan? plan)
+                   (fail! "persisted compiler plan has the wrong executable shape"
+                          {:reason :plan-shape :plan-kind (:kind plan)
+                           :entrypoint (:entrypoint plan)}))
+               _ (when-not (= (get-in compile-run [:summary :plan-id])
+                              (:plan-id plan))
+                   (fail! "persisted compiler plan identity differs from child output"
+                          {:reason :plan-identity
+                           :summary (get-in compile-run [:summary :plan-id])
+                           :plan (:plan-id plan)}))
+               _ (when-not (= (get-in compile-run [:summary :plan-sha256])
+                              plan-sha256)
+                   (fail! "persisted compiler plan hash differs from child output"
+                          {:reason :plan-digest
+                           :summary (get-in compile-run [:summary :plan-sha256])
+                           :actual plan-sha256}))
+               execute-run (run-child! snapshot-root
+                                       (execution-expression
+                                        plan-path
+                                        (str (.getPath snapshot-root) "/"
+                                             (:path accepted-fixture))
+                                        (str (.getPath snapshot-root) "/"
+                                             (:path rejected-fixture))
+                                        child-record-path))
+               observation-file (io/file child-record-path)
+               observation-bytes (Files/readAllBytes (.toPath observation-file))
+               observation (read-single-edn observation-bytes
+                                            "persisted-plan execution observation")
+               accepted (:accepted observation)
+               rejected (:rejected observation)
+               _ (when-not (and (= (:plan-id observation) (:plan-id plan))
+                                (= (:plan-sha256 observation) plan-sha256))
+                   (fail! "execution child observed a different persisted plan"
+                          {:reason :execution-plan-identity
+                           :expected-id (:plan-id plan)
+                           :actual-id (:plan-id observation)
+                           :expected-sha256 plan-sha256
+                           :actual-sha256 (:plan-sha256 observation)}))
+               _ (when-not (and (= :complete (:status accepted))
+                                (true? (:same-invocation? accepted))
+                                (= :p15-s23-native-plan-c-emitter-v1
+                                   (:contract accepted))
+                                (= :gravity-source (:implementation accepted))
+                                (string? (:source accepted))
+                                (re-matches #"sha256:[0-9a-f]{64}"
+                                            (:source-sha256 accepted))
+                                (= "Hello Gravity\n" (:expected-output accepted))
+                                (true? (:expected-source-fragment? accepted)))
+                   (fail! "persisted compiler plan did not emit the accepted C artifact"
+                          {:reason :accepted-execution :accepted accepted}))
+               _ (when-not (and (= :rejected (:status rejected))
+                                (= "P15GCE002" (:diagnostic rejected)))
+                   (fail! "persisted compiler plan did not preserve the rejected diagnostic"
+                          {:reason :rejected-execution :rejected rejected}))
+               source (:source accepted)
+               source-bytes (.getBytes ^String source StandardCharsets/UTF_8)
+               record
+               {:artifact :gravity/bootstrap-seed-built-component
+                :schema-version 1
+                :status :complete-for-seed-built-plan
+                :component component-id
+                :source {:path (:source-path component)
+                         :sha256 (:source-sha256 component)}
+                :manifest-sha256 (:manifest-sha256 loaded)
+                :source-graph-sha256 (get-in loaded [:source-graph :sha256])
+                :source-revision (:revision materialized)
+                :source-archive-sha256 (:archive-sha256 materialized)
+                :toolchain toolchain
+                :compiler-child {:command (:command compile-run)
+                                 :exit-code (:exit-code compile-run)
+                                 :stdout-sha256 (:stdout-sha256 compile-run)
+                                 :stderr-sha256 (:stderr-sha256 compile-run)
+                                 :plan-id (:plan-id plan)
+                                 :plan-sha256 plan-sha256}
+                :execution-child {:command (:command execute-run)
+                                  :exit-code (:exit-code execute-run)
+                                  :stdout-sha256 (:stdout-sha256 execute-run)
+                                  :stderr-sha256 (:stderr-sha256 execute-run)
+                                  :plan-id (:plan-id observation)
+                                  :plan-sha256 (:plan-sha256 observation)
+                                  :observation-sha256 (sha256-id observation-bytes)
+                                  :reloaded-plan? true}
+                :inputs {:fixtures fixture-records
+                         :accepted (:path accepted-fixture)
+                         :rejected (:path rejected-fixture)}
+                :plan {:path (:plan-output-path component)
+                       :kind (:kind plan)
+                       :id (:plan-id plan)
+                       :sha256 plan-sha256}
+                :generated-c {:path (:source-output-path component)
+                              :dialect :c11
+                              :sha256 (sha256-id source-bytes)
+                              :bytes (alength source-bytes)
+                              :expected-output (:expected-output accepted)}
+                :diagnostics {:rejected-fixture (:path rejected-fixture)
+                              :code (:diagnostic rejected)}
+                :boundary {:build-language :clojure
+                           :source-language :gravity
+                           :seed-hosted? true
+                           :component-scope :native-plan-emitter
+                           :input-profile :hosted
+                           :input-target :jvm
+                           :output-target :c11
+                           :supported-source-subset
+                           [:ns-hosted-jvm :defn-main :println-string]
+                           :output-conformance {:c11-source :generated-only
+                                                :hosted-stdout :observed
+                                                :native-c11-execution :unrun}
+                           :whole-compiler-rebuild? false
+                           :self-hosted? false
+                           :seed-retired? false}}
+               _ (write-new! plan-destination plan-bytes)
+               _ (write-new! source-destination source)
+               _ (write-new! record-destination record)
+               public-plan-bytes (Files/readAllBytes (.toPath plan-destination))
+               public-source-bytes (Files/readAllBytes (.toPath source-destination))
+               public-record-bytes (Files/readAllBytes (.toPath record-destination))
+               public-plan (read-single-edn public-plan-bytes
+                                            "persisted compiler plan readback")
+               public-record (read-single-edn public-record-bytes
+                                              "persisted component record")
+               public-plan-sha256 (sha256-id public-plan-bytes)
+               public-source-sha256 (sha256-id public-source-bytes)
+               public-record-sha256 (sha256-id public-record-bytes)
+               _ (when-not (valid-plan? public-plan)
+                   (fail! "persisted plan readback has the wrong executable shape"
+                          {:reason :plan-readback-shape
+                           :plan-kind (:kind public-plan)
+                           :entrypoint (:entrypoint public-plan)}))
+               _ (when-not (= (:plan-id plan) (:plan-id public-plan))
+                   (fail! "persisted plan readback identity differs"
+                          {:reason :plan-readback-identity
+                           :expected (:plan-id plan)
+                           :actual (:plan-id public-plan)}))
+               _ (when-not (= plan-sha256 public-plan-sha256)
+                   (fail! "persisted plan readback hash differs"
+                          {:reason :plan-readback
+                           :expected plan-sha256
+                           :actual public-plan-sha256}))
+               _ (when-not (= (get-in record [:generated-c :sha256])
+                              public-source-sha256)
+                   (fail! "persisted generated source readback hash differs"
+                          {:reason :source-readback
+                           :expected (get-in record [:generated-c :sha256])
+                           :actual public-source-sha256}))
+               _ (when-not (= record public-record)
+                   (fail! "persisted component record readback differs"
+                          {:reason :record-readback}))]
+           {:record record
+            :plan-path (.getPath plan-destination)
+            :source-path (.getPath source-destination)
+            :record-path (.getPath record-destination)
+            :output-sha256 {:plan public-plan-sha256
+                            :source public-source-sha256
+                            :record public-record-sha256}})
+         (catch Throwable error
+           (doseq [^File file output-files]
+             (Files/deleteIfExists (.toPath file)))
+           (throw error))
+         (finally
+           (when-let [materialized @snapshot]
+             (delete-tree! (:root materialized))
+             (Files/deleteIfExists (:archive materialized)))))))))
