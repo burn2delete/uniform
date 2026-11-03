@@ -6,8 +6,8 @@
         :tree "9f464ed0f03866bd4978e4213a488f3b1ae48683"}
  :candidate {:commit "24c2b6f390cffdff87d0964cdd8dd533838aa333"
              :tree "402d4c4aa3c85c486da1072ba4ace52a645a046b"}
- :current-source {:commit "19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b"
-                  :tree "dc79967f4939df6790c3a16b0a71a71e81191f9e"}
+ :current-source {:commit "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659"
+                  :tree "552a2bd0f50d53928aef5dffd085656dbe7bc17a"}
  :integration-base {:commit "97445f364d938004618f2ac13d4d4c6e1ca32946"
                     :tree "bde2ef38e3ff53c9a61a88b9ea2ff5d2be1a7bc2"
                     :role :current-main-composition-checkpoint}
@@ -17,9 +17,9 @@
                            :tree-imported false}
  :artifacts
   {:source-view {:path "specs/requirement-reconciliation/phase-02-safety/current-source-view.edn"
-                :sha256 "bce4de982ee35223ba20362ab38de5b4ae31ee24debc9636a6836d7e4bc0720e"}
+                :sha256 "7355c9e48e6f0329ced69e521fe6174f060d6cf20ff306cbf514bc535cc58b62"}
   :checker {:path "tools/safety_task_source_view.clj"
-            :sha256 "6e5e9981becf27c80f0a34e832137abe6e083d2dec62af6895fb45737199063b"}}
+            :sha256 "bce44197a5e5f37ff1d49932e4478fe1a9a099d9fbc081b7c8a4a8279cefdbd3"}}
  :conservation {:source-documents 16
                 :source-occurrences 1908
                 :source-dispositions 962
@@ -36,17 +36,19 @@
   :unchanged-task-sources [:build]
   :current-manifest-task-transition
   {:path "contracts/requirement-reconciliation.edn"
-   :commit "19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b"
-   :tree "dc79967f4939df6790c3a16b0a71a71e81191f9e"
-   :sha256 "8948438410df7c5b6c2c547e48be16b3ff8b1033ec866fb1bec432e4e3c32007"
-   :domain-current-ref "24e7b5e5cd8bc42fa495997870605b596a380678"
-   :domain-current-tree "52a90b3d537f23b3f572ee65ff03edf827c1e29b"
-   :domain-current-sha256 "5378c2c7fba1bb49318fc6cda890c60c77bdbdc57dfe6f5ea42ea8aa23298943"
-   :runtime-current-ref "42c34ab55af0000dfaaf73d96d7ee09ec22c243e"
-   :runtime-current-tree "e8f1cc090800f9fcd9e81b7a5bcea32a88101526"
-   :runtime-current-sha256 "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c"
+   :commit "2cbafb8c23588c299b28c36f315b3105e1270cd5"
+   :tree "29dd8a9c669b92af5ba5bcdbec954a1b190e28df"
+   :sha256 "d08d0f24edf90bce081d123e4d6d1de29fb3e263fef3f62d8a1fd4aff173964e"
+   :domain-current-ref "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659"
+   :domain-current-tree "552a2bd0f50d53928aef5dffd085656dbe7bc17a"
+   :domain-current-sha256 "3d8989b72d00461931e400b5617b9bea090c63265cfee553e12d7b3cd6bc88dc"
+   :runtime-current-ref "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659"
+   :runtime-current-tree "552a2bd0f50d53928aef5dffd085656dbe7bc17a"
+   :runtime-current-sha256 "d4b3a3c875f961b5828e8cceda7ecdf106af4527c64fa07ad6c6e1e049d0868d"
    :runtime-changed-record-count 5
-   :change-class :family-criteria-preserved-plus-current-main-safety-criteria}
+   :runtime-transition-count 2
+   :runtime-transition-final-target "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659"
+   :change-class :current-candidate-composition}
   :status-order-and-identity :verified}
  :controls {:positive :pass
             :proposal-hash-tamper :reject
@@ -54,6 +56,7 @@
             :current-domain-manifest-transition-tamper :reject
             :runtime-transition-forged-id-tamper :reject
             :runtime-transition-duplicate-id-tamper :reject
+            :runtime-transition-disconnected-chain-tamper :reject
             :task-order-tamper :reject
             :duplicate-task-id-tamper :reject
             :closed-task-tamper :reject

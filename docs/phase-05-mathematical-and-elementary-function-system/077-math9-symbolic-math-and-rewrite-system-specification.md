@@ -73,12 +73,13 @@ proof status, and invalidation rules match the expression being transformed.
    :side-conditions [(not= (cos x) 0)]
    :proof {:kind :symbolic
            :checker :gravity.rewrite/check
-           :status :proved}
-   :termination {:measure :operator-count
-                 :direction :nonincreasing}}
+           :status :proved}}
   (tan x)
   (/ (sin x) (cos x)))
 ```
+
+The selected rewrite strategy supplies the termination argument, and the engine
+records the corresponding finite evidence.
 
 Rules may be declared by the standard library, packages, compiler providers, or
 generated search tools. Package rules are imported under trust policy.

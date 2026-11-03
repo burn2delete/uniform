@@ -311,6 +311,56 @@
                        "specs/core-workflow/tasks.md")]]
       (is (thrown? Exception (dependencies/task-sh-view mutated slurp))))))
 
+(deftest stdlib-task-source-transition-authenticates-current-criteria
+  (let [source (edn/read-string (slurp dependencies/sh-crosswalk-path))
+        rows (vec (get-in source [:task-authorities "stdlib"]))
+        snapshots (:source-snapshots source)
+        transition dependencies/stdlib-task-source-transition
+        path (:path transition)
+        current (slurp path)
+        layout-read (fn [read-path]
+                      (if (= read-path path)
+                        (str/replace current
+                                     "<!-- stdlib-implementation-tasks:start -->"
+                                     "Navigation-only preamble edit.\n<!-- stdlib-implementation-tasks:start -->")
+                        (slurp read-path)))
+        changed-read (fn [read-path]
+                       (if (= read-path path)
+                         (str/replace current
+                                      "compiled module manifests agree"
+                                      "unauthenticated module manifests agree")
+                         (slurp read-path)))
+        duplicate-row (dependencies/stdlib-task-row current (:id (first rows)))
+        duplicate-read (fn [read-path]
+                         (if (= read-path path)
+                           (str/replace current
+                                        "<!-- stdlib-implementation-tasks:end -->"
+                                        (str duplicate-row
+                                             "\n\n<!-- stdlib-implementation-tasks:end -->"))
+                           (slurp read-path)))]
+    (is (= :git-bytes-verified
+           (:snapshot-provenance
+            (dependencies/stdlib-task-transition-view
+             transition rows snapshots layout-read))))
+    (is (thrown? Exception
+                 (dependencies/stdlib-task-transition-view
+                  transition rows snapshots changed-read)))
+    (is (thrown? Exception
+                 (dependencies/stdlib-task-transition-view
+                  (assoc transition :applying-blob (:baseline-blob transition))
+                  rows snapshots slurp)))
+    (is (thrown? Exception
+                 (dependencies/stdlib-task-transition-view
+                  transition rows snapshots duplicate-read)))
+    (doseq [mutated
+            [(assoc-in source [:task-authorities "stdlib" 0 :file-sha256]
+                       "0000000000000000000000000000000000000000000000000000000000000000")
+             (assoc-in source [:task-authorities "stdlib" 0 :source :start-byte]
+                       (inc (get-in source [:task-authorities "stdlib" 0 :source :start-byte])))
+             (assoc-in source [:task-authorities "stdlib" 0 :source :path]
+                       "specs/core-workflow/tasks.md")]]
+      (is (thrown? Exception (dependencies/task-sh-view mutated slurp))))))
+
 (deftest historical-sh-routing-drift-stays-unassessed
   (let [source (edn/read-string (slurp dependencies/sh-crosswalk-path))
         path "docs/self-hosting-slice-ownership.edn"

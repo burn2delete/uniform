@@ -8,13 +8,12 @@
            [java.nio ByteBuffer]
            [java.nio.channels FileChannel SeekableByteChannel]
            [java.nio.charset StandardCharsets]
-           [java.nio.file DirectoryStream Files LinkOption Path Paths
+           [java.nio.file Files LinkOption Path Paths
             SecureDirectoryStream StandardOpenOption]
            [java.nio.file.attribute BasicFileAttributes BasicFileAttributeView
             FileAttribute PosixFileAttributeView PosixFileAttributes
             PosixFilePermissions]
-           [java.util Base64 Date HashSet UUID]
-           [java.util.concurrent.locks ReentrantLock]))
+           [java.util Base64 Date HashSet UUID]))
 
 (load "/gravity/c2_pass_cache/foundation")
 (load "/gravity/c2_pass_cache/canonical_encode")
@@ -22,12 +21,6 @@
 (load "/gravity/c2_pass_cache/source_security")
 (load "/gravity/c2_pass_cache/source_snapshot")
 (load "/gravity/c2_pass_cache/key")
-(load "/gravity/c2_pass_cache/directories")
-(load "/gravity/c2_pass_cache/store_handles")
-(load "/gravity/c2_pass_cache/secure_io")
-(load "/gravity/c2_pass_cache/locking")
-(load "/gravity/c2_pass_cache/lookup")
-(load "/gravity/c2_pass_cache/publication")
 (load "/gravity/c2_pass_cache/adapter_request")
 (load "/gravity/c2_pass_cache/requested_hit_binding")
 (load "/gravity/c2_pass_cache/adapter_projection")

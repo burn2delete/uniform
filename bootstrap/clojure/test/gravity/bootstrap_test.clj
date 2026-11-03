@@ -31786,7 +31786,7 @@
         (is (not (str/includes? (pr-str data) ":fixture/")) data)))
     ))
 
-(deftest p15-s23-pinned-runtime-contract-bounds-and-loader-order
+(deftest p15-s23-pinned-runtime-contract-carrier-validation-and-loader-order
   (let [rule (bootstrap/c-backend-stage2-runtime-source-rule!
               "runtime-contract-probe.gravity" :jvm)
         validation (:runtime-contract-validation-record rule)]
@@ -31858,17 +31858,21 @@
       (is (= :runtime-artifact-source-byte-count (:missing-fact data)))
       (is (not-any? #(str/ends-with? % "runtime.gravity")
                     @parsed-paths)))
-    (let [oversized-string
+    (let [large-string
           (.repeat "x"
-                   (inc bootstrap/p15-s23-reference-runtime-max-scalar-bytes))
-          oversized-integer
+                   (inc (* 1024 1024)))
+          large-integer
           (.shiftLeft java.math.BigInteger/ONE
-                      bootstrap/p15-s23-reference-runtime-max-integer-bits)
-          oversized-ratio (/ oversized-integer (biginteger 3))
-          oversized-decimal
+                      4096)
+          large-ratio (/ large-integer (biginteger 3))
+          large-decimal
           (java.math.BigDecimal.
            java.math.BigInteger/ONE
-           (inc bootstrap/p15-s23-reference-runtime-max-scalar-bytes))
+           (inc (* 1024 1024)))
+          wide-vector
+          (vec (repeat 16385 nil))
+          deep-vector
+          (nth (iterate vector nil) 257)
           cumulative
           (vec (repeat 38 (.repeat "y" 900000)))
           string-calls (atom 0)
@@ -31879,20 +31883,25 @@
             (floatValue [] 0.0)
             (doubleValue [] 0.0)
             (toString [] (swap! string-calls inc) "hostile"))
-          cases
-          [[oversized-string :runtime-contract-scalar-bounds]
-           [oversized-integer :runtime-contract-scalar-bounds]
-           [oversized-ratio :runtime-contract-scalar-bounds]
-           [oversized-decimal :runtime-contract-scalar-bounds]
-           [(object-array 1) :runtime-contract-unsupported-scalar]
+          accepted
+          [large-string large-integer large-ratio large-decimal
+           wide-vector deep-vector cumulative]
+          rejected
+          [[(object-array 1) :runtime-contract-unsupported-scalar]
            [(map identity [1]) :runtime-contract-unsupported-collection]
-           [hostile-number :runtime-contract-unsupported-scalar]
-           [cumulative :runtime-contract-total-scalar-bounds]]]
-      (doseq [[candidate expected-fact] cases]
+           [hostile-number :runtime-contract-unsupported-scalar]]]
+      (doseq [candidate accepted]
+        (is (= {:status :passed}
+               (bootstrap/p15-s23-reference-runtime-bounded-value!
+                "runtime-carrier.gravity" :jvm :accepted candidate))))
+      (is (= {:status :passed}
+             (bootstrap/p15-s23-reference-runtime-bounded-value!
+              "runtime-carrier.gravity" :jvm :legacy-arity wide-vector 1 0)))
+      (doseq [[candidate expected-fact] rejected]
         (let [data
               (diagnostic-data
                #(bootstrap/p15-s23-reference-runtime-bounded-value!
-                 "runtime-bounds.gravity" :jvm :hostile candidate))]
+                 "runtime-carrier.gravity" :jvm :hostile candidate))]
           (is (= "P15S23X002" (:id data)) data)
           (is (= expected-fact (:missing-fact data)) data)))
       (is (zero? @string-calls)))))
@@ -32031,20 +32040,11 @@
           (is (= :inactive-capture-failure-injection
                  (:missing-fact inactive))))
         (let [nested-vector (nth (iterate vector nil) 512)
-              data
-              (diagnostic-data
-               #(bootstrap/p15-s23-reference-runtime-adapter-invoke
-                 runtime-rule
-                 bootstrap/p15-s23-stage2-runtime-artifact-closed-plan-function
-                 [nested-vector] effect-authority))]
-          (is (= "P15S23X002" (:id data)))
-          (is (= :runtime-contract-value-bounds (:missing-fact data)))
-          (is (= :runtime-adapter-arguments
-                 (:runtime-contract-definition data)))
-          (is (= bootstrap/p15-s23-reference-runtime-max-closed-plan-carrier-depth
-                 (:maximum-depth data)))
-          (is (false? (:result-committed? data)))
-          (is (false? (:output-committed? data)))))
+              result
+              (bootstrap/p15-s23-reference-runtime-bounded-value!
+               "runtime-adapter-arguments" :jvm :runtime-adapter-arguments
+               nested-vector)]
+          (is (= {:status :passed} result))))
       (is (zero? @preflight-invocations)))
     (let [string-calls (atom 0)
           hostile-number
@@ -44812,6 +44812,88 @@
         (Thread/interrupted)
         (when was-interrupted?
           (.interrupt (Thread/currentThread)))))))
+
+(deftest math-proof-accepts-decreasing-measure-without-fuel
+  (let [artifact (bootstrap/math-proof-file-artifact
+                  (fixture "accepted/math-rewrite-decreasing-measure.gravity"))
+        termination (:termination-report artifact)
+        proof (:capability-based-proof artifact)]
+    (is (= :decreasing-measure (:strategy termination)))
+    (is (= :strictly-decreasing (:direction termination)))
+    (is (= :proof/operator-decrease (:proof-ref termination)))
+    (is (nil? (:fuel termination)))
+    (is (true? (:termination-bounded? proof)))))
+
+(deftest math-proof-still-rejects-unbounded-termination
+  (is (= "MATH9-TERMINATION"
+         (diagnostic-id
+          #(bootstrap/math-proof-file-artifact
+            (fixture "rejected/math-rewrite-termination.gravity"))))))
+
+(deftest math-proof-rejects-nonincreasing-measure-without-decrease-proof
+  (is (= "MATH9-TERMINATION"
+         (diagnostic-id
+          #(bootstrap/math-proof-file-artifact
+            (fixture "rejected/math-rewrite-nonincreasing-measure.gravity"))))))
+
+(deftest math-proof-accepts-zero-bounded-fuel
+  (let [artifact (bootstrap/math-proof-file-artifact
+                  (fixture "accepted/math-rewrite-zero-fuel.gravity"))
+        termination (:termination-report artifact)
+        proof (:capability-based-proof artifact)]
+    (is (= :bounded-fuel (:strategy termination)))
+    (is (= 0 (:fuel termination)))
+    (is (= :emit-candidate-trace (:exhaustion-behavior termination)))
+    (is (true? (:termination-bounded? proof)))))
+
+(deftest math-proof-accepts-empty-proof-guided-trace
+  (let [artifact (bootstrap/math-proof-file-artifact
+                  (fixture "accepted/math-rewrite-empty-proof-trace.gravity"))
+        termination (:termination-report artifact)
+        proof (:capability-based-proof artifact)]
+    (is (= :proof-engine-guided (:strategy termination)))
+    (is (= [] (:finite-trace termination)))
+    (is (= :proof/no-rewrite (:proof-ref termination)))
+    (is (true? (:termination-bounded? proof)))))
+
+(deftest math-proof-rejects-invalid-termination-shapes
+  (doseq [fixture-name ["rejected/math-rewrite-negative-fuel.gravity"
+                        "rejected/math-rewrite-nonnumeric-fuel.gravity"
+                        "rejected/math-rewrite-proof-engine-missing-finite-trace.gravity"]]
+    (is (= "MATH9-TERMINATION"
+           (diagnostic-id
+            #(bootstrap/math-proof-file-artifact
+              (fixture fixture-name)))))))
+
+(deftest p15-s23-reference-runtime-operation-records-preserve-shape-without-admission-quotas
+  (let [wide-items
+        (vec (repeat (inc bootstrap/p15-s23-reference-runtime-max-contract-nodes)
+                     {:op :literal :value nil}))
+        wide-definition {:instructions [{:op :vector-literal :items wide-items}]}
+        wide-records
+        (bootstrap/p15-s23-reference-runtime-function-operation-records
+         "runtime-instructions.gravity" :jvm 'main wide-definition)
+        deep-instruction
+        (reduce (fn [instruction _]
+                  {:op :do :body [instruction]})
+                {:op :literal :value nil}
+                (range bootstrap/p15-s23-reference-runtime-max-instruction-depth))
+        deep-records
+        (bootstrap/p15-s23-reference-runtime-function-operation-records
+         "runtime-instructions.gravity" :jvm 'main
+         {:instructions [deep-instruction]})
+        invalid-data
+        (diagnostic-data
+         #(bootstrap/p15-s23-reference-runtime-function-operation-records
+           "runtime-instructions.gravity" :jvm 'main
+           {:instructions [{:op :unsupported-operation}]}))]
+    (is (= (+ 2 bootstrap/p15-s23-reference-runtime-max-contract-nodes)
+           (count wide-records)))
+    (is (= (inc bootstrap/p15-s23-reference-runtime-max-instruction-depth)
+           (count deep-records)))
+    (is (= "P15S23X002" (:id invalid-data)))
+    (is (= :runtime-contract-instruction-operation
+           (:missing-fact invalid-data)))))
 
 (defn -main
   [& _]

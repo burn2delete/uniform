@@ -348,6 +348,14 @@
       "test": {"path": "bootstrap/clojure/test/gravity/bootstrap_test.clj", "namespace": "gravity.bootstrap-test", "registration": "coordinator"}
     },
     {
+      "id": "source-input-products",
+      "kind": "production-verification-helper",
+      "owner": "master-coordinator",
+      "source": {"path": "bootstrap/clojure/src/gravity/source_input.clj", "namespace": "gravity.source-input"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00004-max-reader-form-depth.clj", "namespace": "gravity.bootstrap", "owner": "master-coordinator"},
+      "test": {"path": "bootstrap/clojure/test/gravity/bootstrap_compatibility/c11_test.clj", "namespace": "gravity.bootstrap-compatibility.c11-test", "registration": "coordinator"}
+    },
+    {
       "id": "safety-records",
       "kind": "production-stage-helper",
       "owner": "sh-safety",

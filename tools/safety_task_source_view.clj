@@ -95,9 +95,12 @@
         current-tree (get-in view [:current-source :tree])
         current-entries (into {} (map (juxt :path identity)
                                       (get-in view [:current-source :task-sources])))]
-    (require! (= 1 (count transitions))
+    (require! (= 2 (count transitions))
               "Safety current-source transition population changed")
-    (doseq [{:keys [path from to changed-record-ids]} transitions]
+    (doseq [[previous next] (partition 2 1 transitions)]
+      (require! (= (:to previous) (:from next))
+                "Safety current-source transition chain is disconnected"))
+    (doseq [[transition-index {:keys [path from to changed-record-ids]}] (map-indexed vector transitions)]
       (let [entry (get current-entries path)]
         (require! entry (str "Safety transition has no current task source: " path))
         (require! (= "specs/runtime-workflow/tasks.md" path)
@@ -106,32 +109,36 @@
                   (str "Safety transition marker is not the authenticated Runtime task marker: " path))
         (verify-commit-tree! from)
         (verify-commit-tree! to)
-        (require! (= (:sha256 to)
-                     (sha256 (git-text current-commit path)))
-                  (str "Safety transition target bytes are not present in composed current source: " path))
+        (when (= transition-index (dec (count transitions)))
+          (require! (= (:sha256 to)
+                       (sha256 (git-text current-commit path)))
+                    (str "Safety transition target bytes are not present in composed current source: " path)))
         (require! (string? current-tree)
                   (str "Safety composed current source tree is missing: " path))
-        (require! (= (:sha256 to) (:sha256 entry))
-                  (str "Safety transition target hash is not current entry: " path))
         (let [from-text (git-text (:commit from) path)
               to-text (git-text (:commit to) path)
-              current-records (task-source-entry! (:commit to) entry)
-              current-record-ids (mapv :id current-records)]
+              target-entry (assoc entry :sha256 (:sha256 to))
+              target-records (task-source-entry! (:commit to) target-entry)
+              target-record-ids (mapv :id target-records)]
           (require! (= (:sha256 from) (sha256 from-text))
                     (str "Safety transition source bytes drifted: " path))
           (require! (= (:sha256 to) (sha256 to-text))
                     (str "Safety transition target bytes drifted: " path))
-          (require! (= to-text (git-text current-commit path))
-                    (str "Safety transition target differs from composed current source: " path))
+          (when (= transition-index (dec (count transitions)))
+            (require! (= (:sha256 to) (:sha256 entry))
+                      (str "Safety transition target hash is not current entry: " path))
+            (require! (= to-text (git-text current-commit path))
+                      (str "Safety transition target differs from composed current source: " path)))
           (require! (not= from-text to-text)
                     (str "Safety transition does not identify a source change: " path))
-          (require! (= to-text (slurp path))
-                    (str "Safety transition target is not the working source: " path))
-          (require! (= 5 (count current-record-ids))
+          (when (= transition-index (dec (count transitions)))
+            (require! (= to-text (slurp path))
+                      (str "Safety transition target is not the working source: " path)))
+          (require! (= 5 (count target-record-ids))
                     (str "Safety Runtime current task row population changed: " path))
-          (require! (= current-record-ids (vec (distinct current-record-ids)))
+          (require! (= target-record-ids (vec (distinct target-record-ids)))
                     (str "Safety Runtime current task row identities are not unique: " path))
-          (require! (= current-record-ids changed-record-ids)
+          (require! (= target-record-ids changed-record-ids)
                     (str "Safety Runtime transition IDs do not match authenticated current rows: " path)))))
     {:count (count transitions)
      :paths (mapv :path transitions)
@@ -313,6 +320,13 @@
                   (update-in view [:current-source :versioned-task-source-transitions 0 :changed-record-ids]
                              assoc 0 "runtime/forged-current-row")
                   proposal))
+     :runtime-transition-disconnected-chain-tamper
+     (rejected? #(let [transitions (get-in view [:current-source :versioned-task-source-transitions])
+                       successor-target (get-in transitions [1 :to])]
+                   (validate-view!
+                    (assoc-in view [:current-source :versioned-task-source-transitions 0 :to]
+                              successor-target)
+                    proposal)))
      :runtime-transition-duplicate-id-tamper
      (rejected? #(validate-view!
                   (update-in view [:current-source :versioned-task-source-transitions 0 :changed-record-ids]

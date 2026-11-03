@@ -29,8 +29,9 @@
   (c16-call c16/c16-incremental-capability-proof artifact))
 
 (defn compiler-c16-incremental-source-artifact [source-path source-text]
-  (c16-call c16/compiler-c16-incremental-source-artifact
-            source-path source-text))
+  (source-input/with-context
+   #(c16-call c16/compiler-c16-incremental-source-artifact
+              source-path source-text)))
 
 (defn compiler-c16-incremental-file-artifact [path]
   (c16-call c16/compiler-c16-incremental-file-artifact path))

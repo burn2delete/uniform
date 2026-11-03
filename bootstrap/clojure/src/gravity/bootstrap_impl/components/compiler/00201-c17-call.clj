@@ -27,8 +27,9 @@
   (c17-call c17/c17-plugin-capability-proof artifact))
 
 (defn compiler-c17-plugin-source-artifact [source-path source-text]
-  (c17-call c17/compiler-c17-plugin-source-artifact
-            source-path source-text))
+  (source-input/with-context
+   #(c17-call c17/compiler-c17-plugin-source-artifact
+              source-path source-text)))
 
 (defn compiler-c17-plugin-file-artifact [path]
   (c17-call c17/compiler-c17-plugin-file-artifact path))

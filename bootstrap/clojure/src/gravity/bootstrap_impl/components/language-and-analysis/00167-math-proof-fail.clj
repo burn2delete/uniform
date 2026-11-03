@@ -56,6 +56,39 @@
                [:rule-id :version :pattern :replacement :domain
                 :branch-policy :numeric-modes :proof-status :source])))
 
+(defn- math9-termination-evidence?
+  [termination]
+  (case (:strategy termination)
+    :bounded-fuel
+    (and (integer? (:fuel termination))
+         (not (neg? (:fuel termination)))
+         (perf-present? (:exhaustion-behavior termination)))
+
+    :decreasing-measure
+    (and (perf-present? (:measure termination))
+         (contains? #{:decreasing :strictly-decreasing}
+                    (:direction termination))
+         (perf-present? (:proof-ref termination)))
+
+    :stratified-phase-order
+    (and (vector? (:phase-order termination))
+         (seq (:phase-order termination))
+         (true? (:stratified? termination))
+         (perf-present? (:proof-ref termination)))
+
+    :egraph-extraction
+    (and (map? (:bounds termination))
+         (seq (:bounds termination))
+         (vector? (:proof-replay termination))
+         (seq (:proof-replay termination)))
+
+    :proof-engine-guided
+    (and (true? (:finite-trace? termination))
+         (vector? (:finite-trace termination))
+         (perf-present? (:proof-ref termination)))
+
+    false))
+
 (defn math-proof-validate-math6!
   [source-path manifest suite]
   (doseq [claim (:claims suite)]
@@ -140,9 +173,9 @@
   (let [termination (:termination-report suite)]
     (when (or (:unbounded? termination)
               (not (true? (:deterministic? termination)))
-              (not (perf-present? (:fuel termination))))
+              (not (math9-termination-evidence? termination)))
       (math-proof-fail! "MATH9-TERMINATION" source-path manifest termination
-                        {:remediation "Bound rewrite application with deterministic fuel or proof-guided termination."})))
+                        {:remediation "Provide one deterministic decreasing measure, stratified phase order, bounded fuel, bounded e-graph extraction, or finite proof-guided trace."})))
   (doseq [counterexample (:counterexamples suite)]
     (when (:disproves-accepted? counterexample)
       (math-proof-fail! "MATH9-COUNTEREXAMPLE" source-path manifest counterexample
@@ -189,6 +222,11 @@
    :rewrite-traces-replayable?
    (every? #(and (:replayable? %) (perf-present? (:source %)))
            (:rewrite-traces suite))
+   :termination-bounded?
+   (let [termination (:termination-report suite)]
+     (and (not (:unbounded? termination))
+          (true? (:deterministic? termination))
+          (math9-termination-evidence? termination)))
    :egraph-extraction-proof-backed?
    (let [egraph (:egraph-report suite)]
      (and (:valid? egraph)

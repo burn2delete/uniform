@@ -81,8 +81,8 @@
                        "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
                        "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"]}]}
  :current-source
- {:commit "19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b"
-  :tree "dc79967f4939df6790c3a16b0a71a71e81191f9e"
+ {:commit "2cbafb8c23588c299b28c36f315b3105e1270cd5"
+  :tree "29dd8a9c669b92af5ba5bcdbec954a1b190e28df"
   :domain-criteria-transition
   {:historical-commit "2c3eac90b9736873ce7c439cdc9603b1e43249e5"
    :historical-tree "3de79028eeaced10f00c6895f4f5cf446d7304f2"
@@ -118,8 +118,8 @@
     :ordered-task-ids ["pipeline" "plugins" "pass-evidence" "domain-ir-boundaries" "development-boundaries"]}
    {:path "specs/domains-workflow/tasks.md"
     :marker "domains-implementation-tasks"
-    :sha256 "5378c2c7fba1bb49318fc6cda890c60c77bdbdc57dfe6f5ea42ea8aa23298943"
-    :change-class :family-criteria-preserved-plus-current-main-safety-criteria
+    :sha256 "3d8989b72d00461931e400b5617b9bea090c63265cfee553e12d7b3cd6bc88dc"
+    :change-class :current-candidate-composition
     :ordered-task-ids ["math" "schema" "query" "workflow" "ai" "gpu" "ui"]}
    {:path "specs/legality-workflow/tasks.md"
     :marker "legality-implementation-tasks"
@@ -137,8 +137,8 @@
     :ordered-task-ids ["hardware" "firmware" "kernel" "devices"]}
    {:path "specs/runtime-workflow/tasks.md"
     :marker "runtime-implementation-tasks"
-    :sha256 "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c"
-    :change-class :current-main-composition
+    :sha256 "d4b3a3c875f961b5828e8cceda7ecdf106af4527c64fa07ad6c6e1e049d0868d"
+    :change-class :current-candidate-composition
     :ordered-task-ids ["runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
                        "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"
                        "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
@@ -167,25 +167,31 @@
   :preserved-pr445 {:sha256 "aa7ee8dfa7c7b0b7a9cb0e609944d7dcbcd81791f080708364a0faf8cc2e7980"
                     :availability :historical-external-not-in-current-tree}}
  :current-manifest
- {:commit "19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b"
-  :tree "dc79967f4939df6790c3a16b0a71a71e81191f9e"
-  :sha256 "8948438410df7c5b6c2c547e48be16b3ff8b1033ec866fb1bec432e4e3c32007"
+ {:commit "2cbafb8c23588c299b28c36f315b3105e1270cd5"
+  :tree "29dd8a9c669b92af5ba5bcdbec954a1b190e28df"
+  :sha256 "d08d0f24edf90bce081d123e4d6d1de29fb3e263fef3f62d8a1fd4aff173964e"
   :domain-task-source-bridge
   {:path "specs/domains-workflow/tasks.md"
    :historical-sha256 "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4"
    :historical-ref "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950"
-   :change-class :family-criteria-preserved-plus-current-main-safety-criteria
+   :change-class :current-candidate-composition
    :marker "domains-implementation-tasks"
-   :current-tree "52a90b3d537f23b3f572ee65ff03edf827c1e29b"
+   :current-tree "552a2bd0f50d53928aef5dffd085656dbe7bc17a"
    :changed-records [{:id "math"
                       :historical-record-sha256 "fd5a8ea4fed8cedd5889bb6030359e87b8abefb1a6467470d161800b6387e0c7"
                       :current-record-sha256 "4696449459576064a9b13100f3313cdfb97a92b536bc89362992705fde5c5f2b"}
                      {:id "ai"
                       :historical-record-sha256 "f1646c5fd968cd1cc3b6e4616ccbb69884872a73d682ceaa558932efcfbc3139"
                       :current-record-sha256 "0dd8433702ae07f6cfbabe7acba0c32ddaaf95c09bf35da2537d1ba313991ea4"}]
-   :qualification "The authenticated current source is the PR562 family/current-main composition checkpoint: historical Domain Workflow/UI criteria remain present and current main's SAFE9/SAFE13 Math/AI boundary criteria are retained. Historical task identity and acceptance remain pinned; no domain implementation or requirement acceptance is inferred."
-   :current-sha256 "5378c2c7fba1bb49318fc6cda890c60c77bdbdc57dfe6f5ea42ea8aa23298943"
-   :current-ref "24e7b5e5cd8bc42fa495997870605b596a380678"}}
+   :qualification "The current candidate preserves the Domain task identity and adds the scoped PR565 schema source joins while retaining the existing Math/AI criteria. Domain implementation and requirement acceptance remain unassessed."
+   :current-sha256 "3d8989b72d00461931e400b5617b9bea090c63265cfee553e12d7b3cd6bc88dc"
+   :current-ref "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659"
+   :known-current-main
+   {:current-ref "d544539eefaea6b16aecd724b54d61a9b0ec1f3d"
+    :current-tree "9fac2c4d1ebfb5294f598860917bc779b2147ebf"
+    :current-sha256 "5378c2c7fba1bb49318fc6cda890c60c77bdbdc57dfe6f5ea42ea8aa23298943"
+    :change-class :current-main-composition
+    :qualification "Immutable d544 source checkpoint before the PR565 Domain joins; no Domain implementation acceptance is inferred."}}}
  :qualification-policy
  {:current-task-status :open-and-unassessed
   :current-task-acceptance :not-replaced
