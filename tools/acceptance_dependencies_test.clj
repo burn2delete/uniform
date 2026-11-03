@@ -481,7 +481,7 @@
     (is (= 149 (count current)))
     (is (= 40 (:task-count review)))
     (is (= 40 (count (:declared-consumers review))))
-    (is (= 99 (count (:declared-parent-consumers review))))
+    (is (= 101 (count (:declared-parent-consumers review))))
     (is (= dependencies/selected-parent-consumers (set (:required-parent-consumers review))))
     (let [text (slurp dependencies/future-dependency-path)
           removed (clojure.string/replace text #"(?m)^\| `domain-ir-boundaries` \|.*\n" "")
@@ -490,7 +490,7 @@
           route (first (filter #(= "domain-ir-boundaries" (:consumer %)) (:routes review)))]
       (is (= ["domain-ir-boundaries"] (get-in altered [:dependency-review :unresolved-consumers])))
       (is (empty? (:start-results route)))
-      (is (= 25 (count (:composition-results route))))
+      (is (= 27 (count (:composition-results route))))
       (doseq [producer (:composition-results route)]
         (is (some #(= ["task:domain-ir-boundaries/implementation" (str "task:" producer "/interface") :declared-producer-interface]
                       [(:from %) (:to %) (:kind %)]) edges))
@@ -506,7 +506,7 @@
           routes (filter #(c9 (:consumer %)) (:routes review))]
       (is (= 5 (count c9) (count routes)))
       (is (= c9 (set (get-in altered [:dependency-review :unresolved-consumers]))))
-      (is (= [29 30 32 42 48] (sort (map (comp count :composition-results) routes))))
+      (is (= [29 31 32 43 50] (sort (map (comp count :composition-results) routes))))
       (doseq [{:keys [consumer start-results composition-results]} routes]
         (is (empty? start-results))
         (doseq [producer composition-results]
@@ -535,7 +535,7 @@
     (is (empty? (:unresolved-consumers review)))
     (is (= :pending (:future-sh-and-full-language-joins review)))
     (is (= :unassessed (:implementation-acceptance review)))
-    (is (= [97 9] (mapv count (:declared-output-cycles review))))
+    (is (= [99 9] (mapv count (:declared-output-cycles review))))
     (is (every? (set (first (:declared-output-cycles review)))
                 ["auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
                  "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
@@ -543,7 +543,7 @@
                  "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers"
                  "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
                  "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
-                 "ai" "workflow" "backend-conformance" "query"]))
+                 "ai" "workflow" "backend-conformance" "query" "backend-interface" "pass-evidence"]))
     (is (contains? (set (first (:declared-output-cycles review)))
                    "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects"))
     (is (every? (set (first (:declared-output-cycles review)))

@@ -82,6 +82,30 @@ Complete runtime provider initialization criterion (Open): Before executing user
 <!-- authority-source-startup:end -->
 
 
+
+<!-- runtime-error-source-execute:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L9 actual error-path execution criterion (Open): Execute the selected admitted protected body, typed handler/propagation, throw, panic or safety-check failure path with actual typed values, source/generated identity and required resource cleanup. Preserve value-before-transfer, protected-before-selected-handler, nonreturning payload/body behavior and the active profile's specified failure/trap; a lowering record, stack-exception label or assigned complete status is not execution. Required evidence: actual selected interpreter or compiled-program results and ordered normal/error/panic/triggered-check/cleanup traces plus refused untyped/unhandled/illegal/missing-service cases. Early real service/error/cleanup contracts precede caller construction; an interpreter needs no universal native artifact and no held execution is enabled.
+<!-- runtime-error-source-execute:end -->
+
+
+<!-- runtime-error-source-finite-check:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+Source obligation `language/errors/execute-defined-check-failure`: Give a retained runtime safety check a specified typed failure or profile-defined trap instead of undefined behavior. Accept: For each retained bounds/initialization/numeric/capability/taint/replay check, emit the specified typed failure or profile-defined trap according to runtime and safety mode, with its check and source identity. Reject: Reject an unspecified failure outcome or target undefined behavior substituted for the check's required failure path. Required outputs: Check-to-failure/trap table, triggered-check fixtures, typed failure records and matching profile/runtime/safety diagnostics. Dependencies consume versioned facts/receipts from effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime; they do not require blanket component completion. Implementation status remains Open.
+<!-- runtime-error-source-finite-check:end -->
+
+
+<!-- runtime-error-source-finite-panic:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+Source obligation `language/errors/lower-panic`: Lower an unrecoverable panic according to the active profile, preserving source/artifact provenance when possible and rejecting panic as ordinary stable-API control flow. Accept: Emit the selected profile's panic lowering: hosted exception/task abort, native runtime handler, kernel trap/platform path, firmware reset/halt, hardware synthesis-time unreachable/trap artifact or runtime-panic rejection, distributed failure state and AI policy/orchestration record. Preserve source/artifact provenance when available and declare try/throw lowering or rejection. Reject: Reject panic as ordinary stable-API control flow, an unsupported lowering or an undeclared profile failure path; report L9-PANIC-PROFILE. Required outputs: Profile-specific panic/error lowering matrix, target failure artifacts, positive/negative fixtures and provenance-linked diagnostics. Dependencies consume versioned facts/receipts from effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime; they do not require blanket component completion. Implementation status remains Open.
+<!-- runtime-error-source-finite-panic:end -->
+
 - [ ] `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries` Implement memory, concurrency and typed FFI boundaries
 
 Status: Open
@@ -155,6 +179,14 @@ Apply the [complete protocol and dispatch source criteria](../types-workflow/pla
 L8 actual host dispatch normalization criterion (Open): At the selected foreign/host implementation boundary, execute the declared host type/nullability/exception/ownership/runtime contract and normalize actual returned nulls, exceptions and failure-resource behavior into the typed Gravity boundary before safe/non-null core consumption. Preserve method effects, runtime dependencies and real cleanup/lifetime obligations; GC/process exit cannot replace required resource behavior. Required evidence: actual permitted foreign-method values, declared Option absence, normalized typed failures and ordered resource traces, plus rejected undeclared null/exception/type/lifetime/runtime contracts under L8-HOST-DISPATCH. Types emits/checks boundary facts; Runtime owns real conversion/normalization, without adopting a new host class/callback facility or enabling held native/provider execution.
 <!-- runtime-protocol-source-host:end -->
 
+
+<!-- runtime-error-source-finite-foreign:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+Source obligation `language/errors/normalize-foreign-failure`: Normalize a foreign/host call's error, exception, null and failure-resource behavior into an explicit typed Gravity boundary contract before entering safe/non-null source semantics. Accept: Before safe/non-null entry, convert nullable/undefined foreign values through the declared Option/Result, checked-wrapper or opaque-foreign-value contract; declared nullable Option absence may produce None without inventing an error. Separately translate foreign/host error returns, errno-like state, exceptions, panics, rejected promises, signals and exit statuses into declared typed Gravity error contracts. Do not convert a real error or capability denial into absence. Retain host/foreign type identity, ownership transfer on failure, cleanup, abort policy, runtime dependencies and exception/null contracts for hosted dispatch. Reject: Reject an unexpected or undeclared null, null crossing a non-null type, untranslated/untyped foreign failure and a missing mapping or failure-resource contract; report P4-EXCEPTION, L8-HOST-DISPATCH, L9-HOST-ERROR/L9-FFI-ERROR or L19-ERROR-MAP as applicable. Required outputs: Foreign/host dispatch and error-mapping artifacts, hosted conformance, failure-cleanup tests and diagnostics with host/runtime, source/generated origin, requested effect, grant, symbol and deployment policy when relevant. Dependencies consume versioned facts/receipts from runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime, types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts; they do not require blanket component completion. Implementation status remains Open.
+<!-- runtime-error-source-finite-foreign:end -->
+
 - [ ] `runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution` Connect distributed/AI replay and interactive execution
 
 Status: Open
@@ -198,6 +230,22 @@ Apply the [complete provider and capability source criteria](../auth-workflow/pl
 Complete provider workflow/AI consumer criterion (Open): Use actual selected provider/grant/typed-handle and installed operation-gate products at each admitted workflow/AI/tool/model/memory or review boundary, including retries, delegation, revocation and cancellation. Check the callee's own contract as well as caller authority and separately supplied required review; no policy definition or review-request capability issues its own approval. Preserve stable typed action/event identities, redacted decision/audit records, retention/evaluation policy and no-repeat replay under the governing L6/R7/R8 conditions. Replay consumes recorded results and cannot reacquire or widen authority through a hidden live provider. Produce actual authorized/refused source-consumer and replay traces; full AI/runtime coverage, live model/tool use and held external actions remain separate and unaccepted.
 <!-- authority-source-replay:end -->
 
+
+
+<!-- runtime-error-source-finite-ai:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+Source obligation `language/errors/emit-ai-policy-failure`: Emit structured audit/policy evidence for AI/model/tool/schema/defense/review failure instead of losing it in exception text. Accept: Emit structured policy/audit artifacts for model-provider failure, tool failure, schema validation, policy denial, prompt-defense trigger and human-review denial, preserving source spans and generated-origin chains. Actual external account/billing errors may remain explicit; removed project quotas are not restored. Reject: Reject free-text-only or missing AI/tool failure evidence, omitted policy/schema/review identity and lost source/generated origins; report L9-AI-ERROR. Required outputs: Typed AI/tool failure record, policy/audit/replay links, validation/denial fixtures and source-bound diagnostics. Dependencies consume versioned facts/receipts from auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime, effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering; they do not require blanket component completion. Implementation status remains Open.
+<!-- runtime-error-source-finite-ai:end -->
+
+
+<!-- runtime-error-source-finite-workflow:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+Source obligation `language/errors/emit-durable-workflow-failure`: Emit and replay a durable workflow failure record with its step/input/error identity, retry/compensation policy and external-result/replay provenance. Accept: Persist and replay a workflow failure with step ID, input and output/error schemas, retry/compensation policy, time, external-call results and replay ID; retain source/generated origins and exercise failure plus compensation replay. Reject: Reject workflow failure without durable record, missing required schema/policy/result/replay identity or live re-execution during recorded replay; report L9-WORKFLOW-ERROR. Required outputs: Durable typed failure and compensation records, replay equality/refusal fixtures and source/generated-origin diagnostic artifacts. Dependencies consume versioned facts/receipts from effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime; they do not require blanket component completion. Implementation status remains Open.
+<!-- runtime-error-source-finite-workflow:end -->
 
 - [ ] `runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration` Close enforcement and observability integration
 

@@ -55,6 +55,14 @@ Apply the [complete pattern-matching source criteria](plan.md#complete-pattern-m
 L7 guarded-selection criterion (Open): Represent and preserve actual ordered match selection and single scrutinee evaluation. Structural failure skips guard and body; structural success makes bindings available, evaluates the guard exactly once and evaluates the body only on true. False continues with the next clause; throw/non-returning transfer propagates. Preserve actual guard calls, branch order, causal origins and conditional regions rather than trusting an evaluation label. Require real selected runtime/backend consumer fixtures for every claimed behavior, including side effects, skipped branches and non-returning guards; early Core construction does not wait for its own later execution or final suite.
 <!-- core-pattern-source-selection:end -->
 
+
+<!-- core-error-source-control:start -->
+
+Apply the [complete error-handling source criteria](plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L9 real error-control criterion (Open): Construct actual try/throw control from resolved source: evaluate the thrown value before its transfer and execute protected code before the selected typed handler, preserving source order, lexical handler bindings, nonreturning paths and required cleanup edges. Keep source error effects and profile lowering/rejection requirements visible for their owners rather than treating a try/throw node as a host stack exception. A never-returning payload does not create an additional normal outer throw. Panic is an unrecoverable profile/library/runtime path, not an invented extra Core primitive or ordinary stable-API control flow. Required evidence: actual error-transfer/handler/control/origin artifacts and positive/refusal order, binding, nonreturning and metadata-loss fixtures; later actual semantic/admission/runtime facts are not first structural inputs.
+<!-- core-error-source-control:end -->
+
 - [ ] `core/current-evidence-and-remaining-work/core2-preserve-binding-structure` core/2: Preserve binding structure
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -186,6 +194,14 @@ Apply the [complete pattern-matching source criteria](plan.md#complete-pattern-m
 
 L7 checked-match composition criterion (Open): Join actual current decision tree, exhaustiveness report, narrowing table, branch-effect summary, unreachable diagnostics, applicable schema-validation links and move/borrow facts with every pattern/branch source and generated origin. Keep initial Core structure before analyses and checked composition after genuine owner products. Verify/read back complete references and invalidate affected constructor/domain/guard/binding/type/effect/ownership/schema/profile/target/source changes before reuse. Preserve all eight L7 diagnostic meanings: NONEXHAUSTIVE, UNREACHABLE, DUP-BINDING, PATTERN-TYPE, GUARD-EFFECT, GUARD-TYPE, UNVALIDATED-SHAPE and LINEAR-MOVE. Required evidence: full accepted/refused source/generated/profile fixtures and representative backend-equivalent branch behavior; missing/substituted/stale products, invented narrowing or reordered observable guards reject. Structural planning checks or narrow historical slices do not close L7.
 <!-- core-pattern-source-artifacts:end -->
+
+
+<!-- core-error-source-composition:start -->
+
+Apply the [complete error-handling source criteria](plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L9 real error-semantic composition criterion (Open): Compose actual source control, independently typed Option/Result/throw/handler/call facts, actual error effects, separate grants, profile/safety/resource verdicts and concrete host/runtime/target/workflow/AI failure products. Owner fixtures cover Option, Result, try, throw, panic, safety-check, host/FFI, durable workflow failure/compensation replay and structured AI/tool/schema/policy failures, with constrained versus hosted dispositions and real Result/Option exhaustiveness. Preserve all eight artifact families and seven diagnostic meanings with actual origins, values, failure behavior and current producer dependencies. Actual runtime/target traces and independent conformance follow owner construction; required but unsupported/held cases remain work rather than source-shape acceptance or a whole-language implementation claim.
+<!-- core-error-source-composition:end -->
 
 <!-- core-implementation-tasks:end -->
 

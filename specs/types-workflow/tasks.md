@@ -63,6 +63,14 @@ Apply the [complete pattern-matching source criteria](../core-workflow/plan.md#c
 L7 Boolean guard criterion (Open): Establish Bool for each normally returning guard from actual checked expression and branch-binding facts, or emit L7-GUARD-TYPE. True selects its body and false continues; nil, numeric, text, nil-or-Bool, unknown or Dynamic results are not silently Boolean. A throw or other non-returning guard retains its control transfer without manufacturing a Bool value. Preserve actual guard type, source and binding dependencies. Required evidence: accepted true/false/non-returning cases and rejected non-Boolean/unestablished results, distinct from L2 if truthiness and without authorizing illegal effects.
 <!-- types-pattern-source-guard:end -->
 
+
+<!-- types-error-source-typing:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L9 actual throw/handler typing criterion (Open): Check real thrown payload types, typed catch bindings and protected/handler normal results against resolved source declarations, preserving nonreturning evaluation and original transfer identities. Actual function/call artifacts expose thrown-error type/effect requirements; distinguish conservative source-error potential from admitted or executed effects. Result/Option pattern coverage uses actual declared constructor domains and L7 evidence, never a canonical-if-only join extension or host truthiness. Reject untyped/unknown/mismatched thrown values, invalid handler bindings/results and missing required handling/propagation. Required evidence: independent payload/result/handler/call constraints, typed/never and accepted/refused source/generated cases with current provenance. Source coverage alone does not discharge profile, handler, effect or capability legality.
+<!-- types-error-source-typing:end -->
+
 - [ ] `types/current-evidence-and-remaining-work/types2-check-declared-abstractions` types/2: Check declared abstractions
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -155,6 +163,14 @@ Apply the [complete protocol and dispatch source criteria](plan.md#complete-prot
 L8 declared multimethod criterion (Open): Where multimethod-style dispatch is supported, use the actual declared dispatch function and case/implementation identities. Open multimethods are hosted/dynamic unless a profile-specific table is actually generated with known coverage; closed multimethods may lower to actual matching or jump tables preserving source behavior. Retain dispatch-function effects, actual table/case coverage and missing/ambiguous-selection diagnostics. The illustrated event kinds are examples, not the complete language registry, and optional support does not silently make open dispatch portable or mandate an invented priority rule.
 <!-- types-protocol-source-multimethod:end -->
 
+
+<!-- types-error-source-outcomes:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L9 distinct error-family criterion (Open): Represent actual declared absence Option, recoverable Result, typed thrown error, panic/unrecoverable failure, assertion/contract failure, safety-check failure, capability denial, FFI error, workflow retry/compensation failure, AI/model/tool/policy/evaluation failure and compiler diagnostic as distinct contracts. Preserve actual Some/None and Ok/Err payload types and source/audit identities across portable constrained profiles. Do not turn capability denial into nil/absence, workflow replay failure into an unrelated local exception or AI failure into unrecorded text. Source nil remains its own L2 value; it is not an implicit Option or host-null conversion. Required evidence: genuine error/outcome declarations, constructor/match type cases and positive/refused cross-family conversions without inventing new error syntax or a host exception hierarchy.
+<!-- types-error-source-outcomes:end -->
+
 - [ ] `types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit` types/3: Make dynamic boundaries explicit
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -185,6 +201,14 @@ Apply the [complete protocol and dispatch source criteria](plan.md#complete-prot
 L8 explicit dynamic/foreign-boundary criterion (Open): Represent actual dynamic/reflective/host dispatch with method/receiver/type identity, selected runtime dependencies, source profile, nullability, exception/failure behavior, ownership, required runtime checks, effects and capabilities. Preserve a declared host boundary and actual normalization route before values/errors enter safe core semantics; a host null or exception cannot become an unmodeled core value/throw. Types records the concrete boundary; Runtime performs normalization and resource behavior, Effects checks actual effects and Auth grants separate authority. Reject missing type/null/exception/lifetime/runtime facts and forbidden dynamic/reflective behavior with L8-HOST-DISPATCH or L8-DYNAMIC-FORBIDDEN; metadata alone is not executed normalization.
 <!-- types-protocol-source-dynamic:end -->
 
+
+<!-- types-error-source-ffi:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L9 complete FFI error-boundary criterion (Open): Check and preserve actual declared error-return convention, errno/equivalent state, exception behavior, nullability, ownership transfer on failure, resource cleanup, panic/abort behavior and typed Gravity error mapping. Declared Option absence remains legal, while real errors and denials cannot become absence. Host nulls/exceptions cross into safe/non-null types only through the actual required checked/typed boundary. Types owns concrete mapping/type/dataflow facts; Runtime performs actual conversion/normalization and failure cleanup. Reject missing/incompatible/stale mappings or untranslated failures with L9-HOST-ERROR/FFI-ERROR and governing interop diagnostics. Required evidence: source-bound complete error-map/host contract and accepted/refused nullable/typed-error/failure-resource cases without enabling held native/provider/callback execution.
+<!-- types-error-source-ffi:end -->
+
 - [ ] `types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts` types/4: Preserve and invalidate facts
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -206,6 +230,14 @@ Apply the [complete protocol and dispatch source criteria](plan.md#complete-prot
 
 L8 complete dispatch-artifact criterion (Open): Serialize actual protocol and implementation tables, method signatures, selected dispatch-mode records, applicable multimethod tables, interface-lowering and host-interop records, diagnostics and conformance fixtures with current producer/source/generated/binding/type/effect/capability/profile/target/ABI/schema/provider identities. Preserve all seven L8 diagnostic meanings and actual source failure subjects rather than a requested diagnostic catalog. Later interface/runtime/conformance products retain their actual producing owners; typed serialization cannot fabricate them. Changed protocols, implementations, dispatch functions/cases/priority declarations, types, effects, grants, profiles, target layouts, host contracts or specialization proofs invalidate affected selection and consumers. Required evidence: real round-trip/current-identity checks and missing/stale/tampered/coherently substituted refusal fixtures; a complete flag or nonempty link is not acceptance.
 <!-- types-protocol-source-artifacts:end -->
+
+
+<!-- types-error-source-artifacts:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L9 complete error-artifact criterion (Open): Preserve actual error declarations, function thrown-error/effect records, panic lowering, safety-check failure, FFI mapping, workflow failure, AI/tool failure and diagnostic fixtures with current source/generated/binding/type/effect/grant/profile/target/runtime/provider/schema/check/replay/policy identities. Each later runtime/target/workflow/AI artifact retains its actual producer; typed serialization cannot fabricate it. Keep all seven L9 diagnostic meanings and real failure subjects, not a requested-code catalog. Changed payload/handler/call/control/type/effect/mapping/profile/service/schema/retry/compensation/policy/source inputs invalidate affected facts and consumers. Required evidence: actual stable round-trip/currentness checks and missing/stale/tampered/coherently substituted refusal fixtures, with no complete-container or nonempty-link acceptance.
+<!-- types-error-source-artifacts:end -->
 
 - [ ] `types/current-evidence-and-remaining-work/types5-integrate-typed-core` types/5: Integrate typed core
 

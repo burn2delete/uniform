@@ -594,6 +594,18 @@ Use the [complete protocol and dispatch source criteria](../types-workflow/plan.
 
 Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Protocol and dispatch dependency interface
+
+Use the [protocol and dispatch producer and consumer order](../types-workflow/plan.md#protocol-and-dispatch-producer-and-consumer-order) and existing selected-result table. Early authentic schema/tool/workflow/proof/checker contracts precede actual admitted dispatch/validation and later typed-Core/MIR/runtime anchors. Closed formal dispatch need not wait for full future Formal completion; required proof precedes dependent use.
+
+Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete error-handling source interface
+
+Use the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria). Workflow owns durable step/input/error/retry/compensation/time/external-result/replay contracts and AI owns structured model/tool/schema/policy/defense/review failure artifacts. Runtime actual execution follows real source/schema/grant contracts. External billing errors remain explicit while removed project quotas stay removed; the original mixed policy facet remains pending independent acceptance.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Domains workflow migration

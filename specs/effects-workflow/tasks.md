@@ -75,6 +75,14 @@ Apply the [complete protocol and dispatch source criteria](../types-workflow/pla
 L8 caller-visible method-effects criterion (Open): Propagate effects from the actually selected implementation, or the declared upper bound when no implementation is statically known, through real typed dispatch/call edges. Preserve latent and thrown effects and caller-visible capability requirements; reject implementation widening beyond what callers can see. Do not hide allocation, IO, FFI, network/database, model/tool calls, unsafe operations or reflection behind a method/dispatch table or declared pure label. Required evidence: actual implementation/upper-bound derivations and positive/refused known/unknown/dynamic/recursive call-site fixtures; an assigned complete dispatch status or copied node effect set does not prove propagation.
 <!-- effects-protocol-source-effects:end -->
 
+
+<!-- effects-error-source-effects:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L9 thrown-error propagation criterion (Open): Infer actual direct, latent and transitive error effects from typed throw/call/protected/handler edges, expose them in function contracts and preserve handler-raised and residual errors. Distinguish declared allowance, conservative source error potential, actual admitted handling and one selected runtime trace; declarations or a fixed String throws set are not body inference. Preserve required L6 conservative branch/handler behavior and original handled-label audit rather than erasing effects merely because C7 classifies a source catch. Required evidence: genuine function/call/handler derivations and accepted/refused hidden or undeclared throws and missing propagation fixtures with L9-THROW-EFFECT/UNHANDLED and owning C8 diagnostics.
+<!-- effects-error-source-effects:end -->
+
 - [ ] `effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering` effects/3: Check legality and ordering
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -127,6 +135,14 @@ Apply the [complete protocol and dispatch source criteria](../types-workflow/pla
 
 L8 dispatch effect-admission criterion (Open): Check real selected-implementation or declared-upper-bound effects against actual call-site/context/profile allowances before dispatch is admitted. Expose every required capability for separate authentic Auth checking; a profile, protocol type, provider name or effect declaration grants no authority. Unsafe operations retain their explicit audited boundary. If the active profile cannot determine a safe implementation set, reject or use only the actually supported checked runtime provider with explicit effects/capabilities and surviving checks. Required evidence: admitted legal call sites and refused hidden allocation/IO/FFI/network/database/model/tool/unsafe/reflection or absent checked-provider conditions, preserving L8-METHOD-EFFECT/DYNAMIC-FORBIDDEN and owning effect diagnostics.
 <!-- effects-protocol-source-allowance:end -->
+
+
+<!-- effects-error-source-admission:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L9 actual error-admission criterion (Open): Check actual thrown/handler/residual error effects against function/namespace/profile/package/deployment/runtime/safety allowances and separate authentic grants before admitting the selected behavior. Typed source coverage is not permission to handle an effect or erase an escaping label. Keep ordinary typed try/catch distinct from separately declared L6 resumable-effect continuations; do not invent resume/multi-shot authority. Reject undeclared error effects, forbidden lowering/handler modes and missing required handled-or-propagated paths. Required evidence: actual accepted/refused effect/profile/authority outcomes and residual/audit records under L9 and governing L6/C8, with no runtime-only or backend-only legality substitution.
+<!-- effects-error-source-admission:end -->
 
 - [ ] `effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation` effects/4: Record replay and invalidation
 

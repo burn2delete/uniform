@@ -165,6 +165,18 @@ Use the [complete protocol and dispatch source criteria](../types-workflow/plan.
 
 Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Protocol and dispatch dependency interface
+
+Use the [protocol and dispatch producer and consumer order](../types-workflow/plan.md#protocol-and-dispatch-producer-and-consumer-order) and existing selected-result table. Early method ABI/layout/service support precedes source checking; later admitted verified input yields actual selected interface artifacts/bytes/readback or refusal, preserving protocol semantics and source diagnostics.
+
+Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete error-handling source interface
+
+Use the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria). Use real verified admitted input and selected profile/runtime/error contracts to emit actual exception/Result/trap/panic/workflow/AI failure artifacts or refusal. Early ABI/service rules precede callers; actual target products preserve source errors and authority.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Lower task authority

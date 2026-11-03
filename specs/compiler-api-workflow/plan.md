@@ -259,6 +259,18 @@ Use the [complete protocol and dispatch source criteria](../types-workflow/plan.
 
 Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Protocol and dispatch dependency interface
+
+Use the [protocol and dispatch producer and consumer order](../types-workflow/plan.md#protocol-and-dispatch-producer-and-consumer-order) and existing selected-result table. Expose real structural, tentative typed, inferred-effect, admitted-dispatch, verified MIR, target/interface and runtime boundaries. pass-evidence supplies early actual checker interfaces and later exact-subject proofs, not a universal future Formal gate.
+
+Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete error-handling source interface
+
+Use the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria). Expose actual structural error control, typed source-error potential, admitted effects/profile/grants, checked Core/MIR and later target/runtime/workflow/AI failure products as distinct observable boundaries. Preserve all artifacts, diagnostics and invalidation across equivalent fused passes.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
 ## Historical workflow-transfer and source-composition plan
 
 # Implementation plan: Compiler API workflow migration

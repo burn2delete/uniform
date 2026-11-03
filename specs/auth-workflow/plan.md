@@ -323,6 +323,18 @@ Use the [complete protocol and dispatch source criteria](../types-workflow/plan.
 
 Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Protocol and dispatch dependency interface
+
+Use the [protocol and dispatch producer and consumer order](../types-workflow/plan.md#protocol-and-dispatch-producer-and-consumer-order) and existing selected-result table. Truthful provider/service declarations and actual call requirements precede authentic separate grant checking; later runtime usage must agree and no type/effect/provider label grants authority.
+
+Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Complete error-handling source interface
+
+Use the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria). Preserve actual typed/audited capability/policy/human-review denial with principal/action/grant/provider/source identity. Authority is checked before action; catch/Result/panic paths cannot issue grants or convert denial into nil/absence.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Auth task authority

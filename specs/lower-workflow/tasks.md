@@ -108,6 +108,14 @@ Apply the [complete target-lowering source criteria](plan.md#complete-target-low
 C14 emission/unsupported criterion compiler/c14/unsupported-target (Open): Emit only accepted backend-ready inputs with the actual verified-input identity, backend/profile/target fingerprint, produced artifact kinds/content hashes, source/generated map, proof map, effect/capability/safety summaries, runtime/provider and dependency provenance, diagnostics and eligibility/ABI/layout decisions. Actual backend and package consumer fixtures validate the complete artifact manifest and preserved metadata. For an unrepresentable operation or domain artifact, produce a machine-readable unsupported record naming that subject, required feature, backend/profile, source span, alternatives, fallback status and diagnostic identity. Select fallback only under the same semantic/effect/capability/safety/profile contract and actual support; reject hidden services, authority expansion, undefined-behavior paths, unsupported features or incomplete manifests with the applicable C14 rules. Required outputs: actual target artifacts/manifests, unsupported-feature report and legal-fallback/refusal/consumer results. Preserve the existing staged Linux LLVM release slice as its declared claim, with other target coverage explicitly unimplemented until evidenced; this general C14 contract adopts no additional target and confers no execution or release acceptance.
 <!-- lower-canonical-emission:end -->
 
+
+<!-- lower-error-source-lower:start -->
+
+Apply the [complete error-handling source criteria](../core-workflow/plan.md#complete-error-handling-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L9 actual selected error lowering criterion (Open): Produce actual target artifacts implementing the admitted profile's try/throw and panic/check-failure disposition, or an owning rejection, from verified current input and actual type/effect/grant/profile/resource/runtime facts. Preserve typed Result/Option data paths, handler/transfer/cleanup order, required traps or failure records, all relevant source/generated maps and available artifact provenance. No target stack exception, undefined behavior or runtime label may silently replace the declared source failure contract. Required evidence: actual selected target bytes/IR/graphs and readback, positive/refused lowering/missing-service/mapping cases and representative behavior comparisons, with Runtime's earlier error/panic contract distinct from later execution and all held target/device actions unchanged.
+<!-- lower-error-source-lower:end -->
+
 <!-- lower-implementation-tasks:end -->
 
 ## Historical migration record (frozen)
