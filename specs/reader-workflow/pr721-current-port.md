@@ -144,6 +144,36 @@ actual C5/C6/C7/C8, public admission, migration, release or self-hosting claim
 is made. Historical failed runs and the stopped large-result attempt remain
 nonpasses; no retry, heap workaround, or source-pin renewal is implied.
 
+## Additional global macro repair/adoption frame
+
+The accepted PR2516 netpatch is a separate current test repair. It is not one
+of PR721's 17 authored inputs and does not replace, rewrite, or reclassify any
+of those inputs. It strengthens the public macro receipt interposition checks
+by using a real source-backed `defn-basic` artifact and the real verifier report
+while retaining the existing cache, stage, seed-operation, and invocation
+guards.
+
+| Item | Identity or result |
+| --- | --- |
+| Repair base | `1a3ea15c0ccb140e6420f6d447b82bcf826c05f9` / tree `ae84d7d87404d5949e0c805853a8c589349e7b0c` |
+| Code-only checkpoint | `d0f2049c6754b45d2d139efadb4d5d95be9bdb31` / tree `624e5f528ece12e9e1929c6e339627a92dbd6a6e` |
+| Changed path | `bootstrap/clojure/test/gravity/macro/pipeline_test.clj` |
+| Original file blob | `c1e961617a2e0795516091a25e1a338f54004b78` |
+| Repaired file blob | `2670c12834328613a0f72ba025ec9fc42c383181` |
+| Accepted patch SHA-256 | `91d7f9e8b039728e674ea97259915774781f5f760aa35d5a9c633fa30795ce78` |
+
+The origin receipt `2516` remains attributed only to its three focused controls:
+197, 27, and 8 assertions respectively. Exact-head CI is pending, and the
+full local macro cohort was not rerun. The actual PR721 900-second timeout
+artifact `13264510655` remains historical nonpass evidence; it is not waived or
+reclassified by this repair.
+
+The 19b source checkpoint, ac07 historical composition, f891 code checkpoint,
+and all 17 PR721 source inputs remain unchanged. Receipt paths are excluded
+from the input set and are not self-hashed. This additional test repair claims
+no hosted-native execution, C5-C8 acceptance, public admission, migration,
+release, self-hosting, or seed-retirement result.
+
 ## Disposition
 
 The 17 authored paths are fully accounted for and the useful current-source

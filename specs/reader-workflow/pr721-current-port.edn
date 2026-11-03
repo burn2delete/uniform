@@ -408,6 +408,56 @@
    :log "/tmp/pr721-current-main-roadmap.log"}
   {:name :current-main-diff-check
    :result "passed"}]
+ :global-macro-repair
+ {:kind :additional-global-test-repair
+  :scope :macro-public-receipt-adoption
+  :source-frame
+  {:path "bootstrap/clojure/test/gravity/macro/pipeline_test.clj"
+   :original-blob "c1e961617a2e0795516091a25e1a338f54004b78"
+   :patched-blob "2670c12834328613a0f72ba025ec9fc42c383181"
+   :patch-sha256 "91d7f9e8b039728e674ea97259915774781f5f760aa35d5a9c633fa30795ce78"
+   :base-commit "1a3ea15c0ccb140e6420f6d447b82bcf826c05f9"
+   :base-tree "ae84d7d87404d5949e0c805853a8c589349e7b0c"
+   :code-checkpoint
+   {:commit "d0f2049c6754b45d2d139efadb4d5d95be9bdb31"
+    :tree "624e5f528ece12e9e1929c6e339627a92dbd6a6e"
+    :parent "1a3ea15c0ccb140e6420f6d447b82bcf826c05f9"
+    :worktree-status :clean-before-receipt}
+   :role :additional-global-test-repair}
+  :origin-evidence
+  {:receipt-id "2516"
+   :status :reported-origin-evidence
+   :focused-controls
+   [{:test-var "public-receipt-reuse-requires-current-stage-and-seed-operations"
+     :tests 1 :assertions 197}
+    {:test-var "source-backed-operation-interpositions-stay-live"
+     :tests 1 :assertions 27}
+    {:test-var "identical-value-thread-binding-disables-receipt-reuse"
+     :tests 1 :assertions 8}]
+   :exact-head-ci :pending
+   :full-local-macro-suite :not-run}
+  :preservation
+  {:pr721-original-path-count 17
+   :pr721-original-inputs :unchanged
+   :source-checkpoint "19b7bbe8e6b50d5b74aa3ab3611d81f5ac37c032"
+   :historical-main-composition "ac07ee623d293a60a6c6c9ad690b9ee587f621e4"
+   :current-code-checkpoint "f891c8c1a5962ef45efd358a0c8781756dabf14f"
+   :receipt-paths-excluded-from-inputs
+   ["specs/reader-workflow/pr721-current-port.edn"
+    "specs/reader-workflow/pr721-current-port.md"]
+   :timeout-artifact
+   {:id 13264510655
+    :status :historical-900s-nonpass}}
+  :nonclaims
+  [:full-macro-suite
+   :hosted-native
+   :real-C5-C6-C7-C8-acceptance
+   :public-admission
+   :migration
+   :release
+   :self-hosting
+   :seed-retirement]
+  :status :additional-repair-code-checkpoint}
  :nonclaims
  [:independent-acceptance
   :current-main-integration
