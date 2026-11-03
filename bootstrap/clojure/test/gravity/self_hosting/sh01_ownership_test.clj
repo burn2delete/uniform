@@ -357,7 +357,7 @@
         (and (= owner :master-coordinator)
              (contains? #{"SH-00" "SH-01" "SH-17" "SH-24"} slice))
         (and (= slice "SH-18")
-             (contains? #{:sh-target-c :sh-target-llvm} owner)
+             (contains? #{:sh-target-c :sh-target-llvm :sh-target-mlir :sh-target-gpu} owner)
              (= :sh-target-native leaf-owner))
         (and (= slice "SH-00")
              (contains? #{:sh-target-js :sh-target-jvm} owner)
@@ -1383,3 +1383,29 @@
                  (assoc-in contract ["production_helpers" helper-index "source" "namespace"] "gravity.forged")
                  (assoc-in contract ["production_helpers" helper-index "consumer" "path"] "forged.clj")]]
       (is (not (production-helper-registration-valid? record bad))))))
+
+(deftest specialized-native-backend-helpers-retain-explicit-slice-ownership
+  (let [record (ownership-record)
+        contract ((requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/read-strict-component-contract))
+        ids (mapv #(get % "id") (get contract "production_helpers"))]
+    (doseq [[id owner] [["mlir-diagnostic-data" :sh-target-mlir]
+                        ["gpu-diagnostic-data" :sh-target-gpu]]]
+      (let [index (.indexOf ids id)
+            helper (get-in contract ["production_helpers" index])
+            source-path (get-in helper ["source" "path"])
+            test-path (get-in helper ["test" "path"])
+            foreign-owner :sh-target-unregistered
+            changed-record (-> record
+                               (assoc-in [:production-helper-associations source-path :owner] foreign-owner)
+                               (assoc-in [:module-owners source-path] foreign-owner)
+                               (assoc-in [:standalone-test-owners test-path :owner] foreign-owner))
+            changed-contract (-> contract
+                                 (assoc-in ["production_helpers" index "owner"] "sh-target-unregistered")
+                                 (assoc-in ["production_helpers" index "consumer" "owner"] "sh-target-unregistered"))]
+        (is (not (neg? index)))
+        (is (= owner (get-in record [:production-helper-associations source-path :owner])))
+        (is (= "SH-18" (get-in record [:production-helper-associations source-path :slice])))
+        (is (production-helper-registration-valid? record contract))
+        (is (not (production-helper-registration-valid?
+                  (assoc-in record [:production-helper-associations source-path :slice] "SH-00") contract)))
+        (is (not (production-helper-registration-valid? changed-record changed-contract)))))))
