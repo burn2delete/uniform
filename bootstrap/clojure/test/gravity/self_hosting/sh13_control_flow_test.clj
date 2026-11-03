@@ -51,7 +51,7 @@
 (def ^:private engine-plan
   (delay
    (compile-plan
-    "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity")))
+    "language/compiler/src/gravity/compiler/c11_mir_specification.gravity")))
 
 (def ^:private accepted-gravity-plan
   (delay

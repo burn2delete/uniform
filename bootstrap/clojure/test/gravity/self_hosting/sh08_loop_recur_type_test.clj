@@ -968,7 +968,7 @@
         compiled (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter emitter-path (slurp emitter-path))
         lowered (bootstrap/p15-s23-stage2-runtime-execute-function {:engine :typed-catch-downstream-boundary} compiled 'p15-s23-compile-expr
                   [emitter {:module 'example.try :profile :meta :target :jvm} '#{problem} '(try (throw problem) (catch String e e))])
-        runtime-path (path "bootstrap/gravity/src/gravity/runtime.gravity")
+        runtime-path (path "language/runtime/src/gravity/runtime.gravity")
         runtime-text (slurp runtime-path)
         runtime-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter runtime-path runtime-text)
         result (bootstrap/p15-s23-stage2-runtime-execute-function {:engine :typed-catch-downstream-boundary} runtime-plan

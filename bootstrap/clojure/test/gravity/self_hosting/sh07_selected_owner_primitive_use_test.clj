@@ -7,7 +7,7 @@
 ;; C01/BOOT2/BOOT8: actual seed plans and potential executable occurrences,
 ;; not an execution trace, Gravity compilation, or migration acceptance.
 (def owner-paths
-  ["bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity"
+  ["language/compiler/src/gravity/compiler/authenticated_envelope.gravity"
    "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"
    "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"
    "language/compiler/src/gravity/macro.gravity"

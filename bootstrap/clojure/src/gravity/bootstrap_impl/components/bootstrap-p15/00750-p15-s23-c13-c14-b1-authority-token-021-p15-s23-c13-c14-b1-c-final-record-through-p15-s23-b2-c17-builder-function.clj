@@ -211,7 +211,7 @@
 
 
 (def p15-s23-b2-c17-source-relative-path
-  "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity")
+  "language/compiler/src/gravity/backend/b2_c_backend_design.gravity")
 
 (def p15-s23-b2-c17-builder-function
   'b2-build-bounded-hosted-c17))

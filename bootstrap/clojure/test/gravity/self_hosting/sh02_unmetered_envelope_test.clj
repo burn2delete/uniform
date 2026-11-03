@@ -22,7 +22,7 @@
   (let [input @descriptor before (pr-str input) product (build input)
         rule (:source-rule product) sealed (:sealed-artifact product)
         current-path (#'gravity.self-hosting.sh02-authenticated-envelope-test/path
-                      "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity")]
+                      "language/compiler/src/gravity/compiler/authenticated_envelope.gravity")]
     (is (= 2 (:schema-version input)))
     (is (not (contains? input :bounds)))
     (is (= :accepted (:status product)))

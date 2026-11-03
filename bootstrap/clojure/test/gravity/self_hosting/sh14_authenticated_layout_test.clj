@@ -21,7 +21,7 @@
 
 (def ^:private root (delay (repository-root)))
 (def ^:private c12-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity")
+  "language/compiler/src/gravity/compiler/c12_domain_ir_architecture.gravity")
 (def ^:private maximum-c12-source-bytes (* 1024 1024))
 
 (defn- bounded-c12-source-text

@@ -2,8 +2,9 @@
 
 This map separates two delivery projects that currently share one checkout:
 the Uniform language and the replacement of its temporary Clojure bootstrap.
-The split is an ownership and dependency boundary. It does not move source,
-change language semantics, or alter the 240-document inventory.
+The split is an ownership and dependency boundary. The current physical source
+locations are recorded below; relocation does not change language semantics or
+the 240-document inventory.
 
 ## Project boundaries
 
@@ -37,9 +38,10 @@ does not grant authority that either project has not proved.
 
 | Current path | Initial owner | Notes |
 | --- | --- | --- |
-| `bootstrap/gravity/src/gravity/compiler/` | Uniform language | Compiler pass semantics and their Uniform-authored contracts. The directory name is historical; a pass remains language-owned when Clojure executes it. |
-| `bootstrap/gravity/src/gravity/reader.gravity`, `effects.gravity`, `runtime.gravity` | Uniform language | Language and compiler behavior. Their temporary seed transport stays bootstrap-owned. |
+| `language/compiler/src/gravity/compiler/` and `language/compiler/src/gravity/backend/` | Uniform language | Relocated compiler pass and backend semantics. The Clojure seed may execute them, but the physical source and contract are language-owned. |
+| `language/compiler/src/gravity/checked_core.gravity`, `language/compiler/src/gravity/effects.gravity`, `language/runtime/src/gravity/runtime.gravity` | Uniform language | Relocated core, effects, and runtime contracts. Their temporary seed transport remains bootstrap-owned. |
 | `language/compiler/src/gravity/macro.gravity`, `language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity`, `language/compiler/src/gravity/resolution.gravity`, `language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity` | Uniform language | Relocated frontend modules retain their legacy namespaces/APIs; Clojure adapters and migration evidence remain bootstrap-owned. |
+| `bootstrap/gravity/src/gravity/compiler/` and `bootstrap/gravity/src/gravity/reader.gravity` | Mixed, by behavior | Remaining reader/syntax, diagnostics, C6 support, and W5 stage modules remain bootstrap/stage bridges until their owning slices are split. |
 | `bootstrap/gravity/src/gravity/bootstrap/` | Mixed, by behavior | C2/C3 reader, syntax, and diagnostic semantics are language-owned; stage executors, release-attestation, and seed-retirement entrypoints in the same files remain bootstrap-owned until extracted. The directory name alone does not decide ownership. |
 | `bootstrap/gravity/src/gravity/self_hosting/` | Bootstrap replacement, by behavior | Stage rebuild orchestration, compiler identity, equivalence, trust, and evidence modules such as `w5_stage_rebuild_orchestrator.gravity`, `w5_stage_equivalence_verifier.gravity`, and `w5_trust_provenance_verifier.gravity` belong to bootstrap. A module that implements a permanent compiler rule is language-owned after behavior review. |
 | `bootstrap/gravity/p15_s23/compiler.gravity` | Mixed; extraction required | This source combines compiler rule inventories with stage/rebuild/seed-retirement records. Extract permanent compiler behavior to the language project and keep stage inventory, rebuild orchestration, and retirement evidence in bootstrap. Do not assign the whole file to either project. |
@@ -76,6 +78,11 @@ and temporary Clojure transport boundary are documented in
 current source path; historical evidence continues to retain the old path. The mixed
 `bootstrap/gravity/p15_s23/compiler.gravity` and self-hosting orchestrators
 must be split by behavior before they are candidates for relocation.
+
+Some linked roadmaps and recorded plan inputs intentionally retain the former
+bootstrap path as historical baseline material. Those paths are not current
+ownership declarations; this map and `docs/bootstrap/core-relocation.md`
+define the current source location.
 
 ## Separate progress claims
 

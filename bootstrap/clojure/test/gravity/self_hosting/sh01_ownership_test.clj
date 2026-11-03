@@ -45,12 +45,9 @@
 
 (defn- gravity-module-paths
   []
-  (let [source-roots [(path "bootstrap/gravity/src")
-                      (path "language/compiler/src/gravity/checked_core.gravity")
-                      (path "language/compiler/src/gravity/macro.gravity")
-                      (path "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity")
-                      (path "language/compiler/src/gravity/resolution.gravity")
-                      (path "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity")]
+  (let [source-roots (map path ["bootstrap/gravity/src"
+                                "language/compiler/src"
+                                "language/runtime/src"])
         root-path @root]
     (->> source-roots
          (mapcat file-seq)
@@ -160,7 +157,8 @@
         (set (map #(format "SH-%02d" %) (range 30)))
         declared-gravity-modules
         (set (filter #(or (str/starts-with? % "bootstrap/gravity/src/")
-                          (str/starts-with? % "language/compiler/src/"))
+                          (str/starts-with? % "language/compiler/src/")
+                          (str/starts-with? % "language/runtime/src/"))
                      declared-modules))
         declared-stage0-paths
         (set/difference
@@ -217,7 +215,8 @@
       (doseq [module
               (get-in record [:coordinator-owned :integration-surfaces])
               :when (or (str/starts-with? module "bootstrap/gravity/src/")
-                        (str/starts-with? module "language/compiler/src/"))]
+                         (str/starts-with? module "language/compiler/src/")
+                         (str/starts-with? module "language/runtime/src/"))]
         (is (= :master-coordinator (get module-owners module)) module)))
     (testing "reserved Stage0 ids cover exactly the 55 source components"
       (let [reserved (:reserved-leaf-modules record)
@@ -365,7 +364,7 @@
         (and (= owner :master-coordinator)
              (contains? #{"SH-00" "SH-01" "SH-17" "SH-24"} slice))
         (and (= slice "SH-18")
-             (contains? #{:sh-target-c :sh-target-llvm :sh-target-mlir :sh-target-gpu} owner)
+             (contains? #{:sh-target-c :sh-target-llvm :sh-target-mlir :sh-target-gpu :sh-target-hdl :sh-target-workflow :sh-target-query} owner)
              (= :sh-target-native leaf-owner))
         (and (= slice "SH-00")
              (contains? #{:sh-target-js :sh-target-jvm} owner)
@@ -1397,7 +1396,10 @@
         contract ((requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/read-strict-component-contract))
         ids (mapv #(get % "id") (get contract "production_helpers"))]
     (doseq [[id owner] [["mlir-diagnostic-data" :sh-target-mlir]
-                        ["gpu-diagnostic-data" :sh-target-gpu]]]
+                        ["gpu-diagnostic-data" :sh-target-gpu]
+                        ["hdl-diagnostic-data" :sh-target-hdl]
+                        ["workflow-diagnostic-data" :sh-target-workflow]
+                        ["query-diagnostic-data" :sh-target-query]]]
       (let [index (.indexOf ids id)
             helper (get-in contract ["production_helpers" index])
             source-path (get-in helper ["source" "path"])

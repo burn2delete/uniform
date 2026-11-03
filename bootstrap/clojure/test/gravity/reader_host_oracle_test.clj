@@ -1,11 +1,28 @@
 (ns gravity.reader-host-oracle-test
   (:require [clojure.test :refer [deftest is testing]]
+            [clojure.string :as str]
             [gravity.diagnostics :as diagnostics]
             [gravity.reader-cursor :as reader-cursor]
             [gravity.reader-diagnostic-policy :as reader-diagnostic-policy]
             [gravity.reader-host-oracle :as reader-host-oracle]
             [gravity.reader-primitives :as reader-primitives]
             [gravity.source-span :as source-span]))
+
+(defn- native-reader-forms
+  [source]
+  (with-open [reader (clojure.lang.LineNumberingPushbackReader.
+                      (java.io.StringReader. source))]
+    (let [eof (Object.)]
+      (binding [*read-eval* false]
+        (loop [forms []]
+          (let [form (read {:eof eof} reader)]
+            (if (identical? eof form)
+              forms
+              (recur (conj forms form)))))))))
+
+(defn- stable-form
+  [form]
+  (str/replace (pr-str form) #"__[0-9]+#" "__reader#"))
 
 (defn- operations
   []
@@ -76,6 +93,28 @@
               (pr-str terminator))
           (is (= (count prefix) (get-in record [:span :start :char]))
               (pr-str terminator)))))))
+
+(deftest current-source-files-preserve-host-reader-parity
+  (doseq [path ["language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity"
+                "language/compiler/src/gravity/effects.gravity"
+                "bootstrap/gravity/p15_s23/emitter.gravity"]
+          :let [source (slurp path)
+                records (reader-host-oracle/read-source-form-records-host-oracle
+                         path source)
+                expected (native-reader-forms source)
+                actual (mapv :form records)
+                byte-length (alength (.getBytes ^String source
+                                                 java.nio.charset.StandardCharsets/UTF_8))]]
+    (testing path
+      (is (= (mapv stable-form expected)
+             (mapv stable-form actual)))
+      (is (= (count expected) (count records)))
+      (doseq [[index {:keys [span]}] (map-indexed vector records)]
+        (is (= index (:form-index span)))
+        (is (= path (:source span)))
+        (is (integer? (:byte-start span)))
+        (is (integer? (:byte-end span)))
+        (is (<= 0 (:byte-start span) (:byte-end span) byte-length))))))
 
 (deftest malformed-input-retains-classified-diagnostic-payload
   (doseq [[source expected-id]

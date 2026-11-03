@@ -162,7 +162,7 @@
 
 (def ^:private match-lowering-closure
   {:module-ids ["sh07-checked-core"]
-   :paths ["bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"
+   :paths ["language/compiler/src/gravity/compiler/l2_core_language_semantics.gravity"
            "language/compiler/src/gravity/checked_core.gravity"
            "bootstrap/clojure/test/gravity/self_hosting/sh07_match_lowering_test.clj"
            "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"

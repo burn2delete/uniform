@@ -17,9 +17,9 @@
     (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter file (slurp file))))
 
 (def ^:private plans
-  {:c13 (delay (compile-plan "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity"))
-   :c14 (delay (compile-plan "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity"))
-   :b1 (delay (compile-plan "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity"))})
+  {:c13 (delay (compile-plan "language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity"))
+   :c14 (delay (compile-plan "language/compiler/src/gravity/compiler/c14_target_lowering_architecture.gravity"))
+   :b1 (delay (compile-plan "language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity"))})
 
 (defn- call [stage name arguments]
   (bootstrap/p15-s23-stage2-runtime-execute-function

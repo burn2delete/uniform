@@ -46,10 +46,10 @@
      emitter source-path source-text)))
 
 (def ^:private envelope-source
-  "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity")
+  "language/compiler/src/gravity/compiler/authenticated_envelope.gravity")
 
 (def ^:private c9-source
-  "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity")
+  "language/compiler/src/gravity/compiler/c9_ownership_checker_engine.gravity")
 
 (def ^:private bridge-source
   (str

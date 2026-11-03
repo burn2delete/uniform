@@ -27,7 +27,7 @@
 (def ^:private root (delay (repository-root)))
 
 (def ^:private c11-source
-  "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity")
+  "language/compiler/src/gravity/compiler/c11_mir_specification.gravity")
 
 (def ^:private accepted-fixtures
   {".gravity"

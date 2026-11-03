@@ -33,39 +33,39 @@
 (def ^:private cohort
   [{:module :b5-jvm
     :path
-    "bootstrap/gravity/src/gravity/backend/b5_jvm_backend_design.gravity"
+    "language/compiler/src/gravity/backend/b5_jvm_backend_design.gravity"
     :keyword-lookup-count 9}
    {:module :b6-javascript-typescript
     :path
-    "bootstrap/gravity/src/gravity/backend/b6_javascript_typescript_backend_design.gravity"
+    "language/compiler/src/gravity/backend/b6_javascript_typescript_backend_design.gravity"
     :keyword-lookup-count 8}
    {:module :b7-mlir
     :path
-    "bootstrap/gravity/src/gravity/backend/b7_mlir_backend_design.gravity"
+    "language/compiler/src/gravity/backend/b7_mlir_backend_design.gravity"
     :keyword-lookup-count 5}
    {:module :b8-gpu
     :path
-    "bootstrap/gravity/src/gravity/backend/b8_gpu_backend_design.gravity"
+    "language/compiler/src/gravity/backend/b8_gpu_backend_design.gravity"
     :keyword-lookup-count 8}
    {:module :b9-hdl
     :path
-    "bootstrap/gravity/src/gravity/backend/b9_hdl_backend_design.gravity"
+    "language/compiler/src/gravity/backend/b9_hdl_backend_design.gravity"
     :keyword-lookup-count 10}
    {:module :b10-workflow
     :path
-    "bootstrap/gravity/src/gravity/backend/b10_workflow_graph_backend_design.gravity"
+    "language/compiler/src/gravity/backend/b10_workflow_graph_backend_design.gravity"
     :keyword-lookup-count 7}
    {:module :b11-query
     :path
-    "bootstrap/gravity/src/gravity/backend/b11_query_relational_backend_design.gravity"
+    "language/compiler/src/gravity/backend/b11_query_relational_backend_design.gravity"
     :keyword-lookup-count 8}
    {:module :b12-mobile
     :path
-    "bootstrap/gravity/src/gravity/backend/b12_mobile_backend_design.gravity"
+    "language/compiler/src/gravity/backend/b12_mobile_backend_design.gravity"
     :keyword-lookup-count 8}
    {:module :c11-mir
     :path
-    "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
+    "language/compiler/src/gravity/compiler/c11_mir_specification.gravity"
     :keyword-lookup-count 0}])
 (def ^:private expected-module-counts
   {:b5-jvm 9

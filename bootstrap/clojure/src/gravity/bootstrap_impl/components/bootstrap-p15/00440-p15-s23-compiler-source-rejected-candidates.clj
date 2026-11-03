@@ -43,57 +43,57 @@
                  {:component :name-resolution
                   :path "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"}
                  {:component :core-semantics
-                  :path "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"}
+                  :path "language/compiler/src/gravity/compiler/l2_core_language_semantics.gravity"}
                  {:component :core-lowering
                   :path "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"}
                  {:component :type-checker
-                  :path "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"}
+                  :path "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity"}
                  {:component :effect-checker
-                  :path "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"}
+                  :path "language/compiler/src/gravity/compiler/c8_effect_checker_engine.gravity"}
                  {:component :ownership-checker
-                  :path "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"}
+                  :path "language/compiler/src/gravity/compiler/c9_ownership_checker_engine.gravity"}
                  {:component :safety-analysis
-                  :path "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"}
+                  :path "language/compiler/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"}
                  {:component :mir-specification
-                  :path "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"}
+                  :path "language/compiler/src/gravity/compiler/c11_mir_specification.gravity"}
                  {:component :domain-ir-architecture
-                  :path "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity"}
+                  :path "language/compiler/src/gravity/compiler/c12_domain_ir_architecture.gravity"}
                  {:component :mir-optimization
-                  :path "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity"}
+                  :path "language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity"}
                  {:component :target-lowering
-                  :path "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity"}
+                  :path "language/compiler/src/gravity/compiler/c14_target_lowering_architecture.gravity"}
                  {:component :compiler-diagnostics
                   :path "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity"}
                  {:component :incremental-compilation
-                  :path "bootstrap/gravity/src/gravity/compiler/c16_incremental_compilation_design.gravity"}
+                  :path "language/compiler/src/gravity/compiler/c16_incremental_compilation_design.gravity"}
                  {:component :compiler-plugin-pass-api
-                  :path "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"}
+                  :path "language/compiler/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"}
                  {:component :compiler-verification
-                  :path "bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"}
+                  :path "language/compiler/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"}
                  {:component :backend-interface
-                  :path "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity"}
+                  :path "language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity"}
                  {:component :c-backend
-                  :path "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity"}
+                  :path "language/compiler/src/gravity/backend/b2_c_backend_design.gravity"}
                  {:component :llvm-backend
-                  :path "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity"}
+                  :path "language/compiler/src/gravity/backend/b3_llvm_backend_design.gravity"}
                  {:component :wasm-backend
-                  :path "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity"}
+                  :path "language/compiler/src/gravity/backend/b4_wasm_backend_design.gravity"}
                  {:component :jvm-backend
-                  :path "bootstrap/gravity/src/gravity/backend/b5_jvm_backend_design.gravity"}
+                  :path "language/compiler/src/gravity/backend/b5_jvm_backend_design.gravity"}
                  {:component :js-ts-backend
-                  :path "bootstrap/gravity/src/gravity/backend/b6_javascript_typescript_backend_design.gravity"}
+                  :path "language/compiler/src/gravity/backend/b6_javascript_typescript_backend_design.gravity"}
                  {:component :mlir-backend
-                  :path "bootstrap/gravity/src/gravity/backend/b7_mlir_backend_design.gravity"}
+                  :path "language/compiler/src/gravity/backend/b7_mlir_backend_design.gravity"}
                  {:component :gpu-backend
-                  :path "bootstrap/gravity/src/gravity/backend/b8_gpu_backend_design.gravity"}
+                  :path "language/compiler/src/gravity/backend/b8_gpu_backend_design.gravity"}
                  {:component :hdl-backend
-                  :path "bootstrap/gravity/src/gravity/backend/b9_hdl_backend_design.gravity"}
+                  :path "language/compiler/src/gravity/backend/b9_hdl_backend_design.gravity"}
                  {:component :workflow-backend
-                  :path "bootstrap/gravity/src/gravity/backend/b10_workflow_graph_backend_design.gravity"}
+                  :path "language/compiler/src/gravity/backend/b10_workflow_graph_backend_design.gravity"}
                  {:component :query-backend
-                  :path "bootstrap/gravity/src/gravity/backend/b11_query_relational_backend_design.gravity"}
+                  :path "language/compiler/src/gravity/backend/b11_query_relational_backend_design.gravity"}
                  {:component :mobile-backend
-                  :path "bootstrap/gravity/src/gravity/backend/b12_mobile_backend_design.gravity"}
+                  :path "language/compiler/src/gravity/backend/b12_mobile_backend_design.gravity"}
                  {:component :compiler-source-inventory
                   :path p15-s23-compiler-source-path}]
                 :required-evidence []
@@ -121,57 +121,57 @@
                  {:component :name-resolution
                   :path "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"}
                  {:component :core-semantics
-                  :path "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"}
+                  :path "language/compiler/src/gravity/compiler/l2_core_language_semantics.gravity"}
                  {:component :core-lowering
                   :path "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"}
                  {:component :type-checker
-                  :path "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"}
+                  :path "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity"}
                  {:component :effect-checker
-                  :path "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"}
+                  :path "language/compiler/src/gravity/compiler/c8_effect_checker_engine.gravity"}
                  {:component :ownership-checker
-                  :path "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"}
+                  :path "language/compiler/src/gravity/compiler/c9_ownership_checker_engine.gravity"}
                  {:component :safety-analysis
-                  :path "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"}
+                  :path "language/compiler/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"}
                  {:component :mir-specification
-                  :path "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"}
+                  :path "language/compiler/src/gravity/compiler/c11_mir_specification.gravity"}
                  {:component :domain-ir-architecture
-                  :path "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity"}
+                  :path "language/compiler/src/gravity/compiler/c12_domain_ir_architecture.gravity"}
                  {:component :mir-optimization
-                  :path "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity"}
+                  :path "language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity"}
                  {:component :target-lowering
-                  :path "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity"}
+                  :path "language/compiler/src/gravity/compiler/c14_target_lowering_architecture.gravity"}
                  {:component :compiler-diagnostics
                   :path "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity"}
                  {:component :incremental-compilation
-                  :path "bootstrap/gravity/src/gravity/compiler/c16_incremental_compilation_design.gravity"}
+                  :path "language/compiler/src/gravity/compiler/c16_incremental_compilation_design.gravity"}
                  {:component :compiler-plugin-pass-api
-                  :path "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"}
+                  :path "language/compiler/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"}
                  {:component :compiler-verification
-                  :path "bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"}
+                  :path "language/compiler/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"}
                  {:component :backend-interface
-                  :path "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity"}
+                  :path "language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity"}
                  {:component :c-backend
-                  :path "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity"}
+                  :path "language/compiler/src/gravity/backend/b2_c_backend_design.gravity"}
                  {:component :llvm-backend
-                  :path "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity"}
+                  :path "language/compiler/src/gravity/backend/b3_llvm_backend_design.gravity"}
                  {:component :wasm-backend
-                  :path "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity"}
+                  :path "language/compiler/src/gravity/backend/b4_wasm_backend_design.gravity"}
                  {:component :jvm-backend
-                  :path "bootstrap/gravity/src/gravity/backend/b5_jvm_backend_design.gravity"}
+                  :path "language/compiler/src/gravity/backend/b5_jvm_backend_design.gravity"}
                  {:component :js-ts-backend
-                  :path "bootstrap/gravity/src/gravity/backend/b6_javascript_typescript_backend_design.gravity"}
+                  :path "language/compiler/src/gravity/backend/b6_javascript_typescript_backend_design.gravity"}
                  {:component :mlir-backend
-                  :path "bootstrap/gravity/src/gravity/backend/b7_mlir_backend_design.gravity"}
+                  :path "language/compiler/src/gravity/backend/b7_mlir_backend_design.gravity"}
                  {:component :gpu-backend
-                  :path "bootstrap/gravity/src/gravity/backend/b8_gpu_backend_design.gravity"}
+                  :path "language/compiler/src/gravity/backend/b8_gpu_backend_design.gravity"}
                  {:component :hdl-backend
-                  :path "bootstrap/gravity/src/gravity/backend/b9_hdl_backend_design.gravity"}
+                  :path "language/compiler/src/gravity/backend/b9_hdl_backend_design.gravity"}
                  {:component :workflow-backend
-                  :path "bootstrap/gravity/src/gravity/backend/b10_workflow_graph_backend_design.gravity"}
+                  :path "language/compiler/src/gravity/backend/b10_workflow_graph_backend_design.gravity"}
                  {:component :query-backend
-                  :path "bootstrap/gravity/src/gravity/backend/b11_query_relational_backend_design.gravity"}
+                  :path "language/compiler/src/gravity/backend/b11_query_relational_backend_design.gravity"}
                  {:component :mobile-backend
-                  :path "bootstrap/gravity/src/gravity/backend/b12_mobile_backend_design.gravity"}
+                  :path "language/compiler/src/gravity/backend/b12_mobile_backend_design.gravity"}
                  {:component :compiler-source-inventory
                   :path p15-s23-compiler-source-path}]
                 :required-evidence (vec (p15-s23-required-evidence-keys))
