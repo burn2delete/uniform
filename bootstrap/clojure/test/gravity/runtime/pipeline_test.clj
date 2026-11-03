@@ -479,6 +479,30 @@
            (invoke [{:op :literal :value 7}
                     {:op :literal :value 8}])))))
 
+(deftest gravity-runtime-character-predicate-preserves-value-domain-and-arity-refusal
+  (let [ctx (assoc context :runtime-artifact-plan (:plan @runtime-plan)
+                          :runtime-artifact-source-path (:path @runtime-plan))
+        invoke (fn [arguments]
+                 (b/p15-s23-stage2-runtime-artifact-invoke
+                  ctx 'p15-s23-runtime-evaluate-closed-instruction
+                  [{:op :builtin-call :function 'char? :args arguments} {} ""]))]
+    (is (= [true "" :normal]
+           (invoke [{:op :literal :value \a}])))
+    (is (= [false "" :normal]
+           (invoke [{:op :literal :value "a"}])))
+    (is (= [false "" :normal]
+           (invoke [{:op :literal
+                     :value {:artifact :gravity/unicode-scalar-character
+                             :schema-version 1
+                             :codepoint 97
+                             :text "a"}}])))
+    (is (= [{:diagnostic "P15S23X002"
+             :operation :builtin-call
+             :reason :invalid-local-runtime-instruction}
+            "" :rejected]
+           (invoke [{:op :literal :value \a}
+                    {:op :literal :value \b}])))))
+
 (defn- builtin-operations []
   (var-get (ns-resolve 'gravity.bootstrap 'p15-s23-runtime-builtin-operations)))
 
