@@ -4609,3 +4609,96 @@ crosswalk suite was not rerun; the prior complete 68-test / 44,978-assertion
 run remains bound to `25a96a0c03536270001449c00676e644ea353521`.
 These checks establish planning/tooling consistency and conservation, not
 compiler, runtime, provider, target, self-hosting or release conformance.
+
+## Core, MIR and target dependency continuation
+
+Source `9e8e1be3d570ef214e5a65864a5f744c5cd39596` refines 59 selected
+consumers: thirteen missing Types/MIR/Opt/Lower routes and 46 extensions.
+The sole dependency table preserves all 1,577 earlier result joins, every
+previous input and 78 unaffected route meanings. It adds 203 inputs, yielding
+1,780 joins across 137 routes, 97 current parents and forty unchanged future
+records. Selected inputs grow from 778 to 981. Twenty existing plans expose
+195 concrete Core/new-pipeline input subjects, with eleven canonical interface
+contexts. These populations measure conservation, not semantic coverage.
+
+All fifteen L2/C6 criteria retain routes for their nine existing tasks.
+Current task bodies, statuses, source criteria, future records and finite
+review subjects are unchanged. The 149 current keys and 25 authorities remain;
+the 139 original bodies retain the preceding 49 identical/90 amended split.
+The complete Core source regression now reads its entire exact `a68b5464f`
+subject, including bridge, projection and source bytes. Immutable commit/path
+reads are cached within that test; live reads remain uncached. Earlier
+assertions, mutation controls, hashes and review scopes remain.
+
+Actual expanded/resolved candidate Core preserves declarations and binding
+seeds before inference. Core4 verifies complete source-stage graph/order/
+reference/domain products and round-trips artifacts before Types. Types,
+Effects, separate Auth grants and Legality profile/ownership/safety compute
+actual current facts before Core5 checked export. Early candidate and pending
+analysis projections are distinct from that later export. Source-domain
+owner/schema/checker contracts and selected validation precede checked use;
+later typed-Core/MIR/target anchor completion follows actual producers.
+
+MIR1/2 construct real semantic graphs/tables from checked Core and required
+facts; MIR3 verifies, MIR4 round-trips and MIR5 gates consumption. Opt uses
+actual verified inputs and selected pass contracts, retaining checks or
+requiring governing proof/domain/math evidence, regenerating affected owner
+facts and verifying the changed subject. Structural verification alone does
+not replace required high-risk validation. Lower consumes actual verified raw
+MIR or selected optimized/domain input, actual eligibility/ABI/provider/proof/
+source maps and real emitted/unsupported products. The existing conditional
+Lower5-to-Opt5 route remains; three proposed unconditional optimizer joins
+were removed before the source commit. Lower1, Lower2 and Lower5 gain no
+universal optimizer prerequisite, and valid unoptimized input remains legal.
+
+Runtime service/cleanup/session interfaces precede compiling their callers.
+Selected interpretation requires its actual checked program; compiled
+execution requires its real emitted input. Neither route invents a native
+artifact prerequisite for the other. Libraries, tools and diagnostics consume
+only the actual facts in their selected stage/session subject. Source-only
+editing, documentation and caches need no later absent facts. Preserve true
+if/Bool-guard distinctions, calls/captures/recur/location/error/cleanup/order,
+all eight L2/seven C6 artifacts and seven L2/eight C6 diagnostics. Changed
+rules/facts/origins invalidate actual affected consumers. Owner accepted/
+refused fixtures precede independently executed harnesses; final suite
+acceptance cannot be its own first construction input.
+
+The coarse cycles contain 95 and nine tasks: all 82 prior main members plus
+the thirteen newly routed producers, with the release/schema/governance set
+unchanged. Stage-specific products expose those feedback boundaries without
+claiming executable composition or resolving the retained D1/C1/C5/C6 order
+and L6/L12 environment wording. Same-input bytes, semantic preservation,
+performance evidence, stage equivalence and seed retirement remain distinct.
+
+Current proposal input fingerprint:
+`ff132bd693934c3ccb5e7a14f85bf95a106fa8b1c5e6baabaaa4782b2ea975b8`.
+The first dependency-suite attempt preceded projection refresh and rejected
+five stale SH inputs at the changed MIR plan; it receives no passing credit.
+Final refreshed validation passes four focused crosswalk tests / 11,790
+assertions: the new selected-result and route-removal controls, complete frozen
+Core source subject, complete frozen L3/C5 dependency subject and global
+task/history conservation. All 23 dependency tests / 5,213 assertions and both
+pinned projection checks pass. Canonical validation passes 240 documents /
+nineteen phase indexes; full-language roadmap structural validation passes
+with dated counts non-authoritative. The language-boundary gate passes six
+tests / eleven assertions. Navigation/conservation passes ninety changed
+files, 84 Markdown files, 3,693 local references, 139 original task routes,
+48 historical spec/plan suffixes and all 48 original task/evidence contents
+after declared additions are removed. ASCII and whitespace checks pass.
+The full current 71-test crosswalk suite was not rerun. The previous complete
+68-test / 44,978-assertion run remains bound to
+`25a96a0c03536270001449c00676e644ea353521`. No compiler/provider/target,
+self-hosting or release conformance is inferred from these planning checks.
+
+Next source work is complete L5/C7 Types reconciliation in its existing five
+tasks. A preserved five-criterion owner proposal and qualified source review
+exist; the published task subject is `505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea`.
+Their exact current conservation, earlier finite predicates, complete source
+conjunctions and actual implementation applicability still need inspection.
+Reader contract coverage remains the first actual implementation increment.
+Global source/task/interface entailment, complete readiness, independent
+current acceptance and integration remain pending or unassessed. Every actual
+C7/C12/paired/provider/plugin/native/callback/device/probe/replay/migration/
+private-store/signing/publication restriction, writer reservation and stopped
+handoff remains. No held execution, other-chat message, reviewer wake,
+aggregate publication or merge occurs.
