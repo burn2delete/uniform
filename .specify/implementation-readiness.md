@@ -7,8 +7,8 @@ another implementation task ledger, acceptance graph or completion denominator.
 Reconciliation remains in progress; independent acceptance and integration of
 this change are pending. No compiler or product completion is claimed.
 
-Latest source continuation: L17 alternative type system source and selected-result
-dependency proposals. The [current checkpoint](#complete-l17-selected-result-dependency-continuation)
+Latest source continuation: L19 interoperability and migration source proposal.
+The [current checkpoint](#complete-l19-interoperability-and-migration-source-continuation)
 records checks and remaining work. Whole-project semantic coverage, independent
 acceptance and integration remain unproven.
 
@@ -6498,3 +6498,163 @@ A separately parsed read-only audit then verified its exact
 paths, exact committed/workspace bytes, clean workspace, ASCII, whitespace and
 source/fingerprint identity. The failed guard is not passing evidence. This
 report-only follow-up records that distinction; no source, join or test changes.
+
+## Complete L19 interoperability and migration source continuation
+
+Source proposal `49d5c6e12c89dfb511fb0621116fc0a446c83b9c` follows the
+`eeaf494727e7c780539b2eb38c196d76acc0f97f` L17 dependency checkpoint. The
+[complete interoperability and migration source criteria](../specs/runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria)
+join 31 criteria to twenty-five existing tasks in eleven authorities: 26 new
+clauses, two exact restored Expand predicates totalling 2,251 bytes, and three
+unchanged current conversion/error predicates totalling 3,322 bytes. Twenty-five
+bodies change in eleven task files; twenty-two plans and one Runtime spec gain
+source/interface detail. No task identity, checkbox, status or editable authority
+changes. Current whole-source/interface entailment and independent acceptance
+remain pending; no actual interop implementation is accepted by this proposal.
+
+Direct complete L19 reading accounts for 114 facets, 78 occurrences, seventeen
+semantic section conjunctions and six original owner obligations. The preserved
+census has 84 semantic and thirty context facets; the current source allocation
+has 82 predicate and 32 context facets over 57 predicate and 21 context
+occurrences. The two old semantic/current-context differences are literal
+headings. Section preambles, lists, examples and following conditions remain
+part of each actual predicate conjunction. The local census provides identity
+and conservation, not semantic acceptance or aggregate adoption.
+
+The two restored predicates are migration-shim behavior and schema-binding
+generation in the existing Expand generated-program task. Their complete
+published source `45fc1420cfe4373e5a20b1fcd80d46f87e4edb63` was fetched and
+matched byte-for-byte to local Git before amendment; its Expand task file digest
+is `036ad7a35059a4d34456b4be1ea011de8b5c21dee1eeb0f03891adc9d5d86f39`.
+Their qualified historical review remains at its original source/scope; no
+review is renewed or consumed. Four of six queried profile74 owner IDs have
+exact operations: two already current and two restored. That selected query is
+not an absence proof for all other clauses or reviews. The original Auth
+admission and Legality wrapper task-reference/criterion-candidate dispositions
+remain preserved alongside the new explicit current clauses.
+
+All ten boundary families remain explicit: native ABI, managed host, JS/TS,
+Wasm, schema, process, network, hardware, AI and incumbent package/build.
+Every claimed boundary needs a complete typed declaration and actual provider
+supported by its profile. Thirteen declaration field groups retain language/
+protocol/symbol, ABI/wire, types, effects, capabilities, ownership, null/init,
+error, thread/blocking, safety, profile/target and version/compatibility facts.
+Memory behavior and authentic source/provider identity survive. Incomplete safe
+namespace declarations and implicit FFI reject; resolving a symbol or reading a
+schema creates no grant or execution evidence.
+
+Six directional mapping families retain numeric, string, Option, Result,
+collection and linear-handle semantics, explicit loss and declared Result/error
+on failure. Distinct host/UTF-8 owned/borrowed representations are not implicit
+bidirectional equivalence. Declared Option absence remains legal; real errors
+or capability denials cannot become absence. Seven ownership modes and six
+pointer fact families preserve actual borrow/transfer/shared/allocator/release/
+alias/thread rules. Foreign pointers are not ordinary safe references and
+unrepresentable facts stay unsafe. Actual conversion/normalization/release is a
+Runtime result, not a type record, named function, host GC or process exit.
+
+Wrappers need actual proved or checked requirements, visible unsafe operations,
+source/profile/target/effect/grant metadata, ownership/layout/no-retention
+invariants, real audit/evidence and governing re-review. CString non-null/
+termination/within-buffer/no-retention is not established by copying the example
+review name. ABI/CString/layout change invalidates affected evidence. Six
+foreign failure families translate before safe entry with full L9 error and
+failure-resource contracts; untranslated failure remains unsafe.
+
+Nine schema-binding fields retain source digest/version, actual types/codecs,
+nullability, status/error/effects/grants, compatibility and provenance. Actual
+L12 compile-time actions and normal generated checking remain separate from
+emitted runtime effects. Seven host-bridge fields preserve runtime version,
+reflection/dynamic use, rooting/lifetime, threading, exception, performance/
+allocation and non-hosted missing-feature behavior behind a measured boundary.
+The host runtime does not become portable Gravity.
+
+Seven shim examples retain C-header/initial wrapper, selected Java, TypeScript,
+Python-model/provider-tool, SQL, GraphQL and ABI-safe Rust contracts. Nine field
+groups name incumbent source, target namespace, preserved/emulated/narrowed and
+rejected behavior, effects/grants, safety, generated files, parity, owner/stability.
+Shims stay temporary unless promoted; existing conditional Evolution owners
+govern actual stable changes/promotion without new per-run permission or fresh
+migration-proof prerequisites. Foreign language support authorizes no new
+bootstrap/tooling language; the Clojure-only temporary boundary remains.
+
+All eight compatibility-evidence families remain actual golden/round-trip/error/
+ownership/release/concurrency-blocking/performance-where-sensitive/profile
+results, bound to provider/schema/target/lock identities. At least one real
+incumbent-language/schema parity report remains. Actual owner cases/oracles
+precede applicable independent Release language/compiler/profile/runtime/safety/
+library results. Assigned passed reports and one demonstration cannot establish
+omitted behavior. Unavailable/held cases remain work.
+
+Eight named profile meanings retain Core schema-only portability, hosted/native
+services, modeled kernel/firmware allocation/blocking/interrupt/MMIO, hardware
+descriptions and distributed/AI replay/audit. Workflow is a distributed facet/
+target/artifact, not another profile. Ten artifact families and eleven diagnostic
+meanings retain ten actual context fields and real source/generated/foreign
+maps. Changed sources/schemas/ABI/runtime/layout invalidate affected generated
+bindings, wrappers, facts/proofs, errors/origins and parity before real regeneration.
+
+Original roles remain: Auth admits foreign boundaries after consuming genuine
+other-owner facts, Types owns conversion, Expand generates/checks bindings and
+shims, Runtime normalizes failure, and Legality owns safe-wrapper classification.
+Auth does not replace inference, profiles, wrapper proof or Runtime actions.
+Related resource/ABI/library/domain/Build/diagnostic and independent harness
+owners retain their actual products. The Evolution task body is unchanged.
+
+Static inspection covers only three complete selected functions:
+record-interop-call!, interop-conformance-fixture and host-interop-adapter-manifest.
+They respectively project/default arguments with complete/passed/reproducible/
+translation/enforcement flags, count nineteen record/status family tokens, and
+emit four fixed adapter maps with complete/typed flags. Those functions alone
+execute no real foreign conversion/call/wrapper proof, schema generation/drift
+comparison or incumbent parity. Other callers/generators/checkers remain
+unassessed; neither whole absence nor whole implementation is inferred, and
+none of the selected helpers is executed.
+
+All 149 current keys, 25 authorities, forty identical / 99 amended original
+bodies and forty future declarations/source bindings remain. No Domains/Release/
+Platform task source changes, so no future-binding successor is introduced.
+The dependency graph remains 2,743 joins over 147 routes, 107 current parents,
+forty future records and the same 128-task feedback set. Complete L19 selected
+result staging is next in the sole dependency representation.
+
+The new regression binds complete source/section/owner identities, exact restored
+and unchanged predicates, real source/task/plan witnesses and conservation.
+The L17 dependency regression now reads its entire frozen `eeaf49472` bridge,
+projection and source readers; every other prior test byte remains unchanged.
+The local census object still requires preserved Git custody; remote aggregate
+availability, adoption and fresh-clone reproducibility remain unestablished.
+
+Temporary census preparation had a delimiter error followed by missing temporary
+reads; no repository source was changed by those failures. The next identity
+guard rejected the inherited L17 metadata-title classification before writing
+its census. Corrected preparation uses L19's actual title. All checks/attempts
+retain their real outcomes and failed attempts get no passing credit.
+
+Whole-project source/owner/task/interface conjunctions, wider library/support
+contracts, recorded architecture/product decisions, actual implementation,
+current independent review and integration remain open. The first actual
+increment remains `reader/finite-remaining-work/contract-coverage-reconciliation`
+in the [selected Reader plan](../specs/reader-workflow/plan.md#selected-increment-complete-contract-coverage).
+No held compiler/provider/plugin/C7/C12/native/callback/device/probe/replay/
+migration/private-store/signing/product-publication operation, other-chat
+message, reviewer wake, aggregate publication or merge occurs.
+
+Current proposal fingerprint:
+`2132b365c92a22b4e253c75cbcee36bdba577c724561047504e5c19d31e4414d`.
+All applying source pins verify against local Git. Four focused crosswalk tests
+pass 8,904 assertions with a 512 MB host heap; all 23 dependency tests /
+7,285 assertions and both current projection checks pass. The language-boundary
+gate passes six tests / eleven assertions. Canonical validation passes all 240
+documents / nineteen phase indexes; roadmap structural validation passes with
+its dated counts non-authoritative. The full current 86-test crosswalk suite
+was not rerun. The prior complete 68-test / 44,978-assertion run remains bound
+to `25a96a0c03536270001449c00676e644ea353521`. These checks establish planning
+and traceability properties, not foreign/host/schema/migration/compiler/provider/
+proof/selfhost/release conformance or independent acceptance.
+
+Final conservation/navigation passes 91 changed files, 85 Markdown files,
+4,187 local references, 139 original routes, 48 historical spec/plan suffixes
+and all 48 original task/evidence contents after declared additions are removed.
+ASCII and whitespace checks pass. Reconciliation, implementation, independent
+acceptance and integration remain separate and unfinished.
