@@ -76,7 +76,8 @@
     (is (= '([id message data]) (:arglists (meta #'diagnostics/diagnostic))))
     (is (= '([id message data]) (:arglists (meta #'diagnostics/fail!))))
     (is (= #{'diagnostic 'fail! 'stable-id 'diagnostic-record
-             'resolve-request-id 'bind-private-record 'verify-private-record}
+             'resolve-request-id 'bind-private-record 'verify-private-record 'source-overrides 'native-catalog
+             'native-context-valid? 'native-primary-valid? 'validate-native!}
            (set (keys (ns-publics 'gravity.diagnostics))))))
   (testing "the namespace contract states its API and ownership boundary"
     (let [contract-var
@@ -87,20 +88,23 @@
       (is (= :stage0-diagnostic-carriers-and-record-data
              (:contract-boundary contract)))
       (is (= #{'diagnostic 'fail! 'stable-id 'diagnostic-record
-               'resolve-request-id 'bind-private-record 'verify-private-record}
+               'resolve-request-id 'bind-private-record 'verify-private-record 'source-overrides 'native-catalog
+               'native-context-valid? 'native-primary-valid? 'validate-native!}
              (set (keys (:public-api contract)))))
-      (is (= [:rule-id :human-message :structured-data :explicit-span-and-identity-operations
+      (is (= [:native-c15-artifacts :native-validation-configuration :explicit-native-validation-operations
+              :native-compiler-metadata :native-c15-rule-id-order :rule-id :human-message :structured-data :explicit-span-and-identity-operations
               :native-seed-diagnostic-fields :source-invocation :canonical-request-digest
               :original-eleven-c15-fields :private-candidate :complete-digest-request]
              (:artifact-inputs contract)))
-      (is (= [:stage0-exception-info-carrier :native-seed-diagnostic-record :legacy-diagnostic-id
+      (is (= [:native-phase-and-primary-predicates :native-record-validation-result
+              :native-source-overrides :native-c15-catalog :stage0-exception-info-carrier :native-seed-diagnostic-record :legacy-diagnostic-id
               :resolved-request-data :private-c15-binding :source-owned-rejection]
              (:artifact-outputs contract)))
-      (is (= ['clojure.core]
+      (is (= ['clojure.core 'clojure.string]
              (get-in contract [:dependency-direction :requires])))
       (is (= ['gravity.bootstrap 'gravity.c15-diagnostics 'gravity.cli 'gravity.release]
              (get-in contract [:dependency-direction :forbids])))
-      (is (some #{:c15-schema}
+      (is (some #{:canonical-c15-schema}
                 (get-in contract [:diagnostic-ownership :does-not-own])))
       (is (true? (:bootstrap-hosted? contract)))
       (is (true? (:clojure-seed-boundary? contract)))
