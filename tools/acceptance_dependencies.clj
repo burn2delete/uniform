@@ -175,7 +175,9 @@
 (def future-dependency-path "docs/acceptance-dependencies.md")
 
 (def selected-parent-consumers
-  #{"backend-conformance"
+  #{"backend-interface"
+    "pass-evidence"
+    "backend-conformance"
     "query"
     "types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit"
     "mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir"

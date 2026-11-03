@@ -176,3 +176,9 @@ Task bodies/statuses, source criteria, frozen review scopes and actual restricti
 Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Retain the exact 1,011-byte conditional stable-protocol-change predicate and qualified profile74 scope. Stable changes consume affected type/effect/performance/ABI/host/library/AI/formal compatibility/conformance results; unchanged-contract development gains no new ceremony.
 
 Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
+## Protocol and dispatch dependency interface
+
+Use the [protocol and dispatch producer and consumer order](../types-workflow/plan.md#protocol-and-dispatch-producer-and-consumer-order) and existing selected-result table. Keep the exact 1,011-byte conditional protocol-change producer and earlier typed-selection predicate; actual affected consumer compatibility/conformance precedes stable change without gating ordinary unchanged-contract development.
+
+Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
