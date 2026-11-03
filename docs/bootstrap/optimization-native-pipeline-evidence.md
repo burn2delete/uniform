@@ -10,7 +10,7 @@ Keep all existing predicate, record, serialization, diagnostic, callback and
 function-root evaluation behavior. Existing facade and leaf entry points remain
 compatibility APIs; their operations context and policy remain unchanged.
 
-The eight planned APIs are native-source-overrides,
+The eight public native APIs are native-source-overrides,
 native-source-overrides-artifact, native-diagnostic-catalog,
 native-artifact-base, native-validate!, native-capability-proof,
 native-source-artifact and native-file-artifact. Inputs are trusted native
@@ -76,6 +76,34 @@ under /tmp/uniform-optimization-native-pipeline-*. Fresh clean candidate
 capture, committed lint, validators, independent review and own CI remain
 integration requirements.
 
+## Current-main composition and CI envelope
+
+The source commit 0e77354d5cfd94bfdc63c0adad1546ec51bddcda, tree
+238b42a995c9289fd8453a404178fe4c7f28f484, passed fresh clean capture,
+committed lint and independent source review. Its own CI run 41702956674
+checked provider 1272ed96ebdadfaa4804727b581a675a72eedcb3, tree
+a48782f62c4ff291274d5366144351f0267d0953, over main
+77027c72003b636d0c475092fb01309848df9923. Ten applicable artifact jobs
+passed; Resolution was canceled at the outer 15-minute job ceiling. All
+eleven artifact bundles passed checksum, checkout/parent/tree, command-vector
+and source-mutation audit. The first Resolution child passed 42 tests/2178
+assertions in 554814ms; its fresh replay has no terminal result. Macro passed
+27/351 in 660106ms under its unchanged 900-second watchdog. These observations
+establish no timing cause, performance fix or complete CI acceptance.
+
+Normal merge 5d125f1266fac76e6aa84f808e7bef640f2c74d5 composes actual main
+77027c72003b636d0c475092fb01309848df9923 without adopting the provider commit.
+Commit 2150dce0e96139c88a165aae288aa4316dbcc128 applies only the two-file
+patch from independently reviewed 7108bc14aac80eb1cc76729738c97741f6fc41a2:
+the Resolution job envelope becomes 25 minutes, allowing two sequential
+600-second children plus setup, cleanup and artifact upload. Both child
+watchdogs, failure propagation and evidence remain unchanged. No other source
+from that patch's ancestry is adopted. The seven C13 source/test paths remain
+byte-identical to 0e77354d5cfd94bfdc63c0adad1546ec51bddcda; only this evidence
+document changes within the original eight-path scope. Exact composition
+review, fresh local checks/capture, own CI and immediate current-main preflight
+are required; no prior green result transfers to this composition.
+
 ## Unsupported boundaries
 
 This owns the complete existing native artifact pipeline, not a canonical C13
@@ -89,4 +117,6 @@ grant, unsafe approval, target legality, native backend execution, performance,
 release, migration, self-hosting or seed-retirement support is established.
 Held broker/factory, private JVM, package/release, default frozen Reader and
 Attempt30 routes remain untouched. No shared ownership/registry/map, CI or
-pending backend/Safety integration source is edited by this slice.
+pending backend/Safety integration source is edited by the semantic slice.
+The separately declared composition above changes only the two CI envelope
+paths in addition to its evidence note.
