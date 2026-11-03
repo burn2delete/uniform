@@ -4123,3 +4123,102 @@ The complete crosswalk run passes 65 tests / 38,149 assertions with zero
 failures or errors, including all preserved historical regressions and the new
 macro dependency controls. This successful current run does not rewrite the
 preceding macro-source run's recorded failures or expand its reviewed scope.
+
+## Complete syntax source continuation
+
+Source `89959d87edb55f47a66a1f15d530b0e40c27b44c` refines the complete
+[C3 syntax contract](../docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md)
+in the five existing Syntax tasks and reuses the unchanged Pipeline
+evidence-preservation predicate. Five new clauses cover actual construction,
+immutable transformation, fact lifecycle, verification/serialization and
+artifact/consumer behavior. Seven existing plans and the Syntax specification
+link those outcomes. No task identity, status, accepted receipt or normative
+language rule changes; no second task authority is created.
+
+The source binding preserves all 128 C3 facets and 52 occurrences: 112 semantic
+and sixteen context facets, 36 semantic and sixteen context occurrences,
+fourteen complete section conjunctions and five original owner identities.
+The shared `compiler/c1/preserve-evidence` owner retains Pipeline authority;
+Syntax supplies its actual carried products. Full attached owner predicates,
+current independent source/interface review and implementation acceptance
+remain unassessed. The preserved census is an identity/conservation input,
+not adoption or publication of its unavailable aggregate.
+
+Construction covers all fifteen C3 form families with sufficient spelling and
+decoded value, source references, context, content-derived identity and origins.
+Tooling trivia is excluded unless its artifact kind requires it. Transformations
+produce new linked values preserving source maps, full generator/input/step/
+reason/build origins, inspectable hygiene/capture and metadata unless explicitly
+changed. Generated syntax retains caller profile unless its producing contract
+explicitly defines another transition. Expand and Auth retain actual expansion
+facts and authority rather than receiving grants from Syntax metadata.
+
+The ten named fact categories require actual producer/version/condition-bound
+attachment, affected invalidation, valid unaffected preservation, regeneration
+where required and stale-use refusal before consumption. The example version
+does not impose a universal fixed-version rule. Real verification stops
+expansion and analysis on invalid fields/references/context/hygiene/phase or
+failed round-trip. Complete source/generated/shared-origin reconstruction is
+required; a summary payload round-trip is insufficient and no single physical
+encoding is imposed across equivalent representations. Eight real artifacts
+and nine C3 diagnostic families retain every required field and both generated
+and producing source/macro-call origins. Fixture-requested refusal and assigned
+complete/current flags do not prove detection or execution.
+
+Selected static definitions show real Gravity SH-04 construction, generated
+templates, reference checking and serializer/deserializer operations, plus
+hosted positional projection, fixed demo metadata/fact ledgers and finite-field
+checks. The compatibility facade denies authoritative credit. Gravity node,
+reference-depth, width, entry and byte allowances remain accounting-removal
+debt; semantic/authentication/reference checks and actual host restrictions
+survive without renamed quotas or replacement proof admission. This inspection
+executes no compiler path and neither erases narrower evidence nor accepts
+general C3 conformance.
+
+The current projection retains 149 keys in 25 authorities and forty unchanged
+future records. Three newly amended original Syntax bodies change the original
+body comparison from 58 identical / 81 amended to 55 / 84. The existing 1,331
+selected joins, 113 routes, 73 current parents and 71/nine coarse cycles remain;
+complete C3 selected-result entailment still requires review. The previous macro
+dependency regression now reads its complete recorded `580798f56` subject, with
+all earlier subjects/review hashes conserved. Reader contract coverage remains
+the first implementation increment. Independent acceptance, implementation,
+global reconciliation and integration remain open. No other chat is messaged,
+reviewer woken, stopped handoff retried or restricted operation executed.
+
+The direct dependency readback finds selected routes for Syntax1, Syntax2 and
+Syntax5, but none yet for Syntax3 fact invalidation or Syntax4 verification/
+serialization. The next C3 dependency continuation must declare their actual
+producer results and refine the three existing routes; source criteria alone
+cannot close those interfaces. Current declarations are retained unchanged
+rather than treating missing selected routes as acceptance or a new start gate.
+Syntax3 currently has two selected consumers, Syntax2 and Syntax5; the existing
+Pipeline evidence predicate names Syntax3 but its selected route omits that
+direct result. Syntax4 has sixteen selected consumers while its own producer
+route is absent. Reconcile actual early versus later products and this mismatch
+without requiring future final acceptance before initial construction.
+
+The pending-proposal fingerprint is
+`217adf7eef4659627280ce34a1685e5559011ba91d6cac230ff2da43e2062841`.
+An initial generator invocation started before its fingerprint capture finished
+and correctly refused the old binding. The verified successor preserves every
+historical review subject; generation follows that completed pin verification.
+
+The focused current-source, frozen predecessor and global task-conservation
+checks pass three tests / 5,851 assertions. Dependency tests pass 23 tests /
+4,255 assertions; both pinned projection checks pass. Canonical validation
+passes 240 documents / nineteen phase indexes, the full-language structural
+validator passes with its dated snapshot non-authoritative, and the language-
+boundary gate passes six tests / eleven assertions. Navigation/conservation
+passes ninety changed files, 84 Markdown files, 3,580 local references, 139
+original routes, 48 historical spec/plan suffixes and all 48 original task/
+evidence contents after declared additions are removed. ASCII and whitespace
+checks pass. These results establish planning/tooling conservation, not actual
+C3 implementation, independent acceptance, self-hosting or release conformance.
+
+The complete historical crosswalk run passes 66 tests / 39,606 assertions,
+with zero failures or errors. The long run continued through actual local Git
+source reads for recorded subjects; it was not restarted on observation timeout.
+All prior review hashes and scopes remain unchanged. Current independent
+source/interface acceptance and full-project implementation readiness are still
+unproven; these successful checks confer neither result.
