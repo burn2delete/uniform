@@ -200,8 +200,20 @@
       "C3-ID" "<sh04-selected-verification>"
       :native-selected-syntax-products nil {}))
    (let [path (get-in c2-artifact [:source-unit-record :path])
-         context (sh04-development-syntax-context! path invocation)]
-     (when (:registered-literal-projection c2-artifact)
+         context (sh04-development-syntax-context! path invocation)
+         projection (:registered-literal-projection c2-artifact)]
+     (when (and projection
+                (or (not (map? projection))
+                    (not= #{:reader-source-revision
+                            :bindings
+                            :schema-version
+                            :reader-binding
+                            :upstream-product-binding
+                            :upstream-integrity-hash
+                            :projection-id
+                            :artifact
+                            :upstream-artifact-id}
+                           (set (keys projection)))))
        (sh04-syntax-boundary-fail!
         "C3-ID" path :selected-syntax-registered-projection-unsupported nil {}))
      (when-not (= context (:operation-context boundary))
