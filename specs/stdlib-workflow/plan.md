@@ -94,6 +94,12 @@ Use the [macro producer and consumer order](../expand-workflow/plan.md#macro-pro
 
 Task bodies/statuses and frozen review subjects stay unchanged. Declared interfaces permit local construction; actual composition, acceptance and release retain their separate required results. Current independent source/interface acceptance is pending and every actual restriction remains.
 
+## Complete Core semantic interface
+
+Use the [complete Core source criteria](../core-workflow/plan.md#complete-core-source-criteria). Supply early actual library/macro definitions for structured lowering and admitted value/dispatch/resource APIs. Runtime execution and Legality flow checking remain later distinct owners; full library release is no initial Core construction gate.
+
+Task identities/statuses, prior source/review subjects and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held execution or task transfer is authorized.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Standard Library workflow migration

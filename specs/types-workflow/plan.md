@@ -95,6 +95,12 @@ Use the [resolution producer and consumer order](../resolve-workflow/plan.md#res
 
 Existing task bodies/statuses, source predicates, frozen evidence and actual restrictions remain unchanged. Current source/interface entailment, independent acceptance and final release require their own applicable evidence; no held action is enabled.
 
+## Complete Core semantic interface
+
+Use the [complete Core source criteria](../core-workflow/plan.md#complete-core-source-criteria). Solve real verified Core calls, branches, captures, recur and typed errors. L2 if truthiness differs from L7 normally returning Boolean guards; declared seeds and expected results are not inferred witnesses.
+
+Task identities/statuses, prior source/review subjects and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held execution or task transfer is authorized.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Types task authority

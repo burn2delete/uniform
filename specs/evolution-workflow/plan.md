@@ -134,3 +134,9 @@ Task identities/statuses, frozen reviews and actual restrictions remain unchange
 Use the [resolution producer and consumer order](../resolve-workflow/plan.md#resolution-producer-and-consumer-order) and the existing selected-result table. Consume actual affected namespace/module/public API, macro/type/effect/package/cache, diagnostics/LSP/Docs and bootstrap-order results only for the existing conditional semantic-change and stable adoption boundary. Ordinary unchanged-contract work gains no new generic review gate.
 
 Existing task bodies/statuses, source predicates, frozen evidence and actual restrictions remain unchanged. Current source/interface entailment, independent acceptance and final release require their own applicable evidence; no held action is enabled.
+
+## Complete Core semantic interface
+
+Use the [complete Core source criteria](../core-workflow/plan.md#complete-core-source-criteria). Retain the exact existing profile74 Core semantic-change predicate and conditional affected-consumer/schema/conformance adoption. Ordinary unchanged-contract development gains no new generic admission gate.
+
+Task identities/statuses, prior source/review subjects and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held execution or task transfer is authorized.

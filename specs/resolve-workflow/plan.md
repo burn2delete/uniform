@@ -330,6 +330,12 @@ Owners produce actual accepted/refused cases and preservation/composition result
 
 All task bodies, source-criterion records, statuses, future records and finite review subjects remain unchanged. Declared interfaces permit local construction; actual composition, independent acceptance and final release require their own real results. Preserve every C7/C12/paired/provider/plugin/probe/native/callback/device/replay/migration/private-store/signing/publication restriction, reserved writer and stopped handoff. No held execution, other-chat message, reviewer wake or aggregate publication occurs. Reader contract coverage remains the first implementation increment. Global source/task/interface entailment and current independent acceptance remain pending.
 
+## Complete Core semantic interface
+
+Use the [complete Core source criteria](../core-workflow/plan.md#complete-core-source-criteria). Supply actual binding/namespace references before semantic Core lowering; keep the D1 representation qualification open and later inferred module summaries distinct from initial binding inputs.
+
+Task identities/statuses, prior source/review subjects and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held execution or task transfer is authorized.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Resolve task authority

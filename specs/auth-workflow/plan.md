@@ -281,6 +281,12 @@ Use the [resolution producer and consumer order](../resolve-workflow/plan.md#res
 
 Existing task bodies/statuses, source predicates, frozen evidence and actual restrictions remain unchanged. Current source/interface entailment, independent acceptance and final release require their own applicable evidence; no held action is enabled.
 
+## Complete Core semantic interface
+
+Use the [complete Core source criteria](../core-workflow/plan.md#complete-core-source-criteria). Keep the existing effect-allowance/grant predicate unchanged. Real calls and explicit mutation require applicable authority independently of shape, resolved names or well-typed Core.
+
+Task identities/statuses, prior source/review subjects and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held execution or task transfer is authorized.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Auth task authority

@@ -358,6 +358,12 @@ Use the [resolution producer and consumer order](../resolve-workflow/plan.md#res
 
 Existing task bodies/statuses, source predicates, frozen evidence and actual restrictions remain unchanged. Current source/interface entailment, independent acceptance and final release require their own applicable evidence; no held action is enabled.
 
+## Complete Core semantic interface
+
+Use the [complete Core source criteria](../core-workflow/plan.md#complete-core-source-criteria). Retain the unchanged L6 algebra criterion for real ordered do/let/call/branch/try/match summaries and conservative branch legality; actual effect inference remains separate from Auth grants and runtime selected-branch execution.
+
+Task identities/statuses, prior source/review subjects and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held execution or task transfer is authorized.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Effects task authority

@@ -80,6 +80,12 @@ serialized forms, invalidation and verifier records, refusal diagnostics and
 real boundary results. Focused source work, composition, source review,
 independent acceptance, migration, integration and release remain distinct.
 
+## Complete Core semantic interface
+
+Use the [complete Core source criteria](../core-workflow/plan.md#complete-core-source-criteria). Consume actual verified and semantically checked Core, preserving source/control/order/metadata and real analysis decisions. A Core-node or passed-field projection is not required evidence of MIR legality.
+
+Task identities/statuses, prior source/review subjects and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held execution or task transfer is authorized.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: MIR task authority

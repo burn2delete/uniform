@@ -55,6 +55,8 @@ Keep actual C12 and source-consumer restrictions with their owners. Component
 completion requires the unchanged full acceptance checklist and independently
 reviewed applicable evidence, with residual host and seed boundaries explicit.
 
+The [complete Core source criteria](plan.md#complete-core-source-criteria) restore the five published C6 clauses and add complete L2 expression/control/value/call/order/artifact/checked-consumer requirements in the same five Open tasks. Existing profile74, Effects/Auth/Pipeline and conditional Evolution predicates retain exact roles and historical review scope. Current full L2/C6 source/interface and implementation acceptance remain pending.
+
 ## Historical task-authority-transfer specification
 
 # Feature specification: Core implementation workflow
