@@ -1795,3 +1795,35 @@
       (write-source! "(" [StandardOpenOption/TRUNCATE_EXISTING StandardOpenOption/WRITE])
       (let [rejection (try (ordinary-var source-path) nil (catch clojure.lang.ExceptionInfo error (ex-data error)))]
         (is (= "C2-DELIMITER" (:id rejection)))))))
+
+(deftest generic-v2-adapter-reuses-validated-output-envelope-identity
+  (with-temporary-directory [directory]
+    (let [source (.resolve directory "validated-output.gravity")
+          _ (Files/write source (.getBytes "(ns validated-output)\n"
+                                                StandardCharsets/UTF_8)
+                         (into-array OpenOption
+                                     [StandardOpenOption/CREATE_NEW
+                                      StandardOpenOption/WRITE]))
+          key (cache/cache-key
+               (key-request (cache/source-snapshot! source)))
+          artifact (accepted-artifact :validated-output)
+          operations (validation-ops (constantly artifact))
+          builder (var-get (private-var 'adapter-operations!))
+          adapted (builder key operations (constantly artifact) :store)
+          adapted-operations (:operations adapted)
+          envelope ((:produce! adapted-operations) (:request adapted))
+          decode-var (private-var 'decode-adapter-envelope!)
+          decode (var-get decode-var)
+          decode-calls (atom 0)
+          result
+          (with-redefs-fn
+            {decode-var
+             (fn [& args]
+               (swap! decode-calls inc)
+               (apply decode args))}
+            #(do
+               ((:validate-output! adapted-operations)
+                envelope (:request adapted) (:contract (:request adapted)))
+               ((:artifact-id-of adapted-operations) envelope)))]
+      (is (= (:c2-artifact-id envelope) result))
+      (is (= 1 @decode-calls)))))
