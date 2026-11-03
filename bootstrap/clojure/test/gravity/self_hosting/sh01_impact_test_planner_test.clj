@@ -1072,6 +1072,14 @@
     (is (= ["README.md"] (:ignored-paths plan)))
     (is (empty? (:namespaces plan)))))
 
+(deftest unknown-language-root-input-fails-closed
+  (let [ownership (edn/read-string
+                   (slurp "docs/self-hosting-slice-ownership.edn"))
+        relative "language/compiler/src/gravity/not_registered.gravity"
+        classification (planner/classify-path ownership relative)]
+    (is (= :unowned (:classification classification)))
+    (is (= [] (:slices classification)))))
+
 (deftest changed-path-plans-are-canonical
   (let [first-path
         "bootstrap/clojure/test/gravity/self_hosting/sh06_resolution_test.clj"

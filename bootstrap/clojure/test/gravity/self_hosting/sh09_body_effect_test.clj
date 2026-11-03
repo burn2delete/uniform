@@ -592,6 +592,13 @@
                            (assoc-in facts [:type-table (get-in call [:argument-node-ids (.indexOf order :suffix)])] :gravity.type/bool)]]
           (is (false? (valid candidate))))
         (when-not never-map?
+          (let [map-declaration (get-in callee [:signature :parameters map-index])
+                map-actual (get types map-id)
+                checked (leaf 'body-mp-compatibility core call edge callee map-index map-actual nodes bindings)
+                malformed (leaf 'body-mp-compatibility core call edge callee map-index map-actual nodes
+                                (assoc-in bindings [(:type-binding-id map-declaration) :kind] :var))]
+            (is (= :accepted (:status checked)))
+            (is (= :rejected (:status malformed))))
           (doseq [changed [(assoc-in row [:rhs map-index :compatibility :version] :sh08-bare-list-parameter-v1)
                            (assoc-in row [:rhs map-index :compatibility :declared-type] :gravity.type/list)
                            (assoc-in row [:rhs map-index :compatibility :parameter-binding-id] :suffix)

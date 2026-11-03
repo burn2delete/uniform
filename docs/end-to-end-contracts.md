@@ -217,7 +217,7 @@ Exact interfaces: `bootstrap/clojure/src/gravity/authenticated_artifact_pipeline
 and `04-envelope-valid.clj`; Gravity `c3_syntax_object_model.gravity`,
 `c4_macro_expansion_engine.gravity`, `c5_name_resolution_namespace_analyzer.gravity`,
 `c6_core_lowering_engine.gravity` under `bootstrap/gravity/src/gravity/compiler/`,
-and `bootstrap/gravity/src/gravity/checked_core.gravity`.
+and `language/compiler/src/gravity/checked_core.gravity`.
 
 Dependency: OWN-01 for real source cases. The ordinary authenticated pipeline
 exposes only source/Reader/Syntax/expansion/resolution/checked-Core stages; its
