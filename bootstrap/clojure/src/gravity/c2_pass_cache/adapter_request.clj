@@ -35,6 +35,19 @@
    :build-effect-binding :capability-binding :facet-binding
    :profile-binding :target-binding :boundary-binding])
 
+(defn- required-validation-ops!
+  [ops]
+  (when-not (and (map? ops)
+                 (map? (:current-binding ops))
+                 (ifn? (:artifact-id-of ops))
+                 (ifn? (:boundary-projection-id-of ops))
+                 (ifn? (:validate-artifact! ops)))
+    (cache-fail! "C16-KEY" "cache validation operations are incomplete"
+                 {:required [:current-binding :artifact-id-of
+                             :boundary-projection-id-of
+                             :validate-artifact!]}))
+  ops)
+
 (defn- validated-legacy-key-request!
   [key]
   (when-not (map? key)
