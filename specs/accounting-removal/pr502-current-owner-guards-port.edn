@@ -1,6 +1,6 @@
 {:record-kind :pr502-current-owner-guards-port
  :purpose "Port the accepted quota-free mixed List/Set, Map/keys, and bare Set owner guards, preserved fixtures, and PR641 complete-product comparisons onto exact current main without claiming public C8/L5 authority."
- :receipt-revision 3
+ :receipt-revision 4
  :integration-base
  {:commit "6f6cc71be14ecb3dffa18a7566f2205d2ceb5b05"
   :tree "41687b2b95f67d775684f06eb7cb52e09f51e107"
@@ -304,4 +304,64 @@
    :changed-paths ["tools/ci/lint.clj" "tools/ci/lint_facade_test.clj"]}
   :worktree-status-before-receipt-update :clean
   :native-c8-l5-authority :unrun}
+ :macro-public-receipt-adoption
+ {:schema :macro-public-receipt-adoption-v1
+  :status :bounded-test-adoption
+  :base
+  {:commit "77027c72003b636d0c475092fb01309848df9923"
+   :tree "2be1bf39abd1fd4b290acd0b1f2aa488dbc006b8"
+   :ref "origin/main"}
+  :code-checkpoint
+  {:commit "38769f708e29604cd9a03e74fbcb2fe5a61f992d"
+   :tree "13b671550ebf5921461e266beec3422535effb08"
+   :parent "cb8b6f04a316906e1a88f34c9669d54a51883fc7"
+   :status :clean}
+  :accepted-net-repair
+  {:evidence-commit "2516b84c1d9e8a3b5653b12cfc7171aa62672ecf"
+   :path "bootstrap/clojure/test/gravity/macro/pipeline_test.clj"
+   :base-blob "c1e961617a2e0795516091a25e1a338f54004b78"
+   :result-blob "2670c12834328613a0f72ba025ec9fc42c383181"
+   :patch-path "/tmp/uniform-macro-public-receipt-2516.patch"
+   :patch-sha256 "91d7f9e8b039728e674ea97259915774781f5f760aa35d5a9c633fa30795ce78"
+   :source-files-changed 1}
+  :historical-final-composition
+  {:head "2ea65285ebdca79a2154ec3c30c39d4b75c34946"
+   :tree "adcc9f5409100bad8ea602457d5612077acf3e1a"
+   :final-diff-path-count 12
+   :status :historical}
+  :current-diff
+  {:base "77027c72003b636d0c475092fb01309848df9923"
+   :code-checkpoint "38769f708e29604cd9a03e74fbcb2fe5a61f992d"
+   :final-diff-path-count 13
+   :new-path "bootstrap/clojure/test/gravity/macro/pipeline_test.clj"
+   :preserved-source-test-fixture-blobs 8
+   :receipt-paths 2}
+  :origin-focused-evidence
+  [{:selector "public-receipt-reuse-requires-current-stage-and-seed-operations"
+    :tests 1 :assertions 197 :failures 0 :errors 0
+    :evidence-commit "2516b84c1d9e8a3b5653b12cfc7171aa62672ecf"
+    :status :reported-pass}
+   {:selector "source-backed-operation-interpositions-stay-live"
+    :tests 1 :assertions 27 :failures 0 :errors 0
+    :evidence-commit "2516b84c1d9e8a3b5653b12cfc7171aa62672ecf"
+    :status :reported-pass}
+   {:selector "identical-value-thread-binding-disables-receipt-reuse"
+    :tests 1 :assertions 8 :failures 0 :errors 0
+    :evidence-commit "2516b84c1d9e8a3b5653b12cfc7171aa62672ecf"
+    :status :reported-pass}]
+  :checks
+  {:source-blob :verified
+   :patch-identity :verified
+   :diff-check :passed
+   :current-focused-rerun :pending-after-publication
+   :historical-resolution-17m13s :preserved
+   :historical-macro-900s :nonpass-preserved}
+  :nonclaims
+  [:no-new-c8-authority
+   :no-native-callback-or-runtime-proof
+   :no-source-admission
+   :no-public-c8-or-l5-acceptance
+   :no-self-hosting-or-seed-retirement
+   :no-fresh-heavy-cohort-rerun]
+  :independent-acceptance :pending}
 }

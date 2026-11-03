@@ -118,3 +118,39 @@ The active genuine public-C8 proof (PID `48316`) and its cohort are unchanged.
 PR502/PR598 remain open. No public C8/L5, authenticated Reader/Core/C5/C11,
 native/callback/runtime, migration, release, self-hosting, or seed-retirement
 claim follows from this candidate.
+
+## Accepted public macro receipt adoption
+
+This is an appended bounded adoption frame. The preceding twelve-path final
+composition remains historical; this frame adds one accepted test-only source
+path and does not rewrite the earlier source/test/fixture accounting.
+
+The exact current base is `77027c72003b636d0c475092fb01309848df9923`
+(`2be1bf39abd1fd4b290acd0b1f2aa488dbc006b8`). The clean code checkpoint is
+`38769f708e29604cd9a03e74fbcb2fe5a61f992d` with tree
+`13b671550ebf5921461e266beec3422535effb08` and parent
+`cb8b6f04a316906e1a88f34c9669d54a51883fc7`.
+
+Only `bootstrap/clojure/test/gravity/macro/pipeline_test.clj` was adopted. Its
+source blob was `c1e961617a2e0795516091a25e1a338f54004b78`; the result blob is
+`2670c12834328613a0f72ba025ec9fc42c383181`. The supplied patch was
+`/tmp/uniform-macro-public-receipt-2516.patch`, SHA-256
+`91d7f9e8b039728e674ea97259915774781f5f760aa35d5a9c633fa30795ce78`, from
+source evidence commit `2516b84c1d9e8a3b5653b12cfc7171aa62672ecf`.
+
+The source evidence at `2516b84c1d9e8a3b5653b12cfc7171aa62672ecf` reports the
+following origin-focused controls:
+
+- `public-receipt-reuse-requires-current-stage-and-seed-operations`: `1 test /
+  197 assertions`.
+- `source-backed-operation-interpositions-stay-live`: `1 test / 27
+  assertions`.
+- `identical-value-thread-binding-disables-receipt-reuse`: `1 test / 8
+  assertions`.
+
+These are recorded as source-evidence receipts, not as a fresh local rerun.
+The current diff against the exact base is thirteen paths: the historical
+twelve plus this macro test path. The previously verified Resolution
+17m13s result and macro 900s nonpass remain historical; current CI is pending
+publication. No new C8/native/source-admission/public-L5 or self-hosting claim
+is made, and no heavyweight cohort was rerun locally.
