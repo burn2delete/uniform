@@ -3056,7 +3056,7 @@
 (deftest stage1-bootstrap-source-artifact-preserves-self-hosting-bridge
   (is (= "bootstrap/gravity/src"
          bootstrap/stage1-reader-bootstrap-source-root))
-  (is (= 34 (count bootstrap/stage1-reader-bootstrap-source-roots)))
+  (is (= 36 (count bootstrap/stage1-reader-bootstrap-source-roots)))
   (is (= #{"language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity"
            "language/compiler/src/gravity/backend/b2_c_backend_design.gravity"
            "language/compiler/src/gravity/backend/b3_llvm_backend_design.gravity"
@@ -3085,6 +3085,8 @@
            "language/compiler/src/gravity/compiler/l2_core_language_semantics.gravity"
            "language/compiler/src/gravity/effects.gravity"
            "language/runtime/src/gravity/runtime.gravity"
+           "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+           "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
            "language/compiler/src/gravity/macro.gravity"
            "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity"
            "language/compiler/src/gravity/resolution.gravity"
@@ -3245,7 +3247,7 @@
     (is (some #{"D9"} (:documents authenticated-envelope)))
     (is (some #{'authenticated-envelope-build-template}
               (map :name (:definitions authenticated-envelope))))
-    (is (= "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+    (is (= "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
            (:source-path c6-c10-checked-core)))
     (is (some #{"C6"} (:documents c6-c10-checked-core)))
     (is (some #{'c6-c10-build-checked-core-template}
@@ -3275,7 +3277,7 @@
     (is (some #{"L2"} (:documents core-semantics)))
     (is (some #{'verify-l2-core-semantics}
               (map :name (:definitions core-semantics))))
-    (is (= "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
+    (is (= "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
            (:source-path core-lowering)))
     (is (some #{"C6"} (:documents core-lowering)))
     (is (some #{'verify-c6-core-lowering}
@@ -6063,7 +6065,7 @@
         (first
          (bootstrap/p15-s23-source-module-records
           {:source-modules [{:component :hdl-backend :path declared}]}))]
-    (is (= 26 (count bootstrap/p15-s23-compiler-source-relocation-map)))
+    (is (= 27 (count bootstrap/p15-s23-compiler-source-relocation-map)))
     (is (= actual
            (get bootstrap/p15-s23-compiler-source-relocation-map declared)))
     (is (= declared (:path record)))
@@ -6078,7 +6080,10 @@
                 "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity")))
     (is (= "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
            (get bootstrap/p15-s23-compiler-source-relocation-map
-                "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity")))))
+                "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity")))
+    (is (= "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
+           (get bootstrap/p15-s23-compiler-source-relocation-map
+                "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity")))))
 
 (deftest p15-s23-unmapped-source-does-not-fallback-to-relocated-file
   (let [declared
@@ -25815,7 +25820,7 @@
 
 (deftest public-check-accepts-gravity-authored-c6-core-lowering-engine
   (let [source-path
-        "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
+        "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
         artifact (bootstrap/check-file-artifact source-path)
         cli-result (run-bin "bin/gravity" "check" source-path)]
     (is (= :gravity/stage0-module-artifact (:kind artifact)))

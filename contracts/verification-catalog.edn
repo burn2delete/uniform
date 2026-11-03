@@ -81,7 +81,7 @@
                :selectors ["sh07-b8-authenticated-input-substitution-fails-before-lowering"
                            "sh07-b8-public-proof-is-bounded-and-does-not-claim-later-facts"]}
    :dependency-closure {:module-ids ["sh07-checked-core"]
-                        :paths ["bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+                        :paths ["language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
                                 "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_try_catch_test.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"

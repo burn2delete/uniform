@@ -247,7 +247,7 @@
             :resolution
             "language/compiler/src/gravity/resolution.gravity"
             :c6-c10-pipeline
-            "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+            "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
             :c6-call-arity
             "language/compiler/src/gravity/compiler/c6_call_arity_legality.gravity"
             :checked-core
@@ -255,7 +255,7 @@
             :c3-compat
             "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
             :c6-core
-            "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
+            "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
             :c4-compat
             "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity"
             :c5-compat

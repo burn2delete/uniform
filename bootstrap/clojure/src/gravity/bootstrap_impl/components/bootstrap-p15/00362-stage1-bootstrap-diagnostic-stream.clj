@@ -128,6 +128,8 @@
          [{:fixture "bootstrap/gravity/src"
            :source-roots ["bootstrap/gravity/src"
                           "language/compiler/src/gravity/checked_core.gravity"
+                          "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+                          "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
                           "language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity"
                           "language/compiler/src/gravity/backend/b2_c_backend_design.gravity"
                           "language/compiler/src/gravity/backend/b3_llvm_backend_design.gravity"
@@ -194,6 +196,8 @@
 (def stage1-reader-bootstrap-source-roots
   ["bootstrap/gravity/src"
    "language/compiler/src/gravity/checked_core.gravity"
+   "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+   "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
    "language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity"
    "language/compiler/src/gravity/backend/b2_c_backend_design.gravity"
    "language/compiler/src/gravity/backend/b3_llvm_backend_design.gravity"

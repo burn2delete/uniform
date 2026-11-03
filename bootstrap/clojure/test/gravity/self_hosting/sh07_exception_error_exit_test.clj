@@ -76,7 +76,7 @@
 (def ^:private c6-plan
   (delay
     (compile-plan
-     "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity")))
+     "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity")))
 
 (defn- invoke [function arguments]
   (bootstrap/p15-s23-stage2-runtime-execute-function
@@ -1473,7 +1473,7 @@
 (deftest sh07-b50-independent-verifier-does-not-reuse-production-transcript-validator
   (let [forms
         (read-gravity-source-forms
-         "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity")
+         "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity")
         wrapper-forms
         (read-gravity-source-forms
          "bootstrap/clojure/test/gravity/self_hosting/sh07_exception_error_exit_test.clj")

@@ -206,7 +206,7 @@
     [:bootstrap-resolution] 9)
    (sh25-component
     :core-lowering :checked-core
-    "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
+    "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
     [:core-semantics] 10)
    (sh25-component
     :checked-core :checked-core
@@ -214,7 +214,7 @@
     [:core-lowering :authenticated-envelope] 11)
    (sh25-component
     :checked-core-pipeline :checked-core
-    "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+    "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
     [:checked-core] 12)
    (sh25-component
     :call-arity :analyzer
