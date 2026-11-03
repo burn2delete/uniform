@@ -95,7 +95,8 @@
           (str "current source classification for " (pr-str form))))))
 
 (deftest current-source-evaluation-order-preserves-hosted-leaf-parity
-  (let [order @source-evaluation-order-operation]
+  (let [order @source-evaluation-order-operation
+        hosted-order lowering/c6-eval-order]
     (doseq [[form child-count expected]
             [[(quote quote) 9 []]
              [(quote if) 3 [:condition :then-or-else]]
@@ -113,14 +114,30 @@
              [(quote throw) 1 [:value]]
              [(quote match) 2 [:scrutinee :selected-clause]]
              [:call 3 [:operator :arguments-left-to-right]]
-             [:declared-primitive 3 [:operator :arguments-left-to-right]]
+             [:declared-primitive 3 [:arguments-left-to-right]]
              [:unknown 3 []]]]
-      (is (= expected (order form child-count))
-          (str "current source evaluation order for " (pr-str form))))))
+      (let [hosted-result (hosted-order form child-count)
+            source-result (order form child-count)]
+        (is (= expected hosted-result)
+            (str "hosted evaluation order contract for " (pr-str form)))
+        (is (= hosted-result source-result)
+            (str "current source evaluation order parity for " (pr-str form)))))))
 
-(deftest current-source-evaluation-order-rejects-wrong-arity
-  (is (thrown? clojure.lang.ArityException
-               (@source-evaluation-order-operation (quote if)))))
+(deftest current-source-evaluation-order-stage2-rejects-wrong-arity
+  (let [failure
+        (try
+          (bootstrap/p15-s23-stage2-runtime-execute-function
+           {:engine :gravity-c6-core-lowering-source-evaluation-order
+            :compiler-artifact-plan? true}
+           @source-plan
+           source-adapter/evaluation-order-source-function
+           [(quote if)])
+          nil
+          (catch clojure.lang.ExceptionInfo error
+            (ex-data error)))]
+    (is (= "L2-FUNCTION-ARITY" (:id failure)))
+    (is (= 2 (:expected-arity failure)))
+    (is (= 1 (:actual-arity failure)))))
 
 (deftest current-source-leaves-are-used-by-c6-lowering-caller
   (let [classification-calls (atom [])

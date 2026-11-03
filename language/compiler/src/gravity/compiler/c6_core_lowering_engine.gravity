@@ -229,7 +229,7 @@
                             (if (= form :call)
                               [:operator :arguments-left-to-right]
                               (if (= form :declared-primitive)
-                                [:operator :arguments-left-to-right]
+                                [:arguments-left-to-right]
                                 []))))))))))))))))
 
 (def c6-set-mutation-execution-contract
