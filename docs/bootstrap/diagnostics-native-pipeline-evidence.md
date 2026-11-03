@@ -10,7 +10,7 @@ the twelve existing stage APIs and their whole bodies, including native
 validation and the current Gravity private-record construction/binding path.
 Keep the C15 facade, configuration and dynamic operation interposition.
 
-The planned APIs are native-fixture-diagnostics, native-artifact-base,
+The public native APIs are native-fixture-diagnostics, native-artifact-base,
 native-capability-proof, native-failure!, native-validate-source-overrides!,
 native-source-artifact and native-file-artifact. Trusted native source/module,
 C14-shaped parent, configuration and late operation suppliers produce the
@@ -46,6 +46,46 @@ twelve-original-body conservation, adversarial late-operation/refusal tests,
 affected Gravity/native controls, language/ownership, lint and contract checks.
 Independent exact-source review, own CI/artifact audit and immediate clean
 current-main preflight remain required.
+
+## Implemented pipeline and local checks
+
+All seven whole bodies now live in the stage with four compatibility leaves.
+The original twelve stage bodies, facade/configuration, operations map and
+private source binding remain unchanged. The stage declares nineteen public
+APIs, their argument lists and native non-admission boundaries. C15 already
+declares its Diagnostics dependency, so no policy or registry edit is needed.
+Whole-body/late-reference, exact wrapper and original-body conservation passes.
+
+The unchanged native component tests pass 14/288. Added stage controls preserve file-invoke lookup before
+argument reading, override failure lookup before Named argument evaluation,
+fixture-record lookup before span callbacks, later record-root rebinding,
+validation rebinding during artifact projection, later proof-predicate roots,
+nested failure-invoke lookup before span construction, field precedence and
+original thrown exception identity. They supplement every original test.
+
+Independent observations run in clean source
+da024bc1cc2c99872d1d7be57dacd13108dc4943, whose complete native C15 and
+Diagnostics sources are proven identical to baseline f0. They confirm the
+original file/override/fixture/nested-failure evaluation order with Bootstrap
+unloaded. Existing current Gravity C15 compilation, private binding and actual
+rejection tests, nineteen-API metadata checks and six port controls pass
+15/260 in the existing gravity.diagnostics-test namespace. No original
+private source verifier or native predicate is replaced or weakened.
+
+Initially the six port controls were placed in the legacy C15 component's
+test namespace and passed there (20/308). The ownership gate rejected the
+new private-leaf imports against that component's declared dependencies
+(48/1189, one failure). The controls now belong to the Diagnostics stage's
+existing test namespace and retain all assertions, with explicit native
+fixture data. The legacy C15 test file is byte-identical to baseline.
+No registry, dependency-gate or acceptance rule is changed. Corrected language
+and ownership checks pass 48/1190 with zero skipped namespaces. Document,
+roadmap and governance validators pass.
+
+Fresh committed capture/identity verification, lint, boundary/contract checks,
+independent exact-source review, own CI and integration preflight remain
+requirements. The draft PR attachment attempt hit the existing 100-identity
+limit once; it is retained without retry or removing another attachment.
 
 ## Unsupported boundaries
 
