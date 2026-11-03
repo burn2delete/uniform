@@ -172,6 +172,8 @@ evidence artifacts, not authority or release receipts:
   direct byte-length/content-hash coverage was restored under the current
   `pinned-source-guards-byte-count-and-content-hash` control below, using a
   synthetic current-byte oracle without admitting a pinned plan.
+  Assertion accounting is explicit: 64 historical - 12 retired obsolete
+  positive-pin assertions + 10 direct byte/hash-guard assertions = 62 final.
 - `clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test --fail-fast`
   passed 6 tests / 11 assertions; log `/tmp/uniform-pr599-boundary.log`.
 - `clojure -M tools/validate_gravity_docs.clj` passed 240 docs / 19 indexes;
