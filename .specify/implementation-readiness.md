@@ -5570,3 +5570,162 @@ pending/unassessed. Reader contract coverage remains the first actual
 implementation increment. All actual restrictions, writer reservations and
 stopped handoffs remain; no held execution, other-chat message, reviewer wake,
 aggregate publication or merge occurs.
+
+## Complete L13 library-principles source continuation
+
+Source commit `5e4acae89f2b3c20723c855b791cf5163e8e3325` follows the complete L9
+dependency checkpoint `d272cdda029c3195bca7b5b9bea9f52f48f4b85c`.
+The complete [L13 source](../docs/phase-01-core-language/023-l13-standard-library-design-principles.md)
+is unchanged at SHA256
+`c14b680b66c13f20ef383d4e872fe72bf3e707405706396c0d21cb9e1b1268cd`.
+Read directly with Phase 1/16 navigation, STD1, TEST7, GOV3, C17 and the selected
+L6/L15 authority clauses. The supporting interfaces confer no complete STD1,
+TEST7, GOV3, C17 or remaining STD1-STD20 source acceptance.
+
+The author proposal preserves 125 source facets, 84 occurrences, nineteen full
+section conjunctions and thirteen original owner joins. The captured census has
+92 semantic and 33 context facets; the current proposal assigns 93 predicate and
+32 context facets across sixty semantic and 24 context occurrences. The source
+census remains identity/conservation evidence, not an adopted aggregate or proof
+that the new source/owner/task conjunctions have independent acceptance.
+
+The [existing library plan](../specs/stdlib-workflow/plan.md#complete-library-principles-source-criteria)
+routes 26 criteria through thirteen existing tasks across nine authorities:
+fifteen new criteria, ten exact restored predicates and one unchanged generated-
+program predicate. Twelve Open task bodies change across eight authorities;
+eight task files, thirteen existing plans and the existing Library spec comprise
+22 source files. No task ID, status, checkbox, historical record or evidence file
+changes. Three previously unchanged original Library bodies gain declared
+criteria; the original 139-body population is now 41 identical / 98 amended.
+All 149 current keys, 25 authorities and forty future declarations/source
+bindings retain their identities. No Domains/Release/Platform task source
+changes and no future binding successor is needed.
+
+All ten earlier Library predicates (5,758 bytes) are restored exactly under their
+original Library tasks. Published task source
+`45fc1420cfe4373e5a20b1fcd80d46f87e4edb63` was fetched through the connected
+GitHub tool and matched local Git byte-for-byte (19,484 UTF8 characters, file
+SHA256 `f3885ce4b757ae1391083535f9a6e5f673d1cd983656dacdc98ac4fde9dc71ac`).
+The predicates cover List, Vector, Set, Map, String, numeric mode, public
+contracts, portability layers, executable examples and compatibility events.
+Their original profile74 role/dependency review stays frozen; no review is
+renewed, consumed or broadened into full L13/current implementation support.
+The later Stdlib83 source/index/composition review remains separately pending;
+no whole aggregate or its wider clauses is published or adopted. Expand's exact
+857-byte complete macro generated-program predicate is unchanged.
+
+Library declarations and actual callable exports remain separate products.
+Require public profile/type/effect/capability/allocation/resource/error/panic/
+blocking/scheduling/nondeterminism/replay/target/stability facts, the five
+portability layers and complete 55-name source namespace population (10/12/9/10/
+14). Actual dependency checking rejects lower-to-higher edges and exact built
+availability identifies the shipped profile subset. All seven API classes
+survive metadata, documentation, lints, checks and fixtures; labels establish no
+behavior, authority or support. Compiler-support reachable closure can finish
+earlier than wider modules without removing those required wider surfaces.
+
+Preserve real List/Vector/Map/Set/byte/String contracts, physical capacity and
+region-backed alternatives, numeric modes/proofs, resource families and source
+concurrency. Fixed physical capacity, queues, indices/arity, layout and target
+representability remain semantic requirements, distinct from removed project
+work/cost/input/attempt quotas. Actual selected services, values and cleanup
+establish resource/API support; a host builtin, provider descriptor or fake does
+not accept a module or all profiles.
+
+Resolve owns actual imports/layer graphs; Types actual declaration/call
+compatibility; Effects actual inferred call admission; Auth separately authentic
+scoped grants; Legality actual safe-wrapper/profile/resource verdicts; Opt actual
+preservation; and Diag complete actual owning failure carriers. The census's
+inherited Auth references for generation/admission remain context alongside
+Expand/Effects witnesses. Its inherited Opt numeric owner supplies preservation
+while Library supplies callable numeric behavior. No role is silently reassigned.
+
+L13 IR inspection declares L6's `:compiler/read-ir` effect and C17's scoped
+`:compiler/ir-transform` capability. The latter includes read scopes: a
+`:read-mir` grant provides no `:write-mir`. Scope still binds artifact kind,
+namespace, phase and package policy. Generated ordinary forms pass normal
+handwritten-source checks and retain spans/hygiene/phase/origin/type/effect/
+profile/target/artifact identity; named intrinsic hooks are specified and
+auditable rather than privileged.
+
+Safe wrappers isolate unsafe namespaces with actual invariants, tests/proofs,
+checks, supported profiles, cleanup and required release/safety-critical audits.
+D8's four outcomes and no undefined behavior survive selected transformations.
+Required exact-subject evidence, affected regeneration and changed-subject
+verification precede consumption. Valid raw MIR remains usable; no universal
+optimizer or full future Formal gate is introduced.
+
+All six L13 artifact families and nine diagnostics retain actual producer,
+namespace/symbol/profile/target/contract/caller-effect/capability/remediation and
+source/generated identities. Documentation is executable conformance: actual
+imports, positive examples for claimed major profiles and forbidden-profile/
+capability/allocation negatives are required. Library owns real API fixtures;
+the existing independent TEST7/T7/Release harness consumes them later. Actual
+compatibility events include profile removal, migration/feasible shims and
+existing Governance/STD20/GOV2/GOV8 policy. Library assembles release-bound
+records; classification or a signature alone is not approval.
+
+Static inspection covers only the complete selected hosted library-artifact
+builder function. It calls the P16 artifact/fixture/validator/proof helpers and
+emits fixed document/fixture/record counts and a complete status. This is no
+fresh callable API/example execution evidence. Helper implementations and other
+real library implementations remain unassessed; neither whole-library absence
+nor whole-library implementation is claimed.
+
+Current proposal fingerprint:
+`129ebc87d90a9191a1ec5b1beaf58d11788c83ed7a6f1de54668c237960dd5f0`.
+All applying pins verify against local Git. Four focused crosswalk tests /
+12,051 assertions pass: current complete L13 source/owner/finite predicates,
+entire frozen L9 dependency/source subjects and global conservation. L13 facet,
+occurrence and owner identity sets additionally match the exact preserved Git
+census; the unchanged predicate's content-addressed view resolves to the same
+857 bytes and digest. All 23 dependency tests / 6,137 assertions and both
+pinned projection checks pass. Canonical validation passes 240 documents /
+nineteen phase indexes; full-language roadmap structural validation passes with
+dated counts non-authoritative. The language-boundary gate passes six tests /
+eleven assertions. ASCII/whitespace checks pass. The full current 80-test
+crosswalk suite was not rerun; the prior complete 68-test / 44,978-assertion run
+remains bound to `25a96a0c03536270001449c00676e644ea353521`. These checks establish
+planning/traceability consistency, not compiler/library/provider/target/proof/
+migration/release conformance.
+
+The first focused run had 12,048 passing assertions and one new failing assertion:
+it compared the raw unchanged-predicate carrier directly with its normalized
+content-addressed projection. Resolving the actual snapshot and checking its
+exact bytes/digest corrects that new test; all source/pin/projection inputs are
+unchanged. Only the new test is repaired. The earlier conservation helper
+initially omitted the new block-delimiter convention; correcting that helper
+passes byte-for-byte source restoration without a source change. Temporary
+preparation parse/inspection failures were corrected before their affected
+mutators. Failed attempts receive no passing credit.
+
+The extra census identity comparison uses the preserved local Git object at
+`55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6`. Remote availability of that aggregate
+is not established; it remains unpublished and unadopted. Independent review
+must retain that source-custody limitation.
+
+The preceding complete L9 dependency regression reads its entire frozen
+`d272cdda029c3195bca7b5b9bea9f52f48f4b85c` bridge, projection and source readers.
+All other prior test bytes remain unchanged except the three current global
+census assertions recording 41 unchanged / 98 amended original bodies. No
+historical checkpoint or earlier assertion is numerically converted.
+
+Conservation/navigation passes 91 changed files, 85 Markdown files, 3,981 local
+references, 139 original routes, 48 historical spec/plan suffixes and all 48
+original task/evidence contents after declared additions are removed.
+
+Complete L13 selected-result staging is next. Direct parsing confirms three
+missing consumer routes for existing Library tasks: inventory reconciliation,
+schema/query/workflow/AI/meta/crypto/UI adapters and platform/release assembly.
+The graph currently has 141 routes and only ten of L13's thirteen criterion-task
+consumers; the next dependency amendment must add these existing task routes and
+actual selected producer/consumer interfaces. Existing 2,199 joins, 101 current
+parents, forty future records and coarse feedback sets remain unchanged in this
+source increment. These gaps are not implementation credit or hidden completion.
+
+Global source/owner/task and complete interface entailment, wider library/source
+surfaces, implementation acceptance, independent current review and integration
+remain pending/unassessed. Reader contract coverage remains the first actual
+implementation increment. Preserve every actual restriction, writer reservation
+and stopped handoff; no held execution, other-chat message, reviewer wake,
+aggregate publication or merge occurs.
