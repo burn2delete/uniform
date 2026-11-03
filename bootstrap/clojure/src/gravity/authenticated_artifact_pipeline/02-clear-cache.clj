@@ -13,19 +13,13 @@
         _ (when (not= @stage-cache (:entries bounded))
             (reset! stage-cache (:entries bounded))
             (swap! cache-metrics update :evictions + (:evicted bounded)))
-        entries (vals (:entries bounded))
-        measures (map cache-entry-measure entries)]
+        entries (vals (:entries bounded))]
     {:kind :gravity/authenticated-artifact-pipeline-cache-stats
      :eligible? true
      :authoritative? false
      :entry-count (count entries)
      :stages (frequencies (map :stage entries))
-     :node-count (reduce + 0 (map :nodes measures))
-     :cost-bytes (reduce + 0 (map :bytes measures))
-     :limits {:max-entries cache-max-entries
-              :max-node-count cache-max-node-count
-              :max-entry-cost-bytes cache-max-entry-cost-bytes
-              :max-cost-bytes cache-max-cost-bytes}
+     :limits {:max-entries cache-max-entries}
      :evictions (:evictions @cache-metrics)
      :skipped (:skipped @cache-metrics)
      :nonclaims [:integration :proof :release :self-hosting :seed-retirement
@@ -220,17 +214,6 @@
      ;; for SH-07 is deliberate: its existing verification transaction owns
      ;; replay of the large core identity preimage.
      :owner-artifact-id (delegated-artifact-identity stage payload)}))
-
-(defn- payload-size-witness
-  "Bounded shallow size projection used only for cache budgeting."
-  [stage payload]
-  (let [shape (payload-shape-witness stage payload)]
-    {:top-level-keys (count (:keys shape))
-     :scalar-fields (count (:scalar-fields shape))
-     :collections (count (:collection-shape shape))
-     :collection-elements
-     (reduce + 0 (map #(min 1000000 (long (:count %)))
-                      (vals (:collection-shape shape))))}))
 
 (defn- semantic-preimage
   [stage source-id parents payload-artifact-id diagnostics-id]
