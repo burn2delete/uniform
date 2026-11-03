@@ -155,3 +155,56 @@ numbered source roots, helper dependencies, wire/rule IDs and test namespaces
 are compatibility dependencies, not renamed by this increment. No shared
 roadmap or task status is advanced; the unfinished source candidate remains
 local to avoid triggering publication CI outside this scope.
+
+## Current-main composition receipt
+
+This candidate was composed from the accepted PR647 source checkpoint
+`4e81b77fcc7aa40a3955a953dc910c65a459457c`, tree
+`c44289eadaf254882700e355e40b72dd47b86ee6`, parent
+`d5c91f424c7b04b9bfe150b384217bf47b4fffc7`. The complete integration base was
+`170e5a1694a7a2c9a63df7a1aa624d6c65934611`, tree
+`ab18306fd83cdb437e5f7d6a435dd51ce704d6aa`, parent
+`bc1edfb9bdb7e17e4ceb94a36054617ab4e96a02`. A normal merge produced
+`a056be140cb7377c94f6f85056b3ae5ca7a08210`, tree
+`db0ac1e3dc0f8ff0dd2ac61a76b1cc72a97b573a`, with parents exactly the source
+checkpoint and the complete current-main base.
+
+The candidate-owned net delta against that base is exactly the five original
+PR647 paths: the paired `.gravity`/`.qst` rejected fixtures,
+`bootstrap/clojure/test/gravity/self_hosting/resolution_alias_diagnostic_test.clj`,
+`bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity`, and
+this receipt. Main's C15 Diagnostics ownership, native helper, catalog,
+validation, and List-join controls remain inherited main content; no native or
+public-dispatch claim is added. The source adapter and all original assertions
+are byte conserved from the accepted checkpoint, including the exact-redaction
+repair.
+
+Current-source owner checks on this final composition passed:
+
+```text
+/tmp/uniform-pr647-final/c15-owner.log          14 tests / 288 assertions, 0 failures, 0 errors
+/tmp/uniform-pr647-final/diagnostics-owner.log    8 tests / 198 assertions, 0 failures, 0 errors
+/tmp/uniform-pr647-final/c15-shape.log            1 test  / 12 assertions, 0 failures, 0 errors
+/tmp/uniform-pr647-final/kondo-contextual.log     clj-kondo 2025.10.23, 0 errors / 0 warnings
+/tmp/uniform-pr647-final/formatter.log            all changed Clojure source formatted
+/tmp/uniform-pr647-final/boundary.log             6 tests / 11 assertions, 0 failures, 0 errors
+/tmp/uniform-pr647-final/docs.log                 240 docs / 19 phase indexes, passed
+/tmp/uniform-pr647-final/roadmap.log              structural validation, passed
+```
+
+The three-test current C5 alias consumer was started against the earlier
+`bc1edfb9...` composition but stopped after 21 minutes in the actual
+`compiler-c5-resolution-source-artifact` builder under host contention, before
+any result was emitted. It is not claimed as a pass; the repaired source/test
+receipt above remains the historical bounded result for the byte-identical
+accepted checkpoint. No native, C14, public-dispatch, full-namespace, release,
+or self-hosting operation was run.
+
+The separate C15 source-export identity control remains a stale-baseline
+nonpass at `/tmp/uniform-pr647-final/c15-source-identity.nonpass.log`: it
+expects the older export vector, 35,228 bytes, and hash
+`ffb56f136f13172c1e366ae60a7514402ece009ccb3b018e2c50c9cb96b1d58a`, while
+the composed source has the existing additional
+`verify-c15-resolved-diagnostic` export, 71,007 bytes, and hash
+`6ac5af325d4e3a31ecb24d345c28d39a5b348dca1dd3d2180b1cd8d2fb199f9f`.
+Those integrity expectations were not blindly repinned or reclassified.
