@@ -48,7 +48,7 @@
    "bootstrap/clojure/test/gravity/self_hosting/sh07_c7_type_source_coverage_test.clj",
    :byte-count 39767,
    :sha256
-   "12b5c8aea66bc6654fc0796897144a7ab930ecc8ed0a034bd04df7e9e6737082"}],
+   "dabb2230724fcabeedeec58695a9db490384a2e08afcf4dca80e2ad4ceca1829"}],
  :historical-checkpoints
  [{:source-commit "e857f603c6167181b7a12574a4cbb73c990496df",
    :source-tree "2ed513b4948dc606cf17dd48d109e88e527e2d9b",
