@@ -6,7 +6,9 @@ This current-main port extends `ci.lint-context/source-forms!` and its private
 Var usage pass with a non-evaluating, data-only reader scope. It recognizes
 current `ns`/`require` aliases, core refers, imports, declaration heads,
 prefix libspecs, and validated literal top-level `alias` declarations. The
-scope is local to each input and follows source order.
+scope is local to each input and follows source order. Distinct owners for one
+alias, refer name, or simple imported class are refused instead of silently
+overwriting one another; identical duplicate declarations remain idempotent.
 
 ## Requirements and dependencies
 
@@ -22,8 +24,10 @@ their current owners.
 The private-usage pass records a literal alias only after the same resolved
 declaration-head operation has validated it. An alias does not invent a
 `require` edge or suppress an unrelated unused-private warning. Current core
-and C2 owner identities are preserved; this tooling port does not confer
-Reader, Bootstrap, runtime, admission, publication, or CI authority.
+and C2 owner identities are preserved. Prefix `require` libspecs feed the same
+source-backed private-call edge and owner/caller digest records as vector
+libspecs. This tooling port does not confer Reader, Bootstrap, runtime,
+admission, publication, or CI authority.
 
 ## Outputs and artifacts
 
@@ -35,9 +39,13 @@ in `../accounting-removal/pr697-current-port.edn`.
 ## Conformance and acceptance limits
 
 With the pinned `clj-kondo` 2025.10.23 directory on `PATH`, the facade/context
-controls passed 25 tests/473 assertions with zero failures/errors and zero
+controls passed 26 tests/488 assertions with zero failures/errors and zero
 blocking warnings/errors. The language-boundary gate passed 6 tests/11
-assertions. These are finite source/data controls: they do not load Bootstrap,
-execute a genuine Reader, run native code, dispatch hosted CI, or reclassify the
-historical PR697 static failure. Independent acceptance of this exact
-checkpoint and normal changed-head CI remain required.
+assertions. The supplied repository-wide `cljfmt` check remains nonzero for
+the three original PR697 control files (`progress_test.clj`,
+`progress_isolation_test.clj`, and `resolution_interval_test.clj`); the two
+files changed by this repair pass it. These are finite source/data controls:
+they do not load Bootstrap, execute a genuine Reader, run native code,
+dispatch hosted CI, or reclassify the historical PR697 static failure.
+Independent acceptance of this exact checkpoint and normal changed-head CI
+remain required.

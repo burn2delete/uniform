@@ -15,18 +15,18 @@
  {:commit "5fa103d2b384d36b3fc67a0d502f2212d0a225a8"
   :tree "56b99d048302548a6c73b5385798e62301fdc6fc"}
  :source-checkpoint
- {:commit "c5c87e747bcb1f21a3245037ef35d024dd4fc3ee"
-  :tree "aa79bc374057850f6d671930b515b5a70b1af93d"
-  :parent "5fa103d2b384d36b3fc67a0d502f2212d0a225a8"
+ {:commit "ff22c2c70dfd2748a53050ed783472cfe20686ab"
+  :tree "ad5aa67a21553ea001dddd6a20e5f2acc7345ac3"
+  :parent "407d17a537544299c2667dfbaa72e971f0e69134"
   :paths
   {"bootstrap/clojure/test/gravity/development_test_runner.clj"
    "e66336203aec9b1d120bf637a65b940541c33238"
    "bootstrap/clojure/test/gravity/self_hosting/sh06_unmetered_resolution_test.clj"
    "f05f9a26a633bb40c16f27f57141d5be4b23fc08"
    "tools/ci/lint_context.clj"
-   "13d68b863f61b18584f02efb73280ac71d19f7ac"
+   "d69acd895a094efd29578c399ff367504e648f6e"
    "tools/ci/lint_facade_test.clj"
-   "0ffd61ea6ec380a3908fdd75401c847b7ef4b4a7"
+   "7363e30a34318046928acbaee732d6284ff5f475"
    "tools/ci/progress_isolation_test.clj"
    "3f059b708f3a879fdb7d87b7bc9764f0c93b6a8b"
    "tools/ci/progress_test.clj"
@@ -44,25 +44,35 @@
   :progress-schema :gravity/development-test-progress-v1}
  :focused-checks
  [{:name :progress-runner
-   :command "clojure -J-Xmx512m -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\" \"tools\"]}' -M tools/ci/progress_test.clj"
-   :log "/tmp/uniform-pr697-progress.log"
+   :command "clojure -J-Xmx256m -M tools/ci/progress_test.clj"
+   :log "/tmp/uniform-pr697-progress-repair.log"
    :result "5 tests, 20 assertions, 0 failures, 0 errors"}
   {:name :resolution-intervals
-   :command "clojure -J-Xmx512m -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\" \"tools\"]}' -M tools/ci/resolution_interval_test.clj"
-   :log "/tmp/uniform-pr697-resolution-interval.log"
+   :command "clojure -J-Xmx256m -M tools/ci/resolution_interval_test.clj"
+   :log "/tmp/uniform-pr697-resolution-interval-repair.log"
    :result "4 tests, 15 assertions, 0 failures, 0 errors"}
   {:name :progress-isolation
-   :command "clojure -J-Xmx512m -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\" \"tools\"]}' -M tools/ci/progress_isolation_test.clj"
-   :log "/tmp/uniform-pr697-progress-isolation.log"
+   :command "clojure -J-Xmx256m -M tools/ci/progress_isolation_test.clj"
+   :log "/tmp/uniform-pr697-progress-isolation-repair.log"
    :result "2 tests, 7 assertions, 0 failures, 0 errors"}
   {:name :facade-context
    :command "PATH=/tmp/acc08-controls-01a183dd/kondo-2025.10.23:$PATH clojure -J-Xmx768m -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\" \"tools\"]}' -M tools/ci/lint_facade_test.clj"
-   :log "/tmp/uniform-pr697-lint-facade-pinned-rerun.log"
-   :result "25 tests, 473 assertions, 0 failures, 0 errors; 0 blocking lint warnings/errors"}
+   :log "/tmp/uniform-pr697-lint-facade-repair.log"
+   :result "26 tests, 488 assertions, 0 failures, 0 errors; 0 blocking lint warnings/errors"}
   {:name :language-boundary
    :command "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test"
-   :log "/tmp/uniform-pr697-boundary.log"
+   :log "/tmp/uniform-pr697-boundary-repair.log"
    :result "6 tests, 11 assertions, 0 failures, 0 errors"}]
+ :repair-controls
+ {:ambiguous-binding-refusal
+  [:distinct-require-alias :distinct-refer :same-simple-name-import]
+  :duplicate-identical-bindings-idempotent true
+  :prefix-require-private-provenance true
+  :source-evaluation false}
+ :formatting-check
+ {:command "clojure -J-Xmx256m -Sdeps '{:deps {dev.weavejester/cljfmt {:mvn/version \"0.13.4\"}}}' -M -m cljfmt.main check tools/ci"
+  :log "/tmp/uniform-pr697-cljfmt-tools-ci-repair.log"
+  :result "exit 1; three original PR697 control files still require cljfmt formatting: tools/ci/progress_test.clj, tools/ci/progress_isolation_test.clj, tools/ci/resolution_interval_test.clj; lint_context.clj and lint_facade_test.clj pass"}
  :nonclaims
  [:no-native-execution
   :no-bootstrap-or-selected-macro-workload
