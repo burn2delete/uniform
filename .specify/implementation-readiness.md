@@ -4049,3 +4049,77 @@ Final navigation/conservation covers ninety changed files, 84 Markdown files,
 and all 48 original task/evidence contents after declared amendments are removed.
 ASCII and whitespace checks pass; current source/implementation acceptance and
 integration remain pending.
+
+## Macro producer and consumer dependency continuation
+
+Source commit `f5fe58427947156d31f033a8e52b514bfbfa055d` refines the existing
+dependency authority and nineteen plans. Forty-seven selected consumers retain
+all 562 previous selected inputs and gain 255 inputs: 817 selected joins across
+36 extended and eleven new routes. The complete table now has 1,331 selected
+joins, 113 routes and 73 current parents, preserving forty future records and
+the meanings of all 66 unaffected routes. All sixteen macro-source task owners
+now have selected-result routes. Task identities, bodies, statuses and the
+complete macro-source refinement remain unchanged.
+
+The eleven new routes cover Syntax1, Syntax2, Resolve4, diagnostic origins,
+Formatter, Language Server, Debugger, IR Explorer, REPL, the canonical diagnostic
+record and its text/JSON/redaction/explain consumers. The plans identify 115
+staged result subjects. Real Reader and immutable Syntax operations precede
+invocation; an available checked macro P and actual scoped authority precede
+its action. Generated Q subsequently passes ordinary binding, Core, type,
+effect, authority and legality checks. A future generated index or later
+conformance receipt cannot authorize the earlier macro action.
+
+Formatter consumes actual unexpanded Reader/Syntax results and does not require
+macro expansion or provider selection. Other tooling consumes actual selected
+compiler, session or runtime facts. L16 retains engine-specific cache machinery;
+Build supplies shared/default policy admission, invalidation and revalidation
+integration. Actual hit/refusal decisions precede use, without repeating the
+external work to authorize a hit or requiring identical physical engine keys.
+Structural alpha-equivalence, same-input hermetic typed-Core byte equality,
+claimed-stage comparison and final seed retirement remain distinct evidence.
+
+Coarse selected-task cycles grow from 60 and eight members to 71 and nine.
+The first adds the eleven new parents. The second retains its eight existing
+members and adds `evolution/change-review`: raw candidate comparison can precede
+stable adoption, while the later support claim consumes the actual governance
+decision. Existing tracked-change, review and admission requirements apply at
+their affected boundaries; unchanged-contract implementation gains no generic
+governance prerequisite. Concrete result staging preserves those real inputs;
+it neither permits unmarked Build cycles nor proves executable composition.
+
+The pending-proposal fingerprint is
+`a005d47f340fdfcda44ac97a5dcde8d8e0e472868046c6a29c63417cfd11d588`.
+The projection retains the exact preceding macro-source checkpoint and all
+149 current task keys in 25 authorities, including the unchanged forty future
+task bodies and their explicit current source bindings. Twenty-one canonical
+interface locations supply bounded context, not whole-document acceptance.
+Reader contract coverage remains the first implementation increment. Global
+requirement/task entailment, actual implementation, independent acceptance and
+integration remain pending or unassessed. No other chat is messaged and no
+stopped handoff, reviewer wake or aggregate publication is retried.
+
+The focused dependency/source/history run passes three tests / 9,514 assertions.
+The initial dependency run exercised 23 tests / 4,255 assertions with four
+failures and no errors: expected parent, domain-input, Legality-input and coarse
+cycle populations still described the preceding graph. Updating those four
+expected populations to the actual conserved-plus-added declarations produces
+23 tests / 4,255 passing assertions. Route-removal controls, prior-input
+preservation, interface-versus-actual-result edges, unassessed result states,
+formatter independence and the complete recorded historical subject remain
+checked. No governing input, review hash or acceptance scope is relaxed.
+
+Both pinned projection checks pass. Canonical validation passes 240 documents /
+nineteen phase indexes, and the full-language structural validator passes with
+its dated snapshot explicitly non-authoritative. The final language-boundary
+gate passes six tests / eleven assertions. Navigation/conservation passes
+ninety changed files, 84 Markdown files, 3,565 local references, 139 original
+task routes, 48 historical spec/plan suffixes and all 48 original task/evidence
+contents after declared additions are removed. ASCII and whitespace checks
+pass. These are planning/traceability/tooling results, not actual compiler,
+provider, macro-engine, target, self-hosting or release conformance.
+
+The complete crosswalk run passes 65 tests / 38,149 assertions with zero
+failures or errors, including all preserved historical regressions and the new
+macro dependency controls. This successful current run does not rewrite the
+preceding macro-source run's recorded failures or expand its reviewed scope.
