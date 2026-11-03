@@ -7,6 +7,11 @@ another implementation task ledger, acceptance graph or completion denominator.
 Reconciliation remains in progress; independent acceptance and integration of
 this change are pending. No compiler or product completion is claimed.
 
+Latest source continuation: L14 facet source and selected-result dependency
+proposals. The [current checkpoint](#complete-l14-selected-result-dependency-continuation)
+records checks and remaining work. Whole-project semantic coverage, independent
+acceptance and integration remain unproven.
+
 At the inspected base, the 240 canonical documents specify the complete
 language/platform contracts. Spec Kit primarily organizes implementation
 ownership, task editing and historical evidence. Its document links reach the
@@ -6068,3 +6073,172 @@ Final conservation/navigation passes 91 changed files, 85 Markdown files,
 and all 48 original task/evidence contents after declared additions are
 removed. ASCII/whitespace checks pass. Reconciliation, implementation,
 independent acceptance, integration and seedless release remain distinct.
+
+## Complete L14 selected-result dependency continuation
+
+The corrected dependency source is `2777cc98040b034f3b38cba669aea79b3201f52f`,
+after complete L14 source checkpoint
+`4a23561f9cc072664b30901970fa650cd66e87cf`. Use the
+[facet producer and consumer order](../specs/expand-workflow/plan.md#facet-producer-and-consumer-order)
+and [sole selected-result table](../docs/acceptance-dependencies.md#future-task-construction-and-composition).
+Twenty-two existing plans expose 371 selected input subjects. This continuation
+changes no task body/status, source criterion, historical receipt or future
+source binding. Current source/interface entailment, independent acceptance
+and integration remain pending.
+
+Forty-eight selected routes retain all 2,486 earlier input joins and 99
+unaffected route meanings. Add 179 inputs for 2,665 joins over 147 routes,
+107 current parents and forty unchanged future records. Selected composition
+inputs increase from 1,138 to 1,317; staged subjects describe the 371 expressly
+proposed inputs, not every legacy edge. All 25 complete L14 criteria retain
+fifteen direct task consumers. Their rows already existed; the wider family
+review additionally finds the existing UI task missing its consuming row.
+Adding that one row preserves its identity/status and makes actual source,
+type/effect/grant/profile/schema/domain inputs explicit. No new task is created.
+
+The coarse feedback set grows from 126 to 128 tasks. All previous 126 members
+survive, Crypto and UI enter, and none disappear. This is genuine task feedback,
+not a whole-task topological order or permission for cyclic namespace imports
+or unmarked Build cycles. Preserve PKG2 acyclicity and its explicitly governed
+bootstrap fixed point. Earlier source/dependency section populations retain
+their original checkpoints; the latest continuation and sole table give the
+current population. Required current interface entailment remains open.
+
+Early authentic manifest identity/version/surface/profile/requirements/effects/
+grants/lowering/artifact/stability declarations precede real lock resolution,
+lexical activation and dependent expansion. A future fully expanded facet
+cannot supply its own first identity/lock. Imports do not enable facets in the
+importer; nested generated activation has actual provenance. Early registration,
+syntax, stage, payload/checker/anchor/entry/exit contracts support construction.
+Actual available checked P precedes invocation, actual generated Q precedes
+normal revalidation, and final Q acceptance is no first manifest or hygiene
+input. Nine observable boundaries survive with the existing source-order
+conflict still owned and unresolved.
+
+Actual structural/local premises and preliminary typed P/Q graphs precede
+actual direct/latent/transitive effect inference. Independent allowance/profile/
+service/resource premises and separately authentic grants precede final
+admission and checked Core. Final effect/profile verdicts do not supply their
+own first preliminary types. Read-IR scope grants no write; compiler/build/
+model/tool/query operations remain explicit. Labels, prompts, wrappers, caught
+errors and package trust cannot grant authority or erase effects.
+
+The ten initial facet owners expose real selected family/source/payload/schema/
+checker/ABI/custody interfaces early, followed by actual products for their
+claimed composition. Domain-bearing subjects need real compatible current
+facts, typed-Core or MIR anchors, owning verification and legal registered exits.
+Core-only facets require no invented IR or complete registry. Later HDL/target
+bytes are no first domain schema, provisional source carrier or anchor input.
+Ten L14 facets remain distinct from nine C12 IR families.
+
+Schema supplies actual User/validation/requested-codec/tool/field products;
+EFIR remains semantic and EML proof/search. Workflow/AI/Query/UI keep their
+actual source/schema/graph/effect/privacy and later claimed behavior. Hardware
+source state/clock/reset/enable/width/overflow/timing precede circuit products
+and later HDL artifacts. No physical device or product ISA is adopted.
+Actual early FFI/provider/ABI/wrapper/lifetime/error contracts precede checking;
+needed layouts and admitted callers precede later normalization/transfer/cleanup.
+Source generation and SupportAgent bundles authorize no live model/tool/store
+and need no universal native artifact or runtime session.
+
+Zk consumes actual early relation/public-private/custody/disclosure/provider-
+trust/proof-verifier schemas, then required real privacy/declassification and
+proof/checker products before the affected claim. This introduces no whole
+Crypto/Formal, private-store or live proof-generation gate before unrelated
+Core-only source. Structural privacy cases remain source artifacts rather than
+live crypto/proof evidence. Required genuine verdicts still govern checked
+private-computation claims. Preserve labels, witness provenance, public schema,
+reveal reason and erasing edge under redaction.
+
+Actual early selected property/checker interfaces precede transformations;
+governing exact-subject evidence, affected owner regeneration and changed-subject
+verification precede dependent use. No new direct generated-Q-to-Opt3 gate is
+added; valid raw/unoptimized and Core-only paths remain. Changed source/IR/
+lowering/profile/schema/privacy/grants invalidate affected facts/proofs/artifacts/
+diagnostics before real regeneration and current-policy reuse.
+
+Early artifact/diagnostic schemas precede output construction; actual admitted
+selected products precede required written bytes/metadata/readback. Final valid
+facet output is no first diagnostic interface. All six artifact families and
+eleven genuine diagnostics retain original/generated/external and facet/version/
+profile/rule/effect/grant/privacy identity. Independent language/compiler/profile/
+safety/formal/agent-workflow results follow early actual owner cases/properties/
+checkers/runnable fixtures. Two-facet composition and separately required zk
+privacy cases remain. Final selfhost/release acceptance is no first fixture;
+held/unavailable cases stay Open and supplied successful records cannot pass.
+
+Early actual old/new syntax/IR/lowering/profile/schema/stability comparison and
+policy interfaces precede actual required scoped Governance decisions and
+checked migration or justified infeasibility. Final migration is no first
+review input, and compatible ordinary implementation acquires no per-run gate.
+All historical source/role/dependency reviews stay frozen without renewal,
+consumption, aggregate adoption or new review.
+
+The first proposal assumed every selected family already had a route; its
+preparation guard exposed UI before source application. The premature dependent
+state inspection then found its missing temporary input, with no source write.
+The corrected proposal adds UI and conserves all previous joins. Temporary
+preparation delimiters were corrected before their affected mutators.
+
+The initial focused run reported 14,684 passing assertions, three new failures
+and one 256 MB heap error. The new join-set assertions omitted ten preserved
+start-result joins even though the dependency record counted them correctly;
+they now include start and composition inputs. The missing-UI negative expected
+an exception, while the existing audit reports an exact unresolved consumer;
+the control now requires that unresolved UI result and unassessed acceptance.
+The frozen complete L14 source census comparison exhausted the host heap.
+The corrected focused run uses a 512 MB host heap, with no project accounting
+change or implementation/admission quota. The first dependency suite reported
+23 tests / 7,121 assertions with one failure: the old domain row expected 27
+inputs while the preserved-plus-added source has 36. Corrective commit
+`2777cc98040b034f3b38cba669aea79b3201f52f` changes that assertion alone; the
+`4de97c7168ffe9a35fde4696a8c2ff4f1a495a68` dependency declarations/stages stay
+exact. The pending source record is freshly rebound to the corrected source.
+Failed attempts receive no passing or acceptance credit.
+
+The complete L14 source test reads its entire frozen `4a23561f9` bridge,
+projection and source readers. The earlier library dependency test keeps its
+original assertion-body bytes and additionally binds its original 106-parent
+declaration from its exact frozen tool source, checking that source digest.
+The current 107-parent/UI declaration stays intact outside that scoped test.
+No old assertion is numerically converted; every other prior test byte remains
+unchanged. The census tests still require the preserved local aggregate object;
+remote availability/publication/adoption is not established.
+
+All 149 current keys, 25 authorities, forty future declarations/source bindings,
+forty identical / 99 amended original bodies and the full complete L14 source
+record remain unchanged. No Domains/Release/Platform task source successor or
+implementation completion follows from this dependency continuation.
+
+Next is whole L17 alternative-type-system source reconciliation. Direct reading
+shows five distinct declared soundness meanings, common typed-Core/fact/proof/
+check exports, selected provider identity, L5 corpus compatibility and profile
+soundness obligations. Existing L5/C7 or plugin references do not establish
+complete L17 source/task entailment. L19 and wider contracts, global current
+source/owner/task and interface entailment, actual implementation acceptance,
+required independent review and integration remain pending. Reader contract
+coverage remains the first actual implementation increment. No held action,
+other-chat message, reviewer wake, aggregate publication or merge occurs.
+
+Current proposal fingerprint:
+`24102c805b7a8507c461b2ea497bda4b5c5dd3199ad9161aa5aa146ac6a98cb1`.
+All applying pins verify against local Git. The corrected four focused crosswalk
+tests pass 14,689 assertions with a 512 MB host heap. All 23 dependency tests /
+7,121 assertions and both pinned projection checks pass. The corrected-source
+language-boundary gate passes six tests / eleven assertions. Canonical document
+validation passes 240 documents / nineteen phase indexes on unchanged canonical
+inputs; full-language roadmap structural validation passes with its dated counts
+non-authoritative. ASCII/whitespace checks pass.
+
+The full current 83-test crosswalk suite was not rerun. The prior complete
+68-test / 44,978-assertion run remains bound to
+`25a96a0c03536270001449c00676e644ea353521`. These are planning and traceability
+checks, not compiler, domain, provider, native, proof, migration, self-hosting
+or release conformance. Corrected checks do not confer current independent
+acceptance or integration authority.
+
+Final conservation/navigation passes 91 changed files, 85 Markdown files,
+4,070 local references, 139 original routes, 48 historical spec/plan suffixes
+and all 48 original task/evidence contents after declared additions are
+removed. ASCII and whitespace checks pass. The current report pointer above
+leads to this checkpoint; earlier population statements keep their source scope.
