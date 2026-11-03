@@ -3057,7 +3057,11 @@
   (is (= "bootstrap/gravity/src"
          bootstrap/stage1-reader-bootstrap-source-root))
   (is (= ["bootstrap/gravity/src"
-          "language/compiler/src/gravity/checked_core.gravity"]
+          "language/compiler/src/gravity/checked_core.gravity"
+          "language/compiler/src/gravity/macro.gravity"
+          "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity"
+          "language/compiler/src/gravity/resolution.gravity"
+          "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"]
          bootstrap/stage1-reader-bootstrap-source-roots))
   (let [artifact (bootstrap/stage1-bootstrap-source-file-artifact
                   bootstrap/stage1-reader-bootstrap-source-roots)

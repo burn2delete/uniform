@@ -38,7 +38,8 @@ does not grant authority that either project has not proved.
 | Current path | Initial owner | Notes |
 | --- | --- | --- |
 | `bootstrap/gravity/src/gravity/compiler/` | Uniform language | Compiler pass semantics and their Uniform-authored contracts. The directory name is historical; a pass remains language-owned when Clojure executes it. |
-| `bootstrap/gravity/src/gravity/reader.gravity`, `macro.gravity`, `resolution.gravity`, `checked_core.gravity`, `effects.gravity`, `runtime.gravity` | Uniform language | Language and compiler behavior. Their temporary seed transport stays bootstrap-owned. |
+| `bootstrap/gravity/src/gravity/reader.gravity`, `effects.gravity`, `runtime.gravity` | Uniform language | Language and compiler behavior. Their temporary seed transport stays bootstrap-owned. |
+| `language/compiler/src/gravity/macro.gravity`, `language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity`, `language/compiler/src/gravity/resolution.gravity`, `language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity` | Uniform language | Relocated frontend modules retain their legacy namespaces/APIs; Clojure adapters and migration evidence remain bootstrap-owned. |
 | `bootstrap/gravity/src/gravity/bootstrap/` | Mixed, by behavior | C2/C3 reader, syntax, and diagnostic semantics are language-owned; stage executors, release-attestation, and seed-retirement entrypoints in the same files remain bootstrap-owned until extracted. The directory name alone does not decide ownership. |
 | `bootstrap/gravity/src/gravity/self_hosting/` | Bootstrap replacement, by behavior | Stage rebuild orchestration, compiler identity, equivalence, trust, and evidence modules such as `w5_stage_rebuild_orchestrator.gravity`, `w5_stage_equivalence_verifier.gravity`, and `w5_trust_provenance_verifier.gravity` belong to bootstrap. A module that implements a permanent compiler rule is language-owned after behavior review. |
 | `bootstrap/gravity/p15_s23/compiler.gravity` | Mixed; extraction required | This source combines compiler rule inventories with stage/rebuild/seed-retirement records. Extract permanent compiler behavior to the language project and keep stage inventory, rebuild orchestration, and retirement evidence in bootstrap. Do not assign the whole file to either project. |
@@ -49,6 +50,11 @@ does not grant authority that either project has not proved.
 | `tools/` | Shared repository tooling | Tool ownership follows whether a command validates language behavior, bootstrap evidence, or repository policy. |
 | `contracts/` | Shared evidence and governance | Keep existing schemas and lifecycle records; add no duplicate ledger for this split. |
 | `docs/component-roadmaps/` | Component navigation | Component pages remain the detailed outcome/task owners. This map only assigns their relationship to the two delivery projects. |
+
+The milestone completion plan and current migration cohort retain the source
+paths recorded in their pinned baselines. The current physical-owner mapping
+above governs this layout; it does not renew migration, self-hosting, or release
+authority.
 
 ## Relocation order
 

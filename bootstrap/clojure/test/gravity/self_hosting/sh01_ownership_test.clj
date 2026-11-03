@@ -46,7 +46,11 @@
 (defn- gravity-module-paths
   []
   (let [source-roots [(path "bootstrap/gravity/src")
-                      (path "language/compiler/src")]
+                      (path "language/compiler/src/gravity/checked_core.gravity")
+                      (path "language/compiler/src/gravity/macro.gravity")
+                      (path "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity")
+                      (path "language/compiler/src/gravity/resolution.gravity")
+                      (path "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity")]
         root-path @root]
     (->> source-roots
          (mapcat file-seq)

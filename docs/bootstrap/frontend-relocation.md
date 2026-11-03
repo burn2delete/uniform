@@ -29,6 +29,9 @@ reader, syntax, diagnostics, C6 and later compiler modules, backends, and
 P15 source remain under `bootstrap/gravity/src`. The Clojure adapters and
 bootstrap runner remain in `bootstrap/clojure`; they execute or inspect the
 language-owned files without becoming their owners.
+The stage1 source lists append `checked_core.gravity` and these four moved files
+explicitly; they do not recursively treat `language/compiler/src` as a stage1
+root, preserving the existing source population.
 
 ## Active consumers and evidence boundary
 

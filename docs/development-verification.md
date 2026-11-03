@@ -86,7 +86,7 @@ Use the owning path for the behavior under test:
 | Behavior | Owning implementation |
 | --- | --- |
 | Canonical source/Core shape and legality | `language/compiler/src/gravity/checked_core.gravity` |
-| Namespace and reference binding | `bootstrap/gravity/src/gravity/resolution.gravity` |
+| Namespace and reference binding | `language/compiler/src/gravity/resolution.gravity` |
 | Reader literal transport | `bootstrap/clojure/src/gravity/c3_literal_projection.clj` and its SH-04 consumer |
 | Function and expression types | `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` |
 | Body and latent effects | `bootstrap/gravity/src/gravity/effects.gravity` |
