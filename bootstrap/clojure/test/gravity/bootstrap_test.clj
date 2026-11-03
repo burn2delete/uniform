@@ -6078,7 +6078,7 @@
                 "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity")))
     (is (= "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
            (get bootstrap/p15-s23-compiler-source-relocation-map
-                "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"))))
+                "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity")))))
 
 (deftest p15-s23-unmapped-source-does-not-fallback-to-relocated-file
   (let [declared
