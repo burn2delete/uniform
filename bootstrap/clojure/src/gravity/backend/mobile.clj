@@ -1,18 +1,26 @@
 (ns gravity.backend.mobile
-  "Native B12 diagnostic lookup data; no mobile or input admission authority.")
+  "Native B12 diagnostic context and catalog data; no backend or input admission authority."
+  (:require [clojure.string :as str]))
 
 (def ^:private namespace-contract
   '{:authenticates-inputs? false,
  :public-api
  {source-overrides {:arglists ([module]), :admission :none},
   missing-policy {:arglists ([id]), :admission :none},
-  domain-anchor {:arglists ([id]), :admission :none}},
+  domain-anchor {:arglists ([id]), :admission :none},
+  diagnostic-stream
+  {:arglists ([source-path input-id operations]),
+   :admission :none,
+   :required-operations
+   [:source-span :diagnostic-ids :domain-anchor :missing-policy]}},
  :supported
  [:existing-native-projection
   :borrowed-identity
-  :compatibility-var-interposition],
+  :compatibility-var-interposition
+  :native-catalog-assembly
+  :explicit-native-operations],
  :dependency-direction
- {:requires [clojure.core],
+ {:requires [clojure.core clojure.string],
   :consumed-by [gravity.bootstrap],
   :forbids [gravity.bootstrap gravity.cli gravity.release]},
  :governing-contracts
@@ -35,23 +43,37 @@
   :migration
   :release
   :self-hosting
-  :seed-retirement],
- :artifact-inputs [:native-module-metadata :native-b12-diagnostic-id],
+  :seed-retirement
+  :canonical-c15-conformance
+  :catalog-as-observed-semantic-findings
+  :native-operations-as-proof-authority],
+ :artifact-inputs
+ [:native-module-metadata
+  :native-b12-diagnostic-id
+  :native-source-path
+  :supplied-input-artifact-id
+  :native-diagnostic-operations],
  :namespace gravity.backend.mobile,
  :diagnostic-ownership
- {:stage [:native-override-projection :native-rule-context-defaults],
+ {:stage
+  [:native-override-projection
+   :native-rule-context-defaults
+   :native-catalog-assembly],
   :existing-owner
   [:b12-refusal-decisions
    :failure-construction
-   :diagnostic-stream
    :source-admission
    :publication]},
  :artifact-outputs
  [:borrowed-source-overrides
   :native-missing-policy
-  :native-domain-anchor],
+  :native-domain-anchor
+  :native-diagnostic-catalog-stream],
+ :consumer-component-paths
+ ["bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00262-b11-document-source-artifact.clj"
+  "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00263-b12-document-app-bundle.clj"],
  :issues-certificates? false,
- :contract-boundary :native-b12-diagnostic-policy-data})
+ :contract-boundary :native-b12-diagnostic-context-and-catalog-data})
 
 (defn source-overrides
   [module]
@@ -85,5 +107,71 @@
     "B12-RESOURCE" :resource-bundle
     :mobile-manifest))
 
-(doseq [operation [#'source-overrides #'missing-policy #'domain-anchor]]
+(defn diagnostic-stream
+  [source-path input-id operations]
+  {:artifact :gravity/b12-mobile-backend-diagnostic-stream
+   :stage :b12-mobile-backend-document-coverage
+   :input-artifact input-id
+   :diagnostics
+   (mapv (fn [id index]
+           {:artifact :gravity/diagnostic
+            :diagnostic-id (str "diag-" (str/lower-case id) "-stage0")
+            :diagnostic id
+            :rule id
+            :severity :error
+            :stage :b12-mobile-backend-document-coverage
+            :backend :gravity.backend/mobile
+            :message-key (keyword "backend-mobile" (str/lower-case id))
+            :primary {:span ((:source-span operations) source-path index)
+                      :syntax-id (str "b12-document-syntax-" index)
+                      :artifact input-id}
+            :profile :hosted
+            :target :ios
+            :domain-anchor ((:domain-anchor operations) id)
+            :platform :ios
+            :api-symbol (case id
+                          "B12-PERMISSION" 'Foundation/URLSession.data
+                          "B12-THREAD" 'SwiftUI/View.body
+                          "B12-STORAGE" 'CoreData/PersistentStore
+                          'GravityStage0/MobileEntry)
+            :lifecycle-state (case id
+                               "B12-BACKGROUND" :background
+                               "B12-LIFECYCLE" :unknown
+                               :foreground)
+            :thread-actor (case id
+                            "B12-THREAD" :background-worker
+                            :main)
+            :permission (case id
+                          "B12-PERMISSION" :network
+                          "B12-BACKGROUND" :background-execution
+                          "B12-STORAGE" :local-files
+                          :network)
+            :capability (case id
+                          "B12-PERMISSION" :network/request
+                          "B12-BACKGROUND" :background/fetch
+                          "B12-STORAGE" :storage/local
+                          :network/request)
+            :missing-policy ((:missing-policy operations) id)
+            :source-generated-origin-chain
+            [:mir :c11-mir :c12-mobile-domain-ir
+             :c14-target-lowering :b1-interface
+             :b12-mobile-backend]
+            :fallback-status :rejected
+            :facts {:permission-manifest-required true
+                    :main-thread-ui-required true
+                    :hidden-background-work-rejected true
+                    :platform-null-error-adapters-required true
+                    :storage-sync-schema-required true}
+            :remediation [{:kind :declare-platform-target}
+                          {:kind :attach-permission-capability-policy}
+                          {:kind :record-lifecycle-threading-adapters}
+                          {:kind :emit-storage-resource-store-audit}]
+            :redactions []
+            :ordering-key [id :b12-mobile-backend-document-coverage
+                           :ios]})
+         ((:diagnostic-ids operations))
+         (range))
+   :status :complete})
+
+(doseq [operation [#'source-overrides #'missing-policy #'domain-anchor #'diagnostic-stream]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

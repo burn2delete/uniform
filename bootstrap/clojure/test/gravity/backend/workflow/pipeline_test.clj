@@ -75,3 +75,57 @@
     (is (= (pr-str stream) (pr-str (bootstrap/b10-document-diagnostic-stream path input-id))))
     (is (every? #(= [:distributed :durable-workflow] ((juxt :profile :target) %)) (:diagnostics stream)))
     (is (every? #(true? (get-in % [:facts :prompt-authority-rejected])) (:diagnostics stream)))))
+
+(deftest native-catalog-assembly-uses-explicit-borrowed-operations
+  (let [path "explicit-native-catalog.gravity"
+        input-id (str "sha256:" (digest/sha256-hex (pr-str {})))
+        ids ["B10-REPLAY" "B10-MANIFEST"]
+        spans [{:source path :provided-index 0} {:source path :provided-index 1}]
+        span-calls (atom []) id-calls (atom 0)
+        stream (workflow/diagnostic-stream
+                path input-id
+                {:source-span (fn [source ordinal]
+                                (swap! span-calls conj [source ordinal])
+                                (nth spans ordinal))
+                 :diagnostic-ids (fn [] (swap! id-calls inc) ids)
+                 :step-id (fn [id] [:provided-context id])
+                 :missing-policy (fn [id] [:provided-policy id])})
+        rows (:diagnostics stream)]
+    (is (identical? input-id (:input-artifact stream)))
+    (is (= ids (mapv :rule rows)))
+    (is (= [[path 0] [path 1]] @span-calls))
+    (is (= 1 @id-calls))
+    (is (every? true? (map (fn [span row] (identical? span (get-in row [:primary :span]))) spans rows)))
+    (is (= (mapv (fn [id] [:provided-context id]) ids) (mapv :step-id rows)))
+    (is (= (mapv (fn [id] [:provided-policy id]) ids) (mapv :missing-policy rows)))))
+
+(deftest compatibility-catalog-wrapper-retains-late-native-operations
+  (let [captured (atom nil)
+        path "late-native-catalog.gravity" input-id "supplied-native-input"]
+    (with-redefs [workflow/diagnostic-stream (fn [source input operations]
+                                        (reset! captured [source input operations])
+                                        :observed-stage-catalog)]
+      (is (= :observed-stage-catalog
+             (bootstrap/b10-document-diagnostic-stream path input-id))))
+    (let [[source input operations] @captured]
+      (is (= [path input-id] [source input]))
+      (is (= #{:source-span :diagnostic-ids :step-id :missing-policy} (set (keys operations))))
+      (with-redefs [bootstrap/source-span (fn [source ordinal] [:late-span source ordinal])
+                    bootstrap/b10-document-diagnostic-ids ["LATE-NATIVE-ID"]
+                    bootstrap/b10-document-step-id (constantly :late-context)
+                    bootstrap/b10-document-missing-policy (constantly :late-policy)]
+        (is (= [:late-span path 3] ((:source-span operations) path 3)))
+        (is (= ["LATE-NATIVE-ID"] ((:diagnostic-ids operations))))
+        (is (= :late-context ((:step-id operations) "LATE-NATIVE-ID")))
+        (is (= :late-policy ((:missing-policy operations) "LATE-NATIVE-ID")))))))
+
+(deftest native-catalog-operation-failure-is-not-replaced-with-data
+  (let [error (ex-info "native source span failed" {:operation :source-span})
+        operations {:source-span (fn [_ _] (throw error))
+                    :diagnostic-ids (fn [] ["B10-REPLAY"])
+                    :step-id (constantly :native-context)
+                    :missing-policy (constantly :native-policy)}
+        capture (fn [thunk] (try (thunk) nil (catch clojure.lang.ExceptionInfo actual actual)))]
+    (is (identical? error (capture #(workflow/diagnostic-stream "failure.gravity" "native-input" operations))))
+    (with-redefs [bootstrap/source-span (fn [_ _] (throw error))]
+      (is (identical? error (capture #(bootstrap/b10-document-diagnostic-stream "failure.gravity" "native-input")))))))

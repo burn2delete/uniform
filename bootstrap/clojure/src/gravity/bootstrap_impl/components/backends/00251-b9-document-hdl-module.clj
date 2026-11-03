@@ -78,43 +78,9 @@
 
 (defn b9-document-diagnostic-stream
   [source-path input-id]
-  {:artifact :gravity/b9-hdl-backend-diagnostic-stream
-   :stage :b9-hdl-backend-document-coverage
-   :input-artifact input-id
-   :diagnostics
-   (mapv (fn [id index]
-           {:artifact :gravity/diagnostic
-            :diagnostic-id (str "diag-" (str/lower-case id) "-stage0")
-            :diagnostic id
-            :rule id
-            :severity :error
-            :stage :b9-hdl-backend-document-coverage
-            :backend :gravity.backend/hdl
-            :message-key (keyword "backend-hdl" (str/lower-case id))
-            :primary {:span (source-span source-path index)
-                      :syntax-id (str "b9-document-syntax-" index)
-                      :artifact input-id}
-            :profile :hardware
-            :target :systemverilog
-            :hardware-module :gravity_stage0_hdl
-            :signal-or-state-id (b9-document-signal-id id)
-            :clock-domain :clk
-            :reset-domain :rst
-            :missing-proof-or-constraint (b9-document-missing-fact id)
-            :source-generated-origin-chain
-            [:mir :c12-hardware-domain-ir :c14-target-lowering
-             :b1-interface :b9-hdl-backend]
-            :fallback-status :rejected
-            :facts {:fixed-widths-required true
-                    :implicit-runtime-rejected true
-                    :unmediated-cdc-rejected true
-                    :timing-constraints-required true}
-            :remediation [{:kind :declare-hdl-target-provider-and-constraints}
-                          {:kind :attach-fixed-width-clock-reset-cdc-records}
-                          {:kind :emit-testbench-and-simulation-trace}]
-            :redactions []
-            :ordering-key [id :b9-hdl-backend-document-coverage
-                           :systemverilog]})
-         b9-document-diagnostic-ids
-         (range))
-   :status :complete})
+  (gravity.backend.hdl/diagnostic-stream
+   source-path input-id
+   {:source-span (fn [path index] (source-span path index))
+    :diagnostic-ids (fn [] b9-document-diagnostic-ids)
+    :signal-id (fn [id] (b9-document-signal-id id))
+    :missing-fact (fn [id] (b9-document-missing-fact id))}))

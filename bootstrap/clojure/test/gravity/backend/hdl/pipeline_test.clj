@@ -75,3 +75,57 @@
     (is (= (pr-str stream) (pr-str (bootstrap/b9-document-diagnostic-stream path input-id))))
     (is (every? #(= [:hardware :systemverilog] ((juxt :profile :target) %)) (:diagnostics stream)))
     (is (every? #(true? (get-in % [:facts :unmediated-cdc-rejected])) (:diagnostics stream)))))
+
+(deftest native-catalog-assembly-uses-explicit-borrowed-operations
+  (let [path "explicit-native-catalog.gravity"
+        input-id (str "sha256:" (digest/sha256-hex (pr-str {})))
+        ids ["B9-CLOCK" "B9-MANIFEST"]
+        spans [{:source path :provided-index 0} {:source path :provided-index 1}]
+        span-calls (atom []) id-calls (atom 0)
+        stream (hdl/diagnostic-stream
+                path input-id
+                {:source-span (fn [source ordinal]
+                                (swap! span-calls conj [source ordinal])
+                                (nth spans ordinal))
+                 :diagnostic-ids (fn [] (swap! id-calls inc) ids)
+                 :signal-id (fn [id] [:provided-context id])
+                 :missing-fact (fn [id] [:provided-policy id])})
+        rows (:diagnostics stream)]
+    (is (identical? input-id (:input-artifact stream)))
+    (is (= ids (mapv :rule rows)))
+    (is (= [[path 0] [path 1]] @span-calls))
+    (is (= 1 @id-calls))
+    (is (every? true? (map (fn [span row] (identical? span (get-in row [:primary :span]))) spans rows)))
+    (is (= (mapv (fn [id] [:provided-context id]) ids) (mapv :signal-or-state-id rows)))
+    (is (= (mapv (fn [id] [:provided-policy id]) ids) (mapv :missing-proof-or-constraint rows)))))
+
+(deftest compatibility-catalog-wrapper-retains-late-native-operations
+  (let [captured (atom nil)
+        path "late-native-catalog.gravity" input-id "supplied-native-input"]
+    (with-redefs [hdl/diagnostic-stream (fn [source input operations]
+                                        (reset! captured [source input operations])
+                                        :observed-stage-catalog)]
+      (is (= :observed-stage-catalog
+             (bootstrap/b9-document-diagnostic-stream path input-id))))
+    (let [[source input operations] @captured]
+      (is (= [path input-id] [source input]))
+      (is (= #{:source-span :diagnostic-ids :signal-id :missing-fact} (set (keys operations))))
+      (with-redefs [bootstrap/source-span (fn [source ordinal] [:late-span source ordinal])
+                    bootstrap/b9-document-diagnostic-ids ["LATE-NATIVE-ID"]
+                    bootstrap/b9-document-signal-id (constantly :late-context)
+                    bootstrap/b9-document-missing-fact (constantly :late-policy)]
+        (is (= [:late-span path 3] ((:source-span operations) path 3)))
+        (is (= ["LATE-NATIVE-ID"] ((:diagnostic-ids operations))))
+        (is (= :late-context ((:signal-id operations) "LATE-NATIVE-ID")))
+        (is (= :late-policy ((:missing-fact operations) "LATE-NATIVE-ID")))))))
+
+(deftest native-catalog-operation-failure-is-not-replaced-with-data
+  (let [error (ex-info "native source span failed" {:operation :source-span})
+        operations {:source-span (fn [_ _] (throw error))
+                    :diagnostic-ids (fn [] ["B9-CLOCK"])
+                    :signal-id (constantly :native-context)
+                    :missing-fact (constantly :native-policy)}
+        capture (fn [thunk] (try (thunk) nil (catch clojure.lang.ExceptionInfo actual actual)))]
+    (is (identical? error (capture #(hdl/diagnostic-stream "failure.gravity" "native-input" operations))))
+    (with-redefs [bootstrap/source-span (fn [_ _] (throw error))]
+      (is (identical? error (capture #(bootstrap/b9-document-diagnostic-stream "failure.gravity" "native-input")))))))

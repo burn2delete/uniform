@@ -50,61 +50,9 @@
 
 (defn b10-document-diagnostic-stream
   [source-path input-id]
-  {:artifact :gravity/b10-workflow-graph-backend-diagnostic-stream
-   :stage :b10-workflow-graph-backend-document-coverage
-   :input-artifact input-id
-   :diagnostics
-   (mapv (fn [id index]
-           {:artifact :gravity/diagnostic
-            :diagnostic-id (str "diag-" (str/lower-case id) "-stage0")
-            :diagnostic id
-            :rule id
-            :severity :error
-            :stage :b10-workflow-graph-backend-document-coverage
-            :backend :gravity.backend/workflow-graph
-            :message-key (keyword "backend-workflow" (str/lower-case id))
-            :primary {:span (source-span source-path index)
-                      :syntax-id (str "b10-document-syntax-" index)
-                      :artifact input-id}
-            :profile :distributed
-            :target :durable-workflow
-            :workflow-id :gravity-stage0-workflow
-            :step-id (b10-document-step-id id)
-            :schema-id :workflow-input-v1
-            :effect (case id
-                      "B10-CAPABILITY" :ai/tool-call
-                      "B10-POLICY" :ai/model-call
-                      "B10-TAINT" :ai/model-output
-                      "B10-COMPENSATION" :db/write
-                      "B10-IDEMPOTENCY" :network/request
-                      :workflow/evaluate)
-            :capability (case id
-                          "B10-CAPABILITY" :ai/tool-call
-                          "B10-POLICY" :ai/human-review
-                          "B10-TAINT" :trusted/write
-                          "B10-COMPENSATION" :db/write
-                          "B10-IDEMPOTENCY" :network/request
-                          :workflow/run)
-            :provider :stage0-model-provider
-            :replay-mode :event-log
-            :missing-policy (b10-document-missing-policy id)
-            :source-generated-origin-chain
-            [:mir :c11-mir :c12-workflow-domain-ir
-             :c14-target-lowering :b1-interface
-             :b10-workflow-graph-backend]
-            :fallback-status :rejected
-            :facts {:schemas-required true
-                    :event-log-required true
-                    :ambient-authority-rejected true
-                    :prompt-authority-rejected true
-                    :human-review-required-for-trusted-write true}
-            :remediation [{:kind :attach-workflow-step-state-schemas}
-                          {:kind :record-replay-nondeterminism}
-                          {:kind :declare-idempotency-retry-compensation}
-                          {:kind :attach-capability-policy-taint-review}]
-            :redactions []
-            :ordering-key [id :b10-workflow-graph-backend-document-coverage
-                           :durable-workflow]})
-         b10-document-diagnostic-ids
-         (range))
-   :status :complete})
+  (gravity.backend.workflow/diagnostic-stream
+   source-path input-id
+   {:source-span (fn [path index] (source-span path index))
+    :diagnostic-ids (fn [] b10-document-diagnostic-ids)
+    :step-id (fn [id] (b10-document-step-id id))
+    :missing-policy (fn [id] (b10-document-missing-policy id))}))

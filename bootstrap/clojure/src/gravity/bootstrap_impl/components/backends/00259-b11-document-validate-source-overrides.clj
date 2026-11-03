@@ -48,69 +48,9 @@
 
 (defn b11-document-diagnostic-stream
   [source-path input-id]
-  {:artifact :gravity/b11-query-relational-backend-diagnostic-stream
-   :stage :b11-query-relational-backend-document-coverage
-   :input-artifact input-id
-   :diagnostics
-   (mapv (fn [id index]
-           {:artifact :gravity/diagnostic
-            :diagnostic-id (str "diag-" (str/lower-case id) "-stage0")
-            :diagnostic id
-            :rule id
-            :severity :error
-            :stage :b11-query-relational-backend-document-coverage
-            :backend :gravity.backend/query-relational
-            :message-key (keyword "backend-query" (str/lower-case id))
-            :primary {:span (source-span source-path index)
-                      :syntax-id (str "b11-document-syntax-" index)
-                      :artifact input-id}
-            :profile :hosted
-            :target :postgresql
-            :query-id (b11-document-query-id id)
-            :schema-id :stage0-v1
-            :dialect :postgresql
-            :parameter-id (case id
-                            "B11-PARAMETER" :gravity-value
-                            "B11-TAINT" :dynamic-fragment
-                            :gravity-value)
-            :column-id (case id
-                         "B11-RESULT" :gravity_value
-                         "B11-NULL" :gravity_value
-                         :gravity_value)
-            :effect (case id
-                      "B11-CAPABILITY" :db/write
-                      "B11-MIGRATION" :db/migrate
-                      "B11-TRANSACTION" :db/read
-                      :db/read)
-            :capability (case id
-                          "B11-CAPABILITY" :db/write
-                          "B11-MIGRATION" :db/migrate
-                          :db/read)
-            :taint-category (case id
-                              "B11-TAINT" :external-input
-                              "B11-PARAMETER" :external-input
-                              :validated)
-            :migration-state (case id
-                               "B11-MIGRATION" :drift-without-policy
-                               :compatible)
-            :missing-policy (b11-document-missing-policy id)
-            :source-generated-origin-chain
-            [:mir :c11-mir :c12-query-domain-ir
-             :c14-target-lowering :b1-interface
-             :b11-query-relational-backend]
-            :fallback-status :rejected
-            :facts {:prepared-statements-required true
-                    :dynamic-tainted-sql-rejected true
-                    :result-adapter-validation-required true
-                    :migration-data-loss-requires-policy true
-                    :provider-plan-movement-requires-evidence true}
-            :remediation [{:kind :declare-dialect-schema-provider}
-                          {:kind :parameterize-query-inputs}
-                          {:kind :attach-capability-taint-policy}
-                          {:kind :record-transaction-migration-adapter-plan}]
-            :redactions []
-            :ordering-key [id :b11-query-relational-backend-document-coverage
-                           :postgresql]})
-         b11-document-diagnostic-ids
-         (range))
-   :status :complete})
+  (gravity.backend.query/diagnostic-stream
+   source-path input-id
+   {:source-span (fn [path index] (source-span path index))
+    :diagnostic-ids (fn [] b11-document-diagnostic-ids)
+    :query-id (fn [id] (b11-document-query-id id))
+    :missing-policy (fn [id] (b11-document-missing-policy id))}))

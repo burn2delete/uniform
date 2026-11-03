@@ -1,18 +1,26 @@
 (ns gravity.backend.query
-  "Native B11 diagnostic lookup data; no query or input admission authority.")
+  "Native B11 diagnostic context and catalog data; no backend or input admission authority."
+  (:require [clojure.string :as str]))
 
 (def ^:private namespace-contract
   '{:authenticates-inputs? false,
  :public-api
  {source-overrides {:arglists ([module]), :admission :none},
   missing-policy {:arglists ([id]), :admission :none},
-  query-id {:arglists ([id]), :admission :none}},
+  query-id {:arglists ([id]), :admission :none},
+  diagnostic-stream
+  {:arglists ([source-path input-id operations]),
+   :admission :none,
+   :required-operations
+   [:source-span :diagnostic-ids :query-id :missing-policy]}},
  :supported
  [:existing-native-projection
   :borrowed-identity
-  :compatibility-var-interposition],
+  :compatibility-var-interposition
+  :native-catalog-assembly
+  :explicit-native-operations],
  :dependency-direction
- {:requires [clojure.core],
+ {:requires [clojure.core clojure.string],
   :consumed-by [gravity.bootstrap],
   :forbids [gravity.bootstrap gravity.cli gravity.release]},
  :governing-contracts
@@ -34,23 +42,37 @@
   :migration
   :release
   :self-hosting
-  :seed-retirement],
- :artifact-inputs [:native-module-metadata :native-b11-diagnostic-id],
+  :seed-retirement
+  :canonical-c15-conformance
+  :catalog-as-observed-semantic-findings
+  :native-operations-as-proof-authority],
+ :artifact-inputs
+ [:native-module-metadata
+  :native-b11-diagnostic-id
+  :native-source-path
+  :supplied-input-artifact-id
+  :native-diagnostic-operations],
  :namespace gravity.backend.query,
  :diagnostic-ownership
- {:stage [:native-override-projection :native-rule-context-defaults],
+ {:stage
+  [:native-override-projection
+   :native-rule-context-defaults
+   :native-catalog-assembly],
   :existing-owner
   [:b11-refusal-decisions
    :failure-construction
-   :diagnostic-stream
    :source-admission
    :publication]},
  :artifact-outputs
  [:borrowed-source-overrides
   :native-missing-policy
-  :native-query-label],
+  :native-query-label
+  :native-diagnostic-catalog-stream],
+ :consumer-component-paths
+ ["bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00258-b10-document-source-artifact.clj"
+  "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00259-b11-document-validate-source-overrides.clj"],
  :issues-certificates? false,
- :contract-boundary :native-b11-diagnostic-policy-data})
+ :contract-boundary :native-b11-diagnostic-context-and-catalog-data})
 
 (defn source-overrides
   [module]
@@ -86,5 +108,74 @@
     "B11-PLAN" :provider-plan
     :query-manifest))
 
-(doseq [operation [#'source-overrides #'missing-policy #'query-id]]
+(defn diagnostic-stream
+  [source-path input-id operations]
+  {:artifact :gravity/b11-query-relational-backend-diagnostic-stream
+   :stage :b11-query-relational-backend-document-coverage
+   :input-artifact input-id
+   :diagnostics
+   (mapv (fn [id index]
+           {:artifact :gravity/diagnostic
+            :diagnostic-id (str "diag-" (str/lower-case id) "-stage0")
+            :diagnostic id
+            :rule id
+            :severity :error
+            :stage :b11-query-relational-backend-document-coverage
+            :backend :gravity.backend/query-relational
+            :message-key (keyword "backend-query" (str/lower-case id))
+            :primary {:span ((:source-span operations) source-path index)
+                      :syntax-id (str "b11-document-syntax-" index)
+                      :artifact input-id}
+            :profile :hosted
+            :target :postgresql
+            :query-id ((:query-id operations) id)
+            :schema-id :stage0-v1
+            :dialect :postgresql
+            :parameter-id (case id
+                            "B11-PARAMETER" :gravity-value
+                            "B11-TAINT" :dynamic-fragment
+                            :gravity-value)
+            :column-id (case id
+                         "B11-RESULT" :gravity_value
+                         "B11-NULL" :gravity_value
+                         :gravity_value)
+            :effect (case id
+                      "B11-CAPABILITY" :db/write
+                      "B11-MIGRATION" :db/migrate
+                      "B11-TRANSACTION" :db/read
+                      :db/read)
+            :capability (case id
+                          "B11-CAPABILITY" :db/write
+                          "B11-MIGRATION" :db/migrate
+                          :db/read)
+            :taint-category (case id
+                              "B11-TAINT" :external-input
+                              "B11-PARAMETER" :external-input
+                              :validated)
+            :migration-state (case id
+                               "B11-MIGRATION" :drift-without-policy
+                               :compatible)
+            :missing-policy ((:missing-policy operations) id)
+            :source-generated-origin-chain
+            [:mir :c11-mir :c12-query-domain-ir
+             :c14-target-lowering :b1-interface
+             :b11-query-relational-backend]
+            :fallback-status :rejected
+            :facts {:prepared-statements-required true
+                    :dynamic-tainted-sql-rejected true
+                    :result-adapter-validation-required true
+                    :migration-data-loss-requires-policy true
+                    :provider-plan-movement-requires-evidence true}
+            :remediation [{:kind :declare-dialect-schema-provider}
+                          {:kind :parameterize-query-inputs}
+                          {:kind :attach-capability-taint-policy}
+                          {:kind :record-transaction-migration-adapter-plan}]
+            :redactions []
+            :ordering-key [id :b11-query-relational-backend-document-coverage
+                           :postgresql]})
+         ((:diagnostic-ids operations))
+         (range))
+   :status :complete})
+
+(doseq [operation [#'source-overrides #'missing-policy #'query-id #'diagnostic-stream]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))
