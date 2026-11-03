@@ -1,38 +1,5 @@
-(declare p15-s23-trusted-carrier-validation)
-
-(defn p15-s23-reference-runtime-bounded-utf8-count
-  [^String value maximum-bytes]
-  (let [length (.length value)]
-    (if (> length maximum-bytes)
-      {:status :over-limit :bytes (inc maximum-bytes)}
-      (loop [index 0 bytes 0]
-        (if (< index length)
-          (let [code (int (.charAt value index))]
-            (cond
-              (<= 0xD800 code 0xDBFF)
-              (if (and (< (inc index) length)
-                       (<= 0xDC00
-                           (int (.charAt value (inc index)))
-                           0xDFFF))
-                (let [next-bytes (+ bytes 4)]
-                  (if (> next-bytes maximum-bytes)
-                    {:status :over-limit :bytes next-bytes}
-                    (recur (+ index 2) next-bytes)))
-                {:status :invalid-surrogate :index index :bytes bytes})
-
-              (<= 0xDC00 code 0xDFFF)
-              {:status :invalid-surrogate :index index :bytes bytes}
-
-              :else
-              (let [width (cond
-                            (<= code 0x7F) 1
-                            (<= code 0x7FF) 2
-                            :else 3)
-                    next-bytes (+ bytes width)]
-                (if (> next-bytes maximum-bytes)
-                  {:status :over-limit :bytes next-bytes}
-                  (recur (inc index) next-bytes)))))
-          {:status :valid :bytes bytes})))))
+(declare p15-s23-trusted-carrier-validation
+         p15-s23-closed-core-utf8-count)
 
 (defn p15-s23-reference-runtime-hash
   [value]
@@ -61,33 +28,6 @@
     (or (vector? value) (set? value) (seq? value))
     (reduce conj [] value)
     :else []))
-
-(defn p15-s23-reference-runtime-unbounded-utf8-count
-  "Count valid UTF-8 bytes without turning size into an admission decision."
-  [^String value]
-  (let [length (.length value)]
-    (loop [index 0 bytes 0]
-      (if (< index length)
-        (let [code (int (.charAt value index))]
-          (cond
-            (<= 0xD800 code 0xDBFF)
-            (if (and (< (inc index) length)
-                     (<= 0xDC00
-                         (int (.charAt value (inc index)))
-                         0xDFFF))
-              (recur (+ index 2) (+ bytes 4))
-              {:status :invalid-surrogate :index index :bytes bytes})
-
-            (<= 0xDC00 code 0xDFFF)
-            {:status :invalid-surrogate :index index :bytes bytes}
-
-            :else
-            (recur (inc index)
-                   (+ bytes (cond
-                              (<= code 0x7F) 1
-                              (<= code 0x7FF) 2
-                              :else 3)))))
-        {:status :valid :bytes bytes}))))
 
 (defn- p15-s23-reference-runtime-carrier-missing-fact
   [reason class-name]
@@ -127,8 +67,7 @@
             invalid-text
             (some (fn [text]
                     (let [measurement
-                          (p15-s23-reference-runtime-unbounded-utf8-count
-                           text)]
+                          (p15-s23-closed-core-utf8-count text)]
                       (when-not (= :valid (:status measurement))
                         {:text-kind (cond
                                       (string? item) :string

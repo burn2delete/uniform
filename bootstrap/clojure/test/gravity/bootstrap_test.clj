@@ -44865,6 +44865,36 @@
             #(bootstrap/math-proof-file-artifact
               (fixture fixture-name)))))))
 
+(deftest p15-s23-reference-runtime-operation-records-preserve-shape-without-admission-quotas
+  (let [wide-items
+        (vec (repeat (inc bootstrap/p15-s23-reference-runtime-max-contract-nodes)
+                     {:op :literal :value nil}))
+        wide-definition {:instructions [{:op :vector-literal :items wide-items}]}
+        wide-records
+        (bootstrap/p15-s23-reference-runtime-function-operation-records
+         "runtime-instructions.gravity" :jvm 'main wide-definition)
+        deep-instruction
+        (reduce (fn [instruction _]
+                  {:op :do :body [instruction]})
+                {:op :literal :value nil}
+                (range bootstrap/p15-s23-reference-runtime-max-instruction-depth))
+        deep-records
+        (bootstrap/p15-s23-reference-runtime-function-operation-records
+         "runtime-instructions.gravity" :jvm 'main
+         {:instructions [deep-instruction]})
+        invalid-data
+        (diagnostic-data
+         #(bootstrap/p15-s23-reference-runtime-function-operation-records
+           "runtime-instructions.gravity" :jvm 'main
+           {:instructions [{:op :unsupported-operation}]}))]
+    (is (= (+ 2 bootstrap/p15-s23-reference-runtime-max-contract-nodes)
+           (count wide-records)))
+    (is (= (inc bootstrap/p15-s23-reference-runtime-max-instruction-depth)
+           (count deep-records)))
+    (is (= "P15S23X002" (:id invalid-data)))
+    (is (= :runtime-contract-instruction-operation
+           (:missing-fact invalid-data)))))
+
 (defn -main
   [& _]
   (let [result (run-tests 'gravity.diagnostics-test

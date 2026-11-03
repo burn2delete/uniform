@@ -27,7 +27,7 @@
                          (=
                            :valid
                            (:status
-                             (p15-s23-reference-runtime-unbounded-utf8-count
+                             (p15-s23-closed-core-utf8-count
                                (:source-text context))))
                          (keyword? (:requested-target context))
                          (contains?
