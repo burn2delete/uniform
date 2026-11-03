@@ -177,7 +177,7 @@
      {:ordinal 1 :kind :l2-contract :module-ordinal nil
       :path "docs/phase-01-core-language/012-l2-core-language-semantics.md"}
      {:ordinal 2 :kind :checked-core :module-ordinal nil
-      :path "bootstrap/gravity/src/gravity/checked_core.gravity"}]
+      :path "language/compiler/src/gravity/checked_core.gravity"}]
     (mapv (fn [{:keys [module-ordinal logical-source-path]}]
             {:ordinal (+ 3 module-ordinal)
              :kind :module

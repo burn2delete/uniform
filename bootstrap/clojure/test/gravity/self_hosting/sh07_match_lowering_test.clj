@@ -839,7 +839,7 @@
           (doseq [pattern (if (= family "accepted") [(nth match-form 2) (nth match-form 4)] [(nth match-form 2)])]
             (is (= (if (= family "accepted") :accepted :rejected) (get-in (check pattern) [:result :status]))))))
       (let [contract (with-open [reader (java.io.PushbackReader.
-                                        (io/reader (path "bootstrap/gravity/src/gravity/checked_core.gravity")))]
+                                        (io/reader (path "language/compiler/src/gravity/checked_core.gravity")))]
                        (binding [*read-eval* false]
                          (loop []
                            (let [form (read reader)]

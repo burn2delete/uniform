@@ -87,7 +87,7 @@
     (let [resource (io/resource "gravity/self_hosting/sh16_relative_flat_bool_report_shape_test.clj")
           root (loop [p (.getParent (.toPath (io/file (.toURI resource))))]
                  (if (.isFile (.toFile (.resolve p "deps.edn"))) p (recur (.getParent p))))
-          source (slurp (str (.resolve root "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity")))
+          source (slurp (str (.resolve root "language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity")))
           forms (binding [*read-eval* false]
                   (with-open [r (java.io.PushbackReader. (java.io.StringReader. source))]
                     (loop [result []]

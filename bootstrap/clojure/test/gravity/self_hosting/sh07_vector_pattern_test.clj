@@ -588,7 +588,7 @@
 
 (deftest sh07-b11-gravity-contract-names-l7
   (let [forms
-        (source-forms "bootstrap/gravity/src/gravity/checked_core.gravity")
+        (source-forms "language/compiler/src/gravity/checked_core.gravity")
         contract-form
         (first
          (filter

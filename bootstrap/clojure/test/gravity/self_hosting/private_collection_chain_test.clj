@@ -3,8 +3,8 @@
 
 ;; Compiler plans are constructed only by explicitly selected semantic tests.
 (def owners
-  {:c7 ["sh08" "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"]
-   :effects ["body" "bootstrap/gravity/src/gravity/effects.gravity"]
+  {:c7 ["sh08" "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity"]
+   :effects ["body" "language/compiler/src/gravity/effects.gravity"]
    :emitter ["p15-s23" "bootstrap/gravity/p15_s23/emitter.gravity"]})
 
 (defn- source [id]

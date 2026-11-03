@@ -96,9 +96,17 @@
 (defn p15-s23-source-module-records
   [compiler-stage]
   (mapv (fn [{:keys [component path]}]
-          (let [source-text (slurp path)]
+          (let [{:keys [logical-path actual-path relocated?]}
+                (p15-s23-compiler-source-path-resolution path)
+                source-text (slurp actual-path)]
             {:component component
-             :path path
+             ;; Keep :path as the frozen logical declaration. The actual
+             ;; development read is recorded separately so relocation cannot
+             ;; masquerade as a new logical inventory revision.
+             :path logical-path
+             :logical-path logical-path
+             :actual-path actual-path
+             :relocated? relocated?
              :source-hash (str "sha256:" (sha256-hex source-text))
              :status :present}))
         (:source-modules compiler-stage)))

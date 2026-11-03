@@ -51,6 +51,15 @@ predicate extraction is not a Resolution timeout fix. Actual landed source
 relocations and CI changes require normal composition and new evidence, with
 historical captures and immutable plans/pins retained.
 
+The successor normally composes the compiler implementation relocation source
+b3a01b34 and main's CI/cache controls through fccac185. The inherited HDL,
+Workflow and Query test locators follow that relocation; the new Mobile test
+locator now reads `language/compiler/src/gravity/backend/` as well. Only the
+physical source location changes. Predicate bodies, fixture assertions and
+serialized historical path labels remain unchanged. Fresh candidate captures,
+independent composition review and own CI are required; neither the earlier
+green provider run nor the relocation candidate's checks transfer here.
+
 The recognizers are legacy fixture heuristics. Canonical target syntax,
 arbitrary valid HDL/SQL/workflow/mobile programs, verified IR ingress, backend
 code generation/execution, semantic findings, canonical C15 validation,

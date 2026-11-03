@@ -57,7 +57,7 @@
 
 (deftest original-set-constructor-retains-c2-source-child-order
   (let [path #(str (io/file (root) %))
-        owner (path "bootstrap/gravity/src/gravity/checked_core.gravity")
+        owner (path "language/compiler/src/gravity/checked_core.gravity")
         owner-text (slurp owner :encoding "UTF-8")
         start (.indexOf ^String owner-text "(defn sh07-collection-kind? [kind]\n")
         end (.indexOf ^String owner-text "(defn sh07-even-count? " start)

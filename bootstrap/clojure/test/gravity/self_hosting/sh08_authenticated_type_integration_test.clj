@@ -45,9 +45,9 @@
      emitter source-path source-text)))
 
 (def ^:private envelope-source
-  "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity")
+  "language/compiler/src/gravity/compiler/authenticated_envelope.gravity")
 (def ^:private c7-source
-  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity")
+  "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity")
 (def ^:private bridge-source
   (str
    "bootstrap/clojure/fixtures/self-hosting/sh-08/"

@@ -45,9 +45,12 @@
 
 (defn- gravity-module-paths
   []
-  (let [source-root (path "bootstrap/gravity/src")
+  (let [source-roots (map path ["bootstrap/gravity/src"
+                                "language/compiler/src"
+                                "language/runtime/src"])
         root-path @root]
-    (->> (file-seq source-root)
+    (->> source-roots
+         (mapcat file-seq)
          (filter #(.isFile %))
          (filter #(str/ends-with? (.getName %) ".gravity"))
          (map #(str (.relativize root-path (.toPath %))))
@@ -153,7 +156,9 @@
         expected-slice-ids
         (set (map #(format "SH-%02d" %) (range 30)))
         declared-gravity-modules
-        (set (filter #(str/starts-with? % "bootstrap/gravity/src/")
+        (set (filter #(or (str/starts-with? % "bootstrap/gravity/src/")
+                          (str/starts-with? % "language/compiler/src/")
+                          (str/starts-with? % "language/runtime/src/"))
                      declared-modules))
         declared-stage0-paths
         (set/difference
@@ -209,7 +214,9 @@
     (testing "coordinator-only integration modules are not assigned to a leaf"
       (doseq [module
               (get-in record [:coordinator-owned :integration-surfaces])
-              :when (str/starts-with? module "bootstrap/gravity/src/")]
+              :when (or (str/starts-with? module "bootstrap/gravity/src/")
+                         (str/starts-with? module "language/compiler/src/")
+                         (str/starts-with? module "language/runtime/src/"))]
         (is (= :master-coordinator (get module-owners module)) module)))
     (testing "reserved Stage0 ids cover exactly the 55 source components"
       (let [reserved (:reserved-leaf-modules record)

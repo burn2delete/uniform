@@ -4,8 +4,8 @@
   (:require [clojure.test :refer [deftest is]]))
 
 (def owners
-  [{:prefix "sh08" :path "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"}
-   {:prefix "body" :path "bootstrap/gravity/src/gravity/effects.gravity"}
+  [{:prefix "sh08" :path "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity"}
+   {:prefix "body" :path "language/compiler/src/gravity/effects.gravity"}
    {:prefix "p15-s23" :path "bootstrap/gravity/p15_s23/emitter.gravity"}])
 
 (defn definitions [path]

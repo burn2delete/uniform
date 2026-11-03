@@ -490,7 +490,7 @@
   ;; default admission pins or claiming full upstream construction.
   (let [source-path (.getCanonicalPath
                      (java.io.File.
-                      "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"))
+                      "language/compiler/src/gravity/compiler/c11_mir_specification.gravity"))
         emitter (:emitter (b/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))
         plan (b/p15-s23-stage2-compiler-artifact-plan emitter source-path (slurp source-path))
         producer (b/p15-s23-stage2-runtime-execute-function
