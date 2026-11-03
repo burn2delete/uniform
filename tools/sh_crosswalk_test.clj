@@ -7029,7 +7029,6 @@
         old-text (sh-crosswalk/git-source (:commit previous) (:path previous))
         old-projection (sh-crosswalk/git-source (:commit previous) (:projection-path previous))
         old-source (edn/read-string old-text)
-        old (edn/read-string old-projection)
         view (sh-crosswalk/source-view)
         sha (fn [text] (sh-inventory/sha256 text))
         span-text (fn [body {:keys [start-byte end-byte]}]
