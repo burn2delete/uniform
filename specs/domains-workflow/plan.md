@@ -570,6 +570,12 @@ Use the [complete Types source criteria](../types-workflow/plan.md#complete-type
 
 Current task identities/statuses, historical review subjects and original C7 publication/other actual restrictions remain unchanged. This source proposal grants no implementation or current independent acceptance.
 
+## Types dependency interface
+
+Use the [Types producer and consumer order](../types-workflow/plan.md#types-producer-and-consumer-order) and existing selected-result table. Supply authentic expanded schema/AI sources before projection; compare real derived types and generated/runtime consumers afterward. Types owns static projection, Expand owns ordinary generated-program checking and Schema owns its normalization/runtime validation. Do not weaken source identity or infer model/provider authority from a type.
+
+Existing task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Domains workflow migration

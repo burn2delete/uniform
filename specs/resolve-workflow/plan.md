@@ -348,6 +348,12 @@ Use the [complete Types source criteria](../types-workflow/plan.md#complete-type
 
 Current task identities/statuses, historical review subjects and original C7 publication/other actual restrictions remain unchanged. This source proposal grants no implementation or current independent acceptance.
 
+## Types dependency interface
+
+Use the [Types producer and consumer order](../types-workflow/plan.md#types-producer-and-consumer-order) and existing selected-result table. Supply actual private visibility/export/use/call/escape/mutation/original-target and declaration identities before inference. Later enrich modules with actual inferred type facts and invalidate changed private-entry premises; do not demand the future inferred index first.
+
+Existing task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Resolve task authority

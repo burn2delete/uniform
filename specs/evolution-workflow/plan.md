@@ -152,3 +152,9 @@ Existing task bodies/statuses, source criteria, frozen reviews and actual restri
 Use the [complete Types source criteria](../types-workflow/plan.md#complete-types-source-criteria). Retain the exact existing conditional type-form schema/fixture/consumer adoption predicate in evolution/change-review. Restore no second governance authority or ordinary-development approval gate.
 
 Current task identities/statuses, historical review subjects and original C7 publication/other actual restrictions remain unchanged. This source proposal grants no implementation or current independent acceptance.
+
+## Types dependency interface
+
+Use the [Types producer and consumer order](../types-workflow/plan.md#types-producer-and-consumer-order) and existing selected-result table. Keep the unchanged conditional type-form change producer. Actual artifact-schema updates, fixtures and affected type/effect/memory/profile/MIR/backend/schema/AI/library/documentation products precede stable adoption; ordinary unchanged-contract development gains no permission ceremony.
+
+Existing task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.

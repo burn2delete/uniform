@@ -141,6 +141,12 @@ Use the [complete Types source criteria](../types-workflow/plan.md#complete-type
 
 Current task identities/statuses, historical review subjects and original C7 publication/other actual restrictions remain unchanged. This source proposal grants no implementation or current independent acceptance.
 
+## Types dependency interface
+
+Use the [Types producer and consumer order](../types-workflow/plan.md#types-producer-and-consumer-order) and existing selected-result table. Provide real early ABI/representation rules, derive selected layouts from real concrete type premises before final typed verification where needed, and consume actual admitted instantiation/dispatch/conversion/schema/layout facts for target work. No Q future layout or universal optimizer gate is introduced.
+
+Existing task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Lower task authority

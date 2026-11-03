@@ -299,6 +299,12 @@ Use the [complete Types source criteria](../types-workflow/plan.md#complete-type
 
 Current task identities/statuses, historical review subjects and original C7 publication/other actual restrictions remain unchanged. This source proposal grants no implementation or current independent acceptance.
 
+## Types dependency interface
+
+Use the [Types producer and consumer order](../types-workflow/plan.md#types-producer-and-consumer-order) and existing selected-result table. Supply authentic early provider/capability signatures and selected compatibility contracts without requiring execution first. Actual grants, attenuation and allowed uses remain separate from typed capabilities, effect declarations and tentative dispatch.
+
+Existing task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Auth task authority

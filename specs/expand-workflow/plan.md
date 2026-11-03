@@ -472,6 +472,12 @@ Use the [complete Types source criteria](../types-workflow/plan.md#complete-type
 
 Current task identities/statuses, historical review subjects and original C7 publication/other actual restrictions remain unchanged. This source proposal grants no implementation or current independent acceptance.
 
+## Types dependency interface
+
+Use the [Types producer and consumer order](../types-workflow/plan.md#types-producer-and-consumer-order) and existing selected-result table. Use authentic already-available checked macro P facts before invocation; real generated Q is resolved and ordinarily typed afterward. Early authentic schemas precede Types-owned static projection, while generated Q checking remains Expand-owned. Expected type queries cannot invent independent inference witnesses.
+
+Existing task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Expand task authority
