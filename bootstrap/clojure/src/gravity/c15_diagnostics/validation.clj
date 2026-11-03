@@ -1,22 +1,11 @@
 (ns gravity.c15-diagnostics.validation
-  (:require [gravity.c15-diagnostics.operations :as operations]
-            [gravity.c15-diagnostics.records :as records]
-            [gravity.compiler-verification-shared :as shared]))
+  (:require [gravity.diagnostics :as diagnostics]
+            [gravity.c15-diagnostics.operations :as operations]
+            [gravity.c15-diagnostics.records :as records]))
 (defn context-valid? [diagnostic]
-  (let [unavailable? (contains? #{:read-source :compiler-diagnostics} (:stage diagnostic))]
-    (every? (fn [field]
-              (and (contains? diagnostic field)
-                   (let [value (get diagnostic field)]
-                     (or (keyword? value) (and unavailable? (nil? value))))))
-            [:profile :target])))
+  (diagnostics/native-context-valid? diagnostic))
 (defn primary-valid? [diagnostic]
-  (let [primary (:primary diagnostic)
-        syntax-id (:syntax-id primary)]
-    (and (map? primary)
-         (every? #(get primary %) [:span :artifact])
-         (contains? primary :syntax-id)
-         (or (keyword? syntax-id) (and (string? syntax-id) (seq syntax-id))
-             (and (nil? syntax-id) (contains? #{:read-source :compiler-diagnostics} (:stage diagnostic)))))))
+  (diagnostics/native-primary-valid? diagnostic))
 (defn fail! [configuration id source-path subject extra]
   (operations/invoke :c15-diagnostics-fail!
                      (fn [rule path item fields]
@@ -44,39 +33,7 @@
                                               :profile nil :target nil}
                {:missing-fields [fail-kind] :subject-kind subject-kind})))))
 (defn validate! [configuration source-path artifact]
-  (let [required (set (:c15-diagnostic-required-fields configuration))
-        schema-fields (set (get-in artifact [:diagnostic-schema :required-fields]))
-        diagnostics (get-in artifact [:diagnostic-stream :diagnostics])
-        catalog-rules (set (map :rule (get-in artifact [:diagnostic-catalog :rules])))
-        golden (:golden-diagnostic-fixtures artifact)]
-    (when-not (= required schema-fields) (fail! configuration "C15-SCHEMA" source-path (:diagnostic-schema artifact)
-                                                 {:missing-fields (vec (remove schema-fields required))}))
-    (when-not (= (count diagnostics) (count (distinct (map :diagnostic-id diagnostics))))
-      (fail! configuration "C15-ID" source-path (first diagnostics) {:missing-fields [:diagnostic-id]}))
-    (doseq [diagnostic diagnostics]
-      (let [present (set (keys diagnostic))]
-        (when-not (every? present required) (fail! configuration "C15-SCHEMA" source-path diagnostic
-                                                       {:missing-fields (vec (remove present required))})))
-      (when-not (= (:diagnostic-id diagnostic) (records/stable-id (dissoc diagnostic :diagnostic-id :ordering-key)))
-        (fail! configuration "C15-ID" source-path diagnostic {:missing-fields [:stable-id]}))
-      (when-not (context-valid? diagnostic)
-        (fail! configuration "C15-SCHEMA" source-path diagnostic {:missing-fields [:phase-context]}))
-      (when-not (primary-valid? diagnostic)
-        (fail! configuration "C15-SPAN" source-path diagnostic {:missing-fields [:primary]}))
-      (when (and (:generated? diagnostic) (or (empty? (:origin-chain diagnostic))
-                                               (not-any? #(= :generated-by (:role %)) (:related diagnostic))))
-        (fail! configuration "C15-ORIGIN" source-path diagnostic {:missing-fields [:origin-chain]}))
-      (when-not (and (map? (:facts diagnostic)) (seq (:facts diagnostic)))
-        (fail! configuration "C15-FACTS" source-path diagnostic {:missing-fields [:facts]}))
-      (when-not (seq (:remediation diagnostic))
-        (fail! configuration "C15-REMEDIATION" source-path diagnostic {:missing-fields [:remediation]})))
-    (when-not (true? (get-in artifact [:redaction-report :public-safe?]))
-      (fail! configuration "C15-REDACTION" source-path (:redaction-report artifact) {:missing-fields [:public-safe]}))
-    (when-not (= diagnostics (vec (sort-by :ordering-key diagnostics)))
-      (fail! configuration "C15-ORDER" source-path (:diagnostic-stream artifact) {:missing-fields [:ordering-key]}))
-    (when-not (= (set (:c15-diagnostics-diagnostic-ids configuration)) catalog-rules)
-      (fail! configuration "C15-SCHEMA" source-path (:diagnostic-catalog artifact) {:missing-fields [:diagnostic-catalog]}))
-    (when-not (and (= (set (:c15-diagnostics-diagnostic-ids configuration)) (set (map :rule golden)))
-                   (every? #(= :matched (:status %)) golden))
-      (fail! configuration "C15-GOLDEN" source-path (first golden) {:missing-fields [:golden-fixtures]})))
-  :complete)
+  (diagnostics/validate-native!
+   {:fail! #'fail! :stable-id #'records/stable-id
+    :context-valid? #'context-valid? :primary-valid? #'primary-valid?}
+   configuration source-path artifact))
