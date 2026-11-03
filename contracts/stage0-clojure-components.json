@@ -260,6 +260,14 @@
       "test": {"path": "bootstrap/clojure/test/gravity/backend/workflow/pipeline_test.clj", "namespace": "gravity.backend.workflow.pipeline-test", "registration": "standalone"}
     },
     {
+      "id": "query-diagnostic-data",
+      "kind": "production-stage-helper",
+      "owner": "sh-target-query",
+      "source": {"path": "bootstrap/clojure/src/gravity/backend/query.clj", "namespace": "gravity.backend.query"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00258-b10-document-source-artifact.clj", "namespace": "gravity.bootstrap", "owner": "sh-target-query"},
+      "test": {"path": "bootstrap/clojure/test/gravity/backend/query/pipeline_test.clj", "namespace": "gravity.backend.query.pipeline-test", "registration": "standalone"}
+    },
+    {
       "id": "c-emission",
       "kind": "production-stage-helper",
       "owner": "sh-target-c",
