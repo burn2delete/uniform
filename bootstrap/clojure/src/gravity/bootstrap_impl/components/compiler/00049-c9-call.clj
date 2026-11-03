@@ -92,7 +92,8 @@
 
 (defn compiler-c9-ownership-source-artifact
   [source-path source-text]
-  (c9-call c9/compiler-c9-ownership-source-artifact source-path source-text))
+  (source-input/with-context
+   #(c9-call c9/compiler-c9-ownership-source-artifact source-path source-text)))
 
 (defn compiler-c9-ownership-file-artifact
   [path]
