@@ -1,6 +1,6 @@
 {:record-kind :pr502-current-owner-guards-port
  :purpose "Port the accepted quota-free mixed List/Set, Map/keys, and bare Set owner guards, preserved fixtures, and PR641 complete-product comparisons onto exact current main without claiming public C8/L5 authority."
- :receipt-revision 2
+ :receipt-revision 3
  :integration-base
  {:commit "6f6cc71be14ecb3dffa18a7566f2205d2ceb5b05"
   :tree "41687b2b95f67d775684f06eb7cb52e09f51e107"
@@ -241,4 +241,67 @@
   :no-new-project-quota-or-allowance
   :independent-acceptance-pending]
  :decision :bounded-ordinary-current-owner-source-port
- :independent-acceptance :pending}
+ :independent-acceptance :pending
+ :ci-cancellation-evidence
+ {:run-id "41693000912"
+  :job-id "126116475947"
+  :observed-head "9ae87e8fce94b79e45c01470ccc5d23c7ffc2a42"
+  :observed-tree "4a3443844c04426dd74ff43f50e52ed80f0b2786"
+  :artifact-name "ci-resolution-pipeline-9ae87e8fce94b79e45c01470ccc5d23c7ffc2a42-1"
+  :artifact-id "13261850287"
+  :artifact-directory "/tmp/uniform-pr879-resolution-ckF3X6"
+  :artifact-files
+  ["SHA256SUMS"
+   "checkout-parents.edn"
+   "resolution-pipeline.edn"
+   "resolution-pipeline-fresh-replay.edn"
+   "resolution-pipeline.log"
+   "resolution-pipeline-fresh-replay.log"
+   "worktree.txt"]
+  :first-child
+  {:timeout-seconds 600
+   :status :passed
+   :exit-code 0
+   :started-ms 1793730154870
+   :finished-ms 1793730687400}
+  :fresh-replay
+  {:timeout-seconds 600
+   :status :running-at-cancellation
+   :started-ms 1793730687401
+   :outer-job-timeout-minutes 15
+   :job-conclusion :cancelled}
+  :classification :outer-resolution-envelope-cancellation
+  :source-failure-observed false
+  :source-mutation-observed false
+  :generated-worktree-entry "?? target/ci/"}
+ :final-composition
+ {:base
+  {:commit "77027c72003b636d0c475092fb01309848df9923"
+   :tree "2be1bf39abd1fd4b290acd0b1f2aa488dbc006b8"
+   :parent "4bf83407647813cbef54573571e0f31a2d7062b4"
+   :ref "origin/main"
+   :main-only-changes
+   ["tools/ci/lint.clj" "tools/ci/lint_facade_test.clj"]}
+  :pre-base-composition
+  {:commit "d89640677bdebbbe1074cc9a9fbbae3c3fe16247"
+   :tree "040cc06d82dca6f0495d70dd98a7b2f6da9e6594"
+   :parent "6147d845477e429974c9a640e5b331f967a593de"
+   :envelope-fix-commit "7108bc14aac80eb1cc76729738c97741f6fc41a2"
+   :envelope-fix-paths [".github/workflows/ci.yml" "docs/ci.md"]}
+  :composition-head-before-receipt-update
+  {:commit "2ea65285ebdca79a2154ec3c30c39d4b75c34946"
+   :tree "adcc9f5409100bad8ea602457d5612077acf3e1a"
+   :parents
+   ["d89640677bdebbbe1074cc9a9fbbae3c3fe16247"
+    "77027c72003b636d0c475092fb01309848df9923"]}
+  :owned-path-count 10
+  :owned-source-test-fixture-path-count 8
+  :owned-receipt-path-count 2
+  :final-diff-path-count 12
+  :checks-run-against "d89640677bdebbbe1074cc9a9fbbae3c3fe16247"
+  :checks-not-rerun-after-base
+  {:reason :main-887-only-changed-disjoint-lint-tooling
+   :changed-paths ["tools/ci/lint.clj" "tools/ci/lint_facade_test.clj"]}
+  :worktree-status-before-receipt-update :clean
+  :native-c8-l5-authority :unrun}
+}

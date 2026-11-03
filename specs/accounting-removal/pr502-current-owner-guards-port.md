@@ -62,6 +62,56 @@ The receipt is
 `specs/accounting-removal/pr502-current-owner-guards-port.edn`. Independent
 acceptance and exact integration preflight remain pending.
 
+## CI cancellation evidence
+
+The failed-looking Resolution result was inspected from run `41693000912`, job
+`126116475947`, rather than treated as a source failure. Its preserved artifact
+is `ci-resolution-pipeline-9ae87e8fce94b79e45c01470ccc5d23c7ffc2a42-1`
+(artifact `13261850287`), downloaded at
+`/tmp/uniform-pr879-resolution-ckF3X6`. The artifact checkout was commit
+`9ae87e8fce94b79e45c01470ccc5d23c7ffc2a42`, tree
+`4a3443844c04426dd74ff43f50e52ed80f0b2786`.
+
+The first sequential child, the resolution cohort excluding the fresh-replay
+case, completed with `:status :passed`, exit `0`, and its 600-second watchdog.
+The second child, the exact
+`verifier-requires-fresh-replay-current-products-and-public-proof` case, was
+still `:running` when the enclosing 15-minute Resolution job was cancelled.
+There is no failure receipt or source mutation in the artifact; its generated
+worktree entry is only `?? target/ci/`. This is the two sequential 600-second
+children versus a 15-minute outer envelope mismatch, not evidence that the
+fresh replay failed. It also does not claim that the fresh replay passed.
+
+The narrowly accepted envelope repair is commit
+`7108bc14aac80eb1cc76729738c97741f6fc41a2`, limited to
+`.github/workflows/ci.yml` and `docs/ci.md`: the Resolution envelope is 25
+minutes for the two 600-second children, with the split watchdog documented.
+CI was not rerun during this composition.
+
+## Final current-main composition
+
+The candidate was normally composed with the exact returned main base
+`77027c72003b636d0c475092fb01309848df9923` (tree
+`2be1bf39abd1fd4b290acd0b1f2aa488dbc006b8`) whose parent is
+`4bf83407647813cbef54573571e0f31a2d7062b4`. The source/effects and focused
+checks were clean at pre-base composition commit
+`d89640677bdebbbe1074cc9a9fbbae3c3fe16247` (tree
+`040cc06d82dca6f0495d70dd98a7b2f6da9e6594`); that commit contains the
+two-file envelope repair and the ten authored PR879 paths. The normal merge
+with main 887 is composition commit
+`2ea65285ebdca79a2154ec3c30c39d4b75c34946` (tree
+`adcc9f5409100bad8ea602457d5612077acf3e1a`), with parents the pre-base
+composition and main 887.
+
+The final diff against main 887 is exactly twelve paths: the ten authored
+source/test/fixture/report paths listed in the historical accounting above,
+plus the two accepted CI-envelope files. Main 887 changed only
+`tools/ci/lint.clj` and `tools/ci/lint_facade_test.clj`, disjoint from the
+owned Effects/emitter/tests/fixtures and envelope files, so the focused checks
+listed above remain attributable to the pre-base composition. No fresh replay,
+native callback, public C8/L5, source-admission, release, or self-hosting claim
+is made here.
+
 ## Explicit nonclaims
 
 The active genuine public-C8 proof (PID `48316`) and its cohort are unchanged.
