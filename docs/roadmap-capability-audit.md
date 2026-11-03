@@ -97,7 +97,7 @@ Latest L2 correction on 2026-07-08: public `gravity check` now accepts
 `host-semantics.gravity` and `host-semantics.qst` with stable
 `L2-HOST-SEMANTICS`, preserves the actual source path and extension in
 diagnostics, and records the Gravity-authored L2 source module
-`bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity` in
+`language/compiler/src/gravity/compiler/l2_core_language_semantics.gravity` in
 the stage1 and P15-S23 compiler source inventories. This is still check-only
 public bridge progress and does not prove public `run`, public `compile`, full
 L2 semantics, final release, or self-hosting.

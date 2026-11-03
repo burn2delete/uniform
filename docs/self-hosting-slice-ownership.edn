@@ -61,9 +61,9 @@
   ["bootstrap/gravity/p15_s23/compiler.gravity"
    "bootstrap/gravity/p15_s23/emitter.gravity"
    "bootstrap/gravity/p15_s23/runtime.gravity"
-   "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity"
-   "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
-   "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity"]
+   "language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity"
+   "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+   "language/compiler/src/gravity/compiler/c14_target_lowering_architecture.gravity"]
   :p15-coordinator-integration-reservations
   ["bootstrap/clojure/src/gravity/p15_native_packet_binding.clj"
    "bootstrap/clojure/src/gravity/p15_native_plan_specialization.clj"
@@ -154,6 +154,26 @@
   {:namespace gravity.backend.llvm :owner :sh-target-llvm :slice "SH-18"
    :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_llvm/005-lowering-reconstruction-and-builder.clj"
    :test-path "bootstrap/clojure/test/gravity/backend/llvm/pipeline_test.clj"}
+  "bootstrap/clojure/src/gravity/backend/mlir.clj"
+  {:namespace gravity.backend.mlir :owner :sh-target-mlir :slice "SH-18"
+   :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00242-b6-document-source-artifact.clj"
+   :test-path "bootstrap/clojure/test/gravity/backend/mlir/pipeline_test.clj"}
+  "bootstrap/clojure/src/gravity/backend/gpu.clj"
+  {:namespace gravity.backend.gpu :owner :sh-target-gpu :slice "SH-18"
+   :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00246-b7-document-source-artifact.clj"
+   :test-path "bootstrap/clojure/test/gravity/backend/gpu/pipeline_test.clj"}
+  "bootstrap/clojure/src/gravity/backend/hdl.clj"
+  {:namespace gravity.backend.hdl :owner :sh-target-hdl :slice "SH-18"
+   :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00250-b8-document-source-artifact.clj"
+   :test-path "bootstrap/clojure/test/gravity/backend/hdl/pipeline_test.clj"}
+  "bootstrap/clojure/src/gravity/backend/workflow.clj"
+  {:namespace gravity.backend.workflow :owner :sh-target-workflow :slice "SH-18"
+   :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00254-b9-document-source-artifact.clj"
+   :test-path "bootstrap/clojure/test/gravity/backend/workflow/pipeline_test.clj"}
+  "bootstrap/clojure/src/gravity/backend/query.clj"
+  {:namespace gravity.backend.query :owner :sh-target-query :slice "SH-18"
+   :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00258-b10-document-source-artifact.clj"
+   :test-path "bootstrap/clojure/test/gravity/backend/query/pipeline_test.clj"}
   "bootstrap/clojure/src/gravity/optimization.clj"
   {:namespace gravity.optimization :owner :sh-optimization :slice "SH-16"
    :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00750-p15-s23-c13-comparison-fold-reconstruction.clj"
@@ -201,7 +221,11 @@
   "bootstrap/clojure/src/gravity/cli/packaged_launcher.clj"
   {:namespace gravity.cli.packaged-launcher :owner :master-coordinator :slice "SH-01"
    :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/release-p18/00909-p18-t02-run-bin-gravity.clj"
-   :test-path "bootstrap/clojure/test/gravity/bootstrap_test.clj"}}
+   :test-path "bootstrap/clojure/test/gravity/bootstrap_test.clj"}
+  "bootstrap/clojure/src/gravity/source_input.clj"
+  {:namespace gravity.source-input :owner :master-coordinator :slice "SH-01"
+   :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00004-max-reader-form-depth.clj"
+   :test-path "bootstrap/clojure/test/gravity/bootstrap_compatibility/c11_test.clj"}}
 
  ;; Supplemental helper checks, outside the unchanged primary component pairs.
  :auxiliary-test-associations
@@ -223,28 +247,33 @@
   "bootstrap/clojure/src/gravity/backend/wasm.clj" :sh-target-wasm
   "bootstrap/clojure/src/gravity/backend/c.clj" :sh-target-c
   "bootstrap/clojure/src/gravity/backend/llvm.clj" :sh-target-llvm
+  "bootstrap/clojure/src/gravity/backend/mlir.clj" :sh-target-mlir
+  "bootstrap/clojure/src/gravity/backend/gpu.clj" :sh-target-gpu
+  "bootstrap/clojure/src/gravity/backend/hdl.clj" :sh-target-hdl
+  "bootstrap/clojure/src/gravity/backend/workflow.clj" :sh-target-workflow
+  "bootstrap/clojure/src/gravity/backend/query.clj" :sh-target-query
   "bootstrap/clojure/src/gravity/optimization.clj" :sh-optimization
-  "bootstrap/gravity/src/gravity/backend/b10_workflow_graph_backend_design.gravity" :sh-target-workflow
-  "bootstrap/gravity/src/gravity/backend/b11_query_relational_backend_design.gravity" :sh-target-query
-  "bootstrap/gravity/src/gravity/backend/b12_mobile_backend_design.gravity" :sh-target-mobile
-  "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity" :master-coordinator
-  "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity" :sh-target-c
-  "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity" :sh-target-llvm
-  "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity" :sh-target-wasm
-  "bootstrap/gravity/src/gravity/backend/b5_jvm_backend_design.gravity" :sh-target-jvm
-  "bootstrap/gravity/src/gravity/backend/b6_javascript_typescript_backend_design.gravity" :sh-target-js
-  "bootstrap/gravity/src/gravity/backend/b7_mlir_backend_design.gravity" :sh-target-mlir
-  "bootstrap/gravity/src/gravity/backend/b8_gpu_backend_design.gravity" :sh-target-gpu
-  "bootstrap/gravity/src/gravity/backend/b9_hdl_backend_design.gravity" :sh-target-hdl
+  "language/compiler/src/gravity/backend/b10_workflow_graph_backend_design.gravity" :sh-target-workflow
+  "language/compiler/src/gravity/backend/b11_query_relational_backend_design.gravity" :sh-target-query
+  "language/compiler/src/gravity/backend/b12_mobile_backend_design.gravity" :sh-target-mobile
+  "language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity" :master-coordinator
+  "language/compiler/src/gravity/backend/b2_c_backend_design.gravity" :sh-target-c
+  "language/compiler/src/gravity/backend/b3_llvm_backend_design.gravity" :sh-target-llvm
+  "language/compiler/src/gravity/backend/b4_wasm_backend_design.gravity" :sh-target-wasm
+  "language/compiler/src/gravity/backend/b5_jvm_backend_design.gravity" :sh-target-jvm
+  "language/compiler/src/gravity/backend/b6_javascript_typescript_backend_design.gravity" :sh-target-js
+  "language/compiler/src/gravity/backend/b7_mlir_backend_design.gravity" :sh-target-mlir
+  "language/compiler/src/gravity/backend/b8_gpu_backend_design.gravity" :sh-target-gpu
+  "language/compiler/src/gravity/backend/b9_hdl_backend_design.gravity" :sh-target-hdl
   "bootstrap/gravity/src/gravity/backend/w5_b13_artifact_emitter.gravity" :master-coordinator
   "bootstrap/gravity/src/gravity/backend/w5_b14_backend_conformance_verifier.gravity" :master-coordinator
   "bootstrap/gravity/src/gravity/bootstrap/diagnostics.gravity" :master-coordinator
   "bootstrap/gravity/src/gravity/bootstrap/reader.gravity" :sh-reader
   "bootstrap/gravity/src/gravity/reader.gravity" :sh-reader
   "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity" :sh-syntax
-  "bootstrap/gravity/src/gravity/checked_core.gravity" :sh-core
-  "bootstrap/gravity/src/gravity/effects.gravity" :sh-effects
-  "bootstrap/gravity/src/gravity/runtime.gravity" :sh-runtime
+  "language/compiler/src/gravity/checked_core.gravity" :sh-core
+  "language/compiler/src/gravity/effects.gravity" :sh-effects
+  "language/runtime/src/gravity/runtime.gravity" :sh-runtime
   "bootstrap/gravity/src/gravity/sh07_b51/producer_a.gravity" :sh-core
   "bootstrap/gravity/src/gravity/sh07_b51/producer_b.gravity" :sh-core
   "bootstrap/gravity/src/gravity/sh07_b51/producer_c.gravity" :sh-core
@@ -252,34 +281,34 @@
   "bootstrap/gravity/src/gravity/sh07_b51/root6_a.gravity" :sh-core
   "bootstrap/gravity/src/gravity/sh07_b51/root6_b.gravity" :sh-core
   "bootstrap/gravity/src/gravity/sh07_b51/root8.gravity" :sh-core
-  "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity" :sh-safety
-  "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity" :sh-mir
-  "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity" :sh-domain-ir
-  "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity" :sh-optimization
-  "bootstrap/gravity/src/gravity/compiler/c14_literal_bool_contextual_lowering.gravity" :master-coordinator
-  "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity" :master-coordinator
+  "language/compiler/src/gravity/compiler/c10_safety_analysis_pipeline.gravity" :sh-safety
+  "language/compiler/src/gravity/compiler/c11_mir_specification.gravity" :sh-mir
+  "language/compiler/src/gravity/compiler/c12_domain_ir_architecture.gravity" :sh-domain-ir
+  "language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity" :sh-optimization
+  "language/compiler/src/gravity/compiler/c14_literal_bool_contextual_lowering.gravity" :master-coordinator
+  "language/compiler/src/gravity/compiler/c14_target_lowering_architecture.gravity" :master-coordinator
   "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity" :master-coordinator
-  "bootstrap/gravity/src/gravity/compiler/c16_incremental_compilation_design.gravity" :sh-incremental
-  "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity" :sh-pass-api
-  "bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity" :sh-verification
-  "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity" :sh-envelope
+  "language/compiler/src/gravity/compiler/c16_incremental_compilation_design.gravity" :sh-incremental
+  "language/compiler/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity" :sh-pass-api
+  "language/compiler/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity" :sh-verification
+  "language/compiler/src/gravity/compiler/authenticated_envelope.gravity" :sh-envelope
   "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity" :sh-syntax
-  "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity" :sh-macro
-  "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity" :sh-resolution
-  "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity" :master-coordinator
-  "bootstrap/gravity/src/gravity/compiler/c6_call_arity_legality.gravity" :sh-core
-  "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity" :sh-core
-  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity" :sh-types
-  "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity" :sh-effects
-  "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity" :sh-ownership
+  "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity" :sh-macro
+  "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity" :sh-resolution
+  "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity" :master-coordinator
+  "language/compiler/src/gravity/compiler/c6_call_arity_legality.gravity" :sh-core
+  "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity" :sh-core
+  "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity" :sh-types
+  "language/compiler/src/gravity/compiler/c8_effect_checker_engine.gravity" :sh-effects
+  "language/compiler/src/gravity/compiler/c9_ownership_checker_engine.gravity" :sh-ownership
   "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity" :sh-reader
-  "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity" :sh-core
+  "language/compiler/src/gravity/compiler/l2_core_language_semantics.gravity" :sh-core
   "bootstrap/gravity/src/gravity/compiler/w5_c16_incremental_executor.gravity" :master-coordinator
   "bootstrap/gravity/src/gravity/compiler/w5_c17_plugin_executor.gravity" :master-coordinator
   "bootstrap/gravity/src/gravity/compiler/w5_c18_pass_verifier.gravity" :master-coordinator
   "bootstrap/gravity/src/gravity/compiler/w5_compiler_pipeline_verifier.gravity" :master-coordinator
-  "bootstrap/gravity/src/gravity/macro.gravity" :sh-macro
-  "bootstrap/gravity/src/gravity/resolution.gravity" :sh-resolution
+  "language/compiler/src/gravity/macro.gravity" :sh-macro
+  "language/compiler/src/gravity/resolution.gravity" :sh-resolution
   "bootstrap/gravity/src/gravity/self_hosting/hermetic_package_build.gravity" :sh-package-build
   "bootstrap/gravity/src/gravity/self_hosting/meta_compiler_legality.gravity" :sh-meta-compiler
   "bootstrap/gravity/src/gravity/self_hosting/w5_compiler_identity_verifier.gravity" :master-coordinator
@@ -345,6 +374,7 @@
   "bootstrap/clojure/src/gravity/macro_run_storage.clj" :sh-macro
   "bootstrap/clojure/src/gravity/process_supervision.clj" :master-coordinator
   "bootstrap/clojure/src/gravity/cli/packaged_launcher.clj" :master-coordinator
+  "bootstrap/clojure/src/gravity/source_input.clj" :master-coordinator
   "bootstrap/clojure/src/gravity/module_analysis.clj" :sh-resolution
   "bootstrap/clojure/src/gravity/optimization_lowering.clj" :sh-optimization
   "bootstrap/clojure/src/gravity/pass_cache.clj" :sh-incremental
@@ -474,6 +504,16 @@
   {:namespace gravity.backend.c.pipeline-test :slice "SH-18" :owner :sh-target-c}
   "bootstrap/clojure/test/gravity/backend/llvm/pipeline_test.clj"
   {:namespace gravity.backend.llvm.pipeline-test :slice "SH-18" :owner :sh-target-llvm}
+  "bootstrap/clojure/test/gravity/backend/mlir/pipeline_test.clj"
+  {:namespace gravity.backend.mlir.pipeline-test :slice "SH-18" :owner :sh-target-mlir}
+  "bootstrap/clojure/test/gravity/backend/gpu/pipeline_test.clj"
+  {:namespace gravity.backend.gpu.pipeline-test :slice "SH-18" :owner :sh-target-gpu}
+  "bootstrap/clojure/test/gravity/backend/hdl/pipeline_test.clj"
+  {:namespace gravity.backend.hdl.pipeline-test :slice "SH-18" :owner :sh-target-hdl}
+  "bootstrap/clojure/test/gravity/backend/workflow/pipeline_test.clj"
+  {:namespace gravity.backend.workflow.pipeline-test :slice "SH-18" :owner :sh-target-workflow}
+  "bootstrap/clojure/test/gravity/backend/query/pipeline_test.clj"
+  {:namespace gravity.backend.query.pipeline-test :slice "SH-18" :owner :sh-target-query}
   "bootstrap/clojure/test/gravity/optimization/pipeline_test.clj"
   {:namespace gravity.optimization.pipeline-test :slice "SH-16" :owner :sh-optimization}
   "bootstrap/clojure/test/gravity/runtime/pipeline_test.clj"
@@ -715,5 +755,5 @@
    :eligible-after ["SH-01"]
    :paths [:new-native-fixtures :dedicated-native-tests]
    :forbidden-paths
-   ["bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity"
-    "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity"]}]}
+   ["language/compiler/src/gravity/compiler/c14_target_lowering_architecture.gravity"
+    "language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity"]}]}

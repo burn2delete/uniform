@@ -14,7 +14,8 @@
             [gravity.module-analysis.dependencies :as dependencies]
             [gravity.module-analysis.effects :as effects]
             [gravity.module-analysis.module :as module]
-            [gravity.module-analysis.policy :as policy]))
+            [gravity.module-analysis.policy :as policy]
+            [gravity.source-input :as source-input]))
 
 (def ^:private ^:dynamic *operations* {})
 (def ^:private ^:dynamic *active-operation-keys* #{})
@@ -143,7 +144,8 @@
   (policy/validate-operations! operations)
   (when-not (fn? thunk)
     (throw (ex-info "Gravity module-analysis thunk must be a function" {:thunk thunk})))
-  (binding [*operations* (merge *operations* operations)] (thunk)))
+  (binding [*operations* (merge *operations* operations)]
+    (source-input/with-module-analysis-interposition thunk)))
 
 (defn call-entrypoint-body
   "Enter one extracted function body with one-shot operation bypass.

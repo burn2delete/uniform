@@ -27,7 +27,7 @@
 (def ^:private root (delay (repository-root)))
 
 (def ^:private c11-source
-  "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity")
+  "language/compiler/src/gravity/compiler/c11_mir_specification.gravity")
 
 (def ^:private accepted-fixtures
   {".gravity"
@@ -97,7 +97,7 @@
   (first (:diagnostics report)))
 
 (def ^:private parameter-c6-source
-  "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity")
+  "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity")
 
 (def ^:private parameter-c6-plan (delay (compile-plan parameter-c6-source)))
 

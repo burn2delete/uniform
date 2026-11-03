@@ -13,6 +13,9 @@ New Python source, bytecode and executable shebangs are prohibited. See
 ## Start here
 
 - [Documentation set](docs/README.md) - phase map and source-of-truth rules.
+- [Project structure](docs/project-structure.md) - language and bootstrap-replacement ownership.
+- [Uniform language project](language/README.md) - permanent language/compiler scope.
+- [Bootstrap replacement project](bootstrap/README.md) - seed and trust-reduction scope.
 - [Development verification](docs/development-verification.md) - the focused
   edit-to-test workflow.
 - [Stage-owned namespaces](docs/bootstrap/stage-owned-namespaces.md) - current
@@ -29,6 +32,11 @@ The 240 documents in `docs/` remain the semantic authority. Phase README files
 provide navigation; they do not replace the documents they link. The current
 product release surface is described by [Phase 18](docs/phase-18-binary-distribution-and-seedless-release/README.md),
 which remains separate from the 240-document inventory.
+
+The checkout contains two coordinated delivery projects. Uniform language
+modules own semantics regardless of which host executes them. Bootstrap
+replacement owns the temporary Clojure seed, rebuild/equivalence work, and
+seed-retirement evidence. See [the project structure map](docs/project-structure.md).
 
 ## Run the hosted bootstrap
 
@@ -96,7 +104,7 @@ work-unit budgets, task quotas and budget-only refusals are retired; host heap,
 process, capture and platform restrictions remain independent safeguards.
 
 For SH-07, the semantic owner is
-`bootstrap/gravity/src/gravity/checked_core.gravity`; the Clojure adapter is a
+`language/compiler/src/gravity/checked_core.gravity`; the Clojure adapter is a
 transport boundary only. Follow the owning-path table and paired-source rules
 in [Development Verification](docs/development-verification.md).
 

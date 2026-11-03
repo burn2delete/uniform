@@ -1,0 +1,13 @@
+(ns math.rewrite-proof-engine-missing-finite-trace
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:proof
+           {:termination-report {:strategy :proof-engine-guided
+                                 :finite-trace []
+                                 :proof-ref :proof/no-rewrite
+                                 :deterministic? true
+                                 :unbounded? false}}}}))

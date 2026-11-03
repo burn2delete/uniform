@@ -46,7 +46,7 @@
     (is (= :accepted (:status raw)))
     (is (= :passed (:status upstream)))
     (is (= (sha256 (slurp (fixture condition "gravity"))) (:source-content-hash input)))
-    (is (= (sha256 (slurp (path "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity")))
+    (is (= (sha256 (slurp (path "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity")))
            (get-in c6-plan [:source :sha256])
            (get-in core [:semantic-provenance :binding-pins :builder-source-hash])))
     (is (= (sha256 (slurp (path "bootstrap/gravity/p15_s23/emitter.gravity"))) (:source-content-hash emitter)))

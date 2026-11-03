@@ -226,7 +226,7 @@
       (is (= {:module-id "sh07-checked-core"
               :module-owner :gravity
               :stage :checked-core
-              :source-path "bootstrap/gravity/src/gravity/checked_core.gravity"}
+              :source-path "language/compiler/src/gravity/checked_core.gravity"}
              (:artifact-request p)))
       (is (= #{:module-id :module-owner :stage :source-path}
              (set (keys (:artifact-request p))))))))
@@ -973,7 +973,7 @@
            (set (keys (:legacy-routes projection)))))
     (is (= {:module-id "sh07-checked-core" :owner :gravity}
            (get-in projection [:module-ownership
-                               "bootstrap/gravity/src/gravity/checked_core.gravity"])))
+                               "language/compiler/src/gravity/checked_core.gravity"])))
     (is (= (set (keys (:routes plan/catalog)))
            (set (keys (:dependency-closures projection)))))
     (is (= 21 (:route-count accounting)))
@@ -1177,15 +1177,15 @@
            (error-id #(plan/validate-manifest-projections! stale-accounting))))))
 
 (deftest manifest-paths-and-coverage-shapes-fail-closed
-  (doseq [unsafe ["C:bootstrap/gravity/src/gravity/checked_core.gravity"
-                  "bootstrap/gravity/src/gravity/checked_core.gravity\u0000"
-                  "bootstrap/gravity/src/gravity/checked_core.gravity\u0001"]]
+  (doseq [unsafe ["C:language/compiler/src/gravity/checked_core.gravity"
+                  "language/compiler/src/gravity/checked_core.gravity\u0000"
+                  "language/compiler/src/gravity/checked_core.gravity\u0001"]]
     (let [route-ids (keys (:routes plan/catalog))
           changed (reduce (fn [catalog route-id]
                             (update-in catalog [:routes route-id
                                                 :dependency-closure :paths]
                                        (fn [paths]
-                                         (mapv #(if (= "bootstrap/gravity/src/gravity/checked_core.gravity" %)
+                                         (mapv #(if (= "language/compiler/src/gravity/checked_core.gravity" %)
                                                   unsafe
                                                   %)
                                                paths))))

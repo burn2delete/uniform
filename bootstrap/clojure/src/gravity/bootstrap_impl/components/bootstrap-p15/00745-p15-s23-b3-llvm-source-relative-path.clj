@@ -5,7 +5,7 @@
 ;; ---------------------------------------------------------------------------
 
 (def p15-s23-b3-llvm-source-relative-path
-  "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity")
+  "language/compiler/src/gravity/backend/b3_llvm_backend_design.gravity")
 
 (def p15-s23-b3-llvm-builder-function
   'b3-build-bounded-llvm-x86_64-linux)

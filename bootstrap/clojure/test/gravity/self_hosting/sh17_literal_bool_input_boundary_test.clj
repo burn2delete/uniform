@@ -8,10 +8,10 @@
 (defn- path [relative]
   (str (.resolve @(existing 'gravity.self-hosting.sh12-branch-join-mir-test 'root) relative)))
 (def ^:private c14-path
-  "bootstrap/gravity/src/gravity/compiler/c14_literal_bool_contextual_lowering.gravity")
+  "language/compiler/src/gravity/compiler/c14_literal_bool_contextual_lowering.gravity")
 (def ^:private dependencies
-  ["bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
-   "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity"])
+  ["language/compiler/src/gravity/compiler/c11_mir_specification.gravity"
+   "language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity"])
 (def ^:private current-reader-invocation
   (let [reader (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
         syntax (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")]

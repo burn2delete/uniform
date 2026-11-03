@@ -1,6 +1,7 @@
 (ns ci.run-test
   (:require [clojure.java.io :as io]
             [clojure.edn :as edn]
+            [clojure.set :as set]
             [clojure.string :as str]
             [clojure.test :refer [deftest is run-tests]]))
 
@@ -320,7 +321,7 @@
                         {:old-mode "100644" :new-mode "100644" :status "M" :path path})]
       (is (ci/docs-only-change? "pull_request" base
                                 (mapv regular-doc ["README.md" "docs/guide.md"])))
-      (doseq [paths [["bootstrap/gravity/src/gravity/runtime.gravity"]
+      (doseq [paths [["language/runtime/src/gravity/runtime.gravity"]
                      [".github/workflows/ci.yml"]
                      [".github/README.md"]
                      ["tools/ci/README.md"]
@@ -416,6 +417,27 @@
     (is (str/includes? leaves "matrix.platform == 'darwin' && (needs.select.result != 'success'"))
     (is (str/includes? leaves "matrix.platform == 'unsupported' && (needs.select.result != 'success'"))))
 
+(defn source-deftest-names
+  [path]
+  (with-open [reader (java.io.PushbackReader. (io/reader path))]
+    (loop [names #{}]
+      (let [form (read {:eof ::eof} reader)]
+        (if (= ::eof form)
+          names
+          (recur (if (and (seq? form)
+                          (= 'deftest (first form))
+                          (symbol? (second form)))
+                   (conj names (str (second form)))
+                   names)))))))
+
+(defn option-value
+  [argv option]
+  (let [index (.indexOf ^java.util.List argv option)]
+    (when (neg? index)
+      (throw (ex-info "Expected command option is absent"
+                      {:option option :argv argv})))
+    (nth argv (inc index))))
+
 (deftest resolution-commands-are-complete-and-disjoint
   (let [modes ["resolution-pipeline" "resolution-unmetered"
                "resolution-invocation-selection"]
@@ -433,6 +455,36 @@
            (mapv namespace commands)))
     (is (= 3 (count (set (map #(nth % 2) commands)))))
     (is (every? #(= 1 (count (filter #{"--namespace"} (nth % 2)))) commands))))
+
+(deftest resolution-pipeline-selector-partition-covers-the-source-namespace
+  (let [pipeline-commands (ci/commands-for-selection
+                           "resolution-pipeline" {:kind :full})
+        [cohort final] pipeline-commands
+        cohort-argv (nth cohort 2)
+        final-argv (nth final 2)
+        source-vars (source-deftest-names
+                     "bootstrap/clojure/test/gravity/resolution/pipeline_test.clj")
+        namespace "gravity.resolution.pipeline-test"
+        qualified (fn [name] (str namespace "/" name))
+        cohort-pattern (re-pattern (option-value cohort-argv "--regex"))
+        final-name (option-value final-argv "--exact")
+        cohort-vars (set (filter #(or (re-find cohort-pattern %)
+                                      (re-find cohort-pattern (qualified %)))
+                                 source-vars))
+        final-vars (set (filter #(or (= final-name %)
+                                     (= final-name (qualified %)))
+                                source-vars))]
+    (is (= ["resolution-pipeline" "resolution-pipeline-fresh-replay"]
+           (mapv first pipeline-commands)))
+    (is (= [600 600] (mapv second pipeline-commands)))
+    (is (= 2 (count pipeline-commands)))
+    (is (= #{ci/resolution-pipeline-final-test} final-vars))
+    (is (seq cohort-vars))
+    (is (empty? (set/intersection cohort-vars final-vars)))
+    (is (= source-vars (set/union cohort-vars final-vars)))
+    (is (not (re-find cohort-pattern ci/resolution-pipeline-final-test)))
+    (is (re-find (re-pattern (option-value final-argv "--exact"))
+                 ci/resolution-pipeline-final-test))))
 
 (deftest resolution-workflow-serializes-only-its-own-pool
   (let [workflow (slurp ".github/workflows/ci.yml")
@@ -464,11 +516,17 @@
     (is (= expected-all
            (:modes (ci/stage-selection [(change "bootstrap/clojure/src/gravity/reader.clj")]))))
     (is (= expected-macro
-           (:modes (ci/stage-selection [(change "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity")]))))
+           (:modes (ci/stage-selection [(change "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity")]))))
     (is (= expected-resolution
            (:modes (ci/stage-selection [(change "bootstrap/clojure/test/gravity/resolution/pipeline_test.clj")]))))
     (is (= expected-checked
-           (:modes (ci/stage-selection [(change "bootstrap/gravity/src/gravity/checked_core.gravity")]))))
+           (:modes (ci/stage-selection [(change "language/compiler/src/gravity/checked_core.gravity")]))))
+    (is (= expected-checked
+           (:modes (ci/stage-selection
+                    [(change "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity")]))))
+    (is (= expected-checked
+           (:modes (ci/stage-selection
+                    [(change "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity")]))))
     (is (= expected-checked
            (:modes (ci/stage-selection
                     [(change "bootstrap/clojure/test/gravity/self_hosting/sh07_var_reference_test.clj")]))))
@@ -484,7 +542,7 @@
                     "resolution-invocation-selection"]]
         (is (not (ci/skip-for-stage-selection? mode resolution-selection)) mode))
       (let [checked-selection
-            (ci/stage-selection [(change "bootstrap/gravity/src/gravity/checked_core.gravity")])]
+            (ci/stage-selection [(change "language/compiler/src/gravity/checked_core.gravity")])]
         (doseq [mode ["resolution-pipeline" "resolution-unmetered"
                       "resolution-invocation-selection"]]
           (is (ci/skip-for-stage-selection? mode checked-selection) mode)))
@@ -507,6 +565,56 @@
                   "src/new-owner.gravity"
                   nil]]
       (is (= :full (:kind (ci/stage-selection [(change path)]))) (pr-str path)))))
+
+(deftest lint-tooling-selection-keeps-only-affected-ci-surfaces
+  (let [change (fn [path] {:old-mode "100644" :new-mode "100644"
+                           :status "M" :path path})
+        compiler-modes ["bootstrap" "macro" "resolution"
+                        "resolution-pipeline" "resolution-unmetered"
+                        "resolution-invocation-selection" "checked-core-runtime"]
+        selection (ci/stage-selection [(change "tools/ci/lint.clj")])
+        output (set (ci/selection-output-lines selection))]
+    (is (= :selected (:kind selection)))
+    (is (= :lint-tooling-only (:reason selection)))
+    (is (= [] (:stages selection)))
+    (is (= #{"static" "contracts"} (:modes selection)))
+    (doseq [mode ["static" "contracts"]]
+      (is (not (ci/skip-for-stage-selection? mode selection)) mode))
+    (doseq [mode compiler-modes]
+      (is (ci/skip-for-stage-selection? mode selection) mode))
+    (is (contains? output "static=true"))
+    (is (contains? output "contracts=true"))
+    (is (contains? output "darwin-unsupported=true"))
+    (doseq [mode ["bootstrap" "macro" "resolution" "checked-core-runtime"
+                  "leaves-portable" "leaves-darwin"]]
+      (is (contains? output (str mode "=false")) mode))
+    (is (contains? output "static-tools-required=true"))
+    (is (contains? output "selection-valid=true"))
+    (let [leaf (ci/leaf-selection-for-changes
+                "portable" [] [(change "tools/ci/lint_facade_test.clj")])]
+      (is (= :selected (:kind leaf)))
+      (is (= :lint-tooling-only (:reason leaf)))
+      (is (empty? (:entries leaf))))
+    (doseq [path ["tools/ci/lint_context.clj"
+                  "tools/ci/lint_facade_test.clj"
+                  "tools/ci/lint_macro_test.clj"
+                  "tools/ci/lint_macros.clj"
+                  "tools/ci/kondo/config.edn"
+                  "tools/ci/kondo/hooks/c2.clj"
+                  "tools/ci/kondo/hooks/module_analysis.clj"
+                  ".clj-kondo/config.edn"]]
+      (is (= :lint-tooling-only
+             (:reason (ci/stage-selection [(change path)])))
+          path))
+    (is (= :full (:kind (ci/stage-selection
+                         [(change "tools/ci/lint.clj")
+                          (change "language/compiler/src/gravity/checked_core.gravity")]))))
+    (doseq [path ["tools/ci/run.clj" "tools/ci/run_test.clj"
+                  "tools/ci/progress_test.clj" "tools/ci/snapshot.clj"
+                  "tools/ci/kondo/hooks/new_hook.clj" ".github/workflows/ci.yml"
+                  "deps.edn" "language/runtime/src/gravity/runtime.gravity"
+                  "src/new-owner.gravity"]]
+      (is (= :full (:kind (ci/stage-selection [(change path)]))) path))))
 
 (deftest stage-selection-fails-closed-for-deletes-renames-modes-and-types
   (let [regular (fn [path] {:old-mode "100644" :new-mode "100644"
@@ -541,6 +649,60 @@
     (is (not (some #{"snapshot-controls"} (command-ids selected))))
     (is (= 1 (count (filter #{"snapshot-controls"} (command-ids snapshot-selected)))))
     (is (= 1 (count (filter #{"snapshot-controls"} (command-ids snapshot-test-selected)))))))
+
+(deftest static-selection-runs-only-dependent-control-suites
+  (let [base (apply str (repeat 40 "a"))
+        command-ids (fn [selection]
+                      (mapv first (ci/commands-for-selection "static"
+                                                             (assoc selection :base base))))
+        checked-core {:kind :selected
+                      :reason :affected-stage
+                      :paths ["language/compiler/src/gravity/checked_core.gravity"]}
+        macro-source {:kind :selected
+                      :reason :lint-tooling-only
+                      :paths ["tools/ci/lint_macro_test.clj"]}
+        context-source {:kind :selected
+                        :reason :lint-tooling-only
+                        :paths ["tools/ci/lint_context.clj"]}
+        facade-source {:kind :selected
+                       :reason :lint-tooling-only
+                       :paths ["tools/ci/lint_facade_test.clj"]}
+        root-kondo-config {:kind :selected
+                           :reason :lint-tooling-only
+                           :paths [".clj-kondo/config.edn"]}
+        full {:kind :full :paths []}
+        failed {:kind :full :reason :path-discovery-failed :paths []}
+        malformed {:kind :selected :paths [nil]}
+        unknown {:kind :selected :paths ["src/new-owner.gravity"]}]
+    ;; A compiler source change has no dependency on the static control
+    ;; fixtures.  Whitespace remains unconditional, while changed-file lint
+    ;; remains available for Clojure/EDN inputs below.
+    (is (= ["whitespace"] (command-ids checked-core)))
+    (is (= ["whitespace" "clojure-lint" "clojure-format"
+            "macro-context-controls" "changed-clojure-lint"]
+           (command-ids macro-source)))
+    (is (= ["whitespace" "clojure-lint" "clojure-format"
+            "harness-controls" "macro-context-controls"
+            "facade-context-controls" "changed-clojure-lint"]
+           (command-ids context-source)))
+    (is (= ["whitespace" "clojure-lint" "clojure-format"
+            "facade-context-controls" "changed-clojure-lint"]
+           (command-ids facade-source)))
+    ;; tools/ci/kondo/config.edn imports the root Kondo configuration, so a
+    ;; root config change affects both pinned hook/context observations.
+    (is (= ["whitespace" "clojure-lint" "harness-controls"
+            "macro-context-controls" "facade-context-controls"
+            "changed-clojure-lint"]
+           (command-ids root-kondo-config)))
+    ;; Non-PR/broad selections and malformed or unknown selected data retain
+    ;; the complete control suite instead of guessing a narrower dependency.
+    (doseq [selection [full failed malformed unknown]]
+      (is (= ["whitespace" "workflow-lint" "clojure-lint" "clojure-format"
+              "harness-controls" "project-scope-runner-controls"
+              "progress-controls" "macro-context-controls"
+              "facade-context-controls"]
+             (command-ids selection))
+          (pr-str selection)))))
 
 (deftest path-discovery-failure-cannot-green-static
   (let [base (apply str (repeat 40 "a"))
@@ -890,6 +1052,76 @@
   (is (= :launch-error (:status (ci/execute! "negative-launch" 1
                                              ["/nonexistent/ci-command"])))))
 
+(deftest execute-output-keeps-success-quiet-and-failure-bounded
+  (let [success-output
+        (with-out-str
+          (let [result (ci/execute!
+                        "output-success-bounded" 15
+                        (ci/command "128m" "-M" "-e"
+                                    "(println \"success-payload\")"))]
+            (is (= :passed (:status result)))))
+        failure-output
+        (with-out-str
+          (let [result (ci/execute!
+                        "output-failure-bounded" 15
+                        (ci/command "128m" "-M" "-e"
+                                    "(do (println (apply str (repeat 10000 \\x))) (System/exit 7))"))]
+            (is (= :failed (:status result)))))
+        success-log (slurp "target/ci/output-success-bounded.log")
+        failure-log (slurp "target/ci/output-failure-bounded.log")]
+    (is (str/includes? success-output "CI command output-success-bounded finished :passed exit 0"))
+    (is (not (str/includes? success-output "success-payload")))
+    (is (< (count success-output) 1000))
+    (is (str/includes? failure-output "CI command output-failure-bounded finished :failed exit 7"))
+    (is (str/includes? failure-output "CI log preview:"))
+    (is (str/includes? failure-output "[log preview truncated"))
+    (is (< (count failure-output) 6000))
+    (is (str/includes? success-log "success-payload"))
+    (is (str/includes? failure-log "xxxxxxxx"))))
+
+(deftest log-preview-counts-multibyte-characters
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "uniform-ci-output-preview-"
+                            (make-array java.nio.file.attribute.FileAttribute 0)))
+        exact-file (io/file directory "exact.log")
+        extra-file (io/file directory "extra.log")
+        exact-content (apply str (repeat 4096 "\u00e9"))
+        extra-content (str exact-content "\u00e9")
+        preview-fn (ns-resolve 'ci.run 'log-preview)
+        marker "[log preview truncated"]
+    (try
+      (spit exact-file exact-content :encoding "UTF-8")
+      (spit extra-file extra-content :encoding "UTF-8")
+      (let [exact-preview (preview-fn exact-file)
+            extra-preview (preview-fn extra-file)]
+        (is (= 8192 (.length exact-file)))
+        (is (= exact-content exact-preview))
+        (is (str/starts-with? extra-preview exact-content))
+        (is (str/includes? extra-preview marker)))
+      (finally
+        (delete-fixture-tree! directory)))))
+
+(deftest log-preview-reads-short-chunks-without-unbounded-read
+  (let [preview-fn (ns-resolve 'ci.run 'read-log-preview)
+        source (apply str (repeat 10000 "x"))
+        source-length (count source)
+        offset (atom 0)
+        reader (proxy [java.io.Reader] []
+                 (read [buffer start _length]
+                   (let [position @offset]
+                     (if (= position source-length)
+                       -1
+                       (do
+                         (aset-char buffer start (.charAt source position))
+                         (swap! offset inc)
+                         1))))
+                 (close [] nil))
+        preview (preview-fn reader "short-read.log")]
+    (is (= 4097 @offset))
+    (is (str/starts-with? preview (apply str (repeat 4096 "x"))))
+    (is (str/includes? preview
+                       "[log preview truncated; full log: short-read.log]"))))
+
 (deftest timeout-is-a-failure
   (let [result (ci/execute! "negative-timeout" 1
                             (ci/command "128m" "-M" "-e" "(Thread/sleep 30000)"))]
@@ -1058,6 +1290,42 @@
                   (bytes (str "(ns " source-ns ")\n"
                               "(def missing ::unknown/key)\n")))))
     (is (nil? (find-ns source-ns)))))
+
+(deftest bootstrap-selection-runs-historical-input-controls-only-at-boundary
+  (let [command-ids (fn [selection]
+                      (mapv first (ci/commands-for-selection "bootstrap" selection)))
+        has-input-controls? (fn [selection]
+                              (some #{"bootstrap-input-controls"}
+                                    (command-ids selection)))
+        ordinary-reader {:kind :selected
+                         :paths ["bootstrap/clojure/src/gravity/reader.clj"]}
+        boundary-paths ["contracts/bootstrap-inputs.edn"
+                        "deps.edn"
+                        ".github/workflows/ci.yml"
+                        "tools/ci/run.clj"
+                        "tools/ci/run_test.clj"
+                        "bootstrap/clojure/src/gravity/bootstrap/rebuild/inputs.clj"
+                        "bootstrap/clojure/test/gravity/bootstrap/rebuild/inputs_test.clj"
+                        "bootstrap/clojure/fixtures/accepted/profile-accepted-meta.gravity"
+                        "bootstrap/clojure/fixtures/rejected/core-unknown-form.gravity"
+                        "bootstrap/clojure/src/gravity/digest.clj"
+                        "bootstrap/clojure/src/gravity/process_supervision.clj"
+                        "bootstrap/clojure/test/gravity/development_test_runner.clj"]
+        selected-boundary (fn [path] {:kind :selected :paths [path]})
+        full {:kind :full :reason :path-discovery-failed :paths []}
+        unknown {:kind :selected :paths ["src/new-owner.clj"]}
+        docs-only {:kind :docs-only :paths ["README.md"]}]
+    (let [ordinary-commands (command-ids ordinary-reader)]
+      (is (some #{"reader-regression"} ordinary-commands))
+      (is (some #{"syntax-regression"} ordinary-commands))
+      (is (not (has-input-controls? ordinary-reader))))
+    (doseq [path boundary-paths]
+      (is (ci/bootstrap-input-control-path? path) path)
+      (is (has-input-controls? (selected-boundary path)) path))
+    (is (has-input-controls? full))
+    (is (has-input-controls? unknown))
+    (is (has-input-controls? nil))
+    (is (not (has-input-controls? docs-only)))))
 
 (let [result (run-tests)]
   (System/exit (if (zero? (+ (:fail result) (:error result))) 0 1)))

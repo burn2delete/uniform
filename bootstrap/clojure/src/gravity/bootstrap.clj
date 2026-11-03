@@ -20,6 +20,11 @@
             [gravity.backend.wasm]
             [gravity.backend.c]
             [gravity.backend.llvm]
+            [gravity.backend.mlir]
+            [gravity.backend.gpu]
+            [gravity.backend.hdl]
+            [gravity.backend.workflow]
+            [gravity.backend.query]
             [gravity.types]
             [gravity.resolution]
             [gravity.macro-run-storage :as macro-run-storage]
@@ -85,7 +90,8 @@
             [gravity.source-span :as source-span]
             [gravity.source-unit :as source-unit]
             [gravity.syntax-object-stream :as syntax-object-stream]
-            [gravity.syntax-origin :as syntax-origin])
+            [gravity.syntax-origin :as syntax-origin]
+            [gravity.source-input :as source-input])
   (:import [clojure.lang LineNumberingPushbackReader]
            [java.io StringReader]))
 

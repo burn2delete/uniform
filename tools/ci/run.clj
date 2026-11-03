@@ -6,6 +6,7 @@
             [gravity.process-supervision :as process-supervision]))
 
 (def output "target/ci")
+(def ^:private log-preview-max-chars 4096)
 (def runtime-deps "{:deps {org.clojure/clojure {:mvn/version \"1.12.5\"}}}")
 (def semantic-modes #{"static" "contracts" "bootstrap" "macro" "resolution"
                       "resolution-pipeline" "resolution-unmetered"
@@ -15,6 +16,16 @@
 (def leaf-modes #{"leaves-portable" "leaves-darwin"})
 (def resolution-modes #{"resolution" "resolution-pipeline" "resolution-unmetered"
                         "resolution-invocation-selection"})
+
+;; Keep the existing full Resolution pipeline namespace in two fresh JVM
+;; processes.  The final verifier performs its own current-product replay and
+;; can consume the whole child watchdog; the other vars remain one ordinary
+;; cohort.  The runner's --regex/--exact selectors are the only partition
+;; mechanism so each child retains the normal namespace loading and fixtures.
+(def resolution-pipeline-final-test
+  "verifier-requires-fresh-replay-current-products-and-public-proof")
+(def resolution-pipeline-cohort-regex
+  "^(?!.*verifier-requires-fresh-replay-current-products-and-public-proof$).+")
 
 ;; These are the existing owner boundaries exposed by the CI matrix.  Keep
 ;; this table deliberately small: an unlisted path is cross-cutting and must
@@ -59,8 +70,8 @@
                 "bootstrap/clojure/test/gravity/self_hosting/sh04_"
                 "bootstrap/clojure/fixtures/self-hosting/sh-03"
                 "bootstrap/clojure/fixtures/self-hosting/sh-04"]
-   "macro" ["bootstrap/gravity/src/gravity/macro.gravity"
-            "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity"
+   "macro" ["language/compiler/src/gravity/macro.gravity"
+            "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity"
             "bootstrap/clojure/src/gravity/macro.clj"
             "bootstrap/clojure/src/gravity/macro_run_storage.clj"
             "bootstrap/clojure/src/gravity/macro_expansion"
@@ -72,8 +83,8 @@
             "bootstrap/clojure/test/gravity/self_hosting/sh05_"
             "bootstrap/clojure/test/gravity/self_hosting/macro_run_storage_test.clj"
             "bootstrap/clojure/fixtures/self-hosting/sh-05"]
-   "resolution" ["bootstrap/gravity/src/gravity/resolution.gravity"
-                 "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
+   "resolution" ["language/compiler/src/gravity/resolution.gravity"
+                 "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
                  "bootstrap/clojure/src/gravity/resolution.clj"
                  "bootstrap/clojure/src/gravity/c5_name_resolution"
                  "bootstrap/clojure/src/gravity/c5_name_resolution.clj"
@@ -84,10 +95,10 @@
                  "bootstrap/clojure/test/gravity/self_hosting/sh06_"
                  "bootstrap/clojure/test/gravity/self_hosting/resolution_"
                  "bootstrap/clojure/fixtures/self-hosting/sh-06"]
-   "checked-core-runtime" ["bootstrap/gravity/src/gravity/checked_core.gravity"
-                           "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
-                           "bootstrap/gravity/src/gravity/compiler/c6_call_arity_legality.gravity"
-                           "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
+   "checked-core-runtime" ["language/compiler/src/gravity/checked_core.gravity"
+                           "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+                           "language/compiler/src/gravity/compiler/c6_call_arity_legality.gravity"
+                           "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
                            "bootstrap/clojure/src/gravity/checked_core.clj"
                            "bootstrap/clojure/src/gravity/checked_core"
                            "bootstrap/clojure/src/gravity/c6_core_lowering"
@@ -160,6 +171,39 @@
                 (.addSuppressed ^Throwable original cleanup-error)))))
         (throw original)))))
 
+(defn- read-log-preview
+  "Read at most one character past the preview limit without reading the log in full."
+  [reader log-path]
+  (let [buffer (char-array (inc log-preview-max-chars))]
+    (loop [offset 0]
+      (if (= offset (alength buffer))
+        (str (String. buffer 0 log-preview-max-chars)
+             "\n[log preview truncated; full log: " log-path "]")
+        (let [count (.read reader buffer offset (- (alength buffer) offset))]
+          (cond
+            (= -1 count)
+            (when (pos? offset)
+              (String. buffer 0 offset))
+
+            (pos? count)
+            (recur (+ offset count))
+
+            :else
+            (let [character (.read reader)]
+              (if (= -1 character)
+                (when (pos? offset)
+                  (String. buffer 0 offset))
+                (do
+                  (aset-char buffer offset (char character))
+                  (recur (inc offset)))))))))))
+
+(defn- log-preview
+  "Read a bounded diagnostic preview while retaining the complete log on disk."
+  [^java.io.File log]
+  (when (.isFile log)
+    (with-open [reader (io/reader log)]
+      (read-log-preview reader (.getPath log)))))
+
 (defn execute!
   ([id seconds argv] (execute! id seconds argv nil))
   ([id seconds argv stdin-path]
@@ -174,7 +218,7 @@
                   :run-attempt (System/getenv "GITHUB_RUN_ATTEMPT")
                   :stdin-path stdin-path}]
      (spit receipt (pr-str initial))
-     (println "CI command" id argv)
+     (println "CI command" id "started")
      (let [result
            (try
              (let [process (process-supervision/start-process
@@ -188,7 +232,11 @@
                {:status :launch-error :exit-code 125}))
            result (merge initial result {:finished-ms (System/currentTimeMillis)})]
        (spit receipt (str (pr-str result) "\n"))
-       (print (slurp log))
+       (println "CI command" id "finished" (:status result)
+                "exit" (:exit-code result))
+       (when-not (= :passed (:status result))
+         (when-let [preview (log-preview log)]
+           (println "CI log preview:" preview)))
        (flush)
        result))))
 
@@ -264,6 +312,28 @@
            (contains? #{"deps.edn" "deps-lock.edn" "project.clj" "build.boot"
                         "bb.edn" "shadow-cljs.edn"} path))))
 
+;; These files are the reviewed static-lint implementation and its direct
+;; configuration/control surface.  They do not own a compiler stage, but a
+;; change here must still retain the static job so the affected controls and
+;; changed-file lint execute.  Keep this allowlist exact: selector, workflow,
+;; progress, snapshot and other tooling changes remain cross-cutting.
+(def lint-tooling-paths
+  #{".clj-kondo/config.edn"
+    "tools/ci/lint.clj"
+    "tools/ci/lint_context.clj"
+    "tools/ci/lint_facade_test.clj"
+    "tools/ci/lint_macro_test.clj"
+    "tools/ci/lint_macros.clj"
+    "tools/ci/kondo/config.edn"
+    "tools/ci/kondo/hooks/c2.clj"
+    "tools/ci/kondo/hooks/module_analysis.clj"})
+
+(defn lint-tooling-path? [path]
+  (contains? lint-tooling-paths path))
+
+(defn lint-tooling-only? [paths]
+  (and (seq paths) (every? lint-tooling-path? paths)))
+
 (defn docs-only-record? [{:keys [old-mode new-mode status path]}]
   (and (docs-only-path? path)
        (not (or (str/starts-with? path "contracts/")
@@ -290,6 +360,49 @@
   (some (fn [stage]
           (when (some #(prefix-path? path %) (get stage-path-prefixes stage)) stage))
         stage-order))
+
+;; The historical bootstrap-input check consumes an immutable source snapshot.
+;; Ordinary stage source edits cannot affect that snapshot, but the current
+;; boundary code, its declaration/fixtures, or the code that launches and
+;; authenticates it can.  Keep this list explicit; paths outside the known
+;; stage map fail closed through `bootstrap-input-controls-required?`.
+(def bootstrap-input-control-path-prefixes
+  ["contracts/bootstrap-inputs.edn"
+   "deps.edn"
+   ".github/"
+   "tools/ci/run.clj"
+   "tools/ci/run_test.clj"
+   "bootstrap/clojure/src/gravity/bootstrap/rebuild/"
+   "bootstrap/clojure/test/gravity/bootstrap/rebuild/"
+   "bootstrap/clojure/fixtures/accepted/profile-accepted-meta.gravity"
+   "bootstrap/clojure/fixtures/rejected/core-unknown-form.gravity"
+   "bootstrap/clojure/src/gravity/digest.clj"
+   "bootstrap/clojure/src/gravity/process_supervision.clj"
+   "bootstrap/clojure/test/gravity/development_test_runner.clj"])
+
+(defn bootstrap-input-control-path? [path]
+  (boolean (some #(prefix-path? path %) bootstrap-input-control-path-prefixes)))
+
+(defn bootstrap-input-controls-required? [selection]
+  (cond
+    ;; Direct command construction and non-PR runs must retain the complete
+    ;; bootstrap cohort, including scheduled/push/integration invocations.
+    (nil? selection) true
+    (= :full (:kind selection)) true
+    (= :docs-only (:kind selection)) false
+    (= :selected (:kind selection))
+    (let [paths (or (:paths selection)
+                    (:clojure-paths selection)
+                    (mapv :path (:changes selection)))]
+      ;; A selected result with no trustworthy paths is not evidence that the
+      ;; historical boundary is unaffected.  Unknown paths likewise retain
+      ;; the control instead of being silently skipped.
+      (or (empty? paths)
+          (some bootstrap-input-control-path? paths)
+          (some #(nil? (stage-owner %)) paths)))
+    ;; New selection kinds are conservative until their path contract is
+    ;; explicitly understood.
+    :else true))
 
 (defn stage-closure [stage]
   (let [index (.indexOf ^java.util.List stage-order stage)]
@@ -328,6 +441,13 @@
 
       (some contract-or-spec-path? paths)
       {:kind :full :reason :contract-or-spec-change :paths paths}
+
+      (lint-tooling-only? paths)
+      {:kind :selected
+       :reason :lint-tooling-only
+       :paths paths
+       :stages []
+       :modes always-pr-modes}
 
       (some cross-cutting-path? paths)
       {:kind :full :reason :cross-cutting-change :paths paths}
@@ -383,13 +503,15 @@
            :selection-error (str error)})))))
 
 (defn selection-output-lines [selection]
-  (let [modes (if (= :full (:kind selection))
+  (let [lint-tooling-only? (= :lint-tooling-only (:reason selection))
+        modes (if (= :full (:kind selection))
                 (conj semantic-modes "leaves-portable" "leaves-darwin"
                       "darwin-unsupported")
                 (cond-> (set (:modes selection))
-                  (= :docs-only (:kind selection))
+                  (or (= :docs-only (:kind selection)) lint-tooling-only?)
                   (into #{"static" "contracts" "darwin-unsupported"})
-                  (not= :docs-only (:kind selection))
+                  (and (not= :docs-only (:kind selection))
+                       (not lint-tooling-only?))
                   (conj "leaves-portable" "leaves-darwin"
                         "darwin-unsupported")))]
     (into (mapv #(str % "=" (boolean (contains? modes %)))
@@ -595,6 +717,9 @@
       (some contract-or-spec-path? paths)
       {:kind :full :reason :contract-or-spec-change :paths paths :entries platform-catalog}
 
+      (lint-tooling-only? paths)
+      {:kind :selected :reason :lint-tooling-only :paths paths :entries []}
+
       (some cross-cutting-path? paths)
       {:kind :full :reason :cross-cutting-change :paths paths :entries platform-catalog}
 
@@ -660,6 +785,86 @@
      (apply command "512m" "-M:leaf-test"
             (mapcat (fn [entry] ["--namespace" (str (:namespace entry))]) selected)))))
 
+(def static-control-dependencies
+  "Exact inputs of the static controls that can be narrowed in PR selection.
+
+  The selector's `:lint-tooling-only` reason is backed by the same reviewed
+  allowlist.  Stage-owned compiler paths are handled by `stage-owner`; every
+  other path remains a full selection, so context and macro inputs still run
+  their hook/facade controls rather than being guessed away."
+  {:clojure-lint #{".clj-kondo/config.edn"
+                   "tools/ci/lint.clj"
+                   "tools/ci/lint_context.clj"
+                   "tools/ci/lint_facade_test.clj"
+                   "tools/ci/lint_macro_test.clj"
+                   "tools/ci/lint_macros.clj"
+                   "tools/ci/kondo/hooks/c2.clj"
+                   "tools/ci/kondo/hooks/module_analysis.clj"}
+   :clojure-format #{"tools/ci/lint.clj"
+                     "tools/ci/lint_context.clj"
+                     "tools/ci/lint_facade_test.clj"
+                     "tools/ci/lint_macro_test.clj"
+                     "tools/ci/lint_macros.clj"
+                     "tools/ci/kondo/hooks/c2.clj"
+                     "tools/ci/kondo/hooks/module_analysis.clj"}
+   :harness-controls #{".clj-kondo/config.edn"
+                       "tools/ci/lint.clj"
+                       "tools/ci/lint_context.clj"
+                       "tools/ci/lint_macros.clj"}
+   :macro-context-controls #{"tools/ci/lint.clj"
+                             "tools/ci/lint_context.clj"
+                             "tools/ci/lint_macro_test.clj"
+                             "tools/ci/lint_macros.clj"
+                             ".clj-kondo/config.edn"
+                             "tools/ci/kondo/config.edn"
+                             "tools/ci/kondo/hooks/c2.clj"
+                             "tools/ci/kondo/hooks/module_analysis.clj"}
+   :facade-context-controls #{"tools/ci/lint.clj"
+                              "tools/ci/lint_context.clj"
+                              "tools/ci/lint_facade_test.clj"
+                              "tools/ci/lint_macros.clj"
+                              ".clj-kondo/config.edn"
+                              "tools/ci/kondo/config.edn"
+                              "tools/ci/kondo/hooks/c2.clj"
+                              "tools/ci/kondo/hooks/module_analysis.clj"}})
+
+(def static-control-selector-paths
+  "The exact lint-tooling paths accepted by the shared selector contract."
+  (into #{} (mapcat val static-control-dependencies)))
+
+(defn- selected-static-paths
+  "Return paths only for a complete, known selected map.
+
+  `nil`, full selections, docs-only selections, missing paths, malformed paths,
+  and unknown paths intentionally return nil.  The caller interprets nil as a
+  request for the complete static control suite."
+  [selection]
+  (when (and (map? selection)
+             (= :selected (:kind selection))
+             (not (:selection-error selection)))
+    (let [paths (if (contains? selection :paths)
+                  (:paths selection)
+                  (:clojure-paths selection))]
+      (when (and (sequential? paths)
+                 (seq paths)
+                 (every? string? paths)
+                 (or (= :lint-tooling-only (:reason selection))
+                     (every? #(some? (stage-owner %)) paths))
+                 (or (not= :lint-tooling-only (:reason selection))
+                     (every? #(contains? static-control-selector-paths %) paths)))
+        (vec paths)))))
+
+(defn- static-control-required?
+  "Whether one static command is needed for the supplied existing selection.
+
+  Only a known :selected map is narrowed.  Every other selection shape is
+  intentionally complete, preserving scheduled/push/broad runs and malformed
+  or unknown selector data."
+  [control selection]
+  (if-let [paths (selected-static-paths selection)]
+    (some #(contains? (get static-control-dependencies control #{}) %) paths)
+    true))
+
 (declare commands-for-selection)
 
 (defn commands [mode]
@@ -671,16 +876,34 @@
                    paths (if (contains? selection :clojure-paths)
                            (:clojure-paths selection)
                            (if (contains? selection :paths)
-                             (filterv #(or (str/ends-with? % ".clj") (str/ends-with? % ".edn"))
-                                      (:paths selection))
+                             (let [selected (:paths selection)]
+                               (if (sequential? selected)
+                                 (filterv #(and (string? %)
+                                                (or (str/ends-with? % ".clj")
+                                                    (str/ends-with? % ".edn")))
+                                          selected)
+                                 []))
                              (changed-clojure-paths base)))]
-               (concat [["whitespace" 30 ["git" "diff" "--check" base "HEAD"]]
-                        ["workflow-lint" 30 ["actionlint" "-color"]]
-                        ["clojure-lint" 60 ["clj-kondo" "--lint" "tools/ci"]]
-                        ["clojure-format" 60 ["cljfmt" "check" "tools/ci"]]
-                        ["harness-controls" 60 (command "256m" "-M" "tools/ci/run_test.clj")]
-                        ["macro-context-controls" 60 (command "256m" "-M" "tools/ci/lint_macro_test.clj")]
-                        ["facade-context-controls" 60 (command "256m" "-M" "tools/ci/lint_facade_test.clj")]]
+               (concat (cond-> [["whitespace" 30 ["git" "diff" "--check" base "HEAD"]]]
+                         (static-control-required? :workflow-lint selection)
+                         (conj ["workflow-lint" 30 ["actionlint" "-color"]])
+                         (static-control-required? :clojure-lint selection)
+                         (conj ["clojure-lint" 60 ["clj-kondo" "--lint" "tools/ci"]])
+                         (static-control-required? :clojure-format selection)
+                         (conj ["clojure-format" 60 ["cljfmt" "check" "tools/ci"]])
+                         (static-control-required? :harness-controls selection)
+                         (conj ["harness-controls" 60 (command "256m" "-M" "tools/ci/run_test.clj")])
+                         (static-control-required? :project-scope-runner-controls selection)
+                         (conj ["project-scope-runner-controls" 120
+                                (command "1g" "-M:dev-test"
+                                         "--namespace" "gravity.project-tests.test-scope-runner-test"
+                                         "--fail-fast")])
+                         (static-control-required? :progress-controls selection)
+                         (conj ["progress-controls" 60 (command "128m" "-M" "tools/ci/progress_test.clj")])
+                         (static-control-required? :macro-context-controls selection)
+                         (conj ["macro-context-controls" 60 (command "256m" "-M" "tools/ci/lint_macro_test.clj")])
+                         (static-control-required? :facade-context-controls selection)
+                         (conj ["facade-context-controls" 60 (command "256m" "-M" "tools/ci/lint_facade_test.clj")]))
                        (when (some #{"tools/ci/snapshot.clj" "tools/ci/snapshot_test.clj"} paths)
                          [["snapshot-controls" 120
                            (command "256m" "-M" "tools/ci/snapshot_test.clj")]])
@@ -688,49 +911,66 @@
                          [["changed-clojure-lint" 120
                            (apply command "256m" "-M" "tools/ci/lint.clj" base paths)]])))
     "contracts" (contract-commands)
-    "bootstrap" [["cold-bootstrap-load" 120
-                  (command "1g" "-M" "-e"
-                           "(assert (nil? (find-ns 'gravity.bootstrap))) (require 'gravity.bootstrap) (println :cold-bootstrap-loaded)")]
-                 ["reader-regression" 120
-                  (command "1g" "-M:dev-test"
-                           "--namespace" "gravity.reader.artifact-test"
-                           "--namespace" "gravity.reader-primitives-test"
-                           "--namespace" "gravity.c3-reader-expansions-test"
-                           "--namespace" "gravity.cli.launcher-test"
-                           "--namespace" "gravity.self-hosting.seed-readable-printer-test")]
-                 ["syntax-regression" 600
-                  (command "2g" "-M:dev-test"
-                           "--namespace" "gravity.syntax.pipeline-test"
-                           "--namespace" "gravity.bootstrap-compatibility.c3-test"
-                           "--namespace" "gravity.self-hosting.sh04-fresh-c2-construction-test"
-                           "--namespace" "gravity.self-hosting.sh04-form-index-test"
-                           "--namespace" "gravity.self-hosting.sh04-literal-index-test")]
-                 ["language-boundary" 90
-                  (command "512m" "-M:test" "--namespace"
-                           "gravity.self-hosting.sh01-language-boundary-test")]
-                 ["catalog-controls" 120
-                  (command "512m" "-M:test" "--namespace"
-                           "gravity.self-hosting.sh01-stage0-leaf-test-runner-test")]
-                 ["ownership-inventory" 90
-                  (command "512m" "-M:test" "--namespace"
-                           "gravity.self-hosting.sh01-ownership-test")]]
+    "bootstrap"
+    (cond-> [["cold-bootstrap-load" 120
+              (command "1g" "-M" "-e"
+                       "(assert (nil? (find-ns 'gravity.bootstrap))) (require 'gravity.bootstrap) (println :cold-bootstrap-loaded)")]
+             ["reader-regression" 120
+              (command "1g" "-M:dev-test"
+                       "--namespace" "gravity.reader.artifact-test"
+                       "--namespace" "gravity.reader-primitives-test"
+                       "--namespace" "gravity.c3-reader-expansions-test"
+                       "--namespace" "gravity.cli.launcher-test"
+                       "--namespace" "gravity.self-hosting.seed-readable-printer-test")]
+             ["syntax-regression" 600
+              (command "2g" "-M:dev-test"
+                       "--namespace" "gravity.syntax.pipeline-test"
+                       "--namespace" "gravity.bootstrap-compatibility.c3-test"
+                       "--namespace" "gravity.self-hosting.sh04-fresh-c2-construction-test"
+                       "--namespace" "gravity.self-hosting.sh04-form-index-test"
+                       "--namespace" "gravity.self-hosting.sh04-literal-index-test")]]
+      (bootstrap-input-controls-required? selection)
+      (conj ["bootstrap-input-controls" 600
+             (command "2g" "-M:dev-test"
+                      "--namespace" "gravity.bootstrap.rebuild.inputs-test")])
+      true
+      (into [["language-boundary" 90
+              (command "512m" "-M:test" "--namespace"
+                       "gravity.self-hosting.sh01-language-boundary-test")]
+             ["catalog-controls" 120
+              (command "512m" "-M:test" "--namespace"
+                       "gravity.self-hosting.sh01-stage0-leaf-test-runner-test")]
+             ["ownership-inventory" 90
+              (command "512m" "-M:test" "--namespace"
+                       "gravity.self-hosting.sh01-ownership-test")]]))
     "macro" [["macro-regression" 900
               (command "2g" "-M:dev-test"
+                       "--progress"
                        "--namespace" "gravity.macro.pipeline-test"
                        "--namespace" "gravity.bootstrap-compatibility.c4-test")]]
     "resolution" [["resolution-regression" 900
                    (command "2g" "-M:dev-test"
+                            "--progress"
                             "--namespace" "gravity.resolution.pipeline-test"
                             "--namespace" "gravity.self-hosting.sh06-unmetered-resolution-test"
                             "--namespace" "gravity.self-hosting.sh06-invocation-selection-test")]]
     "resolution-pipeline" [["resolution-pipeline" 600
                             (command "2g" "-M:dev-test"
-                                     "--namespace" "gravity.resolution.pipeline-test")]]
+                                     "--progress"
+                                     "--namespace" "gravity.resolution.pipeline-test"
+                                     "--regex" resolution-pipeline-cohort-regex)]
+                           ["resolution-pipeline-fresh-replay" 600
+                            (command "2g" "-M:dev-test"
+                                     "--progress"
+                                     "--namespace" "gravity.resolution.pipeline-test"
+                                     "--exact" resolution-pipeline-final-test)]]
     "resolution-unmetered" [["resolution-unmetered" 600
                              (command "2g" "-M:dev-test"
+                                      "--progress"
                                       "--namespace" "gravity.self-hosting.sh06-unmetered-resolution-test")]]
     "resolution-invocation-selection" [["resolution-invocation-selection" 600
                                         (command "2g" "-M:dev-test"
+                                                 "--progress"
                                                  "--namespace" "gravity.self-hosting.sh06-invocation-selection-test")]]
     "checked-core-runtime" [["checked-core-runtime-regression" 180
                              (command "2g" "-M:dev-test"

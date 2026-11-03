@@ -14,7 +14,7 @@
 (def observed-literal-cluster (atom nil))
 
 (deftest original-literal-cluster-preserves-character-occurrences-callees-and-loop-target
-  (let [owner (path "bootstrap/gravity/src/gravity/checked_core.gravity")
+  (let [owner (path "language/compiler/src/gravity/checked_core.gravity")
         owner-text (slurp owner :encoding "UTF-8")
         start (.indexOf ^String owner-text "(defn sh07-literal-kind? [kind]\n")
         end (.indexOf ^String owner-text "(defn sh07-exact-decimal-descriptor? " start)

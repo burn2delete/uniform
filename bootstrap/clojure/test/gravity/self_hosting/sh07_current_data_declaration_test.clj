@@ -27,7 +27,7 @@
   ;; A source-region join for a C01 DATA declaration. This authenticates
   ;; the fixture's own path; it does not authenticate the complete owning module.
   (let [path #(str (io/file (root) %))
-        owner (path "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity")
+        owner (path "language/compiler/src/gravity/compiler/authenticated_envelope.gravity")
         owner-text (slurp owner :encoding "UTF-8")
         start (.indexOf ^String owner-text "(def authenticated-envelope-contract\n")
         end (.indexOf ^String owner-text "\n\n(" start)

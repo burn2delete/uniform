@@ -131,7 +131,7 @@
 (def ^:private vector-pattern-closure
   {:module-ids ["sh07-checked-core"]
    :paths ["bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
-           "bootstrap/gravity/src/gravity/checked_core.gravity"
+           "language/compiler/src/gravity/checked_core.gravity"
            "bootstrap/clojure/test/gravity/self_hosting/sh07_vector_pattern_test.clj"
            "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"
            "bootstrap/clojure/fixtures/self-hosting/sh-07-b11"
@@ -144,11 +144,11 @@
 
 (def ^:private alias-reference-closure
   {:module-ids ["sh07-checked-core"]
-   :paths ["bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
-           "bootstrap/gravity/src/gravity/resolution.gravity"
+   :paths ["language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
+           "language/compiler/src/gravity/resolution.gravity"
            "bootstrap/clojure/fixtures/self-hosting/sh-06/modules/shared-core.gravity"
            "bootstrap/clojure/fixtures/self-hosting/sh-06/modules/shared-core.qst"
-           "bootstrap/gravity/src/gravity/checked_core.gravity"
+           "language/compiler/src/gravity/checked_core.gravity"
            "bootstrap/clojure/test/gravity/self_hosting/sh07_alias_qualified_reference_test.clj"
            "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"
            "bootstrap/clojure/fixtures/self-hosting/sh-07-b11"
@@ -162,8 +162,8 @@
 
 (def ^:private match-lowering-closure
   {:module-ids ["sh07-checked-core"]
-   :paths ["bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"
-           "bootstrap/gravity/src/gravity/checked_core.gravity"
+   :paths ["language/compiler/src/gravity/compiler/l2_core_language_semantics.gravity"
+           "language/compiler/src/gravity/checked_core.gravity"
            "bootstrap/clojure/test/gravity/self_hosting/sh07_match_lowering_test.clj"
            "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"
            "contracts/stage0-incremental-test-dependencies.edn"

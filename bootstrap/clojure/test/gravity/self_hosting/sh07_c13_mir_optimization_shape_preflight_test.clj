@@ -8,9 +8,9 @@
             [clojure.test :refer [deftest is testing]]))
 
 (def ^:private source-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity")
+  "language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity")
 (def ^:private c14-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c14_literal_bool_contextual_lowering.gravity")
+  "language/compiler/src/gravity/compiler/c14_literal_bool_contextual_lowering.gravity")
 
 ;; The moving source may grow, but this shape gate still admits one explicit
 ;; C13 public surface.  Keep this list synchronized with the source contract:
@@ -628,8 +628,9 @@
                             (= :as (second %))
                             (= 'c13 (nth % 2 nil)))
                  %)
-                 (rest requires))
+                (rest requires))
           consumer 'sh16-c13-build-literal-bool-translation-validation]
+      (is (= 'gravity.compiler.c13-mir-optimization-passes (second c13-ns)))
       (is (some #(= consumer %) (exports-vector c13-ns)))
       (is (some? c13-require))
       (is (contains-qualified-call?

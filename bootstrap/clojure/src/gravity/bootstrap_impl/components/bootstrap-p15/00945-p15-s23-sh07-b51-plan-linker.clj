@@ -177,7 +177,7 @@
      {:ordinal 1 :kind :l2-contract :module-ordinal nil
       :path "docs/phase-01-core-language/012-l2-core-language-semantics.md"}
      {:ordinal 2 :kind :checked-core :module-ordinal nil
-      :path "bootstrap/gravity/src/gravity/checked_core.gravity"}]
+      :path "language/compiler/src/gravity/checked_core.gravity"}]
     (mapv (fn [{:keys [module-ordinal logical-source-path]}]
             {:ordinal (+ 3 module-ordinal)
              :kind :module
@@ -189,7 +189,7 @@
      {:ordinal 11 :kind :emitter :module-ordinal nil
       :path "bootstrap/gravity/p15_s23/emitter.gravity"}
      {:ordinal 12 :kind :sh06-resolution :module-ordinal nil
-      :path "bootstrap/gravity/src/gravity/resolution.gravity"}])))
+      :path "language/compiler/src/gravity/resolution.gravity"}])))
 
 (def ^:private p15-s23-sh07-b51-source-event-plan
   (vec

@@ -23,7 +23,7 @@
 
 (def ^:private root (delay (repository-root)))
 (def ^:private c13-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity")
+  "language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
 (def ^:private accepted-fixture-relative-path

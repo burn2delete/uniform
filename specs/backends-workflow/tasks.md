@@ -142,6 +142,14 @@ maintainer; recommendation: one explicit reference API/device pair first with
 named additional target obligations. Integrates GPU domain/Runtime/Emit;
 accelerator availability does not gate the ordinary compiler release.
 
+<!-- concurrency-source-gpu:start -->
+
+Apply the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria) within this existing task. Status remains Open; historical finite reviews do not accept this whole-source/current implementation proposal.
+
+Complete GPU concurrency lowering criterion (Open): Consume actual GPU ownership/address-space/barrier facts and emit supported workgroup/subgroup barriers, queue/stream and launch dependencies, host-device fences, atomic operation/order/scope, transfer completion and event edges without weakening semantics. A target lacking the representation must reject or use an explicitly equivalent permitted runtime provider. Preserve buffer/lifetime/transfer/source/proof identities and reject missing barrier/fence, unsupported order/scope, dependency gaps and hidden transfers. Produce real selected target IR/artifacts and refusal diagnostics; declarations and one GPU demonstration do not accept full B8, physical device execution or other numeric/certificate obligations. Existing target/provider/C12 holds remain visible.
+<!-- concurrency-source-gpu:end -->
+
+
 - [ ] `backend-hdl` HDL
 
 Status: Open
@@ -157,6 +165,18 @@ is a fixed string, not general lowering. Decision owner: hardware emitter
 maintainer; recommendation: explicit SystemVerilog reference flow, subject to
 architecture adoption and tool availability. Hardware IR is prerequisite for
 integration; neither fabrication nor a completed OS is required for emitter work.
+
+<!-- concurrency-source-hdl:start -->
+
+Apply the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria) within this existing task. Status remains Open; historical finite reviews do not accept this whole-source/current implementation proposal.
+
+Preserved finite predicate conjunctions and historical source context:
+
+Source obligation `language/concurrency/emit-hardware-parallel-state`: Represent concurrent hardware behavior as explicit clock/reset/register/memory/timing state or signal-level domain IR rather than host threads. Accept: Lower declared concurrent hardware into explicit signal/state domain IR and HDL artifacts with clocks, resets, registers, memories, timing constraints and source maps. The L14 counter fixture retains enable/reset/state transitions and width-aware overflow-defined addition. Reject: Reject host-thread semantics, missing concurrent domain IR or hidden allocation/GC/reflection/host IO unless represented by permitted hardware constructs. Do not select a product ISA/device here. Required outputs: Circuit/state IR, clock/reset/register/memory/timing records, backend artifact and valid counter plus forbidden-service rejection fixtures. Dependencies consume versioned facts/receipts from expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs, types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts, effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering; they do not require blanket component completion. Implementation status remains Open.
+
+Complete hardware concurrency lowering criterion (Open): Translate actual hardware-profile parallel behavior into emitted signals/state IR and HDL with clocks, resets, registers, memories, widths, latency/timing and source/proof origins. Require declared clock-domain crossing synchronizers, async FIFOs, handshakes, Gray-code protocols or a governing hardware-policy waiver with its audit; a generic unsafe label does not waive hardware policy. Reject unrepresentable state/timing/crossing and hidden host scheduler/thread/runtime dependence. Preserve other B9 legality/proof/artifact requirements and current C12/target holds. Required evidence is actual accepted/refused lowering and emitted hardware artifacts; record validation does not demonstrate HDL, device execution or ISA adoption.
+<!-- concurrency-source-hdl:end -->
+
 
 - [ ] `backend-workflow` Workflow Backend
 

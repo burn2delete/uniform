@@ -4,67 +4,18 @@
 (def ^:private canonicalizer-version 1)
 (def ^:private cache-stage :c2-reader)
 (def ^:private maximum-encoded-bytes (* 32 1024 1024))
-(def ^:private maximum-entry-bytes (* 4 1024 1024))
 (def ^:private maximum-blob-bytes maximum-encoded-bytes)
-(def ^:private maximum-entry-count 4096)
-(def ^:private maximum-blob-count 4096)
-(def ^:private maximum-lock-count 4097)
-(def ^:private maximum-staging-count 1)
-(def ^:private maximum-store-bytes (* 256 1024 1024))
 (def ^:private sha256-pattern #"sha256:[0-9a-f]{64}")
 (def ^:private owned-directory-permissions
   (PosixFilePermissions/fromString "rwx------"))
-(def ^:private owned-file-permissions
-  (PosixFilePermissions/fromString "rw-------"))
 (def ^:private nofollow-links
   (into-array LinkOption [LinkOption/NOFOLLOW_LINKS]))
-(def ^:private create-new-write-options
-  (java.util.HashSet. [StandardOpenOption/CREATE_NEW
-                       StandardOpenOption/WRITE
-                       LinkOption/NOFOLLOW_LINKS]))
-(def ^:private file-attribute
-  (PosixFilePermissions/asFileAttribute owned-file-permissions))
-(def ^:private directory-attribute
-  (PosixFilePermissions/asFileAttribute owned-directory-permissions))
 
 (def ^:private key-request-fields
   #{:source-unit :source-snapshot :reader-policy :project-binding
     :compiler-binding :pass-binding :dependency-binding
     :build-effect-binding :capability-binding :facet-binding
     :profile-binding :target-binding :boundary-binding :path-provenance})
-
-;; JVM file locks reject overlapping acquisition from sibling threads instead
-;; of blocking.  This local guard makes the subsequent OS lock usable by both
-;; threads and independent processes without retry or lock bypass.
-(def ^:private in-process-key-locks (atom {}))
-
-(defn- acquire-in-process-key-lock!
-  [path]
-  (let [key (str path)
-        entry
-        (get
-         (swap! in-process-key-locks
-                (fn [locks]
-                  (if-let [existing (get locks key)]
-                    (assoc locks key (update existing :references inc))
-                    (assoc locks key {:lock (ReentrantLock.)
-                                      :references 1}))))
-         key)]
-    (.lock ^ReentrantLock (:lock entry))
-    [key (:lock entry)]))
-
-(defn- release-in-process-key-lock!
-  [key ^ReentrantLock lock]
-  (.unlock lock)
-  (swap! in-process-key-locks
-         (fn [locks]
-           (if-let [entry (get locks key)]
-             (if-not (identical? lock (:lock entry))
-               locks
-               (if (= 1 (:references entry))
-                 (dissoc locks key)
-                 (assoc locks key (update entry :references dec))))
-             locks))))
 
 (def ^:private cache-contract-record
   {:namespace 'gravity.c2-pass-cache
@@ -131,6 +82,23 @@
                                   :stage cache-stage
                                   :cache-schema-version cache-schema-version}
                                  data))))
+
+(defn- lookup-evidence
+  [key status reason extra]
+  (merge
+   {:artifact :gravity/c2-local-pass-cache-evidence
+    :schema-version cache-schema-version
+    :stage cache-stage
+    :semantic-key-id (:semantic-key-id key)
+    :storage-key-id (:storage-key-id key)
+    :status status
+    :reason reason
+    :local-development-only? true
+    :release-authority? false
+    :proof-authority? false
+    :equivalence-authority? false
+    :self-hosting-credit? false}
+   extra))
 
 (defn- with-contained-host-errors
   [diagnostic-id operation thunk]

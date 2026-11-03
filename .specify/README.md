@@ -4,9 +4,36 @@ Status: initial adoption merged in [PR371](https://github.com/burn2delete/unifor
 Semantic naming is the successor draft [PR379](https://github.com/burn2delete/uniform/pull/379).
 Deus owns review routing and integration decisions.
 
-This is a work-artifact layer for bounded changes. The 240 contracts under
+This is a work-artifact layer for implementation increments. The 240 contracts under
 [docs](../docs/README.md), their inventory, roadmap, AGENTS.md and the existing
 [development workflow](../docs/development-verification.md) remain canonical.
+
+## Project-wide implementation coverage
+
+Matt's 2026-11-01 request expands the initial bounded adoption to reconcile the
+complete project into an implementation-ready Spec Kit workflow. Account for
+all 240 canonical documents, the separate Phase 18 release extension, and the
+existing full-language, self-hosting and seed-retirement obligations. This
+supersedes the initial adoption's exclusion of broader workflow coverage; it
+does not authorize copying or replacing the normative language contracts.
+
+Continue existing requirement reconciliation, component task authorities,
+source reviews and SH/dependency projections. Preserve their stable identities,
+ownership, historical evidence and unresolved dispositions. A direct document
+link, migrated task ledger or passing structural check is not substantive
+requirement coverage. Each implementation outcome needs source-backed behavior,
+interfaces, accepted/rejected cases, completion evidence and an actionable route
+through `speckit-plan`, `speckit-tasks` and `speckit-implement`.
+
+Keep one editable implementation task authority per outcome. Dependency
+navigation must distinguish starting work, actual composition, acceptance and
+release, and must reach the wider required language surfaces and final seedless
+product. Preserve actual restrictions as visible blocked work. Reconciliation
+readiness, implementation completion, independent acceptance and integration
+remain separate; this authorization grants none of those results by itself.
+The [implementation-readiness report](implementation-readiness.md) records
+current source lineage, dependency navigation, the first preparation increment
+and remaining decisions without duplicating implementation task status.
 
 ## Private rename fast path
 
@@ -167,7 +194,10 @@ New work gets its own bounded directory. Later adoption decisions for Deus:
 which future slices use Spec Kit, collision-free feature naming across workers,
 historical versus living spec persistence, CLI/dependency upgrade policy, and
 whether external CLI maintenance remains useful. Broader conversion, issue
-integration and automated workflows are outside this increment.
+integration and automated workflows were outside the initial adoption increment.
+The 2026-11-01 project-wide coverage decision above supersedes the exclusion of
+broader implementation-workflow coverage. Issue integration and automated
+workflows remain outside that authorization.
 
 Proposed shared navigation text (through the process bridge only):
 `For optional bounded-change planning, see [Spec Kit adoption](../.specify/README.md).

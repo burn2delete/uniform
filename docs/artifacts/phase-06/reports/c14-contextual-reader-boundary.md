@@ -62,6 +62,22 @@ observes the current Reader bytes `246369`, yielding `C2-HASH`. This is stale
 pinned-source evidence, not malformed current source. No source hash is
 repinned and no default-route failure is relabeled as a pass.
 
+The current-main composition moves the C11, C13 and contextual C14 source
+inputs to their canonical `language/compiler` owner paths without replaying
+the deleted bootstrap source tree. The reader remains owned by its existing
+bootstrap path. The exact current candidate source inputs are:
+
+| Source | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `bootstrap/gravity/src/gravity/bootstrap/reader.gravity` | 246369 | `eec041127cb2785f92e7e2c79d14350d869a0ea8a0194ea3da55f75d52099205` |
+| `language/compiler/src/gravity/compiler/c11_mir_specification.gravity` | 563129 | `3dea275512a70ca63b9da6ed8d79e540ca4c776d6e05d21f1dc44e39e62b504b` |
+| `language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity` | 175365 | `7bf71720a67d665206ec55bcbe2be8ec1896d43097f7712f98664fbfa2ca9d597c75a` |
+| `language/compiler/src/gravity/compiler/c14_literal_bool_contextual_lowering.gravity` | 5406 | `99453ac8c4711892673b60dd7948ddbb4432dce511a218181968a85731138ba1` |
+
+These are a current source-location and tree-composition record, not a
+successful C5/C14 execution or renewed migration pin. The historical table
+above remains unchanged and retains its original source identities.
+
 ## Finite acceptance checklist
 
 - [ ] Complete the actual source producer and fresh original Core/MIR checks.

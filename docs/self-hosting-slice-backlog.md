@@ -7783,17 +7783,12 @@ checks passed 17 tests / 242 assertions at 512 MiB. LOC validation passed
 attempt is excluded from these passing totals; no unchanged source matrix was
 rerun for a label refresh.
 
-The historical attempt recorded by this backlog kept computed, numeric, Symbol
-and collection keys unsupported by that module subset, not newly illegal
-Gravity. A subsequent narrow temporary module-development repair
-(`5db6eb11f`) supports exact native Symbol keys only when authenticated C2
-source/reference keys retain equality and a complete permutation. It does not
-admit canonical typed Maps or change the surrounding source, tamper, or route
-checks. Quote inertness, nested-function and Set-call fences, local work/depth
-bounds, raw3/B51, runtime and public interfaces remain unchanged. Source
-composition is a separate affected check; neither focused records nor module
-routing establish checked effects, admission, authoritative migration, full
-SH-07, self-hosting, full C14, native, or release support.
+Computed, numeric, Symbol and collection keys remain unsupported by this
+module subset, not newly illegal Gravity. Quote inertness, nested-function
+and Set-call fences, local work/depth bounds, raw3/B51, runtime and public
+interfaces remain unchanged. Source composition is a separate affected check;
+neither focused records nor module routing establish checked effects,
+authoritative migration, full SH-07, self-hosting or release.
 
 ### Compiler-module Map-value calls: development increment
 

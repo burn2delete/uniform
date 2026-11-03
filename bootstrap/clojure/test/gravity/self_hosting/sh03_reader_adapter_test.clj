@@ -157,17 +157,15 @@
         (recur (rest remaining))
         false))))
 
-(deftest sh03-current-source-intake-metadata-cannot-grant-capacity
-  ;; Metadata validation is a pre-construction guard, not source acceptance.
-  ;; The capacity comes from the executed reader, never the source record.
-  (let [bounds (current-sh03-seed-execute 'sh03-bounds-record [])
-        maximum (:maximum-source-bytes bounds)
-        unit {:artifact :gravity/sh03-source-unit
+(deftest sh03-current-source-intake-metadata-preserves-contract
+  ;; Metadata still validates types, identities and physical provenance.  It
+  ;; does not impose a source-size allowance or grant source acceptance.
+  (let [unit {:artifact :gravity/sh03-source-unit
               :schema-version 1
               :project-root-id (str "sha256:" (apply str (repeat 64 "0")))
               :logical-source-id "src/intake-policy.gravity"
               :source-content-hash (str "sha256:" (apply str (repeat 64 "0")))
-              :source-byte-count maximum
+              :source-byte-count 0
               :encoding :utf-8
               :actual-path-provenance {:path "/declared/intake-policy.gravity"
                                        :extension ".gravity"
@@ -175,17 +173,16 @@
         valid? #(current-sh03-seed-execute 'sh03-source-unit-valid? [%])
         policy {:artifact :gravity/sh03-reader-policy :schema-version 1
                 :retain-trivia false :enabled-reader-tags []}]
-    (is (true? (valid? (assoc unit :source-byte-count (dec maximum)))))
     (is (true? (valid? unit)))
-    (is (false? (valid? (assoc unit :source-byte-count (inc maximum)))))
+    (is (true? (valid? (assoc unit :source-byte-count 1048577))))
     (doseq [count [nil -1 false "4194304" 1.5]]
       (is (false? (valid? (assoc unit :source-byte-count count)))))
-    (is (false? (valid? (assoc unit :bounds
-                              {:maximum-source-bytes (* 2 maximum)}))))
+    (is (false? (valid? (assoc unit :project-root-id "not-a-digest"))))
+    (is (false? (valid? (assoc-in unit [:actual-path-provenance :source-kind] :qst))))
+    (is (false? (valid? (assoc unit :extra-metadata true))))
     (is (false? (current-sh03-seed-execute
                  'sh03-reader-policy-valid?
-                 [(assoc policy :resource-policy
-                         {:maximum-source-bytes (* 2 maximum)})])))
+                 [(assoc policy :resource-policy {})])))
     (is (true? (current-sh03-seed-execute
                 'sh03-reader-policy-valid? [policy])))))
 
@@ -273,7 +270,7 @@
                 (println (pr-str {:hex-source-stage label :event :begin}))
                 (let [value (operation)]
                   (println (pr-str {:hex-source-stage label :event :complete})) value))
-        _ (require! (<= (.length (io/file reader-path)) 1048576) :reader-source-bytes)
+        _ (require! (.isFile (io/file reader-path)) :reader-source-file)
         reader-text (slurp reader-path :encoding "UTF-8")
         names '[sh03-lowercase-hex? sh03-sha256-id?]
         definitions (filterv #(and (seq? %) (= 'defn (first %))
@@ -284,8 +281,8 @@
                   (:profile :meta) (:target :jvm) (:effects #{}) (:capabilities #{})
                   (:safety :safe) (:exports [sh03-sha256-id?]))
         text (str (pr-str header) "\n" (apply str (map #(str (pr-str %) "\n") definitions)))
-        _ (require! (<= (alength (.getBytes ^String text java.nio.charset.StandardCharsets/UTF_8))
-                         2048) :two-kib-source)
+        _ (require! (pos? (alength (.getBytes ^String text java.nio.charset.StandardCharsets/UTF_8)))
+                    :nonempty-source)
         temporary (java.io.File/createTempFile "gravity-sh03-hex-source-" ".gravity")
         source-path (.getCanonicalPath temporary)
         core-path [:gravity-core-boundary :canonical-core-artifact]
@@ -315,9 +312,9 @@
             artifact (stage :gravity-core #(bootstrap/sh07-core-from-resolution-artifact resolved invocation))
             product (get-in artifact core-path)
             request (get-in artifact [:gravity-core-boundary :authenticated-core-request])
-            _ (require! (and (<= (count (:nodes product)) 256)
-                             (<= (count (:forms request)) 512)
-                             (<= (count (:calls product)) 64)) :bounded-products)
+            _ (require! (and (vector? (:nodes product))
+                             (vector? (:forms request))
+                             (vector? (:calls product))) :product-shapes)
             index (into {} (map (juxt :node-id identity)) (:nodes product))
             source-forms (into {} (map (juxt :form-id identity)) (:forms request))
             bindings (into {} (map (juxt :binding-id identity)) (:binding-table request))
@@ -337,7 +334,7 @@
             hex-function (one (:function-records product) #(= 'sh03-lowercase-hex? (:definition-name %)))
             function-target (one (:recur-targets product)
                                  #(= (:function-core-node-id hex-function) (:owner-core-node-id %)))
-            report (stage :fresh-public-verification #(bootstrap/sh07-core-artifact-verification artifact))]
+            report (stage :fresh-public-verification #(bootstrap/sh07-core-artifact-verification artifact invocation))]
         (check (= :accepted (:status resolved) (:status expanded) (:status artifact)) :accepted-products)
         (check (= :passed (:status report)) :fresh-public-replay)
         (check (= source-path (get-in resolved [:provenance :source-path])
@@ -441,7 +438,7 @@
                                                       [:nodes :calls :call-edges :evaluation-order]))
               changed-product (get-in candidate core-path)
               rejected (stage :fresh-mutated-public-verification
-                              #(bootstrap/sh07-core-artifact-verification candidate))]
+                              #(bootstrap/sh07-core-artifact-verification candidate invocation))]
           (check (not= arguments swapped) :nonidentity-operand-carrier)
           (check (identical? request (get-in candidate [:gravity-core-boundary :authenticated-core-request]))
                  :unchanged-authenticated-source-request)
@@ -1414,21 +1411,6 @@
       (is (false?
            (sh03-facade-execute
             'l1-c2-reader-result-compatible? candidate)) candidate))))
-
-(deftest sh03-gravity-facade-product-count-bounds-are-executable
-  (let [within?
-        (fn [token-count form-count]
-          (sh03-facade-execute
-           'l1-c2-reader-product-counts-within-bounds?
-           [token-count form-count]))]
-    (is (true? (within? 65537 32769)))
-    (is (true? (within? 131072 65536)))
-    (is (true? (within? 524288 262144)))
-    (is (false? (within? 524289 262144)))
-    (is (false? (within? 524288 262145)))
-    (is (false? (within? -1 0)))
-    (is (false? (within? 0 -1)))
-    (is (false? (within? "524288" 262144)))))
 
 (deftest sh03-gravity-facade-package-boundary-fails-closed
   (let [accepted-path

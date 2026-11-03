@@ -10,8 +10,8 @@
 
 (def test-namespace "gravity.self-hosting.sh09-body-effect-test")
 (def test-path "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj")
-(def effects-path "bootstrap/gravity/src/gravity/effects.gravity")
-(def consumer-path "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity")
+(def effects-path "language/compiler/src/gravity/effects.gravity")
+(def consumer-path "language/compiler/src/gravity/compiler/c8_effect_checker_engine.gravity")
 (def selectors
   ["body-private-map-keys-authenticated-builder-composition"
    "body-module-vectors-have-no-cumulative-quota"
@@ -26,7 +26,7 @@
 
 (def resource-paths
   [effects-path test-path consumer-path
-   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+   "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity"
    "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
    "bootstrap/clojure/test/gravity/development_test_runner.clj"
    "bootstrap/clojure/src/gravity/bootstrap_impl/load_order.edn"

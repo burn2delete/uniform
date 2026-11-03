@@ -50,7 +50,7 @@
    "authenticated_mir_bridge.gravity"))
 
 (def ^:private c11-source
-  "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity")
+  "language/compiler/src/gravity/compiler/c11_mir_specification.gravity")
 
 (def ^:private bridge-plan
   (delay (compile-plan bridge-source)))

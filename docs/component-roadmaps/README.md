@@ -10,6 +10,13 @@ whole-repository audit.
 
 ## Purpose and authority
 
+The component portfolio is implemented across two coordinated delivery
+projects. Language components belong to the Uniform language project even when
+their current implementation is executed by the Clojure seed. Bootstrap and
+Release components own rebuild, equivalence, provenance, and seedless-release
+work. The [project structure map](../project-structure.md) records this
+relationship; component pages remain the sole detailed outcome and task owners.
+
 Organize real architectural components into finite, independently reviewable
 projects that compose into the existing overall roadmap. [Reader](reader.md)
 is the first fully worked example. Every component page owns its release
@@ -68,6 +75,7 @@ one project per file, numbered contract, test, or historical task.
 | Domains / `domains` | Registry of separately named domain artifact projects | [Domain outcomes](domains.md#release-outcome) |
 | Platform / `platform` | Separate full hardware/firmware/OS/device extension | [Platform outcome](platform.md#release-outcome) |
 | Release / `release` | Whole compiler rebuild, equivalence and seedless distribution | [Release outcome](release.md#release-outcome) |
+| Governance and Evolution / `evolution` | Subject-bound governance artifact producers and policy decisions | [Governance outcome](evolution.md#release-outcome) |
 
 Domains is a portfolio, not a new monolithic compiler pass; its named project
 outcomes must retain independent completion evidence. Platform product choices

@@ -176,7 +176,7 @@
 ;; ---------------------------------------------------------------------------
 
 (def p15-s23-c11-mir-source-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity")
+  "language/compiler/src/gravity/compiler/c11_mir_specification.gravity")
 
 (def p15-s23-c11-mir-builder-function
   'c11-build-target-independent-mir)

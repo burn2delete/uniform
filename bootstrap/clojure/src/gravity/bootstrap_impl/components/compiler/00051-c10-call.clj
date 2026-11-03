@@ -76,7 +76,8 @@
 
 (defn compiler-c10-safety-source-artifact
   [source-path source-text]
-  (c10-call c10/compiler-c10-safety-source-artifact source-path source-text))
+  (source-input/with-context
+   #(c10-call c10/compiler-c10-safety-source-artifact source-path source-text)))
 
 (defn compiler-c10-safety-file-artifact
   [path]
