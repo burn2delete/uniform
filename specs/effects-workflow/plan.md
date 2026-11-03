@@ -346,6 +346,12 @@ Use the [syntax producer and consumer order](../syntax-workflow/plan.md#syntax-p
 
 All task identities/statuses and historical review subjects remain unchanged. Actual selected products, independent acceptance and final release retain their own requirements; no held operation is enabled.
 
+## Complete namespace and resolution interface
+
+Use the [complete namespace and resolution source criteria](../resolve-workflow/plan.md#complete-namespace-and-resolution-source-criteria). Retain the unchanged C8 allowance/capability/order criterion; check actual inferred namespace effects against all applicable allowances and consume genuine imported effect facts. Resolve does not infer these effects.
+
+Task identities/statuses, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held execution or task transfer is authorized.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Effects task authority

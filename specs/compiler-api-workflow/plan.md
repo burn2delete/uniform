@@ -205,6 +205,12 @@ Use the [syntax producer and consumer order](../syntax-workflow/plan.md#syntax-p
 
 All task identities/statuses and historical review subjects remain unchanged. Actual selected products, independent acceptance and final release retain their own requirements; no held operation is enabled.
 
+## Complete namespace and resolution interface
+
+Use the [complete namespace and resolution source criteria](../resolve-workflow/plan.md#complete-namespace-and-resolution-source-criteria). Preserve actual namespace/binding/graph artifacts and verifier results across observable or fused passes, with real invalidation and consumers. Keep the recorded D1/C1/C5/C6 order ambiguity explicit and source-only start interfaces distinct from later semantic completion.
+
+Task identities/statuses, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held execution or task transfer is authorized.
+
 ## Historical workflow-transfer and source-composition plan
 
 # Implementation plan: Compiler API workflow migration

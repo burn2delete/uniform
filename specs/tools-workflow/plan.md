@@ -78,6 +78,12 @@ Use the [syntax producer and consumer order](../syntax-workflow/plan.md#syntax-p
 
 All task identities/statuses and historical review subjects remain unchanged. Actual selected products, independent acceptance and final release retain their own requirements; no held operation is enabled.
 
+## Complete namespace and resolution interface
+
+Use the [complete namespace and resolution source criteria](../resolve-workflow/plan.md#complete-namespace-and-resolution-source-criteria). Consume actual stable public/private-aware binding, alias and scope indexes, module documentation and invalidation. Debug inspection is not stable public import permission; documentation/formatting changes preserve semantic ids while physical origins remain accurate.
+
+Task identities/statuses, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held execution or task transfer is authorized.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Developer Tools workflow migration

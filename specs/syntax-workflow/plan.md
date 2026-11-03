@@ -201,6 +201,12 @@ Formatting consumes only selected unexpanded source preservation/verification/re
 
 Declared interfaces permit local development; actual selected composition needs real producer products. Preserve all source reservations, current C7/C12/paired/provider/plugin/probe/native/callback/device/replay/migration/private-store/signing/publication restrictions and the stopped handoff. No held operation, other-chat message, reviewer wake or aggregate publication occurs. Current independent source/interface review, global conjunctions, actual implementation and integration remain pending/unassessed. Reader contract coverage remains the first implementation increment.
 
+## Complete namespace and resolution interface
+
+Use the [complete namespace and resolution source criteria](../resolve-workflow/plan.md#complete-namespace-and-resolution-source-criteria). Carry structurally valid namespace context and actual producer-conditioned resolved bindings; semantic Resolve facts arrive after their owner computes them. Transformation invalidation must prevent stale binding reuse.
+
+Task identities/statuses, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held execution or task transfer is authorized.
+
 ## Historical task-authority-transfer plan
 
 # Plan: Syntax task authority and roadmap navigation

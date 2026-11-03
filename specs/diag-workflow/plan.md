@@ -138,6 +138,12 @@ Use the [syntax producer and consumer order](../syntax-workflow/plan.md#syntax-p
 
 All task identities/statuses and historical review subjects remain unchanged. Actual selected products, independent acceptance and final release retain their own requirements; no held operation is enabled.
 
+## Complete namespace and resolution interface
+
+Use the [complete namespace and resolution source criteria](../resolve-workflow/plan.md#complete-namespace-and-resolution-source-criteria). Consume actual L3/C5 refusals with symbol/syntax/source/namespace/profile/target, candidates, dependency edge and remediation. Preserve generated and producing origins; diagnostic catalog membership is not detection.
+
+Task identities/statuses, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held execution or task transfer is authorized.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Diagnostics task authority

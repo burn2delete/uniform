@@ -269,6 +269,12 @@ Use the [macro producer and consumer order](../expand-workflow/plan.md#macro-pro
 
 Task bodies/statuses and frozen review subjects stay unchanged. Declared interfaces permit local construction; actual composition, acceptance and release retain their separate required results. Current independent source/interface acceptance is pending and every actual restriction remains.
 
+## Complete namespace and resolution interface
+
+Use the [complete namespace and resolution source criteria](../resolve-workflow/plan.md#complete-namespace-and-resolution-source-criteria). Retain the unchanged L6 authority criterion; validate actual required capabilities against package/build/deployment grants independently of effect allowance. Naming a capability or publishing a module does not grant authority.
+
+Task identities/statuses, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held execution or task transfer is authorized.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Auth task authority

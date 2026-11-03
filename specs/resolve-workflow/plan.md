@@ -58,6 +58,47 @@ Use the [syntax producer and consumer order](../syntax-workflow/plan.md#syntax-p
 
 All task identities/statuses and historical review subjects remain unchanged. Actual selected products, independent acceptance and final release retain their own requirements; no held operation is enabled.
 
+## Complete namespace and resolution source criteria
+
+Direct review of the complete [L3 contract](../../docs/phase-01-core-language/013-l3-namespace-and-module-system-specification.md) and [C5 design](../../docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md) restores the five published Resolve-owner criteria from `11350110bc0c0456699a31151b321a7ddfaa6d7e` in their existing tasks. The earlier [PKG1 entrypoint predicate](../../docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md) returns to Resolve2 unchanged; that finite criterion does not adopt the whole package or [B13 emission contract](../../docs/phase-07-backend-architecture/110-b13-artifact-emission-specification.md). Two exact profile74 predicates return to the existing Legality profile task, preserving their qualified historical review. Current composition and full attached source-facet entailment remain pending; no historical review is renewed.
+
+| Existing criterion/task | Concrete source outcome |
+| --- | --- |
+| `resolve/current-evidence-and-remaining-work/resolve1-resolve-lexical-positions` / `binding` | Actual lexical and syntactic-position resolution with stable bindings and owning refusals. |
+| `resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries` / `imports` | Actual module/package/foreign imports, public API metadata and legal visibility. |
+| `resolve/current-evidence-and-remaining-work/resolve3-check-graph-legality` / `graph` | Actual namespace identity/clauses, initialization graph and explicit cross-profile edges. |
+| `resolve/current-evidence-and-remaining-work/resolve4-publish-stable-indexes` / `interface` | Complete definition entries and source-independent downstream module interfaces. |
+| `resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers` / `consumers` | All L3/C5 artifacts, diagnostics, invalidation and actual consumer conformance. |
+| `resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries` / `entrypoint` | Actual artifact-kind entrypoint resolution and PKG1003 refusal; existing finite prefix only. |
+| `legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks` / `profile-edge` | Existing profile74 producer/consumer boundary legality; Resolve records and consumes the actual verdict. |
+| `legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks` / `namespace-contract` | Existing profile74 namespace/profile/target validation, including the explicit bootstrap-seed exception. |
+| `auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime` / `authority` | Existing unchanged effect-allowance/grant separation, authority intersection and runtime enforcement interface. |
+| `effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering` / `effects` | Existing unchanged actual function/namespace/profile/build allowance and capability/order checks. |
+| `build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation` / `invalidation` | Existing unchanged semantic dependency invalidation with actual affected consumer artifacts. |
+| `evolution/change-review` / `compatibility` | Existing unchanged conditional namespace/module compatibility-change review. |
+
+### Binding positions, namespace contracts and genuine inputs
+
+Bind every executable or declarative reference in its actual syntax context. Quoted runtime data symbols are data, not executable references. Preserve L3's unqualified expression search and qualified-name bypass; do not flatten C5's context-sensitive list into one universal search. Macro positions resolve macros before expression vars; type/protocol positions use their own namespace; an intrinsic requires explicit syntax. Exercise nested lexical scope, parameters and nearest loop/function recur bindings, legal shadowing and illegal ambiguity with actual candidate identities and source/generated origins. Host-global lookup and synthetic imported bindings are rejected.
+
+A normal source file has one namespace. Implementation namespaces have one active profile; retain P1's explicit compiler bootstrap-seed exception in Legality, not a blanket ordinary-file exemption. Reusable profile sets require exclusions or variants rather than union powers. Profile-set declarations are semantic contracts, not retired accounting. Targets request artifact families and cannot legalize rejected profile behavior. Validate profile/profiles, target/targets, requires/imports, exports, effects, capabilities, safety and providers separately. Namespace identity retains package/version/profile/target, not just name. Public API includes exports and package-public declarations; debug/private provenance inspection is not stable import authority.
+
+Consume actual module artifacts, package manifests and explicit foreign records with version, profile, target, type, effects, capabilities, safety, ownership/build metadata and source links. Resolve emits real edges and consumes actual Legality profile and Effects/Auth results; it does not duplicate their checker or grant authority by naming a capability. Exercise pure core, safe facade, typed schema/artifact, FFI-like and generated-artifact boundaries, with all required metadata and rejected missing/forged/richer-source cases. Initialization cycles require an actual later checked protocol; an acyclic=true label or mere runtime availability is insufficient.
+
+### Complete artifacts, invalidation and source cases
+
+Publish entries for def, defn, defmacro, defschema, defprotocol and facet declarations with name, kind, visibility, source span, type, latent effects, required capabilities, profile restrictions, safety mode, artifact links and applicable stability/deprecation. Semantic binding ids remain stable under documentation/formatting changes; keep exact physical source/provenance separately. Do not delete required source spans to achieve stable identity. Emit real module interfaces before lowering; downstream package graphs derive from them without rereading source.
+
+Exercise all ten L3 artifact families and nine C5 products, all eight L3 and ten C5 diagnostics, their context/remediation and actual positive/negative subjects. Include all nine invalidation causes: namespace source, imports/exports, aliases, dependency versions, visibility, kind, profile/target, facets and expanded symbol positions. Show affected downstream rechecking and unaffected preservation. The unchanged Build predicate owns dependency reuse; Resolve supplies actual semantic keys and changes. Complete field projections or assigned passed/complete flags alone cannot establish semantic validation.
+
+Available P namespace and compiled macro bindings precede P invocation; final generated Q bindings/indexes follow expansion. Keep the existing D1/C1/C5/C6 representation-order decision explicit. Declared interfaces allow local construction; selected composition requires actual Syntax/Expand and module producers, followed by real Core/Types/Effects/Legality/Auth/Build/Tools consumers. Final owner-verification, release and seed-retirement receipts are not start prerequisites. Conditional namespace/module changes retain the existing Evolution compatibility criterion; unchanged-contract development gains no new review ceremony.
+
+### Evidence scope and current implementation inspection
+
+Selected static inspection finds actual hosted lexical/local/alias/core branches and namespace checks, alongside stage0 import placeholders, flattened compatibility scopes and artifact projections containing assigned complete/acyclic/passed values. The Gravity resolution module has real scope ancestry, candidate selection, visibility/cycle/target/capability refusals and module-premise consumption within its declared SH06 subset. Its compatibility facade disclaims authoritative credit. These are partial implementations, not proof of full L3/C5 behavior; general formatting-invariant identity and complete current composition remain unassessed.
+
+All five Resolve tasks and the existing shared tasks remain Open. Preserve the frozen owner-source-Core verification package unchanged; it does not close full namespace, visibility, graph or profile scope. Reuse the four shared Auth/Effects/Build/Evolution criteria verbatim. The two restored profile74 predicates retain only their frozen source-operation/role/dependency review; later clauses, whole-facet entailment, current composition and implementation acceptance remain pending. No compiler/native/provider/callback/device/probe/replay/migration/private-store/signing/publication execution, reviewer wake, chat message, merge or stopped-handoff retry is performed.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Resolve task authority

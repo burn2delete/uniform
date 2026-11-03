@@ -123,3 +123,8 @@ Task bodies/statuses and frozen review subjects stay unchanged. Declared interfa
 Use the [syntax producer and consumer order](../syntax-workflow/plan.md#syntax-producer-and-consumer-order) and existing selected-result table. Consume actual affected syntax/fact/schema/identity/diagnostic compatibility only at the existing conditional semantic-change boundary; unchanged-contract implementation gains no generic new review gate.
 
 All task identities/statuses and historical review subjects remain unchanged. Actual selected products, independent acceptance and final release retain their own requirements; no held operation is enabled.
+## Complete namespace and resolution interface
+
+Use the [complete namespace and resolution source criteria](../resolve-workflow/plan.md#complete-namespace-and-resolution-source-criteria). Retain the unchanged namespace/module compatibility-change criterion and conditional affected-consumer review. Restoring unchanged source criteria does not invent a new ordinary-development admission gate.
+
+Task identities/statuses, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held execution or task transfer is authorized.
