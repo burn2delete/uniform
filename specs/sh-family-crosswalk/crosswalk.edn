@@ -16622,7 +16622,7 @@
    :source-version-bridge
    "specs/sh-family-crosswalk/macro-runtime-source-version.edn"},
   :input-fingerprint
-  "f7c9b0a89913badae41ae7e46c809585a5ed63d3505fd73aca886a8264402f83"},
+  "8edbe4bc736ea749ed688d532c9379a4e1afd878819bf642cb672466ae3a9993"},
  :implementation-readiness-source-version
  {:macro-dependency-refinement
   {:canonical-sources
@@ -29612,7 +29612,7 @@
      :before-sha256
      "259e56b5a3ef7013c0cac28b89961938f79dc91634affb6189f6fa4492dbdbeb",
      :after-sha256
-     "04daacfe2166def2d7847332edebcd0f493c370f2128f041f56dd462d0ccaa20",
+     "32ceeb0dc7132335ce580c64e4f4c3e04a7941d1ec1bcec34440bb53b57916d3",
      :before-checked false,
      :after-checked false}
     {:id
@@ -29648,7 +29648,7 @@
      :before-sha256
      "12fdebcee716c2303459dace017bca2e65d3b5f63db760436c32a767dfced750",
      :after-sha256
-     "28ab8980935b8aba36e75bbe51d5cc68177d79d7c0dfe8e1b97ecd5b065601a0",
+     "a261f396233dd4898d6316aac44dde41a0ea86c9eae83159931563499a33478b",
      :before-checked false,
      :after-checked false}
     {:id
@@ -29736,7 +29736,7 @@
      :before-sha256
      "1039f707b4d8e9831a1dcde2c433a2612914a43ccebffbee9f8852385ac5825d",
      :after-sha256
-     "27d3a21a1a6b9f50ea103af0709b50514ae4dd50ee3dc19f178bc701903b698a",
+     "d1aa88a3f8faf1074f0a717c7ae8bf8fc41f193bdfdc7369a32b3f3a79058440",
      :before-checked false,
      :after-checked false}
     {:id
@@ -29772,7 +29772,7 @@
      :before-sha256
      "b25a1031ad5c7601756ad3a5b9bc27e638888ea52d7f03c087e0bd6a93cb0d53",
      :after-sha256
-     "c671e860153f83d6a9b07f647a8bb9d274281046566830691cdc37f777137b3b",
+     "3d42e0b2bf95a48af01baa6c346b4ecc26d402b3323a962f1d4615a3a94d46c1",
      :before-checked false,
      :after-checked false}
     {:id
@@ -29826,7 +29826,7 @@
      :before-sha256
      "0a3be335becc28785539c35483823d36fb0070db331069e6f75a50493f3dbf83",
      :after-sha256
-     "9538adce7dcf87e1c0bfbd1291834f58f7ebbebfa412686d032d622bf95c2c03",
+     "baa1f2a18ca707182eddd0e4d11a8ce9719e30872e82d0cf915137d121a490ca",
      :before-checked false,
      :after-checked false}
     {:id
@@ -29835,7 +29835,7 @@
      :before-sha256
      "f19d442e1fcbf7e4de928925aea79538b84f716f7151eeef300826ebd6f73270",
      :after-sha256
-     "e7ce579b1f7fcba9e3cbd88b0c9607be6ffda3caa975c497d9ffccad9d84d1e1",
+     "a7e45ffbc562875b701ee9adc2fabf023463fc348b4a2b561430893193dda572",
      :before-checked false,
      :after-checked false}
     {:id
@@ -29933,7 +29933,7 @@
      :before-sha256
      "0bca8126d43acf042bf255a7a28721d7767ef9b0515c23638a194585cec03b51",
      :after-sha256
-     "54911c8bf5bac92c8dcec5d822fb1e5e18a402d8bae2cf5d09f1721fd1d760c6",
+     "1885a1fe7d20eb57756b6e5066a6e44595bf6b582e82ba4fe41d0473862f0096",
      :before-checked false,
      :after-checked false}
     {:id
@@ -29942,7 +29942,7 @@
      :before-sha256
      "1872ebe2a5eda2592ba7d86bdd08c20da03a812a787e1044cffb32a1f8ddb50c",
      :after-sha256
-     "5ad37be66820d14c0b0c834b15c0251042c143d302f85e4acff8ccfcd732e108",
+     "2ffe1c4ce25c8b569927e1e5c6e10f4fc3a8f541f9752b3b84c015f73c898620",
      :before-checked false,
      :after-checked false}
     {:id
@@ -29996,7 +29996,7 @@
      :before-sha256
      "bea71cfcf6e99dac9285833ca027126fb34d835638f0771a4a5645959884132f",
      :after-sha256
-     "626368eca3918e3dda13ea67642ab1f89fa5cb6867f3ab7801fb8b6540f2e1f6",
+     "26d9c2be71ae2acf69616c5b74f20db44afde37c72fdb972120e71300371b78b",
      :before-checked false,
      :after-checked false}
     {:id "math",
@@ -30234,7 +30234,7 @@
      :before-sha256
      "ac70c2d8acf15c5049d0f079e7c5278ee492d543ee8f0092da6df093e1815ffb",
      :after-sha256
-     "d9de789ee854c980efc71283c255b6e3ca10c8799fc7eca619a115499608ea44",
+     "0ef85e70122a514080e250c13583f107489532ac4e95d347afdc96dbaa757afe",
      :before-checked false,
      :after-checked false}
     {:id
@@ -30243,7 +30243,7 @@
      :before-sha256
      "c6c621a740f7ce6400452641d1aa67b56f5c2216be7603f6c17ddd51ce3c7dd3",
      :after-sha256
-     "39f21cb746f0c0c96ea1a7927cf476a46588b4f581de09b879d19139c14776f8",
+     "a1f543250372846a657c21bf2cbb86a1808949e67df97a5dbcf8ff81917555e8",
      :before-checked false,
      :after-checked false}
     {:id
@@ -30261,7 +30261,7 @@
      :before-sha256
      "86bceb1d3186fd03c074849fc0fd1cd86c10ea6f81cf00e6c15377aefda92c9c",
      :after-sha256
-     "afb6e3e4435c3e94f69f6e1108fb5a8192c4becddf13b3161c9ad188b0aebc4c",
+     "7a97011f95d657afc2147cb4e37909080e6284775021f5144a2371b004ee8855",
      :before-checked false,
      :after-checked false}
     {:id "schema",
@@ -30341,7 +30341,7 @@
      :before-sha256
      "a794f77307bb1b6110061de5dcd5d5b7e88253cb96d0018ee512fce84c64c4b9",
      :after-sha256
-     "d12e1fb598f0e6490232740d3a998c18a0881606890e0cad2acd9f6a24c1a333",
+     "1959a5dd61da925d5a44d7e453437fce5b085280ba063f5599aad19df85b280b",
      :before-checked false,
      :after-checked false}
     {:id
@@ -30350,7 +30350,7 @@
      :before-sha256
      "b9b6f16ff0cbf9a5fe48c56a58bc6fc7775b03fda28151fb957e072bc9eca4e4",
      :after-sha256
-     "8fccd9a7400de5f2e0991496fdafcf209fddd1d3344cf0710efca7f698e95b29",
+     "11c77b2a90631429e405ccc09658765828019ae5994d202ceb52988721797926",
      :before-checked false,
      :after-checked false}
     {:id
@@ -30359,7 +30359,7 @@
      :before-sha256
      "7ef5bec73af724d2ed5123b19f03b5b29460ee0f4416a822ae4461143ca2446e",
      :after-sha256
-     "b14777948571fe6db5d1ca2612226d978e637d86bfd2064e532d146e9c82c151",
+     "cd11720aa31eb3aafb65976d68bb8adb487430ec2ef9c5d7fc87dd808d920a50",
      :before-checked false,
      :after-checked false}
     {:id
@@ -30368,7 +30368,7 @@
      :before-sha256
      "9bad0ab3716d6026386da2ff922e84481bf574459711bdbf71cd663b906879fa",
      :after-sha256
-     "0842488d37f3d797dcd7454abcd081d0cd7287bb8fe905b8f315d1f27644ae85",
+     "92443f2c4514107eb9da59a0a8540757e2c4d27530f8218fb10ce426839c605d",
      :before-checked false,
      :after-checked false}
     {:id
@@ -30393,7 +30393,7 @@
      :before-sha256
      "fe1758f8bff9b955628481877afa5e92dc998f4582977d511842a11bd20605ae",
      :after-sha256
-     "f7966a113f6c96fe05fe9c7cf867cbdae4e66249c30481c0515c738d2387db27",
+     "f139406f97f7f20f25b667aa281626d584a399f8d15be602f256de5212bc1172",
      :before-checked false,
      :after-checked false}],
    :added-ids
