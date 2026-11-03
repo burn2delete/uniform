@@ -3805,3 +3805,72 @@ conservation covers 88 changed files, 82 Markdown files, 3,423 local references,
 task/evidence contents after declared additions are removed. ASCII and whitespace
 checks pass. No compiler/provider/plugin/replay/native/release conformance,
 independent acceptance or integration follows from these traceability results.
+
+## Compile-time evaluation dependency continuation
+
+The [existing selected-result table](../docs/acceptance-dependencies.md#future-task-construction-and-composition)
+and [compile-time producer/consumer order](../specs/expand-workflow/plan.md#compile-time-evaluation-producer-and-consumer-order)
+now declare L12-selected detail for 33 consumers. Eleven existing parents gain
+routes, including all five previously missing Expand2/4/5, pipeline and plugin
+consumers, plus Syntax5, Resolve5, Core4, Lower2, Schema and diagnostic integration.
+Twenty-two existing routes gain selected detail. All 267 prior selected inputs
+and 69 unaffected route meanings remain; 242 additions yield 509 selected inputs
+and 1,076 total selected-result joins across 102 routes, 62 current parents and
+forty unchanged future records. These declarations do not prove full task or
+source/interface entailment.
+
+Sixteen existing plans explain 58 staged subjects. The coarse cycles now contain
+sixty and eight tasks. The larger preserves its 48 predecessors and adds eleven
+new parents plus the existing unchanged Core1 source-construction owner; the
+separate release/schema-projection cycle is unchanged. Core1 consumes real early
+expanded syntax, not Expand5's later whole generated-program comparison. Checked
+available P, early solved types and fixed target/ABI rules precede evaluation;
+computed values and Q syntax precede ordinary Q checking and final Q layout.
+Target layout is not S3 canonical representation. Real codecs precede actual
+encoded record consumption; full schema migration is no local-value start gate.
+
+Actual grants and installed gates precede actions. Pipeline provides versioned
+stage/key-input facts and integrates the sole Build cache owner. Build constructs/
+invalidates/revalidates entries; Expand consumes the actual hit/deny/miss result
+without repeating external work to authorize a hit. Real local records precede
+packaging, actual repeated typed-Core comparison and separately authorized
+archive/signing/publication. Owner cases precede independently executed suites.
+Actual build cycles remain illegal except the governing marked bootstrap fixed
+point; coarse task feedback is no execution permission. Existing architecture-
+order and L6/L12 environment decisions remain unresolved with their owners.
+
+The source subject is `1ce9a7ea8937a06d1fbf819582319779a7c39c0d`, continuing
+`5c30445ecdc8fb2a90c58742f3cebfdff0cdcf46`, with applying fingerprint
+`d3bfbf332dfa86f8d335540adbe4b657e161c6ba3f6fd4be6cdb36a383a5aef3`.
+Task-source input remains `6dfaf54be773f7eece444c2e73ac08ec4ae4368a`: 149 keys,
+25 authorities, original 61-identical/78-amended bodies, every task status and all
+forty future records are unchanged. The preceding L12 source regression now
+reads its complete recorded predecessor; its initial failure/profile correction
+history and all older review scopes stay frozen without renewal or consumption.
+Current independent acceptance, implementation, global source conjunctions and
+complete interface entailment remain pending or unassessed. All actual holds and
+the stopped handoff remain, no other chat is messaged and no aggregate or held
+compiler/provider/plugin/probe/native/replay/private/signing/publication action
+occurs. Reader contract coverage remains the first implementation increment.
+
+The next complete macro-source reconciliation includes L4, L16, C4 and SAFE12.
+Direct source review identifies L16's explicit permission for alternative-engine
+cache machinery. Reconcile that provider implementation boundary with the shared
+Build cache/key/reuse authority through the existing Expand provider, Auth
+selection and Build cache tasks; do not interpret the L12 shared-cache routing
+as a prohibition on L16 replacement or as whole-L16 acceptance. Reference versus
+alternative equivalence may be structural up to permitted alpha-renaming, while
+same-input hermetic reproduction retains its own byte-equality requirement.
+This source/interface qualification remains to be made actionable in the existing
+tasks, with the exact four-document predicates and required evidence.
+
+Dependency-subject validation passes: 62 crosswalk tests with 28,567 assertions,
+23 dependency tests with 3,711 assertions, both pinned projection checks,
+240-document/19-index structural validation, full-language roadmap structural
+validation and six language-boundary tests with eleven assertions. Navigation/
+conservation covers 88 changed files, 82 Markdown files, 3,442 local references,
+139 original routes, 48 historical spec/plan suffixes and all 48 original
+task/evidence contents after declared additions are removed. ASCII and whitespace
+checks pass. These are source/traceability checks, not actual compiler/provider/
+macro/plugin/native/replay/release conformance, independent acceptance or
+integration.

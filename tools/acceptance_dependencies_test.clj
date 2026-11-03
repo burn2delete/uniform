@@ -358,7 +358,7 @@
     (is (= 149 (count current)))
     (is (= 40 (:task-count review)))
     (is (= 40 (count (:declared-consumers review))))
-    (is (= 51 (count (:declared-parent-consumers review))))
+    (is (= 62 (count (:declared-parent-consumers review))))
     (is (= dependencies/selected-parent-consumers (set (:required-parent-consumers review))))
     (let [text (slurp dependencies/future-dependency-path)
           removed (clojure.string/replace text #"(?m)^\| `domain-ir-boundaries` \|.*\n" "")
@@ -383,7 +383,7 @@
           routes (filter #(c9 (:consumer %)) (:routes review))]
       (is (= 5 (count c9) (count routes)))
       (is (= c9 (set (get-in altered [:dependency-review :unresolved-consumers]))))
-      (is (= [11 18 22 23 39] (sort (map (comp count :composition-results) routes))))
+      (is (= [15 18 23 25 39] (sort (map (comp count :composition-results) routes))))
       (doseq [{:keys [consumer start-results composition-results]} routes]
         (is (empty? start-results))
         (doseq [producer composition-results]
@@ -412,7 +412,7 @@
     (is (empty? (:unresolved-consumers review)))
     (is (= :pending (:future-sh-and-full-language-joins review)))
     (is (= :unassessed (:implementation-acceptance review)))
-    (is (= [48 8] (mapv count (:declared-output-cycles review))))
+    (is (= [60 8] (mapv count (:declared-output-cycles review))))
     (is (every? (set (first (:declared-output-cycles review)))
                 ["auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
                  "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"

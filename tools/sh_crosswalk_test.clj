@@ -4088,11 +4088,13 @@
     (is (= r (get-in view [:implementation-readiness-source-version :authority-dependency-refinement])))))
 
 (deftest compile-time-source-preserves-values-phases-and-policy-without-fuel
-  (let [bridge sh-crosswalk/readiness-source-version r (:compile-time-refinement bridge)
+  (let [checkpoint (get-in sh-crosswalk/readiness-source-version [:compile-time-dependency-refinement :predecessor-readiness-successor])
+        bridge (if checkpoint (edn/read-string (sh-crosswalk/git-source (:commit checkpoint) (:path checkpoint))) sh-crosswalk/readiness-source-version) r (:compile-time-refinement bridge)
         previous (:predecessor-readiness-successor r)
         old-text (sh-crosswalk/git-source (:commit previous) (:path previous)) old (edn/read-string old-text)
         prior-text (sh-crosswalk/git-source (:commit previous) (:projection-path previous)) prior (edn/read-string prior-text)
-        view (sh-crosswalk/build)
+        view (if checkpoint (edn/read-string (sh-crosswalk/git-source (:commit checkpoint) (:projection-path checkpoint))) (sh-crosswalk/build))
+        read-text (if checkpoint #(sh-crosswalk/git-source (:commit checkpoint) %) slurp)
         rows (fn [v] (into {} (for [rs (vals (:task-authorities v)) row rs] [(:id row) row])))
         before (rows prior) after (rows view)
         raw-task (fn [v row] (acceptance-dependencies/source-raw (:source row) (:source-snapshots v)))
@@ -4102,14 +4104,14 @@
         census (edn/read-string census-text)
         original-facets (filterv #(= "L12" (:document-id %)) (:facets census))
         original-cases (filterv #(= "L12" (:document-id %)) (:occurrences census))
-        source (first (:canonical-sources r)) body (slurp (:path source))
+        source (first (:canonical-sources r)) body (read-text (:path source))
         facets (:source-facets r) cases (:occurrence-cases r) sections (:section-conjunctions r)
         criteria (:criteria r) finite (:finite-criteria r) criterion-keys (set (concat (map :key criteria) (map :key finite)))
         semantic? #(= :complete-source-predicate-conjunction (:role %))
         sections-valid? (fn [ss] (and (= (set (map :section-key (filter semantic? (vals cases)))) (set (keys ss)))
           (every? (fn [[k s]] (and (seq (:criterion-keys s)) (every? criterion-keys (:criterion-keys s))
             (= (set (:occurrence-ids s)) (set (for [[id c] cases :when (and (semantic? c) (= k (:section-key c)))] id))))) ss)))
-        witness-text (fn [w] (let [t (slurp (:path w))] (is (= t (sh-crosswalk/git-source (:source-commit w) (:path w))))
+        witness-text (fn [w] (let [t (read-text (:path w))] (is (= t (sh-crosswalk/git-source (:source-commit w) (:path w))))
                               (is (= (:sha256 w) (sh-inventory/sha256 t))) (span t (:source-span w))))]
     (is (= (:sha256 previous) (sh-inventory/sha256 old-text)))
     (is (= (:projection-sha256 previous) (sh-inventory/sha256 prior-text)))
@@ -4192,13 +4194,13 @@
       (is (= :preserved (:source-bytes d)))
       (is (= :project-work-call-token-fuel-accounting-removed (:current-policy d)))
       (is (= (:source-span d) (:source-span (first (filter #(= (:facet-id d) (:id %)) facets))))))
-    (doseq [record (concat (:task-sources r) (:plan-sources r) (:specification-sources r)) :let [p (:path record) after (:after record) before (:before record) text (slurp p)]]
+    (doseq [record (concat (:task-sources r) (:plan-sources r) (:specification-sources r)) :let [p (:path record) after (:after record) before (:before record) text (read-text p)]]
       (is (= (:sha256 after) (sh-inventory/sha256 text)))
       (is (= text (sh-crosswalk/git-source (:commit after) p)))
       (is (= (:sha256 before) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit before) p)))))
     (is (= [4 14 3 8] (mapv count [(:task-sources r) (:plan-sources r) (:specification-sources r) (get-in r [:implementation-source-inspection :files])])))
     (doseq [{:keys [path source-commit sha256]} (get-in r [:implementation-source-inspection :files])]
-      (is (= sha256 (sh-inventory/sha256 (slurp path)) (sh-inventory/sha256 (sh-crosswalk/git-source source-commit path)))))
+      (is (= sha256 (sh-inventory/sha256 (read-text path)) (sh-inventory/sha256 (sh-crosswalk/git-source source-commit path)))))
     (let [uncovered (fn [rows] (let [bytes (.getBytes body "UTF-8") covered (java.util.BitSet. (alength bytes))]
                                (doseq [f rows :let [s (:source-span f)]] (.set covered (int (:start-byte s)) (int (:end-byte s))))
                                (filterv #(and (> (bit-and 255 (aget bytes %)) 32) (not (.get covered %))) (range (alength bytes)))))
@@ -4209,6 +4211,391 @@
     (is (= :pending (:independent-current-review r)))
     (is (= :unassessed (:implementation-acceptance r) (:global-source-conjunctions r)))
     (is (= r (get-in view [:implementation-readiness-source-version :compile-time-refinement])))))
+
+(deftest compile-time-dependencies-preserve-P-Q-cache-and-phase-products
+  (let [bridge sh-crosswalk/readiness-source-version r (:compile-time-dependency-refinement bridge)
+        previous (:predecessor-readiness-successor r)
+        old-text (sh-crosswalk/git-source (:commit previous) (:path previous)) old (edn/read-string old-text)
+        prior-text (sh-crosswalk/git-source (:commit previous) (:projection-path previous)) prior (edn/read-string prior-text)
+        view (sh-crosswalk/build)
+        tasks (into {} (for [rs (vals (:task-authorities view)) row rs] [(:id row) row]))
+        ids (set (concat (keys tasks) (map :id (mapcat val (:future-task-authorities view)))))
+        result (acceptance-dependencies/future-task-view (:future-task-authorities view) tasks (:source-snapshots view) slurp (:required-parent-consumers r))
+        review (:dependency-review result) consumers (set (:consumer-task-ids r))
+        selected (filterv #(consumers (:consumer %)) (:routes review))
+        dep (:dependency-source r)
+        old-routes (acceptance-dependencies/future-dependency-routes (sh-crosswalk/git-source (:commit previous) (:path dep)) ids ids)
+        old-map (into {} (map (juxt :consumer identity) old-routes))
+        meaning #(select-keys % [:consumer :start-results :composition-results :selected-output-contract])
+        added {"release/remaining-tasks-and-evidence/execute-library-conformance-fixtures"
+ ["expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"
+  "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "schema"
+  "expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination"],
+ "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+ ["resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers"
+  "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"
+  "core/current-evidence-and-remaining-work/core4-verify-and-serialize"
+  "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+  "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
+  "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+  "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis"
+  "lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout"
+  "schema"
+  "plugins"],
+ "diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift"
+ ["diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema"
+  "diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order"
+  "diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts"
+  "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"
+  "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects"
+  "expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination"
+  "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"
+  "plugins"
+  "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"
+  "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+  "schema"],
+ "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+ ["resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers"
+  "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "plugins"
+  "expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination"
+  "diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift"],
+ "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+ ["expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"
+  "plugins"],
+ "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"
+ ["syntax/current-evidence-and-remaining-work/syntax5-integrate-consumers"
+  "resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers"
+  "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "plugins"
+  "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects"
+  "schema"],
+ "types/current-evidence-and-remaining-work/types5-integrate-typed-core"
+ ["types/current-evidence-and-remaining-work/types1-solve-core-constraints"
+  "types/current-evidence-and-remaining-work/types2-check-declared-abstractions"
+  "types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit"
+  "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts"
+  "resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers"
+  "core/current-evidence-and-remaining-work/core4-verify-and-serialize"
+  "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"
+  "lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout"],
+ "resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers"
+ ["resolve/current-evidence-and-remaining-work/resolve1-resolve-lexical-positions"
+  "resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries"
+  "resolve/current-evidence-and-remaining-work/resolve3-check-graph-legality"
+  "resolve/current-evidence-and-remaining-work/resolve4-publish-stable-indexes"
+  "syntax/current-evidence-and-remaining-work/syntax5-integrate-consumers"
+  "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"
+  "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"
+  "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution"
+  "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"],
+ "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"
+ ["expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"
+  "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+  "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects"],
+ "schema"
+ ["types/current-evidence-and-remaining-work/types5-integrate-typed-core"
+  "core/current-evidence-and-remaining-work/core4-verify-and-serialize"
+  "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"
+  "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+  "diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift"],
+ "release/remaining-tasks-and-evidence/execute-profile-compliance-fixtures"
+ ["expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"
+  "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "plugins"
+  "lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout"],
+ "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"
+ ["pipeline"
+  "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"
+  "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"
+  "plugins"
+  "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"
+  "expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination"
+  "core/current-evidence-and-remaining-work/core4-verify-and-serialize"
+  "diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift"],
+ "release/remaining-tasks-and-evidence/execute-agent-and-workflow-evaluations"
+ ["expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"
+  "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "plugins"
+  "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects"
+  "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix"],
+ "expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination"
+ ["build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"
+  "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"
+  "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects"
+  "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution"
+  "schema"],
+ "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"
+ ["expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"
+  "plugins"
+  "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"],
+ "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis"
+ ["expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"
+  "resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers"
+  "core/current-evidence-and-remaining-work/core4-verify-and-serialize"],
+ "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"
+ ["expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"
+  "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects"
+  "expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination"
+  "plugins"
+  "syntax/current-evidence-and-remaining-work/syntax5-integrate-consumers"
+  "resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers"
+  "types/current-evidence-and-remaining-work/types5-integrate-typed-core"
+  "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"
+  "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+  "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+  "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
+  "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+  "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses"
+  "core/current-evidence-and-remaining-work/core4-verify-and-serialize"
+  "schema"
+  "diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift"
+  "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"],
+ "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures"
+ ["expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"
+  "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"
+  "expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination"
+  "core/current-evidence-and-remaining-work/core4-verify-and-serialize"
+  "lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout"],
+ "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects"
+ ["resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers"
+  "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "plugins"
+  "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"],
+ "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records"
+ ["expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"
+  "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"
+  "plugins"
+  "expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination"
+  "pipeline"
+  "core/current-evidence-and-remaining-work/core4-verify-and-serialize"
+  "diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift"],
+ "release/remaining-tasks-and-evidence/execute-runtime-conformance-fixtures"
+ ["expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"
+  "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects"],
+ "pipeline"
+ ["syntax/current-evidence-and-remaining-work/syntax5-integrate-consumers"
+  "resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers"
+  "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"
+  "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"
+  "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects"
+  "plugins"
+  "types/current-evidence-and-remaining-work/types5-integrate-typed-core"
+  "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"
+  "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+  "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+  "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
+  "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+  "core/current-evidence-and-remaining-work/core4-verify-and-serialize"
+  "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses"
+  "lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout"
+  "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"
+  "expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination"
+  "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"
+  "diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift"],
+ "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"
+ ["expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"
+  "plugins"
+  "pipeline"
+  "expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination"
+  "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"
+  "core/current-evidence-and-remaining-work/core4-verify-and-serialize"
+  "lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout"],
+ "release/remaining-tasks-and-evidence/execute-safety-conformance-fixtures"
+ ["expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"
+  "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"
+  "plugins"
+  "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects"
+  "expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination"],
+ "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix"
+ ["expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"
+  "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"
+  "plugins"
+  "expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination"
+  "pipeline"
+  "core/current-evidence-and-remaining-work/core4-verify-and-serialize"
+  "lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout"
+  "schema"
+  "diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift"],
+ "syntax/current-evidence-and-remaining-work/syntax5-integrate-consumers"
+ ["syntax/current-evidence-and-remaining-work/syntax1-construct-canonical-syntax"
+  "syntax/current-evidence-and-remaining-work/syntax2-preserve-transformations"
+  "syntax/current-evidence-and-remaining-work/syntax3-invalidate-facts"
+  "syntax/current-evidence-and-remaining-work/syntax4-serialize-and-verify"
+  "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"
+  "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "plugins"
+  "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"
+  "resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers"
+  "schema"],
+ "release/remaining-tasks-and-evidence/execute-language-conformance-fixtures"
+ ["expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"
+  "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"
+  "expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination"
+  "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"
+  "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix"
+  "schema"],
+ "core/current-evidence-and-remaining-work/core4-verify-and-serialize"
+ ["core/current-evidence-and-remaining-work/core1-lower-core-forms"
+  "core/current-evidence-and-remaining-work/core2-preserve-binding-structure"
+  "core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss"
+  "resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers"
+  "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"
+  "schema"],
+ "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses"
+ ["expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"
+  "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"
+  "plugins"
+  "resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers"],
+ "lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout"
+ ["types/current-evidence-and-remaining-work/types5-integrate-typed-core"
+  "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution"
+  "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"
+  "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses"],
+ "plugins"
+ ["pipeline"
+  "expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"
+  "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects"
+  "types/current-evidence-and-remaining-work/types5-integrate-typed-core"
+  "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"
+  "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+  "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+  "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+  "core/current-evidence-and-remaining-work/core4-verify-and-serialize"
+  "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"
+  "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"
+  "schema"
+  "pass-evidence"
+  "diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift"],
+ "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+ ["expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+  "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"
+  "plugins"
+  "lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout"],
+ "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects"
+ ["resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers"
+  "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"
+  "plugins"
+  "pipeline"
+  "lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout"
+  "diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift"]}
+
+        expected (into {} (for [id consumers] [id (set (concat (:composition-results (old-map id)) (added id)))]))
+        complete? (fn [rows] (= expected (into {} (map (juxt :consumer (comp set :composition-results)) rows))))]
+    (is (= (:sha256 previous) (sh-inventory/sha256 old-text)))
+    (is (= (:projection-sha256 previous) (sh-inventory/sha256 prior-text)))
+    (is (= (:input-fingerprint previous) (:input-fingerprint old)))
+    (let [changed #{:input-fingerprint :applying-source-pins :additional-pinned-evidence-hashes :inspection-locators :source-files :compile-time-dependency-refinement}]
+      (is (= (apply dissoc old changed) (apply dissoc bridge changed))))
+    (is (= (:task-authorities prior) (:task-authorities view)))
+    (is (= (:future-task-authorities prior) (:future-task-authorities view)))
+    (is (= 149 (count tasks)))
+    (is (= 25 (count (:task-authorities view))))
+    (is (= 61 (get-in bridge [:task-comparisons :unchanged-body-count])))
+    (is (= 78 (count (get-in bridge [:task-comparisons :changed-bodies]))))
+    (is (= "6dfaf54be773f7eece444c2e73ac08ec4ae4368a" (:source-input-commit old) (:source-input-commit bridge)))
+    (is (= 32 (count (:source-files bridge))))
+    (is (= (remove #(= (:path dep) (:path %)) (:source-files old)) (remove #(= (:path dep) (:path %)) (:source-files bridge))))
+    (is (= [] (:changed-task-ids r) (:new-task-identities r)))
+    (is (= 33 (count consumers) (count selected)))
+    (is (= 11 (count (:new-consumer-task-ids r))))
+    (is (= (set (:new-consumer-task-ids r)) (clojure.set/difference consumers (set (keys old-map)))))
+    (is (= added (:added-composition-inputs r)))
+    (is (complete? selected))
+    (doseq [[id inputs] expected]
+      (is (not (complete? (remove #(= id (:consumer %)) selected))))
+      (doseq [input inputs]
+        (is (not (complete? (mapv #(if (= id (:consumer %)) (update % :composition-results (fn [xs] (vec (remove #{input} xs)))) %) selected))))))
+    (is (= 102 (count (:routes review))))
+    (is (= (:routes r) (mapv #(update % :source dissoc :raw) selected)))
+    (is (= 22 (count (:predecessor-selected-routes r))))
+    (is (= 267 (:preserved-prior-input-joins r) (reduce + (map (comp count :composition-results) (:predecessor-selected-routes r)))))
+    (is (= 509 (:selected-consumer-result-joins r) (reduce + (map (comp count :composition-results) selected))))
+    (is (= 242 (:new-selected-producer-result-joins r) (reduce + (map count (vals added)))))
+    (is (= 69 (:preserved-consumer-route-count r)))
+    (is (= (into {} (map (juxt :consumer meaning) (remove #(consumers (:consumer %)) old-routes)))
+           (into {} (map (juxt :consumer meaning) (remove #(consumers (:consumer %)) (:routes review))))))
+    (doseq [row selected :let [id (:consumer row) before (old-map id)]]
+      (is (empty? (:start-results row)))
+      (when before
+        (is (every? (set (:composition-results row)) (:composition-results before)))
+        (is (str/starts-with? (:selected-output-contract row) (:selected-output-contract before))))
+      (let [text (slurp (:path dep))
+            pattern (re-pattern (str "(?m)^\\| `" (java.util.regex.Pattern/quote id) "` \\|[^\\n]*\\n"))
+            missing (acceptance-dependencies/future-task-view (:future-task-authorities view) tasks (:source-snapshots view)
+                      #(if (= % (:path dep)) (str/replace text pattern "") (slurp %)) (:required-parent-consumers r))]
+        (is (= 1 (count (re-seq pattern text))))
+        (is (= [id] (get-in missing [:dependency-review :unresolved-consumers]))))
+      (doseq [input (:composition-results row)]
+        (is (some #(= [(str "task:" id "/implementation") (str "task:" input "/interface") :declared-producer-interface]
+                      [(:from %) (:to %) (:kind %)]) (:typed-edges result)))
+        (is (some #(= [(str "task:" id "/composition") (str "result:" id ":" input) :actual-selected-producer-result]
+                      [(:from %) (:to %) (:kind %)]) (:typed-edges result)))
+        (is (= :unassessed (get-in result [:nodes (str "result:" id ":" input) :state])))))
+    (is (= 1076 (:all-selected-result-joins r) (count (filter #(= :actual-selected-producer-result (:kind %)) (:typed-edges result)))))
+    (is (= 62 (count (:declared-parent-consumers r)) (count (:required-parent-consumers r)) (count (:declared-parent-consumers review))))
+    (is (= 40 (count (:declared-future-consumers r))))
+    (is (= [] (:unresolved-consumers r) (:unresolved-consumers review)))
+    (is (= [60 8] (mapv count (:coarse-producer-cycles r)) (mapv count (:declared-output-cycles review))))
+    (let [prior-cycles (get-in old [:authority-dependency-refinement :coarse-producer-cycles])
+          core1 "core/current-evidence-and-remaining-work/core1-lower-core-forms"
+          members (conj (set (:new-consumer-task-ids r)) core1)]
+      (is (= [48 8] (mapv count prior-cycles)))
+      (is (= prior-cycles (:predecessor-coarse-cycles r)))
+      (is (= members (set (:new-main-cycle-members r))))
+      (is (= (into (set (first prior-cycles)) members) (set (first (:coarse-producer-cycles r)))))
+      (is (= (second prior-cycles) (second (:coarse-producer-cycles r)))))
+    (is (= (:route (:unchanged-cycle-stage-context r)) (update (old-map "core/current-evidence-and-remaining-work/core1-lower-core-forms") :source dissoc :raw)))
+    (is (= 58 (count (:staged-result-subjects r)) (count (set (map :result (:staged-result-subjects r))))))
+    (is (= 14 (count (:subject-phases r))))
+    (let [inputs (into {} (map (juxt :consumer (comp set :composition-results)) (:routes review)))]
+      (doseq [stage (:staged-result-subjects r)]
+        (is (= (:result stage) (str "result:" (:consumer stage) ":" (:producer stage))))
+        (is (contains? (inputs (:consumer stage)) (:producer stage)))
+        (is (= (if (consumers (:consumer stage)) :selected-amended-route :preserved-unchanged-route-context) (:route-scope stage)))))
+    (is (= :checked-available-P-before-invocation-generated-Q-before-ordinary-Q-checks (:P-Q-boundary r)))
+    (is (= :early-fixed-target-rules-before-query-derived-Q-layout-after-real-values-no-canonical-layout-substitution (:target-boundary r)))
+    (is (= :Build-alone-constructs-invalidates-revalidates-Expand-consumes-Pipeline-integrates (:cache-ownership r)))
+    (is (= :real-evaluation-records-before-persistence-repeat-comparison-and-separately-authorized-archive-sign-publish (:record-order r)))
+    (is (= :coarse-task-feedback-not-actual-build-permission-PKG2-acyclic-or-governing-marked-bootstrap-fixed-point (:build-cycle-rule r)))
+    (is (= :existing-D1-C1-C5-C6-order-and-L6-L12-environment-wording-remain-pending (:source-decisions r)))
+    (is (= :all-finite-subjects-frozen-no-renewal-consumption-or-adoption (:review-conservation r)))
+    (is (= :declared-interfaces-no-whole-component-suite-registration-migration-signing-publication-start-gate (:ordinary-construction r)))
+    (is (= 16 (count (:plan-sources r))))
+    (doseq [record (concat [dep (:dependency-tool-source r)] (:plan-sources r))
+            :let [p (:path record) after (:after record) before (:before record) text (slurp p)]]
+      (is (= (:sha256 after) (sh-inventory/sha256 text)))
+      (is (= text (sh-crosswalk/git-source (:commit after) p)))
+      (is (= (:sha256 before) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit before) p)))))
+    (is (= 10 (count (:canonical-sources r))))
+    (doseq [{:keys [path source-commit sha256]} (:canonical-sources r)]
+      (is (= sha256 (sh-inventory/sha256 (slurp path)) (sh-inventory/sha256 (sh-crosswalk/git-source source-commit path)))))
+    (is (= :pending (:independent-current-review r)))
+    (is (= :unassessed (:implementation-acceptance r) (:global-source-conjunctions r)))
+    (is (= r (get-in view [:implementation-readiness-source-version :compile-time-dependency-refinement])))))
 
 (let [result (run-tests 'sh-crosswalk-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))
