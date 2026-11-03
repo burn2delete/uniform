@@ -339,6 +339,49 @@
           (when (some #(prefix-path? path %) (get stage-path-prefixes stage)) stage))
         stage-order))
 
+;; The historical bootstrap-input check consumes an immutable source snapshot.
+;; Ordinary stage source edits cannot affect that snapshot, but the current
+;; boundary code, its declaration/fixtures, or the code that launches and
+;; authenticates it can.  Keep this list explicit; paths outside the known
+;; stage map fail closed through `bootstrap-input-controls-required?`.
+(def bootstrap-input-control-path-prefixes
+  ["contracts/bootstrap-inputs.edn"
+   "deps.edn"
+   ".github/"
+   "tools/ci/run.clj"
+   "tools/ci/run_test.clj"
+   "bootstrap/clojure/src/gravity/bootstrap/rebuild/"
+   "bootstrap/clojure/test/gravity/bootstrap/rebuild/"
+   "bootstrap/clojure/fixtures/accepted/profile-accepted-meta.gravity"
+   "bootstrap/clojure/fixtures/rejected/core-unknown-form.gravity"
+   "bootstrap/clojure/src/gravity/digest.clj"
+   "bootstrap/clojure/src/gravity/process_supervision.clj"
+   "bootstrap/clojure/test/gravity/development_test_runner.clj"])
+
+(defn bootstrap-input-control-path? [path]
+  (boolean (some #(prefix-path? path %) bootstrap-input-control-path-prefixes)))
+
+(defn bootstrap-input-controls-required? [selection]
+  (cond
+    ;; Direct command construction and non-PR runs must retain the complete
+    ;; bootstrap cohort, including scheduled/push/integration invocations.
+    (nil? selection) true
+    (= :full (:kind selection)) true
+    (= :docs-only (:kind selection)) false
+    (= :selected (:kind selection))
+    (let [paths (or (:paths selection)
+                    (:clojure-paths selection)
+                    (mapv :path (:changes selection)))]
+      ;; A selected result with no trustworthy paths is not evidence that the
+      ;; historical boundary is unaffected.  Unknown paths likewise retain
+      ;; the control instead of being silently skipped.
+      (or (empty? paths)
+          (some bootstrap-input-control-path? paths)
+          (some #(nil? (stage-owner %)) paths)))
+    ;; New selection kinds are conservative until their path contract is
+    ;; explicitly understood.
+    :else true))
+
 (defn stage-closure [stage]
   (let [index (.indexOf ^java.util.List stage-order stage)]
     (if (neg? index)
@@ -741,35 +784,38 @@
                          [["changed-clojure-lint" 120
                            (apply command "256m" "-M" "tools/ci/lint.clj" base paths)]])))
     "contracts" (contract-commands)
-    "bootstrap" [["cold-bootstrap-load" 120
-                  (command "1g" "-M" "-e"
-                           "(assert (nil? (find-ns 'gravity.bootstrap))) (require 'gravity.bootstrap) (println :cold-bootstrap-loaded)")]
-                 ["reader-regression" 120
-                  (command "1g" "-M:dev-test"
-                           "--namespace" "gravity.reader.artifact-test"
-                           "--namespace" "gravity.reader-primitives-test"
-                           "--namespace" "gravity.c3-reader-expansions-test"
-                           "--namespace" "gravity.cli.launcher-test"
-                           "--namespace" "gravity.self-hosting.seed-readable-printer-test")]
-                 ["syntax-regression" 600
-                  (command "2g" "-M:dev-test"
-                           "--namespace" "gravity.syntax.pipeline-test"
-                           "--namespace" "gravity.bootstrap-compatibility.c3-test"
-                           "--namespace" "gravity.self-hosting.sh04-fresh-c2-construction-test"
-                           "--namespace" "gravity.self-hosting.sh04-form-index-test"
-                           "--namespace" "gravity.self-hosting.sh04-literal-index-test")]
-                 ["bootstrap-input-controls" 600
-                  (command "2g" "-M:dev-test"
-                           "--namespace" "gravity.bootstrap.rebuild.inputs-test")]
-                 ["language-boundary" 90
-                  (command "512m" "-M:test" "--namespace"
-                           "gravity.self-hosting.sh01-language-boundary-test")]
-                 ["catalog-controls" 120
-                  (command "512m" "-M:test" "--namespace"
-                           "gravity.self-hosting.sh01-stage0-leaf-test-runner-test")]
-                 ["ownership-inventory" 90
-                  (command "512m" "-M:test" "--namespace"
-                           "gravity.self-hosting.sh01-ownership-test")]]
+    "bootstrap"
+    (cond-> [["cold-bootstrap-load" 120
+              (command "1g" "-M" "-e"
+                       "(assert (nil? (find-ns 'gravity.bootstrap))) (require 'gravity.bootstrap) (println :cold-bootstrap-loaded)")]
+             ["reader-regression" 120
+              (command "1g" "-M:dev-test"
+                       "--namespace" "gravity.reader.artifact-test"
+                       "--namespace" "gravity.reader-primitives-test"
+                       "--namespace" "gravity.c3-reader-expansions-test"
+                       "--namespace" "gravity.cli.launcher-test"
+                       "--namespace" "gravity.self-hosting.seed-readable-printer-test")]
+             ["syntax-regression" 600
+              (command "2g" "-M:dev-test"
+                       "--namespace" "gravity.syntax.pipeline-test"
+                       "--namespace" "gravity.bootstrap-compatibility.c3-test"
+                       "--namespace" "gravity.self-hosting.sh04-fresh-c2-construction-test"
+                       "--namespace" "gravity.self-hosting.sh04-form-index-test"
+                       "--namespace" "gravity.self-hosting.sh04-literal-index-test")]]
+      (bootstrap-input-controls-required? selection)
+      (conj ["bootstrap-input-controls" 600
+             (command "2g" "-M:dev-test"
+                      "--namespace" "gravity.bootstrap.rebuild.inputs-test")])
+      true
+      (into [["language-boundary" 90
+              (command "512m" "-M:test" "--namespace"
+                       "gravity.self-hosting.sh01-language-boundary-test")]
+             ["catalog-controls" 120
+              (command "512m" "-M:test" "--namespace"
+                       "gravity.self-hosting.sh01-stage0-leaf-test-runner-test")]
+             ["ownership-inventory" 90
+              (command "512m" "-M:test" "--namespace"
+                       "gravity.self-hosting.sh01-ownership-test")]]))
     "macro" [["macro-regression" 900
               (command "2g" "-M:dev-test"
                        "--progress"
