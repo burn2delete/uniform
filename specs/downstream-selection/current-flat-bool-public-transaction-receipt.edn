@@ -145,7 +145,8 @@
    :tree "43bb78fb65da3a08b583c2b21abd345483b6eaeb"
    :parents ["530afd32e3f4dcc20208b5de39d9d4a267f2b868"
              "8ca58e6ddb330def0b7080dfe6313fa03bbd61e1"]
-   :merge-base "8ca58e6ddb330def0b7080dfe6313fa03bbd61e1"}
+   :composition-base "8ca58e6ddb330def0b7080dfe6313fa03bbd61e1"
+   :git-common-ancestor "0e2b37cd2eefbab2f02e5898b960f9bbc4100fef"}
   :owned-cohort
   {:original-path-count 35
    :accounted-current-equivalent-count 35
