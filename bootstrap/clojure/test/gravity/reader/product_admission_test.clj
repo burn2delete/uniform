@@ -83,7 +83,7 @@
 
 (deftest producer-boundary-remains-explicit
   (let [revision (source-definition
-                  "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity"
+                  "language/compiler/src/gravity/compiler/authenticated_envelope.gravity"
                   'ae-source-revision-valid?)
         raw-verifier (source-definition
                       "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"

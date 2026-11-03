@@ -6,7 +6,7 @@
 ;; Host invocation/arity controls only. Mocked reports below confer no artifact
 ;; acceptance or migration authority; real composition remains a separate test.
 (defn- private-var [name] (or (ns-resolve 'gravity.bootstrap name) (throw (ex-info "Missing SH06 seam" {:name name}))))
-(def ^:private source (.getCanonicalPath (io/file "bootstrap/gravity/src/gravity/resolution.gravity")))
+(def ^:private source (.getCanonicalPath (io/file "language/compiler/src/gravity/resolution.gravity")))
 (def ^:private invocation
   {:reader-source-path b/sh03-reader-source-relative-path
    :authenticated-envelope-options {:source :development-current}})

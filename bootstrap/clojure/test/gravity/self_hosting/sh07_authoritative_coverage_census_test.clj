@@ -133,7 +133,7 @@
     (is (not (contains? c6-expectation :request-counts)))
     (is (not (contains? c6-expectation :core-counts)))
     (is (= {:source-path
-            "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
+            "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
             :source-binding (:source-binding c6-expectation)}
            (get source-contracts "c6-core")))
     (is (= {:source-byte-count 210220
@@ -143,7 +143,7 @@
     (is (not (contains? c7-expectation :request-counts)))
     (is (not (contains? c7-expectation :core-counts)))
     (is (= {:source-path
-            "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+            "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity"
             :source-binding (:source-binding c7-expectation)}
            (get source-contracts "c7-types")))
     (is (= {:source-byte-count 82797
@@ -153,7 +153,7 @@
     (is (not (contains? c8-expectation :request-counts)))
     (is (not (contains? c8-expectation :core-counts)))
     (is (= {:source-path
-            "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"
+            "language/compiler/src/gravity/compiler/c8_effect_checker_engine.gravity"
             :source-binding (:source-binding c8-expectation)}
            (get source-contracts "c8-effects")))
     (is (= {:source-byte-count 111921
@@ -163,7 +163,7 @@
     (is (not (contains? c9-expectation :request-counts)))
     (is (not (contains? c9-expectation :core-counts)))
     (is (= {:source-path
-            "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"
+            "language/compiler/src/gravity/compiler/c9_ownership_checker_engine.gravity"
             :source-binding (:source-binding c9-expectation)}
            (get source-contracts "c9-ownership")))
     (is (= {:source-byte-count 199815
@@ -173,7 +173,7 @@
     (is (not (contains? c10-expectation :request-counts)))
     (is (not (contains? c10-expectation :core-counts)))
     (is (= {:source-path
-            "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"
+            "language/compiler/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"
             :source-binding (:source-binding c10-expectation)}
            (get source-contracts "c10-safety")))
     (is (= {:source-byte-count 330835
@@ -183,7 +183,7 @@
     (is (not (contains? c11-expectation :request-counts)))
     (is (not (contains? c11-expectation :core-counts)))
     (is (= {:source-path
-            "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
+            "language/compiler/src/gravity/compiler/c11_mir_specification.gravity"
             :source-binding (:source-binding c11-expectation)}
            (get source-contracts "c11-mir")))))
 

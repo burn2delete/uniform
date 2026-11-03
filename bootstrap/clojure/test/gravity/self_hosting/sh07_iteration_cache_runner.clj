@@ -29,7 +29,7 @@
     'gravity.self-hosting.sh07-c10-safety-source-coverage-test/sh07-b31-c10-replay-and-high-value-alterations-are-contained})
 
 (def ^:private c10-relative-source-path
-  "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity")
+  "language/compiler/src/gravity/compiler/c10_safety_analysis_pipeline.gravity")
 
 (declare sha256)
 

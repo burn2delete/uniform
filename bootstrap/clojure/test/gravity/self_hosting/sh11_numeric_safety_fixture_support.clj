@@ -35,7 +35,7 @@
   (str (.resolve @root relative)))
 
 (def ^:private c10-source-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity")
+  "language/compiler/src/gravity/compiler/c10_safety_analysis_pipeline.gravity")
 
 (def ^:private fixture-root
   "bootstrap/clojure/fixtures/self-hosting/sh-11")

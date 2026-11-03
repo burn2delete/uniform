@@ -100,7 +100,7 @@
 
 (def ^:private root (delay (repository-root)))
 (def ^:private c7-source-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity")
+  "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity")
 
 (defn path
   [relative]
@@ -1250,7 +1250,7 @@
     (assoc-in input [:core :nodes] (conj (mapv #(get (:nodes input) (:node-id %)) (get-in input [:core :nodes])) payload-node))))
 
 (def ^:private effects-source-relative-path
-  "bootstrap/gravity/src/gravity/effects.gravity")
+  "language/compiler/src/gravity/effects.gravity")
 
 (defn module-root-entry
   [bundle]
@@ -1293,7 +1293,7 @@
       :dependency-plans [dependency-plan]})))
 
 (def ^:private c8-source-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity")
+  "language/compiler/src/gravity/compiler/c8_effect_checker_engine.gravity")
 
 (def c8-plan
   (delay (compile-c8-module-bundle (path c8-source-relative-path))))

@@ -24,7 +24,7 @@
 
 (def ^:private engine
   (delay (compile-plan
-          "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity")))
+          "language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity")))
 
 (defn- fixture-path [family extension]
   (str "bootstrap/clojure/fixtures/self-hosting/sh-16/" family

@@ -14,7 +14,7 @@
    {acceptance/test-path
     (str "(ns " acceptance/test-namespace ")\n"
          "(deftest body-private-map-keys-authenticated-builder-composition\n"
-         "  (compile-c8-module-bundle (path \"bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity\"))\n"
+         "  (compile-c8-module-bundle (path \"language/compiler/src/gravity/compiler/c8_effect_checker_engine.gravity\"))\n"
          "  (sh09-build-authenticated-body-effect-result typed verification binding)\n"
          "  (sh09-verify-authenticated-body-effect-result typed verification binding actual))\n"
          "(deftest body-module-vectors-have-no-cumulative-quota (is true))\n"

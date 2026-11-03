@@ -226,6 +226,28 @@
         inventory (run "lint-base-inventory"
                        (into ["git" "ls-tree" "-rz" "--name-only" base "--"] paths) #{0})
         present (remove str/blank? (str/split (slurp inventory) #"\u0000"))
+        _ (doseq [path present]
+            (when-not (some #{path} paths)
+              (throw (ex-info "Unexpected baseline path" {:path path}))))
+        context-requested? (some context/context-path? paths)
+        current-plan (when context-requested? (context/selected-plan! context/local-bytes! paths))
+        context-paths (set (:paths current-plan))
+        _ (doseq [path paths :when (and context-requested?
+                                        (str/ends-with? path ".clj")
+                                        (str/starts-with? path (str context/source-root "gravity/bootstrap_impl/"))
+                                        (not= context/loader path))]
+            (when-not (contains? context-paths path)
+              (throw (ex-info "Changed Bootstrap fragment is absent from load manifest" {:path path}))))
+        base-plan (when current-plan
+                    (let [archive (io/file root "context.zip")
+                          inventory (run "lint-context-base-inventory"
+                                         ["git" "ls-tree" "-rz" base "--" context/source-root] #{0})]
+                      (run "lint-context-base-archive"
+                           ["git" "archive" "--format=zip" (str "--output=" archive)
+                            base "--" context/source-root] #{0})
+                      (context/archived-plan! archive inventory present)))
+        base-context-paths (set (filter (set present) (:paths base-plan)))
+        baseline-present (remove #(contains? base-context-paths %) present)
         copied (into {} (map-indexed
                          (fn [index path]
                            (when-not (some #{path} paths)
@@ -239,7 +261,7 @@
                              (io/make-parents target)
                              (Files/copy (.toPath source) (.toPath target)
                                          (make-array StandardCopyOption 0))
-                             [path (.getPath target)])) present))
+                             [path (.getPath target)])) baseline-present))
         lint-argv (fn [files]
                     (into ["clj-kondo" "--repro" "--cache" "false"
                            "--config-dir" macros/config-directory
@@ -277,23 +299,6 @@
                              (throw error))
                            (finally
                              (spit (io/file output "lint-macro-contract.edn") (str (pr-str @observations) "\n")))))
-        context-requested? (some context/context-path? paths)
-        current-plan (when context-requested? (context/selected-plan! context/local-bytes! paths))
-        context-paths (set (:paths current-plan))
-        _ (doseq [path paths :when (and context-requested?
-                                        (str/ends-with? path ".clj")
-                                        (str/starts-with? path (str context/source-root "gravity/bootstrap_impl/"))
-                                        (not= context/loader path))]
-            (when-not (contains? context-paths path)
-              (throw (ex-info "Changed Bootstrap fragment is absent from load manifest" {:path path}))))
-        base-plan (when current-plan
-                    (let [archive (io/file root "context.zip")
-                          inventory (run "lint-context-base-inventory"
-                                         ["git" "ls-tree" "-rz" base "--" context/source-root] #{0})]
-                      (run "lint-context-base-archive"
-                           ["git" "archive" "--format=zip" (str "--output=" archive)
-                            base "--" context/source-root] #{0})
-                      (context/archived-plan! archive inventory present)))
         contextual (fn [id plan selected]
                      (if-not plan []
                              (let [view (context/assemble! (io/file output id) plan)
@@ -314,7 +319,7 @@
         baseline (into (normal "lint-baseline" (vals (apply dissoc copied context-paths))
                                #(get (set/map-invert copied) % %))
                        (contextual "lint-context-baseline" base-plan
-                                   (if whole-context? (set (:paths base-plan)) (set (keys copied)))))
+                                   (if whole-context? (set (:paths base-plan)) base-context-paths)))
         current (into (normal "lint-current" (remove context-paths paths) identity)
                       (contextual "lint-context-current" current-plan
                                   (if whole-context? context-paths (set paths))))
@@ -358,7 +363,7 @@
                                              :current (vec (sort (if whole-context? context-paths
                                                                      (filter context-paths paths))))
                                              :base (vec (sort (if whole-context? (:paths base-plan)
-                                                                  (filter (set (:paths base-plan)) (keys copied)))))})}
+                                                                  base-context-paths)))})}
                       (classify (if config-unchanged? (:findings baseline-usage) []) (:findings current-usage) sources))]
     (spit (io/file output "changed-lint-report.edn") (str (pr-str report) "\n"))
     (println "Changed-file lint:" (count (:baseline-warnings report)) "unchanged baseline warnings;"

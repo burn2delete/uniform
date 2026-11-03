@@ -322,7 +322,7 @@
                         {:old-mode "100644" :new-mode "100644" :status "M" :path path})]
       (is (ci/docs-only-change? "pull_request" base
                                 (mapv regular-doc ["README.md" "docs/guide.md"])))
-      (doseq [paths [["bootstrap/gravity/src/gravity/runtime.gravity"]
+      (doseq [paths [["language/runtime/src/gravity/runtime.gravity"]
                      [".github/workflows/ci.yml"]
                      [".github/README.md"]
                      ["tools/ci/README.md"]
@@ -517,11 +517,17 @@
     (is (= expected-all
            (:modes (ci/stage-selection [(change "bootstrap/clojure/src/gravity/reader.clj")]))))
     (is (= expected-macro
-           (:modes (ci/stage-selection [(change "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity")]))))
+           (:modes (ci/stage-selection [(change "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity")]))))
     (is (= expected-resolution
            (:modes (ci/stage-selection [(change "bootstrap/clojure/test/gravity/resolution/pipeline_test.clj")]))))
     (is (= expected-checked
            (:modes (ci/stage-selection [(change "language/compiler/src/gravity/checked_core.gravity")]))))
+    (is (= expected-checked
+           (:modes (ci/stage-selection
+                    [(change "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity")]))))
+    (is (= expected-checked
+           (:modes (ci/stage-selection
+                    [(change "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity")]))))
     (is (= expected-checked
            (:modes (ci/stage-selection
                     [(change "bootstrap/clojure/test/gravity/self_hosting/sh07_var_reference_test.clj")]))))
@@ -561,6 +567,56 @@
                   nil]]
       (is (= :full (:kind (ci/stage-selection [(change path)]))) (pr-str path)))))
 
+(deftest lint-tooling-selection-keeps-only-affected-ci-surfaces
+  (let [change (fn [path] {:old-mode "100644" :new-mode "100644"
+                           :status "M" :path path})
+        compiler-modes ["bootstrap" "macro" "resolution"
+                        "resolution-pipeline" "resolution-unmetered"
+                        "resolution-invocation-selection" "checked-core-runtime"]
+        selection (ci/stage-selection [(change "tools/ci/lint.clj")])
+        output (set (ci/selection-output-lines selection))]
+    (is (= :selected (:kind selection)))
+    (is (= :lint-tooling-only (:reason selection)))
+    (is (= [] (:stages selection)))
+    (is (= #{"static" "contracts"} (:modes selection)))
+    (doseq [mode ["static" "contracts"]]
+      (is (not (ci/skip-for-stage-selection? mode selection)) mode))
+    (doseq [mode compiler-modes]
+      (is (ci/skip-for-stage-selection? mode selection) mode))
+    (is (contains? output "static=true"))
+    (is (contains? output "contracts=true"))
+    (is (contains? output "darwin-unsupported=true"))
+    (doseq [mode ["bootstrap" "macro" "resolution" "checked-core-runtime"
+                  "leaves-portable" "leaves-darwin"]]
+      (is (contains? output (str mode "=false")) mode))
+    (is (contains? output "static-tools-required=true"))
+    (is (contains? output "selection-valid=true"))
+    (let [leaf (ci/leaf-selection-for-changes
+                "portable" [] [(change "tools/ci/lint_facade_test.clj")])]
+      (is (= :selected (:kind leaf)))
+      (is (= :lint-tooling-only (:reason leaf)))
+      (is (empty? (:entries leaf))))
+    (doseq [path ["tools/ci/lint_context.clj"
+                  "tools/ci/lint_facade_test.clj"
+                  "tools/ci/lint_macro_test.clj"
+                  "tools/ci/lint_macros.clj"
+                  "tools/ci/kondo/config.edn"
+                  "tools/ci/kondo/hooks/c2.clj"
+                  "tools/ci/kondo/hooks/module_analysis.clj"
+                  ".clj-kondo/config.edn"]]
+      (is (= :lint-tooling-only
+             (:reason (ci/stage-selection [(change path)])))
+          path))
+    (is (= :full (:kind (ci/stage-selection
+                         [(change "tools/ci/lint.clj")
+                          (change "language/compiler/src/gravity/checked_core.gravity")]))))
+    (doseq [path ["tools/ci/run.clj" "tools/ci/run_test.clj"
+                  "tools/ci/progress_test.clj" "tools/ci/snapshot.clj"
+                  "tools/ci/kondo/hooks/new_hook.clj" ".github/workflows/ci.yml"
+                  "deps.edn" "language/runtime/src/gravity/runtime.gravity"
+                  "src/new-owner.gravity"]]
+      (is (= :full (:kind (ci/stage-selection [(change path)]))) path))))
+
 (deftest stage-selection-fails-closed-for-deletes-renames-modes-and-types
   (let [regular (fn [path] {:old-mode "100644" :new-mode "100644"
                             :status "M" :path path})
@@ -594,6 +650,60 @@
     (is (not (some #{"snapshot-controls"} (command-ids selected))))
     (is (= 1 (count (filter #{"snapshot-controls"} (command-ids snapshot-selected)))))
     (is (= 1 (count (filter #{"snapshot-controls"} (command-ids snapshot-test-selected)))))))
+
+(deftest static-selection-runs-only-dependent-control-suites
+  (let [base (apply str (repeat 40 "a"))
+        command-ids (fn [selection]
+                      (mapv first (ci/commands-for-selection "static"
+                                                             (assoc selection :base base))))
+        checked-core {:kind :selected
+                      :reason :affected-stage
+                      :paths ["language/compiler/src/gravity/checked_core.gravity"]}
+        macro-source {:kind :selected
+                      :reason :lint-tooling-only
+                      :paths ["tools/ci/lint_macro_test.clj"]}
+        context-source {:kind :selected
+                        :reason :lint-tooling-only
+                        :paths ["tools/ci/lint_context.clj"]}
+        facade-source {:kind :selected
+                       :reason :lint-tooling-only
+                       :paths ["tools/ci/lint_facade_test.clj"]}
+        root-kondo-config {:kind :selected
+                           :reason :lint-tooling-only
+                           :paths [".clj-kondo/config.edn"]}
+        full {:kind :full :paths []}
+        failed {:kind :full :reason :path-discovery-failed :paths []}
+        malformed {:kind :selected :paths [nil]}
+        unknown {:kind :selected :paths ["src/new-owner.gravity"]}]
+    ;; A compiler source change has no dependency on the static control
+    ;; fixtures.  Whitespace remains unconditional, while changed-file lint
+    ;; remains available for Clojure/EDN inputs below.
+    (is (= ["whitespace"] (command-ids checked-core)))
+    (is (= ["whitespace" "clojure-lint" "clojure-format"
+            "macro-context-controls" "changed-clojure-lint"]
+           (command-ids macro-source)))
+    (is (= ["whitespace" "clojure-lint" "clojure-format"
+            "harness-controls" "macro-context-controls"
+            "facade-context-controls" "changed-clojure-lint"]
+           (command-ids context-source)))
+    (is (= ["whitespace" "clojure-lint" "clojure-format"
+            "facade-context-controls" "changed-clojure-lint"]
+           (command-ids facade-source)))
+    ;; tools/ci/kondo/config.edn imports the root Kondo configuration, so a
+    ;; root config change affects both pinned hook/context observations.
+    (is (= ["whitespace" "clojure-lint" "harness-controls"
+            "macro-context-controls" "facade-context-controls"
+            "changed-clojure-lint"]
+           (command-ids root-kondo-config)))
+    ;; Non-PR/broad selections and malformed or unknown selected data retain
+    ;; the complete control suite instead of guessing a narrower dependency.
+    (doseq [selection [full failed malformed unknown]]
+      (is (= ["whitespace" "workflow-lint" "clojure-lint" "clojure-format"
+              "harness-controls" "project-scope-runner-controls"
+              "progress-controls" "macro-context-controls"
+              "facade-context-controls"]
+             (command-ids selection))
+          (pr-str selection)))))
 
 (deftest path-discovery-failure-cannot-green-static
   (let [base (apply str (repeat 40 "a"))
@@ -1181,6 +1291,42 @@
                   (bytes (str "(ns " source-ns ")\n"
                               "(def missing ::unknown/key)\n")))))
     (is (nil? (find-ns source-ns)))))
+
+(deftest bootstrap-selection-runs-historical-input-controls-only-at-boundary
+  (let [command-ids (fn [selection]
+                      (mapv first (ci/commands-for-selection "bootstrap" selection)))
+        has-input-controls? (fn [selection]
+                              (some #{"bootstrap-input-controls"}
+                                    (command-ids selection)))
+        ordinary-reader {:kind :selected
+                         :paths ["bootstrap/clojure/src/gravity/reader.clj"]}
+        boundary-paths ["contracts/bootstrap-inputs.edn"
+                        "deps.edn"
+                        ".github/workflows/ci.yml"
+                        "tools/ci/run.clj"
+                        "tools/ci/run_test.clj"
+                        "bootstrap/clojure/src/gravity/bootstrap/rebuild/inputs.clj"
+                        "bootstrap/clojure/test/gravity/bootstrap/rebuild/inputs_test.clj"
+                        "bootstrap/clojure/fixtures/accepted/profile-accepted-meta.gravity"
+                        "bootstrap/clojure/fixtures/rejected/core-unknown-form.gravity"
+                        "bootstrap/clojure/src/gravity/digest.clj"
+                        "bootstrap/clojure/src/gravity/process_supervision.clj"
+                        "bootstrap/clojure/test/gravity/development_test_runner.clj"]
+        selected-boundary (fn [path] {:kind :selected :paths [path]})
+        full {:kind :full :reason :path-discovery-failed :paths []}
+        unknown {:kind :selected :paths ["src/new-owner.clj"]}
+        docs-only {:kind :docs-only :paths ["README.md"]}]
+    (let [ordinary-commands (command-ids ordinary-reader)]
+      (is (some #{"reader-regression"} ordinary-commands))
+      (is (some #{"syntax-regression"} ordinary-commands))
+      (is (not (has-input-controls? ordinary-reader))))
+    (doseq [path boundary-paths]
+      (is (ci/bootstrap-input-control-path? path) path)
+      (is (has-input-controls? (selected-boundary path)) path))
+    (is (has-input-controls? full))
+    (is (has-input-controls? unknown))
+    (is (has-input-controls? nil))
+    (is (not (has-input-controls? docs-only)))))
 
 (let [result (run-tests 'ci.run-test 'ci.lint-context-test)]
   (System/exit (if (zero? (+ (:fail result) (:error result))) 0 1)))
