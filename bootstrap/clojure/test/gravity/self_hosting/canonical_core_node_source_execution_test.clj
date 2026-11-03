@@ -1,6 +1,7 @@
 (ns gravity.self-hosting.canonical-core-node-source-execution-test
   (:require [clojure.java.io :as io]
             [clojure.test :refer [deftest is testing]]
+            [gravity.c6-core-lowering :as c6]
             [gravity.c6-core-lowering.lowering :as lowering]
             [gravity.bootstrap :as bootstrap]))
 
@@ -78,6 +79,33 @@
 (def ^:private effects
   #{:error/throw})
 
+(def ^:private artifact-module
+  {:module 'gravity.canonical-test
+   :source-path "sample.gravity"
+   :profile :hosted
+   :target :jvm
+   :effects #{}
+   :capabilities #{}
+   :safety :safe
+   :metadata {}})
+
+(def ^:private c5-artifact
+  {:kind :gravity/stage0-c5-name-resolution-artifact
+   :artifact-id "sha256:c5"
+   :namespace-analysis {:namespace 'gravity.canonical-test}
+   :binding-table {:bindings [{:binding-id "binding-0"}]}
+   :alias-table {}
+   :dependency-graph {:nodes [] :edges []}})
+
+(defn- artifact-syntax
+  [id form]
+  {:syntax-id id
+   :form form
+   :span {:source "sample.gravity" :form-index id}
+   :origin :source
+   :generated-origin []
+   :metadata {}})
+
 (defn- expected-host-node
   []
   (lowering/c6-core-node "node-1" :if syntax module
@@ -122,3 +150,43 @@
     (is (thrown? clojure.lang.ExceptionInfo
                  (invoke-source 'construct-canonical-core-node
                                 ["node-2"])))))
+
+(deftest source-node-can-feed-existing-c6-validation-boundary
+  (let [source-backed-node
+        (fn [node-id form node-syntax node-module node-data]
+          (invoke-source
+           'construct-canonical-core-node
+           [node-id form node-syntax node-module node-data
+            (get node-module :effects)]))
+        stream [(artifact-syntax "ns" '(ns gravity.canonical-test))
+                (artifact-syntax "value" '(def answer 42))]
+        artifact
+        (c6/c6-lowering-artifact
+         "sample.gravity" artifact-module c5-artifact stream)
+        source-backed-artifact
+        (c6/with-operations
+          {:c6-core-node source-backed-node}
+          #(c6/c6-lowering-artifact
+            "sample.gravity" artifact-module c5-artifact stream))
+        malformed (assoc-in source-backed-artifact
+                             [:surface-to-core-map :status]
+                             :forged)
+        rejection (try
+                    (c6/c6-lowering-validate! "sample.gravity" malformed)
+                    nil
+                    (catch clojure.lang.ExceptionInfo error
+                      (ex-data error)))]
+    (testing "the complete existing artifact can consume source-created nodes"
+      (is (= :complete (get-in source-backed-artifact
+                                [:c6-lowering-results :status])))
+      (is (= :passed (get-in source-backed-artifact
+                              [:core-verifier-report :status])))
+      (is (= (get-in artifact [:core-node-table])
+             (get-in source-backed-artifact [:core-node-table])))
+      (is (= (get-in source-backed-artifact
+                     [:core-node-table 0 :artifact])
+             :gravity/core-node)))
+    (testing "the existing C6 validation boundary rejects malformed output"
+      (is (= "C6-CORE-SHAPE" (:id rejection)))
+      (is (= :source-to-core-map-present?
+             (get-in rejection [:missing-fields 0]))))))

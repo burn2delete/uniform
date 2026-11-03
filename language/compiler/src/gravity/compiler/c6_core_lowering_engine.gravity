@@ -6116,7 +6116,9 @@
               :effects effects
               :capabilities (get module :capabilities)
               :unsafe-metadata unsafe-metadata
-              :generated? (> (count origin-chain) 0)}]
+              :generated? (> (count (if (vector? generated-origin)
+                                       generated-origin
+                                       [])) 0)}]
     (if (map? data)
       (loop [remaining (keys data) result base]
         (if (= 0 (count remaining))
