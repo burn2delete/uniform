@@ -386,7 +386,8 @@
    " :plan-sha256 (str \"sha256:\" (b/sha256-hex text))}))))"))
 
 (defn- execution-expression
-  [plan-path record-path expected-plan-sha256 expected-plan-id]
+  [plan-path record-path expected-plan-sha256 expected-plan-id
+   compiler-revision toolchain]
   (str
    "(do "
    "(require '[clojure.edn :as edn] '[clojure.java.io :as io] "
@@ -394,8 +395,8 @@
    "(let [plan-bytes (java.nio.file.Files/readAllBytes"
    " (.toPath (io/file " (literal plan-path) ")))"
    " plan-text (String. plan-bytes java.nio.charset.StandardCharsets/UTF_8)"
-   " _ (when-not (= " (literal expected-plan-sha256)
-   " (str \"sha256:\" (b/sha256-bytes-hex plan-bytes)))"
+   " plan-sha256 (str \"sha256:\" (b/sha256-bytes-hex plan-bytes))"
+   " _ (when-not (= " (literal expected-plan-sha256) " plan-sha256)"
    " (throw (ex-info \"persisted macro plan bytes changed before execution\""
    " {:reason :plan-file-digest})))"
    " payload (edn/read-string plan-text)"
@@ -446,22 +447,32 @@
    " request (b/sh05-deep-merge base-request request-overrides)"
    " result (m/execute-plan! source binding 'sh05-expand-macro-template"
    " [request] operations)"
-   " template (:expansion-template result)]"
+   " template (:expansion-template result)"
+   " expanded-forms (when (contains? fixture :expected-expanded-forms)"
+   " (mapv #(m/expanded-form % operations) [form]))]"
    " {:status (:status result) :fixture (select-keys fixture [:path :sha256])"
    " :artifact (:artifact result) :schema-version (:schema-version result)"
+   " :expansion-template template"
+   " :digest-requests (:digest-requests result)"
    " :digest-request-count (count (:digest-requests result))"
    " :expansion-template? (map? template)"
    " :macro (:macro template) :macro-version (:macro-version template)"
    " :expanded-syntax-recipe (:expanded-syntax-recipe template)"
+   " :expanded-forms expanded-forms"
    " :diagnostic (get-in result [:diagnostics 0 :rule])"
    " :diagnostics (select-keys (first (:diagnostics result)) [:rule :severity :stage])}))"
-   " accepted (run-fixture " (literal (select-keys accepted-fixture [:path :sha256])) ")"
+   " accepted (run-fixture " (literal (select-keys accepted-fixture
+                                                   [:path :sha256 :expected-expanded-forms])) ")"
    " rejected (run-fixture " (literal (select-keys rejected-fixture [:path :sha256])) ")"
    " record {:schema " (literal schema)
    " :component-id " (literal component-id)
    " :execution-child {:loaded-plan? true :fresh-c3-request? true"
-   " :fresh-operations? true :source-mode :development-current}"
+   " :fresh-operations? true :source-mode :development-current"
+   " :loaded-plan-id (:plan-id plan) :loaded-plan-sha256 plan-sha256}"
    " :accepted accepted :rejected rejected"
+   " :provenance {:compiler-revision " (literal compiler-revision)
+   " :toolchain " (literal toolchain)
+   " :live-worktree? true :authority :non-authoritative}"
    " :boundary {:host-language :clojure :seed-hosted? true"
    " :compiled-by :clojure-stage0-seed"
    " :executed-by :clojure-stage2-generic-rule-runner"
@@ -479,7 +490,11 @@
    " [java.nio.file.StandardOpenOption/CREATE_NEW"
    " java.nio.file.StandardOpenOption/WRITE]))"
    " (println (pr-str {:status :complete :record-path "
-   (literal record-path) " :accepted (:status accepted)"
+   (literal record-path) " :record-sha256 (str \"sha256:\""
+   " (b/sha256-bytes-hex record-bytes))"
+   " :plan-id (:loaded-plan-id (:execution-child record))"
+   " :plan-sha256 (:loaded-plan-sha256 (:execution-child record))"
+   " :accepted (:status accepted)"
    " :rejected (:diagnostic rejected)}))))"))
 
 (defn- run-child!
@@ -500,15 +515,26 @@
            (read-single-edn (:stdout-bytes result)
                             (str "macro " label " child summary")))))
 
+(defn- expected-provenance
+  [compiler-revision toolchain]
+  {:compiler-revision compiler-revision
+   :toolchain toolchain
+   :live-worktree? true
+   :authority :non-authoritative})
+
 (defn- validate-fixture-record!
-  [record]
+  [record compiler-revision toolchain]
   (let [accepted (:accepted record)
         rejected (:rejected record)]
     (when-not (and (= {:loaded-plan? true
                        :fresh-c3-request? true
                        :fresh-operations? true
-                       :source-mode :development-current}
+                       :source-mode :development-current
+                       :loaded-plan-id (:loaded-plan-id (:execution-child record))
+                       :loaded-plan-sha256 (:loaded-plan-sha256 (:execution-child record))}
                       (:execution-child record))
+                   (= (expected-provenance compiler-revision toolchain)
+                      (:provenance record))
                    (= {:host-language :clojure
                        :seed-hosted? true
                        :compiled-by :clojure-stage0-seed
@@ -524,17 +550,29 @@
                       (:fixture accepted))
                    (= :gravity/sh05-macro-template-result (:artifact accepted))
                    (= 1 (:schema-version accepted))
+                   (map? (:expansion-template accepted))
+                   (not (forbidden-plan-value? (:expansion-template accepted)))
+                   (vector? (:digest-requests accepted))
+                   (not (forbidden-plan-value? (:digest-requests accepted)))
+                   (= (count (:digest-requests accepted))
+                      (:digest-request-count accepted))
                    (= 2 (:digest-request-count accepted))
                    (true? (:expansion-template? accepted))
                    (= 'gravity.core/defn (:macro accepted))
                    (sha256-id? (:macro-version accepted))
                    (map? (:expanded-syntax-recipe accepted))
-                   (seq (get-in accepted [:expanded-syntax-recipe :children]))
+                   (= (:expected-expanded-forms accepted-fixture)
+                      (:expanded-forms accepted))
                    (= :rejected (:status rejected))
                    (= (select-keys rejected-fixture [:path :sha256])
                       (:fixture rejected))
                    (= :gravity/sh05-macro-template-result (:artifact rejected))
                    (= 1 (:schema-version rejected))
+                   (nil? (:expansion-template rejected))
+                   (vector? (:digest-requests rejected))
+                   (not (forbidden-plan-value? (:digest-requests rejected)))
+                   (= (count (:digest-requests rejected))
+                      (:digest-request-count rejected))
                    (= 1 (:digest-request-count rejected))
                    (false? (:expansion-template? rejected))
                    (= (:diagnostic rejected-fixture) (:diagnostic rejected)))
@@ -542,10 +580,38 @@
              {:accepted (select-keys accepted
                                      [:status :artifact :schema-version
                                       :digest-request-count :expansion-template?
-                                      :macro :macro-version])
+                                      :macro :macro-version :expanded-forms])
               :rejected (select-keys rejected [:status :artifact :schema-version
                                                :digest-request-count
                                                :expansion-template? :diagnostic])}))))
+
+(defn- validate-execution-summary!
+  [summary record plan-id plan-sha256 record-sha256]
+  (when-not (and (= :complete (:status summary))
+                 (= plan-id (:plan-id summary))
+                 (= plan-sha256 (:plan-sha256 summary))
+                 (= record-sha256 (:record-sha256 summary))
+                 (= plan-id (get-in record [:execution-child :loaded-plan-id]))
+                 (= plan-sha256
+                    (get-in record [:execution-child :loaded-plan-sha256])))
+    (fail! :execution-summary
+           "execution child summary does not bind the loaded plan and record"
+           {:summary summary
+            :plan-id plan-id
+            :plan-sha256 plan-sha256
+            :record-sha256 record-sha256
+            :record-execution (select-keys (:execution-child record)
+                                           [:loaded-plan-id :loaded-plan-sha256])})))
+
+(defn- remember-output!
+  [owned ^File file]
+  (swap! owned conj (.getCanonicalFile file))
+  file)
+
+(defn- cleanup-owned-outputs!
+  [owned]
+  (doseq [^File file @owned]
+    (Files/deleteIfExists (.toPath file))))
 
 (defn run-development-macro-plan!
   "Build, persist, reload, and execute the current macro plan.
@@ -568,11 +634,13 @@
        (when (.exists file)
          (fail! :output-exists "bootstrap macro output already exists"
                 {:path (.getPath file)})))
-     (let [succeeded? (atom false)]
+     (let [succeeded? (atom false)
+           owned-outputs (atom #{})]
        (try
          (let [producer (run-child! project-root
                                     (producer-expression (.getPath plan-file))
                                     :producer)
+               _ (remember-output! owned-outputs plan-file)
                payload (validate-persisted-plan! (read-edn-file! plan-file "macro plan"))
                producer-summary (:summary producer)
                plan-sha256 (file-sha256 plan-file)
@@ -598,30 +666,38 @@
            (when-not (= (:sha256 source) (get-in payload [:plan :source :sha256]))
              (fail! :source-plan-binding "persisted plan source hash drifted"
                     {:source source :plan-source (get-in payload [:plan :source])}))
-           (run-child! project-root
-                       (execution-expression (.getPath plan-file)
-                                             (.getPath record-file)
-                                             plan-sha256
-                                             (get-in payload [:plan :plan-id]))
-                       :execution)
-           (let [record (read-edn-file! record-file "macro execution record")
+           (let [execution (run-child! project-root
+                                       (execution-expression (.getPath plan-file)
+                                                             (.getPath record-file)
+                                                             plan-sha256
+                                                             (get-in payload [:plan :plan-id])
+                                                             revision
+                                                             toolchain)
+                                       :execution)
+                 _ (remember-output! owned-outputs record-file)
+                 record (read-edn-file! record-file "macro execution record")
+                 record-sha256 (file-sha256 record-file)
+                 execution-summary (:summary execution)
+                 _ (validate-execution-summary!
+                    execution-summary record (get-in payload [:plan :plan-id])
+                    plan-sha256 record-sha256)
                  result (do
-                          (validate-fixture-record! record)
+                          (validate-fixture-record! record revision toolchain)
                           {:component component
                            :source source
                            :compiler-revision revision
                            :toolchain toolchain
                            :producer-summary producer-summary
+                           :execution-summary execution-summary
                            :plan {:plan-id (get-in payload [:plan :plan-id])
                                   :identities (:identities payload)}
                            :record record
                            :output-sha256 {:plan (file-sha256 plan-file)
-                                           :record (file-sha256 record-file)}
+                                           :record record-sha256}
                            :plan-path (.getPath plan-file)
                            :record-path (.getPath record-file)})]
              (reset! succeeded? true)
              result))
          (finally
            (when-not @succeeded?
-             (doseq [^File file [plan-file record-file]]
-               (Files/deleteIfExists (.toPath file))))))))))
+             (cleanup-owned-outputs! owned-outputs))))))))

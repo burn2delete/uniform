@@ -45,6 +45,10 @@
     (catch clojure.lang.ExceptionInfo error
       error)))
 
+(defn- private-function
+  [name]
+  (deref (ns-resolve 'gravity.bootstrap.rebuild.macro-plan name)))
+
 (deftest persisted-plan-identities-reject-substitution
   (let [payload (current-payload)
         valid (macro-plan/validate-persisted-plan! payload)
@@ -103,15 +107,82 @@
         (is (= :clojure-stage2-generic-rule-runner
                (get-in record [:boundary :executed-by])))
         (is (= :non-authoritative (get-in record [:boundary :authority])))
+        (is (= [(list 'def 'add-one (list 'fn '[x] '(+ x 1)))]
+               (:expanded-forms accepted)))
+        (is (= (get-in result [:plan :plan-id])
+               (get-in record [:execution-child :loaded-plan-id])))
+        (is (= (get-in result [:output-sha256 :plan])
+               (get-in record [:execution-child :loaded-plan-sha256])))
+        (is (= (:compiler-revision result)
+               (get-in record [:provenance :compiler-revision])))
+        (is (= (:toolchain result)
+               (get-in record [:provenance :toolchain])))
+        (is (= true (get-in record [:provenance :live-worktree?])))
+        (is (= :non-authoritative (get-in record [:provenance :authority])))
+        (is (= (:record-sha256 (:execution-summary result))
+               (get-in result [:output-sha256 :record])))
         (is (= :gravity/sh05-macro-template-result (:artifact accepted)))
+        (is (= 2 (count (:digest-requests accepted))))
+        (is (= (get-in accepted [:expansion-template :expanded-syntax-recipe])
+               (:expanded-syntax-recipe accepted)))
         (is (= 2 (:digest-request-count accepted)))
         (is (= :accepted (:status accepted)))
         (is (= 'gravity.core/defn (:macro accepted)))
         (is (= :gravity/sh05-macro-template-result (:artifact rejected)))
+        (is (nil? (:expansion-template rejected)))
+        (is (= 1 (count (:digest-requests rejected))))
         (is (= 1 (:digest-request-count rejected)))
         (is (= "C4-RETURN" (:diagnostic rejected)))
+        (let [validate-record! (private-function 'validate-fixture-record!)
+              validate-summary! (private-function 'validate-execution-summary!)
+              record-sha256 (get-in result [:output-sha256 :record])
+              plan-id (get-in result [:plan :plan-id])
+              plan-sha256 (get-in result [:output-sha256 :plan])
+              wrong-expansion (assoc-in record [:accepted :expanded-forms]
+                                        [(list 'def 'not-add-one)])
+              wrong-observation (assoc-in record
+                                          [:execution-child :loaded-plan-id]
+                                          :substituted-plan)
+              wrong-summary (assoc (:execution-summary result)
+                                   :record-sha256
+                                   "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")]
+          (is (= :conformance
+                 (:reason (ex-data
+                           (caught #(validate-record! wrong-expansion
+                                                      (:compiler-revision result)
+                                                      (:toolchain result))))))
+              "the accepted fixture must retain its exact expansion datum")
+          (is (= :execution-summary
+                 (:reason (ex-data
+                           (caught #(validate-summary! (:execution-summary result)
+                                                       wrong-observation
+                                                       plan-id plan-sha256
+                                                       record-sha256)))))
+              "the child observation must bind the loaded plan identity")
+          (is (= :execution-summary
+                 (:reason (ex-data
+                           (caught #(validate-summary! wrong-summary record
+                                                       plan-id plan-sha256
+                                                       record-sha256)))))
+              "the child summary must bind the read-back record hash"))
         (is (.isFile (io/file (:plan-path result))))
         (is (.isFile (io/file (:record-path result))))
         (is (seq (get-in accepted [:expanded-syntax-recipe :children]))))
+      (finally
+        (delete-tree! root)))))
+
+(deftest raced-output-cleanup-preserves-unowned-file
+  (let [root (temporary-root)
+        owned-file (io/file root "owned.edn")
+        raced-file (io/file root "raced.edn")
+        owned (atom #{(.getCanonicalFile owned-file)})
+        cleanup! (private-function 'cleanup-owned-outputs!)]
+    (try
+      (io/make-parents owned-file)
+      (spit owned-file "owned-by-this-run")
+      (spit raced-file "created-after-precheck")
+      (cleanup! owned)
+      (is (not (.exists owned-file)))
+      (is (= "created-after-precheck" (slurp raced-file)))
       (finally
         (delete-tree! root)))))

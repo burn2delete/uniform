@@ -25,8 +25,11 @@ compiler, a native backend, or a self-hosting proof.
   execution input are bound before the execution child starts.
 - The accepted and rejected fixture bytes are checked against their declared
   SHA-256 identities before invoking the loaded entry.
+- The accepted fixture must retain the exact `(def add-one (fn [x] (+ x 1)))`
+  expansion datum.
 - Outputs are created with CREATE_NEW, read back, hashed, and removed on a
-  failed run. Existing output files are never overwritten.
+  failed run only when this run successfully owns them. Existing and raced
+  output files are never overwritten or removed.
 
 ## Dependencies
 
@@ -49,19 +52,23 @@ It writes:
 - target/bootstrap-macro-plan/macro-plan.edn, the persisted data-only plan;
 - target/bootstrap-macro-plan/macro-record.edn, the child execution record.
 
-The record contains the accepted SH-05 macro template result and the rejected
-C4-RETURN result. The accepted observation includes the generated expansion
-recipe and digest-request count; it does not claim digest resolution,
-downstream artifact assembly, or native execution. The record labels the
-producer as Clojure stage0 and the fresh consumer as the generic Clojure stage2
-rule runner; both labels are development provenance, not self-hosting authority.
+The record contains the accepted SH-05 macro template and its data-only digest
+requests, the exact accepted expansion datum, and the rejected C4-RETURN
+observation. It records the loaded plan ID/hash, the producer's observed
+compiler revision and dirty status, and the child seed/toolchain facts. It does
+not claim digest resolution, downstream artifact assembly, or native execution.
+The record labels the producer as Clojure stage0 and the fresh consumer as the
+generic Clojure stage2 rule runner; both labels are live-worktree development
+provenance, not self-hosting authority.
 
 ## Conformance and acceptance
 
 The focused test namespace is
 gravity.bootstrap.rebuild.macro-plan-test. It checks plan identity
-substitution, exact function-shape rejection, output-collision preservation,
-EDN readback, accepted template output, and the rejected C4-RETURN path.
+substitution, exact function-shape rejection, exact accepted expansion output,
+child observation/summary substitution, output-collision and raced-output
+preservation, EDN readback, accepted template output, and the rejected
+C4-RETURN path.
 
 For a direct development run:
 
