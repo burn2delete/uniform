@@ -242,10 +242,6 @@
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00857-sh05-macro-source-relative-path.clj")
 (def ^:private macro-stage-test "bootstrap/clojure/test/gravity/macro/pipeline_test.clj")
 
-(def ^:private resolution-stage-path "bootstrap/clojure/src/gravity/resolution.clj")
-(def ^:private resolution-stage-consumer
-  "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00873-sh06-resolution-dependency-edges-05.clj")
-(def ^:private resolution-stage-test "bootstrap/clojure/test/gravity/resolution/pipeline_test.clj")
 
 (def ^:private core-stage-path "bootstrap/clojure/src/gravity/checked_core.clj")
 (def ^:private core-stage-consumer
@@ -327,334 +323,99 @@
   "bootstrap/clojure/src/gravity/process_supervision.clj")
 (def ^:private process-supervision-helper-consumer "tools/ci/run.clj")
 (def ^:private process-supervision-helper-test "tools/ci/run_test.clj")
-(def ^:private packaged-launcher-helper-path
-  "bootstrap/clojure/src/gravity/cli/packaged_launcher.clj")
-(def ^:private packaged-launcher-helper-consumer
-  "bootstrap/clojure/src/gravity/bootstrap_impl/components/release-p18/00909-p18-t02-run-bin-gravity.clj")
-(def ^:private packaged-launcher-helper-test
-  "bootstrap/clojure/test/gravity/bootstrap_test.clj")
-(def ^:private source-input-helper-path
-  "bootstrap/clojure/src/gravity/source_input.clj")
-(def ^:private source-input-helper-consumer
-  "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00004-max-reader-form-depth.clj")
-(def ^:private source-input-helper-test
-  "bootstrap/clojure/test/gravity/bootstrap_compatibility/c11_test.clj")
 
 (def ^:private safety-stage-path "bootstrap/clojure/src/gravity/safety.clj")
 (def ^:private safety-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00684-p15-s23-closed-core-recomputed-node-type.clj")
 (def ^:private safety-stage-test "bootstrap/clojure/test/gravity/safety/pipeline_test.clj")
 
+(defn- production-helper-record [record source-path]
+  (get-in record [:production-helper-associations source-path]))
+
+(defn- production-helper-association
+  "Project one contract helper into the EDN ownership representation.
+
+  The component contract is the single source for helper identity, paths,
+  namespaces and owners.  The ownership document contributes only its slice
+  label; all other fields are checked against this projection below."
+  [record helper]
+  (let [source (get helper "source")
+        consumer (get helper "consumer")
+        test (get helper "test")
+        source-path (get source "path")
+        owner (keyword (get helper "owner"))]
+    [source-path
+     {:namespace (symbol (get source "namespace"))
+      :owner owner
+      :slice (:slice (production-helper-record record source-path))
+      :consumer-path (get consumer "path")
+      :test-path (get test "path")}]))
+
+(defn- production-helper-slice-valid?
+  [record owner slice]
+  (let [leaf-owner (get-in record [:slice-owners slice :leaf-owner])]
+    (or (= owner leaf-owner)
+        (and (= owner :master-coordinator)
+             (contains? #{"SH-00" "SH-01" "SH-17" "SH-24"} slice))
+        (and (= slice "SH-18")
+             (contains? #{:sh-target-c :sh-target-llvm} owner)
+             (= :sh-target-native leaf-owner))
+        (and (= slice "SH-00")
+             (contains? #{:sh-target-js :sh-target-jvm} owner)
+             (= :sh-target-wasm leaf-owner)))))
+
 (defn- production-helper-registration-valid? [record contract]
-  (let [expected {:namespace 'gravity.macro-run-storage :owner :sh-macro :slice "SH-05"
-                  :consumer-path macro-helper-consumer :test-path macro-helper-test}]
-    (and (= {safety-stage-path
-             {:namespace 'gravity.safety :owner :sh-safety :slice "SH-11"
-              :consumer-path safety-stage-consumer :test-path safety-stage-test}
-             release-inventory-stage-path
-             {:namespace 'gravity.release :owner :master-coordinator :slice "SH-00"
-              :consumer-path release-inventory-stage-consumer :test-path release-inventory-stage-test}
-             build-validation-stage-path
-             {:namespace 'gravity.build :owner :sh-package-build :slice "SH-23"
-              :consumer-path build-validation-stage-consumer :test-path build-validation-stage-test}
-             bootstrap-literals-stage-path
-             {:namespace 'gravity.bootstrap.module-literals :owner :master-coordinator :slice "SH-01"
-              :consumer-path bootstrap-literals-stage-consumer :test-path bootstrap-literals-stage-test}
-             tooling-stage-path
-             {:namespace 'gravity.tooling :owner :master-coordinator :slice "SH-24"
-              :consumer-path tooling-stage-consumer :test-path tooling-stage-test}
-             standard-library-stage-path
-             {:namespace 'gravity.standard-library :owner :sh-standard-library :slice "SH-22"
-              :consumer-path standard-library-stage-consumer :test-path standard-library-stage-test}
-             ownership-stage-path
-             {:namespace 'gravity.ownership :owner :sh-ownership :slice "SH-10"
-              :consumer-path ownership-stage-consumer :test-path ownership-stage-test}
-             package-stage-path
-             {:namespace 'gravity.package :owner :sh-package-build :slice "SH-23"
-              :consumer-path package-stage-consumer :test-path package-stage-test}
-             effects-stage-path
-             {:namespace 'gravity.effects :owner :sh-effects :slice "SH-09"
-              :consumer-path effects-stage-consumer :test-path effects-stage-test}
-             lowering-stage-path
-             {:namespace 'gravity.lowering :owner :master-coordinator :slice "SH-17"
-              :consumer-path lowering-stage-consumer :test-path lowering-stage-test}
-             js-source-stage-path
-             {:namespace 'gravity.backend.js :owner :sh-target-js :slice "SH-00"
-              :consumer-path js-source-stage-consumer :test-path js-source-stage-test}
-             jvm-source-stage-path
-             {:namespace 'gravity.backend.jvm :owner :sh-target-jvm :slice "SH-00"
-              :consumer-path jvm-source-stage-consumer :test-path jvm-source-stage-test}
-             wasm-codec-stage-path
-             {:namespace 'gravity.backend.wasm :owner :sh-target-wasm :slice "SH-00"
-              :consumer-path wasm-codec-stage-consumer :test-path wasm-codec-stage-test}
-             c-emission-stage-path
-             {:namespace 'gravity.backend.c :owner :sh-target-c :slice "SH-18"
-              :consumer-path c-emission-stage-consumer :test-path c-emission-stage-test}
-             llvm-data-stage-path
-             {:namespace 'gravity.backend.llvm :owner :sh-target-llvm :slice "SH-18"
-              :consumer-path llvm-data-stage-consumer :test-path llvm-data-stage-test}
-             optimization-stage-path
-             {:namespace 'gravity.optimization :owner :sh-optimization :slice "SH-16"
-              :consumer-path optimization-stage-consumer :test-path optimization-stage-test}
-             runtime-stage-path
-             {:namespace 'gravity.runtime :owner :sh-runtime :slice "SH-19"
-              :consumer-path runtime-stage-consumer :test-path runtime-stage-test}
-             mir-stage-path
-             {:namespace 'gravity.mir :owner :sh-mir :slice "SH-12"
-              :consumer-path mir-stage-consumer :test-path mir-stage-test}
-             types-stage-path
-             {:namespace 'gravity.types :owner :sh-types :slice "SH-08"
-              :consumer-path types-stage-consumer :test-path types-stage-test}
-             core-stage-path
-             {:namespace 'gravity.checked-core :owner :sh-core :slice "SH-07"
-              :consumer-path core-stage-consumer :test-path core-stage-test}
-             resolution-stage-path
-             {:namespace 'gravity.resolution :owner :sh-resolution :slice "SH-06"
-              :consumer-path resolution-stage-consumer :test-path resolution-stage-test}
-             macro-helper-path expected
-             reader-helper-path
-             {:namespace 'gravity.reader :owner :sh-reader :slice "SH-03"
-              :consumer-path reader-helper-consumer :test-path reader-helper-test}
-             syntax-helper-path
-             {:namespace 'gravity.syntax :owner :sh-syntax :slice "SH-04"
-              :consumer-path syntax-helper-consumer :test-path syntax-helper-test}
-             macro-stage-path
-             {:namespace 'gravity.macro :owner :sh-macro :slice "SH-05"
-              :consumer-path macro-stage-consumer :test-path macro-stage-test}
-             process-supervision-helper-path
-             {:namespace 'gravity.process-supervision :owner :master-coordinator :slice "SH-01"
-              :consumer-path process-supervision-helper-consumer
-              :test-path process-supervision-helper-test}
-             packaged-launcher-helper-path
-             {:namespace 'gravity.cli.packaged-launcher :owner :master-coordinator :slice "SH-01"
-              :consumer-path packaged-launcher-helper-consumer
-              :test-path packaged-launcher-helper-test}
-             source-input-helper-path
-             {:namespace 'gravity.source-input :owner :master-coordinator :slice "SH-01"
-              :consumer-path source-input-helper-consumer
-              :test-path source-input-helper-test}}
-            (:production-helper-associations record))
-         (= :sh-macro (get-in record [:module-owners macro-helper-path]))
-         (= {:namespace 'gravity.self-hosting.macro-run-storage-test
-             :slice "SH-05" :owner :sh-macro}
-            (get-in record [:standalone-test-owners macro-helper-test]))
-         (= :sh-reader (get-in record [:module-owners reader-helper-path]))
-         (= {:namespace 'gravity.reader.artifact-test :slice "SH-03" :owner :sh-reader}
-            (get-in record [:standalone-test-owners reader-helper-test]))
-         (= :sh-syntax (get-in record [:module-owners syntax-helper-path]))
-         (= {:namespace 'gravity.syntax.pipeline-test :slice "SH-04" :owner :sh-syntax}
-            (get-in record [:standalone-test-owners syntax-helper-test]))
-         (= :sh-macro (get-in record [:module-owners macro-stage-path]))
-         (= {:namespace 'gravity.macro.pipeline-test :slice "SH-05" :owner :sh-macro}
-            (get-in record [:standalone-test-owners macro-stage-test]))
-         (= :sh-resolution (get-in record [:module-owners resolution-stage-path]))
-         (= {:namespace 'gravity.resolution.pipeline-test :slice "SH-06" :owner :sh-resolution}
-            (get-in record [:standalone-test-owners resolution-stage-test]))
-         (= :sh-core (get-in record [:module-owners core-stage-path]))
-         (= :sh-effects (get-in record [:module-owners effects-stage-path]))
-         (= :sh-effects (get-in record [:module-owners effects-stage-test]))
-         (= :sh-types (get-in record [:module-owners types-stage-path]))
-         (= :sh-types (get-in record [:module-owners types-stage-test]))
-         (= :master-coordinator (get-in record [:module-owners lowering-stage-path]))
-         (= {:namespace 'gravity.lowering.pipeline-test :slice "SH-17" :owner :master-coordinator}
-            (get-in record [:standalone-test-owners lowering-stage-test]))
-         (= :sh-package-build (get-in record [:module-owners package-stage-path]))
-         (= {:namespace 'gravity.package.pipeline-test :slice "SH-23" :owner :sh-package-build}
-            (get-in record [:standalone-test-owners package-stage-test]))
-         (= :sh-ownership (get-in record [:module-owners ownership-stage-path]))
-         (= {:namespace 'gravity.ownership.pipeline-test :slice "SH-10" :owner :sh-ownership}
-            (get-in record [:standalone-test-owners ownership-stage-test]))
-         (= :sh-standard-library (get-in record [:module-owners standard-library-stage-path]))
-         (= {:namespace 'gravity.standard-library.pipeline-test :slice "SH-22" :owner :sh-standard-library}
-            (get-in record [:standalone-test-owners standard-library-stage-test]))
-         (= :master-coordinator (get-in record [:module-owners tooling-stage-path]))
-         (= {:namespace 'gravity.tooling.pipeline-test :slice "SH-24" :owner :master-coordinator}
-            (get-in record [:standalone-test-owners tooling-stage-test]))
-         (= :master-coordinator (get-in record [:module-owners bootstrap-literals-stage-path]))
-         (= {:namespace 'gravity.bootstrap.module-literals-test :slice "SH-01" :owner :master-coordinator}
-            (get-in record [:standalone-test-owners bootstrap-literals-stage-test]))
-         (= :sh-package-build (get-in record [:module-owners build-validation-stage-path]))
-         (= {:namespace 'gravity.build.pipeline-test :slice "SH-23" :owner :sh-package-build}
-            (get-in record [:standalone-test-owners build-validation-stage-test]))
-         (= :master-coordinator (get-in record [:module-owners release-inventory-stage-path]))
-         (= {:namespace 'gravity.release.pipeline-test :slice "SH-00" :owner :master-coordinator}
-            (get-in record [:standalone-test-owners release-inventory-stage-test]))
-         (= :sh-safety (get-in record [:module-owners safety-stage-path]))
-         (= {:namespace 'gravity.safety.pipeline-test :slice "SH-11" :owner :sh-safety}
-            (get-in record [:standalone-test-owners safety-stage-test]))
-         (= :sh-target-jvm (get-in record [:module-owners jvm-source-stage-path]))
-         (= {:namespace 'gravity.backend.jvm.pipeline-test :slice "SH-00" :owner :sh-target-jvm}
-            (get-in record [:standalone-test-owners jvm-source-stage-test]))
-         (= :sh-target-llvm (get-in record [:module-owners llvm-data-stage-path]))
-         (= {:namespace 'gravity.backend.llvm.pipeline-test :slice "SH-18" :owner :sh-target-llvm}
-            (get-in record [:standalone-test-owners llvm-data-stage-test]))
-         (= :sh-target-js (get-in record [:module-owners js-source-stage-path]))
-         (= {:namespace 'gravity.backend.js.pipeline-test :slice "SH-00" :owner :sh-target-js}
-            (get-in record [:standalone-test-owners js-source-stage-test]))
-         (= :sh-target-c (get-in record [:module-owners c-emission-stage-path]))
-         (= {:namespace 'gravity.backend.c.pipeline-test :slice "SH-18" :owner :sh-target-c}
-            (get-in record [:standalone-test-owners c-emission-stage-test]))
-         (= :sh-target-wasm (get-in record [:module-owners wasm-codec-stage-path]))
-         (= {:namespace 'gravity.backend.wasm.pipeline-test :slice "SH-00" :owner :sh-target-wasm}
-            (get-in record [:standalone-test-owners wasm-codec-stage-test]))
-         (= :sh-optimization (get-in record [:module-owners optimization-stage-path]))
-         (= {:namespace 'gravity.optimization.pipeline-test :slice "SH-16" :owner :sh-optimization}
-            (get-in record [:standalone-test-owners optimization-stage-test]))
-         (= :sh-mir (get-in record [:module-owners mir-stage-path]))
-         (= :sh-runtime (get-in record [:module-owners runtime-stage-path]))
-         (= {:namespace 'gravity.runtime.pipeline-test :slice "SH-19" :owner :sh-runtime}
-            (get-in record [:standalone-test-owners runtime-stage-test]))
-         (= {:namespace 'gravity.mir.pipeline-test :slice "SH-12" :owner :sh-mir}
-            (get-in record [:standalone-test-owners mir-stage-test]))
-         (= {:namespace 'gravity.checked-core.pipeline-test :slice "SH-07" :owner :sh-core}
-            (get-in record [:standalone-test-owners core-stage-test]))
-         (= :master-coordinator (get-in record [:module-owners process-supervision-helper-path]))
-         (= {:namespace 'ci.run-test :slice "SH-01" :owner :master-coordinator}
-            (get-in record [:standalone-test-owners process-supervision-helper-test]))
-         (= :master-coordinator
-            (get-in record [:module-owners packaged-launcher-helper-path]))
-         (= :master-coordinator
-            (get-in record [:module-owners source-input-helper-path]))
-         (= [{"id" "macro-run-storage" "kind" "production-verification-helper" "owner" "sh-macro"
-              "source" {"path" macro-helper-path "namespace" "gravity.macro-run-storage"}
-              "consumer" {"path" macro-helper-consumer "namespace" "gravity.macro" "owner" "sh-macro"}
-              "test" {"path" macro-helper-test "namespace" "gravity.self-hosting.macro-run-storage-test"
-                      "registration" "standalone"}}
-             {"id" "reader-artifact-assembly" "kind" "production-stage-helper" "owner" "sh-reader"
-              "source" {"path" reader-helper-path "namespace" "gravity.reader"}
-              "consumer" {"path" reader-helper-consumer "namespace" "gravity.bootstrap" "owner" "sh-reader"}
-              "test" {"path" reader-helper-test "namespace" "gravity.reader.artifact-test"
-                      "registration" "standalone"}}
-             {"id" "syntax-pipeline" "kind" "production-stage-helper" "owner" "sh-syntax"
-              "source" {"path" syntax-helper-path "namespace" "gravity.syntax"}
-              "consumer" {"path" syntax-helper-consumer "namespace" "gravity.bootstrap" "owner" "sh-syntax"}
-              "test" {"path" syntax-helper-test "namespace" "gravity.syntax.pipeline-test"
-                      "registration" "standalone"}}
-             {"id" "resolution-plan-runtime" "kind" "production-stage-helper" "owner" "sh-resolution"
-              "source" {"path" resolution-stage-path "namespace" "gravity.resolution"}
-              "consumer" {"path" resolution-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-resolution"}
-              "test" {"path" resolution-stage-test "namespace" "gravity.resolution.pipeline-test"
-                      "registration" "standalone"}}
-             {"id" "macro-plan-runtime" "kind" "production-stage-helper" "owner" "sh-macro"
-              "source" {"path" macro-stage-path "namespace" "gravity.macro"}
-              "consumer" {"path" macro-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-macro"}
-              "test" {"path" macro-stage-test "namespace" "gravity.macro.pipeline-test"
-                      "registration" "standalone"}}
-             {"id" "checked-core-plan-runtime" "kind" "production-stage-helper" "owner" "sh-core"
-              "source" {"path" core-stage-path "namespace" "gravity.checked-core"}
-              "consumer" {"path" core-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-core"}
-              "test" {"path" core-stage-test "namespace" "gravity.checked-core.pipeline-test"
-                      "registration" "standalone"}}
-             {"id" "types-products" "kind" "production-stage-helper" "owner" "sh-types"
-              "source" {"path" types-stage-path "namespace" "gravity.types"}
-              "consumer" {"path" types-stage-consumer "namespace" "gravity.c7-type-checker.inference" "owner" "sh-types"}
-              "test" {"path" types-stage-test "namespace" "gravity.c7-type-checker-test"
-                      "registration" "bootstrap-free"}}
-             {"id" "mir-control-flow" "kind" "production-stage-helper" "owner" "sh-mir"
-              "source" {"path" mir-stage-path "namespace" "gravity.mir"}
-              "consumer" {"path" mir-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-mir"}
-              "test" {"path" mir-stage-test "namespace" "gravity.mir.pipeline-test"
-                      "registration" "standalone"}}
-             {"id" "runtime-invocation" "kind" "production-stage-helper" "owner" "sh-runtime"
-              "source" {"path" runtime-stage-path "namespace" "gravity.runtime"}
-              "consumer" {"path" runtime-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-runtime"}
-              "test" {"path" runtime-stage-test "namespace" "gravity.runtime.pipeline-test"
-                      "registration" "standalone"}}
-             {"id" "optimization-reconstruction" "kind" "production-stage-helper" "owner" "sh-optimization"
-              "source" {"path" optimization-stage-path "namespace" "gravity.optimization"}
-              "consumer" {"path" optimization-stage-consumer "namespace" "gravity.bootstrap-c13-comparison" "owner" "sh-optimization"}
-              "test" {"path" optimization-stage-test "namespace" "gravity.optimization.pipeline-test"
-                      "registration" "standalone"}}
-             {"id" "llvm-data" "kind" "production-stage-helper" "owner" "sh-target-llvm"
-              "source" {"path" llvm-data-stage-path "namespace" "gravity.backend.llvm"}
-              "consumer" {"path" llvm-data-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-target-llvm"}
-              "test" {"path" llvm-data-stage-test "namespace" "gravity.backend.llvm.pipeline-test"
-                      "registration" "standalone"}}
-             {"id" "c-emission" "kind" "production-stage-helper" "owner" "sh-target-c"
-              "source" {"path" c-emission-stage-path "namespace" "gravity.backend.c"}
-              "consumer" {"path" c-emission-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-target-c"}
-              "test" {"path" c-emission-stage-test "namespace" "gravity.backend.c.pipeline-test"
-                      "registration" "standalone"}}
-             {"id" "wasm-codec" "kind" "production-stage-helper" "owner" "sh-target-wasm"
-              "source" {"path" wasm-codec-stage-path "namespace" "gravity.backend.wasm"}
-              "consumer" {"path" wasm-codec-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-target-wasm"}
-              "test" {"path" wasm-codec-stage-test "namespace" "gravity.backend.wasm.pipeline-test"
-                      "registration" "standalone"}}
-             {"id" "jvm-source" "kind" "production-stage-helper" "owner" "sh-target-jvm"
-              "source" {"path" jvm-source-stage-path "namespace" "gravity.backend.jvm"}
-              "consumer" {"path" jvm-source-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-target-jvm"}
-              "test" {"path" jvm-source-stage-test "namespace" "gravity.backend.jvm.pipeline-test"
-                      "registration" "standalone"}}
-             {"id" "js-source" "kind" "production-stage-helper" "owner" "sh-target-js"
-              "source" {"path" js-source-stage-path "namespace" "gravity.backend.js"}
-              "consumer" {"path" js-source-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-target-js"}
-              "test" {"path" js-source-stage-test "namespace" "gravity.backend.js.pipeline-test"
-                      "registration" "standalone"}}
-             {"id" "lowering-reconstruction" "kind" "production-stage-helper" "owner" "master-coordinator"
-              "source" {"path" lowering-stage-path "namespace" "gravity.lowering"}
-              "consumer" {"path" lowering-stage-consumer "namespace" "gravity.bootstrap" "owner" "master-coordinator"}
-              "test" {"path" lowering-stage-test "namespace" "gravity.lowering.pipeline-test"
-                      "registration" "standalone"}}
-             {"id" "effects-graph-data" "kind" "production-stage-helper" "owner" "sh-effects"
-              "source" {"path" effects-stage-path "namespace" "gravity.effects"}
-              "consumer" {"path" effects-stage-consumer "namespace" "gravity.c8-effect-checker.facts" "owner" "sh-effects"}
-              "test" {"path" effects-stage-test "namespace" "gravity.c8-effect-checker-test"
-                      "registration" "bootstrap-free"}}
-             {"id" "package-selection" "kind" "production-stage-helper" "owner" "sh-package-build"
-              "source" {"path" package-stage-path "namespace" "gravity.package"}
-              "consumer" {"path" package-stage-consumer "namespace" "gravity.build.package-selection" "owner" "sh-package-build"}
-              "test" {"path" package-stage-test "namespace" "gravity.package.pipeline-test"
-                      "registration" "standalone"}}
-             {"id" "ownership-data" "kind" "production-stage-helper" "owner" "sh-ownership"
-              "source" {"path" ownership-stage-path "namespace" "gravity.ownership"}
-              "consumer" {"path" ownership-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-ownership"}
-              "test" {"path" ownership-stage-test "namespace" "gravity.ownership.pipeline-test"
-                      "registration" "standalone"}}
-             {"id" "standard-library-kernel" "kind" "production-stage-helper" "owner" "sh-standard-library"
-              "source" {"path" standard-library-stage-path "namespace" "gravity.standard-library"}
-              "consumer" {"path" standard-library-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-standard-library"}
-              "test" {"path" standard-library-stage-test "namespace" "gravity.standard-library.pipeline-test"
-                      "registration" "standalone"}}
-             {"id" "tooling-evidence" "kind" "production-stage-helper" "owner" "master-coordinator"
-              "source" {"path" tooling-stage-path "namespace" "gravity.tooling"}
-              "consumer" {"path" tooling-stage-consumer "namespace" "gravity.bootstrap" "owner" "master-coordinator"}
-              "test" {"path" tooling-stage-test "namespace" "gravity.tooling.pipeline-test"
-                      "registration" "standalone"}}
-             {"id" "bootstrap-module-literals" "kind" "production-stage-helper" "owner" "master-coordinator"
-              "source" {"path" bootstrap-literals-stage-path "namespace" "gravity.bootstrap.module-literals"}
-              "consumer" {"path" bootstrap-literals-stage-consumer "namespace" "gravity.bootstrap" "owner" "master-coordinator"}
-              "test" {"path" bootstrap-literals-stage-test "namespace" "gravity.bootstrap.module-literals-test"
-                      "registration" "standalone"}}
-             {"id" "build-metadata-validation" "kind" "production-stage-helper" "owner" "sh-package-build"
-              "source" {"path" build-validation-stage-path "namespace" "gravity.build"}
-              "consumer" {"path" build-validation-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-package-build"}
-              "test" {"path" build-validation-stage-test "namespace" "gravity.build.pipeline-test"
-                      "registration" "standalone"}}
-             {"id" "release-jar-inventory" "kind" "production-stage-helper" "owner" "master-coordinator"
-              "source" {"path" release-inventory-stage-path "namespace" "gravity.release"}
-              "consumer" {"path" release-inventory-stage-consumer "namespace" "gravity.bootstrap" "owner" "master-coordinator"}
-              "test" {"path" release-inventory-stage-test "namespace" "gravity.release.pipeline-test"
-                      "registration" "standalone"}}
-             {"id" "process-supervision" "kind" "production-verification-helper" "owner" "master-coordinator"
-              "source" {"path" process-supervision-helper-path "namespace" "gravity.process-supervision"}
-              "consumer" {"path" process-supervision-helper-consumer "namespace" "ci.run" "owner" "master-coordinator"}
-              "test" {"path" process-supervision-helper-test "namespace" "ci.run-test"
-                      "registration" "standalone"}}
-             {"id" "packaged-jvm-launcher" "kind" "production-verification-helper" "owner" "master-coordinator"
-              "source" {"path" packaged-launcher-helper-path "namespace" "gravity.cli.packaged-launcher"}
-              "consumer" {"path" packaged-launcher-helper-consumer "namespace" "gravity.bootstrap" "owner" "master-coordinator"}
-              "test" {"path" packaged-launcher-helper-test "namespace" "gravity.bootstrap-test"
-                      "registration" "coordinator"}}
-             {"id" "source-input-products" "kind" "production-verification-helper" "owner" "master-coordinator"
-              "source" {"path" source-input-helper-path "namespace" "gravity.source-input"}
-              "consumer" {"path" source-input-helper-consumer "namespace" "gravity.bootstrap" "owner" "master-coordinator"}
-              "test" {"path" source-input-helper-test "namespace" "gravity.bootstrap-compatibility.c11-test"
-                      "registration" "coordinator"}}
-             {"id" "safety-records" "kind" "production-stage-helper" "owner" "sh-safety"
-              "source" {"path" safety-stage-path "namespace" "gravity.safety"}
-              "consumer" {"path" safety-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-safety"}
-              "test" {"path" safety-stage-test "namespace" "gravity.safety.pipeline-test"
-                      "registration" "standalone"}}]
-            (get contract "production_helpers")))))
+  (let [helpers (get contract "production_helpers")
+        associations (into {} (map #(production-helper-association record %) helpers))
+        module-owners (:module-owners record)
+        standalone-test-owners (:standalone-test-owners record)
+        valid-helper?
+        (fn [helper]
+          (let [source (get helper "source")
+                consumer (get helper "consumer")
+                test (get helper "test")
+                source-path (get source "path")
+                consumer-path (get consumer "path")
+                test-path (get test "path")
+                owner (keyword (get helper "owner"))
+                association (get associations source-path)
+                slice (:slice association)]
+            (and (map? helper)
+                 (string? (get helper "id"))
+                 (contains? #{"production-stage-helper"
+                              "production-verification-helper"}
+                            (get helper "kind"))
+                 (keyword? owner)
+                 (= owner (keyword (get consumer "owner")))
+                 (every? string? [source-path (get source "namespace")
+                                  consumer-path (get consumer "namespace")
+                                  test-path (get test "namespace")
+                                  (get test "registration")])
+                 (every? #(.isFile (path %))
+                         [source-path consumer-path test-path])
+                 (map? association)
+                 (= association (production-helper-record record source-path))
+                 (production-helper-slice-valid? record owner slice)
+                 (= owner (get module-owners source-path))
+                 (or (not (contains? module-owners test-path))
+                     (= owner (get module-owners test-path)))
+                 (= (if (contains? standalone-test-owners test-path)
+                      "standalone"
+                      (if (= "production-verification-helper" (get helper "kind"))
+                        "coordinator"
+                        "bootstrap-free"))
+                    (get test "registration"))
+                 (if (= "standalone" (get test "registration"))
+                   (= {:namespace (symbol (get test "namespace"))
+                       :slice (:slice association)
+                       :owner owner}
+                      (get standalone-test-owners test-path))
+                   true))))]
+    (and (vector? helpers)
+         (= (count helpers) (count (set (map #(get % "id") helpers))))
+         (= (set (map #(get-in % ["source" "path"]) helpers))
+            (set (keys (:production-helper-associations record))))
+         (= associations (:production-helper-associations record))
+         (every? valid-helper? helpers))))
 
 (deftest process-supervision-helper-has-an-explicit-consumer-and-test
   (require 'gravity.bootstrap-free-leaf-test-runner)
