@@ -22,9 +22,13 @@ three historical proposals:
 - Effects and emitter element reconstruction agree, including homogeneous-list
   identity and empty-list results;
 - both sides of a wide `if` List join report the exact checked-member count;
-- changed atomic members, extra fields, non-vector member collections, unknown
-  atoms, and forged checked-member counts are rejected or not applicable by the
-  current C7, Effects, and emitter consumers.
+- both sides of a wide `if` List join reach the current typed compile node and
+  execute true and false values with preserved branch identity;
+- changed atomic members, extra fields, non-vector member collections, nested
+  List members, homogeneous records carrying `:element-types`, the late
+  invalid member of a 2049-element list, and forged checked-member counts are
+  rejected or not applicable with exact current reasons by the C7, Effects,
+  emitter, context, and typed-compile consumers.
 
 The controls are in
 `bootstrap/clojure/test/gravity/self_hosting/list_join_width_current_port_test.clj`
@@ -35,9 +39,14 @@ evidence; no stale source hash or work-budget assertion was refreshed.
 ## Check
 
 ```text
-clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.list-join-width-current-port-test
-2 tests, 54 assertions, 0 failures, 0 errors
+clojure -J-Xmx1g -M:dev-test --namespace gravity.self-hosting.list-join-width-current-port-test --fail-fast
+3 tests, 146 assertions, 0 failures, 0 errors
 ```
+
+The focused repair is checkpointed at `004762f91364ac3dca25a54d869957be13da7612`
+(tree `7c9eae8a9c3ea86b41c2305cac53d3d80b5c9677`). It changes only this test
+namespace; the Effects and emitter source inputs remain byte-identical. The
+receipt records that checkpoint before this metadata update.
 
 This is a bounded current-source helper test using normalized List-if inputs.
 It does not establish an authoritative source migration, genuine C7/C8

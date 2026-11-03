@@ -2,6 +2,11 @@
  :authority :non-authoritative
  :current-base {:commit "d59a7df90f91b578c1bb160a59ec1ef865abf25b"
                 :tree "c25b4efebc5fb76befb35edce88857012be236ad"}
+ :focused-repair-checkpoint
+ {:commit "004762f91364ac3dca25a54d869957be13da7612"
+  :tree "7c9eae8a9c3ea86b41c2305cac53d3d80b5c9677"
+  :production-inputs-unchanged true
+  :focused-tests {:tests 3 :assertions 146 :failures 0 :errors 0}}
  :historical-inputs
  {:pr611 {:head "edef2c00c103df4b5222cf44124c6e1d707820e4"
           :tree "7f12fa541cf26179ac59b6bdb95c666674ecdfb2"
@@ -23,14 +28,19 @@
   :behavior [:finite-list-widths
              :effects-emitter-result-agreement
              :wide-list-if-join-branch-compatibility
+             :typed-compile-node-and-runtime-branch-identity
              :invalid-member-representation
+             :exact-malformed-reasons
+             :late-invalid-2049-member
+             :nested-list-member
+             :homogeneous-extra-element-types
              :forged-checked-member-count]
   :source-input :current-main
   :historical-census-authority :history-only}
  :checks
- {:command "clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.list-join-width-current-port-test"
-  :tests 2
-  :assertions 54
+ {:command "clojure -J-Xmx1g -M:dev-test --namespace gravity.self-hosting.list-join-width-current-port-test --fail-fast"
+  :tests 3
+  :assertions 146
   :failures 0
   :errors 0}
  :nonclaims [:authoritative-source-migration
