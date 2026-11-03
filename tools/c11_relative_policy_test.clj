@@ -3,6 +3,7 @@
             [clojure.java.io :as io]
             [clojure.string :as str]
             [gravity.digest :as digest]
+            [gravity.mir :as mir]
             [gravity.c6-c10.source-contract :as c6-contract]
             [gravity.c11-mir.source-contract :as c11-contract]))
 
@@ -30,6 +31,7 @@
   (clojure.core/refer 'clojure.core)
   (alias 'str (ns-name (:ns (meta #'str/blank?))))
   (alias 'digest (ns-name (:ns (meta #'digest/sha256-output-hex))))
+  (alias 'gravity.mir (ns-name (:ns (meta #'mir/allowed-opcodes))))
   (alias 'c6-source-contract 'gravity.c6-c10.source-contract)
   (alias 'c11-source-contract (ns-name (:ns (meta #'c11-contract/v2-source-contract))))
   ;; Only diagnostic transport/path selection is synthetic. Carrier traversal,
@@ -65,7 +67,9 @@
                            (forms "00740-p15-s23-c11-mir-validate-effect-edge-placement.clj"))]
   (binding [*ns* owner]
     (eval '(declare p15-s23-c11-mir-expected-ingress-semantic))
-    (eval '(declare p15-s23-c6c10-source-binding!))
+    (eval '(declare p15-s23-c6c10-source-binding!
+                    p15-s23-c6c10-project-expression-owner-metadata
+                    p15-s23-stage2-current-expression-development-binding!))
     (doseq [form selected] (eval form))))
 (defn call [name & args] (apply (ns-resolve owner name) args))
 (def core {:artifact-id "synthetic-core-id"})
