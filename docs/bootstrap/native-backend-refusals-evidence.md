@@ -67,6 +67,24 @@ clean current-main integration preflight remain required. The source starts
 from pending PR878; predecessor reviews and CI do not transfer here. Earlier
 Mobile, catalog and lint timeouts remain nonpasses. No timeout fix is claimed.
 
+## Relocated main composition
+
+The successor normally merges actual main
+2a7d5eefd8483c0144dee62df7ce02cecf984035, tree
+58a17e4d017e173e01e97e46aa07ce568216b102, after PR863 integration.
+The merge has no conflicts. Native backend production files, assertions and
+all four live language/compiler source pointers remain byte-identical to the
+reviewed 67c8a743 candidate. Incoming main files retain their actual contents.
+Fresh clean captures, composition review and own CI are required; no green
+provider tree or predecessor result is adopted.
+
+A separate before-CLI control on unchanged 67c8a743 stopped at the existing
+C3 exact-pinned-syntax-source check (81,241 expected bytes, 78,643 observed).
+It produced no Core-emission evidence. That source-authenticity refusal is
+retained; no CLI edit, source pin, hash constant or authority setting changes
+to obtain a passing result. This native backend slice makes no public Core,
+canonical C3 or broader compiler-conformance claim.
+
 ## Unsupported boundaries
 
 These are native document-fixture refusals. They do not establish canonical
