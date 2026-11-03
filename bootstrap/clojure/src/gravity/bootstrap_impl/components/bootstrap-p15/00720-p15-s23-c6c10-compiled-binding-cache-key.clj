@@ -1,21 +1,31 @@
 
 
+(defn- p15-s23-c6c10-current-source-version?
+  [version]
+  (and (identical? Long (class version))
+       (or (== 2 (.longValue ^Long version))
+           (== 3 (.longValue ^Long version)))))
+
 (defn- p15-s23-c6c10-current-source-input?
   [value]
-  (and (= 2 (:source-contract-version value))
+  (and (p15-s23-c6c10-current-source-version?
+        (:source-contract-version value))
        (= :development-current (:source-mode value))))
 
 (defn- p15-s23-c6c10-require-current-source-selection!
   [request-source version source-mode]
   (when-not (or (nil? source-mode)
-                (and (= 2 version) (= :development-current source-mode)))
+                (and (p15-s23-c6c10-current-source-version? version)
+                     (= :development-current source-mode)))
     (p15-s23-c6c10-host-fail!
      "C6-VERIFY" request-source :explicit-current-source-selection {})))
 
 (defn- p15-s23-c6c10-source-contract-for
   [value]
   (if (p15-s23-c6c10-current-source-input? value)
-    c6-source-contract/current-compiler-program-abi
+    (if (= 3 (:source-contract-version value))
+      c6-source-contract/flat-bool-current-compiler-program-abi
+      c6-source-contract/current-compiler-program-abi)
     (p15-s23-c6c10-source-program-contract
      (p15-s23-c6c10-source-program-version value))))
 
@@ -114,7 +124,7 @@
                   (:required-functions contract))
             current-program
             (when current-source?
-              (assoc (select-keys contract [:version :source-relative-path
+              (assoc (select-keys contract [:version :semantic-family :source-relative-path
                                             :builder-function :verifier-function
                                             :required-functions])
                      :source-mode :development-current
@@ -176,8 +186,12 @@
   ([binding version]
   (let [current-source? (p15-s23-c6c10-current-source-input? binding)
         current-program (:source-program binding)
+        expected-current-program
+        (if (= 3 version)
+          c6-source-contract/flat-bool-current-compiler-program-abi
+          c6-source-contract/current-compiler-program-abi)
         contract (if current-source?
-                   (or current-program c6-source-contract/current-compiler-program-abi)
+                   (or current-program expected-current-program)
                    (p15-s23-c6c10-source-program-contract version))]
   (and (if (contains? binding :source-contract-version)
          (let [tag (:source-contract-version binding)]
@@ -185,18 +199,22 @@
                 (== (.longValue ^Long version) (.longValue ^Long tag))))
          (= 1 version))
        (if current-source?
-         (and (= 2 version)
+         (and (= (:version expected-current-program) version)
               (= :development-current (:source-mode binding))
               (map? current-program)
               (= :development-current (:source-mode current-program))
               (= p15-s23-c6c10-source-relative-path
                  (:source-relative-path current-program))
-              (= (:builder-function c6-source-contract/current-compiler-program-abi)
+              (= (:builder-function expected-current-program)
                  (:builder-function current-program))
-              (= (:verifier-function c6-source-contract/current-compiler-program-abi)
+              (= (:verifier-function expected-current-program)
                  (:verifier-function current-program))
-              (= (:required-functions c6-source-contract/current-compiler-program-abi)
+              (= (:required-functions expected-current-program)
                  (:required-functions current-program))
+              (if (= 3 version)
+                (= (:semantic-family expected-current-program)
+                   (:semantic-family current-program))
+                true)
               (= :complete (:status binding))
               (= (:source-byte-count current-program)
                  (:source-byte-count binding))

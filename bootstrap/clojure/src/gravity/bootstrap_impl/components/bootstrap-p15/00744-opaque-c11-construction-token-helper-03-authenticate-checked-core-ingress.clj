@@ -84,8 +84,8 @@
                      (:checked-core-ingress-mode expected)))
              "C11-MODULE" (:source-path context) {}
              :explicit-effectful-reference-checked-core-authority))
-          (if (= 2 version)
-            (assoc expected :schema-version 2 :source-policy
+          (if (contains? #{2 3} version)
+            (assoc expected :schema-version version :source-policy
                    (p15-s23-c11-mir-core-policy-projection
-                    checked-core context report))
+                    checked-core context report version))
             expected)))))))
