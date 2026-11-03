@@ -10,8 +10,8 @@
   ["language/compiler/src/gravity/compiler/authenticated_envelope.gravity"
    "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"
    "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"
-   "bootstrap/gravity/src/gravity/macro.gravity"
-   "bootstrap/gravity/src/gravity/resolution.gravity"
+   "language/compiler/src/gravity/macro.gravity"
+   "language/compiler/src/gravity/resolution.gravity"
    "language/compiler/src/gravity/checked_core.gravity"])
 
 (defn- root []
@@ -115,8 +115,8 @@
                             :source-byte-count (:bytes (file-id relative))
                             :source-content-hash (:sha256 (file-id relative))}))
       "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity" (:plan (b/sh04-syntax-build-binding! "<sh07-c01>"))
-      "bootstrap/gravity/src/gravity/macro.gravity" (:plan (b/sh05-macro-build-binding! "<sh07-c01>"))
-      "bootstrap/gravity/src/gravity/resolution.gravity" (:plan (b/sh06-resolution-build-binding! "<sh07-c01>"))
+      "language/compiler/src/gravity/macro.gravity" (:plan (b/sh05-macro-build-binding! "<sh07-c01>"))
+      "language/compiler/src/gravity/resolution.gravity" (:plan (b/sh06-resolution-build-binding! "<sh07-c01>"))
       "language/compiler/src/gravity/checked_core.gravity" (:plan (b/sh07-core-build-binding!))
       ;; Same raw seed plan as SH02 source binding before its byte-count augmentation.
       (b/p15-s23-stage2-compiler-artifact-plan emitter source text))))

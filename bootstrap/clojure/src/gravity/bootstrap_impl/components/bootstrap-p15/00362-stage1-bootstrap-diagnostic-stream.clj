@@ -155,7 +155,11 @@
                           "language/compiler/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"
                           "language/compiler/src/gravity/compiler/l2_core_language_semantics.gravity"
                           "language/compiler/src/gravity/effects.gravity"
-                          "language/runtime/src/gravity/runtime.gravity"]
+                          "language/runtime/src/gravity/runtime.gravity"
+                          "language/compiler/src/gravity/macro.gravity"
+                          "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity"
+                          "language/compiler/src/gravity/resolution.gravity"
+                          "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"]
            :components (vec (sort stage1-bootstrap-required-components))
            :status :accepted}]
          :rejected-stage1-bootstrap-source-fixtures
@@ -217,7 +221,11 @@
    "language/compiler/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"
    "language/compiler/src/gravity/compiler/l2_core_language_semantics.gravity"
    "language/compiler/src/gravity/effects.gravity"
-   "language/runtime/src/gravity/runtime.gravity"])
+   "language/runtime/src/gravity/runtime.gravity"
+   "language/compiler/src/gravity/macro.gravity"
+   "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity"
+   "language/compiler/src/gravity/resolution.gravity"
+   "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"])
 
 (def stage1-reader-execution-diagnostic-messages
   {"STAGE1READER001" "stage1 reader table rejected an unexpected close delimiter"

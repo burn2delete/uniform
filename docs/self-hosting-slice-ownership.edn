@@ -292,8 +292,8 @@
   "language/compiler/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity" :sh-verification
   "language/compiler/src/gravity/compiler/authenticated_envelope.gravity" :sh-envelope
   "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity" :sh-syntax
-  "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity" :sh-macro
-  "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity" :sh-resolution
+  "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity" :sh-macro
+  "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity" :sh-resolution
   "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity" :master-coordinator
   "language/compiler/src/gravity/compiler/c6_call_arity_legality.gravity" :sh-core
   "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity" :sh-core
@@ -306,8 +306,8 @@
   "bootstrap/gravity/src/gravity/compiler/w5_c17_plugin_executor.gravity" :master-coordinator
   "bootstrap/gravity/src/gravity/compiler/w5_c18_pass_verifier.gravity" :master-coordinator
   "bootstrap/gravity/src/gravity/compiler/w5_compiler_pipeline_verifier.gravity" :master-coordinator
-  "bootstrap/gravity/src/gravity/macro.gravity" :sh-macro
-  "bootstrap/gravity/src/gravity/resolution.gravity" :sh-resolution
+  "language/compiler/src/gravity/macro.gravity" :sh-macro
+  "language/compiler/src/gravity/resolution.gravity" :sh-resolution
   "bootstrap/gravity/src/gravity/self_hosting/hermetic_package_build.gravity" :sh-package-build
   "bootstrap/gravity/src/gravity/self_hosting/meta_compiler_legality.gravity" :sh-meta-compiler
   "bootstrap/gravity/src/gravity/self_hosting/w5_compiler_identity_verifier.gravity" :master-coordinator

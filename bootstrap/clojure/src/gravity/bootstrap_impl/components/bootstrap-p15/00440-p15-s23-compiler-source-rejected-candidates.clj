@@ -39,9 +39,9 @@
                  {:component :syntax-object-model
                   :path "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"}
                  {:component :macro-expansion
-                  :path "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity"}
+                  :path "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity"}
                  {:component :name-resolution
-                  :path "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"}
+                  :path "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"}
                  {:component :core-semantics
                   :path "language/compiler/src/gravity/compiler/l2_core_language_semantics.gravity"}
                  {:component :core-lowering
@@ -117,9 +117,9 @@
                  {:component :syntax-object-model
                   :path "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"}
                  {:component :macro-expansion
-                  :path "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity"}
+                  :path "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity"}
                  {:component :name-resolution
-                  :path "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"}
+                  :path "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"}
                  {:component :core-semantics
                   :path "language/compiler/src/gravity/compiler/l2_core_language_semantics.gravity"}
                  {:component :core-lowering
