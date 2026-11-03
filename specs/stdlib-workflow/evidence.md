@@ -289,6 +289,11 @@ changes in manifest commit `c85b7b2268c2512e574fb2ebd410e8e248d48d5e`, tree
 `2e9b052554eb55b86600fb0f18bd6965b26749fd`, manifest blob
 `367905fc9b45001865cc5a2e59b4e3f07c16cb6d`, and manifest SHA256
 `c47151307b2dd2e20855f5837053a6a63806f2ed81d0acd5fadaa653c3952a38`.
+The clean repair candidate is commit `52435f3c4` (full identity
+`52435f3c4b5a15efd4666da524bbbdedb806f7f9`) with tree
+`7e8209c629c39edebaac928739e313430e201057`; its immediate parent is the
+tooling-transition repair `d48031f57`, and its original PR564 candidate base
+remains `3ac07caf18b2a7381ce615d17835c881e0f88de9`.
 The 19 task-source bridges, including the PR564 Stdlib row and all 18
 Runtime/Domain predecessor rows, are conserved. Two additional
 source-version bridges are exact and separate from task-source accounting:
