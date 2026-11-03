@@ -1,3 +1,59 @@
+# Artifact emission implementation specification
+
+Implementation scope added under the 2026-11-01 request. Existing emission and
+backend maintainers retain ownership. Historical task transfer below does not
+establish artifact generation, conformance or release acceptance.
+
+## Behavior and interfaces
+
+Implement [the Emit outcome](../../docs/component-roadmaps/emit.md#release-outcome)
+under [B13](../../docs/phase-07-backend-architecture/110-b13-artifact-emission-specification.md)
+and [B14](../../docs/phase-07-backend-architecture/111-b14-backend-conformance-test-plan.md),
+with actual B1/C14 inputs and selected backend rules. Consume Lower's verified
+backend-ready input, explicit target/ABI/runtime/providers, proof/safety/grant
+and source/dependency identities. Invoke the real adapter/toolchain and produce
+actual output bytes or canonical semantic artifacts, common versioned manifests,
+content hashes, source/debug/generated maps, provenance/artifact graphs,
+reproducibility/conformance references and owning diagnostics.
+
+The staged Linux LLVM compiler release remains the selected path. Backend
+owners implement concrete target families; Emit binds their actual products
+and evidence for Runtime, Build, tooling and Release. Development-only evidence
+is labeled with the downstream operations it cannot support. Missing required
+evidence cannot be hidden by producing bytes or a successful-looking manifest.
+
+## Existing implementation routes and acceptance
+
+Use [the sole marked ledger](tasks.md#implementation-tasks) under
+`emit/current-evidence-and-remaining-work/`. Status, criteria and finer source
+joins remain with the existing implementation and reconciliation owners.
+
+| Existing suffix | Required accepted behavior | Required rejection and evidence |
+| --- | --- | --- |
+| `emit1-reconcile-selected-target-contracts` | Bind exact selected target/ABI/runtime/toolchain tuples, supported operations, output kinds and fresh actual Lower inputs. Keep hosted and native release claims separate. | Reject undeclared targets, stale or missing required evidence and incompatible layouts/services before invoking emission. Retain eligibility, source/op and missing-evidence diagnostics. |
+| `emit2-emit-real-outputs` | Invoke actual selected adapters to produce declared objects/executables/libraries or semantic artifacts with explicit runtime/helper linkage and surfaced tool failures. | Reject unsupported operations, tool failure and hidden runtime dependencies. A file name, hand-written output fixture or declared emission is not code generation; retain actual bytes/tool identity and result. |
+| `emit3-bind-provenance-to-bytes` | Hash the actual output, bind common schema/kind/backend/profile/target/build/source/compiler/pass/dependency identity, and preserve safety/proof/effect/capability/audit/ABI/runtime and origin records through the artifact graph. | Reject missing, stale, mismatched or contradictory evidence, broken graph/source edges and unrecorded output-affecting environment/nondeterminism. Verify content/canonical bytes rather than trusting supplied hashes. |
+| `emit4-establish-conformance` | Execute actual selected-target positives and relevant MIR/reference comparisons; verify metadata, manifest and diagnostic behavior, tamper refusal and reproducibility under its declared scope. | Reject illegal/unsupported inputs and metadata loss even if numerical results match. Assert exact owning diagnostics. Unavailable targets need explicit availability records; shared manifest/rejection tests remain required, and skipped execution earns no execution support. |
+| `emit5-integrate-artifact-consumers` | Deliver real content-addressed outputs/manifests to actual Runtime/Build/tooling consumers and retain exact source/fixture/tool/runtime receipts with applicable release evidence. | Reject tampered, wrong-subject or incomplete consumer inputs and promotion of development-only evidence. Signing, SBOM, provenance attestations and seed-retirement acceptance remain with their separate owning outcomes. |
+
+The common B13 artifact contract applies across the wider required backend
+kinds; one LLVM output cannot close C/Wasm/JVM/JS/MLIR/GPU/HDL/workflow/query/
+mobile artifacts. Their independent backend/domain routes retain full B14
+fixture and metadata obligations. Rejected builds retain relevant partial
+diagnostic artifacts without becoming accepted products.
+
+## Starting work and completion
+
+Declared Lower/backend/consumer interfaces and verified fixtures allow local
+emission work before Build and Release finish. Accepted target emission needs
+real adapter output and actual consuming/execution evidence for the claimed
+tuple. Component completion requires its supported matrix, complete manifests,
+metadata/diagnostic negatives and real consumer composition. Preserve writer
+reservations and recorded operation restrictions. Independent acceptance,
+integration, wider backend completion and seedless signed release stay separate.
+
+## Historical task-authority-transfer specification
+
 # Feature specification: Emit implementation workflow
 
 Status: task-authority candidate; independent review and integration pending.

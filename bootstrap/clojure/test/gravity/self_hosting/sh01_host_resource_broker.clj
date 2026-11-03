@@ -1003,6 +1003,37 @@
       (throw throwable))))
 
 (def ^:private ^:dynamic *process-custody* nil)
+(def ^:private ^:dynamic *local-custody-owner* nil)
+(def ^:private ^:dynamic *local-custody-lifecycle* nil)
+
+(defn- require-local-custody-thread! []
+  (when (and *local-custody-owner*
+             (not= *local-custody-owner* (.getId (Thread/currentThread))))
+    (fail! "SH01-PROCESS-OWNERSHIP" "Local process scope belongs to its entering thread" {})))
+
+(defn- reject-local-mutation! [lifecycle id message data]
+  (let [error (ex-info message (assoc data :id id))]
+    ;; Retain the violation BEFORE throwing: a callback may catch/swallow it.
+    (when lifecycle (swap! lifecycle update :violations conj error))
+    (throw error)))
+
+(defn- require-local-operation!
+  ([record] (require-local-operation! record nil))
+  ([_record attempted]
+  ;; The lifecycle ledger is private to the owning scope.  Do not retain a
+  ;; back-reference to it in a process record: observer/finalizer views must
+  ;; never be able to reach or rewrite the invariant state.
+  (if-let [lifecycle *local-custody-lifecycle*]
+    (do
+      (when (or (not= (:owner-thread-id @lifecycle) (.getId (Thread/currentThread)))
+                (and *local-custody-owner* (not= *local-custody-owner* (.getId (Thread/currentThread)))))
+        (reject-local-mutation! lifecycle "SH01-PROCESS-OWNERSHIP"
+                                "Local process scope belongs to another owner" {:attempted attempted}))
+      (when-not (= :operation (:phase @lifecycle))
+      (reject-local-mutation! lifecycle "SH01-PROCESS-PHASE"
+                              "Local process registry is sealed after operation"
+                              {:phase (:phase @lifecycle) :attempted attempted})))
+    (require-local-custody-thread!))))
 
 (def ^:private quarantined-leases (atom {}))
 
@@ -1010,6 +1041,7 @@
   "Register BEFORE native start. A pending or thrown start has unknown creation.
   This is cooperative in-JVM custody, not a startup watchdog or OS containment."
   []
+  (require-local-operation! nil)
   (when *process-custody*
     (let [custody (atom {:launch-state :pending :creation-coverage :unknown
                          :owner-thread-id (.getId (Thread/currentThread))
@@ -1025,12 +1057,14 @@
   "Keep the actual returned Process even if token retention subsequently throws."
   [custody process]
   (when custody
+    (require-local-operation! custody {:entry :returned-process :process process})
     (require-start-owner! custody)
     (swap! custody assoc :launch-state :returned :process process))
   process)
 
 (defn record-started-ownership! [custody owned]
   (when custody
+    (require-local-operation! custody {:entry :owned-token :owned owned})
     (require-start-owner! custody)
     (when-not (and (= :returned (:launch-state @custody))
                    (identical? (:process @custody) (:process owned))
@@ -1042,6 +1076,7 @@
 
 (defn record-process-start-error! [custody error]
   (when custody
+    (require-local-operation! custody {:entry :start-error :error error})
     (require-start-owner! custody)
     (swap! custody #(assoc % :launch-state (if (:process %) :retention-threw :start-threw)
                            :start-error error)))
@@ -1050,6 +1085,7 @@
 (defn retained-start-token
   "Reuse a token only for this exact returned Process in the current lease scope."
   [process]
+  (require-local-custody-thread!)
   (when *process-custody*
     (when-let [custody (some #(when (identical? process (:process @%)) %) @*process-custody*)]
       (require-start-owner! custody)
@@ -1059,6 +1095,12 @@
   "Retains the normal runner's ownership token within an active with-lease.
   Outside that scope the normal process API is unchanged."
   [owned]
+  (require-local-operation! nil {:entry :compatibility-token :owned owned})
+  (when (and *local-custody-lifecycle*
+             (not= (:owner-thread-id owned) *local-custody-owner*))
+    (reject-local-mutation! *local-custody-lifecycle* "SH01-PROCESS-OWNERSHIP"
+                            "Compatibility token belongs to another owner"
+                            {:owned owned}))
   (when *process-custody*
     (if-let [custody (some #(when (identical? (:process owned) (:process @%)) %)
                            @*process-custody*)]
@@ -1067,13 +1109,16 @@
         (when-not (identical? owned (:owned @custody))
           (fail! "SH01-PROCESS-OWNERSHIP" "Process wait must use its startup token" {}))
         custody)
-      (let [custody (atom {:owned owned :result nil})]
+      (let [custody (atom {:owned owned :result nil
+                           :owner-thread-id *local-custody-owner*})]
         (swap! *process-custody* conj custody)
         custody))))
 
 (defn record-process-result!
   "Records actual terminal observations without inferring descendant coverage."
   [custody result]
+  (require-local-operation! custody {:entry :process-result :result result})
+  (when (and custody (:owner-thread-id @custody)) (require-start-owner! custody))
   (when custody (swap! custody assoc :result result))
   result)
 
@@ -1097,10 +1142,11 @@
 (defn- throw-disposition-errors!
   [errors observation]
   (let [cause-with (fn [predicate error]
-                     (loop [error error seen #{}]
-                       (when (and error (not (contains? seen error)))
+                     (loop [error error seen (java.util.IdentityHashMap.)]
+                       (when (and error (not (.containsKey seen error)))
                          (if (predicate error) error
-                             (recur (.getCause ^Throwable error) (conj seen error))))))
+                             (do (.put seen error true)
+                                 (recur (.getCause ^Throwable error) seen))))))
         fatal? #(or (instance? VirtualMachineError %) (instance? ThreadDeath %)
                     (instance? LinkageError %))
         primary (or (some #(cause-with fatal? %) errors) (first errors))]
@@ -1242,3 +1288,167 @@
        (:value operation)
        (finally
          (when @interrupted? (.interrupt (Thread/currentThread))))))))
+
+(def ^:private local-process-custodies (atom {}))
+
+(defn- local-registry-snapshot [processes owner]
+  (let [records @processes]
+    {:snapshot (mapv (fn [record] {:record record :value @record}) records)
+     :complete? (every? #(and (= owner (:owner-thread-id @%))
+                             (terminal-process-custody? %)) records)}))
+
+(defn- seal-local-registry! [processes lifecycle]
+  (let [snapshot (local-registry-snapshot processes (:owner-thread-id @lifecycle))
+        records @processes
+        unchanged! (fn [expected value]
+                     (if (identical? expected value) true
+                       (reject-local-mutation! lifecycle "SH01-PROCESS-PHASE"
+                                               "Sealed process registry is read-only"
+                                               {:attempted value})))]
+    (set-validator! processes #(unchanged! records %))
+    (doseq [{:keys [record value]} (:snapshot snapshot)]
+      (set-validator! record #(unchanged! value %)))
+    snapshot))
+
+(defn- same-local-snapshot? [expected observed]
+  (and (nil? (:error expected)) (nil? (:error observed))
+       (= (count (:snapshot expected)) (count (:snapshot observed)))
+       (every? (fn [[a b]] (and (identical? (:record a) (:record b))
+                                (identical? (:value a) (:value b))))
+               (map vector (:snapshot expected) (:snapshot observed)))))
+
+(def ^:private observer-result-keys
+  [:status :exit-code :root-exited? :cleanup-root-alive?
+   :tracked-owned-processes-terminal? :descendant-coverage :capture-failed?
+   :stdout-capture-status :stderr-capture-status
+   :stdout-capture-error :stderr-capture-error
+   :stdout-capture-forced-close? :stderr-capture-forced-close?])
+
+(defn- immutable-observer-record
+  "Expose only a persistent DATA snapshot, never a process/ownership/lifecycle
+  atom.  The private ledger remains the only source used for completion."
+  [value]
+  (assoc (dissoc value :process :owned :local-lifecycle)
+         :process-present? (some? (:process value))
+         :ownership-present? (some? (:owned value))
+         :result (when (map? (:result value))
+                   (select-keys (:result value) observer-result-keys))))
+
+(defn- immutable-local-process-view
+  [snapshot]
+  (mapv (comp immutable-observer-record :value) (:snapshot snapshot)))
+
+(defn- immutable-local-terminal-view
+  [snapshot]
+  (when (map? snapshot)
+    {:complete? (:complete? snapshot)
+     :snapshot (immutable-local-process-view snapshot)}))
+
+(defn- immutable-owned-resources-view
+  [resources]
+  (if (map? resources)
+    (cond-> (dissoc resources :processes :lease :released? :custody
+                    :local-lifecycle :owned :process)
+      (contains? resources :processes) (assoc :processes-present? true)
+      (contains? resources :lease) (assoc :lease-present? true)
+      (contains? resources :released?) (assoc :release-state-present? true)
+      (contains? resources :custody) (assoc :custody-present? true))
+    resources))
+
+(defn with-process-custody
+  "Synchronous local process ownership WITHOUT broker admission. J1 has no L;
+  J2 supplies its own original local-L finalizer. Registry/token/raw errors stay
+  local and thread-affine. Unknown startup/capture/terminal facts retain custody
+  and cannot become a complete local disposition. Observer receives a read-only
+  :completion view with immutable process DATA snapshots, nil until it returns;
+  dereference after return/error for the final closed disposition. No
+  parent-exit durability."
+  [operation finalize-owned-resources! observe!]
+  (when-not (every? ifn? [operation finalize-owned-resources! observe!])
+    (fail! "SH01-PROCESS-OWNERSHIP" "Local custody callbacks must be callable" {}))
+  (when *process-custody*
+    (fail! "SH01-PROCESS-OWNERSHIP" "Local custody may not hide an existing process scope" {}))
+  (let [key (Object.) owner (.getId (Thread/currentThread))
+        processes (atom []) custody (atom {:owner-thread-id owner :processes processes
+                                          :phase :operation :violations []})
+        completion-state (atom nil)
+        completion (reify clojure.lang.IDeref (deref [_] @completion-state))
+        interrupted? (volatile! (.isInterrupted (Thread/currentThread)))
+        remember! #(when (.isInterrupted (Thread/currentThread)) (vreset! interrupted? true))]
+    ;; Establish strong custody before any selected callback/native start.
+    (swap! local-process-custodies assoc key custody)
+    (binding [*process-custody* processes *local-custody-owner* owner
+              *local-custody-lifecycle* custody]
+      (let [operation-result (try {:returned? true :value (operation)}
+                                  (catch Throwable e {:returned? false :error e}))
+            _ (remember!)
+            _ (swap! custody assoc :phase :sealed)
+            terminal (try (seal-local-registry! processes custody)
+                          (catch Throwable e {:error e}))
+            _ (remember!)
+            resources
+            (try
+              (let [r (finalize-owned-resources!
+                       {:owner-thread-id owner :processes processes
+                        :operation operation-result :terminal terminal})]
+                (when-not (and (map? r) (contains? r :custody)
+                               (contains? #{:not-acquired :released :quarantined :release-failed} (:state r))
+                               (boolean? (:release-attempted? r))
+                               (or (nil? (:error r)) (instance? Throwable (:error r)))
+                               (case (:state r)
+                                 :released (and (:release-attempted? r) (nil? (:error r)))
+                                 :not-acquired (and (false? (:release-attempted? r)) (nil? (:error r)))
+                                 :release-failed (and (:release-attempted? r) (instance? Throwable (:error r)))
+                                 :quarantined true false))
+                  (fail! "SH01-BROKER-OWNED-RESOURCE" "Invalid local resource disposition" {}))
+                r)
+              (catch Throwable e {:state :quarantined :release-attempted? :unknown
+                                  :custody finalize-owned-resources! :error e}))
+            _ (remember!)
+            before-observer (try (local-registry-snapshot processes owner)
+                                 (catch Throwable e {:error e}))
+            provisional? (and (:returned? operation-result) (:complete? terminal)
+                           (same-local-snapshot? terminal before-observer)
+                           (empty? (:violations @custody))
+                           (nil? (:error resources)) (#{:not-acquired :released} (:state resources)))
+            observation {:owner-thread-id owner
+                         :processes (immutable-local-process-view before-observer)
+                         :operation operation-result
+                         :terminal (immutable-local-terminal-view terminal)
+                         :owned-resources (immutable-owned-resources-view resources)
+                         :local-disposition (if provisional? :observer-pending :quarantined)
+                         :completion completion
+                         :broker-admission :not-performed
+                         :parent-exit-custody :unsupported-in-JVM-only}
+            _ (swap! custody merge observation)
+            observer-error (try (observe! observation) nil (catch Throwable e e))
+            _ (remember!)
+            after-observer (try (local-registry-snapshot processes owner)
+                                (catch Throwable e {:error e}))
+            stable? (and (same-local-snapshot? terminal before-observer)
+                         (same-local-snapshot? terminal after-observer))
+            registry-error (when-not stable?
+                             (ex-info "Local process registry changed after sealing"
+                                      {:id "SH01-PROCESS-PHASE"}))
+            violations (:violations @custody)
+            complete? (and provisional? stable? (:complete? after-observer)
+                           (empty? violations) (nil? observer-error))
+            final-observation (-> observation (dissoc :completion)
+                                  (assoc :local-disposition (if complete? :complete :quarantined)
+                                         :phase-violations violations :observer-error observer-error
+                                         :registry-stable? stable?))
+            _ (swap! custody merge final-observation {:phase :closed})
+            _ (reset! completion-state final-observation)
+            _ (when complete? (swap! local-process-custodies dissoc key))
+            errors (let [seen (java.util.IdentityHashMap.)]
+                     (vec (filter (fn [error]
+                                    (when-not (.containsKey seen error)
+                                      (.put seen error true) true))
+                                  (remove nil? (concat [(:error operation-result) (:error terminal)
+                                                       (:error resources) (:error before-observer)
+                                                       (:error after-observer) observer-error registry-error]
+                                                      violations)))))]
+        (try
+          (throw-disposition-errors! errors final-observation)
+          (:value operation-result)
+          (finally (when @interrupted? (.interrupt (Thread/currentThread)))))))))

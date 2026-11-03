@@ -189,3 +189,67 @@
           failure (diagnostic #(bootstrap/compiler-c5-resolution-file-artifact path ci))]
       (is (= "C5-PRIVATE" (:id failure)))
       (is (map? (:source-span failure))))))
+
+(deftest stage2-module-transitive-explicit-reader-invocation-plumbing
+  ;; Actual C5 current-source verification is owned by the resolution tests.
+  ;; This test stays finite and isolates the Stage2 interface seam: an explicit
+  ;; invocation reaches every transitive source, while the old arity retains
+  ;; the pinned/default route and no invocation is stored as admission data.
+  (let [c (artifact 3 []) b (artifact 2 [c]) a (artifact 1 [b])
+        emitter {:fixture :emitter}
+        sources (into {} (map (fn [[x namespace]]
+                                [(:artifact-id x) {:artifact x :module-id (:artifact-id x)
+                                                   :source-path (str namespace) :source-text (str namespace)
+                                                   :module {:namespace namespace} :request {:imports []}
+                                                   :functions {}}])
+                              [[a 'example.root] [b 'example.middle] [c 'example.leaf]]))
+        route (fn [caller callee]
+                {:route-id (:artifact-id caller) :caller-module-id (:artifact-id caller)
+                 :caller-function 'relay :callsite-path [0 1 1] :callee-module-id (:artifact-id callee)})
+        ra (route a b) rb (route b c)
+        raw (fn raw
+              ([emitter path text index] (raw emitter path text index nil))
+              ([_ path _ index _map-order]
+               (let [index (not-empty index)]
+                 {:plan-id (bootstrap/reader-canonical-hash [path index])
+                  :module {:module (symbol path)} :functions {} :route-index index})))
+        bp (raw emitter "example.middle" "example.middle" {['relay [0 1 1]] rb})
+        cp (raw emitter "example.leaf" "example.leaf" nil)
+        inputs {:caller-resolution-artifact a :dependency-plans [bp cp]}
+        invocation {:reader-source-path "current-reader.gravity"
+                    :authenticated-envelope-options {:source :development-current}
+                    :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                              :source-path "current-syntax.gravity"}
+                    :macro-source-mode :development-current}
+        source-calls (atom [])
+        source (fn
+                 ([value]
+                  (swap! source-calls conj [:pinned (:artifact-id value) nil])
+                  (get sources (:artifact-id value)))
+                 ([value selected]
+                  (swap! source-calls conj [:current (:artifact-id value) selected])
+                  (get sources (:artifact-id value))))
+        build (fn [selected]
+                (bootstrap/p15-s23-stage2-module-bundle
+                 emitter "example.root" "example.root" inputs selected))]
+    (with-redefs [bootstrap/p15-s23-stage2-module-source source
+                  bootstrap/p15-s23-stage2-module-shadowing-check! (fn [& _])
+                  bootstrap/c-backend-stage2-plan-emitter-source-rule! (fn [& _] {:emitter emitter})
+                  bootstrap/p15-s23-stage2-module-routes
+                  (fn [source _] (get {(:artifact-id a) [ra] (:artifact-id b) [rb]} (:module-id source) []))
+                  bootstrap/p15-s23-stage2-module-exports (fn [_] [])
+                  bootstrap/p15-s23-stage2-compiler-artifact-plan-raw raw]
+      (let [bundle (build invocation)]
+        (is (= [[:current (:artifact-id a) invocation]
+                [:current (:artifact-id b) invocation]
+                [:current (:artifact-id c) invocation]] @source-calls))
+        (is (= :development-unadmitted (get-in bundle [:boundary :revision-status])))
+        (is (false? (get-in bundle [:boundary :self-hosted?])))
+        (is (not (contains? bundle :reader-invocation))))
+      (reset! source-calls [])
+      (let [bundle (build nil)]
+        (is (= [[:pinned (:artifact-id a) nil]
+                [:pinned (:artifact-id b) nil]
+                [:pinned (:artifact-id c) nil]] @source-calls))
+        (is (= :development-unadmitted (get-in bundle [:boundary :revision-status])))
+        (is (not (contains? bundle :reader-invocation)))))))

@@ -216,8 +216,8 @@ remaining active writer identities before source changes. Contracts: C3-C6.
 Exact interfaces: `bootstrap/clojure/src/gravity/authenticated_artifact_pipeline/01-pipeline-schema-version.clj`
 and `04-envelope-valid.clj`; Gravity `c3_syntax_object_model.gravity`,
 `c4_macro_expansion_engine.gravity`, `c5_name_resolution_namespace_analyzer.gravity`,
-`c6_core_lowering_engine.gravity` under `bootstrap/gravity/src/gravity/compiler/`,
-and `language/compiler/src/gravity/checked_core.gravity`.
+`c6_core_lowering_engine.gravity` under `language/compiler/src/gravity/compiler/`,
+and `bootstrap/gravity/src/gravity/checked_core.gravity`.
 
 Dependency: OWN-01 for real source cases. The ordinary authenticated pipeline
 exposes only source/Reader/Syntax/expansion/resolution/checked-Core stages; its
@@ -235,10 +235,12 @@ Remaining population and its source-to-Core results stay open under the
 
 Accountable join: ownership maintainer coordinates Types/Effects/Legality/Auth
 with the existing MIR producer owner. Contracts: C7-C11 and L15.
-Source: `language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity`,
+Source: `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity`,
 `c8_effect_checker_engine.gravity`, `c9_ownership_checker_engine.gravity`,
-`c10_safety_analysis_pipeline.gravity`, `c6_c10_checked_core_pipeline.gravity`
-and `c11_mir_specification.gravity`. Consumer fixtures include
+`c10_safety_analysis_pipeline.gravity`, and
+`language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity`,
+with `c11_mir_specification.gravity` remaining under
+`bootstrap/gravity/src/gravity/compiler/`. Consumer fixtures include
 `bootstrap/clojure/test/gravity/self_hosting/sh12_c10_mir_adapter_test.clj` and
 `sh12_authenticated_mir_integration_test.clj`.
 
@@ -258,10 +260,11 @@ dependency remains a blocker, not an excluded passing path.
 #### Bounded fact producer and consumer contract
 
 The accepted Bool path has one concrete fused producer, not six independently
-observed public analysis calls. The Native Core owner is accountable for the
-public C6-v2 constructor and fresh verification (`00724a`/`00726`), which execute
-`bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity`.
-That source has SHA-256
+observed public analysis calls. The retained historical acceptance artifact for
+the Native Core owner's C6-v2 constructor and fresh verification
+(`00724a`/`00726`) named the source
+`language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity`.
+That historical source artifact has SHA-256
 `0e7e30e15bc68dabdcee3cfea4c91740d82808204c5fe322d67ccd0ffdb76b98`.
 `c6-c10-build-checked-core-template` calls `c6c10-build-fact-tables` and
 `c6c10-build-node-facts` on actual lowered Core nodes. These are executable
@@ -460,9 +463,9 @@ follows from this finite acceptance and unsupported-capability record.
 
 Accountable join: Opt #370 owner, Reader/C14 #374 owner and Native/Lower owners.
 Contracts: C11/C13/C14/B1. Source:
-`language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity`,
+`bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity`,
 `c14_target_lowering_architecture.gravity`,
-`language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity`;
+`bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity`;
 fixtures include `sh16_checked_mir_identity_bridge_test.clj` and
 `sh17_c13_optimized_mir_carrier_test.clj` in the self-hosting test directory.
 

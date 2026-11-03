@@ -60,17 +60,22 @@
         callee-scope (assoc scope :module-id (:module-id entry) :function (:callee-function route))]
     (p15-s23-stage2-runtime-execute-function-scoped runtime (:plan entry) (:callee-function route) args callee-scope)))
 
-(defn p15-s23-stage2-module-execute-function [runtime bundle function args]
-  (when-not (map? runtime) (p15-s23-stage2-module-fail! :runtime-map-required {}))
-  (when (some #(and (keyword? %) (str/starts-with? (name %) "sh07-b51-")) (keys runtime))
-    (p15-s23-stage2-module-fail! :admission-runtime-forbidden {}))
-  (let [bundle (p15-s23-stage2-module-validate-bundle! bundle)
-        root (p15-s23-stage2-module-member! bundle (:root-module-id bundle))]
-    (when-not (and (symbol? function) (nil? (namespace function))
-                   (map? (get-in root [:plan :functions function])))
-      (p15-s23-stage2-module-fail! :root-function-member-required {:function function}))
-    ;; This data is derived only here, after full reconstruction, and threaded
-    ;; lexically through private calls. Public raw instruction entry has nil.
-    (p15-s23-stage2-runtime-execute-function-scoped
-     runtime (:plan root) function args
-     {:kind :gravity/stage2-module-invocation :bundle bundle :module-id (:module-id root) :function function})))
+(defn p15-s23-stage2-module-execute-function
+  ([runtime bundle function args]
+   (p15-s23-stage2-module-execute-function runtime bundle function args nil))
+  ([runtime bundle function args reader-invocation]
+   (when-not (map? runtime) (p15-s23-stage2-module-fail! :runtime-map-required {}))
+   (when (some #(and (keyword? %) (str/starts-with? (name %) "sh07-b51-")) (keys runtime))
+     (p15-s23-stage2-module-fail! :admission-runtime-forbidden {}))
+   (let [bundle (if (some? reader-invocation)
+                  (p15-s23-stage2-module-validate-bundle! bundle reader-invocation)
+                  (p15-s23-stage2-module-validate-bundle! bundle))
+         root (p15-s23-stage2-module-member! bundle (:root-module-id bundle))]
+     (when-not (and (symbol? function) (nil? (namespace function))
+                    (map? (get-in root [:plan :functions function])))
+       (p15-s23-stage2-module-fail! :root-function-member-required {:function function}))
+     ;; This data is derived only here, after full reconstruction, and threaded
+     ;; lexically through private calls. Public raw instruction entry has nil.
+     (p15-s23-stage2-runtime-execute-function-scoped
+      runtime (:plan root) function args
+      {:kind :gravity/stage2-module-invocation :bundle bundle :module-id (:module-id root) :function function}))))

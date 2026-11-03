@@ -57,14 +57,22 @@
                        (= (get-in source [:request :module :c4-artifact-id]) (:definition-artifact-id binding)))
           (p15-s23-stage2-module-fail! :declaration-binding-mismatch {:symbol name}))))))
 
-(defn p15-s23-stage2-module-source [artifact]
-  (let [boundary (:gravity-resolution-boundary artifact)
-        request (:authenticated-resolution-request boundary)]
+(defn p15-s23-stage2-module-source
+  ([artifact]
+   (p15-s23-stage2-module-source artifact nil))
+  ([artifact reader-invocation]
+   (let [boundary (:gravity-resolution-boundary artifact)
+         request (:authenticated-resolution-request boundary)]
     (when-not (and (= :gravity/sh06-resolution-artifact (:kind artifact))
                    (= :accepted (:status artifact)) (= :gravity-source (:owner boundary))
                    (= :gravity/sh06-ordinary-module-resolution-request (:artifact request))
                    (= 2 (:schema-version request))
-                   (= :passed (:status (sh06-resolution-artifact-verification artifact))))
+                   (= :passed
+                      (:status
+                       (if (some? reader-invocation)
+                         (sh06-resolution-artifact-verification
+                          artifact :gravity.bootstrap/legacy reader-invocation)
+                         (sh06-resolution-artifact-verification artifact)))))
       (p15-s23-stage2-module-fail! :verified-ordinary-c5-required {}))
     (let [sh05 (:sh05-macro-artifact artifact)
           c2 (get-in sh05 [:gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact])
@@ -93,7 +101,7 @@
                     :functions (stage0-function-table (assoc (:module macro) :forms (:expanded-forms macro)))
                     :syntax (:expanded-syntax-stream sh05) :request request}]
         (p15-s23-stage2-module-declarations! source expanded)
-        (assoc source :map-order (p15-s23-stage2-module-map-order source))))))
+        (assoc source :map-order (p15-s23-stage2-module-map-order source)))))))
 
 (defn p15-s23-stage2-module-shadowing-check! [source emitter]
   (let [bindings (into {} (map (juxt :binding-id identity) (get-in source [:artifact :binding-table :bindings])))

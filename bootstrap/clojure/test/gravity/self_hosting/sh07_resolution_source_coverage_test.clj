@@ -24,7 +24,7 @@
 
 (def ^:private root (delay (repository-root)))
 (def ^:private source-relative-path
-  "bootstrap/gravity/src/gravity/resolution.gravity")
+  "language/compiler/src/gravity/resolution.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
 (def ^:private fixture-root
