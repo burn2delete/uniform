@@ -40,9 +40,9 @@ in `../accounting-removal/pr697-current-port.edn`.
 
 With the pinned `clj-kondo` 2025.10.23 directory on `PATH`, the facade/context
 controls passed 27 tests/494 assertions with zero failures/errors and zero
-blocking warnings/errors. The progress runner composition controls passed 6
-tests/28 assertions, including timing/result-delivery chaining; the interval
-and isolation controls passed 4/15 and 2/7. The selected sh06 digest hook
+blocking warnings/errors. The progress runner controls passed 12 tests/165
+assertions, including timing/result-delivery chaining; the interval and
+isolation controls passed 11/237 and 3/16. The selected sh06 digest hook
 passed 1 test/5 assertions. The language-boundary gate passed 6 tests/11
 assertions. The supplied repository-wide `cljfmt` check remains nonzero for
 the three original PR697 control files in its pre-format source checkpoint;

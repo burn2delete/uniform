@@ -1,117 +1,206 @@
-{:schema :gravity/pr697-current-port-v1
- :pr 697
- :kind :bounded-current-source-port
- :historical-candidate
- {:base "042f72adca0075ef4163ca832390e0be29b02890"
-  :base-tree "f710471f73b3ceff8e29ca0aafacf623a54fbf8f"
-  :head "7f01d36efe09e2a4ee47aa9d3334113f6713827a"
-  :head-tree "49c8d3751482d5aa6bd114bb346ae3493d21b3d7"
-  :original-static-run "41204203482"
-  :original-static-job "124545858508"
-  :original-static-artifact "13043481814"
-  :original-macro-run "41216108296"
-  :status :historical-nonpass}
- :current-base
- {:commit "d351310d5821a983fac2ad0fee4c0be96711b4b4"
-  :tree "1d7c95cf054bbc3e1719bc39cb35ac7bbaf13049"}
- :declared-source
- {:commit "392c3f5f613f05d1f7301264e31ba34fc4aac944"
-  :tree "49978feb45f39f2ec1f98061a1c17aa8904d7588"}
+{:schema :gravity/pr697-current-port-v1,
  :source-checkpoint
- {:commit "8cad807dbd99317baf0a9da622bb9d9ef99650a1"
-  :tree "b972c6620b59f753a8c0dca85464e0cfced2a826"
-  :parent "adc6ebb200252fb6a18dacd617fdb24c7de96f85"
-  :merge-parents ["392c3f5f613f05d1f7301264e31ba34fc4aac944"
-                  "d351310d5821a983fac2ad0fee4c0be96711b4b4"]
-  :owned-path-count 12
+ {:commit "17c6b1b122d58f43aa546621ffe7679a8c62b663",
+  :tree "79463c716041b421173ffb4dd2c1939cb7df413c",
+  :parent "4ac42c85c4224a132ba0bd589cdf5c5d6ae19047",
+  :owned-path-count 12,
   :paths
-  {"bootstrap/clojure/test/gravity/development_test_runner.clj"
-   "e66336203aec9b1d120bf637a65b940541c33238"
-   "bootstrap/clojure/test/gravity/self_hosting/sh06_unmetered_resolution_test.clj"
-   "f05f9a26a633bb40c16f27f57141d5be4b23fc08"
-   "specs/accounting-removal/macro-progress/README.md"
-   "d6bb54a26471539b0b92c7775975808c8a170417"
-   "specs/accounting-removal/pr697-current-port.edn"
-   "e7161be85b6de317cf7ec7f2bf3904d19da307e1"
-   "specs/accounting-removal/resolution-intervals/README.md"
-   "c28d743821e58a9994a3cb52c7ce5fa9ff488160"
-   "specs/reader-workflow/lint-source-alias-reader.md"
-   "8e80f9087cb28838c07a0f0e0d79b0e308958825"
-   "tools/ci/lint_context.clj"
-   "95ea6e0e79694b21ed25e637b655d21691e38869"
+  {"specs/reader-workflow/lint-source-alias-reader.md"
+   "8e80f9087cb28838c07a0f0e0d79b0e308958825",
    "tools/ci/lint_facade_test.clj"
-   "e5618c7af01e92caa977052bb1be92730cbae2fe"
+   "e5618c7af01e92caa977052bb1be92730cbae2fe",
+   "bootstrap/clojure/test/gravity/self_hosting/sh06_unmetered_resolution_test.clj"
+   "f05f9a26a633bb40c16f27f57141d5be4b23fc08",
+   "specs/accounting-removal/resolution-intervals/README.md"
+   "c28d743821e58a9994a3cb52c7ce5fa9ff488160",
+   "tools/ci/lint_context.clj"
+   "95ea6e0e79694b21ed25e637b655d21691e38869",
    "tools/ci/progress_isolation_test.clj"
-   "06b40909c6119f5c2fa03a2c55c031f29c31f3f8"
+   "0720d9b8aba97a7f13f3c5fd65990a2f33d0edac",
+   "specs/accounting-removal/macro-progress/README.md"
+   "d6bb54a26471539b0b92c7775975808c8a170417",
    "tools/ci/progress_test.clj"
-   "91cbbadbc70e7fe9b7ade87ffb3b2def33264824"
+   "f072d003d6283b4093b98b82cee6ce1d6839e941",
    "tools/ci/resolution_interval_test.clj"
-   "3787a7ae4cdd0b7cc13c4e6361888a54243e6ded"
-   "tools/ci/run.clj"
-   "e675daa543fedc9515afdf5b0ae43ea04e2951df"}}
- :current-owner-ids
- {:loader-sha "3b399b57cc68325ea710d28454261f61ffa466ff7bc15bd37f8c1c1e9c0be56c"
-  :previous-reviewed-loader-sha
-  "ac79eb7b09a0ad5cef2b67e92e8669e555ec26877caa50e2599a2b6ec200aee7"
-  :checker "bootstrap/clojure/src/gravity/tools/sh07_b51_attempt32_checker_identity.clj"
-  :c2-pass-cache "bootstrap/clojure/src/gravity/c2_pass_cache.clj"
-  :progress-schema :gravity/development-test-progress-v1}
- :focused-checks
- [{:name :progress-runner
-   :command "clojure -J-Xmx256m -M tools/ci/progress_test.clj"
-   :log "/tmp/uniform-pr697-corrected-progress.log"
-   :result "6 tests, 28 assertions, 0 failures, 0 errors; includes composition timing/result-delivery control"}
-  {:name :composition
-   :command "clojure -J-Xmx256m -M tools/ci/progress_test.clj"
-   :log "/tmp/uniform-pr697-corrected-progress.log"
-   :result "composition-preserves-timing-and-single-result-delivery passed"}
-  {:name :resolution-digest-interval-hook
-   :command "clojure -J-Xmx512m -M:dev-test --progress --namespace gravity.self-hosting.sh06-unmetered-resolution-test --exact digest-count-quota-is-gone-but-complete-ordered-requests-remain-required"
-   :log "/tmp/uniform-pr697-corrected-digest.log"
-   :result "1 test, 5 assertions, 0 failures, 0 errors"}
-  {:name :resolution-intervals
-   :command "clojure -J-Xmx256m -M tools/ci/resolution_interval_test.clj"
-   :log "/tmp/uniform-pr697-corrected-interval.log"
-   :result "4 tests, 15 assertions, 0 failures, 0 errors"}
-  {:name :progress-isolation
-   :command "clojure -J-Xmx256m -M tools/ci/progress_isolation_test.clj"
-   :log "/tmp/uniform-pr697-corrected-isolation.log"
-   :result "2 tests, 7 assertions, 0 failures, 0 errors"}
-  {:name :facade-context
-   :command "PATH=/tmp/acc08-controls-01a183dd/kondo-2025.10.23:$PATH clojure -J-Xmx768m -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\" \"tools\"]}' -M tools/ci/lint_facade_test.clj"
-   :log "/tmp/uniform-pr697-corrected-lint.log"
-   :result "27 tests, 494 assertions, 0 failures, 0 errors; 0 blocking lint warnings/errors"}
-  {:name :language-boundary
-   :command "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test"
-   :log "/tmp/uniform-pr697-corrected-boundary.log"
-   :result "6 tests, 11 assertions, 0 failures, 0 errors"}]
- :repair-controls
- {:ambiguous-binding-refusal
-  [:distinct-require-alias :distinct-refer :same-simple-name-import]
-  :duplicate-identical-bindings-idempotent true
-  :prefix-require-private-provenance true
-  :source-evaluation false}
- :scope-accounting
- {:declared-owned-paths 12
-  :candidate-owned-delta-vs-current-main 12
-  :excluded-main-path-classes
-  [:bootstrap-c6-c8-c11-source
-   :native-helper-tests
-   :source-artifact-reports
-   :unrelated-main-docs]
-  :main-delta-preserved true}
- :formatting-check
- {:command "clojure -J-Xmx256m -Sdeps '{:deps {dev.weavejester/cljfmt {:mvn/version \"0.13.4\"}}}' -M -m cljfmt.main check tools/ci"
-  :log "/tmp/uniform-pr697-corrected-formatter.log"
-  :result "exit 0; all source files formatted correctly"
-  :previous
-  {:log "/tmp/uniform-pr697-cljfmt-tools-ci-repair.log"
-   :result "exit 1; progress_test.clj, progress_isolation_test.clj, and resolution_interval_test.clj required mechanical formatting"}}
+   "fa3bf76519e6b8a71915ac11d6e78a8e8fa5969d",
+   "specs/accounting-removal/pr697-current-port.edn"
+   "7c680a05b0fea08789557659314582364a8787e8",
+   "tools/ci/run.clj" "e675daa543fedc9515afdf5b0ae43ea04e2951df",
+   "bootstrap/clojure/test/gravity/development_test_runner.clj"
+   "e66336203aec9b1d120bf637a65b940541c33238"}},
+ :historical-candidate
+ {:head-tree "49c8d3751482d5aa6bd114bb346ae3493d21b3d7",
+  :original-macro-run "41216108296",
+  :head "7f01d36efe09e2a4ee47aa9d3334113f6713827a",
+  :original-static-job "124545858508",
+  :original-static-run "41204203482",
+  :status :historical-nonpass,
+  :original-static-artifact "13043481814",
+  :base-tree "f710471f73b3ceff8e29ca0aafacf623a54fbf8f",
+  :base "042f72adca0075ef4163ca832390e0be29b02890"},
  :nonclaims
  [:no-native-execution
   :no-bootstrap-or-selected-macro-workload
   :no-genuine-reader-or-ci-authority
   :no-hosted-rerun-or-publication
   :no-timeout-or-aggregate-resource-equivalence
-  :historical-nonpasses-not-reclassified]
- :status :source-checkpoint-awaiting-independent-acceptance}
+  :historical-nonpasses-not-reclassified],
+ :current-owner-ids
+ {:loader-sha
+  "3b399b57cc68325ea710d28454261f61ffa466ff7bc15bd37f8c1c1e9c0be56c",
+  :previous-reviewed-loader-sha
+  "ac79eb7b09a0ad5cef2b67e92e8669e555ec26877caa50e2599a2b6ec200aee7",
+  :checker
+  "bootstrap/clojure/src/gravity/tools/sh07_b51_attempt32_checker_identity.clj",
+  :c2-pass-cache "bootstrap/clojure/src/gravity/c2_pass_cache.clj",
+  :progress-schema :gravity/development-test-progress-v1},
+ :declared-source
+ {:commit "392c3f5f613f05d1f7301264e31ba34fc4aac944",
+  :tree "49978feb45f39f2ec1f98061a1c17aa8904d7588"},
+ :focused-checks
+ [{:name :progress-runner,
+   :command "clojure -J-Xmx256m -M tools/ci/progress_test.clj",
+   :log "/tmp/uniform-pr697-formatted-progress.log",
+   :result
+   "12 tests, 165 assertions, 0 failures, 0 errors; includes composition timing/result-delivery control and restored diagnostic controls"}
+  {:name :composition,
+   :command "clojure -J-Xmx256m -M tools/ci/progress_test.clj",
+   :log "/tmp/uniform-pr697-formatted-progress.log",
+   :result
+   "composition-preserves-timing-and-single-result-delivery passed"}
+  {:name :resolution-digest-interval-hook,
+   :command
+   "clojure -J-Xmx512m -M:dev-test --progress --namespace gravity.self-hosting.sh06-unmetered-resolution-test --exact digest-count-quota-is-gone-but-complete-ordered-requests-remain-required",
+   :log "/tmp/uniform-pr697-corrected-digest.log",
+   :result
+   "1 test, 5 assertions, 0 failures, 0 errors; retained from the prior source-port run because the production owner is unchanged and this checkpoint changes only controls/evidence; not rerun"}
+  {:name :resolution-intervals,
+   :command
+   "clojure -J-Xmx256m -M tools/ci/resolution_interval_test.clj",
+   :log "/tmp/uniform-pr697-formatted-interval.log",
+   :result
+   "11 tests, 237 assertions, 0 failures, 0 errors; includes digest/artifact failure, scope, repetition, and callback controls"}
+  {:name :progress-isolation,
+   :command
+   "clojure -J-Xmx256m -M tools/ci/progress_isolation_test.clj",
+   :log "/tmp/uniform-pr697-formatted-isolation.log",
+   :result
+   "3 tests, 16 assertions, 0 failures, 0 errors; includes failed-inner/outer-state preservation"}
+  {:name :facade-context,
+   :command
+   "PATH=/tmp/acc08-controls-01a183dd/kondo-2025.10.23:$PATH clojure -J-Xmx768m -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\" \"tools\"]}' -M tools/ci/lint_facade_test.clj",
+   :log "/tmp/uniform-pr697-complete-lint.log",
+   :result
+   "27 tests, 494 assertions, 0 failures, 0 errors; 0 blocking lint warnings/errors"}
+  {:name :language-boundary,
+   :command
+   "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test",
+   :log "/tmp/uniform-pr697-complete-boundary.log",
+   :result "6 tests, 11 assertions, 0 failures, 0 errors"}
+  {:name :docs-validation,
+   :command "clojure -M tools/validate_gravity_docs.clj",
+   :log "/tmp/uniform-pr697-complete-docs.log",
+   :result
+   "validation passed: 240 docs, 19 phase indexes, ASCII, no placeholders"}],
+ :scope-accounting
+ {:declared-owned-paths 12,
+  :candidate-owned-delta-vs-current-main 12,
+  :excluded-main-path-classes
+  [:bootstrap-c6-c8-c11-source
+   :native-helper-tests
+   :source-artifact-reports
+   :unrelated-main-docs],
+  :main-delta-preserved true},
+ :status :source-checkpoint-awaiting-independent-acceptance,
+ :kind :bounded-current-source-port,
+ :current-base
+ {:commit "bc1edfb9bdb7e17e4ceb94a36054617ab4e96a02",
+  :tree "dc46485162e6bd0945dda80cbd9f4b0cc5b8bb55"},
+ :integration-composition
+ {:executed-source-checkpoint
+  "17c6b1b122d58f43aa546621ffe7679a8c62b663",
+  :tree "d33bc14a8e31b42dc0be698a207a191454109e5a",
+  :owned-path-count 12,
+  :checkpoint "4fe64a6a73f03a0f3fd4f4d85e5afa7d38fc8454",
+  :original-history-retained-without-tree-replay true,
+  :owned-blobs-conserved-from
+  "2786e0125cfb48e8cdaac3af25c6b9846e2f5381",
+  :independent-composition-and-preflight :recorded-separately,
+  :source-checks-retain-their-recorded-identity true,
+  :kind :ordinary-source-composition,
+  :executed-source-tree "79463c716041b421173ffb4dd2c1939cb7df413c",
+  :base "438978627bce8ceb9bdc82bb2bc1385a645a2fec",
+  :hosted-ci-authority :none},
+ :authored-comparison
+ {:path-count 11,
+  :additions 1519,
+  :head-tree "49c8d3751482d5aa6bd114bb346ae3493d21b3d7",
+  :accounting-note
+  "All eleven authored paths are represented by the current source port; interval and documentation counts are adapted to the current owner APIs, while the historical 042f candidate frame remains separate.",
+  :paths
+  ["bootstrap/clojure/test/gravity/development_test_runner.clj"
+   "bootstrap/clojure/test/gravity/self_hosting/sh06_unmetered_resolution_test.clj"
+   "specs/accounting-removal/macro-progress/README.md"
+   "specs/accounting-removal/resolution-intervals/README.md"
+   "specs/reader-workflow/lint-source-alias-reader.md"
+   "tools/ci/lint_context.clj"
+   "tools/ci/lint_facade_test.clj"
+   "tools/ci/progress_isolation_test.clj"
+   "tools/ci/progress_test.clj"
+   "tools/ci/resolution_interval_test.clj"
+   "tools/ci/run.clj"],
+  :head "7f01d36efe09e2a4ee47aa9d3334113f6713827a",
+  :deletions 31,
+  :base-tree "069b737c5b8973bb57ff974df89a06dd4db452d7",
+  :base "aa503b03136033a3cc932f555dc1692978d3720e"},
+ :pr 697,
+ :formatting-check
+ {:command
+  "clojure -J-Xmx256m -Sdeps '{:deps {dev.weavejester/cljfmt {:mvn/version \"0.13.4\"}}}' -M -m cljfmt.main check tools/ci",
+  :log "/tmp/uniform-pr697-formatted-formatter.log",
+  :result "exit 0; all source files formatted correctly",
+  :previous
+  {:log "/tmp/uniform-pr697-cljfmt-tools-ci-repair.log",
+   :result
+   "exit 1; progress_test.clj, progress_isolation_test.clj, and resolution_interval_test.clj required mechanical formatting"}},
+ :subsequent-composition
+ {:base "9381b2dbf6270f28368c939a479971baae1a8381",
+  :code-checkpoint "fbd27cd790b5657c48d21c5e8838beb64d2de529",
+  :code-tree "7d4ee6b51e8b1fa15be46a8304e97d5fa26f3e41",
+  :owned-paths-conserved-from
+  "362ca5ecfac25f51ec5f752f5a742be638a8c4bc",
+  :executed-source-checkpoint
+  "17c6b1b122d58f43aa546621ffe7679a8c62b663",
+  :prior-complete-ci
+  {:head "362ca5ecfac25f51ec5f752f5a742be638a8c4bc",
+   :success 12,
+   :configured-skips 2},
+  :focused-checks
+  [{:name :facade,
+    :tests 27,
+    :assertions 494,
+    :failures 0,
+    :errors 0,
+    :exit 0,
+    :log "/tmp/uniform-pr697-9381-facade.log"}
+   {:name :progress,
+    :tests 12,
+    :assertions 165,
+    :failures 0,
+    :errors 0,
+    :exit 0,
+    :log "/tmp/uniform-pr697-9381-progress.log"}
+   {:name :isolation,
+    :tests 3,
+    :assertions 16,
+    :failures 0,
+    :errors 0,
+    :exit 0,
+    :log "/tmp/uniform-pr697-9381-isolation.log"}],
+  :hosted-ci-for-later-head :not-claimed},
+ :repair-controls
+ {:ambiguous-binding-refusal
+  [:distinct-require-alias :distinct-refer :same-simple-name-import],
+  :duplicate-identical-bindings-idempotent true,
+  :prefix-require-private-provenance true,
+  :source-evaluation false}}
