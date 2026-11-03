@@ -138,25 +138,9 @@
                  :instruction instruction
                  :depth 1})
               instructions)))
-           visited 0
            records []]
       (if-let [{:keys [path instruction depth]} (peek pending)]
-        (let [pending (pop pending)
-              visited (inc visited)]
-          (when (or (> visited p15-s23-reference-runtime-max-contract-nodes)
-                    (> depth
-                       p15-s23-reference-runtime-max-instruction-depth))
-            (p15-s23-reference-runtime-fail!
-             source-path target :runtime-contract-instruction-bounds
-             instruction
-             {:runtime-function function-name
-              :instruction-path path
-              :observed-nodes visited
-              :observed-depth depth
-              :maximum-nodes
-              p15-s23-reference-runtime-max-contract-nodes
-              :maximum-depth
-              p15-s23-reference-runtime-max-instruction-depth}))
+        (let [pending (pop pending)]
           (when-not (map? instruction)
             (p15-s23-reference-runtime-fail!
              source-path target :runtime-contract-instruction-shape
@@ -177,7 +161,6 @@
              (into pending
                    (map #(assoc % :depth (inc depth))
                         (reverse children)))
-             visited
              (conj records record))))
         records))))
 
