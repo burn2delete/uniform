@@ -206,7 +206,7 @@
    {:component-id :core-lowering
     :category :checked-core
     :source-path
-    "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
+    "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
     :dependencies [:core-semantics]}
    {:component-id :checked-core
     :category :checked-core
@@ -215,7 +215,7 @@
    {:component-id :checked-core-pipeline
     :category :checked-core
     :source-path
-    "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+    "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
     :dependencies [:checked-core]}
    {:component-id :call-arity
     :category :analyzer
