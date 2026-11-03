@@ -330,12 +330,12 @@
   {:path "tools/schema_phase10_current.clj"
    :disposition :ported-current-authenticated-checker}]
  :nonclaims
- [:no-current-manifest-write
+ [:no-application-of-historical-decision-operations-to-current-manifest
   :no-historical-source-hash-renewal
   :no-application-of-stale-25-field-operations
   :no-accounting-or-input-quota-admission
   :no-denominator-or-accepted-mapping-change
-  :no-source-version-or-manifest-renewal
+  :no-unproven-source-version-or-manifest-renewal
   :no-hosted-runtime-provider-or-failure-fixture-execution
   :no-types-schema-or-openapi-implementation-acceptance
   :no-independent-review-or-canonical-adoption
