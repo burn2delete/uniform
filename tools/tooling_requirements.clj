@@ -121,6 +121,73 @@
         [requirement-sources/math4-search-policy-kind
          requirement-sources/math9-rewrite-termination-kind]))
 
+;; PR564 is an immutable predecessor of the PR565 current-source port.  Its
+;; MATH9 row intentionally remains the dcf337 snapshot; the current source
+;; bridge is authenticated only by the later PR565 successor below.
+(def expected-pr564-math9-source-bridge
+  {:document-id "MATH9"
+   :path requirement-sources/math9-rewrite-termination-path
+   :kind requirement-sources/math9-rewrite-termination-kind
+   :review-state :proposed
+   :baseline-ref "a1b991be499d50579a8b4366976c519ae8949224"
+   :applying-ref "dcf3378130ef92c37105aeda17b3badfec6619dc"
+   :baseline-tree "5b62819e511bfc7e6b5eba0527d8c9b5883c5572"
+   :applying-tree "b0609b39cf93b8c27dbd204b69ca197ef781d8f8"
+   :baseline-sha256 "ca9ccdcfe25a76de1127d5629d8265f83885481e7334012ee4da8aa1fdbd0410"
+   :live-sha256 "8ee9b9bd7a70508ebac2d74eac64417462c1a18f75e5b2ae2c43b12b96266430"
+   :baseline-blob "ac364084776e3cd0a2046c224aacd7d65178cc68"
+   :applying-blob "5bae82b6d377e64b803dd1c6a7282f4ec179406b"
+   :authority "MATH9 rewrite-system source audit of current termination evidence after mandatory-fuel retirement."
+   :qualification "Only the exact Rewrite Rule Form termination measure is projected to the authenticated baseline view. Rule/domain/branch/numeric/floating/side-condition/proof/source and invalidation facts, deterministic rule ordering, cost-model tie breaks, equality explanations, proof replay, and well-founded finite termination evidence remain current semantic obligations. The current strict tan-occurrence measure is a semantic termination correction, not a project quota or admission allowance; this bridge is source reconciliation evidence only and confers no canonical adoption or implementation acceptance."
+   :current-criteria {:retained [:rule-domain-branch-numeric-floating-side-condition-proof-source-and-invalidation
+                                 :deterministic-rule-ordering-cost-model-tie-breaks-equality-explanation-and-proof-replay
+                                 :well-founded-termination-finite-trace-and-stopped-run-history]
+                      :changed [:strictly-decreasing-tan-occurrence-measure]
+                      :qualification :current-math9-criteria-derived-from-dcf3378130}
+   :semantic-deltas [{:hunk-id "MATH9-rewrite-termination"
+                      :classification :semantic-strict-termination-measure}]
+   :projection-hunks [{:hunk-id "MATH9-rewrite-termination"
+                       :facet-ids ["MATH9/partition-facet/f7ea6e89842884748fe59dbe8f51ab1430d943e274be2db887506a777a0977c9"
+                                   "MATH9/partition-facet/e231af9a1d26e177746d45311c38254441b372ff323f06178c5a5777ae4243ad"]
+                       :baseline-start-line 77 :baseline-end-line 78
+                       :live-start-line 77 :live-end-line 78
+                       :baseline-fragment-sha256 "ca061d6ae9dc82e9c5ab1dbba13b05632a62d13a9ce09355452dfd58a444f8f1"
+                       :live-fragment-sha256 "f35520ec40d85c0f54bbb63e31895c3ad097ed693da79100a56deb0ffa16e404"}]})
+
+(def current-manifest-pr565-transition
+  {:kind :tooling-current-manifest-pr565-owner-task-bridge-extension-v2
+   :path manifest-path
+   :source-view-baseline-sha256
+   "aa51bfad176edcf7ed75109a68ea1a0bcbcb3eeeedd6311db256bf331ad01ef0"
+   :baseline
+   {:commit "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659"
+    :tree "552a2bd0f50d53928aef5dffd085656dbe7bc17a"
+    :blob "367905fc9b45001865cc5a2e59b4e3f07c16cb6d"
+    :sha256 "c47151307b2dd2e20855f5837053a6a63806f2ed81d0acd5fadaa653c3952a38"}
+   :applying
+   {:commit "2cbafb8c23588c299b28c36f315b3105e1270cd5"
+    :tree "29dd8a9c669b92af5ba5bcdbec954a1b190e28df"
+    :blob "b41348db598b8d6c88c9f6e0c5775ae55fabada8"
+    :sha256 "d08d0f24edf90bce081d123e4d6d1de29fb3e263fef3f62d8a1fd4aff173964e"}
+   :task-source-bridge-extension
+   {:updated-paths ["specs/domains-workflow/tasks.md"
+                    "specs/runtime-workflow/tasks.md"
+                    "specs/types-workflow/tasks.md"]
+    :current-ref "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659"
+    :current-tree "552a2bd0f50d53928aef5dffd085656dbe7bc17a"
+    :current-sha256
+    {"specs/domains-workflow/tasks.md"
+     "3d8989b72d00461931e400b5617b9bea090c63265cfee553e12d7b3cd6bc88dc"
+     "specs/runtime-workflow/tasks.md"
+     "d4b3a3c875f961b5828e8cceda7ecdf106af4527c64fa07ad6c6e1e049d0868d"
+     "specs/types-workflow/tasks.md"
+     "be4ab3523fcc9532a8f3dc7e36309843b5727cdb9bd5fea2ff8ba08faf07f946"}
+    :change-class :current-candidate-composition
+    :known-current-main
+    {:current-ref "d544539eefaea6b16aecd724b54d61a9b0ec1f3d"
+     :current-tree "9fac2c4d1ebfb5294f598860917bc779b2147ebf"}}
+   :interpretation :pr565-current-owner-task-source-bridge-extension})
+
 (def historical-platform-bridge-kind
   :platform-task-authority-current-layout)
 
@@ -369,7 +436,6 @@
         path (:path transition)
         baseline-text (git-text (:commit baseline) path)
         applying-text (git-text (:commit applying) path)
-        live-text (slurp path)
         baseline-manifest (edn/read-string baseline-text)
         applying-manifest (edn/read-string applying-text)
         baseline-task-bridges (task-source-bridges baseline-manifest)
@@ -380,7 +446,12 @@
                                               (:source-version-bridges applying-manifest)))
         stdlib-path (:path (:stdlib-task-source-successor transition))
         expected-stdlib (:stdlib-task-source-successor transition)
-        math-documents (set (map :document-id expected-current-math-source-bridges))]
+        math-documents (set (map :document-id expected-current-math-source-bridges))
+        expected-pr564-math-source-bridges
+        (mapv #(if (= "MATH9" (:document-id %))
+                 expected-pr564-math9-source-bridge
+                 %)
+              expected-current-math-source-bridges)]
     (require! (= path (:path current))
               "Tooling PR564 manifest path changed")
     (require! (= (:source-view-baseline-sha256 transition) (:sha256 current))
@@ -395,8 +466,6 @@
               "Tooling PR564 applying bytes drifted")
     (require! (= (:blob applying) (git-blob (:commit applying) path))
               "Tooling PR564 applying blob drifted")
-    (require! (= applying-text live-text)
-              "Current manifest is not the authenticated PR564 applying source")
     (require! (= (dissoc (manifest-population baseline-manifest)
                          :source-version-bridge-identities)
                  (dissoc (manifest-population applying-manifest)
@@ -413,7 +482,7 @@
                  (set/difference (set (keys applying-source-bridges))
                                  (set (keys baseline-source-bridges))))
               "PR564 math source-version bridge additions drifted")
-    (doseq [expected-bridge expected-current-math-source-bridges]
+    (doseq [expected-bridge expected-pr564-math-source-bridges]
       (let [document-id (:document-id expected-bridge)
             bridge (get applying-source-bridges document-id)]
         (require! (= expected-bridge bridge)
@@ -455,11 +524,117 @@
      :math-source-version :authenticated-successors
      :interpretation (:interpretation transition)}))
 
+(defn validate-pr565-current-manifest-transition! [source-view]
+  (let [transition current-manifest-pr565-transition
+        baseline (:baseline transition)
+        applying (:applying transition)
+        current (get-in source-view [:current-source :manifest])
+        path (:path transition)
+        baseline-text (git-text (:commit baseline) path)
+        applying-text (git-text (:commit applying) path)
+        live-text (slurp path)
+        baseline-manifest (edn/read-string baseline-text)
+        applying-manifest (edn/read-string applying-text)
+        baseline-task-bridges (task-source-bridges baseline-manifest)
+        applying-task-bridges (task-source-bridges applying-manifest)
+        extension (:task-source-bridge-extension transition)
+        updated-paths (set (:updated-paths extension))
+        changed-paths (set (filter #(not= (get baseline-task-bridges %)
+                                          (get applying-task-bridges %))
+                                   (keys baseline-task-bridges)))
+        stable-keys [:path :marker :historical-ref :historical-sha256
+                     :changed-records :current-only-records]]
+    (require! (= path (:path current))
+              "Tooling PR565 manifest path changed")
+    (require! (= (:source-view-baseline-sha256 transition) (:sha256 current))
+              "Frozen tooling source-view manifest identity changed")
+    (verify-commit-tree! baseline)
+    (verify-commit-tree! applying)
+    (require! (= (:sha256 baseline) (sha256 baseline-text))
+              "Tooling PR565 baseline bytes drifted")
+    (require! (= (:blob baseline) (git-blob (:commit baseline) path))
+              "Tooling PR565 baseline blob drifted")
+    (require! (= (:sha256 applying) (sha256 applying-text))
+              "Tooling PR565 applying bytes drifted")
+    (require! (= (:blob applying) (git-blob (:commit applying) path))
+              "Tooling PR565 applying blob drifted")
+    (require! (= applying-text live-text)
+              "Current manifest is not the authenticated PR565 applying source")
+    (require! (= (manifest-population baseline-manifest)
+                 (manifest-population applying-manifest))
+              "PR565 changed a required manifest population")
+    (let [baseline-source-bridges
+          (into {} (map (juxt :document-id identity)
+                        (:source-version-bridges baseline-manifest)))
+          applying-source-bridges
+          (into {} (map (juxt :document-id identity)
+                        (:source-version-bridges applying-manifest)))
+          math9 (get applying-source-bridges "MATH9")
+          expected-math9 (get (into {} (map (juxt :document-id identity)
+                                            expected-current-math-source-bridges))
+                              "MATH9")]
+      (require! (= (set (keys baseline-source-bridges))
+                   (set (keys applying-source-bridges)))
+                "PR565 changed source-version bridge population")
+      (doseq [document-id (set/difference (set (keys baseline-source-bridges)) #{"MATH9"})]
+        (require! (= (get baseline-source-bridges document-id)
+                     (get applying-source-bridges document-id))
+                  (str "Unauthenticated PR565 source-version bridge change: " document-id)))
+      (require! (= (select-keys (get baseline-source-bridges "MATH9")
+                                [:path :kind :review-state :baseline-ref :baseline-tree
+                                 :baseline-sha256 :baseline-blob])
+                   (select-keys math9
+                                [:path :kind :review-state :baseline-ref :baseline-tree
+                                 :baseline-sha256 :baseline-blob]))
+                "PR565 changed the MATH9 authenticated baseline")
+      (require! (= expected-math9 math9)
+                "PR565 MATH9 current successor is not authenticated"))
+    (require! (= (set (keys baseline-task-bridges))
+                 (set (keys applying-task-bridges)))
+              "PR565 changed task-source bridge population")
+    (require! (= updated-paths changed-paths)
+              "PR565 task-source bridge delta drifted")
+    (doseq [path (set/difference (set (keys baseline-task-bridges)) updated-paths)]
+      (require! (= (get baseline-task-bridges path)
+                   (get applying-task-bridges path))
+                (str "Unauthenticated PR565 task-source bridge change: " path)))
+    (doseq [task-path (sort updated-paths)
+            :let [before (get baseline-task-bridges task-path)
+                  after (get applying-task-bridges task-path)
+                  expected-sha (get (:current-sha256 extension) task-path)
+                  known-current-main (:known-current-main after)]]
+      (require! (= (select-keys before stable-keys)
+                   (select-keys after stable-keys))
+                (str "PR565 changed historical task identity: " task-path))
+      (require! (and (= (:current-ref extension) (:current-ref after))
+                     (= (:current-tree extension) (:current-tree after))
+                     (= (:change-class extension) (:change-class after))
+                     (= expected-sha (:current-sha256 after))
+                     (= expected-sha
+                        (sha256 (git-text (:current-ref extension) task-path)))
+                     (= (:known-current-main extension)
+                        (select-keys known-current-main
+                                     [:current-ref :current-tree])))
+                (str "PR565 task-source bridge identity is not authenticated: " task-path)))
+    (verify-commit-tree! {:commit (:current-ref extension)
+                          :tree (:current-tree extension)})
+    {:kind (:kind transition)
+     :path path
+     :baseline baseline
+     :applying applying
+     :snapshot-provenance :git-commit-tree-blob-and-bytes-verified
+     :population :conserved
+     :updated-task-source-paths (vec (sort updated-paths))
+     :source-version-bridges :conserved
+     :interpretation (:interpretation transition)}))
+
 (defn validate-current-manifest-transition! [source-view]
   (let [known (validate-known-current-manifest-transition! source-view)
         successor (validate-pr561-current-manifest-transition! source-view)
-        stdlib-successor (validate-pr564-current-manifest-transition! source-view)]
-    (assoc known :successor successor :stdlib-successor stdlib-successor)))
+        stdlib-successor (validate-pr564-current-manifest-transition! source-view)
+        pr565-successor (validate-pr565-current-manifest-transition! source-view)]
+    (assoc known :successor successor :stdlib-successor stdlib-successor
+           :pr565-successor pr565-successor)))
 
 (declare view)
 
