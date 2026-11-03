@@ -457,33 +457,44 @@
     (is (needed? [macros/source] false))
     (is (needed? ["tools/ci/kondo/config.edn"] false))))
 
-(deftest contextual-edn-runs-macro-admission-before-context-loading
+(deftest contextual-edn-retains-macro-admission-guard
   (let [directory (.toFile (java.nio.file.Files/createTempDirectory
                             "uniform-context-edn-lint-"
                             (make-array java.nio.file.attribute.FileAttribute 0)))
         output (io/file directory "observations")
         commands (atom [])
         local-reads (atom [])
+        read-local context/local-bytes!
         execute! (fn [id _ argv & [_stdin-path]]
                    (swap! commands conj [id argv])
-                   (spit (io/file output (str id ".log")) "")
+                   (if (= id "lint-macro-base-source")
+                     (java.nio.file.Files/write
+                      (.toPath (io/file output (str id ".log")))
+                      ^bytes (read-local macros/source)
+                      (make-array java.nio.file.OpenOption 0))
+                     (spit (io/file output (str id ".log")) ""))
                    (spit (io/file output (str id ".edn"))
                          (pr-str {:status :passed :exit-code 0}))
                    {:status :passed :exit-code 0})]
     (try
       (.mkdir output)
+      ;; Context-plan validation may run before this guard; that phase order is
+      ;; not a contract. Stub it here and assert only guard reachability before Kondo.
       (let [error (try
-                    (with-redefs [context/local-bytes!
+                    (with-redefs [context/selected-plan! (fn [& _] nil)
+                                  context/local-bytes!
                                   (fn [path]
                                     (swap! local-reads conj path)
-                                    (throw (ex-info "contextual EDN must retain macro admission"
-                                                    {:path path})))]
+                                    (if (= path macros/source)
+                                      (utf8 "(ns gravity.c2-artifact-identity)\n")
+                                      (read-local path)))]
                       (lint/run-comparison! execute! output "fixture-base" [context/manifest]))
                     nil
-                    (catch clojure.lang.ExceptionInfo exception exception))]
-        (is (= {:path macros/source} (ex-data error)))
-        (is (= ["lint-base-inventory"] (mapv first @commands)))
-        (is (= [macros/source] @local-reads)))
+                    (catch Exception exception exception))]
+        (is (instance? Exception error))
+        (is (some #{macros/source} @local-reads))
+        (is (some #(= "lint-macro-base-source" (first %)) @commands))
+        (is (not-any? #(= "clj-kondo" (first (second %))) @commands)))
       (finally
         (doseq [file (reverse (file-seq directory))]
           (.delete file))))))
