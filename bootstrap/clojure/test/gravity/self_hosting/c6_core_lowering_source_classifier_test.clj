@@ -6,7 +6,8 @@
             [gravity.c6-core-lowering :as c6]
             [gravity.c6-core-lowering.lowering :as lowering]
             [gravity.c6-core-lowering.source-adapter :as source-adapter]
-            [gravity.digest :as digest]))
+            [gravity.digest :as digest]
+            [gravity.source-input :as source-input]))
 
 ;; This is a current-source development execution check.  It does not renew
 ;; migration evidence, source pins, or a self-hosting claim.
@@ -129,6 +130,10 @@
      target
      (make-array java.nio.file.CopyOption 0))
     root))
+
+(defn- repository-path [relative-path]
+  (.getCanonicalPath
+   (io/file (.toFile ^java.nio.file.Path @repository-root) relative-path)))
 
 (deftest current-source-classifier-preserves-hosted-leaf-parity
   (let [classify @source-operation]
@@ -309,6 +314,87 @@
     (is (= :development-current
            (get-in (vec (second @c5-arguments))
                    [4 :authenticated-envelope-options :source])))
+    (is (pos? @host-classifier-calls))
+    (is (pos? @host-evaluation-order-calls))))
+
+(deftest development-current-route-consumes-genuine-current-c5-artifact
+  (let [source-path (repository-path
+                     "bootstrap/clojure/fixtures/self-hosting/sh-06/current-cohort-unmetered.gravity")
+        paired-path (repository-path
+                     "bootstrap/clojure/fixtures/self-hosting/sh-06/current-cohort-unmetered.qst")
+        reader-path (repository-path bootstrap/sh03-reader-source-relative-path)
+        syntax-path (repository-path
+                     "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
+        source-text (slurp source-path :encoding "UTF-8")
+        invocation {:reader-source-path reader-path
+                    :authenticated-envelope-options {:source :development-current}
+                    :syntax-source-selection
+                    {:schema :gravity/sh04-development-syntax-selection-v1
+                     :source-path syntax-path}
+                    :macro-source-mode :development-current}
+        genuine-c5
+        (bootstrap/compiler-c5-resolution-source-artifact
+         source-path source-text
+         {:artifact :gravity/sh06-module-inputs
+          :schema-version 1
+          :module-artifacts []}
+         reader-path invocation)
+        genuine-report
+        (bootstrap/sh06-resolution-artifact-verification
+         genuine-c5 :gravity.bootstrap/legacy invocation)
+        genuine-expanded-stream
+        (mapv (fn [syntax]
+                (-> syntax
+                    (assoc :syntax-id (:syntax/id syntax)
+                           :generated-origin (:origin syntax))
+                    (dissoc :origin)))
+              (get-in genuine-c5 [:sh05-macro-artifact :expanded-syntax-stream]))
+        genuine-module
+        (source-input/with-context
+          (fn []
+            (source-input/with-product-mode
+              :c6-expanded
+              #(bootstrap/parse-module
+                source-path (mapv :form genuine-expanded-stream)))))
+        original-classifier lowering/c6-form->core-form
+        original-evaluation-order lowering/c6-eval-order
+        host-classifier-calls (atom 0)
+        host-evaluation-order-calls (atom 0)
+        host-artifact
+        (source-input/with-context
+          (fn []
+            (source-input/with-product-mode
+              :c6-expanded
+              #(with-redefs
+                [lowering/c6-form->core-form
+                 (fn [form]
+                   (swap! host-classifier-calls inc)
+                   (original-classifier form))
+                 lowering/c6-eval-order
+                 (fn [form child-count]
+                   (swap! host-evaluation-order-calls inc)
+                   (original-evaluation-order form child-count))]
+                 (c6/c6-lowering-artifact
+                  source-path genuine-module genuine-c5 genuine-expanded-stream)))))
+        fallback (fn [& _]
+                   (throw
+                    (ex-info
+                     "hosted Clojure C6 operation was called"
+                     {:id "C6-SOURCE-ADOPTION-HOST-FALLBACK"})))
+        current-artifact
+        (binding [bootstrap/*compiler-c6-authenticated-resolution-input*
+                  genuine-c5]
+          (with-redefs [lowering/c6-form->core-form fallback
+                        lowering/c6-eval-order fallback]
+            (bootstrap/compiler-c6-lowering-source-artifact-development-current
+             source-path source-text @repository-root)))]
+    (is (= source-text (slurp paired-path :encoding "UTF-8")))
+    (is (= :accepted (:status genuine-c5)))
+    (is (= :passed (:status genuine-report)))
+    (is (= :complete (get-in host-artifact [:c6-lowering-results :status])))
+    (is (= :complete (get-in current-artifact [:c6-lowering-results :status])))
+    (is (= :passed (get-in current-artifact [:core-verifier-report :status])))
+    (is (= host-artifact current-artifact))
     (is (pos? @host-classifier-calls))
     (is (pos? @host-evaluation-order-calls))))
 
