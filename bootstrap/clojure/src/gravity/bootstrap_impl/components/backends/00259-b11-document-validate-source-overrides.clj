@@ -2,13 +2,10 @@
 
 (defn b11-document-validate-source-overrides!
   [source-path overrides]
-  (when-let [fail-kind (:fail overrides)]
-    (when-let [id (get b11-document-override-diagnostics fail-kind)]
-      (b11-document-fail!
-       id source-path
-       {:artifact-id (str "b11-document-" (name fail-kind))
-        :query-id (keyword (str "b11-document-" (name fail-kind)))}
-       {:missing-fields [fail-kind]}))))
+  (gravity.backend.query/validate-source-overrides!
+   source-path overrides
+   {:override-diagnostics (fn [] b11-document-override-diagnostics)
+    :failure-operation (fn [] b11-document-fail!)}))
 
 (def b11-document-sql-statement
   gravity.backend.query/sql-statement)

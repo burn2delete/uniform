@@ -5,19 +5,23 @@
 (def ^:private namespace-contract
   '{:authenticates-inputs? false,
  :public-api
- {source-overrides {:arglists ([module]), :admission :none},
-  missing-policy {:arglists ([id]), :admission :none},
-  domain-anchor {:arglists ([id]), :admission :none},
-  diagnostic-stream
-  {:arglists ([source-path input-id operations]),
+ {validate-source-overrides!
+  {:arglists ([source-path overrides operations]),
+   :admission :none,
+   :required-operations [:override-diagnostics :failure-operation]},
+  source-overrides {:arglists ([module]), :admission :none},
+  fail!
+  {:arglists ([id source-path subject extra operations]),
    :admission :none,
    :required-operations
-   [:source-span :diagnostic-ids :domain-anchor :missing-policy]},
+   [:fail! :source-span :domain-anchor :missing-policy],
+   :callback-return :propagated},
+  domain-anchor {:arglists ([id]), :admission :none},
+  permission-manifest-fixture
+  {:value-kind :string,
+   :artifact-role :fixed-native-reference-fixture,
+   :admission :none},
   bundle-structurally-valid?
-  {:arglists ([text]),
-   :admission :none,
-   :validation-scope :native-document-fixture-text},
-  permission-structurally-valid?
   {:arglists ([text]),
    :admission :none,
    :validation-scope :native-document-fixture-text},
@@ -25,10 +29,16 @@
   {:value-kind :string,
    :artifact-role :fixed-native-reference-fixture,
    :admission :none},
-  permission-manifest-fixture
-  {:value-kind :string,
-   :artifact-role :fixed-native-reference-fixture,
-   :admission :none}},
+  permission-structurally-valid?
+  {:arglists ([text]),
+   :admission :none,
+   :validation-scope :native-document-fixture-text},
+  diagnostic-stream
+  {:arglists ([source-path input-id operations]),
+   :admission :none,
+   :required-operations
+   [:source-span :diagnostic-ids :domain-anchor :missing-policy]},
+  missing-policy {:arglists ([id]), :admission :none}},
  :supported
  [:existing-native-projection
   :borrowed-identity
@@ -36,7 +46,9 @@
   :native-catalog-assembly
   :explicit-native-operations
   :existing-native-fixture-recognition
-  :fixed-native-reference-text],
+  :fixed-native-reference-text
+  :native-failure-payload-assembly
+  :native-explicit-override-refusal],
  :dependency-direction
  {:requires [clojure.core clojure.string],
   :consumed-by [gravity.bootstrap],
@@ -68,7 +80,9 @@
   :canonical-target-syntax-validation
   :fixture-text-as-verified-ir
   :fixture-match-as-capability-or-proof-authority
-  :fixture-text-as-lowering-or-execution],
+  :fixture-text-as-lowering-or-execution
+  :refusal-callback-as-admission-or-proof
+  :canonical-diagnostic-publication],
  :artifact-inputs
  [:native-module-metadata
   :native-b12-diagnostic-id
@@ -76,7 +90,10 @@
   :supplied-input-artifact-id
   :native-diagnostic-operations
   :native-document-fixture-text
-  :fixed-native-fixture-definitions],
+  :fixed-native-fixture-definitions
+  :native-diagnostic-subject
+  :native-diagnostic-extra
+  :native-refusal-operations],
  :namespace gravity.backend.mobile,
  :diagnostic-ownership
  {:stage
@@ -84,10 +101,12 @@
    :native-rule-context-defaults
    :native-catalog-assembly
    :native-fixture-recognition
-   :fixed-native-reference-text],
+   :fixed-native-reference-text
+   :native-failure-payload-assembly
+   :native-explicit-override-refusal],
   :existing-owner
-  [:b12-refusal-decisions
-   :failure-construction
+  [:native-artifact-validation-decisions
+   :diagnostic-throw-transport
    :source-admission
    :publication]},
  :artifact-outputs
@@ -96,7 +115,8 @@
   :native-domain-anchor
   :native-diagnostic-catalog-stream
   :native-fixture-recognition-result
-  :fixed-native-reference-text],
+  :fixed-native-reference-text
+  :native-refusal-callback-result],
  :consumer-component-paths
  ["bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00262-b11-document-source-artifact.clj"
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00263-b12-document-app-bundle.clj"],
@@ -238,5 +258,41 @@
    " :hidden-background-work :rejected\n"
    " :status :complete}\n"))
 
-(doseq [operation [#'source-overrides #'missing-policy #'domain-anchor #'diagnostic-stream #'bundle-structurally-valid? #'permission-structurally-valid? #'app-bundle #'permission-manifest-fixture]]
+(defn fail!
+  [id source-path subject extra operations]
+  ((:fail! operations) id
+         "B12 mobile backend design document coverage validation failed"
+         (merge {:source-span (or (:source-span subject)
+                                  ((:source-span operations) source-path 0))
+                 :diagnostic-family :b12-mobile-backend-document
+                 :stage :b12-mobile-backend-document-coverage
+                 :backend :gravity.backend/mobile
+                 :profile :hosted
+                 :target :ios
+                 :domain-anchor (or (:domain-anchor subject)
+                                    ((:domain-anchor operations) id))
+                 :platform (or (:platform subject) :ios)
+                 :api-symbol (or (:api-symbol subject)
+                                 'Foundation/URLSession.data)
+                 :lifecycle-state (or (:lifecycle-state subject)
+                                      :foreground)
+                 :thread-actor (or (:thread-actor subject) :main)
+                 :permission (or (:permission subject) :network)
+                 :capability (or (:capability subject) :network/request)
+                 :missing-policy ((:missing-policy operations) id)
+                 :fallback-status :rejected
+                 :remediation "B12 requires verified mobile/platform IR, explicit platform target and bundle metadata, permission and capability manifests, lifecycle and threading maps, null/error adapters, storage/sync schemas, resource manifests, store-audit metadata, source maps, and simulator/device conformance records."}
+                extra)))
+
+(defn validate-source-overrides!
+  [source-path overrides operations]
+  (when-let [fail-kind (:fail overrides)]
+    (when-let [id (get ((:override-diagnostics operations)) fail-kind)]
+      (((:failure-operation operations))
+       id source-path
+       {:artifact-id (str "b12-document-" (name fail-kind))
+        :domain-anchor (keyword (str "b12-document-" (name fail-kind)))}
+       {:missing-fields [fail-kind]}))))
+
+(doseq [operation [#'source-overrides #'missing-policy #'domain-anchor #'diagnostic-stream #'bundle-structurally-valid? #'permission-structurally-valid? #'app-bundle #'permission-manifest-fixture #'fail! #'validate-source-overrides!]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

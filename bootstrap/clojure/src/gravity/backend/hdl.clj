@@ -17,7 +17,16 @@
   {:value-kind :string,
    :artifact-role :fixed-native-reference-fixture,
    :admission :none},
+  validate-source-overrides!
+  {:arglists ([source-path overrides operations]),
+   :admission :none,
+   :required-operations [:override-diagnostics :failure-operation]},
   source-overrides {:arglists ([module]), :admission :none},
+  fail!
+  {:arglists ([id source-path subject extra operations]),
+   :admission :none,
+   :required-operations [:fail! :source-span :signal-id :missing-fact],
+   :callback-return :propagated},
   testbench-structurally-valid?
   {:arglists ([text]),
    :admission :none,
@@ -44,7 +53,9 @@
   :native-catalog-assembly
   :explicit-native-operations
   :existing-native-fixture-recognition
-  :fixed-native-reference-text],
+  :fixed-native-reference-text
+  :native-failure-payload-assembly
+  :native-explicit-override-refusal],
  :dependency-direction
  {:requires [clojure.core clojure.string],
   :consumed-by [gravity.bootstrap],
@@ -76,7 +87,9 @@
   :canonical-target-syntax-validation
   :fixture-text-as-verified-ir
   :fixture-match-as-capability-or-proof-authority
-  :fixture-text-as-lowering-or-execution],
+  :fixture-text-as-lowering-or-execution
+  :refusal-callback-as-admission-or-proof
+  :canonical-diagnostic-publication],
  :artifact-inputs
  [:native-module-metadata
   :native-b9-diagnostic-id
@@ -84,7 +97,10 @@
   :supplied-input-artifact-id
   :native-diagnostic-operations
   :native-document-fixture-text
-  :fixed-native-fixture-definitions],
+  :fixed-native-fixture-definitions
+  :native-diagnostic-subject
+  :native-diagnostic-extra
+  :native-refusal-operations],
  :namespace gravity.backend.hdl,
  :diagnostic-ownership
  {:stage
@@ -92,10 +108,12 @@
    :native-rule-context-defaults
    :native-catalog-assembly
    :native-fixture-recognition
-   :fixed-native-reference-text],
+   :fixed-native-reference-text
+   :native-failure-payload-assembly
+   :native-explicit-override-refusal],
   :existing-owner
-  [:b9-refusal-decisions
-   :failure-construction
+  [:native-artifact-validation-decisions
+   :diagnostic-throw-transport
    :source-admission
    :publication]},
  :artifact-outputs
@@ -104,7 +122,8 @@
   :native-signal-label
   :native-diagnostic-catalog-stream
   :native-fixture-recognition-result
-  :fixed-native-reference-text],
+  :fixed-native-reference-text
+  :native-refusal-callback-result],
  :consumer-component-paths
  ["bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00250-b8-document-source-artifact.clj"
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00251-b9-document-hdl-module.clj"],
@@ -265,5 +284,36 @@
    "set_input_delay 1 -clock clk [get_ports input_data]\n"
    "set_output_delay 1 -clock clk [get_ports done]\n"))
 
-(doseq [operation [#'source-overrides #'missing-fact #'signal-id #'diagnostic-stream #'hdl-structurally-valid? #'testbench-structurally-valid? #'timing-structurally-valid? #'hdl-module #'testbench #'timing-constraints]]
+(defn fail!
+  [id source-path subject extra operations]
+  ((:fail! operations) id
+         "B9 HDL backend design document coverage validation failed"
+         (merge {:source-span (or (:source-span subject)
+                                  ((:source-span operations) source-path 0))
+                 :diagnostic-family :b9-hdl-backend-document
+                 :stage :b9-hdl-backend-document-coverage
+                 :backend :gravity.backend/hdl
+                 :profile :hardware
+                 :target :systemverilog
+                 :hardware-module :gravity_stage0_hdl
+                 :signal-or-state-id ((:signal-id operations) id)
+                 :clock-domain :clk
+                 :reset-domain :rst
+                 :missing-proof-or-constraint
+                 ((:missing-fact operations) id)
+                 :fallback-status :rejected
+                 :remediation "B9 requires verified hardware IR, fixed-width layout, explicit clock/reset and CDC records, finite-state control, hardware interface schemas, timing constraints, testbench/simulation trace evidence, source maps, and HDL artifact provenance."}
+                extra)))
+
+(defn validate-source-overrides!
+  [source-path overrides operations]
+  (when-let [fail-kind (:fail overrides)]
+    (when-let [id (get ((:override-diagnostics operations)) fail-kind)]
+      (((:failure-operation operations))
+       id source-path
+       {:artifact-id (str "b9-document-" (name fail-kind))
+        :signal-or-state-id (keyword (str "b9-document-" (name fail-kind)))}
+       {:missing-fields [fail-kind]}))))
+
+(doseq [operation [#'source-overrides #'missing-fact #'signal-id #'diagnostic-stream #'hdl-structurally-valid? #'testbench-structurally-valid? #'timing-structurally-valid? #'hdl-module #'testbench #'timing-constraints #'fail! #'validate-source-overrides!]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

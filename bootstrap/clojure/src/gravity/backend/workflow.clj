@@ -5,30 +5,39 @@
 (def ^:private namespace-contract
   '{:authenticates-inputs? false,
  :public-api
- {source-overrides {:arglists ([module]), :admission :none},
-  missing-policy {:arglists ([id]), :admission :none},
-  step-id {:arglists ([id]), :admission :none},
+ {step-id {:arglists ([id]), :admission :none},
+  validate-source-overrides!
+  {:arglists ([source-path overrides operations]),
+   :admission :none,
+   :required-operations [:override-diagnostics :failure-operation]},
+  source-overrides {:arglists ([module]), :admission :none},
+  fail!
+  {:arglists ([id source-path subject extra operations]),
+   :admission :none,
+   :required-operations [:fail! :source-span :step-id :missing-policy],
+   :callback-return :propagated},
+  replay-fixture-structurally-valid?
+  {:arglists ([text]),
+   :admission :none,
+   :validation-scope :native-document-fixture-text},
+  replay-fixture
+  {:value-kind :string,
+   :artifact-role :fixed-native-reference-fixture,
+   :admission :none},
+  workflow-graph-structurally-valid?
+  {:arglists ([text]),
+   :admission :none,
+   :validation-scope :native-document-fixture-text},
   diagnostic-stream
   {:arglists ([source-path input-id operations]),
    :admission :none,
    :required-operations
    [:source-span :diagnostic-ids :step-id :missing-policy]},
-  workflow-graph-structurally-valid?
-  {:arglists ([text]),
-   :admission :none,
-   :validation-scope :native-document-fixture-text},
-  replay-fixture-structurally-valid?
-  {:arglists ([text]),
-   :admission :none,
-   :validation-scope :native-document-fixture-text},
   workflow-graph
   {:value-kind :string,
    :artifact-role :fixed-native-reference-fixture,
    :admission :none},
-  replay-fixture
-  {:value-kind :string,
-   :artifact-role :fixed-native-reference-fixture,
-   :admission :none}},
+  missing-policy {:arglists ([id]), :admission :none}},
  :supported
  [:existing-native-projection
   :borrowed-identity
@@ -36,7 +45,9 @@
   :native-catalog-assembly
   :explicit-native-operations
   :existing-native-fixture-recognition
-  :fixed-native-reference-text],
+  :fixed-native-reference-text
+  :native-failure-payload-assembly
+  :native-explicit-override-refusal],
  :dependency-direction
  {:requires [clojure.core clojure.string],
   :consumed-by [gravity.bootstrap],
@@ -69,7 +80,9 @@
   :canonical-target-syntax-validation
   :fixture-text-as-verified-ir
   :fixture-match-as-capability-or-proof-authority
-  :fixture-text-as-lowering-or-execution],
+  :fixture-text-as-lowering-or-execution
+  :refusal-callback-as-admission-or-proof
+  :canonical-diagnostic-publication],
  :artifact-inputs
  [:native-module-metadata
   :native-b10-diagnostic-id
@@ -77,7 +90,10 @@
   :supplied-input-artifact-id
   :native-diagnostic-operations
   :native-document-fixture-text
-  :fixed-native-fixture-definitions],
+  :fixed-native-fixture-definitions
+  :native-diagnostic-subject
+  :native-diagnostic-extra
+  :native-refusal-operations],
  :namespace gravity.backend.workflow,
  :diagnostic-ownership
  {:stage
@@ -85,10 +101,12 @@
    :native-rule-context-defaults
    :native-catalog-assembly
    :native-fixture-recognition
-   :fixed-native-reference-text],
+   :fixed-native-reference-text
+   :native-failure-payload-assembly
+   :native-explicit-override-refusal],
   :existing-owner
-  [:b10-refusal-decisions
-   :failure-construction
+  [:native-artifact-validation-decisions
+   :diagnostic-throw-transport
    :source-admission
    :publication]},
  :artifact-outputs
@@ -97,7 +115,8 @@
   :native-step-label
   :native-diagnostic-catalog-stream
   :native-fixture-recognition-result
-  :fixed-native-reference-text],
+  :fixed-native-reference-text
+  :native-refusal-callback-result],
  :consumer-component-paths
  ["bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00254-b9-document-source-artifact.clj"
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00255-b10-document-workflow-graph.clj"],
@@ -249,5 +268,42 @@
    " :side-effects-reissued false\n"
    " :status :complete}\n"))
 
-(doseq [operation [#'source-overrides #'missing-policy #'step-id #'diagnostic-stream #'workflow-graph-structurally-valid? #'replay-fixture-structurally-valid? #'workflow-graph #'replay-fixture]]
+(defn fail!
+  [id source-path subject extra operations]
+  ((:fail! operations) id
+         "B10 workflow graph backend design document coverage validation failed"
+         (merge {:source-span (or (:source-span subject)
+                                  ((:source-span operations) source-path 0))
+                 :diagnostic-family :b10-workflow-graph-backend-document
+                 :stage :b10-workflow-graph-backend-document-coverage
+                 :backend :gravity.backend/workflow-graph
+                 :profile :distributed
+                 :target :durable-workflow
+                 :workflow-id :gravity-stage0-workflow
+                 :step-id (or (:step-id subject)
+                              ((:step-id operations) id))
+                 :schema-id (or (:schema-id subject) :workflow-input-v1)
+                 :effect (or (:effect subject) :network/request)
+                 :capability (or (:capability subject)
+                                 :network/request)
+                 :provider (or (:provider subject)
+                               :stage0-model-provider)
+                 :replay-mode (or (:replay-mode subject)
+                                  :event-log)
+                 :missing-policy ((:missing-policy operations) id)
+                 :fallback-status :rejected
+                 :remediation "B10 requires workflow, step, message, and state schemas; replay-safe nondeterminism records; idempotency, retry, timeout, cancellation, and compensation records; explicit capabilities and human-review policy; taint validation; valid graph edges; audit provenance; and a complete workflow artifact manifest."}
+                extra)))
+
+(defn validate-source-overrides!
+  [source-path overrides operations]
+  (when-let [fail-kind (:fail overrides)]
+    (when-let [id (get ((:override-diagnostics operations)) fail-kind)]
+      (((:failure-operation operations))
+       id source-path
+       {:artifact-id (str "b10-document-" (name fail-kind))
+        :step-id (keyword (str "b10-document-" (name fail-kind)))}
+       {:missing-fields [fail-kind]}))))
+
+(doseq [operation [#'source-overrides #'missing-policy #'step-id #'diagnostic-stream #'workflow-graph-structurally-valid? #'replay-fixture-structurally-valid? #'workflow-graph #'replay-fixture #'fail! #'validate-source-overrides!]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

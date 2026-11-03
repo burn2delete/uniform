@@ -182,36 +182,16 @@
 
 (defn b12-document-fail!
   [id source-path subject extra]
-  (fail! id
-         "B12 mobile backend design document coverage validation failed"
-         (merge {:source-span (or (:source-span subject)
-                                  (source-span source-path 0))
-                 :diagnostic-family :b12-mobile-backend-document
-                 :stage :b12-mobile-backend-document-coverage
-                 :backend :gravity.backend/mobile
-                 :profile :hosted
-                 :target :ios
-                 :domain-anchor (or (:domain-anchor subject)
-                                    (b12-document-domain-anchor id))
-                 :platform (or (:platform subject) :ios)
-                 :api-symbol (or (:api-symbol subject)
-                                 'Foundation/URLSession.data)
-                 :lifecycle-state (or (:lifecycle-state subject)
-                                      :foreground)
-                 :thread-actor (or (:thread-actor subject) :main)
-                 :permission (or (:permission subject) :network)
-                 :capability (or (:capability subject) :network/request)
-                 :missing-policy (b12-document-missing-policy id)
-                 :fallback-status :rejected
-                 :remediation "B12 requires verified mobile/platform IR, explicit platform target and bundle metadata, permission and capability manifests, lifecycle and threading maps, null/error adapters, storage/sync schemas, resource manifests, store-audit metadata, source maps, and simulator/device conformance records."}
-                extra)))
+  (gravity.backend.mobile/fail!
+   id source-path subject extra
+   {:fail! fail!
+    :source-span (fn [path index] (source-span path index))
+    :domain-anchor (fn [id] (b12-document-domain-anchor id))
+    :missing-policy (fn [id] (b12-document-missing-policy id))}))
 
 (defn b12-document-validate-source-overrides!
   [source-path overrides]
-  (when-let [fail-kind (:fail overrides)]
-    (when-let [id (get b12-document-override-diagnostics fail-kind)]
-      (b12-document-fail!
-       id source-path
-       {:artifact-id (str "b12-document-" (name fail-kind))
-        :domain-anchor (keyword (str "b12-document-" (name fail-kind)))}
-       {:missing-fields [fail-kind]}))))
+  (gravity.backend.mobile/validate-source-overrides!
+   source-path overrides
+   {:override-diagnostics (fn [] b12-document-override-diagnostics)
+    :failure-operation (fn [] b12-document-fail!)}))

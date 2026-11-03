@@ -163,3 +163,87 @@
         (is (= expected-sha256
                (digest/sha256-bytes-hex (java.nio.file.Files/readAllBytes (.toPath file)))))
         (finally (.delete file))))))
+
+(deftest native-failure-assembly-keeps-operation-order-and-extra-precedence
+  (let [calls (atom []) payload (atom nil) result (Object.)
+        operations {:source-span (fn [path index] (swap! calls conj [:span path index]) :default-span)
+                    :step-id (fn [id] (swap! calls conj [:first id]) :first-context)
+                    :missing-policy (fn [id] (swap! calls conj [:last id]) :last-context)
+                    :fail! (fn [id message data]
+                             (swap! calls conj [:fail id]) (reset! payload [id message data]) result)}]
+    (is (identical? result (workflow/fail! "NATIVE" "borrowed.gravity" {}
+                                        {:source-span :extra-span :missing-policy :extra-policy} operations)))
+    (is (= [[:span "borrowed.gravity" 0] [:last "NATIVE"] [:first "NATIVE"] [:fail "NATIVE"]] @calls))
+    (is (= "NATIVE" (first @payload)))
+    (is (= :extra-span (get-in @payload [2 :source-span])))
+    (is (= :extra-policy (get-in @payload [2 :missing-policy])))
+    (let [span (Object.) marker (ex-info "operation identity" {})]
+      (is (identical? result (workflow/fail! "NATIVE" "borrowed.gravity" {:source-span span} {}
+                                          (assoc operations :source-span (fn [& _] (throw marker))))))
+      (is (identical? span (get-in @payload [2 :source-span])))
+      (is (identical? marker
+                     (try (workflow/fail! "NATIVE" "borrowed.gravity" {} {}
+                                        (assoc operations :fail! (fn [& _] (throw marker))))
+                          (catch clojure.lang.ExceptionInfo error error)))))))
+
+(deftest native-failure-wrapper-captures-throw-operation-before-payload-evaluation
+  (let [original-result (Object.) substituted-result (Object.)]
+    (with-redefs [bootstrap/fail! (fn [& _] original-result)
+                  bootstrap/b10-document-missing-policy
+                  (fn [_]
+                    (alter-var-root #'bootstrap/fail! (constantly (fn [& _] substituted-result)))
+                    :observed-context)]
+      (is (identical? original-result
+                      (bootstrap/b10-document-fail! "NATIVE" "borrowed.gravity" {} {}))))))
+
+(deftest native-override-selection-is-lazy-and-preserves-callback-results
+  (let [marker (ex-info "unused operation" {})]
+    (doseq [input [nil {} {:fail nil} {:fail false}]]
+      (is (nil? (workflow/validate-source-overrides!
+                  "borrowed.gravity" input
+                  {:override-diagnostics (fn [] (throw marker)) :failure-operation (fn [] (throw marker))})))))
+  (let [calls (atom []) result (Object.) id (String. "borrowed-native-id")
+        operations {:override-diagnostics (fn [] (swap! calls conj :table) {:custom id})
+                    :failure-operation
+                    (fn []
+                      (swap! calls conj :failure-lookup)
+                      (fn [actual path subject extra]
+                        (is (identical? id actual))
+                        (swap! calls conj [path subject extra]) result))}]
+    (is (identical? result (workflow/validate-source-overrides! "borrowed.gravity" {:fail :custom} operations)))
+    (is (= [:table :failure-lookup ["borrowed.gravity"
+                    {:artifact-id "b10-document-custom" :step-id :b10-document-custom}
+                    {:missing-fields [:custom]}]] @calls))
+    (reset! calls [])
+    (is (nil? (workflow/validate-source-overrides! "borrowed.gravity" {:fail :unknown} operations)))
+    (is (= [:table] @calls))))
+
+(deftest native-override-wrapper-keeps-table-and-failure-var-lookup-late
+  (let [captured (atom nil) path (String. "borrowed.gravity") input {:fail :custom}]
+    (with-redefs [workflow/validate-source-overrides!
+                  (fn [source overrides operations]
+                    (is (identical? path source)) (is (identical? input overrides))
+                    (reset! captured operations) :stage-result)]
+      (is (= :stage-result (bootstrap/b10-document-validate-source-overrides! path input))))
+    (let [table {:custom "NATIVE"} result (Object.) subject {} extra {}]
+      (with-redefs [bootstrap/b10-document-override-diagnostics table
+                    bootstrap/b10-document-fail!
+                    (fn [id source actual-subject actual-extra]
+                      (is (= "NATIVE" id)) (is (identical? path source))
+                      (is (identical? subject actual-subject)) (is (identical? extra actual-extra)) result)]
+        (is (identical? table ((:override-diagnostics @captured))))
+        (is (identical? result (((:failure-operation @captured)) "NATIVE" path subject extra)))))))
+
+(deftest native-override-wrapper-captures-failure-root-before-selector-name
+  (let [original-result (Object.) substituted-result (Object.)
+        selector (reify clojure.lang.Named
+                   (getName [_]
+                     (alter-var-root #'bootstrap/b10-document-fail!
+                                     (constantly (fn [& _] substituted-result)))
+                     "custom")
+                   (getNamespace [_] nil))]
+    (with-redefs [bootstrap/b10-document-override-diagnostics {selector "NATIVE"}
+                  bootstrap/b10-document-fail! (fn [& _] original-result)]
+      (is (identical? original-result
+                      (bootstrap/b10-document-validate-source-overrides!
+                        "borrowed.gravity" {:fail selector}))))))

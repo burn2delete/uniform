@@ -5,7 +5,17 @@
 (def ^:private namespace-contract
   '{:authenticates-inputs? false,
  :public-api
- {source-overrides {:arglists ([module]), :admission :none},
+ {validate-source-overrides!
+  {:arglists ([source-path overrides operations]),
+   :admission :none,
+   :required-operations [:override-diagnostics :failure-operation]},
+  source-overrides {:arglists ([module]), :admission :none},
+  fail!
+  {:arglists ([id source-path subject extra operations]),
+   :admission :none,
+   :required-operations
+   [:fail! :source-span :query-id :missing-policy],
+   :callback-return :propagated},
   sql-statement
   {:value-kind :string,
    :artifact-role :fixed-native-reference-fixture,
@@ -40,7 +50,9 @@
   :native-catalog-assembly
   :explicit-native-operations
   :existing-native-fixture-recognition
-  :fixed-native-reference-text],
+  :fixed-native-reference-text
+  :native-failure-payload-assembly
+  :native-explicit-override-refusal],
  :dependency-direction
  {:requires [clojure.core clojure.string],
   :consumed-by [gravity.bootstrap],
@@ -71,7 +83,9 @@
   :canonical-target-syntax-validation
   :fixture-text-as-verified-ir
   :fixture-match-as-capability-or-proof-authority
-  :fixture-text-as-lowering-or-execution],
+  :fixture-text-as-lowering-or-execution
+  :refusal-callback-as-admission-or-proof
+  :canonical-diagnostic-publication],
  :artifact-inputs
  [:native-module-metadata
   :native-b11-diagnostic-id
@@ -79,7 +93,10 @@
   :supplied-input-artifact-id
   :native-diagnostic-operations
   :native-document-fixture-text
-  :fixed-native-fixture-definitions],
+  :fixed-native-fixture-definitions
+  :native-diagnostic-subject
+  :native-diagnostic-extra
+  :native-refusal-operations],
  :namespace gravity.backend.query,
  :diagnostic-ownership
  {:stage
@@ -87,10 +104,12 @@
    :native-rule-context-defaults
    :native-catalog-assembly
    :native-fixture-recognition
-   :fixed-native-reference-text],
+   :fixed-native-reference-text
+   :native-failure-payload-assembly
+   :native-explicit-override-refusal],
   :existing-owner
-  [:b11-refusal-decisions
-   :failure-construction
+  [:native-artifact-validation-decisions
+   :diagnostic-throw-transport
    :source-admission
    :publication]},
  :artifact-outputs
@@ -99,7 +118,8 @@
   :native-query-label
   :native-diagnostic-catalog-stream
   :native-fixture-recognition-result
-  :fixed-native-reference-text],
+  :fixed-native-reference-text
+  :native-refusal-callback-result],
  :consumer-component-paths
  ["bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00258-b10-document-source-artifact.clj"
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00259-b11-document-validate-source-overrides.clj"],
@@ -246,5 +266,43 @@
    " :taint-policy :validated\n"
    " :status :complete}\n"))
 
-(doseq [operation [#'source-overrides #'missing-policy #'query-id #'diagnostic-stream #'sql-structurally-valid? #'result-adapter-structurally-valid? #'sql-statement #'migration-sql #'result-adapter-fixture]]
+(defn fail!
+  [id source-path subject extra operations]
+  ((:fail! operations) id
+         "B11 query/relational backend design document coverage validation failed"
+         (merge {:source-span (or (:source-span subject)
+                                  ((:source-span operations) source-path 0))
+                 :diagnostic-family :b11-query-relational-backend-document
+                 :stage :b11-query-relational-backend-document-coverage
+                 :backend :gravity.backend/query-relational
+                 :profile :hosted
+                 :target :postgresql
+                 :query-id (or (:query-id subject)
+                               ((:query-id operations) id))
+                 :schema-id (or (:schema-id subject) :stage0-v1)
+                 :dialect (or (:dialect subject) :postgresql)
+                 :parameter-id (or (:parameter-id subject) :gravity-value)
+                 :column-id (or (:column-id subject) :gravity_value)
+                 :effect (or (:effect subject) :db/read)
+                 :capability (or (:capability subject) :db/read)
+                 :taint-category (or (:taint-category subject)
+                                     :external-input)
+                 :migration-state (or (:migration-state subject)
+                                      :compatible)
+                 :missing-policy ((:missing-policy operations) id)
+                 :fallback-status :rejected
+                 :remediation "B11 requires verified relational IR, explicit dialect/schema/version/provider records, parameterized SQL, capability and taint evidence, transaction and migration policy, null/type/result adapters, provider-plan evidence, and a complete query artifact manifest."}
+                extra)))
+
+(defn validate-source-overrides!
+  [source-path overrides operations]
+  (when-let [fail-kind (:fail overrides)]
+    (when-let [id (get ((:override-diagnostics operations)) fail-kind)]
+      (((:failure-operation operations))
+       id source-path
+       {:artifact-id (str "b11-document-" (name fail-kind))
+        :query-id (keyword (str "b11-document-" (name fail-kind)))}
+       {:missing-fields [fail-kind]}))))
+
+(doseq [operation [#'source-overrides #'missing-policy #'query-id #'diagnostic-stream #'sql-structurally-valid? #'result-adapter-structurally-valid? #'sql-statement #'migration-sql #'result-adapter-fixture #'fail! #'validate-source-overrides!]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))
