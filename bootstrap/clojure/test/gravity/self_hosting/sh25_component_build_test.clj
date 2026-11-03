@@ -156,7 +156,7 @@
     (is (= {:component-id :call-arity
             :category :analyzer
             :source-path
-            "bootstrap/gravity/src/gravity/compiler/c6_call_arity_legality.gravity"
+            "language/compiler/src/gravity/compiler/c6_call_arity_legality.gravity"
             :dependencies [:checked-core-pipeline]}
            (nth catalog 13)))
     (is (= :runtime-subset (:component-id (nth catalog 42))))

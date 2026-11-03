@@ -85,13 +85,13 @@ Use the owning path for the behavior under test:
 
 | Behavior | Owning implementation |
 | --- | --- |
-| Canonical source/Core shape and legality | `bootstrap/gravity/src/gravity/checked_core.gravity` |
+| Canonical source/Core shape and legality | `language/compiler/src/gravity/checked_core.gravity` |
 | Namespace and reference binding | `bootstrap/gravity/src/gravity/resolution.gravity` |
 | Reader literal transport | `bootstrap/clojure/src/gravity/c3_literal_projection.clj` and its SH-04 consumer |
-| Function and expression types | `bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity` |
-| Body and latent effects | `bootstrap/gravity/src/gravity/effects.gravity` |
+| Function and expression types | `language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity` |
+| Body and latent effects | `language/compiler/src/gravity/effects.gravity` |
 | Typed Core to executable development IR | `bootstrap/gravity/p15_s23/emitter.gravity` |
-| Development IR evaluation | `bootstrap/gravity/src/gravity/runtime.gravity` |
+| Development IR evaluation | `language/runtime/src/gravity/runtime.gravity` |
 
 Start with an exact kernel test:
 

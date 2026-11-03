@@ -141,7 +141,7 @@
                            "sh07-b10-match-decision-resolver-rejects-over-limit-vectors"
                            "sh07-b10-match-record-resolver-rejects-invalid-boundary-values"]}
    :dependency-closure {:module-ids ["sh07-checked-core"]
-                        :paths ["bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"
+                        :paths ["language/compiler/src/gravity/compiler/l2_core_language_semantics.gravity"
                                 "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_match_lowering_test.clj"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"
@@ -228,7 +228,7 @@
                            "sh07-b13-fragment-manifest-is-exact-root-aligned-and-exhaustive"
                            "sh07-b13-fragment-coverage-is-exact-ordered-and-complete"]}
    :dependency-closure {:module-ids ["sh07-checked-core"]
-                        :paths ["bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
+                        :paths ["language/compiler/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
                                 "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_table.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_module_fragment_test.clj"
@@ -286,7 +286,7 @@
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_semantic_carrier.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/unified_execution_plan.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
-                                "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
+                                "language/compiler/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
                                 "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_table.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_module_fragment_test.clj"
@@ -343,7 +343,7 @@
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_semantic_carrier.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/unified_execution_plan.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
-                                "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
+                                "language/compiler/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
                                 "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_table.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_module_fragment_test.clj"
@@ -400,7 +400,7 @@
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_semantic_carrier.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/unified_execution_plan.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
-                                "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
+                                "language/compiler/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
                                 "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_table.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_module_fragment_test.clj"
@@ -457,7 +457,7 @@
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_semantic_carrier.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/unified_execution_plan.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
-                                "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
+                                "language/compiler/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
                                 "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_table.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_module_fragment_test.clj"
@@ -516,7 +516,7 @@
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_semantic_carrier.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/unified_execution_plan.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
-                                "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
+                                "language/compiler/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
                                 "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_table.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_module_fragment_test.clj"
@@ -1005,7 +1005,7 @@
                            "sh07-b10-match-branches-preserve-enclosing-tail-recur-targets"
                            "sh07-b10-match-scrutinee-does-not-inherit-tail-position"]}
    :dependency-closure {:module-ids ["sh07-checked-core"]
-                        :paths ["bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"
+                        :paths ["language/compiler/src/gravity/compiler/l2_core_language_semantics.gravity"
                                 "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_match_lowering_test.clj"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"
@@ -1056,7 +1056,7 @@
                            "sh07-b10-match-decision-resolver-rejects-over-limit-vectors"
                            "sh07-b10-match-record-resolver-rejects-invalid-boundary-values"]}
    :dependency-closure {:module-ids ["sh07-checked-core"]
-                        :paths ["bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"
+                        :paths ["language/compiler/src/gravity/compiler/l2_core_language_semantics.gravity"
                                 "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_match_lowering_test.clj"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"

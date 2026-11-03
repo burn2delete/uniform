@@ -249,7 +249,7 @@
             :c6-c10-pipeline
             "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
             :c6-call-arity
-            "bootstrap/gravity/src/gravity/compiler/c6_call_arity_legality.gravity"
+            "language/compiler/src/gravity/compiler/c6_call_arity_legality.gravity"
             :checked-core
             "language/compiler/src/gravity/checked_core.gravity"
             :c3-compat

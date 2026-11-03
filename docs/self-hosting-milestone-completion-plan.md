@@ -234,7 +234,7 @@ coordination framework is required for each semantic change.
 ## SH-02 - Reusable authenticated envelopes
 
 Contracts: D9, C18, BOOT8. Owner:
-`bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity`.
+`language/compiler/src/gravity/compiler/authenticated_envelope.gravity`.
 
 1. **SH-02.1:** Use one reusable envelope contract at two distinct compiler
    stages, with explicit producer, consumer and artifact schema identities.
@@ -418,7 +418,7 @@ Downstream-pending facts must remain explicit, never represented as checked.
 ## SH-08 - Bootstrap types
 
 Contracts: L5, L7-L10, C7. Owner:
-`bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity`.
+`language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity`.
 
 1. **SH-08.1:** Assign types or structured diagnostics to every compiler Core
    node, including primitive literals, quoted/meta values and collections.
@@ -446,7 +446,7 @@ Stop: compiler-required typing, not every optional type-system extension.
 ## SH-09 - Effects, capabilities and profiles
 
 Contracts: L6, L12, L15, C8, P1/P3/P13 and release-profile contract. Owner:
-`bootstrap/gravity/src/gravity/effects.gravity` and the declared C8 engine.
+`language/compiler/src/gravity/effects.gravity` and the declared C8 engine.
 
 1. **SH-09.1:** Compute direct, latent, transitive, thrown-error and residual
    effects for all compiler constructs, including guards and mutation.
@@ -471,7 +471,7 @@ Stop: compiler/release-path legality, not all distributed/AI runtime services.
 ## SH-10 - Ownership, lifetimes and initialization
 
 Contracts: L10, SAFE2-SAFE5, C9. Owner:
-`bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity`.
+`language/compiler/src/gravity/compiler/c9_ownership_checker_engine.gravity`.
 
 1. **SH-10.1:** Represent persistent sharing, owned mutable values, copies,
    moves and borrows required by the compiler without hidden copying.
@@ -498,7 +498,7 @@ Stop: required memory regimes, not universal GC/arena/concurrency support.
 
 Contracts: D8, SAFE1/SAFE6/SAFE15/SAFE16 and applicable specialized safety
 contracts, C10. Owner:
-`bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity`.
+`language/compiler/src/gravity/compiler/c10_safety_analysis_pipeline.gravity`.
 
 1. **SH-11.1:** Inventory every dangerous operation in the compiler subset;
    exactly one outcome is proven-safe, runtime-checked, rejected or unsafe-island.
@@ -522,7 +522,7 @@ Stop: safety for the declared subset; no performance claim follows.
 ## SH-12 - MIR construction and verification
 
 Contracts: C11, C12, C18. Owner:
-`bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity`.
+`language/compiler/src/gravity/compiler/c11_mir_specification.gravity`.
 
 1. **SH-12.1:** Construct modules, globals, functions, blocks, values and
    operations from actual checked Core for every required operation family.
@@ -617,7 +617,7 @@ Stop: bootstrap diagnostic families, not every IDE/localization feature.
 ## SH-16 - Required MIR optimization
 
 Contracts: D6, C13/C18, PERF10. Owner:
-`bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity`.
+`language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity`.
 
 1. **SH-16.1:** Enumerate the finite required bootstrap pass pipeline with
    inputs/outputs, versions, analyses and deterministic order.
@@ -641,8 +641,8 @@ all domain optimizers are later work; do not substitute a no-op for a required p
 ## SH-17 - Target-lowering boundary
 
 Contracts: C14, B1, P13, C18. Owners:
-`bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity`
-and `bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity`.
+`language/compiler/src/gravity/compiler/c14_target_lowering_architecture.gravity`
+and `language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity`.
 
 1. **SH-17.1:** Accept only the actual verified MIR/domain artifact and its
    current checked facts; stale or substituted inputs fail before emission.
@@ -689,7 +689,7 @@ all-target support. A standalone harness success alone does not satisfy .1.
 ## SH-19 - Self-hosting runtime subset
 
 Contracts: R1/R3/R5/R11, L9/L10/L15, SAFE6. Owners:
-`bootstrap/gravity/src/gravity/runtime.gravity`, native runtime driver and
+`language/runtime/src/gravity/runtime.gravity`, native runtime driver and
 declared providers; temporary C providers remain explicit trusted components.
 
 1. **SH-19.1:** Start the compiled compiler/runtime with defined argv, inputs,
