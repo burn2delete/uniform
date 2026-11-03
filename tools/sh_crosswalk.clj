@@ -5,9 +5,18 @@
 (binding [*command-line-args* nil] (load-file "tools/sh_inventory.clj") (load-file "tools/acceptance_dependencies.clj"))
 (require '[sh-inventory] '[acceptance-dependencies])
 (def baseline "254a5b50ea5e2825c424248c9216802cc866c0fd")
+(def predecessor-applying-source-pins
+  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/component-roadmaps/build.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "docs/component-roadmaps/compiler-api.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "docs/component-roadmaps/reader.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/self-hosting-slice-ownership.edn" "c8fd8e437ef921041b181e2f09ee1a37d716d357", "specs/build-workflow/tasks.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "specs/compiler-api-workflow/tasks.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "specs/reader-workflow/tasks.md" "2e0292c61603aad200df397e397e94e3c7d24818"})
+(def historical-readiness-source-version
+  (edn/read-string
+    (slurp "specs/sh-family-crosswalk/implementation-readiness-source-version.edn")))
+(def readiness-source-version
+  (edn/read-string
+    (slurp "specs/sh-family-crosswalk/implementation-readiness-current-source-version.edn")))
 (def applying-source-pins
-  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/component-roadmaps/build.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "docs/component-roadmaps/compiler-api.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "docs/component-roadmaps/reader.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/self-hosting-slice-ownership.edn" "c8fd8e437ef921041b181e2f09ee1a37d716d357", "specs/build-workflow/tasks.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "specs/compiler-api-workflow/tasks.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "specs/reader-workflow/tasks.md" "2e0292c61603aad200df397e397e94e3c7d24818", "specs/runtime-workflow/tasks.md" "42c34ab55af0000dfaaf73d96d7ee09ec22c243e"})
-(def pinned-evidence-hashes
+  (merge predecessor-applying-source-pins
+         (:applying-source-pins readiness-source-version)))
+(def predecessor-pinned-evidence-hashes
   {"docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
  "6bf8d0fce1744526f500857eedfd03f11138ee4b0941c49ab787e5dacb5ba5d6",
  "bootstrap/clojure/src/gravity/authenticated_artifact_pipeline.clj"
@@ -235,16 +244,10 @@
  "docs/phase-18-binary-distribution-and-seedless-release/README.md"
  "45c126ec6370358245c666a2dda960a4f3d9666433f140552ade73dd52c486b5"}
 )
+(def pinned-evidence-hashes
+  (merge predecessor-pinned-evidence-hashes
+         (:additional-pinned-evidence-hashes readiness-source-version)))
 (defn source-pin [path] (get applying-source-pins path baseline))
-(declare git-source)
-(defn pinned-source-text [path]
-  ;; The SH projection is a pinned historical view. A current task-ledger
-  ;; transition is authenticated separately by the source-view consumers; it
-  ;; must not silently rewrite historical crosswalk rows. The current
-  ;; explanatory dependency index is the one intentional live input.
-  (if (= path "docs/acceptance-dependencies.md")
-    (slurp path)
-    (git-source (source-pin path) path)))
 (def original-baseline "15a5499e97798621d270c36dd2546ce98ddd62a9")
 (def output-path "specs/sh-family-crosswalk/crosswalk.edn")
 (def rollup-path "specs/sh-family-crosswalk/rollup.md")
@@ -258,7 +261,7 @@
 
 ;; Integers below select pinned literal IDs, never live document/display order.
 ;; The mapping keys are local routing shorthand, not tasks or completion units.
-(def stable-task-routing-keys
+(def predecessor-stable-task-routing-keys
   {"auth"
  ["auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
   "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
@@ -409,6 +412,10 @@
   "types/current-evidence-and-remaining-work/types5-integrate-typed-core"]}
 )
 
+(def stable-task-routing-keys
+  (merge predecessor-stable-task-routing-keys
+         (:stable-task-routing-additions readiness-source-version)))
+
 (def routes
   [[[["mir" 1] ["lower" 1]] [["backends" "backend-wasm"] ["emit" 2]] [["backends" "backend-conformance"] ["emit" 4]] [["lower" 1] ["backends" "backend-interface"]] [["compiler-api" "pass-evidence"]] [["release" 5]]]
    [[["compiler-api" "development-boundaries"]] [["compiler-api" "development-boundaries"]] [["compiler-api" "development-boundaries"]] [["compiler-api" "development-boundaries"]] [["compiler-api" "development-boundaries"]] [["compiler-api" "development-boundaries"]]]
@@ -452,28 +459,65 @@
     (loop [rows []] (if (.find m)
                      (recur (conj rows {:groups (mapv #(.group m %) (range 1 (inc (.groupCount m))))
                                         :source (sh-inventory/source-span path text (.start m) (.end m))})) rows))))
-(defn task-records [component]
-  (let [path (str "specs/" component "-workflow/tasks.md") text (pinned-source-text path)
-        marker (str "<!-- " component "-implementation-tasks:")
+(defn task-records
+  ([component] (task-records component (str component "-implementation-tasks")))
+  ([component region]
+  (let [path (str "specs/" component "-workflow/tasks.md") text (slurp path)
+        marker (str "<!-- " region ":")
         start (+ (.indexOf text (str marker "start -->")) (count (str marker "start -->")))
         end (.indexOf text (str marker "end -->"))
-        _ (acceptance-dependencies/implementation-ids text component)
+        _ (when-not (seq (acceptance-dependencies/marked-task-ids text region))
+            (throw (ex-info "Missing task region" {:path path :region region})))
         m (re-matcher #"(?m)^- \[([ xX])\] `([^`]+)`[^\n]*" text)
         positions (loop [v []] (if (.find m) (recur (if (< start (.start m) end)
                    (conj v {:start (.start m) :id (.group m 2) :checked (not= " " (.group m 1))}) v)) v))]
     (mapv (fn [row next-row]
             (let [stop (or (:start next-row) end) raw (str/trimr (subs text (:start row) stop))]
-              {:id (:id row) :component component :path path :checked (:checked row)
+              (cond-> {:id (:id row) :component component :path path :checked (:checked row)
                :authority :component-implementation-ledger
                :source-commit (source-pin path) :file-sha256 (sh-inventory/sha256 text)
                :source (sh-inventory/source-span path text (:start row) (+ (:start row) (count raw)))
-               :owner-source (str "docs/component-roadmaps/" component ".md")}))
-          positions (concat (rest positions) [nil]))))
+               :owner-source (str "docs/component-roadmaps/" component ".md")}
+                (not= region (str component "-implementation-tasks"))
+                (assoc :region region :authority :component-future-task-ledger))))
+          positions (concat (rest positions) [nil])))))
 (defn task-ref [tasks [component selector]]
   (let [id (if (integer? selector) (get-in stable-task-routing-keys [component (dec selector)]) selector)
         row (first (filter #(= id (:id %)) (tasks component)))]
     (when-not row (throw (ex-info "Unknown task route" {:component component :selector selector})))
     (select-keys row [:id :component :path])))
+
+(defn finish-line-sources []
+  (let [full "docs/full-language-implementation-gap-map.md"
+        phase "docs/phase-18-binary-distribution-and-seedless-release/IMPLEMENTATION-ROADMAP.md"
+        paths [full phase sh-inventory/plan-path]
+        digests (into {} (map (fn [path] [path (sh-inventory/sha256 (slurp path))]) paths))
+        row (fn [id kind match]
+              (let [source (:source match) path (:path source)]
+                {:id id :kind kind :path path :source-commit (source-pin path)
+                 :sha256 (digests path) :source source
+                 :recorded-status (or (second (re-find #"(?m)^Status: ([^\n]+)" (:raw source)))
+                                      (when-let [[_ checked] (re-find #"^- \[([ xX])\]" (:raw source))]
+                                        (if (= " " checked) "open" "checked-at-recorded-scope"))
+                                      "source-declared-only")}))
+        fl (mapv #(row (nth (:groups %) 1) :full-language-task %)
+                 (span-matches full #"(?ms)^- \[([ xX])\] `(FL-P\d{2}-T\d{2})` [^\n]*\n.*?(?=^- \[[ xX]\] `FL-|^## |\z)"))
+        p18 (mapv #(row (first (:groups %)) :phase18-task %)
+                  (span-matches phase #"(?ms)^### (P18-T0[0-6]) - [^\n]*\n.*?(?=^### P18-|^## |\z)"))
+        sh (mapv #(row (first (:groups %)) :self-hosting-milestone %)
+                 (span-matches sh-inventory/plan-path #"(?ms)^## (SH-2[1-9]) - [^\n]*\n.*?(?=^## |\z)"))
+        contexts (mapv (fn [[path id kind pattern]]
+                         (let [matches (span-matches path pattern)]
+                           (when-not (= 1 (count matches)) (throw (ex-info "Missing finish-line source boundary" {:id id})))
+                           (row id kind (first matches))))
+                       [[full "full-language-completion-rule" :shared-proof-contract #"(?ms)^## Completion Rule\n.*?(?=^## |\z)"]
+                        [full "full-language-staging-contract" :shared-stage-contract #"(?ms)^### Dependency stages and finite acceptance\n.*?(?=^## |\z)"]
+                        [full "P15-S23" :existing-terminal-gate #"(?ms)^P15 has one named terminal gate, `P15-S23`.*?(?=^- \[[ xX]\] `FL-|^## |\z)"]
+                        [phase "final-phase-18-completion-gate" :existing-terminal-gate #"(?ms)^## Final Phase 18 Completion Gate\n.*?(?=^## |\z)"]])]
+    (acceptance-dependencies/require-population! acceptance-dependencies/full-language-task-ids (map :id fl) "finish-line full-language task")
+    (when-not (= [36 7 9 4] (mapv count [fl p18 sh contexts]))
+      (throw (ex-info "Changed finish-line source population" {})))
+    (vec (concat fl p18 sh contexts))))
 (defn review-fingerprint [result]
   (sh-inventory/sha256
     (pr-str [(dissoc result :requirements :source-digests :source-snapshots)
@@ -711,12 +755,17 @@
 (def resolution-runtime-predecessor-review
   (:resolution-runtime-predecessor-review resolution-runtime-current-review))
 
-(def mapping-review
+(def readiness-predecessor-mapping-review
   (assoc resolution-main-predecessor-review
-         :historical-predecessor-input-fingerprint "f16680ce6e29658f827e6a50a5bd13fd3c90241aeb01614e4465422c40533f8e"
-         :predecessor-input-fingerprint "9a4a8c8219cfb90965396426e9544caa91c3307dcf1c67b0663d001eb2a7993a"
-         :input-fingerprint "4f4c7275e14284a2f0ce0528272b3e35e76fb54f9d0c3aeb82e3ba8da6b17bcd"
+         :input-fingerprint "f16680ce6e29658f827e6a50a5bd13fd3c90241aeb01614e4465422c40533f8e"
          :source-version-bridge "specs/sh-family-crosswalk/resolution-runtime-composition-source-version.edn"
+         :resolution-main-predecessor-review
+         (select-keys resolution-main-predecessor-review
+                      [:status :input-fingerprint :source-version-bridge])
+         :resolution-runtime-current-review
+         (select-keys resolution-runtime-current-review
+                      [:status :input-fingerprint :source-version-bridge])
+         :resolution-runtime-predecessor-review resolution-runtime-predecessor-review
          :stdlib-task-source-transition
          {:status :pending-source-version-review
           :path "specs/stdlib-workflow/tasks.md"
@@ -725,14 +774,19 @@
           :task-ids (:task-ids acceptance-dependencies/stdlib-task-source-transition)
           :scope :historical-routing-and-structural-only
           :qualification "PR564's five Stdlib rows are authenticated against the frozen SH source rows and the applying current task-ledger blob. This successor preserves old locators and rejects changed criteria; it confers no implementation, library-release or whole-SH acceptance."}
-         :resolution-main-predecessor-review
-         (select-keys resolution-main-predecessor-review
-                      [:status :input-fingerprint :source-version-bridge])
-         :resolution-runtime-current-review
-         (select-keys resolution-runtime-current-review
-                      [:status :input-fingerprint :source-version-bridge])
-         :resolution-runtime-predecessor-review resolution-runtime-predecessor-review
          :qualification "Native and resolution ownership source composition plus the PR564 Stdlib task-ledger source transition; immutable predecessor projections remain pinned, all current states unassessed."))
+
+(def mapping-review
+  (assoc readiness-predecessor-mapping-review
+         :status :pending-source-version-review
+         :input-fingerprint (:input-fingerprint readiness-source-version)
+         :source-version-bridge
+         "specs/sh-family-crosswalk/implementation-readiness-source-version.edn"
+         :implementation-readiness-predecessor-review
+         (select-keys readiness-predecessor-mapping-review
+                      [:status :input-fingerprint :source-version-bridge])
+         :qualification
+         "Exact task-source and Governance routing successor, including foundation criteria and Domain/Platform/Release refinements. Original task statuses and predecessor review subjects are preserved. Future Domain, Release and Platform Product records retain pending SH composition. Current source/routing, implementation and whole-SH acceptance remain pending."))
 
 (defn source-view []
   (let [inventory (edn/read-string (slurp "specs/sh-family-crosswalk/original-inventory.edn"))
@@ -742,6 +796,22 @@
             (throw (ex-info "Original source changed; retain lineage before rebinding" {})))
         components (mapv second (re-seq #"(?m)^\| [^|\n]+ / `([a-z-]+)` \|" (slurp "docs/component-roadmaps/README.md")))
         tasks (into (sorted-map) (map (fn [c] [c (task-records c)]) components))
+        finish-sources (finish-line-sources)
+        future-tasks (into (sorted-map)
+                           (for [[component region expected] acceptance-dependencies/future-task-regions
+                                 :let [rows (task-records component region)]]
+                             (do (when-not (= expected (count rows))
+                                   (throw (ex-info "Future task population changed" {:region region})))
+                                 [region rows])))
+        _ (let [captured (into {} (map (juxt :id identity)
+                                      (or (:future-task-records readiness-source-version)
+                                          (get-in readiness-source-version [:macro-refinement :future-task-source-successor :after])
+                                          (get-in readiness-source-version [:future-dependency-refinement :task-records]))))
+                actual (into {} (for [row (mapcat val future-tasks)]
+                                  [(:id row) (assoc (select-keys row [:id :region :component :path :checked :source-commit :file-sha256])
+                                                   :body-sha256 (get-in row [:source :sha256]))]))]
+            (when-not (= captured actual)
+              (throw (ex-info "Future task sources differ from explicit readiness successor" {}))))
         _ (doseq [[c rows] tasks]
             (when-not (= (set (map :id rows)) (set (stable-task-routing-keys c)))
               (throw (ex-info "Task identity population changed; preserve source/ownership routing before amendment" {:component c}))))
@@ -765,13 +835,15 @@
                                     "docs/self-hosting-slice-backlog.md" "docs/self-hosting-current-migration-cohort.md"
                                     "docs/self-hosting-slice-ownership.edn" "docs/document-inventory.json"
                                     "docs/acceptance-dependencies.md" "docs/component-roadmaps/README.md"
+                                    "docs/full-language-implementation-gap-map.md"
                                     "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
                                     "docs/phase-06-compiler-architecture/080-c1-compiler-architecture-overview.md"
                                     "docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md"
                                     "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md"
                                     "docs/phase-18-binary-distribution-and-seedless-release/README.md"
                                     "docs/phase-18-binary-distribution-and-seedless-release/IMPLEMENTATION-ROADMAP.md"]
-                                  (mapcat (fn [[c rows]] (conj (mapv :path rows) (str "docs/component-roadmaps/" c ".md"))) tasks)))
+                                  (mapcat (fn [[c rows]] (conj (mapv :path rows) (str "docs/component-roadmaps/" c ".md"))) tasks)
+                                  (keys (:inspection-locators readiness-source-version))))
         requirements
         (mapv (fn [{:keys [id milestone source]}]
                 (let [n (Long/parseLong (subs milestone 3)) r (dec (Long/parseLong (subs id 6)))
@@ -821,6 +893,15 @@
     {:schema-version 2 :kind :sh-family-derived-crosswalk :authority :read-only-acceptance-rollup
      :applying-task-source-commit baseline :original-inventory-commit original-baseline
      :applying-source-pins applying-source-pins
+     :implementation-readiness-source-version
+     (select-keys readiness-source-version
+                  [:kind :status :source-input-commit :predecessor
+                   :task-comparisons :source-criteria
+                   :retained-historical-source-inputs :math-parent-refinement
+                   :release-testing-refinement :domain-parent-refinement
+                   :ai-parent-refinement :platform-refinement :future-dependency-refinement
+                   :math-schema-dependency-refinement :release-dependency-refinement :finish-line-refinement
+                   :foundation-tools-refinement :foundation-owner-refinement :c15-refinement :mir-refinement :lower-refinement :opt-refinement :verification-refinement :incremental-refinement :plugin-refinement :domain-ir-refinement :effects-refinement :ownership-refinement :ownership-dependency-refinement :safety-refinement :safety-dependency-refinement :root-safety-refinement :root-safety-dependency-refinement :memory-refinement :memory-dependency-refinement :memory-model-refinement :memory-model-dependency-refinement :source-effects-refinement :source-effects-dependency-refinement :concurrency-refinement :concurrency-dependency-refinement :authority-refinement :authority-dependency-refinement :compile-time-refinement :compile-time-dependency-refinement :macro-cache-refinement :macro-refinement :macro-dependency-refinement :syntax-refinement :syntax-dependency-refinement])
      :pr574-macro-artifacts-composition
      {:path "specs/sh-family-crosswalk/pr574-macro-artifacts-composition.edn" :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/pr574-macro-artifacts-composition.edn"))}
      :pr574-composition-source-version
@@ -858,7 +939,7 @@
         :qualification "Implementation, integration and authoritative completion remain separate. Actual owning execution, rejection/preservation/composition, exact provenance/support/TCB and independently accepted stable revision are required only for the applicable claim. SH00-SH02 retain accepted baseline/process scope; no unconditional replay of unchanged evidence."})
      :component-owner-evidence
      (into (sorted-map)
-       (for [c components :let [path (str "docs/component-roadmaps/" c ".md") text (pinned-source-text path)
+       (for [c components :let [path (str "docs/component-roadmaps/" c ".md") text (slurp path)
                                 end (or (str/index-of text "\n## ") (count text))]]
          [c {:source (sh-inventory/source-span path text 0 end)
              :assignment :existing-reservations-preserved-not-inferred
@@ -866,7 +947,13 @@
      :global-requirement-owner "01a179ad-2198-7392-966a-1e3c31209027"
      :global-requirement-handoff {:sha256 "25be0fe3d53bf133b72f405d50d039ba3ab9fb186499036587ab72a860174954"
                                 :authority :join-proposals-only :accepted-denominator false}
-     :source-digests (into (sorted-map) (map (fn [p] [p (sh-inventory/sha256 (pinned-source-text p))]) sources))
+     :source-digests
+     (into (sorted-map)
+       (for [p sources]
+         [p (sh-inventory/sha256
+              (if (acceptance-dependencies/historical-sh-source-path? p)
+                (git-source (source-pin p) p)
+                (slurp p)))]))
      :stable-task-routing-keys stable-task-routing-keys
      :retained-native-history {:path "specs/sh-family-crosswalk/retained-native-evidence.edn"
                               :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/retained-native-evidence.edn"))
@@ -918,7 +1005,7 @@
        :disposition :preserve-mixed-source-with-existing-supersession-qualification
        :global-equivalence-owner "01a179ad-2198-7392-966a-1e3c31209027"
        :qualification "Original raw wording and historical checks remain provenance. Existing current direction retires project work/capacity-only refusals; it does not retire malformed/cyclic/tampered/stale rejection, intrinsic type/Unicode/index/arity/target constraints, semantic resource ownership, actual broker/heap/watchdog/capture/platform controls or external provider spending limits. OOM/timeout remains a resource failure. This SH view makes no new global facet/equivalence adjudication."}]
-     :task-authorities tasks :requirements requirements
+     :task-authorities tasks :future-task-authorities future-tasks :finish-line-sources finish-sources :requirements requirements
      :sh07-sequence (mapv (fn [{:keys [groups source]}]
                             {:id (nth groups 0) :requirement-scope (str/trim (nth groups 1))
                              :accountability (str/trim (nth groups 2))
@@ -1032,7 +1119,7 @@
   (normalize-source-payloads (adopt-review (source-view) mapping-review)))
 
 (defn rollup [result]
-  (str "# SH acceptance rollup\n\nGenerated by tools/sh_crosswalk.clj; read-only. Edit component task authorities,\nnot this view. Source criteria and sequence IDs are provenance, not additive\nimplementation tasks. Mapping/graph reviewed at c6c80530; implementation and\ncurrent whole-criterion acceptance remain separate and unassessed.\n\n"
+  (str "# SH acceptance rollup\n\nGenerated by tools/sh_crosswalk.clj; read-only. Edit component task authorities,\nnot this view. Source criteria and sequence IDs are provenance, not additive\nimplementation tasks. Historical mapping/graph review at c6c80530 retains its\noriginal subject; current source-version review, implementation and whole-criterion\nacceptance remain separate and unassessed.\n\n"
        "Original source: " original-baseline ". Task authority amendment: " baseline ".\n\n"
        "Source-version adoption: " (name (get-in result [:mapping-review :status])) ". The explicit source-version bridge preserves predecessor pins and new owner-accepted Reader evidence.\n\n"
        "Every requirement retains its complete acceptance/context text, source\nlocators, lines and SHA256; crosswalk.edn stores each distinct source payload once\nin its source-snapshots table and references it by content digest. Current\nacceptance is unassessed unless an exact scoped task receipt explicitly establishes it.\n\n"
@@ -1072,12 +1159,14 @@
                        :let [m (into {} node)]
                        :when (and (:path m) (:source-commit m) (:sha256 m))]
                    [(:source-commit m) (:path m) (:sha256 m)])
-        task-files (for [[_ rows] (:task-authorities result) row rows]
+        task-files (for [rows (concat (vals (:task-authorities result)) (vals (:future-task-authorities result))) row rows]
                      [(:source-commit row) (:path row) (:file-sha256 row)])
-        digests (into (or (:source-digests result) {})
-                      (map (fn [[_ path digest]] [path digest]) (concat locators task-files)))
+        digests (into {}
+                      (map (fn [[commit path digest]] [[commit path] digest])
+                           (concat locators task-files)))
         explicit-pins (for [[path commit] (:applying-source-pins result)
-                            :let [digest (get digests path)]]
+                            :let [digest (or (get (:source-digests result) path)
+                                             (get digests [commit path]))]]
                         (do (when-not digest
                               (throw (ex-info "Explicit applying pin lacks a whole-file digest" {:path path})))
                             [commit path digest]))]

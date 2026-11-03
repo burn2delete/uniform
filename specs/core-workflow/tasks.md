@@ -23,6 +23,14 @@ Current evidence/status: Open; partial source evidence above is not closure
 
 Done when (yes/no): Implement quote, if, do, let, fn, loop/recur, def, var, set!, try/throw and match with specified evaluation order and shape validation.
 
+<!-- core-canonical-memory-model-core-outcomes:start -->
+
+Apply the [complete source memory-model and provider criteria](../legality-workflow/plan.md#complete-source-memory-model-and-provider-criteria) within this existing task. Status remains Open; frozen finite review does not accept the new whole-source or current composition.
+
+L10 defined memory-form outcome criterion (Open): Lower every supported memory/resource primitive or declared library/macro form into the actual Core operation with defined value, control, effect or panic behavior, or an owning prior rejection. Preserve regime, allocation, ownership/resource, address-space, profile/provider and source/generated declarations and evaluation order; a backend's undefined behavior or host-managed object assumption cannot supply source semantics. Expose the actual Core inputs needed by Types/Effects and memory safety, leaving their later facts unproved until their owners derive them. Core's expression/control outcomes are distinct from C10's four operation safety outcomes. Reject an unknown primitive, unmodeled allocation behavior or lost operation/origin/declaration instead of claiming safety from a Core-node label; the owning semantic checkers retain profile and safety refusals. Required evidence: real accepted memory forms, refused malformed/unsupported or metadata-losing forms and versioned Core/source/evaluation artifacts consumed by the semantic checkers.
+<!-- core-canonical-memory-model-core-outcomes:end -->
+
+
 - [ ] `core/current-evidence-and-remaining-work/core2-preserve-binding-structure` core/2: Preserve binding structure
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -35,6 +43,22 @@ Current evidence/status: Open; partial source evidence above is not closure
 
 Done when (yes/no): Lower surface conveniences while recording source/generated origins, effects, capabilities, metadata and unsafe declarations.
 
+<!-- core-canonical-memory-model-structured-lowering:start -->
+
+Apply the [complete source memory-model and provider criteria](../legality-workflow/plan.md#complete-source-memory-model-and-provider-criteria) within this existing task. Status remains Open; frozen finite review does not accept the new whole-source or current composition.
+
+L10 structured resource lowering criterion (Open): Treat with-open and related region/resource scopes as actual macro/library forms lowering into ordered acquisition, body, release/transfer and Core control paths with linear-resource evidence. Preserve source/generated origins, declared effects/grants, resource identity, normal/error/panic/cancellation/early-exit cleanup and every modeled contract-specific exit. Core emits the graph and seed declarations; Legality derives exactly-once flow and Runtime executes cleanup. Preserve an explicit privileged forget operation only under its declared policy boundary for the owning checkers, never an implicit leak repair or ordinary scope exit. Reject missing/duplicated cleanup edges, reordered acquisition/release, hidden generated duplication or lost control/source facts, and supply actual downstream analysis results rather than a supplied flow verdict.
+<!-- core-canonical-memory-model-structured-lowering:end -->
+
+
+<!-- concurrency-source-control:start -->
+
+Apply the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria) within this existing task. Status remains Open; historical finite reviews do not accept this whole-source/current implementation proposal.
+
+Complete concurrency control criterion (Open): Lower actual structured task, async/await, channel/actor and cancellation control without losing ordered effects, source/generated origins, ownership moves, child scope or cleanup edges. Preserve the difference between an explicitly transferred task handle and an unjoined child, and between hardware parallel state or GPU workgroups and host threads. Emit real Core/control products for semantic analysis and reject lost or reordered synchronization/cleanup; a task-shaped record alone does not establish lowered behavior.
+<!-- concurrency-source-control:end -->
+
+
 - [ ] `core/current-evidence-and-remaining-work/core4-verify-and-serialize` core/4: Verify and serialize
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -46,6 +70,18 @@ Done when (yes/no): Reject malformed node graphs, illegal control positions, unr
 Current evidence/status: Open; partial source evidence above is not closure
 
 Done when (yes/no): Use the same core interface for handwritten/generated input and feed Types/Effects with accepted control-flow programs and rejected malformed/illegal core fixtures.
+
+<!-- concurrency-source-core:start -->
+
+Apply the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria) within this existing task. Status remains Open; historical finite reviews do not accept this whole-source/current implementation proposal.
+
+Preserved finite predicate conjunctions and historical source context:
+
+Decision criterion interface/language/core/enforce-profile-semantics: Apply common core semantics under the one active profile; run post-expansion legality and keep admitted host behaviors normalized at declared boundaries. Reject: Reject backend-specific source legality, hidden host/runtime dependencies, illegal effects/grants/memory/unsafe facilities and macro-generated violations. Required outputs: Checked core/profile facts, common-semantic parity and profile-specific admission/refusal diagnostics with generated origins.
+
+Complete concurrency checked-Core criterion (Open): Compose actual Types, Effects, Auth and Legality products for every selected L11 construct and profile before MIR. Require admitted task/scheduler, ownership/capture, race/synchronization, atomic order/scope, typed-message and replay facts, preserving the selected provider/target, source origins and all four safety outcomes. Refuse missing or inconsistent products rather than trusting supplied safe/complete fields. This task consumes the analyses; their existing owners retain fact production. Produce actual checked Core and refused compositions, without claiming one supported primitive covers the complete concurrency surface.
+<!-- concurrency-source-core:end -->
+
 
 <!-- core-implementation-tasks:end -->
 
