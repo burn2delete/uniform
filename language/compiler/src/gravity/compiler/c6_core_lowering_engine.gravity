@@ -5990,55 +5990,129 @@
     (c6-sh07-exception-diagnostic
      request "C6-VERIFY" :entry-request-shape-invalid nil)))
 
+(defn c6-core-node-required-fields-valid? [node]
+  (if (map? node)
+    (loop [remaining (get c6-core-node-contract :required-fields)]
+      (if (= (count remaining) 0)
+        true
+        (if (contains? node (first remaining))
+          (recur (rest remaining))
+          false)))
+    false))
+
+(defn c6-core-node-id-valid? [value]
+  (if (string? value)
+    (> (count value) 0)
+    false))
+
+(defn c6-core-node-children-valid? [node]
+  (let [children (get node :children)]
+    (if (map? children)
+      true
+      (vector? children))))
+
+(defn c6-core-node-source-valid? [node]
+  (let [source (get node :source)]
+    (if (map? source)
+      (if (contains? source :syntax-id)
+        (if (c6-core-node-id-valid? (get source :syntax-id))
+          (if (contains? source :span)
+            (if (map? (get source :span))
+              (if (contains? source :origin-chain)
+                (vector? (get source :origin-chain))
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)))
+
+(defn c6-core-node-shape-valid? [node]
+  (if (c6-core-node-required-fields-valid? node)
+    (if (= (get node :artifact) :gravity/c6-core-node)
+      (if (= (get node :contract) c6-core-node-contract)
+        (if (c6-core-node-id-valid? (get node :node-id))
+          (if (contains? (set (get c6-core-node-contract :core-forms))
+                         (get node :form))
+            (if (c6-core-node-children-valid? node)
+              (if (c6-core-node-source-valid? node)
+                (if (map? (get node :metadata))
+                  (if (map? (get node :facts))
+                    (if (keyword? (get node :profile))
+                      (if (keyword? (get node :target))
+                        (boolean? (get node :generated?))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
+            false)
+          false)
+        false)
+      false)
+    false))
+
 (defn build-c6-core-node
   [node-id form children syntax-id source-span origin-chain binding-context profile target metadata facts generated?]
-  (quote {:artifact :gravity/c6-core-node
-          :node-id node-id
-          :form form
-          :children children
-          :source {:syntax-id syntax-id
-                   :span source-span
-                   :origin-chain origin-chain}
-          :binding-context binding-context
-          :profile profile
-          :target target
-          :metadata metadata
-          :facts facts
-          :generated? generated?
-          :contract c6-core-node-contract}))
+  {:artifact :gravity/c6-core-node
+   :node-id node-id
+   :form form
+   :children children
+   :source {:syntax-id syntax-id
+            :span source-span
+            :origin-chain origin-chain}
+   :binding-context binding-context
+   :profile profile
+   :target target
+   :metadata metadata
+   :facts facts
+   :generated? generated?
+   :contract c6-core-node-contract})
 
 (defn build-c6-desugaring-trace
   [surface-syntax surface-kind core-root introduced-forms preserved introduced-origin evaluation-order]
-  (quote {:artifact :gravity/c6-desugaring-trace
-          :surface-syntax surface-syntax
-          :surface-kind surface-kind
-          :core-root core-root
-          :introduced-forms introduced-forms
-          :preserved preserved
-          :introduced-origin introduced-origin
-          :evaluation-order evaluation-order
-          :diagnostics []
-          :contract c6-lowering-rule-contract}))
+  {:artifact :gravity/c6-desugaring-trace
+   :surface-syntax surface-syntax
+   :surface-kind surface-kind
+   :core-root core-root
+   :introduced-forms introduced-forms
+   :preserved preserved
+   :introduced-origin introduced-origin
+   :evaluation-order evaluation-order
+   :diagnostics []
+   :contract c6-lowering-rule-contract})
 
 (defn verify-c6-core-lowering [core-lowering-artifact]
-  (quote {:status :stage1-source-owned
-          :core-lowering-artifact core-lowering-artifact
-          :checks [:every-executable-form-lowered-or-diagnosed
-                   :core-node-shape-valid
-                   :left-to-right-evaluation-recorded
-                   :generated-origin-linked
-                   :effects-and-capabilities-preserved
-                   :unsafe-metadata-preserved
-                   :domain-boundaries-anchored
-                   :core-verifier-before-type-checking
-                   :lowering-rule-versions-recorded]
-          :diagnostics c6-core-lowering-diagnostic-catalog
-          :preserves [:source-spans :syntax-identity
-                      :origin-chains :generated-origin
-                      :namespace-context :binding-identity
-                      :profile-target-metadata
-                      :effect-capability-metadata
-                      :unsafe-metadata :evaluation-order
-                      :domain-boundary-anchors
-                      :lowering-rule-versions
-                      :artifact-provenance]}))
+  (if (c6-core-node-shape-valid? core-lowering-artifact)
+    {:status :passed
+     :scope :single-core-node
+     :accepted-artifact :gravity/c6-core-node
+     :core-lowering-artifact core-lowering-artifact
+     :checks [:artifact-kind-valid
+              :required-fields-present
+              :contract-binding-valid
+              :node-id-valid
+              :core-form-valid
+              :children-shape-valid
+              :source-shape-valid
+              :metadata-and-facts-present
+              :profile-and-target-present
+              :generated-flag-valid]
+     :diagnostics c6-core-lowering-diagnostic-catalog
+     :nonclaims [:whole-module-core-ast
+                 :child-graph-verification
+                 :domain-boundary-verification
+                 :downstream-type-effect-ownership-safety]}
+    {:status :rejected
+     :scope :single-core-node
+     :accepted-artifact :gravity/c6-core-node
+     :rule "C6-CORE-SHAPE"
+     :reason :core-node-shape-invalid
+     :core-lowering-artifact core-lowering-artifact
+     :checks []
+     :diagnostics c6-core-lowering-diagnostic-catalog
+     :nonclaims [:whole-module-core-ast
+                 :child-graph-verification
+                 :domain-boundary-verification
+                 :downstream-type-effect-ownership-safety]}))
