@@ -38,7 +38,8 @@ does not grant authority that either project has not proved.
 | Current path | Initial owner | Notes |
 | --- | --- | --- |
 | `bootstrap/gravity/src/gravity/compiler/` | Uniform language | Compiler pass semantics and their Uniform-authored contracts. The directory name is historical; a pass remains language-owned when Clojure executes it. |
-| `bootstrap/gravity/src/gravity/reader.gravity`, `macro.gravity`, `resolution.gravity`, `checked_core.gravity`, `effects.gravity`, `runtime.gravity` | Uniform language | Language and compiler behavior. Their temporary seed transport stays bootstrap-owned. |
+| `bootstrap/gravity/src/gravity/reader.gravity`, `macro.gravity`, `resolution.gravity`, `effects.gravity`, `runtime.gravity` | Uniform language | Language and compiler behavior. Their temporary seed transport stays bootstrap-owned. |
+| `language/compiler/src/gravity/checked_core.gravity` | Uniform language | The first relocated semantic module. Its temporary Clojure seed transport remains bootstrap-owned. |
 | `bootstrap/gravity/src/gravity/bootstrap/` | Mixed, by behavior | C2/C3 reader, syntax, and diagnostic semantics are language-owned; stage executors, release-attestation, and seed-retirement entrypoints in the same files remain bootstrap-owned until extracted. The directory name alone does not decide ownership. |
 | `bootstrap/gravity/src/gravity/self_hosting/` | Bootstrap replacement, by behavior | Stage rebuild orchestration, compiler identity, equivalence, trust, and evidence modules such as `w5_stage_rebuild_orchestrator.gravity`, `w5_stage_equivalence_verifier.gravity`, and `w5_trust_provenance_verifier.gravity` belong to bootstrap. A module that implements a permanent compiler rule is language-owned after behavior review. |
 | `bootstrap/gravity/p15_s23/compiler.gravity` | Mixed; extraction required | This source combines compiler rule inventories with stage/rebuild/seed-retirement records. Extract permanent compiler behavior to the language project and keep stage inventory, rebuild orchestration, and retirement evidence in bootstrap. Do not assign the whole file to either project. |
@@ -70,6 +71,11 @@ and temporary Clojure transport boundary are documented in
 current source path; historical evidence continues to retain the old path. The mixed
 `bootstrap/gravity/p15_s23/compiler.gravity` and self-hosting orchestrators
 must be split by behavior before they are candidates for relocation.
+
+Some linked roadmaps and recorded plan inputs intentionally retain the former
+bootstrap path as historical baseline material. Those paths are not current
+ownership declarations; this map and `docs/bootstrap/core-relocation.md`
+define the current source location.
 
 ## Separate progress claims
 

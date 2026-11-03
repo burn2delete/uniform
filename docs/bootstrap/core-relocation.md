@@ -53,7 +53,8 @@ Acceptance for this increment is limited to:
 - the Clojure adapter resolves and executes that path;
 - current Core development fixtures retain their accepted and rejected
   behavior and diagnostics;
-- the stage1 inventory records both source roots and includes the module.
+- the stage1 inventory records the bootstrap source root and relocated language
+  source location and includes the module.
 
 This does not claim self-hosting, Clojure seed retirement, a complete compiler,
 or a seedless release. Those claims remain governed by BOOT1, BOOT3, BOOT7 and
