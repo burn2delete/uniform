@@ -51,7 +51,7 @@
   "bootstrap/clojure/test/gravity/types/pr502_mixed_collection_joins_test.clj" "e1ac04c6d42ab276acca2b2bd7881ec0e4559601"
   "bootstrap/clojure/test/gravity/types/bare_set_equality_mixed_ledger_test.clj" "efd61129392703ae52ed3fd52d8aa59daae5cf8a"
   "bootstrap/clojure/test/gravity/types/pr502_preserved_fixtures_test.clj" "81625771f209c3bf8a457c0b78ba225e7ade3b99"
-  "bootstrap/clojure/test/gravity/types/pr598_mixed_collection_joins_test.clj" "d8a03c7b6f3aa2cba459aa9357c58e8f68ea416c"
+  "bootstrap/clojure/test/gravity/types/pr598_mixed_collection_joins_test.clj" "68c37de5ffa742a6b9aa9e0a9b186b456c2e4b01"
   "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/local-runtime-bare-set-equality.gravity" "d86e9f560969d8e04738950c897f495c08516621"
   "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/local-runtime-bare-set-equality.qst" "d86e9f560969d8e04738950c897f495c08516621"}
  :source-delta
