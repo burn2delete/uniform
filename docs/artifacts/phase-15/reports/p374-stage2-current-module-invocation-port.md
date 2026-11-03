@@ -147,3 +147,17 @@ review. Any later integration must normal-merge or otherwise compose against
 the exact then-current `main`, rerun the affected checks, and retain this
 source checkpoint as history. No GitHub write, push, merge, or PR state change
 was performed here.
+
+## Subsequent coordinator composition
+
+Checkpoint `dc8276a8653d8092d2a84a593e22c5c49a570824`, tree
+`ca72bfc057c21f767bd86e19085996dc7e46ad61`, normally composes main
+`f7184c2e2e236018c600c417ab1d5f01f166ca6e`. All five source/test
+inputs and this earlier report remain unchanged from `ac777f3`.
+The four finite selectors above passed together at this composition:
+4 tests, 41 assertions, zero failures and zero errors. The durable log is
+`/tmp/uniform-module-invocation-current-finite.log`.
+
+This later check proves forwarding and legacy dispatch only. It does not
+replace the incomplete real-source experiments or the separate pending C14
+evidence. Whole PR374 remains open.
