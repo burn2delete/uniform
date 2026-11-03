@@ -23,7 +23,7 @@ support from local checks.
 
 ## Compile-time evaluation dependency interface
 
-Use the [compile-time evaluation producer and consumer order](../expand-workflow/plan.md#compile-time-evaluation-producer-and-consumer-order) and existing selected-result table. Provide actual pass/event/verifier contracts before Build calls stages, and retain actual results afterward. Pipeline integrates the sole Build cache; checked P, generated Q and selected plugin/IR products have distinct phases.
+Use the [compile-time evaluation producer and consumer order](../expand-workflow/plan.md#compile-time-evaluation-producer-and-consumer-order) and existing selected-result table. Provide actual pass/event/verifier contracts before Build calls stages, and retain actual results afterward. Pipeline supplies versioned stage/key-input facts and integrates actual shared/default and permitted L16 engine-specific results through the [Build cache boundary](../expand-workflow/plan.md#macro-engine-cache-replacement-boundary); checked P, generated Q and selected plugin/IR products have distinct phases.
 
 Task bodies/statuses and finite review subjects stay unchanged. Current source/interface entailment and independent acceptance remain pending; preserve all actual holds.
 

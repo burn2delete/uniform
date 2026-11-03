@@ -52,7 +52,7 @@ earlier source/memory/safety/concurrency/provider stage and the distinctions bel
 | Types and target queries | Actual solved P types/captures/allocation/effects and fixed declared target/ABI/alignment rules | Actual values and target-representation checks, generated Q typing and final Q-derived layout; no query waits for its own future layout |
 | Grants, gates and actions | Actual scoped build authority/provider/isolation plus installed phase/IR/operation gates | Actual performed/refused evaluator/plugin/action, replay and redacted diagnostic events; a later trace never authorizes its first action |
 | Compiler API and build graph | Versioned pass/input/output/verifier/invalidation/event contracts before graph node invocation | Actual ordered stage products and node/input-edge failures; immutable prior artifacts remain available through new identities |
-| Cache production and use | Sole Build cache implementation receives authentic stage/value/trace and semantic-input identities, validates the creation trace under current policy | Expand4 consumes the actual hit/deny/miss decision and cached value; evaluation follows misses; later clean-versus-reused results verify the claimed behavior |
+| Cache production and use | Build shared/default cache and permitted L16 engine-specific machinery expose authentic stage/value/key/entry/trace and semantic-input identities; shared admission validates the creation trace under current policy | Expand4 consumes the actual hit/deny/miss decision and cached value; evaluation follows misses; later clean-versus-reused results verify the claimed behavior |
 | Canonical records and target constants | Selected schema/format/numeric/string/metadata contracts and real encoder/decoder implementations where used | Actual canonical records and target-compatible constant products under their distinct contracts; target layout is not S3 canonical bytes |
 | Local records and packaging | Real namespace events/constants/origins/action/replay/cache/diagnostic products | Typed graph persistence, actual repeated typed-Core byte comparisons, then policy-required archive/signing/publication as separately authorized consumers |
 | APIs, fallback and suites | Real available eligible callable definitions and actual checked generated or explicitly permitted fallback Q | Real source/API/runtime results where claimed, owner cases, then each independently executed harness with its exact subject and oracle |
@@ -67,9 +67,9 @@ program conformance. Structural validity and a target rule are not checked Core
 or a derived Q layout. Actual source recursion still needs a legal governing
 rule or refusal, not a project depth/fuel allowance.
 
-Pipeline supplies actual stage/key-input facts and consumes the existing Build
-cache result. Its broad cache-integration row is not a second key/invalidation
-implementation. A cache hit verifies the creation trace and current inputs; it
+Pipeline supplies actual stage/key-input facts and integrates real Build shared
+cache and permitted L16 engine-specific results. Its broad cache-integration row
+does not duplicate the selected cache machinery. A cache hit verifies the creation trace and current inputs; it
 does not repeat an external action to authorize itself. Stricter policy may
 invalidate matching bytes; looser policy never blesses hidden creation effects.
 Selected schema definitions can precede values, while serialized consumption
@@ -110,10 +110,10 @@ two existing exact predicates remain in place. All finite reviews stay frozen.
 | Expand1 evaluator | Computed compile-time/defconst values, eligible pure or explicitly authorized execution, stable target representations and actual phase/capture refusals |
 | Expand2 origins | Immutable source/generated syntax, hygiene/public-name rules and full generator/input/span/phase/package/version/effect/output chain |
 | Expand3 action and record | Installed build-phase enforcement before action, authentic ordered evaluation/constants/action/replay/diagnostic products for each namespace |
-| Expand4 reuse consumer | Actual Build cache result and current trace-policy legality before consuming the value; no independent cache implementation |
+| Expand4 reuse consumer | Actual shared or selected L16 engine cache result and current trace-policy legality before consuming the value; integrate permitted engine machinery without a second shared cache authority |
 | Expand5 generated programs | Ordinary validation of actual generated declarations/protocols/serialization/layout/tests/proofs, source equivalence and complete owner cases |
 | Build graph | Nine ordered observable phase products and immutable earlier artifacts, preserving source and generated origins |
-| Build cache | Sole key/entry/invalidation/revalidation authority for all ten L12 input groups and actual cached values/traces |
+| Build cache | Shared/default cache construction, complete semantic-input/current-policy admission and invalidation/revalidation integration for all ten L12 groups; permitted L16 engine-specific machinery supplies actual results under the same contracts |
 | Build reproducibility | Actual repeated hermetic typed-core byte comparison; native metadata exceptions require marked fields and target acceptance |
 | Build artifact packaging | Persist actual evaluator records in the typed graph; policy-required archival/shipping/signing remain distinct operations |
 | Auth grants and secrets | Actual narrow build authority and secret/export policy with destination-specific redaction/refusal results |
@@ -151,9 +151,10 @@ native metadata exceptions cannot weaken that equality.
 Actual cache reuse needs every source/span/macro/extension/function/lock/grant/
 file/environment/profile/target/compiler/facet/replay input and a still-legal
 trace. Stricter policy may invalidate a matching entry; looser policy never
-legalizes creation-time hidden effects. Build alone constructs and invalidates
-the cache, Expand consumes its actual result, and reproducibility compares
-repeated builds. Ordered namespace records need actual computed values and
+legalizes creation-time hidden effects. Build owns shared/default cache construction and admission/invalidation/
+revalidation integration. Expand integrates and consumes actual selected-engine
+results under the macro cache replacement boundary below; reproducibility
+compares actual repeated builds. Ordered namespace records need actual computed values and
 performed/refused actions, not output-type digests or assigned passed/reuse flags.
 
 Preserve all nine explicit profile cases: core, hosted, native, kernel, firmware,
@@ -230,6 +231,16 @@ Task bodies/statuses and previous qualified evidence stay unchanged. Current sou
 Use the [complete source effect and handler criteria](../effects-workflow/plan.md#complete-source-effect-and-handler-criteria) with the existing task authority. The existing expand3 task owns actual compile-time boundary enforcement and input/output/phase/replay records. Auth issues grants, Effects infers behavior and Build packages the logs; listed grants do not prove performed work.
 
 The frozen finite review is qualified to its exact source predicates; complete L6/current source entailment, independent review and implementation acceptance remain pending. Preserve every actual held operation.
+
+## Macro engine cache replacement boundary
+
+[L16 replacement machinery](../../docs/phase-01-core-language/026-l16-alternative-macro-system-contract.md#replacement-boundary) includes incremental expansion caches and scheduling. Its [incremental and parallel rules](../../docs/phase-01-core-language/026-l16-alternative-macro-system-contract.md#incremental-and-parallel-expansion) preserve dependency order, deterministic results, stable diagnostics, namespace initialization and side-effect visibility, with invalidation for source, macro, provider, profile, facet, target, grant and compiler changes. This permission qualifies the earlier L12/shared-cache ownership wording; it does not transfer language or policy authority.
+
+Use the existing Expand4 task for selected engine-specific expansion machinery, actual cache reuse/refusal and integration. Build's existing cache task owns shared/default construction, complete semantic-input and current-policy admission, and invalidation/revalidation integration. An engine may implement its own keys, storage and scheduling and expose actual complete semantic input/key/entry/trace/replay/policy results through the versioned shared boundary. Build need not duplicate the engine's storage or expansion implementation. Auth selects the compatible provider and enforces actual grants; Compiler API supplies stage/key-input facts and integrates actual results; the reproducibility task consumes these products and performs actual repeated-build comparisons. Keep the existing task authority for each outcome.
+
+Acceptance needs unchanged-input reuse, changed provider/version/source/macro/profile/facet/target/grant/compiler/replay invalidation, stricter-policy refusal even for a matching key, hidden creation-effect refusal after policy relaxation, secret-safe records, and clean-versus-reused artifact/diagnostic comparisons. Effectful entries include authentic trace and replay records. A hit must not repeat external work merely to authorize reuse. Physical keys and syntax representations may differ between engines; shared schemas, semantic-input completeness, provenance and policy checks remain required. Reference/alternative expansion comparison is structural up to permitted alpha-renaming under [L16 equivalence](../../docs/phase-01-core-language/026-l16-alternative-macro-system-contract.md#required-equivalence); this does not relax L12's same-input hermetic typed-Core byte equality.
+
+Local interface and fixture development can start under the existing contracts. Actual composition requires the selected provider and real producer/consumer products. Preserve all held provider/plugin/replay operations, source-policy decisions and independent review requirements. This correction does not confer whole-L16, whole-macro, implementation, migration or release acceptance. Complete L4/L16/C4/SAFE12 predicate and dependency reconciliation remains pending.
 
 ## Historical task-authority-transfer plan
 

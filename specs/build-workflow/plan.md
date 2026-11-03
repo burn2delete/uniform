@@ -20,23 +20,23 @@ Refine only the selected existing task, keeping failed/unrun cases and exact
 input/output identities. Reviewable package mutation behavior, independent
 acceptance, integration and final seedless Build remain distinct.
 
-Cache key construction, invalidation and reuse stay with the existing dependency-aware caching task. The reproducibility task consumes its actual provider-bound decisions and performs repeat-build comparisons; the selected L15 criterion adds no second cache authority.
+Shared/default cache construction and admission/invalidation/revalidation integration stay with the existing dependency-aware caching task; selected L16 engines may implement their own expansion cache machinery under the same contracts. The reproducibility task consumes its actual provider-bound decisions and performs repeat-build comparisons; the selected L15 criterion adds no second cache authority.
 
 ## Compile-time evaluation dependency interface
 
-Use the [compile-time evaluation producer and consumer order](../expand-workflow/plan.md#compile-time-evaluation-producer-and-consumer-order) and existing selected-result table. The graph invokes versioned compiler stages and keeps immutable products. The existing cache task alone constructs/invalidates/revalidates entries; Expand consumes the result, reproducibility compares actual builds, and local records precede later authorized archive/signing/publication.
+Use the [compile-time evaluation producer and consumer order](../expand-workflow/plan.md#compile-time-evaluation-producer-and-consumer-order) and existing selected-result table. The graph invokes versioned compiler stages and keeps immutable products. The existing cache task owns shared/default cache construction and admission/invalidation/revalidation integration, including permitted L16 engine-specific results under the [macro cache boundary](../expand-workflow/plan.md#macro-engine-cache-replacement-boundary); Expand supplies and consumes actual engine results, reproducibility compares actual builds, and local records precede later authorized archive/signing/publication.
 
 Task bodies/statuses and finite review subjects stay unchanged. Current source/interface entailment and independent acceptance remain pending; preserve all actual holds.
 
 ## Complete compile-time evaluation interface
 
-Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). The graph task schedules immutable phase products; the cache task alone owns keys/invalidation/revalidation; reproducibility consumes those outputs and compares repeated typed Core; packaging persists actual evaluator records under separate archive/signing policy.
+Use the [complete compile-time evaluation source criteria](../expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria). The graph task schedules immutable phase products; the cache task owns shared/default key completeness and admission/invalidation/revalidation integration, preserving permitted L16 engine-specific cache machinery; reproducibility consumes those outputs and compares repeated typed Core; packaging persists actual evaluator records under separate archive/signing policy.
 
 Current source/interface entailment and implementation acceptance remain pending; preserve existing task authority, frozen reviews and every actual restriction.
 
 ## Provider and capability dependency interface
 
-Use the [provider and capability producer and consumer order](../auth-workflow/plan.md#provider-and-capability-producer-and-consumer-order) and existing selected-result table. Normalize requests before actual grants; verify imported Q before use; execute the typed graph through installed gates. The existing cache owner alone constructs/revalidates keys; reproducibility consumes its results. Current P provenance follows P execution and comparisons.
+Use the [provider and capability producer and consumer order](../auth-workflow/plan.md#provider-and-capability-producer-and-consumer-order) and existing selected-result table. Normalize requests before actual grants; verify imported Q before use; execute the typed graph through installed gates. The existing cache owner integrates complete, revalidated shared/default and permitted engine-specific cache results; reproducibility consumes its results. Current P provenance follows P execution and comparisons.
 
 Task authorities and frozen review subjects stay unchanged. Selected interfaces remain proposed; current independent acceptance and implementation are unassessed. Preserve all actual restrictions.
 
@@ -122,8 +122,9 @@ PKG2/7/11, foundation, standard-library or bootstrap documents.
 Compiler API/stage owners supply versioned schema/fact/origin/diagnostic
 contracts and actual stage products; Resolve supplies affected index identities.
 Expand/Auth/typed-graph owners supply generated inputs, granted effects and
-replay evidence. The cache owner constructs keys/entries/graphs and revalidates
-actual artifacts. The rebuild owner performs recorded-input rebuild comparisons
+replay evidence. The cache owner constructs shared/default keys/entries/graphs and integrates
+actual engine-specific cache products and artifact revalidation under the
+[macro cache boundary](../expand-workflow/plan.md#macro-engine-cache-replacement-boundary). The rebuild owner performs recorded-input rebuild comparisons
 and records actual per-target support. Bootstrap consumes stage comparisons separately.
 No duplicate stage implementation, proof checker or task authority is created.
 

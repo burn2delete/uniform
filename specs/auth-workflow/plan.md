@@ -61,7 +61,7 @@ completion checkbox cannot stand in for all its different inputs and outputs.
 | Gate and action | Real typed action/caller/callee requirements, actual grants and available isolation; installed phase-scoped sink gate | Actual Build/Expand/Runtime allowed/refused action, delegation/revocation/deployment-narrowing and redacted audit trace |
 | Runtime support and startup | Declared compatible services, real selected primitive implementation/link/load and installed checks | Actual provider presence/version/scope/contract/profile/target/safety/audit validation before user code, or declared compatible fallback/refusal |
 | Compile-time use and replay | Checked macro/build P, actual build grants/gates, exact L6/L12 hermetic premises and replay contract | Actual action/input/output/provider records, generated Q checking and no-repeat replay; a recorded non-replayability exception waives no grant or hermetic condition |
-| Cache and reproducibility | Actual stage/action outputs plus exact source/compiler/provider/version/grant/policy/replay inputs | The existing cache task constructs keys and revalidates reuse; the reproducibility task consumes those results and compares actual repeated locked builds |
+| Cache and reproducibility | Actual stage/action outputs plus exact source/compiler/provider/version/grant/policy/replay inputs | The existing cache task owns shared/default construction and integrates complete permitted L16 engine-specific key/trace/replay/current-policy results under the [macro cache boundary](../expand-workflow/plan.md#macro-engine-cache-replacement-boundary); the reproducibility task consumes those results and compares actual repeated locked builds |
 | Library and replacement | Real typed API/provider/EFIR/numeric/resource contracts and applicable checked proof products | Actual safe Math replacement plus memory or IO implementation and usable operation/failure/cleanup results over permitted selected services |
 | Owner cases and suites | Actual selection/grant/trust/compiler/gate/startup/action/cache/replacement products | Auth and Legality owner cases, then each independently executed Release harness with its own source/profile/target subject and oracle |
 
@@ -72,7 +72,7 @@ capability requests, review-request tokens, manifests and supplied safe/scope
 flags cannot replace real decisions, grants, review or action enforcement.
 Types supplies capability facts; Effects derives action requirements; Auth owns
 selection/grants/trust/gates; Runtime/Expand/Build execute their own selected
-actions; Math/Stdlib implement replacements. The cache owner remains unique.
+actions; Math/Stdlib implement replacements. Build retains shared cache admission/integration; L16 engine-specific machinery remains permitted.
 
 Selected schema definitions precede actual validators/codecs where used; full
 schema migration and final suites are not generic construction prerequisites.
@@ -178,8 +178,10 @@ wording remains visible as source context, while project work/call/token/fuel
 accounting remains removed. Real external account/billing restrictions, retention,
 evaluation, physical scopes and runtime failure semantics remain separate.
 
-Cache key construction, invalidation and reuse remain solely under the existing
-Build dependency-aware caching task. The provider criterion in Build
+The existing Build dependency-aware caching task owns shared/default cache
+construction and admission/invalidation/revalidation integration, preserving
+permitted L16 engine-specific keys, storage and scheduling under the
+[macro cache boundary](../expand-workflow/plan.md#macro-engine-cache-replacement-boundary). The provider criterion in Build
 reproducibility consumes that task's real outputs and owns repeated locked-build
 manifest/content comparisons. It does not implement a second cache.
 
