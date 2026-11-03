@@ -88,7 +88,7 @@
   {:name :resolution-digest-interval-hook
    :command "clojure -J-Xmx512m -M:dev-test --progress --namespace gravity.self-hosting.sh06-unmetered-resolution-test --exact digest-count-quota-is-gone-but-complete-ordered-requests-remain-required"
    :log "/tmp/uniform-pr697-corrected-digest.log"
-   :result "1 test, 5 assertions, 0 failures, 0 errors"}
+   :result "1 test, 5 assertions, 0 failures, 0 errors; retained from the prior source-port run because the production owner is unchanged and this checkpoint changes only controls/evidence; not rerun"}
   {:name :resolution-intervals
    :command "clojure -J-Xmx256m -M tools/ci/resolution_interval_test.clj"
    :log "/tmp/uniform-pr697-formatted-interval.log"
