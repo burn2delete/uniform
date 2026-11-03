@@ -30,7 +30,7 @@
 
 (def ^:private root (delay (repository-root)))
 (def ^:private c8-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity")
+  "language/compiler/src/gravity/compiler/c8_effect_checker_engine.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
 (def ^:private expected-source-byte-count 82797)

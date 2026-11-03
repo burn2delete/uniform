@@ -48,7 +48,7 @@
 (defn- c9-kernel-unit-source
   []
   (let [source-relative-path
-        "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"
+        "language/compiler/src/gravity/compiler/c9_ownership_checker_engine.gravity"
         source-path (path source-relative-path)
         source-text (slurp source-path)
         forms (bootstrap/read-forms source-path source-text)
@@ -257,7 +257,7 @@
               (invoke 'sh10-verify-ownership-result [request result])
               rejected (invoke 'sh10-check-ownership-request [malformed])]
           (is (= c9-kernel-unit-namespace (:unit-namespace provenance)))
-          (is (= "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"
+          (is (= "language/compiler/src/gravity/compiler/c9_ownership_checker_engine.gravity"
                  (:source-origin provenance)))
           (is (pos? (:selected-definition-count provenance)))
           (is (not= (:source-origin provenance) (:unit-path provenance)))

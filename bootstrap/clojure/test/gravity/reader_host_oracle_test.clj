@@ -95,8 +95,8 @@
               (pr-str terminator)))))))
 
 (deftest current-source-files-preserve-host-reader-parity
-  (doseq [path ["bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
-                "bootstrap/gravity/src/gravity/effects.gravity"
+  (doseq [path ["language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity"
+                "language/compiler/src/gravity/effects.gravity"
                 "bootstrap/gravity/p15_s23/emitter.gravity"]
           :let [source (slurp path)
                 records (reader-host-oracle/read-source-form-records-host-oracle

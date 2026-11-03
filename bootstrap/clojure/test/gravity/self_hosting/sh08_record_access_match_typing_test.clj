@@ -17,7 +17,7 @@
 
 (def ^:private root (delay (repository-root)))
 (def ^:private fixture-root "bootstrap/clojure/fixtures/self-hosting/sh-08/record-access-match-typing")
-(def ^:private c7-source "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity")
+(def ^:private c7-source "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity")
 (def ^:private descriptor-definition 'closed-record-union-descriptor)
 (def ^:private accepted-definition 'accepted-record-access-match-program)
 (def ^:private extensions [".gravity" ".qst"])

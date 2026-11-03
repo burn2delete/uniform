@@ -33,7 +33,7 @@
 (def ^:private c12-plan
   (delay
     (compile-plan
-     "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity")))
+     "language/compiler/src/gravity/compiler/c12_domain_ir_architecture.gravity")))
 
 (defn- invoke-c12
   [function arguments]
@@ -52,7 +52,7 @@
   []
   (let [source-path
         (str (.resolve @root
-                       "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity"))
+                       "language/compiler/src/gravity/compiler/c12_domain_ir_architecture.gravity"))
         source-text (slurp source-path)
         reader (java.io.PushbackReader.
                 (java.io.StringReader. source-text))
@@ -104,7 +104,7 @@
         source-text
         (java.nio.file.Files/readString
          (.resolve @root
-                   "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity"))
+                   "language/compiler/src/gravity/compiler/c12_domain_ir_architecture.gravity"))
         representative-carrier
         (vec (repeat 64 (vec (range 64))))
         representative-preflight

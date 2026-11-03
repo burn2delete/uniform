@@ -366,7 +366,7 @@
         @(ns-resolve 'gravity.self-hosting.sh07-authoritative-runner
                      'authoritative-contract-check-keys)
         revision (valid-revision
-                  "bootstrap/gravity/src/gravity/checked_core.gravity"
+                  "language/compiler/src/gravity/checked_core.gravity"
                   source-binding)
         module-result
         {:module "c6-core"

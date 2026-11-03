@@ -118,7 +118,7 @@
   ;; Original text is an extraction check; SOURCE4 authenticates this fixture.
   ;; No C7 annotation narrows the original non-Map false branch.
   (let [path #(str (io/file (root) %))
-        owner-path (path "bootstrap/gravity/src/gravity/checked_core.gravity")
+        owner-path (path "language/compiler/src/gravity/checked_core.gravity")
         reader-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
         syntax-path (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
         prefix "bootstrap/clojure/fixtures/self-hosting/sh-07/compiler-exact-keys"

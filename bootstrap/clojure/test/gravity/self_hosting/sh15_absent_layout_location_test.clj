@@ -16,7 +16,7 @@
 (def ^:private c15-path
   "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity")
 (def ^:private c12-path
-  "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity")
+  "language/compiler/src/gravity/compiler/c12_domain_ir_architecture.gravity")
 (defn- fixture-path [family extension]
   (str "bootstrap/clojure/fixtures/self-hosting/sh-15/" family
        "/coordinator-absent-layout-location." extension))

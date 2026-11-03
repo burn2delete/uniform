@@ -45,11 +45,11 @@
      emitter source-path source-text)))
 
 (def ^:private envelope-source
-  "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity")
+  "language/compiler/src/gravity/compiler/authenticated_envelope.gravity")
 (def ^:private sh13-source
-  "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity")
+  "language/compiler/src/gravity/compiler/c11_mir_specification.gravity")
 (def ^:private sh14-source
-  "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity")
+  "language/compiler/src/gravity/compiler/c12_domain_ir_architecture.gravity")
 (def ^:private sh22-source
   "bootstrap/gravity/src/gravity/stdlib/self_hosting_core.gravity")
 (def ^:private bridge-source

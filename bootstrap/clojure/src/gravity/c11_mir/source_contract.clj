@@ -46,7 +46,7 @@
 (def v2-source-contract
   {:interface :gravity/c11-mir
    :version 2
-   :source-relative-path "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
+   :source-relative-path "language/compiler/src/gravity/compiler/c11_mir_specification.gravity"
    :source-byte-count 567399
    :source-content-hash "sha256:c41d9e0317b398a53e4b28d7bba90be7bebda23c51fa9c74a6a8c91be38ce79e"
    :plan-semantic-hash "sha256:91334a8348ee6c56e8d9384ade2060af04b8b71e1aa9150386b7e5e5dd119f8e"
@@ -91,7 +91,7 @@
 (def flat-bool-source-contract
   {:interface :gravity/c11-mir :version 3
    :semantic-family :closed-flat-bool-literal-sequence
-   :source-relative-path "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
+   :source-relative-path "language/compiler/src/gravity/compiler/c11_mir_specification.gravity"
    :source-byte-count 597279
    :source-content-hash "sha256:4ca2bf8c551c9b0e7aefbeab84e7f7c9b5742bdeee10f68e74aff3470d35b3dd"
    :plan-semantic-hash "sha256:36c1a98c8753852754147f01bdd310b952391fea406125093d20d4f242b8199a"

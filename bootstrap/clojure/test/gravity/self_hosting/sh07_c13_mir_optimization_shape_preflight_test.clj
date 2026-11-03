@@ -8,7 +8,7 @@
             [clojure.test :refer [deftest is testing]]))
 
 (def ^:private source-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity")
+  "language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity")
 
 ;; The moving source may grow, but this shape gate still admits one explicit
 ;; C13 public surface.  Keep this list synchronized with the source contract:
