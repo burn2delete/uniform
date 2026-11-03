@@ -60,6 +60,22 @@ Complete concurrency profile criterion (Open): Determine legal concurrency famil
 <!-- concurrency-source-profile:end -->
 
 
+
+<!-- resolve-source-profile-edge:start -->
+
+Apply the [complete namespace and resolution source criteria](../resolve-workflow/plan.md#complete-namespace-and-resolution-source-criteria) within this existing task. Preserve its Open status, original criteria and historical evidence scope.
+
+Decision criterion interface/language/module/check-import-boundary: Check same-profile imports or explicit direct/facade/artifact-only boundaries against producer/consumer effects, grants, memory/runtime assumptions and required safety evidence; emit all cross-profile edges. Reject: Reject richer source hidden behind artifacts, missing facade/evidence, macro-hidden imports and package-declared widening; a backend cannot legalize a rejected edge. Required outputs: Profile dependency/facade/artifact manifest and legal/illegal matrix-edge fixtures with source/generated origins.
+<!-- resolve-source-profile-edge:end -->
+
+
+<!-- resolve-source-namespace-contract:start -->
+
+Apply the [complete namespace and resolution source criteria](../resolve-workflow/plan.md#complete-namespace-and-resolution-source-criteria) within this existing task. Preserve its Open status, original criteria and historical evidence scope.
+
+Decision criterion interface/language/module/validate-namespace-contract: Require the declared namespace contract and one active implementation profile, retaining the explicit bootstrap-seed exception; validate reusable profile sets/exclusions, target requests and clauses separately. Reject: Reject missing/conflicting active profiles, illegal namespace clauses and unioning powers from multiple profile variants. Required outputs: Namespace/profile/target contract and supported-variant manifest, missing/ambiguous/invalid-clause diagnostics.
+<!-- resolve-source-namespace-contract:end -->
+
 - [ ] `legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis` Complete ownership, borrow, initialization and lifetime analysis
 
 Status: Open

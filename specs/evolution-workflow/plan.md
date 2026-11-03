@@ -123,3 +123,20 @@ Task bodies/statuses and frozen review subjects stay unchanged. Declared interfa
 Use the [syntax producer and consumer order](../syntax-workflow/plan.md#syntax-producer-and-consumer-order) and existing selected-result table. Consume actual affected syntax/fact/schema/identity/diagnostic compatibility only at the existing conditional semantic-change boundary; unchanged-contract implementation gains no generic new review gate.
 
 All task identities/statuses and historical review subjects remain unchanged. Actual selected products, independent acceptance and final release retain their own requirements; no held operation is enabled.
+## Complete namespace and resolution interface
+
+Use the [complete namespace and resolution source criteria](../resolve-workflow/plan.md#complete-namespace-and-resolution-source-criteria). Retain the unchanged namespace/module compatibility-change criterion and conditional affected-consumer review. Restoring unchanged source criteria does not invent a new ordinary-development admission gate.
+
+Task identities/statuses, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held execution or task transfer is authorized.
+
+## Resolution dependency interface
+
+Use the [resolution producer and consumer order](../resolve-workflow/plan.md#resolution-producer-and-consumer-order) and the existing selected-result table. Consume actual affected namespace/module/public API, macro/type/effect/package/cache, diagnostics/LSP/Docs and bootstrap-order results only for the existing conditional semantic-change and stable adoption boundary. Ordinary unchanged-contract work gains no new generic review gate.
+
+Existing task bodies/statuses, source predicates, frozen evidence and actual restrictions remain unchanged. Current source/interface entailment, independent acceptance and final release require their own applicable evidence; no held action is enabled.
+
+## Complete Core semantic interface
+
+Use the [complete Core source criteria](../core-workflow/plan.md#complete-core-source-criteria). Retain the exact existing profile74 Core semantic-change predicate and conditional affected-consumer/schema/conformance adoption. Ordinary unchanged-contract development gains no new generic admission gate.
+
+Task identities/statuses, prior source/review subjects and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held execution or task transfer is authorized.

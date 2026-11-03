@@ -54,6 +54,8 @@ unchanged acceptance and independently reviewed current applicable evidence.
 
 The [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria) route L4/L16/C4/SAFE12 through real macro/syntax/provider/safety/equivalence outcomes in existing tasks. They preserve the selected-engine cache replacement boundary and finite historical review scopes; current independent source/interface acceptance and complete implementation remain pending.
 
+The [complete namespace and resolution source criteria](plan.md#complete-namespace-and-resolution-source-criteria) restore the published five-task L3/C5 refinement, the earlier finite package-entrypoint predicate and the two qualified profile74 producer predicates. Shared Effects/Auth/Build/Evolution criteria and the frozen owner verification keep their distinct roles; complete current source/interface acceptance and implementation remain pending.
+
 ## Historical task-authority-transfer specification
 
 # Feature specification: Resolve implementation workflow

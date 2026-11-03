@@ -442,6 +442,24 @@ Use the [syntax producer and consumer order](../syntax-workflow/plan.md#syntax-p
 
 All task identities/statuses and historical review subjects remain unchanged. Actual selected products, independent acceptance and final release retain their own requirements; no held operation is enabled.
 
+## Complete namespace and resolution interface
+
+Use the [complete namespace and resolution source criteria](../resolve-workflow/plan.md#complete-namespace-and-resolution-source-criteria). Consume authentic available P macro bindings before invocation, then supply actual expanded Q syntax/definition facts for final resolution. Do not require a namespace's own future index to construct itself.
+
+Task identities/statuses, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held execution or task transfer is authorized.
+
+## Resolution dependency interface
+
+Use the [resolution producer and consumer order](../resolve-workflow/plan.md#resolution-producer-and-consumer-order) and the existing selected-result table. Use already-available compiled P namespace/macro bindings and authentic imported interfaces before invocation. Final Q syntax, ordinary binding and inferred module summaries follow; do not use Q's own future index as its initial environment.
+
+Existing task bodies/statuses, source predicates, frozen evidence and actual restrictions remain unchanged. Current source/interface entailment, independent acceptance and final release require their own applicable evidence; no held action is enabled.
+
+## Complete Core semantic interface
+
+Use the [complete Core source criteria](../core-workflow/plan.md#complete-core-source-criteria). Supply actual expanded Q plus causal origins and caller profile; available P comes earlier. Generated and handwritten Core receive the same ordinary analyses, and macro success is not checked-Core acceptance.
+
+Task identities/statuses, prior source/review subjects and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held execution or task transfer is authorized.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Expand task authority

@@ -232,6 +232,24 @@ Use the [syntax producer and consumer order](../syntax-workflow/plan.md#syntax-p
 
 All task identities/statuses and historical review subjects remain unchanged. Actual selected products, independent acceptance and final release retain their own requirements; no held operation is enabled.
 
+## Complete namespace and resolution interface
+
+Use the [complete namespace and resolution source criteria](../resolve-workflow/plan.md#complete-namespace-and-resolution-source-criteria). Consume actual L3/C5 positive/negative and composition results for the claimed compiler closure. The frozen owner-source-Core subset, module schema or restored planning criteria cannot confer whole resolver, self-hosting or seed-retirement acceptance.
+
+Task identities/statuses, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held execution or task transfer is authorized.
+
+## Resolution dependency interface
+
+Use the [resolution producer and consumer order](../resolve-workflow/plan.md#resolution-producer-and-consumer-order) and the existing selected-result table. Run independent language/compiler/profile harnesses after actual owner cases and selected receiver results. Compare full claimed-stage binding/module/diagnostic products; frozen SH06/owner-to-Core evidence, structural checks and source restoration confer no whole resolver, self-hosting or seed-retirement acceptance.
+
+Existing task bodies/statuses, source predicates, frozen evidence and actual restrictions remain unchanged. Current source/interface entailment, independent acceptance and final release require their own applicable evidence; no held action is enabled.
+
+## Complete Core semantic interface
+
+Use the [complete Core source criteria](../core-workflow/plan.md#complete-core-source-criteria). Run real source/generated primitive, observable-order, profile/error/domain/metadata and malformed/tamper cases against actual owner and receiver products before claimed-stage comparisons. Preserve finite receipts without whole Core, self-hosting or seed-retirement promotion.
+
+Task identities/statuses, prior source/review subjects and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held execution or task transfer is authorized.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Release workflow migration

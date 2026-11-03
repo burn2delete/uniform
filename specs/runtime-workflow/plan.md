@@ -113,6 +113,12 @@ Use the [macro producer and consumer order](../expand-workflow/plan.md#macro-pro
 
 Task bodies/statuses and frozen review subjects stay unchanged. Declared interfaces permit local construction; actual composition, acceptance and release retain their separate required results. Current independent source/interface acceptance is pending and every actual restriction remains.
 
+## Complete Core semantic interface
+
+Use the [complete Core source criteria](../core-workflow/plan.md#complete-core-source-criteria). Execute the actual admitted value/control/call/mutation/error/cleanup behavior under the selected runtime/profile, normalizing host crossings. Narrow mutation or exception slices cannot establish all thirteen primitive semantics or complete Core.
+
+Task identities/statuses, prior source/review subjects and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held execution or task transfer is authorized.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Runtime workflow migration

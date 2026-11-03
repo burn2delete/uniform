@@ -83,6 +83,24 @@ Use the [syntax producer and consumer order](../syntax-workflow/plan.md#syntax-p
 
 All task identities/statuses and historical review subjects remain unchanged. Actual selected products, independent acceptance and final release retain their own requirements; no held operation is enabled.
 
+## Complete namespace and resolution interface
+
+Use the [complete namespace and resolution source criteria](../resolve-workflow/plan.md#complete-namespace-and-resolution-source-criteria). Consume actual type/protocol/constructor identities and complete module type references. Resolving a name does not solve constraints or validate a fabricated module record.
+
+Task identities/statuses, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held execution or task transfer is authorized.
+
+## Resolution dependency interface
+
+Use the [resolution producer and consumer order](../resolve-workflow/plan.md#resolution-producer-and-consumer-order) and the existing selected-result table. Use early actual binding/declaration/module interfaces before solving; compute real constraints and checked abstractions, then publish complete dependency/currentness products that enrich later modules. The same subject's future inferred module summary cannot be its own first input.
+
+Existing task bodies/statuses, source predicates, frozen evidence and actual restrictions remain unchanged. Current source/interface entailment, independent acceptance and final release require their own applicable evidence; no held action is enabled.
+
+## Complete Core semantic interface
+
+Use the [complete Core source criteria](../core-workflow/plan.md#complete-core-source-criteria). Solve real verified Core calls, branches, captures, recur and typed errors. L2 if truthiness differs from L7 normally returning Boolean guards; declared seeds and expected results are not inferred witnesses.
+
+Task identities/statuses, prior source/review subjects and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held execution or task transfer is authorized.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Types task authority

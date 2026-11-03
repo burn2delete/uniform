@@ -89,6 +89,56 @@ Use the [syntax producer and consumer order](../syntax-workflow/plan.md#syntax-p
 
 All task identities/statuses and historical review subjects remain unchanged. Actual selected products, independent acceptance and final release retain their own requirements; no held operation is enabled.
 
+## Complete namespace and resolution interface
+
+Use the [complete namespace and resolution source criteria](../resolve-workflow/plan.md#complete-namespace-and-resolution-source-criteria). Consume actual position-resolved bindings, lexical/recur structure and namespace/module facts; quoted data remains data. Keep final generated Q bindings distinct from earlier available P macro environments and the unresolved Core representation-order decision.
+
+Task identities/statuses, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held execution or task transfer is authorized.
+
+## Resolution dependency interface
+
+Use the [resolution producer and consumer order](../resolve-workflow/plan.md#resolution-producer-and-consumer-order) and the existing selected-result table. Use real position-resolved bindings and namespace/header context before semantic Core lowering. Preserve lexical/recur/capture/mutation references and quoted-data boundaries; verify against actual resolver outputs. Later inferred module summaries are not early Core facts and the D1 order question remains open.
+
+Existing task bodies/statuses, source predicates, frozen evidence and actual restrictions remain unchanged. Current source/interface entailment, independent acceptance and final release require their own applicable evidence; no held action is enabled.
+
+## Complete Core source criteria
+
+Direct review of complete [L2](../../docs/phase-01-core-language/012-l2-core-language-semantics.md) and [C6](../../docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md) restores the five existing published C6 clauses from `a330051b3c0062cff2fb91df5bd6ff6252676c08` and adds five complementary L2 criteria in the same five Open tasks. The frozen C6 source review covers its exact 103-facet/five-role subject only; it grants no new L2, changed-composition, implementation or release acceptance. The existing profile74 Core/profile and conditional Evolution semantic-change predicates remain byte-identical, as do the shared Effects/Auth/Pipeline clauses. Preserve all 24 original requirement-owner identities and existing task authority.
+
+| Existing task | Complete selected source outcome |
+| --- | --- |
+| `core/current-evidence-and-remaining-work/core1-lower-core-forms` | All thirteen primitives, core-owned data constructors and defined expression/control outcomes. |
+| `core/current-evidence-and-remaining-work/core2-preserve-binding-structure` | Actual lexical/capture/recur/mutation/call identities, seed facts and value-family references. |
+| `core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss` | Versioned lowering rules, real causal origins, observable order and affected invalidation. |
+| `core/current-evidence-and-remaining-work/core4-verify-and-serialize` | Actual complete reference/control/source/domain verification, round-trip and all diagnostic families. |
+| `core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses` | Anchored domain transitions, actual semantic analyses and true downstream behavior/acceptance boundaries. |
+
+### Defined semantics and complete real cases
+
+Exercise quote, if, do, let, fn, loop, recur, def, var, set!, try, throw and match as real Core products with source-backed owning execution/consumer cases. An inert quoted symbol cannot become authority or lookup. If uses false/nil falsehood and otherwise truthiness unless its profile narrows condition types, evaluates the condition and exactly one branch. Do returns the last ordered value. Let bindings are immutable unless an explicit mutable form is admitted; captures, nearest recur targets and arity/type facts retain their actual checker/owner. Def is an artifact-visible namespace definition, and var indirection/runtime redefinition obey the profile. Mutation names an explicit location with actual permission; error transfer uses real typed/effect/profile rules.
+
+Preserve [L7's guard interface](../../docs/phase-01-core-language/017-l7-pattern-matching-specification.md#guards-and-effects): a normally returning guard produces Bool, runs once after structural success/bindings, and precedes its body; false continues and non-returning control is preserved. This is distinct from L2 if truthiness and does not adopt all L7 by association. Calls use actual source operator/argument semantics and left-to-right arguments, then actual type/effect/ownership/capability/profile admission. [L8](../../docs/phase-01-core-language/018-l8-protocols-interfaces-and-dispatch-specification.md) owns permitted dispatch strategies and [L9](../../docs/phase-01-core-language/019-l9-error-handling-specification.md) owns typed errors. L2's value families reference actual type/memory/profile/library representations, equality, allocation and target contracts; no host object model supplies missing semantics.
+
+For the existing selected callable population, [SH07-C05](../../docs/self-hosting-sh07-completion-plan.md) explicitly records operator-before-arguments-once order, parameter/body/capture bindings and later capture/call-type obligations. Retain that declared increment scope; an implementation trace label alone cannot establish broader dispatch or execution support.
+
+### Construction, inference and the four safety outcomes
+
+Use the [existing resolution order](../resolve-workflow/plan.md#resolution-producer-and-consumer-order): actual expanded/resolved Q precedes semantic Core lowering; available P definitions precede invocation. Keep D1's earlier representation qualification open. At construction preserve true declarations and binding seed facts, leaving later inferred type/effect/ownership/safety facts empty until their owners compute them. Checked artifacts later retain actual producer results; an example native/if node or pending C5 table is no proof. Core's defined value/control/effect/panic/refusal behaviors are distinct from the four dangerous-operation safety outcomes. Real proof, a surviving runtime check, prior rejection or explicit audited unsafe island handles target hazards; target undefined behavior supplies no safe semantics.
+
+Effects owns actual ordered direct/latent/transitive summaries and conservative branch legality even though runtime evaluates one conditional branch. Auth owns separate applicable grants. Legality owns profile/ownership/safety, Runtime executes real behavior, and Lower/backends preserve or reject source meaning. Core produces defined graph/control inputs and composes their real results, not a second checker or new interpreter. Constrained no-heap/allocation/layout/ownership/target limits remain concrete semantics; no arbitrary collection/form/node/work quota is restored under that wording. Existing accounting-only step/node/store limits observed in source remain cleanup debt under their actual owner.
+
+### Lowering, artifacts and genuine rejection
+
+All surface forms lower to Core, an explicitly declared primitive or an owned domain boundary. Preserve C6's versioned defn/when/cond/case/with-open/Result-Option/facet rules, actual required equivalence, cleanup/control and causal origins. Ordinary library/macro definitions precede source lowering; actual flow checking and cleanup execution follow at their own owners. Preserve evaluation-order records for arguments, binding initializers, bodies, conditionals, match/guards/branches, cleanup, handlers and effectful generated forms. Later pure reordering needs real purity and semantics/diagnostic preservation evidence, not an order flag. A changed lowering rule identifies all affected typed-Core/MIR/diagnostic/conformance rechecks.
+
+Produce all eight L2 and seven C6 artifacts and all seven L2/eight C6 owning diagnostic families. Verify every node/child/source/generated/binding/profile/target/domain reference before Types and reconstruct complete graph/context/declarations during serialization. A nonempty binding table, assigned passed/complete/surface-absent field or summary payload cannot establish that gate. Domain transitions name actual source/owner/checker, source and later typed-Core/MIR anchors, profile/target/effect/capability and fallback. EFIR/schema/workflow/HDL/agent IR examples do not bypass ordinary checking or imply all domains implemented. Tamper/lost-fact/origin/order/illegal-control and stale-rule cases need real failure subjects and preserved owning diagnostics.
+
+### Historical evidence and current static findings
+
+The accepted finite Reader-to-Core/SH07 and frozen C6 source receipts retain exact subjects. Current L2/C6 source/task entailment, whole original owner predicates, actual composition and independent acceptance remain pending. Existing conditional semantic changes retain the unchanged Evolution producer; restoring these requirements adds no new ordinary-development review ceremony. Every task stays Open, with source reservations and C7/C12/paired/provider/native/callback/device/probe/replay/migration/private-store/signing/publication restrictions intact. No held execution, other-chat message, reviewer wake, aggregate publication or merge occurs.
+
+Selected static inspection finds real hosted recursive form construction and some checks, alongside positional ids, pending C5 bindings, nonempty-table/field-presence verification, declared future domain anchors and assigned conformance fields. Gravity checked_core has real quote/if/do/call/recur construction and refusals under its declared partial SH07 boundary, with later analyses and broader forms explicitly pending. The L2/C6 modules include quoted builder/verifier-contract records, real narrow mutation execution and scoped exception admission/verification functions; those limited behaviors do not prove general L2/C6 execution. Existing project step/node/store allowances remain accounting-removal debt. No compiler semantic suite runs or current acceptance is inferred here.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Core task authority

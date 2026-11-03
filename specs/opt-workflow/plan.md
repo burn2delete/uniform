@@ -90,6 +90,12 @@ implementation, independent acceptance, integration and seedless release remain
 separate. The old source PASS keeps its frozen subject and later-head limits;
 the current predicate/owner proposal requires independent current review.
 
+## Complete Core semantic interface
+
+Use the [complete Core source criteria](../core-workflow/plan.md#complete-core-source-criteria). Reorder only after actual purity/effect facts and required preservation evidence for semantics and diagnostics. Preserve all order/origin/unsafe/proof and invalidation requirements; target undefined behavior cannot justify a transformation.
+
+Task identities/statuses, prior source/review subjects and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held execution or task transfer is authorized.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Opt task authority

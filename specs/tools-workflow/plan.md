@@ -78,6 +78,24 @@ Use the [syntax producer and consumer order](../syntax-workflow/plan.md#syntax-p
 
 All task identities/statuses and historical review subjects remain unchanged. Actual selected products, independent acceptance and final release retain their own requirements; no held operation is enabled.
 
+## Complete namespace and resolution interface
+
+Use the [complete namespace and resolution source criteria](../resolve-workflow/plan.md#complete-namespace-and-resolution-source-criteria). Consume actual stable public/private-aware binding, alias and scope indexes, module documentation and invalidation. Debug inspection is not stable public import permission; documentation/formatting changes preserve semantic ids while physical origins remain accurate.
+
+Task identities/statuses, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held execution or task transfer is authorized.
+
+## Resolution dependency interface
+
+Use the [resolution producer and consumer order](../resolve-workflow/plan.md#resolution-producer-and-consumer-order) and the existing selected-result table. Docs and semantic LSP/debug/REPL/inspection use actual current module/binding and session facts, while source-only services require only applicable inputs. T7 source/doc-string reading remains legal; module-derived semantic APIs and graphs do not require semantic source rereconstruction. Private inspection grants no public import or live evaluation authority.
+
+Existing task bodies/statuses, source predicates, frozen evidence and actual restrictions remain unchanged. Current source/interface entailment, independent acceptance and final release require their own applicable evidence; no held action is enabled.
+
+## Complete Core semantic interface
+
+Use the [complete Core source criteria](../core-workflow/plan.md#complete-core-source-criteria). Present actual Core/source/desugaring/control/domain and applicable current semantic facts, with truthful partial/declared/checked distinctions and source-generated origins; static nodes cannot invent runtime frames or evaluation authority.
+
+Task identities/statuses, prior source/review subjects and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held execution or task transfer is authorized.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Developer Tools workflow migration
