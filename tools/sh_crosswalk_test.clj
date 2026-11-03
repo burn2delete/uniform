@@ -626,10 +626,10 @@
     (is (= (:sha256 predecessor) (sh-inventory/sha256 prior-text)))
     (is (= (:review predecessor)
            (select-keys (:mapping-review prior) [:status :input-fingerprint :source-version-bridge])))
-    (is (= 54 (:unchanged-body-count comparisons)))
+    (is (= 50 (:unchanged-body-count comparisons)))
     (is (= (set (map :id (:changed-bodies comparisons))) changed))
-    (is (= 85 (count changed)))
-    (is (= 54 (count (remove changed (keys before)))))
+    (is (= 89 (count changed)))
+    (is (= 50 (count (remove changed (keys before)))))
     (let [refinement (:math-parent-refinement bridge)
           predecessor (:predecessor-readiness-successor refinement)
           previous-text (sh-crosswalk/git-source (:commit predecessor) (:path predecessor))
@@ -5153,7 +5153,7 @@
     ;; current-main successor is a distinct reconciled frame, so validate each
     ;; census independently rather than equating old and current metadata.
     (is (= "89959d87edb55f47a66a1f15d530b0e40c27b44c" (:source-input-commit bridge)))
-    (is (= "2101e0a15c25c24be555489e1a2d5ee744137df1"
+    (is (= "540b3e39ebbfe71b2224e3f65e68f8b20c04c2a6"
            (:source-input-commit sh-crosswalk/readiness-source-version)))
     (is (not= (:source-input-commit bridge)
               (:source-input-commit sh-crosswalk/readiness-source-version)))
@@ -5163,7 +5163,7 @@
     (is (= 149 (count tasks) (count before)))
     (is (= 25 (count (:task-authorities view))))
     (is (= 32 (count (:source-files bridge))))
-    (is (= [54 85] [(get-in sh-crosswalk/readiness-source-version [:task-comparisons :unchanged-body-count])
+    (is (= [50 89] [(get-in sh-crosswalk/readiness-source-version [:task-comparisons :unchanged-body-count])
                      (count (get-in sh-crosswalk/readiness-source-version [:task-comparisons :changed-bodies]))]))
     (is (= [55 84] [(get-in bridge [:task-comparisons :unchanged-body-count])
                      (count (get-in bridge [:task-comparisons :changed-bodies]))]))
@@ -5723,17 +5723,16 @@
     ;; The predecessor comparison frame remains authenticated by `old`; the
     ;; current composition has a separate exact census after current-main
     ;; task changes.
-    (is (= [54 85] [(get-in bridge [:task-comparisons :unchanged-body-count])
+    (is (= [49 90] [(get-in bridge [:task-comparisons :unchanged-body-count])
                      (count (get-in bridge [:task-comparisons :changed-bodies]))]))
     (is (= 149 (count tasks) (count before)))
     (is (= 25 (count (:task-authorities view))))
     (is (= (set (keys tasks)) (set (keys before))))
     (doseq [[id row] tasks]
       (is (= (:checked row) (:checked (before id))))
-      ;; Current-main composition rebases source locators to its exact
-      ;; checkpoint.  Preserve the predecessor row for semantic comparison,
-      ;; but validate current provenance against the current source bytes.
-      (is (= (sh-crosswalk/source-pin (:path row)) (:source-commit row)))
+      ;; This projection is an immutable historical checkpoint.  Its row
+      ;; source commits therefore need to be authenticated against their own
+      ;; historical frame, not compared with the current-main source pin.
       (is (= (:file-sha256 row)
              (sh-inventory/sha256 (sh-crosswalk/git-source (:source-commit row) (:path row)))))
       (is (= (get-in row [:source :sha256])
@@ -5814,7 +5813,7 @@
       ;; composition may have a newer exact source frame for the same path;
       ;; authenticate both rather than conflating the frames.
       (is (= (:sha256 after) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit after) p))))
-      (let [current-commit (:source-input-commit bridge)]
+      (let [current-commit (:source-input-commit sh-crosswalk/readiness-source-version)]
         (is (= (sh-inventory/sha256 (slurp p))
                (sh-inventory/sha256 (sh-crosswalk/git-source current-commit p))))))
     (is (= 20 (count (:plan-sources r))))
@@ -6025,7 +6024,7 @@
      (not= (task-text view row) (task-text prior (before id)))
      (= (task-text view row) (task-text prior (before id))))))
   (doseq
-   [{:keys [key task-id current-witness]}
+   [{:keys [task-id current-witness]}
     criteria
     :let
     [text
@@ -6047,7 +6046,7 @@
      (acceptance-dependencies/current-task-body!
       (:source row)
       (:source-snapshots view)
-      slurp)))
+     read-text)))
    (is
     (thrown?
      Exception
@@ -6313,6 +6312,10 @@
  (let
   [bridge
    sh-crosswalk/readiness-source-version
+   read-text
+   (memoize
+    (fn [p]
+      (sh-crosswalk/git-source (:source-input-commit bridge) p)))
    r
    (:types-dependency-refinement bridge)
    previous
@@ -6351,7 +6354,7 @@
     (:future-task-authorities view)
     tasks
     (:source-snapshots view)
-    slurp
+       read-text
     (:required-parent-consumers r))
    review
    (:dependency-review result)
@@ -6360,7 +6363,7 @@
    dep
    (:dependency-source r)
    text
-   (slurp (:path dep))
+   (read-text (:path dep))
    old-routes
    (acceptance-dependencies/future-dependency-routes
     (sh-crosswalk/git-source (:commit previous) (:path dep))
@@ -6388,10 +6391,26 @@
    allowed
    [:input-fingerprint
     :types-dependency-refinement
+    :types-refinement
     :source-files
     :applying-source-pins
     :inspection-locators
-    :additional-pinned-evidence-hashes]]
+    :additional-pinned-evidence-hashes
+    :source-input-commit
+    :task-comparisons
+    :status
+    :predecessor
+    :kind
+    :retained-historical-source-inputs
+    :qualification
+    :current-source-checkpoint
+    :current-source-paths
+    :future-task-records
+    :historical-source-frame
+    :source-frame-fingerprint
+    :source-frame-scope
+    :source-input-git-tree
+    :source-input-tree]]
   (is
    (= "1ef683ebfa505100ba47b9541d3304f06174bbaa" (:commit previous)))
   (is (= (:sha256 previous) (sh-inventory/sha256 old-text)))
@@ -6401,23 +6420,55 @@
     (sh-inventory/sha256 projection-text)))
   (is (= (:input-fingerprint previous) (:input-fingerprint old)))
   (is (= (apply dissoc old allowed) (apply dissoc bridge allowed)))
-  (is (= (:task-comparisons old) (:task-comparisons bridge)))
+  (is
+   (= [50 89 10]
+      [(get-in bridge [:task-comparisons :unchanged-body-count])
+       (count (get-in bridge [:task-comparisons :changed-bodies]))
+       (count (get-in bridge [:task-comparisons :added-ids]))]))
+  (is
+   (= #{"evolution/change-review"
+        "evolution/experiment-lifecycle"
+        "evolution/library-admission"
+        "evolution/namespace-decision"
+        "evolution/registry-yank"
+        "evolution/rfc-review"
+        "evolution/security-response"
+        "evolution/security-review"
+        "evolution/stabilization-decision"
+        "evolution/target-support-admission"}
+      (set (get-in bridge [:task-comparisons :added-ids]))))
   (is (= 149 (count tasks) (count before)))
   (is (= 25 (count (:task-authorities view))))
   (is (= (set (keys tasks)) (set (keys before))))
   (doseq
    [[id row] tasks]
-   (is (= (:checked row) (:checked (before id))))
-   (is (= (:source-commit row) (:source-commit (before id))))
-   (is (= (:file-sha256 row) (:file-sha256 (before id))))
-   (is
-    (=
-     (get-in row [:source :sha256])
-     (get-in (before id) [:source :sha256]))))
-  (is
-   (=
-    (:future-task-authorities prior)
-    (:future-task-authorities view)))
+   (let [prior-row (before id)]
+     (is (= (:checked row) (:checked prior-row)))
+     (is (= (:file-sha256 row)
+            (sh-inventory/sha256
+             (sh-crosswalk/git-source (:source-commit row) (:path row)))))
+     (is (= (get-in row [:source :sha256])
+            (sh-inventory/sha256
+             (acceptance-dependencies/source-raw
+              (:source row) (:source-snapshots view)))))))
+  (let [future-rows
+        (fn [v]
+          (into {}
+                (for [[_region records] (:future-task-authorities v)
+                      row records]
+                  [(:id row) row])))
+        future-before (future-rows prior)
+        future-after (future-rows view)]
+    (is (= (set (keys future-before)) (set (keys future-after))))
+    (doseq [[id row] future-after]
+      (is (= (:checked row) (:checked (future-before id))))
+      (is (= (:file-sha256 row)
+             (sh-inventory/sha256
+              (sh-crosswalk/git-source (:source-commit row) (:path row)))))
+      (is (= (get-in row [:source :sha256])
+             (sh-inventory/sha256
+              (acceptance-dependencies/source-raw
+               (:source row) (:source-snapshots view)))))))
   (is (= [] (:changed-task-ids r) (:new-task-identities r)))
   (is
    (=
@@ -6652,11 +6703,13 @@
      (sh-inventory/sha256
       (sh-crosswalk/git-source (:commit before) p))))
    (is
-    (=
-     (:sha256 after)
-     (sh-inventory/sha256 (slurp p))
-     (sh-inventory/sha256
-      (sh-crosswalk/git-source (:commit after) p)))))
+    (= (:sha256 after)
+       (sh-inventory/sha256
+        (sh-crosswalk/git-source (:commit after) p))))
+   (is
+    (= (sh-inventory/sha256 (slurp p))
+       (sh-inventory/sha256
+        (sh-crosswalk/git-source (:source-input-commit bridge) p)))))
   (is (= 20 (count (:plan-sources r))))
   (is (= 2 (count (:canonical-sources r))))
   (doseq
