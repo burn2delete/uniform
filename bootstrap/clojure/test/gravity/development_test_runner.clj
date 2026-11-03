@@ -23,6 +23,169 @@
 
 (def machine-result-schema :gravity/development-test-result-v1)
 
+(def ^:private ^:dynamic *progress-state* nil)
+(def ^:private ^:dynamic *progress-test-context* nil)
+
+(defn- progress-state []
+  {:errors (java.util.ArrayList.)
+   :inspected (java.util.IdentityHashMap.)
+   :interrupt? (boolean-array [(.isInterrupted (Thread/currentThread))])})
+
+(defn- retain-progress-error! [state error]
+  (let [^java.util.ArrayList errors (:errors state)]
+    (when-not (some #(identical? error %) (seq (.toArray errors)))
+      (.add errors error))))
+
+(defn- inspect-progress-error [root]
+  (let [seen (java.util.IdentityHashMap.)]
+    (loop [todo [root] interrupted? false faults []]
+      (if (empty? todo)
+        {:interrupted? interrupted? :faults faults :complete? (empty? faults)}
+        (let [^Throwable error (peek todo)
+              remaining (pop todo)]
+          (if (.containsKey seen error)
+            (recur remaining interrupted? faults)
+            (do
+              (.put seen error true)
+              (let [cause (try {:value (.getCause error)}
+                               (catch Throwable fault {:fault fault}))
+                    suppressed (try {:value (vec (.getSuppressed error))}
+                                    (catch Throwable fault {:fault fault}))
+                    failures (vec (keep :fault [cause suppressed]))]
+                (recur (into (cond-> remaining (:value cause) (conj (:value cause)))
+                             (:value suppressed))
+                       (or interrupted? (instance? InterruptedException error)
+                           (boolean (some #(instance? InterruptedException %) failures)))
+                       (into faults failures))))))))))
+
+(defn- note-progress-interrupt! [state error]
+  ;; Direct knowledge survives even if the inspection helper itself fails.
+  (when (instance? InterruptedException error)
+    (aset-boolean ^booleans (:interrupt? state) 0 true))
+  (let [^java.util.IdentityHashMap inspected (:inspected state)]
+    (when-not (.containsKey inspected error)
+      (.put inspected error true)
+      (let [report (try (inspect-progress-error error)
+                        (catch Throwable fault
+                          {:interrupted? (instance? InterruptedException fault)
+                           :faults [fault] :complete? false}))]
+        (when (seq (:faults report))
+          ;; An unreadable edge is not an interrupted cause. Never inspect the
+          ;; accessor/internal failures recursively or render their objects.
+          (retain-progress-error! state error)
+          (doseq [fault (:faults report)] (retain-progress-error! state fault)))
+        (when (:interrupted? report)
+          (aset-boolean ^booleans (:interrupt? state) 0 true))))))
+
+(defn- emit-progress! [phase edge namespace test-var error]
+  (try
+    (let [frame (cond-> {:schema :gravity/development-test-progress-v1
+                         :authority :non-authoritative :phase phase :edge edge
+                         :namespace namespace}
+                  test-var (assoc :test-var test-var)
+                  error (assoc :error-class (.getName (class error))))]
+      (.write ^java.io.Writer *err*
+              (binding [*print-length* nil *print-level* nil *print-meta* false
+                        *print-readably* true *print-dup* false]
+                (str (pr-str frame) "\n")))
+      (if (instance? java.io.PrintWriter *err*)
+        ;; PrintWriter can hide IOException. checkError performs the flush;
+        ;; the hidden exception identity is unavailable, never invented.
+        (when (.checkError ^java.io.PrintWriter *err*)
+          (throw (ex-info "Progress stderr reported a write/flush failure"
+                          {:id "DEV-PROGRESS-WRITE" :original-IO-error :unavailable})))
+        (.flush ^java.io.Writer *err*)))
+    (catch Throwable diagnostic
+      ;; Retain BEFORE any fallible accessor/causal inspection. Diagnostics
+      ;; cannot skip a selected call or replace its value inside a fixture.
+      (retain-progress-error! *progress-state* diagnostic)
+      (note-progress-interrupt! *progress-state* diagnostic))))
+
+(defn- resolution-digest-test? [namespace test-var]
+  (and (= "gravity.self-hosting.sh06-unmetered-resolution-test" namespace)
+       (= "gravity.self-hosting.sh06-unmetered-resolution-test/digest-count-quota-is-gone-but-complete-ordered-requests-remain-required"
+          test-var)))
+
+(defn- resolution-current-artifact-test? [namespace test-var]
+  (and (= "gravity.self-hosting.sh06-unmetered-resolution-test" namespace)
+       (= "gravity.self-hosting.sh06-unmetered-resolution-test/actual-current-source-artifact-retains-authentication-and-roundtrip"
+          test-var)))
+
+(defn- observe-progress! [phase namespace test-var body]
+  (emit-progress! phase :enter namespace test-var nil)
+  (let [outcome (try {:value (if (and (= :test-var phase)
+                                      (or (resolution-digest-test? namespace test-var)
+                                          (resolution-current-artifact-test? namespace test-var)))
+                               (binding [*progress-test-context* {:state *progress-state*
+                                                                  :namespace namespace :test-var test-var}]
+                                 (body))
+                               (body))}
+                     (catch Throwable error
+                       (note-progress-interrupt! *progress-state* error)
+                       {:error error}))]
+    (emit-progress! phase (if (:error outcome) :throw :return)
+                    namespace test-var (:error outcome))
+    (if-let [error (:error outcome)] (throw error) (:value outcome))))
+
+(defn observe-resolution-digest-interval!
+  "Five fixed diagnostic intervals in one selected test; never execution authority.
+  Outside its original enabled test scope, execute body once without reporting."
+  [interval body]
+  (let [context *progress-test-context*
+        phase (when (keyword? interval)
+                ({:positive-resolve :resolution-digest-positive-resolve
+                  :count-and-hash-shape :resolution-digest-count-and-hash-shape
+                  :ordinal-negative :resolution-digest-ordinal-negative
+                  :count-negative :resolution-digest-count-negative
+                  :shape-negative :resolution-digest-shape-negative} interval))]
+    (if (and *progress-state* (identical? *progress-state* (:state context)) phase
+             (resolution-digest-test? (:namespace context) (:test-var context)))
+      (observe-progress! phase (:namespace context) (:test-var context) body)
+      (body))))
+
+(defn observe-resolution-current-artifact-interval!
+  "Three fixed initial RHS intervals in one test; never execution authority."
+  [interval body]
+  (let [context *progress-test-context*
+        phase (when (keyword? interval)
+                ({:construction :resolution-current-artifact-construction
+                  :verification :resolution-current-artifact-verification
+                  :serialization :resolution-current-artifact-serialization} interval))]
+    (if (and *progress-state* (identical? *progress-state* (:state context)) phase
+             (resolution-current-artifact-test? (:namespace context) (:test-var context)))
+      (observe-progress! phase (:namespace context) (:test-var context) body)
+      (body))))
+
+(defmacro ^:private with-progress-phase [phase namespace test-var & body]
+  `(if *progress-state*
+     (observe-progress! ~phase (str ~namespace) ~test-var (fn [] ~@body))
+     (do ~@body)))
+
+(defn- require-progress-success! []
+  (when (and *progress-state* (not (.isEmpty ^java.util.ArrayList (:errors *progress-state*))))
+    (throw (.get ^java.util.ArrayList (:errors *progress-state*) 0))))
+
+(defn- run-with-progress! [state body]
+  (binding [*progress-state* state]
+    (try
+      (let [outcome (try {:value (body)}
+                         (catch Throwable error
+                           (note-progress-interrupt! state error)
+                           {:error error}))
+            errors (vec (.toArray ^java.util.ArrayList (:errors state)))
+            primary (or (:error outcome) (first errors))]
+        (if primary
+          (do
+            (doseq [error errors]
+              (when-not (or (identical? primary error)
+                            (some #(identical? error %) (.getSuppressed ^Throwable primary)))
+                (.addSuppressed ^Throwable primary error)))
+            (throw primary))
+          (:value outcome)))
+      (finally
+        (when (aget ^booleans (:interrupt? state) 0)
+          (.interrupt (Thread/currentThread)))))))
+
 (defn- machine-result-file-sink
   "One completion delivery. Request equality is binding data, not source or
   effective-configuration attestation. Does not own the parent directory."
@@ -301,6 +464,7 @@
    "  --list            print selected qualified names without running tests\n"
    "  --catalog         print the reviewed namespace/path catalog without loading tests\n"
    "  --fail-fast       stop after the first test failure or error\n"
+   "  --progress        write non-authoritative phase breadcrumbs to stderr\n"
    "  --timing-receipt FILE\n"
    "                    write non-authoritative machine-readable EDN timing telemetry\n"
    "  --machine-result EDN\n"
@@ -320,6 +484,7 @@
   (loop [remaining (seq args)
          options {:namespaces [] :exact [] :regex [] :prefix []
                   :list? false :catalog? false :fail-fast? false :help? false
+                  :progress? false
                   :timing-receipt nil}]
     (if-not remaining
       options
@@ -330,6 +495,7 @@
           (= argument "--list") (recur tail (assoc options :list? true))
           (= argument "--catalog") (recur tail (assoc options :catalog? true))
           (= argument "--fail-fast") (recur tail (assoc options :fail-fast? true))
+          (= argument "--progress") (recur tail (assoc options :progress? true))
 
           (= argument "--timing-receipt")
           (if (seq tail)
@@ -414,7 +580,7 @@
       (let [already-loaded? (boolean (find-ns namespace))
             started (System/nanoTime)]
         (try
-          (require namespace)
+          (with-progress-phase :namespace-load namespace nil (require namespace))
           (swap! *timing-events* update :namespace-loads conj
                  {:namespace (str namespace)
                   :already-loaded? already-loaded?
@@ -428,7 +594,7 @@
                     :outcome :error
                     :error-class (.getName (class ex))})
             (throw ex))))
-      (require namespace))))
+      (with-progress-phase :namespace-load namespace nil (require namespace)))))
 
 (defn- test-var-records [namespace-records]
   (->> namespace-records
@@ -517,29 +683,34 @@
               each-fixture-fn (test/join-fixtures
                                (::test/each-fixtures (meta namespace-object)))]
           (test/do-report {:type :begin-test-ns :ns namespace-object})
-          (once-fixture-fn
-           (fn []
-             (doseq [{:keys [var qualified-name]} records :while (not @stopped?)]
-               (if *timing-events*
-                 (let [before @test/*report-counters*
-                       started (System/nanoTime)]
-                   (each-fixture-fn #(test/test-var var))
-                   (let [after @test/*report-counters*
-                         counts (merge-with - after before)
-                         outcome (cond
-                                   (pos? (:error counts)) :error
-                                   (pos? (:fail counts)) :failed
-                                   :else :passed)]
-                     (swap! namespace-events conj
-                            {:test-var qualified-name
-                             :elapsed-ns (- (System/nanoTime) started)
-                             :outcome outcome
-                             :counts counts})))
-                 (each-fixture-fn #(test/test-var var)))
-               (when (and fail-fast?
-                          (pos? (+ (:fail @test/*report-counters*)
-                                   (:error @test/*report-counters*))))
-                 (reset! stopped? true)))))
+          (with-progress-phase :namespace-fixture namespace nil
+            (once-fixture-fn
+             (fn []
+               (doseq [{:keys [var qualified-name]} records :while (not @stopped?)]
+                 (if *timing-events*
+                   (let [before @test/*report-counters*
+                         started (System/nanoTime)]
+                     (with-progress-phase :each-fixture namespace qualified-name
+                       (each-fixture-fn #(with-progress-phase :test-var namespace qualified-name
+                                          (test/test-var var))))
+                     (let [after @test/*report-counters*
+                           counts (merge-with - after before)
+                           outcome (cond
+                                     (pos? (:error counts)) :error
+                                     (pos? (:fail counts)) :failed
+                                     :else :passed)]
+                       (swap! namespace-events conj
+                              {:test-var qualified-name
+                               :elapsed-ns (- (System/nanoTime) started)
+                               :outcome outcome
+                               :counts counts})))
+                   (with-progress-phase :each-fixture namespace qualified-name
+                     (each-fixture-fn #(with-progress-phase :test-var namespace qualified-name
+                                        (test/test-var var)))))
+                 (when (and fail-fast?
+                            (pos? (+ (:fail @test/*report-counters*)
+                                     (:error @test/*report-counters*))))
+                   (reset! stopped? true))))))
           (test/do-report {:type :end-test-ns :ns namespace-object})
           (when *timing-events*
             (let [counts (merge-with - @test/*report-counters*
@@ -614,9 +785,8 @@
     (println (str namespace "\t" path)))
   (flush))
 
-(defn run-cli! [args]
-  (let [options (parse-args args)
-        sink (if-let [delivery (:machine-result options)]
+(defn- run-cli-with-options! [options]
+  (let [sink (if-let [delivery (:machine-result options)]
                (result-delivery-sink delivery *machine-result-sink*)
                *machine-result-sink*)]
     (when (and (contains? options :machine-result)
@@ -648,6 +818,7 @@
                                                 (:fail-fast? options))
                     elapsed-ns (when execution-started
                                  (- (System/nanoTime) execution-started))]
+                (require-progress-success!)
                 (when-let [path (:timing-receipt options)]
                   (write-timing-receipt! path options namespace-records
                                          selected-records @timing-events summary
@@ -672,6 +843,13 @@
                   (when *machine-result-sink*
                     (*machine-result-sink* result))
                   exit-code))))))))))
+
+(defn run-cli! [args]
+  (let [options (parse-args args)]
+    (if (:progress? options)
+      (run-with-progress! (progress-state) #(run-cli-with-options! options))
+      (binding [*progress-state* nil]
+        (run-cli-with-options! options)))))
 
 (defn- report-cli-error [^Throwable ex]
   (binding [*out* *err*]
