@@ -31,6 +31,8 @@
   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
+;; Frozen SH-07-B47 migration identities below are historical checkpoints.
+;; Current development kernels do not renew them or confer migration authority.
 (def ^:private expected-source-byte-count 284176)
 (def ^:private expected-source-revision-id
   "sha256:e33a54b8cf202399a1f7dfae23221f653a8d43387566539fb026a54d2f44b275")
@@ -123,20 +125,13 @@
      c7-type-diagnostic-catalog
      build-c7-type-fact
      build-c7-function-type
-     sh08-local-bounds-value
      sh08-vector-contains?
      sh08-all-unique?
      sh08-exact-keys?
      sh08-lowercase-hex?
      sh08-sha256-id?
-     sh08-bounded-vector?
      sh08-keyword-vector?
      sh08-sha-vector?
-     sh08-aggregate?
-     sh08-aggregate-width
-     sh08-aggregate-components
-     sh08-max
-     sh08-carrier-preflight
      sh08-origin-shape?
      sh08-origin-vector?
      sh08-source-shape?
@@ -185,19 +180,6 @@
    "SAFE6" "SAFE9" "BOOT1" "BOOT2"
    "BOOT3" "BOOT4" "BOOT5" "BOOT6"
    "BOOT7" "BOOT8" "TEST2"])
-(def ^:private expected-bounds
-  {:maximum-core-nodes 65536
-   :maximum-root-nodes 1024
-   :maximum-node-children 1024
-   :maximum-origin-entries 256
-   :maximum-metadata-entries 256
-   :maximum-effects 128
-   :maximum-capabilities 128
-   :maximum-exports 1024
-   :maximum-carrier-nodes 1048576
-   :maximum-carrier-depth 128
-   :maximum-carrier-width 65536
-   :maximum-scalar-units 16777216})
 (def ^:private expected-pending
   [:authenticated-coordinator-adapter
    :resolved-typed-artifact-digest
@@ -307,7 +289,6 @@
    "lowering-gap" "C6-LOWERING-GAP"})
 (def ^:private zero-id
   (str "sha256:" (apply str (repeat 64 "0"))))
-(def ^:private maximum-top-level-form-nodes 1024)
 
 (defn- path [relative] (str (.resolve @root relative)))
 
@@ -336,10 +317,6 @@
           forms
           (recur (conj forms form)))))))
 
-(defn- source-form-node-count
-  [form]
-  (count (tree-seq coll? seq form)))
-
 (defn- invalid-source-if-forms
   [forms]
   (vec
@@ -351,9 +328,8 @@
      {:definition (second form)
       :child-count (count node)})))
 
-;; This is a conservative reader-tree admission check.  It is not the
-;; authoritative C6 fragment form-id census, which the SH-07 request must
-;; still validate independently.
+;; The frozen plan/census checks retain their original migration identities.
+;; Ordinary current-source development does not claim those checks pass.
 
 (def ^:private c7-plan
   (delay
@@ -635,7 +611,25 @@
             ['(defn invalid-if-example []
                 (if true :then :else :extra))])))))
 
-(deftest sh07-b28-c7-source-contracts-bounds-pending-and-limitations-are-exact
+(deftest c7-accounting-removal-source-development-kernel
+  (let [forms (binding [*read-eval* false] (source-forms))
+        definitions (set (map second (filter #(and (seq? %)
+                                                   (#{'def 'defn} (first %)))
+                                             forms)))
+        retired-definitions '#{sh08-local-bounds-value sh08-bounded-vector?
+                               sh08-aggregate? sh08-aggregate-width
+                               sh08-aggregate-components sh08-max
+                               sh08-carrier-preflight}
+        retired-allowances #{:maximum-core-nodes :maximum-root-nodes
+                             :maximum-node-children :maximum-origin-entries
+                             :maximum-metadata-entries :maximum-effects
+                             :maximum-capabilities :maximum-exports
+                             :maximum-carrier-nodes :maximum-carrier-depth
+                             :maximum-carrier-width :maximum-scalar-units}]
+    (is (not-any? definitions retired-definitions))
+    (is (not-any? retired-allowances (tree-seq coll? seq forms)))))
+
+(deftest sh07-b28-c7-source-contracts-pending-and-limitations-are-exact
   (let [forms (source-forms)
         namespace-form (first forms)
         namespace-clauses
@@ -662,7 +656,6 @@
           #(and (vector? %)
                 (= :authenticated-coordinator-adapter (first %)))
           (tree-seq coll? seq type-core-form)))
-        bounds-form (get definition-forms 'sh08-local-bounds-value)
         diagnostic-form (get definition-forms 'c7-type-diagnostic-catalog)
         keyword-vector-form (get definition-forms 'sh08-keyword-vector?)
         sha-form (get definition-forms 'sh08-sha256-id?)
@@ -672,12 +665,6 @@
         type-node-form (get definition-forms 'sh08-type-node)
         verifier-form (get definition-forms 'verify-c7-type-checker)]
     (is (= 253 (count forms)))
-    (is (every? #(<= (source-form-node-count %)
-                     maximum-top-level-form-nodes)
-                forms))
-    (is (<= (source-form-node-count
-             (get definition-forms 'sh08-ft-function-type-core-artifact))
-            maximum-top-level-form-nodes))
     (is (= 'gravity.compiler.c7-type-checker-engine
            (second namespace-form)))
     (is (= :meta (:profile namespace-clauses)))
@@ -740,7 +727,6 @@
            (gravity.bootstrap/p15-s23-c11-mir-digest
             (vec (sort executable-names)))))
     (is (= 3 (count (filter quoted-body (vals definition-forms)))))
-    (is (= expected-bounds (nth bounds-form 3)))
     (is (= expected-pending pending))
     (is (= expected-diagnostic-catalog (nth diagnostic-form 2)))
     (doseq [[name expected] expected-contract-structures]
