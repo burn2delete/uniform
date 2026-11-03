@@ -21,16 +21,24 @@
 ;; Reuse is safe only for the original production operation and its
 ;; serialization dependencies. Re-defined or injected callbacks stay
 ;; observable and are deliberately left unmarked.
+(defn- c3-syntax-serialization-live-valid?
+  []
+  (and (identical? (clojure.core/deref c3-syntax-serialization-fixture-var)
+                   default-c3-syntax-serialization-fixture)
+       (identical? (clojure.core/deref reader-canonical-hash-var)
+                   default-reader-canonical-hash)
+       (identical?
+        (clojure.core/deref c3-evidence-serialization-fixture-var)
+        default-c3-evidence-serialization-fixture)))
+
 (defn- c3-syntax-serialization-operation
   [operation]
-  (if (and (identical? operation default-c3-syntax-serialization-fixture)
-           (identical? (clojure.core/deref reader-canonical-hash-var)
-                       default-reader-canonical-hash)
-           (identical?
-            (clojure.core/deref c3-evidence-serialization-fixture-var)
-            default-c3-evidence-serialization-fixture))
-    (mark-production-default-serialization-operation operation)
-    operation))
+  (let [live-valid? (c3-syntax-serialization-live-valid?)]
+    (if (and (identical? operation default-c3-syntax-serialization-fixture)
+             live-valid?)
+      (mark-production-default-serialization-operation
+       operation c3-syntax-serialization-live-valid?)
+      operation)))
 
 (declare ^:private c3-current-reader-revision-authentic?)
 (declare ^:private sh04-syntax-reader-expansion-history sh04-syntax-reader-expansions-current?)

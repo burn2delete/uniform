@@ -53,7 +53,7 @@
   [operation]
   ((deref (ns-resolve 'gravity.c3-syntax-verification
                       'mark-production-default-serialization-operation))
-   operation))
+   operation (constantly true)))
 
 (deftest verification-report-recomputes-shape-and-authentication
   (let [authentication-calls (atom [])

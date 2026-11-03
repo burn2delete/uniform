@@ -186,7 +186,8 @@
                               'mark-production-default-serialization-operation))
            (fn [stream]
              (swap! calls inc)
-             (serialization-operation stream)))
+             (serialization-operation stream))
+           (constantly true))
           operations
           (assoc (dissoc production-operations
                          :c3-syntax-verification-report
@@ -210,7 +211,22 @@
               fallback-operations
               #(c3-syntax-verification/c3-syntax-capability-proof artifact))]
         (is (= :failed (:status fallback-proof)))
-        (is (= 2 @fallback-calls))))))
+        (is (= 2 @fallback-calls)))
+      (let [live-report-operations
+            (assoc (dissoc production-operations
+                           :c3-syntax-capability-proof)
+                   :c3-syntax-verification-report
+                   (fn [stream supplied-serialization c2 boundary]
+                     (with-redefs [bootstrap/reader-canonical-hash
+                                   (fn [_] "sha256:changed")]
+                       (c3-syntax-verification/c3-syntax-verification-report
+                        stream supplied-serialization c2 boundary))))
+            live-proof
+            (c3-syntax-verification/with-operations
+              live-report-operations
+              #(c3-syntax-verification/c3-syntax-capability-proof artifact))]
+        (is (= :failed (:status live-proof)))
+        (is (false? (:syntax-verifier-passed? live-proof)))))))
 
 (deftest c3-syntax-verification-compatibility-wrappers-preserve-interposition
   (let [stream [{:syntax/id "sha256:compatibility"

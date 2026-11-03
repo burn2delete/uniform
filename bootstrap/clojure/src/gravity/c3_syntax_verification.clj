@@ -32,19 +32,30 @@
 
 #_{:clj-kondo/ignore [:unused-private-var]}
 (defn- mark-production-default-serialization-operation
-  [operation]
+  [operation live-valid?]
   (with-meta
     operation
     (assoc (meta operation)
            :gravity.c3-syntax-verification/default-serialization-token
-           default-serialization-token)))
+           default-serialization-token
+           :gravity.c3-syntax-verification/default-serialization-live-valid?
+           live-valid?)))
 
-(defn- production-default-serialization-operation?
+(defn- production-default-serialization-binding
   []
-  (identical?
-   default-serialization-token
-   (:gravity.c3-syntax-verification/default-serialization-token
-    (meta (current-operation :c3-syntax-serialization-fixture)))))
+  (let [operation (current-operation :c3-syntax-serialization-fixture)
+        metadata (meta operation)
+        live-valid?
+        (:gravity.c3-syntax-verification/default-serialization-live-valid?
+         metadata)]
+    (when (and (identical?
+                default-serialization-token
+                (:gravity.c3-syntax-verification/default-serialization-token
+                 metadata))
+               (fn? live-valid?)
+               (true? (live-valid?)))
+      {:operation operation
+       :live-valid? live-valid?})))
 
 (defn- transaction-fresh-serialization
   [syntax-stream supplied-serialization]
@@ -52,6 +63,7 @@
          transaction-operations :operations
          transaction-operation :serialization-operation
          transaction-input-serialization :input-serialization
+         transaction-live-valid? :live-valid?
          transaction-serialization :serialization}
         *fresh-serialization-context*
         operation (current-operation :c3-syntax-serialization-fixture)]
@@ -60,7 +72,9 @@
              (identical? supplied-serialization
                          transaction-input-serialization)
              (identical? *operations* transaction-operations)
-             (identical? operation transaction-operation))
+             (identical? operation transaction-operation)
+             (fn? transaction-live-valid?)
+             (true? (transaction-live-valid?)))
       transaction-serialization
       (invoke :c3-syntax-serialization-fixture syntax-stream))))
 
@@ -136,18 +150,21 @@
           (get-in artifact [:gravity-syntax-boundary :resolved-syntax-result])
           gravity-ownership (:gravity-syntax-ownership-product artifact)
           fresh-verifier
-          (binding [*fresh-serialization-context*
-                    (when (production-default-serialization-operation?)
-                      {:syntax-stream syntax-stream
-                       :operations *operations*
-                       :serialization-operation
-                       (current-operation :c3-syntax-serialization-fixture)
-                       :input-serialization fresh-serialization
-                       :serialization fresh-serialization})]
-            (c3-syntax-verification-report
-             syntax-stream fresh-serialization
-             (:c2-reader-artifact artifact)
-             (:gravity-syntax-boundary artifact)))
+          (let [serialization-binding
+                (production-default-serialization-binding)]
+            (binding [*fresh-serialization-context*
+                      (when serialization-binding
+                        {:syntax-stream syntax-stream
+                         :operations *operations*
+                         :serialization-operation
+                         (:operation serialization-binding)
+                         :input-serialization fresh-serialization
+                         :live-valid? (:live-valid? serialization-binding)
+                         :serialization fresh-serialization})]
+              (c3-syntax-verification-report
+               syntax-stream fresh-serialization
+               (:c2-reader-artifact artifact)
+               (:gravity-syntax-boundary artifact))))
           checks
           {:construction-from-reader-seeds?
            (boolean
