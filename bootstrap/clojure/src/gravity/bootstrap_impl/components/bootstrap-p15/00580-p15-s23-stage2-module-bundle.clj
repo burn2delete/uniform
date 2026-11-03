@@ -133,16 +133,21 @@
     (when-not (= (count routes) (count index)) (p15-s23-stage2-module-fail! :duplicate-callsite-route {}))
     index))
 
-(defn p15-s23-stage2-module-bundle [emitter source-path source-text inputs]
-  (when-not (and (map? inputs) (= #{:caller-resolution-artifact :dependency-plans} (set (keys inputs)))
-                 (vector? (:dependency-plans inputs)) (<= (count (:dependency-plans inputs)) 256))
-    (p15-s23-stage2-module-fail! :closed-module-inputs-required {}))
-  (let [artifacts (p15-s23-stage2-module-closure (:caller-resolution-artifact inputs))
-        plans (:dependency-plans inputs)
-        _ (when-not (and (= (dec (count artifacts)) (count plans))
-                         (= (count plans) (count (set (map :plan-id plans)))))
-            (p15-s23-stage2-module-fail! :source-emitter-or-dependency-set {}))
-        sources (mapv p15-s23-stage2-module-source artifacts)
+(defn p15-s23-stage2-module-bundle
+  ([emitter source-path source-text inputs]
+   (p15-s23-stage2-module-bundle emitter source-path source-text inputs nil))
+  ([emitter source-path source-text inputs reader-invocation]
+   (when-not (and (map? inputs) (= #{:caller-resolution-artifact :dependency-plans} (set (keys inputs)))
+                  (vector? (:dependency-plans inputs)) (<= (count (:dependency-plans inputs)) 256))
+     (p15-s23-stage2-module-fail! :closed-module-inputs-required {}))
+   (let [artifacts (p15-s23-stage2-module-closure (:caller-resolution-artifact inputs))
+         plans (:dependency-plans inputs)
+         _ (when-not (and (= (dec (count artifacts)) (count plans))
+                          (= (count plans) (count (set (map :plan-id plans)))))
+             (p15-s23-stage2-module-fail! :source-emitter-or-dependency-set {}))
+         sources (if (some? reader-invocation)
+                   (mapv #(p15-s23-stage2-module-source % reader-invocation) artifacts)
+                   (mapv p15-s23-stage2-module-source artifacts))
         caller (first sources) callees (subvec sources 1)]
     (when-not (and (= source-path (:source-path caller)) (= source-text (:source-text caller))
                    (= emitter (:emitter (c-backend-stage2-plan-emitter-source-rule! source-path :jvm)))
@@ -174,11 +179,14 @@
           plan (p15-s23-stage2-compiler-artifact-plan-raw emitter source-path source-text (get indexes (:module-id caller)) (:map-order caller))
           entries (vec (sort-by :module-id (conj dependencies (p15-s23-stage2-module-entry caller plan))))
           identity (p15-s23-stage2-module-identity emitter (:module-id caller) entries routes)]
-      {:kind :gravity/stage2-compiler-artifact-module-bundle :schema-version 1 :root-module-id (:module-id caller)
-       :emitter emitter :modules entries :routes routes :identity-input identity
-       :bundle-id (reader-canonical-hash identity) :boundary p15-s23-stage2-module-boundary})))
+       {:kind :gravity/stage2-compiler-artifact-module-bundle :schema-version 1 :root-module-id (:module-id caller)
+        :emitter emitter :modules entries :routes routes :identity-input identity
+        :bundle-id (reader-canonical-hash identity) :boundary p15-s23-stage2-module-boundary}))))
 
-(defn p15-s23-stage2-module-validate-bundle! [bundle]
+(defn p15-s23-stage2-module-validate-bundle!
+  ([bundle]
+   (p15-s23-stage2-module-validate-bundle! bundle nil))
+  ([bundle reader-invocation]
   (when-not (and (map? bundle) (= #{:kind :schema-version :root-module-id :emitter :modules :routes :identity-input :bundle-id :boundary}
                                  (set (keys bundle)))
                  (= :gravity/stage2-compiler-artifact-module-bundle (:kind bundle)) (= 1 (:schema-version bundle))
@@ -191,8 +199,11 @@
         path (get-in c5 [:provenance :source-path])
         text (c2-reader-artifact-source-text path
                (get-in c5 [:sh05-macro-artifact :gravity-macro-boundary :authenticated-sh04-artifact :c2-reader-artifact]))
-        expected (p15-s23-stage2-module-bundle (:emitter bundle) path text
-                   {:caller-resolution-artifact c5
-                    :dependency-plans (mapv :plan (remove #(= (:module-id %) (:root-module-id bundle)) (:modules bundle)))})]
+        inputs {:caller-resolution-artifact c5
+                :dependency-plans (mapv :plan (remove #(= (:module-id %) (:root-module-id bundle)) (:modules bundle)))
+                }
+        expected (if (some? reader-invocation)
+                   (p15-s23-stage2-module-bundle (:emitter bundle) path text inputs reader-invocation)
+                   (p15-s23-stage2-module-bundle (:emitter bundle) path text inputs))]
     (when-not (= expected bundle) (p15-s23-stage2-module-fail! :module-bundle-reconstruction-mismatch {}))
-    bundle))
+    bundle)))
