@@ -198,6 +198,21 @@
                             findings))]
     (vec (filter warnings candidates))))
 
+(defn- ordinary-lint-groups
+  "Keep Clojure files isolated; only data-mode EDN files share an invocation."
+  [files]
+  (let [files (vec files)
+        data? #(str/ends-with? % ".edn")
+        first-data-index (first (keep-indexed (fn [index path]
+                                                (when (data? path) index))
+                                              files))]
+    (if (some? first-data-index)
+      (let [before (mapv vector (take first-data-index files))
+            data-files (vec (filter data? files))
+            after (mapv vector (remove data? (drop (inc first-data-index) files)))]
+        (into before (cons data-files after)))
+      (mapv vector files))))
+
 (defn run-comparison! [execute! output base paths]
   (let [root (io/file output "lint-base")
         _ (when-not (.mkdirs root)
@@ -289,16 +304,18 @@
                                                               (not (contains? selected (:filename finding))))]
                                  (throw (ex-info "Syntax failure in lint context dependency" finding)))
                                (filterv #(contains? selected (:filename %)) all))))
-        normal (fn [id files]
-                 (vec (mapcat (fn [[index path]]
-                                (let [log (run (str id "-" index) (lint-argv [path]) #{0 2 3})]
-                                  (findings! log #{path} #(get (set/map-invert copied) % %))))
-                              (map-indexed vector files))))
+        normal (fn [id files rename]
+                 (vec (mapcat (fn [[index group]]
+                                (let [group-id (if (zero? index) id (str id "-" index))
+                                      log (run group-id (lint-argv group) #{0 2 3})]
+                                  (findings! log (set group) rename)))
+                              (map-indexed vector (ordinary-lint-groups files)))))
         whole-context? (some context/whole-context-path? paths)
-        baseline (into (normal "lint-baseline" (vals (apply dissoc copied context-paths)))
+        baseline (into (normal "lint-baseline" (vals (apply dissoc copied context-paths))
+                               #(get (set/map-invert copied) % %))
                        (contextual "lint-context-baseline" base-plan
                                    (if whole-context? (set (:paths base-plan)) (set (keys copied)))))
-        current (into (normal "lint-current" (remove context-paths paths))
+        current (into (normal "lint-current" (remove context-paths paths) identity)
                       (contextual "lint-context-current" current-plan
                                   (if whole-context? context-paths (set paths))))
         source-paths (source-paths-for-warnings paths current-plan whole-context? current)

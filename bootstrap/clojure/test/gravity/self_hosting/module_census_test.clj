@@ -6,7 +6,7 @@
 
 (def ^:private runtime-plan
   (delay
-    (let [path "bootstrap/gravity/src/gravity/runtime.gravity"
+    (let [path "language/runtime/src/gravity/runtime.gravity"
           emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))]
       (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path)))))
 (defn- invoke [name & arguments]

@@ -129,24 +129,29 @@
 
 (defn stage1-bootstrap-source-files
   [path]
-  (let [root (java.io.File. path)]
-    (cond
-      (.isDirectory root)
-      (let [files (->> (file-seq root)
-                       (filter #(.isFile %))
-                       (filter #(qst-or-gravity-source? (.getName %)))
-                       (sort-by #(.getPath %))
-                       (mapv #(.getPath %)))]
-        (when-not (seq files)
-          (stage1-bootstrap-fail! "STAGE1006" path nil
-                                  {:missing-fields [:gravity-source-files]}))
-        files)
+  (let [roots (if (sequential? path) (vec path) [path])
+        files (mapcat
+               (fn [root-path]
+                 (let [root (java.io.File. root-path)]
+                   (cond
+                     (.isDirectory root)
+                     (->> (file-seq root)
+                          (filter #(.isFile %))
+                          (filter #(qst-or-gravity-source? (.getName %)))
+                          (map #(.getPath %)))
 
-      (.isFile root) [(.getPath root)]
+                     (.isFile root) [(.getPath root)]
 
-      :else
+                     :else
+                     (stage1-bootstrap-fail!
+                      "STAGE1006" root-path nil
+                      {:missing-fields [:gravity-source-root]}))))
+               roots)
+        files (->> files sort distinct vec)]
+    (when-not (seq files)
       (stage1-bootstrap-fail! "STAGE1006" path nil
-                              {:missing-fields [:gravity-source-root]}))))
+                              {:missing-fields [:gravity-source-files]}))
+    files))
 
 (defn stage1-bootstrap-module-metadata
   [source-path module]

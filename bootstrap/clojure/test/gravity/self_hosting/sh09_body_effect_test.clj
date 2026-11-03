@@ -3544,7 +3544,7 @@
                             (= :passed (:status (:verification %)))) products)
       (throw (ex-info "PMK products failed before public C8 composition" {})))
     (let [bundle (compile-c8-module-bundle
-                  (path "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"))
+                  (path "language/compiler/src/gravity/compiler/c8_effect_checker_engine.gravity"))
           invoke (fn [function args]
                    (bootstrap/p15-s23-stage2-runtime-execute-function
                     {:engine :body-effect-pmk-public-composition} bundle function args))]
@@ -5194,7 +5194,7 @@
       (is (= #{:compiler/read-ir} (:latent construction))))))
 
 (deftest body-effect-public-forwarding-source-boundary
-  (let [forms (read-string (str "[" (slurp (path "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity")) "]"))
+  (let [forms (read-string (str "[" (slurp (path "language/compiler/src/gravity/compiler/c8_effect_checker_engine.gravity")) "]"))
         definitions (into {} (keep #(when (and (seq? %) (= 'defn (first %))) [(second %) %]) forms))
         namespace (first (filter #(and (seq? %) (= 'ns (first %))) forms))
         exports (second (first (filter #(and (seq? %) (= :exports (first %))) namespace)))]
@@ -5537,7 +5537,7 @@
         (when-not (= "L7-GUARD-TYPE" (get-in rejected [:typed :diagnostics 0 :rule]))
           (throw (ex-info "Unexpected non-Bool guard result before costly module loading" {})))))
     ;; Force the real compiler module only after source/type/leaf joins pass.
-    (let [bundle (compile-c8-module-bundle (path "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"))
+    (let [bundle (compile-c8-module-bundle (path "language/compiler/src/gravity/compiler/c8_effect_checker_engine.gravity"))
           root (module-root-entry bundle) plan (:plan root)
           invoke (fn [function args] (bootstrap/p15-s23-stage2-runtime-execute-function {:engine :body-effect-authenticated-development} bundle function args))]
       (is (= 6 (count (filter #(= :var (:kind %)) (:exports root)))))

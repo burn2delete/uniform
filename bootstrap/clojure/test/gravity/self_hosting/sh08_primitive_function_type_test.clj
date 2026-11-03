@@ -15,7 +15,7 @@
 
 (def ^:private root (delay (repository-root)))
 (def ^:private c7-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity")
+  "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity")
 (def ^:private c7-plan
   (delay
     (let [source-path (str (.resolve @root c7-relative-path))

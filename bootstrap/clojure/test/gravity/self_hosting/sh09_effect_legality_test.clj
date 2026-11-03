@@ -34,7 +34,7 @@
   (str (.resolve @root relative)))
 
 (def ^:private c8-source-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity")
+  "language/compiler/src/gravity/compiler/c8_effect_checker_engine.gravity")
 
 (def ^:private fixture-root
   "bootstrap/clojure/fixtures/self-hosting/sh-09")

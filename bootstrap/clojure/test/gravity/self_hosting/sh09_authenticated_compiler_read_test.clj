@@ -37,7 +37,7 @@
   (str (.resolve @root relative)))
 
 (def ^:private c8-source
-  "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity")
+  "language/compiler/src/gravity/compiler/c8_effect_checker_engine.gravity")
 
 (def ^:private accepted-fixture
   (str

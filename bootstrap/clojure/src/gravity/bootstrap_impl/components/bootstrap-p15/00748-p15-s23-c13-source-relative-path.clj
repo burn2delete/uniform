@@ -5,11 +5,11 @@
 ;; ---------------------------------------------------------------------------
 
 (def p15-s23-c13-source-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity")
+  "language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity")
 (def p15-s23-c14-source-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity")
+  "language/compiler/src/gravity/compiler/c14_target_lowering_architecture.gravity")
 (def p15-s23-b1-source-relative-path
-  "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity")
+  "language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity")
 
 (def p15-s23-c13-source-byte-count 126249)
 (def p15-s23-c13-expected-source-content-hash
@@ -174,7 +174,7 @@
    {:arity 2 :params ['lowering 'backend-manifest]}})
 
 (def p15-s23-sh02-source-relative-path
-  "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity")
+  "language/compiler/src/gravity/compiler/authenticated_envelope.gravity")
 (def p15-s23-sh02-source-byte-count 59495)
 (def p15-s23-sh02-expected-source-content-hash
   "sha256:04470b93d923611108df2c5167d72b27b5c444fe00052fa1c69bfec9e44f9c71")

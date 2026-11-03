@@ -134,7 +134,9 @@
          (slurp (path "docs/self-hosting-slice-ownership.edn")))
         owned-paths
         (set
-         (filter #(str/starts-with? % "bootstrap/gravity/src/")
+         (filter #(or (str/starts-with? % "bootstrap/gravity/src/")
+                      (str/starts-with? % "language/compiler/src/")
+                      (str/starts-with? % "language/runtime/src/"))
                  (keys (:module-owners ownership))))
         runtime-path
         "bootstrap/clojure/fixtures/self-hosting/sh-19/minimal_runtime_engine.gravity"
@@ -156,7 +158,7 @@
     (is (= {:component-id :call-arity
             :category :analyzer
             :source-path
-            "bootstrap/gravity/src/gravity/compiler/c6_call_arity_legality.gravity"
+            "language/compiler/src/gravity/compiler/c6_call_arity_legality.gravity"
             :dependencies [:checked-core-pipeline]}
            (nth catalog 13)))
     (is (= :runtime-subset (:component-id (nth catalog 42))))

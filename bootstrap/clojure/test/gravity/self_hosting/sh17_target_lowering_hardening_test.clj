@@ -27,7 +27,7 @@
   (str (.resolve @root relative)))
 
 (def ^:private engine-path
-  "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity")
+  "language/compiler/src/gravity/compiler/c14_target_lowering_architecture.gravity")
 
 (defn- compile-plan []
   (let [source-path (path engine-path)
@@ -316,7 +316,7 @@
                                           :b1-preflight {:status :verified-mir-candidate-for-b1}})}
                        (catch clojure.lang.ExceptionInfo error {:error (ex-data error)})))
         convert-var (ns-resolve 'gravity.bootstrap 'p15-s23-b2-c17-process-exit-code)
-        b2-path (path "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity")
+        b2-path (path "language/compiler/src/gravity/backend/b2_c_backend_design.gravity")
         b2-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan
                  (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! b2-path :jvm))
                  b2-path (slurp b2-path))

@@ -29,7 +29,7 @@
 
 (def ^:private root (delay (repository-root)))
 (def ^:private source-relative-path
-  "bootstrap/gravity/src/gravity/checked_core.gravity")
+  "language/compiler/src/gravity/checked_core.gravity")
 (def ^:private fixture-root
   "bootstrap/clojure/fixtures/self-hosting/sh-07/b51-vector-destructuring-v18")
 (def ^:private extensions [".gravity" ".qst"])
