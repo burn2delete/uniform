@@ -446,6 +446,7 @@
   (or
    (str/starts-with? relative "bootstrap/gravity/src/")
    (str/starts-with? relative "language/compiler/src/")
+   (str/starts-with? relative "language/runtime/src/")
    (str/starts-with? relative "bootstrap/clojure/src/gravity/")
    (boolean
     (re-matches

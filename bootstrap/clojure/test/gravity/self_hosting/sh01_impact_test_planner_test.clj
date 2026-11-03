@@ -1075,10 +1075,12 @@
 (deftest unknown-language-root-input-fails-closed
   (let [ownership (edn/read-string
                    (slurp "docs/self-hosting-slice-ownership.edn"))
-        relative "language/compiler/src/gravity/not_registered.gravity"
-        classification (planner/classify-path ownership relative)]
-    (is (= :unowned (:classification classification)))
-    (is (= [] (:slices classification)))))
+        relative-paths ["language/compiler/src/gravity/not_registered.gravity"
+                        "language/runtime/src/gravity/not_registered.gravity"]]
+    (doseq [relative relative-paths
+            :let [classification (planner/classify-path ownership relative)]]
+      (is (= :unowned (:classification classification)) relative)
+      (is (= [] (:slices classification)) relative))))
 
 (deftest changed-path-plans-are-canonical
   (let [first-path
