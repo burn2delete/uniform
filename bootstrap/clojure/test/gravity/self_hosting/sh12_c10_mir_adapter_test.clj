@@ -33,7 +33,7 @@
 (def ^:private c11-plan
   (delay
     (compile-plan
-     "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity")))
+     "language/compiler/src/gravity/compiler/c11_mir_specification.gravity")))
 
 (defn- invoke-c11
   [function arguments]
@@ -62,7 +62,7 @@
   []
   (let [source-path
         (str (.resolve @root
-                       "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"))
+                       "language/compiler/src/gravity/compiler/c11_mir_specification.gravity"))
         source-text (slurp source-path)
         reader (java.io.PushbackReader.
                 (java.io.StringReader. source-text))

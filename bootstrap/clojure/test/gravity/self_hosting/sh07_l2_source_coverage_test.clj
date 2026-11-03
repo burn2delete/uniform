@@ -30,7 +30,7 @@
 
 (def ^:private root (delay (repository-root)))
 (def ^:private l2-relative-path
-  "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity")
+  "language/compiler/src/gravity/compiler/l2_core_language_semantics.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
 (def ^:private expected-source-byte-count 31532)

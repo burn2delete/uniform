@@ -92,7 +92,7 @@
     (is (str/includes? source
                        ":ordinal 12 :kind :sh06-resolution"))
     (is (str/includes? source
-                       "bootstrap/gravity/src/gravity/resolution.gravity"))
+                       "language/compiler/src/gravity/resolution.gravity"))
     (is (str/includes? source
                        ":ordinal 39 :domain :sh06-resolution-binding"))
     (is (str/includes? source "(= 13 (count descriptors))"))

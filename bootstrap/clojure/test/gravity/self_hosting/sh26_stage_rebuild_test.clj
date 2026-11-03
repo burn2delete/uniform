@@ -23,7 +23,7 @@
 (def ^:private sh25-root
   "bootstrap/clojure/fixtures/self-hosting/sh-25")
 (def ^:private envelope-source
-  "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity")
+  "language/compiler/src/gravity/compiler/authenticated_envelope.gravity")
 
 (defn- compile-plan [relative]
   (let [source-path (path relative)

@@ -33,7 +33,7 @@
   (str (.resolve @root relative)))
 
 (def ^:private c7-source-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity")
+  "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity")
 
 (def ^:private fixture-root
   "bootstrap/clojure/fixtures/self-hosting/sh-08")

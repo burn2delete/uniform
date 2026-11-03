@@ -36,7 +36,7 @@
   (str (.resolve @root relative)))
 
 (def ^:private c14-source-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity")
+  "language/compiler/src/gravity/compiler/c14_target_lowering_architecture.gravity")
 
 (def ^:private c14-plan
   (delay
@@ -51,19 +51,19 @@
 
 (def ^:private development-c13-plan
   (delay
-    (let [source-path (path "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity")
+    (let [source-path (path "language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity")
           emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))]
       (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source-path (slurp source-path)))))
 
 (def ^:private development-b3-plan
   (delay
-    (let [source-path (path "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity")
+    (let [source-path (path "language/compiler/src/gravity/backend/b3_llvm_backend_design.gravity")
           emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))]
       (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source-path (slurp source-path)))))
 
 (def ^:private development-b1-plan
   (delay
-    (let [source-path (path "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity")
+    (let [source-path (path "language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity")
           emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))]
       (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source-path (slurp source-path)))))
 
@@ -615,9 +615,9 @@
                     {:source-content-hash (str "sha256:" (bootstrap/sha256-hex text))
                      :source-byte-count (alength (.getBytes text "UTF-8"))
                      :compiled-source-rule :not-established}))
-        c11-lineage (lineage "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity")
-        c13-lineage (lineage "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity")
-        b3-lineage (lineage "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity")
+        c11-lineage (lineage "language/compiler/src/gravity/compiler/c11_mir_specification.gravity")
+        c13-lineage (lineage "language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity")
+        b3-lineage (lineage "language/compiler/src/gravity/backend/b3_llvm_backend_design.gravity")
         dependencies {:source-core (get-in verifier [:b1-preflight :binding :checked-core-artifact-id])
                       :c11-source-rule c11-lineage :c11-pass (get-in verifier [:b1-preflight :binding :pass-execution-record-id])
                       :c13-artifact (:artifact-id optimized) :c13-source-rule c13-lineage :b3-source (:source-content-hash b3-lineage)}

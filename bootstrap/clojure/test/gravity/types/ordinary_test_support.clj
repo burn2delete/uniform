@@ -7,8 +7,8 @@
   (:require [clojure.java.shell :as shell]
             [clojure.walk :as walk]))
 
-(def owners [["sh08" "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"]
-             ["body" "bootstrap/gravity/src/gravity/effects.gravity"]
+(def owners [["sh08" "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity"]
+             ["body" "language/compiler/src/gravity/effects.gravity"]
              ["p15-s23" "bootstrap/gravity/p15_s23/emitter.gravity"]])
 
 (defn before

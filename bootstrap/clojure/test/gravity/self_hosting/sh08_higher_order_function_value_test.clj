@@ -29,7 +29,7 @@
 (def ^:private bridge-relative-path
   (str fixture-root "/higher_order_function_value_bridge.gravity"))
 (def ^:private envelope-relative-path
-  "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity")
+  "language/compiler/src/gravity/compiler/authenticated_envelope.gravity")
 (def ^:private bridge-plan
   (delay
     (let [source-path (str (.resolve @root bridge-relative-path))

@@ -30,7 +30,7 @@
 
 (def ^:private root (delay (repository-root)))
 (def ^:private macro-relative-path
-  "bootstrap/gravity/src/gravity/macro.gravity")
+  "language/compiler/src/gravity/macro.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
 (def ^:private expected-macro-source-revision-id
@@ -187,55 +187,55 @@
     (is (= {:diagnostics
             "bootstrap/gravity/src/gravity/bootstrap/diagnostics.gravity"
             :b1-backend-interface
-            "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity"
+            "language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity"
             :b2-c
-            "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity"
+            "language/compiler/src/gravity/backend/b2_c_backend_design.gravity"
             :b3-llvm
-            "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity"
+            "language/compiler/src/gravity/backend/b3_llvm_backend_design.gravity"
             :b4-wasm
-            "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity"
+            "language/compiler/src/gravity/backend/b4_wasm_backend_design.gravity"
             :b5-jvm
-            "bootstrap/gravity/src/gravity/backend/b5_jvm_backend_design.gravity"
+            "language/compiler/src/gravity/backend/b5_jvm_backend_design.gravity"
             :b6-javascript-typescript
-            "bootstrap/gravity/src/gravity/backend/b6_javascript_typescript_backend_design.gravity"
+            "language/compiler/src/gravity/backend/b6_javascript_typescript_backend_design.gravity"
             :b7-mlir
-            "bootstrap/gravity/src/gravity/backend/b7_mlir_backend_design.gravity"
+            "language/compiler/src/gravity/backend/b7_mlir_backend_design.gravity"
             :b8-gpu
-            "bootstrap/gravity/src/gravity/backend/b8_gpu_backend_design.gravity"
+            "language/compiler/src/gravity/backend/b8_gpu_backend_design.gravity"
             :b9-hdl
-            "bootstrap/gravity/src/gravity/backend/b9_hdl_backend_design.gravity"
+            "language/compiler/src/gravity/backend/b9_hdl_backend_design.gravity"
             :b10-workflow
-            "bootstrap/gravity/src/gravity/backend/b10_workflow_graph_backend_design.gravity"
+            "language/compiler/src/gravity/backend/b10_workflow_graph_backend_design.gravity"
             :b11-query
-            "bootstrap/gravity/src/gravity/backend/b11_query_relational_backend_design.gravity"
+            "language/compiler/src/gravity/backend/b11_query_relational_backend_design.gravity"
             :b12-mobile
-            "bootstrap/gravity/src/gravity/backend/b12_mobile_backend_design.gravity"
+            "language/compiler/src/gravity/backend/b12_mobile_backend_design.gravity"
             :c11-mir
-            "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
+            "language/compiler/src/gravity/compiler/c11_mir_specification.gravity"
             :c12-domain-ir
-            "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity"
+            "language/compiler/src/gravity/compiler/c12_domain_ir_architecture.gravity"
             :c13-mir-optimization
-            "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity"
+            "language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity"
             :c14-target-lowering
-            "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity"
+            "language/compiler/src/gravity/compiler/c14_target_lowering_architecture.gravity"
             :c15-diagnostics
             "bootstrap/gravity/src/gravity/compiler/c15_compiler_diagnostics.gravity"
             :c16-incremental
-            "bootstrap/gravity/src/gravity/compiler/c16_incremental_compilation_design.gravity"
+            "language/compiler/src/gravity/compiler/c16_incremental_compilation_design.gravity"
             :c17-plugin
-            "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
+            "language/compiler/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
             :sh21-meta
             "bootstrap/gravity/src/gravity/self_hosting/meta_compiler_legality.gravity"
             :c18-verification
-            "bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"
+            "language/compiler/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"
             :c7-types
-            "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+            "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity"
             :c8-effects
-            "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"
+            "language/compiler/src/gravity/compiler/c8_effect_checker_engine.gravity"
             :c9-ownership
-            "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"
+            "language/compiler/src/gravity/compiler/c9_ownership_checker_engine.gravity"
             :c10-safety
-            "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"
+            "language/compiler/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"
             :l1-c2-surface-reader
             "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity"
             :sh23-package-build
@@ -243,13 +243,13 @@
             :sh22-standard-library
             "bootstrap/gravity/src/gravity/stdlib/self_hosting_core.gravity"
             :authenticated-envelope
-            "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity"
+            "language/compiler/src/gravity/compiler/authenticated_envelope.gravity"
             :resolution
-            "bootstrap/gravity/src/gravity/resolution.gravity"
+            "language/compiler/src/gravity/resolution.gravity"
             :c6-c10-pipeline
             "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
             :c6-call-arity
-            "bootstrap/gravity/src/gravity/compiler/c6_call_arity_legality.gravity"
+            "language/compiler/src/gravity/compiler/c6_call_arity_legality.gravity"
             :checked-core
             "language/compiler/src/gravity/checked_core.gravity"
             :c3-compat
@@ -257,11 +257,11 @@
             :c6-core
             "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
             :c4-compat
-            "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity"
+            "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity"
             :c5-compat
-            "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
+            "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
             :l2-core
-            "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"
+            "language/compiler/src/gravity/compiler/l2_core_language_semantics.gravity"
             :macro macro-relative-path
             :reader
             "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"

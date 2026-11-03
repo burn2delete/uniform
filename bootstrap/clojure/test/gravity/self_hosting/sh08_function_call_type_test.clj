@@ -5938,7 +5938,9 @@
     (doseq [actual actuals]
       (let [{:keys [core call edge callee nodes bindings signature] :as input} (bare-map-parameter-input actual)
             result (bare-list-parameter-constraints input) row (first (:constraints result)) pair (first (:rhs row)) premise (:compatibility pair)
-            scan #(invoke-c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings])]
+            scan #(if (= :gravity.type/map (get (get (get callee :parameters) 0) :type))
+                    (invoke-c7 'sh08-mp-compatibility [core call edge callee 0 actual nodes bindings])
+                    (invoke-c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings]))]
         (is (= [] (:diagnostics result)) (pr-str result))
         (is (= :argument-compatibility (:kind row)))
         (is (= :sh08-map-list-parameter-compatibility-v1 (:compatibility-rule-version row)))
@@ -16873,8 +16875,8 @@
   ;; Same real Effects dependency and C8 module-bundle construction as the
   ;; existing C8 test helper, with only explicit current-reader transport.
   (delay
-    (let [source-path (path "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity")
-          effects-path (path "bootstrap/gravity/src/gravity/effects.gravity")
+    (let [source-path (path "language/compiler/src/gravity/compiler/c8_effect_checker_engine.gravity")
+          effects-path (path "language/compiler/src/gravity/effects.gravity")
           emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))
           dependency (function-current-resolution effects-path)
           inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [dependency]}

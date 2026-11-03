@@ -158,7 +158,7 @@
   [{:component-id :authenticated-envelope
     :category :compiler
     :source-path
-    "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity"
+    "language/compiler/src/gravity/compiler/authenticated_envelope.gravity"
     :dependencies []}
    {:component-id :surface-reader
     :category :reader
@@ -183,25 +183,25 @@
    {:component-id :macro-engine
     :category :macro
     :source-path
-    "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity"
+    "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity"
     :dependencies [:bootstrap-syntax]}
    {:component-id :bootstrap-macro
     :category :macro
-    :source-path "bootstrap/gravity/src/gravity/macro.gravity"
+    :source-path "language/compiler/src/gravity/macro.gravity"
     :dependencies [:macro-engine]}
    {:component-id :resolution-engine
     :category :analyzer
     :source-path
-    "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
+    "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
     :dependencies [:bootstrap-macro]}
    {:component-id :bootstrap-resolution
     :category :analyzer
-    :source-path "bootstrap/gravity/src/gravity/resolution.gravity"
+    :source-path "language/compiler/src/gravity/resolution.gravity"
     :dependencies [:resolution-engine]}
    {:component-id :core-semantics
     :category :checked-core
     :source-path
-    "bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"
+    "language/compiler/src/gravity/compiler/l2_core_language_semantics.gravity"
     :dependencies [:bootstrap-resolution]}
    {:component-id :core-lowering
     :category :checked-core
@@ -220,37 +220,37 @@
    {:component-id :call-arity
     :category :analyzer
     :source-path
-    "bootstrap/gravity/src/gravity/compiler/c6_call_arity_legality.gravity"
+    "language/compiler/src/gravity/compiler/c6_call_arity_legality.gravity"
     :dependencies [:checked-core-pipeline]}
    {:component-id :type-checker
     :category :analyzer
     :source-path
-    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+    "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity"
     :dependencies [:checked-core-pipeline]}
    {:component-id :effect-checker
     :category :analyzer
     :source-path
-    "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity"
+    "language/compiler/src/gravity/compiler/c8_effect_checker_engine.gravity"
     :dependencies [:type-checker]}
    {:component-id :ownership-checker
     :category :analyzer
     :source-path
-    "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity"
+    "language/compiler/src/gravity/compiler/c9_ownership_checker_engine.gravity"
     :dependencies [:type-checker]}
    {:component-id :safety-analysis
     :category :analyzer
     :source-path
-    "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"
+    "language/compiler/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"
     :dependencies [:effect-checker :ownership-checker]}
    {:component-id :mir
     :category :mir
     :source-path
-    "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
+    "language/compiler/src/gravity/compiler/c11_mir_specification.gravity"
     :dependencies [:safety-analysis]}
    {:component-id :domain-ir
     :category :mir
     :source-path
-    "bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity"
+    "language/compiler/src/gravity/compiler/c12_domain_ir_architecture.gravity"
     :dependencies [:mir]}
    {:component-id :compiler-diagnostics
     :category :diagnostic
@@ -265,87 +265,87 @@
    {:component-id :mir-optimization
     :category :optimizer
     :source-path
-    "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity"
+    "language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity"
     :dependencies [:mir :bootstrap-diagnostics]}
    {:component-id :compiler-verification
     :category :optimizer
     :source-path
-    "bootstrap/gravity/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"
+    "language/compiler/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"
     :dependencies [:mir-optimization]}
    {:component-id :target-lowering
     :category :lowering
     :source-path
-    "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity"
+    "language/compiler/src/gravity/compiler/c14_target_lowering_architecture.gravity"
     :dependencies [:compiler-verification :domain-ir]}
    {:component-id :backend-interface
     :category :backend
     :source-path
-    "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity"
+    "language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity"
     :dependencies [:target-lowering]}
    {:component-id :backend-c
     :category :backend
     :source-path
-    "bootstrap/gravity/src/gravity/backend/b2_c_backend_design.gravity"
+    "language/compiler/src/gravity/backend/b2_c_backend_design.gravity"
     :dependencies [:backend-interface]}
    {:component-id :backend-llvm
     :category :backend
     :source-path
-    "bootstrap/gravity/src/gravity/backend/b3_llvm_backend_design.gravity"
+    "language/compiler/src/gravity/backend/b3_llvm_backend_design.gravity"
     :dependencies [:backend-interface]}
    {:component-id :backend-wasm
     :category :backend
     :source-path
-    "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity"
+    "language/compiler/src/gravity/backend/b4_wasm_backend_design.gravity"
     :dependencies [:backend-interface]}
    {:component-id :backend-jvm
     :category :backend
     :source-path
-    "bootstrap/gravity/src/gravity/backend/b5_jvm_backend_design.gravity"
+    "language/compiler/src/gravity/backend/b5_jvm_backend_design.gravity"
     :dependencies [:backend-interface]}
    {:component-id :backend-js
     :category :backend
     :source-path
-    "bootstrap/gravity/src/gravity/backend/b6_javascript_typescript_backend_design.gravity"
+    "language/compiler/src/gravity/backend/b6_javascript_typescript_backend_design.gravity"
     :dependencies [:backend-interface]}
    {:component-id :backend-mlir
     :category :backend
     :source-path
-    "bootstrap/gravity/src/gravity/backend/b7_mlir_backend_design.gravity"
+    "language/compiler/src/gravity/backend/b7_mlir_backend_design.gravity"
     :dependencies [:backend-interface]}
    {:component-id :backend-gpu
     :category :backend
     :source-path
-    "bootstrap/gravity/src/gravity/backend/b8_gpu_backend_design.gravity"
+    "language/compiler/src/gravity/backend/b8_gpu_backend_design.gravity"
     :dependencies [:backend-interface]}
    {:component-id :backend-hdl
     :category :backend
     :source-path
-    "bootstrap/gravity/src/gravity/backend/b9_hdl_backend_design.gravity"
+    "language/compiler/src/gravity/backend/b9_hdl_backend_design.gravity"
     :dependencies [:backend-interface]}
    {:component-id :backend-workflow
     :category :backend
     :source-path
-    "bootstrap/gravity/src/gravity/backend/b10_workflow_graph_backend_design.gravity"
+    "language/compiler/src/gravity/backend/b10_workflow_graph_backend_design.gravity"
     :dependencies [:backend-interface]}
    {:component-id :backend-query
     :category :backend
     :source-path
-    "bootstrap/gravity/src/gravity/backend/b11_query_relational_backend_design.gravity"
+    "language/compiler/src/gravity/backend/b11_query_relational_backend_design.gravity"
     :dependencies [:backend-interface]}
    {:component-id :backend-mobile
     :category :backend
     :source-path
-    "bootstrap/gravity/src/gravity/backend/b12_mobile_backend_design.gravity"
+    "language/compiler/src/gravity/backend/b12_mobile_backend_design.gravity"
     :dependencies [:backend-interface]}
    {:component-id :incremental-compiler
     :category :compiler
     :source-path
-    "bootstrap/gravity/src/gravity/compiler/c16_incremental_compilation_design.gravity"
+    "language/compiler/src/gravity/compiler/c16_incremental_compilation_design.gravity"
     :dependencies [:compiler-verification]}
    {:component-id :compiler-pass-api
     :category :compiler
     :source-path
-    "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
+    "language/compiler/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
     :dependencies [:compiler-verification]}
    {:component-id :meta-legality
     :category :compiler
