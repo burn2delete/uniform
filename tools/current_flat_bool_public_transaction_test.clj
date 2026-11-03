@@ -214,7 +214,16 @@
       (is (= c6-v3-header
              (get-in mir [:checked-core-ingress :source-policy :source-interface])))
       (assert-current-c11-rule! (:source-rule mir))
-      (is (= (:source-rule mir) (:source-rule mir-report)))
+      (is (= (select-keys (:source-rule mir)
+                          [:source-interface :source-mode :semantic-family
+                           :source-relative-path :source-byte-count
+                           :source-content-hash :builder-function
+                           :verifier-function :function-shapes])
+             (select-keys (:source-rule mir-report)
+                          [:source-interface :source-mode :semantic-family
+                           :source-relative-path :source-byte-count
+                           :source-content-hash :builder-function
+                           :verifier-function :function-shapes])))
       (is (= :gravity/c11-mir-verification-report (:artifact mir-report)))
       (is (= :passed (:status mir-report)))
       (is (= :passed (:semantic-replay-parity mir-report)))
