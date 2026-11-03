@@ -58,12 +58,23 @@
         (assoc expanded 0 (symbol (str (first spec) "." (first expanded)))))
       :else (throw (ex-info "Unsupported lint source libspec" {:spec spec})))))
 
+(defn- source-bind! [scope path value kind]
+  (let [existing (get-in scope path)]
+    (when (and (some? existing) (not= existing value))
+      (throw (ex-info "Ambiguous lint source binding"
+                      {:kind kind :path path :existing existing :incoming value})))
+    (assoc-in scope path value)))
+
 (defn- source-core-refers [options]
   (let [options (apply hash-map options)
         names (if-let [only (:only options)] only (keys (ns-publics 'clojure.core)))
         excluded (set (:exclude options)) renames (:rename options)]
-    (into {} (for [name names :when (not (contains? excluded name))]
-               [(get renames name name) (symbol "clojure.core" (str name))]))))
+    (reduce (fn [scope name]
+              (if (contains? excluded name)
+                scope
+                (source-bind! scope [(get renames name name)]
+                              (symbol "clojure.core" (str name)) :core-refer)))
+            {} names)))
 
 (defn- source-reader-defaults [namespace]
   {:namespace namespace :aliases {} :locals #{} :refers (source-core-refers [])
@@ -79,7 +90,9 @@
               (when-not (seq classes)
                 (throw (ex-info "Unsupported lint source import" {:spec spec})))
               (reduce (fn [scope name]
-                        (assoc-in scope [:imports (symbol (last (str/split (str name) #"\.")))] name))
+                        (source-bind! scope
+                                      [:imports (symbol (last (str/split (str name) #"\.")))]
+                                      name :import))
                       scope classes)))
           scope specs))
 
@@ -129,7 +142,7 @@
                   (when (or (contains? (:imports scope) alias)
                             (and existing (not= existing target)))
                     (throw (ex-info "Unsupported lint source alias conflict" {})))
-                  (assoc-in scope [:aliases alias] target)) scope)
+                  (source-bind! scope [:aliases alias] target :alias)) scope)
         ns? (contains? #{'ns 'clojure.core/ns} operation)
         scope (if ns? (source-reader-defaults (second form)) scope)
         clauses (when ns? (filter seq? (drop 2 form)))
@@ -155,10 +168,17 @@
                    (throw (ex-info "Unsupported lint source refer-all declaration" {:spec spec})))
                _ (when (some #(contains? (:imports scope) (get (:rename options) % %)) (:refer options))
                    (throw (ex-info "Unsupported lint source class shadowing" {:spec spec})))
-               scope (if (symbol? alias) (assoc-in scope [:aliases alias] (first spec)) scope)]
+               scope (if (symbol? alias)
+                       (do
+                         (when (contains? (:imports scope) alias)
+                           (throw (ex-info "Unsupported lint source alias conflict" {:alias alias})))
+                         (source-bind! scope [:aliases alias] (first spec) :require-alias))
+                       scope)]
            (reduce (fn [scope name]
-                     (assoc-in scope [:refers (get (:rename options) name name)]
-                               (symbol (str (first spec)) (str name))))
+                     (source-bind! scope
+                                   [:refers (get (:rename options) name name)]
+                                   (symbol (str (first spec)) (str name))
+                                   :require-refer))
                    scope (:refer options)))
          scope))
      scope (mapcat source-libspecs specs))))
@@ -429,6 +449,9 @@
             :alias (or (:as options)
                        (when reader-alias? (:as-alias options)))}))))))
 
+(defn- require-specs [value]
+  (keep require-spec (source-libspecs value)))
+
 (declare ^:private call-references)
 
 (defn- binding-references [bindings locals aliases]
@@ -521,7 +544,7 @@
                     specs (cond (= 'ns operation) (mapcat rest (filter #(and (seq? %) (= :require (first %))) (drop 2 form)))
                                 (= 'require operation) (rest form))]
                 (when (= 'ns operation) (swap! scopes assoc current-ns {:aliases {} :required {} :defined #{}}))
-                (doseq [{target :namespace alias :alias} (keep require-spec specs)]
+                (doseq [{target :namespace alias :alias} (mapcat require-specs specs)]
                   (swap! scopes assoc-in [current-ns :required target]
                          {:namespace target :alias alias :path path :row (:line (meta form)) :sha256 digest})
                   (when alias (swap! scopes assoc-in [current-ns :aliases alias] target)))

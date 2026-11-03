@@ -499,6 +499,40 @@
       (is (= before (set (map ns-name (all-ns)))))
       (is (= 'never.prefix (second (first forms)))))))
 
+(deftest source-reader-refuses-ambiguous-bindings-and-keeps-private-prefix-provenance
+  (let [parse #(context/source-forms! "ambiguous.clj" (utf8 %))]
+    (doseq [source ["(ns never.ambiguous (:require [never.x :as a] [never.y :as a])) ::a/x"
+                    "(ns never.ambiguous (:require [never.x :refer [value]] [never.y :refer [value]])) value"
+                    "(ns never.ambiguous (:import (java.lang String) (java.util String))) String"]]
+      (is (thrown? Exception (parse source)) source))
+    (let [forms (parse (str "(ns never.same (:require [never.x :as a] [never.x :as a]"
+                            " [never.x :refer [value]] [never.x :refer [value]]))"
+                            " ::a/x value"))]
+      (is (= :never.x/x (nth forms 1)))
+      (is (= 'value (nth forms 2))))
+    (is (nil? (find-ns 'never.ambiguous)))
+    (is (nil? (find-ns 'never.same))))
+  (let [plan {:paths ["prefix-owner.clj" "prefix-caller.clj"]
+              :entrypoints #{"prefix-owner.clj" "prefix-caller.clj"}
+              :namespace-by-path {"prefix-owner.clj" 'never.prefix-owner
+                                  "prefix-caller.clj" 'never.prefix-caller}
+              :inputs {"prefix-owner.clj" (utf8 "(ns never.prefix-owner)\n(defn- held [x] x)\n")
+                       "prefix-caller.clj" (utf8 (str "(ns never.prefix-caller "
+                                                      "(:require (never [prefix-owner :as o])))\n"
+                                                      "(defn call [x] (#'o/held x))\n"))}}
+        usages (context/private-var-usages [plan])
+        edge (first (mapcat :callers usages))]
+    (is (= 1 (count usages)))
+    (is (= 'never.prefix-owner (:namespace edge)))
+    (is (= 'o (:alias edge)))
+    (is (= 'o/held (:reference edge)))
+    (is (= 'never.prefix-owner (get-in edge [:require :namespace])))
+    (is (= (context/sha256 (get-in plan [:inputs "prefix-caller.clj"]))
+           (:sha256 edge)
+           (get-in edge [:require :sha256])))
+    (is (nil? (find-ns 'never.prefix-owner)))
+    (is (nil? (find-ns 'never.prefix-caller)))))
+
 (deftest declaration-heads-respect-prior-source-bindings
   (let [parse #(context/source-forms! "head-scope.clj" (utf8 %))
         shadow-require (str "(ns never.shadow (:refer-clojure :exclude [require]))\n"
