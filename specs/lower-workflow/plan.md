@@ -183,6 +183,12 @@ Use the [error-handling producer and consumer order](../core-workflow/plan.md#er
 
 Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Library dependency interface
+
+Use the [library producer and consumer order](../stdlib-workflow/plan.md#library-producer-and-consumer-order) and existing selected-result table. Early truthful target/provider/wrapper ABI rules precede checking, concrete type premises precede needed layouts, and admitted verified input precedes actual selected target artifacts. Final library release is not the first ABI or service contract.
+
+Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Lower task authority

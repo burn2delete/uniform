@@ -344,6 +344,12 @@ The staged subjects below distinguish early actual contracts from later actual a
 
 The unchanged 534-byte Types predicate, all five recovered Runtime predicates (6,269 bytes), qualified review scopes and exact error-source record remain preserved. Current task bodies/statuses and forty future declarations/source bindings are unchanged. This selected L9/C8/C13/C14/R7/R8/R10/L19 interface does not accept those whole support contracts. Global source/owner/interface entailment, implementation acceptance, independent current review and integration remain pending/unassessed. Reader contract coverage remains the first actual implementation increment. Preserve every writer reservation, actual C7/C12/paired/provider/plugin/native/callback/device/probe/replay/migration/private-store/signing/publication restriction and stopped handoff. No held execution, other-chat message, reviewer wake, aggregate publication or merge occurs.
 
+## Library dependency interface
+
+Use the [library producer and consumer order](../stdlib-workflow/plan.md#library-producer-and-consumer-order) and existing selected-result table. Early genuine public call/constructor/resource/intrinsic contracts support structural construction and verification; actual type/effect/grant/profile/safety products support checked export. Later API execution is not its first checking input.
+
+Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Core task authority

@@ -358,7 +358,7 @@
     (is (= 149 (count current)))
     (is (= 40 (:task-count review)))
     (is (= 40 (count (:declared-consumers review))))
-    (is (= 101 (count (:declared-parent-consumers review))))
+    (is (= 106 (count (:declared-parent-consumers review))))
     (is (= dependencies/selected-parent-consumers (set (:required-parent-consumers review))))
     (let [text (slurp dependencies/future-dependency-path)
           removed (clojure.string/replace text #"(?m)^\| `domain-ir-boundaries` \|.*\n" "")
@@ -383,7 +383,7 @@
           routes (filter #(c9 (:consumer %)) (:routes review))]
       (is (= 5 (count c9) (count routes)))
       (is (= c9 (set (get-in altered [:dependency-review :unresolved-consumers]))))
-      (is (= [30 34 36 46 50] (sort (map (comp count :composition-results) routes))))
+      (is (= [33 38 40 46 50] (sort (map (comp count :composition-results) routes))))
       (doseq [{:keys [consumer start-results composition-results]} routes]
         (is (empty? start-results))
         (doseq [producer composition-results]
@@ -412,7 +412,7 @@
     (is (empty? (:unresolved-consumers review)))
     (is (= :pending (:future-sh-and-full-language-joins review)))
     (is (= :unassessed (:implementation-acceptance review)))
-    (is (= [99 9] (mapv count (:declared-output-cycles review))))
+    (is (= [126] (mapv count (:declared-output-cycles review))))
     (is (every? (set (first (:declared-output-cycles review)))
                 ["auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
                  "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
@@ -427,7 +427,8 @@
                 ["evolution/security-review" "formal" "math/independent-proof-and-certificate-checking"
                  "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
                  "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"]))
-    (is (every? (set (second (:declared-output-cycles review)))
+    ;; The former release cycle is preserved in the merged feedback set.
+    (is (every? (set (first (:declared-output-cycles review)))
                 ["schema/checked-consumer-projection" "schema/compatibility-and-migration"
                  "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler"
                  "release/remaining-tasks-and-evidence/execute-staged-compiler-validation"]))

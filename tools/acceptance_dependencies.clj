@@ -175,7 +175,12 @@
 (def future-dependency-path "docs/acceptance-dependencies.md")
 
 (def selected-parent-consumers
-  #{"backend-interface"
+  #{"stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
+    "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters"
+    "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"
+    "evolution/library-admission"
+    "evolution/stabilization-decision"
+    "backend-interface"
     "pass-evidence"
     "backend-conformance"
     "query"

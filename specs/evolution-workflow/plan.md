@@ -200,3 +200,9 @@ Task bodies/statuses, source criteria, frozen reviews and actual restrictions re
 Use the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria). Retain actual library admission, compatibility/deprecation/stabilization and unsafe/security policy ownership. Library assembles affected per-release records and profile-change events; a report or signature does not confer approval.
 
 Current source/interface entailment and independent acceptance remain pending. Task identities/statuses, finite historical reviews and actual restrictions survive; no held action is enabled.
+
+## Library dependency interface
+
+Use the [library producer and consumer order](../stdlib-workflow/plan.md#library-producer-and-consumer-order) and existing selected-result table. Early scoped policy and real candidate evidence support actual library review and promotion; final released-module admission also consumes actual stability and signed provenance. Library/PKG final assembly is not its first review schema, and an early schema or scoped review cannot substitute for required final decisions.
+
+Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
