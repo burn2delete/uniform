@@ -1,6 +1,7 @@
 (ns ci.run-test
   (:require [clojure.java.io :as io]
             [clojure.edn :as edn]
+            [clojure.set :as set]
             [clojure.string :as str]
             [clojure.test :refer [deftest is run-tests]]))
 
@@ -416,6 +417,27 @@
     (is (str/includes? leaves "matrix.platform == 'darwin' && (needs.select.result != 'success'"))
     (is (str/includes? leaves "matrix.platform == 'unsupported' && (needs.select.result != 'success'"))))
 
+(defn source-deftest-names
+  [path]
+  (with-open [reader (java.io.PushbackReader. (io/reader path))]
+    (loop [names #{}]
+      (let [form (read {:eof ::eof} reader)]
+        (if (= ::eof form)
+          names
+          (recur (if (and (seq? form)
+                          (= 'deftest (first form))
+                          (symbol? (second form)))
+                   (conj names (str (second form)))
+                   names)))))))
+
+(defn option-value
+  [argv option]
+  (let [index (.indexOf ^java.util.List argv option)]
+    (when (neg? index)
+      (throw (ex-info "Expected command option is absent"
+                      {:option option :argv argv})))
+    (nth argv (inc index))))
+
 (deftest resolution-commands-are-complete-and-disjoint
   (let [modes ["resolution-pipeline" "resolution-unmetered"
                "resolution-invocation-selection"]
@@ -433,6 +455,36 @@
            (mapv namespace commands)))
     (is (= 3 (count (set (map #(nth % 2) commands)))))
     (is (every? #(= 1 (count (filter #{"--namespace"} (nth % 2)))) commands))))
+
+(deftest resolution-pipeline-selector-partition-covers-the-source-namespace
+  (let [pipeline-commands (ci/commands-for-selection
+                           "resolution-pipeline" {:kind :full})
+        [cohort final] pipeline-commands
+        cohort-argv (nth cohort 2)
+        final-argv (nth final 2)
+        source-vars (source-deftest-names
+                     "bootstrap/clojure/test/gravity/resolution/pipeline_test.clj")
+        namespace "gravity.resolution.pipeline-test"
+        qualified (fn [name] (str namespace "/" name))
+        cohort-pattern (re-pattern (option-value cohort-argv "--regex"))
+        final-name (option-value final-argv "--exact")
+        cohort-vars (set (filter #(or (re-find cohort-pattern %)
+                                      (re-find cohort-pattern (qualified %)))
+                                 source-vars))
+        final-vars (set (filter #(or (= final-name %)
+                                     (= final-name (qualified %)))
+                                source-vars))]
+    (is (= ["resolution-pipeline" "resolution-pipeline-fresh-replay"]
+           (mapv first pipeline-commands)))
+    (is (= [600 600] (mapv second pipeline-commands)))
+    (is (= 2 (count pipeline-commands)))
+    (is (= #{ci/resolution-pipeline-final-test} final-vars))
+    (is (seq cohort-vars))
+    (is (empty? (set/intersection cohort-vars final-vars)))
+    (is (= source-vars (set/union cohort-vars final-vars)))
+    (is (not (re-find cohort-pattern ci/resolution-pipeline-final-test)))
+    (is (re-find (re-pattern (option-value final-argv "--exact"))
+                 ci/resolution-pipeline-final-test))))
 
 (deftest resolution-workflow-serializes-only-its-own-pool
   (let [workflow (slurp ".github/workflows/ci.yml")
@@ -889,6 +941,76 @@
   (is (= 7 (:exit-code (read-string (slurp "target/ci/negative-exit.edn")))))
   (is (= :launch-error (:status (ci/execute! "negative-launch" 1
                                              ["/nonexistent/ci-command"])))))
+
+(deftest execute-output-keeps-success-quiet-and-failure-bounded
+  (let [success-output
+        (with-out-str
+          (let [result (ci/execute!
+                        "output-success-bounded" 15
+                        (ci/command "128m" "-M" "-e"
+                                    "(println \"success-payload\")"))]
+            (is (= :passed (:status result)))))
+        failure-output
+        (with-out-str
+          (let [result (ci/execute!
+                        "output-failure-bounded" 15
+                        (ci/command "128m" "-M" "-e"
+                                    "(do (println (apply str (repeat 10000 \\x))) (System/exit 7))"))]
+            (is (= :failed (:status result)))))
+        success-log (slurp "target/ci/output-success-bounded.log")
+        failure-log (slurp "target/ci/output-failure-bounded.log")]
+    (is (str/includes? success-output "CI command output-success-bounded finished :passed exit 0"))
+    (is (not (str/includes? success-output "success-payload")))
+    (is (< (count success-output) 1000))
+    (is (str/includes? failure-output "CI command output-failure-bounded finished :failed exit 7"))
+    (is (str/includes? failure-output "CI log preview:"))
+    (is (str/includes? failure-output "[log preview truncated"))
+    (is (< (count failure-output) 6000))
+    (is (str/includes? success-log "success-payload"))
+    (is (str/includes? failure-log "xxxxxxxx"))))
+
+(deftest log-preview-counts-multibyte-characters
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "uniform-ci-output-preview-"
+                            (make-array java.nio.file.attribute.FileAttribute 0)))
+        exact-file (io/file directory "exact.log")
+        extra-file (io/file directory "extra.log")
+        exact-content (apply str (repeat 4096 "\u00e9"))
+        extra-content (str exact-content "\u00e9")
+        preview-fn (ns-resolve 'ci.run 'log-preview)
+        marker "[log preview truncated"]
+    (try
+      (spit exact-file exact-content :encoding "UTF-8")
+      (spit extra-file extra-content :encoding "UTF-8")
+      (let [exact-preview (preview-fn exact-file)
+            extra-preview (preview-fn extra-file)]
+        (is (= 8192 (.length exact-file)))
+        (is (= exact-content exact-preview))
+        (is (str/starts-with? extra-preview exact-content))
+        (is (str/includes? extra-preview marker)))
+      (finally
+        (delete-fixture-tree! directory)))))
+
+(deftest log-preview-reads-short-chunks-without-unbounded-read
+  (let [preview-fn (ns-resolve 'ci.run 'read-log-preview)
+        source (apply str (repeat 10000 "x"))
+        source-length (count source)
+        offset (atom 0)
+        reader (proxy [java.io.Reader] []
+                 (read [buffer start _length]
+                   (let [position @offset]
+                     (if (= position source-length)
+                       -1
+                       (do
+                         (aset-char buffer start (.charAt source position))
+                         (swap! offset inc)
+                         1))))
+                 (close [] nil))
+        preview (preview-fn reader "short-read.log")]
+    (is (= 4097 @offset))
+    (is (str/starts-with? preview (apply str (repeat 4096 "x"))))
+    (is (str/includes? preview
+                       "[log preview truncated; full log: short-read.log]"))))
 
 (deftest timeout-is-a-failure
   (let [result (ci/execute! "negative-timeout" 1

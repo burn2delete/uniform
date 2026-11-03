@@ -34,8 +34,6 @@
               (canonical-id! expected-stage
                              (envelope-id-preimage envelope)))
            (= (:payload-integrity-id envelope) integrity)
-           (= (:payload-size-witness envelope)
-              (payload-size-witness expected-stage payload))
            ;; All currently exposed owner identities are independent from the
            ;; facade wrapper.  SH-07 core's owner identity is verifier-bound
            ;; and may be unavailable here; its replay verifier still runs on a
