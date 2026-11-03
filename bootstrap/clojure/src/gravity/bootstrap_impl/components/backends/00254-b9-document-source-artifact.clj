@@ -154,38 +154,15 @@
 
 (defn b10-document-source-overrides
   [module]
-  (or (get-in module [:metadata :backend :b10-document])
-      (get-in module [:metadata :backend :specialized-lowering])
-      (get-in module [:metadata :backend :specialized])
-      {}))
+  (gravity.backend.workflow/source-overrides module))
 
 (defn b10-document-missing-policy
   [id]
-  (case id
-    "B10-SCHEMA" :workflow-step-message-state-schema
-    "B10-REPLAY" :recorded-nondeterminism-and-event-log-replay
-    "B10-IDEMPOTENCY" :side-effect-idempotency-key
-    "B10-RETRY" :retry-timeout-cancellation-failure-map
-    "B10-COMPENSATION" :compensation-handler
-    "B10-CAPABILITY" :external-authority-capability-manifest
-    "B10-POLICY" :provider-budget-human-review-policy
-    "B10-TAINT" :validated-model-tool-external-output
-    "B10-GRAPH" :valid-workflow-graph-edge-cycle-compensation
-    :complete-workflow-artifact-manifest))
+  (gravity.backend.workflow/missing-policy id))
 
 (defn b10-document-step-id
   [id]
-  (case id
-    "B10-SCHEMA" :schema-step
-    "B10-REPLAY" :call-model
-    "B10-IDEMPOTENCY" :write-ticket
-    "B10-RETRY" :call-service
-    "B10-COMPENSATION" :write-database
-    "B10-CAPABILITY" :call-tool
-    "B10-POLICY" :approve-output
-    "B10-TAINT" :trusted-sink
-    "B10-GRAPH" :join
-    :workflow-manifest))
+  (gravity.backend.workflow/step-id id))
 
 (defn b10-document-fail!
   [id source-path subject extra]
