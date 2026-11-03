@@ -481,8 +481,12 @@
     (is (= 149 (count current)))
     (is (= 40 (:task-count review)))
     (is (= 40 (count (:declared-consumers review))))
-    (is (= 101 (count (:declared-parent-consumers review))))
+    (is (= 104 (count (:declared-parent-consumers review))))
     (is (= dependencies/selected-parent-consumers (set (:required-parent-consumers review))))
+    (is (every? dependencies/selected-parent-consumers
+                ["stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
+                 "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters"
+                 "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"]))
     (let [text (slurp dependencies/future-dependency-path)
           removed (clojure.string/replace text #"(?m)^\| `domain-ir-boundaries` \|.*\n" "")
           altered (dependencies/future-task-view future current snapshots
@@ -535,7 +539,7 @@
     (is (empty? (:unresolved-consumers review)))
     (is (= :pending (:future-sh-and-full-language-joins review)))
     (is (= :unassessed (:implementation-acceptance review)))
-    (is (= [99 9] (mapv count (:declared-output-cycles review))))
+    (is (= [99 11] (mapv count (:declared-output-cycles review))))
     (is (every? (set (first (:declared-output-cycles review)))
                 ["auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
                  "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
