@@ -297,6 +297,13 @@ Use the [complete facet source criteria](../expand-workflow/plan.md#complete-fac
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Facet dependency interface
+
+Use the [facet producer and consumer order](../expand-workflow/plan.md#facet-producer-and-consumer-order) and existing selected-result table. Early real versioned family schema/anchor/verifier/entry/exit and registration APIs precede construction. Actual checked selected Q/Core/MIR/facts and owning verification precede legal exits. Ten L14 facets differ from nine C12 families; Core-only subjects need no invented domain IR. Preserve the source-order decision and every held callback.
+
+Task bodies/statuses, source criteria, historical reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending. No held action is enabled.
+
+
 ## Historical workflow-transfer and source-composition plan
 
 # Implementation plan: Compiler API workflow migration

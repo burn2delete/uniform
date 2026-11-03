@@ -55,6 +55,13 @@ Use the [library producer and consumer order](../stdlib-workflow/plan.md#library
 
 Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Facet dependency interface
+
+Use the [facet producer and consumer order](../expand-workflow/plan.md#facet-producer-and-consumer-order) and existing selected-result table. Early actual artifact/source/diagnostic schemas precede output construction, then admitted selected generated/domain/target products precede real written bytes/metadata/readback. The later complete bundle is no first schema; every source facet needs no native artifact or final release.
+
+Task bodies/statuses, source criteria, historical reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending. No held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Emit task authority

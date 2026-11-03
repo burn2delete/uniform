@@ -80,6 +80,13 @@ Use the [complete facet source criteria](../expand-workflow/plan.md#complete-fac
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Facet dependency interface
+
+Use the [facet producer and consumer order](../expand-workflow/plan.md#facet-producer-and-consumer-order) and existing selected-result table. Early truthful target/circuit/emission interfaces precede actual checked source/domain/registered-lowering products and genuine HDL emission. Future full Platform/facet acceptance is not the first backend contract, and artifact presence accepts no device.
+
+Task bodies/statuses, source criteria, historical reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending. No held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Backends family task authority

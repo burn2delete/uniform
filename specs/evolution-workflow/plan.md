@@ -212,3 +212,9 @@ Task bodies/statuses, source criteria, frozen reviews and actual restrictions re
 Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Preserve the single existing conditional change-review authority for semantic/compatibility changes and actual policy decisions. Expand owns stable-facet migration products and checked feasible rewrites; Build owns actual locks. An early schema or version comparison is not final approval, while compatible ordinary local development acquires no new per-run permission gate.
 
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+## Facet dependency interface
+
+Use the [facet producer and consumer order](../expand-workflow/plan.md#facet-producer-and-consumer-order) and existing selected-result table. Early actual affected old/new source/IR/lowering/profile/schema/stability comparisons precede applicable required scoped decisions and checked migration products. Final migration is not a first policy input, and compatible ordinary implementation has no new per-run review gate.
+
+Task bodies/statuses, source criteria, historical reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending. No held action is enabled.

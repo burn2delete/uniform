@@ -410,6 +410,13 @@ Use the [complete facet source criteria](../expand-workflow/plan.md#complete-fac
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Facet dependency interface
+
+Use the [facet producer and consumer order](../expand-workflow/plan.md#facet-producer-and-consumer-order) and existing selected-result table. Actual early selected facet manifests and locks precede lexical activation, alias/ambiguity and profile checks. Imports do not activate facets in importers; generated nested activation retains provenance. Later registered/checked outputs are separate products.
+
+Task bodies/statuses, source criteria, historical reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending. No held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Resolve task authority

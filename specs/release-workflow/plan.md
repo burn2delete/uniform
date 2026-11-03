@@ -324,6 +324,13 @@ Use the [complete facet source criteria](../expand-workflow/plan.md#complete-fac
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Facet dependency interface
+
+Use the [facet producer and consumer order](../expand-workflow/plan.md#facet-producer-and-consumer-order) and existing selected-result table. Early real owner examples/property/checker/runnable fixtures precede independent language/compiler/profile/safety/formal/agent-workflow results. Actual at-least-two-facet and separately required zk/privacy cases remain; source generation grants no live action. Final selfhost/release acceptance is later.
+
+Task bodies/statuses, source criteria, historical reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending. No held action is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Release workflow migration

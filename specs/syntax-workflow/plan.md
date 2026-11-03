@@ -280,6 +280,13 @@ Use the [complete facet source criteria](../expand-workflow/plan.md#complete-fac
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Facet dependency interface
+
+Use the [facet producer and consumer order](../expand-workflow/plan.md#facet-producer-and-consumer-order) and existing selected-result table. Early real structured syntax/adapter/origin interfaces precede Q production; actual source/external/macro/facet subjects preserve or invalidate owner facts later. Final Q acceptance is not its first syntax or hygiene input.
+
+Task bodies/statuses, source criteria, historical reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending. No held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Plan: Syntax task authority and roadmap navigation

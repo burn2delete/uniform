@@ -228,6 +228,13 @@ The coarse graph now has one 126-task feedback set: both earlier 99-task and nin
 The complete L13 source record, all ten restored predicates (5,758 bytes), one unchanged generated predicate (857 bytes), thirteen original owners and their qualified reviews remain exact. Selected STD1/TEST7/GOV2/GOV3/GOV8/GOV9/STD20/PKG12/C17/L6/L15 interfaces confer no whole support-contract acceptance. Six artifact families and nine actual diagnostics retain source/namespace/symbol/profile/target/contract/caller-effect/grant/remediation identity. Physical capacity, queues, indices/arity, layout, Unicode and target representability survive; removed project work/cost/input/attempt quotas do not return. All current task keys and forty future records/source bindings remain unchanged.
 
 Current source/owner/interface entailment, implementation acceptance, independent current review and integration remain pending/unassessed. Reader contract coverage remains the first actual implementation increment. Preserve all actual writer reservations, original C7/C12 and paired/provider/plugin/native/callback/device/probe/replay/migration/private-store/signing/publication restrictions and stopped handoffs. No held execution, other-chat message, reviewer wake, aggregate publication or merge occurs.
+## Facet dependency interface
+
+Use the [facet producer and consumer order](../expand-workflow/plan.md#facet-producer-and-consumer-order) and existing selected-result table. Actual available checked compiler/library helper P precedes facet invocation; generated APIs receive ordinary Q checking with declared effects/grants/profiles/privacy. Earlier Library source/dependency populations remain bound to their checkpoints; the latest facet continuation and sole table record the current graph. No whole library release gates first source declarations.
+
+Task bodies/statuses, source criteria, historical reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending. No held action is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Standard Library workflow migration

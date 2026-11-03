@@ -625,6 +625,13 @@ Use the [complete facet source criteria](../expand-workflow/plan.md#complete-fac
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Facet dependency interface
+
+Use the [facet producer and consumer order](../expand-workflow/plan.md#facet-producer-and-consumer-order) and existing selected-result table. Existing family owners supply early truthful source/schema/checker contracts then actual claimed products. The UI task gains its previously missing consumer route; Crypto joins selected zk custody/disclosure/checker composition. Their future/partial/held work remains explicit; source bundles are not live service/private-computation evidence.
+
+Task bodies/statuses, source criteria, historical reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending. No held action is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Domains workflow migration

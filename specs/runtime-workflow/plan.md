@@ -186,6 +186,13 @@ Use the [complete facet source criteria](../expand-workflow/plan.md#complete-fac
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Facet dependency interface
+
+Use the [facet producer and consumer order](../expand-workflow/plan.md#facet-producer-and-consumer-order) and existing selected-result table. Early real FFI/ABI/ownership/error/provider contracts precede wrapper checking. Actual selected admitted callers and needed layouts precede later normalization/transfer/cleanup. Generation-only facets and agent artifacts authorize no live calls or universal native runtime.
+
+Task bodies/statuses, source criteria, historical reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending. No held action is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Runtime workflow migration

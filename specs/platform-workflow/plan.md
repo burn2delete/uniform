@@ -155,6 +155,13 @@ Use the [complete facet source criteria](../expand-workflow/plan.md#complete-fac
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Facet dependency interface
+
+Use the [facet producer and consumer order](../expand-workflow/plan.md#facet-producer-and-consumer-order) and existing selected-result table. Early actual counter state/clock/reset/enable/width/overflow/timing contracts precede checking, then circuit/domain products and later HDL artifacts establish claimed conformance. No physical device or product ISA is selected; host threads/GC/IO are not hardware constructs.
+
+Task bodies/statuses, source criteria, historical reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending. No held action is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Platform workflow migration

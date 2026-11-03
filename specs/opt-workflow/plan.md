@@ -163,6 +163,13 @@ Use the [library producer and consumer order](../stdlib-workflow/plan.md#library
 
 Task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Facet dependency interface
+
+Use the [facet producer and consumer order](../expand-workflow/plan.md#facet-producer-and-consumer-order) and existing selected-result table. Early real selected property/checker interfaces precede transformation; governing exact-subject proof/validation and actual affected owner regeneration/changed-subject verification precede consumption. Preserve disclosure/custody/anchors and valid unoptimized source; no whole future Formal gate.
+
+Task bodies/statuses, source criteria, historical reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending. No held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Opt task authority

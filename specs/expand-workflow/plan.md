@@ -713,6 +713,134 @@ private-store/signing/publication execution occurs. Complete selected-result
 L14 staging remains pending in the existing dependency representation; current
 joins/cycles and all forty future declarations/source bindings stay unchanged.
 
+## Facet producer and consumer order
+
+Use the [complete L14 source criteria](#complete-facet-source-criteria), actual
+selected family contracts and the
+[sole selected-result table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition).
+Task bodies/statuses, the 25 source criteria, all historical reviews and forty
+future declarations/source bindings stay unchanged. This is a dependency
+proposal with current source/interface entailment and independent acceptance
+pending, not an implementation receipt or another roadmap. Populations in earlier source
+and dependency sections remain bound to their original checkpoints; this
+continuation and the sole table record the latest graph population.
+
+Forty-eight selected consumer routes preserve all 2,486 earlier joins and 99
+unaffected route meanings. The existing UI task gains a missing consumer row;
+all fifteen direct L14 criterion tasks already had rows. Add 179 selected
+inputs for 2,665 joins over 147 routes / 107 current parents / forty unchanged
+future records. Selected inputs increase from 1,138 to 1,317. Every proposed
+input retains an explicit selected result/stage role in the source record;
+those roles do not relabel all pre-existing edges as newly reviewed.
+
+The coarse graph has a 128-task feedback set. All 126 prior cyclic members
+survive, Crypto and UI enter, and none disappear. These are actual source-task
+feedback relationships, not an executable whole-task topological order.
+Selected earlier/later products below expose the required interfaces. Neither
+this feedback nor a passing projection permits unmarked source/build cycles;
+PKG2's acyclic graph and explicitly governed bootstrap fixed point remain.
+
+### Early source, invocation and checking
+
+Load an actual early facet manifest containing identity/version/surface/profile/
+requirements/effects/grants/lowering/artifact/stability declarations before
+lexical activation and dependent expansion. Build resolves authentic facet id,
+version/range, source and artifact-schema locks from those declarations; a
+future fully expanded facet cannot be its first lock input. Imports do not
+activate facets in importers. Aliases or explicit activation disambiguate
+surfaces; generated nested activation needs real provenance.
+
+Early versioned registration, payload, entry/exit, checker, syntax and stage
+contracts precede construction. Actual available checked P code precedes
+invocation; actual generated Q is then normally checked. Final Q acceptance,
+whole registry completion and independent suites are no first manifest,
+expander, syntax or hygiene input. Syntax facts remain actual subject/version
+products; external syntax is structured and mapped. Preserve nine observable
+phase boundaries and the unresolved D1/C1/C5/C6 ordering decision.
+
+Actual structural/local premises produce preliminary typed P/Q/call graphs
+before real effect derivation. Actual transitive build/runtime/compiler effects
+and independent allowance/profile/service/resource premises, with separate
+authentic grants, precede final admission and checked Core. Final effect/profile
+verdicts do not supply their own first preliminary typed graph. Early real
+profile/invariant/gate contracts support the checks; actual owning verdicts
+precede affected use. Read-ir plus a C17 read scope grants no write. Model/tool/
+query wrappers, caught errors, package/facet/trust labels and prompt prose grant
+no authority and erase no effects.
+
+### Families, privacy, anchors and artifacts
+
+The ten initial facet owners expose real selected source/payload/checker/ABI/
+custody interfaces early, then actual checked products for claimed composition.
+Core-only subjects need no domain IR; domain-bearing subjects retain actual
+C12 schema/verifier and typed-Core or MIR anchors, current compatible facts and
+legal registered exits. A later emitted HDL/backend artifact is not its first
+domain schema, provisional source carrier or anchor interface. Nine C12 IR
+families and ten L14 facets retain distinct populations.
+
+Schema supplies actual User/validator/requested-codec/tool/field products;
+Math supplies EFIR semantics and required checked evidence; Workflow/AI/Query/UI
+supply their actual typed graph/schema/source/artifact interfaces and later
+claimed results. The new UI route makes its source/type/effect/profile/domain
+consumption explicit. Hardware publishes actual state/clock/reset/enable/width/
+overflow/timing contracts, then circuit products, then HDL artifacts. Backend
+schema is no future physical-product gate; no ISA or device is adopted.
+
+Zk uses actual early relation/public-private/custody/disclosure/provider-trust/
+proof-verifier schemas from Crypto/Formal/Schema owners, followed by real
+required privacy/declassification/checker products for the selected claim.
+Those interfaces do not require whole future Crypto/Formal, private-store
+access or live proof generation before unrelated Core-only source. Pure
+structural privacy fixtures are honest source artifacts; they are not live
+crypto or proof execution. Required genuine evidence remains necessary before
+claiming checked proof/private computation. Preserve original labels, witness
+provenance, public schema, reveal reason and erasing edge under redaction.
+
+Early real FFI/ABI/wrapper/provider/ownership/error contracts precede checking;
+needed concrete layouts and actual admitted callers precede later invocation,
+normalization, transfer and cleanup. Source facet or SupportAgent bundle
+creation needs no universal native artifact, runtime session, live model/tool
+or store. Actual behavior claims still need actual selected producers/results.
+
+Early property/checker interfaces precede selected transformations; actual
+governing exact-subject proof/validation, affected owner regeneration and
+changed-subject verification precede use. No new direct generated-Q-to-Opt3 gate
+is introduced; valid unoptimized/Core-only paths remain. Fact/source/privacy/
+profile/schema/version/grant changes invalidate affected products before real
+regeneration and current-policy reuse. Metadata flags cannot preserve facts.
+
+Emit consumes actual admitted selected artifacts before writing required bytes,
+metadata/readback; early schemas precede that output. Source generation does
+not universally require native bytes, signing or final release. All six L14
+artifact families and eleven genuine diagnostics keep original/generated/
+external origins and exact facet/version/profile/rule/effect/grant/privacy
+context. Final valid facet output is no first diagnostic schema or error path.
+
+### Conformance, compatibility and remaining work
+
+Early actual owner examples, properties, checker and runnable-case interfaces
+precede independent language/compiler/profile/safety/formal/agent-workflow
+results for the selected claims. Actual two-facet composition plus separately
+required zk/schema/security/formal privacy cases remain required, as do
+inactive/ambiguous/profile/effect/grant/opaque/privilege/refusal cases. Full
+component/selfhost/release acceptance is not the first fixture. Held or
+unavailable requirements stay Open; source inventories and supplied success
+records cannot pass actual conformance.
+
+Early actual old/new syntax/IR/lowering/profile/schema/stability comparison and
+policy schemas precede actual affected Governance decisions and checked
+migration products or justified infeasibility. Final migration execution is no
+first review input; compatible local implementation has no new routine gate.
+Keep one change-review authority and every historical review's exact source,
+role, dependencies and exclusions without renewal or consumption.
+
+Current source/interface entailment, independent acceptance, integration and
+whole-project reconciliation remain pending. Real host, physical storage,
+Unicode/type/index/arity/target, source/authenticity and external account/billing
+conditions remain, with project work/input/cost/attempt quotas removed. This
+planning change executes no compiler/provider/plugin/C12/native/callback/device/
+probe/replay/migration/private-store/signing/publication action and grants none.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Expand task authority
