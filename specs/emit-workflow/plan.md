@@ -1,3 +1,32 @@
+# Artifact emission implementation planning entry
+
+Select one unresolved [existing task](tasks.md#implementation-tasks), preserving
+the transfer plan below. Read [spec.md](spec.md), B13/B14 and the actual selected
+backend and consumer contracts. Locate current adapters and focused tests via
+[development verification](../../docs/development-verification.md) and the
+[stage ownership table](../../docs/bootstrap/stage-owned-namespaces.md).
+
+Name exact Lower input, target/ABI/runtime/provider/toolchain, output kinds,
+actual adapter/tool invocation, byte/canonical hash inputs, required evidence
+and Runtime/Build consumer. Plan actual output and execution/semantic comparison
+plus relevant invalid-input, tool-failure, unsupported-target, tamper and
+metadata-loss controls. Capture real diagnostic IDs and source/generated maps;
+fixture files or supplied hashes cannot establish actual production.
+
+Run focused owner checks and actual selected Lower/backend/Runtime/Build
+composition needed for the claim. Record target availability and unrun work,
+reproducibility inputs and residual host services. Refine only the selected
+existing task; preserve restrictions, custody and writer reservations.
+Development results, independent acceptance and release evidence stay distinct.
+
+## Resolution dependency interface
+
+Use the [resolution producer and consumer order](../resolve-workflow/plan.md#resolution-producer-and-consumer-order) and the existing selected-result table. Consume actual visible artifact-kind entrypoint binding/artifact tables and current selected module metadata, then real Lower/backend results before selected emission. Preserve PKG1003 refusals at the owning resolver stage; no synthetic symbol or linker fallback supplies missing source resolution.
+
+Existing task bodies/statuses, source predicates, frozen evidence and actual restrictions remain unchanged. Current source/interface entailment, independent acceptance and final release require their own applicable evidence; no held action is enabled.
+
+## Historical task-authority-transfer plan
+
 # Implementation plan: Emit task authority
 
 Spec: [spec.md](spec.md) | Evidence: [evidence.md](evidence.md)

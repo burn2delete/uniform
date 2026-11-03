@@ -169,7 +169,7 @@
      {:source-path source-path}))
   (when (some? source-policy-version)
     (p15-s23-c6c10-source-program-contract source-policy-version)
-    (when-not (and (= 2 source-policy-version)
+    (when-not (and (contains? #{2 3} source-policy-version)
                    (string? reader-source-path)
                    (= (.getCanonicalPath (java.io.File. (sh03-reader-resolve-source-path)))
                       (.getCanonicalPath (java.io.File. reader-source-path))))
@@ -244,10 +244,11 @@
        {:source-rule-hash (:source-rule-hash emitter-rule)
         :rule-record (:rule-record emitter-rule)}}
         parameter? (assoc :resolved-parameter resolved-parameter)
-        (= 2 source-policy-version)
+        (contains? #{2 3} source-policy-version)
         (assoc :source-policy-receipt
                (p15-s23-c6c10-current-reader-envelope-state!
-                source-path raw-front-end reader-source-path selected-reader-binding)))))))
+                source-path raw-front-end reader-source-path selected-reader-binding
+                source-policy-version)))))))
 
 (defn p15-s23-c6c10-resolve-source-path
   []

@@ -460,6 +460,25 @@
     (is (apply = (map #(get-in % [:plan :plan-id])
                      (filter #(= disposition (:disposition %)) @dispatch-programs))))))
 
+(deftest gravity-runtime-number-predicate-preserves-compiler-domain-and-arity-refusal
+  (let [ctx (assoc context :runtime-artifact-plan (:plan @runtime-plan)
+                          :runtime-artifact-source-path (:path @runtime-plan))
+        invoke (fn [arguments]
+                 (b/p15-s23-stage2-runtime-artifact-invoke
+                  ctx 'p15-s23-runtime-evaluate-closed-instruction
+                  [{:op :builtin-call :function 'number? :args arguments} {} ""]))]
+    (doseq [value [7 3/2 2.5M]]
+      (is (= [true "" :normal]
+             (invoke [{:op :literal :value value}]))))
+    (is (= [false "" :normal]
+           (invoke [{:op :literal :value "7"}])))
+    (is (= [{:diagnostic "P15S23X002"
+             :operation :builtin-call
+             :reason :invalid-local-runtime-instruction}
+            "" :rejected]
+           (invoke [{:op :literal :value 7}
+                    {:op :literal :value 8}])))))
+
 (defn- builtin-operations []
   (var-get (ns-resolve 'gravity.bootstrap 'p15-s23-runtime-builtin-operations)))
 

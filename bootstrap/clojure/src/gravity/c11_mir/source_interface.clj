@@ -9,9 +9,9 @@
   (header/source-interface-version! value :gravity/c11-mir))
 
 (defn public-interface-version!
-  "The public constructor/report route currently admits the version2 contract."
+  "Select the explicit public C11 source-family contract."
   [value]
-  (header/interface-version! value :gravity/c11-mir))
+  (header/source-interface-version! value :gravity/c11-mir))
 
 (defn artifact-version!
   "Inspect only native top-level discriminants, never Core/MIR/report payload.
