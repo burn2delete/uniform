@@ -5729,3 +5729,183 @@ remain pending/unassessed. Reader contract coverage remains the first actual
 implementation increment. Preserve every actual restriction, writer reservation
 and stopped handoff; no held execution, other-chat message, reviewer wake,
 aggregate publication or merge occurs.
+
+## Complete L13 selected-result dependency continuation
+
+The library dependency proposal applies corrected source commit
+`e9b045dfa60612f79738ae98591f7fe8ad53a0eb` after the complete L13 source
+checkpoint `b45c09a9c7e88b6b3ed7a491930d5289e0553795`. Use the
+[existing library producer/consumer plan](../specs/stdlib-workflow/plan.md#library-producer-and-consumer-order)
+and [sole selected-result table](../docs/acceptance-dependencies.md#future-task-construction-and-composition).
+Twenty-one existing plans expose 449 selected input subjects. The dependency
+tool adds required consumer declarations for five existing tasks; its current
+regression records actual parent, C9 input and cycle populations. No task body,
+status, source criterion, future declaration/source binding or historical review
+changes. Current source/owner/interface entailment, independent acceptance and
+integration remain pending.
+
+Seventy-three selected consumer routes retain all 2,199 prior joins and 73
+unaffected route meanings. Five missing routes use the existing Library
+inventory, domain/compiler adapter and platform/release assembly tasks plus
+Governance library-admission and stabilization. Add 287 inputs for 2,486 joins
+over 146 routes, 106 current parents and forty unchanged future records.
+Selected inputs increase from 1,405 to 1,692. All 26 L13 criteria retain thirteen
+existing task routes; both newly selected Governance tasks already exist in the
+same authority. These counts establish conservation, not semantic acceptance.
+
+The coarse graph has one 126-task feedback set. Both earlier 99-task and
+nine-task cycles are absorbed; all 108 old cyclic members survive, eighteen
+formerly acyclic tasks enter, and no previous cyclic member disappears. Five
+are the newly routed existing tasks; the other thirteen are Auth/Legality
+conformance and eleven Release execution/acceptance producers. The full member
+sets are retained in the dependency record. This is genuine task feedback, not
+a proof of executable whole-task order or permission for unmarked source/build
+cycles. PKG2's acyclic graph and explicitly governed bootstrap fixed-point
+boundary remain. The selected stages below describe concrete earlier/later
+products; full current interface entailment and independent review remain open.
+
+Early real namespace/export/type/macro/protocol/constructor/resource/layer/class/
+profile/stability and intrinsic contracts precede actual binding/import/graph
+checks. Actual namespace edges reject lower-to-higher imports; task-group result
+dependencies are not namespace imports. Later actual compiled/built availability
+confirms shipped claims. A finished inventory is not its own first declaration.
+Actually available checked callable P helpers precede invocation; generated Q
+receives ordinary checks afterward, preserving source/hygiene/phase/origins.
+Neither future Q inventory nor final conformance is P's first implementation.
+
+Actual structural calls and independent local/public type/generic/schema
+premises precede preliminary typed verification. Real direct/latent/transitive
+library effects follow; later actual allowance/profile/resource/service admission
+with separately authentic grants precedes checked export. Classes and declared
+allowances do not derive facts or widen authority. L6's read-IR effect and C17's
+scoped IR-transform read grant precede actual inspection; read-mir grants no
+write-mir. Named hooks, package identity and generated code have no privilege.
+
+Early truthful provider/family/profile/ABI/wrapper/invariant/checker contracts
+support source checking; genuine selected owner verdicts and needed concrete
+layouts precede affected use. Actual selected values, normalization, transfer,
+failure and cleanup establish later behavior. Future Library/Runtime/Platform
+release is not the first interface. Host builtins/fakes do not accept a module
+or live provider. Physical capacity, queues, index/arity, Unicode, layout and
+target representability remain semantic requirements; project work/cost/input/
+attempt quotas stay removed.
+
+Actual admitted library callers and current owner facts precede verified raw
+MIR. Selected transformations require actual mode/resource/error/wrapper/check/
+authority preservation, governing exact-subject evidence, affected regeneration
+and changed-subject verification. A new direct Library2-to-Opt3 input was caught
+in the intermediate `b11a04e36ce30a7d2da3a619ce29bf359e4b76c0` source candidate:
+it would gate unoptimized APIs. The correction removes only that new edge,
+retains every one of the 2,199 predecessor joins and keeps required evidence on
+the actual selected-transform and compiler-conformance routes. The final graph
+has no direct Opt3 input for Library2, retains the existing conditional
+Lower5/Opt5 route, and keeps valid raw/unoptimized paths. No full future Formal
+gate or source/body requirement is removed. The intermediate dependency claim
+receives no final acceptance or implementation credit.
+
+Early target/manifest/canonical-record contracts precede actual admitted target
+artifacts, written bytes/readback and provenance. Actual selected checked-Core
+or emitted compiled input precedes API values and traces; interpretation needs
+no universal native artifact. Early selected owner fixtures, Auth/Legality
+boundary cases, Runtime service/family contracts, property generators/seeds and
+runnable documentation precede the dedicated independent library harness.
+Actual independent results support later inventory/acceptance. Whole final
+self-hosting/release acceptance is not the first library fixture; final claims
+still require their full governing evidence. Held/unavailable required cases
+remain work and fakes cannot establish live service/device support.
+
+Early policy, criteria and schema plus actual scoped API/profile/safety/
+compatibility review products support the decisions required by GOV3/GOV8/
+STD20. Actual scoped library review precedes promotion; final released-module
+admission also consumes actual stability and signed-candidate evidence. Relevant
+experiment closure and applicable real security/unsafe reviews remain required.
+A future whole released-module admission is not its first review input, and an
+early schema or scoped review is not final release approval or an ordinary
+per-run permission gate.
+
+Actual canonical content/manifest/provenance/attestation/SBOM/safety and required
+identity/policy evidence precede a real signature/verification record under
+PKG12. Early signing/key-policy interfaces precede this producer. Final module
+release admission consumes actual signed-candidate evidence; Build installation/
+publication then consumes actual applicable Governance decisions. The same
+package task's final consumer verdict is not its first signature-format input.
+No signature is fabricated, key/consumer/verification-track policy weakened,
+signing permission issued or held operation performed. Library assembles exact
+release-bound records, Governance decides, Build signs/verifies and Release
+consumes the actual component/product result. Compiler-support closure, wider
+library modules and final seedless release remain separate.
+
+Source/export/layer/class/mode/provider/schema/profile/policy changes invalidate
+affected typed/effect/check/audit/example/compatibility products before real
+owner regeneration and reuse. Source-only docs/index/inspection can work
+earlier; semantic views and runnable examples need current real producers.
+Six L13 artifact families and nine diagnostics retain actual namespace/symbol/
+profile/target/contract/caller-effects/grants/remediation and source identity.
+Selected STD1/TEST7/GOV2/GOV3/GOV8/GOV9/STD20/PKG12/C17/L6/L15 interfaces confer
+no whole support-contract acceptance. Preserve unresolved D1/C1/C5/C6 ordering
+and L6/L12 hermetic-wording decisions.
+
+The complete L13 source record is unchanged: 125 facets, 84 occurrences,
+nineteen section conjunctions, thirteen original owner joins, all ten restored
+predicates (5,758 bytes), one unchanged generated predicate (857 bytes), seven
+classes and the complete 55-name/five-layer source population. Every historical
+review retains its exact source/role/dependency scope, with no renewal,
+consumption or new acceptance. All 149 current keys, 25 authorities, forty
+future declarations/source bindings and the original 41-identical / 98-amended
+task-body census remain unchanged. No Domains/Release/Platform task source or
+latest future binding successor changes.
+
+Current proposal fingerprint:
+`2cb619faf2d13688625678b816e654c5980d4112b0d32507e5ba412dd0444ad0`.
+
+All applying source pins verify against local Git. Four focused crosswalk tests /
+17,974 assertions pass: the current library dependency proposal, the complete
+frozen L13 source and L9 dependency subjects, and global conservation. All 23
+dependency tests / 6,733 assertions and both pinned projection checks pass.
+Canonical validation passes 240 documents / nineteen phase indexes; the
+full-language roadmap structural check passes with dated counts non-authoritative.
+The language-boundary gate passes six tests / eleven assertions. The full
+current 81-test crosswalk suite was not rerun; the prior complete 68-test /
+44,978-assertion run remains bound to
+`25a96a0c03536270001449c00676e644ea353521`. Planning checks establish no actual
+compiler, library, provider, native, proof, self-hosting, migration or release
+conformance.
+
+The complete L13 source regression reads its entire frozen
+`b45c09a9c7e88b6b3ed7a491930d5289e0553795` bridge, projection and source readers.
+All other prior crosswalk test bytes are unchanged. The new regression checks
+all prior joins, missing-route controls, every staged selected subject, exact
+source/task conservation and the newly merged feedback membership. No previous
+acceptance or test population is relabeled as current. The frozen L13 census
+comparison still requires the preserved local `55fed8d9` object; remote
+availability of that unpublished, unadopted aggregate is not established.
+
+A read-only metadata summary attempt initially assumed every source-census
+field was a map; one historical qualifier is a keyword. Correcting that
+inspection assumption made the summary readable without changing repository
+source or evidence. Failed inspection attempts receive no validation credit.
+
+The next whole-source language reconciliation is L14's facet contract. Existing
+Compiler API prose names its namespace/version/checking boundaries, but the
+current complete plugin record binds C17 rather than complete L14 source facets.
+Read L14 directly and reconcile its substantive source/owner/task conjunctions
+and selected interfaces under the existing authorities; do not infer whole L14
+coverage from C17 registration or a document link. L17/L19 and wider source
+contracts also remain subject to full entailment. This report does not add a
+second task ledger or claim that the remaining source population is complete.
+
+Global source/owner/task and complete interface entailment, implementation
+acceptance, required independent current review and integration remain pending.
+Reader contract coverage remains the first actual implementation increment; the
+planning continuation does not execute it. Every actual restriction, reserved
+writer and stopped handoff remains. No other-chat message, reviewer wake,
+aggregate publication, held execution or merge occurs.
+
+Final conservation/navigation passes 91 changed files, 85 Markdown files,
+4,005 local references, 139 original routes, 48 historical spec/plan suffixes
+and all 48 original task/evidence contents after declared additions are
+removed. ASCII and whitespace checks pass. The first final conservation
+invocation printed passing counts but then parsed its misplaced shell
+redirection/delimiter as Clojure and exited nonzero; the corrected read-only
+invocation exited zero with the same counts. Only that terminal success
+receives final validation credit.

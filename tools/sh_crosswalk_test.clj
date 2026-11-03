@@ -9686,8 +9686,21 @@
 (deftest
  complete-library-source-preserves-contracts-layers-and-finite-predicates
  (let
-  [bridge
-   sh-crosswalk/readiness-source-version
+  [checkpoint
+   (get-in
+    sh-crosswalk/readiness-source-version
+    [:library-dependency-refinement :predecessor-readiness-successor])
+   bridge
+   (if
+    checkpoint
+    (edn/read-string
+     (sh-crosswalk/git-source (:commit checkpoint) (:path checkpoint)))
+    sh-crosswalk/readiness-source-version)
+   read-text
+   (if
+    checkpoint
+    (memoize (fn [p] (sh-crosswalk/git-source (:commit checkpoint) p)))
+    slurp)
    r
    (:library-refinement bridge)
    previous
@@ -9703,7 +9716,13 @@
    prior
    (edn/read-string old-projection)
    view
-   (sh-crosswalk/build)
+   (if
+    checkpoint
+    (edn/read-string
+     (sh-crosswalk/git-source
+      (:commit checkpoint)
+      (:projection-path checkpoint)))
+    (sh-crosswalk/build))
    rows
    (fn
     [v]
@@ -9731,7 +9750,7 @@
    source
    (first (:canonical-sources r))
    text
-   (slurp (:path source))
+   (read-text (:path source))
    span-text
    (fn
     [body span]
@@ -9745,7 +9764,7 @@
     [k]
     (let
      [w (:current-witness (by-key k))]
-     (span-text (slurp (:path w)) (:source-span w))))
+     (span-text (read-text (:path w)) (:source-span w))))
    facets
    (:source-facets r)
    cases
@@ -9912,7 +9931,7 @@
      raw
      (current-clause key)
      body
-     (slurp p)
+     (read-text p)
      task
      (tasks task-id)
      finite
@@ -10067,7 +10086,7 @@
    (is
     (=
      (:sha256 a)
-     (sh-inventory/sha256 (slurp p))
+     (sh-inventory/sha256 (read-text p))
      (sh-inventory/sha256 (sh-crosswalk/git-source (:commit a) p)))))
   (is
    (= 1 (count (get-in r [:implementation-source-inspection :files]))))
@@ -10077,7 +10096,7 @@
    (is
     (=
      sha256
-     (sh-inventory/sha256 (slurp path))
+     (sh-inventory/sha256 (read-text path))
      (sh-inventory/sha256
       (sh-crosswalk/git-source source-commit path))))
    (is (nil? line-ranges)))
@@ -10097,14 +10116,27 @@
     :unassessed
     (:implementation-acceptance r)
     (:global-source-conjunctions r)))
-  (let [projected (get-in view [:implementation-readiness-source-version :library-refinement])
-        record (get-in projected [:unchanged-current-predicates :generated-existing])
-        raw (acceptance-dependencies/source-raw record (:source-snapshots view))
-        restored (assoc-in projected [:unchanged-current-predicates :generated-existing]
-                   (assoc (dissoc record :source-snapshot-ref) :raw raw))]
-    (is (= r restored))
-    (is (= (:source-snapshot-ref record) (sh-inventory/sha256 raw)))
-    (is (= raw (current-clause :generated-existing))))
+  (let
+   [projected
+    (get-in
+     view
+     [:implementation-readiness-source-version :library-refinement])
+    record
+    (get-in
+     projected
+     [:unchanged-current-predicates :generated-existing])
+    raw
+    (acceptance-dependencies/source-raw
+     record
+     (:source-snapshots view))
+    restored
+    (assoc-in
+     projected
+     [:unchanged-current-predicates :generated-existing]
+     (assoc (dissoc record :source-snapshot-ref) :raw raw))]
+   (is (= r restored))
+   (is (= (:source-snapshot-ref record) (sh-inventory/sha256 raw)))
+   (is (= raw (current-clause :generated-existing))))
   (is
    (=
     (:future-task-authorities prior)
@@ -10122,7 +10154,7 @@
    (is
     (=
      sha256
-     (sh-inventory/sha256 (slurp path))
+     (sh-inventory/sha256 (read-text path))
      (sh-inventory/sha256
       (sh-crosswalk/git-source source-commit path)))))
   (is
@@ -10178,6 +10210,477 @@
       (get-in
        captured
        [:owner-resolutions id :original-obligation])))))))
+
+
+(deftest
+ library-dependencies-preserve-declarations-independent-harness-and-release-stages
+ (let
+  [bridge
+   sh-crosswalk/readiness-source-version
+   r
+   (:library-dependency-refinement bridge)
+   previous
+   (:predecessor-readiness-successor r)
+   old-text
+   (sh-crosswalk/git-source (:commit previous) (:path previous))
+   old
+   (edn/read-string old-text)
+   projection-text
+   (sh-crosswalk/git-source
+    (:commit previous)
+    (:projection-path previous))
+   prior
+   (edn/read-string projection-text)
+   view
+   (sh-crosswalk/build)
+   rows
+   (fn
+    [v]
+    (into
+     {}
+     (for
+      [records (vals (:task-authorities v)) row records]
+      [(:id row) row])))
+   tasks
+   (rows view)
+   before
+   (rows prior)
+   ids
+   (set
+    (concat
+     (keys tasks)
+     (map :id (mapcat val (:future-task-authorities view)))))
+   result
+   (acceptance-dependencies/future-task-view
+    (:future-task-authorities view)
+    tasks
+    (:source-snapshots view)
+    slurp
+    (:required-parent-consumers r))
+   review
+   (:dependency-review result)
+   routes
+   (:routes review)
+   dep
+   (:dependency-source r)
+   text
+   (slurp (:path dep))
+   old-routes
+   (acceptance-dependencies/future-dependency-routes
+    (sh-crosswalk/git-source (:commit previous) (:path dep))
+    ids
+    ids)
+   consumers
+   (set (:consumer-task-ids r))
+   selected
+   (filterv (fn* [p1__3#] (consumers (:consumer p1__3#))) routes)
+   current-map
+   (into {} (map (juxt :consumer identity) routes))
+   old-map
+   (into {} (map (juxt :consumer identity) old-routes))
+   meaning
+   (fn*
+    [p1__4#]
+    (select-keys
+     p1__4#
+     [:consumer
+      :start-results
+      :composition-results
+      :selected-output-contract]))
+   allowed
+   [:input-fingerprint
+    :library-dependency-refinement
+    :source-files
+    :applying-source-pins
+    :inspection-locators
+    :additional-pinned-evidence-hashes]
+   binding
+   (:library-source-binding r)]
+  (is
+   (= "b45c09a9c7e88b6b3ed7a491930d5289e0553795" (:commit previous)))
+  (is (= (:sha256 previous) (sh-inventory/sha256 old-text)))
+  (is
+   (=
+    (:projection-sha256 previous)
+    (sh-inventory/sha256 projection-text)))
+  (is (= (:input-fingerprint previous) (:input-fingerprint old)))
+  (is (= (apply dissoc old allowed) (apply dissoc bridge allowed)))
+  (is (= (:task-comparisons old) (:task-comparisons bridge)))
+  (is (= 149 (count tasks) (count before)))
+  (is (= 25 (count (:task-authorities view))))
+  (is (= (set (keys tasks)) (set (keys before))))
+  (doseq
+   [[id row] tasks]
+   (is
+    (=
+     (select-keys row [:checked :source-commit :file-sha256 :source])
+     (select-keys
+      (before id)
+      [:checked :source-commit :file-sha256 :source]))))
+  (is
+   (=
+    (:future-task-authorities prior)
+    (:future-task-authorities view)))
+  (is (= [] (:changed-task-ids r) (:new-task-identities r)))
+  (is
+   (=
+    [73 68 1405 1692 287 2199 2486 146 106 40 73]
+    [(count consumers)
+     (count (:predecessor-selected-routes r))
+     (:preserved-prior-input-joins r)
+     (:selected-consumer-result-joins r)
+     (:new-selected-producer-result-joins r)
+     (:predecessor-all-selected-result-joins r)
+     (:all-selected-result-joins r)
+     (count routes)
+     (count (:declared-parent-consumers review))
+     (count (:declared-consumers review))
+     (:preserved-consumer-route-count r)]))
+  (is (= 73 (count selected) (count (:routes r))))
+  (is
+   (=
+    1405
+    (reduce
+     +
+     (map
+      (comp count :composition-results)
+      (:predecessor-selected-routes r)))))
+  (is
+   (=
+    1692
+    (reduce + (map (comp count :composition-results) selected))))
+  (is
+   (= 287 (reduce + (map count (vals (:added-composition-inputs r))))))
+  (is
+   (=
+    2486
+    (count
+     (filter
+      (fn*
+       [p1__3#]
+       (= :actual-selected-producer-result (:kind p1__3#)))
+      (:typed-edges result)))))
+  (is
+   (=
+    (set (:new-consumer-task-ids r))
+    (clojure.set/difference
+     (set (keys current-map))
+     (set (keys old-map)))))
+  (doseq
+   [[id row] old-map :let [now (current-map id)]]
+   (is (= (:start-results row) (:start-results now)))
+   (is
+    (every?
+     (set (:composition-results now))
+     (:composition-results row)))
+   (is
+    (str/starts-with?
+     (:selected-output-contract now)
+     (:selected-output-contract row)))
+   (when-not (consumers id) (is (= (meaning row) (meaning now)))))
+  (doseq
+   [row selected :let [id (:consumer row)]]
+   (is
+    (=
+     (meaning row)
+     (meaning
+      (first
+       (filter
+        (fn* [p1__6#] (= id (:consumer p1__6#)))
+        (:routes r))))))
+   (is (empty? (:start-results row)))
+   (doseq
+    [input (:composition-results row)]
+    (is
+     (some
+      (fn*
+       [p1__7#]
+       (=
+        [(str "task:" id "/implementation")
+         (str "task:" input "/interface")
+         :declared-producer-interface]
+        [(:from p1__7#) (:to p1__7#) (:kind p1__7#)]))
+      (:typed-edges result)))
+    (is
+     (some
+      (fn*
+       [p1__8#]
+       (=
+        [(str "task:" id "/composition")
+         (str "result:" id ":" input)
+         :actual-selected-producer-result]
+        [(:from p1__8#) (:to p1__8#) (:kind p1__8#)]))
+      (:typed-edges result)))
+    (is
+     (=
+      :unassessed
+      (get-in result [:nodes (str "result:" id ":" input) :state])))))
+  (is (= 13 (count (:library-source-consumer-task-ids r))))
+  (is (every? consumers (:library-source-consumer-task-ids r)))
+  (is (= [] (:unresolved-consumers r) (:unresolved-consumers review)))
+  (doseq
+   [id
+    (set
+     (concat
+      (:library-source-consumer-task-ids r)
+      (:new-consumer-task-ids r)))
+    :let
+    [pattern
+     (re-pattern
+      (str
+       "(?m)^"
+       (java.util.regex.Pattern/quote (str "| `" id "` |"))
+       "[^\n]*\n"))
+     missing
+     (acceptance-dependencies/future-task-view
+      (:future-task-authorities view)
+      tasks
+      (:source-snapshots view)
+      (fn*
+       [p1__9#]
+       (if
+        (= p1__9# (:path dep))
+        (str/replace text pattern "")
+        (slurp p1__9#)))
+      (:required-parent-consumers r))]]
+   (is (= 1 (count (re-seq pattern text))))
+   (is
+    (=
+     [id]
+     (get-in missing [:dependency-review :unresolved-consumers]))))
+  (do
+   (is (= [99 9] (mapv count (:predecessor-coarse-cycles r))))
+   (is
+    (=
+     [126]
+     (mapv count (:coarse-producer-cycles r))
+     (mapv count (:declared-output-cycles review)))))
+  (is
+   (=
+    (set (:preserved-previous-cycle-members r))
+    (set (mapcat identity (:predecessor-coarse-cycles r)))))
+  (is (= [] (:removed-cyclic-task-ids r)))
+  (is
+   (=
+    449
+    (count (:staged-result-subjects r))
+    (count (set (map :result (:staged-result-subjects r))))))
+  (doseq
+   [stage (:staged-result-subjects r)]
+   (is
+    (=
+     (:result stage)
+     (str "result:" (:consumer stage) ":" (:producer stage))))
+   (is
+    (some
+     #{(:producer stage)}
+     (:composition-results (current-map (:consumer stage)))))
+   (is
+    (=
+     :selected-L13-proposal-inputs-not-all-old-route-edges
+     (:route-scope stage)))
+   (is (keyword? (:role stage))))
+  (is (= (:library-refinement old) (:library-refinement bridge)))
+  (is
+   (=
+    (:record-sha256 binding)
+    (sh-inventory/sha256 (pr-str (:library-refinement bridge)))))
+  (is
+   (=
+    (:source-commit binding)
+    (get-in bridge [:library-refinement :source-commit])))
+  (is
+   (=
+    [26 13 9 125 84 19 13 5758 857 40]
+    (mapv
+     binding
+     [:criteria
+      :criterion-tasks
+      :criterion-authorities
+      :source-facets
+      :source-occurrences
+      :section-conjunctions
+      :original-owner-joins
+      :restored-finite-bytes
+      :unchanged-generated-bytes
+      :unchanged-future-declarations])))
+  (is
+   (=
+    10
+    (count
+     (filter
+      :restored?
+      (vals
+       (get-in
+        bridge
+        [:library-refinement :retained-finite-predicates]))))))
+  (is
+   (=
+    :all-finite-subjects-frozen-no-renewal-consumption-adoption-or-new-review
+    (:review-conservation r)))
+  (is
+   (=
+    :physical-capacity-queues-index-arity-Unicode-layout-target-representability-remain-project-work-cost-input-attempt-quotas-removed-real-host-and-external-account-limits-distinct
+    (:accounting-policy r)))
+  (is
+   (some
+    #{["lower" 5 "opt" 5 :optimization-requested]}
+    acceptance-dependencies/composition-routes))
+  (is
+   (=
+    []
+    (get-in
+     r
+     [:optional-optimization :new-universal-optimizer-joins])))
+  (is
+   (str/includes?
+    (:selected-output-contract
+     (current-map
+      "lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs"))
+    "verified unoptimized MIR"))
+  (doseq
+   [record
+    (concat
+     [dep (:dependency-tool-source r) (:dependency-test-source r)]
+     (:plan-sources r))
+    :let
+    [p (:path record) before (:before record) after (:after record)]]
+   (is
+    (=
+     (:sha256 before)
+     (sh-inventory/sha256
+      (sh-crosswalk/git-source (:commit before) p))))
+   (is
+    (=
+     (:sha256 after)
+     (sh-inventory/sha256 (slurp p))
+     (sh-inventory/sha256
+      (sh-crosswalk/git-source (:commit after) p)))))
+  (is (= 21 (count (:plan-sources r))))
+  (is (= 12 (count (:canonical-sources r))))
+  (doseq
+   [{:keys [path source-commit sha256]} (:canonical-sources r)]
+   (is
+    (=
+     sha256
+     (sh-inventory/sha256 (slurp path))
+     (sh-inventory/sha256
+      (sh-crosswalk/git-source source-commit path)))))
+  (is (= :pending (:independent-current-review r)))
+  (is
+   (=
+    :unassessed
+    (:implementation-acceptance r)
+    (:global-source-conjunctions r)))
+  (is
+   (=
+    r
+    (get-in
+     view
+     [:implementation-readiness-source-version
+      :library-dependency-refinement])))
+  (is
+   (=
+    [108 18 0]
+    (mapv
+     (fn* [p1__155#] (count (p1__155# r)))
+     [:preserved-previous-cycle-members
+      :new-cyclic-task-ids
+      :removed-cyclic-task-ids])))
+  (is
+   (=
+    (set (mapcat identity (:coarse-producer-cycles r)))
+    (into
+     (set (:preserved-previous-cycle-members r))
+     (:new-cyclic-task-ids r))))
+  (is (= 2 (:absorbed-predecessor-cycle-count r)))
+  (is (= 5 (count (:new-consumer-task-ids r))))
+  (is (every? tasks (:new-consumer-task-ids r)))
+  (is
+   (clojure.set/subset?
+    (set (:new-consumer-task-ids r))
+    (set (:new-cyclic-task-ids r))))
+  (is
+   (=
+    (set (:required-parent-consumers r))
+    acceptance-dependencies/selected-parent-consumers))
+  (is
+   (not-any?
+    #{"opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors"}
+    (:composition-results
+     (current-map
+      "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis"))))
+  (is
+   (some
+    #{"opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors"}
+    (:composition-results
+     (current-map
+      "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures"))))
+  (is
+   (=
+    :raw-unoptimized-library-API-needs-no-new-optimizer-result-required-proof-remains-on-selected-transform-and-compiler-harness-routes
+    (get-in r [:source-correction :reason])))
+  (doseq
+   [[edge required-role]
+    {["stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"
+      "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"]
+     :early-real-public-metadata-and-actual-per-export-evidence-not-future-final-inventory-acceptance,
+     ["build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"
+      "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"]
+     :early-real-artifact-profile-manifest-contract-then-actual-selected-products-not-final-release-as-first-recipe,
+     ["runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"
+      "lower/current-evidence-and-remaining-work/lower5-integrate-target-emission"]
+     :actual-emitted-input-only-for-selected-compiled-path-no-universal-native-artifact,
+     ["stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
+      "release/remaining-tasks-and-evidence/execute-library-conformance-fixtures"]
+     :later-actual-independent-library-results-before-acceptance-not-first-catalog-or-owner-fixture,
+     ["effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects"
+      "types/current-evidence-and-remaining-work/types5-integrate-typed-core"]
+     :actual-preliminary-typed-call-graph-before-library-effect-derivation-not-final-admission,
+     ["build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records"
+      "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"]
+     :early-real-manifest-and-candidate-report-before-signing-not-own-future-final-signed-assembly,
+     ["types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit"
+      "lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout"]
+     :early-real-target-ABI-rules-then-needed-layout-from-independent-types-not-own-final-layout,
+     ["core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses"
+      "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis"]
+     :early-real-callable-signature-contract-not-later-actual-API-value-as-first-checking-input,
+     ["release/remaining-tasks-and-evidence/execute-library-conformance-fixtures"
+      "auth/remaining-tasks-and-evidence/publish-conformance-and-remaining-trust-assumptions"]
+     :actual-selected-grant-denial-boundary-cases-not-whole-future-Auth-acceptance,
+     ["build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records"
+      "evolution/library-admission"]
+     :early-real-policy-for-candidate-records-actual-final-admission-before-install-publication-not-first-signature-payload,
+     ["evolution/stabilization-decision" "evolution/library-admission"]
+     :actual-scoped-library-review-before-promotion-not-future-released-module-admission,
+     ["stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
+      "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"]
+     :early-real-stability-assembly-schema-then-actual-affected-records-not-future-final-signed-release,
+     ["release/remaining-tasks-and-evidence/execute-library-conformance-fixtures"
+      "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"]
+     :early-authentic-catalog-and-real-selected-API-bindings-not-future-accepted-inventory,
+     ["evolution/library-admission"
+      "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records"]
+     :actual-selected-canonical-signature-attestation-SBOM-before-released-module-admission-no-signing-permission,
+     ["types/current-evidence-and-remaining-work/types5-integrate-typed-core"
+      "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"]
+     :later-real-admission-after-preliminary-typed-library-call-export,
+     ["stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"
+      "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records"]
+     :early-real-record-schema-then-actual-canonical-signed-candidate-and-verification-before-final-release-claim,
+     ["evolution/library-admission" "evolution/stabilization-decision"]
+     :early-stability-criteria-then-actual-required-promotion-before-final-module-release-admission}]
+   (is
+    (=
+     required-role
+     (:role
+      (first
+       (filter
+        (fn*
+         [p1__178#]
+         (= edge [(:consumer p1__178#) (:producer p1__178#)]))
+        (:staged-result-subjects r)))))))))
 
 (let [result (run-tests 'sh-crosswalk-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))
