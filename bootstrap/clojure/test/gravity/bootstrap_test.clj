@@ -3057,7 +3057,9 @@
   (is (= "bootstrap/gravity/src"
          bootstrap/stage1-reader-bootstrap-source-root))
   (is (= ["bootstrap/gravity/src"
-          "language/compiler/src/gravity/checked_core.gravity"]
+          "language/compiler/src/gravity/checked_core.gravity"
+          "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+          "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"]
          bootstrap/stage1-reader-bootstrap-source-roots))
   (let [artifact (bootstrap/stage1-bootstrap-source-file-artifact
                   bootstrap/stage1-reader-bootstrap-source-roots)

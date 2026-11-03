@@ -37,6 +37,8 @@ Current consumers updated by this increment include:
 - the checked-core-runtime stage selector and its unit assertions;
 - current source-coverage, component-build, execution, and bootstrap tests;
 - the SH-25 component catalog fixtures that carry current source paths.
+- the two default stage1 plural source-root vectors, which explicitly list the
+  moved files while retaining the singular bootstrap root and accepted fixture;
 - the current C6 rows in `docs/self-hosting-slice-ownership.edn` and
   `bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn`.
 
@@ -59,8 +61,11 @@ selector.
 The two source files are Git renames with unchanged bytes. The new current
 path references are limited to the source contract, inventories, verification
 catalog, CI selector, current tests, and current component fixtures listed
-above. No release, migration, self-hosting, or seed-retirement evidence is
-created by this relocation.
+above. The explicit stage1 source-file audit returns the original 70-file
+population, includes both moved paths, and rejects a missing root with
+`STAGE1006`; it does not refresh any frozen source identity. No release,
+migration, self-hosting, or seed-retirement evidence is created by this
+relocation.
 
 ## Conformance and acceptance
 
