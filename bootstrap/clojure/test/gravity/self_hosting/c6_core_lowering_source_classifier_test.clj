@@ -76,6 +76,9 @@
 
 (deftest current-source-classifier-preserves-hosted-leaf-parity
   (let [classify @source-operation]
+    (doseq [core-form '[quote if do let fn loop recur def var set! try throw match]]
+      (is (= core-form (classify (list core-form :argument)))
+          (str "current source core-form classification for " core-form)))
     (doseq [[form expected]
             [['answer :symbol]
              [42 :literal]
