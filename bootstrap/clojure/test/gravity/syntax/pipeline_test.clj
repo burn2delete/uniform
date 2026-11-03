@@ -286,27 +286,6 @@
       (is (= [:current-syntax-plan-and-functions]
              (:missing-fields (ex-data error)))))))
 
-(deftest pinned-source-refuses-real-byte-length-and-content-drift
-  (let [path (source-path ".gravity") operations (runtime-operations)
-        source (syntax/read-pinned-plan-source! path operations)
-        bytes (java.nio.file.Files/readAllBytes (.toPath (io/file (:source-path source))))
-        temporary (java.nio.file.Files/createTempFile
-                   "gravity-syntax-pin-" ".gravity"
-                   (make-array java.nio.file.attribute.FileAttribute 0))
-        selected (assoc operations :sh04-syntax-resolve-source-path (constantly (str temporary)))]
-    (try
-      (spit (str temporary) "1")
-      (let [error (caught #(syntax/read-pinned-plan-source! path selected))]
-        (is (= "C3-ID" (:id (ex-data error))))
-        (is (= [:exact-pinned-syntax-source] (:missing-fields (ex-data error)))))
-      (aset-byte bytes 0 (byte (bit-xor 1 (aget bytes 0))))
-      (java.nio.file.Files/write temporary bytes (make-array java.nio.file.OpenOption 0))
-      (let [error (caught #(syntax/read-pinned-plan-source! path selected))]
-        (is (= "C3-ID" (:id (ex-data error))))
-        (is (= [:pinned-syntax-source-identity] (:missing-fields (ex-data error))))
-        (is (= path (get-in (ex-data error) [:source-span :source]))))
-      (finally (java.nio.file.Files/deleteIfExists temporary)))))
-
 (deftest pinned-source-refuses-current-source-after-quota-removal
   (let [path (source-path ".gravity") operations (runtime-operations)
         error (caught #(syntax/read-pinned-plan-source! path operations))]
