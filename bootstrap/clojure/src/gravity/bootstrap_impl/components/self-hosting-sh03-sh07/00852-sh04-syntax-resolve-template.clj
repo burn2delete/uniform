@@ -72,7 +72,8 @@
   :sh04-syntax-adapter-contract sh04-syntax-adapter-contract,
   :sh04-syntax-boundary-fail! #'sh04-syntax-boundary-fail!,
   :sh04-syntax-build-from-fresh-c2! #'sh04-syntax-build-from-fresh-c2!,
-  :sh04-syntax-current-binding! #'sh04-syntax-current-binding!,
+  :sh04-development-syntax-context! #'sh04-development-syntax-context!,
+  :sh04-syntax-current-binding! #'sh04-syntax-assembly-binding!,
   :sh04-syntax-descriptor-sh03-product-binding
   #'sh04-syntax-descriptor-sh03-product-binding,
   :sh04-syntax-envelope-stage sh04-syntax-envelope-stage,

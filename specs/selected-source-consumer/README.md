@@ -1,5 +1,9 @@
 # Portable selected-source consumer controls
 
+Historical preparation receipt: the implementation-status statements below
+describe the original harness snapshot. See [current-port.md](current-port.md)
+for the later bounded current-source implementation and evidence.
+
 Owner: ACC13 successor. Scope: prepared Reader -> Syntax -> SH05 -> C5 harness,
 not execution or authentication acceptance. The governing contracts are
 [C3](../../docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md),
