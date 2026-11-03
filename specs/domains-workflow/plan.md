@@ -91,11 +91,16 @@ from the historical schema plan without replaying its 25 field operations:
 | api-client-openapi | `schema/graphql-generation/full-source-interface` | S5 OpenAPI artifacts and diagnostics | OpenAPI document, validators, typed client and handler parity joined to operation/schema, source/compiler/profile/target/provider and diagnostic identities |
 
 The [current-source checker](../../tools/schema_phase10_current.clj) authenticates
-these immutable normative paths at current main `2d0844f8f7f21321d920b9245341a2b98adc642e`
-and checks the candidate task/plan wording, including the owning Types and
-Runtime task criteria. The transition from the preceding current source
-`585298b5faa75a307c5b06be19a0aebb8b09168c` preserves the embedded source tree
-and baseline while authenticating the task-source bridge additions. Later
-current-source transitions must preserve these joins by normal composition; no
-source hash is silently renewed. The checker does not execute a compiler,
-runtime, provider, hosted failure, or release gate.
+these immutable normative paths at the current PR565 source checkpoint
+`10aebae8d060e4cc901e97ed2cfe9ea3f1dba659` (tree
+`552a2bd0f50d53928aef5dffd085656dbe7bc17a`) and checks the candidate task/plan
+wording, including the owning Types and Runtime task criteria. The known
+current-main predecessor is the immutable d544 checkpoint
+`d544539eefaea6b16aecd724b54d61a9b0ec1f3d` (tree
+`9fac2c4d1ebfb5294f598860917bc779b2147ebf`). The manifest application is
+`3e5d74d014a0105a3887dc044ead4da75b1f03ac` (tree
+`de6f0bccad60c7af68bc7eb53e1d63021f457b6e`). The earlier 2d084/585298
+composition attempt remains historical receipt evidence only; it is not the
+current source. Later current-source transitions must preserve these joins by
+normal composition; no source hash is silently renewed. The checker does not
+execute a compiler, runtime, provider, hosted failure, or release gate.

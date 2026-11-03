@@ -35,7 +35,7 @@
 (def current-task-sha
   "3d8989b72d00461931e400b5617b9bea090c63265cfee553e12d7b3cd6bc88dc")
 (def current-plan-sha
-  "7ca9c4aa25a3961180728c1c75a672a68bf0bd656a3ed258d53a1d56e842e368")
+  "77ebba019b2bb25c2d62ef99db107178fecd0a677116b2a253c195919f84574c")
 (def current-source-tree "5b62819e511bfc7e6b5eba0527d8c9b5883c5572")
 (def current-source-git-tree
   "552a2bd0f50d53928aef5dffd085656dbe7bc17a")

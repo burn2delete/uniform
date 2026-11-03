@@ -97,6 +97,9 @@
                                       (get-in view [:current-source :task-sources])))]
     (require! (= 2 (count transitions))
               "Safety current-source transition population changed")
+    (doseq [[previous next] (partition 2 1 transitions)]
+      (require! (= (:to previous) (:from next))
+                "Safety current-source transition chain is disconnected"))
     (doseq [[transition-index {:keys [path from to changed-record-ids]}] (map-indexed vector transitions)]
       (let [entry (get current-entries path)]
         (require! entry (str "Safety transition has no current task source: " path))
@@ -317,6 +320,13 @@
                   (update-in view [:current-source :versioned-task-source-transitions 0 :changed-record-ids]
                              assoc 0 "runtime/forged-current-row")
                   proposal))
+     :runtime-transition-disconnected-chain-tamper
+     (rejected? #(let [transitions (get-in view [:current-source :versioned-task-source-transitions])
+                       successor-target (get-in transitions [1 :to])]
+                   (validate-view!
+                    (assoc-in view [:current-source :versioned-task-source-transitions 0 :to]
+                              successor-target)
+                    proposal)))
      :runtime-transition-duplicate-id-tamper
      (rejected? #(validate-view!
                   (update-in view [:current-source :versioned-task-source-transitions 0 :changed-record-ids]

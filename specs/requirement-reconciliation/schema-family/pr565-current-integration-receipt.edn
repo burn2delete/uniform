@@ -78,7 +78,7 @@
                  "specs/runtime-workflow/tasks.md" "d4b3a3c875f961b5828e8cceda7ecdf106af4527c64fa07ad6c6e1e049d0868d"
                  "specs/domains-workflow/tasks.md" "3d8989b72d00461931e400b5617b9bea090c63265cfee553e12d7b3cd6bc88dc"}
   :plan-path "specs/domains-workflow/plan.md"
-  :plan-sha256 "7ca9c4aa25a3961180728c1c75a672a68bf0bd656a3ed258d53a1d56e842e368"
+  :plan-sha256 "77ebba019b2bb25c2d62ef99db107178fecd0a677116b2a253c195919f84574c"
   :source-joins {:normative-paths 9
                  :join-kinds 5
                  :task-joins 5
@@ -219,7 +219,7 @@
   :safety-source-view
   {:command "clojure -J-Xmx512m -M tools/safety_task_source_view.clj --check"
    :runtime-transitions 2
-   :controls 11
+   :controls 12
    :result :pass}
   :tooling-consumer
   {:command "clojure -J-Xmx2g -M tools/tooling_requirements_test.clj"
@@ -234,6 +234,9 @@
   {:command "clojure -J-Xmx2g -M tools/requirement_reconciliation.clj --check"
    :source-documents 245 :source-occurrences 19962 :source-facets 29177
    :result :pass}
+  :reconciliation-test
+  {:command "clojure -J-Xmx2g -M tools/requirement_reconciliation_test.clj"
+   :tests 31 :assertions 272 :failures 0 :errors 0 :result :pass}
   :boundary
   {:command "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test"
    :tests 6 :assertions 11 :failures 0 :errors 0 :result :pass}

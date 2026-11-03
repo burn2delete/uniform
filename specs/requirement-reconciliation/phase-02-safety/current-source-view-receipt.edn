@@ -19,7 +19,7 @@
   {:source-view {:path "specs/requirement-reconciliation/phase-02-safety/current-source-view.edn"
                 :sha256 "53849a95212296bef50c36c4483a1327051e9a8aa408b094dfe9e4008e042dde"}
   :checker {:path "tools/safety_task_source_view.clj"
-            :sha256 "9ce585d9368e224afb5575a34afb1555250dec5f23913a82ab22499e9064302c"}}
+            :sha256 "bce44197a5e5f37ff1d49932e4478fe1a9a099d9fbc081b7c8a4a8279cefdbd3"}}
  :conservation {:source-documents 16
                 :source-occurrences 1908
                 :source-dispositions 962
@@ -56,6 +56,7 @@
             :current-domain-manifest-transition-tamper :reject
             :runtime-transition-forged-id-tamper :reject
             :runtime-transition-duplicate-id-tamper :reject
+            :runtime-transition-disconnected-chain-tamper :reject
             :task-order-tamper :reject
             :duplicate-task-id-tamper :reject
             :closed-task-tamper :reject
