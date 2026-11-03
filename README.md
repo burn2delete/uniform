@@ -104,7 +104,7 @@ work-unit budgets, task quotas and budget-only refusals are retired; host heap,
 process, capture and platform restrictions remain independent safeguards.
 
 For SH-07, the semantic owner is
-`bootstrap/gravity/src/gravity/checked_core.gravity`; the Clojure adapter is a
+`language/compiler/src/gravity/checked_core.gravity`; the Clojure adapter is a
 transport boundary only. Follow the owning-path table and paired-source rules
 in [Development Verification](docs/development-verification.md).
 

@@ -37,7 +37,7 @@
   (let [table (stage1-reader-table)
         table-id (str "sha256:" (sha256-hex (pr-str table)))
         stage1-bootstrap-artifact
-        (stage1-bootstrap-source-artifact stage1-reader-bootstrap-source-root)
+        (stage1-bootstrap-source-artifact stage1-reader-bootstrap-source-roots)
         stage1-records (stage1-reader-table-driven-records source-path
                                                            source-text
                                                            table)
