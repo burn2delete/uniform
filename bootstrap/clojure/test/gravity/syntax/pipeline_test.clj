@@ -527,6 +527,31 @@
         (is (= "C3-SERIALIZE" (:id diagnostic)))
         (is (= source (get-in diagnostic [:source-span :source])))))))
 
+(deftest selected-registered-products-require-the-authenticated-syntax-owner
+  (let [{:keys [artifact]} @literal-gravity
+        stream (:syntax-object-stream artifact)
+        c2 (:c2-reader-artifact artifact)
+        boundary (:gravity-syntax-boundary artifact)
+        invocation (current-syntax-invocation)
+        operations (reader-operations)
+        authentic? (fn [candidate]
+                     (syntax/reader-products-authentic?
+                      stream c2 candidate invocation operations))
+        forged-boundary
+        (assoc-in boundary
+                  [:plan-binding :implementation-projection :binding-id]
+                  "sha256:forged-selected-syntax-owner")
+        missing-boundary
+        (update-in boundary [:plan-binding] dissoc :implementation-projection)
+        forged-artifact (assoc artifact :gravity-syntax-boundary forged-boundary)]
+    (is (true? (authentic? boundary)))
+    ;; C3's path-neutral identity excludes the physical owner projection; the
+    ;; separate selected-owner check must reject a same-identity substitution.
+    (is (= (:artifact-id artifact)
+           (bootstrap/c3-artifact-id forged-artifact)))
+    (is (false? (authentic? forged-boundary)))
+    (is (false? (authentic? missing-boundary)))))
+
 (deftest reader-view-ingress-still-reverifies-internal-products-before-projection
   (let [{:keys [reader]} @literal-gravity operations (view-operations) projected? (atom false)
         observing (assoc operations :sh04-syntax-registered-literal-registry

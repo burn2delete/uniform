@@ -900,6 +900,14 @@
         (:syntax-object-stream result)
         source-path
         (get-in c2-artifact [:source-unit-record :path])
+        selected-binding
+        (if (and (map? invocation)
+                 (contains? invocation :syntax-source-selection))
+          ;; Registered literals use a separate projection, but selected
+          ;; current Syntax still has to authenticate its owner binding.
+          (sh04-syntax-verification-binding!
+           source-path invocation gravity-boundary)
+          true)
         serialization-id
         (p15-s23-c6c10-canonical-digest
          source-path
@@ -915,6 +923,7 @@
         (sh04-syntax-registered-literal-projection-authentic?
          c2-artifact
          gravity-boundary)
+        selected-binding
         (= :accepted (:status result))
         (= syntax-stream expected-rich-stream)
         (=
