@@ -516,11 +516,17 @@
     (is (= expected-all
            (:modes (ci/stage-selection [(change "bootstrap/clojure/src/gravity/reader.clj")]))))
     (is (= expected-macro
-           (:modes (ci/stage-selection [(change "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity")]))))
+           (:modes (ci/stage-selection [(change "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity")]))))
     (is (= expected-resolution
            (:modes (ci/stage-selection [(change "bootstrap/clojure/test/gravity/resolution/pipeline_test.clj")]))))
     (is (= expected-checked
            (:modes (ci/stage-selection [(change "language/compiler/src/gravity/checked_core.gravity")]))))
+    (is (= expected-checked
+           (:modes (ci/stage-selection
+                    [(change "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity")]))))
+    (is (= expected-checked
+           (:modes (ci/stage-selection
+                    [(change "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity")]))))
     (is (= expected-checked
            (:modes (ci/stage-selection
                     [(change "bootstrap/clojure/test/gravity/self_hosting/sh07_var_reference_test.clj")]))))

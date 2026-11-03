@@ -46,9 +46,9 @@
    (sh06-resolution-base-request source-path sh05-artifact context)))
 
 (def sh06-resolution-source-relative-path
-  "bootstrap/gravity/src/gravity/resolution.gravity")
+  "language/compiler/src/gravity/resolution.gravity")
 (def sh06-resolution-facade-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity")
+  "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity")
 (def sh06-resolution-adapter-contract
   :gravity/sh06-to-c5-resolution-products-v1)
 (def sh06-resolution-envelope-stage :c5-resolution)

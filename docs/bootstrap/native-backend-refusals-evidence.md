@@ -87,6 +87,15 @@ canonical C3 or broader compiler-conformance claim.
 
 ## Unsupported boundaries
 
+The final relocation composition normally merges actual main
+92123759e99efc89bf7346a0ea8892f4f903d7af, tree
+533ffab46c9bbe8460e5fc8301217a12d84369c7, after PR860, PR861,
+PR862 and PR874 integration. The merge is conflict-free. Native backend code
+and tests remain unchanged; the ownership map retains main's relocated
+frontend/C6 paths together with the existing Mobile helper registrations.
+This source needs its own fresh clean captures, review and CI; the earlier
+850ac0ec green run with a newer provider base remains historical.
+
 These are native document-fixture refusals. They do not establish canonical
 C15 findings, verified target IR, profile/effect/capability legality, backend
 execution, input authentication, redaction/binding/publication or certificates.
