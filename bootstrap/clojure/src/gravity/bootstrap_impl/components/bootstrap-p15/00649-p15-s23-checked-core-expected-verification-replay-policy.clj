@@ -195,12 +195,6 @@
 (def p15-s23-reference-runtime-max-closed-plan-carrier-depth 512)
 (def p15-s23-reference-runtime-max-rule-nodes 65536)
 (def p15-s23-reference-runtime-max-packet-nodes 131072)
-(def p15-s23-reference-runtime-max-context-source-bytes (* 1024 1024))
-(def p15-s23-reference-runtime-max-scalar-bytes (* 1024 1024))
-(def p15-s23-reference-runtime-max-total-scalar-bytes (* 32 1024 1024))
-(def p15-s23-reference-runtime-max-integer-bits 4096)
-(def p15-s23-reference-runtime-max-collection-width 16384)
-
 (def p15-s23-reference-runtime-supported-number-class-names
   #{"java.lang.Byte" "java.lang.Short" "java.lang.Integer"
     "java.lang.Long" "java.math.BigInteger" "clojure.lang.BigInt"
