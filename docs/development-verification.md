@@ -127,6 +127,20 @@ reader drift. Both modes retain strict extension, UTF-8, source identity,
 regular-file, ownership and path checks. The public decoder reads the target
 once, and authenticated downstream passes consume the retained source.
 
+## Current Stage2 module map-key development
+
+The frozen `docs/self-hosting-slice-backlog.md` wording that lists Symbol keys
+as unsupported describes its older checkpoint. Current temporary
+module-development code has a narrow Symbol-key increment: it accepts exact
+native Symbol keys only when authenticated C2 source/reference keys retain
+equality and form a complete source permutation; the existing source and
+reference-key checks remain in force. This does not widen the canonical
+typed-Gravity Map subset or establish module admission, checked Effects, full
+C14, native execution, self-hosting, migration or release support. Quoted Maps
+remain inert, and the surrounding map-key fences are unchanged. This note
+describes current development behavior; it does not update the frozen SH
+source input or renew migration authority.
+
 ## Focused runners and composition
 
 Use the existing `:dev-test` runner with `--namespace` and `--exact` selectors.
