@@ -29,6 +29,11 @@
   ["foundation" "canonical_encode" "canonical_decode" "source_security"
    "source_snapshot" "key" "adapter_request"
    "requested_hit_binding" "adapter_projection"])
+(def c2-pass-cache-historical-resources
+  ["foundation" "canonical_encode" "canonical_decode" "source_security"
+   "source_snapshot" "key" "directories" "store_handles" "secure_io"
+   "locking" "lookup" "publication" "adapter_request"
+   "requested_hit_binding" "adapter_projection"])
 (def c2-pass-cache-nested-resources
   {"adapter_request" ["capacity_handoff"]})
 
@@ -196,20 +201,35 @@
                          (throw (ex-info "Unsupported namespace/load change in checker fragment" {:path path})))
                        [path bytes])))}))
 
+(defn- c2-pass-cache-resources-for!
+  [loads]
+  (or (some (fn [resources]
+              (when (= loads
+                       (mapv #(list 'load (str "/gravity/c2_pass_cache/" %))
+                             resources))
+                resources))
+            [c2-pass-cache-resources c2-pass-cache-historical-resources])
+      (throw (ex-info "C2 pass-cache entrypoint changed; unsupported lint assembly recipe"
+                      {:loads loads
+                       :accepted
+                       (mapv #(mapv (fn [resource]
+                                      (list 'load
+                                            (str "/gravity/c2_pass_cache/" resource)))
+                                    %)
+                             [c2-pass-cache-resources
+                              c2-pass-cache-historical-resources])}))))
+
 (defn c2-pass-cache-plan! [read-bytes]
   (let [entry (read-bytes c2-pass-cache)
-        [header & tail :as forms] (source-forms! c2-pass-cache entry)
-        expected (mapv #(list 'load (str "/gravity/c2_pass_cache/" %))
-                       c2-pass-cache-resources)
+        [header & tail] (source-forms! c2-pass-cache entry)
+        _ (when-not (= '(ns gravity.c2-pass-cache) (take 2 header))
+            (throw (ex-info "C2 pass-cache entrypoint changed; unsupported lint assembly recipe" {})))
+        resource-names (c2-pass-cache-resources-for! (vec tail))
         resources (vec (mapcat #(concat (get c2-pass-cache-nested-resources % []) [%])
-                               c2-pass-cache-resources))
+                               resource-names))
         paths (into [c2-pass-cache]
                     (map #(str c2-pass-cache-prefix % ".clj") resources))
         resource-paths (zipmap resources (rest paths))]
-    (when-not (and (= (inc (count expected)) (count forms))
-                   (= '(ns gravity.c2-pass-cache) (take 2 header))
-                   (= expected (vec tail)))
-      (throw (ex-info "C2 pass-cache entrypoint changed; unsupported lint assembly recipe" {})))
     {:paths paths
      :namespace-by-path (zipmap paths (repeat 'gravity.c2-pass-cache))
      :entrypoints #{c2-pass-cache}
