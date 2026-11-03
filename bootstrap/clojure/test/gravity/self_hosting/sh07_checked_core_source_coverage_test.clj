@@ -24,7 +24,7 @@
 
 (def ^:private root (delay (repository-root)))
 (def ^:private source-relative-path
-  "bootstrap/gravity/src/gravity/checked_core.gravity")
+  "language/compiler/src/gravity/checked_core.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
 (def ^:private accepted-fixture-relative-path

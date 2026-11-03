@@ -43,7 +43,7 @@
     "bootstrap/clojure/test/gravity/self_hosting/sh07_iteration_cache_runner.clj"
     "bootstrap/clojure/test/gravity/self_hosting/sh07_semantic_carrier.clj"
     "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
-    "bootstrap/gravity/src/gravity/checked_core.gravity"
+    "language/compiler/src/gravity/checked_core.gravity"
     "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_table.clj"
     "bootstrap/clojure/test/gravity/self_hosting/sh07_module_fragment_test.clj"
     "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"

@@ -3055,7 +3055,7 @@
 
 (deftest stage1-bootstrap-source-artifact-preserves-self-hosting-bridge
   (let [artifact (bootstrap/stage1-bootstrap-source-file-artifact
-                  "bootstrap/gravity/src")
+                  bootstrap/stage1-reader-bootstrap-source-root)
         proof (:capability-based-proof artifact)
         components (set (map :component (:modules artifact)))
         source-frontend (first (filter #(= :source-frontend (:component %))

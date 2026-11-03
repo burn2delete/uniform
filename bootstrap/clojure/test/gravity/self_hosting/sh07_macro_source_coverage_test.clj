@@ -251,7 +251,7 @@
             :c6-call-arity
             "bootstrap/gravity/src/gravity/compiler/c6_call_arity_legality.gravity"
             :checked-core
-            "bootstrap/gravity/src/gravity/checked_core.gravity"
+            "language/compiler/src/gravity/checked_core.gravity"
             :c3-compat
             "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
             :c6-core

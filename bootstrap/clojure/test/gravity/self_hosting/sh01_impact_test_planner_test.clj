@@ -1158,7 +1158,7 @@
         (planner/build-plan
          {:changed-paths
           ["bootstrap/clojure/fixtures/self-hosting/sh-07/accepted/new.gravity"
-           "bootstrap/gravity/src/gravity/checked_core.gravity"]
+           "language/compiler/src/gravity/checked_core.gravity"]
           :iteration-slices ["SH-07" "SH-08"]})]
     (is (= ["SH-07" "SH-08"] (:iteration-slices plan)))
     (is (= ["SH-07" "SH-08"] (:affected-slices plan)))

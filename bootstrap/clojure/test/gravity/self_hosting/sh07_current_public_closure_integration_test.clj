@@ -152,7 +152,7 @@
         (assoc-in [:gravity-core-boundary :authenticated-envelope-descriptor :semantic-artifact-id] id))))
 
 (deftest paired-original-two-slot-source-preserves-core-products
-  (selected-source! "compiler-all-unique" "bootstrap/gravity/src/gravity/checked_core.gravity"
+  (selected-source! "compiler-all-unique" "language/compiler/src/gravity/checked_core.gravity"
                     "(defn sh07-all-unique? " "(defn sh07-vector-subset? ")
   (let [g (pair! "compiler-all-unique" check-two-slot!)
         repeated (build! (str fixture-root "sh-07/compiler-all-unique.gravity"))]
