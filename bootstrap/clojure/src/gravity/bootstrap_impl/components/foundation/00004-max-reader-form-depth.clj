@@ -93,7 +93,7 @@
 
 (def ^:dynamic *authenticated-source-form-records* nil)
 
-(defn read-source-form-records
+(defn- bootstrap-read-source-form-records
   [source-path source-text]
   (let [authenticated *authenticated-source-form-records*
         same-source?
@@ -108,6 +108,18 @@
     (if same-source?
       (:records authenticated)
       (read-source-form-records-host-oracle source-path source-text))))
+
+#_{:clj-kondo/ignore [:unused-private-var]}
+(def ^:private bootstrap-default-read-source-form-records
+  bootstrap-read-source-form-records)
+
+(defn read-source-form-records
+  [source-path source-text]
+  (source-input/records
+   bootstrap-read-source-form-records
+   source-path
+   source-text
+   (not (map? *authenticated-source-form-records*))))
 
 (defn read-forms
   "Read source into Lisp forms. Stage 0 delegates lexical reading to Clojure's

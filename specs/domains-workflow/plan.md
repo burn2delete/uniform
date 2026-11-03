@@ -54,3 +54,57 @@ task IDs, statuses, acceptance text and historical receipts retain their scope.
 
 - [D5](../../docs/phase-00-foundation-and-thesis/006-d5-language-replacement-strategy.md#requirements): Domain replacement claims require named incumbent slices, unsupported behavior, typed interop artifacts and accepted/rejected parity fixtures. A domain demo cannot establish whole-language replacement.
 - [L19](../../docs/phase-01-core-language/029-l19-language-interoperability-and-migration-specification.md#requirements): Schema-generated bindings and migration shims retain schema digests, error mappings, provenance and incumbent parity; this is not a blanket interop-support claim.
+
+## Phase-10 schema-family current port
+
+The source-qualified S1-S9 clauses and five finite Open criteria live in the
+sole editable `schema` task record above. They preserve schema identity,
+canonical encoding, provenance, taint, effects, capabilities, migration and
+artifact evidence requirements; they do not create another task population or
+claim implementation acceptance.
+
+The [25-decision allocation plan](../requirement-reconciliation/schema-family/decision-allocation-plan.edn)
+is retained as a bounded proposal. Its historical field operations are not
+applied to current task bytes: the current task predecessor changed. The
+read-only [current source-pair checker](../../tools/schema_phase10_current.clj)
+authenticates the original 25 decisions and 463 attached facets against the
+current requirement manifest, verifies 19 source-document hashes, and rejects
+ID/order/status/facet/task tampering. It records the exact historical/current
+refs and nonclaims in the [PR565 receipt](../requirement-reconciliation/schema-family/pr565-current-integration-receipt.edn).
+
+The historical proposal remains pending independent allocation review and
+canonical adoption. No denominator, accepted mapping count, roadmap credit,
+release claim or implementation completion follows from this current port.
+
+## Current source-join boundary
+
+The five concrete source joins are part of the existing five Open schema
+criteria, not a new task population. They translate the useful current intent
+from the historical schema plan without replaying its 25 field operations:
+
+| Join | Existing Open criterion | Immutable normative inputs | Required current consumer |
+| --- | --- | --- | --- |
+| source-schema-projection | `schema/graphql-generation/full-source-interface` and `schema/artifact-validation/full-source-interface` | D2 source-schema exit gate and S9 artifact envelope | JSON Schema and typed `:gravity/artifact-schema` with exact source/compiler/profile/target/provider/checker identities and parity diagnostics |
+| initial-configuration-loading | `schema/configuration-reload/full-source-interface` | S8 typed configuration/source policy | Validated provider input, deterministic precedence, redacted S8-INITIAL positive/negative fixtures before any S8-RELOAD claim |
+| hosted-runtime-source-map | existing schema criterion plus Runtime consumer | P4 hosted diagnostics and DOM6 source-map contract | Actual failure fixture joined to runtime version, host symbol, lowered artifact, origin chain and conditional-unavailable result |
+| types-schema-static-projection | `schema/graphql-generation/full-source-interface` plus Types | S1 expanded schema and current Types task `types/current-evidence-and-remaining-work/types2-check-declared-abstractions` | Static records/unions/optional/reference/recursive/refined projection with stale/constraint-loss rejection |
+| api-client-openapi | `schema/graphql-generation/full-source-interface` | S5 OpenAPI artifacts and diagnostics | OpenAPI document, validators, typed client and handler parity joined to operation/schema, source/compiler/profile/target/provider and diagnostic identities |
+
+The [current-source checker](../../tools/schema_phase10_current.clj) authenticates
+these immutable normative paths at the current PR565 source checkpoint
+`10aebae8d060e4cc901e97ed2cfe9ea3f1dba659` (tree
+`552a2bd0f50d53928aef5dffd085656dbe7bc17a`) and checks the candidate task/plan
+wording, including the owning Types and Runtime task criteria. The known
+current-main predecessor is the immutable d544 checkpoint
+`d544539eefaea6b16aecd724b54d61a9b0ec1f3d` (tree
+`9fac2c4d1ebfb5294f598860917bc779b2147ebf`). The manifest application is
+`2cbafb8c23588c299b28c36f315b3105e1270cd5` (tree
+`29dd8a9c669b92af5ba5bcdbec954a1b190e28df`). Its MATH9 source-version bridge
+uses current-main `4d8a085a9b68bb8c349869c574b94ee4cea81406` and retains the
+older dcf337 snapshot as historical provenance only; the unsupported strict
+tan-occurrence example is not treated as termination proof, and selected
+strategies must supply finite evidence. The earlier 2d084/585298
+composition attempt remains historical receipt evidence only; it is not the
+current source. Later current-source transitions must preserve these joins by
+normal composition; no source hash is silently renewed. The checker does not
+execute a compiler, runtime, provider, hosted failure, or release gate.

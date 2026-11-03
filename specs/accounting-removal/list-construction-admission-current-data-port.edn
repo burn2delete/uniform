@@ -1,0 +1,87 @@
+{:kind :list-construction-admission-current-data-port
+ :owner :ACC-01
+ :pr 623
+ :historical-head "b7bb26497b4cec472265ccd414d364350a105cb1"
+ :historical-authored-candidate "c5e9fccdad293b34c290859cc3e4716870241dd6"
+ :historical-tree "7b506c824110d5f88fc228bdf9b4c5999b35b3a7"
+ :historical-base "e047157d711652a5624012f0da7d6911ce086718"
+ :historical-base-tree "2b2168fe83fc08a7b4a882d75650c5b6e6eac31d"
+ :frozen-main "7201ddcc82ab3bf778f65f9f1f6e6ac821632128"
+ :frozen-main-tree "b1703faa759a7bf0daa79b03258737d1dab80012"
+ :source-port-commit "4d3a888fd3522664e9c017d7994c955d38129c33"
+ :source-port-tree "a81f4270ab09bb4561514803a4870ec4d8ee43b9"
+ :source-port-parent "7201ddcc82ab3bf778f65f9f1f6e6ac821632128"
+ :checkout "/Users/matt/.codex/worktrees/review-pr-659-recheck/uniform"
+ :branch "codex/review-623-current"
+ :changed-paths
+ ["bootstrap/clojure/test/gravity/self_hosting/list_construction_admission_current_test.clj"
+  "specs/accounting-removal/list-construction-admission-current-data-port.md"
+  "specs/accounting-removal/list-construction-admission-current-data-port.edn"]
+ :production
+ {:paths
+  ["bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+   "bootstrap/gravity/src/gravity/effects.gravity"
+   "bootstrap/gravity/p15_s23/emitter.gravity"]
+  :unchanged-vs-frozen-main true
+  :sha256
+  {"bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+   "492a6076887c6c5be2bbd13520b065c1b9af8cf88c7ffa0f773039d4c64ca74f"
+   "bootstrap/gravity/src/gravity/effects.gravity"
+   "48dc1df3ca7c05f9c9a57eb5b7b0c3350053b6fdbb8e50f658a2a73b777a12cd"
+   "bootstrap/gravity/p15_s23/emitter.gravity"
+   "5a28aebe715e65dbaad5a62e041cbf94757d919abd050f492ae0729a71e712c8"}}
+ :test
+ {:path "bootstrap/clojure/test/gravity/self_hosting/list_construction_admission_current_test.clj"
+  :sha256 "378deb7ce6bd45734614a36989c338325b899814cd21a1e39fba8951addec54f"
+  :lines 149
+  :tests 3
+  :assertions 133
+  :widths [0 1023 1024 1025 2049]
+  :owner-matrices [:C7-derive-step :C8-body-source :C14-lowering-source]
+  :late-invalid-control true
+  :source-control true
+  :edge-control true
+  :accounting-fields-absent true}
+ :historical-receipts
+ {:preserved true
+  :files ["specs/accounting-removal/list-construction-review-consumption.edn"
+          "specs/accounting-removal/list-construction-lowering-review-consumption.edn"]
+  :reinterpreted-as-current-acceptance false
+  :original-production-delta :already-incorporated-on-frozen-main}
+ :current-composition
+ {:base "5fa103d2b384d36b3fc67a0d502f2212d0a225a8"
+  :source-checkpoint "c013fd4db9ba9889e55e21503b0811ec3a289ee4"
+  :source-tree "a85544f0bf2e91ba97aef8d21a97aaf4aeb9f4fd"
+  :test-and-production-source-unchanged true
+  :original-history-retained true
+  :c7-hash-transcription-corrected true}
+ :execution
+ {:mode :ordinary-clojure-jvm-normalized-data
+  :authenticated-source :UNRUN
+  :native-c :UNRUN
+  :target-runtime :UNRUN
+  :source-admission :UNRUN
+  :main-integration :UNRUN
+  :independent-acceptance :PENDING}
+ :nonclaims
+ [:PR623-acceptance
+  :authenticated-source-admission
+  :native-C-acceptance
+  :target-runtime-acceptance
+  :whole-accounting-removal
+  :whole-ACC01
+  :PR502-closure
+  :current-CI-acceptance
+  :main-integration
+  :release
+  :self-hosting
+  :seed-retirement]
+ :checks
+ {:focused "3 tests / 133 assertions / 0 failures / 0 errors"
+  :boundary "6 tests / 11 assertions / 0 failures / 0 errors"
+  :docs "240 docs / 19 phase indexes / passed"
+  :roadmap :passed
+  :pinned-lint "0 unchanged baseline warnings / 0 blocking warnings or errors"
+  :diff-check :passed
+  :clean-bookends :passed}
+ :verdict :current-data-test-successor-awaiting-independent-review}

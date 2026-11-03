@@ -78,7 +78,8 @@
 
 (defn compiler-c8-effect-source-artifact
   [source-path source-text]
-  (c8-call c8/compiler-c8-effect-source-artifact source-path source-text))
+  (source-input/with-context
+   #(c8-call c8/compiler-c8-effect-source-artifact source-path source-text)))
 
 (defn compiler-c8-effect-file-artifact
   [path]

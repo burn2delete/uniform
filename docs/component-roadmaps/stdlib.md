@@ -32,7 +32,7 @@ Build consumes manifests later, so no circular build prerequisite exists.
 
 ## Remaining tasks and evidence
 
-Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/stdlib-workflow/tasks.md#implementation-tasks).
+Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/stdlib-workflow/tasks.md#implementation-tasks). The ledger's [source-specific STD1-STD20 acceptance and dependency matrix](../../specs/stdlib-workflow/plan.md#source-specific-acceptance-and-dependencies) refines those five Open tasks without adding tasks or implementation credit.
 
 Architecture gate owner: library maintainer. Recommendation: use contract
 modules as export ownership boundaries and separate target adapters from pure

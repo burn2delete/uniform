@@ -40,8 +40,9 @@
   (c15-call c15/c15-diagnostics-capability-proof artifact))
 
 (defn compiler-c15-diagnostics-source-artifact [source-path source-text]
-  (c15-call c15/compiler-c15-diagnostics-source-artifact
-            source-path source-text))
+  (source-input/with-context
+   #(c15-call c15/compiler-c15-diagnostics-source-artifact
+              source-path source-text)))
 
 (defn compiler-c15-diagnostics-file-artifact [path]
   (c15-call c15/compiler-c15-diagnostics-file-artifact path))
