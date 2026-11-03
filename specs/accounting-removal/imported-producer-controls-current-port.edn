@@ -26,10 +26,10 @@
   :names
   [imported-producer-identity-and-schema-controls-current
    imported-producer-finite-data-does-not-authenticate-current]
-  :sha256 "d539b8c6a206fb8478530ba83becc2ab42fc19b367b9adf8d2c7382208fec035"
-  :line-count 81
+  :sha256 "0a9c0c66ed644c438ab72b86e4693d47d9dc0eceb5ec0069354d85109b3047d1"
+  :line-count 83
   :tests 2
-  :assertions 12
+  :assertions 13
   :failures 0
   :errors 0}
  :retained-controls
@@ -42,6 +42,7 @@
   :schema-version-vector-and-extra-key-rejection
   :requests-4097
   :finite-data-scalar-16777217
+  :finite-data-original-validator-acceptance
   :finite-data-is-not-producer-authentication]
  :current-api-adaptation
  {:producer-arity 4

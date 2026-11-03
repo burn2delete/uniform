@@ -73,6 +73,8 @@
     ;; Current C7 exposes the four-argument producer path rather than the
     ;; retired carrier-preflight wrapper; the input-shape check still accepts
     ;; this finite DATA container before producer authentication runs.
+    (is (= {:status :accepted}
+           (invoke-c7 'sh08-vf-original-data [supplied])))
     (is (= :accepted
            (:status (invoke-c7 'sh08-im-inputs-check [supplied]))))
     (is (= :rejected

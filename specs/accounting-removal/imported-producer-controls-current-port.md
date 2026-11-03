@@ -34,13 +34,12 @@ The two tests retain all independent semantic cases:
   refusal;
 - schema/version/vector/extra-key rejection;
 - acceptance of 4,097 request rows without a project-work quota; and
-- acceptance of the finite 16,777,217-character DATA carrier by the input
-  shape check followed by producer rejection, proving DATA is not producer or
-  source authentication authority.
+- acceptance of the finite 16,777,217-character DATA carrier by the direct
+  original-data validator and input-shape check, followed by producer
+  rejection, proving DATA is not producer or source authentication authority.
 
-The focused port is 81 lines and SHA-256
-`d539b8c6a206fb8478530ba83becc2ab42fc19b367b9adf8d2c7382208fec035`.
-It passed 2 tests / 12 assertions with zero failures and errors. These are
+The focused port is 83 lines; its updated SHA-256 is recorded in the paired
+EDN receipt. It passed 2 tests / 13 assertions with zero failures and errors. These are
 normalized C7 kernel controls, not genuine authenticated source or public C7
 acceptance. No production change, allowance replacement, source pin refresh,
 native-C route, or main integration is claimed.
