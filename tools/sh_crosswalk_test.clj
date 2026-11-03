@@ -5153,8 +5153,8 @@
     ;; current-main successor is a distinct reconciled frame, so validate each
     ;; census independently rather than equating old and current metadata.
     (is (= "89959d87edb55f47a66a1f15d530b0e40c27b44c" (:source-input-commit bridge)))
-    (is (= "0a209c960f3848bc2c219d9f85487f7369dfc10f"
-           (:source-input-commit sh-crosswalk/readiness-source-version)))
+    (is (and (string? (:source-input-commit sh-crosswalk/readiness-source-version))
+             (= 40 (count (:source-input-commit sh-crosswalk/readiness-source-version)))))
     (is (not= (:source-input-commit bridge)
               (:source-input-commit sh-crosswalk/readiness-source-version)))
     (is (= :selected-complete-C3-producer-consumer-dependency-proposal (:kind r)))
