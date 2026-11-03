@@ -890,6 +890,33 @@
   (is (= :launch-error (:status (ci/execute! "negative-launch" 1
                                              ["/nonexistent/ci-command"])))))
 
+(deftest execute-output-keeps-success-quiet-and-failure-bounded
+  (let [success-output
+        (with-out-str
+          (let [result (ci/execute!
+                        "output-success-bounded" 15
+                        (ci/command "128m" "-M" "-e"
+                                    "(println \"success-payload\")"))]
+            (is (= :passed (:status result)))))
+        failure-output
+        (with-out-str
+          (let [result (ci/execute!
+                        "output-failure-bounded" 15
+                        (ci/command "128m" "-M" "-e"
+                                    "(do (println (apply str (repeat 10000 \\x))) (System/exit 7))"))]
+            (is (= :failed (:status result)))))
+        success-log (slurp "target/ci/output-success-bounded.log")
+        failure-log (slurp "target/ci/output-failure-bounded.log")]
+    (is (str/includes? success-output "CI command output-success-bounded finished :passed exit 0"))
+    (is (not (str/includes? success-output "success-payload")))
+    (is (< (count success-output) 1000))
+    (is (str/includes? failure-output "CI command output-failure-bounded finished :failed exit 7"))
+    (is (str/includes? failure-output "CI log preview:"))
+    (is (str/includes? failure-output "[log preview truncated"))
+    (is (< (count failure-output) 6000))
+    (is (str/includes? success-log "success-payload"))
+    (is (str/includes? failure-log "xxxxxxxx"))))
+
 (deftest timeout-is-a-failure
   (let [result (ci/execute! "negative-timeout" 1
                             (ci/command "128m" "-M" "-e" "(Thread/sleep 30000)"))]

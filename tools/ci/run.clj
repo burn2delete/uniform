@@ -6,6 +6,7 @@
             [gravity.process-supervision :as process-supervision]))
 
 (def output "target/ci")
+(def ^:private log-preview-max-chars 4096)
 (def runtime-deps "{:deps {org.clojure/clojure {:mvn/version \"1.12.5\"}}}")
 (def semantic-modes #{"static" "contracts" "bootstrap" "macro" "resolution"
                       "resolution-pipeline" "resolution-unmetered"
@@ -160,6 +161,18 @@
                 (.addSuppressed ^Throwable original cleanup-error)))))
         (throw original)))))
 
+(defn- log-preview
+  "Read a bounded diagnostic preview while retaining the complete log on disk."
+  [^java.io.File log]
+  (when (.isFile log)
+    (with-open [reader (io/reader log)]
+      (let [buffer (char-array log-preview-max-chars)
+            count (.read reader buffer)]
+        (when (pos? count)
+          (str (String. buffer 0 count)
+               (when (> (.length log) log-preview-max-chars)
+                 (str "\n[log preview truncated; full log: " (.getPath log) "]"))))))))
+
 (defn execute!
   ([id seconds argv] (execute! id seconds argv nil))
   ([id seconds argv stdin-path]
@@ -174,7 +187,7 @@
                   :run-attempt (System/getenv "GITHUB_RUN_ATTEMPT")
                   :stdin-path stdin-path}]
      (spit receipt (pr-str initial))
-     (println "CI command" id argv)
+     (println "CI command" id "started")
      (let [result
            (try
              (let [process (process-supervision/start-process
@@ -188,7 +201,11 @@
                {:status :launch-error :exit-code 125}))
            result (merge initial result {:finished-ms (System/currentTimeMillis)})]
        (spit receipt (str (pr-str result) "\n"))
-       (print (slurp log))
+       (println "CI command" id "finished" (:status result)
+                "exit" (:exit-code result))
+       (when-not (= :passed (:status result))
+         (when-let [preview (log-preview log)]
+           (println "CI log preview:" preview)))
        (flush)
        result))))
 
