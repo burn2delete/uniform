@@ -56,7 +56,8 @@ APIs, their argument lists and native non-admission boundaries. C15 already
 declares its Diagnostics dependency, so no policy or registry edit is needed.
 Whole-body/late-reference, exact wrapper and original-body conservation passes.
 
-The unchanged native component tests pass 14/288. Added stage controls preserve file-invoke lookup before
+The unchanged native component tests pass 14/288. Added stage controls preserve
+file-invoke lookup before
 argument reading, override failure lookup before Named argument evaluation,
 fixture-record lookup before span callbacks, later record-root rebinding,
 validation rebinding during artifact projection, later proof-predicate roots,
@@ -86,6 +87,26 @@ Fresh committed capture/identity verification, lint, boundary/contract checks,
 independent exact-source review, own CI and integration preflight remain
 requirements. The draft PR attachment attempt hit the existing 100-identity
 limit once; it is retained without retry or removing another attachment.
+
+## Current-main composition
+
+Implementation source 5e7f97af16b2c373499d7ee2a6d903968ce07d2b, tree
+0c049b7a7372b02dd3a6170d7759f14d16bf63d9, preserves all original native
+C15 facade/test and twelve stage bodies. Normal merge
+28789c08c4eebde9c460b62aad7af23ec8ac7301, tree
+13a7c385c3807d0910c0db97a13b9b389533ca19, composes actual main
+f7034ed19496add6a0b3fddffb23750e9c3b8fbe, tree
+9f04d4ac307cd9799f6c028f8148803792931e85. The seven owned paths remain
+unchanged except this later evidence note. All twenty-nine incoming main paths
+and all other tracked paths remain actual main.
+
+Main's bounded current-source C6/C11 version-three transaction is inherited
+without executing its acceptance transaction, refreshing pins, adopting a
+historical whole branch/provider or extending this slice's authority. Its
+source-family selection is separate from this native Diagnostics pipeline.
+Fresh current-source checks/capture, exact independent composition review,
+own CI and immediate current-main preflight remain required. Historical source
+or CI results do not transfer to this composition.
 
 ## Unsupported boundaries
 
