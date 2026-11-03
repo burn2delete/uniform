@@ -210,6 +210,14 @@
 (def ^:private basic-gravity (delay (artifact-context ".gravity" "defn-basic")))
 (defn- private-var [name] (or (ns-resolve 'gravity.bootstrap name)
                             (throw (ex-info "Required seed seam is absent" {:name name}))))
+(def ^:private basic-verifier-report
+  (delay
+    (let [{:keys [artifact invocation]} @basic-gravity]
+      ;; Capture one real report from the valid source-backed artifact. The
+      ;; cache-key harness below replaces only the private inner verifier with
+      ;; this captured value, never with a synthetic authority result.
+      (bootstrap/sh05-macro-artifact-verification
+       artifact invocation :development-current))))
 (defn- with-report-context [operation]
   (let [ctx (atom {:open? true :owner-thread-id (.getId (Thread/currentThread))
                    :phase :construction :epoch 0 :receipts [] :executions {}
@@ -218,26 +226,6 @@
       (with-bindings {(private-var '*sh07-proof-transaction-context*) ctx}
         (operation ctx))
       (finally (swap! ctx assoc :open? false :receipts [])))))
-
-(def ^:private receipt-unit-artifact
-  {:artifact-id "sha256:macro-receipt-unit"})
-(def ^:private receipt-unit-report
-  {:artifact :gravity/sh05-macro-artifact-verification
-   :status :passed
-   :checks {:receipt-unit? true}
-   :failed-checks []})
-(defn- receipt-key-unit-verify [verifier-root verify]
-  ;; This is only a cheap SH-07 cache-key/counter unit. Its synthetic report
-  ;; is never used as source-verification evidence; the genuine SH-05 control
-  ;; below exercises a real artifact and the real operation callbacks.
-  ((private-var 'sh07-proof-transaction-report)
-   :sh05
-   :final
-   {:verifier-root verifier-root
-    :report-schema-version 1
-    :check-catalog-domain :test/receipt-key-unit}
-   receipt-unit-artifact
-   verify))
 
 (deftest multi-artifact-construction-and-verification-are-co-canonical
   (doseq [ctx [multi-gravity multi-qst]]
@@ -492,30 +480,53 @@
     (is (= [:known-macro-source-mode]
            (:missing-fields (ex-data error))))))
 
-(defn- assert-receipt-key-unit []
-  (let [root-a (Object.)
-        root-b (Object.)
-        root-c (Object.)
-        calls (atom 0)]
-    (with-report-context
-      (fn [ctx]
-        (let [verify (fn [root]
-                       (receipt-key-unit-verify
-                        root
-                        (fn []
-                          (swap! calls inc)
-                          receipt-unit-report)))]
-          (is (= receipt-unit-report (verify root-a)))
-          (is (= receipt-unit-report (verify root-a)))
+(defn- with-basic-inner-verifier [operation]
+  (let [{:keys [artifact invocation]} @basic-gravity
+        report @basic-verifier-report
+        calls (atom [])]
+    (with-redefs-fn
+      {(private-var 'sh05-macro-artifact-verification*)
+       (fn [& args]
+         (swap! calls conj (vec args))
+         report)}
+      #(operation artifact invocation report calls))))
+
+(defn- assert-inner-verifier-calls [calls artifact invocation]
+  (is (= 3 (count @calls)))
+  (doseq [args @calls]
+    (is (= 4 (count args)))
+    (is (identical? artifact (nth args 0)))
+    (is (false? (nth args 1)))
+    (is (identical? invocation (nth args 2)))
+    (is (= :development-current (nth args 3)))))
+
+(defn- assert-public-receipt-interposition [interpose]
+  (with-basic-inner-verifier
+    (fn [artifact invocation report calls]
+      (is (= :passed (:status report)))
+      (with-report-context
+        (fn [ctx]
+          (is (= report
+                 (bootstrap/sh05-macro-artifact-verification
+                  artifact invocation :development-current)))
+          (is (= report
+                 (bootstrap/sh05-macro-artifact-verification
+                  artifact invocation :development-current)))
           (is (= 1 (get-in @ctx [:executions :sh05])))
           (is (= 1 (get-in @ctx [:reuses :sh05])))
-          (is (= receipt-unit-report (verify root-b)))
-          (is (= receipt-unit-report (verify root-c)))
+          (interpose
+           (fn []
+             (dotimes [_ 2]
+               (is (= report
+                      (bootstrap/sh05-macro-artifact-verification
+                       artifact invocation :development-current))))))
           (is (= 3 (get-in @ctx [:executions :sh05])))
           (is (= 1 (get-in @ctx [:reuses :sh05])))
-          (is (= receipt-unit-report (verify root-a)))
+          (is (= report
+                 (bootstrap/sh05-macro-artifact-verification
+                  artifact invocation :development-current)))
           (is (= 2 (get-in @ctx [:reuses :sh05])))
-          (is (= 3 @calls)))))))
+          (assert-inner-verifier-calls calls artifact invocation))))))
 
 (defn- assert-real-operation-interposition [v]
   (let [{:keys [artifact invocation]} @basic-gravity
@@ -533,34 +544,39 @@
     (is (= :passed (:status report)))
     (is (pos? @calls))))
 
-(deftest receipt-key-unit-reuse-requires-current-stage-and-seed-operations
-  (doseq [v [#'macro/verify #'macro/expanded-syntax-object
-             #'bootstrap/sh05-macro-gravity-verifier-report
-             #'macro-run-storage/exact?]]
-    (let [replacement (fn [& _] :unit-interposition)]
-      ;; The cache-key assertions are deliberately independent of operation
-      ;; callbacks; the genuine call-through assertion is the separate test.
-      (with-redefs-fn
-        {v replacement}
-        #(do
-           (is (identical? replacement @v))
-           (assert-receipt-key-unit)))))
-  (let [defaults (private-var 'macro-stage-defaults)
-        original @defaults
-        copied (reduce-kv assoc {} original)]
-    (is (= original copied))
-    (is (not (identical? original copied)))
-    (with-redefs-fn
-      {defaults (assoc copied :verifier-root (fn [] :not-a-guard))}
-      #(assert-receipt-key-unit)))
-  (let [cache (private-var 'sh05-macro-pinned-plan-identities)
-        replacement (atom @@cache)]
-    (with-redefs-fn {cache replacement} #(assert-receipt-key-unit)))
-  (let [version (private-var 'sh05-macro-version)
-        replacement (String. ^String @version)]
-    (is (= @version replacement))
-    (is (not (identical? @version replacement)))
-    (with-redefs-fn {version replacement} #(assert-receipt-key-unit))))
+(deftest public-receipt-reuse-requires-current-stage-and-seed-operations
+  (let [_ @basic-gravity
+        _ @basic-verifier-report]
+    (doseq [v [#'macro/verify #'macro/expanded-syntax-object
+               #'bootstrap/sh05-macro-gravity-verifier-report
+               #'macro-run-storage/exact?]]
+      (let [replacement (fn [& _] :unit-interposition)]
+        (assert-public-receipt-interposition
+         (fn [operation]
+           (with-redefs-fn
+             {v replacement}
+             #(do
+                (is (identical? replacement @v))
+                (operation)))))))
+    (let [defaults (private-var 'macro-stage-defaults)
+          original @defaults
+          copied (reduce-kv assoc {} original)]
+      (is (= original copied))
+      (is (not (identical? original copied)))
+      (assert-public-receipt-interposition
+       #(with-redefs-fn
+          {defaults (assoc copied :verifier-root (fn [] :not-a-guard))}
+          %)))
+    (let [cache (private-var 'sh05-macro-pinned-plan-identities)
+          replacement (atom @@cache)]
+      (assert-public-receipt-interposition
+       #(with-redefs-fn {cache replacement} %)))
+    (let [version (private-var 'sh05-macro-version)
+          replacement (String. ^String @version)]
+      (is (= @version replacement))
+      (is (not (identical? @version replacement)))
+      (assert-public-receipt-interposition
+       #(with-redefs-fn {version replacement} %)))))
 
 (deftest source-backed-operation-interpositions-stay-live
   (doseq [v [#'macro/verify #'macro/expanded-syntax-object
@@ -569,11 +585,13 @@
     (assert-real-operation-interposition v)))
 
 (deftest identical-value-thread-binding-disables-receipt-reuse
-  (let [v #'macro/verify dynamic? (.isDynamic v) original @v]
+  (let [_ @basic-gravity
+        _ @basic-verifier-report
+        v #'macro/verify dynamic? (.isDynamic v) original @v]
     (try
       (.setDynamic v true)
-      (with-bindings {v original}
-        (assert-receipt-key-unit))
+      (assert-public-receipt-interposition
+       #(with-bindings {v original} (%)))
       (finally (.setDynamic v dynamic?)))))
 
 (deftest invocation-rejection-precedes-the-stage-verifier
