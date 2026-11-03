@@ -30,6 +30,14 @@ Gravity is a self-hosting, homoiconic, Clojure-inspired language platform for th
 
 ## Implementation Roadmap
 
+The implementation is coordinated as two delivery projects in one checkout:
+the [Uniform language project](../language/README.md) owns language and
+compiler behavior, while the [bootstrap replacement project](../bootstrap/README.md)
+owns the temporary Clojure seed and trust-reduction evidence. The
+[project structure map](project-structure.md) records current paths and
+dependency direction. This separation does not change the normative document
+inventory or claim self-hosting progress.
+
 For ordinary compiler edits, start with the
 [development workflow](development-verification.md): focused semantic tests,
 affected integration checks, then authoritative migration only when explicitly
