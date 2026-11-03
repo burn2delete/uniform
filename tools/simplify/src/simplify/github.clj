@@ -32,7 +32,14 @@
 
 (defn graphql [ctx query variables]
   (let [response (api ctx "POST" "graphql" {:query query :variables variables})]
-    (when (seq (:errors response)) (rt/fail! "GitHub GraphQL failed" {:errors (:errors response)}))
+    (when (seq (:errors response))
+      (let [restricted (boolean (some #(or (#{"FORBIDDEN" "UNAUTHORIZED" "RATE_LIMITED"} (:type %))
+                                           (re-find #"(?i)(resource not accessible|requires authentication|bad credentials|rate limit|forbidden)"
+                                                    (or (:message %) ""))) (:errors response)))]
+        (when restricted
+          (rt/update! ctx assoc-in [:restricted-actions (rt/digest (pr-str ["POST" "graphql"]))]
+                      {:method "POST" :endpoint "graphql" :errors (:errors response)}))
+        (rt/fail! "GitHub GraphQL failed" {:errors (:errors response) :restricted restricted})))
     (:data response)))
 
 (defn pages [ctx endpoint]

@@ -118,6 +118,16 @@
     (with-redefs [rt/with-lock (fn [_ f] (f))]
       (is (thrown? Exception (main/dispatch! ctx "retry" ["blocked"]))))))
 
+(deftest graphql-authorization-errors-cannot-use-http-success-to-escape-denial
+  (let [ctx (context) calls (atom 0)]
+    (with-redefs [rt/command (fn [& _]
+                              (swap! calls inc)
+                              {:exit 0 :err "" :out "{\"errors\":[{\"type\":\"FORBIDDEN\",\"message\":\"Resource not accessible by integration\"}]}"})]
+      (is (thrown? Exception (gh/graphql ctx "mutation first" {})))
+      (is (seq (:restricted-actions (rt/read-edn (:state-file ctx)))))
+      (is (thrown? Exception (gh/graphql ctx "mutation changed" {})))
+      (is (= 1 @calls)))))
+
 (deftest tracking-writes-have-durable-intents-and-stop-on-uncertainty
   (let [ctx (context) calls (atom 0)]
     (is (= 1 (rt/tracking-effect! ctx "status/item" #(swap! calls inc))))
