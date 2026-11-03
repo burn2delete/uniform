@@ -33,14 +33,25 @@ through backend containment.
 
 ## Version boundaries and unaccepted work
 
-The current main source-interface API accepts public C11 version 2 only. The
-separate C11 source-contract DATA selector also contains a version-3
-flat-bool-literal-sequence record, but the current public C11 API does not
-admit version 3 and the corresponding Gravity producer functions are absent.
-This port therefore does not claim or invoke v3, copy a Native v3 producer, or
-invent a v3 fallback. C6/C11 source-contract DATA versions 1/2/3 are not the
-same thing as the public interface version; only the owner-supported v2 route
-is wired here.
+The statements in this section retain the historical PR552 checkpoint: on
+the original `5ecc0003e5595e73b3fb2d2e79a98233b9dd8950` composition, the public
+C11 source-interface admitted version 2 only and the version-3 DATA record had
+no corresponding public producer. That checkpoint remains historical evidence;
+it is not silently relabelled as the current implementation.
+
+The later current-source flat-Bool transaction adds an exact public C6 v3
+constructor, a public C11 v3 constructor, and a separate fresh C11 report path
+for the closed flat-Bool literal-sequence family. It derives current source
+bytes, plans, function shapes and builder/verifier identities at invocation;
+it does not refresh a historical v3 pin, copy a Native producer, or claim
+migration, release, self-hosting or backend completion. The exact bounded
+positive, v2 regression and fail-closed mutation matrix are recorded in
+`current-flat-bool-public-transaction-receipt.edn` after the source-freeze
+commit and independent review.
+
+C6/C11 source-contract DATA versions 1/2/3 are not interchangeable with the
+public interface versions. Legacy default/v1 routing remains unchanged and
+explicit unsupported headers still fail closed.
 
 The original PR's four authored paths (the two packet components,
 `bootstrap/clojure/test/gravity/self_hosting/downstream_selection_test.clj`,
