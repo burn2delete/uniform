@@ -183,20 +183,20 @@
    {:component-id :macro-engine
     :category :macro
     :source-path
-    "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity"
+    "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity"
     :dependencies [:bootstrap-syntax]}
    {:component-id :bootstrap-macro
     :category :macro
-    :source-path "bootstrap/gravity/src/gravity/macro.gravity"
+    :source-path "language/compiler/src/gravity/macro.gravity"
     :dependencies [:macro-engine]}
    {:component-id :resolution-engine
     :category :analyzer
     :source-path
-    "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
+    "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
     :dependencies [:bootstrap-macro]}
    {:component-id :bootstrap-resolution
     :category :analyzer
-    :source-path "bootstrap/gravity/src/gravity/resolution.gravity"
+    :source-path "language/compiler/src/gravity/resolution.gravity"
     :dependencies [:resolution-engine]}
    {:component-id :core-semantics
     :category :checked-core
@@ -206,7 +206,7 @@
    {:component-id :core-lowering
     :category :checked-core
     :source-path
-    "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
+    "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
     :dependencies [:core-semantics]}
    {:component-id :checked-core
     :category :checked-core
@@ -215,7 +215,7 @@
    {:component-id :checked-core-pipeline
     :category :checked-core
     :source-path
-    "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+    "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
     :dependencies [:checked-core]}
    {:component-id :call-arity
     :category :analyzer

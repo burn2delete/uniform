@@ -1,13 +1,14 @@
 (ns gravity.self-hosting.sh06-unmetered-resolution-test
   (:require [clojure.java.io :as io]
             [clojure.test :refer [deftest is]]
+            [gravity.development-test-runner :as development]
             [gravity.bootstrap :as b]))
 
 ;; L3/C5: execute the actual current Gravity leaf on normalized requests.
 ;; These are semantic checks, not authenticated source/corpus or migration proof.
 (defn- id [n] (format "sha256:%064x" n))
 (def ^:private source
-  (.getCanonicalPath (io/file "bootstrap/gravity/src/gravity/resolution.gravity")))
+  (.getCanonicalPath (io/file "language/compiler/src/gravity/resolution.gravity")))
 (def ^:private resolver-binding (delay (b/sh06-resolution-current-binding! source)))
 (defn- run [function & arguments]
   (b/sh06-resolution-execute! source @resolver-binding function (vec arguments)))
@@ -125,7 +126,7 @@
 
 (deftest actual-compatibility-facade-consumes-the-quota-free-owner-result
   (let [facade (.getCanonicalPath
-                 (io/file "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"))
+                 (io/file "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"))
         emitter (:emitter (b/c-backend-stage2-plan-emitter-source-rule! facade :jvm))
         plan (b/p15-s23-stage2-compiler-artifact-plan emitter facade (slurp facade :encoding "UTF-8"))
         result (run 'sh06-build-resolution-template (request))
@@ -165,16 +166,26 @@
         requests (conj (mapv #(hash-map :ordinal % :purpose :sh06-binding-id :preimage {:ordinal %})
                              (range 8192))
                        {:ordinal 8192 :purpose :sh06-namespace-analysis-id :preimage {}})
-        resolved (b/sh06-resolution-resolve-digest-requests! source analysis requests)
+        resolved (development/observe-resolution-digest-interval!
+                   :positive-resolve
+                   #(b/sh06-resolution-resolve-digest-requests! source analysis requests))
         failure (fn [values]
                   (try (b/sh06-resolution-resolve-digest-requests! source analysis values) nil
                        (catch clojure.lang.ExceptionInfo error (ex-data error))))]
-    (is (= 8193 (count resolved)))
-    (is (every? #(re-matches #"sha256:[0-9a-f]{64}" %) resolved))
-    (is (= [:ordered-resolution-digest-requests]
-           (:missing-fields (failure (assoc-in requests [0 :ordinal] 1)))))
-    (is (= [:complete-resolution-digest-requests] (:missing-fields (failure (pop requests)))))
-    (is (= [:resolution-digest-requests] (:missing-fields (failure '()))))))
+    (development/observe-resolution-digest-interval!
+      :count-and-hash-shape
+      (fn [] (is (= 8193 (count resolved)))
+             (is (every? #(re-matches #"sha256:[0-9a-f]{64}" %) resolved))))
+    (development/observe-resolution-digest-interval!
+      :ordinal-negative
+      #(is (= [:ordered-resolution-digest-requests]
+              (:missing-fields (failure (assoc-in requests [0 :ordinal] 1))))))
+    (development/observe-resolution-digest-interval!
+      :count-negative
+      #(is (= [:complete-resolution-digest-requests] (:missing-fields (failure (pop requests))))))
+    (development/observe-resolution-digest-interval!
+      :shape-negative
+      #(is (= [:resolution-digest-requests] (:missing-fields (failure '())))))))
 
 (deftest actual-current-source-artifact-retains-authentication-and-roundtrip
   (let [fixture (.getCanonicalPath
@@ -188,11 +199,16 @@
                     :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
                                               :source-path syntax}
                     :macro-source-mode :development-current}
-        artifact (b/compiler-c5-resolution-source-artifact
-                   fixture (slurp fixture :encoding "UTF-8")
-                   {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []} reader invocation)
-        report (b/sh06-resolution-artifact-verification artifact :gravity.bootstrap/legacy invocation)
-        serialized (b/sh06-resolution-serialize artifact invocation)
+        artifact (development/observe-resolution-current-artifact-interval!
+                  :construction
+                  #(b/compiler-c5-resolution-source-artifact
+                    fixture (slurp fixture :encoding "UTF-8")
+                    {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []} reader invocation))
+        report (development/observe-resolution-current-artifact-interval!
+                :verification
+                #(b/sh06-resolution-artifact-verification artifact :gravity.bootstrap/legacy invocation))
+        serialized (development/observe-resolution-current-artifact-interval!
+                    :serialization #(b/sh06-resolution-serialize artifact invocation))
         changed (update-in artifact [:binding-table :bindings 0 :name] (constantly 'forged))]
     (is (= (slurp fixture :encoding "UTF-8") (slurp paired :encoding "UTF-8")))
     (is (= :accepted (:status artifact)))

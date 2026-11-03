@@ -133,7 +133,7 @@
     (is (not (contains? c6-expectation :request-counts)))
     (is (not (contains? c6-expectation :core-counts)))
     (is (= {:source-path
-            "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
+            "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity"
             :source-binding (:source-binding c6-expectation)}
            (get source-contracts "c6-core")))
     (is (= {:source-byte-count 210220

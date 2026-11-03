@@ -1,6 +1,7 @@
 (ns ci.run-test
   (:require [clojure.java.io :as io]
             [clojure.edn :as edn]
+            [clojure.set :as set]
             [clojure.string :as str]
             [clojure.test :refer [deftest is run-tests]]))
 
@@ -416,6 +417,27 @@
     (is (str/includes? leaves "matrix.platform == 'darwin' && (needs.select.result != 'success'"))
     (is (str/includes? leaves "matrix.platform == 'unsupported' && (needs.select.result != 'success'"))))
 
+(defn source-deftest-names
+  [path]
+  (with-open [reader (java.io.PushbackReader. (io/reader path))]
+    (loop [names #{}]
+      (let [form (read {:eof ::eof} reader)]
+        (if (= ::eof form)
+          names
+          (recur (if (and (seq? form)
+                          (= 'deftest (first form))
+                          (symbol? (second form)))
+                   (conj names (str (second form)))
+                   names)))))))
+
+(defn option-value
+  [argv option]
+  (let [index (.indexOf ^java.util.List argv option)]
+    (when (neg? index)
+      (throw (ex-info "Expected command option is absent"
+                      {:option option :argv argv})))
+    (nth argv (inc index))))
+
 (deftest resolution-commands-are-complete-and-disjoint
   (let [modes ["resolution-pipeline" "resolution-unmetered"
                "resolution-invocation-selection"]
@@ -433,6 +455,36 @@
            (mapv namespace commands)))
     (is (= 3 (count (set (map #(nth % 2) commands)))))
     (is (every? #(= 1 (count (filter #{"--namespace"} (nth % 2)))) commands))))
+
+(deftest resolution-pipeline-selector-partition-covers-the-source-namespace
+  (let [pipeline-commands (ci/commands-for-selection
+                           "resolution-pipeline" {:kind :full})
+        [cohort final] pipeline-commands
+        cohort-argv (nth cohort 2)
+        final-argv (nth final 2)
+        source-vars (source-deftest-names
+                     "bootstrap/clojure/test/gravity/resolution/pipeline_test.clj")
+        namespace "gravity.resolution.pipeline-test"
+        qualified (fn [name] (str namespace "/" name))
+        cohort-pattern (re-pattern (option-value cohort-argv "--regex"))
+        final-name (option-value final-argv "--exact")
+        cohort-vars (set (filter #(or (re-find cohort-pattern %)
+                                      (re-find cohort-pattern (qualified %)))
+                                 source-vars))
+        final-vars (set (filter #(or (= final-name %)
+                                     (= final-name (qualified %)))
+                                source-vars))]
+    (is (= ["resolution-pipeline" "resolution-pipeline-fresh-replay"]
+           (mapv first pipeline-commands)))
+    (is (= [600 600] (mapv second pipeline-commands)))
+    (is (= 2 (count pipeline-commands)))
+    (is (= #{ci/resolution-pipeline-final-test} final-vars))
+    (is (seq cohort-vars))
+    (is (empty? (set/intersection cohort-vars final-vars)))
+    (is (= source-vars (set/union cohort-vars final-vars)))
+    (is (not (re-find cohort-pattern ci/resolution-pipeline-final-test)))
+    (is (re-find (re-pattern (option-value final-argv "--exact"))
+                 ci/resolution-pipeline-final-test))))
 
 (deftest resolution-workflow-serializes-only-its-own-pool
   (let [workflow (slurp ".github/workflows/ci.yml")
@@ -464,11 +516,17 @@
     (is (= expected-all
            (:modes (ci/stage-selection [(change "bootstrap/clojure/src/gravity/reader.clj")]))))
     (is (= expected-macro
-           (:modes (ci/stage-selection [(change "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity")]))))
+           (:modes (ci/stage-selection [(change "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity")]))))
     (is (= expected-resolution
            (:modes (ci/stage-selection [(change "bootstrap/clojure/test/gravity/resolution/pipeline_test.clj")]))))
     (is (= expected-checked
            (:modes (ci/stage-selection [(change "language/compiler/src/gravity/checked_core.gravity")]))))
+    (is (= expected-checked
+           (:modes (ci/stage-selection
+                    [(change "language/compiler/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity")]))))
+    (is (= expected-checked
+           (:modes (ci/stage-selection
+                    [(change "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity")]))))
     (is (= expected-checked
            (:modes (ci/stage-selection
                     [(change "bootstrap/clojure/test/gravity/self_hosting/sh07_var_reference_test.clj")]))))

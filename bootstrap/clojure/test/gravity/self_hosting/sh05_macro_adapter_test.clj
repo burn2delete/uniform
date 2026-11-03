@@ -701,7 +701,7 @@
 
 (deftest sh05-compatibility-c4-routing-retains-the-gravity-result
   (let [source-path
-        (path "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity")
+        (path "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity")
         sh05 (sh05-file-artifact source-path)
         c4 (bootstrap/compiler-c4-macro-file-artifact source-path)]
     (is (= :gravity/stage0-c4-macro-expansion-artifact (:kind c4)))
@@ -863,7 +863,7 @@
          :provenance-definition-span
          (alter-second-run-provenance
           artifact :definition-span
-          {:source "bootstrap/gravity/src/gravity/macro.gravity"
+          {:source "language/compiler/src/gravity/macro.gravity"
            :byte-start 0 :byte-end 1})
          :provenance-reader-binding
          (alter-second-run-provenance
