@@ -92,6 +92,18 @@ Use the [Core producer and consumer order](../core-workflow/plan.md#core-produce
 
 Existing task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current selected-interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Complete Types source interface
+
+Use the [complete Types source criteria](../types-workflow/plan.md#complete-types-source-criteria). Consume actual current typed/checked Core with function/dispatch/schema/dynamic/cast/ownership/layout facts and required semantic verdicts; preserve identities and invalidation rather than accepting a type-name table.
+
+Current task identities/statuses, historical review subjects and original C7 publication/other actual restrictions remain unchanged. This source proposal grants no implementation or current independent acceptance.
+
+## Types dependency interface
+
+Use the [Types producer and consumer order](../types-workflow/plan.md#types-producer-and-consumer-order) and existing selected-result table. Bind actual current type/signature/instantiation/dispatch/conversion/schema/layout/resource facts and complete local/private/transfer premises to real MIR nodes/tables. Verify and round-trip whole subjects, rejecting stale or substituted facts and preserving checks before consumption.
+
+Existing task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: MIR task authority

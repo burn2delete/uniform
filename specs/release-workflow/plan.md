@@ -256,6 +256,18 @@ Use the [Core producer and consumer order](../core-workflow/plan.md#core-produce
 
 Existing task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current selected-interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Complete Types source interface
+
+Use the [complete Types source criteria](../types-workflow/plan.md#complete-types-source-criteria). Execute actual owner type/schema/boundary/guard/branch/entry/loop and tamper/refusal fixtures before independently claiming full language/compiler conformance. Frozen source reviews and narrow current-runtime receipts establish no full C7 or seed retirement.
+
+Current task identities/statuses, historical review subjects and original C7 publication/other actual restrictions remain unchanged. This source proposal grants no implementation or current independent acceptance.
+
+## Types dependency interface
+
+Use the [Types producer and consumer order](../types-workflow/plan.md#types-producer-and-consumer-order) and existing selected-result table. Independent language/compiler harnesses consume actual complete owner fixtures and type/verifier/invalidation/MIR/transform/target preservation/refusal products. Preserve full independent-inference premises and real claimed runtime observations; final suite acceptance cannot be an initial checker input.
+
+Existing task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Release workflow migration

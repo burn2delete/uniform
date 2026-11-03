@@ -106,6 +106,18 @@ Use the [Core producer and consumer order](../core-workflow/plan.md#core-produce
 
 Existing task bodies/statuses, source criteria, frozen reviews and actual restrictions remain unchanged. Current selected-interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Complete Types source interface
+
+Use the [complete Types source criteria](../types-workflow/plan.md#complete-types-source-criteria). Keep collection operations and current STD3 quota removal distinct from Types inference. Supply actual declared value contracts and consume independently established compatible types; expected results or an export table prove no inference.
+
+Current task identities/statuses, historical review subjects and original C7 publication/other actual restrictions remain unchanged. This source proposal grants no implementation or current independent acceptance.
+
+## Types dependency interface
+
+Use the [Types producer and consumer order](../types-workflow/plan.md#types-producer-and-consumer-order) and existing selected-result table. Supply real early public function/type/protocol/collection/resource declarations, then exercise actual implementations and checked callers. Preserve actual argument/body compatibility, full stored-value validation, independent branch/loop/private-census premises and typed foreign/resource failure/cleanup obligations.
+
+Existing task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Standard Library workflow migration
