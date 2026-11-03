@@ -261,6 +261,7 @@
         (when (contains? (set (:current-source-paths readiness-source-version)) path)
           (:source-input-commit readiness-source-version))
         baseline)))
+(declare git-source)
 (def original-baseline "15a5499e97798621d270c36dd2546ce98ddd62a9")
 (def output-path "specs/sh-family-crosswalk/crosswalk.edn")
 (def rollup-path "specs/sh-family-crosswalk/rollup.md")
@@ -476,20 +477,23 @@
   ([component] (task-records component (str component "-implementation-tasks")))
   ([component region]
   (let [path (str "specs/" component "-workflow/tasks.md") text (slurp path)
+        source-text (if (contains? historical-task-transition-paths path)
+                      (git-source baseline path)
+                      text)
         marker (str "<!-- " region ":")
-        start (+ (.indexOf text (str marker "start -->")) (count (str marker "start -->")))
-        end (.indexOf text (str marker "end -->"))
-        _ (when-not (seq (acceptance-dependencies/marked-task-ids text region))
+        start (+ (.indexOf source-text (str marker "start -->")) (count (str marker "start -->")))
+        end (.indexOf source-text (str marker "end -->"))
+        _ (when-not (seq (acceptance-dependencies/marked-task-ids source-text region))
             (throw (ex-info "Missing task region" {:path path :region region})))
-        m (re-matcher #"(?m)^- \[([ xX])\] `([^`]+)`[^\n]*" text)
+        m (re-matcher #"(?m)^- \[([ xX])\] `([^`]+)`[^\n]*" source-text)
         positions (loop [v []] (if (.find m) (recur (if (< start (.start m) end)
                    (conj v {:start (.start m) :id (.group m 2) :checked (not= " " (.group m 1))}) v)) v))]
     (mapv (fn [row next-row]
-            (let [stop (or (:start next-row) end) raw (str/trimr (subs text (:start row) stop))]
+            (let [stop (or (:start next-row) end) raw (str/trimr (subs source-text (:start row) stop))]
               (cond-> {:id (:id row) :component component :path path :checked (:checked row)
                :authority :component-implementation-ledger
-               :source-commit (source-pin path) :file-sha256 (sh-inventory/sha256 text)
-               :source (sh-inventory/source-span path text (:start row) (+ (:start row) (count raw)))
+               :source-commit (source-pin path) :file-sha256 (sh-inventory/sha256 source-text)
+               :source (sh-inventory/source-span path source-text (:start row) (+ (:start row) (count raw)))
                :owner-source (str "docs/component-roadmaps/" component ".md")}
                 (not= region (str component "-implementation-tasks"))
                 (assoc :region region :authority :component-future-task-ledger))))
