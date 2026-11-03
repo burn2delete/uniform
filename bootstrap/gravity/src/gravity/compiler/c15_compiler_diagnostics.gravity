@@ -487,7 +487,7 @@
                            (get (get origin :call-site-span) :primary)) false)
                     true (recur (+ index 1)))))) false)]
       (if (= [:c5-name-resolution "C5-ALIAS" :name-resolution :error
-              true true true true true true true false true
+              true true true true true true true true true
               :unknown-namespace-alias :unknown-namespace-alias
               true true true true true 0 [] true]
              [(get original :diagnostic-family) (get original :id) (get original :stage)
@@ -495,7 +495,8 @@
               (symbol? (get original :namespace)) (keyword? (get original :profile))
               (keyword? (get original :target)) (sh15-sha256-shape? (get original :syntax-id))
               (sh15-sha256-shape? (get original :diagnostic-id))
-              (string? (get original :remediation)) (contains? original :redactions)
+              (string? (get original :remediation))
+              (= nil (get original :redactions))
               (c15-c5-origin-chain-valid? origins)
               (get facts :reason) (get details :reason)
               (symbol? (get details :qualifier)) (symbol? (get details :name))

@@ -83,7 +83,13 @@
     (refused (c15 'build-resolution-alias-diagnostic [original]) "C15-SCHEMA")))
 
 (deftest noncausal-or-malformed-alias-inputs-stay-unsupported
-  (let [original (get @originals "gravity")]
+  (let [original (get @originals "gravity")
+        redactions-tampered (assoc original :redactions [])]
+    ;; Exercise the changed Gravity fields and builder directly. Do not route
+    ;; this input through a constructed record, whose redactions field is always
+    ;; the private nil value and would hide the source rejection.
+    (is (nil? (c15 'resolution-alias-diagnostic-fields [redactions-tampered])))
+    (refused (c15 'build-resolution-alias-diagnostic [redactions-tampered]) "C15-SCHEMA")
     (doseq [bad [nil []
                  (assoc original :id "C5-UNRESOLVED")
                  (assoc original :symbol 'other/inspect)
@@ -96,7 +102,7 @@
                  (assoc-in original [:origin-chain 1 :inputs] [])
                  (assoc-in original [:source-span :primary :source] "other.gravity")
                  (update-in original [:source-span :primary :byte-end] inc)
-                 (assoc original :redactions [])]]
+                 redactions-tampered]]
       (refused (c15 'build-resolution-alias-diagnostic [bad]) "C15-SCHEMA"))))
 
 (deftest fresh-original-comparison-and-whole-request-refuse-substitution
@@ -111,6 +117,7 @@
                      (assoc candidate :origin-chain [])
                      (assoc-in candidate [:facts :rule-specific :candidate-count] 1)
                      (assoc candidate :redactions [])
+                     (dissoc candidate :redactions)
                      (:candidate reworded)
                      (:candidate (resolved (path "qst") (get @originals "qst")))]]
       (refused (verify (path "gravity") fields changed request) "C15-ID"))
