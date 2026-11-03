@@ -9,7 +9,7 @@ ordered validation and capability projection bodies into gravity.lowering.
 Preserve the existing six LLVM/C/Wasm reconstruction and exact-join APIs,
 the C14 facade, its dynamic operations context and all original predicates.
 
-The planned public native APIs are native-source-overrides,
+The public native APIs are native-source-overrides,
 native-source-overrides-artifact, native-diagnostic-catalog,
 native-artifact-base, native-validate!, native-capability-proof,
 native-source-artifact and native-file-artifact. Trusted native configuration,
@@ -41,6 +41,32 @@ six-original-algorithm conservation, positive and adversarial native tests,
 existing actual current Gravity C14 module compilation and C14-INPUT rejection,
 boundary/ownership, lint and contract checks. Exact independent review, own
 CI/artifact audit and immediate clean current-main preflight remain required.
+
+## Implemented pipeline and local checks
+
+All eight whole bodies now live in the stage; three compatibility leaves
+retain their original private span, digest, failure and presence helpers as
+late suppliers. Whole-body/reference transformation, exact three-wrapper
+conservation and all six original reconstruction algorithms pass text checks.
+The C14 dependency contract names Lowering; the public facade and dynamic
+operations remain unchanged. Fourteen stage APIs declare their arguments,
+native data boundaries and lack of admission authority.
+
+Original native tests pass 4/60. Five additional adversarial tests bring them
+to 9/101, preserving invoke lookup before file argument reading, digest root
+lookup before serialization, subsequent digest rebinding, validation rebinding
+after projection, eleven returning-refusal callbacks in order, exception
+identity and existing vacuous collection predicates. Independent observations
+run in clean bd50bb2ed3fd3c75d225fb4c438253a6a5816039, whose complete native
+C14/Lowering sources are proven identical to the baseline, and confirm the
+original invoke and digest timing with Bootstrap unloaded.
+
+The existing current Gravity C14 module compilation, actual C14-INPUT rejection
+and raw reconstruction/strict-join tests pass 6/127. The supplied native inputs
+remain unbound fixture data; module compilation does not confer upstream
+admission. Language/ownership checks pass 48/1190 with zero skipped namespaces.
+Documents, roadmap and governance validators pass. Fresh committed capture,
+lint, independent exact-source review and own CI remain required.
 
 ## Unsupported boundaries
 
