@@ -1,10 +1,9 @@
 (ns gravity.c15-diagnostics.records
-  (:require [clojure.string]
-            [gravity.diagnostics :as diagnostics]
+  (:require [gravity.diagnostics :as diagnostics]
             [gravity.c15-diagnostics.operations :as operations]
             [gravity.digest :as digest]))
 (defn source-overrides [module]
-  (or (get-in module [:metadata :compiler :c15-diagnostics]) (get-in module [:metadata :compiler :verification]) {}))
+  (diagnostics/source-overrides module))
 (defn source-span [path index]
   (operations/invoke :source-span (fn [p i] {:source p :form-index i}) path index))
 (defn stable-id [diagnostic]
@@ -18,10 +17,4 @@
     :related related :origin-chain origin-chain :redactions redactions :lifecycle lifecycle :generated? generated?
     :profile profile :target target :syntax-id syntax-id))
 (defn catalog [configuration]
-  {:artifact :gravity/diagnostic-catalog :status :complete
-   :rules (mapv (fn [id] {:rule id :severity (if (= "C15-GOLDEN" id) :hint :error)
-                          :message-key (keyword "diagnostic" (clojure.string/lower-case
-                                                               (clojure.string/replace id #"_" "-")))
-                          :explain-page (str "gravity://diagnostics/" id) :lifecycle :active
-                          :stable-id-policy :rule-primary-artifact-stage-facts})
-                (:c15-diagnostics-diagnostic-ids configuration))})
+  (diagnostics/native-catalog (:c15-diagnostics-diagnostic-ids configuration)))

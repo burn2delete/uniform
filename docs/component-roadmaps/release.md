@@ -9,6 +9,10 @@ Implementation task authority: [Spec Kit ledger](../../specs/release-workflow/ta
 
 ## Purpose and scope
 
+Release consumes the separate [Uniform language project](../../language/README.md)
+and [bootstrap replacement project](../../bootstrap/README.md) outcomes. It
+does not fold their implementation tasks into the release component.
+
 Assemble component evidence into a reproducible public compiler distribution
 with honest seed and trust boundaries. Governing contracts:
 [bootstrap](../phase-15-bootstrap-and-self-hosting/README.md) and
