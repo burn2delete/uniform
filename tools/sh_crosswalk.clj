@@ -254,13 +254,21 @@
   ;; rows as ordinary current-source observations.
   #{(:path acceptance-dependencies/platform-task-source-transition)
     (:path acceptance-dependencies/stdlib-task-source-transition)})
+(def preserved-scoped-evidence-source-pins
+  ;; These are already accepted, narrowly scoped current records.  Preserve
+  ;; their inspected source identities while the ordinary development frame
+  ;; advances; changing their pin would silently relabel historical evidence.
+  {"docs/artifacts/phase-06/reports/current-reader-fresh-syntax-handoff.md"
+   baseline})
 (defn source-pin [path]
-  (if (contains? historical-task-transition-paths path)
-    baseline
-    (or (get applying-source-pins path)
-        (when (contains? (set (:current-source-paths readiness-source-version)) path)
-          (:source-input-commit readiness-source-version))
-        baseline)))
+  (if-let [preserved (get preserved-scoped-evidence-source-pins path)]
+    preserved
+    (if (contains? historical-task-transition-paths path)
+      baseline
+      (or (get applying-source-pins path)
+          (when (contains? (set (:current-source-paths readiness-source-version)) path)
+            (:source-input-commit readiness-source-version))
+          baseline))))
 (declare git-source)
 (def original-baseline "15a5499e97798621d270c36dd2546ce98ddd62a9")
 (def output-path "specs/sh-family-crosswalk/crosswalk.edn")
