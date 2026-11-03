@@ -1,5 +1,45 @@
 (clojure.core/require 'gravity.syntax)
 
+(def ^:private c3-syntax-serialization-fixture-var
+  (clojure.core/resolve 'c3-syntax-serialization-fixture))
+(def ^:private default-c3-syntax-serialization-fixture
+  (clojure.core/deref c3-syntax-serialization-fixture-var))
+(def ^:private reader-canonical-hash-var
+  (clojure.core/resolve 'reader-canonical-hash))
+(def ^:private default-reader-canonical-hash
+  (clojure.core/deref reader-canonical-hash-var))
+(def ^:private c3-evidence-serialization-fixture-var
+  (clojure.core/ns-resolve 'gravity.c3-syntax-evidence
+                           'c3-syntax-serialization-fixture))
+(def ^:private default-c3-evidence-serialization-fixture
+  (clojure.core/deref c3-evidence-serialization-fixture-var))
+(def ^:private mark-production-default-serialization-operation
+  (clojure.core/deref (clojure.core/ns-resolve
+                       'gravity.c3-syntax-verification
+                       'mark-production-default-serialization-operation)))
+
+;; Reuse is safe only for the original production operation and its
+;; serialization dependencies. Re-defined or injected callbacks stay
+;; observable and are deliberately left unmarked.
+(defn- c3-syntax-serialization-live-valid?
+  []
+  (and (identical? (clojure.core/deref c3-syntax-serialization-fixture-var)
+                   default-c3-syntax-serialization-fixture)
+       (identical? (clojure.core/deref reader-canonical-hash-var)
+                   default-reader-canonical-hash)
+       (identical?
+        (clojure.core/deref c3-evidence-serialization-fixture-var)
+        default-c3-evidence-serialization-fixture)))
+
+(defn- c3-syntax-serialization-operation
+  [operation]
+  (let [live-valid? (c3-syntax-serialization-live-valid?)]
+    (if (and (identical? operation default-c3-syntax-serialization-fixture)
+             live-valid?)
+      (mark-production-default-serialization-operation
+       operation c3-syntax-serialization-live-valid?)
+      operation)))
+
 (declare ^:private c3-current-reader-revision-authentic?)
 (declare ^:private sh04-syntax-reader-expansion-history sh04-syntax-reader-expansions-current?)
 (defn-
@@ -55,7 +95,9 @@
   [invocation]
   {:c3-syntax-schema c3-syntax-schema
    :c3-resolvable-span? c3-resolvable-span?
-   :c3-syntax-serialization-fixture c3-syntax-serialization-fixture
+   :c3-syntax-serialization-fixture
+   (c3-syntax-serialization-operation
+    (clojure.core/deref c3-syntax-serialization-fixture-var))
    :c3-syntax-stream-reader-products-authentic?
    (fn [stream c2 boundary] (c3-syntax-stream-reader-products-authentic? stream c2 boundary invocation))
    :c3-syntax-verification-report
