@@ -270,6 +270,13 @@ Use the [complete alternative type system source criteria](../types-workflow/pla
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Alternative type system dependency interface
+
+Use the [alternative type system producer and consumer order](../types-workflow/plan.md#alternative-type-system-producer-and-consumer-order) and sole selected-result table. Complete L17 locks consume actual early provider/version/range/source/fact/proof/solver/restriction declarations and selection-policy interfaces. Resolve identity before dependent compilation; actual later checker/conformance products bind that identity to their claims. Neither complete selected-provider execution nor final soundness report is the first lock input. Reject ambiguity and mismatched schema/provider identity without inventing a provider or grant. Complete L17 cache identities consume early real source/compiler/provider/version/fact/proof/solver/profile/target/macro/facet/grant/build-effect dependency contracts, then actual output and diagnostic identities. Changed governing inputs invalidate affected types/checks/ownership/domain/proofs before real owner regeneration and current-policy reuse. Future regenerated output is not the first cache dependency interface; a digest proves neither authority nor proof applicability. Complete L17 build graph construction uses early actual selected checker/solver/package/input/effect/phase interfaces; actual admitted checking, artifact and conformance actions follow the graph. Task feedback permits no cyclic namespace imports or unmarked Build cycles. Preserve PKG2 acyclicity and only its explicitly governed bootstrap fixed point; final checker acceptance is not the first graph-node schema. Complete L17 package auditing consumes actual common typed-Core/fact/proof/compatibility/profile evidence and provider/lock/source identities without implementing the alternative theory. Early schema/policy interfaces support package construction; actual applicable verification precedes the claimed audited package. Selected signing/publication remains separately governed and held actions remain held; an export inventory or metadata flag supplies no soundness evidence.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration

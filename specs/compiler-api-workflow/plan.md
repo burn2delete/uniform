@@ -311,6 +311,13 @@ Use the [complete alternative type system source criteria](../types-workflow/pla
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Alternative type system dependency interface
+
+Use the [alternative type system producer and consumer order](../types-workflow/plan.md#alternative-type-system-producer-and-consumer-order) and sole selected-result table. Complete L17 pipeline exposes actual selected checker/declaration/common-output and verifier contracts before work, then candidate types, genuine inferred effects, separate grants/profile/resource/safety admission and checked common export. Fused or interleaved passes retain observable facts/diagnostics/invalidation boundaries; future final conformance cannot supply its first checker interface. Preserve the existing D1/C1/C5/C6 ordering decision rather than assign an invented order. Complete L17 uses the C17 API only for an actually selected plugin implementation: early authentic versioned checker/fact/proof/verifier/action interfaces precede registration or invocation, then actual admitted outputs and traces establish results. Pure local checking needs no universal plugin, callback or whole plugin acceptance; all existing held operations remain held. A registered callback and read-IR scope do not prove checker soundness or grant IR writes.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical workflow-transfer and source-composition plan
 
 # Implementation plan: Compiler API workflow migration

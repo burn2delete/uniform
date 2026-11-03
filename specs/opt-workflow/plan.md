@@ -177,6 +177,13 @@ Use the [complete alternative type system source criteria](../types-workflow/pla
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Alternative type system dependency interface
+
+Use the [alternative type system producer and consumer order](../types-workflow/plan.md#alternative-type-system-producer-and-consumer-order) and sole selected-result table. Complete L17 selected refinement consumption uses early actual property/proof/checker schemas, then selected-provider/profile/target-valid serialized facts stable for the actual transform and the governing checked proof/preservation results. Every erased runtime check retains its actual justifying proof reference. Unchecked casts, manifests and passed labels supply no safe evidence. Valid unoptimized programs require neither whole Opt nor whole future Formal; selected elision still requires real evidence before use. Complete L17 transforms use available real owner checker/regeneration interfaces before work; changed source/provider/profile/target/macro/facet/grants require actual affected rechecking or invalidation and changed-subject verification afterward. The old valid fact is not the new fact, and the later regenerated output cannot be its first analysis service. Preserve exact erased-check proof identity and applicable diagnostics; no universal optimizer or stronger proof method is added.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Opt task authority

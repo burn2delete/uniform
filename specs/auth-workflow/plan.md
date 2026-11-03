@@ -375,6 +375,13 @@ Use the [complete alternative type system source criteria](../types-workflow/pla
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Alternative type system dependency interface
+
+Use the [alternative type system producer and consumer order](../types-workflow/plan.md#alternative-type-system-producer-and-consumer-order) and sole selected-result table. Complete L17 selects an authentic versioned type provider from early actual declarations, requested profile/facet/features, fact/proof/solver/conformance/restriction schemas and lock/policy inputs. Selection and candidate checker construction need no future complete checker, corpus or Auth conformance result. Applicable actual soundness evidence precedes any safe-profile claim or admitted reliance; later current compatibility results confirm that claim. The example provider does not install a solver, grant IR access or establish profile support. Complete L17 actual claim reporting consumes genuine selected provider identity, common typed-Core verifier/consumer results, claim-specific L5 comparison and applicable profile theorem/proof/test-suite/audit evidence. Early real claim/evidence/corpus/oracle interfaces precede candidate checking; independently executed selected results precede acceptance. Reference-equivalent, L5-subset strict-extension, all-L5-plus-annotation conservative-extension, gradual and domain-specific claims retain different populations. Final conformance cannot be the first checker interface, and neither owner flags nor one finite example establishes unrestricted soundness. Complete L17 authority checks use early authentic checker/solver/action/phase/scope contracts and actual typed linear/affine capability facts, then genuine allowed/denied grants before effects. Capability values retain authority metadata but their types and selected-provider labels issue no grant. Read-IR gives no write. C17 applies only to an actually selected plugin path; pure source checking needs no universal plugin, service or live solver.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Auth task authority

@@ -169,6 +169,13 @@ Use the [complete alternative type system source criteria](../types-workflow/pla
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Alternative type system dependency interface
+
+Use the [alternative type system producer and consumer order](../types-workflow/plan.md#alternative-type-system-producer-and-consumer-order) and sole selected-result table. Complete L17 Hardware exposes real bit-width/clock-domain/bus/reset contracts before checking, then exports actual selected typed facts into required domain/layout consumers. Final HDL artifacts and physical-device acceptance are no first width/schema premise. No device or product ISA is adopted; unsupported constrained-profile representations remain explicit.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Platform workflow migration

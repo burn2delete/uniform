@@ -163,6 +163,13 @@ Use the [complete alternative type system source criteria](../types-workflow/pla
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Alternative type system dependency interface
+
+Use the [alternative type system producer and consumer order](../types-workflow/plan.md#alternative-type-system-producer-and-consumer-order) and sole selected-result table. Complete L17 documentation consumes actual common typed-Core/fact/proof/check/profile/source artifacts through the declared schema without implementing the whole alternative theory. Early schema/availability contracts precede service construction; actual selected checked products precede published claims. A future final checker release is not the first tool interface, and a missing fact remains missing. Complete L17 language-server services use early actual incremental/schema/source/origin contracts, then real current selected checker facts and diagnostics for completion/hover/errors/navigation. Changed subjects invalidate stale facts before owner regeneration and use. Future whole-provider acceptance is no first LSP interface; cached labels cannot supply inference or erase blame. Complete L17 inspection renders actual selected common types/effects/capabilities/ownership/check/proof/provider/profile/source identities through their real schemas. Early record contracts precede tool construction; authentic current products precede semantic claims. Tools need no implementation of the entire alternative theory and cannot promote projected flags into verifier evidence.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Developer Tools workflow migration

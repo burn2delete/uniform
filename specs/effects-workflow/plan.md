@@ -452,6 +452,13 @@ Use the [complete alternative type system source criteria](../types-workflow/pla
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Alternative type system dependency interface
+
+Use the [alternative type system producer and consumer order](../types-workflow/plan.md#alternative-type-system-producer-and-consumer-order) and sole selected-result table. Complete L17 effect derivation consumes actual preliminary typed calls/checks and selected-provider function contracts, then derives performed/latent/transitive requirements before final admission. A checker without effect modeling uses explicit effects verified by the reference effect checker. Future final typed verification or soundness conformance cannot be its initial typed graph; checked casts retain real allocation/failure/panic effects. Complete L17 effect admission uses actual inferred or reference-verified explicit requirements, independent caller allowance/profile/service premises and separate authentic grants. Early legality interfaces precede checking and later combined verdicts precede affected use. Alternative type theory, soundness labels and caught errors cannot erase effects, capability requirements, panic, allocation or resources.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Effects task authority

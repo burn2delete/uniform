@@ -848,6 +848,13 @@ Use the [complete alternative type system source criteria](../types-workflow/pla
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Alternative type system dependency interface
+
+Use the [alternative type system producer and consumer order](../types-workflow/plan.md#alternative-type-system-producer-and-consumer-order) and sole selected-result table. Complete L17 generated-program integration uses early actual selected checker/fact/proof/schema/origin contracts, actual checked available P before invocation and real generated Q before ordinary rechecking. Final Q verification cannot provide its own first checker interface. Alternative theory cannot erase macro provenance or normal effect/grant/profile/safety checks; type-provider selection alone requires no macro invocation. Complete L17 macro/engine reuse binds actual selected type-provider/fact/proof identities with source/profile/target/macro/facet/grant dependencies. Early dependency/regenerator contracts precede work; actual changed-input invalidation and owner recomputation precede reuse. Keep engine machinery and shared/default Build admission separate; future whole checker conformance is no first cache service.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Expand task authority

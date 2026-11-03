@@ -244,6 +244,13 @@ Use the [complete alternative type system source criteria](../types-workflow/pla
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Alternative type system dependency interface
+
+Use the [alternative type system producer and consumer order](../types-workflow/plan.md#alternative-type-system-producer-and-consumer-order) and sole selected-result table. Complete L17 diagnostics start with real ten-family carrier/context schemas and later transport genuine owning provider/lowering/soundness/effect/capability/ownership/gradual/unsafe/domain/mapping failures. Preserve provider id/version, profile, source/generated origins, type, effects, capabilities, proof and failed rule. Future valid output is no first error interface; Diag derives no fabricated checker verdict. Complete L17 mapping consumes actual handwritten/macro/facet/generated subjects and authentic type/proof/check/source identities, preserving definition/call/generated-origin chains back to original source. Early map schemas precede construction; actual owner failures and boundary/blame records follow. Whole generated-program acceptance is not the first mapping input, and a map-preserved flag cannot repair stale facts.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Diagnostics task authority

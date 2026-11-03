@@ -481,6 +481,124 @@ quotas removed. No compiler/provider/plugin/C7-publication/C12/native/callback/
 device/probe/replay/migration/private-store/signing/publication action, other-chat
 message, reviewer wake, aggregate publication or merge occurs.
 
+## Alternative type system producer and consumer order
+
+Use the [complete L17 source criteria](#complete-alternative-type-system-source-criteria)
+and [sole selected-result table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition).
+This proposal changes dependencies and existing plans, not source criteria,
+task bodies/statuses, historical receipts or forty future source bindings.
+Current source/interface entailment, independent acceptance and integration
+remain pending. Earlier populations retain their original checkpoints.
+
+Forty-seven existing routes preserve every one of the 2,665 previous joins and
+all 100 unaffected route meanings. Add 78 selected inputs for 2,743 joins over
+147 routes, 107 current parents and forty future records. Selected composition
+inputs increase from 1,311 to 1,389. All twenty direct criterion consumers
+already have routes. The same 128-task feedback set remains with no members
+entering or leaving. This is not whole-task executable order; PKG2 acyclicity
+and its explicitly governed bootstrap fixed point remain authoritative.
+
+### Selection, candidate checking and safe admission
+
+Actual early selected provider/version/profile/facet/feature declarations,
+fact/proof/solver/conformance/restriction schemas and source/package/lock policy
+precede deterministic choice and candidate checker construction. Lock resolution
+needs the real declaration, not a future complete checker artifact or final
+soundness report. The illustrative provider installs nothing and grants no IR
+access. Pure local checking has no universal external solver, plugin, callback,
+native artifact or live service prerequisite; actual selected actions still
+require their real effects, grants and applicable restrictions.
+
+Early actual checker/corpus/oracle/property/evidence interfaces permit candidate
+execution and gathering comparison results. Candidate output is not admitted
+safe output. Applicable actual theorem, proof, test-suite or audit evidence and
+actual required compatibility/profile verdicts precede a safe-profile claim or
+downstream reliance. Final Auth conformance consumes real independent results;
+it cannot be the first checker interface needed to produce those results.
+Reference-equivalent, L5-subset strict-extension, all-L5-plus-annotation
+conservative-extension, gradual and domain-specific retain their exact different
+populations. No finite demonstration proves an unrestricted theorem, and L17
+adds no universal stronger proof method or whole future Formal prerequisite.
+
+Actual resolved/expanded source and independent local constraint/schema premises
+precede candidate inference and preliminary common typed Core. Actual preliminary
+calls/checks precede direct/latent/transitive effect derivation. A checker without
+effect modeling needs explicit effects verified by the reference effect checker.
+Independent caller allowance/profile/service/resource premises, separate authentic
+grants and actual required safety/profile verdicts precede checked common export.
+Final effect/profile/soundness admission does not supply its own first types.
+Types supplies facts, Effects checks effects, Auth owns selection/grants/claim
+reporting, and Legality owns profile/resource/safety admission.
+
+### Common facts, runtime checks, layout and changes
+
+Early real common schemas and verifier interfaces precede output construction;
+later actual selected solutions, functions/effects/capabilities, ownership,
+allocation/resources, casts/checks/proof references, profile assumptions and
+source maps supply all ten typed-Core groups and eight artifact families.
+Actual ordinary verification and selected consumers establish compatibility;
+accepted-downstream flags and serialized theorem names supply no verdict.
+
+Delegated ownership consumes independent flow and early real borrow/move/region/
+arena/linear/uniqueness/init/pinning/foreign-handle contracts, then sufficient
+actual facts for safety/release/transfer/layout. Compatible delegated analysis
+need not be duplicated. Early ABI/representation/service rules plus preliminary
+types permit layout derivation before later combined verification; future
+runtime execution is not the first layout premise. A provider cannot replace
+backend layout contracts without actual required exported facts.
+
+Early representation/profile/check/failure/blame interfaces permit typed gradual
+boundary construction. Actual owning legality and needed layouts precede selected
+Runtime execution on real values, with actual Result/User or DecodeError and
+source/expected-type/check/failure/blame records. Future execution cannot be the
+first check schema. Unchecked casts stay unsafe, never safe proof; forbidden
+metadata/allocation/dynamic representation rejects before lowering. Unproved
+required properties retain permitted actual check, rejection or explicit audited
+unsafe, with safe Gravity's guarantees preserved.
+
+Early selected property/proof/checker interfaces permit transformation; actual
+selected-provider/profile/target-valid serialized stable facts and required
+governing verification precede reliance. Every erased check retains its actual
+justifying proof reference. Available owner analysis precedes change; changed
+source/provider/profile/target/macro/facet/grants require real affected rechecking
+or invalidation and changed-subject verification. Future regenerated facts are
+not the first analysis service. Valid unoptimized paths remain available.
+
+### Domain facts, tools and independent results
+
+Six owners expose real early Schema record/validator, EFIR numeric/range/
+differentiability/proof, Hardware width/clock/bus/reset, Workflow durable/replay/
+signal/retry, Agent prompt/tool/model-shape/guardrail and Query row/cardinality/
+nullability/transaction interfaces, then actual selected products cross typed
+boundaries. Ordinary Core needs no complete future domain or invented domain IR.
+Source schemas authorize no live solver/model/tool/store, device or private
+operation; actual execution claims retain actual selected services and evidence.
+
+Optimizers, safety checkers, lowerers, documentation, package auditors and LSP
+consume actual common artifacts without implementing the whole alternative
+theory. Early schemas support tool construction; current checked facts precede
+semantic claims. Package verification/signing/publication remain distinct.
+Ten diagnostic families retain ten actual context fields and generated-source/
+type/proof/check/blame links. Real owning failures supply diagnostics; final
+valid output is not the first error interface. Changed subjects invalidate
+stale tool/cache facts before actual owner regeneration/current-policy reuse.
+
+Early actual owner fixtures, L5 corpus/oracles and common verifier/property/check
+interfaces precede genuine independent language/compiler/profile/safety and
+applicable formal-evidence results. Actual selected boundary execution, consumer
+verification, fact lifecycle and erased-check proof-link positives/refusals remain
+required where claimed. Final Auth/selfhost/release acceptance is not the first
+fixture. Held/unavailable cases remain Open and supplied passed records cannot
+establish conformance. Historical reviews keep their exact subject and scope.
+
+Current global source/owner/task/interface entailment, independent review and
+integration remain unproven. Reader contract coverage remains the first actual
+implementation increment. Preserve the D1/C1/C5/C6 ordering and L6/L12 hermetic
+wording decisions, real host/platform/external-account restrictions, accounting
+removal and every held operation. This dependency proposal executes no compiler,
+provider, solver, plugin, callback, native, device, replay, migration, private-store,
+signing or publication action and messages no other chat or reviewer.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Types task authority

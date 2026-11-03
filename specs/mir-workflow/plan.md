@@ -160,6 +160,13 @@ Use the [complete alternative type system source criteria](../types-workflow/pla
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Alternative type system dependency interface
+
+Use the [alternative type system producer and consumer order](../types-workflow/plan.md#alternative-type-system-producer-and-consumer-order) and sole selected-result table. Complete L17 MIR checking consumes actual admitted common typed-Core/current facts and applicable check/proof/source/profile/target identity. Early common schemas and preliminary candidates precede analysis; actual verified export precedes downstream reliance. A selected alternative theory requires no different MIR language, universal domain IR or optimizer, while actual domain-bearing subjects retain their governing anchors.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: MIR task authority

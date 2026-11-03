@@ -203,6 +203,13 @@ Use the [complete alternative type system source criteria](../types-workflow/pla
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Alternative type system dependency interface
+
+Use the [alternative type system producer and consumer order](../types-workflow/plan.md#alternative-type-system-producer-and-consumer-order) and sole selected-result table. Complete L17 lowering validates actual ordinary common typed-Core output, provider/profile/target identity, required facts and owning admission before consuming it. Early schema/verifier contracts support candidate construction, followed by actual verified selected artifacts; backend assumptions and provider success labels cannot fill missing semantic facts. Complete L17 layout derivation uses early real ABI/representation/foreign-handle/service contracts and independent preliminary type/ownership facts before actual concrete layouts. Later checked artifacts and runtime executions confirm their own claims; future execution or final combined typing is not the first layout premise. A provider cannot replace backend layout contracts without actual exported facts. Pure typing has no universal native artifact requirement. Complete L17 selected lowering preserves actual source/provider/profile/target/check/unsafe/proof facts and the specific check-erasure justification through the governing preservation evidence. Early layout/checker interfaces precede work; actual changed-subject verification precedes emitted use. Raw/unoptimized valid inputs keep their path while actual selected transformations retain their proof obligations.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Lower task authority

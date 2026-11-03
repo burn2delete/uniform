@@ -200,6 +200,13 @@ Use the [complete alternative type system source criteria](../types-workflow/pla
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Alternative type system dependency interface
+
+Use the [alternative type system producer and consumer order](../types-workflow/plan.md#alternative-type-system-producer-and-consumer-order) and sole selected-result table. Complete L17 selected runtime checking uses early real check/expected-type/failure/blame/profile/representation/service/ABI contracts, then actual admitted check records and needed layouts before executing against actual values. Preserve accepted Result/User or DecodeError, blame, resource/panic and unsafe boundaries. Later runtime execution is not the first typed check schema; source-only typing needs no universal runtime, external provider or native artifact. Complete L17 foreign/resource consumption uses early actual lifetime/pinning/handle/ABI/layout interfaces, then authentic sufficient exported facts and admitted selected calls before real transfer/cleanup. Later executions cannot supply the first ownership or layout contract. No alternative type fact grants authority or permits a hidden unsafe/nullability boundary; unrelated pure checker work needs no live foreign service.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Runtime workflow migration

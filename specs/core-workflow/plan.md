@@ -364,6 +364,13 @@ Use the [complete alternative type system source criteria](../types-workflow/pla
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Alternative type system dependency interface
+
+Use the [alternative type system producer and consumer order](../types-workflow/plan.md#alternative-type-system-producer-and-consumer-order) and sole selected-result table. Complete L17 structural candidate Core and independent local premises precede selected type/effect inference; checked common export follows actual selected checker and owning effect/grant/profile/resource/safety verdicts. Alternative machinery preserves Core evaluation semantics and required metadata. Future accepted Core output is not the first candidate subject, and alternative facts cannot replace source semantics with a host theory.
+
+Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Core task authority
