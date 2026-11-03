@@ -12,13 +12,15 @@ claim whole-project acceptance.
 | --- | --- | --- |
 | Original PR721 base | `43c69654b3f2daefa05e3902cbe78b469af47d96` | `088aa0c632516704aa552a9fa2a046828661fabc` |
 | Original PR721 head | `8cf0651e5d1adaafe4b32325beaf4c47f1d3e894` | `f2b4e596e0ef5f354e2921689d15026710650557` |
-| Prior current-main base (historical receipt) | `d351310d5821a983fac2ad0fee4c0be96711b4b4` | `1d7c95cf054bbc3e1719bc39cb35ac7bbaf13049` |
+| Historical prior current-main base | `d351310d5821a983fac2ad0fee4c0be96711b4b4` | `1d7c95cf054bbc3e1719bc39cb35ac7bbaf13049` |
 | Normal PR697 dependency source | `8cad807dbd99317baf0a9da622bb9d9ef99650a1` | `b972c6620b59f753a8c0dca85464e0cfced2a826` |
 | PR697 corrected receipt | `c5ca71cd5c0428af72b423d17ba7d62a613b5d7b` | `c8f917f3701f58d2d168f120dd0550a7e3fb46cf` |
 | PR697 normal composition merge | `6ae40925dec3ae486dc63c4963a1bfa60ce633ec` | `641beb2f3861c1ab08d56626a9d72a8d1e938603` |
 | PR721 source/test checkpoint | `19b7bbe8e6b50d5b74aa3ab3611d81f5ac37c032` | `1510969cd79404f34d6ab1ad8856b1dd96aa4e9f` |
+| Final preparation base (main 885) | `b0d949cad61c65b19a9c441669db637a90deccb1` | `7b614c485e7e012c4e7023e83e70cec852ededcd` |
+| Final source checkpoint before receipt metadata | `f891c8c1a5962ef45efd358a0c8781756dabf14f` | `572099ea99212c64d47029dec0214ffc459c6d4e` |
 
-### Current-main composition frame
+### Historical current-main composition frame (19b/ac07)
 
 The candidate was normally composed on the actual PR697 main at
 `78db2bc984bd66de920a4abaef02f759f1108605` (tree
@@ -35,8 +37,34 @@ unchanged; the final receipt metadata commit is intentionally not self-hashed.
 
 The PR697 merge is an explicit current-owner dependency, not PR721 roadmap
 credit. The historical source checkpoint was clean before its receipt metadata
-commit; the current-main composition frame records the later clean source
-merge.
+commit; the historical current-main composition frame records the later clean
+source merge. The `:current-main-composition` map is retained as the 19b/ac07
+historical frame and is not the final 885 source identity.
+
+### Final current code checkpoint (main 885)
+
+The final preparation base is main 885 at
+`b0d949cad61c65b19a9c441669db637a90deccb1` (tree
+`7b614c485e7e012c4e7023e83e70cec852ededcd`). A normal merge produced source
+checkpoint `f891c8c1a5962ef45efd358a0c8781756dabf14f` (tree
+`572099ea99212c64d47029dec0214ffc459c6d4e`), with PR721 composition
+`cfc7f73bd0e2b2d38926d3e959d278241bbf28ed` and main 885 as ordered parents.
+The worktree was clean before this receipt metadata update.
+
+The new `:current-code-checkpoint` EDN frame records all 17 original useful
+source, test, documentation and tooling inputs at their exact current blob IDs,
+byte counts and SHA-256 values. The final EDN and Markdown receipt paths are
+explicitly excluded from that input set so the receipt does not self-hash. The
+merge preserves main 885's relocation selectors and bootstrap-boundary
+selection controls while retaining PR721's lint-context loading and namespace
+run.
+
+Fresh bounded checks at this checkpoint passed: the pinned CI harness ran 45
+tests / 480 assertions, the facade suite ran 35 tests / 559 assertions, and
+pinned clj-kondo on `tools/ci` reported zero errors and warnings. Logs and
+archived generated CI artifacts are recorded in the EDN frame. These results do
+not upgrade hosted-native, C5-C8, migration, release or self-hosting claims.
+
 The final receipt commit/tree must therefore be read externally and is not
 self-hashed here.
 
@@ -75,11 +103,11 @@ was not retried.
 
 ## Focused evidence
 
-- `ci.run-test` plus the new namespace: 38 tests / 366 assertions, zero
+- Historical ac07 `ci.run-test` plus the new namespace: 38 tests / 366 assertions, zero
   failures/errors, with pinned kondo on `PATH`.
 - Archived-plan focused controls: 3 tests / 21 assertions, zero
   failures/errors.
-- Current facade/context suite: 27 tests / 494 assertions, zero
+- Historical ac07 facade/context suite: 27 tests / 494 assertions, zero
   failures/errors.
 - Core binding/session: 7 / 89 and 12 / 328, zero failures/errors.
 - SH01 list/membership/literal Set selectors: 1 / 100, 1 / 147, and 1 / 87,
@@ -96,13 +124,19 @@ was not retried.
   roadmap validator passed; its dated coverage snapshot remains
   non-authoritative.
 
-The post-composition current-main checks independently pass: reader binding and
-session 19 / 417, scalar-Set controls 3 / 383, CI runner 38 / 366, and the
-facade/context suite 27 / 494, all with zero failures/errors. The current
-`tools/ci` tree has zero pinned-kondo errors or warnings; current boundary,
-document and roadmap logs are recorded in the EDN receipt. These checks are
-bounded Clojure/source/data controls and do not upgrade any hosted-native or
-full C5-C8 claim.
+At the final main-885 code checkpoint, the fresh pinned CI harness passed 45
+tests / 480 assertions and the fresh facade suite passed 35 tests / 559
+assertions, both with zero failures/errors. Pinned clj-kondo on `tools/ci`
+reported zero errors and warnings. These fresh receipts are recorded under
+`:current-code-checkpoint` and do not self-hash the final receipt files.
+
+The historical ac07 post-composition current-main checks independently pass:
+reader binding and session 19 / 417, scalar-Set controls 3 / 383, CI runner
+38 / 366, and facade/context suite 27 / 494, all with zero failures/errors.
+The current `tools/ci` tree has zero pinned-kondo errors or warnings; current
+boundary, document and roadmap logs are recorded in the EDN receipt. These
+checks are bounded Clojure/source/data controls and do not upgrade any
+hosted-native or full C5-C8 claim.
 
 These are finite Clojure source/data/fixture controls. Hosted-native files are
 byte-identical current equivalents; no native execution was performed. No
@@ -113,7 +147,7 @@ nonpasses; no retry, heap workaround, or source-pin renewal is implied.
 ## Disposition
 
 The 17 authored paths are fully accounted for and the useful current-source
-delta is frozen on the current-main composition frame, but this candidate
+delta is frozen on the final main-885 code checkpoint, but this candidate
 remains `HOLD` pending independent review, integration preflight, and
 coordinator publication. The PR697 owner composition is a dependency only; it
 is not credited as PR721 work.

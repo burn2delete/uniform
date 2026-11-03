@@ -89,6 +89,110 @@
    {:path "tools/ci/run_test.clj"
     :current-blob "11b1432adb7763b99c739ece02c38094c4d16397"
     :current-sha256 "c3bf942d086c570471f278b24c2360f14ffe003eae0fbdd7ffd9d8d08cefa3a1"}]}
+ :current-code-checkpoint
+ {:base-commit "b0d949cad61c65b19a9c441669db637a90deccb1"
+  :base-tree "7b614c485e7e012c4e7023e83e70cec852ededcd"
+  :source-commit "f891c8c1a5962ef45efd358a0c8781756dabf14f"
+  :source-tree "572099ea99212c64d47029dec0214ffc459c6d4e"
+  :merge-parents
+  ["cfc7f73bd0e2b2d38926d3e959d278241bbf28ed"
+   "b0d949cad61c65b19a9c441669db637a90deccb1"]
+  :owned-path-count 17
+  :worktree-status :clean-before-receipt
+  :role :current-source-code-checkpoint-not-independent-acceptance
+  :receipt-paths-excluded-from-inputs
+  ["specs/reader-workflow/pr721-current-port.edn"
+   "specs/reader-workflow/pr721-current-port.md"]
+  :inputs
+  [{:path "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00897-sh07-core-construction-upstream-guard.clj"
+    :current-blob "9c554004e5adf07037cbd0cf5b47aad11f6752da"
+    :byte-count 23689
+    :current-sha256 "352feb1af8de7500594f16bb1cd2d709e261e20a183db1da16ae4dd51a8b425b"}
+   {:path "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00898-sh07-core-from-authenticated-request.clj"
+    :current-blob "a6245b27af39d973079eb220b5a7f7d5be0b6e39"
+    :byte-count 5645
+    :current-sha256 "b92924334557b1ee371fee4b771524e4c0a55c15f93d9a510c4d8a4c582e435f"}
+   {:path "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00899-sh07-core-verification-session.clj"
+    :current-blob "99b19bf320b9fb7f73835dbcaa0305d2d038893a"
+    :byte-count 13245
+    :current-sha256 "f85093054ec85fae612bbc558ec81bb2c19af1b272d077aefa8621aeb234f587"}
+   {:path "bootstrap/clojure/test/gravity/reader/core_construction_binding_test.clj"
+    :current-blob "92d4bc41ec03507455e8b0fdd82fe60779573604"
+    :byte-count 11286
+    :current-sha256 "53b26dc9d6e625a674ce8f6bf2c8f13e9a3fe0b9ca0ae3678b40104c6e5c24a3"}
+   {:path "bootstrap/clojure/test/gravity/reader/core_session_invocation_test.clj"
+    :current-blob "9f94edd4ca88507db1f3490b5759dbaee45a1242"
+    :byte-count 28395
+    :current-sha256 "bac87ee1e16f2e18ca15cb2923f0ce696d12bfa85c35da095989cabd620e0b5a"}
+   {:path "bootstrap/clojure/test/gravity/self_hosting/hosted_native_data_preflight_test.clj"
+    :current-blob "930cfb606e8fd98c22804bb631953a0dc59c3b1e"
+    :byte-count 7599
+    :current-sha256 "b219a95189275c7fbd4437b05ce48195433b3945bd4c23ddc7869193b4c8e96f"}
+   {:path "bootstrap/clojure/test/gravity/self_hosting/module_census_test.clj"
+    :current-blob "a3fa7d9f58997e5e0648f071b80712d9b72842bb"
+    :byte-count 24927
+    :current-sha256 "5a36ec0e2fb3f50181f90072c354c88fd05b36e020a9aba49c39664490aef96b"}
+   {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj"
+    :current-blob "631e773f53940be723969dbc394cb1c94c21ad51"
+    :byte-count 3047408
+    :current-sha256 "a3e40a39e4c7bac0a9cb62c1a5908c055c3998df687b9d7856a155cc904e4d79"}
+   {:path "docs/hosted-native-data-preflight.md"
+    :current-blob "7b7d42988ca97e30718c3c313cd65c51c39200e5"
+    :byte-count 2811
+    :current-sha256 "b0f7986f4056e7a4f0b76072b8d334f9347dd2a4909ae4060ed21373d394cebc"}
+   {:path "specs/reader-workflow/core-construction-root-binding.md"
+    :current-blob "523ddffd526fee6a285625f601ee73cc290e89ef"
+    :byte-count 4980
+    :current-sha256 "eae80db0091dd7f9e0b86fa6f4caf33123e40e087f8e357b7c5dd12bb978e2d3"}
+   {:path "specs/reader-workflow/core-session-invocation.md"
+    :current-blob "3b75ed2f54e40c20c6d325d5f90c5d00871b86b0"
+    :byte-count 8941
+    :current-sha256 "d3d180af2d357861be39d5fb8a412608b1e0bfb6b081c21a3c7d786881005673"}
+   {:path "specs/reader-workflow/core-session-known-diagnostic.md"
+    :current-blob "271144c5095919060c8831d31ddd336211ecdc72"
+    :byte-count 3487
+    :current-sha256 "df7b3d7aa6ee846b67b5546fbc6c97d8dd6d7268df1cbd92416f6127e797cca9"}
+   {:path "specs/reader-workflow/expected-core-failure-source-trace.edn"
+    :current-blob "9240a4fb10814631bdc224a4442b9d998de08560"
+    :byte-count 1403
+    :current-sha256 "9068ff7bc776a133642c7934dd352651eac634ccde25ee85ff3fc16efb793b13"}
+   {:path "specs/reader-workflow/expected-core-failure-source-trace.md"
+    :current-blob "64f4cb213b83f2a6f135bd1787ff65d319061a3b"
+    :byte-count 1888
+    :current-sha256 "7a0a72238bf084268ecc9c5bf8c071933ff90d9116f191ac506a268083d81fdd"}
+   {:path "tools/ci/lint_context.clj"
+    :current-blob "7fe227cb42aab10df0830e3f955429164b999671"
+    :byte-count 39473
+    :current-sha256 "92875213c49ba090ff881d0c2d7fbf420e7e811db8caded381e2ec396bb3fc17"}
+   {:path "tools/ci/lint_context_test.clj"
+    :current-blob "93ee9ce685e7f10fe7db45c1fb503466964cffec"
+    :byte-count 5172
+    :current-sha256 "8e03f6beeb0739986cf260a6ca4f24ba24b2217c6ad8208c49531d719283f770"}
+   {:path "tools/ci/run_test.clj"
+    :current-blob "9056568aca92f8a1da2f99652db32c3385a6a905"
+    :byte-count 74766
+    :current-sha256 "3ed7357a46df24b4e697d11e0216fcdb2b85a421850d9f8a651022832e35ee69"}]
+  :focused-checks
+  [{:name :post-885-ci-runner
+    :command "PATH=/tmp/acc08-controls-01a183dd/kondo-2025.10.23:$PATH clojure -M tools/ci/run_test.clj"
+    :result "45 tests, 480 assertions, 0 failures, 0 errors"
+    :exit 0
+    :log "/tmp/uniform-pr721-post885-ci-run-test.log"}
+   {:name :post-885-facade-context
+    :command "PATH=/tmp/acc08-controls-01a183dd/kondo-2025.10.23:$PATH clojure -M tools/ci/lint_facade_test.clj"
+    :result "35 tests, 559 assertions, 0 failures, 0 errors"
+    :exit 0
+    :log "/tmp/uniform-pr721-post885-facade.log"}
+   {:name :post-885-pinned-clj-kondo
+    :command "PATH=/tmp/acc08-controls-01a183dd/kondo-2025.10.23:$PATH clj-kondo --lint tools/ci"
+    :result "0 errors, 0 warnings"
+    :exit 0
+    :log "/tmp/uniform-pr721-post885-kondo.log"}
+   {:name :post-885-git-diff-check
+    :result "passed"
+    :exit 0}]
+  :archived-artifacts
+  ["/tmp/uniform-pr721-post885-target-ci"]}
  :path-accounting
  [{:path "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00897-sh07-core-construction-upstream-guard.clj"
    :original-blob "deade6360a98dcc8480685e78746d29c3f23d793"
