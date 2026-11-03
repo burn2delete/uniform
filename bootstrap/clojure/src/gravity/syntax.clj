@@ -1444,8 +1444,6 @@
      sh04-syntax-plan-identities
      sh04-syntax-public-function-hashes
      sh04-syntax-public-function-shapes
-     sh04-syntax-read-current-source!
-     sh04-syntax-read-pinned-source!
      sha256-hex]
     :as operations}
    source-mode
@@ -1470,8 +1468,8 @@
     (:source-path source)
     (:source-text source))
    identities
-   (sh04-syntax-plan-identities raw-plan)]
-  (let [common?
+   (sh04-syntax-plan-identities raw-plan)
+        common?
         (and
          (= :gravity/stage2-compiler-artifact-plan (:kind raw-plan))
          (true? (:compiler-artifact-plan? raw-plan))
@@ -1559,7 +1557,7 @@
         :function-names-hash
         :function-shapes-hash
         :public-function-hashes
-       :public-function-shapes])))))))))
+       :public-function-shapes]))))))))
 
 (defn
  current-plan-binding!
