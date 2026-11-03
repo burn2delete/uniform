@@ -57,14 +57,15 @@
 
 (defn- module-analysis-default?
   [context]
-  (let [defaults (:defaults context)
-        state (ns-resolve 'gravity.bootstrap 'default-module-analysis-state)
-        config (ns-resolve 'gravity.bootstrap
-                           'default-module-analysis-config-state)]
+  (let [defaults (:defaults context)]
     (and (true? (:module-analysis-default? defaults))
-         (or (nil? state) (boolean (@state)))
-         (or (nil? config)
-             (= (:module-analysis-config defaults) (@config))))))
+         (let [state (ns-resolve 'gravity.bootstrap
+                                 'default-module-analysis-state)
+               config (ns-resolve 'gravity.bootstrap
+                                  'default-module-analysis-config-state)]
+           (and (or (nil? state) (boolean (@state)))
+                (or (nil? config)
+                    (= (:module-analysis-config defaults) (@config))))))))
 
 (defn- same-source?
   [context source-path source-text]
