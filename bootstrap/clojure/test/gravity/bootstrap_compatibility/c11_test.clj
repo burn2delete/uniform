@@ -132,9 +132,30 @@
                     (original-resolve namespace symbol))]
       (is (= :standalone
              (source-input/module (fn [_ _] :standalone)
-                                   "standalone-module.gravity"
-                                   [])))
+                                  "standalone-module.gravity"
+                                  [])))
       (is (zero? @lookups)))))
+
+(deftest inactive-module-analysis-skips-bootstrap-analysis-state-lookups
+  (let [lookups (atom 0)
+        original-resolve clojure.core/ns-resolve
+        context-var (ns-resolve 'gravity.source-input '*context*)]
+    (with-redefs [clojure.core/ns-resolve
+                  (fn [namespace symbol]
+                    (when (and (= namespace 'gravity.bootstrap)
+                               (contains?
+                                #{'default-module-analysis-state
+                                  'default-module-analysis-config-state}
+                                symbol))
+                      (swap! lookups inc))
+                    (original-resolve namespace symbol))]
+      (with-bindings
+        {context-var (atom {:defaults {:module-analysis-default? false}})}
+        (is (= :inactive
+               (source-input/module (fn [_ _] :inactive)
+                                    "inactive-module.gravity"
+                                    [])))
+        (is (zero? @lookups))))))
 
 (deftest c11-composition-reuses-default-products-and-keeps-expanded-products-separate
   (let [source-path "c11-composition.gravity"
