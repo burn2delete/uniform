@@ -7,8 +7,8 @@ another implementation task ledger, acceptance graph or completion denominator.
 Reconciliation remains in progress; independent acceptance and integration of
 this change are pending. No compiler or product completion is claimed.
 
-Latest source continuation: L17 alternative type system source proposal.
-The [current checkpoint](#complete-l17-alternative-type-system-source-continuation)
+Latest source continuation: L17 alternative type system source and selected-result
+dependency proposals. The [current checkpoint](#complete-l17-selected-result-dependency-continuation)
 records checks and remaining work. Whole-project semantic coverage, independent
 acceptance and integration remain unproven.
 
@@ -6362,3 +6362,131 @@ read-only invocation exits zero. Final conservation/navigation passes 91 changed
 files, 85 Markdown files, 4,113 local references, 139 original routes, 48
 historical spec/plan suffixes and all 48 original task/evidence contents after
 declared additions are removed. ASCII and whitespace checks pass.
+
+## Complete L17 selected-result dependency continuation
+
+Dependency source `3d4854762252741c302a9c5367a124114fe9547c` follows the
+`ddc5529a47e28bda574ffbb39a7e70aa77dd4984` complete L17 source checkpoint.
+The [alternative type system producer and consumer order](../specs/types-workflow/plan.md#alternative-type-system-producer-and-consumer-order)
+and [sole selected-result table](../docs/acceptance-dependencies.md#future-task-construction-and-composition)
+now expose 280 selected input subjects in seventeen existing plans. Forty-seven
+existing consumer routes retain all 2,665 preceding input joins and all 100
+unaffected route meanings. Add 78 inputs for 2,743 joins over 147 routes, 107
+current parents and forty future records. Selected composition inputs increase
+from 1,311 to 1,389. All twenty direct L17 task consumers already had routes;
+no consumer row, task identity, authority or status is added.
+
+The coarse feedback set remains exactly the same 128 tasks, with no entering
+or departing members. Selected stages express early interfaces and later real
+results; they do not prove a whole-task executable order. Namespace and Build
+cycles remain subject to PKG2 acyclicity and its explicitly governed bootstrap
+fixed point. The current global interface conjunction remains unassessed.
+
+Early authentic selected provider/version/profile/facet/feature/fact/proof/solver/
+conformance/restriction declarations and locks precede candidate checking. The
+later complete checker or final conformance report cannot supply its own first
+identity/lock/interface. Early actual corpus/oracle/property/evidence contracts
+permit candidate execution and comparison. Applicable actual theorem/proof/test/
+audit and independent results precede safe-profile claims or admitted reliance.
+Candidate outputs do not inherit safe acceptance. Auth's later report consumes
+real products instead of gating the first fixture needed to produce them.
+All five exact declared soundness meanings retain their distinct populations;
+no universal stronger method or whole future Formal completion is invented.
+
+Actual resolved/expanded source and independent constraints produce preliminary
+common typed Core before direct/latent/transitive effect derivation. Actual
+effects or reference-verified explicit effects, independent allowance/profile/
+service/resource premises and separate authentic grants precede checked export.
+Final admission cannot provide its own first type graph. Types, Effects, Auth
+and Legality keep their distinct real responsibilities. Pure checking requires
+no universal plugin/callback/external solver/native artifact/live service;
+actual selected actions still need their concrete authority and restrictions.
+
+Early common schemas/verifiers support construction; actual selected facts,
+checks/proofs, all ten typed-Core groups and eight artifact families precede
+admitted consumption. Delegated nine-family ownership analysis need not be
+duplicated, but actual sufficient facts must reach safety/release/transfer/layout.
+Early ABI rules and independent preliminary types precede concrete layouts;
+future runtime execution is no first layout contract. Early representation/
+check/failure/blame schemas precede inserted gradual boundaries, then actual
+legality and required layouts precede selected execution on real values.
+Result/User or DecodeError, source/expected-type/check/failure/blame and unsafe
+metadata remain. Unchecked casts never become safe proof.
+
+Early selected property/checker interfaces precede transforms; actual applicable
+serialized stable proof and governing preservation precede reliance. Every
+erased check retains its actual justifying proof reference. Available owner
+analysis precedes change, then changed source/provider/profile/target/macro/
+facet/grants require real affected rechecking/invalidation and changed-subject
+verification. Valid unoptimized paths remain. Six domain fact owners expose
+actual early contracts, then genuine selected typed products; ordinary Core
+requires no universal domain IR or complete future domain. Source schemas
+provide no live model/tool/store/device authority.
+
+Common schemas allow documentation, package auditors, LSP and other consumers
+to use actual current typed facts without implementing the whole theory.
+Ten diagnostic meanings retain their ten real context fields, generated-source
+maps and check/blame/proof links. A future valid artifact is no first error
+schema. Early owner fixtures and L5 corpus/oracles precede actual independent
+language/compiler/profile/safety and applicable formal-evidence results; final
+Auth/selfhost/release acceptance is no first fixture. Held/unavailable cases
+remain Open and supplied successful records cannot pass.
+
+All 25 complete L17 source criteria, four reused predicates/7,618 bytes, 95
+facets, 66 occurrences, fifteen section conjunctions and six original owner
+obligations remain exact. All 149 current keys, 25 task authorities, forty
+identical / 99 amended original bodies and forty future declarations/source
+bindings remain. No task body/source criterion, historical receipt or
+Domains/Release/Platform task source changes. Every historical source/role/
+dependency review keeps its subject and scope without renewal or consumption.
+
+The L17 source regression now reads its entire frozen `ddc5529a4` bridge,
+projection and source readers. All other prior test bytes stay unchanged.
+The new dependency regression checks original task/receipt conservation,
+source bindings, complete join preservation, selected stages, unchanged cycle
+membership and the missing-provider-route refusal. The retained local census
+object remains necessary; aggregate remote availability, adoption and fresh-clone
+reproducibility are not established.
+
+Temporary preparation rejected an extra close delimiter before its writes;
+the capture reader also rejected an extra delimiter before its mutator. Both
+were corrected before application. Only the current aggregate Legality-input
+count changes in the existing dependency test, from the old source's sorted
+35/39/43/46/50 to the actual preserved-plus-added 36/42/43/46/50. No semantic
+requirement or historical assertion is converted.
+
+Next is complete L19 interoperability and migration source reconciliation.
+Direct reading requires ten boundary families, explicit directional mappings,
+complete declarations, real wrapper invariants, foreign ownership/error/threading,
+schema provenance/drift, hosted-profile separation and incumbent parity. Foreign
+language support is a language contract, not authorization to add another
+bootstrap/tooling language. Existing runtime/type/provider links alone do not
+establish whole L19 coverage. Wider library/support sources, global source/owner/
+task/interface entailment, material recorded decisions, current independent
+review and integration remain pending. Reader contract coverage remains the
+first actual implementation increment. No held execution, other-chat message,
+reviewer wake, aggregate publication, merge or migration operation occurs.
+
+The first focused run passed 10,240 assertions with one new failure: the role
+lookup searched current tasks only and missed the existing future Release
+language harness. The source stage was present. The corrected new-test lookup
+uses the full current-plus-future id set; every prior test byte remains as
+scoped above. The corrected four-test run passes 10,241 assertions with a
+512 MB host heap. Failed attempts receive no passing or acceptance credit.
+
+Current proposal fingerprint:
+`f7dbfef35858d44b46330e073a000ee21cf1d4086b6bf6fab76bad14e806d21b`.
+All applying source pins verify against local Git. All 23 dependency tests /
+7,285 assertions and both current projection checks pass. The language-boundary
+gate passes six tests / eleven assertions. Canonical validation passes all 240
+documents / nineteen phase indexes; roadmap structural validation passes with
+its dated counts non-authoritative. The full current 85-test crosswalk suite
+was not rerun. The prior complete 68-test / 44,978-assertion run remains bound
+to `25a96a0c03536270001449c00676e644ea353521`. These are planning/traceability
+checks, not compiler/provider/interop/proof/migration/selfhost/release conformance.
+
+Final conservation/navigation passes 91 changed files, 85 Markdown files,
+4,133 local references, 139 original routes, 48 historical spec/plan suffixes
+and all 48 original task/evidence contents after declared additions are removed.
+ASCII and whitespace checks pass. Reconciliation, implementation, independent
+acceptance and integration remain distinct and unfinished.
