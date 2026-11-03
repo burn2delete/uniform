@@ -68,6 +68,23 @@ to force a passing result. Helpers/logs use uniform-safety-native-reports-*
 under /tmp. The PR attachment attempt failed at the existing 100-identity
 limit and is not retried.
 
+## Complete backend and Safety composition
+
+The integration candidate normally composes reviewed Safety source
+23a146e412412c25f5242b5b1fad874c8a478a3e with reviewed backend source
+7b38fffbaab2d3da55f72bda816c04d5da6ce5da. The latter includes actual main
+c28077686b5bd641c8cc0717bbd23641a701987a, tree
+67eb8f7ab968c29fc3b58ce7a4ac980ac41e4d21, and its selected Syntax owner
+authentication. All 25 backend paths match the reviewed backend source. All
+six Safety paths match the reviewed Safety source before this composition
+paragraph. All other tracked paths match actual main. The complete union is
+31 paths, preserving both original draft histories without duplicate credit.
+
+Fresh clean native captures, paired Safety/backend controls, exact complete
+composition review, own CI/artifact checks and immediate current-main
+preflight remain required. No provider source is adopted, and earlier CI
+results do not confer integration eligibility on the combined source.
+
 ## Residual boundaries
 
 No new general SAFE classification, source/Core authentication, proof-provider
