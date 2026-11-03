@@ -51,17 +51,17 @@
    :main-opts ["-m" "gravity.development-test-runner"
                "--namespace" "gravity.project-structure-test-runner-test"]}
 
-  ;; Project-scoped development entrypoints.  Each wrapper requires explicit
-  ;; namespaces for non-empty selections and rejects the broad bootstrap
-  ;; default, while reusing the existing runners and their fixtures.
+  ;; Project-scoped development entrypoints.  The shared runner binds each
+  ;; alias to its initial namespace catalog while preserving the existing
+  ;; development runner's selectors and fixtures.
   :language-test
   {:extra-paths ["bootstrap/clojure/test"]
-   :main-opts ["-m" "gravity.language-test-runner"]}
+   :main-opts ["-m" "gravity.project-test-runner" "--scope" "language"]}
 
   :compiler-composition-test
   {:extra-paths ["bootstrap/clojure/test"]
-   :main-opts ["-m" "gravity.compiler-composition-test-runner"]}
+   :main-opts ["-m" "gravity.project-test-runner" "--scope" "compiler"]}
 
   :bootstrap-validation-test
   {:extra-paths ["bootstrap/clojure/test"]
-   :main-opts ["-m" "gravity.bootstrap-validation-test-runner"]}}}
+   :main-opts ["-m" "gravity.project-test-runner" "--scope" "bootstrap"]}}}

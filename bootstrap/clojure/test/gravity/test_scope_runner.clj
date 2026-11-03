@@ -93,42 +93,6 @@
         (ensure-scope! scope selected)
         args)))))
 
-(defn normalize-bootstrap-args
-  "Bind a bootstrap validation invocation to its fixed namespaces.
-
-  Bootstrap validation intentionally exposes only namespace selection and
-  fail-fast controls.  Rebuild/equivalence evidence remains owned by the
-  bootstrap project and is not inferred from this development gate."
-  [args]
-  (let [args (vec args)]
-    (if (empty? args)
-      (vec (mapcat #(vector "--namespace" (str %))
-                   (scope-namespaces :bootstrap)))
-      (if (= ["--list"] args)
-        args
-      (loop [remaining (seq args)
-             selected []]
-        (if-not remaining
-          (do (ensure-scope! :bootstrap selected) args)
-          (let [argument (first remaining)
-                tail (next remaining)]
-            (cond
-              (= "--fail-fast" argument)
-              (recur tail selected)
-
-              (= "--namespace" argument)
-              (if (seq tail)
-                (recur (next tail)
-                       (conj selected
-                             (symbol (selector-value argument (first tail)))))
-                (throw (ex-info "--namespace requires an owned test namespace"
-                                {:id "TEST-SCOPE-SELECTOR"})))
-
-              :else
-              (throw (ex-info "Unsupported bootstrap validation option"
-                              {:id "TEST-SCOPE-OPTION"
-                               :option argument}))))))))))
-
 (defn usage
   [scope]
   (str "Project test scope: " (name scope) "\n"

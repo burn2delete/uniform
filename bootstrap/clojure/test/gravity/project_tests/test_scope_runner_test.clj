@@ -1,6 +1,6 @@
-(ns gravity.test-scope-runner-test
-  (:require [clojure.test :refer [deftest is testing]]
-            [clojure.set :as set]
+(ns gravity.project-tests.test-scope-runner-test
+  (:require [clojure.set :as set]
+            [clojure.test :refer [deftest is]]
             [gravity.test-scope-runner :as scope]))
 
 (defn- throws-message?
@@ -31,15 +31,20 @@
   (is (throws-message?
        #"outside the requested project scope"
        #(scope/normalize-development-args
-         :language
-         ["--namespace" "gravity.bootstrap-test"]))))
+         :language ["--namespace" "gravity.bootstrap-test"]))))
 
-(deftest development-selection-requires-explicit-namespace
-  (is (throws-message?
-       #"requires an explicit namespace"
-       #(scope/normalize-development-args :compiler ["--exact" "some-test"]))))
+(deftest bootstrap-selection-accepts-existing-focused-selectors
+  (is (= ["--namespace" "gravity.self-hosting.w5-stage-equivalence-verifier-test"
+          "--exact" "gravity.self-hosting.w5-stage-equivalence-verifier-test/w5-stage-equivalence-rejected-fixture-covers-every-mode-and-control"
+          "--fail-fast"]
+         (scope/normalize-development-args
+          :bootstrap
+          ["--namespace" "gravity.self-hosting.w5-stage-equivalence-verifier-test"
+           "--exact" "gravity.self-hosting.w5-stage-equivalence-verifier-test/w5-stage-equivalence-rejected-fixture-covers-every-mode-and-control"
+           "--fail-fast"]))))
 
-(deftest bootstrap-selection-rejects-development-only-options
+(deftest bootstrap-selection-rejects-language-namespace
   (is (throws-message?
-       #"Unsupported bootstrap validation option"
-       #(scope/normalize-bootstrap-args ["--exact" "some-test"]))))
+       #"outside the requested project scope"
+       #(scope/normalize-development-args
+         :bootstrap ["--namespace" "gravity.reader.normal-dispatch-test"]))))
