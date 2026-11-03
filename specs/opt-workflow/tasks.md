@@ -60,6 +60,14 @@ Apply the [complete optimization source criteria](plan.md#complete-optimization-
 C13 proof/check/anchor criterion (Open): Preserve bounds, overflow, null, initialization and lifetime checks unless actual applicable PERF10 evidence justifies their elision for the exact subject with required dominance and surviving assumptions. Domain entry/exit, EFIR fusion and provider selection preserve typed-core/MIR anchors and governing MATH10/SAFE15 semantics/certificates. Consume actual domain/math/proof-checker results; a proof name or target metadata is not verification. Regenerate invalidated type/effect/ownership/capability/safety/math/profile facts and evidence, keep lawful residual checks or reject the transformation. Required outputs: proof/certificate-use and check-elision/retention records, residual checks, actual accepted/rejected missing/non-dominating/stale-proof and invalid-anchor fixtures, and preserved source/generated origins. Reject proofless check erasure, stale safety outcomes, invalid domain transformations and illegal effect reorder with C13-PROOF/CHECK-ELISION/SAFETY/DOMAIN/EFFECT; no required policy or authority check disappears for speed.
 <!-- opt-canonical-checks:end -->
 
+
+<!-- opt-library-source-preservation:start -->
+
+Apply the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current whole-source/interface acceptance remains pending.
+
+L13 library numeric and safe-API preservation criterion (Open): Preserve actual declared public numeric width/overflow/floating/vector/rounding/NaN/infinity mode and library error/resource/wrapper/authority semantics through each selected optimization, specialization and inline/lowering path. Explicitly relaxed source modes permit only their declared variation; host defaults, normal-result equality, metadata retention or structural validity cannot justify lost failures, checks, cleanup, diagnostics or audit. Obtain the governing exact-subject proof/certificate/validation before dependent use, regenerate affected owner facts and verify the changed subject. Required evidence: actual before/after accepted/refused mode, check, resource and wrapper products plus preserved source/profile/target identity. Valid unoptimized programs remain usable; no universal optimizer or full future Formal prerequisite is introduced.
+<!-- opt-library-source-preservation:end -->
+
 - [ ] `opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate` opt/4: Verify and regenerate
 
 Current evidence/status: Open; partial source evidence above is not closure

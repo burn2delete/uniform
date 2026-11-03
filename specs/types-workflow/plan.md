@@ -264,6 +264,13 @@ Use the [complete error-handling source criteria](../core-workflow/plan.md#compl
 
 Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Complete library-principles source interface
+
+Use the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria). Derive actual declaration/implementation/call/generic/schema compatibility from independent types. Public metadata and library API classifications are inputs, not completed effect/safety admission or callable behavior.
+
+Current source/interface entailment and independent acceptance remain pending. Task identities/statuses, finite historical reviews and actual restrictions survive; no held action is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Types task authority

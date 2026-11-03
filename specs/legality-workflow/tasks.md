@@ -466,6 +466,14 @@ Apply the [complete error-handling source criteria](../core-workflow/plan.md#com
 L9 specified safety-check-failure criterion (Open): For every actual retained bounds, initialization, numeric, capability, taint or replay check, require its current typed failure record or profile/runtime/safety-mode-defined trap and preserve the real check/source/generated identity to Runtime and Lower. A failing retained check is specified behavior rather than target undefined behavior, proof of success or an implicit fifth D8 outcome. Preserve proven-safe/runtime-checked/rejected/explicit audited unsafe classification and surviving checks under their own contracts. Required evidence: actual check-to-failure/trap obligations and accepted/refused missing/changed/erased behavior fixtures; Runtime executes triggered failure and cleanup, not this static declaration or supplied safe flag.
 <!-- legality-error-source-failure:end -->
 
+
+<!-- legality-library-source-wrappers:start -->
+
+Apply the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current whole-source/interface acceptance remains pending.
+
+L13 real safe-wrapper boundary criterion (Open): Verify each claimed safe library surface over separately isolated unsafe namespaces using the actual signature/invariant, preconditions, permitted profiles, ownership/cleanup and surviving proof/check/audit evidence. Require tests or proofs of the invariant, identify the wrapper when it cannot be established and retain release/safety-critical audit artifacts. Preserve D8's proved-safe/runtime-checked/rejected/explicit unsafe-island outcomes and no undefined behavior through optimization and target lowering. A manifest, generic unsafe flag or host implementation is no safety proof. Required evidence: actual valid/invalid wrapper cases and owning L13-UNSAFE-INVARIANT/L13-RESOURCE/L13-ALLOC or safety diagnostics, source-linked checks/proofs/audits and real library boundary behavior. Library owns callable wrappers, Legality analysis and verdicts; restricted unsafe/provider/device execution remains held.
+<!-- legality-library-source-wrappers:end -->
+
 - [ ] `legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution` Preserve obligations into MIR and runtime execution
 
 Status: Open

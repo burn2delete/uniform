@@ -171,6 +171,14 @@ Apply the [complete error-handling source criteria](../core-workflow/plan.md#com
 L9 distinct error-family criterion (Open): Represent actual declared absence Option, recoverable Result, typed thrown error, panic/unrecoverable failure, assertion/contract failure, safety-check failure, capability denial, FFI error, workflow retry/compensation failure, AI/model/tool/policy/evaluation failure and compiler diagnostic as distinct contracts. Preserve actual Some/None and Ok/Err payload types and source/audit identities across portable constrained profiles. Do not turn capability denial into nil/absence, workflow replay failure into an unrelated local exception or AI failure into unrecorded text. Source nil remains its own L2 value; it is not an implicit Option or host-null conversion. Required evidence: genuine error/outcome declarations, constructor/match type cases and positive/refused cross-family conversions without inventing new error syntax or a host exception hierarchy.
 <!-- types-error-source-outcomes:end -->
 
+
+<!-- types-library-source-typed:start -->
+
+Apply the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current whole-source/interface acceptance remains pending.
+
+L13 actual public library type-contract criterion (Open): Check actual public function/type/macro/protocol/constructor declarations and selected calls against independently derived argument/result/generic/schema facts and genuine resolved export identities. Preserve declared effect, capability, allocation, failure and profile contracts as inputs without treating them as completed effect/safety admission or callable implementation. Source schemas and intrinsic signatures are authentic; invalid/generated forms follow normal checks. Reject declaration/implementation/call mismatch, unsupported overloads, invented shape or host-default types, retaining actual source/export/version identity and typed accepted/refused cases. Library publishes contracts and implements APIs; Types supplies real type/compatibility facts, while other owners retain effects, grants, safety and target judgments.
+<!-- types-library-source-typed:end -->
+
 - [ ] `types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit` types/3: Make dynamic boundaries explicit
 
 Current evidence/status: Open; partial source evidence above is not closure
