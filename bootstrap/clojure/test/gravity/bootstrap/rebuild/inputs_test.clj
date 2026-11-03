@@ -1,6 +1,5 @@
 (ns gravity.bootstrap.rebuild.inputs-test
   (:require [clojure.edn :as edn]
-            [clojure.java.io :as io]
             [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap.rebuild.inputs :as inputs])
   (:import [java.nio.file Files]))
@@ -26,83 +25,105 @@
   []
   (edn/read-string (slurp manifest-path)))
 
-(deftest repository-declaration-authenticates
-  (let [loaded (inputs/load-inputs! "." manifest-path)
-        entries (get-in loaded [:source-graph :entries])]
-    (is (= :gravity/bootstrap-inputs-v1
-           (get-in loaded [:manifest :schema])))
-    (is (= :gravity (get-in loaded [:compiler :source-language])))
-    (is (= :clojure (get-in loaded [:compiler :seed-language])))
-    (is (<= 1 (count entries)))
-    (is (= (get-in loaded [:source-graph :sha256])
-           (inputs/source-graph-sha256 entries)))))
+(defn- with-pinned-root
+  [manifest-path f]
+  (let [declaration (inputs/read-manifest manifest-path)
+        materialize! (deref (resolve 'gravity.bootstrap.rebuild.inputs/materialize-source!))
+        delete-tree! (deref (resolve 'gravity.bootstrap.rebuild.inputs/delete-tree!))
+        snapshot (materialize! "." declaration)]
+    (try
+      (f (.toString (:root snapshot)))
+      (finally
+        (delete-tree! (:root snapshot))
+        (Files/deleteIfExists (:archive snapshot))))))
 
-(deftest rebuild-executor-receives-authenticated-inputs
-  (let [seen (atom nil)
-        loaded (inputs/load-inputs! "." manifest-path)
-        graph-id (get-in loaded [:source-graph :sha256])
-        result (inputs/run-rebuild!
-                "."
-                manifest-path
-                (fn [verified]
-                  (reset! seen verified)
-                  {:artifact-id "sha256:synthetic-bootstrap-artifact"
-                   :source-graph-sha256 (get-in verified [:source-graph :sha256])}))]
-    (is (= graph-id (get-in @seen [:source-graph :sha256])))
-    (is (= "sha256:synthetic-bootstrap-artifact"
-           (get-in result [:result :artifact-id])))))
+(deftest pinned-source-declaration-authenticates
+  (with-pinned-root
+    manifest-path
+    (fn [root]
+      (let [loaded (inputs/load-inputs! root manifest-path)
+            entries (get-in loaded [:source-graph :entries])]
+        (is (= :gravity/bootstrap-inputs-v2
+               (get-in loaded [:manifest :schema])))
+        (is (= "d351310d5821a983fac2ad0fee4c0be96711b4b4"
+               (get-in loaded [:manifest :source-revision :commit])))
+        (is (= "sha256:c78ccb773f2e89ee3c7aaf7190703d2a3ed23f301ed76fd0bf75135a08556c50"
+               (get-in loaded [:source-graph :sha256])))
+        (is (< 2000 (count entries)))
+        (is (= (get-in loaded [:source-graph :sha256])
+               (inputs/source-graph-sha256 entries)))))))
 
-(deftest direct-input-substitution-is-rejected
-  (let [changed (assoc-in (manifest) [:direct-inputs 0 :sha256]
-                          (str "sha256:" (apply str (repeat 64 "0"))))]
-    (with-temporary-manifest
-      changed
-      (fn [path]
-        (let [error (try
-                      (inputs/load-inputs! "." path)
-                      nil
-                      (catch clojure.lang.ExceptionInfo error error))]
-          (is error)
-          (is (= "BOOT-INPUTS-DIRECT-DIGEST-MISMATCH"
-                 (:diagnostic (ex-data error)))))))))
+(deftest missing-and-substituted-inputs-fail-closed
+  (testing "a changed lockfile digest is observed in the pinned snapshot"
+    (let [changed (assoc-in (manifest) [:direct-inputs 0 :sha256]
+                            (str "sha256:" (apply str (repeat 64 "0"))))]
+      (with-temporary-manifest
+        changed
+        (fn [path]
+          (let [error (try
+                        (with-pinned-root path #(inputs/load-inputs! % path))
+                        nil
+                        (catch clojure.lang.ExceptionInfo error error))]
+            (is error)
+            (is (= "BOOT-INPUTS-DIRECT-DIGEST-MISMATCH"
+                   (:diagnostic (ex-data error)))))))))
+  (testing "a changed source graph identity is rejected"
+    (let [changed (assoc-in (manifest) [:source-graph :sha256]
+                            (str "sha256:" (apply str (repeat 64 "f"))))]
+      (with-temporary-manifest
+        changed
+        (fn [path]
+          (let [error (try
+                        (with-pinned-root path #(inputs/load-inputs! % path))
+                        nil
+                        (catch clojure.lang.ExceptionInfo error error))]
+            (is error)
+            (is (= "BOOT-INPUTS-SOURCE-GRAPH-MISMATCH"
+                   (:diagnostic (ex-data error))))))))))
 
-(deftest missing-source-root-is-rejected
-  (let [changed (assoc-in (manifest) [:source-roots 0 :path]
-                          "bootstrap/gravity/missing-source-root")]
-    (with-temporary-manifest
-      changed
-      (fn [path]
-        (let [error (try
-                      (inputs/load-inputs! "." path)
-                      nil
-                      (catch clojure.lang.ExceptionInfo error error))]
-          (is error)
-          (is (= "BOOT-INPUTS-MISSING-ROOT"
-                 (:diagnostic (ex-data error)))))))))
+(deftest declaration-substitution-fails-before-development-build
+  (doseq [[label changed expected]
+          [["source revision"
+            (assoc-in (manifest) [:source-revision :commit] (apply str (repeat 40 "0")))
+            "BOOT-INPUTS-MALFORMED"]
+           ["scope profile"
+            (assoc-in (manifest) [:scope :compiler-profiles] [:native])
+            "BOOT-INPUTS-MALFORMED"]
+           ["execution backend"
+            (assoc-in (manifest) [:execution :backend] :wasm)
+            "BOOT-INPUTS-INCOMPATIBLE"]
+           ["seed artifact"
+            (assoc-in (manifest) [:toolchain :seed-artifact-id]
+                      "sha256:0000000000000000000000000000000000000000000000000000000000000000")
+            "BOOT-INPUTS-MALFORMED"]]]
+    (testing label
+      (with-temporary-manifest
+        changed
+        (fn [path]
+          (let [error (try
+                        (inputs/read-manifest path)
+                        nil
+                        (catch clojure.lang.ExceptionInfo error error))]
+            (is error)
+            (is (= expected (:diagnostic (ex-data error))))))))))
 
-(deftest incompatible-target-is-rejected-before-source-walk
-  (let [changed (assoc-in (manifest) [:execution :backend] :wasm)]
-    (with-temporary-manifest
-      changed
-      (fn [path]
-        (let [error (try
-                      (inputs/load-inputs! "." path)
-                      nil
-                      (catch clojure.lang.ExceptionInfo error error))]
-          (is error)
-          (is (= "BOOT-INPUTS-INCOMPATIBLE"
-                 (:diagnostic (ex-data error)))))))))
-
-(deftest source-graph-identity-drift-is-rejected
-  (let [changed (assoc-in (manifest) [:source-graph :sha256]
-                          (str "sha256:" (apply str (repeat 64 "f"))))]
-    (with-temporary-manifest
-      changed
-      (fn [path]
-        (let [error (try
-                      (inputs/load-inputs! "." path)
-                      nil
-                      (catch clojure.lang.ExceptionInfo error error))]
-          (is error)
-          (is (= "BOOT-INPUTS-SOURCE-GRAPH-MISMATCH"
-                 (:diagnostic (ex-data error)))))))))
+(deftest development-build-consumes-real-compiler-fixtures
+  (let [{:keys [inputs result]} (inputs/run-development-build! "." manifest-path)
+        fixtures (:fixtures result)
+        accepted (some #(when (= :accepted (:expect %)) %) fixtures)
+        rejected (some #(when (= :rejected (:expect %)) %) fixtures)]
+    (is (= (get-in inputs [:source-graph :sha256])
+           (:source-graph-sha256 result)))
+    (is (= "d351310d5821a983fac2ad0fee4c0be96711b4b4"
+           (get-in result [:source-revision :commit])))
+    (is (= "sha256:dfdee131460216a84fef22e537bb0d0579965f8f70338d748323dff26f8e5a8b"
+           (get-in result [:toolchain :seed-artifact-id])))
+    (is (= 0 (:exit-code accepted)))
+    (is (= :gravity/stage0-core-artifact (:artifact-kind accepted)))
+    (is (re-matches #"sha256:[0-9a-f]{64}" (:artifact-id accepted)))
+    (is (re-matches #"sha256:[0-9a-f]{64}" (:stdout-sha256 accepted)))
+    (is (not= (:artifact-id accepted) (:stdout-sha256 accepted)))
+    (is (not (zero? (:exit-code rejected))))
+    (is (re-matches #"sha256:[0-9a-f]{64}" (:diagnostic-id rejected)))
+    (is (= ["L2-UNKNOWN-CORE-FORM"] (:diagnostic-codes rejected)))
+    (is (= (:artifact-id accepted) (:artifact-id result)))))

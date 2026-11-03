@@ -2,62 +2,92 @@
 
 ## Purpose
 
-The bootstrap replacement project must name the exact compiler source closure,
-seed identity and build declaration used for a rebuild. The declaration at
-`contracts/bootstrap-inputs.edn` is consumed by
-`gravity.bootstrap.rebuild.inputs`; it is not a release claim or a self-hosting
-certificate.
+The bootstrap replacement project has an explicit input boundary independent
+from the Uniform language contract. The declaration at
+`contracts/bootstrap-inputs.edn` names the stage0 compiler source revision,
+seed/runtime identity, load order, classpath, locked inputs, fixture bytes, and
+the deliberately narrow conformance scope. It is consumed by
+`gravity.bootstrap.rebuild.inputs`; it is not a self-hosting certificate or a
+release claim.
 
 ## Requirements
 
 - The source language and temporary seed language are explicit.
-- The source closure uses deterministic roots, extension filters, sorted paths,
-  file sizes and SHA-256 content identities.
-- Direct non-source inputs, including `deps.edn`, carry their expected digest.
-- Profiles, targets, supported compiler modules, accepted fixtures and rejected
-  fixtures are stated separately from the source closure.
-- Backend, runtime and residual host boundaries are explicit.
+- The compiler revision is pinned by both commit and tree identity.
+- Source, tooling, lockfile, load-order, and fixture inputs are content
+  addressed. The observed graph has one canonical entry per path.
+- The Clojure seed jar and CLI version are pinned; the run records the observed
+  Clojure description and resolved classpath identities.
+- The exact `deps.edn` classpath and six bootstrap load-order files are named.
+- Compiler source profiles and tested program profiles, target, supported
+  compiler modules, accepted fixture bytes, and rejected fixture bytes are
+  stated separately from language semantics.
+- Backend, runtime, network, and residual host boundaries are explicit.
 - Comparison modes and output artifact kinds are explicit.
-- Missing, substituted, malformed or incompatible inputs fail before the
-  rebuild executor is called.
-- A rebuild result must bind its artifact identity to the verified source graph.
+- Missing, substituted, symlinked, malformed, or incompatible inputs fail
+  before compiler execution.
 
-## Dependency and execution boundary
+## Snapshot and execution boundary
 
-The validator is bootstrap tooling written in Clojure. It authenticates source
-and policy data, then passes the verified record to an explicitly supplied
-executor. The executor retains process, filesystem and publication policy; the
-validator does not grant authority or certify the executor's implementation.
+`run-development-build!` first validates the declaration, verifies that the
+pinned commit resolves to the pinned tree, and materializes the declared source roots,
+lockfile, load orders, tooling root, and fixture files into an isolated
+temporary directory with `git archive` and the host `tar` extractor. It then
+walks that snapshot and compares the complete source graph with the declared
+SHA-256 identity.
 
-The current declaration describes the hosted stage0 path: Gravity compiler
-source and Clojure seed source are consumed for a JVM target using the Clojure
-stage0 runtime. Its accepted and rejected fixture lists describe the declared
-conformance scope; they do not imply whole-language coverage.
+The development build invokes the existing stage0 command
+`clojure -Srepro -M:gravity core <fixture>` from that snapshot. The accepted
+fixture must exit successfully and parse as the expected
+`:gravity/stage0-core-artifact` with the core-lowering pass, module, expanded
+syntax/core records, source map, trace, and diagnostics fields. The rejected
+fixture must exit non-zero and contain the declared `L2-UNKNOWN-CORE-FORM`
+diagnostic. The returned evidence records
+process status, stdout/stderr hashes, an accepted artifact hash, a rejected
+diagnostic hash/code, source archive identity, source graph identity, and
+seed/toolchain identity. No caller-supplied executor or result identity is
+trusted.
+
+The current declaration is intentionally a bounded development check: one
+`:meta` compiler-source profile with `:meta`/`:jvm` accepted program fixture,
+one `:hosted` rejected core-form program fixture, and the listed
+reader/syntax/expand/resolve/core modules. It does not produce a rebuilt
+compiler, prove whole-language conformance, establish stage equivalence, or
+retire the Clojure seed. Updating the pinned compiler revision or expanding
+scope requires an explicit declaration and corresponding code/test review.
 
 ## Outputs and artifacts
 
-`load-inputs!` returns the authenticated manifest, observed source graph, graph
-identity, scope, execution boundary and comparison declaration. `run-rebuild!`
-returns that record together with the executor result after checking that the
-result names the same source graph.
-
-The source graph identity is content-based and changes when a declared file is
-added, removed or substituted. Historical evidence from other revisions is not
-renewed by this declaration.
+`load-inputs!` returns the authenticated manifest, observed graph, graph
+identity, scope, execution boundary, and comparison declaration.
+`run-development-build!` returns that record plus the immutable source revision/archive,
+observed toolchain, and fixture execution records. Output and diagnostic bytes
+are represented by hashes rather than copied into the provenance record. For an
+accepted fixture, `:artifact-id` is the canonical hash of the parsed Core EDN
+artifact and `:stdout-sha256` separately identifies the process observation;
+the latter is not treated as the artifact identity.
 
 ## Conformance criteria
 
-- The repository declaration loads successfully from the current checkout.
+- The pinned source declaration authenticates from an isolated snapshot.
 - A direct input digest mismatch is rejected with
   `BOOT-INPUTS-DIRECT-DIGEST-MISMATCH`.
-- A missing source root is rejected with `BOOT-INPUTS-MISSING-ROOT`.
 - A changed source graph is rejected with
   `BOOT-INPUTS-SOURCE-GRAPH-MISMATCH`.
+- A substituted revision or seed/toolchain identity is rejected before the
+  development build.
+- Symlinked source inputs cannot extend the authenticated root.
 - An incompatible execution target or backend is rejected with
   `BOOT-INPUTS-INCOMPATIBLE`.
-- A rebuild executor cannot run before input authentication and its result must
-  carry the authenticated source graph identity.
+- The development build executes real accepted and rejected fixtures through the existing
+  stage0 CLI and records their observed output identities.
 
-This boundary establishes explicit inputs for a bounded bootstrap rebuild. It
-does not establish semantic compiler correctness, stage equivalence, seed
-retirement, self-hosting or release readiness.
+The declaration records `:network :denied` as the intended bootstrap policy.
+The current host process does not enforce OS-level offline execution; the
+`-Srepro` commands may still resolve from the configured local/cache boundary.
+That residual host boundary is deliberately visible in the execution record.
+
+This boundary separates replacing the temporary Clojure bootstrap from
+evolving the Uniform language. It does not establish semantic compiler
+correctness, stage equivalence, seed retirement, self-hosting, or release
+readiness.
