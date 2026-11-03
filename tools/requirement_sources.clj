@@ -4,13 +4,22 @@
             [clojure.set :as set]
             [clojure.string :as str]))
 
+(def platform-generated-view-instructions
+  "Edit the ledger and run `clojure -M tools/platform_task_projection.clj --write`;\nthe project table and full-product scope below are generated.\n")
 (def platform-authority
   (str "Implementation task authority: [Spec Kit platform ledger](../../specs/platform-workflow/tasks.md#implementation-tasks).\n"
-       "Edit the ledger and run `clojure -M tools/platform_task_projection.clj --write`;\n"
-       "the project table and full-product scope below are generated.\n\n"))
+       platform-generated-view-instructions
+       "\n"))
 (def platform-markers
   (for [region ["platform-task-projection" "platform-product-projection"] side ["start" "end"]]
     (str "<!-- " region ":" side " -->\n")))
+(def platform-generated-view-kind :platform-task-authority-current-layout-v2)
+(def platform-generated-view-contract
+  {:instructions platform-generated-view-instructions
+   :regions [{:marker "platform-task-projection"
+              :replacement "Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/platform-workflow/tasks.md#implementation-tasks).\n"}
+             {:marker "platform-product-projection"
+              :replacement "Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/platform-workflow/tasks.md#platform-product-scope).\n"}]})
 
 ;; Current-main source changes are projected only through these exact, named
 ;; bridges.  A source hash alone is insufficient: the hunk inventory and
@@ -19,6 +28,7 @@
   #{:l4-macro-expansion-semantic-projection
     :c4-macro-expansion-semantic-projection
     :platform-task-authority-current-layout
+    :platform-task-authority-current-layout-v2
     :governance-lifecycle-policy-semantic-projection})
 
 (defn exact-source-projection-kind? [kind]
@@ -222,6 +232,25 @@
                       {:hunk-id "platform-project-ledger-view" :classification :platform-generated-view-authority-layout}
                       {:hunk-id "platform-product-ledger-view" :classification :platform-product-scope-authority-layout}]
     :projection-hunks platform-current-projection-hunks}
+   platform-generated-view-kind
+   {:document-id "platform-product"
+    :path "docs/component-roadmaps/platform.md"
+    :baseline-ref "a1b991be499d50579a8b4366976c519ae8949224"
+    :applying-ref "2a86a9f1fc56b1eceacf4ca29aac7c95a1a4792b"
+    :baseline-sha256 "03a971d2bf910876352e9555d45679a9fa3d00876710c8233de5f50882349a3f"
+    :live-sha256 "9d4efe1bb5348949dde850880154cf31d06dbc81cb4b659144e771efce2a54d5"
+    :baseline-blob "91c4d4fcc0094c41c4d73e39fae3006f7c9e44cf"
+    :applying-blob "2fdfdc30648d1bc7d08adde3d925a2d9aa7c73cb"
+    :review-state :proposed
+    :authority "Platform task-ledger authority and generated-view reconciliation for the bounded PR554 product-task port."
+    :qualification "Only the exact generated task/product regions and the task-ledger instruction stanza are removed to recover the current navigation view; the existing named source hunks then project to the authenticated historical platform source. The sole editable task ledger remains authoritative for the eleven product task interfaces; task status, product architecture, target semantics and implementation acceptance remain open. This bridge confers no implementation or product acceptance and is not accounting equivalence."
+    :semantic-deltas [{:hunk-id "platform-authority-stanza" :classification :platform-task-ledger-authority-layout}
+                      {:hunk-id "platform-generated-task-view" :classification :platform-generated-task-interface-view}
+                      {:hunk-id "platform-generated-product-view" :classification :platform-generated-product-interface-view}
+                      {:hunk-id "platform-project-ledger-view" :classification :platform-generated-view-authority-layout}
+                      {:hunk-id "platform-product-ledger-view" :classification :platform-product-scope-authority-layout}]
+    :generated-view platform-generated-view-contract
+    :projection-hunks platform-current-projection-hunks}
    :governance-lifecycle-policy-semantic-projection
    {:document-id "accounting-policy"
     :path "AGENTS.md"
@@ -236,6 +265,33 @@
     :qualification "Only the exact integration-preflight lifecycle paragraph is projected to the authenticated historical policy view. Exact base/commit/tree binding, governed-composition metadata and independent review remain current governance semantics; no quota/accounting equivalence or canonical adoption is claimed."
     :semantic-deltas [{:hunk-id "AGENTS-integration-preflight" :classification :governance-lifecycle-and-preflight-binding}]
     :projection-hunks agents-policy-projection-hunks}})
+
+;; The PR554 task ledger is a second source view of the same bounded platform
+;; transfer.  Its historical SH crosswalk points at the four short rows in the
+;; frozen comparator, while the applying commit adds the current criteria to
+;; those rows.  Keep that transition explicit and content-addressed: callers
+;; may tolerate navigation/layout movement around a row, but they may not
+;; silently accept a changed criterion, status or source basis.
+(def platform-task-source-transition
+  {:kind :platform-task-authority-ledger-current-layout-v1
+   :document-id "platform-task-authority"
+   :path "specs/platform-workflow/tasks.md"
+   :baseline-ref "5dfe15c9fad14e5abebf23bf1e645bf9154a2e1e"
+   :applying-ref "2a86a9f1fc56b1eceacf4ca29aac7c95a1a4792b"
+   :historical-source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd"
+   :historical-source-tree "abb83592fc9e5e81c0f041e59c67749dbb67b55c"
+   :baseline-tree "643afe5f3b00918fc3de76f2855294481a09b505"
+   :applying-tree "8a242945a690dcf4ae6a7b15ecc546c09179a80c"
+   :baseline-sha256 "789f8482bf8212e68c978daaaa2487f39f66a46467385ba0b0350df82a78e39f"
+   :live-sha256 "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f"
+   :baseline-blob "0c5e17169840e1a5deee71e5733955ff0a41805a"
+   :applying-blob "054ee72c93246d88785ed29d82b549428a0d4e64"
+   :parent-bridge-kind platform-generated-view-kind
+   :parent-bridge-applying-ref "2a86a9f1fc56b1eceacf4ca29aac7c95a1a4792b"
+   :task-ids ["hardware" "firmware" "kernel" "devices"]
+   :review-state :proposed
+   :authority "PR554 task-ledger source transition, authenticated against the frozen SH task rows and the applying task-authority Git blob."
+   :qualification "Only the four named Platform task rows transfer from the frozen historical SH source view to the applying PR554 task ledger. The applying row bytes, IDs, status, criteria and source-basis identities are exact; surrounding navigation layout may move. This bridge preserves historical SH routing and structural-only authority, confers no implementation or product acceptance, and does not authorize arbitrary task-criterion changes or source-hash renewal."})
 
 ;; These are the six reviewed source regions, not a text diff computed from the
 ;; checkout.  The exact baseline/live fragment hashes make an omitted hunk,
@@ -423,6 +479,34 @@
      :bridge (assoc bridge :span-basis :authenticated-stdlib-baseline-view
                     :snapshot-provenance (if verified? :git-bytes-verified :unverified))}))
 
+(defn- replace-generated-region [text marker replacement require!]
+  (let [start-marker (str "<!-- " marker ":start -->")
+        end-marker (str "<!-- " marker ":end -->")
+        starts (count (re-seq (re-pattern (java.util.regex.Pattern/quote start-marker)) text))
+        ends (count (re-seq (re-pattern (java.util.regex.Pattern/quote end-marker)) text))]
+    (require! (and (= 1 starts) (= 1 ends))
+              (str "Generated platform view region is missing or duplicated: " marker))
+    (let [start (.indexOf text start-marker)
+          end (.indexOf text end-marker (+ start (count start-marker)))
+          after-end (+ end (count end-marker))
+          after-end (if (and (< after-end (count text))
+                            (= \newline (.charAt text after-end)))
+                      (inc after-end)
+                      after-end)]
+      (require! (and (<= 0 start) (< start end))
+                (str "Generated platform view region is reversed: " marker))
+      (str (subs text 0 start) replacement (subs text after-end)))))
+
+(defn- normalize-platform-generated-view [text require!]
+  (let [instruction (:instructions platform-generated-view-contract)
+        parts (str/split text (re-pattern (java.util.regex.Pattern/quote instruction)) -1)]
+    (require! (= 2 (count parts))
+              "Generated platform view instruction is missing or duplicated")
+    (reduce (fn [current {:keys [marker replacement]}]
+              (replace-generated-region current marker replacement require!))
+            (apply str parts)
+            (:regions platform-generated-view-contract))))
+
 (defn- exact-source-bridge? [bridge]
   (let [expected (get exact-source-bridge-contracts (:kind bridge))]
     (and expected
@@ -430,7 +514,10 @@
                  [:document-id :path :baseline-ref :applying-ref
                   :baseline-sha256 :live-sha256 :baseline-blob :applying-blob
                   :review-state :authority :qualification :semantic-deltas
-                  :projection-hunks]))))
+                  :projection-hunks])
+         (or (not= platform-generated-view-kind (:kind bridge))
+             (= (:generated-view (get exact-source-bridge-contracts (:kind bridge)))
+                (:generated-view bridge))))))
 
 (defn- exact-source-view [manifest bridge text baseline sha256 require! verified?]
   (require! (exact-source-bridge? bridge)
@@ -446,7 +533,10 @@
       (require! (and (vector? facet-ids) (seq facet-ids)
                      (set/subset? (set facet-ids) declared-facets))
                 "Exact source bridge references an undeclared historical facet")))
-  (let [projected
+  (let [source-text (if (= platform-generated-view-kind (:kind bridge))
+                      (normalize-platform-generated-view text require!)
+                      text)
+        projected
         (reduce (fn [current hunk]
                   (let [live-fragment (line-fragment current (:live-start-line hunk)
                                                      (:live-end-line hunk) require!)
@@ -458,7 +548,7 @@
                               "Exact source bridge baseline facet bytes differ")
                     (replace-line-fragment current (:live-start-line hunk) (:live-end-line hunk)
                                            (line-segments baseline-fragment) require!)))
-                text
+                source-text
                 (sort-by :live-start-line > (:projection-hunks bridge)))]
     (require! (= (:baseline-sha256 bridge) (sha256 projected))
               "Exact source bridge projection leaves unlisted source drift")
@@ -524,7 +614,7 @@
     (require! (zero? exit) "Source version bridge commit/path cannot be read")
     out))
 
-(defn- git-blob-id [text]
+(defn git-blob-id [text]
   (let [bytes (.getBytes ^String text "UTF-8")
         header (.getBytes (str "blob " (alength bytes) "\u0000") "UTF-8")
         payload (byte-array (+ (alength header) (alength bytes)))]
@@ -532,9 +622,36 @@
     (System/arraycopy bytes 0 payload (alength header) (alength bytes))
     (format "%040x" (BigInteger. 1 (.digest (java.security.MessageDigest/getInstance "SHA-1") payload)))))
 
+(defn git-commit-tree [root ref require!]
+  (let [type-process (.start (.redirectErrorStream
+                              (ProcessBuilder. ^java.util.List
+                                               ["git" "-C" (str root) "cat-file" "-t" ref]) true))
+        type (with-open [input (.getInputStream type-process)] (slurp input :encoding "UTF-8"))
+        type-exit (.waitFor type-process)]
+    (require! (and (zero? type-exit) (= "commit" (str/trim type)))
+              (str "Pinned Git source is not a commit: " ref))
+    (let [tree-process (.start (.redirectErrorStream
+                                (ProcessBuilder. ^java.util.List
+                                                 ["git" "-C" (str root) "rev-parse" "--verify"
+                                                  (str ref "^{tree}")]) true))
+          tree (with-open [input (.getInputStream tree-process)] (slurp input :encoding "UTF-8"))
+          tree-exit (.waitFor tree-process)]
+      (require! (and (zero? tree-exit)
+                     (re-matches #"[0-9a-f]{40}" (str/trim tree)))
+                (str "Pinned Git source has no tree: " ref))
+      (str/trim tree))))
+
 (defn validate-snapshots! [bridge read-ref sha256 require!]
   (require! (and (string? (:path bridge)) (not (.isAbsolute (io/file (:path bridge)))))
             "Source version bridge path must be relative")
+  (let [trees [(:baseline-tree bridge) (:applying-tree bridge)]]
+    (when (some some? trees)
+      (require! (every? #(and (string? %) (re-matches #"[0-9a-f]{40}" %)) trees)
+                "Bridge tree identities must be complete and exact")
+      (doseq [[ref expected-tree] [[(:baseline-ref bridge) (:baseline-tree bridge)]
+                                   [(:applying-ref bridge) (:applying-tree bridge)]]]
+        (require! (= expected-tree (git-commit-tree "." ref require!))
+                  (str "Bridge commit/tree identity differs: " ref)))))
   (doseq [[ref expected expected-blob] [[(:baseline-ref bridge) (:baseline-sha256 bridge) (:baseline-blob bridge)]
                                         [(:applying-ref bridge) (:live-sha256 bridge) (:applying-blob bridge)]]]
     (require! (boolean (re-matches #"[0-9a-f]{40}" (or ref ""))) "Invalid bridge source identity")

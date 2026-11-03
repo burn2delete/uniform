@@ -1,0 +1,184 @@
+{:kind :gravity/noncanonical-safety-current-source-view
+ :version 1
+ :authority :proposal-only
+ :scope-key "requirement-reconciliation/phase-02-safety"
+ :base {:commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3"
+        :tree "9f464ed0f03866bd4978e4213a488f3b1ae48683"}
+ :historical-source
+ {:proposal {:commit "24c2b6f390cffdff87d0964cdd8dd533838aa333"
+             :tree "402d4c4aa3c85c486da1072ba4ace52a645a046b"
+             :path "specs/requirement-reconciliation/phase-02-safety/proposal.edn"
+             :sha256 "9f4ba7b4d40891638684ed14e151400651e325ec7e5c8ae5c7a720a6a6a6c525"}
+  :task-sources
+  [{:path "specs/auth-workflow/tasks.md"
+    :marker "auth-implementation-tasks"
+    :commit "24c2b6f390cffdff87d0964cdd8dd533838aa333"
+    :sha256 "e4d1f6389d87e46981cc3ec2613718887bd4faeaf65ddc75b8edfb7db5920ad4"
+    :ordered-task-ids ["auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
+                       "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+                       "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks"
+                       "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"
+                       "auth/remaining-tasks-and-evidence/publish-conformance-and-remaining-trust-assumptions"]}
+   {:path "specs/build-workflow/tasks.md"
+    :marker "build-implementation-tasks"
+    :commit "24c2b6f390cffdff87d0964cdd8dd533838aa333"
+    :sha256 "bc69fa4ed80c90143e843146dabfb567f058f206f16fe6988e6cce63ff55a0d4"
+    :ordered-task-ids ["build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution"
+                       "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"
+                       "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"
+                       "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records"
+                       "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix"]}
+   {:path "specs/domains-workflow/tasks.md"
+    :marker "domains-implementation-tasks"
+    :commit "24c2b6f390cffdff87d0964cdd8dd533838aa333"
+    :sha256 "2da7118e08067ff31e22d74ccfbafacc0cea1673d667c6258fe3ba5c28377162"
+    :ordered-task-ids ["math" "schema" "query" "workflow" "ai" "gpu" "ui"]}
+   {:path "specs/expand-workflow/tasks.md"
+    :marker "expand-implementation-tasks"
+    :commit "24c2b6f390cffdff87d0964cdd8dd533838aa333"
+    :sha256 "e1cf578f48991336eb885172b3f829a150dd856de018b47f52fb8e2dfc51b63f"
+    :ordered-task-ids ["expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+                       "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"
+                       "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects"
+                       "expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination"
+                       "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"]}
+   {:path "specs/legality-workflow/tasks.md"
+    :marker "legality-implementation-tasks"
+    :commit "24c2b6f390cffdff87d0964cdd8dd533838aa333"
+    :sha256 "03a8df36dde69decc84fc8f0a7cafddb073b412b79b80b7371e94b26ae091dc2"
+    :ordered-task-ids ["legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+                       "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
+                       "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+                       "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"
+                       "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface"]}
+   {:path "specs/runtime-workflow/tasks.md"
+    :marker "runtime-implementation-tasks"
+    :commit "24c2b6f390cffdff87d0964cdd8dd533838aa333"
+    :sha256 "edbafd3d58f645d74e208eb428b7feb89f6dfd957899ce8c9136287026cbb9c4"
+    :ordered-task-ids ["runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
+                       "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"
+                       "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
+                       "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+                       "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"]}]}
+ :base-source
+ {:task-sources
+  [{:path "specs/auth-workflow/tasks.md" :sha256 "9db81aa1c8ef183a9da8656a343a29fd9104b10e7130fd63ba4e52b75ce2b256"}
+   {:path "specs/build-workflow/tasks.md" :sha256 "6c88f677477ec41d755dbedd39d1e03de7c9ae81cc9a956a48c8cf319bfca1b0"}
+   {:path "specs/domains-workflow/tasks.md" :sha256 "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4"}
+   {:path "specs/expand-workflow/tasks.md" :sha256 "e1cf578f48991336eb885172b3f829a150dd856de018b47f52fb8e2dfc51b63f"}
+   {:path "specs/legality-workflow/tasks.md" :sha256 "937ed9cf0a8a7272559564344141fff0f1e3db34c9deef4106ab3ca958354f9e"}
+   {:path "specs/runtime-workflow/tasks.md" :sha256 "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972"}]}
+ :current-source
+
+ {:commit "19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b"
+  :tree "dc79967f4939df6790c3a16b0a71a71e81191f9e"
+  :domain-task-source-transition
+  {:path "specs/domains-workflow/tasks.md"
+   :manifest-commit "19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b"
+   :manifest-tree "dc79967f4939df6790c3a16b0a71a71e81191f9e"
+   :manifest-sha256 "8948438410df7c5b6c2c547e48be16b3ff8b1033ec866fb1bec432e4e3c32007"
+   :current-ref "24e7b5e5cd8bc42fa495997870605b596a380678"
+   :current-tree "52a90b3d537f23b3f572ee65ff03edf827c1e29b"
+   :current-sha256 "5378c2c7fba1bb49318fc6cda890c60c77bdbdc57dfe6f5ea42ea8aa23298943"
+   :change-class :family-criteria-preserved-plus-current-main-safety-criteria
+   :bridge
+   {:path "specs/domains-workflow/tasks.md"
+    :historical-sha256 "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4"
+    :historical-ref "5ecc0003e5595e73b3fb2d2e79a98233b9dd8950"
+    :change-class :family-criteria-preserved-plus-current-main-safety-criteria
+    :marker "domains-implementation-tasks"
+    :current-tree "52a90b3d537f23b3f572ee65ff03edf827c1e29b"
+    :changed-records [{:id "math"
+                       :historical-record-sha256 "fd5a8ea4fed8cedd5889bb6030359e87b8abefb1a6467470d161800b6387e0c7"
+                       :current-record-sha256 "4696449459576064a9b13100f3313cdfb97a92b536bc89362992705fde5c5f2b"}
+                      {:id "ai"
+                       :historical-record-sha256 "f1646c5fd968cd1cc3b6e4616ccbb69884872a73d682ceaa558932efcfbc3139"
+                       :current-record-sha256 "0dd8433702ae07f6cfbabe7acba0c32ddaaf95c09bf35da2537d1ba313991ea4"}]
+    :qualification "The authenticated current source is the PR562 family/current-main composition checkpoint: historical Domain Workflow/UI criteria remain present and current main's SAFE9/SAFE13 Math/AI boundary criteria are retained. Historical task identity and acceptance remain pinned; no domain implementation or requirement acceptance is inferred."
+    :current-sha256 "5378c2c7fba1bb49318fc6cda890c60c77bdbdc57dfe6f5ea42ea8aa23298943"
+    :current-ref "24e7b5e5cd8bc42fa495997870605b596a380678"}}
+  :versioned-task-source-transitions
+  [{:path "specs/runtime-workflow/tasks.md"
+    :from {:commit "8e6608856edcde2b57c33951839dfa9b79f2c503"
+           :tree "23974efdf7c3fa19160a344f26084ebe051ef1a5"
+           :sha256 "edbafd3d58f645d74e208eb428b7feb89f6dfd957899ce8c9136287026cbb9c4"}
+    :to {:commit "42c34ab55af0000dfaaf73d96d7ee09ec22c243e"
+         :tree "e8f1cc090800f9fcd9e81b7a5bcea32a88101526"
+         :sha256 "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c"}
+    :changed-record-ids
+    ["runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
+     "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"
+     "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+     "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"]
+    :qualification "Versioned current-source bridge from the authenticated PR560 Runtime source to the PR561 current task composition. Historical safety source and all non-Runtime current pins remain unchanged; this source transition confers no implementation or safety acceptance."}]
+
+  :task-sources
+  [{:path "specs/auth-workflow/tasks.md"
+    :marker "auth-implementation-tasks"
+    :sha256 "67e9a9b93d753ac1c6f1269cf2987c1010ade2331aeba678ff43b3b5930a31aa"
+    :change-class :current-main-composition
+    :ordered-task-ids ["auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
+                       "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+                       "auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks"
+                       "auth/remaining-tasks-and-evidence/bind-artifact-trust-to-exact-source-compiler-and-policy-identity"
+                       "auth/remaining-tasks-and-evidence/publish-conformance-and-remaining-trust-assumptions"]}
+   {:path "specs/build-workflow/tasks.md"
+    :marker "build-implementation-tasks"
+    :sha256 "bc69fa4ed80c90143e843146dabfb567f058f206f16fe6988e6cce63ff55a0d4"
+    :change-class :unchanged-proposal-source
+    :ordered-task-ids ["build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution"
+                       "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"
+                       "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"
+                       "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records"
+                       "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix"]}
+   {:path "specs/domains-workflow/tasks.md"
+    :marker "domains-implementation-tasks"
+    :sha256 "5378c2c7fba1bb49318fc6cda890c60c77bdbdc57dfe6f5ea42ea8aa23298943"
+    :change-class :family-criteria-preserved-plus-current-main-safety-criteria
+    :ordered-task-ids ["math" "schema" "query" "workflow" "ai" "gpu" "ui"]}
+   {:path "specs/expand-workflow/tasks.md"
+    :marker "expand-implementation-tasks"
+    :sha256 "216dbb577f552d65f263bc7943a847b77500de1f50e06f5cb340e5419054ed74"
+    :change-class :current-main-composition
+    :ordered-task-ids ["expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros"
+                       "expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety"
+                       "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects"
+                       "expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination"
+                       "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"]}
+   {:path "specs/legality-workflow/tasks.md"
+    :marker "legality-implementation-tasks"
+    :sha256 "9ca56250bb856a277b4ea2f5d68271c427345f1843a1e82a2865cd3e677090ce"
+    :change-class :current-main-composition
+    :ordered-task-ids ["legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+                       "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
+                       "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+                       "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"
+                       "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface"]}
+   {:path "specs/runtime-workflow/tasks.md"
+    :marker "runtime-implementation-tasks"
+    :sha256 "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c"
+    :change-class :current-main-composition
+    :ordered-task-ids ["runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
+                       "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup"
+                       "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
+                       "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
+                       "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"]}]}
+ :expected {:source-documents 16
+            :source-occurrences 1908
+            :source-dispositions 962
+            :source-facets 1055
+            :inherited-unit-records 119
+            :field-edits 329
+            :task-references 237
+            :unique-task-interfaces 18
+            :task-source-files 6}
+ :qualification-policy
+ {:historical-task-criteria :preserved-proposal-source-view-only
+  :current-task-status :open-and-unassessed
+  :current-task-acceptance :not-replaced
+  :implementation-acceptance :unassessed
+  :independent-review :pending}
+ :nonclaims [:canonical-adoption :implementation-acceptance :global-nonoverlap
+             :aggregate-adoption :denominator :release :seed-retirement
+             :current-task-criteria :independent-review :integration]}

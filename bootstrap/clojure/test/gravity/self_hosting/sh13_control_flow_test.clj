@@ -133,10 +133,12 @@
   (let [policy (invoke-engine 'sh13-control-flow-policy [])]
     (is (= :gravity/sh13-control-flow-policy (:artifact policy)))
     (is (= 1 (:version policy)))
-    (is (= 32 (:maximum-functions policy)))
-    (is (= 32 (:maximum-blocks-per-function policy)))
+    (is (not (contains? policy :maximum-functions)))
+    (is (not (contains? policy :maximum-blocks-per-function)))
+    (is (not (contains? policy :maximum-parameters)))
+    (is (not (contains? policy :maximum-call-depth)))
     (is (not (contains? policy :maximum-operations-per-block)))
-    (is (= 512 (:maximum-execution-steps policy)))
+    (is (not (contains? policy :maximum-execution-steps)))
     (is (contains? (:operation-set policy) :call))
     (is (contains? (:terminator-set policy) :conditional-branch))
     (is (contains? (:diagnostics policy) "C11-DOMINANCE"))
@@ -166,7 +168,6 @@
                      [:control-flow :structured-exit])))
       (is (true? (:clojure-seed-boundary? when-true)))
       (is (false? (:self-hosted? when-true)))
-      (is (pos? (get-in when-true [:control-flow :steps-used])))
       (is (some #(= :conditional-branch (:terminator %))
                 (get-in when-true [:execution :trace])))
       (is (= :passed
@@ -175,7 +176,7 @@
                'sh13-verify-execution
                [module [true] when-true])))))))
 
-(deftest finite-operation-carriers-preserve-execution-resource-controls
+(deftest operation-carriers-preserve-mir-semantics-beyond-retired-counts
   (let [base (module accepted-gravity-plan 'sh13-branch-module)
         original (first (:functions base))
         entry (first (:blocks original))
@@ -194,34 +195,15 @@
       (is (= 64 (get-in result [:execution :value])))
       (is (= :passed (:status (invoke-engine 'sh13-verify-execution [large [true] result]))))
       (is (= :rejected (:status (invoke-engine 'sh13-verify-execution
-                                              [large [true] (assoc-in result [:execution :fuel] 0)])))))
+                                              [large [true] (assoc-in result [:execution :unexpected] :substitution)])))))
     (let [large (carrier 513) result (run large [true])
           invalid (assoc-in large [:functions 0 :blocks 0 :operations 512 :type] :bool)]
       (is (nil? (invoke-engine 'sh13-module-error [large])))
-      (is (= :rejected (:status result)))
-      (is (= :execution-step-bound (get-in result [:execution :reason])))
-      (is (= 0 (get-in result [:execution :fuel])))
+      (is (= :accepted (:status result)))
+      (is (= 512 (get-in result [:execution :value])))
+      (is (= :passed (:status (invoke-engine 'sh13-verify-execution [large [true] result]))))
       (is (= :type (invoke-engine 'sh13-module-error [invalid])))
-      (is (nil? (:execution (run invalid [true])))))
-    (doseq [budget [nil 0 -1 513 "512"]]
-      (let [result (run (assoc (carrier 65) :maximum-execution-steps budget) [true])]
-        (is (= :rejected (:status result)))
-        (is (nil? (:execution result)))))
-    (doseq [depth [nil 0 -1 33 "32"]]
-      (let [result (run (assoc-in (carrier 65) [:functions 0 :maximum-call-depth] depth) [true])]
-        (is (= :rejected (:status result)))
-        (is (nil? (:execution result)))))
-    (let [loop-block (assoc entry :operations []
-                           :terminator (assoc (:terminator entry) :opcode :branch
-                                              :target (:block-id entry) :arguments (:params entry)))
-          looping (assoc base :maximum-execution-steps 8
-                              :functions [(assoc original :blocks [loop-block])])
-          result (run looping [true])]
-      (is (nil? (invoke-engine 'sh13-module-error [looping])))
-      (is (= :rejected (:status result)))
-      (is (= :execution-step-bound (get-in result [:execution :reason])))
-      (is (= 0 (get-in result [:execution :fuel])))
-      (is (= 9 (count (get-in result [:execution :trace])))))))
+      (is (nil? (:execution (run invalid [true])))))))
 
 (deftest operation-heavy-call-graphs-preserve-cycle-and-identity-checks
   (let [base (module accepted-gravity-plan 'sh13-indirect-module)
@@ -240,11 +222,31 @@
     (is (= :verify (invoke-engine 'sh13-module-error
                                   [(assoc-in large (conj path :operations 512 :allowed-callees) #{})])))))
 
-(deftest sh13-executes-direct-recursion-with-an-explicit-depth-bound
+(deftest sh13-preserves-unbounded-provenance-and-path-metadata
+  (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+    (let [base (module plan 'sh13-branch-module)
+          origin-entry {:kind :source :source-id :gravity.compiler/sh13-fixture}
+          long-origin (vec (repeat 17 origin-entry))
+          long-path (str "/checkout/" (apply str (repeat 4081 "p")) ".gravity")
+          long-origin-module (assoc base :origin-chain long-origin)
+          long-path-module (assoc base :actual-source-path long-path)
+          malformed-origin (assoc-in long-origin-module [:origin-chain 16 :source-id] nil)
+          malformed-path (assoc long-path-module :actual-source-path 42)
+          empty-path (assoc base :actual-source-path "")]
+      (is (> (count long-path) 4096))
+      (is (nil? (invoke-engine 'sh13-module-error [long-origin-module])))
+      (is (= :accepted (:status (run long-origin-module [true]))))
+      (is (nil? (invoke-engine 'sh13-module-error [long-path-module])))
+      (is (= :accepted (:status (run long-path-module [true]))))
+      (is (= :origin (invoke-engine 'sh13-module-error [malformed-origin])))
+      (is (= :module (invoke-engine 'sh13-module-error [malformed-path])))
+      (is (= :module (invoke-engine 'sh13-module-error [empty-path]))))))
+
+(deftest sh13-executes-direct-recursion-without-a-depth-quota
   (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
     (let [module (module plan 'sh13-factorial-module)
           result (run module [5])
-          depth-rejection (run module [20])]
+          larger-result (run module [20])]
       (is (= :accepted (:status result)))
       (is (= :returned (get-in result [:execution :status])))
       (is (= 120 (get-in result [:execution :value])))
@@ -253,13 +255,16 @@
               (filter
                #(= :enter (:event %))
                (get-in result [:execution :trace])))))
-      (is (= :rejected (:status depth-rejection)))
-      (is (= "C11-VERIFY"
-             (get-in depth-rejection [:diagnostics 0 :rule])))
-      (is (= :call-depth-bound
-             (get-in depth-rejection [:execution :reason]))))))
+      (is (= :accepted (:status larger-result)))
+      (is (= :returned (get-in larger-result [:execution :status])))
+      (is (= 2432902008176640000 (get-in larger-result [:execution :value])))
+      (is (= 21
+             (count
+              (filter
+               #(= :enter (:event %))
+               (get-in larger-result [:execution :trace]))))))))
 
-(deftest sh13-executes-loop-backedges-and-bounded-indirect-calls
+(deftest sh13-executes-loop-backedges-and-allowlisted-indirect-calls
   (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
     (let [loop-module (module plan 'sh13-loop-module)
           indirect-module (module plan 'sh13-indirect-module)
@@ -272,8 +277,7 @@
       (is (= [:choose :factorial :sum-down :add-one :indirect-main
               :error-main :throw-main :panic-main]
              (:functions (:call-graph indirect-result))))
-      (is (true? (get-in indirect-result
-                         [:call-graph :bounded-call-depth]))))))
+      (is (not (contains? (:call-graph indirect-result) :bounded-call-depth))))))
 
 (deftest sh13-preserves-distinct-structured-exits
   (doseq [[function expected]
@@ -324,19 +328,10 @@
                    (get-in result [:diagnostics 0 :reason])))
             (is (nil? (:execution result)))))))))
 
-(deftest sh13-fails-closed-on-runtime-bounds-and-argument-types
-  (doseq [[accepted-plan rejected-plan]
-          [[accepted-gravity-plan rejected-gravity-plan]
-           [accepted-qst-plan rejected-qst-plan]]]
+(deftest sh13-fails-closed-on-invalid-argument-types
+  (doseq [accepted-plan [accepted-gravity-plan accepted-qst-plan]]
     (let [base (module accepted-plan 'sh13-factorial-module)
-          low-fuel (invoke rejected-plan 'sh13-low-fuel-module [base])
-          fuel-result (run low-fuel [5])
           type-result (run base [true])]
-      (is (= :rejected (:status fuel-result)))
-      (is (= "C11-VERIFY"
-             (get-in fuel-result [:diagnostics 0 :rule])))
-      (is (= :execution-step-bound
-             (get-in fuel-result [:execution :reason])))
       (is (= :rejected (:status type-result)))
       (is (= "C11-TYPE"
              (get-in type-result [:diagnostics 0 :rule])))

@@ -16,9 +16,8 @@
                  (perf-present? (:source %))
                  (not (false? (:replayable? %))))
            (:normalization-trace suite))
-   :search-bounded-deterministic?
+   :search-deterministic-replayable?
    (and (true? (get-in suite [:search-manifest :deterministic?]))
-        (true? (get-in suite [:search-manifest :bounded?]))
         (perf-present? (get-in suite [:search-manifest :tie-policy])))
    :candidate-promotion-proof-gated?
    (every? #(or (not (:can-influence-lowering? %))

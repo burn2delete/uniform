@@ -8,8 +8,11 @@
 (defn- path [extension]
   (.getCanonicalPath (io/file (str "bootstrap/clojure/fixtures/self-hosting/sh-04/current-reader-lossless" extension))))
 (defn- reader [] (.getCanonicalPath (io/file b/sh03-reader-source-relative-path)))
+(defn- syntax [] (.getCanonicalPath (io/file b/sh04-syntax-source-relative-path)))
 (defn- invocation [] {:reader-source-path (reader)
-                     :authenticated-envelope-options {:source :development-current}})
+                     :authenticated-envelope-options {:source :development-current}
+                     :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                                :source-path (syntax)}})
 (defn- emitter []
   @(var-get (ns-resolve 'gravity.self-hosting.sh12-zero-arity-bool-diamond-test 'current-emitter)))
 

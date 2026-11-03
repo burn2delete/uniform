@@ -1,0 +1,75 @@
+{:kind :safety-current-source-view-receipt
+ :date "2026-11-02"
+ :scope-key "requirement-reconciliation/phase-02-safety"
+ :authority :proposal-only
+ :base {:commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3"
+        :tree "9f464ed0f03866bd4978e4213a488f3b1ae48683"}
+ :candidate {:commit "24c2b6f390cffdff87d0964cdd8dd533838aa333"
+             :tree "402d4c4aa3c85c486da1072ba4ace52a645a046b"}
+ :current-source {:commit "19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b"
+                  :tree "dc79967f4939df6790c3a16b0a71a71e81191f9e"}
+ :integration-base {:commit "97445f364d938004618f2ac13d4d4c6e1ca32946"
+                    :tree "bde2ef38e3ff53c9a61a88b9ea2ff5d2be1a7bc2"
+                    :role :current-main-composition-checkpoint}
+ :source-checkpoint-qualification :historical-source-evidence-not-integration
+ :original-pr562-ancestry {:commit "2c3eac90b9736873ce7c439cdc9603b1e43249e5"
+                           :present-in-final-candidate true
+                           :tree-imported false}
+ :artifacts
+  {:source-view {:path "specs/requirement-reconciliation/phase-02-safety/current-source-view.edn"
+                :sha256 "bce4de982ee35223ba20362ab38de5b4ae31ee24debc9636a6836d7e4bc0720e"}
+  :checker {:path "tools/safety_task_source_view.clj"
+            :sha256 "6e5e9981becf27c80f0a34e832137abe6e083d2dec62af6895fb45737199063b"}}
+ :conservation {:source-documents 16
+                :source-occurrences 1908
+                :source-dispositions 962
+                :source-facets 1055
+                :inherited-unit-records 119
+                :field-edits 329
+                :task-references 237
+                :unique-task-interfaces 18
+                :task-source-files 6}
+ :source-transition
+ {:historical-candidate-task-bytes :preserved
+  :current-main-composition :authenticated
+  :changed-task-sources [:auth :expand :legality :domains-composition :runtime-successor]
+  :unchanged-task-sources [:build]
+  :current-manifest-task-transition
+  {:path "contracts/requirement-reconciliation.edn"
+   :commit "19d3be8a2852fa8e6f4f78ad9234f8a2458bd92b"
+   :tree "dc79967f4939df6790c3a16b0a71a71e81191f9e"
+   :sha256 "8948438410df7c5b6c2c547e48be16b3ff8b1033ec866fb1bec432e4e3c32007"
+   :domain-current-ref "24e7b5e5cd8bc42fa495997870605b596a380678"
+   :domain-current-tree "52a90b3d537f23b3f572ee65ff03edf827c1e29b"
+   :domain-current-sha256 "5378c2c7fba1bb49318fc6cda890c60c77bdbdc57dfe6f5ea42ea8aa23298943"
+   :runtime-current-ref "42c34ab55af0000dfaaf73d96d7ee09ec22c243e"
+   :runtime-current-tree "e8f1cc090800f9fcd9e81b7a5bcea32a88101526"
+   :runtime-current-sha256 "b6157bb289fb1c731fc74158aa6fbd510f3f2e07614357abd34f23a3fc83d82c"
+   :runtime-changed-record-count 5
+   :change-class :family-criteria-preserved-plus-current-main-safety-criteria}
+  :status-order-and-identity :verified}
+ :controls {:positive :pass
+            :proposal-hash-tamper :reject
+            :current-source-pair-tamper :reject
+            :current-domain-manifest-transition-tamper :reject
+            :runtime-transition-forged-id-tamper :reject
+            :runtime-transition-duplicate-id-tamper :reject
+            :task-order-tamper :reject
+            :duplicate-task-id-tamper :reject
+            :closed-task-tamper :reject
+            :canonical-adoption-closure :reject
+            :implementation-closure :reject}
+ :focused-checks {:current-source-view {:command "clojure -M tools/safety_task_source_view.clj --check"
+                                        :result :pass}
+                  :language-boundary {:tests 6 :assertions 11 :failures 0 :errors 0}
+                  :canonical-documents {:documents 240 :phase-indexes 19 :result :pass}
+                  :full-language-roadmap :pass
+                  :diff-check :pass}
+ :historical-checker
+ {:state :preserved-nonpass
+  :reason [:retired-task-projection-loader
+           :external-pr445-applying-manifest-not-available]
+  :required-sha256 "aa7ee8dfa7c7b0b7a9cb0e609944d7dcbcd81791f080708364a0faf8cc2e7980"
+  :action :not-regenerated-or-renewed}
+ :nonclaims [:implementation-acceptance :canonical-adoption :integration
+             :compiler-runtime-or-broker-execution :release :seed-retirement]}

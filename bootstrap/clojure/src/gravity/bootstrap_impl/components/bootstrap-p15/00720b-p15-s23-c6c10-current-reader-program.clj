@@ -43,10 +43,12 @@
   [request-source]
   ;; Authenticate actual C6/compiler source inputs before and after the actual
   ;; selected-source Reader owner. No caller-selected path, pins or binding.
-  (let [before (p15-s23-c6c10-authenticated-source-binding-inputs! request-source 2)
+  (let [before (p15-s23-c6c10-authenticated-source-binding-inputs!
+               request-source 2 :development-current)
         path (p15-s23-c6c10-canonical-file-path (sh03-reader-resolve-source-path))
         binding (sh03-reader-current-binding! request-source path)
-        after (p15-s23-c6c10-authenticated-source-binding-inputs! request-source 2)
+        after (p15-s23-c6c10-authenticated-source-binding-inputs!
+               request-source 2 :development-current)
         emitter-rule (:emitter-rule after)
         source-before (dissoc (:source-snapshot before) :source-text)
         source-after (dissoc (:source-snapshot after) :source-text)]
@@ -64,6 +66,8 @@
                    :source-path
                    (p15-s23-c6c10-canonical-file-path
                     (sh04-syntax-resolve-source-path))}}
+     :c6-source-snapshot {:before source-before
+                          :after source-after}
      :verification-scope :selected-source-reader-plan
      ;; Actual envelope state must be obtained from fresh C2 products. A plan
      ;; match supplies neither a fabricated state nor frozen admission.

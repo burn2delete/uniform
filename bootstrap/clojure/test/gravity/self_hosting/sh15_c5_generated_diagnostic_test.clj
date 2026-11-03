@@ -9,7 +9,11 @@
 (def ^:private verify #'gravity.self-hosting.sh15-resolved-reader-diagnostic-test/verify)
 (def ^:private invocation
   {:reader-source-path bootstrap/sh03-reader-source-relative-path
-   :authenticated-envelope-options {:source :development-current}})
+   :authenticated-envelope-options {:source :development-current}
+   :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                             :source-path (.getCanonicalPath
+                                           (io/file bootstrap/sh04-syntax-source-relative-path))}
+   :macro-source-mode :development-current})
 (defn- current-resolution [source-path source]
   (bootstrap/compiler-c5-resolution-source-artifact
    (.getCanonicalPath (io/file source-path)) source

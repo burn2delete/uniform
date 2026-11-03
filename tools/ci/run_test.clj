@@ -224,6 +224,31 @@
   (is (empty? (lint/source-definitions
                (str/split-lines "#=(do (def executed true) nil)\n")))))
 
+(deftest source-mapping-loads-only-current-warnings
+  (let [warning {:filename "small.clj" :row 1 :col 1 :end-row 1 :end-col 2
+                 :level :warning :type :unused-binding :message "unused binding x"}
+        error (assoc warning :filename "large.edn" :level :error)
+        info (assoc warning :filename "large.edn" :level :info)
+        sources {"small.clj" {:changes [] :before ["same"] :after ["same"]}
+                 "large.edn" {:changes [] :before ["huge"] :after ["huge"]}}
+        calls (atom 0)]
+    ;; A large source with no warning is not selected for source loading; an
+    ;; error is still a blocking finding and an info is still non-blocking.
+    (is (= [] (lint/source-paths-for-warnings ["large.edn"] nil false [error info])))
+    (is (= ["small.clj"]
+           (lint/source-paths-for-warnings ["large.edn" "small.clj"] nil false
+                                           [error warning info])))
+    (with-redefs [lint/source-definitions (fn [_]
+                                            (swap! calls inc)
+                                            [])]
+      (let [result (lint/classify [error] [error info] sources)]
+        (is (= [error] (:blocking result)))
+        (is (zero? @calls)))
+      (let [result (lint/classify [warning] [warning] sources)]
+        (is (= [warning] (:baseline-warnings result)))
+        (is (empty? (:blocking result)))
+        (is (= 2 @calls))))))
+
 (deftest baseline-matching-and-output-validation-fail-closed
   (let [finding {:filename "sample.clj" :row 1 :col 2 :end-row 1 :end-col 3
                  :level :warning :type :unused-binding :message "unused binding x"}

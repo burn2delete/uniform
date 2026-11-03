@@ -110,7 +110,8 @@
     :source-path (.getCanonicalPath
                   (io/file
                    (str (.resolve @root
-                                 "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"))))}})
+                                 "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"))))}
+   :macro-source-mode :development-current})
 
 (deftest sh12-current-c6-selects-last-result-sources
   ;; Direct original Gravity helpers on bounded DATA, not fabricated Core or

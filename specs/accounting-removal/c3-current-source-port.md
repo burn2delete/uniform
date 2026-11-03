@@ -5,7 +5,9 @@
 This port removes the C3 graph and container accounting ceilings while
 preserving shape, arity, reference order, uniqueness, Unicode, metadata,
 provenance, source identity, native-class, callback, cycle, and tamper checks.
-The two Gravity source files are byte-identical to original PR512.
+At the historical composed-source tuple recorded below, the two Gravity source
+files were byte-identical to original PR512. That historical statement is not
+the reviewed immutable PR512 source tuple recorded at the end.
 
 | Item | Commit | Tree |
 | --- | --- | --- |
@@ -44,6 +46,10 @@ main's Core/C11 alias cleanups and CI changes. The source evidence is reused
 with this explicit conservation; no repeated execution is implied.
 
 ## Source identities
+
+The following table is the historical source-port tuple for the composed
+candidate recorded above. Its byte counts and hashes are immutable historical
+observations; they are not the reviewed immutable source identity at the end.
 
 | Source | Bytes | SHA-256 |
 | --- | --- | --- |
@@ -116,10 +122,18 @@ comparison, and the pinned/default refusal cases remain part of the record.
 
 ## Remaining work and nonclaims
 
-The Reader revision byte ceiling `1048576` remains in this source and is the
-separate PR566 delta. The structural projection control does not prove
-acceptance above that ceiling. PR544's additional selected-interface controls
-and PR580's selected-revision/process evidence remain separately reviewable.
+The historical source-port tuple above recorded that the Reader revision byte
+ceiling `1048576` remained in that historical source and deferred its removal
+to the separate PR566 delta. That statement is historical. At the reviewed
+immutable PR512 source tuple `c46ddb408e9503e6960fd12ff6daedf403ee895c`
+(tree `e71c1899a3f3c5985f1084895b9204764c4bca07`), C3 Syntax no longer enforces
+`source-byte-count <= 1048576` in `c3-reader-source-revision?`; it retains the
+nonnegative-integer and identity/schema checks. The existing PR566 evidence
+remains separately scoped to its Reader revision-length controls and does not
+prove large-source construction, whole-pipeline acceptance, canonical
+admission, release, self-hosting, or seed-retirement. PR544's additional
+selected-interface controls and PR580's selected-revision/process evidence
+remain separately reviewable.
 
 This receipt grants the finite C3 development evidence above. It grants no
 canonical admission, C12, large-Wasm, native-C, migration, release,
@@ -170,3 +184,161 @@ that run is not claimed as a pass and was stopped without retry.
 
 The source owner change is intentionally narrow: no native-C, C11, PMK
 admission, or migration evidence is inferred from these JVM observations.
+
+## Remaining current-caller audit and repair
+
+The composed candidate was re-audited from the clean pre-repair identity
+`d88c0e053eaa0c69c6831d665a7fff17df010a47` / tree
+`bc206cee028d920f8832c0012d4e2f0e768f420a`, based on main
+`69d21cb8aacd0be8e74cbf4c9ad8b12b84d244e8` / tree
+`1911689d59beb0d9771d5efc5fe29856177b470e`. The hosted C3 failures were not
+isolated to the three SH04 fixtures: every current-source C3/C5/Core caller
+was checked once and classified by downstream intent.
+
+The minimal owner repair now carries the validated
+`:gravity/sh04-development-syntax-selection-v1` selection through the
+remaining current paths. It covers SH04 lossless, handoff, and provenance;
+the SH07 current data, loop, quoted-reader, set-order, two-slot, local-callee,
+and construction-verification fixtures; the SH08 primitive source-to-Core
+fixture; the SH15 current C5 diagnostic producer; the SH07 proof-census
+current request; the SH07 B2 required-primitive current composition; the SH03
+small current source-to-Core composition; and the current parent-mutation
+resolution control. Current C5/Core paths also select
+`:macro-source-mode :development-current` when they consume Macro products.
+The two direct SH07 request/test adapters strip only that Macro key before
+calling the exact SH03 Reader-options callback; the full invocation continues
+through SH06 and the Macro owner. No pinned/default call or public option set
+was widened, and no admission hash was refreshed.
+
+The explicit refusal classifications remain part of the audit. The resolution
+Macro-isolation control selects Reader and Syntax but omits Macro and fails
+closed at `C4-TRACE`/`:exact-pinned-macro-source`; the separate Reader-only
+control omits both and fails closed at `C3-ID`/`:exact-pinned-syntax-source`.
+C2-only tests, routing-only spies, historical/default C5 callers, and the
+public `{:reader :development-current}` API contract remain unchanged; the
+public route does not silently infer Syntax or Macro source. Its downstream
+paired public fixtures therefore remain historical/refusal evidence rather
+than being relabeled as current full-source acceptance.
+
+Focused checks on the repaired worktree passed:
+
+- SH04 lossless/handoff/provenance: 1 test / 37, 518, and 99 assertions.
+- SH07 current data/loop/quote/set/multislot/local-callee: 1 test / 405,
+  133, 50, 179, 89, and 107 assertions; construction-verification focused
+  tamper/request controls: 1 test / 8 assertions each.
+- SH08 primitive current source-to-Core: 1 test / 532 assertions; SH15 C5
+  diagnostics: 1 test / 54 assertions; SH07 B2 current composition: 1 test /
+  191 assertions; parent-mutation resolution: 1 test / 20 assertions.
+- The two explicit source-choice refusals passed 2 tests / 4 assertions, and
+  public ingress option/default pinned controls passed 2 tests / 11 assertions.
+
+The SH03 adapter namespace is now executable after the retired carrier
+node/depth/width and source-identity quota tests were removed. The
+two-argument trusted-carrier call remains the native-class, cycle and metadata
+validation path; no old limit constants were restored. Unicode, native-shape,
+digest, provenance and tamper controls remain. No native-C, PMK,
+resource-broker workaround, or restricted route was retried. The repaired
+candidate remains development evidence only and needs independent acceptance
+on its exact final tuple.
+
+## Latest-main composition and SH03 stale-quota cleanup
+
+The clean PR512 repair commit `a6e1880f83253e9b3f5634cb5b612b1c0059e6c4`
+was normally merged with main commit
+`d97539762108d7e44024164c61bb120044ef684b` (tree
+`093a9c284a1e2fc4dd360fa677e43f7a0512dfba`), which includes the current MIR
+source-owner extraction and emitter-cycle repair. The merge had no conflicts;
+its composition commit was `f6956ae937baf4280002bfc0b8f1fe8b944360a5`,
+tree `ec2b021d70167a8da782d93f572ddad6383f4ae8`, with parents
+`a6e1880f83253e9b3f5634cb5b612b1c0059e6c4` and
+`d97539762108d7e44024164c61bb120044ef684b`. The MIR/emitter paths do not
+overlap the repaired Reader/Syntax/Core caller paths; the earlier genuine
+current Map-to-Core receipt (1 test / 131 assertions) is reused as prior
+evidence, not relabeled as a fresh d975 execution.
+
+The remaining SH03 test file still referenced constants removed by the reader
+quota-removal source change. The repair removes the budget-only carrier-depth
+and source-identity-size tests, removes the observed-node allowance assertion,
+and calls trusted-carrier validation through its current two-argument contract.
+It also updates two stale diagnostic expectations from
+`:exact-bounded-sh03-reader-instruction` to `:exact-sh03-reader-instruction`
+and from the historical plan-identity diagnostic to the current exact-plan
+envelope diagnostic. No runtime quota, bound, admission hash or pinned/default
+selection changed; the finite depth/stack-safety, Unicode, type/shape, native
+carrier, provenance and tamper tests remain.
+
+Evidence for this cleanup is bounded and attributable. The first post-cleanup
+namespace run (`clojure -M:test --namespace
+gravity.self-hosting.sh03-reader-adapter-test --fail-fast`) loaded and ran 32
+tests / 1079 assertions with no errors and one stale expectation failure. After
+the two expectation updates, the exact owner test
+`sh03-current-reader-plan-checks-keep-historical-priority` passed via
+`clojure -M:dev-test --namespace gravity.self-hosting.sh03-reader-adapter-test
+--exact gravity.self-hosting.sh03-reader-adapter-test/sh03-current-reader-plan-checks-keep-historical-priority
+--fail-fast`: 1 test / 27 assertions, 0 failures, 0 errors. The complete
+namespace was not rerun after expectation-only edits; the preceding run is
+the evidence that all remaining forms load and execute. No hosted failure
+receipt, native lane, PMK lane or migration claim is inferred from this
+focused repair.
+
+## Final composition with the authenticated owner-prefix witness
+
+The clean SH03 cleanup commit was normally composed with verified main commit
+`2d0844f8f7f21321d920b9245341a2b98adc642e` (tree
+`c5f5941ca3db4ce38695f870276e1b345a323339`, parent
+`d97539762108d7e44024164c61bb120044ef684b`). The normal merge had no
+conflicts. Before the final owner-witness repair, the merge identity was
+`e99f27c094065329181e647577cfbe916011cfc5`, tree
+`13153d4714300d3aadb2834dd1ea08b2a38e6986`, with parents
+`97929ea6c53484a66a20bae8f9b9e43c005991e6` and
+`2d0844f8f7f21321d920b9245341a2b98adc642e`.
+
+The new authenticated owner-prefix witness now carries the explicit
+`:gravity/sh04-development-syntax-selection-v1` selection and
+`:macro-source-mode :development-current` in its full Reader-to-Core
+invocation. SH03's exact Reader invocation contract intentionally receives
+only the Reader plus Syntax selection; SH05 receives the same authenticated
+Reader/Syntax map with the Macro source mode as its explicit source-mode
+argument; SH06 and SH07 retain the full invocation for their downstream
+binding and verification. This is the smallest stage-local adaptation and
+does not widen the default or pinned route. A first run failed closed at C2
+because the full Macro selector was incorrectly forwarded into SH03; that
+failure led directly to the stage-local fix and was not relabeled as a pass.
+The corrected real owner-prefix replay passed 1 test / 35 assertions with
+zero failures and errors. The ten other owner selectors were not run.
+
+The requested fresh semantic witness then passed on this composed source:
+`gravity.self-hosting.sh07-current-map-guard-test/current-map-guard-source-to-core-and-branch-substitution-replay`, 1 test / 131 assertions,
+zero failures and errors, including hostile branch replay rejection.
+Focused negative controls also passed: the two Reader-only source-choice
+refusals in `gravity.resolution.pipeline-test` passed 2 tests / 4 assertions
+(C4 `:exact-pinned-macro-source` and C3
+`:exact-pinned-syntax-source`), and the Syntax pinned/default plus
+selection-mode/source-tamper controls in `gravity.syntax.pipeline-test`
+passed 2 tests / 12 assertions. Pinned clj-kondo 2025.10.23 reported zero
+findings on the changed authenticated owner-prefix test. The full hosted
+lanes, native-C, PMK, broker and migration claims remain outside this
+receipt; no restricted route was retried and no admission hash was refreshed.
+
+## Reviewed immutable PR512 source identity
+
+The reviewed immutable PR512 source tuple is commit
+`c46ddb408e9503e6960fd12ff6daedf403ee895c`, tree
+`e71c1899a3f3c5985f1084895b9204764c4bca07`. At this exact tuple, the Gravity
+source identities are:
+
+| Source | Bytes | SHA-256 |
+| --- | --- | --- |
+| `bootstrap/gravity/src/gravity/bootstrap/syntax.gravity` | 78643 | `a9252e729c2bf830c157708352b9f760e6cb959bf621eb4d5893fdc968074ffa` |
+| `bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity` | 4062 | `31241b6fafa5ff7ab7eefad272397b6141d9c1166cb12c3529bf6803147cb585` |
+
+At this reviewed source tuple, Syntax removes the
+`source-byte-count <= 1048576` admission check from
+`c3-reader-source-revision?` while retaining its nonnegative integer, exact-key,
+schema, artifact, function, digest, and binding/revision identity checks. The
+historical table and ceiling statement above remain preserved as evidence for
+their original tuple. The existing PR566 report at
+`docs/artifacts/phase-06/reports/syntax-reader-revision-length-current-port.md`
+is evidence only for its separately owned Reader revision-length controls and
+their focused negative cases; it is not a claim of whole-pipeline,
+canonical-admission, release, self-hosting, or seed-retirement authority.
