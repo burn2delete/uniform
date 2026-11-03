@@ -241,12 +241,20 @@
 
 (defn- valid-plan?
   [plan]
-  (and (map? plan)
-       (= :gravity/stage0-hosted-core-compiled-plan (:kind plan))
-       (= :hosted (get-in plan [:module :profile]))
-       (= :jvm (get-in plan [:module :target]))
-       (= 'main (:entrypoint plan))
-       (map? (get-in plan [:functions 'p15-s23-native-c-emit-plan]))))
+  (let [definition (get-in plan [:functions 'p15-s23-native-c-emit-plan])
+        observed-shape (when (map? definition)
+                         {:function 'p15-s23-native-c-emit-plan
+                          :arity (:arity definition)
+                          :params (:params definition)})]
+    (and (map? plan)
+         (= :gravity/stage0-hosted-core-compiled-plan (:kind plan))
+         (= :hosted (get-in plan [:module :profile]))
+         (= :jvm (get-in plan [:module :target]))
+         (= 'main (:entrypoint plan))
+         (= {:function 'p15-s23-native-c-emit-plan
+             :arity 1
+             :params ['request]}
+            observed-shape))))
 
 (defn run-seed-built-component!
   "Persist and execute the fixed Gravity emitter plan from the pinned seed.
@@ -308,6 +316,13 @@
                    (fail! "persisted compiler plan has the wrong executable shape"
                           {:reason :plan-shape :plan-kind (:kind plan)
                            :entrypoint (:entrypoint plan)}))
+               _ (when-not (and (= helper-source-path (get-in plan [:source :path]))
+                                (= source-sha256 (get-in plan [:source :sha256])))
+                   (fail! "persisted compiler plan source identity differs"
+                          {:reason :plan-source-binding
+                           :expected {:path helper-source-path
+                                      :sha256 source-sha256}
+                           :actual (select-keys (:source plan) [:path :sha256])}))
                _ (when-not (= (get-in compile-run [:summary :plan-id])
                               (:plan-id plan))
                    (fail! "persisted compiler plan identity differs from child output"
@@ -320,11 +335,6 @@
                           {:reason :source-plan-binding
                            :expected source-sha256
                            :actual (get-in compile-run [:summary :source-content-hash])}))
-               _ (when-not (= source-sha256 (get-in plan [:source :sha256]))
-                   (fail! "persisted compiler plan source identity differs"
-                          {:reason :plan-source-binding
-                           :expected source-sha256
-                           :actual (get-in plan [:source :sha256])}))
                _ (when-not (= (get-in compile-run [:summary :plan-sha256])
                               plan-sha256)
                    (fail! "persisted compiler plan hash differs from child output"
@@ -387,6 +397,7 @@
                                  :exit-code (:exit-code compile-run)
                                  :stdout-sha256 (:stdout-sha256 compile-run)
                                  :stderr-sha256 (:stderr-sha256 compile-run)
+                                 :source-path helper-source-path
                                  :source-content-sha256
                                  (get-in compile-run [:summary :source-content-hash])
                                  :plan-id (:plan-id plan)
@@ -452,11 +463,13 @@
                           {:reason :plan-readback-identity
                            :expected (:plan-id plan)
                            :actual (:plan-id public-plan)}))
-               _ (when-not (= source-sha256 (get-in public-plan [:source :sha256]))
+               _ (when-not (and (= helper-source-path (get-in public-plan [:source :path]))
+                                (= source-sha256 (get-in public-plan [:source :sha256])))
                    (fail! "persisted plan readback source identity differs"
                           {:reason :plan-readback-source-binding
-                           :expected source-sha256
-                           :actual (get-in public-plan [:source :sha256])}))
+                           :expected {:path helper-source-path
+                                      :sha256 source-sha256}
+                           :actual (select-keys (:source public-plan) [:path :sha256])}))
                _ (when-not (= plan-sha256 public-plan-sha256)
                    (fail! "persisted plan readback hash differs"
                           {:reason :plan-readback

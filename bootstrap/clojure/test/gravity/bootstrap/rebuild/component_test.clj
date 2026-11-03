@@ -1,6 +1,7 @@
 (ns gravity.bootstrap.rebuild.component-test
   (:require [clojure.edn :as edn]
-            [clojure.test :refer [deftest is]]
+            [clojure.java.io :as io]
+            [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap.rebuild.component :as component])
   (:import [java.nio.file Files LinkOption Path]))
 
@@ -23,6 +24,10 @@
        ~@body
        (finally
          (delete-tree! ~binding)))))
+
+(defn- snapshot-plan-file
+  [snapshot]
+  (io/file snapshot "target/bootstrap-component.plan.edn"))
 
 (deftest persisted-component-is-reloaded-for-accepted-and-rejected-inputs
   (with-output-root [output-root]
@@ -134,3 +139,53 @@
       (is error)
       (is (= "BOOT-COMPONENT-BUILD" (:diagnostic (ex-data error))))
       (is (= :plan-readback-source-binding (:reason (ex-data error)))))))
+
+(deftest pre-execution-plan-abi-and-source-controls-run-no-execution-child
+  (doseq [[label mode expected-reason]
+          [["wrong helper function shape" :function-shape :plan-shape]
+           ["wrong helper source path" :source-path :plan-source-binding]
+           ["wrong compiler source summary" :source-summary :source-plan-binding]]]
+    (testing label
+      (with-output-root [output-root]
+        (let [runner-var (ns-resolve 'gravity.bootstrap.rebuild.component
+                                     'run-child!)
+              original-runner @runner-var
+              calls (atom 0)
+              error (try
+                      (with-redefs-fn
+                        {runner-var
+                         (fn [snapshot expression]
+                           (let [call (swap! calls inc)
+                                 result (original-runner snapshot expression)]
+                             (if (not= 1 call)
+                               result
+                               (case mode
+                                 :function-shape
+                                 (let [file (snapshot-plan-file snapshot)
+                                       plan (edn/read-string (slurp file))]
+                                   (spit file
+                                         (pr-str
+                                          (assoc-in plan
+                                                    [:functions
+                                                     'p15-s23-native-c-emit-plan
+                                                     :params]
+                                                    ['wrong]))))
+                                 :source-path
+                                 (let [file (snapshot-plan-file snapshot)
+                                       plan (edn/read-string (slurp file))]
+                                   (spit file
+                                         (pr-str
+                                          (assoc-in plan [:source :path]
+                                                    "bootstrap/gravity/substituted.gravity"))))
+                                 :source-summary
+                                 (assoc-in result [:summary :source-content-hash]
+                                           "sha256:0000000000000000000000000000000000000000000000000000000000000000")))))}
+                        #(component/run-seed-built-component!
+                          "." manifest-path (component/seed-built-component)
+                          (.toString output-root)))
+                      nil
+                      (catch clojure.lang.ExceptionInfo error error))]
+          (is error)
+          (is (= 1 @calls))
+          (is (= "BOOT-COMPONENT-BUILD" (:diagnostic (ex-data error))))
+          (is (= expected-reason (:reason (ex-data error)))))))))
