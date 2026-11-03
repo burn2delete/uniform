@@ -50505,9 +50505,110 @@
      :baseline-fragment-sha256
      "ac7dc6454f761f0572ad2407a78baf4bd395a85680f2ad5ce44082b7cc25c7f4",
      :live-fragment-sha256
-     "ffca258d344464aa30dd1107d91c940106f89a1d4858c18beb3ccc8f55ac15f6"}]}],
+     "ffca258d344464aa30dd1107d91c940106f89a1d4858c18beb3ccc8f55ac15f6"}]},
+  {:document-id "MATH4",
+   :path "docs/phase-05-mathematical-and-elementary-function-system/072-math4-eml-normalization-and-search-design.md",
+   :kind :math4-eml-search-policy-semantic-projection,
+   :review-state :proposed,
+   :baseline-ref "a1b991be499d50579a8b4366976c519ae8949224",
+   :applying-ref "9d5039362df42863111097217f30d8e13693c9ac",
+   :baseline-tree "5b62819e511bfc7e6b5eba0527d8c9b5883c5572",
+   :applying-tree "14e32fb6c46c74d5522771c0f805cd8830f99aeb",
+   :baseline-sha256
+   "df3613be7932354a0efa846b27365c7e7f5c9a404b2a788113857912bf5d14eb",
+   :live-sha256
+   "55c3eb0d96b729eba9e1600e439091db3ad9890f2e6da0ce11fe711c7567360a",
+   :baseline-blob "893307855d138b48c68fece63122dc5a4cfe07f4",
+   :applying-blob "907ec2399cbe35d0c4d4f97fe3cf6faafc128f2b",
+   :authority
+   "AGENTS.md#project-accounting-removal, with MATH4 source-bound search-policy supersession review.",
+   :qualification
+   "Only the exact MATH4 search-manifest and diagnostic hunks are projected to the authenticated baseline view. Verified EFIR/domain/branch/numeric/precision/source anchors, grammar and operators, rule premises and invalidation, candidate ranking and selection, deterministic ordering and tie policy, replayable traces, proof or approximation acceptance, candidate lifecycle and diagnostic metadata remain current criteria. The project work budget and admission fuel are removed; this bridge is source reconciliation evidence only and confers no canonical adoption or implementation acceptance.",
+   :current-criteria
+   {:retained [:verified-efir-domain-branch-numeric-precision-source-anchors
+               :grammar-operators-and-constants
+               :rule-premises-and-invalidation
+               :candidate-ranking-and-selection
+               :deterministic-ordering-and-tie-policy
+               :replayable-traces
+               :proof-and-approximation-acceptance
+               :candidate-lifecycle-and-diagnostics],
+    :removed [:project-work-budget-and-admission-fuel],
+    :qualification :current-math4-criteria-derived-from-9d5039362},
+   :semantic-deltas
+   [{:hunk-id "MATH4-search-manifest",
+     :classification :accounting-removal-with-deterministic-search-and-proof-criteria}
+    {:hunk-id "MATH4-search-diagnostic",
+     :classification :diagnostic-wording-clarification}],
+   :projection-hunks
+   [{:hunk-id "MATH4-search-manifest",
+     :facet-ids ["MATH4/partition-facet/b0242c1e615d110b8dbf22e266c89080036586922838c2974dfc04c3312c6445"
+                 "MATH4/partition-facet/5531de997b8799d293891bb399be16017c7b692725a8b1e7ee9d0b0d4a3396a2"
+                 "MATH4/partition-facet/c7a3b5fb25af8d9c6c4ed00509c91868bf90413a966106d680aed330d21df2d7"
+                 "MATH4/partition-facet/1d9acdbfdad21d99f36007292ef5ee91fbd87f960e96bf9bfc758ff8c979e63e"
+                 "MATH4/partition-facet/f46376ad54e0b21f10f9d38c8c3228d7be3bcdefb3b4d8bb11c57681be7efc7a"],
+     :baseline-start-line 130, :baseline-end-line 149,
+     :live-start-line 130, :live-end-line 152,
+     :baseline-fragment-sha256
+     "b833d11e86d7da70026fb1ce90bb363c527d20beb2be63b75e862ef45600673a",
+     :live-fragment-sha256
+     "833502a90365f96164650a852e0d7bfcbb655f19066628400cb0e7370e338621"}
+    {:hunk-id "MATH4-search-diagnostic",
+     :facet-ids ["MATH4/partition-facet/608e0b440b42427ebb5e0a6088a115707d61831b739994a227ba455b35f18ce3"],
+     :baseline-start-line 206, :baseline-end-line 206,
+     :live-start-line 209, :live-end-line 209,
+     :baseline-fragment-sha256
+     "410ebde6d2e88ced922f21e7788a7f6dc6923fad29e37d2c344ad7a374851b35",
+     :live-fragment-sha256
+     "b5f05427b20dfe9ebacab7c6a349622b1a7e091f35c47d21166cdc1180a1ef02"}]}
+  {:document-id "MATH9",
+   :path "docs/phase-05-mathematical-and-elementary-function-system/077-math9-symbolic-math-and-rewrite-system-specification.md",
+   :kind :math9-rewrite-termination-semantic-projection,
+   :review-state :proposed,
+   :baseline-ref "a1b991be499d50579a8b4366976c519ae8949224",
+   :applying-ref "dcf3378130ef92c37105aeda17b3badfec6619dc",
+   :baseline-tree "5b62819e511bfc7e6b5eba0527d8c9b5883c5572",
+   :applying-tree "b0609b39cf93b8c27dbd204b69ca197ef781d8f8",
+   :baseline-sha256
+   "ca9ccdcfe25a76de1127d5629d8265f83885481e7334012ee4da8aa1fdbd0410",
+   :live-sha256
+   "8ee9b9bd7a70508ebac2d74eac64417462c1a18f75e5b2ae2c43b12b96266430",
+   :baseline-blob "ac364084776e3cd0a2046c224aacd7d65178cc68",
+   :applying-blob "5bae82b6d377e64b803dd1c6a7282f4ec179406b",
+   :authority
+   "MATH9 rewrite-system source audit of current termination evidence after mandatory-fuel retirement.",
+   :qualification
+   "Only the exact Rewrite Rule Form termination measure is projected to the authenticated baseline view. Rule/domain/branch/numeric/floating/side-condition/proof/source and invalidation facts, deterministic rule ordering, cost-model tie breaks, equality explanations, proof replay, and well-founded finite termination evidence remain current semantic obligations. The current strict tan-occurrence measure is a semantic termination correction, not a project quota or admission allowance; this bridge is source reconciliation evidence only and confers no canonical adoption or implementation acceptance.",
+   :current-criteria
+   {:retained [:rule-domain-branch-numeric-floating-side-condition-proof-source-and-invalidation
+               :deterministic-rule-ordering-cost-model-tie-breaks-equality-explanation-and-proof-replay
+               :well-founded-termination-finite-trace-and-stopped-run-history],
+    :changed [:strictly-decreasing-tan-occurrence-measure],
+    :qualification :current-math9-criteria-derived-from-dcf3378130},
+   :semantic-deltas
+   [{:hunk-id "MATH9-rewrite-termination",
+     :classification :semantic-strict-termination-measure}],
+   :projection-hunks
+   [{:hunk-id "MATH9-rewrite-termination",
+     :facet-ids ["MATH9/partition-facet/f7ea6e89842884748fe59dbe8f51ab1430d943e274be2db887506a777a0977c9"
+                 "MATH9/partition-facet/e231af9a1d26e177746d45311c38254441b372ff323f06178c5a5777ae4243ad"],
+     :baseline-start-line 77, :baseline-end-line 78,
+     :live-start-line 77, :live-end-line 78,
+     :baseline-fragment-sha256
+     "ca061d6ae9dc82e9c5ab1dbba13b05632a62d13a9ce09355452dfd58a444f8f1",
+     :live-fragment-sha256
+     "f35520ec40d85c0f54bbb63e31895c3ad097ed693da79100a56deb0ffa16e404"}]}],
  :task-source-version-bridges
- [{:path "specs/auth-workflow/tasks.md",
+ [{:path "specs/stdlib-workflow/tasks.md",
+   :marker "stdlib-implementation-tasks",
+   :historical-ref "254a5b50ea5e2825c424248c9216802cc866c0fd",
+   :historical-sha256 "69ac9a7163838c4cb297c94174d0b3061b0e7686f2378c45aa30e6320b6f6d94",
+   :current-ref "80d8a655cea00218799446986a976ca64043a1f8",
+   :current-tree "8c7e533bed9536a760254754e26dbb75db0b0f55",
+   :current-sha256 "9ac5d948a4df974051fe15adce874f6bf39074982991d8c6c80201a971142d57",
+   :change-class :acceptance-boundary-extension,
+   :qualification "The current Stdlib task ledger retains the five historical task identities and adds source-specific closing criteria and evidence boundaries. This authenticated source transition preserves historical routing while explicitly conferring no implementation, library-release or requirement acceptance."}
+  {:path "specs/auth-workflow/tasks.md",
    :marker "auth-implementation-tasks",
    :historical-ref "d5d8e15c773929337e1d9646da4f32af2d461e17",
    :historical-sha256 "9db81aa1c8ef183a9da8656a343a29fd9104b10e7130fd63ba4e52b75ce2b256",

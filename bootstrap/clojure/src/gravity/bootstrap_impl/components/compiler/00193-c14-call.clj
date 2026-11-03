@@ -23,8 +23,9 @@
   (c14-call c14/c14-lowering-capability-proof artifact))
 
 (defn compiler-c14-lowering-source-artifact [source-path source-text]
-  (c14-call c14/compiler-c14-lowering-source-artifact
-            source-path source-text))
+  (source-input/with-context
+   #(c14-call c14/compiler-c14-lowering-source-artifact
+              source-path source-text)))
 
 (defn compiler-c14-lowering-file-artifact [path]
   (c14-call c14/compiler-c14-lowering-file-artifact path))

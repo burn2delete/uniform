@@ -384,6 +384,121 @@
      :authority :historical-routing-and-structural-only
      :current-file-sha256 (sha256 current)}))
 
+(def stdlib-task-source-transition
+  requirement-sources/stdlib-task-source-transition)
+
+(defn- stdlib-task-row-matches [text id]
+  (let [quoted-id (java.util.regex.Pattern/quote id)
+        pattern (re-pattern
+                 (str "(?ms)^- \\[([ xX])\\] `" quoted-id
+                      "` .*?(?=^\\- \\[|^<!-- stdlib-implementation-tasks:end -->)"))
+        matcher (re-matcher pattern text)]
+    (loop [matches []]
+      (if (.find matcher)
+        (recur (conj matches {:raw (str/trim (.group matcher))
+                              :start (.start matcher)}))
+        matches))))
+
+(defn stdlib-task-row
+  "Return one exact Stdlib task row, excluding inter-row navigation whitespace.
+  Criteria, status, IDs and source-basis text remain authenticated bytes."
+  [text id]
+  (let [matches (stdlib-task-row-matches text id)]
+    (require! (= 1 (count matches))
+              (str "Missing or duplicate Stdlib task row: " id))
+    (:raw (first matches))))
+
+(defn- stdlib-task-locator [baseline id path]
+  (let [matches (stdlib-task-row-matches baseline id)]
+    (require! (= 1 (count matches))
+              (str "Missing or duplicate historical Stdlib task row: " id))
+    (let [{:keys [raw start]} (first matches)
+          bytes (.getBytes ^String baseline "UTF-8")
+          raw-bytes (.getBytes ^String raw "UTF-8")
+          end (+ start (alength raw-bytes))]
+      {:path path
+       :start-byte start
+       :end-byte end
+       :start-line (utf8-line-number bytes start)
+       :end-line (utf8-line-number bytes (dec end))
+       :sha256 (sha256 raw)
+       :source-snapshot-ref (sha256 raw)})))
+
+(defn- validate-stdlib-task-locator!
+  [transition row baseline snapshots]
+  (let [id (:id row)
+        path (:path transition)
+        source (:source row)
+        historical-source-commit (:historical-source-commit transition)
+        expected (stdlib-task-locator baseline id path)]
+    (require! (= path (:path row))
+              (str "Stdlib task file path changed: " id))
+    (require! (= historical-source-commit (:source-commit row))
+              (str "Stdlib task source commit changed: " id))
+    (require! (= (:baseline-sha256 transition) (:file-sha256 row))
+              (str "Stdlib task file digest changed: " id))
+    (require! (= expected source)
+              (str "Stdlib task source locator changed: " id))
+    (require! (= (stdlib-task-row baseline id) (source-raw source snapshots))
+              (str "Stdlib task source snapshot changed: " id))))
+
+(defn stdlib-task-transition-view
+  "Authenticate the five Stdlib task rows across PR564's source transition.
+  Historical crosswalk rows are checked against their old Git source, while
+  current rows must equal the separately pinned applying Git source."
+  [transition rows snapshots read-text]
+  (require! (= transition stdlib-task-source-transition)
+            "Stdlib task source transition identity or qualification changed")
+  (let [path (:path transition)
+        expected-ids (set (:task-ids transition))
+        ids (mapv :id rows)
+        read-ref (fn [ref source-path]
+                   (requirement-sources/git-source "." ref source-path require!))
+        _ (require! (not= (:baseline-ref transition) (:applying-ref transition))
+                    "Stdlib task source transition replays one source identity")
+        _ (require! (and (= expected-ids (set ids))
+                         (= (count ids) (count (set ids))))
+                    "Stdlib task transition has missing or duplicate task identities")
+        _ (requirement-sources/validate-snapshots!
+           transition read-ref sha256 require!)
+        historical (read-ref (:historical-source-commit transition) path)
+        _ (require! (= (:historical-source-tree transition)
+                       (requirement-sources/git-commit-tree
+                        "." (:historical-source-commit transition) require!))
+                    "Stdlib historical source commit/tree changed")
+        _ (require! (= (:baseline-sha256 transition) (sha256 historical))
+                    "Stdlib historical source commit bytes differ from baseline")
+        _ (require! (= (:baseline-blob transition)
+                       (requirement-sources/git-blob-id historical))
+                    "Stdlib historical source commit blob differs from baseline")
+        baseline (read-ref (:baseline-ref transition) path)
+        applying (read-ref (:applying-ref transition) path)
+        current (read-text path)]
+    (doseq [{:keys [id source]} rows]
+      (validate-stdlib-task-locator!
+       transition (first (filter #(= id (:id %)) rows)) baseline snapshots)
+      (let [raw (source-raw source snapshots)
+            historical-row (stdlib-task-row baseline id)
+            applying-row (stdlib-task-row applying id)
+            current-row (stdlib-task-row current id)]
+        (require! (= raw historical-row)
+                  (str "Historical Stdlib task body is not the frozen source row: " id))
+        (require! (= current-row applying-row)
+                  (str "Changed or unauthenticated current Stdlib task row: " id))))
+    {:kind (:kind transition)
+     :path path
+     :row-ids (vec (sort ids))
+     :historical-source-commit (:historical-source-commit transition)
+     :historical-source-tree (:historical-source-tree transition)
+     :baseline-ref (:baseline-ref transition)
+     :baseline-tree (:baseline-tree transition)
+     :applying-ref (:applying-ref transition)
+     :applying-tree (:applying-tree transition)
+     :snapshot-provenance :git-bytes-verified
+     :locator-provenance :historical-git-blob-and-utf8-span-verified
+     :authority :historical-routing-and-structural-only
+     :current-file-sha256 (sha256 current)}))
+
 (defn current-task-body!
   "Check a current task row's captured body without rebinding its history.
   Task-ledger preambles are navigation layout, so their edits can shift a row;
@@ -514,6 +629,11 @@
         (when (seq platform-tasks)
           (platform-task-transition-view platform-task-source-transition
                                          platform-tasks snapshots read-text))
+        stdlib-tasks (vec (filter #(= "stdlib" (:component %)) tasks))
+        stdlib-transition
+        (when (seq stdlib-tasks)
+          (stdlib-task-transition-view stdlib-task-source-transition
+                                       stdlib-tasks snapshots read-text))
         routing (:stable-task-routing-keys crosswalk)
         _ (require! (= (count tasks) (count task-map)) "Duplicate global literal task ID")
         _ (doseq [[component rows] (:task-authorities crosswalk)]
@@ -522,8 +642,10 @@
               (implementation-ids (read-text (str "specs/" component "-workflow/tasks.md")) component)
               (str component " live implementation task")))
         _ (doseq [row tasks]
-            (when-not (and (= "platform" (:component row))
-                           (= (:path (:source row)) (:path platform-task-source-transition)))
+            (when-not (or (and (= "platform" (:component row))
+                               (= (:path (:source row)) (:path platform-task-source-transition)))
+                          (and (= "stdlib" (:component row))
+                               (= (:path (:source row)) (:path stdlib-task-source-transition))))
               (current-task-body! (:source row) snapshots read-text))
             (let [[_ checked id] (re-find #"^- \[([ xX])\] `([^`]+)`" (source-text (:source row)))]
               (require! (and (= id (:id row)) (= (:checked row) (not= " " checked)))
@@ -642,6 +764,7 @@
      :condition-values conditions
      :evidence-source-applicability evidence-applicability
      :platform-task-source-transition platform-transition
+     :stdlib-task-source-transition stdlib-transition
      :historical-source-applicability historical-source-applicability
      :mapping-ready? (every? #(= :owner-and-independent-reviewed (:coverage %)) requirements)
      :coverage-gaps (mapv :id (filter #(= :missing-task-authority (:coverage %)) requirements))

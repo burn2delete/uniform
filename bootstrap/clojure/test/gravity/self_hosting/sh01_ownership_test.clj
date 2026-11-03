@@ -337,6 +337,12 @@
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/release-p18/00909-p18-t02-run-bin-gravity.clj")
 (def ^:private packaged-launcher-helper-test
   "bootstrap/clojure/test/gravity/bootstrap_test.clj")
+(def ^:private source-input-helper-path
+  "bootstrap/clojure/src/gravity/source_input.clj")
+(def ^:private source-input-helper-consumer
+  "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00004-max-reader-form-depth.clj")
+(def ^:private source-input-helper-test
+  "bootstrap/clojure/test/gravity/bootstrap_compatibility/c11_test.clj")
 
 (def ^:private safety-stage-path "bootstrap/clojure/src/gravity/safety.clj")
 (def ^:private safety-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00684-p15-s23-closed-core-recomputed-node-type.clj")
@@ -428,7 +434,11 @@
              packaged-launcher-helper-path
              {:namespace 'gravity.cli.packaged-launcher :owner :master-coordinator :slice "SH-01"
               :consumer-path packaged-launcher-helper-consumer
-              :test-path packaged-launcher-helper-test}}
+              :test-path packaged-launcher-helper-test}
+             source-input-helper-path
+             {:namespace 'gravity.source-input :owner :master-coordinator :slice "SH-01"
+              :consumer-path source-input-helper-consumer
+              :test-path source-input-helper-test}}
             (:production-helper-associations record))
          (= :sh-macro (get-in record [:module-owners macro-helper-path]))
          (= {:namespace 'gravity.self-hosting.macro-run-storage-test
@@ -512,6 +522,8 @@
             (get-in record [:standalone-test-owners process-supervision-helper-test]))
          (= :master-coordinator
             (get-in record [:module-owners packaged-launcher-helper-path]))
+         (= :master-coordinator
+            (get-in record [:module-owners source-input-helper-path]))
          (= [{"id" "macro-run-storage" "kind" "production-verification-helper" "owner" "sh-macro"
               "source" {"path" macro-helper-path "namespace" "gravity.macro-run-storage"}
               "consumer" {"path" macro-helper-consumer "namespace" "gravity.macro" "owner" "sh-macro"}
@@ -646,6 +658,11 @@
               "source" {"path" packaged-launcher-helper-path "namespace" "gravity.cli.packaged-launcher"}
               "consumer" {"path" packaged-launcher-helper-consumer "namespace" "gravity.bootstrap" "owner" "master-coordinator"}
               "test" {"path" packaged-launcher-helper-test "namespace" "gravity.bootstrap-test"
+                      "registration" "coordinator"}}
+             {"id" "source-input-products" "kind" "production-verification-helper" "owner" "master-coordinator"
+              "source" {"path" source-input-helper-path "namespace" "gravity.source-input"}
+              "consumer" {"path" source-input-helper-consumer "namespace" "gravity.bootstrap" "owner" "master-coordinator"}
+              "test" {"path" source-input-helper-test "namespace" "gravity.bootstrap-compatibility.c11-test"
                       "registration" "coordinator"}}
              {"id" "safety-records" "kind" "production-stage-helper" "owner" "sh-safety"
               "source" {"path" safety-stage-path "namespace" "gravity.safety"}
