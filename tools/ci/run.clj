@@ -708,6 +708,84 @@
      (apply command "512m" "-M:leaf-test"
             (mapcat (fn [entry] ["--namespace" (str (:namespace entry))]) selected)))))
 
+(def static-control-dependencies
+  "Exact inputs of the static controls that can be narrowed in PR selection.
+
+  The selector's `:lint-tooling-only` reason is backed by the same reviewed
+  allowlist.  Stage-owned compiler paths are handled by `stage-owner`; every
+  other path remains a full selection, so context and macro inputs still run
+  their hook/facade controls rather than being guessed away."
+  {:clojure-lint #{".clj-kondo/config.edn"
+                   "tools/ci/lint.clj"
+                   "tools/ci/lint_context.clj"
+                   "tools/ci/lint_facade_test.clj"
+                   "tools/ci/lint_macro_test.clj"
+                   "tools/ci/lint_macros.clj"
+                   "tools/ci/kondo/hooks/c2.clj"
+                   "tools/ci/kondo/hooks/module_analysis.clj"}
+   :clojure-format #{"tools/ci/lint.clj"
+                     "tools/ci/lint_context.clj"
+                     "tools/ci/lint_facade_test.clj"
+                     "tools/ci/lint_macro_test.clj"
+                     "tools/ci/lint_macros.clj"
+                     "tools/ci/kondo/hooks/c2.clj"
+                     "tools/ci/kondo/hooks/module_analysis.clj"}
+   :harness-controls #{".clj-kondo/config.edn"
+                       "tools/ci/lint.clj"
+                       "tools/ci/lint_context.clj"
+                       "tools/ci/lint_macros.clj"}
+   :macro-context-controls #{"tools/ci/lint.clj"
+                             "tools/ci/lint_context.clj"
+                             "tools/ci/lint_macro_test.clj"
+                             "tools/ci/lint_macros.clj"
+                             "tools/ci/kondo/config.edn"
+                             "tools/ci/kondo/hooks/c2.clj"
+                             "tools/ci/kondo/hooks/module_analysis.clj"}
+   :facade-context-controls #{"tools/ci/lint.clj"
+                              "tools/ci/lint_context.clj"
+                              "tools/ci/lint_facade_test.clj"
+                              "tools/ci/lint_macros.clj"
+                              "tools/ci/kondo/config.edn"
+                              "tools/ci/kondo/hooks/c2.clj"
+                              "tools/ci/kondo/hooks/module_analysis.clj"}})
+
+(def static-control-selector-paths
+  "The exact lint-tooling paths accepted by the shared selector contract."
+  (into #{} (mapcat val static-control-dependencies)))
+
+(defn- selected-static-paths
+  "Return paths only for a complete, known selected map.
+
+  `nil`, full selections, docs-only selections, missing paths, malformed paths,
+  and unknown paths intentionally return nil.  The caller interprets nil as a
+  request for the complete static control suite."
+  [selection]
+  (when (and (map? selection)
+             (= :selected (:kind selection))
+             (not (:selection-error selection)))
+    (let [paths (if (contains? selection :paths)
+                  (:paths selection)
+                  (:clojure-paths selection))]
+      (when (and (sequential? paths)
+                 (seq paths)
+                 (every? string? paths)
+                 (or (= :lint-tooling-only (:reason selection))
+                     (every? #(some? (stage-owner %)) paths))
+                 (or (not= :lint-tooling-only (:reason selection))
+                     (every? #(contains? static-control-selector-paths %) paths)))
+        (vec paths)))))
+
+(defn- static-control-required?
+  "Whether one static command is needed for the supplied existing selection.
+
+  Only a known :selected map is narrowed.  Every other selection shape is
+  intentionally complete, preserving scheduled/push/broad runs and malformed
+  or unknown selector data."
+  [control selection]
+  (if-let [paths (selected-static-paths selection)]
+    (some #(contains? (get static-control-dependencies control #{}) %) paths)
+    true))
+
 (declare commands-for-selection)
 
 (defn commands [mode]
@@ -719,21 +797,34 @@
                    paths (if (contains? selection :clojure-paths)
                            (:clojure-paths selection)
                            (if (contains? selection :paths)
-                             (filterv #(or (str/ends-with? % ".clj") (str/ends-with? % ".edn"))
-                                      (:paths selection))
+                             (let [selected (:paths selection)]
+                               (if (sequential? selected)
+                                 (filterv #(and (string? %)
+                                                (or (str/ends-with? % ".clj")
+                                                    (str/ends-with? % ".edn")))
+                                          selected)
+                                 []))
                              (changed-clojure-paths base)))]
-               (concat [["whitespace" 30 ["git" "diff" "--check" base "HEAD"]]
-                        ["workflow-lint" 30 ["actionlint" "-color"]]
-                        ["clojure-lint" 60 ["clj-kondo" "--lint" "tools/ci"]]
-                        ["clojure-format" 60 ["cljfmt" "check" "tools/ci"]]
-                        ["harness-controls" 60 (command "256m" "-M" "tools/ci/run_test.clj")]
-                        ["project-scope-runner-controls" 120
-                         (command "1g" "-M:dev-test"
-                                  "--namespace" "gravity.project-tests.test-scope-runner-test"
-                                  "--fail-fast")]
-                        ["progress-controls" 60 (command "128m" "-M" "tools/ci/progress_test.clj")]
-                        ["macro-context-controls" 60 (command "256m" "-M" "tools/ci/lint_macro_test.clj")]
-                        ["facade-context-controls" 60 (command "256m" "-M" "tools/ci/lint_facade_test.clj")]]
+               (concat (cond-> [["whitespace" 30 ["git" "diff" "--check" base "HEAD"]]]
+                         (static-control-required? :workflow-lint selection)
+                         (conj ["workflow-lint" 30 ["actionlint" "-color"]])
+                         (static-control-required? :clojure-lint selection)
+                         (conj ["clojure-lint" 60 ["clj-kondo" "--lint" "tools/ci"]])
+                         (static-control-required? :clojure-format selection)
+                         (conj ["clojure-format" 60 ["cljfmt" "check" "tools/ci"]])
+                         (static-control-required? :harness-controls selection)
+                         (conj ["harness-controls" 60 (command "256m" "-M" "tools/ci/run_test.clj")])
+                         (static-control-required? :project-scope-runner-controls selection)
+                         (conj ["project-scope-runner-controls" 120
+                                (command "1g" "-M:dev-test"
+                                         "--namespace" "gravity.project-tests.test-scope-runner-test"
+                                         "--fail-fast")])
+                         (static-control-required? :progress-controls selection)
+                         (conj ["progress-controls" 60 (command "128m" "-M" "tools/ci/progress_test.clj")])
+                         (static-control-required? :macro-context-controls selection)
+                         (conj ["macro-context-controls" 60 (command "256m" "-M" "tools/ci/lint_macro_test.clj")])
+                         (static-control-required? :facade-context-controls selection)
+                         (conj ["facade-context-controls" 60 (command "256m" "-M" "tools/ci/lint_facade_test.clj")]))
                        (when (some #{"tools/ci/snapshot.clj" "tools/ci/snapshot_test.clj"} paths)
                          [["snapshot-controls" 120
                            (command "256m" "-M" "tools/ci/snapshot_test.clj")]])

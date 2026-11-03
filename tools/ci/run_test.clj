@@ -594,6 +594,51 @@
     (is (= 1 (count (filter #{"snapshot-controls"} (command-ids snapshot-selected)))))
     (is (= 1 (count (filter #{"snapshot-controls"} (command-ids snapshot-test-selected)))))))
 
+(deftest static-selection-runs-only-dependent-control-suites
+  (let [base (apply str (repeat 40 "a"))
+        command-ids (fn [selection]
+                      (mapv first (ci/commands-for-selection "static"
+                                                             (assoc selection :base base))))
+        checked-core {:kind :selected
+                      :reason :affected-stage
+                      :paths ["language/compiler/src/gravity/checked_core.gravity"]}
+        macro-source {:kind :selected
+                      :reason :lint-tooling-only
+                      :paths ["tools/ci/lint_macro_test.clj"]}
+        context-source {:kind :selected
+                        :reason :lint-tooling-only
+                        :paths ["tools/ci/lint_context.clj"]}
+        facade-source {:kind :selected
+                       :reason :lint-tooling-only
+                       :paths ["tools/ci/lint_facade_test.clj"]}
+        full {:kind :full :paths []}
+        failed {:kind :full :reason :path-discovery-failed :paths []}
+        malformed {:kind :selected :paths [nil]}
+        unknown {:kind :selected :paths ["src/new-owner.gravity"]}]
+    ;; A compiler source change has no dependency on the static control
+    ;; fixtures.  Whitespace remains unconditional, while changed-file lint
+    ;; remains available for Clojure/EDN inputs below.
+    (is (= ["whitespace"] (command-ids checked-core)))
+    (is (= ["whitespace" "clojure-lint" "clojure-format"
+            "macro-context-controls" "changed-clojure-lint"]
+           (command-ids macro-source)))
+    (is (= ["whitespace" "clojure-lint" "clojure-format"
+            "harness-controls" "macro-context-controls"
+            "facade-context-controls" "changed-clojure-lint"]
+           (command-ids context-source)))
+    (is (= ["whitespace" "clojure-lint" "clojure-format"
+            "facade-context-controls" "changed-clojure-lint"]
+           (command-ids facade-source)))
+    ;; Non-PR/broad selections and malformed or unknown selected data retain
+    ;; the complete control suite instead of guessing a narrower dependency.
+    (doseq [selection [full failed malformed unknown]]
+      (is (= ["whitespace" "workflow-lint" "clojure-lint" "clojure-format"
+              "harness-controls" "project-scope-runner-controls"
+              "progress-controls" "macro-context-controls"
+              "facade-context-controls"]
+             (command-ids selection))
+          (pr-str selection)))))
+
 (deftest path-discovery-failure-cannot-green-static
   (let [base (apply str (repeat 40 "a"))
         selection {:kind :full
