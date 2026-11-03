@@ -278,3 +278,44 @@ assertions, one baseline error). This is outside the PR564-owned manifest row
 and no attempt was made to relabel or route around it. No implementation,
 provider, canonical-adoption, release, self-hosting, denominator, or
 integration claim is made by this receipt.
+
+### PR564 Math source-version bridge successor
+
+To repair the concrete current-main reconciliation failure without renewing the
+frozen source baseline, the isolated successor from PR564 candidate
+`3ac07caf18b2a7381ce615d17835c881e0f88de9` (tree
+`b5a3abf8a23b24f8350c0299cd55ffef5e3372ce`) records the authenticated source
+changes in manifest commit `c85b7b2268c2512e574fb2ebd410e8e248d48d5e`, tree
+`2e9b052554eb55b86600fb0f18bd6965b26749fd`, manifest blob
+`367905fc9b45001865cc5a2e59b4e3f07c16cb6d`, and manifest SHA256
+`c47151307b2dd2e20855f5837053a6a63806f2ed81d0acd5fadaa653c3952a38`.
+The 19 task-source bridges, including the PR564 Stdlib row and all 18
+Runtime/Domain predecessor rows, are conserved. Two additional
+source-version bridges are exact and separate from task-source accounting:
+
+- MATH4 uses baseline `a1b991be499d50579a8b4366976c519ae8949224` / tree
+  `5b62819e511bfc7e6b5eba0527d8c9b5883c5572` and applying commit
+  `9d5039362df42863111097217f30d8e13693c9ac` / tree
+  `14e32fb6c46c74d5522771c0f805cd8830f99aeb`; baseline/live document SHA256
+  values are `df3613be7932354a0efa846b27365c7e7f5c9a404b2a788113857912bf5d14eb`
+  and `55c3eb0d96b729eba9e1600e439091db3ad9890f2e6da0ce11fe711c7567360a`.
+  Only project work-budget/admission fuel and its diagnostic wording are
+  projected; EFIR, deterministic ordering/ties, replay, proof and candidate
+  criteria remain current.
+- MATH9 uses the same baseline tree and applying commit
+  `dcf3378130ef92c37105aeda17b3badfec6619dc` / tree
+  `b0609b39cf93b8c27dbd204b69ca197ef781d8f8`; baseline/live document SHA256
+  values are `ca9ccdcfe25a76de1127d5629d8265f83885481e7334012ee4da8aa1fdbd0410`
+  and `8ee9b9bd7a70508ebac2d74eac64417462c1a18f75e5b2ae2c43b12b96266430`.
+  The strict tan-occurrence termination measure is retained as a semantic
+  current criterion, not treated as a quota or admission allowance.
+
+The exact reconciliation test now passes 31 tests / 272 assertions with no
+failures or errors. Tooling transition tests pass 8 / 52; tooling, Profile,
+Domain, Safety, acceptance-dependency, boundary, documentation and roadmap
+checks pass with their existing bounded scopes. Updated current-source-view
+hashes are Domain `8679d703b54cb21831b44fa45d52f81544cd0feff1f45177dff93fa7f4c38db9`
+and Safety `56b119414d255696883af9ca15a01d6380a2d5b92bb7ecaad1dd32ad13290265`.
+This bridge records source reconciliation only; it confers no implementation,
+canonical-adoption, release, self-hosting, denominator, or integration
+authority.
