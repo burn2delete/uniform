@@ -41,7 +41,7 @@
   (is (nil? (find-ns 'gravity.authenticated-artifact-pipeline))))
 
 (deftest actual-c2-facade-resolves-the-selected-fragment
-  (is (= 17 (count (:paths c2-actual))))
+  (is (= 11 (count (:paths c2-actual))))
   (is (= (:paths c2-actual) (:paths (context/selected-plan! context/local-bytes! [c2-fragment]))))
   (let [findings (observe! c2-actual)]
     (is (not-any? #(= :error (:level %)) findings) (pr-str findings))

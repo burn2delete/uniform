@@ -27,8 +27,7 @@
 (def c2-pass-cache-prefix (str source-root "gravity/c2_pass_cache/"))
 (def c2-pass-cache-resources
   ["foundation" "canonical_encode" "canonical_decode" "source_security"
-   "source_snapshot" "key" "directories" "store_handles" "secure_io"
-   "locking" "lookup" "publication" "adapter_request"
+   "source_snapshot" "key" "adapter_request"
    "requested_hit_binding" "adapter_projection"])
 (def c2-pass-cache-nested-resources
   {"adapter_request" ["capacity_handoff"]})

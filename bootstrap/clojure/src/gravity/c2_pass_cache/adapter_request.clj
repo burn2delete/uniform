@@ -35,23 +35,6 @@
    :build-effect-binding :capability-binding :facet-binding
    :profile-binding :target-binding :boundary-binding])
 
-(defn- lookup-evidence
-  [key status reason extra]
-  (merge
-   {:artifact :gravity/c2-local-pass-cache-evidence
-    :schema-version cache-schema-version
-    :stage cache-stage
-    :semantic-key-id (:semantic-key-id key)
-    :storage-key-id (:storage-key-id key)
-    :status status
-    :reason reason
-    :local-development-only? true
-    :release-authority? false
-    :proof-authority? false
-    :equivalence-authority? false
-    :self-hosting-credit? false}
-   extra))
-
 (defn- required-validation-ops!
   [ops]
   (when-not (and (map? ops)
