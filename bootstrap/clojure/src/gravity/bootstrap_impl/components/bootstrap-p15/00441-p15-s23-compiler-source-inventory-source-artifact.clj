@@ -30,8 +30,6 @@
          :compiler-module module-record
          :compiler-stage compiler-stage
          :source-inventory source-inventory
-         :source-path-resolution
-         (p15-s23-source-path-resolution-records source-inventory)
          :full-language-compiler-self-hosted?
          (get-in compiler-stage
                  [:self-hosting-claims

@@ -111,12 +111,6 @@
              :status :present}))
         (:source-modules compiler-stage)))
 
-(defn p15-s23-source-path-resolution-records
-  [source-inventory]
-  (mapv #(select-keys % [:component :logical-path :actual-path
-                         :relocated? :source-hash :status])
-         source-inventory))
-
 (defn p15-s23-compiler-source-diagnostic-stream
   [source-path inventory-id]
   {:artifact :gravity/p15-s23-compiler-source-inventory-diagnostic-stream
