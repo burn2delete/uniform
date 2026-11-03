@@ -105,6 +105,32 @@
         (is (= expected (select-keys body-result [:status :reason])))
         (is (= expected (select-keys emitter-result [:status :reason])))
         (is (= body-result emitter-result))))
+    (doseq [width [1025 2049]
+            bad [:gravity.type/keyword :gravity.type/unknown nil
+                 {:kind :gravity.type/list}]]
+      (let [members (vec (repeat width s))
+            [body-result emitter-result]
+            (element-result (finite (assoc members (dec width) bad)))
+            expected {:status :not-applicable :reason :incompatible-list-elements}]
+        (testing (str "late invalid member width " width " " (pr-str bad))
+          (is (= expected (select-keys body-result [:status :reason])))
+          (is (= expected (select-keys emitter-result [:status :reason])))
+          (is (= body-result emitter-result)))))
+    (doseq [bad [nil :gravity.type/list
+                 {:kind :gravity.type/list :shape :literal :element-types (list s)}
+                 (assoc (finite [s]) :extra true)
+                 (assoc (finite [s]) :shape :homogeneous)]]
+      (let [[body-result emitter-result] (element-result bad)
+            expected {:status :not-applicable :reason :independent-list-element-required}]
+        (testing (str "malformed outer list " (pr-str bad))
+          (is (= expected (select-keys body-result [:status :reason])))
+          (is (= expected (select-keys emitter-result [:status :reason])))
+          (is (= body-result emitter-result)))))
+    (let [[body-result emitter-result] (element-result (finite [:gravity.type/unknown]))
+          expected {:status :not-applicable :reason :independent-atomic-element-required}]
+      (is (= expected (select-keys body-result [:status :reason])))
+      (is (= expected (select-keys emitter-result [:status :reason])))
+      (is (= body-result emitter-result)))
     (let [[body-result emitter-result]
           (element-result {:kind :gravity.type/list :shape :homogeneous
                            :element-type s})]
