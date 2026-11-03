@@ -291,7 +291,9 @@
             input [foreign-vector [foreign-map] [opaque] [cycle] invalid-view
                    (with-meta [:valid] {:hidden opaque})]]
       (let [result (invoke constructor input)]
-        (is (= :set-literal-native-data-required (:reason result)))))
+        (is (= :set-literal-native-data-required (:reason result)))
+        ;; Invalid native input must not partially mutate the result.
+        (is (= #{:status :reason :native-reason} (set (keys result))))))
     (doseq [changed [foreign-map (assoc definition :type foreign-map)
                     (assoc-in definition [:type :element-types] foreign-vector)
                     (assoc-in definition [:type :element-types] [cycle])
@@ -309,7 +311,8 @@
             input (vec (concat (repeat 1029 value) [opaque]))
             result (invoke constructor input)]
         ;; A late invalid member is rejected before the earlier duplicates compare.
-        (is (= :set-literal-native-data-required (:reason result)))))
+        (is (= :set-literal-native-data-required (:reason result)))
+        (is (= #{:status :reason :native-reason} (set (keys result))))))
     (is (zero? @callbacks))))
 
 (deftest runtime-set-conversion-validates-native-inputs
@@ -321,6 +324,7 @@
                    (reify java.lang.reflect.InvocationHandler (invoke [_ _ _ _] (deny)))))
         foreign-vector (foreign clojure.lang.IPersistentVector)
         foreign-list (foreign clojure.lang.IPersistentList)
+        foreign-seqable (reify clojure.lang.Seqable (seq [_] (deny)))
         opaque (proxy [Object] [] (hashCode [] (deny)) (equals [_] (deny)) (toString [] (deny)))
         cycle (list :a :b)
         bad-view (clojure.lang.APersistentVector$SubVector. nil [] 0 1)
@@ -328,11 +332,14 @@
         convert (fn [value] {:op :builtin-call :function 'set :args [{:op :literal :value value}]})]
     (set-fixture-field! cycle "_rest" cycle)
     (doseq [constructor functions
-            value [foreign-vector foreign-list [opaque] (list opaque) cycle bad-view
+            value [foreign-vector foreign-list foreign-seqable [opaque] (list opaque) cycle bad-view
                    (with-meta [:valid] {:hidden opaque}) (with-meta '(:valid) {:hidden opaque})]]
       (let [result (invoke constructor value)]
-        (is (= :set-conversion-native-data-required (:reason result)))))
-    (doseq [value [foreign-vector foreign-list [opaque] cycle bad-view
+        (is (= :set-conversion-native-data-required (:reason result)))
+        ;; Rejected conversion exposes no partially built value or accounting
+        ;; counter; the native-domain rejection is the complete result.
+        (is (= #{:status :reason :native-reason} (set (keys result))))))
+    (doseq [value [foreign-vector foreign-list foreign-seqable [opaque] cycle bad-view
                    (with-meta [:valid] {:hidden opaque})]]
       (is (= :set-conversion-native-data-required
              (get-in (invoke 'p15-s23-runtime-evaluate-closed-instruction (convert value) {} "") [0 :reason]))))
