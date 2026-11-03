@@ -257,6 +257,12 @@ Use the [source memory-model dependency order](../legality-workflow/plan.md#sour
 
 Current selected source/dependency review and implementation acceptance remain pending/unassessed. No actual provider, device, review or publication operation is performed here; all current restrictions and sole task authorities remain.
 
+## Complete macro source interface
+
+Use the [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria). Validate/select the actual full L16 provider contract and enforce build grants/gates separately from declarations, signatures, runtime authority and later trace results.
+
+Existing task identities/statuses, historical reviews, actual restrictions and ordinary construction versus composition/acceptance boundaries remain. These are source-backed current criteria proposals; full source/interface entailment and independent current acceptance are pending.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Auth task authority

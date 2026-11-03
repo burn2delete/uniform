@@ -105,3 +105,9 @@ current consumer-field joins, then obtain affected independent review. Record
 exact implementation/fixture/tool/policy identities and unresolved ownership.
 No whole-governance, global partition or implementation acceptance follows
 from the carried task file or source checks.
+
+## Complete macro source interface
+
+Use the [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria). Reuse the exact existing conditional macro-semantics change-review predicate; affected syntax schema, formatter/LSP, safety fixtures, diagnostics and bootstrap comparisons follow actual adopted semantic change.
+
+Existing task identities/statuses, historical reviews, actual restrictions and ordinary construction versus composition/acceptance boundaries remain. These are source-backed current criteria proposals; full source/interface entailment and independent current acceptance are pending.

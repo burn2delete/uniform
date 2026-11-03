@@ -401,6 +401,14 @@ Complete capability compiler-safety criterion (Open): Consume actual inferred ef
 <!-- authority-source-legality:end -->
 
 
+<!-- macro-source-legality:start -->
+
+Apply the [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria) within this existing task. Finite reviewed predicates remain scoped history; status and current independent acceptance do not change.
+
+Complete macro safety consumer criterion (Open): Consume actual expanded forms, declarations versus observed behavior, hygiene/capture, phase/build authority, taint/sink metadata, full SAFE6 records and origins before issuing the ordinary safety verdict. Reject declaration mismatch, unadvertised or incomplete unsafe, privileged/runtime capture, taint loss, skipped generated checks or weakened alternative-engine provenance. Classify dangerous operations only as :proven-safe, :runtime-checked, :rejected or :unsafe-island with surviving evidence and caller-profile restrictions. Expand owns macro analysis/products; this task owns ordinary downstream safety classification and preservation, not duplicate macro execution or self-acceptance from supplied flags.
+<!-- macro-source-legality:end -->
+
+
 - [ ] `legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution` Preserve obligations into MIR and runtime execution
 
 Status: Open

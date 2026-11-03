@@ -45,6 +45,14 @@ Criterion compiler/c15/diagnostic-identity: Derive the resolved diagnostic ident
 <!-- diag-canonical-identity:end -->
 
 
+<!-- macro-source-diagnostics:start -->
+
+Apply the [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria) within this existing task. Finite reviewed predicates remain scoped history; status and current independent acceptance do not change.
+
+Complete macro diagnostic consumer criterion (Open): Preserve the 34 active L4/L16/C4/SAFE12 diagnostic meanings and deterministic ordering across reference/alternative engines, early typed diagnostics and normal generated-program failures. Carry provider id/version, macro symbol/version, definition/call/generated span/origin, phase/profile/target, hygiene context, requested/declared/granted effects/capabilities, equivalent L4 rule, missing safety fact and remediation where applicable. Redact secrets while retaining actionable context in actual text/JSON/debugger/LSP consumers. Preserve historical L4-EXPANSION-DEPTH, C4-DEPTH and C4-SIZE only as retired accounting source context; no renamed quota or substituted proof gate is introduced.
+<!-- macro-source-diagnostics:end -->
+
+
 - [ ] `diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts` Close text/JSON/redaction and explain contracts
 
 Status: Open

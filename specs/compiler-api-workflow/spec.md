@@ -75,6 +75,8 @@ source entry. Each outcome completes through its existing full criteria and
 real positive/negative artifacts, with independent acceptance and coordinator
 integration separate from author checks, migration and release.
 
+The [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria) route L4/L16/C4/SAFE12 through real macro/syntax/provider/safety/equivalence outcomes in existing tasks. They preserve the selected-engine cache replacement boundary and finite historical review scopes; current independent source/interface acceptance and complete implementation remain pending.
+
 ## Historical workflow-transfer and source-composition specification
 
 # Feature specification: Compiler API workflow migration

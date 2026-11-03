@@ -43,6 +43,14 @@ Complete provider declaration/selection criterion (Open): Validate real versione
 <!-- authority-source-declaration:end -->
 
 
+<!-- macro-source-provider:start -->
+
+Apply the [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria) within this existing task. Finite reviewed predicates remain scoped history; status and current independent acceptance do not change.
+
+Complete macro provider criterion (Open): Validate and deterministically select the actual L16 macro-system provider declaration with engine id/version, supported profiles/targets/facets, build effects and required grants, syntax guarantees, hygiene/phase model, determinism/cache policy, trace schema, reference suite and known deviations with explicit profile gates. Profile-specific behavior requires the declared profile split and matching artifacts. Reject missing/ambiguous/unsupported/incompatible providers before use. Signatures, declaration presence and compatibility do not issue grants or prove conformance; actual scoped authority and enforcement remain required. Route semantics-changing deviations to the existing language change authority and preserve compatible replacement machinery without invented registration or experiment permissions.
+<!-- macro-source-provider:end -->
+
+
 - [ ] `auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime` Enforce grant intersection, attenuation, revocation, phase and lifetime
 
 Status: Open

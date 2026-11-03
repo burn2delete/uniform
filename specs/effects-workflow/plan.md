@@ -328,6 +328,12 @@ meaningful runtime timeout/retry/failure semantics, semantic validity, real host
 restrictions and external billing remain separate. Exact raw clause conservation
 does not accept current implementation, independence, release or self-hosting.
 
+## Complete macro source interface
+
+Use the [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria). Derive actual generated runtime effects separately from P's declared/granted build effects; supplied macro declarations do not establish action legality.
+
+Existing task identities/statuses, historical reviews, actual restrictions and ordinary construction versus composition/acceptance boundaries remain. These are source-backed current criteria proposals; full source/interface entailment and independent current acceptance are pending.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Effects task authority

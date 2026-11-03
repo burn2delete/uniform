@@ -24,11 +24,27 @@ Current evidence/status: Open; partial source evidence above is not closure
 
 Done when (yes/no): Implement every required form kind with stable semantic identity, namespace/profile/phase and metadata; reject malformed fields and source references.
 
+<!-- macro-source-syntax:start -->
+
+Apply the [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria) within this existing task. Finite reviewed predicates remain scoped history; status and current independent acceptance do not change.
+
+Complete macro syntax interface criterion (Open): Expose actual form-kind/children, literal, span, namespace/lexical context, metadata read/attach, fresh-identifier introduction, hygiene-aware identifier comparison, explicit capture, generated-origin recording and artifact serialization across reference and alternative representations. Preserve form, file/span, namespace, lexical/hygiene context, metadata, phase, caller profile, macro namespace, origin and build context without mutating input syntax. Lazy/compact/indexed/arena/persistent/incremental/typed representation is permitted when observable operations, semantic immutability and diagnostics survive. Reject lost context, invalid identifier comparison, malformed representations and nonserializable claimed artifacts through actual adapter/verifier cases.
+<!-- macro-source-syntax:end -->
+
+
 - [ ] `syntax/current-evidence-and-remaining-work/syntax2-preserve-transformations` syntax/2: Preserve transformations
 
 Current evidence/status: Open; partial source evidence above is not closure
 
 Done when (yes/no): Record generated producer/input origins, explicit metadata changes, hygiene marks and intentional captures; reject accidental capture.
+
+<!-- macro-source-syntax-origins:start -->
+
+Apply the [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria) within this existing task. Finite reviewed predicates remain scoped history; status and current independent acceptance do not change.
+
+Complete macro syntax preservation criterion (Open): Syntax transformations produce new linked values with original definition/call/generated spans, lexical context, hygiene marks, metadata, phase/caller-profile and complete generator identity/version/input/output origins. Metadata survives unless an explicit documented transformation changes it; compact or normalized representations cannot erase diagnostic anchors. Verify actual reference and alternate adapter products and reject lost, forged, stale or disconnected context/origin chains. Expand produces expansion-specific facts; Syntax owns their faithful carrier and transformation semantics, rather than duplicating macro execution.
+<!-- macro-source-syntax-origins:end -->
+
 
 - [ ] `syntax/current-evidence-and-remaining-work/syntax3-invalidate-facts` syntax/3: Invalidate facts
 

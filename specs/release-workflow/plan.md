@@ -214,6 +214,12 @@ Product adoption does not choose an ISA, OS, application inventory or physical
 delivery boundary. Structural reachability establishes no executed command,
 accepted source conjunction or independent release decision.
 
+## Complete macro source interface
+
+Use the [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria). Consume actual owner corpus/trace/equivalence products before independent harness execution and compare the declared seed/Gravity subjects without widening finite receipts.
+
+Existing task identities/statuses, historical reviews, actual restrictions and ordinary construction versus composition/acceptance boundaries remain. These are source-backed current criteria proposals; full source/interface entailment and independent current acceptance are pending.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Release workflow migration

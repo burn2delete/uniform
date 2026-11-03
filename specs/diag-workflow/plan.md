@@ -114,6 +114,12 @@ composition under the existing development workflow. Publication/private-store
 actions and all existing holds retain their authority; none runs here. Real
 execution, independent acceptance, integration and release remain separate.
 
+## Complete macro source interface
+
+Use the [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria). Render actual macro/provider/definition/call/generated/phase/profile/effect/missing-fact diagnostics and redaction with stable ordering across engines.
+
+Existing task identities/statuses, historical reviews, actual restrictions and ordinary construction versus composition/acceptance boundaries remain. These are source-backed current criteria proposals; full source/interface entailment and independent current acceptance are pending.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Diagnostics task authority

@@ -534,6 +534,12 @@ the thirteen Release suite/seed joins and future SH/full-language composition
 remain pending their actual owning work. No component implementation body,
 checkbox, source pin, receipt or execution hold changes here.
 
+## Complete macro source interface
+
+Use the [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria). Consume actual declared versioned facet IR with namespace activation, ambiguity, source/safety metadata and profile checks before backend lowering; no hidden macro language or C12 permission is introduced.
+
+Existing task identities/statuses, historical reviews, actual restrictions and ordinary construction versus composition/acceptance boundaries remain. These are source-backed current criteria proposals; full source/interface entailment and independent current acceptance are pending.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Domains workflow migration

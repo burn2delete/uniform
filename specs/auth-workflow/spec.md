@@ -61,6 +61,8 @@ stopped handoffs. Component acceptance requires actual allowed/denied operations
 and rejected trust failures, exact identities, audit/redaction evidence and
 named residual assumptions. Independent acceptance and release remain separate.
 
+The [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria) route L4/L16/C4/SAFE12 through real macro/syntax/provider/safety/equivalence outcomes in existing tasks. They preserve the selected-engine cache replacement boundary and finite historical review scopes; current independent source/interface acceptance and complete implementation remain pending.
+
 ## Historical task-authority-transfer specification
 
 # Feature specification: Auth implementation workflow

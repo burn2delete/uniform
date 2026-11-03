@@ -831,6 +831,12 @@ accept one in every mode. Preserve conditional review/certificate policy,
 generated origins and invalidation. Physical memory/timing/format requirements
 remain distinct from removed project work accounting and execution holds.
 
+## Complete macro source interface
+
+Use the [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria). Consume real macro declaration/hygiene/phase/taint/SAFE6/origin facts and issue ordinary generated-program safety decisions; Expand retains macro execution and analysis.
+
+Existing task identities/statuses, historical reviews, actual restrictions and ordinary construction versus composition/acceptance boundaries remain. These are source-backed current criteria proposals; full source/interface entailment and independent current acceptance are pending.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Legality task authority

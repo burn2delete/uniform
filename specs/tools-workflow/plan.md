@@ -54,6 +54,12 @@ fixtures cover missing facts, stale definitions/checks, conflated concepts,
 unknown domain mappings, changed syntax, stale diagnostics and bypassed grants.
 No text match or passing report grants semantic correctness or policy authority.
 
+## Complete macro source interface
+
+Use the [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria). Consume real stable expansion traces, syntax operations, definitions/origins and diagnostics for debugger, formatter and LSP behavior; adopt affected semantic changes only through the existing conditional change route.
+
+Existing task identities/statuses, historical reviews, actual restrictions and ordinary construction versus composition/acceptance boundaries remain. These are source-backed current criteria proposals; full source/interface entailment and independent current acceptance are pending.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Developer Tools workflow migration

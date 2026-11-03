@@ -181,6 +181,12 @@ default grants, universal risk assignments or accepted verifier results.
 Source conservation, implementation, independent acceptance, integration and
 seedless release remain distinct.
 
+## Complete macro source interface
+
+Use the [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria). Expose versioned macro/syntax/pass/facet/domain interfaces and integrate real expansion/verifier/isolation/cache products; retain conditional language-change and current C17/C12 boundaries.
+
+Existing task identities/statuses, historical reviews, actual restrictions and ordinary construction versus composition/acceptance boundaries remain. These are source-backed current criteria proposals; full source/interface entailment and independent current acceptance are pending.
+
 ## Historical workflow-transfer and source-composition plan
 
 # Implementation plan: Compiler API workflow migration

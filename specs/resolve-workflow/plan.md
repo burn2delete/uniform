@@ -34,6 +34,12 @@ Use the [complete compile-time evaluation source criteria](../expand-workflow/pl
 
 Current source/interface entailment and implementation acceptance remain pending; preserve existing task authority, frozen reviews and every actual restriction.
 
+## Complete macro source interface
+
+Use the [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria). Supply available macro bindings before P invocation and publish authentic stable macro definition/export indexes; ordinary generated Q bindings are resolved later.
+
+Existing task identities/statuses, historical reviews, actual restrictions and ordinary construction versus composition/acceptance boundaries remain. These are source-backed current criteria proposals; full source/interface entailment and independent current acceptance are pending.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Resolve task authority

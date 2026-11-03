@@ -84,6 +84,14 @@ Fresh stage-to-stage outputs and diagnostics, residual trusted-code inventory BO
 
 Closing evidence: Fresh stage-to-stage outputs and diagnostics, residual trusted-code inventory
 
+<!-- macro-source-seed:start -->
+
+Apply the [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria) within this existing task. Finite reviewed predicates remain scoped history; status and current independent acceptance do not change.
+
+Complete macro seed equivalence consumer criterion (Open): Consume real source-pinned reference/alternative and seed/Gravity macro expansion products and actually compare the claimed population, syntax serialization, hygiene/capture, build effects/replay, generated safety/profile facts, origins and stable diagnostics. Keep structural alpha-equivalence distinct from same-input typed-Core byte equality, stage compatibility and whole-language compiler equivalence. A narrow defn kernel, fixture-produced equivalent flag or translated C4 facade cannot establish general user-macro or seed-retirement support. Preserve valid finite historical receipts and actual residual seed/host boundaries; final self-hosting, trust and release gates retain their separate required evidence.
+<!-- macro-source-seed:end -->
+
+
 - [ ] `release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution` Produce actual self-hosted compiler/runtime execution
 
 Status: Open

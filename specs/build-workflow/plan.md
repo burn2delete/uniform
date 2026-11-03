@@ -140,6 +140,12 @@ dependency/proof/replay/diagnostic/recipe/output identities and actual results.
 Source review, implementation, independent acceptance, integration and seedless
 release remain separate.
 
+## Complete macro source interface
+
+Use the [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria). Integrate authentic selected-engine cache products under shared completeness/current-policy contracts and compare actual repeated hermetic typed Core; permitted engine-specific machinery remains intact.
+
+Existing task identities/statuses, historical reviews, actual restrictions and ordinary construction versus composition/acceptance boundaries remain. These are source-backed current criteria proposals; full source/interface entailment and independent current acceptance are pending.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration

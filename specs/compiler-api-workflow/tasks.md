@@ -112,6 +112,14 @@ Complete L12 compiler-extension criterion (Open): Run only actually authorized c
 <!-- compile-time-source-plugin:end -->
 
 
+<!-- macro-source-plugin:start -->
+
+Apply the [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria) within this existing task. Finite reviewed predicates remain scoped history; status and current independent acceptance do not change.
+
+Complete macro compiler-service criterion (Open): Expose actual versioned macro-provider/syntax/pass/facet/domain interfaces and declared inputs/outputs/requires/preserves/invalidates/regenerates/diagnostic/artifact boundaries. Integrate selected engine machinery and real expansion/safety/replay/cache/verifier products under the normal compiler pipeline and existing C17 isolation/sink rules. Preserve syntax/facet/IR schema versions and revalidate transformed output; compatible implementation replacement is not an implicit language change or generic registration/review admission ceremony. Semantics-changing deviations retain the existing Evolution route. No held provider/plugin/probe invocation or C12 execution is authorized here.
+<!-- macro-source-plugin:end -->
+
+
 - [ ] `pass-evidence` Pass Evidence: finite remaining tasks
 
 Status: Open

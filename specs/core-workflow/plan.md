@@ -71,6 +71,12 @@ Use the [source memory-model dependency order](../legality-workflow/plan.md#sour
 
 Current selected source/dependency review and implementation acceptance remain pending/unassessed. No actual provider, device, review or publication operation is performed here; all current restrictions and sole task authorities remain.
 
+## Complete macro source interface
+
+Use the [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria). Construct actual ordinary generated Core from early expanded Q and retain later check results; macro success or a typed-engine artifact cannot replace ordinary validation.
+
+Existing task identities/statuses, historical reviews, actual restrictions and ordinary construction versus composition/acceptance boundaries remain. These are source-backed current criteria proposals; full source/interface entailment and independent current acceptance are pending.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Core task authority

@@ -63,6 +63,8 @@ semantic checks or real host restrictions. A model/provider's actual external
 billing policy is not compiler work accounting. No restricted provider, compiler
 or replay operation is enabled by these planning changes.
 
+The [complete macro source criteria](plan.md#complete-macro-source-criteria) route L4/L16/C4/SAFE12 through real macro/syntax/provider/safety/equivalence outcomes in existing tasks. They preserve the selected-engine cache replacement boundary and finite historical review scopes; current independent source/interface acceptance and complete implementation remain pending.
+
 ## Historical task-authority-transfer specification
 
 # Feature specification: Expand implementation workflow

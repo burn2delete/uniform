@@ -65,6 +65,12 @@ Use the [complete source effect and handler criteria](../effects-workflow/plan.m
 
 The frozen finite review is qualified to its exact source predicates; complete L6/current source entailment, independent review and implementation acceptance remain pending. Preserve every actual held operation.
 
+## Complete macro source interface
+
+Use the [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria). Type-check actual generated Q and preserve early expected-type interfaces; earlier engine refusals must match or improve an ordinary required diagnostic and cannot skip later legality.
+
+Existing task identities/statuses, historical reviews, actual restrictions and ordinary construction versus composition/acceptance boundaries remain. These are source-backed current criteria proposals; full source/interface entailment and independent current acceptance are pending.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Types task authority

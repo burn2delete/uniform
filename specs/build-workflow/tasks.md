@@ -116,6 +116,14 @@ Complete L12 cache producer criterion (Open): The existing Build cache task owns
 <!-- compile-time-source-cache:end -->
 
 
+<!-- macro-source-cache-shared:start -->
+
+Apply the [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria) within this existing task. Finite reviewed predicates remain scoped history; status and current independent acceptance do not change.
+
+Complete macro shared cache criterion (Open): Preserve the L16 replacement boundary in the existing Build cache task: own shared/default cache construction, complete semantic-input/current-policy admission and invalidation/revalidation integration, consuming real selected-engine expansion key/entry/trace/replay/policy results. Engine-specific storage/key construction/invalidation/scheduling remains permitted; Build need not duplicate that machinery. Reject incomplete source/macro/provider/dependency/profile/target/facet/grant/compiler/reader/namespace/replay inputs, stale traces, stricter-policy mismatch, hidden creation effects and secret leakage. Produce authentic admitted/refused/miss and recomputed graph/artifact/diagnostic products for actual consumers rather than record-only success.
+<!-- macro-source-cache-shared:end -->
+
+
 - [ ] `build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records` Produce and verify package/provenance/signing records
 
 Status: Open
@@ -203,6 +211,14 @@ Apply the [complete compile-time evaluation source criteria](../expand-workflow/
 
 Complete L12 hermetic reproduction criterion (Open): In required release/conformance/reproducible-publication/safety-critical modes, repeat actual builds from identical source, compiler version, lockfile, target manifest, grants and declared inputs/replay records and compare byte-identical typed Core. Reject undeclared filesystem input; environment reads require the exact declared-key/explicit-value-policy premise subject to the retained L6/L12 wording decision. Network/shell/model/tool use requires configured replayable provider or pinned result, clock/random requires recorded values or deterministic seed, probes use declared target manifests, and generated forms include input content hashes. A grant, replay exception or generic reproducible flag proves none of these premises. Native-object metadata variation needs an explicitly marked nonsemantic field and actual target-conformance acceptance; never relax typed-core equality. Consume actual cache results without implementing another cache, and retain unavailable/held cases, source-policy resolution and actual target evidence separately from signing/publication authority.
 <!-- compile-time-source-hermetic:end -->
+
+
+<!-- macro-source-rebuild:start -->
+
+Apply the [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria) within this existing task. Finite reviewed predicates remain scoped history; status and current independent acceptance do not change.
+
+Complete macro reproducibility consumer criterion (Open): Consume authentic engine/cache/event/value products and perform actual repeated declared-input builds and expansion-trace comparisons with source/compiler/provider/macro/grant/profile/target/facet/replay identity. Compare same-input hermetic typed-Core bytes under L12 separately from structural reference/alternative expansion equivalence under L16. Native metadata exceptions retain their explicitly marked nonsemantic fields and target acceptance; never weaken typed-Core equality. Retain actual cache invalidation/refusal and secret-safe recipe/output evidence without implementing another cache, issuing authority or treating records as reproducibility results.
+<!-- macro-source-rebuild:end -->
 
 
 <!-- build-implementation-tasks:end -->

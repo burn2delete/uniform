@@ -45,6 +45,14 @@ Current evidence/status: Open; partial source evidence above is not closure
 
 Done when (yes/no): Serialize scope/binding graphs and invalidate dependent references when export, profile, package or semantic identity changes.
 
+<!-- macro-source-definition-index:start -->
+
+Apply the [complete macro source criteria](../expand-workflow/plan.md#complete-macro-source-criteria) within this existing task. Finite reviewed predicates remain scoped history; status and current independent acceptance do not change.
+
+Complete macro definition index criterion (Open): Consume actual expanded/analyzed macro definitions and publish stable namespace/public API entries with name, parameters/accepted syntax, namespace, definition/version identity, build effects/capabilities, hygiene, output/safety contract, documentation and conformance fixture references. Preserve binding visibility and source/generated origins, reject stale or mismatched exported definitions and feed real engine/debugger/package consumers. Expand owns actual definition execution; this task owns stable definition-index publication, not another macro registry or evaluator.
+<!-- macro-source-definition-index:end -->
+
+
 - [ ] `resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers` resolve/5: Integrate binding consumers
 
 Current evidence/status: Open; partial source evidence above is not closure
