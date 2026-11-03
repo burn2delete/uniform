@@ -87,7 +87,7 @@ canonical C3 or broader compiler-conformance claim.
 
 ## Unsupported boundaries
 
-The final relocation composition normally merges actual main
+The relocation composition normally merges actual main
 92123759e99efc89bf7346a0ea8892f4f903d7af, tree
 533ffab46c9bbe8460e5fc8301217a12d84369c7, after PR860, PR861,
 PR862 and PR874 integration. The merge is conflict-free. Native backend code
@@ -95,6 +95,15 @@ and tests remain unchanged; the ownership map retains main's relocated
 frontend/C6 paths together with the existing Mobile helper registrations.
 This source needs its own fresh clean captures, review and CI; the earlier
 850ac0ec green run with a newer provider base remains historical.
+
+The subsequent normal composition incorporates actual main
+7f3319be3a2bb9b6c5415d0d04b7a597015f01ac, tree
+6c0ccf9433d9ac8b793b5d256b486a66101f5593. Its only incoming changes are
+tools/ci/run.clj and tools/ci/run_test.clj, preserved byte-for-byte from main.
+All 25 owned paths match the reviewed ccc48880 predecessor before this
+evidence paragraph update; no native backend implementation changes are
+introduced. Fresh source-specific captures, independent review, CI artifact
+verification and immediate current-main preflight remain integration gates.
 
 These are native document-fixture refusals. They do not establish canonical
 C15 findings, verified target IR, profile/effect/capability legality, backend
