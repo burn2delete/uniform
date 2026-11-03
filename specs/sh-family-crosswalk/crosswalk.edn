@@ -14498,7 +14498,21 @@
    :prior-current-main-qualification
    "Composed Reader and Build task source pins; both predecessor histories are retained. Changed composition awaits independent review; all180 whole-criterion implementation assessments stay unassessed."},
   :qualification
-  "Native and resolution ownership source composition only; immutable predecessor projections remain pinned, all current states unassessed.",
+  "Native and resolution ownership source composition plus the PR564 Stdlib task-ledger source transition; immutable predecessor projections remain pinned, all current states unassessed.",
+  :stdlib-task-source-transition
+  {:status :pending-source-version-review,
+   :path "specs/stdlib-workflow/tasks.md",
+   :baseline-ref "dbeda7c7dc9a7bb880baa90af1a89046828db327",
+   :applying-ref "80d8a655cea00218799446986a976ca64043a1f8",
+   :task-ids
+   ["stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
+    "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis"
+    "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis"
+    "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters"
+    "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"],
+   :scope :historical-routing-and-structural-only,
+   :qualification
+   "PR564's five Stdlib rows are authenticated against the frozen SH source rows and the applying current task-ledger blob. This successor preserves old locators and rejects changed criteria; it confers no implementation, library-release or whole-SH acceptance."},
   :resolution-main-predecessor-review
   {:status :pending-source-version-review,
    :input-fingerprint
@@ -14518,7 +14532,7 @@
    :source-version-bridge
    "specs/sh-family-crosswalk/macro-runtime-source-version.edn"},
   :input-fingerprint
-  "f16680ce6e29658f827e6a50a5bd13fd3c90241aeb01614e4465422c40533f8e"},
+  "68800351e24827ea244f6d718ee24f28c36e0606e1b1c6e2533d5c967b4f7530"},
  :accepted-current-scoped-evidence
  [{:task-id
    "reader/finite-remaining-work/lexical-products-and-origins-closure",
