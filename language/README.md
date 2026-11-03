@@ -42,8 +42,9 @@ implementation paths remain valid while coherent modules are moved with their
 callers, tests, manifests, and provenance references. Current Gravity modules
 are classified by behavior rather than directory. Compiler passes and runtime
 semantics under `bootstrap/gravity/src/gravity/` are language-owned, while
-stage rebuild, trust, and equivalence modules under `src/gravity/self_hosting/`
-are bootstrap-owned. The mixed `bootstrap/gravity/p15_s23/compiler.gravity`
+stage rebuild, trust, and equivalence modules under
+`bootstrap/gravity/src/gravity/self_hosting/` are bootstrap-owned. The mixed
+`bootstrap/gravity/p15_s23/compiler.gravity`
 source requires extraction before relocation; see the project structure map.
 
 See [the project structure map](../docs/project-structure.md) for the current
