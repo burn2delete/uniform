@@ -857,6 +857,8 @@
         census-data (edn/read-string census-text)
         census-facets (filter #(= "L13" (:document-id %)) (:facets census-data))
         census-occurrences (filter #(= "L13" (:document-id %)) (:occurrences census-data))
+        canonical (first (filter #(= "L13" (:document-id %)) (:canonical-sources ref)))
+        canonical-text (git-source (:source-commit canonical) (:path canonical))
         span-text (fn [body span]
                     (String. (.getBytes body "UTF-8")
                              (int (:start-byte span))
@@ -871,6 +873,33 @@
     (acceptance-dependencies/require! (= (set (map :id census-occurrences))
                                          (set (keys (:occurrence-cases ref))))
                                       "L13 source occurrence identity set changed")
+    (doseq [facet (:source-facets ref)
+            :let [occurrence (get (:occurrence-cases ref) (:source-occurrence-id facet))
+                  raw (span-text canonical-text (:source-span facet))]]
+      (acceptance-dependencies/require! occurrence "L13 facet points to an unknown occurrence")
+      (acceptance-dependencies/require! (= (:path canonical) (:source-path facet))
+                                        "L13 facet source path changed")
+      (acceptance-dependencies/require! (= (get-in facet [:source-span :sha256])
+                                           (sh-inventory/sha256 raw))
+                                        "L13 facet span digest changed")
+      (acceptance-dependencies/require! (= (:criterion-keys facet) (:criterion-keys occurrence))
+                                        "L13 facet criterion join changed")
+      (acceptance-dependencies/require! (= (:role facet) (:role occurrence))
+                                        "L13 facet occurrence role changed"))
+    (doseq [[_ occurrence] (:occurrence-cases ref)]
+      (let [raw (span-text canonical-text (:source-span occurrence))]
+        (acceptance-dependencies/require! (= (get-in occurrence [:source-span :sha256])
+                                             (sh-inventory/sha256 raw))
+                                          "L13 occurrence span digest changed")))
+    (doseq [[section row] (:section-conjunctions ref)]
+      (doseq [occurrence-id (:occurrence-ids row)]
+        (acceptance-dependencies/require! (contains? (:occurrence-cases ref) occurrence-id)
+                                          "L13 section points to an unknown occurrence")
+        (acceptance-dependencies/require! (= section (:section-key (get (:occurrence-cases ref) occurrence-id)))
+                                          "L13 occurrence section join changed"))
+      (doseq [criterion-key (:criterion-keys row)]
+        (acceptance-dependencies/require! (some #(= criterion-key (:key %)) (:criteria ref))
+                                          "L13 section points to an unknown criterion")))
     (doseq [record (:current-source-files ref)]
       (let [body (git-source (:source-commit record) (:path record))]
         (acceptance-dependencies/require! (= (:sha256 record) (sh-inventory/sha256 body))
