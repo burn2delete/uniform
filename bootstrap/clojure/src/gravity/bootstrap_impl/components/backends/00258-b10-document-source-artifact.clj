@@ -179,37 +179,15 @@
 
 (defn b11-document-source-overrides
   [module]
-  (get-in module [:metadata :backend :specialized-lowering] {}))
+  (gravity.backend.query/source-overrides module))
 
 (defn b11-document-missing-policy
   [id]
-  (case id
-    "B11-DIALECT" :dialect-version-type-map
-    "B11-SCHEMA" :schema-version-compatibility
-    "B11-TAINT" :taint-proof-for-sql-syntax
-    "B11-PARAMETER" :prepared-parameter-bindings
-    "B11-CAPABILITY" :database-authority-grant
-    "B11-TRANSACTION" :transaction-isolation-retry-timeout
-    "B11-NULL" :sql-null-three-valued-logic-map
-    "B11-MIGRATION" :migration-compatibility-and-data-loss-policy
-    "B11-RESULT" :typed-result-adapter-validation
-    "B11-PLAN" :provider-plan-semantic-equivalence
-    :query-artifact-manifest))
+  (gravity.backend.query/missing-policy id))
 
 (defn b11-document-query-id
   [id]
-  (case id
-    "B11-DIALECT" :dialect-map
-    "B11-SCHEMA" :schema-map
-    "B11-TAINT" :dynamic-sql
-    "B11-PARAMETER" :select-gravity-value
-    "B11-CAPABILITY" :write-gravity-value
-    "B11-TRANSACTION" :transaction-record
-    "B11-NULL" :null-semantics
-    "B11-MIGRATION" :stage0-migration
-    "B11-RESULT" :gravity-value-adapter
-    "B11-PLAN" :provider-plan
-    :query-manifest))
+  (gravity.backend.query/query-id id))
 
 (defn b11-document-fail!
   [id source-path subject extra]
