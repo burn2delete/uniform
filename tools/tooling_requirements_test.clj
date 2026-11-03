@@ -146,6 +146,9 @@
         successor tooling-requirements/pr561-current-manifest-source-transition
         wrong-successor (assoc-in successor [:applying :sha256]
                                    (:sha256 (:baseline successor)))
+        stdlib-successor tooling-requirements/pr564-current-manifest-source-transition
+        wrong-stdlib-successor (assoc-in stdlib-successor [:applying :sha256]
+                                          (:sha256 (:baseline stdlib-successor)))
         result (tooling-requirements/validate-current-manifest-transition! source-view)]
     (is (= {:snapshot-provenance :git-commit-tree-blob-and-bytes-verified
             :population :conserved
@@ -158,6 +161,15 @@
            (select-keys (:successor result)
                         [:snapshot-provenance :population :runtime-task-source
                          :interpretation])))
+    (is (= {:snapshot-provenance :git-commit-tree-blob-and-bytes-verified
+            :population :conserved
+            :stdlib-task-source :authenticated-successor
+            :math-source-version :authenticated-successors
+            :interpretation :pr561-runtime-successor-to-pr564-stdlib-and-math-source-successor}
+           (select-keys (:stdlib-successor result)
+                        [:snapshot-provenance :population :stdlib-task-source
+                         :math-source-version
+                         :interpretation])))
     ;; A changed applying body, a mismatched commit/tree pair, and replay of the
     ;; baseline identity must all fail closed even when the source-view digest
     ;; remains frozen.
@@ -166,6 +178,10 @@
         (is (refuses? #(tooling-requirements/validate-current-manifest-transition!
                         source-view)))))
     (with-redefs [tooling-requirements/pr561-current-manifest-source-transition wrong-successor]
+      (is (refuses? #(tooling-requirements/validate-current-manifest-transition!
+                      source-view))))
+    (with-redefs [tooling-requirements/pr564-current-manifest-source-transition
+                  wrong-stdlib-successor]
       (is (refuses? #(tooling-requirements/validate-current-manifest-transition!
                       source-view))))))
 
