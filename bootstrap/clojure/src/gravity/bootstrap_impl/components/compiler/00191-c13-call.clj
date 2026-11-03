@@ -28,7 +28,8 @@
 
 (defn compiler-c13-optimization-source-artifact
   [source-path source-text]
-  (c13-call c13/compiler-c13-optimization-source-artifact source-path source-text))
+  (source-input/with-context
+   #(c13-call c13/compiler-c13-optimization-source-artifact source-path source-text)))
 
 (defn compiler-c13-optimization-file-artifact
   [path]

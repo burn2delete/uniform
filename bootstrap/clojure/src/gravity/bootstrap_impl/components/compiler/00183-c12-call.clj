@@ -20,7 +20,8 @@
 
 (defn compiler-c12-domain-ir-source-artifact
   [source-path source-text]
-  (c12-call c12/compiler-c12-domain-ir-source-artifact source-path source-text))
+  (source-input/with-context
+   #(c12-call c12/compiler-c12-domain-ir-source-artifact source-path source-text)))
 
 (defn compiler-c12-domain-ir-file-artifact
   [path]

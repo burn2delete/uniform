@@ -1,12 +1,38 @@
 (ns gravity.bootstrap-compatibility.c11-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [clojure.test :refer [deftest is]]
             [gravity.bootstrap :as bootstrap]
             [gravity.c11-mir :as c11]
-            [gravity.c11-mir.artifact :as artifact]))
+            [gravity.c11-mir.artifact :as artifact]
+            [gravity.c10-safety-analysis :as c10]
+            [gravity.module-analysis :as module-analysis]
+            [gravity.module-analysis.module :as module-leaf]
+            [gravity.source-input :as source-input]))
 
 (defn fixture
   [name]
   (str "bootstrap/clojure/fixtures/" name))
+
+(defn- reviewed-c6-fixture
+  [source-path module-name]
+  ;; Reuse the reviewed C6 input shape owned by the C7 tests.  This is a
+  ;; bounded C6 boundary seam: C7 through C11 still execute their real
+  ;; source-artifact pipelines below.
+  (let [fixture-ns (do (require 'gravity.c7-type-checker-test)
+                       (find-ns 'gravity.c7-type-checker-test))
+        artifact @(ns-resolve fixture-ns 'c6-artifact)]
+    (-> artifact
+        (assoc-in [:core-ast-module :module] module-name)
+        (update :core-node-table
+                (fn [nodes]
+                  (mapv (fn [node]
+                          (assoc node
+                                 :source
+                                 {:syntax-id (str "c6-" (:node-id node))
+                                  :span {:source source-path :form-index 0}
+                                  :origin-chain [{:kind :source}]}
+                                 :profile :hosted
+                                 :target :jvm))
+                        nodes))))))
 
 (deftest c11-mir-compatibility-wrappers-preserve-interposition
   (is (= '([module span outcome-by-index index family])
@@ -60,3 +86,306 @@
     (is (= ["C11-SENTINEL"] (:c11-mir-diagnostic-ids configuration)))
     (is (= [{:diagnostic "C11-SENTINEL"}] (:c11-mir-rejected-designs configuration))))
   (is (= (:public-api (c11/c11-engine-contract)) c11/public-api)))
+
+(deftest hosted-source-products-reuse-only-bootstrap-defaults
+  (let [source-path "c11-source-input.gravity"
+        source-text "(ns c11.source-input (:profile :hosted) (:target :jvm))"
+        reader-calls (atom 0)
+        parser-calls (atom 0)
+        original-reader bootstrap/read-source-form-records-host-oracle
+        original-parser module-leaf/parse-module]
+    (with-redefs [bootstrap/read-source-form-records-host-oracle
+                  (fn [path text]
+                    (swap! reader-calls inc)
+                    (original-reader path text))
+                  module-leaf/parse-module
+                  (fn [& args]
+                    (swap! parser-calls inc)
+                    (apply original-parser args))]
+      (source-input/with-context
+       (fn []
+         (let [records (bootstrap/read-source-form-records source-path source-text)
+               forms (mapv :form records)
+               module (bootstrap/parse-module source-path forms)]
+           (is (identical? records
+                          (bootstrap/read-source-form-records
+                           source-path source-text)))
+           (is (identical? module
+                          (bootstrap/parse-module source-path forms)))
+           (is (not (identical? records
+                               (bootstrap/read-source-form-records
+                                "./c11-source-input.gravity" source-text))))
+           (is (= 2 @reader-calls))
+           (is (= 1 @parser-calls))))))))
+
+(deftest c11-composition-reuses-default-products-and-keeps-expanded-products-separate
+  (let [source-path "c11-composition.gravity"
+        source-text "(ns c11.composition (:profile :hosted) (:target :jvm))"
+        module {:module 'c11.composition
+                :source-path source-path
+                :profile :hosted
+                :target :jvm
+                :effects #{}
+                :capabilities #{}
+                :requires []
+                :imports []
+                :exports []
+                :safety :safe
+                :providers []
+                :metadata {}}
+        records [{:form '(ns c11.composition
+                          (:profile :hosted) (:target :jvm))}]
+        c9-artifact {:kind :gravity/stage0-c9-ownership-checker-artifact
+                     :artifact-id "sha256:c9"
+                     :capability-based-proof {:status :complete}}
+        c10-artifact
+        (c10/with-operations
+          {:read-source-form-records (fn [_ _] records)
+           :validate-ns-syntax! (fn [_ _] nil)
+           :parse-module (fn [_ _] module)
+           :compiler-c9-ownership-source-artifact
+           (fn [_ _] c9-artifact)}
+          #(c10/compiler-c10-safety-source-artifact source-path source-text))
+        reader-calls (atom 0)
+        parser-calls (atom 0)
+        original-reader bootstrap/read-source-form-records-host-oracle
+        original-parser module-leaf/parse-module
+        original-bootstrap-reader bootstrap/read-source-form-records
+        original-bootstrap-parser bootstrap/parse-module
+        sh06-artifact {:kind :gravity/sh06-resolution-artifact
+                       :sh05-macro-artifact
+                       {:expanded-syntax-stream
+                        [{:form '(ns c11.composition
+                                   (:profile :hosted) (:target :jvm))
+                          :syntax/id "c11-composition-syntax"
+                          :origin []}]}}]
+    (with-redefs-fn
+      {#'bootstrap/read-source-form-records-host-oracle
+       (fn [path text]
+         (swap! reader-calls inc)
+         (original-reader path text))
+       #'module-leaf/parse-module
+       (fn [& args]
+         (swap! parser-calls inc)
+         (apply original-parser args))
+       #'bootstrap/compiler-c10-safety-source-artifact
+       (fn [_ _] c10-artifact)
+       #'bootstrap/compiler-c5-resolution-source-artifact
+       (fn [_ _] sh06-artifact)
+       #'bootstrap/sh06-resolution-artifact-verification
+       (fn [_] {:status :passed})
+       #'bootstrap/c6-call
+       (fn [& _] {:kind :c6-sentinel})}
+      (fn []
+        (source-input/with-context
+         (fn []
+           (let [first-artifact
+                 (bootstrap/compiler-c11-mir-source-artifact
+                  source-path source-text)
+                 second-artifact
+                 (bootstrap/compiler-c11-mir-source-artifact
+                  source-path source-text)
+                 expanded-artifact
+                 (binding [bootstrap/*compiler-c6-authenticated-resolution-input*
+                           sh06-artifact]
+                   (bootstrap/compiler-c6-lowering-source-artifact
+                    source-path source-text))]
+             (is (= :gravity/stage0-c11-mir-spec-artifact
+                    (:kind first-artifact)))
+             (is (= (:kind first-artifact) (:kind second-artifact)))
+             (is (vector? (get-in first-artifact
+                                  [:mir-diagnostic-stream :diagnostics])))
+             (is (= :c6-sentinel (:kind expanded-artifact)))
+             (is (= 1 @reader-calls))
+             (is (= 2 @parser-calls)))))))
+    (let [redefined-reader-calls (atom 0)
+          redefined-parser-calls (atom 0)]
+      (with-redefs-fn
+        {#'bootstrap/read-source-form-records
+         (fn [& args]
+           (swap! redefined-reader-calls inc)
+           (apply original-bootstrap-reader args))
+         #'bootstrap/parse-module
+         (fn [& args]
+           (swap! redefined-parser-calls inc)
+           (apply original-bootstrap-parser args))
+         #'bootstrap/compiler-c10-safety-source-artifact
+         (fn [_ _] c10-artifact)}
+        (fn []
+          (source-input/with-context
+           (fn []
+             (let [redefined-artifact
+                   (bootstrap/compiler-c11-mir-source-artifact
+                    source-path source-text)
+                   repeated-artifact
+                   (bootstrap/compiler-c11-mir-source-artifact
+                    source-path source-text)]
+               (is (= :gravity/stage0-c11-mir-spec-artifact
+                      (:kind redefined-artifact)))
+               (is (= (:kind redefined-artifact)
+                      (:kind repeated-artifact)))
+               (is (vector? (get-in redefined-artifact
+                                    [:mir-diagnostic-stream :diagnostics]))))))))
+      (is (= 2 @redefined-reader-calls))
+      (is (= 2 @redefined-parser-calls)))))
+
+(deftest c11-five-stage-composition-preserves-full-artifact-with-reuse
+  (let [source-path "c11-five-stage.gravity"
+        source-text "(ns c11.five.stage (:profile :hosted) (:target :jvm) (:effects #{:runtime/dynamic-dispatch}))"
+        module-name 'c11.five.stage
+        c6-artifact (reviewed-c6-fixture source-path module-name)
+        default-reader-calls (atom 0)
+        default-parser-calls (atom 0)
+        original-reader bootstrap/read-source-form-records-host-oracle
+        original-parser module-leaf/parse-module
+        default-artifact
+        (with-redefs-fn
+          {#'bootstrap/read-source-form-records-host-oracle
+           (fn [path text]
+             (swap! default-reader-calls inc)
+             (original-reader path text))
+           #'module-leaf/parse-module
+           (fn [& args]
+             (swap! default-parser-calls inc)
+             (apply original-parser args))
+           #'bootstrap/compiler-c6-lowering-source-artifact
+           (fn [_ _] c6-artifact)}
+          (fn []
+            (source-input/with-context
+             #(bootstrap/compiler-c11-mir-source-artifact
+               source-path source-text))))
+        default-diagnostics (:mir-diagnostic-stream default-artifact)
+        default-identity (:artifact-id default-artifact)
+        custom-reader-calls (atom 0)
+        custom-parser-calls (atom 0)
+        default-reader @(ns-resolve 'gravity.bootstrap
+                                   'bootstrap-default-read-source-form-records)
+        default-parser @(ns-resolve 'gravity.bootstrap
+                                   'bootstrap-default-parse-module)
+        custom-reader (fn [path text]
+                        (swap! custom-reader-calls inc)
+                        (default-reader path text))
+        custom-parser (fn [path forms]
+                        (swap! custom-parser-calls inc)
+                        (default-parser path forms))
+        uncached-artifact
+        (with-redefs-fn
+          {#'bootstrap/read-source-form-records custom-reader
+           #'bootstrap/parse-module custom-parser
+           #'bootstrap/compiler-c6-lowering-source-artifact
+           (fn [_ _] c6-artifact)}
+          (fn []
+            (source-input/with-context
+             #(bootstrap/compiler-c11-mir-source-artifact
+               source-path source-text))))]
+    ;; The normal C11 -> C10 -> C9 -> C8 -> C7 chain has five source-artifact
+    ;; entries, but one invocation-local default reader/parser product.
+    (is (= 1 @default-reader-calls))
+    (is (= 1 @default-parser-calls))
+    (is (= :gravity/stage0-c11-mir-spec-artifact
+           (:kind default-artifact)))
+    (is (vector? (:diagnostics default-diagnostics)))
+    (is (re-matches #"sha256:[0-9a-f]{64}" default-identity))
+    ;; Replacing only the source callbacks disables reuse, so every one of the
+    ;; five real stage entries executes its pass-through callback.  The C6
+    ;; boundary remains the reviewed fixture above; C7-C11 are not replaced.
+    (is (= 5 @custom-reader-calls))
+    (is (= 5 @custom-parser-calls))
+    (is (= default-artifact uncached-artifact))
+    (is (= default-diagnostics (:mir-diagnostic-stream uncached-artifact)))
+    (is (= default-identity (:artifact-id uncached-artifact)))))
+
+(deftest hosted-source-products-fall-back-for-injected-and-redefined-callbacks
+  (let [source-path "c11-source-input-custom.gravity"
+        source-text "(ns c11.source-input.custom (:profile :hosted) (:target :jvm))"
+        records [{:form '(ns c11.source-input.custom
+                          (:profile :hosted) (:target :jvm))}]
+        forms (mapv :form records)
+        module {:module 'c11.source-input.custom
+                :source-path source-path
+                :profile :hosted
+                :target :jvm
+                :effects #{}
+                :capabilities #{}}
+        read-calls (atom 0)
+        parse-calls (atom 0)
+        custom-read (fn [_ _] (swap! read-calls inc) records)
+        custom-parse (fn [_ _] (swap! parse-calls inc) module)]
+    (source-input/with-context
+     (fn []
+       (source-input/records custom-read source-path source-text)
+       (source-input/records custom-read source-path source-text)
+       (source-input/module custom-parse source-path forms)
+       (source-input/module custom-parse source-path forms)))
+    (is (= 2 @read-calls))
+    (is (= 2 @parse-calls))
+    (let [redefined-read-calls (atom 0)
+          redefined-parse-calls (atom 0)
+          original-read bootstrap/read-source-form-records
+          original-parse bootstrap/parse-module]
+      (with-redefs [bootstrap/read-source-form-records
+                    (fn [& args]
+                      (swap! redefined-read-calls inc)
+                      (apply original-read args))
+                    bootstrap/parse-module
+                    (fn [& args]
+                      (swap! redefined-parse-calls inc)
+                      (apply original-parse args))]
+        (source-input/with-context
+         (fn []
+           (source-input/records bootstrap/read-source-form-records
+                                 source-path source-text)
+           (source-input/records bootstrap/read-source-form-records
+                                 source-path source-text)
+           (source-input/module bootstrap/parse-module source-path forms)
+           (source-input/module bootstrap/parse-module source-path forms))))
+      (is (= 2 @redefined-read-calls))
+      (is (= 2 @redefined-parse-calls)))
+    (let [interposed-calls (atom 0)
+          original-parse @#'module-analysis/parse-module]
+      (with-redefs [module-analysis/parse-module
+                    (fn [& args]
+                      (swap! interposed-calls inc)
+                      (apply original-parse args))]
+        (source-input/with-context
+         (fn []
+           (source-input/records bootstrap/read-source-form-records
+                                 source-path source-text)
+           (source-input/module bootstrap/parse-module source-path forms)
+           (source-input/module bootstrap/parse-module source-path forms))))
+      (is (= 2 @interposed-calls)))
+    (let [reader-calls (atom 0)
+          original-reader bootstrap/read-source-form-records-host-oracle
+          authenticated-records [{:form '(ns c11.source-input.custom
+                                          (:profile :hosted) (:target :jvm))}]]
+      (with-redefs [bootstrap/read-source-form-records-host-oracle
+                    (fn [path text]
+                      (swap! reader-calls inc)
+                      (original-reader path text))]
+        (source-input/with-context
+         (fn []
+           (bootstrap/read-source-form-records source-path source-text)
+           (binding [bootstrap/*authenticated-source-form-records*
+                     {:source-path source-path
+                      :source-text source-text
+                      :records authenticated-records}]
+             (is (identical?
+                  authenticated-records
+                  (bootstrap/read-source-form-records source-path source-text))))
+           (bootstrap/read-source-form-records source-path source-text))))
+      (is (= 2 @reader-calls)))
+    (let [parser-calls (atom 0)
+          original-parser module-leaf/parse-module]
+      (with-redefs [module-leaf/parse-module
+                    (fn [& args]
+                      (swap! parser-calls inc)
+                      (apply original-parser args))]
+        (source-input/with-context
+         (fn []
+           (source-input/records bootstrap/read-source-form-records
+                                 source-path source-text)
+           (source-input/module bootstrap/parse-module source-path forms)
+           (binding [bootstrap/*additional-bootstrap-targets* #{:extra}]
+             (source-input/module bootstrap/parse-module source-path forms))
+           (source-input/module bootstrap/parse-module source-path forms))))
+      (is (= 3 @parser-calls)))))

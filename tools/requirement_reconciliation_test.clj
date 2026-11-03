@@ -171,32 +171,44 @@
   (let [manifest (edn/read-string (slurp "contracts/requirement-reconciliation.edn"))
         bridges (rr/validate-task-source-versions! "." manifest)
         by-path (into {} (map (juxt :path identity) bridges))
+        path-index (fn [path]
+                     (.indexOf (mapv :path bridges) path))
         refs (mapcat (fn [requirement]
                        (concat (when-let [task (:task-reference requirement)] [task])
                                (:additional-task-interfaces requirement)))
                      (:requirements manifest))]
-    (is (= 18 (count bridges)))
-    (is (= 608 (count (filter #(= (:sha256 %) (:historical-sha256 (get by-path (:path %)))) refs))))
+    (is (= 19 (count bridges)))
+    (is (= 780 (count (filter #(= (:sha256 %) (:historical-sha256 (get by-path (:path %)))) refs))))
     (is (= #{:navigation-only :acceptance-boundary-extension
              :family-criteria-preserved-plus-current-main-safety-criteria
              :status-and-development-evidence}
            (set (map :change-class bridges))))
-    (is (= 3 (count (:changed-records (nth bridges 2)))))
+    (is (= :acceptance-boundary-extension
+           (:change-class (get by-path "specs/stdlib-workflow/tasks.md"))))
+    (is (= "80d8a655cea00218799446986a976ca64043a1f8"
+           (:current-ref (get by-path "specs/stdlib-workflow/tasks.md"))))
+    (is (= 3 (count (:changed-records (get by-path "specs/compiler-api-workflow/tasks.md")))))
     (is (= [{:id "domain-ir-boundaries"
              :current-record-sha256 "114bda63e653e18999b7dd56542decbcc7c95f9b254ef04db5414b96be679b09"}]
-           (:current-only-records (nth bridges 2))))
-    (is (= 2 (count (:changed-records (nth bridges 11)))))
+           (:current-only-records (get by-path "specs/compiler-api-workflow/tasks.md"))))
+    (is (= 2 (count (:changed-records (get by-path "specs/reader-workflow/tasks.md")))))
     (is (thrown? Exception
                  (rr/validate-task-source-versions!
-                  "." (assoc-in manifest [:task-source-version-bridges 0 :current-sha256]
+                  "." (assoc-in manifest [:task-source-version-bridges
+                                           (path-index "specs/stdlib-workflow/tasks.md")
+                                           :current-sha256]
                                 (apply str (repeat 64 "0"))))))
     (is (thrown? Exception
                  (rr/validate-task-source-versions!
-                  "." (assoc-in manifest [:task-source-version-bridges 2 :changed-records 0
+                  "." (assoc-in manifest [:task-source-version-bridges
+                                           (path-index "specs/compiler-api-workflow/tasks.md")
+                                           :changed-records 0
                                            :current-record-sha256] "wrong"))))
     (is (thrown? Exception
                  (rr/validate-task-source-versions!
-                  "." (assoc-in manifest [:task-source-version-bridges 2 :current-only-records 0
+                  "." (assoc-in manifest [:task-source-version-bridges
+                                           (path-index "specs/compiler-api-workflow/tasks.md")
+                                           :current-only-records 0
                                            :current-record-sha256] "wrong"))))))
 
 (deftest proposed-source-disposition-is-not-reviewed-closure
