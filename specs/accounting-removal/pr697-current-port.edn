@@ -99,12 +99,16 @@
    :result "3 tests, 16 assertions, 0 failures, 0 errors; includes failed-inner/outer-state preservation"}
   {:name :facade-context
    :command "PATH=/tmp/acc08-controls-01a183dd/kondo-2025.10.23:$PATH clojure -J-Xmx768m -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\" \"tools\"]}' -M tools/ci/lint_facade_test.clj"
-   :log "/tmp/uniform-pr697-corrected-lint.log"
+   :log "/tmp/uniform-pr697-complete-lint.log"
    :result "27 tests, 494 assertions, 0 failures, 0 errors; 0 blocking lint warnings/errors"}
   {:name :language-boundary
    :command "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test"
-   :log "/tmp/uniform-pr697-corrected-boundary.log"
-   :result "6 tests, 11 assertions, 0 failures, 0 errors"}]
+   :log "/tmp/uniform-pr697-complete-boundary.log"
+   :result "6 tests, 11 assertions, 0 failures, 0 errors"}
+  {:name :docs-validation
+   :command "clojure -M tools/validate_gravity_docs.clj"
+   :log "/tmp/uniform-pr697-complete-docs.log"
+   :result "validation passed: 240 docs, 19 phase indexes, ASCII, no placeholders"}]
  :repair-controls
  {:ambiguous-binding-refusal
   [:distinct-require-alias :distinct-refer :same-simple-name-import]
