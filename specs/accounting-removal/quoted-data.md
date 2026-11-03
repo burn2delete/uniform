@@ -41,5 +41,7 @@ pass or failure. Native compiler, Effects, emitter, runtime, broker and held
 selector execution remain UNRUN. No native or runtime acceptance follows from
 these ordinary Clojure/JVM checks.
 
-Exact base, candidate, source hashes, preserved contracts, removed accounting
-fields and nonclaims are in `quoted-data-census.edn`.
+The immutable source-review checkpoint's base, candidate, source hashes,
+preserved contracts, removed accounting fields and nonclaims are in
+`quoted-data-census.edn`. Those historical identities are not the later main
+composition's identities.

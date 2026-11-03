@@ -3,6 +3,7 @@
  :original-pr {:head "1c0d699f06372fe3c52fa003f53aa38ffd40d07c"
                :tree "5daf1c0d0f690a4557c362fc7203ebe589570768"
                :base "b7347f6b1b978dbc318e88dfe50e7917f7b1e318"}
+ :snapshot-role :historical-source-review-checkpoint
  :current-base {:commit "a13e148ae5078faa94f69e86a911dbe2df378e29"
                 :tree "28eeb8b082ae21af6339c3a1d994c1007530a41d"}
  :candidate {:source-implementation-commit "fa88135e6a25671d381ebdc94aef4301d6bb32ab"
