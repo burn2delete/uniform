@@ -208,3 +208,15 @@ the composed source has the existing additional
 `verify-c15-resolved-diagnostic` export, 71,007 bytes, and hash
 `6ac5af325d4e3a31ecb24d345c28d39a5b348dca1dd3d2180b1cd8d2fb199f9f`.
 Those integrity expectations were not blindly repinned or reclassified.
+
+## Later ordinary source composition
+
+Clean checkpoint `80df68dfac28b4d08e99787b999fe39f6553a4b7`, tree
+`755a12fd8a28b4091d9dc0ccc1e6d44a1e497e7e`, normally incorporates main
+`438978627bce8ceb9bdc82bb2bc1385a645a2fec` and retains original PR647
+history without replaying its tree. All four implementation, test and paired
+fixture blobs remain identical to accepted checkpoint `4e81b77`. The owner
+checks above remain evidence from their recorded composition; this later
+composition does not claim a new alias execution, hosted CI, source admission
+or migration result. The incomplete manual stop and stale-baseline nonpass
+remain unchanged.
