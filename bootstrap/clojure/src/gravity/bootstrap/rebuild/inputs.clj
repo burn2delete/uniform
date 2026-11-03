@@ -141,7 +141,6 @@
 (def ^:private allowed-fixture-keys
   #{:path :role :profile :target :expect :artifact-kind :diagnostic-code
     :required-artifact-fields :sha256})
-(def ^:private allowed-classpath-keys #{:paths :deps-file :alias})
 (def ^:private allowed-toolchain-keys
   #{:command :version :seed-artifact-id :dependency-jars :runtime :network})
 
@@ -221,13 +220,6 @@
 (defn- sha256-file
   [^File file]
   (sha256-id (Files/readAllBytes (.toPath file))))
-
-(defn- validate-id!
-  [value field]
-  (when-not (and (nonempty-string? value)
-                 (re-matches #"[A-Za-z0-9._:/-]+" value))
-    (fail! :malformed (str "invalid bootstrap input " (name field))
-           {:field field :value value})))
 
 (defn- validate-source-root!
   [root]
