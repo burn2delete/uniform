@@ -125,7 +125,9 @@ or an integration receipt. The immutable source input for this review was:
 - current-main base `97445f364d938004618f2ac13d4d4c6e1ca32946`, tree
   `bde2ef38e3ff53c9a61a88b9ea2ff5d2be1a7bc2`;
 - normal-composition input `6eef5371a0640af2d637bc51e90919cf3b3ba579`, tree
-  `32a20f29b833495218fd77c3907a1c17355d6dcc`.
+  `32a20f29b833495218fd77c3907a1c17355d6dcc`;
+- subsequent normal-composition input `7201ddcc82ab3bf778f65f9f1f6e6ac821632128`,
+  tree `b1703faa759a7bf0daa79b03258737d1dab80012`.
 
 The original PR identities remain head
 `b786b464a67e33af2b75bfcf90a87619b71774c3` and declared base
@@ -182,7 +184,7 @@ evidence artifacts, not authority or release receipts:
   validation; log `/tmp/uniform-pr599-roadmap.log`.
 - `git diff --check` and clean-status checks passed on the frozen input.
 
-The final composed tree then reran the affected controls:
+The first composed tree then reran the affected controls:
 
 - The same three SH08 controls passed 3 tests / 78 assertions, 0 failures/errors;
   log `/tmp/uniform-pr599-current-merge-sh08.log`.
@@ -198,9 +200,30 @@ The final composed tree then reran the affected controls:
   `/tmp/uniform-pr599-current-merge-docs-final2.log`, and
   `/tmp/uniform-pr599-current-merge-roadmap.log`.
 
+After the subsequent normal composition with the `7201ddc` main input, the
+affected controls were rerun again:
+
+- The same three SH08 controls passed 3 tests / 78 assertions, 0 failures/errors;
+  log `/tmp/uniform-pr599-main7201-sh08.log`.
+- The six Syntax controls passed 6 tests / 62 assertions, 0 failures/errors;
+  log `/tmp/uniform-pr599-main7201-syntax.log`.
+- The paired ReaderOnly/default-source controls passed 3 tests / 9 assertions;
+  log `/tmp/uniform-pr599-main7201-reader-only.log`.
+- Boundary, docs, and roadmap validation passed; logs are
+  `/tmp/uniform-pr599-main7201-boundary.log`,
+  `/tmp/uniform-pr599-main7201-docs.log`, and
+  `/tmp/uniform-pr599-main7201-roadmap.log`.
+- Focused clj-kondo reported 0 errors and 65 pre-existing warnings in the
+  affected test files; log `/tmp/uniform-pr599-main7201-kondo.log`.
+
+The final clean merge identity is supplied through the coordinator's
+independent composition metadata rather than embedded as a circular report
+self-hash.
+
 No native C compiler, C12 execution, broker/restricted process route, full
 namespace suite, release, self-hosting, source-authentication, or migration
 authority was claimed. The passed controls establish only the finite C7 and
 current Syntax handoff behavior described above. The three SH08 controls were
-rerun after normal composition because current-main quote guards and source
-callers are relevant dependencies; no broad namespace or release claim follows.
+rerun after both normal compositions because current-main quote guards, C7
+source, and source callers are relevant dependencies; no broad namespace or
+release claim follows.
