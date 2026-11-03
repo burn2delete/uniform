@@ -62,7 +62,7 @@
  {"sh07-checked-core"
   {:id "sh07-checked-core"
    :owner :gravity
-   :source-paths ["bootstrap/gravity/src/gravity/checked_core.gravity"]
+   :source-paths ["language/compiler/src/gravity/checked_core.gravity"]
    :artifact-request :checked-core
    :ownership-scope :sh07
    :required-evidence [:source-identity :diagnostics :receipt]}}
@@ -82,7 +82,7 @@
                            "sh07-b8-public-proof-is-bounded-and-does-not-claim-later-facts"]}
    :dependency-closure {:module-ids ["sh07-checked-core"]
                         :paths ["bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
-                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_try_catch_test.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn"
                                 "contracts/stage0-incremental-test-dependencies.edn"
@@ -142,7 +142,7 @@
                            "sh07-b10-match-record-resolver-rejects-invalid-boundary-values"]}
    :dependency-closure {:module-ids ["sh07-checked-core"]
                         :paths ["bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"
-                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_match_lowering_test.clj"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"
                                 "contracts/stage0-incremental-test-dependencies.edn"
@@ -186,7 +186,7 @@
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_table.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/unified_execution_plan.clj"
                                 "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
-                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_vector_pattern_test.clj"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b11"
                                 "contracts/stage0-incremental-test-dependencies.edn"
@@ -229,7 +229,7 @@
                            "sh07-b13-fragment-coverage-is-exact-ordered-and-complete"]}
    :dependency-closure {:module-ids ["sh07-checked-core"]
                         :paths ["bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
-                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_table.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_module_fragment_test.clj"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b13"
@@ -287,7 +287,7 @@
                                 "bootstrap/clojure/test/gravity/self_hosting/unified_execution_plan.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
                                 "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
-                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_table.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_module_fragment_test.clj"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b13"
@@ -344,7 +344,7 @@
                                 "bootstrap/clojure/test/gravity/self_hosting/unified_execution_plan.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
                                 "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
-                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_table.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_module_fragment_test.clj"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b13"
@@ -401,7 +401,7 @@
                                 "bootstrap/clojure/test/gravity/self_hosting/unified_execution_plan.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
                                 "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
-                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_table.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_module_fragment_test.clj"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b13"
@@ -458,7 +458,7 @@
                                 "bootstrap/clojure/test/gravity/self_hosting/unified_execution_plan.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
                                 "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
-                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_table.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_module_fragment_test.clj"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b13"
@@ -517,7 +517,7 @@
                                 "bootstrap/clojure/test/gravity/self_hosting/unified_execution_plan.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting_test_runner.clj"
                                 "bootstrap/gravity/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
-                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_table.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_module_fragment_test.clj"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b13"
@@ -570,7 +570,7 @@
                         :paths ["contracts/verification-catalog.edn"
                                 "contracts/stage0-incremental-test-dependencies.edn"
                                 "deps.edn"
-                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_table.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_table_test.clj"]
                         :fixture-suite-ids ["sh07-b1" "sh07-b2" "sh07-b3"
@@ -621,7 +621,7 @@
                         :paths ["contracts/verification-catalog.edn"
                                 "contracts/stage0-incremental-test-dependencies.edn"
                                 "deps.edn"
-                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_table.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_parity.clj"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_conformance_parity_test.clj"]
@@ -673,7 +673,7 @@
                            "sh07-b11-public-proof-is-bounded-and-honest"]}
    :dependency-closure {:module-ids ["sh07-checked-core"]
                         :paths ["bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
-                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_vector_pattern_test.clj"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b11"
@@ -716,7 +716,7 @@
                            "sh07-b11-pattern-products-bind-to-the-authenticated-sh06-lineage"]}
    :dependency-closure {:module-ids ["sh07-checked-core"]
                         :paths ["bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
-                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_vector_pattern_test.clj"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b11"
@@ -758,7 +758,7 @@
                :selectors ["sh07-b11-rejections-are-structured-and-oracle-bound"]}
    :dependency-closure {:module-ids ["sh07-checked-core"]
                         :paths ["bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
-                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_vector_pattern_test.clj"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b11"
@@ -803,7 +803,7 @@
                            "sh07-b11-pattern-graph-completeness-rejects-structural-alterations"]}
    :dependency-closure {:module-ids ["sh07-checked-core"]
                         :paths ["bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
-                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_vector_pattern_test.clj"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b11"
@@ -855,7 +855,7 @@
                                 "bootstrap/gravity/src/gravity/resolution.gravity"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-06/modules/shared-core.gravity"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-06/modules/shared-core.qst"
-                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_alias_qualified_reference_test.clj"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b11"
@@ -906,7 +906,7 @@
                                 "bootstrap/gravity/src/gravity/resolution.gravity"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-06/modules/shared-core.gravity"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-06/modules/shared-core.qst"
-                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_alias_qualified_reference_test.clj"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b11"
@@ -954,7 +954,7 @@
                                 "bootstrap/gravity/src/gravity/resolution.gravity"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-06/modules/shared-core.gravity"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-06/modules/shared-core.qst"
-                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_alias_qualified_reference_test.clj"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b11"
@@ -1006,7 +1006,7 @@
                            "sh07-b10-match-scrutinee-does-not-inherit-tail-position"]}
    :dependency-closure {:module-ids ["sh07-checked-core"]
                         :paths ["bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"
-                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_match_lowering_test.clj"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"
                                 "contracts/stage0-incremental-test-dependencies.edn"
@@ -1057,7 +1057,7 @@
                            "sh07-b10-match-record-resolver-rejects-invalid-boundary-values"]}
    :dependency-closure {:module-ids ["sh07-checked-core"]
                         :paths ["bootstrap/gravity/src/gravity/compiler/l2_core_language_semantics.gravity"
-                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_match_lowering_test.clj"
                                 "bootstrap/clojure/fixtures/self-hosting/sh-07-b10"
                                 "contracts/stage0-incremental-test-dependencies.edn"
@@ -1106,7 +1106,7 @@
                         ;; fresh export cannot claim completeness from only
                         ;; six entry points while resolving ambient files.
                         :paths ["bootstrap/gravity/src"
-                                "bootstrap/gravity/src/gravity/checked_core.gravity"
+                                "language/compiler/src/gravity/checked_core.gravity"
                                 "bootstrap/clojure/src"
                                 "bootstrap/clojure/test"
                                 "bootstrap/clojure/test/gravity/self_hosting/sh07_authoritative_runner.clj"

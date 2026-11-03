@@ -3054,8 +3054,13 @@
               #(bootstrap/run-compiled-file fixture)))))))
 
 (deftest stage1-bootstrap-source-artifact-preserves-self-hosting-bridge
+  (is (= "bootstrap/gravity/src"
+         bootstrap/stage1-reader-bootstrap-source-root))
+  (is (= ["bootstrap/gravity/src"
+          "language/compiler/src/gravity/checked_core.gravity"]
+         bootstrap/stage1-reader-bootstrap-source-roots))
   (let [artifact (bootstrap/stage1-bootstrap-source-file-artifact
-                  "bootstrap/gravity/src")
+                  bootstrap/stage1-reader-bootstrap-source-roots)
         proof (:capability-based-proof artifact)
         components (set (map :component (:modules artifact)))
         source-frontend (first (filter #(= :source-frontend (:component %))

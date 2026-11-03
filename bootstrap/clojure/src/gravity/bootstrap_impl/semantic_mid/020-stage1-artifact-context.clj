@@ -1,7 +1,7 @@
 (defn- semantic-mid-stage1-artifact-context
   [source-path source-text execute-pipeline]
   (let [stage1-bootstrap-artifact
-        (stage1-bootstrap-source-artifact stage1-reader-bootstrap-source-root)
+        (stage1-bootstrap-source-artifact stage1-reader-bootstrap-source-roots)
         trace (atom {})
         runtime-result
         (binding [*stage1-reader-pipeline-trace* trace]
