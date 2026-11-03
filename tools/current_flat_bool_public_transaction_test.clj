@@ -10,6 +10,9 @@
 (def ^:private source-text
   "(ns gravity.test.flat-bool-v3 (:profile :hosted) (:target :jvm) (:effects #{}) (:capabilities #{}) (:safety :safe) (:exports [main]))\n\n(defn main [] (do true false true))\n")
 
+(def ^:private v2-source-text
+  "(ns gravity.test.flat-bool-v2 (:profile :hosted) (:target :jvm) (:effects #{}) (:capabilities #{}) (:safety :safe) (:exports [main]))\n\n(defn main [] (if true false true))\n")
+
 (def ^:private c6-v3-header
   {:interface :gravity/c6-c10 :version 3})
 
@@ -29,19 +32,26 @@
   (delay
     (let [left (java.io.File/createTempFile "gravity-flat-bool-public-" ".gravity")
           right (java.io.File/createTempFile "gravity-flat-bool-crossed-" ".gravity")
+          v2 (java.io.File/createTempFile "gravity-flat-bool-v2-" ".gravity")
           left-path (.getCanonicalPath left)
-          right-path (.getCanonicalPath right)]
+          right-path (.getCanonicalPath right)
+          v2-path (.getCanonicalPath v2)]
       (spit left source-text)
       (spit right source-text)
+      (spit v2 v2-source-text)
       {:left-path left-path
        :right-path right-path
+       :v2-path v2-path
        :left-context
        (bootstrap/p15-s23-stage2-gravity-checked-core-context
         left-path source-text :jvm)
        :right-context
        (bootstrap/p15-s23-stage2-gravity-checked-core-context
         right-path source-text :jvm)
-       :files [left right]})))
+       :v2-context
+       (bootstrap/p15-s23-stage2-gravity-checked-core-context
+        v2-path v2-source-text :jvm)
+       :files [left right v2]})))
 
 (def ^:private v3-cohort*
   (delay
@@ -65,19 +75,19 @@
 
 (def ^:private v2-cohort*
   (delay
-    (let [{:keys [left-context]} @fixture*
+    (let [{:keys [v2-context]} @fixture*
           core
           (bootstrap/p15-s23-stage2-gravity-checked-core-source-artifact
-           left-context c6-v2-header)
+           v2-context c6-v2-header)
           core-report
           (bootstrap/p15-s23-stage2-gravity-checked-core-verification-report
-           core left-context c6-v2-header)
+           core v2-context c6-v2-header)
           mir
           (bootstrap/p15-s23-stage2-c11-mir-artifact
-           core left-context c11-v2-header)
+           core v2-context c11-v2-header)
           mir-report
           (bootstrap/p15-s23-stage2-c11-mir-verification-report
-           mir core left-context c11-v2-header)]
+           mir core v2-context c11-v2-header)]
       {:core core
        :core-report core-report
        :mir mir
@@ -185,7 +195,7 @@
         operations (bootstrap/p15-s23-c11-mir-operation-sequence module)
         source-binding (get-in core-report [:source-policy-receipt])]
     (testing "the real public C6 route and its fresh report are v3/current"
-      (is (= :gravity/p15-s23-stage2-closed-checked-core-artifact
+      (is (= :gravity/p15-s23-stage2-gravity-checked-core-artifact
              (:kind core)))
       (is (= :passed (:status core-report)))
       (is (= c6-v3-header (:source-interface core-report)))
@@ -212,7 +222,7 @@
       (is (= (:mir-id mir) (:mir-id mir-report)))
       (is (= (:artifact-id core) (:checked-core-artifact-id mir-report)))
       (is (= :clojure-stage0-rule-runner
-             (get-in mir-report [:execution-tcb :runner])))
+             (:execution-tcb mir-report)))
       (is (vector? operations))
       (is (seq operations))
       (is (= (count operations)
@@ -303,8 +313,8 @@
                    {:interface :gravity/c11-mir :version 1})))))))
 
 (let [result (run-tests 'current-flat-bool-public-transaction-test)
-      {:keys [left-path right-path]} @fixture*]
-  (doseq [file [left-path right-path]]
+      {:keys [left-path right-path v2-path]} @fixture*]
+  (doseq [file [left-path right-path v2-path]]
     (java.nio.file.Files/deleteIfExists
      (.toPath (io/file file))))
   (println {:scope :public-current-flat-bool-c6-c11-transaction
