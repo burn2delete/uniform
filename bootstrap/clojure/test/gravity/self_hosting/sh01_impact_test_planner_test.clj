@@ -1072,6 +1072,14 @@
     (is (= ["README.md"] (:ignored-paths plan)))
     (is (empty? (:namespaces plan)))))
 
+(deftest unknown-language-root-input-fails-closed
+  (let [ownership (edn/read-string
+                   (slurp "docs/self-hosting-slice-ownership.edn"))
+        relative "language/compiler/src/gravity/not_registered.gravity"
+        classification (planner/classify-path ownership relative)]
+    (is (= :unowned (:classification classification)))
+    (is (= [] (:slices classification)))))
+
 (deftest changed-path-plans-are-canonical
   (let [first-path
         "bootstrap/clojure/test/gravity/self_hosting/sh06_resolution_test.clj"
@@ -1158,7 +1166,7 @@
         (planner/build-plan
          {:changed-paths
           ["bootstrap/clojure/fixtures/self-hosting/sh-07/accepted/new.gravity"
-           "bootstrap/gravity/src/gravity/checked_core.gravity"]
+           "language/compiler/src/gravity/checked_core.gravity"]
           :iteration-slices ["SH-07" "SH-08"]})]
     (is (= ["SH-07" "SH-08"] (:iteration-slices plan)))
     (is (= ["SH-07" "SH-08"] (:affected-slices plan)))

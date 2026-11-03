@@ -3,7 +3,7 @@
 ;; The coordinator authenticates the verified SH-06 carrier, projects the
 ;; literal/function/control-flow subset, resolves declared digest
 ;; requests, and keeps physical paths out of semantic identity.
-(def sh07-core-source-relative-path "bootstrap/gravity/src/gravity/checked_core.gravity")
+(def sh07-core-source-relative-path "language/compiler/src/gravity/checked_core.gravity")
 
 (def sh07-core-adapter-contract :gravity/sh07-to-c6-core-products-v16)
 (def sh07-core-governing-document

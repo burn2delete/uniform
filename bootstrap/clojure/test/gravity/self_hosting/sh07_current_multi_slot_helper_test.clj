@@ -23,7 +23,7 @@
   ;; C01/C02/C07, L2/C6: the fixture is an exact extracted occurrence. Only
   ;; its G path executes; Q checks text parity. Full-owner/C7/runtime stay open.
   (let [path #(str (io/file (root) %))
-        owner (path "bootstrap/gravity/src/gravity/checked_core.gravity")
+        owner (path "language/compiler/src/gravity/checked_core.gravity")
         reader (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
         syntax (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
         invocation {:reader-source-path reader

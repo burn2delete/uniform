@@ -141,7 +141,7 @@
     :public-runtime-call :forbidden}})
 
 (def ^:private p15-s23-sh07-checked-core-source-relative-path
-  "bootstrap/gravity/src/gravity/checked_core.gravity")
+  "language/compiler/src/gravity/checked_core.gravity")
 
 (def ^:private p15-s23-sh07-compiler-source-authority-v1-keys
   #{:artifact :source-relative-path :source-sha256 :source-byte-count

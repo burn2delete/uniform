@@ -24,7 +24,7 @@
   ;; C01/C03/C05/C06, L2/C6: actual G source-to-Core. The separate fixture is
   ;; exact original text, not full-owner analysis. Q is UTF-8 text parity only.
   (let [path #(str (io/file (root) %))
-        owner (path "bootstrap/gravity/src/gravity/checked_core.gravity")
+        owner (path "language/compiler/src/gravity/checked_core.gravity")
         reader (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
         syntax (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
         invocation {:reader-source-path reader
