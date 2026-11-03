@@ -208,33 +208,34 @@
 (def math9-rewrite-termination-baseline-ref
   "a1b991be499d50579a8b4366976c519ae8949224")
 (def math9-rewrite-termination-applying-ref
-  "dcf3378130ef92c37105aeda17b3badfec6619dc")
+  "4d8a085a9b68bb8c349869c574b94ee4cea81406")
 (def math9-rewrite-termination-baseline-tree
   "5b62819e511bfc7e6b5eba0527d8c9b5883c5572")
 (def math9-rewrite-termination-applying-tree
-  "b0609b39cf93b8c27dbd204b69ca197ef781d8f8")
+  "2366861f1514b0cb03a7a869b2af365d3816df3c")
 (def math9-rewrite-termination-baseline-sha256
   "ca9ccdcfe25a76de1127d5629d8265f83885481e7334012ee4da8aa1fdbd0410")
 (def math9-rewrite-termination-live-sha256
-  "8ee9b9bd7a70508ebac2d74eac64417462c1a18f75e5b2ae2c43b12b96266430")
+  "543cfc52291e89d60c0a80c0c056221c098bc9aed11d8fb7f3e45e999322bff3")
 (def math9-rewrite-termination-baseline-blob
   "ac364084776e3cd0a2046c224aacd7d65178cc68")
 (def math9-rewrite-termination-applying-blob
-  "5bae82b6d377e64b803dd1c6a7282f4ec179406b")
+  "cda65cb93e21f483fc1dafd8dc429f38198940d6")
 (def math9-rewrite-termination-current-criteria
   {:retained [:rule-domain-branch-numeric-floating-side-condition-proof-source-and-invalidation
               :deterministic-rule-ordering-cost-model-tie-breaks-equality-explanation-and-proof-replay
               :well-founded-termination-finite-trace-and-stopped-run-history]
-   :changed [:strictly-decreasing-tan-occurrence-measure]
-   :qualification :current-math9-criteria-derived-from-dcf3378130})
+   :changed [:unsupported-strict-tan-occurrence-example-claim-removed
+             :selected-strategy-finite-termination-evidence-required]
+   :qualification :current-math9-criteria-derived-from-4d8a085a})
 (def math9-rewrite-termination-projection-hunks
   [{:hunk-id "MATH9-rewrite-termination"
     :facet-ids ["MATH9/partition-facet/f7ea6e89842884748fe59dbe8f51ab1430d943e274be2db887506a777a0977c9"
                 "MATH9/partition-facet/e231af9a1d26e177746d45311c38254441b372ff323f06178c5a5777ae4243ad"]
     :baseline-start-line 77 :baseline-end-line 78
-    :live-start-line 77 :live-end-line 78
+    :live-start-line 77 :live-end-line 82
     :baseline-fragment-sha256 "ca061d6ae9dc82e9c5ab1dbba13b05632a62d13a9ce09355452dfd58a444f8f1"
-    :live-fragment-sha256 "f35520ec40d85c0f54bbb63e31895c3ad097ed693da79100a56deb0ffa16e404"}])
+    :live-fragment-sha256 "6b1ee5c8781479b2fa274d615fc5107b23f4e230c024885305a17731569133f4"}])
 
 (def std3-accounting-kind :stdlib-accounting-policy-semantic-projection)
 (defn baseline-projection-kind? [kind]
@@ -278,9 +279,15 @@
     :applying-blob math9-rewrite-termination-applying-blob
     :review-state :proposed
     :authority "MATH9 rewrite-system source audit of current termination evidence after mandatory-fuel retirement."
-    :qualification "Only the exact Rewrite Rule Form termination measure is projected to the authenticated baseline view. Rule/domain/branch/numeric/floating/side-condition/proof/source and invalidation facts, deterministic rule ordering, cost-model tie breaks, equality explanations, proof replay, and well-founded finite termination evidence remain current semantic obligations. The current strict tan-occurrence measure is a semantic termination correction, not a project quota or admission allowance; this bridge is source reconciliation evidence only and confers no canonical adoption or implementation acceptance."
+    :qualification "Only the exact Rewrite Rule Form termination region is projected to the authenticated baseline view. Rule/domain/branch/numeric/floating/side-condition/proof/source and invalidation facts, deterministic rule ordering, cost-model tie breaks, equality explanations, proof replay, and well-founded finite termination evidence remain current semantic obligations. The current source removes an unsupported strict tan-occurrence example claim and requires finite termination evidence from the selected strategy; no proof is inferred from the example's omission, and this bridge is source reconciliation evidence only."
     :current-criteria math9-rewrite-termination-current-criteria
-    :semantic-deltas [{:hunk-id "MATH9-rewrite-termination" :classification :semantic-strict-termination-measure}]
+    :historical-applying
+    {:ref "dcf3378130ef92c37105aeda17b3badfec6619dc"
+     :tree "b0609b39cf93b8c27dbd204b69ca197ef781d8f8"
+     :blob "5bae82b6d377e64b803dd1c6a7282f4ec179406b"
+     :live-sha256 "8ee9b9bd7a70508ebac2d74eac64417462c1a18f75e5b2ae2c43b12b96266430"
+     :qualification "Historical dcf337 MATH9 snapshot retained for provenance only; it is not the current source and is not re-admitted as proof."}
+    :semantic-deltas [{:hunk-id "MATH9-rewrite-termination" :classification :semantic-termination-evidence-and-unsupported-example-removal}]
     :projection-hunks math9-rewrite-termination-projection-hunks}
    math4-search-policy-kind
    {:document-id "MATH4"
