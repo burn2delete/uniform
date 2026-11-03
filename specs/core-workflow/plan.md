@@ -248,6 +248,12 @@ Preserve all fourteen required families, seven artifact families and eight L7 di
 
 Current task bodies/statuses, source criteria, forty future declarations and every finite review subject remain unchanged. The formal row is an existing future authority, not a new implementation task; the new Backend/Query routes likewise reuse existing tasks. Selected B1/B14/P12/DOM19 contexts do not establish those whole contracts. Whole source/owner/interface entailment, actual implementation, independent current acceptance and integration remain pending/unassessed. Reader contract coverage is still the first actual implementation increment. Preserve every C7/C12/paired/provider/plugin/native/callback/device/probe/replay/migration/private-store/signing/publication restriction, writer reservation and stopped handoff. No held execution, other-chat message, reviewer wake, aggregate publication or merge occurs.
 
+## Complete protocol and dispatch source interface
+
+Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Initial structural call/declaration candidates precede actual type/dispatch/effect/profile facts. Checked export preserves real selected method/mode/implementation and required runtime/schema/host contracts; do not require final target layouts for the first structural tree.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Core task authority

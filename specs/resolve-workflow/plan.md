@@ -366,6 +366,12 @@ Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#
 
 Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Complete protocol and dispatch source interface
+
+Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Supply actual protocol/type/method/implementation and dispatch-function/case identities from their declared positions. Preserve missing/ambiguous identities and source/generated provenance; Types selects implementation sets and Effects derives actual call effects.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Resolve task authority

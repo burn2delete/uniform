@@ -588,6 +588,12 @@ Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#
 
 Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Complete protocol and dispatch source interface
+
+Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Distributed workflow/service boundaries use real schema/artifact contracts and AI/tool invocation uses actual schema validation plus authentic grants and effects. Formal dispatch needs real closedness/coverage proof; source preparation precedes held execution.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Domains workflow migration

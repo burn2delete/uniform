@@ -149,6 +149,12 @@ Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#
 
 Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Complete protocol and dispatch source interface
+
+Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Select actual declared checked dispatch/reflection/host services and normalize actual foreign null/exception/resource behavior before safe core entry. Types boundary records do not execute conversion; no held native/provider action is enabled.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Runtime workflow migration

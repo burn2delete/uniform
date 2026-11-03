@@ -39,6 +39,14 @@ C13 pass-family/legal-variant criterion compiler/c13/legal-variant-selection (Op
 Ownership clarification: consume the actual constant-fold/branch/dead-code/common-expression implementations owned by opt1-execute-pass-contracts. This task owns full family coverage and the remaining structural transforms; do not create a duplicate basic-pass implementation or a second task authority.
 <!-- opt-canonical-families:end -->
 
+
+<!-- opt-protocol-source-specialize:start -->
+
+Apply the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L8 proved dispatch-specialization criterion (Open): Perform actual legal dispatch specialization using current implementation/type/profile/target facts and surviving governing proof. Preserve source diagnostics and fallback behavior, or prove that fallback unreachable for the exact subject before erasing it; refusal to transform preserves the original legal dispatch. Reject speculative closed-world assumptions, stale/missing proof, hidden effects/capabilities/unsafe checks or changed fallback/diagnostics. Preserve actual before/after identities, proof/checker assumptions, residual/fallback paths, source/generated mappings and affected fact invalidation/regeneration through verification. Benchmarks or a direct-call label do not prove semantic equivalence. Required evidence: specialized execution/artifact comparisons and negative proof/fallback/diagnostic/staleness fixtures under L8 and C13.
+<!-- opt-protocol-source-specialize:end -->
+
 - [ ] `opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors` opt/3: Protect checks and anchors
 
 Current evidence/status: Open; partial source evidence above is not closure

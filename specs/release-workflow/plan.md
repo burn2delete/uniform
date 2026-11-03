@@ -280,6 +280,12 @@ Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#
 
 Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Complete protocol and dispatch source interface
+
+Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Independent conformance consumes actual owner fixtures, selected target/runtime behavior, seven diagnostics and mode/implementation identity across required L8 surfaces. Owner fixture construction precedes final independent harnesses; narrow receipts do not close L8.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Release workflow migration

@@ -57,6 +57,8 @@ evidence obligations and independent acceptance.
 
 The [complete Types source criteria](plan.md#complete-types-source-criteria) restore five published L5/C7 clauses and five earlier finite predicates in the existing tasks, with unchanged conditional Evolution and inherited Legality/Expand role contexts. They preserve complete source conjunctions and owner history without adopting the original C7 publication or conferring current implementation/acceptance.
 
+The [complete protocol and dispatch source criteria](plan.md#complete-protocol-and-dispatch-source-criteria) route full L8 method/extension contracts, dispatch modes, actual caller-visible effects, profile/host/schema/grant boundaries, interface lowering and proved specialization through existing owners. The earlier typed-selection and conditional Evolution criteria remain unchanged; full current entailment and implementation acceptance remain pending.
+
 ## Historical task-authority-transfer specification
 
 # Feature specification: Types implementation workflow

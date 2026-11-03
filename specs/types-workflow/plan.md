@@ -187,6 +187,55 @@ Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#
 
 Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Complete protocol and dispatch source criteria
+
+Direct review of complete [L8](../../docs/phase-01-core-language/018-l8-protocols-interfaces-and-dispatch-specification.md) retains five original owner obligations and complete source conjunctions. Fourteen additional criteria refine eleven existing Open tasks in seven authorities. The earlier typed-selection criterion and exact 1,011-byte Evolution stable-change predicate remain unchanged: sixteen criteria name twelve existing tasks in eight authorities. No task or feature is created. The inherited select-checked-dispatch allocation retains Effects2 plus actual Types selection and Effects3 admission witnesses; it does not transfer type/implementation selection to effect propagation. The foreign-error owner now has explicit Types boundary and Runtime normalization witnesses without an inferred earlier full-owner acceptance.
+
+| Existing task | Actual source outcome |
+| --- | --- |
+| `types/current-evidence-and-remaining-work/types2-check-declared-abstractions` | Actual nine-field method contracts and checked concrete extensions. |
+| `types/current-evidence-and-remaining-work/types2-check-declared-abstractions` | Actual implementation set, missing/ambiguous refusals and tentative typed selection. |
+| `types/current-evidence-and-remaining-work/types2-check-declared-abstractions` | Eight distinct source dispatch modes with actual choice and dependencies. |
+| `types/current-evidence-and-remaining-work/types2-check-declared-abstractions` | Conditional declared multimethod support, real tables and coverage. |
+| `types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit` | Explicit dynamic/foreign type/null/exception/ownership/runtime contracts. |
+| `effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects` | Actual selected-implementation or declared-upper-bound call effects. |
+| `effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering` | Real effect admission and separately checked grants/provider conditions. |
+| `legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks` | All concrete profile conditions, bounded-behavior artifacts and formal coverage. |
+| `lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout` | Seven actual permitted interface representations preserving source semantics. |
+| `opt/current-evidence-and-remaining-work/opt2-implement-structural-families` | Actual proved specialization and preserved fallback/diagnostics. |
+| `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries` | Executed selected host null/exception/failure-resource normalization. |
+| `ai` | Actual schema/artifact validation and capability-gated tool invocation. |
+| `types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts` | Nine artifact families, seven diagnostic meanings and current invalidation. |
+| `types/current-evidence-and-remaining-work/types5-integrate-typed-core` | Real source-to-checked-dispatch and representative consumer conformance. |
+| `types/current-evidence-and-remaining-work/types2-check-declared-abstractions` | Unchanged finite Types selection criterion from earlier source reconciliation. |
+| `evolution/change-review` | Unchanged conditional stable-change compatibility/conformance predicate. |
+
+### Complete source premises and actual behavior
+
+Preserve all nine method-contract fields and actual protocol/type/method identities. Concrete extensions satisfy the method's receiver/parameter/return/profile/default conditions and cannot widen effects beyond callers' visible contract. Additional capability requirements remain explicit in the method type and dispatch artifact. Default implementations exist only where allowed. Source examples illustrate syntax/artifact fields; they neither supply a FileHandle implementation nor grant fs/write.
+
+Keep direct static, monomorphized generic, dictionary, vtable/interface, multimethod, hosted dynamic, expressly permitted reflective and schema/workflow/AI/tool artifact-boundary modes distinct. Select from actual declarations, type facts, profile, target and applicable optimization evidence. Missing candidates and multiple matches without a declared priority reject; do not invent a global priority, overlap/coherence policy, default allowance or new source syntax. Multimethod support remains conditional: actual declared dispatch functions/cases, open-hosted behavior or generated profile-specific coverage tables, and closed matching/jump tables must preserve source semantics. Unsupported required modes remain implementation work.
+
+Core dispatch is static/dictionary/portable-interface; hosted dynamic/reflection needs effects and capabilities. Native monomorphization/dictionary/vtable does not imply reflection: a native runtime provider must declare it, with actual admissible conditions. Kernel/firmware/hardware reject reflection, hidden allocation, open-world dispatch and runtime lookup unless a constrained artifact proves the required bounded behavior. That proof is a concrete profile/semantic obligation, not a compiler work quota. Distributed dispatch needs schema/artifact contracts; AI requires actual validation and separate grants; formal needs closed dispatch or real total-coverage proof. Early interface/policy declarations support development before later actual verdicts; they do not themselves admit calls.
+
+Effects propagates selected-implementation effects or the declared upper bound when selection is not statically known. Allocation, IO, FFI, network/database, model/tool, unsafe and reflection effects remain visible at call sites. Actual effect allowance, separate authentic Auth grants and required profile/provider checks precede admitted behavior. An indeterminate safe set rejects or follows an actual checked runtime provider with explicit effects/capabilities and surviving checks. Types selection and effects are mutually constrained stages, not declarations accepted as inferred body behavior.
+
+Foreign implementations retain host identity, nullability, exception behavior, ownership and runtime dependencies. Types owns boundary facts; Runtime executes actual null/exception/failure-resource normalization before safe/non-null core consumption, retaining declared Option absence and typed boundary errors. Do not leak host null/exception semantics or accept a metadata table as conversion. Schema/tool boundaries similarly require actual validation dataflow plus grants rather than a tool name or payload shape. This work introduces no host class/callback feature or execution permission.
+
+Source protocols remain semantic authority while actual target interfaces may be direct calls, vtables, dictionaries, host interfaces, C ABI tables, Wasm components or profile-defined HDL bundles. Early ABI/service contracts precede actual checked method/layout/runtime products, then target emission and consumer comparison. Optional optimization specializes real dispatch under surviving proof, preserving source diagnostics and fallback or proving fallback unreachable. It invalidates/regenerates affected facts and verifies the changed subject. Valid unspecialized portable dispatch requires no universal optimizer or native artifact.
+
+### Artifacts, refusals and conformance
+
+Retain all nine artifact families: protocol/implementation tables, method signatures, dispatch modes, applicable multimethod tables, interface lowering, host interop records, diagnostics and conformance fixtures. Preserve actual source/generated/binding/type/effect/capability/profile/target/ABI/schema/provider/proof identities across producers; changed assumptions invalidate affected selection and consumers. Keep all seven L8 diagnostic meanings with real failure subjects: method mismatch, missing/ambiguous selection, forbidden dynamic/reflection, widened method effects, incomplete host boundary and absent tool schema/grant. A diagnostic catalog or complete flag does not detect those conditions.
+
+Owner fixtures exercise definitions/extensions, direct/dictionary/vtable/hosted dispatch, rejected reflection/open dispatch in constrained profiles, actual caller-visible method effects, host normalization, proved specialization and preserved diagnostics/fallback, and real artifact mode/implementation identity. Extend applicable fixtures across the required mode/interface/profile surfaces rather than accepting a representative table as complete L8. Reject missing/stale/coherently substituted owner products, hidden checks, lost origins or changed source semantics. Owner fixture construction precedes independent harnesses; actual execution/acceptance remains separate.
+
+### Implementation applicability and preserved evidence
+
+Static inspection of the complete hosted C7 evidence/verification files finds protocol/value recognition emitting fixed Displayable/String/hosted-dynamic records with copied node effects/capabilities and typed/complete statuses. The verifier checks the dispatch container's complete status rather than those actual L8 method/implementation/profile/ABI/normalization relations. This is a scoped source observation, not fresh execution, complete compiler inspection or proof that no other implementation exists. No full L8 implementation credit follows.
+
+The finite profile74 stable-protocol-change review retains its exact 1,011-byte predicate, original dependencies and qualified review; the earlier Types typed-selection clause is unchanged. No receipt is renewed or consumed. Full current owner/source/interface entailment, independent current review and implementation acceptance remain pending/unassessed. Existing 2,011 joins, 139 routes, 99 current parents, forty future records and 97-/nine-task coarse cycles remain; complete L8 selected-result staging is still to reconcile. Every writer reservation and actual C7/C12/paired/provider/plugin/native/callback/device/probe/replay/migration/private-store/signing/publication restriction remains. No held execution, other-chat message, reviewer wake, aggregate publication or merge occurs. Reader contract coverage remains the first actual implementation increment.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Types task authority

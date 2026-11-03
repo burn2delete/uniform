@@ -130,6 +130,12 @@ Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#
 
 Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Complete protocol and dispatch source interface
+
+Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Provide actual protocol/interface definitions and concrete implementations whose receiver/signature/effect/capability/default/stability contracts survive dispatch. Real resource/host implementations preserve boundary cleanup and actual callable behavior.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Standard Library workflow migration

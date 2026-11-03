@@ -126,6 +126,12 @@ Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#
 
 Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Complete protocol and dispatch source interface
+
+Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Actually specialize dispatch under surviving source-bound proof; preserve diagnostics and fallback or prove fallback unreachable. Keep original legal dispatch when transformation is unsupported and regenerate/verify affected owner facts.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Opt task authority

@@ -2185,6 +2185,14 @@ exact prompt/model/tool identities? Integration: Schema/Auth, Workflow/Runtime,
 Stdlib AI. Decision owner: AI maintainer; recommendation: provider-independent
 artifacts and explicit model identity, never a vendor SDK side path.
 
+
+<!-- domains-protocol-source-tools:start -->
+
+Apply the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L8 schema/artifact tool-dispatch criterion (Open): Execute a selected admitted AI/tool dispatch only against the actual declared schema/artifact and validated request/response boundary with separate authentic capability grants and real effect/profile/runtime checks. Preserve selected tool/implementation identity, schema/version/source facts, validation dataflow and returned typed results/failures. Reject missing/weakened/stale or substituted schema/validation, absent grants and undeclared method/model/tool effects with L8-TOOL-DISPATCH and owning diagnostics. A tool name, schema-shaped payload, method table or AI profile does not validate data or grant authority. Required evidence: actual legal/illegal dispatch and validation fixtures plus source-linked artifacts; existing held tool/provider/replay actions remain unrun and ordinary declaration preparation does not require them.
+<!-- domains-protocol-source-tools:end -->
+
 - [ ] `gpu` GPU
 
 Status: Open

@@ -186,6 +186,12 @@ Use the [pattern-matching producer and consumer order](../core-workflow/plan.md#
 
 Task bodies/statuses, source criteria, frozen review scopes and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance remain pending; no held operation is enabled.
 
+## Complete protocol and dispatch source interface
+
+Use the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria). Preserve all seven L8 failure meanings with actual method/receiver/implementation/profile/host/tool/source/generated subjects. Requested codes/catalogs are separate from executed detection and source-preserving specialization.
+
+Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Diagnostics task authority

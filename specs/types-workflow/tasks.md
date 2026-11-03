@@ -109,6 +109,38 @@ Apply the [complete pattern-matching source criteria](../core-workflow/plan.md#c
 L7 trusted-shape boundary criterion (Open): Require actual schema-validation or typed-boundary-check evidence and authentic source identity before external/dynamic/host data is treated as a trusted closed pattern shape. Network/filesystem/database/AI/tool values must cross the real required boundary; AI variants and required keys are checked against their declared schema. Matching itself, a schema-shaped record, a narrowed annotation or a nonempty validation link does not validate a value. Preserve dataflow and surviving checks to selected runtime consumers; Schema/Runtime own actual validators/check execution. Required evidence: accepted validated values and rejected unvalidated, weakened, wrong-source, stale or coherently substituted shape/constructor/key assumptions.
 <!-- types-pattern-source-trusted:end -->
 
+
+<!-- types-protocol-source-methods:start -->
+
+Apply the [complete protocol and dispatch source criteria](plan.md#complete-protocol-and-dispatch-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L8 protocol method/extension criterion (Open): Produce actual typed protocol contracts retaining method name, receiver type position, parameter and return types, latent effects, relevant capability requirements, profile restrictions, permitted defaults and documentation/stability metadata. Check every concrete implementation against that signature without widening effects beyond callers' visible contract; additional capability requirements remain in method types and dispatch artifacts. Resolve actual protocol/type/method identities rather than accepting a protocol-shaped record. Required evidence: real protocol/implementation/signature tables, legal definition/extension/default cases and rejected incompatible receiver/parameter/return/effect/capability/profile cases with L8-PROTOCOL-METHOD and L8-METHOD-EFFECT. Defaults remain conditional on their governing allowance, not universally enabled.
+<!-- types-protocol-source-methods:end -->
+
+
+<!-- types-protocol-source-selection:start -->
+
+Apply the [complete protocol and dispatch source criteria](plan.md#complete-protocol-and-dispatch-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L8 implementation-set/dispatch criterion (Open): Derive actual applicable implementation candidates and selected mode from resolved declarations, independently established type facts, profile, target and governing optimization facts. Preserve selected implementation identity, receiver and method contracts and source references. Reject missing implementation and multiple matches lacking a declared priority rule with L8-DISPATCH-MISSING/AMBIGUOUS; do not invent a global overlap/priority/coherence policy. Typed selection is tentative until actual Effects and profile checks admit required runtime behavior, with separate Auth grants and actual provider facts. No safe implementation set means rejection or a checked runtime-provider route with explicit effects/capabilities, never implicit host dispatch.
+<!-- types-protocol-source-selection:end -->
+
+
+<!-- types-protocol-source-modes:start -->
+
+Apply the [complete protocol and dispatch source criteria](plan.md#complete-protocol-and-dispatch-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L8 dispatch-mode criterion (Open): Keep direct static, monomorphized generic, dictionary, vtable/interface, multimethod, hosted dynamic, explicitly profile-permitted reflective and schema/workflow/AI/tool artifact-boundary dispatch as distinct source-supported modes. Record the actual chosen mode and its implementation/type/effect/capability/profile/target dependencies; the sample direct close/FileHandle record supplies no implementation, grant or universal default. Cover actual legal and refused cases for every applicable mode; unsupported required modes remain visible implementation work and cannot be completed by a refusal or hosted example.
+<!-- types-protocol-source-modes:end -->
+
+
+<!-- types-protocol-source-multimethod:start -->
+
+Apply the [complete protocol and dispatch source criteria](plan.md#complete-protocol-and-dispatch-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L8 declared multimethod criterion (Open): Where multimethod-style dispatch is supported, use the actual declared dispatch function and case/implementation identities. Open multimethods are hosted/dynamic unless a profile-specific table is actually generated with known coverage; closed multimethods may lower to actual matching or jump tables preserving source behavior. Retain dispatch-function effects, actual table/case coverage and missing/ambiguous-selection diagnostics. The illustrated event kinds are examples, not the complete language registry, and optional support does not silently make open dispatch portable or mandate an invented priority rule.
+<!-- types-protocol-source-multimethod:end -->
+
 - [ ] `types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit` types/3: Make dynamic boundaries explicit
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -131,6 +163,14 @@ Apply the [complete Types source criteria](plan.md#complete-types-source-criteri
 Decision criterion interface/language/interop/convert-declared-foreign-value: Perform the explicitly directional Gravity/foreign type conversion under declared ownership/nullability/encoding/layout semantics; loss is explicit and failure returns Result or the declared boundary error. Reject: Reject hidden lossy conversion, invalid null-to-non-null mapping and foreign values admitted without required type/lifetime facts; declared Option absence remains legal. Required outputs: Directional type map and conversion/round-trip results, declared loss/failure records and invalid-value/ownership refusals.
 <!-- types-source-foreign-value:end -->
 
+
+<!-- types-protocol-source-dynamic:start -->
+
+Apply the [complete protocol and dispatch source criteria](plan.md#complete-protocol-and-dispatch-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L8 explicit dynamic/foreign-boundary criterion (Open): Represent actual dynamic/reflective/host dispatch with method/receiver/type identity, selected runtime dependencies, source profile, nullability, exception/failure behavior, ownership, required runtime checks, effects and capabilities. Preserve a declared host boundary and actual normalization route before values/errors enter safe core semantics; a host null or exception cannot become an unmodeled core value/throw. Types records the concrete boundary; Runtime performs normalization and resource behavior, Effects checks actual effects and Auth grants separate authority. Reject missing type/null/exception/lifetime/runtime facts and forbidden dynamic/reflective behavior with L8-HOST-DISPATCH or L8-DYNAMIC-FORBIDDEN; metadata alone is not executed normalization.
+<!-- types-protocol-source-dynamic:end -->
+
 - [ ] `types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts` types/4: Preserve and invalidate facts
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -145,6 +185,14 @@ Apply the [complete Types source criteria](plan.md#complete-types-source-criteri
 C7/L5 current typed-artifact and invalidation criterion (Open): Serialize actual typed core, type environment, constraint ledger, function signature table, generic instantiations, protocol dispatch types, dynamic-boundary and cast/conversion records, layout/schema links, ownership/resource facts and type diagnostics/conformance fixtures. Bind the module to its actual core-input hash; nodes, locals and functions retain their real identities, type/mutability/ownership, latent/thrown effects, capabilities and current constraint/boundary/cast references. The sample artifact's filesystem effect, FileError, module/type/hash values illustrate fields and do not supply facts or grants. Preserve source node/syntax/span/generated-origin chains, resolved binding, profile/target, schema/version and all relevant declared/actual type, effect, ownership/resource and representation evidence. Constraints retain producer rule, dependencies, solution and invalidation; changed nodes, source, resolved declarations/bindings, callers/entries/uses/visibility/exports/argument or transfer premises, schema constraints, profile/target or downstream contracts invalidate affected solutions/boundaries/layout/dispatch and consuming artifacts, rather than silently reusing a solved flag. Required outputs: stable serialized schemas and provenance, current/invalidated fact maps naming actual consumers/rechecks, round-trip and changed-input refusal fixtures. New type forms require artifact-schema updates and fixtures before stable-document use; type changes identify affected Effects, memory safety, profiles, MIR, backends, schemas, AI, stdlib and conformance consumers. This is contract change control, not an extra ordinary-edit permission gate. Reject stale/mismatched/missing source or schema identities, erased actual argument/body types or compatibility premises, dropped origins/latent effects and unsupported type forms concealed by generic metadata.
 <!-- types-source-artifacts:end -->
 
+
+<!-- types-protocol-source-artifacts:start -->
+
+Apply the [complete protocol and dispatch source criteria](plan.md#complete-protocol-and-dispatch-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L8 complete dispatch-artifact criterion (Open): Serialize actual protocol and implementation tables, method signatures, selected dispatch-mode records, applicable multimethod tables, interface-lowering and host-interop records, diagnostics and conformance fixtures with current producer/source/generated/binding/type/effect/capability/profile/target/ABI/schema/provider identities. Preserve all seven L8 diagnostic meanings and actual source failure subjects rather than a requested diagnostic catalog. Later interface/runtime/conformance products retain their actual producing owners; typed serialization cannot fabricate them. Changed protocols, implementations, dispatch functions/cases/priority declarations, types, effects, grants, profiles, target layouts, host contracts or specialization proofs invalidate affected selection and consumers. Required evidence: real round-trip/current-identity checks and missing/stale/tampered/coherently substituted refusal fixtures; a complete flag or nonempty link is not acceptance.
+<!-- types-protocol-source-artifacts:end -->
+
 - [ ] `types/current-evidence-and-remaining-work/types5-integrate-typed-core` types/5: Integrate typed core
 
 Current evidence/status: Open; partial source evidence above is not closure
@@ -158,6 +206,14 @@ Apply the [complete Types source criteria](plan.md#complete-types-source-criteri
 
 C7/L5 typed-core verifier and consumer criterion (Open): Verify after actual expansion/name resolution/Core production and before Effects can claim legality that each node has exactly one current type or diagnostic, all constraints are solved or rejected, function latent effects are present, all nontrivial conversions have cast records, Dynamic boundaries are profile-marked, schema-derived types reference source schemas, required layout facts exist and source/generated origins survive. Malformed typed-core artifacts refuse with C7-VERIFY and prevent downstream legality claims. Typed core feeds actual Effects and ownership/safety/profile/capability validation; it is not target-lowering authority until those required checks pass. MIR/lowering fixtures must preserve the checked type facts and generic/dispatch/schema/boundary contracts; actual later checks consume current artifacts, not fabricated summaries or completed-component prerequisites. Required outputs: positive typed-core emission for literals, calls, functions, records, unions, matches, protocols, generics, dynamic/schema/ownership/linear surfaces; deterministic constraint/annotation diagnostics; accepted/rejected boundary, cast/unsafe, layout/schema, stale-artifact and verifier-tamper fixtures; actual producer/verifier/consumer records and source/generated-origin diagnostic goldens. Preserve all ten C7 meanings (TYPE-MISMATCH, ANNOTATION, DYNAMIC, CAST, NULLABILITY, GENERIC, PROTOCOL, LAYOUT, SCHEMA, VERIFY) and all eight L5 meanings (TYPE-MISMATCH, ANNOTATION-REQUIRED, DYNAMIC-FORBIDDEN, CAST-UNSAFE, UNINIT-READ, LINEAR-DUP, SCHEMA-WEAKEN, LATENT-EFFECT-MISSING). C7 diagnostics retain core node, syntax ID, source span, expected/actual types, active profile, target, relevant binding, generated-origin chain and remediation. These clauses require future real results and artifacts; source propositions, structural checks and existing partial Dynamic inference do not prove type-system/component, compiler-stage, migration, release or final-count completion. Earlier independent reviews retain exact subjects/scopes and do not accept these new appends; no compiler/helper/runtime/provider/broker/controller/probe execution is authorized or reported here.
 <!-- types-source-verification:end -->
+
+
+<!-- types-protocol-source-composition:start -->
+
+Apply the [complete protocol and dispatch source criteria](plan.md#complete-protocol-and-dispatch-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L8 actual checked-dispatch composition criterion (Open): Compose actual source protocol definitions/extensions, typed method/implementation selection, visible effects and separate grants, profile decisions, selected interface/runtime artifacts and verified downstream consumers. Owner fixtures cover definition/extension, direct/dictionary/vtable/hosted dynamic and rejected reflective dispatch, call-site implementation/upper-bound effects, kernel/firmware/hardware open-dispatch refusals, actual host null/exception normalization, proved specialization with preserved diagnostics/fallback and artifact mode/implementation identity. Keep all required mode/interface/profile surfaces visible; representative fixtures or table presence cannot accept complete L8. Required evidence: actual positive/refusal program/artifact/diagnostic/behavior comparisons and current source/generated provenance; owner fixture construction precedes independent final conformance and no universal optimizer or native runtime is a prerequisite for valid unspecialized portable dispatch.
+<!-- types-protocol-source-composition:end -->
 
 <!-- types-implementation-tasks:end -->
 

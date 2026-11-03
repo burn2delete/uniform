@@ -147,6 +147,14 @@ Complete concurrency runtime behavior criterion (Open): Execute admitted structu
 <!-- concurrency-source-execution:end -->
 
 
+
+<!-- runtime-protocol-source-host:start -->
+
+Apply the [complete protocol and dispatch source criteria](../types-workflow/plan.md#complete-protocol-and-dispatch-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current source/interface entailment and implementation acceptance remain pending.
+
+L8 actual host dispatch normalization criterion (Open): At the selected foreign/host implementation boundary, execute the declared host type/nullability/exception/ownership/runtime contract and normalize actual returned nulls, exceptions and failure-resource behavior into the typed Gravity boundary before safe/non-null core consumption. Preserve method effects, runtime dependencies and real cleanup/lifetime obligations; GC/process exit cannot replace required resource behavior. Required evidence: actual permitted foreign-method values, declared Option absence, normalized typed failures and ordered resource traces, plus rejected undeclared null/exception/type/lifetime/runtime contracts under L8-HOST-DISPATCH. Types emits/checks boundary facts; Runtime owns real conversion/normalization, without adopting a new host class/callback facility or enabling held native/provider execution.
+<!-- runtime-protocol-source-host:end -->
+
 - [ ] `runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution` Connect distributed/AI replay and interactive execution
 
 Status: Open
