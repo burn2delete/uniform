@@ -107,11 +107,16 @@ and current work. No duplicate review or owner notification is initiated here.
 ## Current-main source view
 
 The current-main port keeps the historical proposal bytes and candidate task
-source pins intact. `current-source-view.edn` records the exact transition from
-the PR560 candidate (`24c2b6f`) to the composed current source checkpoint
-`c6044c5eac93d358ca2bf8ff1351d83496767eb0`. It binds every task path, marker,
-candidate hash, current hash, canonical row order and unique task ID. All
-current rows remain unchecked and Open (including the explicitly partial
+source pins intact. `current-source-view.edn` retains the PR560 candidate
+(`24c2b6f`) as historical evidence and authenticates the current PR565 source
+checkpoint `10aebae8d060e4cc901e97ed2cfe9ea3f1dba659` (tree
+`552a2bd0f50d53928aef5dffd085656dbe7bc17a`). Its manifest bridge is the
+PR565 application `2cbafb8c23588c299b28c36f315b3105e1270cd5` (tree
+`29dd8a9c669b92af5ba5bcdbec954a1b190e28df`). Runtime provenance is chained
+from `8e660885` through `42c34ab5` to `10aebae8`; the former `5a93ad98`
+snapshot is historical receipt evidence only. The view binds every task path,
+marker, candidate hash, current hash, canonical row order and unique task ID.
+All current rows remain unchecked and Open (including the explicitly partial
 Expand status), and the source view remains proposal-only.
 
 The current-source checker validates both immutable Git trees, the preserved
@@ -122,6 +127,11 @@ the retired task projection helper:
 ```bash
 clojure -M tools/safety_task_source_view.clj --check
 ```
+
+The current source-view bytes are SHA256
+`7355c9e48e6f0329ced69e521fe6174f060d6cf20ff306cbf514bc535cc58b62`; the
+checker bytes are SHA256
+`bce44197a5e5f37ff1d49932e4478fe1a9a099d9fbc081b7c8a4a8279cefdbd3`.
 
 This view does not replace the historical manifest-backed checker. The
 preserved PR445 applying manifest is not available in Git, and that checker
