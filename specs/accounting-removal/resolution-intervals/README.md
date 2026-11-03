@@ -36,8 +36,9 @@ exact source checkpoint, logs, and nonclaims are in
 
 ## Conformance and acceptance limits
 
-The focused interval controls passed 4 tests/15 assertions. They use synthetic
-bodies and digest DATA; they do not run a Bootstrap, native hash, compiler,
+The focused interval controls passed 11 tests/237 assertions, including
+diagnostic failure, scope, repetition, and live callback controls. They use
+synthetic bodies and digest DATA; they do not run a Bootstrap, native hash, compiler,
 foreign callback, genuine Reader, or hosted Resolution workload. The historical
 PR697 Resolution run remains a nonpass record and is not replaced by this
 source-only evidence. Independent review and current-head CI remain required.

@@ -11,18 +11,38 @@
   :original-static-artifact "13043481814"
   :original-macro-run "41216108296"
   :status :historical-nonpass}
+ :authored-comparison
+ {:base "aa503b03136033a3cc932f555dc1692978d3720e"
+  :base-tree "069b737c5b8973bb57ff974df89a06dd4db452d7"
+  :head "7f01d36efe09e2a4ee47aa9d3334113f6713827a"
+  :head-tree "49c8d3751482d5aa6bd114bb346ae3493d21b3d7"
+  :path-count 11
+  :additions 1519
+  :deletions 31
+  :paths
+  ["bootstrap/clojure/test/gravity/development_test_runner.clj"
+   "bootstrap/clojure/test/gravity/self_hosting/sh06_unmetered_resolution_test.clj"
+   "specs/accounting-removal/macro-progress/README.md"
+   "specs/accounting-removal/resolution-intervals/README.md"
+   "specs/reader-workflow/lint-source-alias-reader.md"
+   "tools/ci/lint_context.clj"
+   "tools/ci/lint_facade_test.clj"
+   "tools/ci/progress_isolation_test.clj"
+   "tools/ci/progress_test.clj"
+   "tools/ci/resolution_interval_test.clj"
+   "tools/ci/run.clj"]
+  :accounting-note
+  "All eleven authored paths are represented by the current source port; interval and documentation counts are adapted to the current owner APIs, while the historical 042f candidate frame remains separate."}
  :current-base
- {:commit "d351310d5821a983fac2ad0fee4c0be96711b4b4"
-  :tree "1d7c95cf054bbc3e1719bc39cb35ac7bbaf13049"}
+ {:commit "bc1edfb9bdb7e17e4ceb94a36054617ab4e96a02"
+  :tree "dc46485162e6bd0945dda80cbd9f4b0cc5b8bb55"}
  :declared-source
  {:commit "392c3f5f613f05d1f7301264e31ba34fc4aac944"
   :tree "49978feb45f39f2ec1f98061a1c17aa8904d7588"}
  :source-checkpoint
- {:commit "8cad807dbd99317baf0a9da622bb9d9ef99650a1"
-  :tree "b972c6620b59f753a8c0dca85464e0cfced2a826"
-  :parent "adc6ebb200252fb6a18dacd617fdb24c7de96f85"
-  :merge-parents ["392c3f5f613f05d1f7301264e31ba34fc4aac944"
-                  "d351310d5821a983fac2ad0fee4c0be96711b4b4"]
+ {:commit "17c6b1b122d58f43aa546621ffe7679a8c62b663"
+  :tree "79463c716041b421173ffb4dd2c1939cb7df413c"
+  :parent "4ac42c85c4224a132ba0bd589cdf5c5d6ae19047"
   :owned-path-count 12
   :paths
   {"bootstrap/clojure/test/gravity/development_test_runner.clj"
@@ -32,7 +52,7 @@
    "specs/accounting-removal/macro-progress/README.md"
    "d6bb54a26471539b0b92c7775975808c8a170417"
    "specs/accounting-removal/pr697-current-port.edn"
-   "e7161be85b6de317cf7ec7f2bf3904d19da307e1"
+   "7c680a05b0fea08789557659314582364a8787e8"
    "specs/accounting-removal/resolution-intervals/README.md"
    "c28d743821e58a9994a3cb52c7ce5fa9ff488160"
    "specs/reader-workflow/lint-source-alias-reader.md"
@@ -42,11 +62,11 @@
    "tools/ci/lint_facade_test.clj"
    "e5618c7af01e92caa977052bb1be92730cbae2fe"
    "tools/ci/progress_isolation_test.clj"
-   "06b40909c6119f5c2fa03a2c55c031f29c31f3f8"
+   "0720d9b8aba97a7f13f3c5fd65990a2f33d0edac"
    "tools/ci/progress_test.clj"
-   "91cbbadbc70e7fe9b7ade87ffb3b2def33264824"
+   "f072d003d6283b4093b98b82cee6ce1d6839e941"
    "tools/ci/resolution_interval_test.clj"
-   "3787a7ae4cdd0b7cc13c4e6361888a54243e6ded"
+   "fa3bf76519e6b8a71915ac11d6e78a8e8fa5969d"
    "tools/ci/run.clj"
    "e675daa543fedc9515afdf5b0ae43ea04e2951df"}}
  :current-owner-ids
@@ -59,11 +79,11 @@
  :focused-checks
  [{:name :progress-runner
    :command "clojure -J-Xmx256m -M tools/ci/progress_test.clj"
-   :log "/tmp/uniform-pr697-corrected-progress.log"
-   :result "6 tests, 28 assertions, 0 failures, 0 errors; includes composition timing/result-delivery control"}
+   :log "/tmp/uniform-pr697-formatted-progress.log"
+   :result "12 tests, 165 assertions, 0 failures, 0 errors; includes composition timing/result-delivery control and restored diagnostic controls"}
   {:name :composition
    :command "clojure -J-Xmx256m -M tools/ci/progress_test.clj"
-   :log "/tmp/uniform-pr697-corrected-progress.log"
+   :log "/tmp/uniform-pr697-formatted-progress.log"
    :result "composition-preserves-timing-and-single-result-delivery passed"}
   {:name :resolution-digest-interval-hook
    :command "clojure -J-Xmx512m -M:dev-test --progress --namespace gravity.self-hosting.sh06-unmetered-resolution-test --exact digest-count-quota-is-gone-but-complete-ordered-requests-remain-required"
@@ -71,12 +91,12 @@
    :result "1 test, 5 assertions, 0 failures, 0 errors"}
   {:name :resolution-intervals
    :command "clojure -J-Xmx256m -M tools/ci/resolution_interval_test.clj"
-   :log "/tmp/uniform-pr697-corrected-interval.log"
-   :result "4 tests, 15 assertions, 0 failures, 0 errors"}
+   :log "/tmp/uniform-pr697-formatted-interval.log"
+   :result "11 tests, 237 assertions, 0 failures, 0 errors; includes digest/artifact failure, scope, repetition, and callback controls"}
   {:name :progress-isolation
    :command "clojure -J-Xmx256m -M tools/ci/progress_isolation_test.clj"
-   :log "/tmp/uniform-pr697-corrected-isolation.log"
-   :result "2 tests, 7 assertions, 0 failures, 0 errors"}
+   :log "/tmp/uniform-pr697-formatted-isolation.log"
+   :result "3 tests, 16 assertions, 0 failures, 0 errors; includes failed-inner/outer-state preservation"}
   {:name :facade-context
    :command "PATH=/tmp/acc08-controls-01a183dd/kondo-2025.10.23:$PATH clojure -J-Xmx768m -Sdeps '{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\" \"tools\"]}' -M tools/ci/lint_facade_test.clj"
    :log "/tmp/uniform-pr697-corrected-lint.log"
@@ -102,7 +122,7 @@
   :main-delta-preserved true}
  :formatting-check
  {:command "clojure -J-Xmx256m -Sdeps '{:deps {dev.weavejester/cljfmt {:mvn/version \"0.13.4\"}}}' -M -m cljfmt.main check tools/ci"
-  :log "/tmp/uniform-pr697-corrected-formatter.log"
+  :log "/tmp/uniform-pr697-formatted-formatter.log"
   :result "exit 0; all source files formatted correctly"
   :previous
   {:log "/tmp/uniform-pr697-cljfmt-tools-ci-repair.log"

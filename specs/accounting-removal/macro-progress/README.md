@@ -36,9 +36,10 @@ nonclaims are recorded in `../pr697-current-port.edn`.
 
 ## Conformance and acceptance limits
 
-Focused runner controls passed 6 tests/28 assertions, including the timing and
-single-result-delivery composition control; isolation controls passed 2 tests/7
-assertions. These controls use synthetic Vars and writers; they do not run
+Focused runner controls passed 12 tests/165 assertions, including the timing
+and single-result-delivery composition control and the restored diagnostic
+failure controls; isolation controls passed 3 tests/16 assertions. These
+controls use synthetic Vars and writers; they do not run
 Bootstrap, native code, a selected macro workload, or a hosted CI job. The
 historical PR697 macro/static nonpasses remain historical evidence and are not
 reclassified by this source port. Independent review of the exact checkpoint
