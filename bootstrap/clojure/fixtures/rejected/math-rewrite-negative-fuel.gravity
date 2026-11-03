@@ -1,0 +1,13 @@
+(ns math.rewrite-negative-fuel
+  (:profile :native)
+  (:target :jvm)
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:proof
+           {:termination-report {:strategy :bounded-fuel
+                                 :fuel -1
+                                 :deterministic? true
+                                 :unbounded? false
+                                 :exhaustion-behavior :emit-candidate-trace}}}}))

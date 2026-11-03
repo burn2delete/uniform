@@ -83,7 +83,23 @@
                                :plan-assembly-invoked? true
                                :plan-assembly-generic-bridge-residual? true
                                :retirement-objective
-                               :retire-clojure-seed})
+                               :retire-clojure-seed}
+                              ;; Version 2 is an explicit, authenticated owner
+                              ;; handoff.  Preserve its observed function
+                              ;; identity in the plan, while leaving the
+                              ;; legacy route unchanged for every non-native-2
+                              ;; value (including boxed Integer and nil).
+                              (when (and (identical? Long
+                                                     (class (:source-contract-version
+                                                             compiler-artifact-binding)))
+                                         (== 2 (.longValue ^Long
+                                                            (:source-contract-version
+                                                             compiler-artifact-binding))))
+                                {:expression-lowering-source-contract-version 2
+                                 :expression-lowering-functions-semantic-hash
+                                 (:functions-semantic-hash compiler-artifact-binding)
+                                 :expression-lowering-function-count
+                                 (:function-count compiler-artifact-binding)}))
                    :module (select-keys module
                                         [:module :source-path :profile :target
                                          :effects :capabilities :providers
