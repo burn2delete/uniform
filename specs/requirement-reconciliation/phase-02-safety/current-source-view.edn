@@ -70,13 +70,13 @@
    {:path "specs/runtime-workflow/tasks.md" :sha256 "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972"}]}
  :current-source
 
- {:commit "3e5d74d014a0105a3887dc044ead4da75b1f03ac"
-  :tree "de6f0bccad60c7af68bc7eb53e1d63021f457b6e"
+ {:commit "2cbafb8c23588c299b28c36f315b3105e1270cd5"
+  :tree "29dd8a9c669b92af5ba5bcdbec954a1b190e28df"
   :domain-task-source-transition
   {:path "specs/domains-workflow/tasks.md"
-   :manifest-commit "3e5d74d014a0105a3887dc044ead4da75b1f03ac"
-   :manifest-tree "de6f0bccad60c7af68bc7eb53e1d63021f457b6e"
-   :manifest-sha256 "722cefbbbb3dabb40ae8667b6a5af9ece33f50655dc8bdc0a6bc37f3813be05f"
+   :manifest-commit "2cbafb8c23588c299b28c36f315b3105e1270cd5"
+   :manifest-tree "29dd8a9c669b92af5ba5bcdbec954a1b190e28df"
+   :manifest-sha256 "d08d0f24edf90bce081d123e4d6d1de29fb3e263fef3f62d8a1fd4aff173964e"
    :current-ref "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659"
    :current-tree "552a2bd0f50d53928aef5dffd085656dbe7bc17a"
    :current-sha256 "3d8989b72d00461931e400b5617b9bea090c63265cfee553e12d7b3cd6bc88dc"

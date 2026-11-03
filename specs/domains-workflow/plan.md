@@ -98,8 +98,12 @@ wording, including the owning Types and Runtime task criteria. The known
 current-main predecessor is the immutable d544 checkpoint
 `d544539eefaea6b16aecd724b54d61a9b0ec1f3d` (tree
 `9fac2c4d1ebfb5294f598860917bc779b2147ebf`). The manifest application is
-`3e5d74d014a0105a3887dc044ead4da75b1f03ac` (tree
-`de6f0bccad60c7af68bc7eb53e1d63021f457b6e`). The earlier 2d084/585298
+`2cbafb8c23588c299b28c36f315b3105e1270cd5` (tree
+`29dd8a9c669b92af5ba5bcdbec954a1b190e28df`). Its MATH9 source-version bridge
+uses current-main `4d8a085a9b68bb8c349869c574b94ee4cea81406` and retains the
+older dcf337 snapshot as historical provenance only; the unsupported strict
+tan-occurrence example is not treated as termination proof, and selected
+strategies must supply finite evidence. The earlier 2d084/585298
 composition attempt remains historical receipt evidence only; it is not the
 current source. Later current-source transitions must preserve these joins by
 normal composition; no source hash is silently renewed. The checker does not

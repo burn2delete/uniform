@@ -33,7 +33,7 @@
   :gap-predecessor-tree "b90613cc0344b4b4a8bde0ff1afc61153723becf"}
  :source-view
  {:path "specs/requirement-reconciliation/domain-current-source-view.edn"
-  :sha256 "ad06ab660e049d98a354778270af3b15c8eeff94d4f723f92177a893623702ec"
+  :sha256 "12b6d8c3b3e9ccca72faf6caec36e95b1db89509bb7f9252c3a722426a8d5cae"
   :checker-path "tools/domain_current_source_view.clj"
   :checker-sha256
   "d0e3ac50609469fd5217ad8d6c7a07b5c9c6128d42ab94f64d6bb75e0dea0647"
@@ -42,9 +42,9 @@
   "bee7e00ce45f471c2375f001464a253845282e8518c38074dc74f1a517715f75"}
  :current-manifest-transition
  {:path "contracts/requirement-reconciliation.edn"
-  :commit "3e5d74d014a0105a3887dc044ead4da75b1f03ac"
-  :tree "de6f0bccad60c7af68bc7eb53e1d63021f457b6e"
-  :sha256 "722cefbbbb3dabb40ae8667b6a5af9ece33f50655dc8bdc0a6bc37f3813be05f"
+  :commit "2cbafb8c23588c299b28c36f315b3105e1270cd5"
+  :tree "29dd8a9c669b92af5ba5bcdbec954a1b190e28df"
+  :sha256 "d08d0f24edf90bce081d123e4d6d1de29fb3e263fef3f62d8a1fd4aff173964e"
   :domain-current-ref "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659"
   :domain-current-tree "552a2bd0f50d53928aef5dffd085656dbe7bc17a"
   :domain-current-sha256 "3d8989b72d00461931e400b5617b9bea090c63265cfee553e12d7b3cd6bc88dc"

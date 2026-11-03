@@ -68,9 +68,9 @@
   :current-source-tree "9fac2c4d1ebfb5294f598860917bc779b2147ebf"
   :current-source-baseline "a1b991be499d50579a8b4366976c519ae8949224"
   :current-manifest-path "contracts/requirement-reconciliation.edn"
-  :current-manifest-sha256 "722cefbbbb3dabb40ae8667b6a5af9ece33f50655dc8bdc0a6bc37f3813be05f"
+  :current-manifest-sha256 "d08d0f24edf90bce081d123e4d6d1de29fb3e263fef3f62d8a1fd4aff173964e"
   :current-main-manifest-sha256 "c47151307b2dd2e20855f5837053a6a63806f2ed81d0acd5fadaa653c3952a38"
-  :candidate-source-git-tree "de6f0bccad60c7af68bc7eb53e1d63021f457b6e"
+  :candidate-source-git-tree "29dd8a9c669b92af5ba5bcdbec954a1b190e28df"
   :task-paths ["specs/types-workflow/tasks.md"
                "specs/runtime-workflow/tasks.md"
                "specs/domains-workflow/tasks.md"]
@@ -78,7 +78,7 @@
                  "specs/runtime-workflow/tasks.md" "d4b3a3c875f961b5828e8cceda7ecdf106af4527c64fa07ad6c6e1e049d0868d"
                  "specs/domains-workflow/tasks.md" "3d8989b72d00461931e400b5617b9bea090c63265cfee553e12d7b3cd6bc88dc"}
   :plan-path "specs/domains-workflow/plan.md"
-  :plan-sha256 "77ebba019b2bb25c2d62ef99db107178fecd0a677116b2a253c195919f84574c"
+  :plan-sha256 "5c7ae4d9dc313e0f6049572e711562450f963ea13530937c3302f82699e3a747"
   :source-joins {:normative-paths 9
                  :join-kinds 5
                  :task-joins 5
@@ -90,15 +90,27 @@
   {:from "d544539eefaea6b16aecd724b54d61a9b0ec1f3d"
    :from-tree "9fac2c4d1ebfb5294f598860917bc779b2147ebf"
    :from-manifest-sha256 "c47151307b2dd2e20855f5837053a6a63806f2ed81d0acd5fadaa653c3952a38"
-   :to "3e5d74d014a0105a3887dc044ead4da75b1f03ac"
-   :to-tree "de6f0bccad60c7af68bc7eb53e1d63021f457b6e"
-   :to-manifest-sha256 "722cefbbbb3dabb40ae8667b6a5af9ece33f50655dc8bdc0a6bc37f3813be05f"
+   :to "2cbafb8c23588c299b28c36f315b3105e1270cd5"
+   :to-tree "29dd8a9c669b92af5ba5bcdbec954a1b190e28df"
+   :to-manifest-sha256 "d08d0f24edf90bce081d123e4d6d1de29fb3e263fef3f62d8a1fd4aff173964e"
    :task-source-bridges [19 19]
    :changed-task-source-paths ["specs/domains-workflow/tasks.md"
                                "specs/runtime-workflow/tasks.md"
                                "specs/types-workflow/tasks.md"]
    :source-tree-unchanged true
-   :source-baseline-unchanged true}}
+   :source-baseline-unchanged true
+   :source-version-bridges
+   {:count 7
+    :preserved-other-bridges true
+    :math9-current-successor
+    {:baseline-ref "a1b991be499d50579a8b4366976c519ae8949224"
+     :applying-ref "4d8a085a9b68bb8c349869c574b94ee4cea81406"
+     :applying-tree "2366861f1514b0cb03a7a869b2af365d3816df3c"
+     :applying-blob "cda65cb93e21f483fc1dafd8dc429f38198940d6"
+     :live-sha256 "543cfc52291e89d60c0a80c0c056221c098bc9aed11d8fb7f3e45e999322bff3"
+     :historical-applying-ref "dcf3378130ef92c37105aeda17b3badfec6619dc"
+     :semantic-delta :semantic-termination-evidence-and-unsupported-example-removal
+     :qualification :source-reconciliation-only}}}
  :valuable-slices
  {:task-interface
   {:s1-s9-source-clauses :ported
@@ -197,9 +209,9 @@
   {:from "d544539eefaea6b16aecd724b54d61a9b0ec1f3d"
    :from-tree "9fac2c4d1ebfb5294f598860917bc779b2147ebf"
    :from-sha256 "c47151307b2dd2e20855f5837053a6a63806f2ed81d0acd5fadaa653c3952a38"
-   :to "3e5d74d014a0105a3887dc044ead4da75b1f03ac"
-   :to-tree "de6f0bccad60c7af68bc7eb53e1d63021f457b6e"
-   :to-sha256 "722cefbbbb3dabb40ae8667b6a5af9ece33f50655dc8bdc0a6bc37f3813be05f"
+   :to "2cbafb8c23588c299b28c36f315b3105e1270cd5"
+   :to-tree "29dd8a9c669b92af5ba5bcdbec954a1b190e28df"
+   :to-sha256 "d08d0f24edf90bce081d123e4d6d1de29fb3e263fef3f62d8a1fd4aff173964e"
    :task-source-bridges [19 19]
    :source-version-bridges [7 7]
    :changed-task-source-paths ["specs/domains-workflow/tasks.md"

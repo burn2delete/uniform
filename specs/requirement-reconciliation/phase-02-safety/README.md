@@ -111,8 +111,8 @@ source pins intact. `current-source-view.edn` retains the PR560 candidate
 (`24c2b6f`) as historical evidence and authenticates the current PR565 source
 checkpoint `10aebae8d060e4cc901e97ed2cfe9ea3f1dba659` (tree
 `552a2bd0f50d53928aef5dffd085656dbe7bc17a`). Its manifest bridge is the
-PR565 application `3e5d74d014a0105a3887dc044ead4da75b1f03ac` (tree
-`de6f0bccad60c7af68bc7eb53e1d63021f457b6e`). Runtime provenance is chained
+PR565 application `2cbafb8c23588c299b28c36f315b3105e1270cd5` (tree
+`29dd8a9c669b92af5ba5bcdbec954a1b190e28df`). Runtime provenance is chained
 from `8e660885` through `42c34ab5` to `10aebae8`; the former `5a93ad98`
 snapshot is historical receipt evidence only. The view binds every task path,
 marker, candidate hash, current hash, canonical row order and unique task ID.
@@ -129,7 +129,7 @@ clojure -M tools/safety_task_source_view.clj --check
 ```
 
 The current source-view bytes are SHA256
-`53849a95212296bef50c36c4483a1327051e9a8aa408b094dfe9e4008e042dde`; the
+`7355c9e48e6f0329ced69e521fe6174f060d6cf20ff306cbf514bc535cc58b62`; the
 checker bytes are SHA256
 `bce44197a5e5f37ff1d49932e4478fe1a9a099d9fbc081b7c8a4a8279cefdbd3`.
 

@@ -125,7 +125,8 @@
 ;; MATH9 row intentionally remains the dcf337 snapshot; the current source
 ;; bridge is authenticated only by the later PR565 successor below.
 (def expected-pr564-math9-source-bridge
-  {:path requirement-sources/math9-rewrite-termination-path
+  {:document-id "MATH9"
+   :path requirement-sources/math9-rewrite-termination-path
    :kind requirement-sources/math9-rewrite-termination-kind
    :review-state :proposed
    :baseline-ref "a1b991be499d50579a8b4366976c519ae8949224"
@@ -164,10 +165,10 @@
     :blob "367905fc9b45001865cc5a2e59b4e3f07c16cb6d"
     :sha256 "c47151307b2dd2e20855f5837053a6a63806f2ed81d0acd5fadaa653c3952a38"}
    :applying
-   {:commit "4b1302e348059fdc63881f542a926a395b5d909a"
-    :tree "309bd9fda58dc38f8ced8a3ae2fdf1170affaf69"
-    :blob "4a21a0869792e83440c66a2d21ed5591bf1c97a1"
-    :sha256 "515a8d623d3ce72d4e61e1a6ef0c56ceb7fa6475d312e014c1480a8683167c19"}
+   {:commit "2cbafb8c23588c299b28c36f315b3105e1270cd5"
+    :tree "29dd8a9c669b92af5ba5bcdbec954a1b190e28df"
+    :blob "b41348db598b8d6c88c9f6e0c5775ae55fabada8"
+    :sha256 "d08d0f24edf90bce081d123e4d6d1de29fb3e263fef3f62d8a1fd4aff173964e"}
    :task-source-bridge-extension
    {:updated-paths ["specs/domains-workflow/tasks.md"
                     "specs/runtime-workflow/tasks.md"

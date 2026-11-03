@@ -17,7 +17,7 @@
                            :tree-imported false}
  :artifacts
   {:source-view {:path "specs/requirement-reconciliation/phase-02-safety/current-source-view.edn"
-                :sha256 "53849a95212296bef50c36c4483a1327051e9a8aa408b094dfe9e4008e042dde"}
+                :sha256 "7355c9e48e6f0329ced69e521fe6174f060d6cf20ff306cbf514bc535cc58b62"}
   :checker {:path "tools/safety_task_source_view.clj"
             :sha256 "bce44197a5e5f37ff1d49932e4478fe1a9a099d9fbc081b7c8a4a8279cefdbd3"}}
  :conservation {:source-documents 16
@@ -36,9 +36,9 @@
   :unchanged-task-sources [:build]
   :current-manifest-task-transition
   {:path "contracts/requirement-reconciliation.edn"
-   :commit "3e5d74d014a0105a3887dc044ead4da75b1f03ac"
-   :tree "de6f0bccad60c7af68bc7eb53e1d63021f457b6e"
-   :sha256 "722cefbbbb3dabb40ae8667b6a5af9ece33f50655dc8bdc0a6bc37f3813be05f"
+   :commit "2cbafb8c23588c299b28c36f315b3105e1270cd5"
+   :tree "29dd8a9c669b92af5ba5bcdbec954a1b190e28df"
+   :sha256 "d08d0f24edf90bce081d123e4d6d1de29fb3e263fef3f62d8a1fd4aff173964e"
    :domain-current-ref "10aebae8d060e4cc901e97ed2cfe9ea3f1dba659"
    :domain-current-tree "552a2bd0f50d53928aef5dffd085656dbe7bc17a"
    :domain-current-sha256 "3d8989b72d00461931e400b5617b9bea090c63265cfee553e12d7b3cd6bc88dc"

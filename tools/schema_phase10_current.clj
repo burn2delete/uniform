@@ -31,11 +31,11 @@
 (def candidate-source-git-tree
   "552a2bd0f50d53928aef5dffd085656dbe7bc17a")
 (def candidate-manifest-sha
-  "515a8d623d3ce72d4e61e1a6ef0c56ceb7fa6475d312e014c1480a8683167c19")
+  "d08d0f24edf90bce081d123e4d6d1de29fb3e263fef3f62d8a1fd4aff173964e")
 (def current-task-sha
   "3d8989b72d00461931e400b5617b9bea090c63265cfee553e12d7b3cd6bc88dc")
 (def current-plan-sha
-  "acbeb7863fc5000af2eb2c3e61cf261dcf083f0ed02b3ef41be7f9a5e2dee94a")
+  "5c7ae4d9dc313e0f6049572e711562450f963ea13530937c3302f82699e3a747")
 (def current-source-tree "5b62819e511bfc7e6b5eba0527d8c9b5883c5572")
 (def current-source-git-tree
   "552a2bd0f50d53928aef5dffd085656dbe7bc17a")
