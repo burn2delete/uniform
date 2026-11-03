@@ -10,11 +10,15 @@ Owner: ACC11. Contract basis: C11, C12, C13, C14, B1 and OWN-06 PR545
 
 The four-argument `p15-s23-stage2-c13-c14-b1-packet-from-c11!` forwards
 `[c11-artifact checked-core context interface-header]` to the existing current
-public C11 owner. The supported public header is exactly
-`{:interface :gravity/c11-mir :version 2}`. The owner performs fresh C11 v2
-construction and report production before downstream work. The downstream
-selector derives the version from that owner-produced report, checks exact
-header/report parity, and never selects from caller-supplied report labels.
+public C11 owner. The downstream packet selector supports the explicit
+`{:interface :gravity/c11-mir :version 2}` header and performs fresh C11 v2
+construction and report production before downstream work. Separately, the
+public C11 owner exposes an explicit v3 route for the closed flat-Bool
+literal-sequence family; that bounded owner transaction is recorded in
+`current-flat-bool-public-transaction-receipt.edn` and is not claimed here as
+a general C13/C14/B1 selector route. The downstream selector derives the
+version from its owner-produced report, checks exact header/report parity, and
+never selects from caller-supplied report labels.
 
 The selected v2 source contract and rule are compared against both the original
 C11 artifact and the fresh report. The checked-core ingress is compared across
