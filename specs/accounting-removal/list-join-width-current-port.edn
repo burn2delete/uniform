@@ -3,10 +3,10 @@
  :current-base {:commit "d59a7df90f91b578c1bb160a59ec1ef865abf25b"
                 :tree "c25b4efebc5fb76befb35edce88857012be236ad"}
  :focused-repair-checkpoint
- {:commit "004762f91364ac3dca25a54d869957be13da7612"
-  :tree "7c9eae8a9c3ea86b41c2305cac53d3d80b5c9677"
+ {:commit "9b8072f4977fc8f050e9dac1da1d50d5bd62d52d"
+  :tree "832dbc69611c2b34709adb09895c3eece6a8e283"
   :production-inputs-unchanged true
-  :focused-tests {:tests 3 :assertions 146 :failures 0 :errors 0}}
+  :focused-tests {:tests 3 :assertions 188 :failures 0 :errors 0}}
  :historical-inputs
  {:pr611 {:head "edef2c00c103df4b5222cf44124c6e1d707820e4"
           :tree "7f12fa541cf26179ac59b6bdb95c666674ecdfb2"
@@ -31,6 +31,7 @@
              :typed-compile-node-and-runtime-branch-identity
              :invalid-member-representation
              :exact-malformed-reasons
+             :complete-original-late-invalid-matrix
              :late-invalid-2049-member
              :nested-list-member
              :homogeneous-extra-element-types
@@ -40,7 +41,7 @@
  :checks
  {:command "clojure -J-Xmx1g -M:dev-test --namespace gravity.self-hosting.list-join-width-current-port-test --fail-fast"
   :tests 3
-  :assertions 146
+  :assertions 188
   :failures 0
   :errors 0}
  :nonclaims [:authoritative-source-migration

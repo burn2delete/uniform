@@ -29,6 +29,11 @@ three historical proposals:
   invalid member of a 2049-element list, and forged checked-member counts are
   rejected or not applicable with exact current reasons by the C7, Effects,
   emitter, context, and typed-compile consumers.
+- The complete original late-invalid matrix is retained at both widths 1025
+  and 2049 for keyword, unknown, nil, and nested List members. Standalone
+  `:gravity.type/list`, missing homogeneous `:element-type`, malformed outer
+  lists, and finite `[:gravity.type/unknown]` retain their exact atomic/list
+  diagnostics.
 
 The controls are in
 `bootstrap/clojure/test/gravity/self_hosting/list_join_width_current_port_test.clj`
@@ -40,11 +45,11 @@ evidence; no stale source hash or work-budget assertion was refreshed.
 
 ```text
 clojure -J-Xmx1g -M:dev-test --namespace gravity.self-hosting.list-join-width-current-port-test --fail-fast
-3 tests, 146 assertions, 0 failures, 0 errors
+3 tests, 188 assertions, 0 failures, 0 errors
 ```
 
-The focused repair is checkpointed at `004762f91364ac3dca25a54d869957be13da7612`
-(tree `7c9eae8a9c3ea86b41c2305cac53d3d80b5c9677`). It changes only this test
+The focused repair is checkpointed at `9b8072f4977fc8f050e9dac1da1d50d5bd62d52d`
+(tree `832dbc69611c2b34709adb09895c3eece6a8e283`). It changes only this test
 namespace; the Effects and emitter source inputs remain byte-identical. The
 receipt records that checkpoint before this metadata update.
 
