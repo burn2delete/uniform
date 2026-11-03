@@ -6,7 +6,11 @@
              :refer [canonicalizer-version execution-request-fields fail!
                      require-keyword-set! require-sha256! schema-version
                      sha256-id? sorted-sha-vector! validate-authority!]]
-            [gravity.pass-execution :as pass-execution]))
+            [gravity.pass-execution :as pass-execution]
+            [gravity.pass-execution.contract :as pass-contract]))
+
+(def ^:private default-pass-contract-validator
+  pass-execution/validate-pass-contract!)
 
 (defn pass-request-fields
   [request]
@@ -14,15 +18,26 @@
     (fail! "C16-KEY" "pass cache request must be a map" {}))
   request)
 
+(defn- validate-stage-request-shape!
+  [request]
+  (when-not (= execution-request-fields (set (keys request)))
+    (fail! "C16-KEY" "pass execution request has unknown or missing fields"
+           {:expected execution-request-fields
+            :observed (set (keys request))}))
+  request)
+
 (defn validate-stage-request!
   [request]
   (let [request (pass-request-fields request)
         contract (:contract request)]
-    (when-not (= execution-request-fields (set (keys request)))
-      (fail! "C16-KEY" "pass execution request has unknown or missing fields"
-             {:expected execution-request-fields
-              :observed (set (keys request))}))
-    (pass-execution/validate-pass-contract! contract)
+    (validate-stage-request-shape! request)
+    ;; The fast path establishes a canonical identity before this second
+    ;; projection.  A redefined facade validator deliberately falls back to
+    ;; the ordinary callback path and must not inherit that context.
+    (when (or (not (pass-contract/validated-pass-contract-identity contract))
+              (not (identical? pass-execution/validate-pass-contract!
+                               default-pass-contract-validator)))
+      (pass-execution/validate-pass-contract! contract))
     (when-not (= (:stage request) (:pass contract))
       (fail! "D1-PIPELINE-ORDER" "request stage differs from pass contract"
              {:stage (:stage request) :pass (:pass contract)}))
@@ -86,10 +101,9 @@
                          (:authority-ceiling contract))
     request))
 
-(defn key-preimage
+(defn- build-key-preimage
   [request]
-  (let [request (validate-stage-request! request)
-        contract (:contract request)
+  (let [contract (:contract request)
         contract-id (pass-execution/pass-contract-id contract)]
     {:artifact :gravity/compiler-pass-cache-key
      :schema-version schema-version
@@ -112,6 +126,22 @@
      :diagnostic-stream-id (:diagnostic-stream-id request)
      :provenance (:provenance request)
      :authority (:authority request)}))
+
+(defn key-preimage
+  [request]
+  (let [request (pass-request-fields request)]
+    (if (identical? pass-execution/validate-pass-contract!
+                    default-pass-contract-validator)
+      (do
+        ;; Preserve the original diagnostic order before entering the context.
+        (validate-stage-request-shape! request)
+        (pass-contract/with-validated-contract-identities
+          [(:contract request)]
+          (fn [_]
+            (build-key-preimage (validate-stage-request! request)))))
+      ;; Preserve injected validator and ID hooks exactly as standalone callers
+      ;; observe them; the default ID path remains the canonical safety check.
+      (build-key-preimage (validate-stage-request! request)))))
 
 (defn request-from-key
   [key]
