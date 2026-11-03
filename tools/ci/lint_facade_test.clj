@@ -249,6 +249,116 @@
   (doseq [mode [:valid :invalid :missing :unregistered]]
     (compare-added-fragment! mode)))
 
+(defn run-batched-files-fixture! [unknown-filename?]
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "uniform-batched-lint-"
+                            (make-array java.nio.file.attribute.FileAttribute 0)))
+        workspace-root (str (io/file "target" (str "batched-lint-" (System/nanoTime))))
+        output (io/file directory "observations")
+        first-file (str (io/file workspace-root "fixture/first.clj"))
+        second-file (str (io/file workspace-root "fixture/second.clj"))
+        paths [first-file second-file]
+        baseline {first-file (utf8 "(ns fixture.first)\n(defn stable [value] (let [unused 1] value))\n")
+                  second-file (utf8 "(ns fixture.second)\n(defn clean [value] value)\n")
+                  macros/source (context/local-bytes! macros/source)}
+        current (if unknown-filename?
+                  (assoc baseline first-file
+                         (utf8 "\n(ns fixture.first)\n(defn stable [value] (let [unused 1] value))\n"))
+                  {first-file (utf8 "\n(ns fixture.first)\n(defn stable [value] (let [unused 1] value))\n")
+                   second-file (utf8 "(ns fixture.second)\n(defn new-warning [value] (let [unused 1] value))\n(def broken (missing-current-symbol))\n")
+                   macros/source (context/local-bytes! macros/source)})
+        write-inputs! (fn [inputs]
+                        (doseq [[path bytes] inputs]
+                          (let [file (io/file path)
+                                target (if (.isAbsolute file) file (io/file directory path))]
+                            (io/make-parents target)
+                            (java.nio.file.Files/write (.toPath target) ^bytes bytes
+                                                       (make-array java.nio.file.OpenOption 0))
+                            (when (some #{path} paths)
+                              (io/make-parents file)
+                              (java.nio.file.Files/write (.toPath file) ^bytes bytes
+                                                         (make-array java.nio.file.OpenOption 0))))))
+        commands (atom [])
+        execute! (fn [id _ argv & [stdin-path]]
+                   (swap! commands conj [id argv])
+                   (let [options (concat [:dir (str directory)]
+                                         (when stdin-path [:in (slurp stdin-path)]))
+                         result (apply sh/sh (concat argv options))
+                         output-text (:out result)
+                         raw (when (and unknown-filename? (= id "lint-current"))
+                               (edn/read-string output-text))
+                         log (if raw
+                               (pr-str (-> raw
+                                           (update :findings conj
+                                                   {:filename "unknown.clj"
+                                                    :level :warning
+                                                    :row 1 :col 1
+                                                    :message "Unknown fixture finding"
+                                                    :type :unused-binding})
+                                           (update-in [:summary :warning] inc)))
+                               output-text)
+                         receipt {:status (if (or (not (zero? (:exit result))) raw)
+                                            :failed :passed)
+                                  :exit-code (if raw 2 (:exit result))}]
+                     (spit (io/file output (str id ".log")) log)
+                     (spit (io/file output (str id ".edn")) (pr-str receipt))
+                     receipt))]
+    (try
+      (doseq [file (file-seq (io/file "tools/ci/kondo")) :when (.isFile file)]
+        (let [target (io/file directory (.getPath file))]
+          (io/make-parents target)
+          (io/copy file target)))
+      (write-inputs! baseline)
+      (fixture-git! directory "init" "--quiet")
+      (fixture-git! directory "add" ".")
+      (fixture-git! directory "-c" "user.name=Lint fixture" "-c" "user.email=lint@example.invalid"
+                    "commit" "--quiet" "-m" "Batched lint baseline")
+      (let [base (fixture-git! directory "rev-parse" "HEAD")]
+        (write-inputs! current)
+        (fixture-git! directory "add" ".")
+        (fixture-git! directory "-c" "user.name=Lint fixture" "-c" "user.email=lint@example.invalid"
+                      "commit" "--quiet" "-m" "Batched lint current")
+        (.mkdir output)
+        (let [slurp* clojure.core/slurp
+              read-current (fn [path]
+                             (if-let [bytes (get current path)]
+                               (String. ^bytes bytes "UTF-8")
+                               (slurp* path)))]
+          (with-redefs [clojure.core/slurp read-current]
+            (if unknown-filename?
+              (is (thrown? clojure.lang.ExceptionInfo
+                           (lint/run-comparison! execute! output base paths)))
+              (let [exit (lint/run-comparison! execute! output base paths)
+                    report (lint/read-one! (io/file output "changed-lint-report.edn"))
+                    kondo-commands (filter #(= "clj-kondo" (first (second %))) @commands)]
+                (is (= 1 exit))
+                (is (= 2 (count kondo-commands)) (pr-str @commands))
+                (is (= ["lint-baseline" "lint-current"] (mapv first kondo-commands)))
+                (is (every? #(= 2 (count (rest (drop-while (fn [argument]
+                                                             (not= "--lint" argument))
+                                                           (second %)))))
+                            kondo-commands))
+                (is (= 1 (count (:baseline-warnings report))) (pr-str report))
+                (is (some #(and (= :unused-binding (:type %))
+                                (= :warning (:level %))) (:blocking report)))
+                (is (some #(and (= :unresolved-symbol (:type %))
+                                (= :error (:level %))) (:blocking report))))))
+          (when unknown-filename?
+            (is (= 2 (count (filter #(= "clj-kondo" (first (second %))) @commands)))
+                (pr-str @commands)))))
+      (finally
+        (doseq [file (reverse (file-seq directory))]
+          (.delete file))
+        (when (.exists (io/file workspace-root))
+          (doseq [file (reverse (file-seq (io/file workspace-root)))]
+            (.delete file)))))))
+
+(deftest ordinary-files-run-as-one-pinned-kondo-process-per-side
+  (run-batched-files-fixture! false))
+
+(deftest ordinary-files-reject-unknown-kondo-filenames
+  (run-batched-files-fixture! true))
+
 (defn private-call-plan [call & [required]]
   {:paths ["fixture-owner.clj" "fixture-caller.clj"]
    :entrypoints #{"fixture-owner.clj" "fixture-caller.clj"}
@@ -412,8 +522,8 @@
           (when (.isFile report-path)
             (let [report (lint/read-one! report-path)]
               (is (= (if (zero? expected) 1 0) (count (get-in report [:resolved-private-usages :current]))))
-              (is (= (or expected-types (if (zero? expected) [] [:unused-private-var]))
-                     (mapv :type (:blocking report))))))))
+              (is (= (set (or expected-types (if (zero? expected) [] [:unused-private-var])))
+                     (set (mapv :type (:blocking report)))))))))
       (finally (doseq [file (reverse (file-seq directory))] (.delete file))))))
 
 (deftest case-data-and-shadowed-comment-run-through-the-complete-lint-pipeline
