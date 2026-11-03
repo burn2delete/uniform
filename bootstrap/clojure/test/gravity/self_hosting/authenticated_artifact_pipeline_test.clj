@@ -408,7 +408,7 @@
     ;; synthetic post-snapshot failure cannot publish it globally.
     (is (= 0 (:entry-count (pipeline/cache-stats))))))
 
-(deftest fast-cache-is-deterministically-bounded
+(deftest fast-cache-retains-deterministically-bounded-entries
   (pipeline/clear-cache!)
   (let [cache-var (ns-resolve 'gravity.authenticated-artifact-pipeline
                               'stage-cache)
@@ -431,10 +431,6 @@
     (let [stats (pipeline/cache-stats)]
       (is (<= (:entry-count stats)
               (get-in stats [:limits :max-entries])))
-      (is (<= (:node-count stats)
-              (get-in stats [:limits :max-node-count])))
-      (is (<= (:cost-bytes stats)
-              (get-in stats [:limits :max-cost-bytes])))
       (is (pos? (:evictions stats))))))
 
 (deftest repeated-distinct-sources-commit-within-bounds
@@ -450,34 +446,16 @@
                                 :target-stage :source
                                 :mode :fast}))
       ;; Read the committed atom directly before cache-stats can perform any
-      ;; defensive pruning.  Publication itself must already enforce bounds.
+      ;; defensive pruning.  Publication itself must already enforce the
+      ;; retention bound.
       (let [entry-count-before (count @cache)
             stats (pipeline/cache-stats)]
         (is (= entry-count-before (:entry-count stats)))
         (is (<= entry-count-before
-                (get-in stats [:limits :max-entries])))
-        (is (<= (:node-count stats)
-                (get-in stats [:limits :max-node-count])))
-        (is (<= (:cost-bytes stats)
-                (get-in stats [:limits :max-cost-bytes]))))
+                (get-in stats [:limits :max-entries]))))
       (finally
         (doseq [path paths]
           (Files/deleteIfExists path))))))
-
-(deftest eight-megabyte-byte-array-is-rejected-before-cache-publication
-  (let [measure-var (ns-resolve 'gravity.authenticated-artifact-pipeline
-                                'bounded-payload-measure)
-        bound-var (ns-resolve 'gravity.authenticated-artifact-pipeline
-                              'bounded-cache-map)
-        payload {:nested {:blob (byte-array (* 8 1024 1024))}}
-        measured (measure-var payload)
-        bounded (bound-var
-                 {["sha256:oversized" "/tmp/oversized"]
-                  {:stage :source :payload payload}})]
-    (is (= :over-limit (:status measured)))
-    (is (> (:bytes measured)
-           (* 2 1024 1024)))
-    (is (empty? (:entries bounded)))))
 
 (deftest source-mutation-changes-content-key-and-never-reuses-old-result
   (pipeline/clear-cache!)

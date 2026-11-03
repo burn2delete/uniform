@@ -71,14 +71,11 @@
    :fresh-policy :cache-free-same-jvm-reconstruction
    :fast-policy :path-scoped-content-addressed-memory})
 
-;; The process-local fast cache is deliberately bounded.  These limits apply
-;; to both the staged per-run map and the committed map.  Cost/node accounting
-;; traverses payload structure iteratively with early cutoffs; it never
-;; recursively encodes a compiler payload or walks beyond per-entry bounds.
+;; The process-local fast cache is deliberately bounded.  This retention limit
+;; applies to both the staged per-run map and the committed map.  The cache is
+;; an operational same-JVM store, not a compiler input budget or accounting
+;; boundary.
 (def ^:private cache-max-entries 32)
-(def ^:private cache-max-node-count 262144)
-(def ^:private cache-max-entry-cost-bytes (* 2 1024 1024))
-(def ^:private cache-max-cost-bytes (* 4 1024 1024))
 
 ;; A process-local store is intentional.  It cannot become a release or
 ;; acceptance cache accidentally and it avoids adding another persistent cache
@@ -87,134 +84,18 @@
 (defonce ^:private cache-metrics
   (atom {:evictions 0 :skipped 0}))
 
-(defn- bounded-payload-measure
-  "Iteratively measure a payload without recursive encoding or unbounded work.
-
-  Byte arrays are charged by their real length. Cycles, lazy sequences, and
-  unknown host values are rejected so cache admission remains fail-closed."
-  [payload]
-  (let [;; LinkedList is used rather than ArrayDeque because null is a valid
-        ;; scalar payload value and still needs a bounded charge.
-        stack (java.util.LinkedList.)
-        active (java.util.IdentityHashMap.)
-        exit-marker (Object.)
-        max-bytes cache-max-entry-cost-bytes
-        max-nodes cache-max-node-count]
-    (.addLast stack payload)
-    (loop [nodes 0 bytes 0]
-      (cond
-        (> nodes max-nodes) {:status :over-limit :nodes nodes :bytes bytes}
-        (> bytes max-bytes) {:status :over-limit :nodes nodes :bytes bytes}
-        (.isEmpty stack) {:status :ok :nodes nodes :bytes bytes}
-        :else
-        (let [item (.removeLast stack)]
-          (if (and (vector? item) (identical? exit-marker (first item)))
-            (do (.remove active (second item))
-                (recur nodes bytes))
-            (let [value item
-              next-nodes (inc nodes)
-              cls (when (some? value) (.getClass value))]
-          (cond
-            (nil? value)
-            (recur next-nodes (+ bytes 4))
-
-            (or (string? value) (keyword? value) (symbol? value)
-                (number? value) (boolean? value) (char? value))
-            (recur next-nodes (+ bytes (count (str value))))
-
-            (and (.isArray cls)
-                 (= Byte/TYPE (.getComponentType cls)))
-            (let [length (java.lang.reflect.Array/getLength value)]
-              (recur next-nodes (+ bytes 16 length)))
-
-            (.isArray cls)
-            (let [length (java.lang.reflect.Array/getLength value)]
-              (if (contains? active value)
-                {:status :cycle :nodes next-nodes :bytes bytes}
-                (do
-                  (.put active value true)
-                  (.addLast stack [exit-marker value])
-                  (doseq [index (range length)]
-                    (.addLast stack
-                              (java.lang.reflect.Array/get value index)))
-                  (recur next-nodes (+ bytes (* 16 length))))))
-
-            (instance? clojure.lang.LazySeq value)
-            {:status :unknown :reason :lazy-sequence
-             :nodes next-nodes :bytes bytes}
-
-            (map? value)
-            (if (contains? active value)
-              {:status :cycle :nodes next-nodes :bytes bytes}
-              (do
-                (.put active value true)
-                (.addLast stack [exit-marker value])
-                (doseq [[key item] value]
-                  (.addLast stack key)
-                  (.addLast stack item))
-                (recur next-nodes (+ bytes (* 24 (count value))))))
-
-            (coll? value)
-            (if (contains? active value)
-              {:status :cycle :nodes next-nodes :bytes bytes}
-              (do
-                (.put active value true)
-                (.addLast stack [exit-marker value])
-                (doseq [item value] (.addLast stack item))
-                (recur next-nodes (+ bytes (* 16 (count value))))))
-
-            :else
-            {:status :unknown :reason :unsupported-host-value
-             :class (str cls) :nodes next-nodes :bytes bytes}))))))))
-
-(defn- cache-entry-measure
-  [entry]
-  (let [parents (vec (or (:input-artifact-ids entry) []))
-        pass (:pass entry)
-        auth (:authentication entry)
-        shallow-fields [(:stage entry) (:artifact-id entry)
-                        (:payload-artifact-id entry)
-                        (:payload-integrity-id entry)
-                        (:cache-key-id entry)]
-        payload-measure (bounded-payload-measure (:payload entry))]
-    {:accepted? (= :ok (:status payload-measure))
-     :nodes (+ (:nodes payload-measure)
-               1 (count parents) (count (or (:preserves pass) []))
-               (count (or (:invalidates pass) []))
-               (count (or (:parent-artifact-ids auth) [])))
-     :bytes (+ (:bytes payload-measure) 256
-               (reduce + 0 (map #(count (str %)) shallow-fields))
-               (* 24 (count parents))
-               (* 16 (+ (count (or (:preserves pass) []))
-                        (count (or (:invalidates pass) [])))))}))
-
 (defn- bounded-cache-map
   "Return a deterministic bounded map and count of entries evicted.
 
   Keys are content ids plus actual paths.  Sorting their printed form gives a
-  stable tie-breaker without inspecting the (potentially huge) payload."
+  stable tie-breaker without inspecting the payload."
   [entries]
   (loop [current entries evicted 0]
-    (let [measured (map (fn [[entry-key entry]]
-                          [entry-key (cache-entry-measure entry)]) current)
-          invalid (->> measured
-                       (filter (comp not :accepted? second))
-                       (map first)
-                       sort)
-          measures (map second measured)
-          total-nodes (reduce + 0 (map :nodes measures))
-          total-bytes (reduce + 0 (map :bytes measures))]
-      (if (and (empty? invalid)
-               (<= (count current) cache-max-entries)
-               (<= total-nodes cache-max-node-count)
-               (<= total-bytes cache-max-cost-bytes))
-        {:entries current :evicted evicted
-         :nodes total-nodes :bytes total-bytes}
-        (if-let [victim (or (first invalid)
-                            (some-> (first (sort-by (comp str key) current)) key))]
-          (recur (dissoc current victim) (inc evicted))
-          {:entries {} :evicted evicted
-           :nodes 0 :bytes 0})))))
+    (if (<= (count current) cache-max-entries)
+      {:entries current :evicted evicted}
+      (if-let [victim (some-> (first (sort-by (comp str key) current)) key)]
+        (recur (dissoc current victim) (inc evicted))
+        {:entries {} :evicted evicted}))))
 
 (def ^:dynamic *pending-cache*
   "Per-run fast entries are committed only after the final source re-snapshot.
