@@ -1,0 +1,216 @@
+{:schema :gravity/pr721-current-port-v2
+ :pr 721
+ :kind :bounded-current-source-port
+ :historical-candidate
+ {:base "43c69654b3f2daefa05e3902cbe78b469af47d96"
+  :base-tree "088aa0c632516704aa552a9fa2a046828661fabc"
+  :head "8cf0651e5d1adaafe4b32325beaf4c47f1d3e894"
+  :head-tree "f2b4e596e0ef5f354e2921689d15026710650557"
+  :status :historical-source-review-input}
+ :current-base
+ {:commit "d351310d5821a983fac2ad0fee4c0be96711b4b4"
+  :tree "1d7c95cf054bb3e1719bc39cb35ac7bbaf13049"}
+ :current-owner-dependency
+ {:pr 697
+  :source-commit "8cad807dbd99317baf0a9da622bb9d9ef99650a1"
+  :source-tree "b972c6620b59f753a8c0dca85464e0cfced2a826"
+  :receipt-commit "c5ca71cd5c0428af72b423d17ba7d62a613b5d7b"
+  :receipt-tree "c8f917f3701f58d2d168f120dd0550a7e3fb46cf"
+  :normal-composition-merge "6ae40925dec3ae486dc63c4963a1bfa60ce633ec"
+  :normal-composition-tree "641beb2f3861c1ab08d56626a9d72a8d1e938603"
+  :role :dependency-not-pr721-credit}
+ :source-checkpoint
+ {:commit "30c7a6468511ee56cd3a79fcbeb53eaa20ab7328"
+  :tree "30990d03c2d638c34892c2a2abec4b531c28251e"
+  :parent "cfc803f19a604e33f71a25451bd2f70954073570"
+  :parent-tree "82e02b67e2d9ff33bb1155c76dd2dc29a438742e"
+  :owned-path-count 17
+  :worktree-status :clean-before-receipt}
+ :path-accounting
+ [{:path "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00897-sh07-core-construction-upstream-guard.clj"
+   :original-blob "deade6360a98dcc8480685e78746d29c3f23d793"
+   :original-sha256 "679deccbeff2911e00185d9fe9d36ccaed0c2488e3010b5299fcc852711fa52e"
+   :current-blob "9c554004e5adf07037cbd0cf5b47aad11f6752da"
+   :current-sha256 "352feb1af8de7500594f16bb1cd2d709e261e20a183db1da16ae4dd51a8b425b"
+   :disposition :current-port
+   :reason :raw-root-and-effective-execution-binding-control}
+  {:path "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00898-sh07-core-from-authenticated-request.clj"
+   :original-blob "cb0c988dcf3a27264ceb8c51473fb2c23609be30"
+   :original-sha256 "62201e58302fb0e07f5a01dd6f1dfff740442d44b4e0322013abc32f9baa2cb6"
+   :current-blob "a6245b27af39d973079eb220b5a7f7d5be0b6e39"
+   :current-sha256 "b92924334557b1ee371fee4b771524e4c0a55c15f93d9a510c4d8a4c582e435f"
+   :disposition :current-port
+   :reason :private-selected-execution-binding-fact}
+  {:path "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00899-sh07-core-verification-session.clj"
+   :original-blob "fce1f3632a857edc37c18399f26413da9deae7f0"
+   :original-sha256 "1d00cfb1132313e5ebb3506ad6476f6c19fd9112e1ee4e33b18800598494fed8"
+   :current-blob "99b19bf320b9fb7f73835dbcaa0305d2d038893a"
+   :current-sha256 "f85093054ec85fae612bbc558ec81bb2c19af1b272d077aefa8621aeb234f587"
+   :disposition :current-port
+   :reason :Throwable-cause-cycle-and-closed-diagnostic-control}
+  {:path "bootstrap/clojure/test/gravity/reader/core_construction_binding_test.clj"
+   :original-blob "612a7aa375a58656d1604ee3fc6eb51e38c98f1d"
+   :original-sha256 "2128c36ebdb4208510b1dd8f1814aa4ca1dbce364f6a7926c0deec320bcbdc2e"
+   :current-blob "92d4bc41ec03507455e8b0fdd82fe60779573604"
+   :current-sha256 "53b26dc9d6e625a674ce8f6bf2c8f13e9a3fe0b9ca0ae3678b40104c6e5c24a3"
+   :disposition :current-port
+   :reason :binding-identity-and-source-control}
+  {:path "bootstrap/clojure/test/gravity/reader/core_session_invocation_test.clj"
+   :original-blob "f672e8fc7374591f6256cb3788241b8038a6cd53"
+   :original-sha256 "9d52ec6bb75de1e7725bcd7243f6345d6f27be568356dad0b4d624017f00cdc5"
+   :current-blob "9f94edd4ca88507db1f3490b5759dbaee45a1242"
+   :current-sha256 "bac87ee1e16f2e18ca15cb2923f0ce696d12bfa85c35da095989cabd620e0b5a"
+   :disposition :current-port
+   :reason :current-invocation-forwarding-and-failure-projection}
+  {:path "bootstrap/clojure/test/gravity/self_hosting/hosted_native_data_preflight_test.clj"
+   :original-blob "930cfb606e8fd98c22804bb631953a0dc59c3b1e"
+   :original-sha256 "b219a95189275c7fbd4437b05ce48195433b3945bd4c23ddc7869193b4c8e96f"
+   :current-blob "930cfb606e8fd98c22804bb631953a0dc59c3b1e"
+   :current-sha256 "b219a95189275c7fbd4437b05ce48195433b3945bd4c23ddc7869193b4c8e96f"
+   :disposition :current-equivalent-byte-identical
+   :reason :already-present-on-current-main}
+  {:path "bootstrap/clojure/test/gravity/self_hosting/module_census_test.clj"
+   :original-blob "fb17db7963815d98cfb1702377e77c3d3e534407"
+   :original-sha256 "d28659a94990bff68d9faadd9542ec8df4d0994c6dfc6c8e8b624e6c97078959"
+   :current-blob "e2f1159795ae42767e371627294e46d1ea4ee0e2"
+   :current-sha256 "e9fc4499e28d2652dfbba152127dae7459fde4eed6a4f41c6f0ddd5d272a6f62"
+   :disposition :current-port
+   :reason :foreign-seqable-and-no-partial-accounting-result}
+  {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj"
+   :original-blob "2d5929b9473c7260f2b52160f4633e263b78b56a"
+   :original-sha256 "32144ed245cc7fb708d17f61230ece6fa2601197ce3e7368a66e13ac2a3db513"
+   :current-blob "210f499f2aa49c3365c8ab4c71319393ad827e9f"
+   :current-sha256 "2f536c69c27e79a5102227074f474050fb1b5c775e9a91248337d50f1850f068"
+   :disposition :current-port
+   :reason :scalar-set-identity-native-metadata-and-construction-controls}
+  {:path "docs/hosted-native-data-preflight.md"
+   :original-blob "7b7d42988ca97e30718c3c313cd65c51c39200e5"
+   :original-sha256 "b0f7986f4056e7a4f0b76072b8d334f9347dd2a4909ae4060ed21373d394cebc"
+   :current-blob "7b7d42988ca97e30718c3c313cd65c51c39200e5"
+   :current-sha256 "b0f7986f4056e7a4f0b76072b8d334f9347dd2a4909ae4060ed21373d394cebc"
+   :disposition :current-equivalent-byte-identical
+   :reason :already-present-on-current-main}
+  {:path "specs/reader-workflow/core-construction-root-binding.md"
+   :original-blob "cd56ea1db9df0e696d3038461ec401e8b737ed2b"
+   :original-sha256 "34ffa6e546a73b3d7c0b016eb94ffd0e29e01d6d3a7d3c05b6f32c4a4f69c4b8"
+   :current-blob "b052f5b574cb8cce105ab76fe292cc148d7ba087"
+   :current-sha256 "8f774cf026ca88902728dd99db1286e8999b0f817a5638b65677f4f5eef37947"
+   :disposition :current-receipt
+   :reason :current-base-and-set-evidence-reconciled}
+  {:path "specs/reader-workflow/core-session-invocation.md"
+   :original-blob "582cd7f3243b9293d42c98eed8f76ed33a241c70"
+   :original-sha256 "1b1c1d08f79e97de72df30aa907badd7d62927523c2308e54a7303606f87d422"
+   :current-blob "3b75ed2f54e40c20c6d325d5f90c5d00871b86b0"
+   :current-sha256 "d3d180af2d357861be39d5fb8a412608b1e0bfb6b081c21a3c7d786881005673"
+   :disposition :current-receipt
+   :reason :historical-interface-and-current-Throwable-reconciled}
+  {:path "specs/reader-workflow/core-session-known-diagnostic.md"
+   :original-blob "176613a908c2d27e0e02d8069cdc63ef90cf0ab6"
+   :original-sha256 "fe18eb7ddb8ac8bdc0a3b029ab45d6d6fe637875e8d6b9b23d3a060ef2491765"
+   :current-blob "271144c5095919060c8831d31ddd336211ecdc72"
+   :current-sha256 "df7b3d7aa6ee846b67b5546fbc6c97d8dd6d7268df1cbd92416f6127e797cca9"
+   :disposition :current-receipt
+   :reason :closed-diagnostic-and-nonclaim-boundary}
+  {:path "specs/reader-workflow/expected-core-failure-source-trace.edn"
+   :original-blob "7fa1f61ea9f4135a76dd9fbe6db4ffcedaad16cf"
+   :original-sha256 "28c9e8313b1536fad123905aa32abd3cfe133ba720e406280403649a38bcd580"
+   :current-blob "9240a4fb10814631bdc224a4442b9d998de08560"
+   :current-sha256 "9068ff7bc776a133642c7934dd352651eac634ccde25ee85ff3fc16efb793b13"
+   :disposition :current-source-data-receipt
+   :reason :allowlist-only-no-authority-or-pin-renewal}
+  {:path "specs/reader-workflow/expected-core-failure-source-trace.md"
+   :original-blob "74ff636a2dd42932c4832ef1f63f4d728ac1bd51"
+   :original-sha256 "6511892647b979b1fa03fb08a7935ad8ad4577ba7f9939ccd8ce33c1bc9ed8a1"
+   :current-blob "64f4cb213b83f2a6f135bd1787ff65d319061a3b"
+   :current-sha256 "7a0a72238bf084268ecc9c5bf8c071933ff90d9116f191ac506a268083d81fdd"
+   :disposition :current-source-data-receipt
+   :reason :historical-trace-and-current-nonclaims-explicit}
+  {:path "tools/ci/lint_context.clj"
+   :original-blob "19178bdbc461da2cd49fa8c74aeb60b6a625804e"
+   :original-sha256 "4a05e7b7e6fd89c60f56cf208aa0543a93030ba3355bf344d41db8e3d8a60feb"
+   :current-blob "8db92ebeba338c3a7f1f92580a6b926852e6954f"
+   :current-sha256 "e76ea789088260edd7ac326a0af301f6d1770d913da29f09826024ac1a14a3bc"
+   :disposition :current-port-on-697-owner
+   :reason :archived-plan-normalizes-bootstrap-facade-checker-and-c2-owners}
+  {:path "tools/ci/lint_context_test.clj"
+   :original-blob "da82b1921577ead641268793779c6beeaac6fbf7"
+   :original-sha256 "5f9292dcbc8ce8c6003e3f20201779af29965f824d87d1b4265aa9472cb235b4"
+   :current-blob "93ee9ce685e7f10fe7db45c1fb503466964cffec"
+   :current-sha256 "8e03f6beeb0739986cf260a6ca4f24ba24b2217c6ad8208c49531d719283f770"
+   :disposition :current-adapted-test
+   :reason :rich-current-selected-plan-resources-loader-and-prefix-controls}
+  {:path "tools/ci/run_test.clj"
+   :original-blob "04824dcdff4843610c8aca94df0cd05616c0dbf9"
+   :original-sha256 "3ffe66ffb6eadd10015df32550b0e4cca125e27fc1254eace42f486547c94c67"
+   :current-blob "c3bf942d086c570471f278b24c2360f14ffe003e"
+   :current-sha256 "c3bf942d086c570471f278b24c2360f14ffe003eae0fbdd7ffd9d8d08cefa3a1"
+   :disposition :current-port
+   :reason :loads-and-runs-current-archival-test-namespace}
+  ]
+ :scope-accounting
+ {:original-path-count 17
+  :current-path-count 17
+  :dropped-paths []
+  :byte-identical-paths
+  ["bootstrap/clojure/test/gravity/self_hosting/hosted_native_data_preflight_test.clj"
+   "docs/hosted-native-data-preflight.md"]
+  :adapted-current-paths
+  ["tools/ci/lint_context_test.clj"]
+  :unadopted-historical-material
+  {:old-lint-context-test :not-copied-whole-file
+   :reason :old-test-targeted-a-pre-697-api-and-was-replaced-by-current-rich-context-controls
+   :optional-large-set-control :incomplete-no-retry}}
+ :focused-checks
+ [{:name :archived-context
+   :result "3 tests, 21 assertions, 0 failures, 0 errors"
+   :log "/tmp/uniform-pr721-lint-context-run-test-pinned.log"}
+  {:name :ci-runner-with-archived-context
+   :result "38 tests, 366 assertions, 0 failures, 0 errors"
+   :log "/tmp/uniform-pr721-lint-context-run-test-pinned.log"}
+  {:name :facade-context
+   :result "27 tests, 494 assertions, 0 failures, 0 errors"
+   :log "/tmp/uniform-pr721-lint-facade-final.log"}
+  {:name :core-construction-binding
+   :result "7 tests, 89 assertions, 0 failures, 0 errors"
+   :log "/tmp/uniform-pr721-construction-binding-after697.log"}
+  {:name :core-session-invocation
+   :result "12 tests, 328 assertions, 0 failures, 0 errors"
+   :log "/tmp/uniform-pr721-session-after697.log"}
+  {:name :sh01-list-set
+   :result "1 test, 100 assertions, 0 failures, 0 errors"
+   :log "/tmp/uniform-pr721-sh01-list-after697.log"}
+  {:name :sh01-keyword-set-membership
+   :result "1 test, 147 assertions, 0 failures, 0 errors"
+   :log "/tmp/uniform-pr721-sh01-contains-after697.log"}
+  {:name :sh01-literal-keyword-set
+   :result "1 test, 87 assertions, 0 failures, 0 errors"
+   :log "/tmp/uniform-pr721-sh01-literal-after697.log"}
+  {:name :pinned-clj-kondo
+   :result "0 errors, 0 warnings"
+   :log "/tmp/uniform-pr721-kondo-archival-final.log"}
+  {:name :tools-ci-format
+   :result "exit 0; all tools/ci source files formatted"
+   :log "/tmp/uniform-pr721-tools-ci-formatter-final.log"}
+  {:name :language-boundary
+   :result "6 tests, 11 assertions, 0 failures, 0 errors"
+   :log "/tmp/uniform-pr721-boundary-archival-final.log"}
+  {:name :document-validator
+   :result "240 docs, 19 phase indexes, passed"
+   :log "/tmp/uniform-pr721-docs-archival-final.log"}
+  {:name :roadmap-validator
+   :result "passed; dated coverage remains non-authoritative"
+   :log "/tmp/uniform-pr721-roadmap-archival-final.log"}
+  {:name :git-diff-check
+   :result "passed"}]
+ :nonclaims
+ [:independent-acceptance
+  :current-main-integration
+  :hosted-native-execution
+  :real-C5-C6-C7-C8-acceptance
+  :public-admission
+  :migration-authority
+  :release
+  :self-hosting
+  :large-result-control
+  :historical-failed-run-reclassification]
+ :status :source-checkpoint-awaiting-independent-review}
