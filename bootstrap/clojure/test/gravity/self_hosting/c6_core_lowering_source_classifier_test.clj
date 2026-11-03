@@ -1,5 +1,6 @@
 (ns gravity.self-hosting.c6-core-lowering-source-classifier-test
   (:require [clojure.java.io :as io]
+            [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as bootstrap]
             [gravity.c6-core-lowering :as c6]
@@ -79,6 +80,43 @@
    :origin :source
    :generated-origin []
    :metadata {}})
+
+(def ^:private development-route-source-path
+  "c6-development-route.gravity")
+
+(def ^:private development-route-source-text
+  "(ns c6.development.route (:profile :hosted) (:target :jvm)) (def answer 1)")
+
+(defn- development-route-c5-artifact [source-path source-text]
+  (assoc c5-artifact
+         :artifact-id "sha256:c6-development-route-c5"
+         :namespace-analysis {:namespace 'c6.development.route}
+         :c4-macro-expansion-artifact
+         {:expanded-syntax-stream
+          (bootstrap/read-source-form-records-host-oracle
+           source-path source-text)}))
+
+(defn- delete-tree! [^java.nio.file.Path root]
+  (when (java.nio.file.Files/exists root
+                                    (make-array java.nio.file.LinkOption 0))
+    (with-open [paths (java.nio.file.Files/walk root)]
+      (doseq [path (reverse (vec (iterator-seq (.iterator paths))))]
+        (java.nio.file.Files/deleteIfExists path)))))
+
+(defn- temporary-current-source-root []
+  (let [root (java.nio.file.Files/createTempDirectory
+              "c6-development-current-"
+              (make-array java.nio.file.attribute.FileAttribute 0))
+        target (.resolve root source-adapter/source-relative-path)]
+    (java.nio.file.Files/createDirectories
+     (.getParent target)
+     (make-array java.nio.file.attribute.FileAttribute 0))
+    (java.nio.file.Files/copy
+     (.toPath (io/file (.toFile ^java.nio.file.Path @repository-root)
+                       source-adapter/source-relative-path))
+     target
+     (make-array java.nio.file.CopyOption 0))
+    root))
 
 (deftest current-source-classifier-preserves-hosted-leaf-parity
   (let [classify @source-operation]
@@ -204,3 +242,141 @@
                 (ex-data error)))]
         (is (= "C6-LOWERING-GAP" (:id failure)))
         (is (= 'defn (:lowering-rule failure)))))))
+
+(deftest development-current-route-adopts-source-leaves-inside-real-c6-caller
+  (let [original-classifier lowering/c6-form->core-form
+        original-evaluation-order lowering/c6-eval-order
+        host-classifier-calls (atom 0)
+        host-evaluation-order-calls (atom 0)
+        c5-calls (atom 0)
+        reader (fn [path text]
+                 (bootstrap/read-source-form-records-host-oracle path text))
+        c5 (fn [path text]
+             (swap! c5-calls inc)
+             (development-route-c5-artifact path text))
+        default-artifact
+        (with-redefs [bootstrap/compiler-c5-resolution-source-artifact c5
+                      bootstrap/read-source-form-records reader
+                      lowering/c6-form->core-form
+                      (fn [form]
+                        (swap! host-classifier-calls inc)
+                        (original-classifier form))
+                      lowering/c6-eval-order
+                      (fn [form child-count]
+                        (swap! host-evaluation-order-calls inc)
+                        (original-evaluation-order form child-count))]
+          (bootstrap/compiler-c6-lowering-source-artifact
+           development-route-source-path development-route-source-text))
+        fallback (fn [& _]
+                   (throw
+                    (ex-info
+                     "hosted Clojure C6 operation was called"
+                     {:id "C6-SOURCE-ADOPTION-HOST-FALLBACK"})))
+        current-artifact
+        (with-redefs [bootstrap/compiler-c5-resolution-source-artifact c5
+                      bootstrap/read-source-form-records reader
+                      lowering/c6-form->core-form fallback
+                      lowering/c6-eval-order fallback]
+          (bootstrap/compiler-c6-lowering-source-artifact-development-current
+           development-route-source-path development-route-source-text
+           @repository-root))]
+    (is (= default-artifact current-artifact))
+    (is (= :complete (:status current-artifact)))
+    (is (= :passed
+           (get-in current-artifact [:core-verifier-report :status])))
+    (is (= 1 @c5-calls))
+    (is (pos? @host-classifier-calls))
+    (is (pos? @host-evaluation-order-calls))))
+
+(deftest development-current-route-retains-real-lowering-gap-rejection
+  (let [source-path development-route-source-path
+        source-text
+        "(ns c6.development.route (:profile :hosted) (:target :jvm)) (defn answer [] 1)"
+        reader (fn [path text]
+                 (bootstrap/read-source-form-records-host-oracle path text))
+        c5 (fn [path text]
+             (development-route-c5-artifact path text))
+        fallback (fn [& _]
+                   (throw
+                    (ex-info
+                     "hosted Clojure C6 operation was called"
+                     {:id "C6-SOURCE-ADOPTION-HOST-FALLBACK"})))
+        failure
+        (try
+          (with-redefs [bootstrap/compiler-c5-resolution-source-artifact c5
+                        bootstrap/read-source-form-records reader
+                        lowering/c6-form->core-form fallback
+                        lowering/c6-eval-order fallback]
+            (bootstrap/compiler-c6-lowering-source-artifact-development-current
+             source-path source-text @repository-root))
+          nil
+          (catch clojure.lang.ExceptionInfo error
+            (ex-data error)))]
+    (is (= "C6-LOWERING-GAP" (:id failure)))
+    (is (= 'defn (:lowering-rule failure)))))
+
+(deftest development-current-route-refuses-missing-source-or-abi-without-fallback
+  (let [reader (fn [path text]
+                 (bootstrap/read-source-form-records-host-oracle path text))
+        c5 (fn [path text]
+             (development-route-c5-artifact path text))
+        fallback (fn [& _]
+                   (throw
+                    (ex-info
+                     "hosted Clojure C6 operation was called"
+                     {:id "C6-SOURCE-ADOPTION-HOST-FALLBACK"})))]
+    (let [root (java.nio.file.Files/createTempDirectory
+                "c6-development-current-missing-"
+                (make-array java.nio.file.attribute.FileAttribute 0))]
+      (try
+        (let [failure
+              (try
+                (with-redefs [bootstrap/compiler-c5-resolution-source-artifact c5
+                              bootstrap/read-source-form-records reader
+                              lowering/c6-form->core-form fallback
+                              lowering/c6-eval-order fallback]
+                  (bootstrap/compiler-c6-lowering-source-artifact-development-current
+                   development-route-source-path development-route-source-text root))
+                nil
+                (catch clojure.lang.ExceptionInfo error
+                  (ex-data error)))]
+          (is (= "C6-SOURCE-CLASSIFIER-SOURCE" (:id failure))))
+        (finally
+          (delete-tree! root))))
+    (let [root (temporary-current-source-root)
+          source-file (.resolve root source-adapter/source-relative-path)
+          original (slurp (.toFile source-file) :encoding "UTF-8")
+          malformed
+          (str/replace-first original
+                             "(defn c6-eval-order [form child-count]"
+                             "(defn c6-eval-order [form]")]
+      (try
+        (spit (.toFile source-file) malformed)
+        (let [failure
+              (try
+                (with-redefs [bootstrap/compiler-c5-resolution-source-artifact c5
+                              bootstrap/read-source-form-records reader
+                              lowering/c6-form->core-form fallback
+                              lowering/c6-eval-order fallback]
+                  (bootstrap/compiler-c6-lowering-source-artifact-development-current
+                   development-route-source-path development-route-source-text root))
+                nil
+                (catch clojure.lang.ExceptionInfo error
+                  (ex-data error)))]
+          (is (= "C6-SOURCE-EVAL-ORDER-ABI" (:id failure))))
+        (finally
+          (delete-tree! root))))))
+
+(deftest development-current-route-rebuilds-source-plan-after-replacement
+  (let [root (temporary-current-source-root)
+        source-file (.resolve root source-adapter/source-relative-path)
+        original (slurp (.toFile source-file) :encoding "UTF-8")]
+    (try
+      (let [first-plan (source-adapter/current-source-plan root compiler-api)]
+        (spit (.toFile source-file)
+              (str original "\n(defn c6-development-probe [value] value)\n"))
+        (let [second-plan (source-adapter/current-source-plan root compiler-api)]
+          (is (not= (:plan-id first-plan) (:plan-id second-plan)))
+          (is (not= (:functions first-plan) (:functions second-plan)))))
+      (finally
+        (delete-tree! root)))))

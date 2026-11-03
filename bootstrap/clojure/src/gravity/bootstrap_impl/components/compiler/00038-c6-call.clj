@@ -4,6 +4,57 @@
     (apply f args)
     (binding [*c6-leaf-call?* true]
       (c6/with-operations (c6-lowering-ops) #(apply f args)))))
+
+(defn- c6-development-current-source-operations [repository-root]
+  (let [current-source-plan
+        (requiring-resolve
+         'gravity.c6-core-lowering.source-adapter/current-source-plan)
+        source-operations
+        (requiring-resolve
+         'gravity.c6-core-lowering.source-adapter/source-operations)
+        runtime-execute-function
+        (requiring-resolve
+         'gravity.bootstrap/p15-s23-stage2-runtime-execute-function)
+        compiler-api
+        {:c-backend-stage2-plan-emitter-source-rule!
+         (requiring-resolve
+          'gravity.bootstrap/c-backend-stage2-plan-emitter-source-rule!)
+         :p15-s23-stage2-compiler-artifact-plan
+         (requiring-resolve
+          'gravity.bootstrap/p15-s23-stage2-compiler-artifact-plan)}
+        plan (current-source-plan repository-root compiler-api)
+        operations (source-operations runtime-execute-function plan)]
+    (select-keys operations [:c6-form->core-form :c6-eval-order])))
+
+(defn- c6-call-development-current [repository-root f & args]
+  (if *c6-leaf-call?*
+    (apply f args)
+    (let [source-operations
+          (c6-development-current-source-operations repository-root)
+          operations (merge (c6-lowering-ops) source-operations)]
+      (binding [*c6-leaf-call?* true]
+        (c6/with-operations operations #(apply f args))))))
+
+(defn- c6-call-route [route repository-root f & args]
+  (case route
+    :default (apply c6-call f args)
+    :development-current
+    (do
+      (when-not (or (string? repository-root)
+                    (instance? java.io.File repository-root)
+                    (instance? java.nio.file.Path repository-root))
+        (throw
+         (ex-info
+          "C6 development-current route requires an explicit repository root"
+          {:id "C6-SOURCE-ADOPTION-ROOT"
+           :route route
+           :repository-root repository-root})))
+      (apply c6-call-development-current repository-root f args))
+    (throw
+     (ex-info "C6 lowering route is not supported"
+              {:id "C6-SOURCE-ADOPTION-ROUTE"
+               :route route}))))
+
 (defn c6-lowering-source-overrides [module]
   (c6-call c6/c6-lowering-source-overrides module))
 (defn c6-lowering-message [id] (c6-call c6/c6-lowering-message id))

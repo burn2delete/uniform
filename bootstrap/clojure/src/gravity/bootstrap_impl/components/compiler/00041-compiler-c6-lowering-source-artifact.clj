@@ -1,7 +1,7 @@
 
 
-(defn compiler-c6-lowering-source-artifact
-  [source-path source-text]
+(defn- compiler-c6-lowering-source-artifact*
+  [source-path source-text route repository-root]
   (source-input/with-context
    (fn []
      (let [c5-artifact (or *compiler-c6-authenticated-resolution-input*
@@ -33,5 +33,20 @@
                      :c6-expanded
                      #(parse-module source-path forms))
                    (parse-module source-path forms))]
-       (c6-call c6/c6-lowering-artifact
-                source-path module c5-artifact expanded-stream)))))
+       (c6-call-route route repository-root c6/c6-lowering-artifact
+                      source-path module c5-artifact expanded-stream)))))
+
+(defn compiler-c6-lowering-source-artifact
+  [source-path source-text]
+  (compiler-c6-lowering-source-artifact*
+   source-path source-text :default nil))
+
+(defn compiler-c6-lowering-source-artifact-development-current
+  "Run C6 with current-source classifier/evaluation-order operations.
+
+  The repository root is explicit and the source plan is rebuilt for this
+  invocation.  This development route does not alter the default pinned
+  two-argument entrypoint or establish migration authority."
+  [source-path source-text repository-root]
+  (compiler-c6-lowering-source-artifact*
+   source-path source-text :development-current repository-root))
