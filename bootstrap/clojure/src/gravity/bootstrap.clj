@@ -23,6 +23,7 @@
             [gravity.backend.mlir]
             [gravity.backend.gpu]
             [gravity.backend.hdl]
+            [gravity.backend.workflow]
             [gravity.types]
             [gravity.resolution]
             [gravity.macro-run-storage :as macro-run-storage]

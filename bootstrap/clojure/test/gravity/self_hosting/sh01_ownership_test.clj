@@ -357,7 +357,7 @@
         (and (= owner :master-coordinator)
              (contains? #{"SH-00" "SH-01" "SH-17" "SH-24"} slice))
         (and (= slice "SH-18")
-             (contains? #{:sh-target-c :sh-target-llvm :sh-target-mlir :sh-target-gpu :sh-target-hdl} owner)
+             (contains? #{:sh-target-c :sh-target-llvm :sh-target-mlir :sh-target-gpu :sh-target-hdl :sh-target-workflow} owner)
              (= :sh-target-native leaf-owner))
         (and (= slice "SH-00")
              (contains? #{:sh-target-js :sh-target-jvm} owner)
@@ -1390,7 +1390,8 @@
         ids (mapv #(get % "id") (get contract "production_helpers"))]
     (doseq [[id owner] [["mlir-diagnostic-data" :sh-target-mlir]
                         ["gpu-diagnostic-data" :sh-target-gpu]
-                        ["hdl-diagnostic-data" :sh-target-hdl]]]
+                        ["hdl-diagnostic-data" :sh-target-hdl]
+                        ["workflow-diagnostic-data" :sh-target-workflow]]]
       (let [index (.indexOf ids id)
             helper (get-in contract ["production_helpers" index])
             source-path (get-in helper ["source" "path"])
