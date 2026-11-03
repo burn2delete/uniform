@@ -120,6 +120,20 @@ dependency direction otherwise follows the Effects row above.
 
 ## Incremental extraction and acceptance
 
+The [native Safety report extraction](safety-native-reports-evidence.md) adds
+`native-verifier-report`, `native-capability-proof` and
+`validate-native-report!` for trusted C9/inventory/outcome/evidence records and
+explicit projection/failure operations. Safety owns the original native report
+predicates, legacy projection and ordered missing-field C10 refusal selection;
+the C10 facade retains interposition and diagnostic construction/transport.
+Core feeds the Safety stage, which is consumed by the native C10 compatibility
+leaf; the stage imports neither C10 nor Bootstrap. Existing paired Gravity/qst
+Safety tests retain actual normalized-request outcomes and numeric refusals.
+Native report tests cover predicate failures, first-failure order, truthiness,
+original paths and callback/exception identity. Duplicate-outcome set matching
+and vacuous native predicates remain explicit limitations; these helpers confer
+no canonical safety classification, source admission or certificate authority.
+
 Extract executable behavior, not empty namespaces or a second compiler.
 Preserve existing API arities, diagnostics, actual supplied paths, extension
 provenance and deterministic artifact identity. Keep `.gravity` and `.qst`
