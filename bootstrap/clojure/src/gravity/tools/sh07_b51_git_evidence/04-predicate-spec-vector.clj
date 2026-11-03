@@ -154,12 +154,9 @@
 (declare evaluate-predicate-node!)
 
 (defn- predicate-term!
-  [node env item-bound? depth budget id]
+  [node env item-bound? id]
   (when-not (and (vector? node) (seq node))
     (fail! id :predicate-term-node {:node node}))
-  (swap! budget inc)
-  (when (or (> @budget 100000) (> depth 256))
-    (fail! id :predicate-fuel {:depth depth :nodes @budget}))
   (case (first node)
     :lookup
     (do
@@ -181,8 +178,7 @@
     (do
       (when-not (= 2 (count node))
         (fail! id :predicate-count-node {:node node}))
-      (let [value (predicate-term! (second node) env item-bound?
-                                   (inc depth) budget id)]
+      (let [value (predicate-term! (second node) env item-bound? id)]
         (when-not (or (vector? value) (map? value))
           (fail! id :predicate-count-type
                  {:actual (some-> value class .getName)}))
@@ -191,8 +187,8 @@
     (fail! id :predicate-term-operator {:operator (first node)})))
 
 (defn- digest-term!
-  [node env item-bound? depth budget id]
-  (let [value (predicate-term! node env item-bound? depth budget id)]
+  [node env item-bound? id]
+  (let [value (predicate-term! node env item-bound? id)]
     (when-not (sha256-id? value)
       (fail! id :predicate-digest {:value value}))
     value))

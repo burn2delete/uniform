@@ -9,6 +9,9 @@
 
 (def ^:private ^:dynamic *operations* {})
 (def ^:private ^:dynamic *active-operation-keys* #{})
+(def ^:private default-serialization-token (Object.))
+;; This is a transaction-local handoff, never a cache of verification output.
+(def ^:private ^:dynamic *fresh-serialization-context* nil)
 (def ^:private namespace-contract policy/namespace-contract)
 
 (defn with-operations [operations thunk]
@@ -26,6 +29,54 @@
     (apply operation args)
     (throw (ex-info (str "C3 syntax verification requires operation " key)
                     {:operation key}))))
+
+#_{:clj-kondo/ignore [:unused-private-var]}
+(defn- mark-production-default-serialization-operation
+  [operation live-valid?]
+  (with-meta
+    operation
+    (assoc (meta operation)
+           :gravity.c3-syntax-verification/default-serialization-token
+           default-serialization-token
+           :gravity.c3-syntax-verification/default-serialization-live-valid?
+           live-valid?)))
+
+(defn- production-default-serialization-binding
+  []
+  (let [operation (current-operation :c3-syntax-serialization-fixture)
+        metadata (meta operation)
+        live-valid?
+        (:gravity.c3-syntax-verification/default-serialization-live-valid?
+         metadata)]
+    (when (and (identical?
+                default-serialization-token
+                (:gravity.c3-syntax-verification/default-serialization-token
+                 metadata))
+               (fn? live-valid?)
+               (true? (live-valid?)))
+      {:operation operation
+       :live-valid? live-valid?})))
+
+(defn- transaction-fresh-serialization
+  [syntax-stream supplied-serialization]
+  (let [{transaction-stream :syntax-stream
+         transaction-operations :operations
+         transaction-operation :serialization-operation
+         transaction-input-serialization :input-serialization
+         transaction-live-valid? :live-valid?
+         transaction-serialization :serialization}
+        *fresh-serialization-context*
+        operation (current-operation :c3-syntax-serialization-fixture)]
+    (if (and transaction-stream
+             (identical? syntax-stream transaction-stream)
+             (identical? supplied-serialization
+                         transaction-input-serialization)
+             (identical? *operations* transaction-operations)
+             (identical? operation transaction-operation)
+             (fn? transaction-live-valid?)
+             (true? (transaction-live-valid?)))
+      transaction-serialization
+      (invoke :c3-syntax-serialization-fixture syntax-stream))))
 
 (defn c3-syntax-verification-report
   ([syntax-stream serialization]
@@ -63,7 +114,7 @@
             :serialization-round-trips? (true? (:roundtrip? serialization))
             :serialization-current?
             (= serialization
-               (invoke :c3-syntax-serialization-fixture syntax-stream))
+               (transaction-fresh-serialization syntax-stream serialization))
             :reader-products-authentic?
             (if c2-artifact
               (invoke :c3-syntax-stream-reader-products-authentic?
@@ -99,10 +150,21 @@
           (get-in artifact [:gravity-syntax-boundary :resolved-syntax-result])
           gravity-ownership (:gravity-syntax-ownership-product artifact)
           fresh-verifier
-          (c3-syntax-verification-report
-           syntax-stream fresh-serialization
-           (:c2-reader-artifact artifact)
-           (:gravity-syntax-boundary artifact))
+          (let [serialization-binding
+                (production-default-serialization-binding)]
+            (binding [*fresh-serialization-context*
+                      (when serialization-binding
+                        {:syntax-stream syntax-stream
+                         :operations *operations*
+                         :serialization-operation
+                         (:operation serialization-binding)
+                         :input-serialization fresh-serialization
+                         :live-valid? (:live-valid? serialization-binding)
+                         :serialization fresh-serialization})]
+              (c3-syntax-verification-report
+               syntax-stream fresh-serialization
+               (:c2-reader-artifact artifact)
+               (:gravity-syntax-boundary artifact))))
           checks
           {:construction-from-reader-seeds?
            (boolean
