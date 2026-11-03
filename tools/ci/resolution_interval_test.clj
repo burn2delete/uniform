@@ -84,7 +84,7 @@
                      (selected-helper interval call))))
                :original-value)
         run #(let [value (#'runner/observe-progress! :test-var digest-ns
-                                                       selected-var body)]
+                                                     selected-var body)]
                (#'runner/require-progress-success!)
                (when timing? (swap! timings inc))
                (swap! sinks inc)
@@ -223,11 +223,11 @@
         (invoke)
         (#'runner/observe-progress! :test-var "other" "other/test" invoke)
         (#'runner/observe-progress! :test-var digest-ns digest-var
-                                     #(with-bindings {#'runner/*progress-state* other}
-                                        (invoke)))
+                                    #(with-bindings {#'runner/*progress-state* other}
+                                       (invoke)))
         (#'runner/observe-progress! :test-var digest-ns digest-var
-                                     #(with-bindings {#'runner/*progress-state* nil}
-                                        (invoke)))))
+                                    #(with-bindings {#'runner/*progress-state* nil}
+                                       (invoke)))))
     (is (= 4 @calls))
     (is (not-any? #(contains? #{:resolution-digest-positive-resolve}
                               (:phase %))
@@ -248,9 +248,9 @@
             (fn []
               (dotimes [_ n]
                 (is (identical?
-                    value
-                    (runner/observe-resolution-digest-interval!
-                     :positive-resolve #(do (swap! calls inc) value))))))))))
+                     value
+                     (runner/observe-resolution-digest-interval!
+                      :positive-resolve #(do (swap! calls inc) value))))))))))
       (is (= n @calls))
       (is (= (+ 2 (* n 2))
              (count (str/split-lines (str output)))))))
@@ -297,7 +297,7 @@
     (is (= 8 (count (:rows r))))
     (is (= (:selected-phases artifact-options)
            (set (map :phase (filter #(contains? (:selected-phases artifact-options)
-                                                   (:phase %))
+                                                (:phase %))
                                     (:rows r))))))
     (is (every? #(= :non-authoritative (:authority %)) (:rows r)))
     (is (every? #(= #{:schema :authority :phase :edge :namespace :test-var}
@@ -312,9 +312,9 @@
   (doseq [stage [:format :write :flush] edge [:enter :return]]
     (let [error (java.io.IOException.)
           r (exercise-legacy (assoc artifact-options
-                                     :fault-stage stage :fault-edge edge
-                                     :diagnostic error :swallow? true
-                                     :timing? true))]
+                                    :fault-stage stage :fault-edge edge
+                                    :diagnostic error :swallow? true
+                                    :timing? true))]
       (is (identical? error (get-in r [:result :error])))
       (is (= 6 (count (:events r))))
       (is (zero? (:timings r)))
@@ -322,8 +322,8 @@
   (doseq [original [(Exception.) (LinkageError.) (InterruptedException.)]]
     (let [diagnostic (InterruptedException.)
           r (exercise-legacy (assoc artifact-options
-                                     :fault-stage :flush :fault-edge :enter
-                                     :diagnostic diagnostic :original original))]
+                                    :fault-stage :flush :fault-edge :enter
+                                    :diagnostic diagnostic :original original))]
       (is (identical? original (get-in r [:result :error])))
       (is (some #(identical? diagnostic %)
                 (.getSuppressed ^Throwable original)))
@@ -367,18 +367,18 @@
          (#'runner/observe-progress!
           :test-var digest-ns artifact-var
           (fn []
-           (is (identical?
-               value
-               (runner/observe-resolution-current-artifact-interval!
-                :construction
-                (fn [] (swap! events conj (@callback))
+            (is (identical?
+                 value
+                 (runner/observe-resolution-current-artifact-interval!
+                  :construction
+                  (fn [] (swap! events conj (@callback))
                     (reset! callback (fn [] :second))
                     value))))
             (runner/observe-resolution-current-artifact-interval!
              :verification (fn [] (swap! events conj (@callback))))
             (runner/observe-resolution-current-artifact-interval!
              :serialization (fn [] (swap! events conj (@callback))))))))
-    (is (= [:first :second :second] @events)))))
+      (is (= [:first :second :second] @events)))))
 
 (let [result (run-tests)]
   (System/exit (if (zero? (+ (:fail result) (:error result))) 0 1)))

@@ -384,10 +384,10 @@
 (deftest legacy-distinct-equal-errors-and-internal-observation-failure
   (let [callbacks (atom 0)
         diagnostic (fn []
-                    (proxy [Exception] []
-                      (equals [_] (swap! callbacks inc) true)
-                      (hashCode [] (swap! callbacks inc) 0)
-                      (toString [] (swap! callbacks inc) "must not render")))
+                     (proxy [Exception] []
+                       (equals [_] (swap! callbacks inc) true)
+                       (hashCode [] (swap! callbacks inc) 0)
+                       (toString [] (swap! callbacks inc) "must not render")))
         first-error (diagnostic)
         second-error (diagnostic)
         entry (writer-fixture :enter :write first-error)
@@ -397,11 +397,11 @@
                  (write [value]
                    (reset! row (edn/read-string value))
                    (.write ^java.io.Writer
-                           (if (= :enter (:edge @row)) (:writer entry) (:writer returns))
+                    (if (= :enter (:edge @row)) (:writer entry) (:writer returns))
                            ^String value))
                  (flush []
                    (.flush ^java.io.Writer
-                           (if (= :enter (:edge @row)) (:writer entry) (:writer returns))))
+                    (if (= :enter (:edge @row)) (:writer entry) (:writer returns))))
                  (close []))
         original (Exception. "operation")
         r (exercise-legacy {:progress? true :writer writer
