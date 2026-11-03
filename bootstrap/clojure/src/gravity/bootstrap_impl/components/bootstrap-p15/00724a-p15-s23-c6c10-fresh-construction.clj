@@ -42,7 +42,7 @@
           (binding [*p15-s23-stage2-compiler-artifact-binding* expression]
             (p15-s23-c6c10-private-ingress-products
              source-path (:source-text context) (get-in reader [:invocation :reader-source-path]) 2
-             (dissoc (:binding reader) :plan)))
+             (dissoc (:binding reader) :plan) (:invocation reader)))
           (p15-s23-c6c10-private-ingress-products source-path (:source-text context)))
         current-source-before-builder
         (when (= 2 version)

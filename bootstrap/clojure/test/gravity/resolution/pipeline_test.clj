@@ -14,9 +14,13 @@
   (try (operation) nil (catch clojure.lang.ExceptionInfo error error)))
 (def ^:private source
   (.getCanonicalPath (io/file "bootstrap/clojure/fixtures/self-hosting/sh-06/current-cohort-unmetered.gravity")))
+(def ^:private syntax-source
+  (.getCanonicalPath (io/file "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")))
 (def ^:private invocation
   {:reader-source-path b/sh03-reader-source-relative-path
    :authenticated-envelope-options {:source :development-current}
+   :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                             :source-path syntax-source}
    :macro-source-mode :development-current})
 (def ^:private real-artifact
   (delay
@@ -665,6 +669,16 @@
                         reader-only))]
     (is (= "C4-TRACE" (:id (ex-data error))))
     (is (= [:exact-pinned-macro-source] (:missing-fields (ex-data error))))))
+
+(deftest reader-selection-does-not-implicitly-select-current-syntax-source
+  (let [reader-only (dissoc invocation :macro-source-mode :syntax-source-selection)
+        error (caught #(b/compiler-c5-resolution-source-artifact
+                        source (slurp source :encoding "UTF-8")
+                        {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+                        (.getCanonicalPath (io/file b/sh03-reader-source-relative-path))
+                        reader-only))]
+    (is (= "C3-ID" (:id (ex-data error))))
+    (is (= [:exact-pinned-syntax-source] (:missing-fields (ex-data error))))))
 
 (deftest plan-substitutions-and-cache-drift-fail-closed
   (let [binding (real-binding) plan (:plan binding) ops (operations)

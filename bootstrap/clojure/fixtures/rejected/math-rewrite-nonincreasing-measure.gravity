@@ -1,0 +1,18 @@
+(ns math.rewrite-nonincreasing-measure
+  (:profile :native)
+  (:target :jvm)
+  (:exports [proof-ready])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe)
+  (:metadata
+   {:math {:proof
+           {:termination-report {:strategy :decreasing-measure
+                                 :measure :operator-count
+                                 :direction :nonincreasing
+                                 :proof-ref :proof/operator-measure
+                                 :deterministic? true
+                                 :unbounded? false}}}}))
+
+(defn proof-ready []
+  true)

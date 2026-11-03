@@ -899,7 +899,7 @@
                             [[node invented (:node second-input)]
                              (vec (vals (merge forms (:forms second-input))))
                              {}])
-        wide-input (quoted-data-input (vec (repeat 1025 true)))
+        wide-input (quoted-data-input (vec (repeat 4097 true)))
         wide-products (invoke-c7 'sh08-qd-products
                                  [[(:node wide-input)] (:source-forms wide-input) {}])]
     (is (= [:unsupported-quoted-numeric-representation]
@@ -911,8 +911,36 @@
     (is (= [] (:diagnostics wide-products)))
     (is (= :gravity.type/vector
            (get-in wide-products [:type-table (:node-id (:node wide-input)) :kind])))
-    (is (= 1025
+    (is (= 4097
            (count (get-in wide-products [:constraints 0 :quoted-data :children]))))))
+
+(deftest sh08-quoted-data-deep-and-malformed-development-kernel
+  (let [value (reduce (fn [value _] [value]) :leaf (range 192))
+        {:keys [node forms payload]} (quoted-data-input value)
+        result (invoke-c7 'sh08-qd-node [node forms])
+        data (:data result)
+        leaf (loop [item data]
+               (if (empty? (:children item)) item (recur (first (:children item)))))
+        callbacks (atom [])
+        opaque (proxy [Object] []
+                 (toString [] (swap! callbacks conj :render)
+                   (throw (AssertionError. "quoted rendering"))))
+        opaque-products (invoke-c7 'sh08-qd-products
+                                   [[node] (conj (vec (vals forms)) {:unused opaque}) {}])]
+    (is (= :accepted (:status result)) (pr-str result))
+    (is (= :leaf (:value leaf)))
+    (is (= (vec (repeat 192 0)) (get-in leaf [:origin :data-path])))
+    (is (nil? (invoke-c7 'sh08-qd-executable-data [data #{}])))
+    (is (= leaf (invoke-c7 'sh08-qd-executable-data
+                           [data #{(get-in leaf [:origin :form-id])}])))
+    (doseq [changed [(assoc-in forms [payload :child-form-ids] :uncountable)
+                     (assoc-in forms [payload :child-form-ids] [payload])
+                     (assoc-in forms [payload :child-form-ids] (vec (repeat 2 payload)))
+                     (assoc forms :unused opaque)]]
+      (is (= :rejected (:status (invoke-c7 'sh08-qd-node [node changed])))))
+    (is (= :malformed-quoted-data-tree
+           (get-in opaque-products [:diagnostics 0 :reason])))
+    (is (empty? @callbacks))))
 
 (defn- pattern-alias-kernel-input []
   ;; Normalized pass input; genuine C5/C6 source products are tested separately.
@@ -3176,12 +3204,24 @@
                                     :elapsed-ms (quot (- (System/nanoTime) started) 1000000)})) value))
         text (slurp source-path)
         reader-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        syntax-path (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
+        invocation {:reader-source-path reader-path
+                    :authenticated-envelope-options {:source :development-current}
+                    :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                              :source-path syntax-path}
+                    :macro-source-mode :development-current}
+        reader-invocation (dissoc invocation :macro-source-mode)
         context (bootstrap/reader-project-context-for-source source-path)
-        syntax (stage :c3 #(bootstrap/compiler-c3-syntax-source-artifact source-path text context nil nil reader-path))
-        expanded (stage :sh05 #(bootstrap/sh05-macro-artifact-from-c3-artifact source-path syntax))
-        resolved (stage :sh06 #(bootstrap/sh06-resolution-artifact-from-sh05-artifact source-path expanded))
-        core (stage :sh07 #(bootstrap/sh07-core-from-resolution-artifact resolved))
-        request (stage :c7-request #(function-request core))]
+        syntax (stage :c3 #(bootstrap/compiler-c3-syntax-source-artifact
+                            source-path text context nil nil reader-path reader-invocation))
+        expanded (stage :sh05 #(bootstrap/sh05-macro-artifact-from-c3-artifact
+                                source-path syntax reader-invocation :development-current))
+        resolved (stage :sh06 #(bootstrap/sh06-resolution-artifact-from-sh05-artifact
+                                source-path expanded
+                                {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+                                reader-path invocation))
+        core (stage :sh07 #(bootstrap/sh07-core-from-resolution-artifact resolved invocation))
+        request (stage :c7-request #(function-request core invocation))]
     {:request request :core core :syntax syntax :expanded expanded :resolved resolved}))
 
 (deftest sh08-parameter-vector-count-slice-current-source-composition
@@ -16917,8 +16957,15 @@
           (spit temporary source :encoding "UTF-8")
           (let [temporary-path (.getCanonicalPath temporary)
                 c5 (function-current-resolution temporary-path source inputs)
-                artifact (bootstrap/sh07-core-from-resolution-artifact c5)
-                q (assoc (function-request artifact) :module-type-inputs (:module-type-inputs request))
+                reader-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+                syntax-path (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
+                invocation {:reader-source-path reader-path
+                            :authenticated-envelope-options {:source :development-current}
+                            :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                                      :source-path syntax-path}
+                            :macro-source-mode :development-current}
+                artifact (bootstrap/sh07-core-from-resolution-artifact c5 invocation)
+                q (assoc (function-request artifact invocation) :module-type-inputs (:module-type-inputs request))
                 rejected (invoke-c7 'sh08-function-type-core-artifact [q])
                 diagnostic (first (:diagnostics rejected))]
             (is (= :accepted (:status artifact)))

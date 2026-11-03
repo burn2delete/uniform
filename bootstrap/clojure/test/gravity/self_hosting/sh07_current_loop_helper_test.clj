@@ -32,6 +32,12 @@
         path #(str (io/file root %))
         owner-path (path "bootstrap/gravity/src/gravity/checked_core.gravity")
         reader-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        syntax-path (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
+        invocation {:reader-source-path reader-path
+                    :authenticated-envelope-options {:source :development-current}
+                    :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                              :source-path syntax-path}
+                    :macro-source-mode :development-current}
         fixture-prefix "bootstrap/clojure/fixtures/self-hosting/sh-07/compiler-vector-contains"
         source-path (path (str fixture-prefix ".gravity"))
         text (slurp source-path :encoding "UTF-8")
@@ -44,9 +50,9 @@
     (let [resolved (bootstrap/compiler-c5-resolution-source-artifact
                     source-path text
                     {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
-                    reader-path)
+                    reader-path invocation)
           _ (println {:loop-helper-phase :gravity-core-begin})
-          artifact (bootstrap/sh07-core-from-resolution-artifact resolved)
+          artifact (bootstrap/sh07-core-from-resolution-artifact resolved invocation)
           boundary (:gravity-core-boundary artifact)
           core (:canonical-core-artifact boundary)
           request (:authenticated-core-request boundary)

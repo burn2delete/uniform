@@ -1536,7 +1536,7 @@
         :function-names-hash
         :function-shapes-hash
         :public-function-hashes
-       :public-function-shapes])))))))))
+        :public-function-shapes])))))))))
 
 (defn
  current-plan-binding!

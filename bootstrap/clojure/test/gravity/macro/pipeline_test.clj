@@ -21,7 +21,11 @@
   ([extension basename]
   (let [source (fixture-path extension basename)
         reader (.getCanonicalPath (io/file bootstrap/sh03-reader-source-relative-path))
-        invocation {:reader-source-path reader :authenticated-envelope-options {:source :development-current}}
+        syntax (.getCanonicalPath (io/file "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"))
+        invocation {:reader-source-path reader
+                    :authenticated-envelope-options {:source :development-current}
+                    :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                              :source-path syntax}}
         c3 (bootstrap/compiler-c3-syntax-source-artifact
              source (slurp source) (bootstrap/reader-project-context-for-source source)
              nil nil reader invocation)
