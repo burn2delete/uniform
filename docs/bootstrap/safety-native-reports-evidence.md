@@ -85,6 +85,42 @@ composition review, own CI/artifact checks and immediate current-main
 preflight remain required. No provider source is adopted, and earlier CI
 results do not confer integration eligibility on the combined source.
 
+## Complete stage cohort composition
+
+Normal source merges compose actual main
+f0f427b96a11c1959ccfcb6a7bcf953a6710a1fa, tree
+01e1dca28949e55c402e755432e0921d3789b757, with the reviewed backend/Safety
+source d0664498f993d3ebc3ce68e0f4d221658d886298, reviewed Optimization
+source bd50bb2ed3fd3c75d225fb4c438253a6a5816039 and reviewed Lowering
+source eb34d250d2f524ec75094b3437f06f49597a0d5d. Initial complete merge
+f83558298cec99ab519bbd7e32eb15b16e7c5712, tree
+934080b23910e2e62ebbb39ad05f4e52beadcfa6, contains their disjoint 31+8+8
+path union. The final documentation delta is this composition note and the
+Optimization/Lowering rows of the existing namespace map. All implementation
+and test paths remain byte-identical to their reviewed sources; all other
+tracked paths remain actual main.
+
+Main's net Macro test repair (blob
+2670c12834328613a0f72ba025ec9fc42c383181) and two-file Resolution envelope
+patch are inherited intact. The old held Macro patch and provider commits
+are not adopted. Main's dormant Simplify tooling is conserved without
+launching it, creating a Project, changing ignored state or activating workers.
+Its separate integration timing exception grants this cohort no CI waiver.
+
+Optimization's preceding own CI run 41708584754 retains a 900-second Macro
+timeout (900116ms), while its unchanged Resolution children pass all 43 tests
+and 2203 assertions in 351452ms and 321812ms. These results remain bound to
+old source bd50 and provider 10e3d3b09e716774477c2ff01b316cec7fa25f78;
+they are not new-source acceptance or a causal performance-fix claim. Other
+predecessor failures/cancellations and source-specific PRs remain history.
+
+Require fresh clean captures for all four native artifact/refusal groups,
+bounded stage and affected integration checks, full exact independent
+composition review, committed lint, this cohort's own CI/artifact audit and
+immediate exact clean current-main preflight. PR892 carries the complete
+cohort; predecessor drafts remain until actual verified integration and gain
+no separate or duplicate credit.
+
 ## Residual boundaries
 
 No new general SAFE classification, source/Core authentication, proof-provider
