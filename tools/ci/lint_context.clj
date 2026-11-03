@@ -20,6 +20,20 @@
 (def facade-resources
   ["01-pipeline-schema-version" "02-clear-cache" "03-revalidate-payload"
    "04-envelope-valid" "05-run-pipeline"])
+(def git-evidence (str source-root "gravity/tools/sh07_b51_git_evidence.clj"))
+(def git-evidence-prefix (str source-root "gravity/tools/sh07_b51_git_evidence/"))
+(def git-evidence-resources
+  ["00-owned-source-fragments" "01-git-executable" "02-row-plan-prefix"
+   "03-row-plan-suffix" "04-predicate-spec-vector"
+   "05-evaluate-predicate-node" "06-exact-keys" "07-run-bounded-process"
+   "08-cat-file-operation" "09-validate-source-object-proof"
+   "10-build-source-descriptors" "11-build-a9-stage-result-e1"
+   "12-mask-span-for-rhs" "13-build-normalized-mask-files"
+   "14-fenced-edn-after" "15-reconstruct-pre-object-snapshot"
+   "16-validate-pre-discharge-envelope" "17-validate-git-observation"
+   "18-build-evidence-eligibility" "19-validate-runtime-lifecycle-ref"
+   "20-validate-eligibility-object" "21-list-entry-names"
+   "22-validate-runtime-identity-receipt" "23-cleanup-unpublished"])
 (def checker (str source-root "gravity/tools/sh07_b51_attempt32_checker_identity.clj"))
 (def checker-prefix (str source-root "gravity/tools/sh07_b51_attempt32_checker_identity/"))
 (def checker-resources ["01-checker-specs" "02-source-product" "03-runtime-fingerprint"])
@@ -40,11 +54,12 @@
 (defn context-path? [path]
   (or (= bootstrap path) (str/starts-with? path (str source-root "gravity/bootstrap_impl/"))
       (= facade path) (str/starts-with? path facade-prefix)
+      (= git-evidence path) (str/starts-with? path git-evidence-prefix)
       (= checker path) (str/starts-with? path checker-prefix)
       (= c2-pass-cache path) (str/starts-with? path c2-pass-cache-prefix)))
 
 (defn whole-context-path? [path]
-  (contains? #{bootstrap manifest semantic-late-manifest loader facade checker c2-pass-cache} path))
+  (contains? #{bootstrap manifest semantic-late-manifest loader facade git-evidence checker c2-pass-cache} path))
 
 (defn source-text! [path bytes]
   (let [text (String. ^bytes bytes java.nio.charset.StandardCharsets/UTF_8)]
@@ -178,6 +193,31 @@
                          (throw (ex-info "Unsupported namespace/load change in facade fragment" {:path path})))
                        [path bytes])))}))
 
+(defn git-evidence-plan! [read-bytes]
+  (let [entry (read-bytes git-evidence)
+        [header load-form :as forms] (source-forms! git-evidence entry)
+        expected (cons 'load (map #(str "/gravity/tools/sh07_b51_git_evidence/" %)
+                                  git-evidence-resources))
+        paths (into [git-evidence] (map #(str git-evidence-prefix % ".clj")
+                                        git-evidence-resources))]
+    (when-not (and (= 2 (count forms))
+                   (= '(ns gravity.tools.sh07-b51-git-evidence) (take 2 header))
+                   (= expected load-form))
+      (throw (ex-info "Git-evidence entrypoint changed; unsupported lint assembly recipe" {})))
+    {:paths paths
+     :namespace-by-path (zipmap paths (repeat 'gravity.tools.sh07-b51-git-evidence))
+     :entrypoints #{git-evidence}
+     :inputs (into {git-evidence entry}
+                   (for [path (rest paths) :let [bytes (read-bytes path)
+                                                 forms (source-forms! path bytes)]]
+                     (do
+                       (when (some #(and (seq? %) (#{'ns 'in-ns 'clojure.core/ns 'clojure.core/in-ns
+                                                     'load 'clojure.core/load} (first %)))
+                                   (tree-seq coll? seq forms))
+                         (throw (ex-info "Unsupported namespace/load change in Git-evidence fragment"
+                                         {:path path})))
+                       [path bytes])))}))
+
 (defn checker-plan! [read-bytes]
   (let [entry (read-bytes checker)
         [header load-form :as forms] (source-forms! checker entry)
@@ -265,11 +305,13 @@
   ([read-bytes selected expected-loader-sha]
    (let [bootstrap? (some #(or (= bootstrap %) (str/starts-with? % (str source-root "gravity/bootstrap_impl/"))) selected)
          facade? (some #(or (= facade %) (str/starts-with? % facade-prefix)) selected)
+         git-evidence? (some #(or (= git-evidence %) (str/starts-with? % git-evidence-prefix)) selected)
          checker? (some #(or (= checker %) (str/starts-with? % checker-prefix)) selected)
          c2-pass-cache? (some #(or (= c2-pass-cache %) (str/starts-with? % c2-pass-cache-prefix)) selected)
          plans (cond-> []
                  bootstrap? (conj (plan! read-bytes expected-loader-sha))
                  facade? (conj (facade-plan! read-bytes))
+                 git-evidence? (conj (git-evidence-plan! read-bytes))
                  checker? (conj (checker-plan! read-bytes))
                  c2-pass-cache? (conj (c2-pass-cache-plan! read-bytes)))
          combined {:paths (vec (mapcat :paths plans))
