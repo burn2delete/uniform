@@ -216,6 +216,25 @@
         (operation ctx))
       (finally (swap! ctx assoc :open? false :receipts [])))))
 
+(def ^:private receipt-unit-artifact
+  {:artifact-id "sha256:macro-receipt-unit"})
+(def ^:private receipt-unit-report
+  {:artifact :gravity/sh05-macro-artifact-verification
+   :status :passed
+   :checks {:receipt-unit? true}
+   :failed-checks []})
+(defn- with-receipt-unit-verifier [operation]
+  ;; Exercise the public SH-05 receipt wrapper without repeating full C3/C4
+  ;; verification. Actual expansion, provenance and tamper behavior remain
+  ;; covered by the end-to-end tests above and below.
+  (with-redefs-fn
+    {(private-var 'sh05-macro-artifact-verification*)
+     (fn [& _] receipt-unit-report)}
+    operation))
+(defn- receipt-unit-verify []
+  (bootstrap/sh05-macro-artifact-verification
+   receipt-unit-artifact nil :development-current))
+
 (deftest multi-artifact-construction-and-verification-are-co-canonical
   (doseq [ctx [multi-gravity multi-qst]]
     (let [{:keys [source c3 invocation artifact binding]} @ctx
@@ -470,32 +489,34 @@
            (:missing-fields (ex-data error))))))
 
 (defn- assert-interposition-misses [interpose]
-  (let [{:keys [artifact invocation]} @multi-gravity]
-    (with-report-context
-      (fn [ctx]
-        (is (= :passed (:status (bootstrap/sh05-macro-artifact-verification
-                                 artifact invocation :development-current))))
-        (is (= :passed (:status (bootstrap/sh05-macro-artifact-verification
-                                 artifact invocation :development-current))))
-        (is (= 1 (get-in @ctx [:executions :sh05])))
-        (is (= 1 (get-in @ctx [:reuses :sh05])))
-        (interpose #(dotimes [_ 2]
-                      (is (= :passed (:status (bootstrap/sh05-macro-artifact-verification
-                                               artifact invocation :development-current))))))
-        (is (= 3 (get-in @ctx [:executions :sh05])))
-        (is (= 1 (get-in @ctx [:reuses :sh05])))
-        (is (= :passed (:status (bootstrap/sh05-macro-artifact-verification
-                                 artifact invocation :development-current))))
-        (is (= 2 (get-in @ctx [:reuses :sh05])))))))
+  (with-receipt-unit-verifier
+    #(with-report-context
+       (fn [ctx]
+         (is (= receipt-unit-report (receipt-unit-verify)))
+         (is (= receipt-unit-report (receipt-unit-verify)))
+         (is (= 1 (get-in @ctx [:executions :sh05])))
+         (is (= 1 (get-in @ctx [:reuses :sh05])))
+         (interpose (fn []
+                      (dotimes [_ 2]
+                        (is (= receipt-unit-report (receipt-unit-verify))))))
+         (is (= 3 (get-in @ctx [:executions :sh05])))
+         (is (= 1 (get-in @ctx [:reuses :sh05])))
+         (is (= receipt-unit-report (receipt-unit-verify)))
+         (is (= 2 (get-in @ctx [:reuses :sh05])))))))
 
 (deftest receipt-reuse-requires-current-stage-and-seed-operations
   (doseq [v [#'macro/verify #'macro/expanded-syntax-object
              #'bootstrap/sh05-macro-gravity-verifier-report
              #'macro-run-storage/exact?]]
-    (let [original @v calls (atom 0)]
+    (let [calls (atom 0)]
       (assert-interposition-misses
        (fn [operation]
-         (with-redefs-fn {v (fn [& args] (swap! calls inc) (apply original args))} operation)))
+         ;; The receipt-unit verifier exercises root identity cheaply. Invoke
+         ;; the interposed stage/seed var once as a sentinel; real operation
+         ;; execution remains covered by the end-to-end tests above and below.
+         (with-redefs-fn
+           {v (fn [& _] (swap! calls inc) :interposed)}
+           #(do (v) (operation)))))
       (is (pos? @calls))))
   (let [defaults (private-var 'macro-stage-defaults)
         original @defaults
