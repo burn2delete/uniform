@@ -614,7 +614,7 @@
   "specs/lower-workflow/plan.md"
   "1f7d5a80f6b68b8bd87459305c20000bdfbef0c69598d7fcfe1ad50adcf8a99f",
   "specs/compiler-api-workflow/plan.md"
-  "9f83b54c3e7390d39318aa37c76f580b6afb954d98c5205dd224fd3df9280f28",
+  "600be6ce9e075c0daffc97478c053392c7e337727ab242b9053abb3a7a8e767b",
   "specs/resolve-workflow/plan.md"
   "fa905d0c9e6093a730e5a7ebd7488c5d54aa21215bae4e2dbf1bd75d7c41fc9b",
   "docs/phase-17-governance-and-evolution/240-gov10-ecosystem-package-governance-policy.md"
@@ -642,9 +642,9 @@
   "specs/backends-workflow/spec.md"
   "0b3caa8138dccf3070ffa6937cd4e2c7449f57591d905aedc6985355f0f59a5e",
   "specs/auth-workflow/plan.md"
-  "378c0dc30a8275650dd611fe97471c18945134b96886e2f16822dee1b02a16e9",
+  "1201c115326403b360442cbdca51cb9ab0ddb0e97da30a198527782fce55c14d",
   "specs/build-workflow/plan.md"
-  "493a457b07649676f39dc0fe5d07a5f06e59dcb973e9bbd64070fb26f1e4cf9f",
+  "1545be22ec81189f4e4bc8e37b2d4fe39fc81631b48ea285c5130cafeb5e2337",
   "specs/auth-workflow/spec.md"
   "58402fc1c93d5e2d14895d5ae1b680cc7bf49c96b58f12dc1905fac1b96dc8e8",
   "specs/effects-workflow/plan.md"
@@ -662,7 +662,7 @@
   "docs/phase-02-safety/043-safe14-supply-chain-safety.md"
   "403faf1d18dab790276e8c5072ca42821e9754856127b73e72eef52ceb28a1f5",
   "docs/acceptance-dependencies.md"
-  "942c9d548848911ab90af85b3240944c8aef41e96c0ac5ebc68393cef1d90f6c",
+  "b20f246a1791b76051dfde2e871360dceb489e9b283bbdc898ba7edaf42eca5a",
   "specs/expand-workflow/spec.md"
   "5e48bae8fc51d773319e0c2a72c00fe4ca7b48c800313e7c889f0ceb196a2d57",
   "specs/build-workflow/spec.md"
@@ -672,7 +672,7 @@
   "specs/syntax-workflow/plan.md"
   "0e0cad8a71c230182b9a02146c0d6fc59b8178cdf168310ac210f47ca2590033",
   "specs/expand-workflow/plan.md"
-  "fc5c03cbac04b4ad6036d241bbf7d33072ac9947260451e160ef3371dc076089",
+  "9e289b85c14ba1b6ca8cd21467d75220744ad3ea6161a78f9bfac9166a895b93",
   "specs/lower-workflow/tasks.md"
   "e247c41b764a858ae789b22297b076dff9be97ff74e38d70e1c4d15ec83a8ffa",
   "specs/compiler-api-workflow/spec.md"
@@ -691,7 +691,7 @@
    "evolution/security-review"
    "evolution/stabilization-decision"
    "evolution/target-support-admission"]},
- :source-input-commit "6dfaf54be773f7eece444c2e73ac08ec4ae4368a",
+ :source-input-commit "4964304ca6228e27161d24e8fa751b055709eedd",
  :task-comparisons
  {:unchanged-body-count 61,
   :changed-bodies
@@ -770,7 +770,7 @@
     :before-sha256
     "e8987cc8863981527889461d9af2194c2a0b17393b82ca6f83e8a555581b5ebe",
     :after-sha256
-    "087c46286d9433f34b293b0d5f97adef81d27fe94ad82dc25c446fc30eb05a5b",
+    "747c2ab0973c79e0202f55e16e35ead13353e620b1e10e4a2e5a42dd43a31ed5",
     :before-checked false,
     :after-checked false}
    {:id
@@ -788,7 +788,7 @@
     :before-sha256
     "f293e86a6d4be7cc1b6f0723e2a117d1880a592c1e16d3ec75cac24dd234d01e",
     :after-sha256
-    "b9fd218eb38eaaade57ee4171e0f006e87b30c59df0b40611c22629194e62fb0",
+    "3b80dcc0f881d1bcd7aead1d877e9fd04da10ec3b29ef7167ee5eaf255d9d4bc",
     :before-checked false,
     :after-checked false}
    {:id
@@ -958,7 +958,7 @@
     :before-sha256
     "f154f46aa295ce68c765a282f757cc646ef3402fd9367155794508a4ca71c11e",
     :after-sha256
-    "a0e7ebbf44825d3a8b2680d69e00b56553cb74b9afdf0299a1ea6bd37a373356",
+    "800977f29f54ab7535d61d32037264465e1df8b5410f288be153bb4b2a28d1ed",
     :before-checked false,
     :after-checked false}
    {:id
@@ -967,7 +967,7 @@
     :before-sha256
     "fdba3ca23718c3a98538c9f3a1a4ea9f36e138b758309b873bd82d6a88851867",
     :after-sha256
-    "36fb89e8937da8b6ddfbd94246345b52014ba1e3ecff743166d7684963cd0107",
+    "b1c01158abed6e7bc674976729495c8a7e813a1a566661aff199f33d9cbe2d24",
     :before-checked false,
     :after-checked false}
    {:id
@@ -14941,9 +14941,9 @@
     "3487862f9c4c6bf19b71a4dd7052ec8e9e0b068ad594e5ea7567cd69f6c20eb6",
     :prior-explicit-applying-pin nil},
    :after
-   {:commit "1ce9a7ea8937a06d1fbf819582319779a7c39c0d",
+   {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
     :sha256
-    "942c9d548848911ab90af85b3240944c8aef41e96c0ac5ebc68393cef1d90f6c"},
+    "b20f246a1791b76051dfde2e871360dceb489e9b283bbdc898ba7edaf42eca5a"},
    :scope :dependency-declaration-version}
   {:path "docs/component-roadmaps/README.md",
    :before
@@ -15025,9 +15025,9 @@
     :sha256
     "6c88f677477ec41d755dbedd39d1e03de7c9ae81cc9a956a48c8cf319bfca1b0"},
    :after
-   {:commit "6dfaf54be773f7eece444c2e73ac08ec4ae4368a",
+   {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
     :sha256
-    "75d51a19577f449daddc1ab473ee4140cc9ba9fe722c25a758a337eeaa76e829"},
+    "e2b19305128dd4f42eed700ccb73960b269b2da3719e64da6fffee38308522b8"},
    :scope :task-file-version}
   {:path "specs/cli-workflow/tasks.md",
    :before
@@ -15111,9 +15111,9 @@
     :sha256
     "e1cf578f48991336eb885172b3f829a150dd856de018b47f52fb8e2dfc51b63f"},
    :after
-   {:commit "6dfaf54be773f7eece444c2e73ac08ec4ae4368a",
+   {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
     :sha256
-    "140af56dd4d69a0c5525bf49fcffc6c11442331ff9af9494eca17b0e9ec15c0b"},
+    "b12ca475ad6e7367be16ed569d9b2aeea8c18386060dacdd707b20f333472372"},
    :scope :task-file-version}
   {:path "specs/legality-workflow/tasks.md",
    :before
@@ -15257,9 +15257,9 @@
    "1f7d5a80f6b68b8bd87459305c20000bdfbef0c69598d7fcfe1ad50adcf8a99f",
    :kind :source-inspection-not-execution},
   "specs/compiler-api-workflow/plan.md"
-  {:commit "1ce9a7ea8937a06d1fbf819582319779a7c39c0d",
+  {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
    :sha256
-   "9f83b54c3e7390d39318aa37c76f580b6afb954d98c5205dd224fd3df9280f28",
+   "600be6ce9e075c0daffc97478c053392c7e337727ab242b9053abb3a7a8e767b",
    :kind :source-inspection-not-execution},
   "specs/resolve-workflow/plan.md"
   {:commit "1ce9a7ea8937a06d1fbf819582319779a7c39c0d",
@@ -15327,14 +15327,14 @@
    "0b3caa8138dccf3070ffa6937cd4e2c7449f57591d905aedc6985355f0f59a5e",
    :kind :source-inspection-not-execution},
   "specs/auth-workflow/plan.md"
-  {:commit "1ce9a7ea8937a06d1fbf819582319779a7c39c0d",
+  {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
    :sha256
-   "378c0dc30a8275650dd611fe97471c18945134b96886e2f16822dee1b02a16e9",
+   "1201c115326403b360442cbdca51cb9ab0ddb0e97da30a198527782fce55c14d",
    :kind :source-inspection-not-execution},
   "specs/build-workflow/plan.md"
-  {:commit "1ce9a7ea8937a06d1fbf819582319779a7c39c0d",
+  {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
    :sha256
-   "493a457b07649676f39dc0fe5d07a5f06e59dcb973e9bbd64070fb26f1e4cf9f",
+   "1545be22ec81189f4e4bc8e37b2d4fe39fc81631b48ea285c5130cafeb5e2337",
    :kind :source-inspection-not-execution},
   "specs/auth-workflow/spec.md"
   {:commit "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
@@ -15397,9 +15397,9 @@
    "0e0cad8a71c230182b9a02146c0d6fc59b8178cdf168310ac210f47ca2590033",
    :kind :source-inspection-not-execution},
   "specs/expand-workflow/plan.md"
-  {:commit "1ce9a7ea8937a06d1fbf819582319779a7c39c0d",
+  {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
    :sha256
-   "fc5c03cbac04b4ad6036d241bbf7d33072ac9947260451e160ef3371dc076089",
+   "9e289b85c14ba1b6ca8cd21467d75220744ad3ea6161a78f9bfac9166a895b93",
    :kind :source-inspection-not-execution},
   "specs/lower-workflow/tasks.md"
   {:commit "2e4e449125785161c2a4ef4c7c7a0a23c90725eb",
@@ -108244,6 +108244,545 @@
   :source-clarification-commits
   ["5ea0927faa58b3ed0b1207c5655f630268c1ae3e"],
   :implementation-acceptance :unassessed},
+ :macro-cache-refinement
+ {:canonical-sources
+  [{:path
+    "docs/phase-01-core-language/026-l16-alternative-macro-system-contract.md",
+    :source-commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+    :sha256
+    "9f9c89bff8f960b9f60b5e4324c467c1e90e808b80739df0d52bc8998bafef06",
+    :scope
+    :selected-cache-and-equivalence-predicates-not-whole-source-entailment}
+   {:path
+    "docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md",
+    :source-commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+    :sha256
+    "a35d01a353082e40faa69930d50b62331643acc71193a8a3e49929dffad89333",
+    :scope
+    :selected-cache-and-equivalence-predicates-not-whole-source-entailment}
+   {:path
+    "docs/phase-06-compiler-architecture/083-c4-macro-expansion-engine-design.md",
+    :source-commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+    :sha256
+    "0a2428520a9c5fb23336e9bcd9bd73c4f074426f4cec82b97bf0df140e994cee",
+    :scope
+    :selected-cache-and-equivalence-predicates-not-whole-source-entailment}
+   {:path
+    "docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md",
+    :source-commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+    :sha256
+    "c9923fae5fbfeb86fa9fee36391b32b5e0e682c5ce3ef93326f71a7399dca662",
+    :scope
+    :selected-cache-and-equivalence-predicates-not-whole-source-entailment}],
+  :new-task-identities [],
+  :predecessor-readiness-successor
+  {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+   :path
+   "specs/sh-family-crosswalk/implementation-readiness-source-version.edn",
+   :sha256
+   "e6ac7191217394f0e38fc8e7286e6c2d4aed98fe5d9b29cfb9cd23c841eeea80",
+   :projection-path "specs/sh-family-crosswalk/crosswalk.edn",
+   :projection-sha256
+   "295ad41355fef196f2653fe8215094c74e32aee6ebf158969e6d625d747783ff",
+   :input-fingerprint
+   "d3bfbf332dfa86f8d335540adbe4b657e161c6ba3f6fd4be6cdb36a383a5aef3"},
+  :remaining
+  :complete-L4-L16-C4-SAFE12-predicates-and-selected-dependency-staging,
+  :source-files
+  [{:path "docs/acceptance-dependencies.md",
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "942c9d548848911ab90af85b3240944c8aef41e96c0ac5ebc68393cef1d90f6c"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "b20f246a1791b76051dfde2e871360dceb489e9b283bbdc898ba7edaf42eca5a"}}
+   {:path "specs/auth-workflow/plan.md",
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "378c0dc30a8275650dd611fe97471c18945134b96886e2f16822dee1b02a16e9"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "1201c115326403b360442cbdca51cb9ab0ddb0e97da30a198527782fce55c14d"}}
+   {:path "specs/build-workflow/plan.md",
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "493a457b07649676f39dc0fe5d07a5f06e59dcb973e9bbd64070fb26f1e4cf9f"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "1545be22ec81189f4e4bc8e37b2d4fe39fc81631b48ea285c5130cafeb5e2337"}}
+   {:path "specs/build-workflow/tasks.md",
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "75d51a19577f449daddc1ab473ee4140cc9ba9fe722c25a758a337eeaa76e829"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "e2b19305128dd4f42eed700ccb73960b269b2da3719e64da6fffee38308522b8"}}
+   {:path "specs/compiler-api-workflow/plan.md",
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "9f83b54c3e7390d39318aa37c76f580b6afb954d98c5205dd224fd3df9280f28"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "600be6ce9e075c0daffc97478c053392c7e337727ab242b9053abb3a7a8e767b"}}
+   {:path "specs/expand-workflow/plan.md",
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "fc5c03cbac04b4ad6036d241bbf7d33072ac9947260451e160ef3371dc076089"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "9e289b85c14ba1b6ca8cd21467d75220744ad3ea6161a78f9bfac9166a895b93"}}
+   {:path "specs/expand-workflow/tasks.md",
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "140af56dd4d69a0c5525bf49fcffc6c11442331ff9af9494eca17b0e9ec15c0b"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "b12ca475ad6e7367be16ed569d9b2aeea8c18386060dacdd707b20f333472372"}}],
+  :replacements
+  [{:path "specs/build-workflow/tasks.md",
+    :marker "compile-time-source-cache",
+    :old
+    "The existing Build cache task alone constructs actual compile-time keys and persistent entries",
+    :new
+    "The existing Build cache task owns shared/default cache construction, semantic-input completeness, current-policy admission and invalidation/revalidation integration. A selected L16 engine may implement expansion-specific keys, storage, invalidation and scheduling under the same contracts, exposing authentic keys, entries, trace/replay and current-policy results to this shared boundary. Construct actual compile-time keys and entries",
+    :kind :unreviewed-current-clause-correction,
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "41bcc997643b6dd5a8341f7567f3673b66a0c993e9a2d7de4609a56ed15aae5a"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "719bb575f5d1eefdc70ea2563f2d176b72e706f206d91a08cff901dfae97dc89"}}
+   {:path "specs/build-workflow/tasks.md",
+    :marker "authority-source-cache",
+    :old
+    "That task remains the sole owner of cache key construction and invalidation;",
+    :new
+    "That task remains the owner of shared/default cache construction and invalidation integration, including actual results from permitted L16 engine-specific cache machinery;",
+    :kind :unreviewed-current-clause-correction,
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "decc667796f58d416d7bebf477089548720c29c4a5de7d43e2eb04e6b6b651a7"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "43a3e108574257abd3a5feb5765d9bb72619e8635d340f5eaba352533e6c30d9"}}
+   {:path "specs/expand-workflow/tasks.md",
+    :marker "compile-time-source-record",
+    :old
+    "Build owns graph persistence/archival and cache construction; this task supplies its authentic event/value inputs without a second cache or package authority.",
+    :new
+    "Build owns graph persistence/archival and the shared/default cache contract; this task supplies authentic event/value inputs and selected engine results without a second shared task ledger or package authority. L16 engine-specific expansion storage and keys remain permitted under the same trace, replay, semantic-input and current-policy contracts.",
+    :kind :unreviewed-current-clause-correction,
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "34544176ab84fe68d8f72983b1777986c1552ac662d22113cc858bb9f8f314c1"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "44ad2b1277cf7a2e04db36f84c9835acec351fc8c6c2c9502a8e187ba48624bb"}}
+   {:path "specs/expand-workflow/tasks.md",
+    :marker "compile-time-source-reuse",
+    :old
+    "this task owns compile-time reuse consumption, Build alone constructs keys and invalidates/revalidates entries.",
+    :new
+    "this task owns compile-time reuse consumption and integration of selected L16 engine-specific cache machinery; Build owns shared/default cache construction, completeness and current-policy admission/invalidation/revalidation integration. The selected engine may construct its own expansion keys and storage, invalidate and schedule expansion under those same contracts, exposing actual complete key/input/entry/trace/replay/current-policy results. Do not require identical internal keys or representation across engines; normal shared artifact schemas and semantic equivalence still apply. Demonstrate actual engine reuse/refusal and shared integration without repeating external work on a hit or treating a provider declaration as a grant.",
+    :kind :unreviewed-current-clause-correction,
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "9165af9378bd0705757fc5091819b68335981407effb747c439450f447bafab2"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "dd2d185f76885f7ec0942db98685320fa0f86ede785d53805213e60f00a88c71"}}
+   {:path "specs/build-workflow/plan.md",
+    :old
+    "The existing cache task alone constructs/invalidates/revalidates entries; Expand consumes the result,",
+    :new
+    "The existing cache task owns shared/default cache construction and admission/invalidation/revalidation integration, including permitted L16 engine-specific results under the [macro cache boundary](../expand-workflow/plan.md#macro-engine-cache-replacement-boundary); Expand supplies and consumes actual engine results,",
+    :kind :unreviewed-current-clause-correction,
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "35984abcad1ce6f20d686ff6591ff66c723e520bf734c65ce80fcd1430f95f27"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "92dfc287b2f9b391f30f28d780c21657c7d34d80429f5ca88b7151990632e5e0"}}
+   {:path "specs/build-workflow/plan.md",
+    :old "the cache task alone owns keys/invalidation/revalidation;",
+    :new
+    "the cache task owns shared/default key completeness and admission/invalidation/revalidation integration, preserving permitted L16 engine-specific cache machinery;",
+    :kind :unreviewed-current-clause-correction,
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "120d4a7a182a6823e535988f29552314ed6a449e7cef15d34bf1820e8f6eeafd"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "4c6c77b6f949180509e259ccb2fd07b70c2ed8046dc7c6749715df8b9eda49eb"}}
+   {:path "specs/build-workflow/plan.md",
+    :old "The existing cache owner alone constructs/revalidates keys;",
+    :new
+    "The existing cache owner integrates complete, revalidated shared/default and permitted engine-specific cache results;",
+    :kind :unreviewed-current-clause-correction,
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "bb0614dafb77ba70690b2c484afc03064ba21be5e73cb6f5f4b2a47a4f83e8bb"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "9f2c4548ceb0a6de83816d7311cc644a4c5e73674a33314791e7c7f80c7d6341"}}
+   {:path "specs/build-workflow/plan.md",
+    :old
+    "The cache owner constructs keys/entries/graphs and revalidates\nactual artifacts.",
+    :new
+    "The cache owner constructs shared/default keys/entries/graphs and integrates\nactual engine-specific cache products and artifact revalidation under the\n[macro cache boundary](../expand-workflow/plan.md#macro-engine-cache-replacement-boundary).",
+    :kind :unreviewed-current-clause-correction,
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "4de47b040a3ceb19ec7e7e4044fadb616e954a5e56255a17e66f0f3e865701e0"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "30f738856b9b6df849035469eedb2cba8f1a89b4564c71e7fa3b1a271a0a3f91"}}
+   {:path "specs/compiler-api-workflow/plan.md",
+    :old "Pipeline integrates the sole Build cache;",
+    :new
+    "Pipeline supplies versioned stage/key-input facts and integrates actual shared/default and permitted L16 engine-specific results through the [Build cache boundary](../expand-workflow/plan.md#macro-engine-cache-replacement-boundary);",
+    :kind :unreviewed-current-clause-correction,
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "60d55e46c66e9ef6a82bed456d9cf04d2d90b0c9cef28d0d80f77565edbf8747"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "ff6c78966cce23cbf0797e1177f6d9a11d650c66013024416cae9e0723bc32d2"}}
+   {:path "specs/auth-workflow/plan.md",
+    :old
+    "The existing cache task constructs keys and revalidates reuse;",
+    :new
+    "The existing cache task owns shared/default construction and integrates complete permitted L16 engine-specific key/trace/replay/current-policy results under the [macro cache boundary](../expand-workflow/plan.md#macro-engine-cache-replacement-boundary);",
+    :kind :unreviewed-current-clause-correction,
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "9649d49b52c0205a894696ef1e07d7227180c4b457f4969e47993acda3ed6587"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "be44137793525a6f06c5373e295ba871c99c8d15bea0f7451bbfda2631dbd377"}}
+   {:path "specs/expand-workflow/plan.md",
+    :old
+    "| Build cache | Sole key/entry/invalidation/revalidation authority for all ten L12 input groups and actual cached values/traces |",
+    :new
+    "| Build cache | Shared/default cache construction, complete semantic-input/current-policy admission and invalidation/revalidation integration for all ten L12 groups; permitted L16 engine-specific machinery supplies actual results under the same contracts |",
+    :kind :unreviewed-current-clause-correction,
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "fa8c4285323220efc58d231ad5966ffef261e4bd4b87374d51851bcd2a70aa3d"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "eaa423d3816e18406fc53b42f195c363a088406ec70dd67cfeecfb0c57a804ef"}}
+   {:path "specs/expand-workflow/plan.md",
+    :old
+    "Build alone constructs and invalidates\nthe cache, Expand consumes its actual result, and reproducibility compares\nrepeated builds.",
+    :new
+    "Build owns shared/default cache construction and admission/invalidation/\nrevalidation integration. Expand integrates and consumes actual selected-engine\nresults under the macro cache replacement boundary below; reproducibility\ncompares actual repeated builds.",
+    :kind :unreviewed-current-clause-correction,
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "bf166a8412c38cdc8e176f38203d573632a0c1d7822ee99e0776b80395fb7157"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "7329e232f185a637d8a5f70658a86794135f4e4beac5dacdb3b1220d9b58c0c8"}}
+   {:path "specs/expand-workflow/plan.md",
+    :old
+    "Sole Build cache implementation receives authentic stage/value/trace and semantic-input identities, validates the creation trace under current policy",
+    :new
+    "Build shared/default cache and permitted L16 engine-specific machinery expose authentic stage/value/key/entry/trace and semantic-input identities; shared admission validates the creation trace under current policy",
+    :kind :unreviewed-current-clause-correction,
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "4f56e0c7b7a1c792079612a7819901e6279d9464d12a6ab44a8d83e5ea940d81"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "9787f57c764f16e0c2935fdb499c2c690202b84a5f0c967d790dbf892e2182b1"}}
+   {:path "specs/expand-workflow/plan.md",
+    :old
+    "Actual Build cache result and current trace-policy legality before consuming the value; no independent cache implementation",
+    :new
+    "Actual shared or selected L16 engine cache result and current trace-policy legality before consuming the value; integrate permitted engine machinery without a second shared cache authority",
+    :kind :unreviewed-current-clause-correction,
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "9e7f8fd6f7bd546bb4b65eb7dbd13c41452f890d50bfe1d1007a76006300bb57"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "2205103bb0f1032fa15a3c424fa87918eff99e78c81e23ea6634378638794322"}}
+   {:path "specs/expand-workflow/plan.md",
+    :old
+    "Pipeline supplies actual stage/key-input facts and consumes the existing Build\ncache result. Its broad cache-integration row is not a second key/invalidation\nimplementation.",
+    :new
+    "Pipeline supplies actual stage/key-input facts and integrates real Build shared\ncache and permitted L16 engine-specific results. Its broad cache-integration row\ndoes not duplicate the selected cache machinery.",
+    :kind :unreviewed-current-clause-correction,
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "43d7032d918fe8174fb8fa40b5f660f6218ff0f71631bb1ab3434dada4535441"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "17b4c37d956bc0d41e8983ceaed29940621cb3d8c277ca353a565ebc3dd95f57"}}
+   {:path "specs/auth-workflow/plan.md",
+    :old "The cache owner remains unique.",
+    :new
+    "Build retains shared cache admission/integration; L16 engine-specific machinery remains permitted.",
+    :kind :unreviewed-current-clause-correction,
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "91cbdb3b2fbc80ed2f3775b66ef95e502d3283faf20ca65af39048a10ab5dc09"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "f1ee6db1b176ecbb6ff6cb34bd13b5609601c7e49c9ceae23f41d12ac3331914"}}
+   {:path "specs/auth-workflow/plan.md",
+    :old
+    "Cache key construction, invalidation and reuse remain solely under the existing\nBuild dependency-aware caching task.",
+    :new
+    "The existing Build dependency-aware caching task owns shared/default cache\nconstruction and admission/invalidation/revalidation integration, preserving\npermitted L16 engine-specific keys, storage and scheduling under the\n[macro cache boundary](../expand-workflow/plan.md#macro-engine-cache-replacement-boundary).",
+    :kind :unreviewed-current-clause-correction,
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "d443b4094fa99ce69dcb7e0489360f1df0e097224fb29b8d2d9ef9350eb97813"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "61342f3af375a898b3a94b47a8967ab04143da719214219ad2d3afe040a4f5f2"}}
+   {:path "specs/build-workflow/plan.md",
+    :old
+    "Cache key construction, invalidation and reuse stay with the existing dependency-aware caching task.",
+    :new
+    "Shared/default cache construction and admission/invalidation/revalidation integration stay with the existing dependency-aware caching task; selected L16 engines may implement their own expansion cache machinery under the same contracts.",
+    :kind :unreviewed-current-clause-correction,
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "51e4bd3e15044286e534174b951b58fbbe33416bfe8fc981164f0958da4ef066"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "c6c3476a171101682eda56adefa7ce1bd1a1a16eb02a75d8955feb311de33f18"}}
+   {:path "docs/acceptance-dependencies.md",
+    :old
+    "Expand consumes reuse; Build alone constructs and invalidates the cache.",
+    :new
+    "Expand integrates and consumes permitted L16 engine-specific cache machinery and its real results; Build owns shared/default construction, completeness, current-policy admission and invalidation/revalidation integration under the macro cache boundary in the Expand plan.",
+    :kind :unreviewed-current-clause-correction,
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "29b5f8ef295e91009ba72ad90d5c505ca0055f90a7a145a83918a321e65e284a"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "7bf9ec30d4bdcd00b41b15028045729476be4eca2d594566ad7c1efa9270e768"}}
+   {:path "docs/acceptance-dependencies.md",
+    :old
+    "Pipeline supplies cache input facts and consumes the sole Build cache owner, resolving the broad cache row as integration rather than duplicate implementation.",
+    :new
+    "Pipeline supplies cache input facts and integrates actual shared/default and permitted L16 engine-specific results through Build's shared completeness/current-policy boundary; it does not duplicate the selected cache machinery.",
+    :kind :unreviewed-current-clause-correction,
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "bccd484f836741a17d357f47249b614f2d715424efa82dab310e9c2a451fd4ce"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "31bd6d41f0154491e7727810a048ad5271811bc50a41d74ce180c577a6b9dff9"}}
+   {:path "docs/acceptance-dependencies.md",
+    :old
+    "This task alone owns key construction, invalidation and reuse;",
+    :new
+    "This task owns shared/default cache construction and completeness/current-policy admission/invalidation/revalidation integration, accepting authentic permitted L16 engine-specific key/entry/trace/replay results;",
+    :kind :unreviewed-current-clause-correction,
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "be248503f17fe1e95ba490c693ac4021cc230d50962a0564d1f3e349475b3518"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "1b167672447a663e0a6bf186d46737cf9c15618ea8a1071d924ce8279f907823"}}
+   {:path "docs/acceptance-dependencies.md",
+    :old "Build's cache task remains sole key/reuse owner;",
+    :new
+    "Build's cache task retains shared/default construction and policy integration, preserving permitted L16 engine-specific expansion keys/storage/invalidation/scheduling;",
+    :kind :unreviewed-current-clause-correction,
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "c32bd9c6aa79ac5fce55d68dce71bb1c721a2eef0da6fa1b220149e852d83c3e"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "5ca9ac42601efc328ce42d6facc512458cff3f262d2ca3c27ab1ace20cf9e0d2"}}
+   {:path "docs/acceptance-dependencies.md",
+    :old
+    "Actual grants and installed gates precede actions. Build alone constructs and\ninvalidates/revalidates cache entries; Expand consumes the real decision, and\nrepeated-build comparison follows real selected results. Pipeline integrates\nthese products rather than implementing a second cache.",
+    :new
+    "Actual grants and installed gates precede actions. Build owns shared/default\ncache construction, semantic-input completeness, current-policy admission and\ninvalidation/revalidation integration. L16 engines may implement expansion keys,\nstorage, invalidation and scheduling under the same contracts. Expand integrates\nand consumes actual selected-engine products; Pipeline supplies stage/key-input\nfacts; repeated-build comparison follows actual results. Preserve structural\nreference/alternative equivalence separately from same-input hermetic typed-Core\nbyte equality under the [macro cache boundary](../specs/expand-workflow/plan.md#macro-engine-cache-replacement-boundary).",
+    :kind :unreviewed-current-clause-correction,
+    :before
+    {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+     :sha256
+     "9ad16d356562d5ee653332df360b61f47927f677f1b6e36bb9c319b02a47bb36"},
+    :after
+    {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+     :sha256
+     "8a4bc794f59791b780797b9e8dae3bade9423a5716d782214c50ad540920072b"}}],
+  :source-entailment :author-proposed-selected-correction,
+  :independent-current-review :pending,
+  :boundary
+  {:path "specs/expand-workflow/plan.md",
+   :raw
+   "## Macro engine cache replacement boundary\n\n[L16 replacement machinery](../../docs/phase-01-core-language/026-l16-alternative-macro-system-contract.md#replacement-boundary) includes incremental expansion caches and scheduling. Its [incremental and parallel rules](../../docs/phase-01-core-language/026-l16-alternative-macro-system-contract.md#incremental-and-parallel-expansion) preserve dependency order, deterministic results, stable diagnostics, namespace initialization and side-effect visibility, with invalidation for source, macro, provider, profile, facet, target, grant and compiler changes. This permission qualifies the earlier L12/shared-cache ownership wording; it does not transfer language or policy authority.\n\nUse the existing Expand4 task for selected engine-specific expansion machinery, actual cache reuse/refusal and integration. Build's existing cache task owns shared/default construction, complete semantic-input and current-policy admission, and invalidation/revalidation integration. An engine may implement its own keys, storage and scheduling and expose actual complete semantic input/key/entry/trace/replay/policy results through the versioned shared boundary. Build need not duplicate the engine's storage or expansion implementation. Auth selects the compatible provider and enforces actual grants; Compiler API supplies stage/key-input facts and integrates actual results; the reproducibility task consumes these products and performs actual repeated-build comparisons. Keep the existing task authority for each outcome.\n\nAcceptance needs unchanged-input reuse, changed provider/version/source/macro/profile/facet/target/grant/compiler/replay invalidation, stricter-policy refusal even for a matching key, hidden creation-effect refusal after policy relaxation, secret-safe records, and clean-versus-reused artifact/diagnostic comparisons. Effectful entries include authentic trace and replay records. A hit must not repeat external work merely to authorize reuse. Physical keys and syntax representations may differ between engines; shared schemas, semantic-input completeness, provenance and policy checks remain required. Reference/alternative expansion comparison is structural up to permitted alpha-renaming under [L16 equivalence](../../docs/phase-01-core-language/026-l16-alternative-macro-system-contract.md#required-equivalence); this does not relax L12's same-input hermetic typed-Core byte equality.\n\nLocal interface and fixture development can start under the existing contracts. Actual composition requires the selected provider and real producer/consumer products. Preserve all held provider/plugin/replay operations, source-policy decisions and independent review requirements. This correction does not confer whole-L16, whole-macro, implementation, migration or release acceptance. Complete L4/L16/C4/SAFE12 predicate and dependency reconciliation remains pending.\n\n",
+   :sha256
+   "4c8cb56ec1c4d7ef82a65b0d57e1dc167b216edfeb1132ca2c0790c1d216f5e3"},
+  :current-ownership
+  {:shared-default-construction-and-policy-integration
+   "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+   :engine-specific-machinery-and-reuse-integration
+   "expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination",
+   :actual-event-and-value-inputs
+   "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects",
+   :provider-selection
+   "auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection",
+   :stage-and-key-input-facts "pipeline",
+   :actual-repeat-comparison
+   "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix"},
+  :dependency-source
+  {:path "docs/acceptance-dependencies.md",
+   :before
+   {:commit "32bb4f31a5b5bddd23a59ee7672b535ee4af5c46",
+    :sha256
+    "942c9d548848911ab90af85b3240944c8aef41e96c0ac5ebc68393cef1d90f6c"},
+   :after
+   {:commit "4964304ca6228e27161d24e8fa751b055709eedd",
+    :sha256
+    "b20f246a1791b76051dfde2e871360dceb489e9b283bbdc898ba7edaf42eca5a"}},
+  :source-commit "4964304ca6228e27161d24e8fa751b055709eedd",
+  :preserved-state
+  {:routes 102,
+   :selected-result-joins 1076,
+   :current-parents 62,
+   :future-records 40,
+   :task-authorities 25,
+   :original-identical-bodies 61,
+   :coarse-cycles [60 8],
+   :current-task-keys 149,
+   :original-amended-bodies 78},
+  :changed-task-ids
+  ["expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects"
+   "expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination"
+   "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"
+   "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix"],
+  :dependency-conservation
+  {:routes 102,
+   :selected-result-joins 1076,
+   :current-parents 62,
+   :future-records 40,
+   :coarse-cycles [60 8],
+   :start-and-composition-producer-identities :unchanged,
+   :selected-output-contract-corrections 4},
+  :kind :L16-cache-machinery-and-shared-policy-boundary-correction,
+  :global-source-conjunctions :unassessed,
+  :qualification
+  "Correct current unreviewed cache ownership in four task bodies, four plans and four dependency output contracts. Twenty-three exact before/after fragments in seven files preserve L16 engine-specific expansion keys/storage/invalidation/scheduling, shared Build completeness/current-policy integration, authentic result interfaces and actual reuse/rebuild evidence. Reference/alternative structural equivalence and same-input hermetic typed-Core byte equality stay distinct. The102 routes and1076 selected joins retain all producer identities and start/composition edges; no task identity/status, original61/78 body population,149 keys,25 authorities,40 future records or held boundary changes. Freeze earlier source/review subjects without renewal or consumption. Complete L4/L16/C4/SAFE12 predicate and dependency reconciliation, independent current review, actual implementation and integration remain pending/unassessed. No compiler/provider/plugin/probe/native/replay/private-store/signing/publication execution or aggregate publication occurs.",
+  :equivalence
+  {:reference-versus-alternative
+   :structural-up-to-permitted-alpha-renaming,
+   :same-input-hermetic-typed-Core :byte-identical,
+   :internal-keys
+   :engine-specific-with-complete-semantic-inputs-and-shared-contracts},
+  :required-refusals
+  [:source-macro-provider-version-profile-facet-target-grant-compiler-and-replay-drift
+   :matching-key-with-stricter-policy
+   :hidden-creation-effects-after-policy-relaxation
+   :secret-disclosure
+   :stale-artifacts-and-diagnostics
+   :repeating-external-work-to-authorize-cache-hit],
+  :dependency-route-corrections
+  [{:consumer
+    "expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination",
+    :before-contract
+    "Selected L12 reuse consumer requests the existing Build cache's real key/entry/current-policy decision using all source/span/macro/extension/function/lock/grant/file/environment/target/profile/compiler/facet/replay inputs. Consume the actual cached value and legal creation trace before reuse. Early evaluator/codec contracts and current checked inputs precede a hit; a hit does not require repeating the external action or reevaluating its own cached expression. Misses/rejected reuse evaluate afterward and return real results. Stricter policy can invalidate matching bytes; looser policy never legalizes hidden creation effects. Expand consumes reuse; Build alone constructs and invalidates the cache.",
+    :after-contract
+    "Selected L12 reuse consumer requests the existing Build cache's real key/entry/current-policy decision using all source/span/macro/extension/function/lock/grant/file/environment/target/profile/compiler/facet/replay inputs. Consume the actual cached value and legal creation trace before reuse. Early evaluator/codec contracts and current checked inputs precede a hit; a hit does not require repeating the external action or reevaluating its own cached expression. Misses/rejected reuse evaluate afterward and return real results. Stricter policy can invalidate matching bytes; looser policy never legalizes hidden creation effects. Expand integrates and consumes permitted L16 engine-specific cache machinery and its real results; Build owns shared/default construction, completeness, current-policy admission and invalidation/revalidation integration under the macro cache boundary in the Expand plan.",
+    :source-file-sha256
+    "b20f246a1791b76051dfde2e871360dceb489e9b283bbdc898ba7edaf42eca5a"}
+   {:consumer "pipeline",
+    :before-contract
+    "Selected complete L12 compiler API supplies versioned requires/preserves/invalidates/regenerates/verifier/diagnostic/artifact contracts before Build invokes stages, then retains real selected stage results with fused boundaries observable. Check P and early type/target facts before evaluation; Q checking and final derived layout follow generation. Build supplies later actual graph/consumer results, not the API's own early contract. Pipeline supplies cache input facts and consumes the sole Build cache owner, resolving the broad cache row as integration rather than duplicate implementation. Keep the existing architecture-order decision and all ordinary-construction versus composition/acceptance distinctions.",
+    :after-contract
+    "Selected complete L12 compiler API supplies versioned requires/preserves/invalidates/regenerates/verifier/diagnostic/artifact contracts before Build invokes stages, then retains real selected stage results with fused boundaries observable. Check P and early type/target facts before evaluation; Q checking and final derived layout follow generation. Build supplies later actual graph/consumer results, not the API's own early contract. Pipeline supplies cache input facts and integrates actual shared/default and permitted L16 engine-specific results through Build's shared completeness/current-policy boundary; it does not duplicate the selected cache machinery. Keep the existing architecture-order decision and all ordinary-construction versus composition/acceptance distinctions.",
+    :source-file-sha256
+    "b20f246a1791b76051dfde2e871360dceb489e9b283bbdc898ba7edaf42eca5a"}
+   {:consumer
+    "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+    :before-contract
+    "Selected L15/SAFE10 cache owner consumes authentic selected source/project/lock/compiler/pass/profile/target/provider/version/grant/policy and recorded build-input identities plus actual stage/action outputs. Construct the real key/entry/dependency graph, detect changed provider/scope/policy/replay assumptions and perform required invalidation/revalidation before reuse. Keep secret values out of stable public keys, generated code, diagnostics and artifacts; a digest-only policy label is not proof of redaction. This task alone owns key construction, invalidation and reuse; repeat-build comparison consumes its results later. A successful prior action or content hash alone cannot validate stale evidence or mint authority for a new one. Additional complete L12 cache producer consumes actual stage/value/trace products and all semantic input identities, including function/extension versions, source spans, facets and current grant/replay/target policy. Construct keys/entries and revalidate before reuse; actual Expand4 use/refusal traces arrive later for clean-versus-reused comparison. Do not wait for a hit's own future result to produce its initial cache decision. Preserve stricter-policy invalidation, hidden-effect refusal after relaxation, secret-safe environment digests/presence and target representation. Pipeline supplies stage facts and consumes decisions; it does not create a second cache authority.",
+    :after-contract
+    "Selected L15/SAFE10 cache owner consumes authentic selected source/project/lock/compiler/pass/profile/target/provider/version/grant/policy and recorded build-input identities plus actual stage/action outputs. Construct the real key/entry/dependency graph, detect changed provider/scope/policy/replay assumptions and perform required invalidation/revalidation before reuse. Keep secret values out of stable public keys, generated code, diagnostics and artifacts; a digest-only policy label is not proof of redaction. This task owns shared/default cache construction and completeness/current-policy admission/invalidation/revalidation integration, accepting authentic permitted L16 engine-specific key/entry/trace/replay results; repeat-build comparison consumes its results later. A successful prior action or content hash alone cannot validate stale evidence or mint authority for a new one. Additional complete L12 cache producer consumes actual stage/value/trace products and all semantic input identities, including function/extension versions, source spans, facets and current grant/replay/target policy. Construct keys/entries and revalidate before reuse; actual Expand4 use/refusal traces arrive later for clean-versus-reused comparison. Do not wait for a hit's own future result to produce its initial cache decision. Preserve stricter-policy invalidation, hidden-effect refusal after relaxation, secret-safe environment digests/presence and target representation. Pipeline supplies stage facts and consumes decisions; it does not create a second cache authority.",
+    :source-file-sha256
+    "b20f246a1791b76051dfde2e871360dceb489e9b283bbdc898ba7edaf42eca5a"}
+   {:consumer
+    "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+    :before-contract
+    "Selected L15 reproducibility consumes actual recorded recipe/source/lock/compiler/profile/target/provider/version/grant/policy and permitted replay inputs, selected cache/invalidation results and authentic produced artifact identities. Perform repeated locked builds and compare real canonical manifest/content/graph outputs for each claimed target, including provider selection and secret-safe public records. Build's cache task remains sole key/reuse owner; this task owns the repeated-build comparison and target support result. The provenance owner provides early output/verification schemas and later exact output records; final signing/publication or P's own future reproducibility attestation is not a prerequisite for its first comparison. Preserve explicit non-replayability exception and stricter hermetic premises separately. Additional complete L12 hermetic comparison consumes actual evaluator/generated/compiler/cache results and a controlled locked recipe with exact source/compiler/target/grant/declared-input/replay identities. Compare real typed-Core bytes, canonical manifests/content and per-target results; identical typed Core is mandatory, while a marked native metadata exception needs actual target-conformance acceptance. Early target/codec contracts precede builds; no own future reproducibility attestation, final suite, signing or publication gates the first comparison. Preserve required kernel/firmware/hardware hermeticity and pending environment-source resolution; a grant or replay exception waives no premise.",
+    :after-contract
+    "Selected L15 reproducibility consumes actual recorded recipe/source/lock/compiler/profile/target/provider/version/grant/policy and permitted replay inputs, selected cache/invalidation results and authentic produced artifact identities. Perform repeated locked builds and compare real canonical manifest/content/graph outputs for each claimed target, including provider selection and secret-safe public records. Build's cache task retains shared/default construction and policy integration, preserving permitted L16 engine-specific expansion keys/storage/invalidation/scheduling; this task owns the repeated-build comparison and target support result. The provenance owner provides early output/verification schemas and later exact output records; final signing/publication or P's own future reproducibility attestation is not a prerequisite for its first comparison. Preserve explicit non-replayability exception and stricter hermetic premises separately. Additional complete L12 hermetic comparison consumes actual evaluator/generated/compiler/cache results and a controlled locked recipe with exact source/compiler/target/grant/declared-input/replay identities. Compare real typed-Core bytes, canonical manifests/content and per-target results; identical typed Core is mandatory, while a marked native metadata exception needs actual target-conformance acceptance. Early target/codec contracts precede builds; no own future reproducibility attestation, final suite, signing or publication gates the first comparison. Preserve required kernel/firmware/hardware hermeticity and pending environment-source resolution; a grant or replay exception waives no premise.",
+    :source-file-sha256
+    "b20f246a1791b76051dfde2e871360dceb489e9b283bbdc898ba7edaf42eca5a"}],
+  :initial-source-commit "15198fef36ca2f848138e4c8714331054dcb6ba3",
+  :source-clarification-commits
+  ["4964304ca6228e27161d24e8fa751b055709eedd"],
+  :implementation-acceptance :unassessed,
+  :historical-ownership-wording
+  :superseded-only-for-current-proposal-earlier-subjects-frozen},
  :domain-parent-refinement
  {:source-input-commit "deacbfd25ea22e501e8e08f54ff826eaa3d59353",
   :producer-consumer-allocation :pending-current-repartition-review,
@@ -109946,7 +110485,7 @@
   "specs/opt-workflow/tasks.md"
   "0e1cec28f43d2902032b1786af08f7aa17af8107",
   "specs/compiler-api-workflow/plan.md"
-  "1ce9a7ea8937a06d1fbf819582319779a7c39c0d",
+  "4964304ca6228e27161d24e8fa751b055709eedd",
   "specs/diag-workflow/tasks.md"
   "d37ba8da837f6dfdf0cc0e185729ce80d0aa1ae5",
   "docs/component-roadmaps/evolution.md"
@@ -109972,7 +110511,7 @@
   "docs/full-language-implementation-gap-map.md"
   "08d7f7a7ab90cc4473d5cb5db5eddb716e12ca1d",
   "specs/expand-workflow/tasks.md"
-  "6dfaf54be773f7eece444c2e73ac08ec4ae4368a",
+  "4964304ca6228e27161d24e8fa751b055709eedd",
   "specs/runtime-workflow/plan.md"
   "1ce9a7ea8937a06d1fbf819582319779a7c39c0d",
   "docs/phase-05-mathematical-and-elementary-function-system/README.md"
@@ -109986,7 +110525,7 @@
   "specs/domains-workflow/plan.md"
   "1ce9a7ea8937a06d1fbf819582319779a7c39c0d",
   "specs/build-workflow/tasks.md"
-  "6dfaf54be773f7eece444c2e73ac08ec4ae4368a",
+  "4964304ca6228e27161d24e8fa751b055709eedd",
   "specs/diag-workflow/plan.md"
   "1ce9a7ea8937a06d1fbf819582319779a7c39c0d",
   "specs/cli-workflow/plan.md"
@@ -110002,9 +110541,9 @@
   "specs/runtime-workflow/tasks.md"
   "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
   "specs/auth-workflow/plan.md"
-  "1ce9a7ea8937a06d1fbf819582319779a7c39c0d",
+  "4964304ca6228e27161d24e8fa751b055709eedd",
   "specs/build-workflow/plan.md"
-  "1ce9a7ea8937a06d1fbf819582319779a7c39c0d",
+  "4964304ca6228e27161d24e8fa751b055709eedd",
   "specs/auth-workflow/spec.md"
   "d2812996f4433e2102daacff9c5f7b3194a0b5e9",
   "specs/effects-workflow/plan.md"
@@ -110034,7 +110573,7 @@
   "docs/phase-02-safety/043-safe14-supply-chain-safety.md"
   "697917447d70ba0797a096d9427d4706bf5515df",
   "docs/acceptance-dependencies.md"
-  "1ce9a7ea8937a06d1fbf819582319779a7c39c0d",
+  "4964304ca6228e27161d24e8fa751b055709eedd",
   "specs/expand-workflow/spec.md"
   "6dfaf54be773f7eece444c2e73ac08ec4ae4368a",
   "specs/build-workflow/spec.md"
@@ -110050,7 +110589,7 @@
   "specs/evolution-workflow/tasks.md"
   "b69133db3237dc47c5fce321763ae4a3b0532cc4",
   "specs/expand-workflow/plan.md"
-  "1ce9a7ea8937a06d1fbf819582319779a7c39c0d",
+  "4964304ca6228e27161d24e8fa751b055709eedd",
   "specs/lower-workflow/tasks.md"
   "480b2ebed8199ed1489b7f5bf871883e6a191403",
   "specs/cli-workflow/tasks.md"
@@ -121672,4 +122211,4 @@
   :newly-amended-original-task-ids [],
   :implementation-acceptance :unassessed},
  :input-fingerprint
- "d3bfbf332dfa86f8d335540adbe4b657e161c6ba3f6fd4be6cdb36a383a5aef3"}
+ "83f10cec0e64b35077f03291caae3b598428a38f87ac2fbab1ba5b155a249de4"}

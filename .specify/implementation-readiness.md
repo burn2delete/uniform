@@ -3874,3 +3874,73 @@ task/evidence contents after declared additions are removed. ASCII and whitespac
 checks pass. These are source/traceability checks, not actual compiler/provider/
 macro/plugin/native/replay/release conformance, independent acceptance or
 integration.
+
+## Alternative macro cache boundary correction
+
+Source `15198fef36ca2f848138e4c8714331054dcb6ba3`, completed with dependency
+wording at `4964304ca6228e27161d24e8fa751b055709eedd`, corrects the current
+unreviewed cache ownership clauses under the existing
+[macro cache boundary](../specs/expand-workflow/plan.md#macro-engine-cache-replacement-boundary).
+L16 explicitly permits replacement of incremental expansion caches and
+scheduling. Earlier "Build alone" wording in the L12/provider proposals was too
+broad; it is superseded for the current proposal while its historical subjects,
+review scopes and hashes remain frozen.
+
+Build's existing cache task owns shared/default construction, semantic-input
+completeness, current-policy admission and invalidation/revalidation integration.
+The selected engine may implement expansion-specific keys, storage, invalidation
+and scheduling under the same contracts. Expand4 integrates actual engine
+key/input/entry/trace/replay/current-policy results and demonstrates reuse and
+refusal. Auth retains provider selection and actual grants; Compiler API supplies
+stage/key-input facts; reproducibility consumes authentic results and performs
+actual repeated-build comparisons. Build need not duplicate engine storage or
+expansion implementation. No second shared cache authority is introduced.
+
+Unchanged reuse, complete semantic-input invalidation, stricter-policy refusal,
+hidden creation-effect refusal after relaxation, secret-safe records and
+clean-versus-reused artifact/diagnostic comparisons remain required. A hit does
+not repeat external work merely to authorize reuse. Internal keys and syntax
+representation may differ across engines. L16 structural reference/alternative
+comparison, including permitted alpha-renaming, remains distinct from L12's
+same-input hermetic typed-Core byte equality.
+
+Twenty-three exact before/after fragments correct four task bodies, four plans
+and four dependency output contracts in seven files. All 102 dependency routes
+retain their start and composition producer identities; 1,076 selected joins,
+62 current parents, forty future records and coarse cycles of sixty/eight are
+unchanged. The 149 task keys, 25 authorities, all task statuses and original
+61-identical/78-amended body population remain. The preceding dependency
+regression now reads its complete recorded predecessor at `32bb4f31`; it does
+not mix historical source witnesses with corrected current files.
+
+This is a selected source/interface correction. Complete L4/L16/C4/SAFE12
+predicate and dependency reconciliation, global entailment, current independent
+review, implementation acceptance and integration remain pending or unassessed.
+Reader contract coverage remains the first implementation increment. No other
+chat is messaged and no held compiler/provider/plugin/probe/native/replay/
+private-store/signing/publication action or aggregate publication occurs.
+
+The final pending-proposal fingerprint is
+`83f10cec0e64b35077f03291caae3b598428a38f87ac2fbab1ba5b155a249de4`.
+The earlier local fingerprint `388b38c7` preceded correction of the dependency
+digest label from row identity to complete-file identity; it was unreviewed.
+No accepted review hash, source subject or disposition is refreshed.
+
+Validation retains its actual sequence. The first dependency run rejected five
+stale-projection reads before regeneration; after regeneration, all 23 tests /
+3,711 assertions pass. The full crosswalk run exercised 63 tests / 29,082
+assertions: the 62 retained regressions passed, and the new regression had one
+comparison failure with no errors because the generated view normalizes raw
+boundary text into a source-snapshot reference. The corrected assertion compares
+all other fields and resolves the authentic stored payload; its focused rerun
+passes one test / 516 assertions. A transient unmatched delimiter was fixed and
+the complete test source parsed before that rerun. These are separate observed
+runs, not a claimed successful second full-suite run. Final pending-source pin
+verification, both regenerated projection checks and six language-boundary tests /
+eleven assertions pass. Canonical 240-document/19-index and full-language
+structural validation pass; dated roadmap counts remain non-authoritative.
+Navigation/conservation covers 88 changed files, 82 Markdown files and 3,452
+local references. It retains 139 original routes, 48 historical spec/plan
+suffixes and all 48 original task/evidence contents after declared amendments
+are removed. ASCII and whitespace checks pass. These checks concern planning/tooling traceability; they
+establish no compiler conformance, independent acceptance or integration.
