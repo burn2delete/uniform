@@ -4389,3 +4389,96 @@ publication execution, other-chat message, reviewer wake, merge, aggregate
 publication or stopped-handoff retry occurs.
 
 Validation passes the complete crosswalk suite: 68 tests / 44,978 assertions, zero failures or errors. Focused current L3/C5 source, frozen C3 dependency and global conservation checks pass three tests / 5,868 assertions. Dependency tests pass 23 tests / 4,419 assertions; both pinned projection checks pass. Canonical validation passes 240 documents / nineteen phase indexes; the full-language structural validator passes with its dated snapshot non-authoritative. The language-boundary gate passes six tests / eleven assertions. Navigation/conservation passes ninety changed files, 84 Markdown files, 3,620 local references, 139 original routes, 48 historical spec/plan suffixes and all 48 original task/evidence contents after declared additions are removed. ASCII and whitespace checks pass. The complete suite ran once on the same process through completion; observation waits did not restart it. These are source/traceability/tooling results, not compiler, provider, target, self-hosting or release conformance.
+
+## Namespace and resolution dependency continuation
+
+Source `78f50d7ac549b01c4bb369b203ed10c973db0c4a` connects the restored
+L3/C5 criteria to concrete producer/consumer results in the sole dependency
+table. Nine missing routes cover Resolve1/2/3, Core2, Types1/2/4, Docs and the
+finite PKG1-to-Emit2 entrypoint handoff. Forty existing routes are extended;
+all 641 preceding selected inputs and 75 unaffected route meanings remain.
+The 172 additions yield 813 selected inputs and 1,577 total start/composition
+joins across 124 routes, 84 current parents and forty unchanged future records.
+All twelve source criteria have routes for their ten distinct existing tasks.
+Fifteen plans annotate 196 concrete selected result subjects, not additional
+tasks or a competing roadmap. Twenty-eight canonical locators give selected
+interface context; they do not adopt complete L2/C6/C7 or other source contracts.
+
+Real namespace/header, requested-edge, lexical and available declaration/index
+operations precede their selected uses. Already-available compiled P macro/
+type/function and module facts precede P invocation. Actual generated Q syntax
+then receives ordinary position-sensitive binding before semantic Core/Types.
+Quoted runtime data remains data. Initial graph/binding construction does not
+wait for the same subject's future inferred/checked module. C6 consumes actual
+C5 binding and namespace products, while later type/effect/ownership/safety
+facts stay empty until their owners compute them. The existing earlier D1
+representation qualification is preserved rather than resolved by an invented
+AST event or inverted completed-Core prerequisite.
+
+Types produces real solutions, checked abstractions and invalidation facts;
+Effects computes inferred summaries and allowance verdicts; Auth checks actual
+applicable imported trust and package/build/deployment grants; Legality validates
+profile variants and all five cross-profile boundaries. Resolve records and
+consumes those decisions before claiming the corresponding checked module or
+admitted downstream use. The explicit bootstrap-seed exception remains scoped,
+library variants cannot union powers, and a target or runtime cannot legalize
+source. Early local artifact fixtures do not require package retrieval or their
+own future signature, while claimed imported use retains real applicable
+verification. No name, declaration or complete/acyclic/passed flag substitutes
+for those actual decisions.
+
+Complete module/public API products carry actual definition/type/effect/
+profile/authority/artifact identities with all required fields. Real package
+graphs derive from module artifacts without source reread. T7 still permits
+source/doc-string and other declared documentation inputs; semantic public API
+reconstruction uses authentic module facts rather than invented source-reading
+prohibitions. Exported plus package-public visibility is distinct from private
+debug inspection. Binding ids survive documentation/nonsemantic formatting
+changes while accurate physical source/generated provenance still updates.
+
+All nine invalidation causes require actual affected owner/consumer decisions.
+Resolve owns binding/module changes, Types/Effects own fact meaning/currentness
+and regeneration, Syntax owns its carrier lifecycle, and Build integrates
+stage-specific completeness/current policy before reuse. Source-only cache or
+tool subjects do not wait for absent later semantic facts. Actual changed-source
+identity checks remain distinct from same-input hermetic bytes, independently
+admitted stage comparisons and seed retirement. The finite existing PKG1 table
+supplies actual visible artifact-kind entrypoint bindings to real selected
+emission; absent/ambiguous/private/wrong-kind cases retain PKG1003 rather than
+synthetic lookup or linker fallback. Build consumes actual scheduled artifacts;
+its own future emission cannot be its initial graph input. PKG2 retains its
+acyclic graph and explicit governed bootstrap fixed point.
+
+The coarse cycles are 82 and nine tasks. The main set preserves all 73 preceding
+members and adds the nine newly routed current parents. The nine-member
+release/schema/governance set is unchanged. Owners produce real accepted/refused
+cases and selected preservation/composition results before independent
+language/compiler/profile harnesses consume them; a completed future full suite
+cannot gate construction of its own owner fixtures. These concrete stages do
+not prove executable composition or authorize unmarked build cycles. Conditional
+namespace/module semantic changes retain the existing conformance updates and
+package compatibility review; unchanged-contract implementation gains no new
+generic review ceremony.
+
+The complete L3/C5 source proposal, all 149 task keys, 25 authorities, 51
+identical / 88 amended original bodies, task statuses and forty future records
+remain unchanged. The preceding source regression reads its entire exact
+`25a96a0c0` subject: bridge, projection and source bytes. Its immutable
+commit/path reads are cached within that test, and live current-file reads remain
+uncached. Every original assertion, mutation control and historical review
+hash/scope remains. No new review, renewal, consumption or broad acceptance is
+inferred. The pending-proposal fingerprint is
+`b7671d34cbf6253a87e02900f6d56080e3515250c22682be2f232d9115abc71f`.
+
+Next source work is the full L2/C6 Core reconciliation in its existing five
+tasks. A preserved five-clause C6 Core-owner proposal is available for exact
+source/witness verification and reuse; it is not a competing replacement or
+independent acceptance. Reader contract coverage remains the first actual
+implementation increment. Global source/task/interface entailment, complete
+implementation readiness, current independent acceptance and integration remain
+pending or unassessed. Every actual C7/C12/paired/provider/plugin/probe/native/
+callback/device/replay/migration/private-store/signing/publication restriction,
+reserved writer and stopped handoff remains. No held execution, other-chat
+message, reviewer wake, aggregate publication or merge occurs.
+
+Current validation passes four selected crosswalk regressions / 10,088 assertions: the new dependency result/route-removal controls, the complete frozen L3/C5 source subject, the frozen C3 dependency subject and global task/history conservation. The complete dependency suite passes 23 tests / 4,779 assertions; both pinned projection checks pass. Canonical validation passes 240 documents / nineteen phase indexes, the full-language structural validator passes with its dated snapshot non-authoritative, and the language-boundary gate passes six tests / eleven assertions. Navigation/conservation passes ninety changed files, 84 Markdown files, 3,635 local references, 139 original task routes, 48 historical spec/plan suffixes and all 48 original task/evidence contents after declared additions are removed. ASCII and whitespace checks pass. The earlier complete 68-test / 44,978-assertion run remains bound to `25a96a0c03536270001449c00676e644ea353521`; the full crosswalk suite was not rerun for this dependency-only continuation. No compiler, provider, target, self-hosting or release conformance is inferred from these source/traceability checks.
