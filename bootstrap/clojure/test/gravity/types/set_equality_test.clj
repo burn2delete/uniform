@@ -8,10 +8,10 @@
             [gravity.self-hosting.sh08-function-call-kernel-support :as kernel-support]))
 
 (def owners
-  [{:path "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+  [{:path "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity"
     :prefix "types-set-equality" :legacy "sh08" :all 'sh08-ft-all-true?
     :source-helper 'sh08-ma-form-source}
-   {:path "bootstrap/gravity/src/gravity/effects.gravity"
+   {:path "language/compiler/src/gravity/effects.gravity"
     :prefix "effects-set-equality" :legacy "body" :all 'body-all?
     :source-helper 'body-ma-form-node}
    {:path "bootstrap/gravity/p15_s23/emitter.gravity"

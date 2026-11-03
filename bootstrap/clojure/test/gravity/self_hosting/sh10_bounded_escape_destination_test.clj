@@ -11,7 +11,7 @@
             (.isFile (.toFile (.resolve p "deps.edn"))) p
             :else (recur (.getParent p))))))
 (defn- path [relative] (str (.resolve @root relative)))
-(def ^:private source "bootstrap/gravity/src/gravity/compiler/c9_ownership_checker_engine.gravity")
+(def ^:private source "language/compiler/src/gravity/compiler/c9_ownership_checker_engine.gravity")
 (def ^:private fixtures "bootstrap/clojure/fixtures/self-hosting/sh-10/")
 (defn- fixture [family extension]
   (str fixtures family "/bounded-escape-destinations" extension))

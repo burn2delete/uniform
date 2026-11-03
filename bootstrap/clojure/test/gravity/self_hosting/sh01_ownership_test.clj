@@ -45,8 +45,9 @@
 
 (defn- gravity-module-paths
   []
-  (let [source-roots [(path "bootstrap/gravity/src")
-                      (path "language/compiler/src")]
+  (let [source-roots (map path ["bootstrap/gravity/src"
+                                "language/compiler/src"
+                                "language/runtime/src"])
         root-path @root]
     (->> source-roots
          (mapcat file-seq)
@@ -156,7 +157,8 @@
         (set (map #(format "SH-%02d" %) (range 30)))
         declared-gravity-modules
         (set (filter #(or (str/starts-with? % "bootstrap/gravity/src/")
-                          (str/starts-with? % "language/compiler/src/"))
+                          (str/starts-with? % "language/compiler/src/")
+                          (str/starts-with? % "language/runtime/src/"))
                      declared-modules))
         declared-stage0-paths
         (set/difference
@@ -213,7 +215,8 @@
       (doseq [module
               (get-in record [:coordinator-owned :integration-surfaces])
               :when (or (str/starts-with? module "bootstrap/gravity/src/")
-                        (str/starts-with? module "language/compiler/src/"))]
+                         (str/starts-with? module "language/compiler/src/")
+                         (str/starts-with? module "language/runtime/src/"))]
         (is (= :master-coordinator (get module-owners module)) module)))
     (testing "reserved Stage0 ids cover exactly the 55 source components"
       (let [reserved (:reserved-leaf-modules record)

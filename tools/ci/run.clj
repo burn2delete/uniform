@@ -97,7 +97,7 @@
                  "bootstrap/clojure/fixtures/self-hosting/sh-06"]
    "checked-core-runtime" ["language/compiler/src/gravity/checked_core.gravity"
                            "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
-                           "bootstrap/gravity/src/gravity/compiler/c6_call_arity_legality.gravity"
+                           "language/compiler/src/gravity/compiler/c6_call_arity_legality.gravity"
                            "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
                            "bootstrap/clojure/src/gravity/checked_core.clj"
                            "bootstrap/clojure/src/gravity/checked_core"

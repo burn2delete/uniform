@@ -43,14 +43,14 @@
         (:emitter
          (bootstrap/c-backend-stage2-plan-emitter-source-rule!
           source-path :jvm))]
-    (if (= relative "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity")
+    (if (= relative "language/compiler/src/gravity/compiler/c8_effect_checker_engine.gravity")
       (body-effects/compile-c8-module-bundle source-path)
       (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source-path source-text))))
 
 (def ^:private envelope-source
-  "bootstrap/gravity/src/gravity/compiler/authenticated_envelope.gravity")
+  "language/compiler/src/gravity/compiler/authenticated_envelope.gravity")
 (def ^:private c8-source
-  "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity")
+  "language/compiler/src/gravity/compiler/c8_effect_checker_engine.gravity")
 (def ^:private bridge-source
   (str
    "bootstrap/clojure/fixtures/self-hosting/sh-09/"

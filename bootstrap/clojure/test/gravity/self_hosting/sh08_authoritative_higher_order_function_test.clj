@@ -24,7 +24,7 @@
 
 (def ^:private root (delay (repository-root)))
 (def ^:private c7-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity")
+  "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity")
 (def ^:private ho2-relative-root
   "bootstrap/clojure/fixtures/self-hosting/sh-08")
 (def ^:private c7-plan
