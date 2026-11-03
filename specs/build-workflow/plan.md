@@ -170,6 +170,12 @@ Use the [complete namespace and resolution source criteria](../resolve-workflow/
 
 Task identities/statuses, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held execution or task transfer is authorized.
 
+## Resolution dependency interface
+
+Use the [resolution producer and consumer order](../resolve-workflow/plan.md#resolution-producer-and-consumer-order) and the existing selected-result table. Normalize real declared/locked inputs early, then derive actual dependency/capability graphs from checked modules without rereading source. Use real affected-invalidation/current-policy results and scheduled entrypoint-bound artifacts; PKG2 cycles require the existing explicit bootstrap protocol.
+
+Existing task bodies/statuses, source predicates, frozen evidence and actual restrictions remain unchanged. Current source/interface entailment, independent acceptance and final release require their own applicable evidence; no held action is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration

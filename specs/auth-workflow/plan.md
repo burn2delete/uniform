@@ -275,6 +275,12 @@ Use the [complete namespace and resolution source criteria](../resolve-workflow/
 
 Task identities/statuses, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held execution or task transfer is authorized.
 
+## Resolution dependency interface
+
+Use the [resolution producer and consumer order](../resolve-workflow/plan.md#resolution-producer-and-consumer-order) and the existing selected-result table. Consume actual namespace/import/provider identities and validate real imported trust plus applicable package/build/deployment grant intersections. Keep local construction distinct from its own future signing and preserve current phase/action gates and held operations.
+
+Existing task bodies/statuses, source predicates, frozen evidence and actual restrictions remain unchanged. Current source/interface entailment, independent acceptance and final release require their own applicable evidence; no held action is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Auth task authority

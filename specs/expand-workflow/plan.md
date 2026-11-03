@@ -448,6 +448,12 @@ Use the [complete namespace and resolution source criteria](../resolve-workflow/
 
 Task identities/statuses, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held execution or task transfer is authorized.
 
+## Resolution dependency interface
+
+Use the [resolution producer and consumer order](../resolve-workflow/plan.md#resolution-producer-and-consumer-order) and the existing selected-result table. Use already-available compiled P namespace/macro bindings and authentic imported interfaces before invocation. Final Q syntax, ordinary binding and inferred module summaries follow; do not use Q's own future index as its initial environment.
+
+Existing task bodies/statuses, source predicates, frozen evidence and actual restrictions remain unchanged. Current source/interface entailment, independent acceptance and final release require their own applicable evidence; no held action is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Expand task authority

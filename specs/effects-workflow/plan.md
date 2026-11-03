@@ -352,6 +352,12 @@ Use the [complete namespace and resolution source criteria](../resolve-workflow/
 
 Task identities/statuses, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held execution or task transfer is authorized.
 
+## Resolution dependency interface
+
+Use the [resolution producer and consumer order](../resolve-workflow/plan.md#resolution-producer-and-consumer-order) and the existing selected-result table. Compute actual direct/latent/transitive effects from real resolved calls/imports and check namespace allowance separately from Auth grants. Early requested graph/declarations precede inference; actual verdicts precede checked module use and owner invalidation precedes stale-summary reuse.
+
+Existing task bodies/statuses, source predicates, frozen evidence and actual restrictions remain unchanged. Current source/interface entailment, independent acceptance and final release require their own applicable evidence; no held action is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Effects task authority

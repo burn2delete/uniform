@@ -144,6 +144,12 @@ Use the [complete namespace and resolution source criteria](../resolve-workflow/
 
 Task identities/statuses, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held execution or task transfer is authorized.
 
+## Resolution dependency interface
+
+Use the [resolution producer and consumer order](../resolve-workflow/plan.md#resolution-producer-and-consumer-order) and the existing selected-result table. Provide early schema/origin/view operations, then normalize and render real L3/C5 and owning profile/effect/authority refusals with complete fields and current generated/producing spans. Catalogs or requested failures cannot substitute for detection.
+
+Existing task bodies/statuses, source predicates, frozen evidence and actual restrictions remain unchanged. Current source/interface entailment, independent acceptance and final release require their own applicable evidence; no held action is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Diagnostics task authority

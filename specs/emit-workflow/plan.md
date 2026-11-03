@@ -19,6 +19,12 @@ reproducibility inputs and residual host services. Refine only the selected
 existing task; preserve restrictions, custody and writer reservations.
 Development results, independent acceptance and release evidence stay distinct.
 
+## Resolution dependency interface
+
+Use the [resolution producer and consumer order](../resolve-workflow/plan.md#resolution-producer-and-consumer-order) and the existing selected-result table. Consume actual visible artifact-kind entrypoint binding/artifact tables and current selected module metadata, then real Lower/backend results before selected emission. Preserve PKG1003 refusals at the owning resolver stage; no synthetic symbol or linker fallback supplies missing source resolution.
+
+Existing task bodies/statuses, source predicates, frozen evidence and actual restrictions remain unchanged. Current source/interface entailment, independent acceptance and final release require their own applicable evidence; no held action is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Emit task authority

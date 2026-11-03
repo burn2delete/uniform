@@ -84,6 +84,12 @@ Use the [complete namespace and resolution source criteria](../resolve-workflow/
 
 Task identities/statuses, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held execution or task transfer is authorized.
 
+## Resolution dependency interface
+
+Use the [resolution producer and consumer order](../resolve-workflow/plan.md#resolution-producer-and-consumer-order) and the existing selected-result table. Docs and semantic LSP/debug/REPL/inspection use actual current module/binding and session facts, while source-only services require only applicable inputs. T7 source/doc-string reading remains legal; module-derived semantic APIs and graphs do not require semantic source rereconstruction. Private inspection grants no public import or live evaluation authority.
+
+Existing task bodies/statuses, source predicates, frozen evidence and actual restrictions remain unchanged. Current source/interface entailment, independent acceptance and final release require their own applicable evidence; no held action is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Developer Tools workflow migration

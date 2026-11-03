@@ -83,9 +83,9 @@ Selected static inspection finds real Gravity construction, generated templates,
 
 ## Syntax producer and consumer order
 
-The [sole selected-result table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition) now includes complete selected C3 detail for 35 consumers: two new Syntax3/Syntax4 routes and 33 extensions. Preserve all 536 prior selected inputs and eighty unaffected route meanings; 74 additions give 610 selected inputs and 1,405 total joins across 115 routes, 75 current parents and forty unchanged future records. Pipeline now consumes its explicitly named Syntax3 lifecycle result. Every task body/status and the complete C3 source proposal remain unchanged. These declarations and annotations do not establish global source/interface entailment, implementation or independent acceptance.
+At C3 dependency source `4c15d7d0b0d75c6d5f05c52d6f5ee3c4898c4fcc`, the [sole selected-result table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition) recorded complete selected C3 detail for 35 consumers: two new Syntax3/Syntax4 routes and 33 extensions. Preserve all 536 prior selected inputs and eighty unaffected route meanings; 74 additions give 610 selected inputs and 1,405 total joins across 115 routes, 75 current parents and forty unchanged future records. Pipeline now consumes its explicitly named Syntax3 lifecycle result. Every task body/status and the complete C3 source proposal remain unchanged. These declarations and annotations do not establish global source/interface entailment, implementation or independent acceptance.
 
-The coarse graph has cycles of 73 and nine tasks. The first preserves all 71 predecessors and adds Syntax3/Syntax4. The nine-task release/schema/governance group is unchanged. The table annotates actual selected edges in the existing dependency authority; it is not another graph or task ledger.
+At that C3 checkpoint, the coarse graph had cycles of 73 and nine tasks. The first preserves all 71 predecessors and adds Syntax3/Syntax4. The nine-task release/schema/governance group is unchanged. The table annotates actual selected edges in the existing dependency authority; it is not another graph or task ledger.
 
 | Consumer | Selected producer | Concrete result order |
 | --- | --- | --- |
@@ -206,6 +206,12 @@ Declared interfaces permit local development; actual selected composition needs 
 Use the [complete namespace and resolution source criteria](../resolve-workflow/plan.md#complete-namespace-and-resolution-source-criteria). Carry structurally valid namespace context and actual producer-conditioned resolved bindings; semantic Resolve facts arrive after their owner computes them. Transformation invalidation must prevent stale binding reuse.
 
 Task identities/statuses, frozen reviews and actual restrictions remain unchanged. Current source/interface entailment and independent acceptance are pending; no held execution or task transfer is authorized.
+
+## Resolution dependency interface
+
+Use the [resolution producer and consumer order](../resolve-workflow/plan.md#resolution-producer-and-consumer-order) and the existing selected-result table. Carry actual resolved binding/index facts only after Resolve produces them, with owner versions and invalidation. Structural namespace context and source-only verification remain earlier and do not wait for later semantic facts absent from their subject.
+
+Existing task bodies/statuses, source predicates, frozen evidence and actual restrictions remain unchanged. Current source/interface entailment, independent acceptance and final release require their own applicable evidence; no held action is enabled.
 
 ## Historical task-authority-transfer plan
 

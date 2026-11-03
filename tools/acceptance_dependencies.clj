@@ -176,6 +176,15 @@
 
 (def selected-parent-consumers
   #{"domain-ir-boundaries" "math"
+    "resolve/current-evidence-and-remaining-work/resolve1-resolve-lexical-positions"
+    "resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries"
+    "resolve/current-evidence-and-remaining-work/resolve3-check-graph-legality"
+    "core/current-evidence-and-remaining-work/core2-preserve-binding-structure"
+    "types/current-evidence-and-remaining-work/types1-solve-core-constraints"
+    "types/current-evidence-and-remaining-work/types2-check-declared-abstractions"
+    "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts"
+    "tools/finite-service-outcomes-and-remaining-work/docs-documentation-tool-maintainer"
+    "emit/current-evidence-and-remaining-work/emit2-emit-real-outputs"
     "syntax/current-evidence-and-remaining-work/syntax3-invalidate-facts"
     "syntax/current-evidence-and-remaining-work/syntax4-serialize-and-verify"
     "syntax/current-evidence-and-remaining-work/syntax1-construct-canonical-syntax"
