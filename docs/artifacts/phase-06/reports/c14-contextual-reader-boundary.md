@@ -26,11 +26,11 @@ The invocation map is
   :macro-source-mode :development-current}`; the ordinary four-argument API
 continues to retain its pinned macro default.
 
-At the current-main port target, main is
-`84a929dfa6661e7e4fa8ff16f58767b3652f31f7` and the contextual source is
-from candidate `7552eb4fe04167ca87870ea1e947dfc110b58d5b`. These are
-development provenance snapshots, not admission pins. Source byte counts and
-SHA-256 values are:
+The following source table is a historical development snapshot from the
+earlier current-main port target `84a929dfa6661e7e4fa8ff16f58767b3652f31f7`
+and contextual candidate `7552eb4fe04167ca87870ea1e947dfc110b58d5b`. It is
+not the current reviewed source identity and is not an admission pin. Its
+source byte counts and SHA-256 values are:
 
 | Source | Bytes | SHA-256 |
 | --- | ---: | --- |
@@ -39,8 +39,28 @@ SHA-256 values are:
 | C13 | 173647 | `c1209f1f5c448e3b86ec55bcbe2be8ec1896d43097ac222b8470427bca012b63` |
 | Contextual C14 | 5406 | `99453ac8c4711892673b60dd7948ddbb4432dce511a218181968a85731138ba1` |
 
-These identify source, not a successful new execution. Historical source and
-execution receipts keep their original identities.
+These identify historical source, not a successful new execution. Historical
+source and execution receipts keep their original identities.
+
+## Current source-input checkpoint
+
+The clean composed checkpoint is commit
+`082231d0d8cb92e4e4c2cbeb62585d35ebb64700`, tree
+`18827cbad69d5db1a94c44546a736564a0c3b54c`. Its development source inputs
+are:
+
+| Source | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `bootstrap/gravity/src/gravity/bootstrap/reader.gravity` | 246369 | `eec041127cb2785f92e7e2c79d14350d869a0ea8a0194ea3da55f75d52099205` |
+| `bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity` | 563129 | `3dea275512a70ca63b9da6ed8d79e540ca4c776d6e05d21f1dc44e39e62b504b` |
+| `bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity` | 175365 | `7bf71720a67d665206ec55bcbe2be8ec1896d43097f7712f98664fbfa2ca9d597c75a` |
+| `bootstrap/gravity/src/gravity/compiler/c14_literal_bool_contextual_lowering.gravity` | 5406 | `99453ac8c4711892673b60dd7948ddbb4432dce511a218181968a85731138ba1` |
+
+The default `gravity check` / exact C13 source-coverage route retains a
+NONPASS at the pinned C2 source guard: it expects Reader bytes `231576` and
+observes the current Reader bytes `246369`, yielding `C2-HASH`. This is stale
+pinned-source evidence, not malformed current source. No source hash is
+repinned and no default-route failure is relabeled as a pass.
 
 ## Finite acceptance checklist
 
