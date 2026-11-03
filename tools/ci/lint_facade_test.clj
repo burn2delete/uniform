@@ -13,6 +13,17 @@
 (def c2-fragment (str context/c2-pass-cache-prefix "source_snapshot.clj"))
 (def c2-actual (context/c2-pass-cache-plan! context/local-bytes!))
 (defn utf8 [text] (.getBytes ^String text "UTF-8"))
+(defn c2-entry [resources]
+  (utf8 (str "(ns gravity.c2-pass-cache)\n"
+             (apply str (map #(str "(load \"/gravity/c2_pass_cache/" % "\")\n")
+                             resources)))))
+(def historical-c2-inputs
+  (let [current (:inputs c2-actual)]
+    (into (assoc current context/c2-pass-cache
+                 (c2-entry context/c2-pass-cache-historical-resources))
+          (for [resource context/c2-pass-cache-historical-resources
+                :let [path (str context/c2-pass-cache-prefix resource ".clj")]]
+            [path (or (get current path) (utf8 "(def historical-c2-resource true)\n"))]))))
 
 (defn observe! [plan]
   (let [directory (.toFile (java.nio.file.Files/createTempDirectory
@@ -41,7 +52,7 @@
   (is (nil? (find-ns 'gravity.authenticated-artifact-pipeline))))
 
 (deftest actual-c2-facade-resolves-the-selected-fragment
-  (is (= 17 (count (:paths c2-actual))))
+  (is (= 11 (count (:paths c2-actual))))
   (is (= (:paths c2-actual) (:paths (context/selected-plan! context/local-bytes! [c2-fragment]))))
   (let [findings (observe! c2-actual)]
     (is (not-any? #(= :error (:level %)) findings) (pr-str findings))
@@ -49,6 +60,30 @@
                               (#{:warning :error} (:level %))) findings)) (pr-str findings)))
   (is (nil? (find-ns 'gravity.bootstrap)))
   (is (nil? (find-ns 'gravity.c2-pass-cache))))
+
+(deftest historical-c2-facade-recipe-remains-readable
+  (let [read-inputs (fn [path] (or (get historical-c2-inputs path)
+                                   (throw (ex-info "Missing historical C2 fixture" {:path path}))))
+        plan (context/c2-pass-cache-plan! read-inputs)
+        selected (context/selected-plan! read-inputs [context/c2-pass-cache])
+        entry (String. ^bytes (get historical-c2-inputs context/c2-pass-cache) "UTF-8")]
+    (is (= 17 (count (:paths plan))))
+    (is (= (:paths plan) (:paths selected)))
+    (is (some #(str/ends-with? % "/directories.clj") (:paths plan)))
+    (is (some #(str/ends-with? % "/publication.clj") (:paths plan)))
+    (is (thrown? Exception
+                 (context/c2-pass-cache-plan!
+                  (fn [path]
+                    (if (= path context/c2-pass-cache)
+                      (utf8 (str/replace entry "/gravity/c2_pass_cache/lookup\""
+                                         "/gravity/c2_pass_cache/unreviewed\""))
+                      (read-inputs path))))))
+    (is (thrown? Exception
+                 (context/c2-pass-cache-plan!
+                  (fn [path]
+                    (if (= path context/c2-pass-cache)
+                      (utf8 (str entry "(load \"/gravity/c2_pass_cache/unreviewed\")\n"))
+                      (read-inputs path))))))))
 
 (deftest introduced-symbol-and-changed-context-still-block
   (doseq [plan [(update-in actual [:inputs fragment]
