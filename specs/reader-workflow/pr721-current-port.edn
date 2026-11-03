@@ -20,10 +20,10 @@
   :normal-composition-tree "641beb2f3861c1ab08d56626a9d72a8d1e938603"
   :role :dependency-not-pr721-credit}
  :source-checkpoint
- {:commit "30c7a6468511ee56cd3a79fcbeb53eaa20ab7328"
-  :tree "30990d03c2d638c34892c2a2abec4b531c28251e"
-  :parent "cfc803f19a604e33f71a25451bd2f70954073570"
-  :parent-tree "82e02b67e2d9ff33bb1155c76dd2dc29a438742e"
+ {:commit "19b7bbe8e6b50d5b74aa3ab3611d81f5ac37c032"
+  :tree "1510969cd79404f34d6ab1ad8856b1dd96aa4e9f"
+  :parent "6fe4f036ff38bdb79d9481324de929c9ccfcce91"
+  :parent-tree "749e881da3f1238791fa9ce7687689a906be6890"
   :owned-path-count 17
   :worktree-status :clean-before-receipt}
  :path-accounting
@@ -94,7 +94,7 @@
    :original-blob "cd56ea1db9df0e696d3038461ec401e8b737ed2b"
    :original-sha256 "34ffa6e546a73b3d7c0b016eb94ffd0e29e01d6d3a7d3c05b6f32c4a4f69c4b8"
    :current-blob "b052f5b574cb8cce105ab76fe292cc148d7ba087"
-   :current-sha256 "5b8efe0eb8e1f17ef605a1f5eadaa4b22feb68252b5d00e7e0bdfcad7f5ad1e6"
+   :current-sha256 "eae80db0091dd7f9e0b86fa6f4caf33123e40e087f8e357b7c5dd12bb978e2d3"
    :disposition :current-receipt
    :reason :current-base-and-set-evidence-reconciled}
   {:path "specs/reader-workflow/core-session-invocation.md"

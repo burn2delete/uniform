@@ -5,8 +5,8 @@
 This bounded source increment records the private construction invariant needed
 when the selected execution binding is dynamically thread-bound. It is based on
 current main `0e2b37cd2eefbab2f02e5898b960f9bbc4100fef`, and the candidate
-source/test freeze is commit `82537d2cb6ec3bb0ac51f30e7c53f9ead2b59b96`, tree
-`4c7b0bb1422cb4170624249408a93515a64cad92`. It changes only the 00897 guard,
+source/test freeze is commit `19b7bbe8e6b50d5b74aa3ab3611d81f5ac37c032`, tree
+`1510969cd79404f34d6ab1ad8856b1dd96aa4e9f`. It changes only the 00897 guard,
 the private 00898 construction fact, their focused controls, and the current
 scalar-Set controls recorded below.
 
@@ -77,8 +77,8 @@ are source and injected-fixture controls only.
 ## Conformance, acceptance and limits
 
 The frozen source/test tuple is base `0e2b37cd2eefbab2f02e5898b960f9bbc4100fef`,
-commit `82537d2cb6ec3bb0ac51f30e7c53f9ead2b59b96`, and tree
-`4c7b0bb1422cb4170624249408a93515a64cad92`. The worktree was clean before
+commit `19b7bbe8e6b50d5b74aa3ab3611d81f5ac37c032`, and tree
+`1510969cd79404f34d6ab1ad8856b1dd96aa4e9f`. The worktree was clean before
 this documentation metadata commit. An independent affected review is still
 required.
 

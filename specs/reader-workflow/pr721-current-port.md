@@ -16,7 +16,7 @@ claim whole-project acceptance.
 | Normal PR697 dependency source | `8cad807dbd99317baf0a9da622bb9d9ef99650a1` | `b972c6620b59f753a8c0dca85464e0cfced2a826` |
 | PR697 corrected receipt | `c5ca71cd5c0428af72b423d17ba7d62a613b5d7b` | `c8f917f3701f58d2d168f120dd0550a7e3fb46cf` |
 | PR697 normal composition merge | `6ae40925dec3ae486dc63c4963a1bfa60ce633ec` | `641beb2f3861c1ab08d56626a9d72a8d1e938603` |
-| PR721 source/test checkpoint | `30c7a6468511ee56cd3a79fcbeb53eaa20ab7328` | `30990d03c2d638c34892c2a2abec4b531c28251e` |
+| PR721 source/test checkpoint | `19b7bbe8e6b50d5b74aa3ab3611d81f5ac37c032` | `1510969cd79404f34d6ab1ad8856b1dd96aa4e9f` |
 
 The PR697 merge is an explicit current-owner dependency, not PR721 roadmap
 credit. The source checkpoint was clean before this receipt metadata commit.
