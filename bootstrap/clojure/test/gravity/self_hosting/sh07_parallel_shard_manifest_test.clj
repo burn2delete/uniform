@@ -144,8 +144,8 @@
 
 (def ^:private alias-reference-closure
   {:module-ids ["sh07-checked-core"]
-   :paths ["bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
-           "bootstrap/gravity/src/gravity/resolution.gravity"
+   :paths ["language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
+           "language/compiler/src/gravity/resolution.gravity"
            "bootstrap/clojure/fixtures/self-hosting/sh-06/modules/shared-core.gravity"
            "bootstrap/clojure/fixtures/self-hosting/sh-06/modules/shared-core.qst"
            "language/compiler/src/gravity/checked_core.gravity"

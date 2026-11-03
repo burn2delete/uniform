@@ -59,8 +59,8 @@
                 "bootstrap/clojure/test/gravity/self_hosting/sh04_"
                 "bootstrap/clojure/fixtures/self-hosting/sh-03"
                 "bootstrap/clojure/fixtures/self-hosting/sh-04"]
-   "macro" ["bootstrap/gravity/src/gravity/macro.gravity"
-            "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity"
+   "macro" ["language/compiler/src/gravity/macro.gravity"
+            "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity"
             "bootstrap/clojure/src/gravity/macro.clj"
             "bootstrap/clojure/src/gravity/macro_run_storage.clj"
             "bootstrap/clojure/src/gravity/macro_expansion"
@@ -72,8 +72,8 @@
             "bootstrap/clojure/test/gravity/self_hosting/sh05_"
             "bootstrap/clojure/test/gravity/self_hosting/macro_run_storage_test.clj"
             "bootstrap/clojure/fixtures/self-hosting/sh-05"]
-   "resolution" ["bootstrap/gravity/src/gravity/resolution.gravity"
-                 "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
+   "resolution" ["language/compiler/src/gravity/resolution.gravity"
+                 "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
                  "bootstrap/clojure/src/gravity/resolution.clj"
                  "bootstrap/clojure/src/gravity/c5_name_resolution"
                  "bootstrap/clojure/src/gravity/c5_name_resolution.clj"

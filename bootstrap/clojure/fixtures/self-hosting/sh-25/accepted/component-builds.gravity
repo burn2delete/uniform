@@ -186,19 +186,19 @@
     [:syntax-model] 4)
    (sh25-component
     :macro-engine :macro
-    "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity"
+    "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity"
     [:bootstrap-syntax] 5)
    (sh25-component
     :bootstrap-macro :macro
-    "bootstrap/gravity/src/gravity/macro.gravity"
+    "language/compiler/src/gravity/macro.gravity"
     [:macro-engine] 6)
    (sh25-component
     :resolution-engine :analyzer
-    "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
+    "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
     [:bootstrap-macro] 7)
    (sh25-component
     :bootstrap-resolution :analyzer
-    "bootstrap/gravity/src/gravity/resolution.gravity"
+    "language/compiler/src/gravity/resolution.gravity"
     [:resolution-engine] 8)
    (sh25-component
     :core-semantics :checked-core

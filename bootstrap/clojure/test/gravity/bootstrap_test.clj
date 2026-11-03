@@ -3213,12 +3213,12 @@
     (is (some #{"C3"} (:documents syntax-object-model)))
     (is (some #{'verify-c3-syntax-object}
               (map :name (:definitions syntax-object-model))))
-    (is (= "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity"
+    (is (= "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity"
            (:source-path macro-expansion)))
     (is (some #{"C4"} (:documents macro-expansion)))
     (is (some #{'verify-c4-expansion}
               (map :name (:definitions macro-expansion))))
-    (is (= "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
+    (is (= "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
            (:source-path name-resolution)))
     (is (some #{"C5"} (:documents name-resolution)))
     (is (some #{'verify-c5-resolution}
@@ -25697,7 +25697,7 @@
 
 (deftest public-check-accepts-gravity-authored-c4-macro-expansion-engine
   (let [source-path
-        "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity"
+        "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity"
         artifact (bootstrap/check-file-artifact source-path)
         cli-result (run-bin "bin/gravity" "check" source-path)]
     (is (= :gravity/stage0-module-artifact (:kind artifact)))
@@ -25713,7 +25713,7 @@
 
 (deftest public-check-accepts-gravity-authored-c5-name-resolution-namespace-analyzer
   (let [source-path
-        "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
+        "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
         artifact (bootstrap/check-file-artifact source-path)
         cli-result (run-bin "bin/gravity" "check" source-path)]
     (is (= :gravity/stage0-module-artifact (:kind artifact)))

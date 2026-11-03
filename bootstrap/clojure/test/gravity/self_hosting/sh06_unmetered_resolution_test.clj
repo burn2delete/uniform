@@ -7,7 +7,7 @@
 ;; These are semantic checks, not authenticated source/corpus or migration proof.
 (defn- id [n] (format "sha256:%064x" n))
 (def ^:private source
-  (.getCanonicalPath (io/file "bootstrap/gravity/src/gravity/resolution.gravity")))
+  (.getCanonicalPath (io/file "language/compiler/src/gravity/resolution.gravity")))
 (def ^:private resolver-binding (delay (b/sh06-resolution-current-binding! source)))
 (defn- run [function & arguments]
   (b/sh06-resolution-execute! source @resolver-binding function (vec arguments)))
@@ -125,7 +125,7 @@
 
 (deftest actual-compatibility-facade-consumes-the-quota-free-owner-result
   (let [facade (.getCanonicalPath
-                 (io/file "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"))
+                 (io/file "language/compiler/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"))
         emitter (:emitter (b/c-backend-stage2-plan-emitter-source-rule! facade :jvm))
         plan (b/p15-s23-stage2-compiler-artifact-plan emitter facade (slurp facade :encoding "UTF-8"))
         result (run 'sh06-build-resolution-template (request))

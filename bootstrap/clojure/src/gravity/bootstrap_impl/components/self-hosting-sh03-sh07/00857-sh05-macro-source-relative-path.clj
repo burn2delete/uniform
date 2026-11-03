@@ -253,11 +253,11 @@
 
 (def
  sh05-macro-source-relative-path
- "bootstrap/gravity/src/gravity/macro.gravity")
+ "language/compiler/src/gravity/macro.gravity")
 
 (def
  sh05-macro-facade-relative-path
- "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity")
+ "language/compiler/src/gravity/compiler/c4_macro_expansion_engine.gravity")
 
 (def sh05-macro-expected-source-byte-count 56488)
 
