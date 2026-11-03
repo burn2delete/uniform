@@ -100,6 +100,7 @@
             [[(quote quote) 9 []]
              [(quote if) 3 [:condition :then-or-else]]
              [(quote do) 0 []]
+             [(quote do) -1 []]
              [(quote do) 3 [[:expr 0] [:expr 1] [:expr 2]]]
              [(quote let) 2 [:bindings-left-to-right :body-left-to-right]]
              [(quote fn) 2 [:call-arguments-left-to-right]]

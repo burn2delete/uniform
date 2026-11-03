@@ -193,7 +193,7 @@
 ; order construction in Uniform so the hosted caller does not decide it.
 (defn c6-evaluation-order-do [child-count]
   (loop [remaining child-count index 0 result []]
-    (if (= remaining 0)
+    (if (<= remaining 0)
       result
       (recur (- remaining 1)
              (+ index 1)
