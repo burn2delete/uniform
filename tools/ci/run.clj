@@ -727,6 +727,10 @@
                         ["clojure-lint" 60 ["clj-kondo" "--lint" "tools/ci"]]
                         ["clojure-format" 60 ["cljfmt" "check" "tools/ci"]]
                         ["harness-controls" 60 (command "256m" "-M" "tools/ci/run_test.clj")]
+                        ["project-scope-runner-controls" 120
+                         (command "1g" "-M:dev-test"
+                                  "--namespace" "gravity.project-tests.test-scope-runner-test"
+                                  "--fail-fast")]
                         ["progress-controls" 60 (command "128m" "-M" "tools/ci/progress_test.clj")]
                         ["macro-context-controls" 60 (command "256m" "-M" "tools/ci/lint_macro_test.clj")]
                         ["facade-context-controls" 60 (command "256m" "-M" "tools/ci/lint_facade_test.clj")]]
