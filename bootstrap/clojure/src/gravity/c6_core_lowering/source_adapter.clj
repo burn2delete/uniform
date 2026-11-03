@@ -5,7 +5,8 @@
    functions instead of requiring gravity.bootstrap.  The dependency stays
    one-way: a development caller supplies the current-source plan machinery,
    while the normal hosted Clojure operation remains the default route."
-  (:require [clojure.java.io :as io]))
+  (:require [clojure.java.io :as io]
+            [gravity.digest :as digest]))
 
 (def source-relative-path
   "language/compiler/src/gravity/compiler/c6_core_lowering_engine.gravity")
@@ -86,6 +87,7 @@
              {:source-path source-path
               :source-relative-path source-relative-path}))
     (let [source (slurp source-file :encoding "UTF-8")
+          source-hash (str "sha256:" (digest/sha256-hex source))
           emitter-result
           (c-backend-stage2-plan-emitter-source-rule! source-path :jvm)
           emitter (:emitter emitter-result)]
@@ -94,9 +96,15 @@
                "Current C6 source adapter did not receive an emitter"
                {:source-path source-path
                 :emitter-result (select-keys emitter-result [:kind :target])}))
-      (validate-source-plan!
-       source-path
-       (p15-s23-stage2-compiler-artifact-plan emitter source-path source)))))
+      (let [plan (p15-s23-stage2-compiler-artifact-plan
+                  emitter source-path source)]
+        (when-not (= source-hash (get-in plan [:source :sha256]))
+          (fail! "C6-SOURCE-CLASSIFIER-SOURCE-DRIFT"
+                 "Current C6 source plan does not describe the read source"
+                 {:source-path source-path
+                  :expected-source-hash source-hash
+                  :actual-source-hash (get-in plan [:source :sha256])}))
+        (validate-source-plan! source-path plan)))))
 
 (defn c6-form->core-form-operation
   "Build one operation that executes the current source classifier."

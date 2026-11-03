@@ -2,14 +2,53 @@
 
 (defn- compiler-c6-lowering-source-artifact*
   [source-path source-text route repository-root]
+  (when (and (= :development-current route)
+             (not (or (string? repository-root)
+                      (instance? java.io.File repository-root)
+                      (instance? java.nio.file.Path repository-root))))
+    (throw
+     (ex-info
+      "C6 development-current route requires an explicit repository root"
+      {:id "C6-SOURCE-ADOPTION-ROOT"
+       :route route
+       :repository-root repository-root})))
   (source-input/with-context
    (fn []
-     (let [c5-artifact (or *compiler-c6-authenticated-resolution-input*
-                            (compiler-c5-resolution-source-artifact source-path
-                                                                    source-text))
+     (let [current-invocation
+           (when (= :development-current route)
+             (let [root-file (if (instance? java.nio.file.Path repository-root)
+                               (.toFile ^java.nio.file.Path repository-root)
+                               (java.io.File. repository-root))
+                   canonical-path
+                   (fn [relative-path]
+                     (.getCanonicalPath (java.io.File. root-file relative-path)))]
+               {:reader-source-path
+                (canonical-path
+                 "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+                :authenticated-envelope-options {:source :development-current}
+                :syntax-source-selection
+                {:schema :gravity/sh04-development-syntax-selection-v1
+                 :source-path
+                 (canonical-path
+                  "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")}
+                :macro-source-mode :development-current}))
+           c5-artifact (or *compiler-c6-authenticated-resolution-input*
+                            (if current-invocation
+                              (compiler-c5-resolution-source-artifact
+                               source-path source-text
+                               {:artifact :gravity/sh06-module-inputs
+                                :schema-version 1
+                                :module-artifacts []}
+                               (:reader-source-path current-invocation)
+                               current-invocation)
+                              (compiler-c5-resolution-source-artifact source-path
+                                                                       source-text)))
           sh06-input? (= :gravity/sh06-resolution-artifact (:kind c5-artifact))
           sh06-report (when sh06-input?
-                        (sh06-resolution-artifact-verification c5-artifact))
+                        (if current-invocation
+                          (sh06-resolution-artifact-verification
+                           c5-artifact :gravity.bootstrap/legacy current-invocation)
+                          (sh06-resolution-artifact-verification c5-artifact)))
           _ (when (and sh06-input? (not= :passed (:status sh06-report)))
               (c6-lowering-fail! "C6-VERIFY" source-path
                                  {:stage :core-lowering}

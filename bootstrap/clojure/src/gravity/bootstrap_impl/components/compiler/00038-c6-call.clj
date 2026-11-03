@@ -17,23 +17,27 @@
          'gravity.bootstrap/p15-s23-stage2-runtime-execute-function)
         compiler-api
         {:c-backend-stage2-plan-emitter-source-rule!
-         (requiring-resolve
-          'gravity.bootstrap/c-backend-stage2-plan-emitter-source-rule!)
+         @(requiring-resolve
+           'gravity.bootstrap/c-backend-stage2-plan-emitter-source-rule!)
          :p15-s23-stage2-compiler-artifact-plan
-         (requiring-resolve
-          'gravity.bootstrap/p15-s23-stage2-compiler-artifact-plan)}
+         @(requiring-resolve
+           'gravity.bootstrap/p15-s23-stage2-compiler-artifact-plan)}
         plan (current-source-plan repository-root compiler-api)
-        operations (source-operations runtime-execute-function plan)]
+        operations (source-operations @runtime-execute-function plan)]
     (select-keys operations [:c6-form->core-form :c6-eval-order])))
 
 (defn- c6-call-development-current [repository-root f & args]
-  (if *c6-leaf-call?*
-    (apply f args)
-    (let [source-operations
-          (c6-development-current-source-operations repository-root)
-          operations (merge (c6-lowering-ops) source-operations)]
-      (binding [*c6-leaf-call?* true]
-        (c6/with-operations operations #(apply f args))))))
+  (when *c6-leaf-call?*
+    (throw
+     (ex-info
+      "C6 development-current source adoption cannot re-enter an active C6 leaf"
+      {:id "C6-SOURCE-ADOPTION-REENTRY"
+       :route :development-current})))
+  (let [source-operations
+        (c6-development-current-source-operations repository-root)
+        operations (merge (c6-lowering-ops) source-operations)]
+    (binding [*c6-leaf-call?* true]
+      (c6/with-operations operations #(apply f args)))))
 
 (defn- c6-call-route [route repository-root f & args]
   (case route

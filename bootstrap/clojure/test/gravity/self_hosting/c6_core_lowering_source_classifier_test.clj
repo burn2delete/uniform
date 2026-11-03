@@ -5,7 +5,8 @@
             [gravity.bootstrap :as bootstrap]
             [gravity.c6-core-lowering :as c6]
             [gravity.c6-core-lowering.lowering :as lowering]
-            [gravity.c6-core-lowering.source-adapter :as source-adapter]))
+            [gravity.c6-core-lowering.source-adapter :as source-adapter]
+            [gravity.digest :as digest]))
 
 ;; This is a current-source development execution check.  It does not renew
 ;; migration evidence, source pins, or a self-hosting claim.
@@ -87,19 +88,30 @@
 (def ^:private development-route-source-text
   "(ns c6.development.route (:profile :hosted) (:target :jvm)) (def answer 1)")
 
+;; This local C5 artifact shape is only a composition fixture.  It keeps the
+;; adoption test independent of the known pinned C2 reader mismatch; it is not
+;; an authenticated C5/SH06 ingress or a migration/admission claim.
 (defn- development-route-c5-artifact [source-path source-text]
   (assoc c5-artifact
          :artifact-id "sha256:c6-development-route-c5"
          :namespace-analysis {:namespace 'c6.development.route}
          :c4-macro-expansion-artifact
          {:expanded-syntax-stream
-          (bootstrap/read-source-form-records-host-oracle
-           source-path source-text)}))
+          (mapv (fn [index record]
+                  (assoc record
+                         :syntax-id (str "c6-development-route-" index)
+                         :origin :source
+                         :generated-origin []))
+                (range)
+                (bootstrap/read-source-form-records-host-oracle
+                 source-path source-text))}))
 
 (defn- delete-tree! [^java.nio.file.Path root]
   (when (java.nio.file.Files/exists root
                                     (make-array java.nio.file.LinkOption 0))
-    (with-open [paths (java.nio.file.Files/walk root)]
+    (with-open [paths (java.nio.file.Files/walk
+                       root
+                       (make-array java.nio.file.FileVisitOption 0))]
       (doseq [path (reverse (vec (iterator-seq (.iterator paths))))]
         (java.nio.file.Files/deleteIfExists path)))))
 
@@ -249,11 +261,14 @@
         host-classifier-calls (atom 0)
         host-evaluation-order-calls (atom 0)
         c5-calls (atom 0)
+        c5-arguments (atom [])
         reader (fn [path text]
                  (bootstrap/read-source-form-records-host-oracle path text))
-        c5 (fn [path text]
-             (swap! c5-calls inc)
-             (development-route-c5-artifact path text))
+        c5 (fn [& args]
+             (let [[path text] args]
+               (swap! c5-calls inc)
+               (swap! c5-arguments conj args)
+               (development-route-c5-artifact path text)))
         default-artifact
         (with-redefs [bootstrap/compiler-c5-resolution-source-artifact c5
                       bootstrap/read-source-form-records reader
@@ -281,12 +296,97 @@
            development-route-source-path development-route-source-text
            @repository-root))]
     (is (= default-artifact current-artifact))
-    (is (= :complete (:status current-artifact)))
+    (is (= :complete (get-in current-artifact [:c6-lowering-results :status])))
     (is (= :passed
            (get-in current-artifact [:core-verifier-report :status])))
-    (is (= 1 @c5-calls))
+    (is (= 2 @c5-calls))
+    (is (= 2 (count @c5-arguments)))
+    (is (= 2 (count (first @c5-arguments))))
+    (is (= 5 (count (second @c5-arguments))))
+    (is (str/ends-with? (nth (second @c5-arguments) 3) "reader.gravity"))
+    (is (= :development-current
+           (get-in (vec (second @c5-arguments)) [4 :macro-source-mode])))
+    (is (= :development-current
+           (get-in (vec (second @c5-arguments))
+                   [4 :authenticated-envelope-options :source])))
     (is (pos? @host-classifier-calls))
     (is (pos? @host-evaluation-order-calls))))
+
+(deftest development-current-route-builds-source-plan-before-c6-entry
+  (let [current-plan-var
+        (ns-resolve 'gravity.c6-core-lowering.source-adapter
+                    'current-source-plan)
+        c6-call-var (ns-resolve 'gravity.bootstrap 'c6-call)
+        original-current-plan @current-plan-var
+        original-c6-call @c6-call-var
+        phase (atom :before-planning)
+        reader (fn [path text]
+                 (bootstrap/read-source-form-records-host-oracle path text))
+        c5 (fn [path text & _]
+             (development-route-c5-artifact path text))
+        fallback (fn [& _]
+                   (throw
+                    (ex-info
+                     "hosted Clojure C6 operation was called"
+                     {:id "C6-SOURCE-ADOPTION-HOST-FALLBACK"})))]
+    (with-redefs-fn
+      {current-plan-var
+       (fn [& args]
+         (reset! phase :planning)
+         (let [plan (apply original-current-plan args)]
+           (reset! phase :after-planning)
+           plan))
+       c6-call-var
+       (fn [& args]
+         (when (= :planning @phase)
+           (throw
+            (ex-info
+             "source-plan construction re-entered C6"
+             {:id "C6-SOURCE-ADOPTION-CYCLE"})))
+         (apply original-c6-call args))}
+      (fn []
+        (with-redefs [bootstrap/compiler-c5-resolution-source-artifact c5
+                      bootstrap/read-source-form-records reader
+                      lowering/c6-form->core-form fallback
+                      lowering/c6-eval-order fallback]
+          (bootstrap/compiler-c6-lowering-source-artifact-development-current
+           development-route-source-path development-route-source-text
+           @repository-root))))
+    (is (= :after-planning @phase))))
+
+(deftest development-current-route-rejects-nested-c6-reentry
+  (let [leaf-var (ns-resolve 'gravity.bootstrap '*c6-leaf-call?*)
+        reader (fn [path text]
+                 (bootstrap/read-source-form-records-host-oracle path text))
+        c5 (fn [path text & _]
+             (development-route-c5-artifact path text))
+        failure
+        (try
+          (with-bindings {leaf-var true}
+            (with-redefs [bootstrap/compiler-c5-resolution-source-artifact c5
+                          bootstrap/read-source-form-records reader]
+              (bootstrap/compiler-c6-lowering-source-artifact-development-current
+               development-route-source-path development-route-source-text
+               @repository-root)))
+          nil
+          (catch clojure.lang.ExceptionInfo error
+            (ex-data error)))]
+    (is (= "C6-SOURCE-ADOPTION-REENTRY" (:id failure)))
+    (is (= :development-current (:route failure)))))
+
+(deftest development-current-route-requires-explicit-root-before-c5
+  (let [c5-called? (atom false)
+        failure
+        (try
+          (with-redefs [bootstrap/compiler-c5-resolution-source-artifact
+                        (fn [& _] (reset! c5-called? true))]
+            (bootstrap/compiler-c6-lowering-source-artifact-development-current
+             development-route-source-path development-route-source-text nil))
+          nil
+          (catch clojure.lang.ExceptionInfo error
+            (ex-data error)))]
+    (is (= "C6-SOURCE-ADOPTION-ROOT" (:id failure)))
+    (is (false? @c5-called?))))
 
 (deftest development-current-route-retains-real-lowering-gap-rejection
   (let [source-path development-route-source-path
@@ -294,7 +394,7 @@
         "(ns c6.development.route (:profile :hosted) (:target :jvm)) (defn answer [] 1)"
         reader (fn [path text]
                  (bootstrap/read-source-form-records-host-oracle path text))
-        c5 (fn [path text]
+        c5 (fn [path text & _]
              (development-route-c5-artifact path text))
         fallback (fn [& _]
                    (throw
@@ -318,7 +418,7 @@
 (deftest development-current-route-refuses-missing-source-or-abi-without-fallback
   (let [reader (fn [path text]
                  (bootstrap/read-source-form-records-host-oracle path text))
-        c5 (fn [path text]
+        c5 (fn [path text & _]
              (development-route-c5-artifact path text))
         fallback (fn [& _]
                    (throw
@@ -346,10 +446,13 @@
     (let [root (temporary-current-source-root)
           source-file (.resolve root source-adapter/source-relative-path)
           original (slurp (.toFile source-file) :encoding "UTF-8")
-          malformed
+          malformed-signature
           (str/replace-first original
                              "(defn c6-eval-order [form child-count]"
-                             "(defn c6-eval-order [form]")]
+                             "(defn c6-eval-order [form]")
+          malformed (str/replace-first malformed-signature
+                                       "(c6-evaluation-order-do child-count)"
+                                       "(c6-evaluation-order-do 0)")]
       (try
         (spit (.toFile source-file) malformed)
         (let [failure
@@ -380,3 +483,26 @@
           (is (not= (:functions first-plan) (:functions second-plan)))))
       (finally
         (delete-tree! root)))))
+
+(deftest current-source-plan-refuses-source-readback-drift
+  (let [plan-builder bootstrap/p15-s23-stage2-compiler-artifact-plan
+        drifted-api (assoc compiler-api
+                           :p15-s23-stage2-compiler-artifact-plan
+                           (fn [emitter source-path source-text]
+                             (assoc (plan-builder emitter source-path source-text)
+                                    :source {:sha256 "sha256:wrong"})))
+        failure
+        (try
+          (source-adapter/current-source-plan @repository-root drifted-api)
+          nil
+          (catch clojure.lang.ExceptionInfo error
+            (ex-data error)))]
+    (is (= "C6-SOURCE-CLASSIFIER-SOURCE-DRIFT" (:id failure)))
+    (is (= (str "sha256:"
+                (digest/sha256-hex
+                 (slurp (.toFile (.resolve
+                                  ^java.nio.file.Path @repository-root
+                                  source-adapter/source-relative-path))
+                        :encoding "UTF-8")))
+           (:expected-source-hash failure)))
+    (is (= "sha256:wrong" (:actual-source-hash failure)))))
