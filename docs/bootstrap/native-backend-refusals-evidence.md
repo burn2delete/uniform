@@ -105,6 +105,15 @@ evidence paragraph update; no native backend implementation changes are
 introduced. Fresh source-specific captures, independent review, CI artifact
 verification and immediate current-main preflight remain integration gates.
 
+The next normal composition incorporates actual main
+c28077686b5bd641c8cc0717bbd23641a701987a, tree
+67eb8f7ab968c29fc3b58ce7a4ac980ac41e4d21. Its eleven incoming paths
+authenticate selected Syntax owners and preserve the consumer controls. They
+remain byte-identical to main, outside this slice's 25 owned paths. This
+evidence update is the only authored change beyond the reviewed predecessor;
+native backend code, tests, registrations and compatibility behavior remain
+unchanged. Earlier source-specific CI and captures do not transfer.
+
 These are native document-fixture refusals. They do not establish canonical
 C15 findings, verified target IR, profile/effect/capability legality, backend
 execution, input authentication, redaction/binding/publication or certificates.

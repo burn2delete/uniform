@@ -265,6 +265,7 @@
     :sh03-reader-authenticated-envelope-options
     :sh04-syntax-adapter-contract
     :sh04-syntax-boundary-fail!
+    :sh04-development-syntax-context!
     :sh04-syntax-current-binding!
     :sh04-syntax-descriptor-sh03-product-binding
     :sh04-syntax-envelope-stage
@@ -417,6 +418,7 @@
    :sh04-syntax-descriptor-sh03-product-binding
    :p15-s23-stage2-sh02-descriptor-envelope-verify!
    :sh04-syntax-current-binding!
+   :sh04-syntax-verification-binding!
    :sh04-syntax-execute!
    :reader-canonical-hash
    :sh04-syntax-sh02-descriptor
@@ -506,6 +508,7 @@
    :sh04-syntax-adapter-contract
    :sh04-syntax-boundary-fail!
    :sh04-syntax-build-from-fresh-c2!
+   :sh04-development-syntax-context!
    :sh04-syntax-current-binding!
    :sh04-syntax-descriptor-sh03-product-binding
    :sh04-syntax-envelope-stage
@@ -721,8 +724,9 @@
    sh04-result
    (:resolved-result sh04-products)
    gravity-boundary
-   {:plan-binding (:plan-binding sh04-products),
-    :resolved-stream-verification (:stream-verification sh04-products),
+   (cond->
+    {:plan-binding (:plan-binding sh04-products),
+     :resolved-stream-verification (:stream-verification sh04-products),
     :clojure-adapter-residual? true,
     :reader-source-revision (:reader-source-revision sh04-products),
     :authenticated-envelope-descriptor (:descriptor sh04-products),
@@ -742,13 +746,15 @@
      :seed-retirement-credit? false,
      :release-credit? false},
     :reader-semantic-binding (:reader-binding sh04-products),
-    :reader-authentication-provenance
-    (:reader-authentication-provenance sh04-products),
-    :adapter-contract sh04-syntax-adapter-contract,
-    :gravity-syntax-serialization (:serialization sh04-products),
-    :target-source-reread? false,
-    :owner :gravity-source,
-    :authenticated-envelope (:envelope sh04-products)}
+     :reader-authentication-provenance
+     (:reader-authentication-provenance sh04-products),
+     :adapter-contract sh04-syntax-adapter-contract,
+     :gravity-syntax-serialization (:serialization sh04-products),
+     :target-source-reread? false,
+     :owner :gravity-source,
+     :authenticated-envelope (:envelope sh04-products)}
+    (:operation-context sh04-products)
+    (assoc :operation-context (:operation-context sh04-products)))
    serialization
    (c3-syntax-serialization-fixture syntax-stream)
    artifact-base
@@ -858,6 +864,7 @@
     sh04-syntax-descriptor-sh03-product-binding
     p15-s23-stage2-sh02-descriptor-envelope-verify!
     sh04-syntax-current-binding!
+    sh04-syntax-verification-binding!
     sh04-syntax-execute!
     reader-canonical-hash
     sh04-syntax-sh02-descriptor
@@ -893,6 +900,14 @@
         (:syntax-object-stream result)
         source-path
         (get-in c2-artifact [:source-unit-record :path])
+        selected-binding
+        (if (and (map? invocation)
+                 (contains? invocation :syntax-source-selection))
+          ;; Registered literals use a separate projection, but selected
+          ;; current Syntax still has to authenticate its owner binding.
+          (sh04-syntax-verification-binding!
+           source-path invocation gravity-boundary)
+          true)
         serialization-id
         (p15-s23-c6c10-canonical-digest
          source-path
@@ -908,6 +923,7 @@
         (sh04-syntax-registered-literal-projection-authentic?
          c2-artifact
          gravity-boundary)
+        selected-binding
         (= :accepted (:status result))
         (= syntax-stream expected-rich-stream)
         (=
@@ -998,7 +1014,14 @@
            ae-options
            (conj ae-options)))
          binding
-         (sh04-syntax-current-binding! source-path invocation)
+         (if (and (map? invocation)
+                  (contains? invocation :syntax-source-selection))
+          (sh04-syntax-verification-binding!
+           source-path invocation gravity-boundary)
+          ;; No selection is the legacy Reader-only path.  Keep its pinned
+          ;; binding contract; a selected invocation must never fall back to
+          ;; a pinned binding when selected implementation verification fails.
+          (sh04-syntax-current-binding! source-path))
          requests
          (:stream-digest-requests gravity-boundary)
          digests
@@ -1445,92 +1468,96 @@
     (:source-path source)
     (:source-text source))
    identities
-   (sh04-syntax-plan-identities raw-plan)]
-  (if
-   (and
-    (= :gravity/stage2-compiler-artifact-plan (:kind raw-plan))
-    (true? (:compiler-artifact-plan? raw-plan))
-    (= 'gravity.bootstrap.syntax (get-in raw-plan [:module :module]))
-    (= :meta (get-in raw-plan [:module :profile]))
-    (= :jvm (get-in raw-plan [:module :target]))
-    (= #{} (get-in raw-plan [:module :effects]))
-    (= #{} (get-in raw-plan [:module :capabilities]))
-    (= :safe (get-in raw-plan [:module :safety]))
-    (= (get-in raw-plan [:source :sha256])
-       (:source-content-hash source))
-    (if development-current?
-     (= sh04-syntax-public-function-shapes
-        (:public-function-shapes identities))
-     (and
-      (= sh04-syntax-expected-plan-semantic-hash
-         (:plan-semantic-hash identities))
-      (= sh04-syntax-expected-functions-semantic-hash
-         (:functions-semantic-hash identities))
-      (= sh04-syntax-expected-function-count
-         (:function-count identities))
-      (= sh04-syntax-expected-function-names-hash
-         (:function-names-hash identities))
-      (= sh04-syntax-expected-function-shapes-hash
-         (:function-shapes-hash identities))
-      (= sh04-syntax-public-function-hashes
-         (:public-function-hashes identities))
-      (= sh04-syntax-public-function-shapes
-         (:public-function-shapes identities)))))
-   (let
-    [authenticated-plan-base
-      (assoc-in
-       (dissoc raw-plan :plan-id)
-       [:source :byte-count]
-       (:source-byte-count source))
-      plan
-      (assoc
-       authenticated-plan-base
-       :plan-id
-       (str
-        "sha256:"
-        (sha256-hex
-         (pr-str (c-backend-canonical-value authenticated-plan-base)))))]
-     (merge
-      source
-      identities
-      (cond->
-       {:artifact
+   (sh04-syntax-plan-identities raw-plan)
+        common?
+        (and
+         (= :gravity/stage2-compiler-artifact-plan (:kind raw-plan))
+         (true? (:compiler-artifact-plan? raw-plan))
+         (= 'gravity.bootstrap.syntax (get-in raw-plan [:module :module]))
+         (= :meta (get-in raw-plan [:module :profile]))
+         (= :jvm (get-in raw-plan [:module :target]))
+         (= #{} (get-in raw-plan [:module :effects]))
+         (= #{} (get-in raw-plan [:module :capabilities]))
+         (= :safe (get-in raw-plan [:module :safety]))
+         (= (get-in raw-plan [:source :sha256])
+            (:source-content-hash source)))
+        identity?
         (if development-current?
-         :gravity/sh04-development-syntax-plan-binding-v1
-         :gravity/sh04-pinned-syntax-plan-binding),
-        :status :complete,
-        :semantic-authority :gravity-source,
-        :compiled-by :clojure-stage0-seed,
-        :executed-by :clojure-stage2-generic-rule-runner,
-        :generic-bridge-residual? true,
-        :self-hosted? false,
-        :plan plan}
-       development-current?
-       (assoc
-        :source-mode :development-current
-        :revision-status :development-unadmitted
-        :admission-status :development-unadmitted
-        :source-authority :development-current
-        :selected-source-path selected-source-path
-        :program-identity
-        (select-keys
-         identities
-         [:plan-semantic-hash
-          :functions-semantic-hash
-          :function-count
-          :function-names-hash
-          :function-shapes-hash
-          :public-function-hashes
-          :public-function-shapes])))))
+         (= sh04-syntax-public-function-shapes
+            (:public-function-shapes identities))
+         (and
+          (= sh04-syntax-expected-plan-semantic-hash
+             (:plan-semantic-hash identities))
+          (= sh04-syntax-expected-functions-semantic-hash
+             (:functions-semantic-hash identities))
+          (= sh04-syntax-expected-function-count
+             (:function-count identities))
+          (= sh04-syntax-expected-function-names-hash
+             (:function-names-hash identities))
+          (= sh04-syntax-expected-function-shapes-hash
+             (:function-shapes-hash identities))
+          (= sh04-syntax-public-function-hashes
+             (:public-function-hashes identities))
+          (= sh04-syntax-public-function-shapes
+             (:public-function-shapes identities))))
+        valid?
+        (and common? identity?)]
+   (when-not valid?
     (sh04-syntax-boundary-fail!
-     "C3-ID"
-     request-source
-     (if development-current?
-      :current-syntax-plan-and-functions
-      :pinned-syntax-plan-and-functions)
-     identities
-     {:source-mode source-mode,
-      :source-path (:source-path source)})))))
+    "C3-ID"
+    request-source
+    (if development-current?
+     :current-syntax-plan-and-functions
+     :pinned-syntax-plan-and-functions)
+    identities
+    {:source-mode source-mode,
+     :source-path (:source-path source)}))
+  (let
+   [authenticated-plan-base
+    (assoc-in
+     (dissoc raw-plan :plan-id)
+     [:source :byte-count]
+     (:source-byte-count source))
+    plan
+    (assoc
+     authenticated-plan-base
+     :plan-id
+     (str
+      "sha256:"
+      (sha256-hex
+       (pr-str (c-backend-canonical-value authenticated-plan-base)))))]
+   (merge
+    source
+    identities
+    (cond->
+     {:artifact
+      (if development-current?
+       :gravity/sh04-development-syntax-plan-binding-v1
+       :gravity/sh04-pinned-syntax-plan-binding),
+      :status :complete,
+      :semantic-authority :gravity-source,
+      :compiled-by :clojure-stage0-seed,
+      :executed-by :clojure-stage2-generic-rule-runner,
+      :generic-bridge-residual? true,
+      :self-hosted? false,
+      :plan plan}
+     development-current?
+     (assoc
+      :source-mode :development-current
+      :revision-status :development-unadmitted
+      :admission-status :development-unadmitted
+      :source-authority :development-current
+      :selected-source-path selected-source-path
+      :program-identity
+      (select-keys
+       identities
+       [:plan-semantic-hash
+        :functions-semantic-hash
+        :function-count
+        :function-names-hash
+        :function-shapes-hash
+        :public-function-hashes
+       :public-function-shapes]))))))))
 
 (defn
  current-plan-binding!
@@ -3123,6 +3150,7 @@
   summary
   {:keys
    [p15-s23-c6c10-canonical-digest
+    sh04-syntax-boundary-fail!
     sh04-syntax-public-function-hashes
     sh04-syntax-public-function-shapes
     sh04-syntax-sealed-artifact-kind
@@ -3132,6 +3160,10 @@
    :syntax-product-identities
    development-current?
    (= :development-current (:source-mode binding))
+   implementation-name
+   :syntax-implementation-binding
+   implementation
+   (:implementation-projection binding)
    function-hashes
    (if development-current?
     (:public-function-hashes binding)
@@ -3169,6 +3201,13 @@
    (p15-s23-c6c10-canonical-digest
     source-path
     {:syntax-result (:syntax-result-id summary)})]
+  (when (and development-current? (not (map? implementation)))
+   (sh04-syntax-boundary-fail!
+    "C3-ID"
+    source-path
+    :selected-syntax-implementation-binding
+    implementation
+    {}))
   {:proof-composite
    {:proof-records [{:proof-id evidence-id, :status :checked}],
     :proof-certificate-table {evidence-id {:status :checked}},
@@ -3182,10 +3221,16 @@
     :provider-selections [],
     :grant-scopes []},
    :semantic-projections
-   [{:name projection-name,
-     :role :complete-syntax-product-identities,
-     :entry-count (count summary),
-     :value summary}],
+   (cond->
+    [{:name projection-name,
+      :role :complete-syntax-product-identities,
+      :entry-count (count summary),
+      :value summary}]
+    development-current?
+    (conj {:name implementation-name,
+           :role :development-unadmitted-syntax-implementation,
+           :entry-count (count implementation),
+           :value implementation})),
    :stage :c3-syntax,
    :lineage
    [{:stage :sh04-syntax,
@@ -3200,11 +3245,15 @@
      :preimage identity-preimage,
      :observed-id observed-id}],
    :projection-contract
-   {:contract-kind :gravity/sh04-syntax-product-envelope-contract,
+   {:contract-kind (if development-current?
+                     :gravity/sh04-development-syntax-product-envelope-contract-v1
+                     :gravity/sh04-syntax-product-envelope-contract),
     :contract-version 1,
     :profile :meta,
     :target :jvm,
-    :required-semantic-projections [projection-name],
+    :required-semantic-projections
+    (cond-> [projection-name]
+      development-current? (conj implementation-name)),
     :required-fact-families [fact-name],
     :required-identity-subjects [identity-name]},
    :schema-version 2,
@@ -3270,6 +3319,7 @@
     sh03-reader-authenticated-envelope-options
     sh04-syntax-adapter-contract
     sh04-syntax-boundary-fail!
+    sh04-development-syntax-context!
     sh04-syntax-current-binding!
     sh04-syntax-descriptor-sh03-product-binding
     sh04-syntax-envelope-stage
@@ -3618,23 +3668,27 @@
       :provenance-binding-id]),
     :actual-reader-product-integrity-hash
     (get-in c2-artifact [:reader-product-integrity :integrity-hash])}]
-  {:plan-binding (dissoc binding :plan :source-text),
-   :envelope envelope,
-   :descriptor descriptor,
-   :rich-syntax rich-syntax,
-   :reader-source-revision reader-source-revision,
-   :deserialization deserialization,
-   :stream-verification stream-verification,
-   :reader-binding reader-binding,
-   :summary summary,
-   :serialization-id serialization-id,
-   :stream-resolved-digests stream-digests,
-   :raw-template-results (mapv :raw-result all-products),
-   :stream-digest-requests stream-requests,
-   :reader-authentication-provenance reader-authentication-provenance,
-   :resolved-result resolved-stream,
-   :serialization serialization,
-   :stream-template-result stream-template-result}))
+  (cond->
+   {:plan-binding (dissoc binding :plan :source-text),
+    :envelope envelope,
+    :descriptor descriptor,
+    :rich-syntax rich-syntax,
+    :reader-source-revision reader-source-revision,
+    :deserialization deserialization,
+    :stream-verification stream-verification,
+    :reader-binding reader-binding,
+    :summary summary,
+    :serialization-id serialization-id,
+    :stream-resolved-digests stream-digests,
+    :raw-template-results (mapv :raw-result all-products),
+    :stream-digest-requests stream-requests,
+    :reader-authentication-provenance reader-authentication-provenance,
+    :resolved-result resolved-stream,
+    :serialization serialization,
+    :stream-template-result stream-template-result}
+   (and invocation sh04-development-syntax-context!)
+   (assoc :operation-context
+          (sh04-development-syntax-context! source-path invocation)))))
 
 (defn
  assemble-reader!
