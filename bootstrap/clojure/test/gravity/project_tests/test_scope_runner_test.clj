@@ -41,8 +41,8 @@
         (is (contains? bootstrap 'gravity.bootstrap.rebuild.macro-plan-test))
         (is (every? #(contains? (set (scope/scope-namespaces :compiler)) %)
                     (map symbol (map second
-                         (partition 2
-                                    (scope/normalize-development-args :compiler []))))))))))
+                                     (partition 2
+                                                (scope/normalize-development-args :compiler []))))))))))
 
 (deftest empty-development-invocation-selects-only-its-scope
   (let [arguments (scope/normalize-development-args :language [])]

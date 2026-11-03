@@ -618,12 +618,12 @@
     (with-redefs [ci/source-test-specs-for-mode present-specs]
       (let [bootstrap-command (some #(when (= "bootstrap-macro-plan" (first %)) %)
                                     (ci/commands-for-selection "bootstrap"
-                                                                {:kind :selected
-                                                                 :paths ["bootstrap/clojure/src/gravity/reader.clj"]}))
+                                                               {:kind :selected
+                                                                :paths ["bootstrap/clojure/src/gravity/reader.clj"]}))
             checked-command (some #(when (= "checked-core-source-tests" (first %)) %)
                                   (ci/commands-for-selection "checked-core-runtime"
-                                                              {:kind :selected
-                                                               :paths ["language/compiler/src/gravity/checked_core.gravity"]}))]
+                                                             {:kind :selected
+                                                              :paths ["language/compiler/src/gravity/checked_core.gravity"]}))]
         (is (= ["gravity.bootstrap.rebuild.macro-plan-test"]
                (namespaces bootstrap-command)))
         (is (= 900 (second bootstrap-command)))
@@ -654,10 +654,10 @@
                                                     {:kind :full}))))
       (is (empty? (filter source-command-ids
                           (map first (ci/commands-for-selection "bootstrap"
-                                                                  {:kind :full})))))
+                                                                {:kind :full})))))
       (is (empty? (filter source-command-ids
                           (map first (ci/commands-for-selection "checked-core-runtime"
-                                                                  {:kind :full})))))
+                                                                {:kind :full})))))
       ;; The released Macro partition is independent of optional source
       ;; population and must keep all three existing children unchanged.
       (is (= ["macro-pipeline-cohort" "macro-receipt-controls"
