@@ -447,10 +447,10 @@
    ;; Preserve PR564's historical/applying bridge while binding the current
    ;; composed task ledger separately; these bytes include only pending source
    ;; criteria and do not promote implementation or library acceptance.
-   :current-source-ref "f9f56c6dffb92d6e8ca5a32ecc5c791d69d1e5db"
-   :current-source-tree "d93d45d8b6c81d229d205569016799b8733b185e"
-   :current-source-blob "bdd08edd8b49cdf4444cfe6fd4855cec58b9fa60"
-   :current-source-sha256 "c0f5795d8d827fa9a7fc43f2930e780252c74744da350f02449c2224e1935def"
+   :current-source-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d"
+   :current-source-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7"
+   :current-source-blob "256b28deeca97929fe7240c1b8672ce42dbf3d2a"
+   :current-source-sha256 "3c863b16b7798f72aa50b9297ed126c044d7357b7002bc0ef789d65fba261055"
    :task-ids ["stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
               "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis"
               "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis"

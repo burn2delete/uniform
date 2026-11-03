@@ -853,16 +853,22 @@
                              (do (when-not (= expected (count rows))
                                    (throw (ex-info "Future task population changed" {:region region})))
                                  [region rows])))
-        _ (let [captured (into {} (map (juxt :id identity)
-                                      (or (get-in readiness-source-version [:error-refinement :future-task-source-successor :after])
-                                          (get-in readiness-source-version [:protocol-refinement :future-task-source-successor :after])
-                                          (get-in readiness-source-version [:macro-refinement :future-task-source-successor :after])
-                                          (:future-task-records readiness-source-version)
-                                          (get-in readiness-source-version [:future-dependency-refinement :task-records]))))
+        _ (let [current-successors [(get-in readiness-source-version [:error-refinement :future-task-source-successor :after])
+                                     (get-in readiness-source-version [:protocol-refinement :future-task-source-successor :after])]
+                successors (if (some some? current-successors)
+                             (do (when-not (every? some? current-successors)
+                                   (throw (ex-info "Current protocol/error successors are incomplete" {})))
+                                 current-successors)
+                             (keep identity
+                                   [(get-in readiness-source-version [:macro-refinement :future-task-source-successor :after])
+                                    (:future-task-records readiness-source-version)
+                                    (get-in readiness-source-version [:future-dependency-refinement :task-records])]))
+                captured-successors (mapv #(into {} (map (juxt :id identity) %)) successors)
                 actual (into {} (for [row (mapcat val future-tasks)]
                                   [(:id row) (assoc (select-keys row [:id :region :component :path :checked :source-commit :file-sha256])
                                                    :body-sha256 (get-in row [:source :sha256]))]))]
-            (when-not (= captured actual)
+            (when-not (and (seq captured-successors)
+                           (every? #(= % actual) captured-successors))
               (throw (ex-info "Future task sources differ from explicit readiness successor" {}))))
         _ (doseq [[c rows] tasks]
             (when-not (= (set (map :id rows)) (set (stable-task-routing-keys c)))

@@ -7114,5 +7114,49 @@
     (is (= :two-complete-hosted-files-static-only-no-execution
            (get-in r [:implementation-source-inspection :scope])))))
 
+(deftest current-error-source-bridge-preserves-finite-predicates-and-tamper-evidence
+  (let [bridge sh-crosswalk/readiness-source-version
+        r (:error-refinement bridge)
+        view (sh-crosswalk/source-view)
+        captured (into {} (map (juxt :id identity)
+                               (get-in r [:future-task-source-successor :after])))
+        actual (into {} (map (juxt :id identity)
+                             (mapcat val (:future-task-authorities view))))
+        metadata (fn [row]
+                   (assoc (select-keys row [:id :region :component :path :checked
+                                             :source-commit :file-sha256])
+                          :body-sha256 (or (:body-sha256 row)
+                                           (get-in row [:source :sha256]))))
+        retained (:retained-finite-predicates r)]
+    (is (= (:source-input-commit bridge) (:source-commit r)))
+    (is (= :complete-L9-cross-component-error-source-proposal (:kind r)))
+    (is (= 23 (count (:criteria r))))
+    (is (= 18 (count (:changed-task-ids r))))
+    (is (= [] (:new-task-identities r)))
+    (is (= 89 (count (:source-facets r))))
+    (is (= 56 (count (:occurrence-cases r))))
+    (is (= 14 (count (:section-conjunctions r))))
+    (is (= 8 (count (:owner-joins r))))
+    (is (= {:context 23 :semantic 65 :unresolved 1}
+           (:census-kind-population r)))
+    (is (= 40 (count captured) (count actual)))
+    (is (= #{:finite-ai :finite-workflow :finite-check :finite-panic
+             :finite-foreign :finite-outcome :error-change}
+           (set (keys retained))))
+    (is (= [1125 1111 995 1229 1809 534 1032]
+           (mapv :bytes (map retained [:finite-ai :finite-workflow :finite-check
+                                       :finite-panic :finite-foreign :finite-outcome
+                                       :error-change]))))
+    (doseq [[_ row] retained]
+      (is (= :none (:implementation-credit row))))
+    (is (= :unassessed (:implementation-acceptance r)))
+    (is (= :pending (:independent-current-review r)))
+    (doseq [[id row] captured]
+      (is (= (metadata row) (metadata (actual id)))))
+    (with-redefs [sh-crosswalk/readiness-source-version
+                  (assoc-in bridge [:error-refinement :future-task-source-successor
+                                    :after 0 :body-sha256] "forged")]
+      (is (thrown? Exception (sh-crosswalk/source-view))))))
+
 (let [result (run-tests 'sh-crosswalk-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))
