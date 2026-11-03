@@ -13,7 +13,7 @@ compiler migration or release acceptance.
 | static | Always | Always | actionlint 1.7.12 workflow syntax; clj-kondo 2025.10.23 on changed Clojure/EDN files and CI tooling; cljfmt 0.13.4 on CI tooling; Git whitespace; harness failure controls. Legacy format adoption remains separate. |
 | contracts (projections) | Always | Always | Canonical 240-document validator, full-language roadmap schema and negative fixtures, acceptance dependency controls, every existing component task projector and its tests. |
 | bootstrap | Always | Always | Fresh process requires Bootstrap without preinstalled aliases; exact decimal/abbreviation Reader regressions; language boundary; strict catalog controls and ownership inventory. No modeled aliases installed by this harness. |
-| macro | Always | Always | Fresh macro pipeline and Bootstrap compatibility regressions in an isolated child process. |
+| macro | Always | Always | Three sequential fresh children: ordinary Macro pipeline cohort, exact receipt/callback controls, and complete Bootstrap C4 compatibility namespace. Each retains its independent 900-second watchdog and normal fixtures. |
 | checked-core-runtime | Always | Always | Checked-Core pipeline, current-binding and projection-kernel regressions in isolated child processes. |
 | resolution-pipeline, resolution-unmetered, and resolution-invocation-selection | Always | Always | Three serialized Resolution matrix jobs retain separate logs/receipts. `resolution-pipeline` runs two sequential fresh children (cohort and fresh replay), each with a 600-second command watchdog; the other two modes run one fresh child each. |
 | fresh-leaf-regressions / portable and / darwin | Markdown-only PRs omit leaves; otherwise the reviewed source/test require-closure selects affected catalog entries. Unknown, cross-cutting, structural, or closure-discovery changes use the full platform catalog. A verified unselected selectable leaf retains its required check and skipped receipt but resolves to Ubuntu; selected and fail-closed leaves retain their matrix runner. | Full fresh catalog | 52 portable namespaces on Ubuntu and one Darwin publication namespace on ARM macOS with its exact JDK 26.0.1 contract. Every selected namespace gets a fresh JVM; the catalog partition is exhaustive and disjoint. No cross-run result cache is used. This is not the full compiler suite. |
@@ -84,22 +84,40 @@ Darwin publication and the unsupported-host refusal probe always run on their
 actual required macOS/JDK platform. Main, manual, and scheduled runs use the
 full catalog.
 
-### Proposed Macro execution cohorts
+### Macro execution cohorts
 
-The draft Macro orchestration repair retains all current pipeline and Bootstrap
-compatibility test bodies and normal fixtures. It separates the twenty ordinary
-pipeline tests, three receipt/callback controls, and five compatibility tests
-into three sequential fresh JVM children. Each retains a 900-second watchdog;
-only the Macro hosted envelope will cover all three children and setup/cleanup.
-Source-inventory controls must prove exhaustive, disjoint selection, and any
-child failure remains a failed Macro job with its receipt preserved.
+The Macro mode retains all pipeline and Bootstrap compatibility test bodies and
+normal fixtures. It selects the three receipt/callback controls by exact name,
+the complement of those names in the same pipeline namespace by regex, and the
+whole compatibility namespace. Source-inventory controls prove exhaustive,
+disjoint selection; new ordinary pipeline tests join the complement rather than
+being omitted. The reviewed source contains twenty ordinary, three control and
+five compatibility tests. Each fresh child retains a 900-second watchdog.
+Only the Macro matrix job has a 50-minute hosted envelope, covering three
+sequential children and setup, cleanup and artifact upload. Other ordinary
+checks retain their 20-minute envelope; Resolution retains its separate
+25-minute envelope and 600-second children. Any child failure remains a failed
+Macro job, later children still produce their evidence, and receipts/cleanup
+remain owned by the unchanged runner.
 
 The prior combined run 41713342032 timed out in 900071ms after twenty-five
 test returns, during real-paired-macro-expansion-retains-identities-provenance-and-output.
-That nonpass remains bound to its old source/provider. The proposed partition
-is an execution boundary, not a compiler change, performance fix, waived test,
-or retrospective pass. Runner, workflow, tests, own CI and exact integration
-verification remain required before this draft is integrated.
+That nonpass remains bound to its old source/provider. This partition changes
+execution boundaries and does not claim a compiler or performance fix, waive
+tests, or reclassify historical failures. New source-specific command IDs and
+receipts identify the three children. Compiler, migration, release and
+self-hosting acceptance still require their separate evidence.
+
+TEST2, C18 and D1/D2/D3/D6/D8/D9 govern this orchestration boundary. Runner
+controls cover source-inventory completeness, disjoint selectors, missing or
+overlapping selection, retained negative fixtures, failure propagation and
+all-child receipt production. They pass 45 tests/487 assertions alongside
+pinned actionlint, clj-kondo and cljfmt checks and the language boundary.
+The first new control had a lexical-scope parenthesis error and failed before
+test execution; that log is retained, and the corrected controls pass without
+altering any compiler or Macro test body. Real execution of all three children,
+exact source review, candidate-owned CI/artifact audit and immediate current-main
+preflight remain separate requirements.
 
 ## Requirements and dependencies
 
