@@ -6,7 +6,9 @@
             [gravity.pass-cache.entry-schema :as entry-schema]
             [gravity.pass-cache.path-policy :as path-policy]
             [gravity.pass-cache.policy :as policy]
-            [gravity.pass-cache.receipt-validation :as receipt-validation])
+            [gravity.pass-cache.receipt-validation :as receipt-validation]
+            [gravity.pass-execution :as pass-execution]
+            [gravity.pass-execution.contract :as pass-contract])
   (:import [java.nio.file Files LinkOption Path StandardOpenOption]
            [java.util.concurrent TimeUnit]
            [java.nio.file.attribute PosixFilePermissions]))
@@ -245,7 +247,6 @@
                             (dissoc :validate-output!)
                             (assoc :validate-artifact! recovery))
         requested (fn [artifact _ _ _] artifact)
-        output (:validate-output! ordinary)
         handoff (fn [error _] (throw error))
         split (assoc ordinary
                      :validate-artifact! recovery
@@ -963,25 +964,93 @@
 
 (deftest exact-operation-and-authority-claims-are-required
   (let [base (request) key (cache/stage-cache-key base) calls (atom {})
-        ops (operations calls)]
-    (let [directory (Files/createTempDirectory
-                     "gravity-pass-cache-test-"
-                     (make-array java.nio.file.attribute.FileAttribute 0))]
-      (try
-        (let [store (cache/open-local-store directory)
-              result (cache/lookup-or-compute! store key base ops)
-              receipt (assoc-in (:producer-receipt result)
-                                [:authority :aggregate-authoritative?] true)]
-          (is (thrown? clojure.lang.ExceptionInfo
-                       (cache/lookup! store key (assoc ops :unknown true))))
-          (is (thrown? clojure.lang.ExceptionInfo
-                       (cache/lookup! store key
-                                      (dissoc ops :validate-output!))))
-          (is (thrown? clojure.lang.ExceptionInfo
-                       (cache/store! store key (:artifact result) receipt ops)))
-          (is (false? (get-in result [:cache-evidence :release?])))
-          (is (false? (get-in result [:cache-evidence :proof?]))))
-        (finally (delete-tree! directory))))))
+        ops (operations calls)
+        directory (Files/createTempDirectory
+                   "gravity-pass-cache-test-"
+                   (make-array java.nio.file.attribute.FileAttribute 0))]
+    (try
+      (let [store (cache/open-local-store directory)
+            result (cache/lookup-or-compute! store key base ops)
+            receipt (assoc-in (:producer-receipt result)
+                              [:authority :aggregate-authoritative?] true)]
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (cache/lookup! store key (assoc ops :unknown true))))
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (cache/lookup! store key
+                                    (dissoc ops :validate-output!))))
+        (is (thrown? clojure.lang.ExceptionInfo
+                     (cache/store! store key (:artifact result) receipt ops)))
+        (is (false? (get-in result [:cache-evidence :release?])))
+        (is (false? (get-in result [:cache-evidence :proof?]))))
+      (finally (delete-tree! directory)))))
+
+(deftest stage-cache-key-validates-contract-once
+  (let [calls (atom 0)
+        original pass-contract/validate-pass-contract!]
+    (with-redefs [pass-contract/validate-pass-contract!
+                  (fn [value]
+                    (swap! calls inc)
+                    (original value))]
+      (cache/stage-cache-key (request)))
+    (is (= 1 @calls))))
+
+(deftest stage-cache-key-retains-validator-interposition
+  (let [calls (atom 0)
+        original pass-execution/validate-pass-contract!]
+    (with-redefs [pass-execution/validate-pass-contract!
+                  (fn [value]
+                    (swap! calls inc)
+                    (original value))]
+      (cache/stage-cache-key (request)))
+    (is (= 1 @calls))))
+
+(deftest redefined-validator-keeps-canonical-id-check
+  (let [request (assoc-in (request) [:contract :unknown] true)
+        failure (with-redefs [pass-execution/validate-pass-contract!
+                              (fn [_] nil)]
+                  (try
+                    (cache/stage-cache-key request)
+                    nil
+                    (catch clojure.lang.ExceptionInfo error
+                      error)))]
+    (is (= "C1-PASS-CONTRACT" (:id (ex-data failure))))))
+
+(deftest standalone-stage-validation-still-runs-validator
+  (let [calls (atom 0)
+        validate-stage-request!
+        (var-get (ns-resolve 'gravity.pass-cache.request-key
+                             'validate-stage-request!))
+        original pass-execution/validate-pass-contract!]
+    (with-redefs [pass-execution/validate-pass-contract!
+                  (fn [value]
+                    (swap! calls inc)
+                    (original value))]
+      (validate-stage-request! (request)))
+    (is (= 1 @calls))))
+
+(deftest stage-cache-key-retains-contract-id-interposition
+  (let [calls (atom [])
+        original pass-execution/pass-contract-id
+        original-validator pass-execution/validate-pass-contract!]
+    (with-redefs [pass-execution/pass-contract-id
+                  (fn [value]
+                    (swap! calls conj :id)
+                    (original value))]
+      (with-redefs [pass-execution/validate-pass-contract!
+                    (fn [value]
+                      (swap! calls conj :validate)
+                      (original-validator value))]
+        (cache/stage-cache-key (request))))
+    (is (= [:validate :id] @calls))))
+
+(deftest invalid-contract-is-still-rejected
+  (let [request (assoc-in (request) [:contract :unknown] true)
+        failure (try
+                  (cache/stage-cache-key request)
+                  nil
+                  (catch clojure.lang.ExceptionInfo error
+                    error))]
+    (is (= "C1-PASS-CONTRACT" (:id (ex-data failure))))))
 
 (deftest different-key-producers-overlap-while-same-key-is-serialized
   (let [directory (Files/createTempDirectory
