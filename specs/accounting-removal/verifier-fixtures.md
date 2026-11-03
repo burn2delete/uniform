@@ -157,16 +157,21 @@ source. No paired execution or runtime value is claimed for `.qst`.
 
 ## Current-port evidence
 
-The following finite checks passed on the immutable source input before this
-report repair. Logs are local evidence artifacts, not authority or release
-receipts:
+The first finite checks below are historical evidence from the immutable source
+input before this report repair and before normal composition. Logs are local
+evidence artifacts, not authority or release receipts:
 
 - `clojure -J-Xmx2g -M:dev-test --namespace gravity.self-hosting.sh08-function-call-type-test --exact ordinary-function-construction-preserves-semantic-results --exact qualified-map-get-construction-preserves-semantic-results --exact function-verifier-source-reconstruction-and-tampering --fail-fast`
   passed 3 tests / 78 assertions, 0 failures/errors;
   log `/tmp/uniform-pr599-focused.log`.
 - `clojure -J-Xmx2g -M:dev-test --namespace gravity.syntax.pipeline-test --exact genuine-paired-products-use-the-stage-and-preserve-identity --exact pinned-runtime-builds-the-real-plan-and-rechecks-cache-freshness --exact pinned-source-refuses-real-byte-length-and-content-drift --exact development-current-syntax-binding-is-explicit-and-unadmitted --exact development-current-syntax-rejects-selection-mode-and-source-tampering --fail-fast`
   passed 5 tests / 64 assertions, 0 failures/errors;
-  log `/tmp/uniform-pr599-syntax-regression-focused.log`.
+  log `/tmp/uniform-pr599-syntax-regression-focused.log`. The positive pinned
+  plan-replay control was retired during composition because current main's
+  accounting-removal source guard correctly rejects the stale frozen pin. Its
+  direct byte-length/content-hash coverage was restored under the current
+  `pinned-source-guards-byte-count-and-content-hash` control below, using a
+  synthetic current-byte oracle without admitting a pinned plan.
 - `clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test --fail-fast`
   passed 6 tests / 11 assertions; log `/tmp/uniform-pr599-boundary.log`.
 - `clojure -M tools/validate_gravity_docs.clj` passed 240 docs / 19 indexes;
@@ -174,6 +179,22 @@ receipts:
 - `clojure -M tools/validate_full_language_roadmap.clj` passed its structural
   validation; log `/tmp/uniform-pr599-roadmap.log`.
 - `git diff --check` and clean-status checks passed on the frozen input.
+
+The final composed tree then reran the affected controls:
+
+- The same three SH08 controls passed 3 tests / 78 assertions, 0 failures/errors;
+  log `/tmp/uniform-pr599-current-merge-sh08.log`.
+- `clojure -J-Xmx2g -M:dev-test --namespace gravity.syntax.pipeline-test --exact genuine-paired-products-use-the-stage-and-preserve-identity --exact pinned-runtime-refuses-stale-source-before-plan-replay --exact pinned-source-refuses-current-source-after-quota-removal --exact pinned-source-guards-byte-count-and-content-hash --exact development-current-syntax-binding-is-explicit-and-unadmitted --exact development-current-syntax-rejects-selection-mode-and-source-tampering --fail-fast`
+  passed 6 tests / 62 assertions, 0 failures/errors;
+  log `/tmp/uniform-pr599-current-merge-syntax-guards.log`.
+- The paired resolution controls for pinned/default source admission and
+  ReaderOnly macro/syntax selection passed 3 tests / 9 assertions;
+  log `/tmp/uniform-pr599-current-merge-reader-only.log`.
+- The final boundary, docs, and roadmap checks passed respectively 6/11,
+  240 docs / 19 indexes, and structural validation; logs are
+  `/tmp/uniform-pr599-current-merge-boundary.log`,
+  `/tmp/uniform-pr599-current-merge-docs.log`, and
+  `/tmp/uniform-pr599-current-merge-roadmap.log`.
 
 No native C compiler, C12 execution, broker/restricted process route, full
 namespace suite, release, self-hosting, source-authentication, or migration
