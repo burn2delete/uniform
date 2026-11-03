@@ -228,6 +228,46 @@
       "test": {"path": "bootstrap/clojure/test/gravity/backend/llvm/pipeline_test.clj", "namespace": "gravity.backend.llvm.pipeline-test", "registration": "standalone"}
     },
     {
+      "id": "mlir-diagnostic-data",
+      "kind": "production-stage-helper",
+      "owner": "sh-target-mlir",
+      "source": {"path": "bootstrap/clojure/src/gravity/backend/mlir.clj", "namespace": "gravity.backend.mlir"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00242-b6-document-source-artifact.clj", "namespace": "gravity.bootstrap", "owner": "sh-target-mlir"},
+      "test": {"path": "bootstrap/clojure/test/gravity/backend/mlir/pipeline_test.clj", "namespace": "gravity.backend.mlir.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "gpu-diagnostic-data",
+      "kind": "production-stage-helper",
+      "owner": "sh-target-gpu",
+      "source": {"path": "bootstrap/clojure/src/gravity/backend/gpu.clj", "namespace": "gravity.backend.gpu"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00246-b7-document-source-artifact.clj", "namespace": "gravity.bootstrap", "owner": "sh-target-gpu"},
+      "test": {"path": "bootstrap/clojure/test/gravity/backend/gpu/pipeline_test.clj", "namespace": "gravity.backend.gpu.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "hdl-diagnostic-data",
+      "kind": "production-stage-helper",
+      "owner": "sh-target-hdl",
+      "source": {"path": "bootstrap/clojure/src/gravity/backend/hdl.clj", "namespace": "gravity.backend.hdl"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00250-b8-document-source-artifact.clj", "namespace": "gravity.bootstrap", "owner": "sh-target-hdl"},
+      "test": {"path": "bootstrap/clojure/test/gravity/backend/hdl/pipeline_test.clj", "namespace": "gravity.backend.hdl.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "workflow-diagnostic-data",
+      "kind": "production-stage-helper",
+      "owner": "sh-target-workflow",
+      "source": {"path": "bootstrap/clojure/src/gravity/backend/workflow.clj", "namespace": "gravity.backend.workflow"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00254-b9-document-source-artifact.clj", "namespace": "gravity.bootstrap", "owner": "sh-target-workflow"},
+      "test": {"path": "bootstrap/clojure/test/gravity/backend/workflow/pipeline_test.clj", "namespace": "gravity.backend.workflow.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "query-diagnostic-data",
+      "kind": "production-stage-helper",
+      "owner": "sh-target-query",
+      "source": {"path": "bootstrap/clojure/src/gravity/backend/query.clj", "namespace": "gravity.backend.query"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00258-b10-document-source-artifact.clj", "namespace": "gravity.bootstrap", "owner": "sh-target-query"},
+      "test": {"path": "bootstrap/clojure/test/gravity/backend/query/pipeline_test.clj", "namespace": "gravity.backend.query.pipeline-test", "registration": "standalone"}
+    },
+    {
       "id": "c-emission",
       "kind": "production-stage-helper",
       "owner": "sh-target-c",

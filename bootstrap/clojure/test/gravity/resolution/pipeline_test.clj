@@ -1,9 +1,30 @@
 (ns gravity.resolution.pipeline-test
   (:require [clojure.java.io :as io]
-            [clojure.test :refer [deftest is]]
+            [clojure.test :as test :refer [deftest is]]
             [gravity.bootstrap :as b]
             [gravity.reader.identity-expectations :as expected]
             [gravity.resolution :as resolution]))
+
+(defn- report-test-timings [run-tests]
+  (let [report test/report starts (atom {})]
+    (with-redefs [test/report
+                  (fn [event]
+                    (when-let [v (:var event)]
+                      (case (:type event)
+                        :begin-test-var
+                        (do (swap! starts assoc v (System/nanoTime))
+                            (prn {:event :resolution-test-start :test (:name (meta v))})
+                            (flush))
+                        :end-test-var
+                        (when-let [started (get @starts v)]
+                          (prn {:event :resolution-test-end :test (:name (meta v))
+                                :elapsed-ms (/ (- (System/nanoTime) started) 1000000.0)})
+                          (flush))
+                        nil))
+                    (report event))]
+      (run-tests))))
+
+(test/use-fixtures :once report-test-timings)
 
 (defn- seed-var [name]
   (or (ns-resolve 'gravity.bootstrap name)

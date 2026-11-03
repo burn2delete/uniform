@@ -165,52 +165,16 @@
 
 (defn b7-document-source-overrides
   [module]
-  (or (get-in module [:metadata :backend :b7-document])
-      (get-in module [:metadata :backend :native-lowering])
-      (get-in module [:metadata :backend :native])
-      {}))
+  (gravity.backend.mlir/source-overrides module))
 
 (defn b7-document-missing-fact
   [id]
-  (case id
-    "B7-DIALECT" :declared-dialect-operation-registry
-    "B7-VERIFY" :mlir-verifier-report
-    "B7-CONVERSION" :conversion-target-legality-evidence
-    "B7-METADATA" :source-proof-safety-capability-metadata
-    "B7-EFFECT" :effect-memory-order-preservation-record
-    "B7-NUMERIC" :numeric-mode-dialect-attribute-map
-    "B7-ALIAS" :alias-ownership-lifetime-map
-    "B7-PASS" :pass-invalidation-repair-record
-    "B7-HANDOFF" :downstream-handoff-manifest
-    "B7-MANIFEST" :complete-mlir-backend-manifest
-    :b7-document-evidence))
+  (gravity.backend.mlir/missing-fact id))
 
 (defn b7-document-mlir-operation
   [id]
-  (case id
-    "B7-DIALECT" "gravity.checked_add"
-    "B7-VERIFY" "func.func"
-    "B7-CONVERSION" "arith.addi"
-    "B7-METADATA" "loc"
-    "B7-EFFECT" "MemoryEffectOpInterface"
-    "B7-NUMERIC" "arith.addi"
-    "B7-ALIAS" "memref.load"
-    "B7-PASS" "canonicalize"
-    "B7-HANDOFF" "llvm.func"
-    "B7-MANIFEST" "gravity/mlir-backend-manifest"
-    "gravity.checked_add"))
+  (gravity.backend.mlir/mlir-operation id))
 
 (defn b7-document-dialect
   [id]
-  (case id
-    "B7-DIALECT" :gravity.mir
-    "B7-VERIFY" :func
-    "B7-CONVERSION" :llvm
-    "B7-METADATA" :builtin
-    "B7-EFFECT" :memref
-    "B7-NUMERIC" :arith
-    "B7-ALIAS" :memref
-    "B7-PASS" :canonicalize
-    "B7-HANDOFF" :llvm
-    "B7-MANIFEST" :gravity.backend/mlir
-    :gravity.mir))
+  (gravity.backend.mlir/dialect id))

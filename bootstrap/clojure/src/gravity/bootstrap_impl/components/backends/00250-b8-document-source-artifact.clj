@@ -149,37 +149,15 @@
 
 (defn b9-document-source-overrides
   [module]
-  (or (get-in module [:metadata :backend :b9-document])
-      (get-in module [:metadata :backend :specialized-lowering])
-      (get-in module [:metadata :backend :specialized])
-      {}))
+  (gravity.backend.hdl/source-overrides module))
 
 (defn b9-document-missing-fact
   [id]
-  (case id
-    "B9-TARGET" :hdl-target-provider-constraint-format
-    "B9-WIDTH" :fixed-width-signedness-truncation-proof
-    "B9-CLOCK" :clock-domain-record
-    "B9-RESET" :reset-domain-record
-    "B9-CDC" :cdc-synchronizer-or-waiver-proof
-    "B9-RUNTIME" :hardware-runtime-construct-rejection-proof
-    "B9-UNBOUNDED" :finite-state-static-control-proof
-    "B9-INTERFACE" :port-bus-protocol-capability-schema
-    "B9-TIMING" :timing-constraint-and-provider-report
-    :hdl-artifact-manifest))
+  (gravity.backend.hdl/missing-fact id))
 
 (defn b9-document-signal-id
   [id]
-  (case id
-    "B9-CLOCK" :clk
-    "B9-RESET" :rst
-    "B9-CDC" :cdc_handshake
-    "B9-INTERFACE" :ready_valid
-    "B9-WIDTH" :accumulator
-    "B9-TIMING" :clk_to_done
-    "B9-RUNTIME" :runtime_call
-    "B9-UNBOUNDED" :control_loop
-    :gravity_stage0_hdl))
+  (gravity.backend.hdl/signal-id id))
 
 (defn b9-document-fail!
   [id source-path subject extra]

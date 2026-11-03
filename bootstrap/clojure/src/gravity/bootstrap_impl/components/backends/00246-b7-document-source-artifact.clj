@@ -154,40 +154,15 @@
 
 (defn b8-document-source-overrides
   [module]
-  (or (get-in module [:metadata :backend :b8-document])
-      (get-in module [:metadata :backend :specialized-lowering])
-      (get-in module [:metadata :backend :specialized])
-      {}))
+  (gravity.backend.gpu/source-overrides module))
 
 (defn b8-document-missing-fact
   [id]
-  (case id
-    "B8-TARGET" :gpu-api-device-feature-binary-format
-    "B8-KERNEL" :gpu-profile-kernel-legality
-    "B8-HOST-EFFECT" :host-effect-absence-proof
-    "B8-MEMORY" :device-memory-lifetime-layout-address-space
-    "B8-TRANSFER" :explicit-transfer-graph
-    "B8-SYNC" :synchronization-graph-barrier-fence
-    "B8-ATOMIC" :atomic-order-memory-scope-map
-    "B8-LAUNCH" :launch-geometry-occupancy-shared-memory-record
-    "B8-MATH" :numeric-mode-math-certificate
-    "B8-MANIFEST" :complete-gpu-artifact-manifest
-    :b8-document-evidence))
+  (gravity.backend.gpu/missing-fact id))
 
 (defn b8-document-kernel-id
   [id]
-  (case id
-    "B8-TARGET" :gravity_stage0_kernel
-    "B8-KERNEL" :gravity_stage0_kernel
-    "B8-HOST-EFFECT" :gravity_stage0_kernel
-    "B8-MEMORY" :gravity_stage0_kernel
-    "B8-TRANSFER" :gravity_stage0_kernel
-    "B8-SYNC" :gravity_stage0_kernel
-    "B8-ATOMIC" :gravity_stage0_atomic
-    "B8-LAUNCH" :gravity_stage0_kernel
-    "B8-MATH" :gravity_stage0_reduce
-    "B8-MANIFEST" :gravity_stage0_kernel
-    :gravity_stage0_kernel))
+  (gravity.backend.gpu/kernel-id id))
 
 (defn b8-document-fail!
   [id source-path subject extra]

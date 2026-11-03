@@ -12,7 +12,21 @@
 (def actual (context/facade-plan! context/local-bytes!))
 (def c2-fragment (str context/c2-pass-cache-prefix "source_snapshot.clj"))
 (def c2-actual (context/c2-pass-cache-plan! context/local-bytes!))
+(def git-evidence-fragment
+  (str context/git-evidence-prefix "04-predicate-spec-vector.clj"))
+(def git-evidence-actual (context/git-evidence-plan! context/local-bytes!))
 (defn utf8 [text] (.getBytes ^String text "UTF-8"))
+(defn c2-entry [resources]
+  (utf8 (str "(ns gravity.c2-pass-cache)\n"
+             (apply str (map #(str "(load \"/gravity/c2_pass_cache/" % "\")\n")
+                             resources)))))
+(def historical-c2-inputs
+  (let [current (:inputs c2-actual)]
+    (into (assoc current context/c2-pass-cache
+                 (c2-entry context/c2-pass-cache-historical-resources))
+          (for [resource context/c2-pass-cache-historical-resources
+                :let [path (str context/c2-pass-cache-prefix resource ".clj")]]
+            [path (or (get current path) (utf8 "(def historical-c2-resource true)\n"))]))))
 
 (defn observe! [plan]
   (let [directory (.toFile (java.nio.file.Files/createTempDirectory
@@ -41,7 +55,7 @@
   (is (nil? (find-ns 'gravity.authenticated-artifact-pipeline))))
 
 (deftest actual-c2-facade-resolves-the-selected-fragment
-  (is (= 17 (count (:paths c2-actual))))
+  (is (= 11 (count (:paths c2-actual))))
   (is (= (:paths c2-actual) (:paths (context/selected-plan! context/local-bytes! [c2-fragment]))))
   (let [findings (observe! c2-actual)]
     (is (not-any? #(= :error (:level %)) findings) (pr-str findings))
@@ -49,6 +63,46 @@
                               (#{:warning :error} (:level %))) findings)) (pr-str findings)))
   (is (nil? (find-ns 'gravity.bootstrap)))
   (is (nil? (find-ns 'gravity.c2-pass-cache))))
+
+(deftest actual-git-evidence-facade-resolves-the-selected-fragment
+  (is (= 25 (count (:paths git-evidence-actual))))
+  (is (= context/git-evidence (first (:paths git-evidence-actual))))
+  (is (= (str context/git-evidence-prefix "23-cleanup-unpublished.clj")
+         (last (:paths git-evidence-actual))))
+  (is (= (:paths git-evidence-actual)
+         (:paths (context/selected-plan! context/local-bytes!
+                                         [git-evidence-fragment]))))
+  (let [findings (observe! git-evidence-actual)]
+    (is (not-any? #(= :error (:level %)) findings) (pr-str findings))
+    (is (empty? (filter #(and (= git-evidence-fragment (:filename %))
+                              (#{:warning :error} (:level %))) findings))
+        (pr-str findings)))
+  (is (nil? (find-ns 'gravity.bootstrap)))
+  (is (nil? (find-ns 'gravity.tools.sh07-b51-git-evidence))))
+
+(deftest historical-c2-facade-recipe-remains-readable
+  (let [read-inputs (fn [path] (or (get historical-c2-inputs path)
+                                   (throw (ex-info "Missing historical C2 fixture" {:path path}))))
+        plan (context/c2-pass-cache-plan! read-inputs)
+        selected (context/selected-plan! read-inputs [context/c2-pass-cache])
+        entry (String. ^bytes (get historical-c2-inputs context/c2-pass-cache) "UTF-8")]
+    (is (= 17 (count (:paths plan))))
+    (is (= (:paths plan) (:paths selected)))
+    (is (some #(str/ends-with? % "/directories.clj") (:paths plan)))
+    (is (some #(str/ends-with? % "/publication.clj") (:paths plan)))
+    (is (thrown? Exception
+                 (context/c2-pass-cache-plan!
+                  (fn [path]
+                    (if (= path context/c2-pass-cache)
+                      (utf8 (str/replace entry "/gravity/c2_pass_cache/lookup\""
+                                         "/gravity/c2_pass_cache/unreviewed\""))
+                      (read-inputs path))))))
+    (is (thrown? Exception
+                 (context/c2-pass-cache-plan!
+                  (fn [path]
+                    (if (= path context/c2-pass-cache)
+                      (utf8 (str entry "(load \"/gravity/c2_pass_cache/unreviewed\")\n"))
+                      (read-inputs path))))))))
 
 (deftest introduced-symbol-and-changed-context-still-block
   (doseq [plan [(update-in actual [:inputs fragment]
@@ -104,6 +158,35 @@
     (is (thrown? Exception (context/selected-plan! (read-inputs inputs)
                                                    [(str context/c2-pass-cache-prefix
                                                          "unregistered.clj")])))))
+
+(deftest unsupported-or-malformed-git-evidence-load-context-fails-closed
+  (let [entry (String. ^bytes (get-in git-evidence-actual [:inputs context/git-evidence]) "UTF-8")
+        inputs (:inputs git-evidence-actual)
+        read-inputs (fn [data]
+                      (fn [path]
+                        (or (get data path)
+                            (throw (ex-info "Missing resource" {:path path})))))]
+    (doseq [changed [(str/replace entry "gravity.tools.sh07-b51-git-evidence"
+                                  "gravity.wrong-git-evidence")
+                     (str/replace entry "04-predicate-spec-vector"
+                                  "04-different-resource")
+                     (str entry "\n(load \"/gravity/tools/sh07_b51_git_evidence/unreviewed\")")]]
+      (is (thrown? Exception
+                   (context/git-evidence-plan!
+                    (read-inputs (assoc inputs context/git-evidence (utf8 changed)))))))
+    (is (thrown? Exception
+                 (context/git-evidence-plan!
+                  (read-inputs (dissoc inputs git-evidence-fragment)))))
+    (doseq [body ["(def broken ["
+                  "(in-ns 'gravity.other)"
+                  "(load \"/gravity/tools/sh07_b51_git_evidence/unreviewed\")"]]
+      (is (thrown? Exception
+                   (context/git-evidence-plan!
+                    (read-inputs (assoc inputs git-evidence-fragment (utf8 body)))))))
+    (is (thrown? Exception
+                 (context/selected-plan! (read-inputs inputs)
+                                         [(str context/git-evidence-prefix
+                                               "unregistered.clj")])))))
 
 (deftest archived-context-rejects-unknown-loader-hash
   (let [directory (.toFile (java.nio.file.Files/createTempDirectory
@@ -213,6 +296,116 @@
 (deftest new-fragments-use-complete-current-context-and-only-existing-baseline-paths
   (doseq [mode [:valid :invalid :missing :unregistered]]
     (compare-added-fragment! mode)))
+
+(defn run-batched-files-fixture! [unknown-filename?]
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "uniform-batched-lint-"
+                            (make-array java.nio.file.attribute.FileAttribute 0)))
+        workspace-root (str (io/file "target" (str "batched-lint-" (System/nanoTime))))
+        output (io/file directory "observations")
+        first-file (str (io/file workspace-root "fixture/first.clj"))
+        second-file (str (io/file workspace-root "fixture/second.clj"))
+        paths [first-file second-file]
+        baseline {first-file (utf8 "(ns fixture.first)\n(defn stable [value] (let [unused 1] value))\n")
+                  second-file (utf8 "(ns fixture.second)\n(defn clean [value] value)\n")
+                  macros/source (context/local-bytes! macros/source)}
+        current (if unknown-filename?
+                  (assoc baseline first-file
+                         (utf8 "\n(ns fixture.first)\n(defn stable [value] (let [unused 1] value))\n"))
+                  {first-file (utf8 "\n(ns fixture.first)\n(defn stable [value] (let [unused 1] value))\n")
+                   second-file (utf8 "(ns fixture.second)\n(defn new-warning [value] (let [unused 1] value))\n(def broken (missing-current-symbol))\n")
+                   macros/source (context/local-bytes! macros/source)})
+        write-inputs! (fn [inputs]
+                        (doseq [[path bytes] inputs]
+                          (let [file (io/file path)
+                                target (if (.isAbsolute file) file (io/file directory path))]
+                            (io/make-parents target)
+                            (java.nio.file.Files/write (.toPath target) ^bytes bytes
+                                                       (make-array java.nio.file.OpenOption 0))
+                            (when (some #{path} paths)
+                              (io/make-parents file)
+                              (java.nio.file.Files/write (.toPath file) ^bytes bytes
+                                                         (make-array java.nio.file.OpenOption 0))))))
+        commands (atom [])
+        execute! (fn [id _ argv & [stdin-path]]
+                   (swap! commands conj [id argv])
+                   (let [options (concat [:dir (str directory)]
+                                         (when stdin-path [:in (slurp stdin-path)]))
+                         result (apply sh/sh (concat argv options))
+                         output-text (:out result)
+                         raw (when (and unknown-filename? (= id "lint-current"))
+                               (edn/read-string output-text))
+                         log (if raw
+                               (pr-str (-> raw
+                                           (update :findings conj
+                                                   {:filename "unknown.clj"
+                                                    :level :warning
+                                                    :row 1 :col 1
+                                                    :message "Unknown fixture finding"
+                                                    :type :unused-binding})
+                                           (update-in [:summary :warning] inc)))
+                               output-text)
+                         receipt {:status (if (or (not (zero? (:exit result))) raw)
+                                            :failed :passed)
+                                  :exit-code (if raw 2 (:exit result))}]
+                     (spit (io/file output (str id ".log")) log)
+                     (spit (io/file output (str id ".edn")) (pr-str receipt))
+                     receipt))]
+    (try
+      (doseq [file (file-seq (io/file "tools/ci/kondo")) :when (.isFile file)]
+        (let [target (io/file directory (.getPath file))]
+          (io/make-parents target)
+          (io/copy file target)))
+      (write-inputs! baseline)
+      (fixture-git! directory "init" "--quiet")
+      (fixture-git! directory "add" ".")
+      (fixture-git! directory "-c" "user.name=Lint fixture" "-c" "user.email=lint@example.invalid"
+                    "commit" "--quiet" "-m" "Batched lint baseline")
+      (let [base (fixture-git! directory "rev-parse" "HEAD")]
+        (write-inputs! current)
+        (fixture-git! directory "add" ".")
+        (fixture-git! directory "-c" "user.name=Lint fixture" "-c" "user.email=lint@example.invalid"
+                      "commit" "--quiet" "-m" "Batched lint current")
+        (.mkdir output)
+        (let [slurp* clojure.core/slurp
+              read-current (fn [path]
+                             (if-let [bytes (get current path)]
+                               (String. ^bytes bytes "UTF-8")
+                               (slurp* path)))]
+          (with-redefs [clojure.core/slurp read-current]
+            (if unknown-filename?
+              (is (thrown? clojure.lang.ExceptionInfo
+                           (lint/run-comparison! execute! output base paths)))
+              (let [exit (lint/run-comparison! execute! output base paths)
+                    report (lint/read-one! (io/file output "changed-lint-report.edn"))
+                    kondo-commands (filter #(= "clj-kondo" (first (second %))) @commands)]
+                (is (= 1 exit))
+                (is (= 2 (count kondo-commands)) (pr-str @commands))
+                (is (= ["lint-baseline" "lint-current"] (mapv first kondo-commands)))
+                (is (every? #(= 2 (count (rest (drop-while (fn [argument]
+                                                             (not= "--lint" argument))
+                                                           (second %)))))
+                            kondo-commands))
+                (is (= 1 (count (:baseline-warnings report))) (pr-str report))
+                (is (some #(and (= :unused-binding (:type %))
+                                (= :warning (:level %))) (:blocking report)))
+                (is (some #(and (= :unresolved-symbol (:type %))
+                                (= :error (:level %))) (:blocking report))))))
+          (when unknown-filename?
+            (is (= 2 (count (filter #(= "clj-kondo" (first (second %))) @commands)))
+                (pr-str @commands)))))
+      (finally
+        (doseq [file (reverse (file-seq directory))]
+          (.delete file))
+        (when (.exists (io/file workspace-root))
+          (doseq [file (reverse (file-seq (io/file workspace-root)))]
+            (.delete file)))))))
+
+(deftest ordinary-files-run-as-one-pinned-kondo-process-per-side
+  (run-batched-files-fixture! false))
+
+(deftest ordinary-files-reject-unknown-kondo-filenames
+  (run-batched-files-fixture! true))
 
 (defn private-call-plan [call & [required]]
   {:paths ["fixture-owner.clj" "fixture-caller.clj"]
@@ -377,8 +570,8 @@
           (when (.isFile report-path)
             (let [report (lint/read-one! report-path)]
               (is (= (if (zero? expected) 1 0) (count (get-in report [:resolved-private-usages :current]))))
-              (is (= (or expected-types (if (zero? expected) [] [:unused-private-var]))
-                     (mapv :type (:blocking report))))))))
+              (is (= (set (or expected-types (if (zero? expected) [] [:unused-private-var])))
+                     (set (mapv :type (:blocking report)))))))))
       (finally (doseq [file (reverse (file-seq directory))] (.delete file))))))
 
 (deftest case-data-and-shadowed-comment-run-through-the-complete-lint-pipeline
@@ -395,6 +588,334 @@
                              [:unused-private-var :unused-binding])
   (compare-private-programs! true "(let [{:keys [value] :or {unused (#'h/hidden x)}} {}] value)" 1
                              [:unused-private-var :unbound-destructuring-default]))
+
+(deftest source-reader-resolves-declared-aliases-without-loading-namespaces
+  (let [before (ns-aliases *ns*)
+        source (str "(ns fixture.reader-unloaded (:require [fixture.never-load :as native]\n"
+                    " [fixture.also-never-load :as-alias only]))\n"
+                    "(def values [::own ::native/value #::only{:key 1}])\n"
+                    "(require '[fixture.later-never-load :as later])\n"
+                    "(def later-value ::later/key)")
+        forms (context/source-forms! "fixture.clj" (utf8 source))]
+    (is (= [:fixture.reader-unloaded/own :fixture.never-load/value
+            {:fixture.also-never-load/key 1}]
+           (nth (nth forms 1) 2)))
+    (is (= :fixture.later-never-load/key (nth (nth forms 3) 2)))
+    (is (= before (ns-aliases *ns*)))
+    (doseq [namespace '[fixture.reader-unloaded fixture.never-load fixture.also-never-load fixture.later-never-load]]
+      (is (nil? (find-ns namespace)))))
+  (doseq [source ["(ns fixture.unknown) ::absent/key"
+                  "(ns fixture.unknown) ::context/key"
+                  "(ns fixture.first (:require [fixture.owner :as local])) (ns fixture.second) ::local/key"
+                  "'(ns fixture.quoted (:require [fixture.owner :as local])) ::local/key"]]
+    (is (thrown? Exception (context/source-forms! "unknown.clj" (utf8 source))))))
+
+(deftest source-reader-refuses-tags-and-reader-evaluation-before-side-effects
+  (let [effects (atom [])]
+    (binding [*data-readers* {'fixture/touch #(do (swap! effects conj %) %)}]
+      (doseq [source ["#fixture/touch 1" "#inst \"2026-10-31\""
+                      "#uuid \"00000000-0000-0000-0000-000000000000\""
+                      "#=(spit \"source-reader-must-not-write\" \"forbidden\")"]]
+        (is (thrown? Exception (context/source-forms! "refused.clj" (utf8 source))))))
+    (is (empty? @effects))
+    (is (not (.exists (io/file "source-reader-must-not-write"))))))
+
+(deftest baseline-current-alias-scopes-retain-private-call-provenance
+  (let [program
+        (fn [target alias]
+          {:paths ["owner.clj" "caller.clj"] :entrypoints #{"owner.clj" "caller.clj"}
+           :namespace-by-path {"owner.clj" target "caller.clj" 'fixture.alias-caller}
+           :inputs {"owner.clj" (utf8 (str "(ns " target ")\n(defn- held [x] x)\n(defn- dead [] nil)\n"))
+                    "caller.clj" (utf8 (str "(ns fixture.alias-caller (:require [" target " :as " alias "]))\n"
+                                            "(def fixture-key ::" alias "/once-fixtures)\n"
+                                            "(defn call [x] (#'" alias "/held x))\n"))}})
+        baseline (program 'fixture.baseline 'old)
+        current (program 'fixture.current 'native)]
+    (doseq [[plan target alias] [[baseline 'fixture.baseline 'old] [current 'fixture.current 'native]]]
+      (let [source (context/private-var-usages [plan])
+            resolved (context/resolve-private-usages (observe! plan) source)
+            calls (vec (mapcat :callers source))]
+        (is (= 1 (count calls)))
+        (is (= target (:namespace (first calls))))
+        (is (= alias (:alias (first calls))))
+        (is (= (context/sha256 (get-in plan [:inputs "caller.clj"])) (:sha256 (first calls))))
+        (is (= 1 (count (:resolved resolved))))
+        (is (some #(= :unused-private-var (:type %)) (:findings resolved)))))
+    (is (thrown? Exception
+                 (context/source-forms! "current-with-stale-alias.clj"
+                                        (utf8 "(ns fixture.current (:require [fixture.current :as native])) ::old/key"))))))
+
+(deftest syntax-quote-retains-core-classes-and-source-declaration-scope
+  (let [read-source #(context/source-forms! "syntax.clj" (utf8 %))
+        symbols #(set (filter symbol? (tree-seq coll? seq %)))
+        basic (symbols (read-source "(ns never.syntax) (def v `(map String clojure.core/inc java.lang/String))"))]
+    (is (contains? basic 'clojure.core/map))
+    (is (contains? basic 'java.lang.String))
+    (is (contains? basic 'clojure.core/inc))
+    (is (contains? basic 'java.lang/String))
+    (is (not (contains? basic 'never.syntax/map)))
+    (is (not (contains? basic 'never.syntax/String)))
+    (let [scoped (symbols
+                  (read-source (str "(ns never.scoped (:refer-clojure :exclude [map] :rename {inc increment})"
+                                    " (:require [never.library :refer [foreign] :rename {foreign renamed} :as n])"
+                                    " (:import (java.util Date)))\n"
+                                    "(def local 1) (clojure.core/defn str [] nil)\n"
+                                    "(def v `(map increment renamed n/qualified Date Date. local str))")))]
+      (doseq [name '[never.scoped/map clojure.core/inc never.library/foreign never.library/qualified
+                     java.util.Date java.util.Date. never.scoped/local never.scoped/str]]
+        (is (contains? scoped name) (str name))))
+    (let [only (symbols (read-source "(ns never.only (:refer-clojure :only [map])) (def v `(map inc))"))]
+      (is (contains? only 'clojure.core/map))
+      (is (contains? only 'never.only/inc)))
+    (is (nil? (find-ns 'never.syntax)))
+    (is (nil? (find-ns 'never.scoped)))
+    (is (nil? (find-ns 'never.library)))
+    (let [imported (symbols (read-source "(ns never.import (:import never.init.MustNotLoad)) (def v `MustNotLoad)"))]
+      (is (contains? imported 'never.init.MustNotLoad)))
+    (doseq [source ["(ns never.all (:require [never.library :refer :all]))"
+                    "(ns never.use (:use never.library))"
+                    "(ns never.refer) (refer 'never.library)"
+                    "(ns never.switch) (in-ns 'never.other)"
+                    "(ns never.shadow) (def String nil)"
+                    "(ns never.shadow (:require [never.lib :refer [String]]))"]]
+      (is (thrown? Exception (read-source source))))))
+
+(deftest prefix-libspec-aliases-are-expanded-only-in-reader-scope
+  (doseq [source ["(ns never.prefix (:require (clojure [set :as s]))) (def k ::s/value)"
+                  "(ns never.prefix) (require '(clojure [set :as s])) (def k ::s/value)"
+                  "(ns never.prefix (:require (never (nested [library :as s])))) (def k ::s/value)"
+                  "(ns never.prefix) (require '(never (nested [library :as s]))) (def k ::s/value)"]]
+    (let [before (set (map ns-name (all-ns)))
+          forms (context/source-forms! "prefix.clj" (utf8 source))
+          target (if (str/includes? source "clojure") :clojure.set/value :never.nested.library/value)]
+      (is (= target (nth (last forms) 2)))
+      (is (= before (set (map ns-name (all-ns)))))
+      (is (= 'never.prefix (second (first forms)))))))
+
+(deftest source-reader-refuses-ambiguous-bindings-and-keeps-private-prefix-provenance
+  (let [parse #(context/source-forms! "ambiguous.clj" (utf8 %))]
+    (doseq [source ["(ns never.ambiguous (:require [never.x :as a] [never.y :as a])) ::a/x"
+                    "(ns never.ambiguous (:require [never.x :refer [value]] [never.y :refer [value]])) value"
+                    "(ns never.ambiguous (:import (java.lang String) (java.util String))) String"]]
+      (is (thrown? Exception (parse source)) source))
+    (let [forms (parse (str "(ns never.same (:require [never.x :as a] [never.x :as a]"
+                            " [never.x :refer [value]] [never.x :refer [value]]))"
+                            " ::a/x value"))]
+      (is (= :never.x/x (nth forms 1)))
+      (is (= 'value (nth forms 2))))
+    (is (nil? (find-ns 'never.ambiguous)))
+    (is (nil? (find-ns 'never.same))))
+  (let [plan {:paths ["prefix-owner.clj" "prefix-caller.clj"]
+              :entrypoints #{"prefix-owner.clj" "prefix-caller.clj"}
+              :namespace-by-path {"prefix-owner.clj" 'never.prefix-owner
+                                  "prefix-caller.clj" 'never.prefix-caller}
+              :inputs {"prefix-owner.clj" (utf8 "(ns never.prefix-owner)\n(defn- held [x] x)\n")
+                       "prefix-caller.clj" (utf8 (str "(ns never.prefix-caller "
+                                                      "(:require (never [prefix-owner :as o])))\n"
+                                                      "(defn call [x] (#'o/held x))\n"))}}
+        usages (context/private-var-usages [plan])
+        edge (first (mapcat :callers usages))]
+    (is (= 1 (count usages)))
+    (is (= 'never.prefix-owner (:namespace edge)))
+    (is (= 'o (:alias edge)))
+    (is (= 'o/held (:reference edge)))
+    (is (= 'never.prefix-owner (get-in edge [:require :namespace])))
+    (is (= (context/sha256 (get-in plan [:inputs "prefix-caller.clj"]))
+           (:sha256 edge)
+           (get-in edge [:require :sha256])))
+    (is (nil? (find-ns 'never.prefix-owner)))
+    (is (nil? (find-ns 'never.prefix-caller)))))
+
+(deftest declaration-heads-respect-prior-source-bindings
+  (let [parse #(context/source-forms! "head-scope.clj" (utf8 %))
+        shadow-require (str "(ns never.shadow (:refer-clojure :exclude [require]))\n"
+                            "(defn require [& xs] nil)\n"
+                            "(require '[foreign.library :refer [map]])\n(def v `map)")
+        shadow-import (str "(ns never.shadow (:refer-clojure :exclude [import]))\n"
+                           "(defn import [& xs] nil)\n"
+                           "(import 'foreign.init.MustNotLoad)\n(def v `MustNotLoad)")
+        before (set (map ns-name (all-ns)))]
+    (is (= '(def v (quote clojure.core/map)) (last (parse shadow-require))))
+    (is (= '(def v (quote never.shadow/MustNotLoad)) (last (parse shadow-import))))
+    (is (= '(def v (quote clojure.core/map))
+           (last (parse (str "(ns never.bound (:refer-clojure :exclude [require])) (def require identity)\n"
+                             "(require '[foreign.library :refer [map]]) (def v `map)")))))
+    (is (= '(def v (quote never.bound/MustNotLoad))
+           (last (parse (str "(ns never.bound (:refer-clojure :exclude [import])) (def import identity)\n"
+                             "(import 'foreign.init.MustNotLoad) (def v `MustNotLoad)")))))
+    (is (= '(def v (quote clojure.core/map))
+           (last (parse (str "(ns never.referred (:refer-clojure :exclude [require])"
+                             " (:require [foreign.api :refer [require]]))\n"
+                             "(require '[foreign.library :refer [map]]) (def v `map)")))))
+    (is (= '(def v (quote never.referred/MustNotLoad))
+           (last (parse (str "(ns never.referred (:refer-clojure :exclude [import])"
+                             " (:require [foreign.api :refer [import]]))\n"
+                             "(import 'foreign.init.MustNotLoad) (def v `MustNotLoad)")))))
+    (is (= :clojure.set/value
+           (last (parse (str shadow-require "\n(clojure.core/require '(clojure [set :as s])) ::s/value")))))
+    (is (= '(def q (quote foreign.init.MustNotLoad))
+           (last (parse (str shadow-import "\n(clojure.core/import 'foreign.init.MustNotLoad) (def q `MustNotLoad)")))))
+    (is (= :clojure.set/value
+           (last (parse (str "(ns never.renamed (:refer-clojure :rename {require need}))\n"
+                             "(need '(clojure [set :as s])) ::s/value")))))
+    (is (= :clojure.set/value
+           (last (parse (str "(ns never.core-alias (:require [clojure.core :as c]))\n"
+                             "(c/require '(clojure [set :as s])) ::s/value")))))
+    (is (thrown? Exception
+                 (parse (str shadow-require "\n(require '[foreign.library :as invented]) ::invented/value"))))
+    (is (= before (set (map ns-name (all-ns)))))))
+
+(deftest literal-core-alias-declarations-follow-read-order-and-resolved-heads
+  (let [parse #(context/source-forms! "literal-alias.clj" (utf8 %))
+        before (set (map ns-name (all-ns))) ambient (ns-aliases *ns*)]
+    (doseq [declaration ["(alias 'late 'never.target)"
+                         "(clojure.core/alias 'late 'never.target)"
+                         "(link 'late 'never.target)"
+                         "(c/alias 'late 'never.target)"]]
+      (let [source (str "(ns never.literal (:refer-clojure :rename {alias link}) (:require [clojure.core :as c])) "
+                        declaration " (def key ::late/value) (def q `late/held) (def v #'late/held)")
+            source (if (str/starts-with? declaration "(alias ")
+                     (str/replace source " :rename {alias link}" "") source)
+            forms (parse source)]
+        (is (= '(def key :never.target/value) (nth forms 2)))
+        (is (= '(def q (quote never.target/held)) (nth forms 3)))
+        (is (= '(def v (var late/held)) (nth forms 4)))))
+    (is (= :never.target/value
+           (last (parse "(ns never.same) (alias 'late 'never.target) (alias 'late 'never.target) ::late/value"))))
+    (is (= :never.target/value
+           (last (parse "(ns never.explicit) (def alias nil) (clojure.core/alias 'late 'never.target) ::late/value"))))
+    (doseq [source ["(ns never.before) ::late/value (alias 'late 'never.target)"
+                    "(ns never.reset) (alias 'late 'never.target) (ns never.reset2) ::late/value"
+                    "(ns never.local) (defn alias [& xs] nil) (alias 'late 'never.target) ::late/value"
+                    "(ns never.local) (def alias nil) (alias 'late 'never.target) ::late/value"
+                    "(ns never.foreign (:require [never.foreign-lib :refer [alias]])) (alias 'late 'never.target) ::late/value"
+                    "(ns never.excluded (:refer-clojure :exclude [alias])) (alias 'late 'never.target) ::late/value"
+                    "(ns never.renamed (:refer-clojure :rename {alias link})) (alias 'late 'never.target) ::late/value"
+                    "(ns never.local-link (:refer-clojure :rename {alias link})) (def link nil) (link 'late 'never.target) ::late/value"
+                    "(ns never.foreign-head (:require [never.foreign-lib :as c])) (c/alias 'late 'never.target) ::late/value"
+                    "(ns never.nested) (do (alias 'late 'never.target)) ::late/value"
+                    "(ns never.nested) (defn f [] (alias 'late 'never.target)) ::late/value"
+                    "(ns never.nested) (comment (alias 'late 'never.target)) ::late/value"
+                    "(ns never.conflict) (alias 'late 'never.one) (alias 'late 'never.two)"
+                    "(ns never.conflict (:require [never.one :as late])) (alias 'late 'never.two)"
+                    "(ns never.class) (alias 'String 'never.target)"
+                    "(ns never.unknown) ::unknown/value"]]
+      (is (thrown? Exception (parse source)) source))
+    (doseq [declaration ["(alias)" "(alias 'late)" "(alias 'late 'never.target 'extra)"
+                         "(alias late 'never.target)" "(alias 'late target)"
+                         "(alias (symbol \"late\") 'never.target)" "(alias 'late (identity 'never.target))"
+                         "(alias :late 'never.target)" "(alias '[late] 'never.target)"
+                         "(alias 'late/x 'never.target)" "(alias 'late 'never/target)"
+                         "(alias '^:private late 'never.target)"]]
+      (is (thrown? Exception (parse (str "(ns never.malformed) " declaration))) declaration))
+    (is (= before (set (map ns-name (all-ns)))))
+    (is (= ambient (ns-aliases *ns*)))
+    (is (nil? (find-ns 'never.target)))))
+
+(deftest top-level-alias-private-calls-retain-source-and-require-provenance
+  (let [make-plan (fn [target alias]
+                    {:paths ["owner.clj" "caller.clj"]
+                     :namespace-by-path {"owner.clj" target "caller.clj" 'never.alias-caller}
+                     :inputs {"owner.clj" (utf8 (str "(ns " target ") (defn- held [x] x) (defn- dead [x] x)"))
+                              "caller.clj" (utf8 (str "(ns never.alias-caller (:require [" target " :as original]))\n"
+                                                      "(alias '" alias " '" target ")\n"
+                                                      "(defn call [x] (#'" alias "/held x))\n"))}})
+        baseline (make-plan 'never.old-owner 'old)
+        current (make-plan 'never.current-owner 'late)]
+    (doseq [[plan target alias] [[baseline 'never.old-owner 'old] [current 'never.current-owner 'late]]]
+      (let [[{:keys [definition callers]} :as usages] (context/private-var-usages [plan])
+            call (first callers) findings (observe! plan)
+            resolved (context/resolve-private-usages findings usages)]
+        (is (= 1 (count usages)))
+        (is (= target (:namespace definition) (:namespace call)))
+        (is (= alias (:alias call)))
+        (is (= (symbol (str alias) "held") (:reference call)))
+        (is (= 'original (get-in call [:require :alias])))
+        (is (= (context/sha256 (get-in plan [:inputs "caller.clj"])) (:sha256 call) (get-in call [:require :sha256])))
+        (is (not-any? #(= :error (:level %)) findings))
+        (is (some #(= (str "Unused private var " target "/dead") (:message %)) (:findings resolved)))
+        (is (not-any? #(= (str "Unused private var " target "/held") (:message %)) (:findings resolved)))))
+    (let [unrequired (update-in current [:inputs "caller.clj"]
+                                (constantly (utf8 "(ns never.alias-caller) (alias 'late 'never.current-owner) (defn call [x] (#'late/held x))")))]
+      (is (empty? (context/private-var-usages [unrequired]))))
+    (is (nil? (find-ns 'never.alias-caller)))
+    (is (nil? (find-ns 'never.current-owner)))))
+
+(deftest literal-alias-private-edges-are-not-retroactive-or-foreign-declarations
+  (let [owner 'never.ordered-owner
+        header "(ns never.ordered-caller (:require [never.ordered-owner :as original] [clojure.core :as c]))\n"
+        usages (fn [source]
+                 (context/private-var-usages
+                  [{:paths ["owner.clj" "caller.clj"]
+                    :inputs {"owner.clj" (utf8 "(ns never.ordered-owner) (defn- held [x] x)")
+                             "caller.clj" (utf8 source)}}]))
+        call "(defn call [x] (#'late/held x))\n"]
+    (doseq [declaration ["(def alias nil) (alias 'late 'never.ordered-owner)"
+                         "(defn alias [& xs] nil) (alias 'late 'never.ordered-owner)"
+                         "(do (alias 'late 'never.ordered-owner))"
+                         "(comment (alias 'late 'never.ordered-owner))"]]
+      (is (empty? (usages (str header declaration "\n" call)))))
+    (let [[{:keys [callers definition]}] (usages (str header call "(alias 'late 'never.ordered-owner)\n" call))]
+      (is (= owner (:namespace definition)))
+      (is (= 1 (count callers)))
+      (is (= 4 (:row (first callers)))))
+    (is (= owner (get-in (usages (str header "(c/alias 'late 'never.ordered-owner)\n" call)) [0 :definition :namespace])))
+    (is (empty? (usages (str header "(alias 'late 'never.ordered-owner)\n(ns never.reset-caller)\n" call))))))
+
+(deftest malformed-foreign-quote-carriers-are-refused-without-callbacks
+  (let [calls (atom 0)
+        callback (fn [] (swap! calls inc) (throw (AssertionError. "foreign seq")))
+        foreign (reify clojure.lang.ISeq
+                  (seq [_] (callback)) (first [_] (callback)) (next [_] (callback))
+                  (more [_] (callback)) (cons [_ _] (callback)) (count [_] (callback))
+                  (empty [_] (callback)) (equiv [_ _] (callback)))
+        bad-quote (clojure.lang.Cons. 'quote foreign)
+        check #'context/source-alias-pair!]
+    (doseq [form [foreign (list 'alias foreign '(quote never.target))
+                  (list 'alias bad-quote '(quote never.target))]]
+      (is (thrown? Exception (check form))))
+    (is (zero? @calls))))
+
+(deftest alias-declaration-head-and-drop-mutations-are-detected
+  (let [parse #(context/source-forms! "alias-mutant.clj" (utf8 %))
+        resolve-head @#'context/source-declaration-operation
+        local "(ns never.mutant) (def alias nil) (alias 'late 'never.target) ::late/value"
+        actual "(ns never.mutant) (alias 'late 'never.target) ::late/value"]
+    (is (thrown? Exception (parse local)))
+    (is (= :never.target/value (last (parse actual))))
+    (is (= :never.target/value
+           (with-redefs-fn {#'context/source-declaration-operation
+                            (fn [scope form] (if (= 'alias (when (seq? form) (first form)))
+                                               'alias (resolve-head scope form)))}
+             #(last (parse local)))))
+    (is (thrown? Exception
+                 (with-redefs-fn {#'context/source-declaration-operation
+                                  (fn [scope form] (let [operation (resolve-head scope form)]
+                                                     (when-not (= 'alias operation) operation)))}
+                   #(parse actual))))))
+
+(deftest actual-C13-compatibility-source-is-inert-and-keeps-late-Vars
+  (let [path (str context/source-root "gravity/bootstrap_impl/components/bootstrap-p15/00750-p15-s23-c13-comparison-fold-reconstruction.clj")
+        base (sh/sh "git" "show" (str "41ab1c357e4d96a510fae4cf5a46e903fe340510^:" path))
+        pinned (sh/sh "git" "show" (str "41ab1c357e4d96a510fae4cf5a46e903fe340510:" path))
+        current (context/local-bytes! path) before (set (map ns-name (all-ns)))
+        forms (context/source-forms! path current)
+        output (first (filter #(and (seq? %) (= 'output-id (second %))) forms))]
+    (is (zero? (:exit base)))
+    (is (zero? (:exit pinned)))
+    (is (= (:out pinned) (String. ^bytes current "UTF-8")))
+    (is (seq (context/source-forms! path (utf8 (:out base)))))
+    (is (= '(alias (quote bootstrap) (quote gravity.bootstrap)) (second forms)))
+    (is (= '(optimization/output-id (var bootstrap/p15-s23-c11-mir-digest)
+                                    (var bootstrap/p15-s23-c11-mir-path-neutral-value) output)
+           (last output)))
+    (is (= :gravity.bootstrap/value
+           (last (context/source-forms! path (utf8 (str (String. ^bytes current "UTF-8") "\n::bootstrap/value"))))))
+    (is (some #{path} (:paths (context/plan! context/local-bytes!))))
+    (is (= before (set (map ns-name (all-ns)))))
+    (is (nil? (find-ns 'gravity.bootstrap-c13-comparison)))
+    (is (nil? (find-ns 'gravity.bootstrap)))
+    (is (nil? (find-ns 'gravity.optimization)))))
 
 (let [result (run-tests)]
   (System/exit (if (zero? (+ (:fail result) (:error result))) 0 1)))
