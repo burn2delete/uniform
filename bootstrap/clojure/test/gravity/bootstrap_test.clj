@@ -3056,8 +3056,44 @@
 (deftest stage1-bootstrap-source-artifact-preserves-self-hosting-bridge
   (is (= "bootstrap/gravity/src"
          bootstrap/stage1-reader-bootstrap-source-root))
-  (is (= ["bootstrap/gravity/src" "language/compiler/src"]
-         bootstrap/stage1-reader-bootstrap-source-roots))
+  (is (= 30 (count bootstrap/stage1-reader-bootstrap-source-roots)))
+  (is (= #{"language/compiler/src/gravity/backend/b1_backend_interface_specification.gravity"
+           "language/compiler/src/gravity/backend/b2_c_backend_design.gravity"
+           "language/compiler/src/gravity/backend/b3_llvm_backend_design.gravity"
+           "language/compiler/src/gravity/backend/b4_wasm_backend_design.gravity"
+           "language/compiler/src/gravity/backend/b5_jvm_backend_design.gravity"
+           "language/compiler/src/gravity/backend/b6_javascript_typescript_backend_design.gravity"
+           "language/compiler/src/gravity/backend/b7_mlir_backend_design.gravity"
+           "language/compiler/src/gravity/backend/b8_gpu_backend_design.gravity"
+           "language/compiler/src/gravity/backend/b9_hdl_backend_design.gravity"
+           "language/compiler/src/gravity/backend/b10_workflow_graph_backend_design.gravity"
+           "language/compiler/src/gravity/backend/b11_query_relational_backend_design.gravity"
+           "language/compiler/src/gravity/backend/b12_mobile_backend_design.gravity"
+           "language/compiler/src/gravity/compiler/authenticated_envelope.gravity"
+           "language/compiler/src/gravity/compiler/c6_call_arity_legality.gravity"
+           "language/compiler/src/gravity/compiler/c7_type_checker_engine.gravity"
+           "language/compiler/src/gravity/compiler/c8_effect_checker_engine.gravity"
+           "language/compiler/src/gravity/compiler/c9_ownership_checker_engine.gravity"
+           "language/compiler/src/gravity/compiler/c10_safety_analysis_pipeline.gravity"
+           "language/compiler/src/gravity/compiler/c11_mir_specification.gravity"
+           "language/compiler/src/gravity/compiler/c12_domain_ir_architecture.gravity"
+           "language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity"
+           "language/compiler/src/gravity/compiler/c14_target_lowering_architecture.gravity"
+           "language/compiler/src/gravity/compiler/c16_incremental_compilation_design.gravity"
+           "language/compiler/src/gravity/compiler/c17_compiler_plugin_pass_api.gravity"
+           "language/compiler/src/gravity/compiler/c18_compiler_verification_pass_correctness.gravity"
+           "language/compiler/src/gravity/compiler/l2_core_language_semantics.gravity"
+           "language/compiler/src/gravity/effects.gravity"
+           "language/runtime/src/gravity/runtime.gravity"}
+         (set/difference
+          (set bootstrap/stage1-reader-bootstrap-source-roots)
+          #{"bootstrap/gravity/src"
+            "language/compiler/src/gravity/checked_core.gravity"})))
+  (is (= "STAGE1006"
+         (diagnostic-id
+          #(bootstrap/stage1-bootstrap-source-file-artifact
+            (conj bootstrap/stage1-reader-bootstrap-source-roots
+                  "language/runtime/src/gravity/missing.gravity")))))
   (let [artifact (bootstrap/stage1-bootstrap-source-file-artifact
                   bootstrap/stage1-reader-bootstrap-source-roots)
         proof (:capability-based-proof artifact)
@@ -3161,6 +3197,9 @@
                               (get-in artifact
                                       [:stage1-diagnostic-stream
                                        :diagnostics])))]
+    (is (= bootstrap/stage1-reader-bootstrap-source-roots
+           (get-in artifact
+                   [:accepted-stage1-bootstrap-source-fixtures 0 :source-roots])))
     (is (= :gravity/stage1-bootstrap-source-artifact (:kind artifact)))
     (is (= :clojure-stage0 (get-in artifact [:seed-boundary :verified-by])))
     (is (true? (get-in artifact [:seed-boundary :still-trusted?])))
