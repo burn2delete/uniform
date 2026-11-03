@@ -312,6 +312,28 @@
            (contains? #{"deps.edn" "deps-lock.edn" "project.clj" "build.boot"
                         "bb.edn" "shadow-cljs.edn"} path))))
 
+;; These files are the reviewed static-lint implementation and its direct
+;; configuration/control surface.  They do not own a compiler stage, but a
+;; change here must still retain the static job so the affected controls and
+;; changed-file lint execute.  Keep this allowlist exact: selector, workflow,
+;; progress, snapshot and other tooling changes remain cross-cutting.
+(def lint-tooling-paths
+  #{".clj-kondo/config.edn"
+    "tools/ci/lint.clj"
+    "tools/ci/lint_context.clj"
+    "tools/ci/lint_facade_test.clj"
+    "tools/ci/lint_macro_test.clj"
+    "tools/ci/lint_macros.clj"
+    "tools/ci/kondo/config.edn"
+    "tools/ci/kondo/hooks/c2.clj"
+    "tools/ci/kondo/hooks/module_analysis.clj"})
+
+(defn lint-tooling-path? [path]
+  (contains? lint-tooling-paths path))
+
+(defn lint-tooling-only? [paths]
+  (and (seq paths) (every? lint-tooling-path? paths)))
+
 (defn docs-only-record? [{:keys [old-mode new-mode status path]}]
   (and (docs-only-path? path)
        (not (or (str/starts-with? path "contracts/")
@@ -377,6 +399,13 @@
       (some contract-or-spec-path? paths)
       {:kind :full :reason :contract-or-spec-change :paths paths}
 
+      (lint-tooling-only? paths)
+      {:kind :selected
+       :reason :lint-tooling-only
+       :paths paths
+       :stages []
+       :modes always-pr-modes}
+
       (some cross-cutting-path? paths)
       {:kind :full :reason :cross-cutting-change :paths paths}
 
@@ -431,13 +460,15 @@
            :selection-error (str error)})))))
 
 (defn selection-output-lines [selection]
-  (let [modes (if (= :full (:kind selection))
+  (let [lint-tooling-only? (= :lint-tooling-only (:reason selection))
+        modes (if (= :full (:kind selection))
                 (conj semantic-modes "leaves-portable" "leaves-darwin"
                       "darwin-unsupported")
                 (cond-> (set (:modes selection))
-                  (= :docs-only (:kind selection))
+                  (or (= :docs-only (:kind selection)) lint-tooling-only?)
                   (into #{"static" "contracts" "darwin-unsupported"})
-                  (not= :docs-only (:kind selection))
+                  (and (not= :docs-only (:kind selection))
+                       (not lint-tooling-only?))
                   (conj "leaves-portable" "leaves-darwin"
                         "darwin-unsupported")))]
     (into (mapv #(str % "=" (boolean (contains? modes %)))
@@ -642,6 +673,9 @@
 
       (some contract-or-spec-path? paths)
       {:kind :full :reason :contract-or-spec-change :paths paths :entries platform-catalog}
+
+      (lint-tooling-only? paths)
+      {:kind :selected :reason :lint-tooling-only :paths paths :entries []}
 
       (some cross-cutting-path? paths)
       {:kind :full :reason :cross-cutting-change :paths paths :entries platform-catalog}
