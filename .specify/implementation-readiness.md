@@ -4222,3 +4222,84 @@ source reads for recorded subjects; it was not restarted on observation timeout.
 All prior review hashes and scopes remain unchanged. Current independent
 source/interface acceptance and full-project implementation readiness are still
 unproven; these successful checks confer neither result.
+
+## Syntax lifecycle and verifier dependency continuation
+
+Source `4c15d7d0b0d75c6d5f05c52d6f5ee3c4898c4fcc` adds the missing
+Syntax3 fact-lifecycle and Syntax4 verification/serialization selected-result
+routes and refines 33 existing consumers. All 536 prior selected inputs and
+eighty unaffected route meanings remain; 74 additions give 610 selected inputs
+and 1,405 total start/composition joins across 115 routes, 75 current parents
+and forty unchanged future records. Pipeline now consumes the actual Syntax3
+decision explicitly named in its existing evidence-preservation criterion.
+All six C3 source-task consumers have routes. Fourteen plans annotate 91 real
+selected result subjects; the sole dependency table retains graph authority.
+
+Real carrier, transformation/change-event, lifecycle, verifier/codec and
+diagnostic operations exist before their selected uses. Later actual binding,
+Types4 solution/layout-requirement, effect, profile, ownership, safety and proof-
+obligation facts retain their actual producing owners and applicable conditions.
+Syntax attaches and invalidates the carrier; Pipeline consumes the actual
+decision before cross-stage reuse. A later full-pipeline verdict cannot
+authorize its own first transform. Read-phase subjects may have empty analysis
+facts, and source-only verification does not wait for inapplicable later facts
+or actual macro execution. Complete later composition still exercises every
+required generated and semantic subject rather than dropping them from scope.
+
+The verifier consumes authentic source references and applicable fact-currentness
+decisions, then reconstructs the complete source/generated/shared-origin graph
+and context under its selected codec. Summary-payload round-trip, requested
+failures and assigned current/complete flags establish none of those results.
+Source-only Formatter consumes selected unexpanded preservation/readback;
+it requires no macro execution, generated macro verification, later semantic
+analysis or whole Syntax4 completion. Other tools use actual applicable owner/
+session results without inventing live frames, facts or authority. Actual C3
+diagnostics retain every field and both generated and producing anchors.
+
+Build consumes real complete subjects and producer-conditioned invalidation/
+revalidation before reuse, retaining current policy and permitted engine cache
+machinery. Syntax identity/round-trip, structural engine equivalence, hermetic
+typed-Core bytes, independently admitted stage comparison and final seed
+retirement remain distinct evidence. Actual owners precede independently run
+harnesses; final suites/releases are not early API construction gates. Existing
+conditional semantic-change governance and all actual restrictions remain.
+
+The coarse cycles are 73 and nine tasks. The first preserves all 71 predecessors
+and adds Syntax3/Syntax4; the nine-task release/schema/governance set is exactly
+unchanged. Stage distinctions preserve actual required inputs and do not
+authorize unmarked Build cycles, choose the D1/C1/C5/C6 order, resolve hermetic
+wording or confer semantic acceptance. Twenty canonical interface locators are
+bounded context rather than whole-document adoption. No task body, identity,
+status or source-input binding changes: 149 keys, 25 authorities, 55 identical /
+84 amended original bodies and forty future records remain exact.
+
+The C3 source regression reads its complete recorded `298995887` predecessor,
+including bridge, projection and source files. Repeated reads of immutable
+historical commit/path bytes are cached locally in that regression and the
+preceding macro dependency regression; live current-file reads stay uncached.
+All assertions, mutation controls, historical subjects, review hashes and
+acceptance scopes remain. No reviewer wake, other-chat message, stopped handoff
+retry, held execution or aggregate publication occurs. Reader contract coverage
+remains the first implementation increment. Current independent source/interface
+review, complete global entailment, actual implementation and integration
+remain pending or unassessed.
+
+The pending-proposal fingerprint for the Syntax dependency continuation is
+`c3f5701eaa118a5d6e6fec624a52e301967d002b5e10d7ef89193529f1cdd5fe`.
+Focused current dependency, frozen C3/macro and global conservation checks pass
+four tests / 8,956 assertions. Dependency tests pass 23 tests / 4,419 assertions;
+both pinned projection checks pass. Canonical validation passes 240 documents /
+nineteen phase indexes, the full-language structural check passes with its dated
+snapshot non-authoritative, and the language-boundary gate passes six tests /
+eleven assertions. Navigation/conservation passes ninety changed files, 84
+Markdown files, 3,594 local references, 139 original task routes, 48 historical
+spec/plan suffixes and all 48 original task/evidence contents after declared
+additions are removed. These are traceability/tooling results, not actual
+compiler, provider, macro-engine, target, self-hosting or release conformance.
+
+The complete crosswalk run passes 67 tests / 42,711 assertions with zero failures
+or errors, including all historical regressions, the unchanged mutation controls
+under immutable historical read caching and the new current C3 dependency cases.
+No observation timeout restarted the run. Current independent source/interface
+acceptance, global semantic coverage and implementation readiness remain
+unproven despite these successful structural/conservation results.
