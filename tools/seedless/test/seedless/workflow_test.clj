@@ -602,7 +602,8 @@
     (try
       (is (= plan (validation/validate! schema/plan plan)))
       (is (= plan (w/validate-plan! plan {})))
-      (is (= plan (w/validate-plan! (assoc plan :slices [(assoc p :key "standalone" :dependencies [] :stack-on "")]) {})))
+      (let [standalone-plan (assoc plan :slices [(assoc p :key "standalone" :dependencies [] :stack-on "")])]
+        (is (= standalone-plan (w/validate-plan! standalone-plan {}))))
       (is (thrown-with-msg? Exception #"Stack parent must be a declared dependency"
                             (w/validate-plan! (assoc plan :slices [p (assoc (dissoc child :status) :stack-on "Main branch")]) {})))
       (is (thrown-with-msg? Exception #"Unknown slice dependency"
