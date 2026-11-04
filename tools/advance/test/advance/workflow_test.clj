@@ -1,6 +1,7 @@
 (ns advance.workflow-test
   "Real Git candidates and squash receipts with deterministic model/GitHub doubles."
-  (:require [advance.github :as project]
+  (:require [advance.catalog :as catalog]
+            [advance.github :as project]
             [advance.main :as main]
             [advance.workflow :as workflow]
             [clojure.data.json :as json]
@@ -17,6 +18,29 @@
 
 (def source-path "specs/demo/tasks.md")
 (def source-key (str source-path "#demo/value"))
+
+(deftest selection-sees-other-open-candidates-without-claiming-their-work
+  (let [ctx (fixture/context)
+        pull {:number 914 :title "Independent candidate" :head {:sha "other-head"}}
+        prompt (atom nil)
+        reads (atom [])]
+    (with-redefs [gh/pages (fn [_ endpoint]
+                            (swap! reads conj endpoint)
+                            (cond
+                              (str/includes? endpoint "pulls?state=open") [pull]
+                              (str/ends-with? endpoint "pulls/914/files") [{:filename "native/value.uni" :status "modified"}]
+                              :else (throw (ex-info "Unexpected read" {:endpoint endpoint}))))
+                  codex/job! (fn [_ _ _ _ _ input _]
+                               (reset! prompt input)
+                               {:summary "Waiting for independent candidate" :coverage [] :increments [] :blockers []})
+                  gh/comment! (fn [& _] nil)
+                  coordination/claims (fn [_] [])]
+      (workflow/select! ctx {:base "base" :worktree "/fixture" :catalog {:tasks []}} {} (project/open-prs ctx))
+      (is (str/includes? @prompt "native/value.uni"))
+      (is (str/includes? @prompt "other-head"))
+      (is (str/includes? @prompt "do not adopt, close, merge or claim their acceptance"))
+      (is (= 2 (count @reads)))
+      (is (empty? (:tasks @(:state ctx)))))))
 (def increment {:key "preserve-value" :task source-key :title "Implement the value increment"
                 :evidence "Current value has duplicate representation" :proposal "Preserve one value and record scoped progress"
                 :preserve "The value remains one; the broader parent remains open"
@@ -42,6 +66,7 @@
         response (fn [value] {:exit 0 :out (json/write-str value) :err ""})]
     (with-redefs
       [project/setup! (fn [_] nil)
+       project/open-prs (fn [_] [])
        project/settings (fn [_] {})
        gh/status! (fn [& _] nil)
        gh/relation! (fn [& _] nil)
@@ -207,3 +232,37 @@
     (is (not (project/runnable? settings 1)))
     (is (project/runnable? settings 2))
     (is (project/runnable? settings 3))))
+
+(deftest large-current-math-task-mirrors-by-immutable-reference-without-input-loss
+  (let [root (.getCanonicalPath (io/file "../.."))
+        math (first (filter #(= "specs/domains-workflow/tasks.md#math" (:key %)) (:tasks (catalog/discover root))))
+        ctx (assoc-in (fixture/context) [:config :repository] "fixture/repo")
+        bodies (atom []) comments (atom [])]
+    (is (> (count (:body math)) 65536) "The actual source reproduces GitHub's rejected payload")
+    (with-redefs [gh/pages (fn [& _] [])
+                  gh/api (fn [_ _ _ body]
+                           (is (< (count (:body body)) 65536) "A GitHub representation must fit its actual host format")
+                           (swap! bodies conj (:body body))
+                           (assoc body :id 1 :number 1 :node_id "math"))
+                  gh/status! (fn [& _] nil)
+                  gh/comment! (fn [_ _ _ body] (swap! comments conj body))]
+      (workflow/mirror! ctx {:tasks [math]} "source-base")
+      (is (= (:body math) (get-in @(:state ctx) [:source-tasks (:key math) :body])))
+      (workflow/mirror! ctx {:tasks [(assoc math :source-digest "new-digest")]} "new-base"))
+    (is (= 1 (count @bodies)))
+    (is (str/includes? (first @bodies) (str "/blob/source-base/" (:path math) "#L" (:line math))))
+    (is (str/includes? (first @comments) "/blob/new-base/"))
+    (is (not (str/includes? (first @bodies) (:body math))))))
+
+(deftest source-sync-reuses-one-issue-inventory-per-pass
+  (let [ctx (assoc-in (fixture/context) [:config :repository] "fixture/repo")
+        tasks [{:key "one" :title "One" :path "specs/test/tasks.md" :line 1 :source-digest "digest"}
+               {:key "two" :title "Two" :path "specs/test/tasks.md" :line 2 :source-digest "digest"}]
+        scans (atom 0) created (atom 0)]
+    (with-redefs [gh/pages (fn [& _] (swap! scans inc) [])
+                  gh/api (fn [_ _ _ body] (let [n (swap! created inc)] (assoc body :id n :number n :node_id (str n))))
+                  gh/status! (fn [& _] nil)]
+      (workflow/mirror! ctx {:tasks tasks} "base"))
+    (is (= 1 @scans))
+    (is (= 2 @created))
+    (is (= 2 (count (:source-tasks @(:state ctx)))))))

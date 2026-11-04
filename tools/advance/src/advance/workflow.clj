@@ -47,12 +47,20 @@
     (rt/update! ctx assoc :campaign-tracked true))
   (:campaign-issue @(:state ctx)))
 
+(defn source-reference [ctx task base]
+  (str "Repository task authority: `" (:key task) "`.\n\n"
+       "[Read the complete task and its acceptance criteria](https://github.com/"
+       (get-in ctx [:config :repository]) "/blob/" base "/" (:path task) "#L" (:line task) ").\n\n"
+       "Source revision: `" base "`; task-file SHA-256: `" (:source-digest task) "`.\n\n"
+       "Repository disposition: " (if (:checked task) "checked" "open") ".\n\n"
+       "This issue mirrors the repository outcome. Child issues are finite increments; their verified merges do not close this parent automatically."))
+
 (defn mirror! [ctx snapshot base]
+  (let [ctx (assoc ctx :issue-cache (atom nil))]
   (doseq [task (:tasks snapshot)]
     (let [issue (or (get-in @(:state ctx) [:source-tasks (:key task) :issue])
                     (gh/ensure-issue! ctx (str "task/" (:key task)) (:title task)
-                      (str "Repository task authority: `" (:key task) "`.\n\nSource at `" base "`:\n\n" (:body task)
-                           "\n\nThis issue mirrors the repository outcome. Child issues are finite increments; their verified merges do not close this parent automatically.")
+                      (source-reference ctx task base)
                       nil "implementation:task"))
           previous (get-in @(:state ctx) [:source-tasks (:key task)])]
       (rt/update! ctx assoc-in [:source-tasks (:key task)] (assoc task :issue issue))
@@ -60,12 +68,12 @@
         (gh/status! ctx issue (if (:checked task) "Done" "Ready")))
       (when (and previous (not= (:source-digest task) (:source-digest previous)))
         (gh/comment! ctx issue (str "source/" base)
-                     (str "Current task authority at `" base "`:\n\n" (:body task))))))
+                     (source-reference ctx task base)))))
   ;; Removed/reclassified records remain history, never completion evidence.
   (let [present (set (map :key (:tasks snapshot)))]
     (doseq [[key task] (:source-tasks @(:state ctx)) :when (not (present key))]
       (rt/update! ctx assoc-in [:source-tasks key :missing] true)
-      (when-not (:missing task) (gh/status! ctx (:issue task) "Attention")))))
+      (when-not (:missing task) (gh/status! ctx (:issue task) "Attention"))))))
 
 (defn snapshot! [ctx]
   (let [base (flow/fresh-main! ctx)
@@ -108,13 +116,14 @@
     (gh/relation! ctx (:issue (flow/task ctx (:key increment))) "dependencies/blocked_by"
                   (get-in (flow/task ctx dep) [:issue :id]))))
 
-(defn select! [ctx {:keys [base worktree catalog]} settings]
+(defn select! [ctx {:keys [base worktree catalog]} settings pulls]
   (let [output (codex/job! ctx (flow/next-job! ctx :select) worktree :read instructions
                  (str "Select independently useful implementation increments from the current task catalog. "
                       "Read owning spec/plan/task/evidence and actual source; the index is navigation. "
                       "Prioritize configured task keys, then Project priority, actual prerequisites and work that unblocks completion. "
                       "Respect Project Control Paused/Blocked on both campaign, source tasks and increments. "
                       "Do not duplicate active, held, restricted or already merged increments. "
+                      "Open PRs are independent candidates even when their writers released file claims for review/CI. Inspect their scope and avoid duplicating their implementation; do not adopt, close, merge or claim their acceptance. "
                       "Use a fresh stable key for each distinct increment, never just rename an unsuccessful one. "
                       "Include the source tasks.md in owned paths and name concrete accepted/rejected evidence. "
                       "Dependencies reference real increment keys only; inspect artifact-level task dependencies rather than assuming the coarse graph is acyclic. "
@@ -124,6 +133,7 @@
                       "\nGitHub controls by issue: " (pr-str settings)
                       "\nSource issue identities: " (pr-str (into {} (map (fn [[k v]] [k (get-in v [:issue :number])]) (:source-tasks @(:state ctx)))))
                       "\nExisting increments: " (pr-str (mapv #(select-keys % [:key :task :title :proposal :paths :status :error :merged :review :checks]) (flow/tasks ctx)))
+                      "\nRepository open candidates and changed paths: " (pr-str (project/candidate-files ctx pulls))
                       "\nShared writer claims: " (pr-str (coordination/claims ctx))) selection-schema)]
     (schema/validate! selection-schema output)
     (doseq [increment (:increments output)]
@@ -214,11 +224,12 @@
                 (rt/update! ctx assoc :status :running)
                 (swap! running assoc (:key t) (.submit pool ^Callable (reify Callable (call [_] (run-worker! ctx (:key t))))))))
             (let [base (when (and campaign-active? (empty? @running)) (flow/fresh-main! ctx))
-                  fingerprint (when base (rt/digest (pr-str [base settings (vec (sort-by :identity (coordination/claims ctx)))
+                  pulls (when base (project/open-prs ctx))
+                  fingerprint (when base (rt/digest (pr-str [base settings pulls (vec (sort-by :identity (coordination/claims ctx)))
                                                             (mapv #(select-keys % [:key :status :merged :error]) (sort-by :key (flow/tasks ctx)))])))]
               (if (and base (not= fingerprint selection-input))
                 (let [snapshot (snapshot! ctx)
-                      output (select! ctx snapshot settings)]
+                      output (select! ctx snapshot settings pulls)]
                   (if (and (empty? (:increments output)) (complete! ctx snapshot))
                     (do (rt/update! ctx assoc :status :complete)
                         (gh/status! ctx (:campaign-issue @(:state ctx)) "Done")
