@@ -191,28 +191,9 @@
 
 (defn b11-document-fail!
   [id source-path subject extra]
-  (fail! id
-         "B11 query/relational backend design document coverage validation failed"
-         (merge {:source-span (or (:source-span subject)
-                                  (source-span source-path 0))
-                 :diagnostic-family :b11-query-relational-backend-document
-                 :stage :b11-query-relational-backend-document-coverage
-                 :backend :gravity.backend/query-relational
-                 :profile :hosted
-                 :target :postgresql
-                 :query-id (or (:query-id subject)
-                               (b11-document-query-id id))
-                 :schema-id (or (:schema-id subject) :stage0-v1)
-                 :dialect (or (:dialect subject) :postgresql)
-                 :parameter-id (or (:parameter-id subject) :gravity-value)
-                 :column-id (or (:column-id subject) :gravity_value)
-                 :effect (or (:effect subject) :db/read)
-                 :capability (or (:capability subject) :db/read)
-                 :taint-category (or (:taint-category subject)
-                                     :external-input)
-                 :migration-state (or (:migration-state subject)
-                                      :compatible)
-                 :missing-policy (b11-document-missing-policy id)
-                 :fallback-status :rejected
-                 :remediation "B11 requires verified relational IR, explicit dialect/schema/version/provider records, parameterized SQL, capability and taint evidence, transaction and migration policy, null/type/result adapters, provider-plan evidence, and a complete query artifact manifest."}
-                extra)))
+  (gravity.backend.query/fail!
+   id source-path subject extra
+   {:fail! fail!
+    :source-span (fn [path index] (source-span path index))
+    :query-id (fn [id] (b11-document-query-id id))
+    :missing-policy (fn [id] (b11-document-missing-policy id))}))

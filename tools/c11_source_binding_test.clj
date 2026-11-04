@@ -2,6 +2,7 @@
   (:require [clojure.test :refer [deftest is run-tests]]
             [clojure.java.io :as io]
             [gravity.digest :as digest]
+            [gravity.mir]
             [gravity.c11-mir.source-contract :as contract-data]))
 
 (def root "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/")
@@ -13,6 +14,8 @@
           (if (= ::end form) out (recur (conj out form))))))))
 (def owner (create-ns (gensym "c11-source-binding-owner-")))
 (def observations (atom []))
+(def construction-token (Object.))
+(def construction-invocations (atom 0))
 (defn fail! [id _ _ extra] (throw (ex-info "Synthetic diagnostic transport" (assoc extra :id id))))
 (binding [*ns* owner]
   (clojure.core/refer 'clojure.core)
@@ -45,6 +48,21 @@
                                  p15-s23-c11-mir-source-binding!*
                                  p15-s23-c11-mir-source-binding!} (second form)))]
   (binding [*ns* owner] (eval form)))
+(binding [*ns* owner]
+  ;; This is an isolated token/runner seam.  The runtime, carrier check and
+  ;; v3 verifier are declared oracles; the test only proves the opaque token
+  ;; is checked before exactly one selected-builder invocation for each
+  ;; version.
+  (intern owner '__gravity_bootstrap_lexical_values_119416 [construction-token])
+  (intern owner '__gravity_bootstrap_lexical_119416_classify-checked-core-ingress-pair
+          (fn [& _] :synthetic-ingress-classifier))
+  (intern owner 'p15-s23-stage2-runtime-execute-function
+          (fn [_ _ selected-function arguments]
+            (swap! construction-invocations inc)
+            {:status :accepted :selected-function selected-function :arguments arguments}))
+  (intern owner 'p15-s23-c11-mir-require-trusted-carrier! (fn [& _] :synthetic-carrier-ok))
+  (intern owner 'p15-s23-c11-mir-verify-flat-produced! (fn [& _] :synthetic-v3-verify-ok))
+  (eval (first (forms "00744-opaque-c11-construction-token-helper-04-invoke-pinned-c11-builder.clj"))))
 (defn call [name & args] (apply (ns-resolve owner name) args))
 (defn diagnostic [f]
   (try (f) nil (catch clojure.lang.ExceptionInfo error (ex-data error))))
@@ -94,6 +112,13 @@
       (finally
         (doseq [file (reverse (file-seq (.toFile directory)))] (io/delete-file file true))))))
 (defn binding! [version] (call 'p15-s23-c11-mir-source-binding!* "request.gravity" :native version))
+(defn invoke-token-builder [version token]
+  (call '__gravity_bootstrap_lexical_119416_invoke-pinned-c11-builder
+        {:checked-core true}
+        {:source-path "synthetic.gravity"}
+        (cond-> {:plan :synthetic-plan}
+          (not= 1 version) (assoc :interface-version version))
+        :verification-replay token))
 
 (deftest strict-built-in-version-precedes-filesystem-or-compiler
   (doseq [version [nil 0 4 (int 3) 3N "3" {:version 3}]]
@@ -137,6 +162,21 @@
           (is (= (when (= 3 version) builder) (:builder-function result)))
           (is (= (when (= 3 version) verifier) (:verifier-function result)))
           (is (= [:contract :emitter :compiler] (mapv first @observations))))))))
+
+(deftest opaque-token-precedes-one-selected-builder-invocation-across-versions
+  (reset! construction-invocations 0)
+  (doseq [version [1 2 3]]
+    (let [result (invoke-token-builder version construction-token)
+          expected (if (= 3 version)
+                     (:builder-function (call 'p15-s23-c11-mir-contract 3))
+                     (call 'p15-s23-c11-mir-selected-builder-function 1))]
+      (is (= :accepted (:status result)))
+      (is (= expected (:selected-function result)))))
+  (is (= 3 @construction-invocations))
+  (let [before @construction-invocations
+        data (diagnostic #(invoke-token-builder 3 (Object.)))]
+    (is (= :opaque-c11-construction-token (:missing-fact data)))
+    (is (= before @construction-invocations))))
 
 (deftest plan-and-function-tampering-is-rejected
   (doseq [[options expected]

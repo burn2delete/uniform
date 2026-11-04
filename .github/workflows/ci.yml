@@ -62,7 +62,10 @@ jobs:
     needs: select
     if: ${{ always() && !cancelled() }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    # Macro runs three sequential fresh children with independent 900-second
+    # watchdogs. Leave room for all children, setup, cleanup and upload; the
+    # other matrix modes retain their existing 20-minute envelope.
+    timeout-minutes: ${{ matrix.mode == 'macro' && 50 || 20 }}
     strategy:
       fail-fast: false
       max-parallel: 2

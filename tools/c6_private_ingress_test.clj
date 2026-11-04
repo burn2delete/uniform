@@ -65,7 +65,7 @@
        (fn [] (f product))))))
 
 (deftest versioned-ingress-consumes-one-real-envelope-policy-helper-after-projections
-  (doseq [version [2] arity [0 1]]
+  (doseq [version [2 3] arity [0 1]]
     (with-ingress
       {:arity arity}
       (fn [product]
@@ -81,6 +81,8 @@
           (is (= :envelope-owner (last @events)))
           (is (< (.indexOf @events :carrier-validation) (.indexOf @events :envelope-owner)))
           (is (= version (get-in receipt [:source-interface :version])))
+          (is (= (= 3 version) (= :closed-flat-bool-literal-sequence
+                                  (:semantic-family receipt))))
           (is (= :development-unadmitted (:admission-status receipt)))
           (is (false? (:self-hosted? receipt)))
           (is (= (pos? arity) (contains? result :resolved-parameter)))
@@ -88,31 +90,33 @@
           (is (not-any? #{(if (pos? arity) :zero-arity-plan :parameter-plan)} @events)))))))
 
 (deftest explicit-current-invocation-separates-front-end-selection-and-macro-mode
-  (with-ingress {:arity 1}
-    (fn [product]
-      (let [invocation {:reader-source-path reader-path
-                        :authenticated-envelope-options {:source :development-current}
-                        :syntax-source-selection
-                        {:schema :gravity/sh04-development-syntax-selection-v1
-                         :source-path (var-get (ns-resolve controls 'syntax-path))}
-                        :macro-source-mode :development-current}
-            result (call 'p15-s23-c6c10-private-ingress-products
-                         "synthetic.gravity" "synthetic source" reader-path 2 (:binding product) invocation)
-            front (filter #(and (vector? %) (= :front-end (first %))) @events)
-            parameter (filter #(and (vector? %) (= :parameter-invocation (first %))) @events)]
-        (is (= 1 (count front)))
-        (is (= (dissoc invocation :macro-source-mode) (last (second (first front)))))
-        (is (= [[:parameter-invocation invocation]] (vec parameter)))
-        (is (= 2 (get-in result [:source-policy-receipt :source-interface :version])))))))
+  (doseq [version [2 3]]
+    (with-ingress {:arity 1}
+      (fn [product]
+        (let [invocation {:reader-source-path reader-path
+                          :authenticated-envelope-options {:source :development-current}
+                          :syntax-source-selection
+                          {:schema :gravity/sh04-development-syntax-selection-v1
+                           :source-path (var-get (ns-resolve controls 'syntax-path))}
+                          :macro-source-mode :development-current}
+              result (call 'p15-s23-c6c10-private-ingress-products
+                           "synthetic.gravity" "synthetic source" reader-path version (:binding product) invocation)
+              front (filter #(and (vector? %) (= :front-end (first %))) @events)
+              parameter (filter #(and (vector? %) (= :parameter-invocation (first %))) @events)]
+          (is (= 1 (count front)))
+          (is (= (dissoc invocation :macro-source-mode) (last (second (first front)))))
+          (is (= [[:parameter-invocation invocation]] (vec parameter)))
+          (is (= version (get-in result [:source-policy-receipt :source-interface :version]))))))))
 
 (deftest invocation-version-path-refusals-precede-front-end-work
   (doseq [[path version fact]
           [[reader-path 1 :selected-current-reader-invocation-policy]
            [reader-path (int 2) :explicit-c6-source-contract-version]
-           [reader-path 3 :selected-current-reader-invocation-policy]
            [reader-path 4 :explicit-c6-source-contract-version]
            [nil 2 :selected-current-reader-invocation-policy]
-           ["other-reader.gravity" 2 :selected-current-reader-invocation-policy]]]
+           [nil 3 :selected-current-reader-invocation-policy]
+           ["other-reader.gravity" 2 :selected-current-reader-invocation-policy]
+           ["other-reader.gravity" 3 :selected-current-reader-invocation-policy]]]
     (with-ingress {}
       (fn [product]
         (is (= fact (:missing-fact (diagnostic #(call 'p15-s23-c6c10-private-ingress-products
@@ -126,16 +130,17 @@
       (is (empty? @events)))))
 
 (deftest canonical-reader-invocation-path-does-not-become-artifact-authority
-  (with-ingress {}
-    (fn [product]
-      (let [path (str (.getParent (java.io.File. reader-path)) "/./" (.getName (java.io.File. reader-path)))]
-        ;; Invocation selection compares canonical paths, but the envelope
-        ;; owner still requires its exact canonical selected-program path.
-        (is (= :actual-selected-current-reader-products
-               (:missing-fact (diagnostic #(call 'p15-s23-c6c10-private-ingress-products
-                                                "synthetic.gravity" "source" path 2 (:binding product))))))
-        (is (= :envelope-owner (last @events)))
-        (is (= 1 (count (filter #(and (vector? %) (= :front-end (first %))) @events))))))))
+  (doseq [version [2 3]]
+    (with-ingress {}
+      (fn [product]
+        (let [path (str (.getParent (java.io.File. reader-path)) "/./" (.getName (java.io.File. reader-path)))]
+          ;; Invocation selection compares canonical paths, but the envelope
+          ;; owner still requires its exact canonical selected-program path.
+          (is (= :actual-selected-current-reader-products
+                 (:missing-fact (diagnostic #(call 'p15-s23-c6c10-private-ingress-products
+                                                  "synthetic.gravity" "source" path version (:binding product))))))
+          (is (= :envelope-owner (last @events)))
+          (is (= 1 (count (filter #(and (vector? %) (= :front-end (first %))) @events)))))))))
 
 (deftest upstream-refusals-do-not-produce-a-policy-receipt
   (doseq [[options rule] [[{:front-end-fails true} "SYNTHETIC-C2"]
@@ -143,12 +148,12 @@
     (with-ingress options
       (fn [product]
         (is (= rule (:id (diagnostic #(call 'p15-s23-c6c10-private-ingress-products
-                                           "synthetic.gravity" "source" reader-path 2 (:binding product))))))
+                                           "synthetic.gravity" "source" reader-path 3 (:binding product))))))
         (is (not-any? #{:envelope-owner} @events)))))
   (with-ingress {}
     (fn [product]
       (is (some? (diagnostic #(call 'p15-s23-c6c10-private-ingress-products
-                                   "synthetic.gravity" "source" reader-path 2
+                                   "synthetic.gravity" "source" reader-path 3
                                    (assoc (:binding product) :source-content-hash "forged")))))
       (is (= :envelope-owner (last @events))))))
 

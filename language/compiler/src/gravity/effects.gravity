@@ -13258,11 +13258,597 @@
               (recur (+ index 1) (if (= target id) (conj items row) items) (assoc table id row)))
             {:status :rejected})))) {:status :rejected}))
 
+(defn body-ledger-producer [value]
+  ; Ordinary rows omit producer-rule. Explicit malformed values must not
+  ; acquire the ordinary default through get's fallback behavior.
+  (if (map? value)
+    (if (contains? value :producer-rule)
+      {:status :present :value (get value :producer-rule)}
+      {:status :absent :value :ordinary-local-function-call})
+    {:status :invalid :value nil}))
+
+(defn body-ledger-dispatch [value]
+  ; Ordinary call facts omit dispatch; explicit malformed values remain
+  ; rejected by the owning consumer.
+  (if (map? value)
+    (if (contains? value :dispatch)
+      {:status :present :value (get value :dispatch)}
+      {:status :absent :value :ordinary-local-function-call})
+    {:status :invalid :value nil}))
+
+; These are the semantic tags emitted by the stage owners. An explicitly
+; supplied tag is not authoritative merely because it is a keyword (or
+; because it repeats a forged application version).
+(def body-ledger-known-producers
+  #{:sh08-acyclic-local-thrown-errors-v1 :sh08-atomic-equality-v1
+    :sh08-atomic-inequality-v1 :sh08-atomic-typed-catch-v1
+    :sh08-b47-verification-binding :sh08-bare-keyword-anchor-set-equality-v1
+    :sh08-bare-list-parameter-v1 :sh08-bare-map-parameter-v1
+    :sh08-bool-root-map-guard-v1 :sh08-boolean-match-v1 :sh08-boolean-predicate-v1
+    :sh08-bounded-successor-v1 :sh08-bounded-successor-v2 :sh08-bounded-unit-addition-v1
+    :sh08-bounded-unit-step-v2 :sh08-character-predicate-v1
+    :sh08-character-query-classification-v1 :sh08-character-set-contains-v1
+    :sh08-collection-count-v1 :sh08-count-quotient-scaling-v1 :sh08-direct-typed-throw-v1
+    :sh08-fixed-integral-inequality-v1 :sh08-flat-integer-vector-equality-v1
+    :sh08-flat-integer-vector-inequality-v1 :sh08-flat-integer-vector-leaf-equality-v1
+    :sh08-flat-keyword-set-vector-equality-v1 :sh08-flat-keyword-set-vector-inequality-v1
+    :sh08-homogeneous-list-parameter-v1 :sh08-homogeneous-list-return-v1
+    :sh08-homogeneous-list-return-v2 :sh08-identity-input
+    :sh08-indexed-private-self-activation-v1 :sh08-indexed-private-self-range-v1
+    :sh08-indexed-private-self-runtime-v1 :sh08-indexed-private-self-unit-addition-v1
+    :sh08-indexed-private-self-value-v1 :sh08-integer-inequality-v1
+    :sh08-integer-predicate-v1 :sh08-integer-set-contains-v1 :sh08-integral-equality-v1
+    :sh08-integral-ordering-v1 :sh08-keyword-map-lookup-v1 :sh08-keyword-predicate-v1
+    :sh08-keyword-set-contains-v1 :sh08-keyword-set-conversion-v1
+    :sh08-keyword-set-equality-v1 :sh08-keyword-set-inequality-v1
+    :sh08-keyword-set-insertion-v1 :sh08-keyword-vector-set-construction-v1
+    :sh08-keyword-vector-set-input-v1 :sh08-list-construction-v1 :sh08-list-equality-v1
+    :sh08-list-head-branch-v1 :sh08-list-if-join-v1 :sh08-list-inequality-v1
+    :sh08-list-parameter-compatibility-v2 :sh08-list-predicate-v1 :sh08-list-prepend-v1
+    :sh08-list-query-v1 :sh08-list-query-v2 :sh08-list-set-conversion-v1
+    :sh08-loop-target-types-v1 :sh08-loop-target-types-v2 :sh08-map-association-v1
+    :sh08-map-contains-v1 :sh08-map-get-present-v1 :sh08-map-get-private-entry-v1
+    :sh08-map-get-private-first-entry-v1 :sh08-map-get-v1 :sh08-map-keys-v1
+    :sh08-map-list-parameter-compatibility-v1 :sh08-map-predicate-v1
+    :sh08-map-removal-v1 :sh08-nil-atomic-equality-v1 :sh08-nil-if-join-v1
+    :sh08-nil-predicate-v1 :sh08-nil-query-classification-v1
+    :sh08-nonnegative-integer-quotient-v1 :sh08-not-v1
+    :sh08-private-map-keys-entry-domain-v1 :sh08-private-map-keys-v1
+    :sh08-private-self-entry-parameter-v1 :sh08-private-self-parameter-premise
+    :sh08-private-self-value-v1 :sh08-recursive-quoted-data-v1 :sh08-set-conversion-v1
+    :sh08-set-predicate-v1 :sh08-shaped-artifact-id :sh08-string-character-vector-latin1-v1
+    :sh08-string-character-vector-v1 :sh08-string-concat-v1 :sh08-string-predicate-v1
+    :sh08-string-set-carrier-equality-v1 :sh08-string-set-carrier-inequality-v1
+    :sh08-string-set-contains-v2 :sh08-string-set-equality-v1
+    :sh08-string-set-inequality-v1 :sh08-string-set-insertion-v2
+    :sh08-structural-match-v1 :sh08-symbol-predicate-v1 :sh08-symbol-set-contains-v2
+    :sh08-symbol-set-insertion-v2 :sh08-vector-append-v1 :sh08-vector-empty-v1
+    :sh08-vector-equality-v1 :sh08-vector-first-nonempty-v1 :sh08-vector-first-v1
+    :sh08-vector-get-indexed-private-self-v1 :sh08-vector-get-loop-v1 :sh08-vector-get-v1
+    :sh08-vector-inequality-v1 :sh08-vector-keyword-set-leaf-equality-v1
+    :sh08-vector-nth-loop-v1 :sh08-vector-nth-v1 :sh08-vector-predicate-v1
+    :sh08-vector-rest-v1 :sh08-vector-slice-v1})
+
+(def body-ledger-known-dispatches
+  #{:direct-atomic-equality :direct-atomic-inequality
+    :direct-bare-keyword-anchor-set-equality :direct-boolean-predicate
+    :direct-bounded-successor :direct-bounded-unit-addition :direct-character-predicate
+    :direct-character-set-contains :direct-character-set-first-membership
+    :direct-collection-count :direct-count-quotient-scaling :direct-integer-predicate
+    :direct-integer-set-contains :direct-integral-equality :direct-integral-ordering
+    :direct-keyword-predicate :direct-keyword-set-contains :direct-keyword-set-equality
+    :direct-keyword-set-insertion :direct-left-vector-equality :direct-list-construction
+    :direct-list-equality :direct-list-predicate :direct-list-prepend :direct-list-query
+    :direct-list-set-conversion :direct-local-function :direct-map-association
+    :direct-map-contains :direct-map-get :direct-map-keys :direct-map-predicate
+    :direct-map-removal :direct-named-self-recursion :direct-nil-predicate
+    :direct-nonnegative-integer-quotient :direct-not :direct-private-map-keys
+    :direct-set-conversion :direct-set-predicate :direct-string-character-vector
+    :direct-string-concat :direct-string-predicate :direct-string-set-contains
+    :direct-string-set-equality :direct-string-set-insertion :direct-symbol-predicate
+    :direct-symbol-set-contains :direct-symbol-set-insertion :direct-thrown-errors
+    :direct-throws :direct-vector-append :direct-vector-empty :direct-vector-equality
+    :direct-vector-first :direct-vector-get :direct-vector-nth :direct-vector-predicate
+    :direct-vector-rest :direct-vector-slice :indirect-function-value})
+
+(def body-ledger-known-effect-sources
+  #{:audited-atomic-inequality-intrinsic :audited-atomic-value-intrinsic
+    :audited-bare-keyword-anchor-set-value-equality :audited-boolean-predicate-intrinsic
+    :audited-character-predicate-intrinsic :audited-character-set-membership-intrinsic
+    :audited-collection-constructor :audited-collection-intrinsic
+    :audited-integer-predicate-intrinsic :audited-integer-set-membership-intrinsic
+    :audited-keyword-list-set-construction :audited-keyword-predicate-intrinsic
+    :audited-keyword-set-inequality-intrinsic :audited-keyword-set-insertion-intrinsic
+    :audited-keyword-set-membership-intrinsic :audited-keyword-set-value-intrinsic
+    :audited-list-inequality-intrinsic :audited-list-predicate-intrinsic
+    :audited-list-value-intrinsic :audited-list-value-query :audited-map-key-list-construction
+    :audited-map-predicate-intrinsic :audited-nil-predicate-intrinsic
+    :audited-numeric-intrinsic :audited-private-entry-map-key-list-construction
+    :audited-set-conversion-constructor :audited-set-predicate-intrinsic
+    :audited-string-predicate-intrinsic :audited-string-set-carrier-inequality-intrinsic
+    :audited-string-set-carrier-value-intrinsic :audited-string-set-inequality-intrinsic
+    :audited-string-set-insertion-intrinsic :audited-string-set-membership-intrinsic
+    :audited-string-set-value-intrinsic :audited-symbol-predicate-intrinsic
+    :audited-symbol-set-insertion-intrinsic :audited-symbol-set-membership-intrinsic
+    :audited-text-intrinsic :audited-truthiness-intrinsic
+    :audited-vector-inequality-intrinsic :audited-vector-list-suffix-construction
+    :audited-vector-predicate-intrinsic :audited-vector-value-intrinsic
+    :audited-vector-value-query})
+
+(def body-ledger-applied-fields
+  [:applied-atomic-equality :applied-atomic-inequality
+   :applied-bare-keyword-anchor-set-equality :applied-boolean-predicate
+   :applied-bounded-successor :applied-bounded-unit-addition :applied-character-predicate
+   :applied-character-set-contains :applied-collection-count :applied-count-quotient-scaling
+   :applied-integer-predicate :applied-integer-set-contains :applied-integral-equality
+   :applied-integral-ordering :applied-keyword-predicate :applied-keyword-set-contains
+   :applied-keyword-set-equality :applied-keyword-set-insertion :applied-list-construction
+   :applied-list-equality :applied-list-predicate :applied-list-prepend :applied-list-query
+   :applied-list-set-conversion :applied-map-association :applied-map-contains
+   :applied-map-get :applied-map-keys :applied-map-predicate :applied-map-removal
+   :applied-nil-predicate :applied-nonnegative-integer-quotient :applied-not
+   :applied-private-map-keys :applied-set-conversion :applied-set-predicate
+   :applied-string-character-vector :applied-string-concat :applied-string-predicate
+   :applied-string-set-contains :applied-string-set-equality :applied-string-set-insertion
+   :applied-symbol-predicate :applied-symbol-set-contains :applied-symbol-set-insertion
+   :applied-vector-append :applied-vector-empty :applied-vector-equality
+   :applied-vector-first :applied-vector-get :applied-vector-nth :applied-vector-predicate
+   :applied-vector-rest :applied-vector-slice])
+
+; An application row is accepted from the semantic owner only when its
+; descriptor kind agrees with the version emitted by that owner.  A broad
+; kind vocabulary is insufficient: a valid descriptor can otherwise be
+; relabelled as a different applied family while retaining all source joins.
+(def body-ledger-application-kind-by-version
+  {:sh08-atomic-equality-v1 :gravity.type/applied-atomic-equality
+   :sh08-nil-atomic-equality-v1 :gravity.type/applied-atomic-equality
+   :sh08-atomic-inequality-v1 :gravity.type/applied-atomic-inequality
+   :sh08-string-set-carrier-inequality-v1 :gravity.type/applied-atomic-inequality
+   :sh08-checked-bare-set-equality-v1 :gravity.type/applied-checked-bare-set-equality
+   :sh08-bare-keyword-anchor-set-equality-v1 :gravity.type/applied-bare-keyword-anchor-set-equality
+   :sh08-boolean-predicate-v1 :gravity.type/applied-boolean-predicate
+   :sh08-bounded-successor-v1 :gravity.type/applied-bounded-successor
+   :sh08-bounded-successor-v2 :gravity.type/applied-bounded-successor
+   :sh08-bounded-unit-addition-v1 :gravity.type/applied-bounded-unit-addition
+   :sh08-indexed-private-self-unit-addition-v1 :gravity.type/applied-bounded-unit-addition
+   :sh08-character-predicate-v1 :gravity.type/applied-character-predicate
+   :sh08-character-set-contains-v1 :gravity.type/applied-character-set-contains
+   :sh08-collection-count-v1 :gravity.type/applied-collection-count
+   :sh08-count-quotient-scaling-v1 :gravity.type/applied-count-quotient-scaling
+   :sh08-integer-predicate-v1 :gravity.type/applied-integer-predicate
+   :sh08-integer-set-contains-v1 :gravity.type/applied-integer-set-contains
+   :sh08-integral-equality-v1 :gravity.type/applied-integral-equality
+   :sh08-integral-ordering-v1 :gravity.type/applied-integral-ordering
+   :sh08-keyword-predicate-v1 :gravity.type/applied-keyword-predicate
+   :sh08-keyword-set-contains-v1 :gravity.type/applied-keyword-set-contains
+   :sh08-keyword-set-equality-v1 :gravity.type/applied-keyword-set-equality
+   :sh08-keyword-set-insertion-v1 :gravity.type/applied-keyword-set-insertion
+   :sh08-keyword-set-conversion-v1 :gravity.type/applied-set-conversion
+   :sh08-list-construction-v1 :gravity.type/applied-list-construction
+   :sh08-list-equality-v1 :gravity.type/applied-list-equality
+   :sh08-list-predicate-v1 :gravity.type/applied-list-predicate
+   :sh08-list-prepend-v1 :gravity.type/applied-list-prepend
+   :sh08-list-query-v1 :gravity.type/applied-list-query
+   :sh08-list-query-v2 :gravity.type/applied-list-query
+   :sh08-list-set-conversion-v1 :gravity.type/applied-list-set-conversion
+   :sh08-map-association-v1 :gravity.type/applied-map-association
+   :sh08-map-contains-v1 :gravity.type/applied-map-contains
+   :sh08-map-get-v1 :gravity.type/applied-map-get
+   :sh08-map-get-present-v1 :gravity.type/applied-map-get
+   :sh08-map-get-private-entry-v1 :gravity.type/applied-map-get
+   :sh08-map-get-private-first-entry-v1 :gravity.type/applied-map-get
+   :sh08-map-keys-v1 :gravity.type/applied-map-keys
+   :sh08-map-predicate-v1 :gravity.type/applied-map-predicate
+   :sh08-map-removal-v1 :gravity.type/applied-map-removal
+   :sh08-nil-predicate-v1 :gravity.type/applied-nil-predicate
+   :sh08-nonnegative-integer-quotient-v1 :gravity.type/applied-nonnegative-integer-quotient
+   :sh08-not-v1 :gravity.type/applied-not
+   :sh08-private-map-keys-v1 :gravity.type/applied-private-map-keys
+   :sh08-set-conversion-v1 :gravity.type/applied-set-conversion
+   :sh08-set-predicate-v1 :gravity.type/applied-set-predicate
+   :sh08-string-character-vector-v1 :gravity.type/applied-string-character-vector
+   :sh08-string-character-vector-latin1-v1 :gravity.type/applied-string-character-vector
+   :sh08-string-concat-v1 :gravity.type/applied-string-concat
+   :sh08-string-predicate-v1 :gravity.type/applied-string-predicate
+   :sh08-string-set-contains-v2 :gravity.type/applied-string-set-contains
+   :sh08-string-set-carrier-equality-v1 :gravity.type/applied-string-set-equality
+   :sh08-string-set-equality-v1 :gravity.type/applied-string-set-equality
+   :sh08-string-set-insertion-v2 :gravity.type/applied-string-set-insertion
+   :sh08-symbol-predicate-v1 :gravity.type/applied-symbol-predicate
+   :sh08-symbol-set-contains-v2 :gravity.type/applied-symbol-set-contains
+   :sh08-symbol-set-insertion-v2 :gravity.type/applied-symbol-set-insertion
+   :sh08-vector-append-v1 :gravity.type/applied-vector-append
+   :sh08-vector-empty-v1 :gravity.type/applied-vector-empty
+   :sh08-vector-equality-v1 :gravity.type/applied-vector-equality
+   :sh08-flat-integer-vector-equality-v1 :gravity.type/applied-vector-equality
+   :sh08-flat-keyword-set-vector-equality-v1 :gravity.type/applied-vector-equality
+   :sh08-vector-first-v1 :gravity.type/applied-vector-first
+   :sh08-vector-get-v1 :gravity.type/applied-vector-get
+   :sh08-vector-get-loop-v1 :gravity.type/applied-vector-get
+   :sh08-vector-get-indexed-private-self-v1 :gravity.type/applied-vector-get
+   :sh08-vector-nth-v1 :gravity.type/applied-vector-nth
+   :sh08-vector-nth-loop-v1 :gravity.type/applied-vector-nth
+   :sh08-vector-predicate-v1 :gravity.type/applied-vector-predicate
+   :sh08-vector-rest-v1 :gravity.type/applied-vector-rest
+   :sh08-vector-slice-v1 :gravity.type/applied-vector-slice})
+
+(defn body-ledger-application-kind? [application producer]
+  (if (contains? body-ledger-application-kind-by-version producer)
+    (= (get body-ledger-application-kind-by-version producer) (get application :kind))
+    false))
+
+(defn body-ledger-application-shape? [application producer]
+  ; Match the descriptor's source-call/source-edge/source-binding projection,
+  ; not merely the presence of those keys. This rejects a known-version row
+  ; whose four source fields have been replaced with nil or forged values.
+  (let [source (get application :source)
+        operator-source (get application :operator-source)
+        source-call (get application :source-call)
+        source-edge (get application :source-edge)
+        source-binding (get application :source-binding)
+        call-id (get application :call-core-node-id)]
+    (body-all?
+      [(map? application) (= producer (get application :version))
+       (body-ledger-application-kind? application producer)
+       (map? source) (map? operator-source) (map? source-call)
+       (map? source-edge) (map? source-binding)
+       (body-sse-ids? [call-id (get application :operator-node-id)
+                      (get source :form-id) (get source :syntax-id)
+                      (get operator-source :form-id) (get operator-source :syntax-id)] 6)
+       (= false (= nil (get application :operator-binding-id)
+                    (get source-binding :binding-id)
+                    (get source-binding :definition-syntax-id)))
+       (= call-id (get source-call :core-node-id) (get source-edge :call-core-node-id))
+       (= (get application :operator-node-id) (get source-call :operator-node-id))
+       (= (get application :operator-binding-id) (get source-call :operator-binding-id)
+          (get source-binding :binding-id))
+       (vector? (get application :argument-types))
+       (= false (= nil (get application :result-type)))
+       (keyword? (get application :profile)) (keyword? (get application :target))])))
+
+(defn body-ledger-signature-declaration? [declaration]
+  (if (map? declaration)
+    (if (contains? #{:sh07-list-parameter-declaration-v1 :sh07-list-return-declaration-v1}
+                   (get declaration :rule-version))
+      (if (body-pmk-fields? declaration
+            #{:rule-version :source-child-index :marker-form-id :marker-syntax-id
+              :type-form-id :type-syntax-id :type-symbol :type-binding-id :type-id
+              :constructor-form-id :constructor-syntax-id :element-form-id :element-syntax-id
+              :element-symbol :element-binding-id})
+        (body-all? [(integer? (get declaration :source-child-index))
+                    (>= (get declaration :source-child-index) 0)
+                    (symbol? (get declaration :type-symbol))
+                    (symbol? (get declaration :element-symbol))
+                    (body-hl-type? (get declaration :type-id))
+                    (body-sse-ids? [(get declaration :marker-form-id) (get declaration :marker-syntax-id)
+                                    (get declaration :type-form-id) (get declaration :type-syntax-id)
+                                    (get declaration :type-binding-id) (get declaration :constructor-form-id)
+                                    (get declaration :constructor-syntax-id) (get declaration :element-form-id)
+                                    (get declaration :element-syntax-id) (get declaration :element-binding-id)] 10)])
+        false)
+      (if (body-pmk-fields? declaration
+            #{:source-child-index :marker-form-id :marker-syntax-id :type-form-id
+              :type-syntax-id :type-symbol :type-binding-id :type-id})
+        (body-all? [(integer? (get declaration :source-child-index))
+                    (>= (get declaration :source-child-index) 0)
+                    (symbol? (get declaration :type-symbol))
+                    (body-ds-type? (get declaration :type-id))
+                    (body-sse-ids? [(get declaration :marker-form-id) (get declaration :marker-syntax-id)
+                                    (get declaration :type-form-id) (get declaration :type-syntax-id)
+                                    (get declaration :type-binding-id)] 5)])
+        false)) false))
+
+(defn body-ledger-signature-provenance? [row producer]
+  (let [request (get row :constraint-id-request)
+        declaration (if (map? request) (get request :declaration) nil)]
+    (body-all?
+      [(= :sh08-atomic-function-signature-v1 producer)
+       (body-pmk-fields? request #{:domain :function-core-node-id :role :ordinal :declaration})
+       (= :gravity/sh08-atomic-function-declaration-constraint-v1 (get request :domain))
+       (contains? #{:parameter :return} (get request :role))
+       (integer? (get request :ordinal)) (>= (get request :ordinal) 0)
+       (body-sse-ids? [(get request :function-core-node-id) (get row :lhs)
+                       (get row :source-syntax-id)] 3)
+       (body-ledger-signature-declaration? declaration)
+       (= (get declaration :type-id) (get row :rhs))
+       (= (get declaration :type-syntax-id) (get row :source-syntax-id))
+       (= :equality (get row :kind)) (= :solved (get row :status))
+       (vector? (get row :diagnostics)) (keyword? (get row :profile))
+       (keyword? (get row :target))])))
+
+(defn body-ledger-declared-self-provenance? [row producer]
+  (let [request (get row :constraint-id-request)
+        premise (if (map? request) (get request :premise) nil)]
+    (body-all?
+      [(= :sh08-declared-self-value-v1 producer)
+       (body-pmk-fields? request #{:domain :premise})
+       (= :gravity/sh08-declared-self-value-constraint-v1 (get request :domain))
+       (map? premise) (= premise (get row :dependencies))
+       (body-pmk-fields? premise
+         #{:domain :function-syntax-id :function-core-node-id :definition-binding-id
+           :definition-syntax-id :body-core-node-id :parameter-binding-ids :parameter-types
+           :declared-return-type :signature :component :self-call-core-node-id :self-call
+           :self-edge :self-call-source :owned-node-ids :incoming-call-node-ids :value-check
+           :effect-error-status :captures})
+       (body-sse-ids? [(get premise :function-syntax-id) (get premise :function-core-node-id)
+                       (get premise :definition-binding-id) (get premise :definition-syntax-id)
+                       (get premise :body-core-node-id) (get premise :self-call-core-node-id)
+                       (get row :lhs)] 7)
+       (vector? (get premise :parameter-binding-ids))
+       (vector? (get premise :parameter-types)) (vector? (get premise :owned-node-ids))
+       (vector? (get premise :incoming-call-node-ids))
+       (body-ds-type? (get premise :declared-return-type))
+       (= (get premise :function-syntax-id) (get row :lhs))
+       (= (get premise :declared-return-type) (get row :rhs))
+       (= :recursive-declared-value (get row :kind)) (= :solved (get row :status))
+       (vector? (get row :diagnostics)) (keyword? (get row :profile))
+       (keyword? (get row :target))])))
+
+(defn body-ledger-imported-reference? [reference]
+  (if (body-pmk-fields? reference
+        #{:binding-id :producer-sh07-artifact-id :producer-sh06-artifact-id
+          :definition-binding-id :function-id})
+    (body-sse-ids? [(get reference :binding-id) (get reference :producer-sh07-artifact-id)
+                    (get reference :producer-sh06-artifact-id) (get reference :definition-binding-id)
+                    (get reference :function-id)] 5) false))
+
+(defn body-ledger-imported-call-provenance? [row producer]
+  (let [request (get row :constraint-id-request)
+        reference (if (map? request) (get request :imported-function) nil)
+        solution (get row :solution)]
+    (body-all?
+      [(= :sh08-imported-function-call-v1 producer)
+       (body-pmk-fields? request #{:domain :call-core-node-id :imported-function})
+       (= :gravity/sh08-imported-call-constraint-v1 (get request :domain))
+       (body-ledger-imported-reference? reference)
+       (= reference (get row :lhs)) (vector? (get row :rhs))
+       (= {:imported-function reference :arguments (get (get row :dependencies) :arguments)}
+          (get row :dependencies))
+       (body-pmk-fields? (get row :dependencies) #{:imported-function :arguments})
+       (vector? (get (get row :dependencies) :arguments))
+       (body-pmk-fields? solution #{:argument-types :result-type :arguments-complete?})
+       (= (get row :rhs) (get solution :argument-types))
+       (= false (= nil (get solution :result-type)))
+       (boolean? (get solution :arguments-complete?))
+       (body-sse-ids? [(get request :call-core-node-id)] 1)
+       (= :equality (get row :kind)) (contains? #{:solved :rejected} (get row :status))
+       (= :pending-sh09-imported-body (get row :effect-status))
+       (= :pending-imported-effects (get row :legality-status))
+       (vector? (get row :invalidation)) (vector? (get row :diagnostics))
+       (keyword? (get row :profile)) (keyword? (get row :target))])))
+
+(defn body-ledger-imported-fact-provenance? [fact]
+  (let [request (get fact :fact-id-request)
+        reference (get fact :imported-function)
+        expected {:domain :gravity/sh08-call-type-fact-v1
+                  :call-core-node-id (get fact :call-core-node-id)
+                  :callee-function-syntax-id nil
+                  :argument-types (get fact :argument-types)
+                  :result-type (get fact :result-type)
+                  :imported-function reference
+                  :effect-status :pending-sh09-imported-body
+                  :legality-status :pending-imported-effects}]
+    (body-all?
+      [(= :direct-imported-function (get fact :dispatch))
+       (= :gravity/c7-call-type-fact (get fact :artifact)) (= :inferred (get fact :status))
+       (= expected request) (body-ledger-imported-reference? reference)
+       (body-sse-ids? [(get fact :call-core-node-id) (get fact :syntax-id)] 2)
+       (vector? (get fact :argument-types)) (= false (= nil (get fact :result-type)))
+       (= (get fact :argument-types) (get request :argument-types))
+       (= (get fact :result-type) (get request :result-type))
+       (keyword? (get fact :evaluation-order)) (keyword? (get fact :profile))
+       (keyword? (get fact :target)) (vector? (get fact :effects))
+       (vector? (get fact :capabilities))
+       (= :callee-module-declarations (get fact :effect-facts-source))])))
+
+(defn body-ledger-application-provenance? [row producer]
+  (let [request (get row :constraint-id-request)
+        application (if (map? request) (get request :application) nil)
+        dependencies (get row :dependencies)]
+    (if (if (map? application) (map? dependencies) false)
+      (if (if (= application dependencies) (= producer (get application :version)) false)
+        (if (contains? body-ledger-known-producers producer)
+          (body-ledger-application-shape? application producer)
+          false)
+        false)
+      false)))
+
+(defn body-ledger-return-provenance? [row producer]
+  (let [request (get row :constraint-id-request)
+        premise (if (map? request) (get request :return-compatibility) nil)
+        domain (if (map? request) (get request :domain) nil)]
+    (if (if (map? premise) (= premise (get row :dependencies)) false)
+      (if (if (= :gravity/sh08-homogeneous-list-return-constraint-v1 domain)
+            (= :sh08-homogeneous-list-return-v1 producer)
+            (if (= :gravity/sh08-homogeneous-list-return-constraint-v2 domain)
+              (= :sh08-homogeneous-list-return-v2 producer) false))
+        (if (if (= :return-compatibility (get row :kind)) (= :solved (get row :status)) false)
+          (if (if (= {:function-id (get premise :function-id)
+                      :body-core-node-id (get premise :body-core-node-id) :role :return}
+                     (get row :lhs))
+                (= {:actual-body-type (get premise :actual-body-type)
+                    :declared-return-type (get premise :declared-return-type)} (get row :rhs))
+                false)
+            true false)
+          false)
+        false)
+      false)))
+
+(defn body-ledger-join-provenance? [row producer]
+  (let [request (get row :constraint-id-request)
+        premise (if (map? request) (get request :join-compatibility) nil)
+        domain (if (map? request) (get request :domain) nil)]
+    (if (if (map? premise) (= premise (get row :dependencies)) false)
+      (if (if (= :gravity/sh08-nil-if-join-constraint-v1 domain)
+            (= :sh08-nil-if-join-v1 producer)
+            (if (= :gravity/sh08-list-if-join-constraint-v1 domain)
+              (= :sh08-list-if-join-v1 producer) false))
+        (if (if (= :join-compatibility (get row :kind)) (= :solved (get row :status)) false)
+          (if (if (= {:core-node-id (get premise :if-core-node-id) :role :canonical-if-result}
+                     (get row :lhs))
+                (= {:actual-branch-types (get premise :branch-types)
+                    :result-type (get premise :result-type)} (get row :rhs))
+                false)
+            true false)
+          false)
+        false)
+      false)))
+
+(defn body-ledger-premise-provenance? [row producer]
+  ; Other proof-backed rows (for example private recursive-value rows) carry
+  ; a premise rather than an application. Preserve them only when the exact
+  ; premise is the row dependency and its known producer version agrees.
+  (let [request (get row :constraint-id-request)
+        premise (if (map? request) (get request :premise) nil)]
+    (if (if (map? premise) (= premise (get row :dependencies)) false)
+      (if (if (contains? body-ledger-known-producers producer)
+            (= producer (get premise :version)) false)
+        (if (if (keyword? (get request :domain)) (keyword? (get row :kind)) false)
+          (= :solved (get row :status)) false)
+        false)
+      false)))
+
+(defn body-ledger-applied-provenance? [fact application]
+  (loop [remaining body-ledger-applied-fields]
+    (if (= 0 (count remaining)) false
+      (let [field (first remaining)]
+        (if (if (contains? fact field) (= application (get fact field)) false)
+          true (recur (rest remaining)))))))
+
+(def body-ledger-higher-order-edge-fields
+  #{:ordinal :call-core-node-id :caller-function-syntax-id :caller-function-core-node-id
+    :callee-binding-id :callee-definition-syntax-id :callee-function-syntax-id
+    :callee-function-core-node-id :argument-core-node-ids :ordered-evaluation-node-ids
+    :evaluation-order :classification})
+
+(defn body-ledger-higher-order-edge? [edge]
+  (body-pmk-fields? edge body-ledger-higher-order-edge-fields))
+
+(defn body-ledger-higher-order-dispatch? [fact dispatch]
+  (if (= :direct-local-function dispatch)
+    (if (= :outer-direct-call (get fact :role))
+      (if (body-ledger-higher-order-edge? (get fact :outer-edge))
+        (if (body-ledger-higher-order-edge? (get fact :b47-edge))
+          (= (get fact :outer-edge) (get fact :b47-edge)) false)
+        false)
+      false)
+    (if (= :indirect-function-value dispatch)
+      (if (= :inner-indirect-call (get fact :role))
+        (body-ledger-higher-order-edge? (get fact :b47-edge)) false)
+      false)))
+
+(defn body-ledger-dse-producer? [row producer]
+  ; DSE rows have a closed producer vocabulary. Other semantic rows are
+  ; admitted below from their own application/premise evidence, so this
+  ; check does not turn a mixed ledger into a BKA/KSE-only ledger.
+  (let [domain (get (get row :constraint-id-request) :domain)]
+    (if (= :gravity/sh08-bare-keyword-anchor-set-equality-constraint-v1 domain)
+      (= :sh08-bare-keyword-anchor-set-equality-v1 producer)
+      (if (= :gravity/sh08-keyword-set-equality-constraint-v1 domain)
+        (= :sh08-keyword-set-equality-v1 producer)
+        (if (= :gravity/sh08-string-set-equality-constraint-v1 domain)
+          (= :sh08-string-set-equality-v1 producer)
+          (if (= :gravity/sh08-string-set-carrier-equality-constraint-v1 domain)
+            (= :sh08-string-set-carrier-equality-v1 producer)
+            false))))))
+
+(defn body-ledger-known-producer? [row producer]
+  ; Presence is meaningful: an omitted producer is the ordinary local-call
+  ; case, while an explicit keyword must be tied to a known semantic row.
+  (if (keyword? producer)
+    (let [request (get row :constraint-id-request)
+          domain (if (map? request) (get request :domain) nil)]
+      (if (contains? #{:gravity/sh08-bare-keyword-anchor-set-equality-constraint-v1
+                       :gravity/sh08-keyword-set-equality-constraint-v1
+                       :gravity/sh08-string-set-equality-constraint-v1
+                       :gravity/sh08-string-set-carrier-equality-constraint-v1}
+                     domain)
+        (body-ledger-dse-producer? row producer)
+        (if (= :sh08-atomic-function-signature-v1 producer)
+          (body-ledger-signature-provenance? row producer)
+          (if (= :sh08-declared-self-value-v1 producer)
+            (body-ledger-declared-self-provenance? row producer)
+            (if (= :sh08-imported-function-call-v1 producer)
+              (body-ledger-imported-call-provenance? row producer)
+              (if (body-ledger-return-provenance? row producer)
+                true
+                (if (body-ledger-join-provenance? row producer)
+                  true
+                  (if (body-ledger-premise-provenance? row producer)
+                    true
+                    (body-ledger-application-provenance? row producer)))))))))
+    false))
+
+(defn body-ledger-dse-dispatch? [fact dispatch]
+  (let [domain (get (get fact :fact-id-request) :domain)]
+    (if (= :gravity/sh08-bare-keyword-anchor-set-equality-call-type-fact-v1 domain)
+      (= :direct-bare-keyword-anchor-set-equality dispatch)
+      (if (= :gravity/sh08-keyword-set-equality-call-type-fact-v1 domain)
+        (= :direct-keyword-set-equality dispatch)
+        (if (= :gravity/sh08-string-set-equality-call-type-fact-v1 domain)
+          (= :direct-string-set-equality dispatch)
+          (if (= :gravity/sh08-string-set-carrier-equality-call-type-fact-v1 domain)
+            (= :direct-string-set-equality dispatch)
+            false))))))
+
+(defn body-ledger-known-dispatch? [fact dispatch]
+  ; A non-DSE fact is accepted only when its own semantic artifact carries
+  ; matching application/effect provenance. Higher-order proof facts are the
+  ; explicit non-application exception and retain their own shape.
+  (if (keyword? dispatch)
+    (let [request (get fact :fact-id-request)
+          application (if (map? request) (get request :application) nil)
+          domain (if (map? request) (get request :domain) nil)]
+      (if (= :direct-imported-function dispatch)
+        (body-ledger-imported-fact-provenance? fact)
+        (if (contains? #{:gravity/sh08-bare-keyword-anchor-set-equality-call-type-fact-v1
+                       :gravity/sh08-keyword-set-equality-call-type-fact-v1
+                       :gravity/sh08-string-set-equality-call-type-fact-v1
+                       :gravity/sh08-string-set-carrier-equality-call-type-fact-v1}
+                     domain)
+          (body-ledger-dse-dispatch? fact dispatch)
+          (if (contains? body-ledger-known-dispatches dispatch)
+            (if (if (= :direct-local-function dispatch) true (= :indirect-function-value dispatch))
+              (body-ledger-higher-order-dispatch? fact dispatch)
+              (if (if (map? application)
+                    (if (contains? body-ledger-known-producers (get application :version))
+                      (body-ledger-application-shape? application (get application :version)) false)
+                    false)
+                (if (contains? body-ledger-known-effect-sources (get fact :effect-facts-source))
+                  (body-ledger-applied-provenance? fact application)
+                  false)
+                false))
+            false))))
+    false))
+
+(defn body-ledger-producer-census? [ledger]
+  (loop [remaining ledger]
+    (if (= 0 (count remaining)) true
+      (let [row (first remaining) info (body-ledger-producer row)]
+        (if (= :invalid (get info :status)) false
+          (if (= :absent (get info :status))
+            (recur (rest remaining))
+            (if (body-ledger-known-producer? row (get info :value))
+              (recur (rest remaining)) false)))))))
+
+(defn body-ledger-dispatch-census? [facts]
+  (loop [remaining facts]
+    (if (= 0 (count remaining)) true
+      (let [fact (first remaining) info (body-ledger-dispatch fact)]
+        (if (= :invalid (get info :status)) false
+          (if (= :absent (get info :status))
+            (recur (rest remaining))
+            (if (body-ledger-known-dispatch? fact (get info :value))
+              (recur (rest remaining)) false)))))))
+
 (defn body-bka-row-census [core ledger nodes bindings types calls edges target descriptor]
   (loop [index 0 items [] seen #{} descriptors {}]
     (if (= index (count ledger)) {:status :accepted :items items :descriptors descriptors}
-      (let [row (get ledger index) producer (if (map? row) (get row :producer-rule) nil)]
-        (if (keyword? producer)
+      (let [row (get ledger index) producer-info (body-ledger-producer row)
+            producer (get producer-info :value)]
+        (if (if (= :invalid (get producer-info :status)) false
+              (if (= :absent (get producer-info :status)) true
+                (body-ledger-known-producer? row producer)))
           (if (= :sh08-bare-keyword-anchor-set-equality-v1 producer)
             (let [lhs (get row :lhs) id (if (map? lhs) (get lhs :core-node-id) nil)]
               (if (body-sse-ids? [id] 1)
@@ -13290,18 +13876,25 @@
       (if (= (set (keys descriptors)) seen) {:status :accepted :items items}
         {:status :rejected :reason :bare-keyword-anchor-set-equality-source-mismatch})
       (let [entry (first remaining) fact (if (map? facts) (if (body-sse-ids? [entry] 1) (get facts entry) nil) entry)
+            dispatch-info (body-ledger-dispatch fact)
             id (if (map? fact) (get fact :call-core-node-id) nil)
-            dispatch (if (map? fact) (get fact :dispatch) nil)]
-        (if (if (body-sse-ids? [id] 1) (if (map? facts) (= entry id) true) false)
-          (if (keyword? dispatch)
-            (if (= :direct-bare-keyword-anchor-set-equality dispatch)
-              (if (contains? seen id) {:status :rejected :reason :bare-keyword-anchor-set-equality-source-mismatch}
-                (let [canonical (get descriptors id)]
-                  (if (if (map? canonical) (= (body-bka-call-fact canonical module) fact) false)
-                    (recur (rest remaining) (+ index 1) (if (= target id) (conj items fact) items) (conj seen id))
-                    {:status :rejected :reason :bare-keyword-anchor-set-equality-source-mismatch})))
-              (recur (rest remaining) (+ index 1) items seen))
-            {:status :rejected :reason :bare-keyword-anchor-set-equality-source-mismatch})
+            dispatch (get dispatch-info :value)]
+        (if (if (= :invalid (get dispatch-info :status)) false
+              (if (body-sse-ids? [id] 1) (if (map? facts) (= entry id) true) false))
+          (if (if (= :absent (get dispatch-info :status)) true
+                (body-ledger-known-dispatch? fact dispatch))
+            (if (= :absent (get dispatch-info :status))
+              (recur (rest remaining) (+ index 1) items seen)
+              (if (= :direct-bare-keyword-anchor-set-equality dispatch)
+                (if (contains? seen id) {:status :rejected :reason :bare-keyword-anchor-set-equality-source-mismatch}
+                  (let [canonical (get descriptors id)]
+                    (if (if (map? canonical) (= (body-bka-call-fact canonical module) fact) false)
+                      (recur (rest remaining) (+ index 1) (if (= target id) (conj items fact) items) (conj seen id))
+                      {:status :rejected :reason :bare-keyword-anchor-set-equality-source-mismatch})))
+                (recur (rest remaining) (+ index 1) items seen)))
+            (if (= :absent (get dispatch-info :status))
+              (recur (rest remaining) (+ index 1) items seen)
+              {:status :rejected :reason :bare-keyword-anchor-set-equality-source-mismatch}))
           {:status :rejected :reason :bare-keyword-anchor-set-equality-source-mismatch})))))
 
 (defn body-bka-evidence [core ledger facts node call edge nodes bindings types]
@@ -13440,7 +14033,9 @@
                           :lhs {:core-node-id (get node :node-id) :projection (if carrier? :string-set-carrier-equality (if strings? :string-set-equality :keyword-set-equality))})]
     (if (map? header)
       (body-all?
-        [(= descriptor (body-kse-finish header)) (= (get descriptor :result-type) (get types (get node :node-id)))
+        [(body-ledger-producer-census? (get facts :constraint-ledger))
+         (body-ledger-dispatch-census? (get facts :call-type-facts))
+         (= descriptor (body-kse-finish header)) (= (get descriptor :result-type) (get types (get node :node-id)))
          (= :list (get owner :kind)) (vector? ids) (= 3 (if (vector? ids) (count ids) 0) (count (get node :children)))
          (= (get node :source) (get (body-ma-form-node {} owner) :source))
          (= {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]

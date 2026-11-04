@@ -22,7 +22,8 @@
   (is (empty? (ns-aliases 'gravity.safety)))
   (is (= #{'managed-allocation-check 'transcript-delivery-check 'safety-basis
            'pure-safety-proof 'pure-safety-proof-valid? 'structural-safety-proof
-           'structural-safety-proof-valid? 'child-obligation-refs 'rederive-proven-safety}
+           'structural-safety-proof-valid? 'child-obligation-refs 'rederive-proven-safety
+           'native-verifier-report 'native-capability-proof 'validate-native-report!}
          (set (keys (ns-publics 'gravity.safety)))))
   (doseq [[name operation] (ns-publics 'gravity.safety)]
     (let [contract (:gravity/namespace-contract (meta operation))]

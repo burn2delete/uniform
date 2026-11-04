@@ -1,8 +1,12 @@
 
 
 (defn- p15-s23-c11-mir-current-source-rule-valid?
-  [source-rule]
-  (let [abi c11-source-contract/v2-current-source-contract-abi
+  ([source-rule]
+   (p15-s23-c11-mir-current-source-rule-valid? source-rule 2))
+  ([source-rule version]
+  (let [abi (if (= 3 version)
+              c11-source-contract/flat-bool-current-source-contract-abi
+              c11-source-contract/v2-current-source-contract-abi)
         identities [:source-content-hash :plan-semantic-hash
                     :functions-semantic-hash :builder-semantic-hash
                     :verifier-semantic-hash]]
@@ -11,7 +15,7 @@
          (= :gravity-source (:owner source-rule))
          (= :development-current (:source-mode source-rule))
          (= (:source-relative-path abi) (:source-relative-path source-rule))
-         (= {:interface :gravity/c11-mir :version 2}
+         (= {:interface :gravity/c11-mir :version version}
             (:source-interface source-rule))
          (= (:builder-function abi) (:builder-function source-rule))
          (= (:verifier-function abi) (:verifier-function source-rule))
@@ -23,7 +27,10 @@
          (= :clojure-stage0-seed (:compiled-by source-rule))
          (= :clojure-stage0-rule-runner (:executed-by source-rule))
          (true? (:clojure-seed-boundary? source-rule))
-         (false? (:self-hosted? source-rule)))))
+         (false? (:self-hosted? source-rule))
+         (if (= 3 version)
+           (= :closed-flat-bool-literal-sequence (:semantic-family source-rule))
+           true)))))
 
 (defn p15-s23-c11-mir-validate-final-artifact!
   ([artifact checked-core context]
@@ -137,7 +144,7 @@
      :type-sensitive-partial-c11-scope)
     (p15-s23-c11-mir-require!
      (if (= :development-current (get-in artifact [:source-rule :source-mode]))
-       (p15-s23-c11-mir-current-source-rule-valid? (:source-rule artifact))
+       (p15-s23-c11-mir-current-source-rule-valid? (:source-rule artifact) version)
        (= (p15-s23-c11-mir-source-rule-record
            (p15-s23-c11-mir-contract-binding version))
           (:source-rule artifact)))

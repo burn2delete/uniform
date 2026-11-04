@@ -1,6 +1,6 @@
 # Uniform adoption constitution
 
-Version: 1.1.0 | Adopted: 2026-10-25 | Change authority: Deus (parent)
+Version: 1.3.0 | Adopted: 2026-10-25 | Updated: 2026-11-03 | Change authority: Matt; integration coordinator: Deus (parent)
 
 This is a concise record of existing user decisions for Spec Kit planning.
 It does not replace [AGENTS.md](../../AGENTS.md), the
@@ -48,12 +48,37 @@ not a competing evidence authority or a second roadmap.
 ## Scope and changes
 
 Canonical language changes go to their owning docs. Update this record only
-when an actual user decision changes. No bulk conversion, new scheduler,
-autonomous hooks, credentials or global Codex configuration is authorized.
+when an actual user decision changes. Matt's 2026-11-01 request authorizes
+project-wide implementation coverage through the existing Spec Kit workflow:
+all 240 documents, the separate Phase 18 extension and existing full-language,
+self-hosting and seed-retirement obligations. Reuse existing requirement
+reconciliation, task authorities, dependencies and evidence rather than starting
+a competing system. Preserve normative source authority and historical records;
+do not bulk-copy the contracts into feature specs. Each substantive requirement
+needs an implementation owner, an actionable task or explicit future task,
+source traceability and required acceptance evidence. Genuine unresolved
+decisions and restrictions remain visible with their affected work and resolution
+path. Planning completion does not establish implementation or acceptance.
+
+No new scheduler, autonomous hooks, credentials or global Codex configuration is
+authorized.
 C12 cybersecurity, the denied oracle Git action and advisory reviewer wake
 remain restricted and cannot be retried, transferred or reframed here. The old
 coordinator hourly automation remains paused. This adoption PR is reviewed by
 Deus; it does not grant itself merge authority.
+
+## Implementation harness delegation
+
+Matt's 2026-11-03 decision authorizes `tools/advance` to select from all current
+Spec Kit implementation tasks and own the full draft, implementation,
+independent review, CI and verified merge loop toward project completion. This
+controller is an integration delegate for its own increments, superseding the
+Deus-only integration wording above within that scope. It has its own GitHub
+Project and coordinates conflicting writers and main integration with
+`tools/simplify`. Existing restrictions and required external approvals persist.
+Repository tasks remain authoritative; finite merged increments do not close
+broad parent outcomes. No service, schedule, global configuration or credential
+change is authorized by this delegation.
 
 ## Semantic implementation names
 

@@ -108,6 +108,50 @@
      "C11-MODULE" source-path checked-core :v3-flat-bool-sequence-source-family))
   nil)
 
+(defn- p15-s23-c11-mir-verify-flat-produced!
+  "Run the selected real Gravity verifier on a freshly produced v3 MIR.
+   The caller has already authenticated the Core and source binding; this
+   helper accepts neither a supplied report nor a cached acceptance result."
+  [source-path source-binding checked-core mir]
+  (p15-s23-c11-mir-require-trusted-carrier!
+   source-path :flat-bool-original-core checked-core :reject)
+  (p15-s23-c11-mir-require-trusted-carrier!
+   source-path :flat-bool-produced-mir mir :reject)
+  (let [report
+        (p15-s23-stage2-runtime-execute-function
+         {:engine :gravity-c11-pinned-builder-host-runner
+          :compiler-artifact-plan? true}
+         (:plan source-binding)
+         (p15-s23-c11-mir-selected-verifier-function 3)
+         [checked-core mir])]
+    (p15-s23-c11-mir-require-trusted-carrier!
+     source-path :flat-bool-gravity-verifier-report report :reject)
+    (p15-s23-c11-mir-require!
+     (and (map? report)
+          (= #{:artifact :schema-version :scope :phase :status :checked-core-artifact-id
+               :mir-module-id :checks :preserves :diagnostics :nonclaims} (set (keys report)))
+          (= :gravity/sh12-branch-join-mir-report (:artifact report))
+          (= 1 (:schema-version report)) (= :verification (:phase report))
+          (= :closed-flat-bool-literal-sequence (:scope report))
+          (= :passed (:status report)) (= [] (:diagnostics report))
+          (= (:artifact-id checked-core) (:checked-core-artifact-id report))
+          (= (:module-id mir) (:mir-module-id report))
+          (vector? (:checks report)) (vector? (:preserves report))
+          (vector? (:nonclaims report))
+          (= [:single-function-linear :blocks-terminators-and-cfg-edges
+              :same-block-definitions-uses-and-return-dominance
+              :type-fact-preservation :effect-order-preservation
+              :ownership-capability-and-profile-preservation
+              :safety-outcome-preservation :source-origin-preservation]
+             (:checks report))
+          (= [:type-facts :effect-facts :ownership-facts :capability-facts
+              :safety-facts :profile-target-facts :source-spans :source-origin-map
+              :generated-origin-chains :control-flow-edges :data-flow-edges
+              :dominance-facts] (:preserves report))
+          (= [:generic-c11-verifier :independent-acceptance :optimizer-credit
+              :backend-credit :self-hosted?] (:nonclaims report)))
+     "C11-VERIFY" source-path checked-core :actual-flat-gravity-verifier-report))
+  nil)
 
 ;; These helpers validate/project DATA. They never authenticate a supplied
 ;; report. Only the lexical public constructor/verifier calls the fresh C6
@@ -165,7 +209,7 @@
         envelope (:authenticated-envelope receipt)
         expression (:expression-binding receipt)
         expression-contract c6-source-contract/current-expression-program
-        current-expression? (and (= 2 version)
+        current-expression? (and (contains? #{2 3} version)
                                  (= :development-current
                                     (:source-mode expression)))
         expected-expression
