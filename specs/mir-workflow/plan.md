@@ -141,6 +141,13 @@ Use the [complete alternative type system source criteria](../types-workflow/pla
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). MIR preserves actual admitted foreign ABI/provider/type/effect/grant/ownership/error/wrapper/source facts and required checks/proofs. Portable schema Core requires no foreign runtime or domain IR; actual selected target or foreign calls retain their own legality and lowering evidence.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: MIR task authority

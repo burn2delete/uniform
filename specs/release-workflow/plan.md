@@ -337,6 +337,13 @@ Use the [complete alternative type system source criteria](../types-workflow/pla
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Existing independent language/compiler/profile/runtime/safety/library harnesses execute actual selected owner cases and incumbent oracles for all eight compatibility-evidence families, including performance where sensitive and at least one real incumbent-language/schema parity report. Unavailable/held execution remains Open; projected passed reports and final release checkboxes are not first fixtures.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Release workflow migration

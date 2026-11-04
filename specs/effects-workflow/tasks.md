@@ -188,6 +188,15 @@ L17 actual alternative-type function-effect admission criterion (Open): Preserve
 <!-- effects-alternative-types-source-effects:end -->
 
 
+
+<!-- effects-interop-source-effects:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 actual foreign and generated-binding effect admission criterion (Open): Check performed/latent foreign ABI, host reflection/dynamic dispatch, process/network/hardware/model/tool/package and schema-generation effects under actual caller allowances/profile/service premises, with separate authentic grants. Schema loading and binding generation are L12 compile-time effects; emitted APIs retain their real runtime effects, allocation/blocking/panic/error behavior and capability requirements. Catching or translating failure, a safe-wrapper label and a migration shim erase no performed effect or authority. Reject missing/hidden effects and constrained-profile host leakage before affected use. Required evidence: actual admitted/refused source-to-generated/runtime effect records and L19-EFFECT/owning diagnostics; example db/query labels supply no granted database/network authority.
+<!-- effects-interop-source-effects:end -->
+
+
 - [ ] `effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation` effects/4: Record replay and invalidation
 
 Current evidence/status: Open; partial source evidence above is not closure

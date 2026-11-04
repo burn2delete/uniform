@@ -729,6 +729,13 @@ Use the [complete alternative type system source criteria](../types-workflow/pla
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). The original generated-program task retains schema-binding and scoped-shim ownership. Restore the two exact published finite predicates, produce actual types/codecs/initial wrapper declarations and normally check generated source under L12. Preserve all nine schema fields, seven illustrative shim inputs and real incumbent parity without authorizing live foreign/model/tool or provider execution.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Expand task authority

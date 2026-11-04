@@ -184,6 +184,13 @@ Use the [complete alternative type system source criteria](../types-workflow/pla
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Actual target ABI/wire/type/layout and foreign allocator/null/error/thread/wrapper assumptions reach lowering with authentic source/provider/profile/target identity. Early ABI rules and independent preliminary types precede concrete layouts; future Runtime traces are no initial layout contract, and held native/backend actions stay held.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Lower task authority

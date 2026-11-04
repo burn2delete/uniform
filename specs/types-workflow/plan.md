@@ -502,6 +502,13 @@ authorized review/integration coordination; the stopped public-contract-cluster
 handoff and recorded denied reviewer wake remain restricted. No aggregate is
 adopted or published, and no main merge or implementation acceptance is claimed.
 
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Types checks complete foreign declarations, six directional mapping families and actual null/error/ownership/layout facts, exports all ten artifact families and verifies ordinary generated consumers. Declared Option absence remains legal; lossy conversions are explicit and fallible conversions return Result or the declared boundary error.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Types task authority

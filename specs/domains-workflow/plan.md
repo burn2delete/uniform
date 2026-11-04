@@ -632,6 +632,13 @@ Use the [complete alternative type system source criteria](../types-workflow/pla
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Existing Schema/Query/Workflow/AI and other domain owners supply actual source schemas, types/codecs/validators and claimed typed/service results behind declared L19 boundaries. Seven shim examples remain real conditional input/output contracts, not implementations inferred from names. Pure generation supplies no live model/tool/database/store or physical-device authority.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Domains workflow migration

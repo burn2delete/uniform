@@ -86,6 +86,13 @@ Use the [complete facet source criteria](../expand-workflow/plan.md#complete-fac
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Target lowering consumes actual typed ABI/protocol/representation/layout/provider/wrapper/ownership/error contracts and preserves source/debug/provenance artifacts. Native/Wasm/managed/JS behavior is claimed only with real selected backend and Runtime evidence, not host defaults or a fixed adapter manifest.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Backends family task authority

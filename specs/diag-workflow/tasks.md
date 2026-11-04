@@ -56,6 +56,15 @@ L17 complete alternative-type diagnostic-carrier criterion (Open): Preserve genu
 <!-- diag-alternative-types-source-diagnostics:end -->
 
 
+
+<!-- diag-interop-source-diagnostics:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 complete interop diagnostic carrier criterion (Open): Transport genuine owning L19-BOUNDARY-INCOMPLETE, L19-PROFILE, L19-TYPE-MAP, L19-OWNERSHIP, L19-ERROR-MAP, L19-CAPABILITY, L19-EFFECT, L19-SAFE-WRAPPER, L19-SCHEMA-DRIFT, L19-MIGRATION-PARITY and L19-HOST-LEAK failures. Retain boundary id, foreign source, profile, source span or manifest entry, provider, type mapping, ownership, effects, capabilities and suggested safe-wrapper/migration step, with actual generated origins and redaction. Owners derive failures; Diag cannot fabricate the requested diagnostic or infer parity from an inventory. Required evidence: real eleven-family carrier/field/source round-trips, tamper/missing-map refusals and current authentic owner failures.
+<!-- diag-interop-source-diagnostics:end -->
+
+
 - [ ] `diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order` Preserve primary/related/generated origins and stable order
 
 Status: Open
@@ -86,6 +95,15 @@ Apply the [complete alternative type system source criteria](../types-workflow/p
 
 L17 actual alternative-type source diagnostic mapping criterion (Open): Map real checker/type/proof failures through base and alternative macro expansion, generated code and facet lowering to original source spans, provider/version/type-expression facts and definition/call/generated-origin chains. Preserve actual expected-type/runtime-check/failure/blame records where applicable and source identity across common typed-Core and downstream consumers. Reject a generated-only location hiding its source, a stale/foreign type-fact link or a preserved-map flag without the actual map. Required evidence: genuine accepted/rejected generated and handwritten cases, source/generated mapping artifacts and L17-DIAGNOSTIC-MAP/owning failures, preserving existing macro/hygiene and compiler diagnostic contracts.
 <!-- diag-alternative-types-source-origins:end -->
+
+
+
+<!-- diag-interop-source-origins:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 actual foreign/schema/generated source mapping criterion (Open): Preserve real incumbent/foreign/source schema digest/version and generated binding/shim/call provenance through ordinary checking, macros and backend/host frames to actual original spans or manifest entries. Keep boundary/provider/type/ownership/error context and safe-wrapper remediation under proper redaction; generated code cannot masquerade as handwritten source. Changed source/schema mappings invalidate affected diagnostics. Required evidence: genuine generated/foreign/handwritten accepted/refused mapping artifacts and stale/foreign/missing-origin refusals rather than a source-map-preserved flag.
+<!-- diag-interop-source-origins:end -->
 
 
 - [ ] `diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts` Close text/JSON/redaction and explain contracts
