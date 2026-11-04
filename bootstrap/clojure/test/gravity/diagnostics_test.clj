@@ -229,6 +229,68 @@
         (is (= {:digest-ref 0} (get-in observed [:diagnostics 0 :diagnostic-id])))))
     (is (empty? @calls))))
 
+(deftest private-binding-requires-executable-singleton-stream-verification
+  (let [fields (system-fields (native-schema-rejection))
+        events (atom []) products (atom {})
+        invoke (fn [function arguments]
+                 (swap! events conj function)
+                 (let [product (invoke-c15 function arguments)]
+                   (swap! products assoc function {:arguments arguments :result product})
+                   product))
+        digest (fn [path request]
+                 (swap! events conj :digest)
+                 (bootstrap/sh03-reader-canonical-digest path request))
+        result (with-redefs [diagnostics/validate-native!
+                            (fn [& _] (throw (AssertionError. "Host stream fallback")))]
+                 (diagnostics/bind-private-record invoke digest (:path @c15-source) fields))
+        record (:diagnostic result)
+        stream (first (get-in @products ['verify-c15-diagnostic-stream :arguments]))
+        verified (get-in @products ['verify-c15-diagnostic-stream :result])]
+    (is (= ['build-c15-diagnostic :digest :digest
+            'verify-c15-resolved-diagnostic 'verify-c15-diagnostic-stream] @events))
+    (is (= #{:status :diagnostic :verification} (set (keys result))))
+    (is (= :passed (:status result) (:status verified)))
+    (is (identical? (:verification result)
+                    (get-in @products ['verify-c15-resolved-diagnostic :result])))
+    (is (identical? record (first (:diagnostics stream))))
+    (is (= [{:original-fields fields :request (:diagnostic-id-request record)
+             :resolved-digest (:diagnostic-id record)}]
+           (:diagnostic-bindings stream)))
+    (is (= stream (:diagnostic-stream verified)))
+    (is (= {:error 1 :warning 0 :info 0 :hint 0 :internal-error 0}
+           (:summary-counts verified)))
+    (is (= :none (:semantic-authority verified)))
+    (is (= :not-evaluated (:redaction-status verified)))
+    (is (not (contains? result :public-safe?)))))
+
+(deftest private-binding-rejects-invalid-or-substituted-stream-results
+  (let [fields (system-fields (native-schema-rejection))]
+    (doseq [substitute [(constantly nil) (constantly {})
+                        (constantly {:status :passed})
+                        #(assoc % :status :rejected :private-payload "omitted")
+                        #(assoc-in % [:diagnostic-stream :diagnostics] [])
+                        #(assoc % :identity-request-joins [])
+                        #(assoc-in % [:summary-counts :error] 0)
+                        #(assoc % :artifact :other-verifier)
+                        #(assoc % :nonclaims [])
+                        #(assoc % :public-safe? true)]]
+      (let [calls (atom [])
+            exception
+            (captured-exception-info
+             #(diagnostics/bind-private-record
+               (fn [function arguments]
+                 (swap! calls conj function)
+                 (let [result (invoke-c15 function arguments)]
+                   (if (= 'verify-c15-diagnostic-stream function)
+                     (substitute result) result)))
+               bootstrap/sh03-reader-canonical-digest (:path @c15-source) fields))]
+        (is (= ['build-c15-diagnostic 'verify-c15-resolved-diagnostic
+                'verify-c15-diagnostic-stream] @calls))
+        (is (= {:id "C15-SCHEMA" :message "Private diagnostic stream verification failed"
+                :bootstrap-stage :stage0 :stage :compiler-diagnostics
+                :schema-field :stream-verification :reason :invalid-stream-verification-result}
+               (ex-data exception)))))))
+
 (deftest fresh-c15-verification-rejects-candidate-and-coherent-request-substitution
   (let [fields (system-fields (native-schema-rejection))
         record (:diagnostic (bind-private fields))

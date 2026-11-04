@@ -189,7 +189,8 @@
           [original-fields candidate request (canonical-digest source-path request)]))
 
 (defn bind-private-record
-  "Constructs, binds and freshly verifies private C15 data. No public projection."
+  "Constructs, binds and freshly verifies private C15 data and its singleton stream.
+  No public projection. Stream legality is checked only by the source invocation."
   [invoke canonical-digest source-path original-fields]
   (let [unresolved (invoke 'build-c15-diagnostic original-fields)]
     (if (= :rejected (:status unresolved))
@@ -199,7 +200,37 @@
             verification (verify-private-record invoke canonical-digest source-path
                                                 original-fields candidate request)]
         (if (= :passed (:status verification))
-          {:status :passed :diagnostic candidate :verification verification}
+          (let [stream {:stage (:stage candidate)
+                        :input-artifact (get-in candidate [:primary :artifact])
+                        :output-artifact nil :diagnostics [candidate]
+                        :diagnostic-bindings [{:original-fields original-fields
+                                               :request request
+                                               :resolved-digest (:diagnostic-id candidate)}]
+                        :summary-counts (assoc {:error 0 :warning 0 :info 0 :hint 0
+                                                :internal-error 0}
+                                               (:severity candidate) 1)
+                        :deterministic-ordering-key :diagnostic-id
+                        :redaction-policy :private-unassessed
+                        :rendering-version "c15-private-v1"}
+                stream-verification (invoke 'verify-c15-diagnostic-stream [stream])]
+            ;; Bind the returned product to this invocation's actual stream.
+            ;; This checks the operation result, never substitutes a host verifier.
+            (when-not (= {:artifact :gravity/c15-diagnostic-stream-verification
+                          :schema-version 1 :status :passed :diagnostics []
+                          :diagnostic-stream stream :summary-counts (:summary-counts stream)
+                          :identity-request-joins [{:record-index 0
+                                                    :diagnostic-id (:diagnostic-id candidate)
+                                                    :request request}]
+                          :verification-status :private-stream-structure-and-external-digest-equality
+                          :semantic-authority :none :redaction-status :not-evaluated
+                          :nonclaims [:digest-recomputation :upstream-source-authentication
+                                      :public-safe-projection :golden-fixture-verification
+                                      :self-hosting :release :seed-retirement]}
+                         stream-verification)
+              (fail! "C15-SCHEMA" "Private diagnostic stream verification failed"
+                     {:stage :compiler-diagnostics :schema-field :stream-verification
+                      :reason :invalid-stream-verification-result}))
+            {:status :passed :diagnostic candidate :verification verification})
           verification)))))
 
 (defn diagnostic-record
