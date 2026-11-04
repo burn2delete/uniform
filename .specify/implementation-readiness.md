@@ -7,8 +7,8 @@ another implementation task ledger, acceptance graph or completion denominator.
 Reconciliation remains in progress; independent acceptance and integration of
 this change are pending. No compiler or product completion is claimed.
 
-Latest source continuation: B4-B14 family and shared backend source
-proposals. The [current checkpoint](#complete-b4-b14-backend-source-continuation)
+Latest source continuation: B4-B14 selected-result dependency proposals.
+The [current checkpoint](#complete-b4-b14-selected-result-dependency-continuation)
 records checks and remaining work. Whole-project semantic coverage, independent
 acceptance and integration remain unproven.
 
@@ -7334,3 +7334,104 @@ and later required conformance must have explicit producer/consumer roles.
 No task, route, source binding or implementation status changes in this
 validation follow-up. The first implementation increment remains the Reader
 contract-coverage reconciliation identified above. No other chat is messaged.
+
+## Complete B4-B14 selected-result dependency continuation
+
+Source proposal: `0370bfdfa4e1ce4d6cb0becc3104da241056a6f8`.
+Dependency-test count successor: `0e3631a6845567081bef282b5809fdc295152a36`.
+Predecessor readiness checkpoint: `fc03e5b0ac3d31a88cf134301473433ac69dec2f`.
+The [B4-B14 producer and consumer order](../specs/backends-workflow/plan.md#b4-b14-producer-and-consumer-order)
+refines 47 existing routes, comprising 42 current parent consumers and five
+existing future Release consumers, in the sole dependency table and twelve
+existing plans. All twelve direct source-criterion owners have routes. All
+3,144 prior input joins survive; 506 additional joins bring the total to 3,650.
+The 776 selected input stages cover this proposal's declared inputs, not every
+older route edge. The other 111 route declarations are unchanged.
+
+Real independent schemas, supported features, target/representation/ABI rules,
+helper/provider/ownership contracts, diagnostic fields and oracle expectations
+precede construction. Actual current verified selected inputs and owner facts
+precede affected lowering; actual emitted, linked/runtime/reference products
+precede their corresponding claims. Required independent conformance and
+reproduction govern later acceptance and release grade. No whole backend,
+future conformance pack, execution trace or signed package supplies its own
+first input contract. Coarse feedback remains exactly the same 139 tasks; this
+is no claim of complete global executable-order entailment.
+
+The selected stages preserve typed Wasm component/resource/async semantics,
+managed/JS host validation and cleanup, optional MLIR with mandatory checks on
+its actual configured conversions, GPU buffer/transfer/synchronization/numeric
+facts, hardware widths/clocks/CDC, durable workflow/AI event and policy guards,
+query dialect/schema/transaction/migration evidence and mobile lifecycle/thread/
+permission/storage boundaries. B13 uses actual content and current evidence
+for common hashing, maps and graph validation before downstream claims; later
+required B14/reproduction results support release grade. Development-only gaps
+remain explicit and non-release. B14's full shared/family/domain matrices,
+exact refusal diagnostics, independent metadata checks and required semantic
+comparisons remain; unavailable-target records excuse only justified target
+skips while shared checks continue. TEST6's conditional SHOULD weakens no B14
+obligation. No cyclic hash premise or new identity policy is invented.
+
+All 149 current task keys, 25 authorities, forty future declarations/bindings,
+84 B4-B14 source criteria and original owner obligations stay exact. Original
+task-body comparisons remain 27 identical and 112 explicitly amended. The
+source-input commit stays `dfed08199ad7467e0dd24fde7a1f60dcdf202921`; this
+dependency continuation does not change source predicates or implementation
+status. All preceding refinement and historical review records remain exact.
+
+Validation of the final source and metadata proposal:
+
+- Two focused crosswalk tests pass with 46,329 assertions, zero failures and
+  zero errors under a 768 MB host heap. They check the entire preserved prior
+  B4-B14 source subject and current global task/authority/source conservation.
+  These tests do not prove the new dependency contracts' semantic entailment.
+- All 23 dependency tests pass with 9,121 assertions, zero failures and zero
+  errors under a 512 MB host heap after regeneration and the explicit count
+  successor. The crosswalk projection and dependency `--check` commands pass.
+- All applying local Git source pins pass. The pending fingerprint is
+  `3b2dc30eb04832bf08a213c8e3b6bbbeff48922e37dcde05a8e773e91ff445ab`.
+- Separate conservation auditing passes: all 25 task-authority files and all
+  149 parsed current rows remain exact, as do all forty future declarations and
+  bindings. Restoring only the 47 previous route declarations recreates the
+  entire predecessor dependency file byte-for-byte. Removing only the new
+  sections recreates all twelve preceding plans byte-for-byte, including their
+  historical records. All 3,144 old edges survive, the 776 staged pairs are
+  unique and join actual declared producers, and source witnesses bind exact
+  committed text. Nineteen canonical/context file identities pass; supporting
+  context is not promoted to whole-source acceptance. The audit's first use of
+  component labels as paths failed before making changes; corrected file-path
+  selection passes.
+- The language-boundary check passes six tests and eleven assertions; canonical
+  documentation validation passes for 240 documents and nineteen phase indexes.
+  New local navigation, ASCII and whitespace checks pass.
+- Full execution of the changed 90-test crosswalk suite is unrun. The earlier
+  90-test / 177,322-assertion result remains scoped to unchanged
+  `88d5f68432beb5c36cdb439fa7cf389118885334`; it is not promoted to this subject.
+  These results establish planning/traceability properties, not backend,
+  compiler, runtime, conformance, release or self-hosting behavior.
+
+The initial dependency test run began before projection regeneration finished:
+five stale-input errors and an outdated current Domain IR route-count assertion
+failed. That mixed-state run receives no validation credit. The one existing
+assertion is updated from 36 to 46 because ten selected family interfaces were
+added while all 36 predecessors survive; every other dependency-test byte is
+unchanged. Test 90's complete preceding subject is frozen to `fc03e5b0`, with
+its original assertion body and every other crosswalk-test byte preserved.
+No new tests or test-count denominator is added. Preparation delimiter/duplicate-
+key errors and an indentation-sensitive temporary census guard were corrected
+before their mutators wrote repository files. The initial temporary route guard
+was corrected to compare unchanged declaration bytes and route fields separately
+from the whole dependency-file digest, which necessarily changes. None of
+these corrections weakens a source requirement or historical assertion.
+
+The source-version root changes four existing pin fields, its pending
+fingerprint and the new dependency record. The test successor is explicitly
+pinned and its count change recorded. The projection tool adds one source-view
+key; dependency-tool logic remains exact. Current whole-source/owner/interface
+entailment and global requirement conjunctions remain unassessed. Wider library,
+AI/support and foundation/nonfunctional source conjunctions, concrete accounting
+cleanup, recorded source-order/hermetic conflicts, product decisions and required
+independent current review remain. The first actual implementation increment is
+still Reader contract coverage. No compiler/backend/provider/device/replay/
+migration/signing/product execution, stopped C7 handoff retry/transfer, other-chat
+message, reviewer wake, automation, aggregate publication or integration occurs.

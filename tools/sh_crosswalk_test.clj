@@ -13465,6 +13465,13 @@
 
 
 (deftest complete-backend-families-source-preserves-every-owner-and-predicate-scope
+ (let [checkpoint (get-in sh-crosswalk/readiness-source-version [:backend-families-dependency-refinement :predecessor-readiness-successor])
+       checkpoint-bridge (if checkpoint (edn/read-string (sh-crosswalk/git-source (:commit checkpoint) (:path checkpoint))) sh-crosswalk/readiness-source-version)
+       checkpoint-view (if checkpoint (edn/read-string (sh-crosswalk/git-source (:commit checkpoint) (:projection-path checkpoint))) (sh-crosswalk/build))
+       read-text (if checkpoint (memoize (fn [p] (sh-crosswalk/git-source (:commit checkpoint) p))) slurp)
+       slurp read-text]
+  (with-redefs [sh-crosswalk/readiness-source-version checkpoint-bridge
+                sh-crosswalk/build (constantly checkpoint-view)]
  (let [bridge sh-crosswalk/readiness-source-version r (:backend-families-refinement bridge)
        previous (:predecessor-readiness-successor r) old-text (sh-crosswalk/git-source (:commit previous) (:path previous)) old (edn/read-string old-text)
        projection-text (sh-crosswalk/git-source (:commit previous) (:projection-path previous)) prior (edn/read-string projection-text)
@@ -13554,7 +13561,8 @@
   (is (= {:routes 158 :current-parent-consumers 118 :future-declarations 40 :selected-result-joins 3144 :task-feedback-members 139 :meaning :unchanged-existing-B1-B3-and-L19-stages-not-complete-B4-B14-dependency-acceptance :further-refinement :pending} (:dependency-review r)))
   (is (= (slurp "docs/acceptance-dependencies.md") (sh-crosswalk/git-source (:commit previous) "docs/acceptance-dependencies.md")))
   (is (= (:backend-families-refinement (:implementation-readiness-source-version view)) r))
-  (is (= :pending (:independent-current-review r))) (is (= :unassessed (:global-source-conjunctions r) (:implementation-acceptance r)))))
+  (is (= :pending (:independent-current-review r))) (is (= :unassessed (:global-source-conjunctions r) (:implementation-acceptance r))))
+  )))
 
 (let [result (run-tests 'sh-crosswalk-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))
