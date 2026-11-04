@@ -50,6 +50,30 @@ clojure -Srepro -M:dev-test \
   --fail-fast
 ```
 
+The first producer boundary is a separate development component, exposed by
+`gravity.bootstrap.rebuild.component/run-seed-built-component!`. It materializes
+the same authenticated snapshot, compiles the fixed Gravity
+`native_plan_c_emitter.gravity` source with the pinned stage0 seed, persists the
+resulting executable plan, and starts a fresh child to reload that plan. The
+child invokes the reloaded exported function for both an accepted hosted/JVM
+`println` source fixture and a rejected vector-output fixture. Run its focused
+check with:
+
+```bash
+clojure -Srepro -M:dev-test \
+  --namespace gravity.bootstrap.rebuild.component-test \
+  --fail-fast
+```
+
+This producer has a deliberately narrow boundary: the input source subset is
+hosted/JVM `ns` metadata plus a `main` function containing a printable-string
+`println`; its output is generated C11 source and a hosted expected-stdout
+observation. Native C compilation/execution is unrun. The persisted plan is a
+seed-hosted component artifact, not a rebuilt compiler, whole-language proof,
+self-hosting result, or seed-retirement claim. A caller-supplied plan/result is
+not accepted; the child plan and observation are parsed, hashed, and compared
+after public output readback.
+
 The declaration is a trusted, versioned VCS input for this bounded check. Its
 source graph and direct-input digests authenticate the selected bytes; the
 executor remains responsible for process, filesystem, publication, and other
