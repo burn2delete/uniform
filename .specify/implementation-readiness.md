@@ -12,6 +12,10 @@ proposals. The [current checkpoint](#complete-b4-b14-backend-source-continuation
 records checks and remaining work. Whole-project semantic coverage, independent
 acceptance and integration remain unproven.
 
+The [subsequent full crosswalk run](#full-crosswalk-validation-at-88d5)
+passes all ninety tests against the unchanged `88d5f6843` checkpoint. This is
+planning/traceability validation, not implementation or independent acceptance.
+
 At the inspected base, the 240 canonical documents specify the complete
 language/platform contracts. Spec Kit primarily organizes implementation
 ownership, task editing and historical evidence. Its document links reach the
@@ -7242,8 +7246,9 @@ Validation of this corrected source and metadata proposal:
   zero errors under a 768 MB host heap for the larger source population. They
   cover the full current eleven-document source/owner/witness population,
   literal historical suffix and criterion containment, the entire frozen prior
-  B1-B3 dependency subject and current global conservation. Full current
-  90-test crosswalk execution is unrun; the earlier complete 68-test /
+  B1-B3 dependency subject and current global conservation. At that checkpoint,
+  full 90-test crosswalk execution was unrun; the subsequent run is recorded
+  [below](#full-crosswalk-validation-at-88d5). The earlier complete 68-test /
   44,978-assertion run remains bound only to
   `25a96a0c03536270001449c00676e644ea353521`.
 - Twenty-three dependency tests pass with 8,089 assertions and zero failures or
@@ -7303,3 +7308,29 @@ cleanup, recorded source conflicts, product decisions and independent review
 remain. The exact first implementation increment is still
 `reader/finite-remaining-work/contract-coverage-reconciliation` in its
 [selected plan](../specs/reader-workflow/plan.md#selected-increment-complete-contract-coverage).
+
+## Full crosswalk validation at 88d5
+
+The unchanged planning checkpoint `88d5f68432beb5c36cdb439fa7cf389118885334`,
+tree `94c5270786d0c4b012247ba47b1e9cb06055e211`, passed
+`clojure -J-Xmx768m -M tools/sh_crosswalk_test.clj`: ninety tests,
+177,322 assertions, zero failures and zero errors, terminal exit zero.
+No test, source, input, assertion or historical checkpoint was changed during
+the run. The raw local output SHA-256 is
+`06f50942f47a942130881edce178fac72cb60375af4e917288d40b244d28f59b`.
+The 768 MB setting is the host JVM heap for this validation command.
+
+This replaces the current full-suite unrun disposition for that exact subject;
+earlier checkpoint statements retain their historical meaning. It validates
+the existing planning and traceability checks, including preserved historical
+subjects and current source conservation. It establishes no complete semantic
+entailment, backend/compiler behavior, conformance execution, independent
+acceptance, integration, self-hosting or seed retirement.
+
+Read-only dependency inspection confirms twelve B4-B14 source-criterion owners
+already have selected-result routes. Their complete selected-result refinement
+remains pending: real early schemas, actual checked inputs, emitted products
+and later required conformance must have explicit producer/consumer roles.
+No task, route, source binding or implementation status changes in this
+validation follow-up. The first implementation increment remains the Reader
+contract-coverage reconciliation identified above. No other chat is messaged.
