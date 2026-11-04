@@ -243,6 +243,10 @@ Original task identities/statuses, source predicates and historical review scope
 
 Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Preserve individual STD10001-STD10008 and STD11001-STD11008 meanings plus owning Schema/domain diagnostic identities and source/schema/path/provider context. Redact secrets and retain expected/actual failures at the true boundary. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
 
+## Workflow and AI library source interface
+
+Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Preserve individual STD12001-STD12008 and STD13001-STD13008 plus owning AI/Workflow/Profile/Runtime ids, missing facts, source/agent/step/provider/review/replay context and redaction. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Diagnostics task authority

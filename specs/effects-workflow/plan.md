@@ -457,6 +457,10 @@ Current source/interface entailment and independent acceptance remain pending. P
 
 Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Distinguish pure query/schema construction from actual direct/latent provider IO and check operation/profile/effect legality with authentic grants. Static admission does not establish Runtime enforcement. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
 
+## Workflow and AI library source interface
+
+Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Check actual direct/latent service/model/tool/memory/workflow effects and phases; pure data or meta graph generation is distinct from executing effects. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Effects task authority

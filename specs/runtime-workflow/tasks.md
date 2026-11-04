@@ -332,6 +332,17 @@ Refusals and acceptance evidence: Reject repeated external effects during replay
 <!-- library-data-source-replay-and-ai-database-calls:end -->
 
 
+
+<!-- library-workflow-ai-source-durable-runtime:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library durable-runtime criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md), [R7](../../docs/phase-08-runtime-architecture/118-r7-distributed-runtime-design.md), [R8](../../docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md).
+
+Execute actual selected scheduling/persistence/provider/model/tool/memory transitions only after authentic current grant, schema/taint/secret/profile/policy and required review. Return recorded outputs during replay or reject missing/incompatible records, preserving idempotency/compensation and exact state/log/version subjects. Exercise first-run/restart/replay, deny/expired/revoked/payload-change and no-action-after-denial cases. No fresh paid or non-idempotent effect is repeated without the governing explicit safe contract; mock/recorded/live results and held actions remain distinct. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-durable-runtime:end -->
+
+
 - [ ] `runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration` Close enforcement and observability integration
 
 Status: Open
@@ -410,6 +421,17 @@ Apply the [schema and database library source criteria](../stdlib-workflow/plan.
 
 Schema/database library runtime enforcement criterion (Open): at the real selected provider boundary, consume the authentic current operation-specific grant and effect/profile/schema/provider decision before connection, query, write, commit, migration, introspection or admin action. Refuse stale/revoked/wrong-subject or missing grants before the denied action; no provider effect may occur after denial. Normalize permitted value/error/cleanup behavior and redact credentials, connection strings and sensitive parameters. Evidence requires real permitted/denied boundary observations, no-action-after-denial cases and source-bound diagnostics under existing availability and execution restrictions. Auth grant production, static Effects admission, callable Library adapters and distributed replay remain separate owning tasks. Metadata flags or a typed driver are no enforcement proof.
 <!-- library-data-source-runtime-enforcement:end -->
+
+
+
+<!-- library-workflow-ai-source-protected-runtime:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library protected-runtime criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md).
+
+Enforce authentic current action-specific grants, effect/profile/provider, schema/taint/secret and payload-bound review before protected model/tool/service/memory or write operations. Deny missing/expired/revoked/wrong-subject/changed-payload authority before action and normalize actual permitted values, errors, cleanup and redaction. Exercise real allowed/denied boundaries and no-action-after-denial for exact source/agent/tool/provider subjects. Distributed/AI replay retains its separate owner and actual log/state obligations; Library/Auth metadata is no enforcement proof. All held effects stay unrun. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-protected-runtime:end -->
 
 <!-- runtime-implementation-tasks:end -->
 

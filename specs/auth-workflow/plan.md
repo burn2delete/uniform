@@ -387,6 +387,10 @@ Original task identities/statuses, source predicates and historical review scope
 
 Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Produce authentic operation-specific database authority and retain attenuation, revocation, phase/lifetime and provider scope. Review text and schema/query metadata do not issue grants; Runtime enforces them at use. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
 
+## Workflow and AI library source interface
+
+Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Supply scoped authentic grants, intersection/attenuation/revocation, phase/lifetime, secret and payload-bound review facts; prompts, graphs and evaluations do not create authority. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Auth task authority

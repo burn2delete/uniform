@@ -515,6 +515,114 @@ Existing receipts keep their original subjects and narrow scope. This increment 
 
 Preserve Clojure bootstrap/Gravity destination, accounting removal and actual ownership/review routing. No held compiler, Reader, Gravity, bootstrap, paired, provider, C12, native, callback, device, probe, replay, migration, private-store, signing or publication action is performed. The stopped public-contract-cluster handoff and denied reviewer wake remain held. The user-authorized review/integration coordination grants no implementation acceptance or main credit.
 
+## Complete workflow and AI library source criteria
+
+[STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md), [P5](../../docs/phase-03-profile-system/050-p5-native-profile-specification.md), [P9](../../docs/phase-03-profile-system/054-p9-distributed-profile-specification.md), [P10](../../docs/phase-03-profile-system/055-p10-ai-profile-specification.md), [R7](../../docs/phase-08-runtime-architecture/118-r7-distributed-runtime-design.md), [R8](../../docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md) govern the selected callable APIs and profile/runtime context. The existing [AI parent](../domains-workflow/plan.md#ai-parent-composition), [Workflow parent](../domains-workflow/plan.md#query-workflow-gpu-and-ui-composition) and [B10 criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria) retain their broader contracts. All normative conditions, examples and profile qualifications remain. Hashes/links are applicability and navigation, not semantic coverage or execution.
+
+### Workflow/AI existing task authority
+
+| Role | Existing sole owner |
+| --- | --- |
+| ai | [`ai`](../../specs/domains-workflow/tasks.md#implementation-tasks) |
+| ai-backend | [`backend-ai`](../../specs/backends-workflow/tasks.md#implementation-tasks) |
+| authority | [`auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`](../../specs/auth-workflow/tasks.md#implementation-tasks) |
+| conformance | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| effects | [`effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering`](../../specs/effects-workflow/tasks.md#implementation-tasks) |
+| evaluations | [`release/remaining-tasks-and-evidence/execute-agent-and-workflow-evaluations`](../../specs/release-workflow/tasks.md#implementation-tasks) |
+| facade | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| inventory | [`stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| migration | [`schema/compatibility-and-migration`](../../specs/domains-workflow/tasks.md#implementation-tasks) |
+| projection | [`schema/checked-consumer-projection`](../../specs/domains-workflow/tasks.md#implementation-tasks) |
+| replay | [`runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| runtime | [`runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| schema | [`schema`](../../specs/domains-workflow/tasks.md#implementation-tasks) |
+| workflow | [`workflow`](../../specs/domains-workflow/tasks.md#implementation-tasks) |
+| workflow-backend | [`backend-workflow`](../../specs/backends-workflow/tasks.md#implementation-tasks) |
+
+Library owns callable operations; Workflow owns durable source semantics, AI typed AI/policy/composed subjects, Backend deployable artifacts, Schema validation/migration/projection, Auth grants, Effects static admission and Runtime services/enforcement/replay. Independent Release evaluations consume their exact interfaces. No second engine, compiler or editable roadmap is introduced.
+
+| Selected criterion | Existing task |
+| --- | --- |
+| callable-inventory | [`stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| workflow-definition | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| workflow-activity | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| workflow-events | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| workflow-reliability | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| workflow-replay | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| workflow-evolution | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| workflow-review | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| workflow-profile-adapter | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| ai-provider | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| ai-prompt | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| ai-tool | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| ai-agent | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| ai-memory | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| ai-policy | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| ai-evaluation | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| ai-workflow-generated-code | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| ai-profile | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| action-authority | [`auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`](../../specs/auth-workflow/tasks.md#implementation-tasks) |
+| durable-runtime | [`runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| library-conformance | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| effect-admission | [`effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering`](../../specs/effects-workflow/tasks.md#implementation-tasks) |
+| protected-runtime | [`runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+
+### Workflow/AI STD12 callable surface
+
+- Definitions: `defworkflow`, `workflow`, `workflow-input`, `workflow-output`, and `workflow-version`.
+- Steps: `step`, `activity`, `recorded-step`, `side-effect`, `child-workflow`, and `workflow-state`.
+- Control: `sleep`, `timer`, `signal`, `await-signal`, `race`, `all`, `choice`, and `loop-step`.
+- Reliability: `retry`, `timeout`, `idempotency-key`, `compensate`, `saga`, and `checkpoint`.
+- Replay: `record-event`, `replay`, `event-log`, `deterministic?`, and `replay-fixture`.
+- Human-review: `human-review-step`, `human-review-policy`, and `human-review-event`.
+- Artifacts: `workflow-graph`, `event-schema`, `activity-manifest`, and `runtime-adapter`.
+
+
+### Workflow/AI STD13 callable surface
+
+- Providers: `defmodel-provider`, `model-provider`, `model`, `model-capability`, and `model-manifest`.
+- Prompts: `defprompt`, `prompt`, `system`, `developer`, `user`, `context`, `structured-output`, and `refusal`.
+- Tools: `deftool`, `tool`, `tool-schema`, `tool-capability`, `tool-call`, and `tool-result`.
+- Agents: `defagent`, `agent`, `run-agent`, `agent-state`, `agent-event`, and `agent-budget`.
+- Memory: `defmemory`, `retrieve`, `remember`, `embed`, `partition`, and `memory-policy`.
+- Policy: `defpolicy`, `policy-check`, `human-review-required?`, `redact`, and `taint-source`.
+- Evals: `defeval`, `run-eval`, `metric`, `threshold`, `probe`, and `eval-report`.
+- Workflow integration: `agent-workflow`, `human-review-step`, `record-model-call`, and `record-tool-call`.
+
+
+### Workflow/AI producer and consumer interfaces
+
+| Producer | Consumer | Selected product and scope |
+| --- | --- | --- |
+| [`workflow`](../../specs/domains-workflow/tasks.md#implementation-tasks) | [`backend-workflow`](../../specs/backends-workflow/tasks.md#implementation-tasks) | Actual checked typed source graph/state and effect/grant/retry/compensation/version semantics; Backend owns deployable emission. |
+| [`backend-workflow`](../../specs/backends-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual selected deployable graph, provider, version and log contracts; generation and execution remain distinct. |
+| [`ai`](../../specs/domains-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Admitted AI declaration/model/prompt/tool/memory/policy/eval/review products; Library is no second semantic authority. |
+| [`schema`](../../specs/domains-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual typed validators, intended-sink trust and event/state serialization results; a schema name is no validated value. |
+| [`schema/compatibility-and-migration`](../../specs/domains-workflow/tasks.md#implementation-tasks) | [`workflow`](../../specs/domains-workflow/tasks.md#implementation-tasks) | Checked exact previous/next schema compatibility/migration; admission does not apply an in-flight migration. |
+| [`auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`](../../specs/auth-workflow/tasks.md#implementation-tasks) | [`runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution`](../../specs/runtime-workflow/tasks.md#implementation-tasks) | Authentic current action grant/review scope; Runtime enforces before effects. |
+| [`runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration`](../../specs/runtime-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual selected provider/scheduler/state/log/error/cleanup products; Library exposes the usable typed boundary. |
+| [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | [`release/remaining-tasks-and-evidence/execute-agent-and-workflow-evaluations`](../../specs/release-workflow/tasks.md#implementation-tasks) | Actual source-bound API/subject fixtures and required comparisons; independent Release execution remains separate. |
+
+### Workflow/AI accepted and refused composition
+
+Onboard-user emits actual graph, typed state/events, retry/idempotency and compensation; IO outside its required activity boundary rejects. Support-agent emits authentic linked model/prompt/tool/memory/policy/eval artifacts. Actual selected services, protected actions and replay require their own evidence. Preserve every STD12001-STD12008 and STD13001-STD13008 meaning and individual missing fact, expected/actual diagnostics, source/workflow/step/event/agent/model/tool/schema/provider/profile/taint/review/replay context and redaction; keep owning P9/P10/R7/R8 and AI/Workflow failures attached.
+
+Distinguish declaration, checked product, first execution, restart/replay, denial, cancellation, compensation and in-flight migration. Exercise missing/changed/incompatible logs, schemas or review payloads, stale evals, injection/secret failures and forbidden effects. Fixed graphs, mocks and one receipt retain their narrow subjects, never general durability, external retention/deletion or whole agent acceptance.
+
+### Workflow/AI source policy and profile interpretation
+
+Apply the existing [accounting-removal authority](../accounting-removal/spec.md) and [AI mixed source dispositions](../domains-workflow/plan.md#ai-mixed-accounting-source-disposition): retire synthetic compiler/project allowances, reservations, debits, cost proofs and quota-only refusals. Keep historical budget fields/API spellings visible with actual remove/retain/history classification; fake zero telemetry, sentinels or renamed allowances are not cleanup. Genuine external-account/provider limits and usage attribution, program retry/timeout/cancellation, concrete memory/format constraints and quality thresholds retain their own meaning. This source increment changes no public name or accounting implementation.
+
+STD13's native local-model availability is a specific documented condition alongside its broader export statement. The bounded author interpretation is a conditional local-provider exception, requiring actual provider/capability/native boundary contracts and independent source review. Do not infer unrestricted native agents/tools or a selected provider. Core stays data-only; restricted profiles have no live APIs; meta artifacts undergo ordinary checking and formal work retains its modeled scope. All actual native/provider execution restrictions persist.
+
+### Workflow/AI staging and evidence limits
+
+Use the [sole dependency representation](../../docs/acceptance-dependencies.md#future-task-construction-and-composition). Initial typed signatures, schemas, provider/profile and graph/log contracts permit bounded construction. Actual admitted semantics, authentic validation/grants/review, generated deployable graphs and selected Runtime products precede their callable consumers. Matching real replay/compensation/migration/eval and conformance precedes each corresponding claim. Whole components, live paid providers and final seedless release are no first-interface prerequisite. This text edits no shared route or source binding; exact dependency reconciliation remains separate.
+
+All tasks remain Open; historical receipts retain immutable scope. This increment executes no compiler, API, provider, tool, memory, callback, replay, migration or eval and expands no complete implementation audit. Source-owner/interface entailment, independent review, current binding and main integration remain pending. Hermetic inputs follow recorded L12 and reviewed L6; D1/C1/C5/C6 ordering stays separate. Reader contract-coverage reconciliation remains the first actual implementation increment.
+
+Preserve Clojure bootstrap/Gravity destination, accounting removal, existing ownership/review and all compiler/Reader/Gravity/bootstrap/paired/provider/C12/native/callback/device/probe/replay/migration/private-store/signing/publication holds. The stopped public-contract-cluster handoff and denied reviewer wake remain held. User-authorized review/integration coordination supplies no implementation acceptance or main credit.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Standard Library workflow migration

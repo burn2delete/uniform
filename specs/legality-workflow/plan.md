@@ -972,6 +972,10 @@ Original task identities/statuses, source predicates and historical review scope
 
 Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Retain each profile restriction, taint-to-trust boundary, resource ownership, source-schema constraint and operation authority. Codec physical limits do not create new compiler work quotas; a legal wrapper still needs actual runtime enforcement. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
 
+## Workflow and AI library source interface
+
+Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Enforce profile/taint/resource/secret and operation authority; preserve the narrow conditional native local-model interpretation for independent review, actual host/provider limits and requested retry semantics. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Legality task authority

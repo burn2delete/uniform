@@ -355,6 +355,10 @@ Original task identities/statuses, source predicates and historical review scope
 
 Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Consume genuine callable exports, schema/codec/canonical vectors, query/transaction/provider, denial/cleanup/replay and migration results for exact subjects. Metadata summaries, mocks and unavailable held cases cannot close library/domain release claims. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
 
+## Workflow and AI library source interface
+
+Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Consume actual callable example/subject, denial/replay/compensation/migration/generated-code and provider/tool/memory/eval/probe evidence. Existing independent suites retain their own exact execution and acceptance. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Release workflow migration

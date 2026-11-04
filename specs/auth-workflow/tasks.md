@@ -206,6 +206,17 @@ Refusals and acceptance evidence: Exercise real accepted and refused grant decis
 <!-- library-data-source-database-authority-and-effects:end -->
 
 
+
+<!-- library-workflow-ai-source-action-authority:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library action-authority criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md), [P9](../../docs/phase-03-profile-system/054-p9-distributed-profile-specification.md), [P10](../../docs/phase-03-profile-system/055-p10-ai-profile-specification.md).
+
+Produce authentic model/tool/memory/service/workflow grants with principal/package/deployment/provider/toolset, phase/lifetime, intersection/attenuation/revocation, secret and required review/payload scope. Preserve independent read/write authority. Exercise actual accepted/refused grant decisions for stale/revoked/wrong-provider/action/phase/payload subjects. Prompt, graph, eval and review records create no capability; Runtime owns actual before-action enforcement and provider results. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-action-authority:end -->
+
+
 - [ ] `auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks` Bind compiler decisions to runtime/build enforcement hooks
 
 Status: Open

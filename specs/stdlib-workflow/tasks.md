@@ -109,6 +109,17 @@ Refusals and acceptance evidence: Missing exports, host-only compatibility names
 <!-- library-data-source-callable-exports-and-contracts:end -->
 
 
+
+<!-- library-workflow-ai-source-callable-inventory:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library callable-inventory criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md).
+
+Bind every named gravity.workflow/gravity.ai export to an actual callable implementation or explicit remaining work, with type/schema/effect/grant, profile/provider, resource/failure/replay, compatibility and artifact contracts. Preserve source names with explicit accounting remove/retain/history dispositions; catalogue names or compatibility helpers prove no availability. Evidence: actual accepted/refused import/call results and matching module/profile metadata for exact source/compiler/provider/target subjects. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-callable-inventory:end -->
+
+
 - [ ] `stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis` Complete pure core, collections, text, numeric and testing APIs
 
 Status: Open
@@ -961,6 +972,193 @@ Refusals and acceptance evidence: Reject driver availability used as portable se
 <!-- library-data-source-providers-profiles-and-redaction:end -->
 
 
+
+<!-- library-workflow-ai-source-workflow-definition:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library workflow-definition criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md).
+
+Implement defworkflow/workflow/input/output/version and graph/state/event/activity artifact APIs over authentic checked Workflow and Backend products. Return actual typed node/edge/input/output/state/effect, source/generated-origin and version identities; graph generation is not execution. Compile onboard-user into genuine graph/event/retry/idempotency/compensation artifacts and reject missing or contradictory graph/schema/state contracts. Workflow retains source semantics and backend-workflow deployable graph emission. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-workflow-definition:end -->
+
+
+
+<!-- library-workflow-ai-source-workflow-activity:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library workflow-activity criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [P9](../../docs/phase-03-profile-system/054-p9-distributed-profile-specification.md), [R7](../../docs/phase-08-runtime-architecture/118-r7-distributed-runtime-design.md).
+
+Implement step/activity/recorded-step/side-effect/child-workflow/state operations over selected Runtime adapters, distinguishing deterministic replay computation from effectful activities. Preserve typed schemas, direct/latent effects, grants, idempotency, retry/timeout/cancel, failure and required compensation. Exercise real selected step outcomes and capability use; reject clock/random/network/file/database/model/tool behavior bypassing the required boundary. Onboard-user must reject IO outside the required activity; a step label or supplied result is insufficient. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-workflow-activity:end -->
+
+
+
+<!-- library-workflow-ai-source-workflow-events:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library workflow-events criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [P9](../../docs/phase-03-profile-system/054-p9-distributed-profile-specification.md), [R7](../../docs/phase-08-runtime-architecture/118-r7-distributed-runtime-design.md).
+
+Implement sleep/timer/signal/await-signal/race/all/choice/loop-step, child workflows and external/review events with typed schema/state, source, ordering, cancellation and recorded decision identities. Record winning choices, timer firings, external payloads and outstanding work as governing replay policy requires. Exercise first-run/replay, failure/cancel/late/malformed event cases; reject untyped events, hidden scheduling/nondeterminism and invalid transitions. Actual callback execution remains held. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-workflow-events:end -->
+
+
+
+<!-- library-workflow-ai-source-workflow-reliability:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library workflow-reliability criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [P9](../../docs/phase-03-profile-system/054-p9-distributed-profile-specification.md), [R7](../../docs/phase-08-runtime-architecture/118-r7-distributed-runtime-design.md).
+
+Implement retry/timeout/idempotency-key/compensate/saga/checkpoint over actual durable semantics. Preserve declared scope/backoff, cancellation, guarded once-only effect identity, timeout/failure mapping, persisted checkpoints and required compensation for irreversible or partially reversible effects. Exercise success/failure/retry/timeout/cancel/restart/partial rollback and compensation failure; reject missing required idempotency or compensation and repeated effects. The example max-three and requested program retry policy are semantics, not development work or attempt quotas. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-workflow-reliability:end -->
+
+
+
+<!-- library-workflow-ai-source-workflow-replay:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library workflow-replay criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [P9](../../docs/phase-03-profile-system/054-p9-distributed-profile-specification.md), [R7](../../docs/phase-08-runtime-architecture/118-r7-distributed-runtime-design.md).
+
+Implement record-event/replay/event-log/deterministic?/replay-fixture against actual schema/versioned Runtime logs and outcomes. Preserve workflow/step/event, provider, input/output digest, schema, error/retry, capability and source origins. Exercise genuine restart/replay and missing/changed/reordered/incompatible record refusals; deterministic replay cannot issue fresh nondeterministic external effects. A replay-policy or deterministic flag is no replay evidence; mock, recorded and live subjects remain distinct. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-workflow-replay:end -->
+
+
+
+<!-- library-workflow-ai-source-workflow-evolution:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library workflow-evolution criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [P9](../../docs/phase-03-profile-system/054-p9-distributed-profile-specification.md), [R7](../../docs/phase-08-runtime-architecture/118-r7-distributed-runtime-design.md).
+
+Expose workflow-version/state and adapter compatibility over checked Schema migration products and actual Workflow/Runtime state/log transitions. Preserve exact previous/next code/schema/event identities, replay policy and admitted migration. Exercise accepted in-flight migration or deterministic rejection, restart and replay with actual state/log subjects. Generating a plan is distinct from applying it; migration, private-store and replay actions remain held. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-workflow-evolution:end -->
+
+
+
+<!-- library-workflow-ai-source-workflow-review:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library workflow-review criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md).
+
+Implement human-review-step/policy/event as typed durable operations consuming AI review/policy and authentic action grants. Preserve payload/action, reviewer and decision scope, expiry/revocation, denial/timeout and recorded replay identity. Exercise grant/deny/expired/revoked/changed-payload and pause/resume cases through actual selected adapters. Review cannot create capability or authorize a changed action; held UI/provider operations remain held. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-workflow-review:end -->
+
+
+
+<!-- library-workflow-ai-source-workflow-profile-adapter:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library workflow-profile-adapter criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [P9](../../docs/phase-03-profile-system/054-p9-distributed-profile-specification.md), [R7](../../docs/phase-08-runtime-architecture/118-r7-distributed-runtime-design.md).
+
+Expose actual runtime-adapter/activity/event-schema behavior and version/replay compatibility for declared providers. Distributed has the durable surface; AI consumes it where durability is required; hosted development and native embedded runtimes need their explicit runtime contracts. Core is data-only, kernel/firmware/hardware lack standard durable execution, meta generates graphs and formal verifies modeled schemas/effects/compensation. Exercise each claimed profile/provider and expected denial, stable logs and normalized Gravity errors; no selected engine or live authority is inferred. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-workflow-profile-adapter:end -->
+
+
+
+<!-- library-workflow-ai-source-ai-provider:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library ai-provider criterion (Open). Sources: [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md), [P10](../../docs/phase-03-profile-system/055-p10-ai-profile-specification.md), [R8](../../docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md).
+
+Implement provider/model/capability/manifest APIs over admitted AI contracts and actual selected Runtime calls. Preserve provider/model/version, input/output schemas, prompt/parameters/request/result/failure/fallback/drift, taint, policy and replay identities. Apply current accounting-removal dispositions to historical budget wording while retaining genuine account/provider limits and attributable usage. Exercise real selected value/error/refusal/fallback/change and output validation; deny missing/wrong grants before invocation. A network grant, provider declaration or supplied response is no model-call result. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-ai-provider:end -->
+
+
+
+<!-- library-workflow-ai-source-ai-prompt:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library ai-prompt criterion (Open). Sources: [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md), [P10](../../docs/phase-03-profile-system/055-p10-ai-profile-specification.md), [R8](../../docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md).
+
+Implement prompt/system/developer/user/context/structured-output/refusal APIs with source-visible authority partitions, rendered message hashes, taint, intended-sink schema validation and refusal/repair policy. Preserve the approved sanitizer OR delimiter alternative without elevating data to instruction authority. Exercise actual rendering, structured/refused/partial/invalid output, injection and secret/no-store cases. Retrieved/model/tool text creates no authority; a prompt or validated flag is no validation result. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-ai-prompt:end -->
+
+
+
+<!-- library-workflow-ai-source-ai-tool:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library ai-tool criterion (Open). Sources: [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md), [P10](../../docs/phase-03-profile-system/055-p10-ai-profile-specification.md), [R8](../../docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md).
+
+Implement tool/schema/capability/call/result APIs using actual typed IO, grant intersection, effects, side-effect class, provider, idempotency/retry/timeout, secret/taint, review and replay contracts. Bind actual calls/results to agent/package/deployment/action subjects. Exercise accepted/refused invocation, invalid input/output, out-of-toolset requests, unsafe retries, missing review and changed payload. Manifests/review cannot create authority; actual tool execution retains all held restrictions. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-ai-tool:end -->
+
+
+
+<!-- library-workflow-ai-source-ai-agent:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library ai-agent criterion (Open). Sources: [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md), [P10](../../docs/phase-03-profile-system/055-p10-ai-profile-specification.md), [R8](../../docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md).
+
+Implement defagent/agent/run-agent/state/event and classify the preserved agent-budget spelling under the existing accounting-removal authority. Bind actual model/prompt/tool/memory/policy/eval/workflow contracts and source/agent attribution; retired synthetic allowance behavior stays removed while genuine account/provider policy and usage remain distinct. Compile support-agent to authentic linked artifacts; exercise real selected lifecycle/value/failure, missing policy/eval/dependency and invalid grant cases. A manifest or arbitrary cutoff proves no behavior or safety; no second agent runtime is introduced. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-ai-agent:end -->
+
+
+
+<!-- library-workflow-ai-source-ai-memory:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library ai-memory criterion (Open). Sources: [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md), [P10](../../docs/phase-03-profile-system/055-p10-ai-profile-specification.md), [R8](../../docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md).
+
+Implement memory/retrieve/remember/embed/partition/policy APIs through actual admitted store/embedding providers, schema/taint and independent read/write grants. Preserve tenant/partition, retention/deletion/privacy/secret, embedding identity/dimension, source/index lineage, retrieval IDs/scores and replay contracts. Exercise permitted/denied read/write/retrieval, partition/retention, selected deletion/re-embedding and refusal cases. Reject fresh retrieval during recorded replay and ungranted cross-tenant access. A mock store proves no external retention/deletion result; private-store/provider actions remain held. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-ai-memory:end -->
+
+
+
+<!-- library-workflow-ai-source-ai-policy:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library ai-policy criterion (Open). Sources: [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md), [P10](../../docs/phase-03-profile-system/055-p10-ai-profile-specification.md), [R8](../../docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md).
+
+Expose policy-check/human-review-required?/redact/taint-source over deterministic layered AI policy and authentic grant/deny/review products. Preserve deny precedence, action/payload binding, reviewer/expiry/revocation/timeout/replay and redaction. Exercise actual permitted/denied protected paths, prompt/tool/model authority injection and secret leaks. No decision record replaces sink enforcement. Remove artificial project allowances without weakening genuine external-account/service/host restrictions; held write/destructive/shell/deployment/package/secret effects stay held. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-ai-policy:end -->
+
+
+
+<!-- library-workflow-ai-source-ai-evaluation:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library ai-evaluation criterion (Open). Sources: [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md).
+
+Implement eval/dataset/metric/threshold/probe/report APIs with exact dataset schema/version/provenance/split, metric direction/aggregation/threshold/confidence-or-variance, model/prompt/provider/tool/memory/policy/runtime subjects and changed-artifact comparisons. Release-marked agents need matching required eval/defense reports. Exercise actual callable scoring/report and missing/stale/incompatible-report refusal. Release execute-agent-and-workflow-evaluations owns its independent actual suite; Library exposes APIs and AI supplies subject/oracle contracts. A hook, sample score or report label is no run; quality thresholds are not project work quotas. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-ai-evaluation:end -->
+
+
+
+<!-- library-workflow-ai-source-ai-workflow-generated-code:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library ai-workflow-generated-code criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md).
+
+Implement agent-workflow/human-review-step/record-model-call/record-tool-call using the same STD12 graph/state/log and authentic provider/memory/review products. Generated code/configuration retains model/prompt/generator origins and passes ordinary compiler, safety, profile and package checks before use. Exercise selected real first-run/replay, missing-model/tool-record and generated-invalid-code/provenance cases. No permissive compiler, hidden live replay call or SDK-only path is accepted; producer owners and all held execution routes remain. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-ai-workflow-generated-code:end -->
+
+
+
+<!-- library-workflow-ai-source-ai-profile:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library ai-profile criterion (Open). Sources: [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md), [P5](../../docs/phase-03-profile-system/050-p5-native-profile-specification.md), [P10](../../docs/phase-03-profile-system/055-p10-ai-profile-specification.md), [R8](../../docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md).
+
+Enforce full AI, workflow-integrated distributed and explicitly enabled hosted development rules. Core has data/schema helpers only; kernel/firmware/hardware and unrestricted formal have no live model API, and meta artifacts undergo downstream checks. Preserve STD13's specific native local-model/provider condition with actual records/capability gates and ordinary native boundary legality, without broad native agent/tool authority. This conditional-exception reading of the native availability bullet is an author interpretation requiring independent source review, not accepted semantic resolution. Exercise actual profile/provider admission/refusal; wider native claims remain unassessed and native/provider execution held. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-ai-profile:end -->
+
+
 - [ ] `stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests` Integrate platform modules and close release manifests
 
 Status: Open
@@ -1022,6 +1220,17 @@ Required behavior: Consume actual callable API/profile examples, validator/codec
 
 Refusals and acceptance evidence: Reject static p16 completeness summaries, manifests, mocked providers or a single narrow receipt promoted to whole library/domain acceptance. Storage page/WAL/crash-recovery remains the storage task; its unavailability cannot disappear or be credited by a database-client fixture. Required held or unavailable cases stay Open. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
 <!-- library-data-source-library-conformance-and-composed-examples:end -->
+
+
+
+<!-- library-workflow-ai-source-library-conformance:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library library-conformance criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md).
+
+Consume actual callable exports/profiles/adapters, graph/state/log/schema, provider/prompt/tool/memory/policy/review/eval/generated-program and applicable independent checker products for exact source/compiler/runtime/provider/target subjects. Preserve STD12001-STD12008 and STD13001-STD13008 meanings and owning AI/Workflow/Profile/Runtime diagnostics with source and redaction. Compile onboard-user/support-agent and exercise genuine selected accepted/refused replay/compensation/migration/injection/schema/grant/review paths. Independent Release/TEST7/TEST8 execution remains separate; catalogues, mocks, fixed graphs or one receipt do not accept whole surfaces. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-library-conformance:end -->
 
 <!-- stdlib-implementation-tasks:end -->
 

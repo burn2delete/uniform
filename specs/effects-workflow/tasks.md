@@ -206,6 +206,17 @@ Schema/database library static effect criterion (Open): infer and check actual d
 <!-- library-data-source-effect-admission:end -->
 
 
+
+<!-- library-workflow-ai-source-effect-admission:start -->
+
+Apply the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Workflow/AI library effect-admission criterion (Open). Sources: [STD12](../../docs/phase-16-standard-library/222-std12-workflow-library-specification.md), [STD13](../../docs/phase-16-standard-library/223-std13-ai-and-agent-library-specification.md).
+
+Infer and check actual direct/latent workflow/service/clock/random/model/tool/memory/retrieval/generated-code effects, profile/phase and authentic grants. Pure Core graph/schema data is not execution and meta generation grants no live provider authority. Exercise real checked-program admission/refusal and precise source/agent/workflow/provider diagnostics for hidden effects, illegal latent use and wrong profile/phase. Static summaries prove neither Runtime enforcement nor replay; preserve selected L12 inputs, reviewed L6 and all held compiler routes. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-workflow-ai-source-effect-admission:end -->
+
+
 - [ ] `effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation` effects/4: Record replay and invalidation
 
 Current evidence/status: Open; partial source evidence above is not closure

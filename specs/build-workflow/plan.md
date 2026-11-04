@@ -300,6 +300,10 @@ Original task identities/statuses, source predicates and historical review scope
 
 Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Track actual source-schema, codec/canonical policy, provider/dialect/version/features, generated inputs and output-affecting environment in invalidation and reproduction. Pure initial declarations do not wait for final provider/release evidence. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
 
+## Workflow and AI library source interface
+
+Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Track source/schema/version/graph/log/prompt/model/tool/provider/policy/eval/generated-program inputs in invalidation and reproduction; stale subjects invalidate matching acceptance. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration

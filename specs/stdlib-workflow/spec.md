@@ -80,6 +80,8 @@ The [complete library foundation criteria](plan.md#complete-library-foundation-s
 
 The [schema and database library source criteria](plan.md#complete-schema-and-database-library-source-criteria) refine callable STD10/STD11 behavior against existing Schema, Query, Backend, Auth, Effects and Runtime owners. Actual codecs, typed parameterized calls, canonical vectors, cleanup, migration, denial and replay evidence remain required. Generation, metadata and provider availability are distinct from execution; no task status or implementation acceptance changes.
 
+The [workflow and AI library source criteria](plan.md#complete-workflow-and-ai-library-source-criteria) refine callable STD12/STD13 behavior over existing Workflow, AI, Backend, Schema, Auth, Effects and Runtime owners. Actual typed events/state, activity isolation, replay/compensation/in-flight migration, provider/tool/memory/review, generated-code and eval results remain distinct from declaration artifacts. Task statuses, historical scopes, accounting removal and held actions persist.
+
 ## Historical workflow-transfer specification
 
 # Feature specification: Standard Library workflow migration

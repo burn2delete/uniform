@@ -435,6 +435,10 @@ Original task identities/statuses, source predicates and historical review scope
 
 Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Consume actual grants and static decisions before provider actions; enforce denial, normalized errors and resource cleanup. Replay consumes recorded exact schema/query/provider/policy subjects. Driver availability or recording a policy establishes no execution. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
 
+## Workflow and AI library source interface
+
+Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Supply actual selected service/provider/tool/memory/scheduler/state/log/error/cleanup products with before-action enforcement and recorded replay. Manifest completeness is no execution. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Runtime workflow migration

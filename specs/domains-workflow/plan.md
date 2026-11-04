@@ -650,6 +650,10 @@ Original task identities/statuses, source predicates and historical review scope
 
 Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Supply actual source-schema/validator/type-projection, checked migration/projection and Query/schema/taint/numeric/lineage results through existing owners. Library facade execution does not produce those outcomes or establish storage WAL/recovery. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
 
+## Workflow and AI library source interface
+
+Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Supply actual AI/Workflow semantics, policy/review/eval and schema/migration/projection outcomes through the existing owners; callable adapters are not a second domain implementation. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Domains workflow migration

@@ -169,6 +169,10 @@ Original task identities/statuses, source predicates and historical review scope
 
 Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Inspect actual schema/version/hash/codec/query/provider/provenance and validation-path artifacts. A catalogue entry or generated filename does not establish consumer parity, provider execution or complete callable support. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
 
+## Workflow and AI library source interface
+
+Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Inspect authentic graph/state/log/schema/provider/prompt/tool/memory/policy/review/eval and redacted source diagnostics; a supplied score or event list is no executed claim. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Developer Tools workflow migration
