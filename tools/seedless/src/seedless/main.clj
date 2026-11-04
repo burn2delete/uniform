@@ -107,6 +107,7 @@
 (defn run-campaign! [ctx resume?]
   (with-current-lock ctx
     #(try
+       (doseq [t (workflow/tasks ctx)] (workflow/assert-no-pending-main! ctx t))
        (when (:interruption @(:state ctx)) (rt/fail! "Inspect retained controller interruption before recovery" {}))
        (when resume? (rt/write-edn! (:control-file ctx) {:paused false}))
        (if (and (= :complete (:status @(:state ctx)))
@@ -121,6 +122,7 @@
   (let [inspection (rt/read-edn file)]
     (when-not (and (string? (:evidence inspection)) (not (str/blank? (:evidence inspection))))
       (rt/fail! "Retry needs a record of the inspected interruption/failure" {}))
+    (doseq [t (workflow/tasks ctx)] (workflow/assert-no-pending-main! ctx t))
     (if (= "audit" key)
       (let [planning (:planning @(:state ctx))
             interruption (:interruption @(:state ctx))
@@ -152,16 +154,38 @@
             (doseq [id ids :let [effect (get-in @(:state ctx) [:effects id])]
                     :when (#{:pending :uncertain :restricted} (:status effect))]
               (rt/fail! "Merged slice finalization needs effect reconciliation" {:effect id :restricted (= :restricted (:status effect))}))))
+        (let [id (or (:merge-effect task) (workflow/merge-effect-id task))
+              record (:inspection (rt/main-merge-state ctx id))]
+          (when (and (get-in task [:error :details :main-effect]) (not (:merged task)) (nil? record))
+            (rt/fail! "Main failure needs original-owner journal inspection before retry" {:effect id :main-effect true}))
+          (when (= :not-applied (get-in record [:inspection :outcome]))
+            (let [effect (get-in @(:state ctx) [:effects id])
+                  digest (rt/digest (pr-str record))
+                  restriction (rt/digest (pr-str ["gh-pr-merge" (get-in ctx [:config :repository])]))
+                  next-id (str id "/inspection/" digest)]
+              (when (or (= :restricted (:status effect))
+                        (get-in @(:state ctx) [:restricted-commands restriction])
+                        (rt/shared-restriction ctx :commands restriction))
+                (rt/fail! "Original repository merge restriction forbids a successor intent" {:effect id :restricted true}))
+              (when-not (and (= (assoc (select-keys task [:base :candidate :tree]) :id id :method :merge)
+                                (select-keys (:intent record) [:id :base :candidate :tree :method]))
+                             (= :done (:status effect)) (= digest (:main-inspection-digest effect)))
+                (rt/fail! "Not-applied main inspection needs matching local effect reconciliation" {:effect id :main-effect true}))
+              (when (get-in @(:state ctx) [:effects next-id])
+                (rt/fail! "Inspected successor already has a retained effect; inspect that outcome" {:effect next-id :main-effect true}))
+              (workflow/task! ctx key :merge-recovery (assoc (select-keys task [:base :candidate :tree]) :id next-id)))))
         (rt/update! ctx update-in [:tasks key :history] (fnil conj []) {:error (:error task) :inspection inspection})
         (workflow/task! ctx key :feedback inspection
-                        :status (if (or (:merged task) (#{:ci :merge} (:resume-status task))) :ci :repair))))))
+                        :status (if (or (:merged task) (:merge-recovery (workflow/task ctx key))
+                                        (#{:ci :merge} (:resume-status task))) :ci :repair))))))
 
 (defn dispatch! [ctx command args]
   (case command
     "doctor" (with-current-lock ctx #(shared/doctor! ctx))
     "status" (println (pr-str @(:state ctx)))
     "pause" (rt/write-edn! (:control-file ctx) {:paused true})
-    "setup" (with-current-lock ctx #(do (gh/setup! ctx) (gh/status! ctx (workflow/campaign-issue! ctx) "Proposed")))
+    "setup" (with-current-lock ctx #(do (doseq [t (workflow/tasks ctx)] (workflow/assert-no-pending-main! ctx t))
+                                        (gh/setup! ctx) (gh/status! ctx (workflow/campaign-issue! ctx) "Proposed")))
     "coordinate" (with-current-lock ctx #(println "Retained state registered; no workers or GitHub writes."))
     "run" (run-campaign! ctx false)
     "resume" (run-campaign! ctx true)

@@ -316,8 +316,11 @@
                            (when-not (some #(shared/covers? % path) (:paths t))
                              (rt/fail! "Merge conflict requires another path owner" {:path path})))
                          false)))]
-    (task! ctx (:key t) :base base :candidate (rt/git ctx (:worktree t) "rev-parse" "HEAD")
-           :tree (rt/git ctx (:worktree t) "rev-parse" "HEAD^{tree}") :checks nil :review nil)
+    (let [candidate (rt/git ctx (:worktree t) "rev-parse" "HEAD")]
+      (task! ctx (:key t) :base base :candidate candidate
+             :tree (rt/git ctx (:worktree t) "rev-parse" "HEAD^{tree}") :checks nil :review nil)
+      (when-not (= candidate (:candidate t))
+        (task! ctx (:key t) :merge-effect nil :merge-recovery nil)))
     merged?))
 
 (defn prepare-base! [ctx t]
@@ -415,7 +418,8 @@
               (rt/fail! "Candidate index changes an unowned path relative to its base" {:path path})))
           (rt/git ctx (:worktree t) "commit" "-m" (:title t)))
         (task! ctx key :candidate (rt/git ctx (:worktree t) "rev-parse" "HEAD")
-               :tree (rt/git ctx (:worktree t) "rev-parse" "HEAD^{tree}") :implementation output :checks nil :review nil :merge-in-progress false)
+               :tree (rt/git ctx (:worktree t) "rev-parse" "HEAD^{tree}") :implementation output :checks nil :review nil :merge-in-progress false
+               :merge-effect nil :merge-recovery nil)
         (publish! ctx (task ctx key))
         (when-not (= "checkpoint" (:outcome output))
           (reset! writer-ended? false)
@@ -536,6 +540,35 @@
         (accept! ctx (:key t) (get-in t [:checks :commands]))
         (transition! ctx (:key t) :repair)))))
 
+(defn assert-merge-provider! [ctx t]
+  (let [info (shared/pr-info ctx t)]
+    (assert-pr-identity! ctx t (pull-request-by-number! ctx (get-in t [:pr :number])) (:candidate t))
+    (when-not (and (= "OPEN" (:state info)) (= (:candidate t) (:headRefOid info))
+                   (= (get-in ctx [:config :base-branch]) (:baseRefName info))
+                   (= :passed (shared/check-state (:statusCheckRollup info)))
+                   (= "MERGEABLE" (:mergeable info)) (not (:isDraft info))
+                   (not (#{"REVIEW_REQUIRED" "CHANGES_REQUESTED"} (:reviewDecision info))))
+      (rt/fail! "Provider merge evidence changed after preflight" {:remote-pr-refusal true :pr info}))
+    (when (gh/open-review-threads? ctx (get-in t [:pr :number]))
+      (rt/fail! "PR has unresolved review threads after preflight" {:remote-pr-refusal true}))
+    (assert-clean! ctx (:worktree t))
+    (assert-identity! ctx t)))
+
+(defn merge-effect-id [t]
+  (if (and (:candidate t)
+           (= (select-keys t [:base :candidate :tree])
+              (select-keys (:merge-recovery t) [:base :candidate :tree])))
+    (get-in t [:merge-recovery :id])
+    (str "merge/" (:candidate t))))
+
+(defn assert-no-pending-main! [ctx t]
+  (doseq [id (distinct (remove nil? [(:merge-effect t) (merge-effect-id t)]))
+          :let [pending (:pending (rt/main-merge-state ctx id))]
+          :when pending]
+    (rt/fail! "Original main effect needs reconcile-main before recovery"
+              {:effect id :main-effect true :shared-main-fence true
+               :restricted (= :restricted (get-in pending [:original-effect :status]))})))
+
 (defn merge-current! [ctx t]
   (rt/try-with-main-lock
    ctx
@@ -567,10 +600,11 @@
            (rt/run! ctx (:worktree t)
                     ["clojure" "-M" "tools/check_worktree_preflight.clj" "--mode" "integration" "--base-ref" base
                      "--candidate-base" base "--candidate-commit" (:candidate t) "--candidate-tree" (:tree t)])
+           (assert-merge-provider! ctx t)
            (let [observed (fresh-main! ctx)]
              (if (not= base observed)
                {:compose observed}
-               (let [intent {:id (str "merge/" (:candidate t)) :base base :candidate (:candidate t)
+               (let [intent {:id (merge-effect-id t) :base base :candidate (:candidate t)
                              :tree (:tree t) :method :merge :pr-url (get-in t [:pr :html_url])}]
                  (task! ctx (:key t) :merge-effect (:id intent))
                  (try
@@ -588,6 +622,7 @@
                                      (assoc (or (ex-data e) {}) :effect (:id intent) :main-effect true) e)))))))))))))
 
 (defn integrate! [ctx t]
+  (assert-no-pending-main! ctx t)
   (assert-identity! ctx t)
   (when (dependencies-merged? ctx t)
     (let [info (shared/pr-info ctx t) ci (shared/check-state (:statusCheckRollup info))]

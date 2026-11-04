@@ -191,6 +191,15 @@ by its original state owner with `release-writer CONFIG LEASE.edn INSPECTION.edn
 the exact lease token and inspected evidence are required. Never clear either
 record merely because its process is absent.
 
+An unresolved original main intent blocks run, setup, retry and integration
+before provider queries, even when the local merge command exited successfully.
+For an inspected `:not-applied` outcome, explicitly reconcile the original local
+effect against that same shared inspection, then retry the slice. This also
+applies to a previously successful command receipt. Only a matching accepted
+base/candidate/tree and non-restricted settlement permit a new inspected intent;
+the original receipt and inspection remain in history. No uncertain or denied
+intent is automatically replayed.
+
 An already merged slice remains in finalization until its tracking writes are
 complete. Tracking failure never queues another author for the merged code.
 Pending/uncertain task effects must be reconciled before retry; restricted

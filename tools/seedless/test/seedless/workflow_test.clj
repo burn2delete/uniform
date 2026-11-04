@@ -342,6 +342,91 @@
                (w/integrate! ctx (w/task ctx "a"))
                (is (= 1 (count (filter #(= :merge (first %)) @events))))))))
 
+(deftest provider-evidence-is-refreshed-after-preflight-before-merge
+  (doseq [drift [:ci :review :base :head :threads]]
+    (harness :normal
+             (fn [ctx events _ _]
+               (add-task! ctx (slice "a")) (w/prepare! ctx "a")
+               (let [original shared/pr-info calls (atom 0) threads (atom 0)]
+                 (with-redefs [shared/pr-info
+                               (fn [context t]
+                                 (let [info (original context t)]
+                                   (if (< (swap! calls inc) 3) info
+                                       (case drift
+                                         :ci (assoc info :statusCheckRollup [{:status "COMPLETED" :conclusion "FAILURE"}])
+                                         :review (assoc info :reviewDecision "CHANGES_REQUESTED")
+                                         :base (assoc info :baseRefName "foreign")
+                                         :head (assoc info :headRefOid "foreign")
+                                         info))))
+                               gh/open-review-threads? (fn [& _] (and (= :threads drift) (> (swap! threads inc) 1)))]
+                   (is (thrown? Exception (w/integrate! ctx (w/task ctx "a")))))
+                 (is (some #(= :preflight (first %)) @events))
+                 (is (not-any? #(= :merge (first %)) @events))
+                 (is (empty? (:main-effects (rt/read-edn (:coordination-file ctx))))))))))
+
+(deftest command-success-with-unverified-merge-needs-original-journal-inspection
+  (harness :normal
+           (fn [ctx events _ _]
+             (add-task! ctx (slice "a")) (w/prepare! ctx "a")
+             (with-redefs [w/verify-merge! (fn [& _] (throw (ex-info "Verification interrupted" {})))]
+               (try (w/integrate! ctx (w/task ctx "a"))
+                    (catch Exception e (w/attention! ctx "a" e))))
+             (let [t (w/task ctx "a") id (:merge-effect t)
+                   file (io/file (:root ctx) "main-inspection.edn")
+                   info (shared/pr-info ctx t) commit (get-in info [:mergeCommit :oid])
+                   before @(:state ctx) queries (atom 0)]
+               (is (= :done (get-in before [:effects id :status])))
+               (is (:pending (rt/main-merge-state ctx id)))
+               (spit file (pr-str {:evidence "Actual fixture merge inspected"}))
+               (is (thrown-with-msg? Exception #"reconcile-main" (main/retry! ctx "a" (str file))))
+               (is (= before @(:state ctx)))
+               (with-redefs [shared/pr-info (fn [& _] (swap! queries inc))]
+                 (is (thrown-with-msg? Exception #"reconcile-main" (w/integrate! ctx t))))
+               (is (zero? @queries))
+               (let [actual {:commit commit :tree (:tree t) :parents [(:base t) (:candidate t)]}]
+                 (spit file (pr-str {:evidence "Inspected real fixture Git parents/tree and PR merge" :outcome :merged :actual actual}))
+                 (main/dispatch! ctx "reconcile-main" [id (str file)]))
+               (main/retry! ctx "a" (str file))
+               (w/integrate! ctx (w/task ctx "a"))
+               (is (= :done (:status (w/task ctx "a"))))
+               (is (= 1 (count (filter #(= :merge (first %)) @events))))))))
+
+(deftest inspected-not-applied-merge-needs-local-settlement-and-explicit-retry
+  (doseq [receipt [:uncertain :done :restricted]]
+    (harness :normal
+             (fn [ctx events _ _]
+               (add-task! ctx (slice "a")) (w/prepare! ctx "a")
+               (let [original rt/command file (io/file (:root ctx) "not-applied.edn")]
+                 (with-redefs [rt/command
+                               (fn [context cwd argv & input]
+                                 (if (= ["gh" "pr" "merge"] (vec (take 3 argv)))
+                                   (if (= :done receipt) {:exit 0 :out "No mutation" :err ""}
+                                       (throw (ex-info "Fixture response lost before mutation" {:restricted (= :restricted receipt)})))
+                                   (apply original context cwd argv input)))]
+                   (try (w/integrate! ctx (w/task ctx "a"))
+                        (catch Exception e (w/attention! ctx "a" e))))
+                 (let [t (w/task ctx "a") id (:merge-effect t)]
+                   (is (= receipt (get-in @(:state ctx) [:effects id :status])))
+                   (spit file (pr-str {:evidence "Fixture PR remains open; no Git mutation occurred" :outcome :not-applied}))
+                   (main/dispatch! ctx "reconcile-main" [id (str file)])
+                   (is (thrown? Exception (main/retry! ctx "a" (str file))))
+                   (is (not-any? #(= :merge (first %)) @events))
+                   (spit file (pr-str {:evidence "Original receipt settled against shared inspection" :result {:outcome :not-applied}}))
+                   (if (= :restricted receipt)
+                     (do (is (thrown? Exception (main/dispatch! ctx "reconcile" [id (str file)])))
+                         (is (thrown? Exception (main/retry! ctx "a" (str file))))
+                         (is (nil? (:merge-recovery (w/task ctx "a")))))
+                     (do
+                       (main/dispatch! ctx "reconcile" [id (str file)])
+                       (main/retry! ctx "a" (str file))
+                       (let [next-id (w/merge-effect-id (w/task ctx "a"))]
+                         (is (not= id next-id))
+                         (is (= receipt (get-in @(:state ctx) [:effects id :prior :status])))
+                         (w/integrate! ctx (w/task ctx "a"))
+                         (is (= :done (:status (w/task ctx "a"))))
+                         (is (= :done (get-in @(:state ctx) [:effects next-id :status])))
+                         (is (= 1 (count (filter #(= :merge (first %)) @events)))))))))))))
+
 (deftest planning-contracts-and-frozen-writer-ownership
   (let [ctx (context) p (slice "parent") child (assoc (slice "child") :status :ready :dependencies ["parent"] :stack-on "parent")
         plan {:coverage ["bootstrap/"] :source-closure ["module.clj"] :target "declared target" :subset "required closure"
