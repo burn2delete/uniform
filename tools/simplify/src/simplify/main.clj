@@ -16,10 +16,12 @@
    :check-executables #{"clojure"}
    :checks [["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]]})
 
-(defn config! [path]
+(defn config!
+  ([path] (config! path defaults))
+  ([path configuration-defaults]
   (let [file (io/file (rt/canonical path))
         parent (.getParentFile file)
-        raw (merge defaults (rt/read-edn file))
+        raw (merge configuration-defaults (rt/read-edn file))
         config (reduce (fn [m key]
                          (let [value (io/file (get m key))]
                            (assoc m key (rt/canonical (if (.isAbsolute value) value (io/file parent (str value)))))))
@@ -31,7 +33,7 @@
       (rt/fail! "Invalid harness configuration" {}))
     (when (workflow/covers? (:repo-dir config) (:worktree-root config))
       (rt/fail! "Worker worktrees must be outside the source checkout" {}))
-    config))
+    config)))
 
 (defn context! [config]
   (let [directory (io/file (:state-dir config))
@@ -47,7 +49,11 @@
         git-dir (rt/git ctx (:repo-dir config) "rev-parse" "--git-common-dir")
         lock-dir (io/file git-dir)
         lock-dir (if (.isAbsolute lock-dir) lock-dir (io/file (:repo-dir config) git-dir))]
-    (assoc ctx :lock-file (str (io/file lock-dir "simplify-harness.lock")))))
+    (let [ctx (assoc ctx :lock-file (str (io/file lock-dir (get config :coordinator-lock "simplify-harness.lock")))
+                         :coordination-dir (rt/canonical (io/file lock-dir "uniform-harness")))]
+      (doseq [[key details] (:restricted-commands @(:state ctx))] (rt/record-denial! ctx :command key details))
+      (doseq [[key details] (:restricted-actions @(:state ctx))] (rt/record-denial! ctx :github key details))
+      ctx)))
 
 (defn doctor! [ctx]
   (doseq [argv [["git" "--version"] ["gh" "--version"] ["codex" "--version"] ["codex" "login" "status"]]]

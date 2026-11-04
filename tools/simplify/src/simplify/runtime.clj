@@ -5,7 +5,7 @@
             [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.string :as str])
-  (:import [java.nio.channels FileChannel]
+  (:import [java.nio.channels FileChannel OverlappingFileLockException]
            [java.nio.file Files StandardCopyOption StandardOpenOption]
            [java.security MessageDigest]
            [java.time Instant]))
@@ -89,18 +89,45 @@
   (boolean (re-find #"(?i)(HTTP (401|403|429)|requested URL returned error: (401|403|429)|permission denied|permission to .+ denied|write access .+ not granted|authentication failed|resource not accessible|requires authentication|bad credentials|rate limit exceeded|secondary rate limit|not authorized)"
                     (or message ""))))
 
+(defn denials!
+  "Denied controller operations survive campaign changes and cannot transfer between harnesses."
+  [ctx f]
+  (if-let [directory (:coordination-dir ctx)]
+    (do (.mkdirs (io/file directory))
+        (loop []
+          (let [result (with-open [channel (FileChannel/open (.toPath (io/file directory "denials.lock"))
+                                                            (into-array StandardOpenOption [StandardOpenOption/CREATE StandardOpenOption/WRITE]))]
+                         (when-let [lock (try (.tryLock channel) (catch OverlappingFileLockException _ nil))]
+                           (try
+                             (let [file (io/file directory "denials.edn")
+                                   [updated result] (f (if (.exists file) (read-edn file) {}))]
+                               (write-edn! file updated) {:value result})
+                             (finally (.release lock)))))]
+            (if result (:value result) (do (Thread/sleep 25) (recur))))))
+    (second (f {}))))
+
+(defn assert-authorized! [ctx kind key]
+  (when (denials! ctx (fn [denials] [denials (get denials [kind key])]))
+    (fail! "Operation denied in a coordinated harness; cannot retry or transfer it" {:restricted true :kind kind :key key})))
+
+(defn record-denial! [ctx kind key details]
+  (denials! ctx (fn [denials] [(assoc denials [kind key] details) true])))
+
 (defn run! [ctx cwd argv]
   (let [action (cond
                  (= ["git" "push"] (vec (take 2 argv))) ["git-push" (get-in ctx [:config :repository])]
                  (= ["gh" "pr" "merge"] (vec (take 3 argv))) ["gh-pr-merge" (get-in ctx [:config :repository])]
                  :else argv)
         key (digest (pr-str action))
+        _ (assert-authorized! ctx :command key)
         _ (when (get-in @(:state ctx) [:restricted-commands key])
             (fail! "Restricted controller command cannot be retried" {:argv argv :restricted true}))
         result (command ctx cwd argv)]
     (when-not (zero? (:exit result))
       (let [restricted (authorization-denied? (str (:err result) "\n" (:out result)))]
-        (when restricted (update! ctx assoc-in [:restricted-commands key] {:argv argv :error (:err result)}))
+        (when restricted
+          (update! ctx assoc-in [:restricted-commands key] {:argv argv :error (:err result)})
+          (record-denial! ctx :command key {:argv argv :error (:err result)}))
         (fail! "Command failed" (assoc result :argv argv :restricted restricted))))
     (str/trim (:out result))))
 
