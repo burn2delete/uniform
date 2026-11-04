@@ -125,3 +125,29 @@ New-test and Reader lint report zero warnings/errors. The initial new-test
 parenthesis nonpass is retained and corrected without altering production
 semantics or weakening assertions. Candidate/native comparisons, broad regression,
 independent acceptance, full wired CI and integration gates remain outstanding.
+
+## Committed comparison and review
+
+Source5aac34c0966570f279eb1eceaecd47952f4bcbff, tree
+134638e4c2d5eaec41cd5e147ebb4f043d9501f0, passes the exact wired Reader
+command: ninety-nine tests and 4,348 assertions under its original one GiB
+heap and 120-second process watchdog. Language/source ownership gates pass
+forty-eight tests and 1,198 assertions with no skipped namespace. All forty
+candidate native records match the typed original baseline byte-for-byte and
+parsed-equal at05facbbf3623085382609ddc1f6ad3d44850027e7536d461e23bee34be35c7a4,
+retaining twenty outputs, eighteen refusals and two original host failures.
+
+Static conservation proves the moved body modulo six per-call operator ports,
+all fourteen earlier public Reader bodies, exact facade/diagnostic suffix,
+both unchanged manifests and the single CI namespace insertion. Contextual
+lint covers forty-one present Clojure/EDN paths against mainf662, with 3,458
+unchanged baseline warnings and zero blockers. Docs, roadmap, governance and
+CI formatting pass. Cold Reader exposes fifteen functions without Bootstrap.
+
+Independent adversarial review accepts the exact source. Independent semantic
+review identifies no source defect and requests explicit late span/terminator
+replacement and owner exception-identity assertions in addition to existing
+order tests. The test-only successor adds these controls, with its own fresh
+Reader command run pending. The parser implementation and all prior preserved
+bodies remain unchanged. Own exact source/base CI, final review and immediate
+integration preflight remain separate gates; prior literal CI does not transfer.

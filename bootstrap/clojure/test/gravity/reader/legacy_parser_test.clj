@@ -126,3 +126,29 @@
       (is (= [(symbol "2.5") (symbol "1/0") "an" #{1}]
              (mapv :form (parse "seed.qst" "2.5 1/0 \"a\\n\" #{1 1}" table))))
       (is (thrown? NumberFormatException (parse "overflow.qst" "999999999999999999999999999" table))))))
+
+(deftest span-and-terminator-rebinding-and-owner-exception-identities-survive
+  (let [table (b/stage1-reader-table)
+        result (with-redefs [b/stage1-reader-span
+                             (fn [& _]
+                               (alter-var-root #'b/stage1-reader-span
+                                               (constantly (fn [& _] {:owner :later})))
+                               {:owner :first})]
+                 (parse "span.qst" "1 2" table))]
+    (is (= [:first :later] (mapv #(get-in % [:span :owner]) result))))
+  (let [table (b/stage1-reader-table) terminator b/line-terminator-char? calls (atom [])
+        result (with-redefs [b/line-terminator-char?
+                             (fn [ch]
+                               (swap! calls conj [:first ch])
+                               (alter-var-root #'b/line-terminator-char?
+                                               (constantly (fn [later] (swap! calls conj [:later later]) (terminator later))))
+                               (terminator ch))]
+                 (parse "terminator.qst" ";x\r\n1" table))]
+    (is (= [1] (mapv :form result)))
+    (is (= [[:first \;] [:later \x] [:later \return]] @calls)))
+  (let [table (b/stage1-reader-table) sentinel (ex-info "exact owner" {})]
+    (doseq [owner [#'b/stage1-reader-span #'b/stage1-reader-fail!]]
+      (with-redefs-fn {owner (fn [& _] (throw sentinel))}
+        (fn []
+          (let [caught (rejection #(parse "identity.qst" "]" table))]
+            (is (identical? sentinel caught))))))))
