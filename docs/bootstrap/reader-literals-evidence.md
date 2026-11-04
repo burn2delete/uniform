@@ -105,3 +105,30 @@ failed its own start-position assertion before comparing bodies. That helper
 and nonpass are retained; correcting only the observer yields the conservation
 result above. The earlier new-test syntax nonpass is also retained. Neither
 failure was used to weaken production behavior or acceptance requirements.
+
+## Committed comparison and regression
+
+Semantic source c8213baf465e267772ab2af241c124e42644edcc, tree
+8179b9ac1b339f35bcdfb1d19bb28d7237c67901, is a clean six-path commit.
+Original, candidate and final captures are byte-identical and parsed-equal at
+the SHA above. The existing Reader regression command augmented locally with
+the new literal namespace passes eighty-eight tests and 4,247 assertions at
+one GiB heap. This run does not substitute for the pending CI source insertion.
+The source-ownership gate adds forty-two tests and 1,187 assertions with no
+skipped namespace. Cold loading Reader exposes fourteen public functions and
+does not load Bootstrap. Contextual comparison covers all thirty-nine present
+Clojure/EDN paths against main c7f61484ced92850309030b69f50088cf54a8d89:
+3,458 unchanged baseline warnings, zero blocking warnings/errors. Raw baseline
+warnings remain visible; they are not reported as a warning-free context.
+
+The initial contextual observer incorrectly expected thirty-eight paths,
+omitting that component00363 is newly changed relative to main. Its corrected
+count is thirty-nine. Its next clean-bookend check also correctly refused the
+observer's own two generated discovery files in target/ci. Those files were
+archived intact and the observer output path was directed to /tmp before the
+successful comparison. Both nonpasses remain recorded. No source or gate was
+weakened, no foreign output was removed, and no CI file was edited.
+
+Independent semantic review accepts the exact six-path source with gates:
+no material source defect, with independent adversarial review, full wired CI,
+fresh integration preflight and coordinator integration still outstanding.
