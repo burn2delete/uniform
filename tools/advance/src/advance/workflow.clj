@@ -31,6 +31,18 @@
   (schema/object-of {:summary schema/text :coverage (schema/array-of schema/text)
                      :increments (schema/array-of increment-schema)
                      :blockers (schema/array-of (schema/object-of {:task schema/text :reason schema/text}))}))
+(defn selection-output-schema [catalog]
+  (let [keys (mapv :key (:tasks catalog))]
+    (if (seq keys)
+      (assoc-in selection-schema [:properties :blockers :items :properties :task :enum] keys)
+      (assoc-in selection-schema [:properties :blockers :maxItems] 0))))
+
+(def selector-instructions
+  (str instructions
+       " Use the supplied base commit and tree; do not run Git identity or merge-history commands. "
+       "Every blockers.task must be an exact current catalog task key. Put environment and restriction notes in summary. "
+       "Retained denied Git/cache-write actions remain denied: never replay, transfer to another tool or executable, or work around them. "
+       "Do not rerun or correct a retained rejected job through tools; its output and refusals remain history. "))
 (def completion-schema
   (schema/object-of {:verdict {:type "string" :enum ["complete" "incomplete"]}
                      :base schema/text :tree schema/text :summary schema/text
@@ -78,11 +90,12 @@
 (defn snapshot! [ctx]
   (let [base (flow/fresh-main! ctx)
         wt (flow/worktree! ctx (str "catalog-" (flow/next-job! ctx :snapshot) "-" (subs base 0 12)) base)
-        snapshot (catalog/discover (:worktree wt))]
-    (rt/update! ctx assoc :catalog {:base base :tree (rt/git ctx (:worktree wt) "rev-parse" "HEAD^{tree}")
+        snapshot (catalog/discover (:worktree wt))
+        tree (rt/git ctx (:worktree wt) "rev-parse" "HEAD^{tree}")]
+    (rt/update! ctx assoc :catalog {:base base :tree tree
                                    :worktree (:worktree wt) :source (catalog/index snapshot)})
     (mirror! ctx snapshot base)
-    {:base base :worktree (:worktree wt) :catalog snapshot}))
+    {:base base :tree tree :worktree (:worktree wt) :catalog snapshot}))
 
 (defn validate-source! [ctx t]
   (let [current (catalog/discover (:worktree t))
@@ -116,9 +129,10 @@
     (gh/relation! ctx (:issue (flow/task ctx (:key increment))) "dependencies/blocked_by"
                   (get-in (flow/task ctx dep) [:issue :id]))))
 
-(defn select! [ctx {:keys [base worktree catalog]} settings pulls]
-  (let [output (codex/job! ctx (flow/next-job! ctx :select) worktree :read instructions
-                 (str "Select independently useful implementation increments from the current task catalog. "
+(defn select! [ctx {:keys [base tree worktree catalog]} settings pulls]
+  (let [output-schema (selection-output-schema catalog)
+        job (flow/next-job! ctx :select)
+        prompt (str "Select independently useful implementation increments from the current task catalog. "
                       "Read owning spec/plan/task/evidence and actual source; the index is navigation. "
                       "Prioritize configured task keys, then Project priority, actual prerequisites and work that unblocks completion. "
                       "Respect Project Control Paused/Blocked on both campaign, source tasks and increments. "
@@ -128,21 +142,37 @@
                       "Include the source tasks.md in owned paths and name concrete accepted/rejected evidence. "
                       "Dependencies reference real increment keys only; inspect artifact-level task dependencies rather than assuming the coarse graph is acyclic. "
                       "If none are actionable, give blockers; never infer completion from an empty selection.\nBase: " base
+                      "\nTree: " tree
                       "\nCatalog: " (pr-str (catalog/index catalog))
                       "\nExplicit priorities: " (pr-str (get-in ctx [:config :priorities]))
                       "\nGitHub controls by issue: " (pr-str settings)
                       "\nSource issue identities: " (pr-str (into {} (map (fn [[k v]] [k (get-in v [:issue :number])]) (:source-tasks @(:state ctx)))))
                       "\nExisting increments: " (pr-str (mapv #(select-keys % [:key :task :title :proposal :paths :status :error :merged :review :checks]) (flow/tasks ctx)))
                       "\nRepository open candidates and changed paths: " (pr-str (project/candidate-files ctx pulls))
-                      "\nShared writer claims: " (pr-str (coordination/claims ctx))) selection-schema)]
-    (schema/validate! selection-schema output)
-    (doseq [increment (:increments output)]
-      (let [number (get-in @(:state ctx) [:source-tasks (:task increment) :issue :number])]
-        (when-not (project/runnable? settings number)
-          (rt/fail! "Selector chose an operator-paused or blocked task" {:task (:task increment)}))))
-    (doseq [blocker (:blockers output)]
-      (when-not (some #(= (:task blocker) (:key %)) (:tasks catalog))
-        (rt/fail! "Blocker names an unknown source task" {:blocker blocker})))
+                      "\nShared writer claims: " (pr-str (coordination/claims ctx))
+                      "\nRetained rejected planning notes (history, never retry authorization): "
+                      (pr-str (mapv #(select-keys % [:job :status :validation-error :restriction])
+                                    (:operator-planning @(:state ctx)))))
+        response (volatile! nil)
+        output (try
+                 (let [output (codex/job! ctx job worktree :read selector-instructions prompt output-schema)]
+                   (vreset! response output)
+                   (schema/validate! output-schema output)
+                   (doseq [increment (:increments output)]
+                     (let [number (get-in @(:state ctx) [:source-tasks (:task increment) :issue :number])]
+                       (when-not (project/runnable? settings number)
+                         (rt/fail! "Selector chose an operator-paused or blocked task" {:task (:task increment)}))))
+                   (doseq [blocker (:blockers output)]
+                     (when-not (some #(= (:task blocker) (:key %)) (:tasks catalog))
+                       (rt/fail! "Blocker names an unknown source task" {:blocker blocker})))
+                   output)
+                 (catch Exception e
+                   (rt/update! ctx update :selection-rejections (fnil conj [])
+                               {:job job :base base :tree tree :output @response :admitted false
+                                :response-reference {:state-file (:state-file ctx) :log-file (:log-file ctx)
+                                                     :job job :identity (select-keys (get-in @(:state ctx) [:jobs job]) [:thread :turn])}
+                                :message (.getMessage e) :details (ex-data e)})
+                   (throw e)))]
     (rt/update! ctx assoc :selection {:base base :output output})
     (gh/comment! ctx (:campaign-issue @(:state ctx)) (str "selection/" (flow/next-job! ctx :record))
                  (str "Selection at `" base "`: " (:summary output) "\n\nBlockers: " (pr-str (:blockers output))))
