@@ -177,6 +177,129 @@ Complete L15/SAFE10/R11 conformance criterion (Open): Join actual declared/selec
 
 <!-- auth-implementation-tasks:end -->
 
+## Environment key policy intersection increment
+
+Finding: `auth.environment-scope.eight-layer-intersection-v1`, within
+`auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`.
+Own only `bootstrap/clojure/src/gravity/capabilities/environment_scope.clj`, its
+matching test, and this tasks/evidence append. The semantic namespace
+`gravity.capabilities.environment-scope` and operation `assess-scope` introduce
+no legacy rename. Existing compatibility APIs and permission rows are unchanged.
+The pinned plan, captured task bodies, Open statuses, source-version records and
+historical evidence retain their exact scope. The distinct provider-choice
+increment composes separately; this change edits none of its implementation.
+
+Source basis: [SAFE10 Grant Intersection](../../docs/phase-02-safety/039-safe10-capability-security-model.md#grant-intersection)
+requires all eight policy layers and forbids downstream expansion.
+[SAFE10 Scope Checks and Secrets](../../docs/phase-02-safety/039-safe10-capability-security-model.md#scope-checks)
+and [L15 Grant Declaration](../../docs/phase-01-core-language/025-l15-capability-provider-specification.md#grant-declaration)
+require environment key sets and redaction policy, separate from a declaration
+or grant. D1/D3 preserve principal/provider/phase/profile/target/source facts;
+D9 keeps a local assessment separate from independent evidence acceptance.
+
+### Local decoded bootstrap carrier
+
+`assess-scope` takes `[request policies declaration declaration-context]` as
+decoded Clojure data from a trusted bootstrap caller. This is a local carrier,
+not canonical source syntax, an authenticated policy format or a guest sandbox.
+L15/SAFE10 do not specify these serialized field names, policy reference
+resolution or a redaction-policy combination algebra. Make those choices
+explicit here and retain all redaction references as unresolved obligations.
+
+The request is a closed map with the following required fields:
+
+| Fields | Shape and meaning |
+| --- | --- |
+| `:principal`, `:capability` | Public qualified keyword/symbol principal and keyword capability; only `:env/read` is supported. Effects do not supply this capability. |
+| `:provider-id`, `:provider-version` | Qualified symbol and nonblank string, exactly matching the explicit declaration. No selection is inferred. |
+| `:phase`, `:profile`, `:target` | `:build` or `:runtime`, profile keyword, target keyword. Both phase uses are supported only with matching explicit policy at every layer. |
+| `:source-id`, `:source-span` | Nonblank public source identity and positive integer line/column coordinates. Only line/column are copied from the span. |
+| `:requested-keys` | Explicit set of public environment key names, possibly empty. Names are nonempty valid Unicode strings without NUL or equals, compared exactly without case folding; no count/size quota. Values are never inputs. |
+
+`policies` is a closed map with exactly `:source`, `:function`, `:package`,
+`:dependency`, `:workspace`, `:profile`, `:invocation`, `:runtime-provider`, in
+SAFE10's order. Each layer is a closed map repeating the request's principal,
+capability, provider id/version, phase, profile and target, plus required
+`:policy-source` and `:redaction-policy` public qualified keyword/symbol
+references, and explicit `:allowed-keys`/`:denied-keys` sets using the same key
+grammar. Empty allowed sets mean no keys; no layer defaults to a wildcard.
+Missing layers never inherit permission. Unknown fields (including supplied
+`:scope-satisfied?` flags) are rejected; they cannot replace computation.
+
+The explicit declaration and its source/applicability context are revalidated
+through the existing `gravity.providers.declarations/record-declaration` on
+every well-shaped request. A producer record cannot replace the declaration.
+Context must explicitly match the request profile/target; the declaration must
+implement `:env/read` and support that profile and target. Signature-policy
+applicability remains the explicit trusted caller input described in the
+[declaration carrier](#explicit-provider-declaration-increment). This is not
+signature/trust/conformance verification or resolution of scope-policy refs.
+
+### Assessment, provenance and precise refusal
+
+Compute the intersection of all eight allowed sets minus the union of their
+explicit denied sets. Compute the complete common scope, not only the requested
+subset. Any requested denied key refuses with `SAFE10-DENIED`; any requested
+key absent from an allowed set refuses with `SAFE10-SCOPE`. A downstream wider
+set cannot restore an earlier removed key. Each layer retains its public source,
+redaction reference, sorted narrowed/explicitly denied/removed keys and remaining
+effective keys. Narrowed keys are relative to the union of supplied key names;
+removed keys are relative to the preceding stage. Even later redundant denials
+remain visible. Output key collections are sorted vectors, layer collections
+follow SAFE10 order, and reordered maps give equal products and diagnostics.
+
+The result has `:status :within-scope` or `:rejected` and `:diagnostics`.
+Well-shaped compatible inputs also produce `:assessment`, with local schema
+`:gravity.capabilities/environment-scope-v1`, sanitized public `:request`,
+`:effective-keys`, `:layers`, all eight `:redaction-obligations` and
+`:redaction-enforced? false`. Out-of-scope requests retain this explanatory
+assessment. Malformed or mismatched inputs produce no assessment. No output is
+a grant, selected provider, usable handle or operation admission record.
+
+Diagnostics have fixed messages, paths/reasons, denied policy layer,
+`:grant-id nil` (no grant exists here), and sanitized request context including
+valid source location, principal/provider/version, capability, phase,
+profile/target and requested key names. Missing layers use `SAFE10-DENIED` with
+`:missing-policy-layer`; extra layers use `:unsupported-policy-layer`.
+Malformed shapes/unknown fields use `SAFE10-SCOPE`, except invalid/missing phase
+uses `SAFE10-PHASE`. Policy identity mismatches use `SAFE10-PROVIDER` for provider
+id/version, `SAFE10-PHASE` for phase, otherwise `SAFE10-DENIED`. Valid policy
+identity failures retain the public policy source. Invalid declarations,
+provider identity/applicability mismatch and unsupported capability/profile/
+target use `SAFE10-PROVIDER`. Producer payloads/diagnostics are not exported.
+Request shape errors precede provider checks; provider errors precede policy
+errors; policy errors follow the above layer and field order. Denial diagnostics
+carry exact sorted refused keys, policy source and requested/effective scope.
+
+Public identities, key names and policy references must contain no secret
+values. Unknown/malformed payloads, provider extensions, symbol metadata and
+nested span payloads and span-map metadata are omitted, including on success.
+Construct a fresh metadata-free line/column span for assessment requests and
+diagnostic contexts. Fixtures must cover metadata-bearing spans on success,
+scope denial, policy identity mismatch and malformed-request rejection, checking
+the entire public result with metadata printing enabled and retaining valid
+coordinates. This is payload minimization, not arbitrary
+secret classification, redaction enforcement or public export acceptance.
+
+Fixtures call the actual operation: common-key intersection, reordered maps,
+downstream widening, missing layers, explicit denies and out-of-scope requests
+at each layer, wrong phase, all identity mismatches, provider revalidation and
+unsupported applicability, forged scope flags, malformed inputs and secret
+markers. Run the focused namespace, declaration and compatibility regressions,
+acceptance dependency controls, language-boundary gate and document validators.
+Record actual argument vectors, failures, final results, restrictions and unrun
+checks in [Auth evidence](evidence.md#environment-key-policy-intersection-increment).
+
+This supplies an early scope computation without waiting for provider choice or
+the complete parent outcome. Actual authenticated policy sourcing, grants,
+attenuation/lifetime/revocation, redaction enforcement and Runtime/Build action
+gates are composition obligations; independent acceptance and controller
+integration remain pending. Preserve genuine parent cycles and the distinction
+between starting construction, composing actions, acceptance and release. The
+parent stays Open and unchecked. No live environment read, callback execution,
+credential access, ambient authority, accounting or release/self-hosting/
+seed-retirement claim is introduced.
+
 ## Explicit provider declaration increment
 
 Finding: `auth.provider-declaration.explicit-fields-v1`, within
