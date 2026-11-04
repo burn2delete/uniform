@@ -52,6 +52,14 @@
     (is (= 1 @calls))
     (is (= :uncertain (get-in (rt/read-edn (:state-file ctx)) [:effects "ambiguous" :status])))))
 
+(deftest legacy-applied-receipts-remain-valid
+  (let [ctx (context) receipt (str (io/file (:state-dir ctx) "inspection.edn"))]
+    (rt/update! ctx assoc-in [:effects "issue"] {:status :uncertain :message "Original response lost"})
+    (rt/write-edn! receipt {:result {:id 7} :evidence "Inspected exact remote issue"})
+    (main/reconcile! ctx "issue" receipt)
+    (is (= {:id 7} (rt/effect! ctx "issue" (fn [] (throw (ex-info "Must not replay" {}))))))
+    (is (= :uncertain (get-in @(:state ctx) [:effects "issue" :previous :status])))))
+
 (deftest confirmed-unapplied-mutations-can-be-repaired-with-original-history-retained
   (let [ctx (context) calls (atom 0) receipt (str (io/file (:state-dir ctx) "inspection.edn"))]
     (is (thrown? Exception (rt/effect! ctx "issue" #(do (swap! calls inc) (throw (ex-info "HTTP 422: body rejected" {}))))))
