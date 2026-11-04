@@ -148,7 +148,7 @@
   (let [contract (:gravity/namespace-contract (meta #'reader/read-source-artifact))]
     (is (= #{'read-source-artifact 'decode-source-bytes 'read-source-text 'reject-source-path!
              'compatibility-reader-products 'validate-native-reader-report! 'native-document-projection
-             'tokenize-compatibility-source}
+             'tokenize-compatibility-source 'build-compatibility-forms}
            (set (keys (ns-publics 'gravity.reader)))))
     (is (= (set (keys (:public-api contract)))
            (set (keep (fn [[name operation]]
@@ -159,7 +159,7 @@
     (is (every? #(not (:private (meta %)))
                 (vals (ns-publics 'gravity.reader))))
     (is (empty? (ns-aliases 'gravity.reader)))
-    (is (= :native-reader-intake-tokenization-products-report-validation-and-document-projection (:contract-boundary contract)))
+    (is (= :native-reader-intake-tokenization-forms-products-report-validation-and-document-projection (:contract-boundary contract)))
     (is (= ['clojure.core] (get-in contract [:dependency-direction :requires])))
     (is (= ['gravity.bootstrap 'gravity.cli 'gravity.release]
            (get-in contract [:dependency-direction :forbids])))

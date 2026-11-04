@@ -98,8 +98,38 @@ repeating parser execution.
 
 The stage-owned predicate must remain bound for recursive composite keys and
 produce the C2-required C2-SET refusal with the duplicate and first-literal
-locations. This is the only declared behavior correction: four paired/trivia
-variants of the duplicate composite case. All other forty-eight records and all
+locations; well-formed composite sets must build normally. This recursive-helper
+binding is the only declared behavior correction. In the retained capture it
+affects four paired/trivia variants of the duplicate composite case. All other forty-eight records and all
 twenty native join refusals must retain exact output/metadata/diagnostic parity.
 The comparison cannot report complete old/new raw-byte equality across this
 explicit diagnostic repair.
+
+The move also removes one unused tokens binding from the private root-context
+destructuring. The context still contains the original token vector; all actual
+token access and outputs remain unchanged. This avoids introducing a moved
+unused-binding warning and changes no public input lookup.
+
+## Implemented hosted form builder
+
+The sixteen recursive helpers now live privately in gravity.reader, retaining
+their recursive Var bindings. Ten explicit owner Vars are threaded through a
+private reader-operations context field; that context/port data is never emitted.
+The facade retains its four-argument signature and supplies only those Vars.
+All eight earlier Reader API bodies remain unchanged. Both manifests remove
+only the six moved resources, and the existing Reader CI command names the
+new owning forms-test namespace.
+
+Initial owning Reader checks pass63 tests/3877 assertions. Coverage includes
+paired real records/raw slices/parent links, metadata and unsafe/review flags,
+generated origins, tagged values, deferred ratios, valid and duplicate composite
+sets, syntax and native-join refusals, lazy indexing, late roots, callback order,
+returning failure callbacks, exception identity, tagged-decoder containment,
+coherent native forgery non-authority, source-discovery tripwires and facade arity.
+
+Retained test-only nonpasses include malformed parentheses before successful
+test execution and a callback expectation that omitted nested digest calls made
+by the unchanged canonical-hash owner. Only the test syntax/expectation changed;
+production ordering was preserved. Candidate artifacts, conservation, committed
+regressions, boundary/lint/format/validator checks, independent review, own CI
+and integration remain outstanding.

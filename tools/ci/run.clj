@@ -928,6 +928,7 @@
               (command "1g" "-M:dev-test"
                        "--namespace" "gravity.reader.artifact-test"
                        "--namespace" "gravity.reader.tokenizer-test"
+                       "--namespace" "gravity.reader.forms-test"
                        "--namespace" "gravity.reader-primitives-test"
                        "--namespace" "gravity.c3-reader-expansions-test"
                        "--namespace" "gravity.cli.launcher-test"

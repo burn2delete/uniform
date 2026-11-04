@@ -2,17 +2,28 @@
   "Native source intake, strict UTF-8 decoding and stage0 reader artifact assembly.
 
   This namespace owns native intake through an explicit byte owner, strict decoding, source-path
-  diagnostic data, existing artifact envelopes and hosted compatibility tokenization/products.
-  Admission, form parsing, syntax, source identity and diagnostic publication remain
+  diagnostic data, existing artifact envelopes and hosted tokenization/form construction.
+  Admission, canonical parsing, syntax, source identity and diagnostic publication remain
   with their supplied owners. Operations are trusted seed dependencies, not evidence of
   canonical reader authentication or self-hosting.")
 
 (def ^:private namespace-contract
   {:namespace 'gravity.reader
    :governing-contracts [:D1 :D2 :D3 :D8 :D9 :L1 :C1 :C2 :C3 :C15 :BOOT1 :BOOT8 :TEST2]
-   :contract-boundary :native-reader-intake-tokenization-products-report-validation-and-document-projection
+   :contract-boundary :native-reader-intake-tokenization-forms-products-report-validation-and-document-projection
    :public-api
-   {'tokenize-compatibility-source
+   {'build-compatibility-forms
+    {:arglists '([source-path source-text table token-stream operations])
+     :contract-boundary :hosted-native-token-stream-form-construction
+     :returns :hosted-reader-form-products
+     :admission :none :authenticates-inputs? false :opens-source? false
+     :native-join-checks-authenticate? false :callback-type-checks? false
+     :private-context-operation-key :reader-operations
+     :operation-inputs [:digest-var :pipeline-fail-var :line-starts-var :token-index-var
+                        :span-var :canonical-hash-var :decode-atom-var :fail-var
+                        :read-tagged-var :form-kind-var]
+     :metadata-target-class 'clojure.lang.IObj :test-owner 'gravity.reader.forms-test}
+    'tokenize-compatibility-source
     {:arglists '([source-path source-text table reader-options operations])
      :contract-boundary :hosted-compatibility-source-tokenization
      :returns :gravity/stage1-reader-token-stream
@@ -70,11 +81,13 @@
                      :compatibility-oracle-late-owner-vars
                      :seed-reader-operations :standard-reader-options
                      :historical-reader-table :tokenizer-late-owner-vars
+                     :native-token-stream :form-builder-late-owner-vars
                      :captured-source-bytes :raw-byte-hash-var :diagnostic-var
                      :extension-predicate-var :path-policy-refusal-var :decoder-var :source-byte-reader-var :co-canonical-extension-set-var]
    :artifact-outputs [:gravity/stage0-reader-artifact :decoded-utf8-text
                       :hosted-compatibility-reader-products :legacy-native-reader-complete-marker
                       :gravity/native-c2-document-projection :gravity/stage1-reader-token-stream
+                      :hosted-reader-form-products
                       :unchanged-source-encoding-failure :unchanged-source-extension-failure
                       :unchanged-source-byte-owner-failure]
    :preserves [:source-spans :metadata :reader-origin :profile-context
@@ -105,7 +118,15 @@
                       :literal-policy-owner :supplied-literal-decoder-vars
                       :span-owner :supplied-span-var :construction-owner :supplied-failure-var
                       :authenticates-inputs? false}
-    :does-not-own [:form-policy :namespace-shape-policy :c15-schema
+    :hosted-form-builder {:owns [:native-token-joins :form-construction :legacy-set-duplicate-rule
+                                :metadata-shape :abbreviation-expansion :parent-child-root-links]
+                         :rule-ids ["STAGE1PIPE004" "STAGE1READER001" "STAGE1READER002"
+                                    "STAGE1READER004" "STAGE1READER005"
+                                    "C2-SET" "C2-METADATA" "C2-ABBREV"]
+                         :literal-owner :supplied-decoder-vars :span-owner :supplied-span-var
+                         :construction-owners [:supplied-pipeline-failure-var :supplied-failure-var]
+                         :authenticates-inputs? false}
+    :does-not-own [:namespace-shape-policy :c15-schema
                    :diagnostic-identity :redaction :rendering]}
    :dependency-direction
    {:requires ['clojure.core]
@@ -117,6 +138,7 @@
    :unsupported [:other-encodings :replacement-decoding :file-authority
                  :native-document-product-or-callback-authentication
                  :tokenizer-text-table-options-callback-and-output-authentication
+                 :native-form-source-table-token-callback-and-output-authentication
                  :native-document-canonical-admission-and-publication
                  :native-report-authentication
                  :compatibility-oracle-product-authentication
@@ -848,6 +870,512 @@
                                  :decode-character-var]))]
     (compatibility-reader-tokenize
      ops (compatibility-reader-token-context ops source-path source-text table reader-options))))
+
+(defn- compatibility-form-products-context
+  [reader-operations source-path source-text table token-stream]
+  (let [expected-source-id (str "sha256:" ((:digest-var reader-operations) source-text))
+        expected-table-id (str "sha256:" ((:digest-var reader-operations) (pr-str table)))
+        tokens (:tokens token-stream)]
+    (when-not (= :gravity/stage1-reader-token-stream (:kind token-stream))
+      ((:pipeline-fail-var reader-operations) "STAGE1PIPE004" source-path token-stream
+                                    {:missing-fields [:kind]}))
+    (when-not (= source-path (:source-path token-stream))
+      ((:pipeline-fail-var reader-operations) "STAGE1PIPE004" source-path token-stream
+                                    {:missing-fields [:source-path]}))
+    (when-not (= expected-source-id (:source-id token-stream))
+      ((:pipeline-fail-var reader-operations) "STAGE1PIPE004" source-path token-stream
+                                    {:missing-fields [:source-id]}))
+    (when-not (= expected-table-id (:reader-table-id token-stream))
+      ((:pipeline-fail-var reader-operations) "STAGE1PIPE004" source-path token-stream
+                                    {:missing-fields [:reader-table-id]}))
+    (when-not (and (vector? tokens)
+                   (= (count tokens) (:token-count token-stream)))
+      ((:pipeline-fail-var reader-operations) "STAGE1PIPE004" source-path token-stream
+                                    {:missing-fields [:tokens
+                                                      :token-count]}))
+    (let [line-starts ((:line-starts-var reader-operations) source-text)
+          token-count (count tokens)
+          token-index (delay ((:token-index-var reader-operations) tokens))
+          nodes (atom {})
+          form-order (atom [])
+          next-form-index (atom 0)
+          token-id (fn [token]
+                     (or (:token-id token)
+                         (keyword (str "tok-" (:index token)))))]
+      {:source-path source-path
+       :source-text source-text
+       :line-starts line-starts
+       :tokens tokens
+       :token-count token-count
+       :token-index token-index
+       :nodes nodes
+       :form-order form-order
+       :next-form-index next-form-index
+       :token-id token-id
+       :reader-operations reader-operations})))
+
+(defn- compatibility-form-new-form-id
+  [{:keys [next-form-index form-order]}]
+  (let [idx (swap! next-form-index inc)
+        id (keyword (str "form-" (dec idx)))]
+    (swap! form-order conj id)
+    id))
+
+(defn- compatibility-form-combined-span
+  [{:keys [reader-operations source-path source-text line-starts]} start-token end-token]
+  ((:span-var reader-operations) source-path source-text line-starts
+                      (get-in start-token [:span :start :char])
+                      (get-in end-token [:span :end :char])))
+
+(defn- compatibility-form-skip-trivia
+  [{:keys [tokens token-count token-id]} idx]
+  (loop [idx idx
+         trivia []]
+    (if (and (< idx token-count)
+             (true? (:trivia? (tokens idx))))
+      (recur (inc idx)
+             (conj trivia (token-id (tokens idx))))
+      [idx trivia])))
+
+(defn- compatibility-form-trivia-hash
+  [{:keys [reader-operations token-index]} ids]
+  (let [by-id @token-index]
+    ((:canonical-hash-var reader-operations)
+     (mapv (fn [id]
+             (let [token (by-id id)]
+               {:kind (:kind token)
+                :raw (:raw token)
+                :span (dissoc (:span token) :source :file)}))
+           ids))))
+
+(defn- compatibility-form-parse-token-literal
+  [{:keys [reader-operations source-path token-id]} token]
+  (if (contains? token :decoded)
+    (:decoded token)
+    ((:decode-atom-var reader-operations)
+     source-path (:kind token) (:lexeme token) (:span token)
+     (token-id token))))
+
+(defn- compatibility-form-literal-set-key?
+  [{:keys [nodes] :as context} node]
+  (or (contains? #{:nil :boolean :integer :ratio :decimal
+                   :string :character :symbol :keyword
+                   :tagged-literal}
+                 (:kind node))
+      (and (contains? #{:list :vector :map :set
+                        :abbreviation :metadata-wrapper}
+                      (:kind node))
+           (every? #(compatibility-form-literal-set-key?
+                     context (@nodes %))
+                   (:children node)))))
+
+(defn- compatibility-form-set-value
+  [{:keys [reader-operations source-path nodes] :as context} child-ids values]
+  (loop [pairs (map vector child-ids values)
+         seen {}]
+    (if-let [[child-id value] (first pairs)]
+      (let [node (@nodes child-id)]
+        (if (and (compatibility-form-literal-set-key? context node)
+                 (contains? seen value))
+          (let [first-id (seen value)
+                first-node (@nodes first-id)]
+            ((:fail-var reader-operations)
+             "C2-SET" source-path value
+             {:source-span (:span node)
+              :token-id (:open-token node)
+              :form-id child-id
+              :raw (:raw node)
+              :related [{:role :first-literal
+                         :span (:span first-node)
+                         :artifact first-id}]
+              :facts {:duplicate-value (pr-str value)
+                      :first-form-id first-id
+                      :duplicate-form-id child-id}}))
+          (recur (rest pairs)
+                 (if (compatibility-form-literal-set-key? context node)
+                   (assoc seen value child-id)
+                   seen))))
+      (set values))))
+
+(defn- compatibility-form-metadata-map
+  [{:keys [reader-operations source-path]} value node]
+  (cond
+    (map? value) value
+    (keyword? value) {value true}
+    (or (symbol? value) (string? value)) {:tag value}
+    :else
+    ((:fail-var reader-operations)
+     "C2-METADATA" source-path value
+     {:source-span (:span node)
+      :token-id (:open-token node)
+      :form-id (:form-id node)
+      :raw (:raw node)
+      :facts {:metadata-kind (:kind node)}})))
+
+(defn- compatibility-form-attach-metadata
+  [{:keys [reader-operations source-path]} metadata target target-node]
+  (if (instance? clojure.lang.IObj target)
+    (with-meta target (merge (meta target) metadata))
+    ((:fail-var reader-operations)
+     "C2-METADATA" source-path target
+     {:source-span (:span target-node)
+      :token-id (:open-token target-node)
+      :form-id (:form-id target-node)
+      :raw (:raw target-node)
+      :facts {:target-kind (:kind target-node)}})))
+
+(declare compatibility-form-read-form)
+
+(defn- compatibility-form-read-delimited
+  [{:keys [reader-operations source-path source-text line-starts tokens token-count nodes token-id]
+    :as context}
+   idx collection-kind close-token open-token leading-trivia form-id]
+  (loop [idx idx
+         child-ids []
+         values []]
+    (let [[idx between-trivia]
+          (compatibility-form-skip-trivia context idx)]
+      (if (>= idx token-count)
+        (let [eof-span ((:span-var reader-operations)
+                        source-path source-text line-starts
+                        (count source-text) (count source-text))]
+          ((:fail-var reader-operations)
+           "STAGE1READER002" source-path nil
+           {:source-span eof-span
+            :token-id (token-id open-token)
+            :form-id form-id
+            :raw (:raw open-token)
+            :expected close-token
+            :facts {:expected-delimiter close-token
+                    :open-token
+                    (token-id open-token)}}))
+        (let [token (tokens idx)]
+          (cond
+            (and (= :close (:kind token))
+                 (= close-token (:lexeme token)))
+            (let [span (compatibility-form-combined-span
+                        context open-token token)
+                  value (case collection-kind
+                          :list (apply list values)
+                          :vector (vec values)
+                          :set (compatibility-form-set-value
+                                context child-ids values)
+                          :map (do
+                                 (when (odd? (count values))
+                                   ((:fail-var reader-operations)
+                                    "STAGE1READER005" source-path values
+                                    {:source-span span
+                                     :token-id
+                                     (token-id token)
+                                     :form-id form-id
+                                     :raw (:raw token)
+                                     :facts {:entry-count (count values)}}))
+                                 (apply hash-map values)))
+                  node {:form-id form-id
+                        :kind collection-kind
+                        :collection-kind collection-kind
+                        :open-token
+                        (token-id open-token)
+                        :close-token
+                        (token-id token)
+                        :children child-ids
+                        :span span
+                        :metadata {}
+                        :origin {:kind :source
+                                 :reader :stage1-token-parser}
+                        :leading-trivia-token-ids leading-trivia
+                        :leading-trivia-hash
+                        (compatibility-form-trivia-hash
+                         context leading-trivia)
+                        :trailing-trivia-token-ids between-trivia
+                        :trailing-trivia-hash
+                        (compatibility-form-trivia-hash
+                         context between-trivia)
+                        :raw (subs source-text
+                                   (get-in open-token [:span :start :char])
+                                   (get-in token [:span :end :char]))
+                        :value value}]
+              (swap! nodes assoc form-id node)
+              [value (inc idx) span form-id])
+
+            (= :close (:kind token))
+            ((:fail-var reader-operations)
+             "STAGE1READER001" source-path (:lexeme token)
+             {:source-span (:span token)
+              :token-id (token-id token)
+              :form-id form-id
+              :raw (:raw token)
+              :expected close-token
+              :actual (:lexeme token)
+              :facts {:expected-delimiter close-token
+                      :actual-delimiter (:lexeme token)}})
+
+            :else
+            (let [[value next-idx _span child-id]
+                  (compatibility-form-read-form
+                   context idx between-trivia)]
+              (recur next-idx
+                     (conj child-ids child-id)
+                     (conj values value)))))))))
+
+(defn- compatibility-form-read-abbreviation
+  [{:keys [reader-operations source-path source-text tokens token-count nodes token-id] :as context}
+   idx token leading-trivia form-id]
+  (let [abbrev (:abbrev token)
+        [metadata-value metadata-end _ metadata-id]
+        (when (= :metadata abbrev)
+          (let [[child-idx child-trivia]
+                (compatibility-form-skip-trivia context (inc idx))]
+            (when (>= child-idx token-count)
+              ((:fail-var reader-operations)
+               "C2-METADATA" source-path abbrev
+               {:source-span (:span token)
+                :token-id (token-id token)
+                :form-id form-id
+                :raw (:raw token)
+                :facts {:abbreviation abbrev}}))
+            (compatibility-form-read-form
+             context child-idx child-trivia)))
+        next-start (if (= :metadata abbrev)
+                     metadata-end
+                     (inc idx))
+        [child-idx child-trivia]
+        (compatibility-form-skip-trivia context next-start)]
+    (when (>= child-idx token-count)
+      ((:fail-var reader-operations)
+       (if (= :metadata abbrev) "C2-METADATA" "C2-ABBREV")
+       source-path abbrev
+       {:source-span (:span token)
+        :token-id (token-id token)
+        :form-id form-id
+        :raw (:raw token)
+        :facts {:abbreviation abbrev}}))
+    (let [[child-value next-idx child-span child-id]
+          (compatibility-form-read-form context child-idx child-trivia)
+          child-node (@nodes child-id)
+          metadata-node (when metadata-id (@nodes metadata-id))
+          metadata (when metadata-id
+                     (compatibility-form-metadata-map
+                      context metadata-value metadata-node))
+          value (case abbrev
+                  :quote (list 'quote child-value)
+                  :syntax-quote (list 'syntax-quote child-value)
+                  :unquote (list 'unquote child-value)
+                  :splice-unquote (list 'splice-unquote child-value)
+                  :deref (list 'deref child-value)
+                  :metadata (compatibility-form-attach-metadata
+                             context metadata child-value child-node))
+          span (compatibility-form-combined-span
+                context token (tokens (dec next-idx)))
+          children (cond-> []
+                     metadata-id (conj metadata-id)
+                     true (conj child-id))
+          node {:form-id form-id
+                :kind (if (= :metadata abbrev)
+                        :metadata-wrapper
+                        :abbreviation)
+                :abbrev abbrev
+                :open-token (token-id token)
+                :close-token (:close-token child-node)
+                :children children
+                :span span
+                :surface-span (:span token)
+                :metadata (or metadata {})
+                :origin {:kind :source :reader :stage1-token-parser}
+                :generated-origin
+                [{:kind :generated
+                  :producer :reader-abbreviation
+                  :reason abbrev
+                  :from (:span token)
+                  :child-form-id child-id}]
+                :leading-trivia-token-ids leading-trivia
+                :leading-trivia-hash
+                (compatibility-form-trivia-hash context leading-trivia)
+                :raw (subs source-text
+                           (get-in token [:span :start :char])
+                           (get-in child-span [:end :char]))
+                :expanded-form value
+                :value value}]
+      (swap! nodes assoc form-id node)
+      [value next-idx span form-id])))
+
+(defn- compatibility-form-read-tagged
+  [{:keys [reader-operations source-path source-text tokens token-count nodes token-id] :as context}
+   idx token leading-trivia form-id]
+  (let [[child-idx child-trivia]
+        (compatibility-form-skip-trivia context (inc idx))]
+    (when (>= child-idx token-count)
+      ((:fail-var reader-operations)
+       "STAGE1READER004" source-path (:raw token)
+       {:source-span (:span token)
+        :token-id (token-id token)
+        :form-id form-id
+        :raw (:raw token)
+        :extension-tag (:tag token)}))
+    (let [[child-value next-idx child-span child-id]
+          (compatibility-form-read-form context child-idx child-trivia)
+          child-node (@nodes child-id)
+          raw (str (:raw token) " " (pr-str child-value))
+          value (try
+                  ((:read-tagged-var reader-operations) raw)
+                  (catch Exception ex
+                    ((:fail-var reader-operations)
+                     "STAGE1READER004" source-path raw
+                     {:source-span (:span token)
+                      :token-id (token-id token)
+                      :form-id form-id
+                      :raw raw
+                      :extension-tag (:tag token)
+                      :cause-message (.getMessage ex)})))
+          span (compatibility-form-combined-span
+                context token (tokens (dec next-idx)))
+          node {:form-id form-id
+                :kind :tagged-literal
+                :tag (:tag token)
+                :open-token (token-id token)
+                :close-token (:close-token child-node)
+                :children [child-id]
+                :span span
+                :metadata {}
+                :origin {:kind :source :reader :stage1-token-parser}
+                :leading-trivia-token-ids leading-trivia
+                :leading-trivia-hash
+                (compatibility-form-trivia-hash context leading-trivia)
+                :raw (subs source-text
+                           (get-in token [:span :start :char])
+                           (get-in child-span [:end :char]))
+                :value value}]
+      (swap! nodes assoc form-id node)
+      [value next-idx span form-id])))
+
+(defn- compatibility-form-read-literal
+  [{:keys [nodes token-id] :as context} idx token leading-trivia form-id]
+  (let [value (compatibility-form-parse-token-literal context token)
+        span (:span token)
+        node {:form-id form-id
+              :kind (:kind token)
+              :open-token (token-id token)
+              :close-token (token-id token)
+              :token-id (token-id token)
+              :children []
+              :span span
+              :metadata {}
+              :origin {:kind :source :reader :stage1-token-parser}
+              :leading-trivia-token-ids leading-trivia
+              :leading-trivia-hash
+              (compatibility-form-trivia-hash context leading-trivia)
+              :raw (:raw token)
+              :value value}]
+    (swap! nodes assoc form-id node)
+    [value (inc idx) span form-id]))
+
+(defn- compatibility-form-read-form
+  [{:keys [reader-operations source-path tokens token-count token-id] :as context}
+   idx leading-trivia]
+  (when (>= idx token-count)
+    ((:fail-var reader-operations) "STAGE1READER002" source-path nil
+                         {:source-span {:source source-path}
+                          :expected :form}))
+  (let [token (tokens idx)
+        form-id (compatibility-form-new-form-id context)]
+    (case (:kind token)
+      :close
+      ((:fail-var reader-operations)
+       "STAGE1READER001" source-path (:lexeme token)
+       {:source-span (:span token)
+        :token-id (token-id token)
+        :form-id form-id
+        :raw (:raw token)
+        :actual (:lexeme token)
+        :facts {:actual-delimiter (:lexeme token)}})
+
+      :list-open
+      (compatibility-form-read-delimited
+       context (inc idx) :list (:close-token token)
+       token leading-trivia form-id)
+
+      :vector-open
+      (compatibility-form-read-delimited
+       context (inc idx) :vector (:close-token token)
+       token leading-trivia form-id)
+
+      :map-open
+      (compatibility-form-read-delimited
+       context (inc idx) :map (:close-token token)
+       token leading-trivia form-id)
+
+      :set-open
+      (compatibility-form-read-delimited
+       context (inc idx) :set (:close-token token)
+       token leading-trivia form-id)
+
+      :abbreviation
+      (compatibility-form-read-abbreviation
+       context idx token leading-trivia form-id)
+
+      :tag
+      (compatibility-form-read-tagged
+       context idx token leading-trivia form-id)
+
+      (compatibility-form-read-literal
+       context idx token leading-trivia form-id))))
+
+(defn- compatibility-form-products
+  [{:keys [reader-operations token-count nodes form-order] :as context}]
+  (loop [idx 0
+         form-index 0
+         root-ids []
+         records []]
+    (let [[idx leading-trivia]
+          (compatibility-form-skip-trivia context idx)]
+      (if (>= idx token-count)
+        (let [raw-tree (mapv @nodes @form-order)
+              parent-by-child
+              (reduce (fn [parents parent]
+                        (reduce #(assoc %1 %2 (:form-id parent))
+                                parents
+                                (:children parent)))
+                      {}
+                      raw-tree)
+              form-tree
+              (mapv #(assoc % :parent-form-id
+                            (get parent-by-child (:form-id %)))
+                    raw-tree)
+              node-by-id (into {} (map (juxt :form-id identity)
+                                       form-tree))
+              records
+              (mapv (fn [record]
+                      (assoc record
+                             :kind (:kind (node-by-id (:form-id record)))
+                             :parent-form-id nil))
+                    records)]
+          {:records records
+           :form-tree form-tree
+           :root-form-ids root-ids
+           :parsed-values (mapv :form records)})
+        (let [[form next-idx span form-id]
+              (compatibility-form-read-form context idx leading-trivia)]
+          (recur next-idx
+                 (inc form-index)
+                 (conj root-ids form-id)
+                 (conj records
+                       {:form form
+                        :kind ((:form-kind-var reader-operations) form)
+                        :form-id form-id
+                        :span (assoc span :form-index form-index)})))))))
+
+(defn build-compatibility-forms
+  "Build hosted form products from explicit native tokens and late owner Vars.
+
+  Existing joins check consistency; they authenticate no input or owner."
+  [source-path source-text table token-stream operations]
+  (compatibility-form-products
+   (compatibility-form-products-context
+    (select-keys operations
+                 [:digest-var :pipeline-fail-var :line-starts-var :token-index-var
+                  :span-var :canonical-hash-var :decode-atom-var :fail-var
+                  :read-tagged-var :form-kind-var])
+    source-path source-text table token-stream)))
 
 (doseq
  [name (keys (:public-api namespace-contract))
