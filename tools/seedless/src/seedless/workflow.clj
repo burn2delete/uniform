@@ -583,17 +583,15 @@
   (let [info (shared/pr-info ctx t) ci (candidate-ci! ctx t info)]
     (assert-pr-identity! ctx t (pull-request-by-number! ctx (get-in t [:pr :number])) (:candidate t))
     (when-not (and (= "OPEN" (:state info)) (= (:candidate t) (:headRefOid info))
-                   (= (get-in ctx [:config :base-branch]) (:baseRefName info))
-                   (= "MERGEABLE" (:mergeable info)) (not (:isDraft info))
-                   (not (#{"REVIEW_REQUIRED" "CHANGES_REQUESTED"} (:reviewDecision info))))
+                   (= (get-in ctx [:config :base-branch]) (:baseRefName info)))
       (rt/fail! "Provider merge evidence changed after preflight" {:remote-pr-refusal true :pr info}))
-    (when (gh/open-review-threads? ctx (get-in t [:pr :number]))
-      (rt/fail! "PR has unresolved review threads after preflight" {:remote-pr-refusal true}))
     (assert-clean! ctx (:worktree t))
     (assert-identity! ctx t)
-    (if (= :passed ci)
+    (if (and (= :passed ci) (= "MERGEABLE" (:mergeable info)) (not (:isDraft info))
+             (not (#{"REVIEW_REQUIRED" "CHANGES_REQUESTED"} (:reviewDecision info)))
+             (not (gh/open-review-threads? ctx (get-in t [:pr :number]))))
       true
-      (do (rt/event! ctx :waiting {:slice (:key t) :reason :ci-changed-after-preflight :ci ci})
+      (do (rt/event! ctx :waiting {:slice (:key t) :reason :readiness-changed-after-preflight :ci ci})
           false))))
 
 (defn merge-effect-id [t]
@@ -682,6 +680,26 @@
                        (throw (ex-info (.getMessage e)
                                        (assoc (or (ex-data e) {}) :effect (:id intent) :main-effect true) e))))))))))))))
 
+(defn- github-review! [ctx t info]
+  (assert-candidate-acceptance! t)
+  (assert-pr-identity! ctx t (pull-request-by-number! ctx (get-in t [:pr :number])) (:candidate t))
+  (when-not (= (pr-base ctx t) (:baseRefName info))
+    (rt/fail! "Review does not target this PR base" {:remote-pr-refusal true :pr info}))
+  (let [number (get-in t [:pr :number])
+        reviews (gh/pages ctx (gh/repo-path ctx (str "pulls/" number "/reviews")))
+        latest (vals (reduce (fn [by-reviewer review]
+                               (assoc by-reviewer (or (get-in review [:user :id]) (:id review)) review))
+                             {} (sort-by (juxt #(or (:submitted_at %) "") #(or (:id %) 0))
+                                         (filter #(#{"APPROVED" "CHANGES_REQUESTED" "DISMISSED"} (:state %)) reviews))))
+        requests (filterv #(and (= "CHANGES_REQUESTED" (:state %)) (= (:candidate t) (:commit_id %))) latest)]
+    (if (seq requests)
+      (let [comments (gh/pages ctx (gh/repo-path ctx (str "pulls/" number "/comments")))]
+        (task! ctx (:key t) :feedback
+               {:candidate (select-keys t [:base :candidate :tree]) :github-reviews requests :comments comments
+                :instruction "Address the current-head review findings within this slice. Preserve scope, checks and required GitHub reapproval; never dismiss or resolve reviews dishonestly."})
+        (transition! ctx (:key t) :repair))
+      (rt/event! ctx :waiting {:slice (:key t) :reason :github-review-reapproval :candidate (:candidate t)}))))
+
 (defn integrate! [ctx t]
   (assert-no-pending-main! ctx t)
   (assert-identity! ctx t)
@@ -703,7 +721,7 @@
                                                           :diagnostics (ci-evidence! ctx t (:statusCheckRollup info))
                                                           :instruction "Read the captured job evidence and repair the actual failure; retain timeouts/unavailable logs as such. Never weaken the test or retry unchanged code."})
                            (transition! ctx (:key t) :repair))
-        (= "CHANGES_REQUESTED" (:reviewDecision info)) (rt/fail! "GitHub review requests changes" {:pr info})
+        (= "CHANGES_REQUESTED" (:reviewDecision info)) (github-review! ctx t info)
         :else
         (let [base (fresh-main! ctx)]
           (cond

@@ -426,12 +426,67 @@
                                          :head (assoc info :headRefOid "foreign")
                                          info))))
                                gh/open-review-threads? (fn [& _] (and (= :threads drift) (> (swap! threads inc) 1)))]
-                   (if (= :ci drift)
+                   (if (#{:ci :review :threads} drift)
                      (w/integrate! ctx (w/task ctx "a"))
                      (is (thrown? Exception (w/integrate! ctx (w/task ctx "a"))))))
                  (is (some #(= :preflight (first %)) @events))
                  (is (not-any? #(= :merge (first %)) @events))
                  (is (empty? (:main-effects (rt/read-edn (:coordination-file ctx))))))))))
+
+(deftest external-review-repairs-current-head-and-waits-for-reapproval
+  (harness :normal
+           (fn [ctx events phases _]
+             (add-task! ctx (slice "a")) (w/prepare! ctx "a")
+             (let [t (w/task ctx "a") original shared/pr-info
+                   request {:id 17 :user {:id 3} :state "CHANGES_REQUESTED" :commit_id (:candidate t)
+                            :submitted_at "2026-11-04T12:00:00Z" :body "Preserve the rejected case"}
+                   comments [{:pull_request_review_id 17 :path "module.clj" :body "Add the missing rejection"}]]
+               (with-redefs [shared/pr-info (fn [context task] (assoc (original context task) :reviewDecision "CHANGES_REQUESTED"))
+                             gh/pages (fn [_ endpoint]
+                                        (cond
+                                          (str/ends-with? endpoint "/reviews") [request]
+                                          (str/ends-with? endpoint "/comments") comments
+                                          :else (throw (ex-info "Unexpected fixture page" {:endpoint endpoint}))))]
+                 (w/integrate! ctx t)
+                 (is (= :repair (:status (w/task ctx "a"))))
+                 (is (= [request] (get-in (w/task ctx "a") [:feedback :github-reviews])))
+                 (is (= comments (get-in (w/task ctx "a") [:feedback :comments])))
+                 (is (= (select-keys t [:base :candidate :tree]) (get-in (w/task ctx "a") [:feedback :candidate])))
+                 (w/prepare! ctx "a")
+                 (is (not= (:candidate t) (:candidate (w/task ctx "a"))))
+                 (let [authors @phases]
+                   (w/integrate! ctx (w/task ctx "a"))
+                   (is (= :ci (:status (w/task ctx "a"))))
+                   (is (= authors @phases))
+                   (is (not-any? #(= :merge (first %)) @events)))
+                 (with-redefs [shared/pr-info (fn [context task] (assoc (original context task) :reviewDecision "APPROVED"))]
+                   (w/integrate! ctx (w/task ctx "a")))
+                 (is (= :done (:status (w/task ctx "a"))))
+                 (is (= 1 (count (filter #(= :merge (first %)) @events)))))))))
+
+(deftest superseded-review-opinions-wait-and-foreign-base-refuses-feedback
+  (harness :normal
+           (fn [ctx events phases _]
+             (add-task! ctx (slice "a")) (w/prepare! ctx "a")
+             (let [t (w/task ctx "a") original shared/pr-info authors @phases pages (atom 0)
+                   reviews [{:id 11 :user {:id 3} :state "CHANGES_REQUESTED" :commit_id (:candidate t) :submitted_at "2026-11-01T12:00:00Z"}
+                            {:id 12 :user {:id 3} :state "APPROVED" :commit_id (:candidate t) :submitted_at "2026-11-02T12:00:00Z"}
+                            {:id 13 :user {:id 4} :state "CHANGES_REQUESTED" :commit_id "old-head" :submitted_at "2026-11-03T12:00:00Z"}]]
+               (with-redefs [shared/pr-info (fn [context task] (assoc (original context task) :reviewDecision "CHANGES_REQUESTED"))
+                             gh/pages (fn [_ endpoint]
+                                        (swap! pages inc)
+                                        (if (str/ends-with? endpoint "/reviews") reviews
+                                            (throw (ex-info "No current findings need comments" {}))))]
+                 (w/integrate! ctx t)
+                 (is (= :ci (:status (w/task ctx "a"))))
+                 (is (= 1 @pages)))
+               (reset! pages 0)
+               (with-redefs [shared/pr-info (fn [context task] (assoc (original context task) :reviewDecision "CHANGES_REQUESTED" :baseRefName "foreign"))
+                             gh/pages (fn [& _] (swap! pages inc))]
+                 (is (thrown-with-msg? Exception #"Review does not target this PR base" (w/integrate! ctx t))))
+               (is (zero? @pages))
+               (is (= authors @phases))
+               (is (not-any? #(= :merge (first %)) @events))))))
 
 (deftest queued-workflow-with-green-rollup-waits-at-each-merge-gate
   (doseq [gate [1 2 3]]
