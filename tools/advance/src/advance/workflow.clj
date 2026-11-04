@@ -178,10 +178,7 @@
              (= base (flow/fresh-main! ctx)))))))
 
 (defn failure! [ctx key e]
-  (if (and (= "Sandboxed check failed" (.getMessage e)) (not (:restricted (ex-data e))))
-    (do (flow/task! ctx key :feedback {:local-check (ex-data e) :instruction "Repair the actual failure without weakening checks."})
-        (flow/transition! ctx key :repair))
-    (flow/attention! ctx key e)))
+  (flow/failure! ctx key e))
 
 (defn run-worker! [ctx key]
   (try (flow/prepare! ctx key)
@@ -193,11 +190,6 @@
   (try
   (project/setup! ctx)
   (ensure-campaign! ctx)
-  (doseq [t (flow/tasks ctx) :when (#{:implementing :review} (:status t))]
-    (when (and (= :implementing (:status t)) (not (coordination/claim! ctx (:key t) (:paths t))))
-      (rt/fail! "Retained increment conflicts with another writer" {:key (:key t)}))
-    (when (#{:implementing :review} (:status t))
-      (flow/attention! ctx (:key t) (ex-info "Interrupted worker requires inspection; preserving files and thread IDs" {}))))
   (let [pool (Executors/newFixedThreadPool (get-in ctx [:config :parallelism])) running (atom {})]
     (try
       (rt/update! ctx assoc :status :running)
@@ -214,6 +206,8 @@
                 active? (fn [t] (and campaign-active?
                                      (project/runnable? settings (get-in t [:issue :number]))
                                      (project/runnable? settings (get-in @(:state ctx) [:source-tasks (:task t) :issue :number]))))]
+            (doseq [t (flow/tasks ctx) :when (and (active? t) (= :finalizing (:status t)))]
+              (try (flow/finalize-merge! ctx t) (catch Exception e (failure! ctx (:key t) e))))
             (doseq [t (flow/tasks ctx) :when (and (active? t) (#{:ci :merge} (:status t)) (not (contains? @running (:key t))))]
               (try (flow/integrate! ctx t)
                    (catch Exception e (when-not (:ownership-wait (ex-data e)) (failure! ctx (:key t) e)))))

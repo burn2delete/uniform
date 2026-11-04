@@ -1,7 +1,6 @@
 (ns simplify.coordination
-  "Shared writer claims and the main-write window for local harnesses."
+  "Advance's coordination interface over the shared runtime protocol."
   (:require [clojure.java.io :as io]
-            [clojure.string :as str]
             [simplify.runtime :as rt])
   (:import [java.lang ProcessHandle]
            [java.nio.channels FileChannel OverlappingFileLockException]
@@ -9,75 +8,64 @@
 
 (defn with-file-lock [path f]
   (let [path (io/file (rt/canonical path))]
-  (.mkdirs (.getParentFile path))
-  (with-open [channel (FileChannel/open (.toPath path)
-                                       (into-array StandardOpenOption [StandardOpenOption/CREATE StandardOpenOption/WRITE]))]
-    (let [lock (try (.tryLock channel) (catch OverlappingFileLockException _ nil))]
-      (when lock (try (f) (finally (.release lock))))))))
+    (.mkdirs (.getParentFile path))
+    (with-open [channel (FileChannel/open (.toPath path)
+                                        (into-array StandardOpenOption [StandardOpenOption/CREATE StandardOpenOption/WRITE]))]
+      (let [lock (try (.tryLock channel) (catch OverlappingFileLockException _ nil))]
+        (when lock (try (f) (finally (.release lock))))))))
 
-(defn transaction! [ctx f]
-  (if-let [directory (:coordination-dir ctx)]
-    ;; Short local registry transactions only; no model/GitHub calls under this lock.
-    (loop []
-      (let [result (with-file-lock (str (io/file directory "registry.lock"))
-                     #(let [file (io/file directory "claims.edn")
-                            state (if (.exists file) (rt/read-edn file) {:claims {} :controllers {}})
-                            [updated result] (f state)]
-                        (rt/write-edn! file updated)
-                        {:value result}))]
-        (if result (:value result) (do (Thread/sleep 25) (recur)))))
-    (second (f {:claims {} :controllers {}}))))
-
+(defn transaction! [ctx f] (rt/coordinate! ctx f))
 (defn owner [ctx] (rt/canonical (:state-file ctx)))
-(defn covers? [a b] (or (= a ".") (= a b) (str/starts-with? b (str a "/"))))
-(defn overlaps? [a b] (some (fn [x] (some #(or (covers? x %) (covers? % x)) b)) a))
+(defn covers? [a b] (rt/covers? a b))
+(defn overlaps? [a b] (rt/overlap? a b))
 
-(defn claims [ctx] (transaction! ctx (fn [state] [state (vals (:claims state))])))
+(defn claims [ctx]
+  (transaction! ctx
+                (fn [state]
+                  [state (mapv #(assoc % :identity (or (get-in % [:legacy-claim :identity]) [(:state-file %) (:key %)]))
+                               (vals (:writers state)))])))
 
 (defn claim! [ctx key paths]
-  (when (empty? paths) (rt/fail! "Writer claim needs owned paths" {:key key}))
-  (let [identity [(owner ctx) key]]
-    (transaction! ctx
-      (fn [state]
-        (let [others (remove #(= identity (:identity %)) (vals (:claims state)))
-              conflict (some #(when (overlaps? paths (:paths %)) %) others)]
-          (if conflict [state false]
-              [(assoc-in state [:claims identity] {:identity identity :key key :paths paths
-                                                    :campaign (get-in ctx [:config :campaign])
-                                                    :state-file (:state-file ctx)}) true]))))))
+  (boolean (rt/claim-paths! ctx key paths :implementing)))
 
 (defn release! [ctx key]
-  (transaction! ctx (fn [state] [(update state :claims dissoc [(owner ctx) key]) true])))
+  (when-let [lease (get (some-> (:path-leases ctx) deref) key)]
+    (rt/release-paths! ctx lease)
+    true))
 
 (defn register! [ctx]
-  (when-let [directory (:coordination-dir ctx)]
-    ;; An older simplify process owns this same legacy lock but publishes no
-    ;; protocol registration. Never start a second coordinator alongside it.
-    (let [legacy (str (io/file directory ".." "simplify-harness.lock"))
-          own? (= (rt/canonical legacy) (rt/canonical (:lock-file ctx)))]
-      (when-not own?
-        (let [available (with-file-lock legacy (constantly true))
-              registered (transaction! ctx
-                           (fn [state]
-                             [state (some (fn [controller]
-                                            (let [process (ProcessHandle/of (long (:pid controller)))]
-                                              (and (= "simplify-harness.lock" (:lock controller))
-                                                   (= 1 (:protocol controller)) (.isPresent process)
-                                                   (.isAlive ^ProcessHandle (.get process)))))
-                                          (vals (:controllers state)))]))]
-          (when (and (not available) (not registered))
-            (rt/fail! "Restart the running simplify harness with shared coordination before advancing" {})))))
-    (transaction! ctx (fn [state]
-                        [(assoc-in state [:controllers (owner ctx)]
-                                   {:lock (.getName (io/file (:lock-file ctx)))
-                                    :pid (.pid (ProcessHandle/current)) :protocol 1}) true]))))
+  ;; Check actual old controller locks, without probing recorded PIDs.
+  (when-not (some-> (:coordinator-owner ctx) deref) (rt/assert-compatible-controllers! ctx))
+  (rt/import-state-coordination! ctx)
+  ;; Retained in-flight work needs original-owner inspection before this
+  ;; controller performs even unrelated provider setup. Attention holds and
+  ;; other campaigns still reserve only their actual paths.
+  (let [retained (into {} (filter (fn [[_ task]] (#{:implementing :review} (:status task)))
+                                (:tasks @(:state ctx))))]
+    (when (seq retained)
+      ;; Record the interruption locally so the existing inspected release and
+      ;; retry commands remain reachable. Never report to the provider here.
+      (rt/update! ctx update :tasks
+                  (fn [tasks]
+                    (reduce-kv (fn [tasks key task]
+                                 (assoc tasks key (-> task
+                                                     (update :handover-history (fnil conj [])
+                                                             (select-keys task [:status :resume-status :error :implementation-job]))
+                                                     (assoc :status :attention :resume-status (:status task)))))
+                               tasks retained)))
+      (rt/fail! "Retained worker requires inspected handover before provider setup" {:findings (vec (keys retained))})))
+  (when-let [pending (transaction! ctx
+                                  (fn [state]
+                                    [state (first (filter #(rt/main-effect-owner? ctx %)
+                                                          (vals (:main-effects state))))]))]
+    (rt/fail! "Unresolved main effect requires inspected handover before provider setup" {:effect (:id pending)}))
+  (transaction! ctx
+                (fn [state]
+                  [(assoc-in state [:controllers (owner ctx)]
+                             {:state-file (owner ctx) :lock (:lock-file ctx)
+                              :pid (.pid (ProcessHandle/current)) :protocol 2}) true])))
 
 (defn unregister! [ctx]
-  (when (:coordination-dir ctx)
-    (transaction! ctx (fn [state] [(update state :controllers dissoc (owner ctx)) true]))))
+  (transaction! ctx (fn [state] [(update state :controllers dissoc (owner ctx)) true])))
 
-(defn with-merge [ctx f]
-  (if-let [directory (:coordination-dir ctx)]
-    (or (with-file-lock (str (io/file directory "merge.lock")) #(do (f) {:acquired true}))
-        (rt/event! ctx :waiting {:reason "Another harness owns the main-write window"}))
-    (f)))
+(defn with-merge [ctx f] (rt/try-with-main-lock ctx f))
