@@ -102,6 +102,45 @@
   [request]
   (invoke-engine 'sh23-build [request]))
 
+(defn- large-build-request
+  []
+  (let [base (request accepted-gravity-plan 'sh23-hermetic-build-request)
+        package-ids (mapv #(keyword "package" (str "library-" %)) (range 33))
+        component-ids (mapv #(keyword "component" (str "module-" %)) (range 130))
+        packages (mapv (fn [id]
+                         (assoc (first (get-in base [:lockfile :packages]))
+                                :package-id id
+                                :content-id (str "sha256:" id)
+                                :provenance-id (str "sha256:provenance-" id)))
+                       package-ids)
+        components
+        (mapv (fn [index id]
+                (assoc (first (:components base))
+                       :component-id id
+                       :source-content-id (str "sha256:source-" id)
+                       :compiler-module-id (keyword "compiler" (name id))
+                       :dependencies (if (= index 129)
+                                       (subvec component-ids 0 index)
+                                       [])
+                       :stdlib-dependencies (if (= index 129)
+                                              package-ids
+                                              [(first package-ids)])
+                       :output-id (keyword "artifact" (name id))
+                       :output-content-hash (format "%064x" (inc index))
+                       :topological-ordinal (inc index)
+                       :actual-source-path (str "/checkout-a/src/" (name id)
+                                                ".gravity")))
+              (range 130) component-ids)]
+    (-> base
+        (assoc :components components :component-order component-ids)
+        (assoc-in [:project :entrypoints] (subvec component-ids 0 33))
+        (assoc-in [:project :dependency-roots] package-ids)
+        (assoc-in [:project :source-roots]
+                  (mapv #(str "src/root-" %) (range 17)))
+        (assoc-in [:lockfile :packages] packages)
+        (assoc-in [:environment :allowed-environment]
+                  (mapv #(keyword (str "BUILD_INPUT_" %)) (range 17))))))
+
 (def ^:private rejected-cases
   {'sh23-missing-lock-request
    ["PKG5004" :bootstrap-lockfile-record-required]
@@ -155,15 +194,10 @@
            (slurp
             (path (fixture-relative-path family basename ".qst")))))))
 
-(deftest sh23-policy-is-bounded-hermetic-and-honest
+(deftest sh23-policy-is-hermetic-and-honest
   (let [policy (invoke-engine 'sh23-build-policy [])]
     (is (= :gravity/sh23-hermetic-build-policy (:artifact policy)))
     (is (= 1 (:schema-version policy)))
-    (is (= 32 (:maximum-packages policy)))
-    (is (= 32 (:maximum-components policy)))
-    (is (= 128 (:maximum-component-dependencies policy)))
-    (is (= 16 (:maximum-build-authorities policy)))
-    (is (not (contains? policy :maximum-source-roots)))
     (is (= #{:meta} (:allowed-profiles policy)))
     (is (= #{:portable-mir} (:allowed-targets policy)))
     (is (contains? (:forbidden-effects policy) :build/network))
@@ -230,6 +264,103 @@
            (:status (invoke-engine 'sh23-verify-result
                                    [expanded-request result]))))))
 
+(deftest sh23-builds-large-locked-graphs-with-complete-identities-and-replay
+  ;; PKG1/2/5/6/7: populations do not replace lock, graph or authority legality.
+  (let [request (large-build-request)
+        components (:components request)
+        result (build request)
+        decoded (edn/read-string (pr-str result))]
+    (is (= :accepted (:status result)))
+    (is (empty? (:diagnostics result)))
+    (is (= 33 (count (get-in result [:resolution :packages]))))
+    (is (= (get-in request [:lockfile :packages])
+           (get-in result [:resolution :packages])))
+    (is (= 130 (get-in result [:build-graph :component-count])))
+    (is (true? (get-in result [:build-graph :acyclic])))
+    (is (= (:component-order request)
+           (get-in result [:build-graph :component-order])
+           (mapv :action-id (:actions result))))
+    (is (= (vec (range 1 131)) (mapv :ordinal (:actions result))))
+    (is (= (mapv :dependencies components)
+           (mapv #(get-in % [:inputs :dependency-components]) (:actions result))))
+    (is (= 129 (count (get-in result [:actions 129 :inputs
+                                     :dependency-components]))))
+    (is (= (mapv :stdlib-dependencies components)
+           (mapv #(get-in % [:inputs :standard-library-packages])
+                 (:actions result))))
+    (is (= (mapv :source-content-id components)
+           (mapv #(get-in % [:inputs :source-content-id]) (:actions result))))
+    (is (every? #(= (get-in request [:compiler :artifact-id])
+                    (get-in % [:inputs :compiler-artifact-id]))
+                (:actions result)))
+    (is (every? #(= (get-in request [:lockfile :lock-id])
+                    (get-in % [:inputs :lock-id]))
+                (:actions result)))
+    (is (every? #(and (= (:effects request) (:effects %))
+                     (= (:capabilities request) (:capabilities %)))
+                (:actions result)))
+    (is (= (mapv :output-id components)
+           (mapv :output-id (:actions result))
+           (mapv :artifact-id (:artifact-requests result))))
+    (is (= (mapv :output-content-hash components)
+           (mapv #(get-in % [:content-hash :digest]) (:artifact-requests result))))
+    (is (= (assoc request :components (mapv #(dissoc % :actual-source-path)
+                                            components))
+           (:identity-input result)))
+    (is (= (mapv #(select-keys % [:component-id :source-content-id
+                                 :actual-source-path]) components)
+           (get-in result [:provenance :components])))
+    (is (= result decoded))
+    (is (= :passed
+           (:status (invoke-engine 'sh23-verify-result [request decoded]))))
+    (let [verification
+          (invoke-engine 'sh23-verify-result
+                         [request (assoc-in decoded [:actions 129 :output-id]
+                                            :artifact/substituted)])]
+      (is (= :rejected (:status verification)))
+      (is (= ["SH23-VERIFY" :build-result-substitution]
+             ((juxt :rule :reason) (first (:diagnostics verification))))))))
+
+(deftest sh23-large-builds-retain-semantic-refusals
+  (let [request (large-build-request)]
+    (doseq [[label invalid rule reason]
+            [[:missing-lock (dissoc request :lockfile)
+              "PKG5004" :bootstrap-lockfile-record-required]
+             [:extra-locked-package
+              (update-in request [:lockfile :packages] conj
+                         (assoc (first (get-in request [:lockfile :packages]))
+                                :package-id :package/unrequested))
+              "PKG5004" :locked-package-set-mismatch]
+             [:unlocked-dependency
+              (assoc-in request [:components 129 :stdlib-dependencies]
+                        [:package/unlocked])
+              "PKG5004" :component-standard-library-dependency-not-locked]
+             [:forward-edge
+              (assoc-in request [:components 0 :dependencies]
+                        [(second (:component-order request))])
+              "PKG2004" :missing-cyclic-or-forward-component-dependency]
+             [:cycle
+              (assoc-in request [:components 129 :dependencies]
+                        (:component-order request))
+              "PKG2004" :missing-cyclic-or-forward-component-dependency]
+             [:malformed-ordinal
+              (assoc-in request [:components 129 :topological-ordinal] "130")
+              "PKG2004" :component-ordinal-must-be-integer]
+             [:exact-authority
+              (assoc request :capabilities #{:build/read-file})
+              "PKG2001" :build-effect-capability-mismatch]
+             [:unsupported-backend
+              (assoc-in request [:target :backend] :gravity.backend/llvm)
+              "PKG11001" :unsupported-bootstrap-backend]
+             [:environment-policy
+              (assoc-in request [:environment :network] :enabled)
+              "PKG7003" :network-must-be-disabled]]]
+      (testing (name label)
+        (let [result (build invalid)]
+          (is (= :rejected (:status result)))
+          (is (= [[rule reason]]
+                 (mapv (juxt :rule :reason) (:diagnostics result)))))))))
+
 (deftest sh23-rejects-malformed-source-roots
   (let [base-request
         (request accepted-gravity-plan 'sh23-hermetic-build-request)]
@@ -241,6 +372,47 @@
           (is (= :rejected (:status result)))
           (is (= "PKG1001" (:rule diagnostic)))
           (is (= :source-root-vector-invalid (:reason diagnostic))))))))
+
+(deftest sh23-retains-vector-and-authority-shape-validation
+  (let [request (request accepted-gravity-plan 'sh23-hermetic-build-request)]
+    (doseq [[key-path rule reason]
+            [[[:project :entrypoints] "PKG1001" :entrypoint-vector-required]
+             [[:project :dependency-roots] "PKG1004" :dependency-root-vector-required]
+             [[:lockfile :packages 0 :targets] "PKG5003" :locked-target-vector-required]
+             [[:environment :allowed-environment] "PKG7005" :environment-allowlist-invalid]
+             [[:components 0 :stdlib-dependencies] "PKG3003" :stdlib-dependency-vector-invalid]]
+            invalid [nil '(:invalid) [:duplicate :duplicate] ["not-a-keyword"]]]
+      (testing (pr-str [key-path invalid])
+        (let [result (build (assoc-in request key-path invalid))]
+          (is (= :rejected (:status result)))
+          (is (= [[rule reason]]
+                 (mapv (juxt :rule :reason) (:diagnostics result)))))))
+    (doseq [[key-path rule reason]
+            [[[:project :effects] "PKG1005" :effect-set-required]
+             [[:project :capabilities] "PKG1005" :capability-set-required]
+             [[:lockfile :packages 0 :effects] "PKG5002" :locked-effect-set-invalid]
+             [[:lockfile :packages 0 :capabilities] "PKG5002" :locked-capability-set-invalid]
+             [[:effects] "PKG2001" :build-effect-set-required]
+             [[:capabilities] "PKG6004" :build-capability-set-required]]]
+      (testing (pr-str key-path)
+        (let [result (build (assoc-in request key-path []))]
+          (is (= :rejected (:status result)))
+          (is (= [[rule reason]]
+                 (mapv (juxt :rule :reason) (:diagnostics result)))))))
+    (let [authorities (set (map #(keyword "unsupported" (str "authority-" %))
+                                (range 17)))]
+      (doseq [[key-path rule reason]
+              [[[:project :effects] "PKG1005" :exact-project-build-effects-required]
+               [[:project :capabilities] "PKG1005" :project-effect-capability-mismatch]
+               [[:lockfile :packages 0 :effects] "PKG5002" :dependency-effect-expansion]
+               [[:lockfile :packages 0 :capabilities] "PKG5002" :dependency-capability-expansion]
+               [[:effects] "PKG2001" :undeclared-or-unsupported-build-effect]
+               [[:capabilities] "PKG2001" :build-effect-capability-mismatch]]]
+        (testing (pr-str key-path)
+          (let [result (build (assoc-in request key-path authorities))]
+            (is (= :rejected (:status result)))
+            (is (= [[rule reason]]
+                   (mapv (juxt :rule :reason) (:diagnostics result))))))))))
 
 (deftest sh23-links-sh21-sh22-and-emits-valid-sh20-requests
   (let [request
