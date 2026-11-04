@@ -44,3 +44,30 @@ Native compatibility views and passing markers cannot enter or replace C2/SH03
 authentication, source grants, cache authority, canonical proof, migration,
 release, self-hosting or seed retirement. Previously refused SourceC9/default
 Reader operations and every held/restricted route remain untouched.
+
+## Implemented native boundary and original control
+
+gravity.reader/validate-native-reader-report! now owns the original rule loop
+through three explicit late Vars. The wrapper keeps [source-path artifact].
+Proof construction occurs once before the rule loop; failure lookup remains
+before its diagnostic arguments and fallback span lookup. The surrounding
+proof, override and extension wrappers and all source/cache admission paths
+remain unchanged. No new callback or input-carrier admission check is added.
+
+Original controls derive two native compatibility views from actual paired
+surface-syntax files using real token/form records, syntax seeds, literal/trivia
+records, lexical validation, source identities and incremental hashes. Both
+return the original complete marker while their actual proof remains partial;
+the view itself records admission:none and authenticates-inputs?:false. Five
+altered views per source exercise source-id, literal, extension-policy, hash and
+lexical refusal. Complete records retain actual paths, text and source hashes
+under /tmp/uniform-reader-validation-before.edn, SHA-256
+6aae3d0590d1e2b6f2cffebc93e0f4196ae1026530f56475d703cfff4a9bb149.
+This is native compatibility evidence only, never a C2 admission artifact.
+
+The first new field-rule test expected the raw token span, but the existing C2
+diagnostic owner adds its source-id as the file field. Its failing source/log
+remain retained; the test expectation now follows that unchanged owner output.
+No production refusal, source pin or diagnostic construction was modified.
+Post-extraction equality, final regressions, independent review and integration
+checks remain outstanding at this source commit.

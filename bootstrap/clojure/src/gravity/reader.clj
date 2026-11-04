@@ -10,9 +10,14 @@
 (def ^:private namespace-contract
   {:namespace 'gravity.reader
    :governing-contracts [:D1 :D2 :D3 :D8 :D9 :L1 :C1 :C2 :C3 :C15 :BOOT1 :BOOT8 :TEST2]
-   :contract-boundary :native-source-intake-diagnostics-artifact-assembly-and-compatibility-products
+   :contract-boundary :native-reader-intake-products-and-report-validation
    :public-api
-   {'compatibility-reader-products
+   {'validate-native-reader-report!
+    {:arglists '([proof-var fail-var source-span-var source-path artifact])
+     :returns :legacy-complete-marker-or-owner-failure
+     :admission :none :authenticates-inputs? false
+     :operation-inputs [:proof-var :fail-var :source-span-var]}
+    'compatibility-reader-products
     {:arglists '([source-path source-text reader-options project-context operations])
      :returns :hosted-compatibility-reader-products
      :admission :none :authenticates-inputs? false
@@ -43,7 +48,7 @@
                      :captured-source-bytes :raw-byte-hash-var :diagnostic-var
                      :extension-predicate-var :path-policy-refusal-var :decoder-var :source-byte-reader-var :co-canonical-extension-set-var]
    :artifact-outputs [:gravity/stage0-reader-artifact :decoded-utf8-text
-                      :hosted-compatibility-reader-products
+                      :hosted-compatibility-reader-products :legacy-native-reader-complete-marker
                       :unchanged-source-encoding-failure :unchanged-source-extension-failure
                       :unchanged-source-byte-owner-failure]
    :preserves [:source-spans :metadata :reader-origin :profile-context
@@ -59,6 +64,11 @@
                            :host-stack-id "C2-HASH"
                            :malformed-source-ids :original-stage1-reader-ids
                            :policy-owner :supplied-reader-failure-var}
+    :native-report-validation {:owns :ordered-missing-field-refusal-selection
+                               :rule-ids ["C2-HASH" "C2-ABBREV" "C2-STRING" "C2-EXTENSION"]
+                               :proof-owner :supplied-proof-var
+                               :policy-owner :supplied-failure-var
+                               :authenticates-inputs? false}
     :does-not-own [:token-and-form-policy :namespace-shape-policy :c15-schema
                    :diagnostic-identity :redaction :rendering]}
    :dependency-direction
@@ -69,6 +79,7 @@
     :syntax-object-stream :l1-source-unit-artifacts :standard-reader-options
     :gravity-source-extension :gravity-source-kind :utf8-byte-count]
    :unsupported [:other-encodings :replacement-decoding :file-authority
+                 :native-report-authentication
                  :compatibility-oracle-product-authentication
                  :operation-authentication :complete-reader-conformance
                  :migration :release :seed-retirement]
@@ -248,6 +259,30 @@
                           :reader-options reader-options}
                          (ex-data ex))
                   ex))))))
+
+(defn validate-native-reader-report!
+  "Preserve native report-field refusal order; the complete marker grants no admission."
+  [proof-var fail-var source-span-var source-path artifact]
+  (let [proof ((deref proof-var) artifact)]
+    (doseq [[field id] [[:source-unit-hash-stable? "C2-HASH"]
+                      [:token-and-form-spans-present? "C2-HASH"]
+                      [:abbreviation-origins-present? "C2-ABBREV"]
+                      [:literal-facts-present? "C2-STRING"]
+                      [:trivia-retained? "C2-HASH"]
+                      [:extension-policy-recorded? "C2-EXTENSION"]
+                      [:incremental-hashes-stable? "C2-HASH"]
+                      [:diagnostics-covered? "C2-HASH"]
+                      [:lexical-token-stream? "C2-HASH"]
+                      [:nested-form-tree? "C2-HASH"]]]
+      (when-not (get proof field)
+        ((deref fail-var) id source-path
+         {:stage :read-source
+          :source-id (get-in artifact [:source-unit-record :source-id])
+          :source-span (or (get-in artifact [:token-stream 0 :span])
+                           ((deref source-span-var) source-path 0))
+          :reader-options (get-in artifact [:source-unit-record :reader-options])}
+         {:missing-fields [field]}))))
+  :complete)
 
 (doseq
  [name (keys (:public-api namespace-contract))

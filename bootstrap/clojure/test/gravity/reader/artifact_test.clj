@@ -146,7 +146,8 @@
 (deftest namespace-contract-is-narrow-and-preserves-compatibility-arities
   (let [contract (:gravity/namespace-contract (meta #'reader/read-source-artifact))]
     (is (= #{'read-source-artifact 'decode-source-bytes 'read-source-text 'reject-source-path!
-             'compatibility-reader-products} (set (keys (ns-publics 'gravity.reader)))))
+             'compatibility-reader-products 'validate-native-reader-report!}
+           (set (keys (ns-publics 'gravity.reader)))))
     (is (= (set (keys (:public-api contract)))
            (set (keep (fn [[name operation]]
                         (when (:gravity/namespace-contract (meta operation)) name))
@@ -156,7 +157,7 @@
     (is (every? #(not (:private (meta %)))
                 (vals (ns-publics 'gravity.reader))))
     (is (empty? (ns-aliases 'gravity.reader)))
-    (is (= :native-source-intake-diagnostics-artifact-assembly-and-compatibility-products (:contract-boundary contract)))
+    (is (= :native-reader-intake-products-and-report-validation (:contract-boundary contract)))
     (is (= ['clojure.core] (get-in contract [:dependency-direction :requires])))
     (is (= ['gravity.bootstrap 'gravity.cli 'gravity.release]
            (get-in contract [:dependency-direction :forbids])))
@@ -639,3 +640,109 @@
                   bootstrap/sh03-reader-adapt-products! forbidden
                   bootstrap/compiler-c2-reader-source-artifact forbidden]
       (is (= 2 (count (:parsed-records (compatibility-products path text context))))))))
+
+(def ^:private native-reader-rules
+  [[:source-unit-hash-stable? "C2-HASH"]
+   [:token-and-form-spans-present? "C2-HASH"]
+   [:abbreviation-origins-present? "C2-ABBREV"]
+   [:literal-facts-present? "C2-STRING"]
+   [:trivia-retained? "C2-HASH"]
+   [:extension-policy-recorded? "C2-EXTENSION"]
+   [:incremental-hashes-stable? "C2-HASH"]
+   [:diagnostics-covered? "C2-HASH"]
+   [:lexical-token-stream? "C2-HASH"]
+   [:nested-form-tree? "C2-HASH"]])
+
+(defn- validate-native-report [path artifact]
+  (reader/validate-native-reader-report!
+   #'bootstrap/c2-reader-capability-proof #'bootstrap/c2-reader-fail!
+   #'bootstrap/source-span path artifact))
+
+(defn- native-compatibility-view [path text]
+  (let [products (compatibility-products path text (bootstrap/reader-project-context-for-source path))
+        source (:source-unit products) tokens (:token-stream products) forms (:form-tree products)
+        module (bootstrap/reader-module-context (:parsed-values products))
+        seeds (bootstrap/c2-syntax-seed-stream path products module)
+        extensions (bootstrap/c2-reader-extension-invocations forms)]
+    {:kind :gravity/native-reader-compatibility-view :admission :none :authenticates-inputs? false
+     :source-unit-record source :token-stream tokens :form-tree forms
+     :literal-decoding-records (bootstrap/c2-literal-records forms)
+     :trivia-retention-records (bootstrap/c2-trivia-records tokens)
+     :reader-extension-policy {:status :registered}
+     :incremental-reader-hashes (bootstrap/c2-incremental-hashes source tokens forms seeds extensions [])
+     :rejected-design-coverage bootstrap/c2-reader-rejected-designs
+     :semantic-error-deferment-record {:deferred? true}
+     :lexical-product-validation
+     (bootstrap/c2-lexical-product-validation text tokens forms (:root-form-ids products))}))
+
+(deftest native-reader-validation-checks-real-compatibility-products-without-admission
+  (doseq [extension [".gravity" ".qst"]]
+    (let [path (fixture "accepted" "surface-syntax" extension)
+          view (native-compatibility-view path (slurp path))]
+      (is (= :none (:admission view)))
+      (is (false? (:authenticates-inputs? view)))
+      (is (= :partial (:status (bootstrap/c2-reader-capability-proof view))))
+      (is (= :complete (validate-native-report path view)))
+      (is (= :complete (bootstrap/c2-reader-validate! path view)))
+      (doseq [[altered expected-id field]
+              [[(assoc-in view [:source-unit-record :source-id] "changed") "C2-HASH" :source-unit-hash-stable?]
+               [(assoc view :literal-decoding-records []) "C2-STRING" :literal-facts-present?]
+               [(dissoc view :reader-extension-policy) "C2-EXTENSION" :extension-policy-recorded?]
+               [(assoc-in view [:incremental-reader-hashes :token-stream] "changed") "C2-HASH" :incremental-hashes-stable?]
+               [(assoc view :lexical-product-validation {}) "C2-HASH" :lexical-token-stream?]]]
+        (let [failure (rejection #(validate-native-report path altered))]
+          (is (= expected-id (:id (ex-data failure))))
+          (is (= [field] (:missing-fields (ex-data failure))))
+          (is (= path (get-in (ex-data failure) [:source-span :source]))))))))
+
+(deftest native-reader-validation-preserves-every-rule-and-native-truthiness
+  (let [path "native.gravity" span {:source path :byte-start 0 :byte-end 1}
+        artifact {:source-unit-record {:source-id "sha256:native" :reader-options {}}
+                  :token-stream [{:span span}]}
+        truthy (zipmap (map first native-reader-rules) (repeat :native-truthy))]
+    (with-redefs [bootstrap/c2-reader-capability-proof (constantly truthy)
+                  bootstrap/c2-reader-fail! (fn [& _] (throw (AssertionError. "truthy field rejected")))
+                  bootstrap/source-span (fn [& _] (throw (AssertionError. "unneeded fallback")))]
+      (is (= :complete (validate-native-report path artifact))))
+    (doseq [[field id] native-reader-rules
+            absent [nil false]]
+      (with-redefs [bootstrap/c2-reader-capability-proof (constantly (assoc truthy field absent))]
+        (let [failure (rejection #(validate-native-report path artifact))]
+          (is (= id (:id (ex-data failure))))
+          (is (= [field] (:missing-fields (ex-data failure))))
+          (is (= (assoc span :file "sha256:native")
+                 (:source-span (ex-data failure)))))))))
+
+(deftest native-reader-validation-retains-repeated-failure-and-late-span-order
+  (let [events (atom [])
+        later (fn [id _ _ extra] (swap! events conj [:late id (:missing-fields extra)]) :ignored)
+        result
+        (with-redefs [bootstrap/c2-reader-capability-proof
+                      (fn [_] (swap! events conj :proof) {})
+                      bootstrap/source-span
+                      (fn [& _] (swap! events conj :span)
+                        (alter-var-root #'bootstrap/c2-reader-fail! (constantly later))
+                        {:source "fallback"})
+                      bootstrap/c2-reader-fail!
+                      (fn [id _ _ extra] (swap! events conj [:first id (:missing-fields extra)]) :ignored)]
+          (validate-native-report "native.gravity" {}))
+        failures (filterv vector? @events)]
+    (is (= :complete result))
+    (is (= :proof (first @events)))
+    (is (= 10 (count (filter #{:span} @events))))
+    (is (= (mapv (fn [[field id]] [id [field]]) native-reader-rules)
+           (mapv #(subvec % 1) failures)))
+    (is (= [:first] (mapv first (take 1 failures))))
+    (is (every? #(= :late (first %)) (rest failures)))))
+
+(deftest native-reader-validation-propagates-owner-exceptions-with-original-identity
+  (doseq [dependency [#'bootstrap/c2-reader-capability-proof #'bootstrap/c2-reader-fail!
+                      #'bootstrap/source-span]]
+    (let [sentinel (ex-info "native owner exception" {:owner dependency})
+          result
+          (with-redefs [bootstrap/c2-reader-capability-proof (constantly {})
+                        bootstrap/c2-reader-fail! (fn [& _] :ignored)
+                        bootstrap/source-span (fn [& _] {})]
+            (with-redefs-fn {dependency (fn [& _] (throw sentinel))}
+              #(rejection (fn [] (validate-native-report "native.gravity" {})))))]
+      (is (identical? sentinel result)))))
