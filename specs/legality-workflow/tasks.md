@@ -152,7 +152,7 @@ Status: Open
 Evidence baseline: [Ownership contract](../../bootstrap/clojure/src/gravity/c9_ownership_checker/contract.clj)
 
 Closing evidence: Real use-after-move, escape, invalid borrow and linear-resource fixtures with graphs. Consume the [SAFE2-SAFE5 contracts](plan.md): partial initialization drops only initialized fields; disjoint borrows require range proof; calls expose copy/move/borrow/consume behavior; region exit and arena reset invalidate dependent references; reject foreign retention and detached captures without lifetime proof. Demonstrate provider-specific exactly-once terminal cleanup on normal, exceptional, panic, cancellation, timeout and early-return paths, including generated linear duplication rejection. Lease renewal versus terminal consumption remains a source qualification, not an inferred terminal event.
-Closing evidence: Real use-after-move, escape, invalid borrow and linear-resource fixtures with graphs
+Historical closing evidence: Real use-after-move, escape, invalid borrow and linear-resource fixtures with graphs
 <!-- legality-canonical-ownership-analysis:start -->
 
 Apply the [complete ownership-checker source criteria](plan.md#complete-ownership-checker-source-criteria) within this existing task. Status remains Open; current independent review and implementation acceptance are pending.
@@ -580,7 +580,7 @@ Status: Open
 Evidence baseline: [Safety pipeline](../../bootstrap/clojure/src/gravity/c10_safety_analysis/pipeline.clj)
 
 Closing evidence: Surviving check/proof/source edges; missing-check and unjustified-elision rejection. For SAFE1/SAFE2/SAFE8/SAFE9/SAFE15, invalidate or regenerate affected facts after source, expansion, type/effect, profile/target, numeric mode, memory/capability provider, pass/backend, dependency, grant or replay changes. Verify imported certificate schema, exact inputs, compatibility and trust before use. Erase only the exact proved condition with surviving backend assumptions and recorded check/proof identities; restore the check or reject on invalidation. Manual review alone is insufficient unless governing claim policy explicitly permits it; authority, audit, replay and human-review gates retain their separate policy obligations.
-Closing evidence: Surviving check/proof/source edges; missing-check and unjustified-elision rejection
+Historical closing evidence: Surviving check/proof/source edges; missing-check and unjustified-elision rejection
 <!-- legality-canonical-ownership-handoff:start -->
 
 Apply the [complete ownership-checker source criteria](plan.md#complete-ownership-checker-source-criteria) within this existing task. Status remains Open; current independent review and implementation acceptance are pending.
@@ -658,7 +658,7 @@ Status: Open
 Evidence baseline: [Architecture](../../docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md)
 
 Closing evidence: Accepted/rejected source fixtures, emitted facts and diagnostics for each claimed profile. Apply [SAFE16](../../docs/phase-02-safety/045-safe16-safety-conformance-test-plan.md) to every SAFE1-SAFE15 family: positive, negative and artifact-inspection fixtures; whole-fixture verdicts distinct from operation outcomes; diagnostic rule IDs and source spans rather than prose; checks-retained versus optimized output and actual backend preservation. Wrong artifacts fail despite correct diagnostics. Publish machine-readable expected/actual outcomes, compiler/profile/target, inspected artifacts, proof and island IDs and pass/fail. Unavailable targets stay open; no execution evidence is inferred from manifest fields.
-Closing evidence: Accepted/rejected source fixtures, emitted facts and diagnostics for each claimed profile
+Historical closing evidence: Accepted/rejected source fixtures, emitted facts and diagnostics for each claimed profile
 <!-- legality-canonical-ownership-conformance:start -->
 
 Apply the [complete ownership-checker source criteria](plan.md#complete-ownership-checker-source-criteria) within this existing task. Status remains Open; current independent review and implementation acceptance are pending.

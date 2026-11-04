@@ -417,7 +417,7 @@ incorrect origin chain, and do not substitute compiler diagnostic emission for
 actual host-failure evidence. Closing evidence is an executed source-mapping
 fixture with runtime/version/symbol/origin/policy context and the P4-SOURCEMAP
 diagnostic; implementation acceptance remains open.
-Closing evidence: Denial at actual service hook, redacted diagnostics and source-map preservation
+Historical closing evidence: Denial at actual service hook, redacted diagnostics and source-map preservation
 <!-- concurrency-source-enforcement:start -->
 
 Apply the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria) within this existing task. Status remains Open; historical finite reviews do not accept this whole-source/current implementation proposal.

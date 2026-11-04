@@ -782,4 +782,47 @@
       (is (thrown? Exception (rr/run ["--source-map" "missing-document"])))
       (is (thrown? Exception (rr/run ["--source-map" "L6" "unexpected-argument"]))))))
 
+(def task-metadata-clarification-cases
+  (vec (concat
+        (for [id ["math" "query" "workflow" "ai" "gpu" "ui"]]
+          ["specs/domains-workflow/tasks.md" "domains-implementation-tasks" id])
+        (for [id ["hardware" "firmware" "kernel" "devices"]]
+          ["specs/platform-workflow/tasks.md" "platform-implementation-tasks" id])
+        (for [id ["legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
+                  "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"
+                  "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface"]]
+          ["specs/legality-workflow/tasks.md" "legality-implementation-tasks" id])
+        [["specs/runtime-workflow/tasks.md" "runtime-implementation-tasks"
+          "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"]])))
+
+(deftest current-task-metadata-clarification-preserves-every-clause-and-task-state
+  (doseq [path (distinct (map first task-metadata-clarification-cases))]
+    (let [before (requirement-sources/git-source "." "09bdb06de4f6c04376d66341547965cf46984e8b" path rr/require!)
+          current (slurp path)
+          restored (-> current
+                       (str/replace #"(?m)^Historical projected task block:" "Projected task block:")
+                       (str/replace #"(?m)^Prior proposed completion and remaining work:" "Declared completion and remaining work:")
+                       (str/replace #"(?m)^Historical declared completion and remaining work:" "Declared completion and remaining work:")
+                       (str/replace #"(?m)^Historical closing evidence:" "Closing evidence:"))]
+      (is (= before restored))))
+  (doseq [[path marker id] task-metadata-clarification-cases]
+    (let [record (requirement-evidence/task-record (slurp path) marker id)]
+      (is (= id (:id record)))
+      (is (= "Open" (:status record)))
+      (is (false? (:checked? record)))
+      (is (not (str/blank? (:acceptance record)))))))
+
+(deftest current-task-metadata-clarification-keeps-authority-ambiguity-rejection
+  (doseq [[path marker id] task-metadata-clarification-cases]
+    (let [text (slurp path)
+          matcher (re-matcher (re-pattern (str "(?m)^- \\[([ x])\\] `" (java.util.regex.Pattern/quote id) "` [^\n]*")) text)]
+      (is (.find matcher))
+      (let [heading-end (.end matcher) checked-at (.start matcher 1)
+            inserted (fn [field] (str (subs text 0 heading-end) "\n" field (subs text heading-end)))
+            forged-check (str (subs text 0 checked-at) "x" (subs text (inc checked-at)))]
+        (is (thrown? Exception (requirement-evidence/task-record (inserted "Status: Accepted; forged") marker id)))
+        (is (thrown? Exception (requirement-evidence/task-record (inserted "Closing evidence: supplied success flag") marker id)))
+        (is (thrown? Exception (requirement-evidence/task-record forged-check marker id)))))))
+
+
 (let [{:keys [fail error]} (run-tests)] (System/exit (if (zero? (+ fail error)) 0 1)))
