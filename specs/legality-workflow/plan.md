@@ -968,6 +968,10 @@ Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-
 Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
 
 
+## Schema and database library source interface
+
+Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Retain each profile restriction, taint-to-trust boundary, resource ownership, source-schema constraint and operation authority. Codec physical limits do not create new compiler work quotas; a legal wrapper still needs actual runtime enforcement. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Legality task authority

@@ -319,6 +319,19 @@ L19 actual process/network/service and migration execution criterion (Open): For
 <!-- runtime-interop-source-replay:end -->
 
 
+
+<!-- library-data-source-replay-and-ai-database-calls:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library replay and ai database calls criterion (Open). Sources: [STD10](../../docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md), [STD11](../../docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md), [DOM10](../../docs/phase-09-domain-specific-computing-coverage/133-dom10-database-and-storage-engine-domain-specification.md), [DOM11](../../docs/phase-09-domain-specific-computing-coverage/134-dom11-data-query-and-analytics-domain-specification.md).
+
+Required behavior: Actual distributed database/serialization boundary calls record decisions/results, satisfy their idempotency contract, or execute in an isolated workflow activity as governing sources require. AI query candidates execute only through constrained/reviewed policy and typed tools, with human review when configured. Preserve schema, query/parameters, provider, source, policy and required payload-bound review/replay identity.
+
+Refusals and acceptance evidence: Reject repeated external effects during replay, changed payload reuse, unrecorded IO and policy bypass. Human review does not itself confer database capability. Real first-run/replay/denial/schema-drift fixtures remain required, subject to existing execution restrictions. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-replay-and-ai-database-calls:end -->
+
+
 - [ ] `runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration` Close enforcement and observability integration
 
 Status: Open
@@ -388,6 +401,15 @@ Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan
 
 Library service service-observation criterion (Open): Emit actual stable source/schema/context-linked service logs, traces, metrics, diagnostics and audit events without changing required program ordering, replay or safety. Mark and redact secrets in HTTP headers, credentials, URLs and bodies, including denial/host-error/retry/cancellation paths, while preserving useful diagnostic codes and source/generated origins. Preserve synchronization/scheduler/provider/path/endpoint/TLS/schema/policy and required-review/eval event links without logging secret captures or raw memory. Reject unredacted secrets, raw host errors substituted for Gravity diagnostics, missing context and observability that silently changes scheduler/replay semantics. Evidence: actual redacted service/error/audit/event products and negative leak/order/schema tests, STD9006 and required host delegation/error mapping records; a declared redaction policy does not prove actual output was redacted.
 <!-- library-service-source-service-observation:end -->
+
+
+
+<!-- library-data-source-runtime-enforcement:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library runtime enforcement criterion (Open): at the real selected provider boundary, consume the authentic current operation-specific grant and effect/profile/schema/provider decision before connection, query, write, commit, migration, introspection or admin action. Refuse stale/revoked/wrong-subject or missing grants before the denied action; no provider effect may occur after denial. Normalize permitted value/error/cleanup behavior and redact credentials, connection strings and sensitive parameters. Evidence requires real permitted/denied boundary observations, no-action-after-denial cases and source-bound diagnostics under existing availability and execution restrictions. Auth grant production, static Effects admission, callable Library adapters and distributed replay remain separate owning tasks. Metadata flags or a typed driver are no enforcement proof.
+<!-- library-data-source-runtime-enforcement:end -->
 
 <!-- runtime-implementation-tasks:end -->
 

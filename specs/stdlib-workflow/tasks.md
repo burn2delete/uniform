@@ -96,6 +96,19 @@ Library foundation module criterion (Open): Bind every required module and expor
 <!-- library-base-source-module:end -->
 
 
+
+<!-- library-data-source-callable-exports-and-contracts:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library callable exports and contracts criterion (Open). Sources: [STD10](../../docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md), [STD11](../../docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md).
+
+Required behavior: Bind gravity.schema and gravity.db exports to actual callable definitions, supported formats/providers/profiles, type/schema or permitted explicit row-shape contracts, effects/grants, allocation/resources, failure, replay and stability metadata. Include the complete named module surfaces, not just compiler-reachable helpers.
+
+Refusals and acceptance evidence: Missing exports, host-only compatibility names, false availability or declaration-only implementations remain Open. Evidence requires actual accepted/refused import and call results bound to exact source/export/profile/provider/target identities. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-callable-exports-and-contracts:end -->
+
+
 - [ ] `stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis` Complete pure core, collections, text, numeric and testing APIs
 
 Status: Open
@@ -818,6 +831,136 @@ L19 actual schema and service adapter API criterion (Open): Provide selected rea
 <!-- stdlib-interop-source-adapters:end -->
 
 
+
+<!-- library-data-source-schema-values-and-validation:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library schema values and validation criterion (Open). Sources: [STD10](../../docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md), [S1](../../docs/phase-10-schema-data-and-interop/145-s1-schema-system-specification.md).
+
+Required behavior: Expose schema/field/optional/required/default/refine/enum/union/record, validate/explain/valid?/coerce/schema-path/validation-error over actual source-schema products. Preserve required/optional/default/invariant/version and classified refinement behavior, expanded source identity, source spans and stable failing schema paths. Execute coerce only under a declared checked conversion policy; its name cannot supply unspecified host coercion.
+
+Refusals and acceptance evidence: Reject weakened source constraints, invalid values, missing schema/boundary identity and lost paths. Actual valid/invalid/refinement/recursive and documented User-schema results consume Schema-produced manifests, validators and static projections; Library does not take over their production. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-schema-values-and-validation:end -->
+
+
+
+<!-- library-data-source-decode-trust-and-serializer-policy:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library decode trust and serializer policy criterion (Open). Sources: [STD10](../../docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md), [S1](../../docs/phase-10-schema-data-and-interop/145-s1-schema-system-specification.md), [S2](../../docs/phase-10-schema-data-and-interop/146-s2-serialization-specification.md).
+
+Required behavior: Run real encode/decode/json/edn/binary/stream codecs under schema/version, format, field/unknown-field, duplicate-key, numeric/string/byte/variant, trust and canonicalization policies. Preserve required-field, precision, encoding, length and recursion checks. External and authenticated-but-unvalidated values stay tainted until validation for the intended schema and sink succeeds. Polymorphic decoding requires its finite admitted type set; lossy conversion needs explicit compatible policy.
+
+Refusals and acceptance evidence: Reject decode-without-validation, silent loss, unsafe polymorphism, sink trust inferred from transport authentication and false round trips. Evidence is actual bytes/values, invalid-field/encoding/numeric cases, declared conversions and schema/path/trust diagnostics, not supplied validated flags. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-decode-trust-and-serializer-policy:end -->
+
+
+
+<!-- library-data-source-canonical-identity-and-byte-vectors:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library canonical identity and byte vectors criterion (Open). Sources: [STD10](../../docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md), [S3](../../docs/phase-10-schema-data-and-interop/147-s3-canonical-data-format-specification.md).
+
+Required behavior: Expose canonical encoding using actual schema hash/version, type tags, canonical encoded map-key/set-value ordering, numeric/string/binary/metadata policies and all supported scalar/container/variant families. Keep absent versus none, widths, NaN/infinity/signed-zero/decimal/timezone and normalization rules explicit. Equal admitted semantic values produce equal bytes under the same policy across supported targets.
+
+Refusals and acceptance evidence: Reject host iteration, identity, locale, timezone, target layout and noncanonical hash/signature inputs. Actual cross-target reference vectors, edge cases, replay/manifest bytes and refused out-of-domain values precede canonical claims; no signing operation is enabled by these notes. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-canonical-identity-and-byte-vectors:end -->
+
+
+
+<!-- library-data-source-binary-streaming-and-profile-behavior:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library binary, streaming and profile behavior criterion (Open). Sources: [STD10](../../docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md), [S2](../../docs/phase-10-schema-data-and-interop/146-s2-serialization-specification.md), [S3](../../docs/phase-10-schema-data-and-interop/147-s3-canonical-data-format-specification.md).
+
+Required behavior: Real binary and streaming codecs preserve declared endian/alignment/length/unknown-field, storage/allocation/lifetime and failure policy. Hardware receives compile-time static/fixed-layout helpers; firmware/kernel codecs expose physical length/allocation limits; core gets pure schema/validator/canonical/derivation support; native, hosted, distributed, AI, meta and formal behavior retains each source-specific condition.
+
+Refusals and acceptance evidence: Reject ambient service/reflection/allocation, unsupported profile claims, hidden layout, weakened bounds and reflection-only derivation in forbidden profiles. Actual accepted/refused profile examples, streaming teardown and binary vectors establish declared behavior. Semantic codec limits do not reinstate compiler work quotas. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-binary-streaming-and-profile-behavior:end -->
+
+
+
+<!-- library-data-source-derivation-and-evolution-interfaces:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library derivation and evolution interfaces criterion (Open). Sources: [STD10](../../docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md), [S1](../../docs/phase-10-schema-data-and-interop/145-s1-schema-system-specification.md).
+
+Required behavior: Expose derive-schema/validator/codec/migration, schema-version/migration/compatible?/diff-schema/upgrade/downgrade and artifact APIs over authentic Schema derivation, semantic-diff and migration outputs. Preserve from/to identity, direction, rejected weakening, compatibility policy and generated consumer constraint/path parity.
+
+Refusals and acceptance evidence: Reject an artifact name or textual diff substituted for source validation or migration admission. Schema and its two existing future tasks retain producer ownership. Actual source/generated accepted/refused parity and checked evolution/upgrade/downgrade results are required for callable library acceptance. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-derivation-and-evolution-interfaces:end -->
+
+
+
+<!-- library-data-source-boundary-schema-identity:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library boundary schema identity criterion (Open). Sources: [STD10](../../docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md), [S1](../../docs/phase-10-schema-data-and-interop/145-s1-schema-system-specification.md), [STD11](../../docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md).
+
+Required behavior: Carry actual schema/version/validator/codec identity across the required AI prompts/structured outputs/tool arguments/results/eval data, workflow events/state, package/compiler artifacts, HTTP and database boundaries. Preserve source-schema projection and intended sink validation. Keep STD9 explicit byte/text body policies and STD11 explicitly declared row shapes as their authorized contextual alternatives.
+
+Refusals and acceptance evidence: Do not silently replace those alternatives with a universal new schema requirement, or use them to label unvalidated values trusted. Evidence must show actual consumer reuse/parity and rejection at each claimed boundary; one shared schema declaration does not prove all consumers executed. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-boundary-schema-identity:end -->
+
+
+
+<!-- library-data-source-database-resources-and-typed-queries:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library database resources and typed queries criterion (Open). Sources: [STD11](../../docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md), [DOM10](../../docs/phase-09-domain-specific-computing-coverage/133-dom10-database-and-storage-engine-domain-specification.md).
+
+Required behavior: Execute connect/with-connection/close/pool/provider/capability and query/execute/prepare/param/query-dsl/select/insert/update/delete/returning over the admitted provider and real Query/backend results. Preserve declared connection/pool lifetime, effects/grants and parameter/taint separation. typed-row/row-schema/decode-row/row-path/row-error checks actual results against the schema artifact or explicitly declared row shape allowed by STD11.
+
+Refusals and acceptance evidence: Reject ambient credentials, string interpolation, invalid/untyped rows, hidden host behavior, leaked resources and provider plans presented as result execution. Exercise the hosted user-by-email example with actual parameter binding, decoded row values, failures, false/nil/null and exact schema/path/provider identities. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-database-resources-and-typed-queries:end -->
+
+
+
+<!-- library-data-source-database-transaction-lifecycle:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library database transaction lifecycle criterion (Open). Sources: [STD11](../../docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md), [DOM10](../../docs/phase-09-domain-specific-computing-coverage/133-dom10-database-and-storage-engine-domain-specification.md).
+
+Required behavior: Execute transaction/commit/rollback/savepoint/isolation/retry-transaction using the selected provider's declared isolation, retry, rollback and idempotency assumptions. Preserve effectful success, early return, error, cancellation and connection teardown behavior, actual retry scope and typed provider failures.
+
+Refusals and acceptance evidence: Reject omitted isolation/rollback policy, unsafe retry, incomplete cleanup and simulated commits. Actual commit/rollback/savepoint/retry/isolation/failure observations are required. A database transaction wrapper does not prove language STM, storage-engine WAL durability or whole Query support; any existing central equivalence disposition still needs explicit source-context review. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-database-transaction-lifecycle:end -->
+
+
+
+<!-- library-data-source-database-migration-execution:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library database migration execution criterion (Open). Sources: [STD11](../../docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md), [DOM10](../../docs/phase-09-domain-specific-computing-coverage/133-dom10-database-and-storage-engine-domain-specification.md).
+
+Required behavior: Expose defmigration/apply-migration/rollback-migration/migration-plan/migration-proof over checked Schema compatibility/migration products and the selected dialect/provider. Preserve from/to schemas, reversibility or declared forward-only behavior, data movement/backfill, data-loss/safety/review policy and deployment ordering. Actual write/admin authority is checked at execution.
+
+Refusals and acceptance evidence: Reject missing/wrong source versions or policy, unreviewed destructive changes where review is required, missing authority and generation presented as execution. Schema's existing migration task owns diff/plan admission products; real permitted library/provider apply/rollback and plan-validation fixtures must prove execution separately. Existing migration restrictions remain effective. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-database-migration-execution:end -->
+
+
+
+<!-- library-data-source-providers-profiles-and-redaction:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library providers, profiles and redaction criterion (Open). Sources: [STD10](../../docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md), [STD11](../../docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md), [DOM10](../../docs/phase-09-domain-specific-computing-coverage/133-dom10-database-and-storage-engine-domain-specification.md), [DOM11](../../docs/phase-09-domain-specific-computing-coverage/134-dom11-data-query-and-analytics-domain-specification.md).
+
+Required behavior: Serializer and database host delegation preserve provider/version/features/dialect/format and error mapping artifacts. Database core exposes data/schema helpers, hardware/firmware/kernel no standard DB IO, native/hosted explicit providers, distributed workflow-safe boundaries, AI policy/tool constraints, meta schema/code generation and formal modeled or constrained provider semantics. Redact credentials, connection strings and sensitive parameters in all required diagnostics/artifacts.
+
+Refusals and acceptance evidence: Reject driver availability used as portable semantics, unsupported feature claims, ambient credential use, raw host errors and secret leakage. Actual allowed/refused provider/profile/diagnostic/redaction products establish the selected claim; no provider, private store or external service is executed here. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-providers-profiles-and-redaction:end -->
+
+
 - [ ] `stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests` Integrate platform modules and close release manifests
 
 Status: Open
@@ -866,6 +1009,19 @@ Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#comp
 
 Library foundation audit-consumption criterion (Open): Consume the existing evolution/security-review task's distinct GOV9 unsafe-audit verdict for each exact island/source/owner/profile/target/wrapper and applicable GOV4 security decision, keeping those decisions separate. Revalidate relevant changed assumptions and preserve invalid-precondition and specialist memory/concurrency/FFI/backend evidence in package/release provenance. Deny stabilization/release with stale/missing audit or unenforced wrapper conditions. Evidence: actual accepted/refused audit-consumer cases and GOV9001-GOV9008, without performing the independent review here or gating ordinary API implementation.
 <!-- library-base-source-audit-consumption:end -->
+
+
+
+<!-- library-data-source-library-conformance-and-composed-examples:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library library conformance and composed examples criterion (Open). Sources: [STD10](../../docs/phase-16-standard-library/220-std10-serialization-and-schema-library-specification.md), [STD11](../../docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md), [S1](../../docs/phase-10-schema-data-and-interop/145-s1-schema-system-specification.md), [S2](../../docs/phase-10-schema-data-and-interop/146-s2-serialization-specification.md), [S3](../../docs/phase-10-schema-data-and-interop/147-s3-canonical-data-format-specification.md), [DOM10](../../docs/phase-09-domain-specific-computing-coverage/133-dom10-database-and-storage-engine-domain-specification.md), [DOM11](../../docs/phase-09-domain-specific-computing-coverage/134-dom11-data-query-and-analytics-domain-specification.md).
+
+Required behavior: Consume actual callable API/profile examples, validator/codec/canonical vectors, schema trust/compatibility/projection products, parameterized query/typed row/transaction/provider results and applicable independent checker/harness outputs for exact compiler/runtime/provider/target subjects. Retain STD10001-STD10008, STD11001-STD11008 and owning Schema/Query errors at their actual boundaries. Compose User-schema, user-by-email and applicable domain migration/query examples.
+
+Refusals and acceptance evidence: Reject static p16 completeness summaries, manifests, mocked providers or a single narrow receipt promoted to whole library/domain acceptance. Storage page/WAL/crash-recovery remains the storage task; its unavailability cannot disappear or be credited by a database-client fixture. Required held or unavailable cases stay Open. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-library-conformance-and-composed-examples:end -->
 
 <!-- stdlib-implementation-tasks:end -->
 

@@ -383,6 +383,10 @@ Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-
 Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
 
 
+## Schema and database library source interface
+
+Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Produce authentic operation-specific database authority and retain attenuation, revocation, phase/lifetime and provider scope. Review text and schema/query metadata do not issue grants; Runtime enforces them at use. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Auth task authority

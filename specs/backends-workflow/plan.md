@@ -425,6 +425,10 @@ is not compiler completion, acceptance, integration, release or self-hosting.
 The first actual implementation increment remains Reader
 [contract-coverage reconciliation](../reader-workflow/plan.md#selected-increment-complete-contract-coverage).
 
+## Schema and database library source interface
+
+Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Emit actual selected dialect/schema/parameter/transaction and migration products consumed by Query and callable Library adapters. Output generation and plan simulation do not imply provider execution or loss approval. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Backends family task authority

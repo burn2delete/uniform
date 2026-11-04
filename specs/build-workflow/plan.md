@@ -296,6 +296,10 @@ Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-
 Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
 
 
+## Schema and database library source interface
+
+Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Track actual source-schema, codec/canonical policy, provider/dialect/version/features, generated inputs and output-affecting environment in invalidation and reproduction. Pure initial declarations do not wait for final provider/release evidence. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration

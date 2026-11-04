@@ -193,6 +193,19 @@ L19 complete foreign-boundary admission criterion (Open): At the original Auth a
 <!-- auth-interop-source-admission:end -->
 
 
+
+<!-- library-data-source-database-authority-and-effects:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library database authority and effects criterion (Open). Sources: [STD11](../../docs/phase-16-standard-library/221-std11-database-and-query-library-specification.md), [DOM10](../../docs/phase-09-domain-specific-computing-coverage/133-dom10-database-and-storage-engine-domain-specification.md).
+
+Required behavior: Produce and validate the concrete database principal/package/deployment/provider/operation grant, phase/lifetime, intersection, attenuation and revocation facts consumed at connection/query/read/write/transaction/migration/schema-introspection/admin boundaries. Auth owns this grant decision and its authentic artifact; Effects owns static direct/latent admission and Runtime owns actual before-action enforcement in their existing tasks. Query policy, allow-read/allow-write helper names, reviewed AI text and artifact metadata cannot create a grant.
+
+Refusals and acceptance evidence: Exercise real accepted and refused grant decisions for each claimed operation and exact subject, including stale/revoked, wrong provider/operation/phase/lifetime and widened authority. An Auth decision alone is no executed database operation or Runtime enforcement result. Preserve source-bound grant diagnostics and all held provider actions. Bind the exact source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
+<!-- library-data-source-database-authority-and-effects:end -->
+
+
 - [ ] `auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks` Bind compiler decisions to runtime/build enforcement hooks
 
 Status: Open

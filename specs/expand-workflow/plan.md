@@ -736,6 +736,10 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Schema and database library source interface
+
+Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Schema/validator/codec/migration derivation preserves expanded source identity, classified refinements, source/path provenance and ordinary generated checking. Reflection-free source generation neither executes a provider nor grants compiler authority. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Expand task authority

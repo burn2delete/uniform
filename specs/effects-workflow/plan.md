@@ -453,6 +453,10 @@ Use the [complete interoperability and migration source criteria](../runtime-wor
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Schema and database library source interface
+
+Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Distinguish pure query/schema construction from actual direct/latent provider IO and check operation/profile/effect legality with authentic grants. Static admission does not establish Runtime enforcement. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Effects task authority

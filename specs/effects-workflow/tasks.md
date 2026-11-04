@@ -197,6 +197,15 @@ L19 actual foreign and generated-binding effect admission criterion (Open): Chec
 <!-- effects-interop-source-effects:end -->
 
 
+
+<!-- library-data-source-effect-admission:start -->
+
+Apply the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria) within this existing Open task. Preserve prior criteria, historical review scopes and actual restrictions.
+
+Schema/database library static effect criterion (Open): infer and check actual direct and latent connection/read/write/transaction/migration/schema-introspection/admin, resource, allocation and relevant host effects against the selected profile and authentic operation-specific grant/provider facts. Keep query construction data distinct from performing IO; pure Core query/schema helpers confer no database IO. Preserve source/call/schema/provider diagnostics and refuse hidden or undeclared effects, wrong phase/profile and illegal latent use. Evidence requires actual accepted/refused checked programs and their real effect/grant joins. Auth owns grants and Runtime owns before-action enforcement; effect summaries prove neither provider execution nor runtime denial. All existing statuses and held execution restrictions persist.
+<!-- library-data-source-effect-admission:end -->
+
+
 - [ ] `effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation` effects/4: Record replay and invalidation
 
 Current evidence/status: Open; partial source evidence above is not closure

@@ -431,6 +431,10 @@ Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-
 Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
 
 
+## Schema and database library source interface
+
+Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Consume actual grants and static decisions before provider actions; enforce denial, normalized errors and resource cleanup. Replay consumes recorded exact schema/query/provider/policy subjects. Driver availability or recording a policy establishes no execution. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Runtime workflow migration

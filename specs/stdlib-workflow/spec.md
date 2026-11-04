@@ -78,6 +78,8 @@ The [complete current collections criteria](plan.md#complete-current-collections
 
 The [complete library foundation criteria](plan.md#complete-library-foundation-source-criteria) add current STD1/STD2/STD4/STD5/STD6 callable API, profile, text/Unicode, numeric/proof, memory/resource and release obligations under existing owners. Eight existing Math/allocation/unsafe-audit predicates keep exact bytes and roles, including the separate future independent checker. Compiler unsafe boundaries, real provider execution and governed release consumption remain distinct. STD3 keeps its separate succession; STD7-STD20 and current whole-source/interface acceptance remain open.
 
+The [schema and database library source criteria](plan.md#complete-schema-and-database-library-source-criteria) refine callable STD10/STD11 behavior against existing Schema, Query, Backend, Auth, Effects and Runtime owners. Actual codecs, typed parameterized calls, canonical vectors, cleanup, migration, denial and replay evidence remain required. Generation, metadata and provider availability are distinct from execution; no task status or implementation acceptance changes.
+
 ## Historical workflow-transfer specification
 
 # Feature specification: Standard Library workflow migration

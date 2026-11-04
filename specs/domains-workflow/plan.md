@@ -646,6 +646,10 @@ Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-
 Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
 
 
+## Schema and database library source interface
+
+Use the [schema and database library source criteria](../stdlib-workflow/plan.md#complete-schema-and-database-library-source-criteria). Supply actual source-schema/validator/type-projection, checked migration/projection and Query/schema/taint/numeric/lineage results through existing owners. Library facade execution does not produce those outcomes or establish storage WAL/recovery. Preserve existing task identities/statuses, historical scopes and held actions. Current source/interface and implementation acceptance remain unassessed.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Domains workflow migration
