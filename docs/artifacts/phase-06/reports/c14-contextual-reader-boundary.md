@@ -92,6 +92,18 @@ composition record, not a successful C5/C14 execution or renewed migration
 pin. The historical table above remains an audit record with its original
 source identities.
 
+The follow-up Stage2 map-key repair is limited to authenticated ordinary
+call-shaped list keys already present in the current C11 source, including
+`{(get token :value-id) token}`. It preserves C2 source/value equality,
+child-link and occurrence checks, native key classes, source entry order,
+reference-key equality and ordinary Stage2 call compilation; it never
+host-evaluates a key or converts it to a literal key. Unsupported special
+forms and collection key shapes remain rejected. A focused current
+Reader/C5/Syntax fragment covers this form, but the prior full SH17 result
+(`11 tests`, `36 assertions`, `0 failures`, `8 errors`) remains terminal failed
+evidence and no complete C11/C14 or migration claim follows from the focused
+repair.
+
 ## Finite acceptance checklist
 
 - [ ] Complete the actual source producer and fresh original Core/MIR checks.
