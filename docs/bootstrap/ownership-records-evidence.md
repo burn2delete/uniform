@@ -58,8 +58,22 @@ prior stage functions, original interposition and host lookup/exception
 behavior, complete raw and parsed capture equality, focused positive/negative
 and adversarial tests, language/ownership and lint gates, contract validators,
 independent acceptance, own CI/artifact audit and exact clean current-main
-integration preflight. Implementation and candidate evidence are outstanding
-at this early draft checkpoint.
+integration preflight. Clean committed candidate capture, committed lint,
+independent acceptance, own CI and integration evidence are outstanding.
+
+The working extraction passes 11 owning tests / 401 assertions. New cases
+check all eight APIs through their direct, compatibility-helper and facade
+entrypoints, preserve module/profile lookup order and original exception
+identity, verify lifetime/region/arena/linear/transfer/review record links,
+retain all eleven runtime-profile classifications and prove interposition
+before default module observation. Existing real normalized Gravity
+programs and graph/persistent data controls remain covered. Pinned
+stage/helpers/test lint reports zero errors or warnings. Exact source checks
+preserve eight moved bodies, eleven prior stage functions, helper arities
+and surrounding source; no intake, validation, admission or facade code moves.
+The separate cold C9 regression passes 4 / 94 with Bootstrap absent.
+Language/ownership gates pass 48 / 1198 with zero skipped namespaces;
+document, roadmap and workstream validators pass.
 
 ## Unsupported boundaries
 

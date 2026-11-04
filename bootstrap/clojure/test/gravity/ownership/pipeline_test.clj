@@ -3,6 +3,8 @@
             [gravity.bootstrap :as b]
             [gravity.c9-ownership-checker :as c9]
             [gravity.c9-ownership-checker.graphs :as graphs]
+            [gravity.c9-ownership-checker.lifecycles :as lifecycles]
+            [gravity.c9-ownership-checker.resources :as resources]
             [gravity.ownership :as ownership]
             [gravity.self-hosting.sh10-ownership-transition-fixture-support
              :as fixture-support]))
@@ -17,7 +19,11 @@
   (is (= #{'persistent-ownership 'forwarded-value-node-ids 'propagate-managed-ownership
            'shared-owner-domain-id 'canonical-owner-id 'persistent-aliasing-valid?
            'persistent-ownership-expected-keys 'persistent-ownership-schema-valid?
-           'expected-managed-node-ids 'native-ownership-graph 'native-borrow-graph}
+           'expected-managed-node-ids 'native-ownership-graph 'native-borrow-graph
+           'native-lifetime-interval-map 'native-escape-analysis-report
+           'native-region-lifetime-graph 'native-arena-generation-graph
+           'native-linear-resource-flow-graph 'native-transfer-records
+           'native-runtime-check-records 'native-unsafe-audit-references}
          (set (keys (ns-publics 'gravity.ownership)))))
   (doseq [[name operation] (ns-publics 'gravity.ownership)]
     (let [contract (:gravity/namespace-contract (meta operation))]
@@ -27,6 +33,84 @@
       (is (false? (:authenticates-inputs? contract)))
       (is (false? (:issues-verifier-certificates? contract)))
       (is (some #{:general-c9-analysis} (:unsupported contract))))))
+
+(def ^:private record-builders
+  [[ownership/native-lifetime-interval-map lifecycles/lifetime-interval-map c9/c9-lifetime-interval-map
+    :gravity/c9-lifetime-interval-map]
+   [ownership/native-escape-analysis-report lifecycles/escape-analysis-report c9/c9-escape-analysis-report
+    :gravity/c9-escape-analysis-report]
+   [ownership/native-region-lifetime-graph lifecycles/region-lifetime-graph c9/c9-region-lifetime-graph
+    :gravity/c9-region-lifetime-graph]
+   [ownership/native-arena-generation-graph lifecycles/arena-generation-graph c9/c9-arena-generation-graph
+    :gravity/c9-arena-generation-graph]
+   [ownership/native-linear-resource-flow-graph resources/linear-resource-flow-graph c9/c9-linear-resource-flow-graph
+    :gravity/c9-linear-resource-flow-graph]
+   [ownership/native-transfer-records resources/transfer-records c9/c9-transfer-records :gravity/c9-transfer-records]
+   [ownership/native-runtime-check-records resources/runtime-check-records c9/c9-runtime-check-records
+    :gravity/c9-runtime-check-records]
+   [ownership/native-unsafe-audit-references resources/unsafe-audit-references c9/c9-unsafe-audit-references
+    :gravity/c9-unsafe-audit-references]])
+
+(deftest native-records-preserve-module-lookup-order-and-original-exceptions
+  (doseq [[direct helper facade artifact] record-builders construct [direct helper facade]]
+    (let [lookups (atom [])
+          module (reify clojure.lang.ILookup
+                   (valAt [_ key]
+                     (swap! lookups conj key) (case key :profile :native :module 'native.module nil))
+                   (valAt [_ key fallback]
+                     (swap! lookups conj key) (case key :profile :native :module 'native.module fallback)))
+          result (construct module)]
+      (is (= artifact (:artifact result)))
+      (is (= 'native.module (:module result)))
+      (is (= (if (= artifact :gravity/c9-runtime-check-records) [:profile :module] [:module]) @lookups)))
+    (let [error (ex-info "original record lookup failure" {:artifact artifact})
+          module (reify clojure.lang.ILookup
+                   (valAt [_ _] (throw error)) (valAt [_ _ _] (throw error)))
+          observed (try (construct module) (catch Throwable value value))]
+      (is (identical? error observed)))))
+
+(deftest native-record-links-profile-flags-and-review-fields-remain-data
+  (let [module {:module 'native.module :profile :hosted}
+        lifetimes (ownership/native-lifetime-interval-map module)
+        region (ownership/native-region-lifetime-graph module)
+        arena (ownership/native-arena-generation-graph module)
+        linear (ownership/native-linear-resource-flow-graph module)
+        contract (:gravity/namespace-contract (meta #'ownership/native-runtime-check-records))]
+    (is (= 9 (count (:intervals lifetimes))))
+    (is (= #{:copy :serialize} (get-in lifetimes [:intervals "lt-region-outer" :allowed-escapes])))
+    (is (= [:arena-reset] (get-in lifetimes [:intervals "lt-arena-generation-1" :invalidates])))
+    (is (= "region-outer" (get-in region [:regions "region-inner" :parent])))
+    (is (= [false true] (mapv :valid? (get-in arena [:arenas "arena-main" :generations]))))
+    (is (= #{1} (set (map :terminal-count (mapcat :terminal-paths (vals (:resources linear)))))))
+    (is (= #{:normal :error :panic :cancellation}
+           (set (map :path (get-in linear [:resources "resource-file" :terminal-paths])))))
+    (is (= #{:function :actor :task :ffi}
+           (set (map :boundary (:records (ownership/native-transfer-records module))))))
+    (is (= [:manual-lifetime-extension :manual-resource-flow]
+           (mapv :unsafe-island (:records (ownership/native-unsafe-audit-references module)))))
+    (is (= [:required :required]
+           (mapv :review (:records (ownership/native-unsafe-audit-references module)))))
+    (is (true? (:runtime-check-profile-flags-are-data? contract)))
+    (is (false? (:performs-runtime-checks? contract)))
+    (is (= [] (:invalidated-verified-ir-facts contract))))
+  (doseq [profile [:hosted :native :distributed :ai :core :firmware :kernel :hardware :gpu nil :unknown]]
+    (let [result (ownership/native-runtime-check-records {:profile profile})
+          expected (contains? #{:hosted :native :distributed :ai} profile)]
+      (is (= 4 (count (:records result))))
+      (is (= (repeat 4 profile) (map :profile (:records result))))
+      (is (= (repeat 4 expected) (map :profile-legal? (:records result)))))))
+
+(deftest record-facade-interposition-precedes-module-observation
+  (let [calls (atom [])
+        module (reify clojure.lang.ILookup
+                 (valAt [_ _] (throw (ex-info "default construction must remain unreachable" {})))
+                 (valAt [_ _ _] (throw (ex-info "default construction must remain unreachable" {}))))
+        result (c9/with-operations
+                 {:c9-runtime-check-records (fn [value] (swap! calls conj value) :interposed)}
+                 #(c9/c9-runtime-check-records module))]
+    (is (= :interposed result))
+    (is (= 1 (count @calls)))
+    (is (identical? module (first @calls)))))
 
 (def ^:private graph-projectors
   [ownership/native-ownership-graph graphs/ownership-graph
