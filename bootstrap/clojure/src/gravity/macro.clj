@@ -10,7 +10,13 @@
 
 (def
  ^{:private true} namespace-contract
- '{:native-report-contract
+ '{:owner-call-resolution
+   {:operations [boundary-fail! execute-plan! raise-rejection! contain-operation!]
+    :evaluation :per-use-before-arguments :var-ports :current-callable-root
+    :other-callable-ports :unchanged :input-port-changed? false
+    :operation-parameter-call-changed? false :admission-check-added? false
+    :test-owner gravity.macro.owner-calls-test}
+   :native-report-contract
    {:governing-contracts [D1 D2 D3 D8 D9 L4 L12 L16 C1 C4 C15 TEST2]
     :boundary :native-c4-proof-predicates-and-ordered-refusals
     :inputs [:native-macro-artifact :diagnostic-catalog-var :proof-var :failure-var]
@@ -442,6 +448,11 @@
     :verification-report],
    :contract-boundary :gravity-macro-artifacts-and-pinned-execution})
 
+(defn- owner-function
+  "Capture a supplied Var before call arguments; retain other callable values."
+  [operation]
+  (if (var? operation) (deref operation) operation))
+
 (defn native-capability-proof
   [artifact diagnostic-ids-var]
   (let [trace-records (:macro-expansion-trace artifact)
@@ -592,10 +603,10 @@
    (.valAt ^clojure.lang.ILookup operations :c4-macro-fail!)
    source-span
    (.valAt ^clojure.lang.ILookup operations :source-span)]
-  (c4-macro-fail!
+  ((owner-function c4-macro-fail!)
    rule
    source-path
-   {:source-span (source-span source-path 0),
+   {:source-span ((owner-function source-span) source-path 0),
     :macro 'gravity.core/defn,
     :macro-version (input :sh05-macro-version),
     :profile :meta,
@@ -1161,13 +1172,13 @@
     ^clojure.lang.ILookup operations
     :sh05-macro-boundary-fail!)]
   (try
-   (sh04-syntax-strip-host-metadata
-    (p15-s23-stage2-runtime-execute-function
+   ((owner-function sh04-syntax-strip-host-metadata)
+    ((owner-function p15-s23-stage2-runtime-execute-function)
      {:engine :gravity-sh05-pinned-macro-runner,
       :compiler-artifact-plan? true}
      (:plan binding)
      function
-     (sh04-syntax-strip-host-metadata arguments)))
+     ((owner-function sh04-syntax-strip-host-metadata) arguments)))
    (catch
     InterruptedException
     interrupted
@@ -1176,7 +1187,7 @@
    (catch
     StackOverflowError
     error
-    (sh05-macro-boundary-fail!
+    ((owner-function sh05-macro-boundary-fail!)
      "C4-DEPTH"
      source-path
      :bounded-macro-host-stack
@@ -1185,7 +1196,7 @@
    (catch
     AssertionError
     error
-    (sh05-macro-boundary-fail!
+    ((owner-function sh05-macro-boundary-fail!)
      "C4-RETURN"
      source-path
      :contained-macro-assertion
@@ -1194,7 +1205,7 @@
    (catch
     LinkageError
     error
-    (sh05-macro-boundary-fail!
+    ((owner-function sh05-macro-boundary-fail!)
      "C4-RETURN"
      source-path
      :contained-macro-linkage
@@ -1203,7 +1214,7 @@
    (catch
     clojure.lang.ExceptionInfo
     error
-    (sh05-macro-boundary-fail!
+    ((owner-function sh05-macro-boundary-fail!)
      "C4-RETURN"
      source-path
      :contained-macro-runtime-diagnostic
@@ -1212,7 +1223,7 @@
    (catch
     Exception
     error
-    (sh05-macro-boundary-fail!
+    ((owner-function sh05-macro-boundary-fail!)
      "C4-RETURN"
      source-path
      :contained-macro-host-failure
@@ -1330,7 +1341,7 @@
      (and
       (= 1 (count resolved-digests))
       (= {:digest-ref 0} (:diagnostic-id-request template)))
-     (sh05-macro-boundary-fail!
+     ((owner-function sh05-macro-boundary-fail!)
       "C4-TRACE"
       source-path
       :declared-diagnostic-id-reference
@@ -1339,10 +1350,10 @@
     (assoc template :diagnostic-id-request (first resolved-digests)))
    rule
    (:rule diagnostic)]
-  (c4-macro-fail!
+  ((owner-function c4-macro-fail!)
    rule
    source-path
-   {:source-span (source-span source-path 0),
+   {:source-span ((owner-function source-span) source-path 0),
     :macro (:macro-name diagnostic),
     :macro-version (:macro-version diagnostic),
     :profile (:profile diagnostic),
@@ -1379,7 +1390,7 @@
    (catch
     StackOverflowError
     error
-    (sh05-macro-boundary-fail!
+    ((owner-function sh05-macro-boundary-fail!)
      "C4-DEPTH"
      source-path
      responsibility
@@ -1393,7 +1404,7 @@
       (set (input :c4-macro-diagnostic-ids))
       (:id (ex-data error)))
      (throw error)
-     (sh05-macro-boundary-fail!
+     ((owner-function sh05-macro-boundary-fail!)
       "C4-TRACE"
       source-path
       responsibility
@@ -1402,7 +1413,7 @@
    (catch
     Throwable
     error
-    (sh05-macro-boundary-fail!
+    ((owner-function sh05-macro-boundary-fail!)
      "C4-RETURN"
      source-path
      responsibility

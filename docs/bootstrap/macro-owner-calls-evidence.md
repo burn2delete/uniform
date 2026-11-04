@@ -4,7 +4,7 @@
 
 D1/D2/D3/D8/D9, L4/L12/L16, C1/C4/C15 and TEST2 govern this correction.
 The source parent is unmerged native-report PR1185 at
- a1c019b2f480c0df43282846e98cd2dc6be07b14, tree
+a1c019b2f480c0df43282846e98cd2dc6be07b14, tree
 82f4917258b74aa116314688c61e7d5b840a6094. Parent acceptance/CI does not
 transfer to this correction. Observed actual main is
 3c97ad75341c5ef6506cf1bba050b9017301695b.
@@ -90,3 +90,32 @@ authenticate compiler/source products, execute source or held private routes,
 renew pins/migration evidence, prove safety or establish release, self-hosting or
 seed retirement. Native report/readiness data remains non-authoritative. No
 unmerged authentication code or retained dirty patch is adopted.
+
+## Corrective implementation and focused regression
+
+The implementation corrects 16 formerly global callable uses across the four
+scoped operations through one private owner-function helper. Each Var is
+resolved before that call's arguments; other callable values are retained.
+The input/configuration port and supplied operation parameter are unchanged.
+All 52 public APIs, the newly extracted native-report pair, other Macro bodies,
+Bootstrap files, authentication, source pins, manifests and CI remain unchanged.
+
+The prepatch regression runs 11 tests / 42 assertions with seven failures and
+zero errors: two span-dependent diagnostic routes, input-dependent boundary,
+outer cleaning, inner runtime selection, runtime cause message and contained
+Throwable cause message. After correction all 42 assertions pass. Controls
+retain next-call roots, ordinary function-valued ports, native diagnostic facts,
+exact exception identity, Macro's broader containment, existing execute classes,
+fatal propagation from execute, and interruption flags captured before reporting.
+The initial test draft had excess closing delimiters; that preparation nonpass
+is retained separately and has no production-failure credit. Direct lint is
+zero warnings/errors. No source compilation or authentication was executed.
+
+A clean prepatch capture retains 40 full records on two actual paired fixture
+paths across Var/function ports: eight native returns, 28 constructed C4
+diagnostics and four exact known-diagnostic propagations. Source text/hash,
+paths and full native result/diagnostic data are preserved; all runtime ports
+are marked explicit unit controls. Metadata-aware EDN SHA256:
+3583b32416da3feb5e0af7faf47d6ed08468bba5ca5639147f2c9b6793ffd259.
+Clean after-capture, conservation, broader local checks, independent corrective
+review and the outstanding CI/index handoff/wiring remain pending.
