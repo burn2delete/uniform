@@ -1,7 +1,8 @@
 (ns acceptance-dependencies-test
   (:require [clojure.test :refer [deftest is run-tests]]
             [clojure.edn :as edn]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [requirement-sources :as requirement-sources]))
 
 (binding [*command-line-args* nil] (load-file "tools/acceptance_dependencies.clj"))
 (require '[acceptance-dependencies :as dependencies])
@@ -312,6 +313,33 @@
                        "specs/core-workflow/tasks.md")]]
       (is (thrown? Exception (dependencies/task-sh-view mutated slurp))))))
 
+(deftest current-source-transition-authenticates-file-and-span-identities
+  (doseq [contract requirement-sources/current-source-transition-contracts]
+    (let [read-ref (fn [ref path]
+                     (requirement-sources/git-source "." ref path dependencies/require!))
+          validate (fn [transition]
+                     (requirement-sources/validate-current-source-transition!
+                      transition contract read-ref slurp dependencies/sha256 dependencies/require!))]
+      (is (= :current-source-interface-only (:authority (validate contract))))
+      (doseq [mutated [(assoc contract :role :migration-authority)
+                       (assoc contract :path "specs/core-workflow/tasks.md")
+                       (assoc-in contract [:changed-spans 0 :after :sha256] "forged")
+                       (assoc-in contract [:changed-spans 0 :before :start-byte]
+                                 (inc (get-in contract [:changed-spans 0 :before :start-byte])))]]
+        (is (thrown? Exception (validate mutated)))))))
+
+(deftest acceptance-owner-rejects-current-transition-population-drift
+  (let [contracts requirement-sources/current-source-transition-contracts
+        view (dependencies/current-source-transition-view contracts slurp)]
+    (is (= requirement-sources/current-source-transition-kind (:kind view)))
+    (is (= (set (map :path contracts)) (set (:paths view))))
+    (doseq [mutated [(vec (butlast contracts))
+                     (assoc-in contracts [0 :role] :migration-authority)
+                     (assoc-in contracts [1 :path] "specs/core-workflow/tasks.md")
+                     (conj contracts (first contracts))]]
+      (is (thrown? Exception
+                   (dependencies/current-source-transition-view mutated slurp))))))
+
 (deftest stdlib-task-source-transition-authenticates-current-criteria
   (let [source (edn/read-string (slurp dependencies/sh-crosswalk-path))
         rows (vec (get-in source [:task-authorities "stdlib"]))
@@ -481,8 +509,12 @@
     (is (= 149 (count current)))
     (is (= 40 (:task-count review)))
     (is (= 40 (count (:declared-consumers review))))
-    (is (= 101 (count (:declared-parent-consumers review))))
+    (is (= 104 (count (:declared-parent-consumers review))))
     (is (= dependencies/selected-parent-consumers (set (:required-parent-consumers review))))
+    (is (every? dependencies/selected-parent-consumers
+                ["stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
+                 "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters"
+                 "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"]))
     (let [text (slurp dependencies/future-dependency-path)
           removed (clojure.string/replace text #"(?m)^\| `domain-ir-boundaries` \|.*\n" "")
           altered (dependencies/future-task-view future current snapshots
@@ -535,7 +567,7 @@
     (is (empty? (:unresolved-consumers review)))
     (is (= :pending (:future-sh-and-full-language-joins review)))
     (is (= :unassessed (:implementation-acceptance review)))
-    (is (= [99 9] (mapv count (:declared-output-cycles review))))
+    (is (= [99 11] (mapv count (:declared-output-cycles review))))
     (is (every? (set (first (:declared-output-cycles review)))
                 ["auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
                  "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"

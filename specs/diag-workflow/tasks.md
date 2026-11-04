@@ -30,6 +30,14 @@ Criterion compiler/c15/structured-diagnostic: Emit authoritative machine-readabl
 <!-- diag-canonical-records:end -->
 
 
+
+<!-- diag-library-source-diagnostics:start -->
+
+Apply the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current whole-source/interface acceptance remains pending.
+
+L13 complete library diagnostic-carrier criterion (Open): Preserve real owning L13-PROFILE, L13-EFFECT, L13-CAPABILITY, L13-ALLOC, L13-RESOURCE, L13-NUMERIC-MODE, L13-UNSAFE-INVARIANT, L13-EXAMPLE and L13-COMPAT failures with namespace, symbol, active profile, target, declared contract, caller effects, capability context and a concrete alternative when available. Source/generated provenance, stable structured/text representations and redaction survive transport. Compiler, library, conformance and Governance owners produce their actual failures; Diag neither guesses an API outcome nor manufactures a requested diagnostic. Required evidence: genuine failures with complete fields, stable round-trip/origin/order and refused missing/stale/tampered/substituted records across actual selected consumers.
+<!-- diag-library-source-diagnostics:end -->
+
 - [ ] `diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order` Preserve primary/related/generated origins and stable order
 
 Status: Open

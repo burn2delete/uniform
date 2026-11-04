@@ -65,6 +65,14 @@ Apply the [complete namespace and resolution source criteria](plan.md#complete-n
 Criterion behavior/pkg1/project-entrypoint-resolution: accept Resolve each artifact-kind entrypoint to its actual source var or artifact declaration after namespace analysis under the owning visibility rules. Reject An entrypoint is absent, ambiguous, violates its owning visibility rules or resolves to the wrong declaration kind. Emit Entrypoint-to-binding/artifact table consumed by the emission plan; PKG1003 names manifest key, package, profile and target. Dependencies: L3, PKG1, B13.
 <!-- resolve-source-entrypoint:end -->
 
+
+<!-- resolve-library-source-import:start -->
+
+Apply the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current whole-source/interface acceptance remains pending.
+
+L13 real library import-boundary criterion (Open): Resolve actual versioned library namespace/export/layer/profile declarations with the ordinary module and public/private graph rules. Consume authentic early declarations before checking the caller, reject actual lower-to-higher portability edges and imports outside the active profile, and preserve source/binding/package/target identity for downstream checking. Later actual built availability confirms shipped claims; a future completed library/release is not the first declaration interface. Emit L13-PROFILE and owning graph diagnostics for real offending imports rather than fabricating unsupported namespaces or inheriting host availability. Required evidence: real allowed downward and refused upward/unknown/excluded/stale imports and exact source/graph/profile records; the library owns declarations and callable exports, Resolve the actual import decision.
+<!-- resolve-library-source-import:end -->
+
 - [ ] `resolve/current-evidence-and-remaining-work/resolve3-check-graph-legality` resolve/3: Check graph legality
 
 Current evidence/status: Open; partial source evidence above is not closure

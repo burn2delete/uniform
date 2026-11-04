@@ -131,6 +131,14 @@ Apply the [complete error-handling source criteria](../core-workflow/plan.md#com
 L9 authentic denial/error boundary criterion (Open): Preserve actual capability denial, policy denial and required human-review denial as their declared typed/audited failures with principal, action, effect, capability, provider, scope, source/generated and applicable policy identity. Check authority before the actual action; a caught error, Result/Option wrapper, panic path or handler cannot issue a grant, suppress required audit or convert denied behavior into successful nil/absence. Required evidence: actual allowed/denied/revoked or missing-grant selected-boundary fixtures and typed denial/audit products consumed by Runtime/AI, with existing action restrictions unchanged and no new ordinary-work approval gate.
 <!-- auth-error-source-policy:end -->
 
+
+<!-- auth-library-source-grants:start -->
+
+Apply the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current whole-source/interface acceptance remains pending.
+
+L13 actual library authority criterion (Open): Require authentic in-scope capability/provider authority at each real effectful library action under its declared phase, lifetime, attenuation/revocation and policy. An explicit capability value, a declared provider context or expressly permitted hosted convenience path still records the concrete effect; ambient globals and a library classification do not supply authority. Require the declared :compiler/read-ir effect and authentic C17 read scope under :compiler/ir-transform for IR inspection; a read-only scope cannot authorize rewriting without the real write scope/effect. Emit L13-CAPABILITY and required audit without externally visible action on denial. Required evidence: allowed/denied/expired/revoked/wrong-phase selected action cases and exact principal/action/export/provider/source records; all held execution stays unrun.
+<!-- auth-library-source-grants:end -->
+
 - [ ] `auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks` Bind compiler decisions to runtime/build enforcement hooks
 
 Status: Open

@@ -1,7 +1,8 @@
 (ns sh-crosswalk
   "Source-bound SH routing projection. Task status is read only from component ledgers."
   (:require [clojure.edn :as edn] [clojure.string :as str] [clojure.pprint :as pp]
-            [clojure.java.io :as io] [clojure.walk :as walk]))
+            [clojure.java.io :as io] [clojure.walk :as walk] [clojure.set :as set]
+            [requirement-sources :as requirement-sources]))
 (binding [*command-line-args* nil] (load-file "tools/sh_inventory.clj") (load-file "tools/acceptance_dependencies.clj"))
 (require '[sh-inventory] '[acceptance-dependencies])
 (def baseline "254a5b50ea5e2825c424248c9216802cc866c0fd")
@@ -254,6 +255,19 @@
   ;; rows as ordinary current-source observations.
   #{(:path acceptance-dependencies/platform-task-source-transition)
     (:path acceptance-dependencies/stdlib-task-source-transition)})
+(def current-source-transition-contracts
+  (vec (:current-source-transitions readiness-source-version)))
+(def current-source-transition-paths
+  (set (map :path current-source-transition-contracts)))
+(defn- current-source-transition-for-path [path]
+  (first (filter #(= path (:path %)) current-source-transition-contracts)))
+(defn current-source-commit
+  "Return the authenticated applying ref for a transitioned current path.
+
+  Historical records retain their own source commit; callers use the fallback
+  for paths that are outside the current-source transition census."
+  [path fallback]
+  (or (:applying-ref (current-source-transition-for-path path)) fallback))
 (def preserved-scoped-evidence-source-pins
   ;; These are already accepted, narrowly scoped current records.  Preserve
   ;; their inspected source identities while the ordinary development frame
@@ -270,6 +284,32 @@
             (:source-input-commit readiness-source-version))
           baseline))))
 (declare git-source)
+
+(defn validate-current-source-transitions! [transitions]
+  (let [expected (vec requirement-sources/current-source-transition-contracts)
+        by-path (fn [xs] (into {} (map (juxt :path identity) xs)))]
+    (acceptance-dependencies/require!
+     (and (vector? transitions)
+          (= (count transitions) (count expected))
+          (= (set (map :path transitions))
+             (set requirement-sources/current-source-transition-paths))
+          (= (set (map :path transitions)) (set (map :path expected))))
+     "Current source transitions must cover exactly the authenticated paths")
+    (doseq [path (sort (keys (by-path expected)))]
+      (let [actual (get (by-path transitions) path)
+            contract (get (by-path expected) path)]
+        (acceptance-dependencies/require!
+         (= actual contract)
+         (str "Current source transition metadata differs from its contract: " path))
+        (requirement-sources/validate-current-source-transition!
+         actual contract
+         (fn [ref source-path]
+           (git-source ref source-path))
+         slurp sh-inventory/sha256 acceptance-dependencies/require!)))
+    (mapv #(select-keys % [:document-id :path :baseline-ref :baseline-tree
+                           :applying-ref :applying-tree :changed-spans
+                           :review-state :authority])
+          (sort-by :path transitions))))
 (def original-baseline "15a5499e97798621d270c36dd2546ce98ddd62a9")
 (def output-path "specs/sh-family-crosswalk/crosswalk.edn")
 (def rollup-path "specs/sh-family-crosswalk/rollup.md")
@@ -476,11 +516,39 @@
    "64f7b968b577013e47ae7d02bad3e39748b4250d" "bd8384b5344d9d99626e698976ee6e8a190859e5"
    "8f4b91d3efc4c4f42442002001707b89ca388025"])
 
+(defn- source-span-index [text]
+  (let [length (count text)
+        byte-offsets (long-array (inc length))
+        line-numbers (int-array (inc length))]
+    (loop [index 0
+           byte-count 0
+           line 1]
+      (aset-long byte-offsets index byte-count)
+      (aset-int line-numbers index line)
+      (if (= index length)
+        {:byte-offsets byte-offsets :line-numbers line-numbers}
+        (let [code-point (.codePointAt ^String text index)
+              char-width (Character/charCount code-point)
+              byte-width (cond
+                           (<= code-point 0x7f) 1
+                           (<= code-point 0x7ff) 2
+                           (<= code-point 0xffff) 3
+                           :else 4)]
+          (recur (+ index char-width)
+                 (+ byte-count byte-width)
+                 (if (= code-point (int \newline)) (inc line) line)))))))
+(defn- indexed-source-span [path text {:keys [byte-offsets line-numbers]} start end]
+  (let [raw (subs text start end)]
+    {:path path :start-byte (aget ^longs byte-offsets start)
+     :end-byte (aget ^longs byte-offsets end)
+     :start-line (aget ^ints line-numbers start)
+     :end-line (if (pos? end) (aget ^ints line-numbers (dec end)) 1)
+     :sha256 (sh-inventory/sha256 raw) :raw raw}))
 (defn span-matches [path pattern]
-  (let [text (slurp path) m (re-matcher pattern text)]
+  (let [text (slurp path) index (source-span-index text) m (re-matcher pattern text)]
     (loop [rows []] (if (.find m)
                      (recur (conj rows {:groups (mapv #(.group m %) (range 1 (inc (.groupCount m))))
-                                        :source (sh-inventory/source-span path text (.start m) (.end m))})) rows))))
+                                        :source (indexed-source-span path text index (.start m) (.end m))})) rows))))
 (defn task-records
   ([component] (task-records component (str component "-implementation-tasks")))
   ([component region]
@@ -490,6 +558,7 @@
         source-text (if historical-row-source?
                       (git-source baseline path)
                       text)
+        source-index (source-span-index source-text)
         marker (str "<!-- " region ":")
         start (+ (.indexOf source-text (str marker "start -->")) (count (str marker "start -->")))
         end (.indexOf source-text (str marker "end -->"))
@@ -506,9 +575,12 @@
                                 historical-row-source? baseline
                                 (contains? historical-task-transition-paths path)
                                 (:source-input-commit readiness-source-version)
+                                (contains? current-source-transition-paths path)
+                                (:applying-ref (current-source-transition-for-path path))
                                 :else (source-pin path))
                :file-sha256 (sh-inventory/sha256 source-text)
-               :source (sh-inventory/source-span path source-text (:start row) (+ (:start row) (count raw)))
+               :source (indexed-source-span path source-text source-index
+                                            (:start row) (+ (:start row) (count raw)))
                :owner-source (str "docs/component-roadmaps/" component ".md")}
                 (not= region (str component "-implementation-tasks"))
                 (assoc :region region :authority :component-future-task-ledger))))
@@ -771,13 +843,21 @@
          :source-version-bridge "specs/sh-family-crosswalk/pr574-macro-artifacts-composition.edn"
          :qualification "Actual macro artifacts and accepted Native header reporting composition only; preserve all predecessor histories and pending unassessed scope."))
 
-(defn git-source [commit path]
+(defn- read-git-source [commit path]
   (let [process (.start (doto (ProcessBuilder. ^java.util.List ["git" "show" (str commit ":" path)])
                          (.redirectErrorStream true)))
         text (slurp (.getInputStream process))]
     (when-not (zero? (.waitFor process))
       (throw (ex-info "Pinned local Git source unavailable; no projection written" {:path path :source-commit commit})))
     text))
+;; Source views authenticate the same immutable Git blobs repeatedly across
+;; their historical and current-source checks.  Cache only successful reads;
+;; repository changes still require a fresh process, while repeated checks no
+;; longer spawn thousands of identical `git show` processes.
+(def git-source (memoize read-git-source))
+(def ^:private read-source-census
+  (memoize (fn [commit path]
+             (edn/read-string (git-source commit path)))))
 
 (def resolution-runtime-current-review
   (:mapping-review (edn/read-string
@@ -838,14 +918,131 @@
          :qualification
          "Exact task-source and Governance routing successor, including foundation criteria and Domain/Platform/Release refinements. Original task statuses and predecessor review subjects are preserved. Future Domain, Release and Platform Product records retain pending SH composition. Current source/routing, implementation and whole-SH acceptance remain pending."))
 
+(defn- validate-library-refinement! [ref]
+  (acceptance-dependencies/require! (map? ref) "Missing L13 library source refinement")
+  (acceptance-dependencies/require! (= :complete-L13-library-source-proposal (:kind ref))
+                                    "Changed L13 library source refinement kind")
+  (doseq [[k expected] [[:criteria 26] [:source-facets 125] [:occurrence-cases 84]
+                                   [:section-conjunctions 19] [:owner-joins 13]]]
+    (acceptance-dependencies/require! (= expected (count (get ref k)))
+                                      (str "Changed L13 library refinement population: " (name k))))
+  (acceptance-dependencies/require! (= :unassessed (:implementation-acceptance ref))
+                                    "L13 library refinement cannot confer implementation acceptance")
+  (acceptance-dependencies/require! (= :unassessed (:global-source-conjunctions ref))
+                                    "L13 library refinement cannot confer whole-source acceptance")
+  (acceptance-dependencies/require! (= :pending (:independent-current-review ref))
+                                    "L13 library refinement cannot self-accept")
+  (let [census (:source-census ref)
+        census-text (git-source (:commit census) (:path census))
+        census-data (read-source-census (:commit census) (:path census))
+        census-facets (filter #(= "L13" (:document-id %)) (:facets census-data))
+        census-occurrences (filter #(= "L13" (:document-id %)) (:occurrences census-data))
+        canonical (first (filter #(= "L13" (:document-id %)) (:canonical-sources ref)))
+        canonical-text (git-source (:source-commit canonical) (:path canonical))
+        span-text (fn [body span]
+                    (String. (.getBytes body "UTF-8")
+                             (int (:start-byte span))
+                             (int (- (:end-byte span) (:start-byte span)))
+                             "UTF-8"))
+        current-witnesses (map :current-witness (:criteria ref))]
+    (acceptance-dependencies/require! (= (:sha256 census) (sh-inventory/sha256 census-text))
+                                      "L13 source census digest changed")
+    (acceptance-dependencies/require! (= (set (map :id census-facets))
+                                         (set (map :id (:source-facets ref))))
+                                      "L13 source facet identity set changed")
+    (acceptance-dependencies/require! (= (set (map :id census-occurrences))
+                                         (set (keys (:occurrence-cases ref))))
+                                      "L13 source occurrence identity set changed")
+    (doseq [facet (:source-facets ref)
+            :let [occurrence (get (:occurrence-cases ref) (:source-occurrence-id facet))
+                  raw (span-text canonical-text (:source-span facet))]]
+      (acceptance-dependencies/require! occurrence "L13 facet points to an unknown occurrence")
+      (acceptance-dependencies/require! (= (:path canonical) (:source-path facet))
+                                        "L13 facet source path changed")
+      (acceptance-dependencies/require! (= (get-in facet [:source-span :sha256])
+                                           (sh-inventory/sha256 raw))
+                                        "L13 facet span digest changed")
+      (acceptance-dependencies/require! (= (:criterion-keys facet) (:criterion-keys occurrence))
+                                        "L13 facet criterion join changed")
+      (acceptance-dependencies/require! (= (:role facet) (:role occurrence))
+                                        "L13 facet occurrence role changed"))
+    (doseq [[_ occurrence] (:occurrence-cases ref)]
+      (let [raw (span-text canonical-text (:source-span occurrence))]
+        (acceptance-dependencies/require! (= (get-in occurrence [:source-span :sha256])
+                                             (sh-inventory/sha256 raw))
+                                          "L13 occurrence span digest changed")))
+    (doseq [[section row] (:section-conjunctions ref)]
+      (doseq [occurrence-id (:occurrence-ids row)]
+        (acceptance-dependencies/require! (contains? (:occurrence-cases ref) occurrence-id)
+                                          "L13 section points to an unknown occurrence")
+        (acceptance-dependencies/require! (= section (:section-key (get (:occurrence-cases ref) occurrence-id)))
+                                          "L13 occurrence section join changed"))
+      (doseq [criterion-key (:criterion-keys row)]
+        (acceptance-dependencies/require! (some #(= criterion-key (:key %)) (:criteria ref))
+                                          "L13 section points to an unknown criterion")))
+    (doseq [record (:current-source-files ref)]
+      (let [body (git-source (:source-commit record) (:path record))]
+        (acceptance-dependencies/require! (= (:sha256 record) (sh-inventory/sha256 body))
+                                          (str "L13 current source file digest changed: " (:path record)))))
+    (doseq [w current-witnesses]
+      (let [body (git-source (:source-commit w) (:path w))
+            raw (span-text body (:source-span w))]
+        (acceptance-dependencies/require! (= (:sha256 w) (sh-inventory/sha256 body))
+                                          (str "L13 current witness file digest changed: " (:path w)))
+        (acceptance-dependencies/require! (= (get-in w [:source-span :sha256])
+                                             (sh-inventory/sha256 raw))
+                                          (str "L13 current witness span digest changed: " (:path w)))))
+    (acceptance-dependencies/require! (= 26 (count (set (map :key (:criteria ref)))))
+                                      "L13 criterion keys are not unique")
+    (acceptance-dependencies/require! (= 13 (count (set (map :task-id (:criteria ref)))))
+                                      "L13 criterion task owners are not unique")
+    (doseq [[owner row] (:owner-joins ref)]
+      (acceptance-dependencies/require! (= owner (:id row))
+                                        "L13 owner join identity changed")
+      (acceptance-dependencies/require! (= :unassessed (:whole-attached-owner-predicate row))
+                                        "L13 owner join cannot confer entailment")
+      (acceptance-dependencies/require! (= :none (:implementation-credit row))
+                                        "L13 owner join cannot confer implementation credit")))
+  (let [changed (set (:changed-task-ids ref))
+        required #{"stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
+                   "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters"
+                   "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"}
+        plan (slurp "specs/stdlib-workflow/plan.md")
+        tasks (slurp "specs/stdlib-workflow/tasks.md")
+        deps (slurp acceptance-dependencies/future-dependency-path)]
+    (acceptance-dependencies/require! (set/subset? required changed)
+                                      "L13 library refinement omits an existing-task consumer route")
+    (doseq [heading ["## Complete library-principles source criteria"
+                     "L13 complete public library-contract criterion"
+                     "L13 API-classification criterion"
+                     "L13 complete compiler/domain library API criterion"
+                     "L13 library compatibility and release-assembly criterion"]]
+      (acceptance-dependencies/require! (str/includes? plan heading)
+                                        (str "Missing L13 source criterion: " heading)))
+    (doseq [marker ["stdlib-library-source-contracts:start"
+                    "stdlib-library-source-classification:start"
+                    "stdlib-library-source-meta:start"
+                    "stdlib-library-source-release:start"]]
+      (acceptance-dependencies/require! (str/includes? tasks marker)
+                                        (str "Missing L13 task source marker: " marker)))
+    (doseq [id required]
+      (acceptance-dependencies/require! (str/includes? deps (str "| `" id "` |"))
+                                        (str "Missing L13 consumer dependency route: " id))))
+  ref)
+
+(def ^:private inventory-of-original-source
+  (memoize sh-inventory/inventory))
 (defn source-view []
   (let [inventory (edn/read-string (slurp "specs/sh-family-crosswalk/original-inventory.edn"))
+        original-source (slurp sh-inventory/plan-path)
         _ (when-not (= original-sh07-sha256 (sh-inventory/sha256 (slurp sh07-path)))
             (throw (ex-info "SH07 source changed; preserve lineage before amending sequence" {})))
-        _ (when-not (= (:requirements inventory) (sh-inventory/inventory (slurp sh-inventory/plan-path)))
+        _ (when-not (= (:requirements inventory) (inventory-of-original-source original-source))
             (throw (ex-info "Original source changed; retain lineage before rebinding" {})))
+        _ (validate-current-source-transitions! (:current-source-transitions readiness-source-version))
         components (mapv second (re-seq #"(?m)^\| [^|\n]+ / `([a-z-]+)` \|" (slurp "docs/component-roadmaps/README.md")))
         tasks (into (sorted-map) (map (fn [c] [c (task-records c)]) components))
+        _ (validate-library-refinement! (:library-refinement readiness-source-version))
         finish-sources (finish-line-sources)
         future-tasks (into (sorted-map)
                            (for [[component region expected] acceptance-dependencies/future-task-regions
@@ -954,12 +1151,13 @@
      :implementation-readiness-source-version
      (select-keys readiness-source-version
                   [:kind :status :source-input-commit :predecessor
+                   :current-source-transitions
                    :task-comparisons :source-criteria
                    :retained-historical-source-inputs :math-parent-refinement
                    :release-testing-refinement :domain-parent-refinement
                    :ai-parent-refinement :platform-refinement :future-dependency-refinement
                    :math-schema-dependency-refinement :release-dependency-refinement :finish-line-refinement
-                   :foundation-tools-refinement :foundation-owner-refinement :c15-refinement :mir-refinement :lower-refinement :opt-refinement :verification-refinement :incremental-refinement :plugin-refinement :domain-ir-refinement :effects-refinement :ownership-refinement :ownership-dependency-refinement :safety-refinement :safety-dependency-refinement :root-safety-refinement :root-safety-dependency-refinement :memory-refinement :memory-dependency-refinement :memory-model-refinement :memory-model-dependency-refinement :source-effects-refinement :source-effects-dependency-refinement :concurrency-refinement :concurrency-dependency-refinement :authority-refinement :authority-dependency-refinement :compile-time-refinement :compile-time-dependency-refinement :macro-cache-refinement :macro-refinement :macro-dependency-refinement :syntax-refinement :syntax-dependency-refinement :resolution-refinement :resolution-dependency-refinement :core-refinement :core-dependency-refinement :types-refinement :types-dependency-refinement :pattern-refinement :pattern-dependency-refinement :protocol-refinement :protocol-dependency-refinement :error-refinement])
+                   :foundation-tools-refinement :foundation-owner-refinement :c15-refinement :mir-refinement :lower-refinement :opt-refinement :verification-refinement :incremental-refinement :plugin-refinement :domain-ir-refinement :effects-refinement :ownership-refinement :ownership-dependency-refinement :safety-refinement :safety-dependency-refinement :root-safety-refinement :root-safety-dependency-refinement :memory-refinement :memory-dependency-refinement :memory-model-refinement :memory-model-dependency-refinement :source-effects-refinement :source-effects-dependency-refinement :concurrency-refinement :concurrency-dependency-refinement :authority-refinement :authority-dependency-refinement :compile-time-refinement :compile-time-dependency-refinement :macro-cache-refinement :macro-refinement :macro-dependency-refinement :syntax-refinement :syntax-dependency-refinement :resolution-refinement :resolution-dependency-refinement :core-refinement :core-dependency-refinement :types-refinement :types-dependency-refinement :pattern-refinement :pattern-dependency-refinement :protocol-refinement :protocol-dependency-refinement :error-refinement :library-refinement])
      :pr574-macro-artifacts-composition
      {:path "specs/sh-family-crosswalk/pr574-macro-artifacts-composition.edn" :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/pr574-macro-artifacts-composition.edn"))}
      :pr574-composition-source-version
@@ -990,16 +1188,18 @@
                               :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/task-authority-lineage.edn"))}
      :shared-completion-rule
      (let [text (slurp sh-inventory/plan-path)
+           source-index (source-span-index text)
            start (str/index-of text "## Three boundaries and one shared completion rule")
            end (str/index-of text "### How to use the check references")]
        {:id :sh03-and-later-uniform-completion :applicability :sh03-through-sh29
-        :source (sh-inventory/source-span sh-inventory/plan-path text start end)
+        :source (indexed-source-span sh-inventory/plan-path text source-index start end)
         :qualification "Implementation, integration and authoritative completion remain separate. Actual owning execution, rejection/preservation/composition, exact provenance/support/TCB and independently accepted stable revision are required only for the applicable claim. SH00-SH02 retain accepted baseline/process scope; no unconditional replay of unchanged evidence."})
      :component-owner-evidence
      (into (sorted-map)
        (for [c components :let [path (str "docs/component-roadmaps/" c ".md") text (slurp path)
+                                source-index (source-span-index text)
                                 end (or (str/index-of text "\n## ") (count text))]]
-         [c {:source (sh-inventory/source-span path text 0 end)
+         [c {:source (indexed-source-span path text source-index 0 end)
              :assignment :existing-reservations-preserved-not-inferred
              :qualification "Use the named component owner role and existing actor reservations; a source-unassigned person remains unassigned, not permission for a new writer."}]))
      :global-requirement-owner "01a179ad-2198-7392-966a-1e3c31209027"
@@ -1009,9 +1209,11 @@
      (into (sorted-map)
        (for [p sources]
          [p (sh-inventory/sha256
-              (if (acceptance-dependencies/historical-sh-source-path? p)
-                (git-source (source-pin p) p)
-                (slurp p)))]))
+              (if (contains? current-source-transition-paths p)
+                (git-source (or (get applying-source-pins p) (source-pin p)) p)
+                (if (acceptance-dependencies/historical-sh-source-path? p)
+                  (git-source (source-pin p) p)
+                  (slurp p))))]))
      :stable-task-routing-keys stable-task-routing-keys
      :retained-native-history {:path "specs/sh-family-crosswalk/retained-native-evidence.edn"
                               :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/retained-native-evidence.edn"))
@@ -1057,9 +1259,10 @@
        :criterion-ids (vec (sort legacy-accounting-facet-ids))
        :current-policy-source
        (let [path "docs/self-hosting-current-migration-cohort.md" text (slurp path)
+             source-index (source-span-index text)
              start (str/index-of text "## Current requirements: no project quotas or cost accounting")
              end (str/index-of text "Assessment revision:")]
-         (sh-inventory/source-span path text start end))
+         (indexed-source-span path text source-index start end))
        :disposition :preserve-mixed-source-with-existing-supersession-qualification
        :global-equivalence-owner "01a179ad-2198-7392-966a-1e3c31209027"
        :qualification "Original raw wording and historical checks remain provenance. Existing current direction retires project work/capacity-only refusals; it does not retire malformed/cyclic/tampered/stale rejection, intrinsic type/Unicode/index/arity/target constraints, semantic resource ownership, actual broker/heap/watchdog/capture/platform controls or external provider spending limits. OOM/timeout remains a resource failure. This SH view makes no new global facet/equivalence adjudication."}]

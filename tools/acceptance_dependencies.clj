@@ -265,6 +265,9 @@
     "auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection"
     "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
     "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis"
+    "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations"
+    "stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters"
+    "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests"
     "devices"
     "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
     "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
@@ -674,6 +677,36 @@
      :locator-provenance :historical-git-blob-and-utf8-span-verified
      :authority :historical-routing-and-structural-only
      :current-file-sha256 (sha256 current)}))
+
+(def current-source-transition-contracts
+  requirement-sources/current-source-transition-contracts)
+
+(defn current-source-transition-view
+  "Authenticate the bounded current-source proposal without changing any
+  historical/applying pin or granting implementation authority."
+  [transitions read-text]
+  (let [expected current-source-transition-contracts
+        by-path (fn [xs] (into {} (map (juxt :path identity) xs)))]
+    (require! (and (vector? transitions)
+                   (= (set (map :path transitions))
+                      (set (map :path expected)))
+                   (= (count transitions) (count expected)))
+              "Current source transition population changed")
+    (doseq [path (sort (keys (by-path expected)))]
+      (let [actual (get (by-path transitions) path)
+            contract (get (by-path expected) path)]
+        (require! (= actual contract)
+                  (str "Current source transition contract changed: " path))
+        (requirement-sources/validate-current-source-transition!
+         actual contract
+         (fn [ref source-path]
+           (requirement-sources/git-source "." ref source-path require!))
+         read-text sha256 require!)))
+    {:kind requirement-sources/current-source-transition-kind
+     :paths (vec (sort (keys (by-path transitions))))
+     :review-state :pending-independent-source-version-review
+     :authority :current-source-interface-only
+     :implementation-acceptance :unassessed}))
 
 (defn current-task-body!
   "Check a current task row's captured body without rebinding its history.
@@ -1115,6 +1148,13 @@
         _ (require! (= 180 (count requirements)) "Duplicate SH criterion")
         tasks (vec (mapcat val (:task-authorities crosswalk)))
         task-map (into {} (map (juxt :id identity) tasks))
+        readiness-source-version (:implementation-readiness-source-version crosswalk)
+        current-source-transition
+        (when (contains? readiness-source-version :current-source-transitions)
+          (current-source-transition-view
+           (:current-source-transitions readiness-source-version)
+           read-text))
+        current-source-transition-paths (set (:paths current-source-transition))
         platform-tasks (vec (filter #(= "platform" (:component %)) tasks))
         platform-transition
         (when (seq platform-tasks)
@@ -1175,7 +1215,8 @@
         ;; report drift separately; current task/acceptance inputs stay exact.
         _ (doseq [[path digest] (:source-digests crosswalk)
                   :when (not (or (navigation-source-path? path)
-                                 (historical-sh-source-path? path)))]
+                                 (historical-sh-source-path? path)
+                                 (contains? current-source-transition-paths path)))]
             (require! (= digest (sha256 (read-text path))) (str "Stale SH input: " path)))
         ;; Contract declarations permit interface work; they do not attest an
         ;; implementation. Acceptance facets remain unknown without exact receipts.
@@ -1259,6 +1300,7 @@
      :finish-line-composition (:summary finish)
      :condition-values conditions
      :evidence-source-applicability evidence-applicability
+     :current-source-transitions current-source-transition
      :platform-task-source-transition platform-transition
      :stdlib-task-source-transition stdlib-transition
      :historical-source-applicability historical-source-applicability

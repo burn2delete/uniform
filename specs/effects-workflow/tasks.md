@@ -144,6 +144,14 @@ Apply the [complete error-handling source criteria](../core-workflow/plan.md#com
 L9 actual error-admission criterion (Open): Check actual thrown/handler/residual error effects against function/namespace/profile/package/deployment/runtime/safety allowances and separate authentic grants before admitting the selected behavior. Typed source coverage is not permission to handle an effect or erase an escaping label. Keep ordinary typed try/catch distinct from separately declared L6 resumable-effect continuations; do not invent resume/multi-shot authority. Reject undeclared error effects, forbidden lowering/handler modes and missing required handled-or-propagated paths. Required evidence: actual accepted/refused effect/profile/authority outcomes and residual/audit records under L9 and governing L6/C8, with no runtime-only or backend-only legality substitution.
 <!-- effects-error-source-admission:end -->
 
+
+<!-- effects-library-source-effects:start -->
+
+Apply the [complete library-principles source criteria](../stdlib-workflow/plan.md#complete-library-principles-source-criteria) within this existing Open task. Preserve original criteria, historical reviews and actual restrictions; current whole-source/interface acceptance remains pending.
+
+L13 actual public library effect-admission criterion (Open): Admit each selected library call only after actual inferred body/latent/transitive requirements fit the caller's declared effect allowance and applicable profile/runtime/safety conditions, with Auth independently checking authentic capability grants. Preserve allocation, blocking, panic, nondeterminism, resource and provider requirements even behind pure-looking facade or target-specific implementation. Emit L13-EFFECT and owning legality diagnostics for real failures; a published class/signature, caught Result, permitted hosted convenience context or exported name cannot hide an effect or widen authority. Required evidence: actual accepted/refused call summaries, current context/profile/service premises and source-bound diagnostics, with the inherited Auth owner retained as grant context rather than inference/admission ownership.
+<!-- effects-library-source-effects:end -->
+
 - [ ] `effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation` effects/4: Record replay and invalidation
 
 Current evidence/status: Open; partial source evidence above is not closure
