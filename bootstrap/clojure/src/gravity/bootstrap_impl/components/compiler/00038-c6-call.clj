@@ -24,7 +24,7 @@
            'gravity.bootstrap/p15-s23-stage2-compiler-artifact-plan)}
         plan (current-source-plan repository-root compiler-api)
         operations (source-operations @runtime-execute-function plan)]
-    (select-keys operations [:c6-form->core-form :c6-eval-order])))
+    (select-keys operations [:c6-core-node :c6-form->core-form :c6-eval-order])))
 
 (defn- c6-call-development-current [repository-root f & args]
   (when *c6-leaf-call?*

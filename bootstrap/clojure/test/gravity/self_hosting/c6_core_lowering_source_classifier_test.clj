@@ -57,6 +57,12 @@
      bootstrap/p15-s23-stage2-runtime-execute-function
      @source-plan)))
 
+(def ^:private source-core-node-operation
+  (delay
+    (source-adapter/c6-core-node-operation
+     bootstrap/p15-s23-stage2-runtime-execute-function
+     @source-plan)))
+
 (def ^:private module
   {:module 'gravity.c6-source-classifier-test
    :source-path "c6-source-classifier-test.gravity"
@@ -193,6 +199,42 @@
     (is (= "L2-FUNCTION-ARITY" (:id failure)))
     (is (= 2 (:expected-arity failure)))
     (is (= 1 (:actual-arity failure)))))
+
+(deftest current-source-core-node-stage2-rejects-wrong-arity
+  (let [failure
+        (try
+          (bootstrap/p15-s23-stage2-runtime-execute-function
+           {:engine :gravity-c6-core-lowering-source-canonical-node
+            :compiler-artifact-plan? true}
+           @source-plan
+           source-adapter/canonical-core-node-source-function
+           ["node-1" :if (syntax "if" '(if true 1 2)) module {}])
+          nil
+          (catch clojure.lang.ExceptionInfo error
+            (ex-data error)))]
+    (is (= "L2-FUNCTION-ARITY" (:id failure)))
+    (is (= 6 (:expected-arity failure)))
+    (is (= 5 (:actual-arity failure)))))
+
+(deftest current-source-canonical-node-preserves-hosted-effect-fact
+  (let [syntax-value (syntax "if" '(if true 1 2))
+        data {:surface-form '(if true 1 2)
+              :children {}
+              :evaluation-order [:condition :then-or-else]
+              :lowering-rule :if}
+        operations {:form-effect (fn [_] #{:error/throw})}
+        source-node
+        (c6/with-operations
+          operations
+          #(@source-core-node-operation
+            "node-1" :if syntax-value module data))
+        hosted-node
+        (c6/with-operations
+          operations
+          #(lowering/c6-core-node
+            "node-1" :if syntax-value module data))]
+    (is (= hosted-node source-node))
+    (is (= #{:error/throw} (:effects source-node)))))
 
 (deftest current-source-leaves-are-used-by-c6-lowering-caller
   (let [classification-calls (atom [])
@@ -358,8 +400,10 @@
                 source-path (mapv :form genuine-expanded-stream)))))
         original-classifier lowering/c6-form->core-form
         original-evaluation-order lowering/c6-eval-order
+        original-core-node lowering/c6-core-node
         host-classifier-calls (atom 0)
         host-evaluation-order-calls (atom 0)
+        host-core-node-calls (atom 0)
         host-artifact
         (source-input/with-context
           (fn []
@@ -373,7 +417,11 @@
                  lowering/c6-eval-order
                  (fn [form child-count]
                    (swap! host-evaluation-order-calls inc)
-                   (original-evaluation-order form child-count))]
+                   (original-evaluation-order form child-count))
+                 lowering/c6-core-node
+                 (fn [& args]
+                   (swap! host-core-node-calls inc)
+                   (apply original-core-node args))]
                  (c6/c6-lowering-artifact
                   source-path genuine-module genuine-c5 genuine-expanded-stream)))))
         fallback (fn [& _]
@@ -385,7 +433,8 @@
         (binding [bootstrap/*compiler-c6-authenticated-resolution-input*
                   genuine-c5]
           (with-redefs [lowering/c6-form->core-form fallback
-                        lowering/c6-eval-order fallback]
+                        lowering/c6-eval-order fallback
+                        lowering/c6-core-node fallback]
             (bootstrap/compiler-c6-lowering-source-artifact-development-current
              source-path source-text @repository-root)))]
     (is (= source-text (slurp paired-path :encoding "UTF-8")))
@@ -396,7 +445,8 @@
     (is (= :passed (get-in current-artifact [:core-verifier-report :status])))
     (is (= host-artifact current-artifact))
     (is (pos? @host-classifier-calls))
-    (is (pos? @host-evaluation-order-calls))))
+    (is (pos? @host-evaluation-order-calls))
+    (is (pos? @host-core-node-calls))))
 
 (deftest development-current-route-builds-source-plan-before-c6-entry
   (let [current-plan-var
@@ -538,7 +588,14 @@
                              "(defn c6-eval-order [form]")
           malformed (str/replace-first malformed-signature
                                        "(c6-evaluation-order-do child-count)"
-                                       "(c6-evaluation-order-do 0)")]
+                                       "(c6-evaluation-order-do 0)")
+          malformed-core-signature
+          (str/replace-first original
+                             "(defn construct-canonical-core-node\n  [node-id form syntax module data effects]"
+                             "(defn construct-canonical-core-node\n  [node-id form syntax module data]")
+          malformed-core (str/replace-first malformed-core-signature
+                                            ":effects effects"
+                                            ":effects #{ }")]
       (try
         (spit (.toFile source-file) malformed)
         (let [failure
@@ -553,6 +610,20 @@
                 (catch clojure.lang.ExceptionInfo error
                   (ex-data error)))]
           (is (= "C6-SOURCE-EVAL-ORDER-ABI" (:id failure))))
+        (spit (.toFile source-file) malformed-core)
+        (let [failure
+              (try
+                (with-redefs [bootstrap/compiler-c5-resolution-source-artifact c5
+                              bootstrap/read-source-form-records reader
+                              lowering/c6-form->core-form fallback
+                              lowering/c6-eval-order fallback
+                              lowering/c6-core-node fallback]
+                  (bootstrap/compiler-c6-lowering-source-artifact-development-current
+                   development-route-source-path development-route-source-text root))
+                nil
+                (catch clojure.lang.ExceptionInfo error
+                  (ex-data error)))]
+          (is (= "C6-SOURCE-CLASSIFIER-CORE-NODE-ABI" (:id failure))))
         (finally
           (delete-tree! root))))))
 
