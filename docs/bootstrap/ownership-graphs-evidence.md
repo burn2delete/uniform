@@ -55,8 +55,26 @@ nine unchanged prior stage bodies, original helper/facade interposition,
 complete raw and parsed native/normalized capture equality, focused
 positive/negative and adversarial tests, language/ownership and lint checks,
 contract validators, independent acceptance, own CI/artifact audit and exact
-clean current-main integration preflight. Implementation and candidate
-evidence remain outstanding at this early draft checkpoint.
+clean current-main integration preflight. Clean committed candidate capture,
+committed lint, independent acceptance, own CI and integration evidence
+remain outstanding.
+
+The working extraction passes 8 owning tests / 208 assertions, including
+actual normalized Gravity fixture compilation/execution, golden owner
+numbering and sorted-map order, source-record identity, profile/target
+transport, every borrow callback/fallback, facade interposition, exception
+identity and failure barriers. The standalone C9 regression passes 4 / 94
+in its own process without Bootstrap loaded. Pinned stage/helper/test lint
+reports zero errors or warnings. Exact source checks conserve both graph
+bodies, nine earlier stage functions, helper arities and every surrounding
+source byte; validation, intake, admission and facade interposition stay put.
+Language/ownership gates pass 48 / 1198 with zero skipped namespaces;
+document, roadmap and workstream validators pass.
+
+The extraction helper's initial unmatched delimiter failed before repository
+mutation. Its source and nonpass log are retained. The repaired helper parses
+and compares both complete planned sources before any write; no rule, test,
+pin or authority gate was changed to obtain a pass.
 
 ## Unsupported boundaries
 

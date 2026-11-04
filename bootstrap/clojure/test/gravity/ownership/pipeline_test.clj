@@ -1,6 +1,8 @@
 (ns gravity.ownership.pipeline-test
   (:require [clojure.test :refer [deftest is]]
             [gravity.bootstrap :as b]
+            [gravity.c9-ownership-checker :as c9]
+            [gravity.c9-ownership-checker.graphs :as graphs]
             [gravity.ownership :as ownership]
             [gravity.self-hosting.sh10-ownership-transition-fixture-support
              :as fixture-support]))
@@ -15,7 +17,7 @@
   (is (= #{'persistent-ownership 'forwarded-value-node-ids 'propagate-managed-ownership
            'shared-owner-domain-id 'canonical-owner-id 'persistent-aliasing-valid?
            'persistent-ownership-expected-keys 'persistent-ownership-schema-valid?
-           'expected-managed-node-ids}
+           'expected-managed-node-ids 'native-ownership-graph 'native-borrow-graph}
          (set (keys (ns-publics 'gravity.ownership)))))
   (doseq [[name operation] (ns-publics 'gravity.ownership)]
     (let [contract (:gravity/namespace-contract (meta operation))]
@@ -25,6 +27,69 @@
       (is (false? (:authenticates-inputs? contract)))
       (is (false? (:issues-verifier-certificates? contract)))
       (is (some #{:general-c9-analysis} (:unsupported contract))))))
+
+(def ^:private graph-projectors
+  [ownership/native-ownership-graph graphs/ownership-graph
+   (fn [span ids node module graph]
+     (c9/with-operations {:source-span span :c9-node-ids ids :c9-node node}
+       #(c9/c9-ownership-graph module graph)))])
+
+(deftest native-graph-projections-retain-source-owner-order-and-callback-order
+  (doseq [project graph-projectors]
+    (let [calls (atom []) source-z {:span :original-z :origin-chain [:generated :source]}
+          source-a {:span :original-a :origin-chain [:source]}
+          module {:module 'native.graph :source-path "native-graph-data" :profile :hosted :target :jvm}
+          input {:nodes {"z" {:source source-z} "a" {:source source-a}}}
+          span (fn [path index] (swap! calls conj [:span path index]) {:source path :form-index index})
+          ids (fn [graph] (is (identical? input graph)) (swap! calls conj :ids) ["z" "a"])
+          node (fn [values index fallback]
+                 (swap! calls conj [:node values index fallback]) :selected-node)
+          result (project span ids node module input)]
+      (is (= :gravity/c9-ownership-graph (:artifact result)))
+      (is (= ["a" "z"] (vec (keys (:owners result)))))
+      (is (= "owner-2" (get-in result [:owners "a" :owner-id])))
+      (is (= "owner-1" (get-in result [:owners "z" :owner-id])))
+      (is (= :persistent-immutable (get-in result [:owners "z" :kind])))
+      (is (= :owned-mutable (get-in result [:owners "a" :kind])))
+      (is (identical? source-z (get-in result [:owners "z" :source])))
+      (is (identical? source-a (get-in result [:owners "a" :source])))
+      (is (= [:hosted :jvm] ((juxt :profile :target) (get-in result [:owners "a"]))))
+      (is (= :selected-node (get-in result [:moves 0 :value])))
+      (is (= [:ids [:node ["z" "a"] 1 "core-node-owned"]
+              [:span "native-graph-data" 0] [:span "native-graph-data" 0]] @calls)))))
+
+(deftest native-borrow-projection-retains-each-callback-and-fallback
+  (doseq [project [ownership/native-borrow-graph graphs/borrow-graph
+                   (fn [ids node module graph]
+                     (c9/with-operations {:c9-node-ids ids :c9-node node}
+                       #(c9/c9-borrow-graph module graph)))]]
+    (let [calls (atom [])
+          ids (fn [_] (swap! calls conj :ids) ["zero" "one"])
+          node (fn [values index fallback]
+                 (swap! calls conj [index fallback]) (get values index fallback))
+          result (project ids node {:module 'native.graph} {})]
+      (is (= :gravity/c9-borrow-graph (:artifact result)))
+      (is (= ["one" "one" "one" "core-node-field" "core-node-transfer"]
+             (mapv :value (:edges result))))
+      (is (= [:ids [1 "core-node-owned"] [1 "core-node-owned"] [1 "core-node-owned"]
+              [2 "core-node-field"] [3 "core-node-transfer"]] @calls)))))
+
+(deftest native-graph-refusals-preserve-exception-identity-and-stop-later-callbacks
+  (doseq [project graph-projectors
+          failure [:ids :node :span :owner-key]]
+    (let [calls (atom []) error (ex-info "original graph callback" {:callback failure})
+          ids (fn [_]
+                (swap! calls conj :ids)
+                (when (= :ids failure) (throw error))
+                (if (= :owner-key failure) ["string-id" :keyword-id] []))
+          node (fn [& _] (swap! calls conj :node) (when (= :node failure) (throw error)) :node)
+          span (fn [& _] (swap! calls conj :span) (throw error))
+          observed (try (project span ids node {} {}) (catch Throwable value value))]
+      (if (= :owner-key failure)
+        (is (instance? ClassCastException observed))
+        (is (identical? error observed)))
+      (is (= (case failure :ids [:ids] :node [:ids :node]
+                    :span [:ids :node :span] :owner-key [:ids]) @calls)))))
 
 (deftest real-paired-gravity-ownership-programs-accept-and-reject
   ;; Current Gravity normalized-request kernels. No authenticated Core/C8

@@ -3,13 +3,20 @@
   (:require [clojure.set :as set]))
 
 (def ^:private namespace-contract
-  (quote
-{:authenticates-inputs? false,
+  '{:authenticates-inputs? false,
  :public-api
  {persistent-ownership {:arglists ([role extra]), :admission :none},
+  native-borrow-graph
+  {:arglists ([node-ids node module effect-graph]),
+   :admission :none,
+   :native-compatibility-only? true},
   persistent-ownership-schema-valid?
   {:arglists ([expected-keys node managed?]), :admission :none},
   forwarded-value-node-ids {:arglists ([node]), :admission :none},
+  native-ownership-graph
+  {:arglists ([source-span node-ids node module effect-graph]),
+   :admission :none,
+   :native-compatibility-only? true},
   propagate-managed-ownership
   {:arglists ([forwarded-value-node-ids nodes]), :admission :none},
   expected-managed-node-ids
@@ -22,9 +29,11 @@
   canonical-owner-id
   {:arglists ([shared-owner-domain-id product node]),
    :admission :none}},
+ :native-graph-boundary :c9-native-graph-projections,
+ :native-graph-status-is-data? true,
  :dependency-direction
  {:requires [clojure.set],
-  :consumed-by [gravity.bootstrap],
+  :consumed-by [gravity.bootstrap gravity.c9-ownership-checker.graphs],
   :forbids
   [gravity.bootstrap
    gravity.c9-ownership-checker
@@ -51,7 +60,8 @@
   C11
   C15
   BOOT8
-  TEST2],
+  TEST2
+  D6],
  :unsupported
  [:public-input-admission
   :callback-authentication
@@ -72,22 +82,35 @@
   :persistent-ownership-extras
   :shared-domain-digest-operation
   :forwarding-and-owner-operations
-  :common-key-schema],
+  :common-key-schema
+  :explicit-native-module-and-effect-node-view
+  :source-span-and-node-callbacks],
+ :preserves-native-graphs
+ [:callback-lookup-and-invocation-order
+  :exception-identity
+  :node-order-and-owner-numbering
+  :sorted-owner-map
+  :fallback-values
+  :source-origin-records
+  :profile-and-target-data],
  :namespace gravity.ownership,
  :diagnostic-ownership
  {:stage
   [:persistent-sharing-predicate :exact-ownership-key-predicate],
   :existing-callers
-  [C9-MUT-ALIAS C9-TRANSFER C6-VERIFY :diagnostic-construction]},
+  [C9-MUT-ALIAS C9-TRANSFER C6-VERIFY :diagnostic-construction],
+  :native-graph-projections :original-callback-and-host-errors},
  :artifact-outputs
  [:persistent-ownership-records
   :forwarded-node-identities
   :managed-provider-propagation
   :owner-domain-identities
   :alias-and-schema-predicates
-  :expected-managed-node-identities],
+  :expected-managed-node-identities
+  :native-ownership-graph
+  :native-borrow-graph],
  :contract-boundary :native-seed-persistent-ownership-data}
-))
+)
 
 (defn persistent-ownership
   [role extra]
@@ -204,6 +227,76 @@
                      (forwarded-value-node-ids node)))]
        (cond-> managed managed? (conj (:node-id node)))))
    #{} nodes))
+
+(defn native-ownership-graph [source-span node-ids node module effect-graph]
+  (let [node-ids (node-ids effect-graph)]
+    {:artifact :gravity/c9-ownership-graph
+     :module (:module module)
+     :owners
+     (into (sorted-map)
+           (map-indexed (fn [idx node-id]
+                          [node-id
+                           {:value-id node-id
+                            :owner-id (str "owner-" (inc idx))
+                            :kind (case (mod idx 6)
+                                    0 :persistent-immutable
+                                    1 :owned-mutable
+                                    2 :borrowed-immutable
+                                    3 :borrowed-mutable
+                                    4 :region-owned
+                                    :linear-resource)
+                            :copyable? (zero? (mod idx 6))
+                            :profile (:profile module)
+                            :target (:target module)
+                            :source (get-in effect-graph [:nodes node-id :source])}])
+                        node-ids))
+     :moves [{:move-id "move-owned-buffer"
+              :from "buffer" :to "worker-buffer"
+              :value (node node-ids 1 "core-node-owned")
+              :owner-before "owner-2" :owner-after "owner-task"
+              :span (source-span (:source-path module) 0)
+              :status :accepted}]
+     :consumes [{:consume-id "consume-linear-file"
+                 :resource-id "resource-file" :operation :close
+                 :owner-before "owner-resource" :terminal-state :closed
+                 :span (source-span (:source-path module) 0)
+                 :status :accepted}]
+     :status :complete}))
+
+(defn native-borrow-graph [node-ids node module effect-graph]
+  (let [node-ids (node-ids effect-graph)]
+    {:artifact :gravity/c9-borrow-graph
+     :module (:module module)
+     :nodes {:owners ["owner-2" "owner-region" "owner-resource"]
+             :borrows ["borrow-immutable-a" "borrow-immutable-b"
+                       "borrow-mutable-exclusive"]
+             :ranges [:whole :header :payload]
+             :provider-scopes [:provider/scope-stdout :provider/scope-memory]}
+     :edges [{:edge :immutable-borrow :owner "owner-2"
+              :borrow-id "borrow-immutable-a"
+              :value (node node-ids 1 "core-node-owned") :range :whole
+              :lifetime "lt-borrow-read" :status :accepted}
+             {:edge :immutable-borrow :owner "owner-2"
+              :borrow-id "borrow-immutable-b"
+              :value (node node-ids 1 "core-node-owned") :range :whole
+              :lifetime "lt-borrow-read" :status :accepted}
+             {:edge :mutable-borrow :owner "owner-2"
+              :borrow-id "borrow-mutable-exclusive"
+              :value (node node-ids 1 "core-node-owned") :range :payload
+              :lifetime "lt-borrow-write" :status :accepted}
+             {:edge :field-projection :owner "owner-2"
+              :borrow-id "borrow-field-header"
+              :value (node node-ids 2 "core-node-field") :range :header
+              :lifetime "lt-borrow-read" :status :accepted}
+             {:edge :transfer :owner "owner-2" :destination "owner-task"
+              :value (node node-ids 3 "core-node-transfer")
+              :lifetime "lt-structured-task" :status :accepted}]
+     :conflict-analysis {:many-immutable-borrows :accepted
+                         :one-mutable-borrow :accepted
+                         :move-while-borrowed :rejected-by-diagnostic
+                         :mutable-alias :rejected-by-diagnostic
+                         :status :complete}
+     :status :complete}))
 
 (doseq [[_ operation] (ns-publics *ns*)]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))
