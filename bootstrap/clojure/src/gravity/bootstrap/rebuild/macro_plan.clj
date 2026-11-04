@@ -47,13 +47,30 @@
    :byte-count 290
    :expected-expanded-forms '[(def add-one (fn [x] (+ x 1)))]})
 (def ^:private rejected-diagnostic
-  {:rule "C4-RETURN" :severity :error :stage :macro-expansion})
+  {:artifact :gravity/sh05-macro-diagnostic
+   :rule "C4-RETURN"
+   :severity :error
+   :lifecycle :active
+   :stage :macro-expansion
+   :generated-span nil
+   :profile :meta
+   :target :jvm
+   :build-effects []
+   :capabilities []
+   :hygiene-context {:marks [] :lexical-scopes []}
+   :remediation "Return a valid syntax object from the macro."
+   :diagnostic-id-request {:digest-ref 0}
+   :macro-name 'defn
+   :facts {:reason :macro-return-not-syntax
+           :caller-profile :meta
+           :generated-profile :meta
+           :generated-unsafe? false
+           :catalog-mapping {:c4-rule "C4-RETURN" :owner-rules []}}})
 (def ^:private rejected-fixture
   {:path "bootstrap/clojure/fixtures/self-hosting/sh-05/rejected/return-non-syntax.gravity"
    :sha256 "sha256:b5e68ccf6f7acc74f6b5054d38896fb6a24c81a07ea0b4eaf139caa43409b9a8"
    :byte-count 565
-   :diagnostic (:rule rejected-diagnostic)
-   :diagnostics rejected-diagnostic})
+   :diagnostic (:rule rejected-diagnostic)})
 
 (def ^:private default-component
   {:component-id component-id
@@ -75,6 +92,7 @@
    :conformance {:accepted :macro-template-result
                  :rejected :structured-c4-diagnostic
                  :native-target :unrun}
+   :failure-output-policy :retain-published-outputs
    :nonclaims [:whole-compiler-rebuild
                :self-hosting
                :seed-retirement
@@ -174,7 +192,7 @@
   [^bytes bytes label]
   (try
     (with-open [reader (java.io.PushbackReader.
-                        (java.io.StringReader. (bytes-text bytes)))]
+                        (java.io.StringReader. (utf8-snapshot bytes label)))]
       (let [eof (Object.)
             value (edn/read {:eof eof} reader)
             trailing (edn/read {:eof eof} reader)]
@@ -509,7 +527,7 @@
    " :expanded-syntax-recipe (:expanded-syntax-recipe template)"
    " :expanded-forms expanded-forms"
    " :diagnostic (get-in result [:diagnostics 0 :rule])"
-   " :diagnostics (select-keys (first (:diagnostics result)) [:rule :severity :stage])}))"
+   " :diagnostics (:diagnostics result)}))"
    " accepted (run-fixture " (literal (select-keys accepted-fixture
                                                    [:path :sha256 :byte-count :expected-expanded-forms])) ")"
    " rejected (run-fixture " (literal (select-keys rejected-fixture
@@ -518,6 +536,7 @@
    " :component-id " (literal component-id)
    " :execution-child {:loaded-plan? true :fresh-c3-request? true"
    " :fresh-operations? true :source-mode :development-current"
+   " :macro-version (get-in identities [:public-function-hashes 'sh05-expand-macro-template])"
    " :loaded-plan-id (:plan-id plan) :loaded-plan-sha256 plan-sha256}"
    " :accepted accepted :rejected rejected"
    " :provenance {:compiler-revision " (literal compiler-revision)
@@ -575,14 +594,139 @@
    :input-stability :stable
    :authority :non-authoritative})
 
+(def ^:private c4-diagnostic-keys
+  #{:artifact :rule :severity :lifecycle :stage :macro-name :macro-version
+    :definition-span :call-site-span :generated-span :profile :target
+    :build-effects :capabilities :hygiene-context :origin-chain :facts
+    :remediation :diagnostic-id-request})
+
+(def ^:private c4-diagnostic-facts-keys
+  #{:reason :generated-profile :caller-profile :generated-unsafe?
+    :trace-replay-id :recorded-trace-replay-id :catalog-mapping})
+
+(def ^:private c4-diagnostic-preimage-keys
+  #{:domain :rule :macro-name :macro-version :call-site-syntax-id
+    :definition-syntax-id :reader-semantic-binding-id :source-revision-id
+    :profile :target :semantic-call-span :requested-build-effects
+    :requested-capabilities})
+
+(def ^:private c4-source-span-keys
+  #{:column-end :line-start :file :source :line-end :scalar-end
+    :scalar-start :byte-start :byte-end :column-start})
+
+(defn- valid-c4-span?
+  [span source]
+  (and (map? span)
+       (= c4-source-span-keys (set (keys span)))
+       (= source (:source span))
+       (sha256-id? (:file span))
+       (every? #(and (integer? %) (not (neg? %)))
+               (vals (select-keys span [:scalar-start :scalar-end
+                                        :byte-start :byte-end])))
+       (every? #(and (integer? %) (pos? %))
+               (vals (select-keys span [:line-start :line-end
+                                        :column-start :column-end])))
+       (<= (:scalar-start span) (:scalar-end span))
+       (<= (:byte-start span) (:byte-end span))))
+
+(defn- valid-c4-call-site-span?
+  [span source]
+  (and (map? span)
+       (= #{:all :primary} (set (keys span)))
+       (= 1 (count (:all span)))
+       (= (:primary span) (first (:all span)))
+       (valid-c4-span? (:primary span) source)))
+
+(defn- valid-c4-origin-chain?
+  [diagnostic source]
+  (let [origin (first (:origin-chain diagnostic))
+        producer (:producer origin)]
+    (and (vector? (:origin-chain diagnostic))
+         (= 1 (count (:origin-chain diagnostic)))
+         (= #{:kind :span :producer :producer-version :input-syntax-ids
+              :generation-reason :build-effects}
+            (set (keys origin)))
+         (= :source (:kind origin))
+         (= (:primary (:call-site-span diagnostic)) (:span origin))
+         (= #{:kind :name :identity :source-id :generated-form-id}
+            (set (keys producer)))
+         (= :reader (:kind producer))
+         (= 'gravity.bootstrap.reader (:name producer))
+         (sha256-id? (:identity producer))
+         (sha256-id? (:source-id producer))
+         (= (:source-id producer) (:file (:span origin)))
+         (nil? (:generated-form-id producer))
+         (= "SH-03" (:producer-version origin))
+         (= [] (:input-syntax-ids origin))
+         (= :source-read (:generation-reason origin))
+         (= [] (:build-effects origin))
+         (valid-c4-span? (:span origin) source))))
+
+(defn- valid-c4-diagnostic-preimage?
+  [request diagnostic macro-version]
+  (let [preimage (:preimage request)]
+    (and (map? request)
+         (= #{:ordinal :purpose :preimage} (set (keys request)))
+         (= 0 (:ordinal request))
+         (= :sh05-macro-diagnostic-id (:purpose request))
+         (map? preimage)
+         (= c4-diagnostic-preimage-keys (set (keys preimage)))
+         (= :gravity/sh05-c4-diagnostic-v1 (:domain preimage))
+         (= (:rule diagnostic) (:rule preimage))
+         (= (:macro-name diagnostic) (:macro-name preimage))
+         (= macro-version (:macro-version preimage))
+         (= (:profile diagnostic) (:profile preimage))
+         (= (:target diagnostic) (:target preimage))
+         (= (:build-effects diagnostic) (:requested-build-effects preimage))
+         (= (:capabilities diagnostic) (:requested-capabilities preimage))
+         (= {:source nil} (:semantic-call-span preimage))
+         (every? sha256-id?
+                 (map preimage [:call-site-syntax-id
+                                :definition-syntax-id
+                                :reader-semantic-binding-id
+                                :source-revision-id])))))
+
+(defn- valid-c4-diagnostic?
+  [diagnostic source macro-version digest-requests]
+  (let [expected (select-keys rejected-diagnostic
+                               [:artifact :rule :severity :lifecycle :stage
+                                :generated-span :profile :target :build-effects
+                                :capabilities :hygiene-context :remediation
+                                :diagnostic-id-request :macro-name])
+        facts (:facts diagnostic)]
+    (and (map? diagnostic)
+         (= c4-diagnostic-keys (set (keys diagnostic)))
+         (= expected (select-keys diagnostic (keys expected)))
+         (= macro-version (:macro-version diagnostic))
+         (= {:source macro-source-path
+             :byte-start 0
+             :byte-end macro-source-byte-count}
+            (:definition-span diagnostic))
+         (valid-c4-call-site-span? (:call-site-span diagnostic) source)
+         (valid-c4-origin-chain? diagnostic source)
+         (map? facts)
+         (= c4-diagnostic-facts-keys (set (keys facts)))
+         (= (select-keys (:facts rejected-diagnostic)
+                         [:reason :generated-profile :caller-profile
+                          :generated-unsafe? :catalog-mapping])
+            (select-keys facts [:reason :generated-profile :caller-profile
+                                :generated-unsafe? :catalog-mapping]))
+         (sha256-id? (:trace-replay-id facts))
+         (= (:trace-replay-id facts) (:recorded-trace-replay-id facts))
+         (valid-c4-diagnostic-preimage? (first digest-requests)
+                                        diagnostic macro-version))))
+
 (defn- validate-fixture-record!
-  [record source compiler-revision toolchain]
+  [record project-root source compiler-revision toolchain macro-version]
   (let [accepted (:accepted record)
-        rejected (:rejected record)]
+        rejected (:rejected record)
+        rejected-source (.getPath
+                         (canonical-file project-root (:path rejected-fixture)))]
     (when-not (and (= {:loaded-plan? true
                        :fresh-c3-request? true
                        :fresh-operations? true
                        :source-mode :development-current
+                       :macro-version macro-version
                        :loaded-plan-id (:loaded-plan-id (:execution-child record))
                        :loaded-plan-sha256 (:loaded-plan-sha256 (:execution-child record))}
                       (:execution-child record))
@@ -606,7 +750,7 @@
                    (= (:sha256 accepted-fixture)
                       (:source-content-hash accepted))
                    (true? (:utf8-snapshot? accepted))
-                   (= {} (:diagnostics accepted))
+                   (= [] (:diagnostics accepted))
                    (= :gravity/sh05-macro-template-result (:artifact accepted))
                    (= 1 (:schema-version accepted))
                    (map? (:expansion-template accepted))
@@ -640,15 +784,22 @@
                    (= 1 (:digest-request-count rejected))
                    (false? (:expansion-template? rejected))
                    (= (:diagnostic rejected-fixture) (:diagnostic rejected))
-                   (= (:diagnostics rejected-fixture) (:diagnostics rejected)))
+                   (vector? (:diagnostics rejected))
+                   (= 1 (count (:diagnostics rejected)))
+                   (valid-c4-diagnostic? (first (:diagnostics rejected))
+                                         rejected-source
+                                         macro-version
+                                         (:digest-requests rejected)))
       (fail! :conformance "macro execution child produced unexpected fixture outcomes"
              {:accepted (select-keys accepted
                                      [:status :artifact :schema-version
                                       :digest-request-count :expansion-template?
-                                      :macro :macro-version :expanded-forms])
+                                      :macro :macro-version :expanded-forms
+                                      :diagnostics])
               :rejected (select-keys rejected [:status :artifact :schema-version
                                                :digest-request-count
-                                               :expansion-template? :diagnostic])}))))
+                                               :expansion-template? :diagnostic
+                                               :diagnostics])}))))
 
 (defn- validate-execution-summary!
   [summary record plan-id plan-sha256 record-sha256]
@@ -689,28 +840,24 @@
      :size (.size attributes)
      :sha256 (file-sha256 canonical)}))
 
-(defn- output-still-owned?
-  [{:keys [^File file file-key size sha256]}]
-  (try
-    (when-let [attributes (output-attributes file)]
-      (and (.isRegularFile attributes)
-           (some? file-key)
-           (= file-key (.fileKey attributes))
-           (= size (.size attributes))
-           (= sha256 (file-sha256 file))))
-    (catch Exception _
-      false)))
-
 (defn- remember-output!
   [owned ^File file]
   (swap! owned conj (output-ownership file))
   file)
 
-(defn- cleanup-owned-outputs!
+(defn- retained-output-receipt
   [owned]
-  (doseq [{:keys [^File file] :as ownership} @owned]
-    (when (output-still-owned? ownership)
-      (Files/deleteIfExists (.toPath file)))))
+  (mapv (fn [{:keys [^File file file-key size sha256]}]
+          {:path (.getPath file)
+           :file-key (str file-key)
+           :size size
+           :sha256 sha256})
+        @owned))
+
+(defn- retain-owned-outputs!
+  [owned]
+  {:policy (:failure-output-policy default-component)
+   :outputs (retained-output-receipt owned)})
 
 (defn run-development-macro-plan!
   "Build, persist, reload, and execute the current macro plan.
@@ -734,8 +881,7 @@
        (when (.exists file)
          (fail! :output-exists "bootstrap macro output already exists"
                 {:path (.getPath file)})))
-     (let [succeeded? (atom false)
-           owned-outputs (atom #{})]
+     (let [owned-outputs (atom #{})]
        (try
          (let [producer (run-child! project-root
                                     (producer-expression (.getPath plan-file))
@@ -780,12 +926,15 @@
                  _ (assert-stable-inputs! inputs project-root :after-execution)
                  record (read-edn-file! record-file "macro execution record")
                  record-sha256 (file-sha256 record-file)
+                 macro-version (get-in payload [:identities :public-function-hashes
+                                                macro-function])
                  execution-summary (:summary execution)
                  _ (validate-execution-summary!
                     execution-summary record (get-in payload [:plan :plan-id])
                     plan-sha256 record-sha256)
                  result (do
-                          (validate-fixture-record! record source revision toolchain)
+                          (validate-fixture-record! record project-root source
+                                                    revision toolchain macro-version)
                           {:component component
                            :source source
                            :compiler-revision revision
@@ -799,8 +948,13 @@
                                            :record record-sha256}
                            :plan-path (.getPath plan-file)
                            :record-path (.getPath record-file)})]
-             (reset! succeeded? true)
              result))
-         (finally
-           (when-not @succeeded?
-             (cleanup-owned-outputs! owned-outputs))))))))
+         (catch clojure.lang.ExceptionInfo error
+           (throw (ex-info (.getMessage error)
+                           (assoc (ex-data error)
+                                  :failure-output-policy
+                                  (:failure-output-policy component)
+                                  :retained-outputs
+                                  (retain-owned-outputs! owned-outputs))
+                           error)))
+         )))))

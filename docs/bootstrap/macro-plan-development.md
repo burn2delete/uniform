@@ -30,13 +30,18 @@ compiler, a native backend, or a self-hosting proof.
   that same snapshot is passed to C3 before invoking the loaded entry.
 - The accepted fixture must retain the exact `(def add-one (fn [x] (+ x 1)))`
   expansion datum.
-- The rejected fixture must retain the complete C4 diagnostic rule, severity,
-  and stage, and the record must bind the source/compiler/toolchain inputs
-  while they remain stable across producer and execution children.
-- Outputs are created with CREATE_NEW, read back, hashed, and removed on a
-  failed run only when this run's file key, size, and digest still match the
-  recorded ownership snapshot. Existing, raced, and replacement output files
-  are never overwritten or removed.
+- The rejected fixture must retain the complete structured C4 diagnostic and
+  provenance: macro identity/version, definition and call-site spans, origin
+  chain, profile/target, effects/capabilities, hygiene, facts, remediation,
+  and the authenticated diagnostic digest preimage. The record must bind the
+  source/compiler/toolchain inputs while they remain stable across producer
+  and execution children.
+- Outputs are created with CREATE_NEW, read back, and hashed. A failed run
+  retains every published output because a portable public-path delete cannot
+  be coupled atomically to the ownership observation. The failure diagnostic
+  records the retention policy and each output's observed file key, size, and
+  digest; existing, raced, and replacement files are never overwritten or
+  deleted by cleanup.
 
 ## Dependencies
 
@@ -69,6 +74,9 @@ stable-input result checked around both child processes.
 The record labels the producer as Clojure stage0 and the fresh consumer as the
 generic Clojure stage2 rule runner; both labels are live-worktree development
 provenance, not self-hosting authority.
+On failure, the thrown diagnostic includes `:failure-output-policy
+:retain-published-outputs` and a `:retained-outputs` receipt for the outputs
+already published by that run.
 
 ## Conformance and acceptance
 

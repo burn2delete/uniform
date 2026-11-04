@@ -141,7 +141,7 @@
         (is (= "sha256:b840a6da3225c88aca70cb9e3234d509a2729d312d876192856aafe5622e2ed2"
                (:source-content-hash accepted)))
         (is (true? (:utf8-snapshot? accepted)))
-        (is (= {} (:diagnostics accepted)))
+        (is (= [] (:diagnostics accepted)))
         (is (= :gravity/sh05-macro-template-result (:artifact rejected)))
         (is (nil? (:expansion-template rejected)))
         (is (= 1 (count (:digest-requests rejected))))
@@ -151,8 +151,13 @@
         (is (= "sha256:b5e68ccf6f7acc74f6b5054d38896fb6a24c81a07ea0b4eaf139caa43409b9a8"
                (:source-content-hash rejected)))
         (is (true? (:utf8-snapshot? rejected)))
-        (is (= {:rule "C4-RETURN" :severity :error :stage :macro-expansion}
-               (:diagnostics rejected)))
+        (is (= 1 (count (:diagnostics rejected))))
+        (is (= #{:artifact :rule :severity :lifecycle :stage :macro-name
+                 :macro-version :definition-span :call-site-span
+                 :generated-span :profile :target :build-effects :capabilities
+                 :hygiene-context :origin-chain :facts :remediation
+                 :diagnostic-id-request}
+               (set (keys (first (:diagnostics rejected))))))
         (let [validate-record! (private-function 'validate-fixture-record!)
               validate-summary! (private-function 'validate-execution-summary!)
               record-sha256 (get-in result [:output-sha256 :record])
@@ -163,48 +168,57 @@
               wrong-observation (assoc-in record
                                           [:execution-child :loaded-plan-id]
                                           :substituted-plan)
+              macro-version (get-in result [:plan :identities
+                                            :public-function-hashes
+                                            'sh05-expand-macro-template])
               wrong-diagnostic (assoc-in record
-                                         [:rejected :diagnostics :severity]
+                                         [:rejected :diagnostics 0 :severity]
                                          :warning)
+              wrong-diagnostic-provenance
+              (assoc-in record
+                        [:rejected :diagnostics 0 :call-site-span :primary :source]
+                        "forged-source.gravity")
               wrong-provenance (assoc-in record
                                          [:provenance :input-stability]
                                          :unknown)
               wrong-summary (assoc (:execution-summary result)
                                    :record-sha256
-                                   "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")]
-          (is (= :conformance
-                 (:reason (ex-data
-                           (caught #(validate-record! wrong-expansion
-                                                      (:source result)
-                                                      (:compiler-revision result)
-                                                      (:toolchain result))))))
+                                   "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+              expansion-error
+              (caught #(validate-record! wrong-expansion "." (:source result)
+                                         (:compiler-revision result)
+                                         (:toolchain result) macro-version))
+              diagnostic-error
+              (caught #(validate-record! wrong-diagnostic "." (:source result)
+                                         (:compiler-revision result)
+                                         (:toolchain result) macro-version))
+              diagnostic-provenance-error
+              (caught #(validate-record! wrong-diagnostic-provenance "."
+                                         (:source result)
+                                         (:compiler-revision result)
+                                         (:toolchain result) macro-version))
+              provenance-error
+              (caught #(validate-record! wrong-provenance "." (:source result)
+                                         (:compiler-revision result)
+                                         (:toolchain result) macro-version))
+              observation-error
+              (caught #(validate-summary! (:execution-summary result)
+                                          wrong-observation plan-id plan-sha256
+                                          record-sha256))
+              summary-error
+              (caught #(validate-summary! wrong-summary record plan-id
+                                          plan-sha256 record-sha256))]
+          (is (= :conformance (-> expansion-error ex-data :reason))
               "the accepted fixture must retain its exact expansion datum")
-          (is (= :conformance
-                 (:reason (ex-data
-                           (caught #(validate-record! wrong-diagnostic
-                                                      (:source result)
-                                                      (:compiler-revision result)
-                                                      (:toolchain result))))))
+          (is (= :conformance (-> diagnostic-error ex-data :reason))
               "the rejected fixture must retain its full structured diagnostic")
-          (is (= :conformance
-                 (:reason (ex-data
-                           (caught #(validate-record! wrong-provenance
-                                                      (:source result)
-                                                      (:compiler-revision result)
-                                                      (:toolchain result))))))
+          (is (= :conformance (-> diagnostic-provenance-error ex-data :reason))
+              "the rejected fixture must retain authenticated source provenance")
+          (is (= :conformance (-> provenance-error ex-data :reason))
               "the execution record must retain stable source/compiler provenance")
-          (is (= :execution-summary
-                 (:reason (ex-data
-                           (caught #(validate-summary! (:execution-summary result)
-                                                       wrong-observation
-                                                       plan-id plan-sha256
-                                                       record-sha256)))))
+          (is (= :execution-summary (-> observation-error ex-data :reason))
               "the child observation must bind the loaded plan identity")
-          (is (= :execution-summary
-                 (:reason (ex-data
-                           (caught #(validate-summary! wrong-summary record
-                                                       plan-id plan-sha256
-                                                       record-sha256)))))
+          (is (= :execution-summary (-> summary-error ex-data :reason))
               "the child summary must bind the read-back record hash"))
         (is (.isFile (io/file (:plan-path result))))
         (is (.isFile (io/file (:record-path result))))
@@ -212,31 +226,31 @@
       (finally
         (delete-tree! root)))))
 
-(deftest raced-output-cleanup-preserves-unowned-file
+(deftest failed-output-retention-records-owned-file
   (let [root (temporary-root)
         owned-file (io/file root "owned.edn")
-        raced-file (io/file root "raced.edn")
         owned (atom #{})
         remember! (private-function 'remember-output!)
-        cleanup! (private-function 'cleanup-owned-outputs!)]
+        retain! (private-function 'retain-owned-outputs!)]
     (try
       (io/make-parents owned-file)
       (spit owned-file "owned-by-this-run")
       (remember! owned owned-file)
-      (spit raced-file "created-after-precheck")
-      (cleanup! owned)
-      (is (not (.exists owned-file)))
-      (is (= "created-after-precheck" (slurp raced-file)))
+      (let [receipt (retain! owned)]
+        (is (.exists owned-file))
+        (is (= :retain-published-outputs (:policy receipt)))
+        (is (= (.getCanonicalPath owned-file)
+               (:path (first (:outputs receipt))))))
       (finally
         (delete-tree! root)))))
 
-(deftest replacement-output-cleanup-preserves-replacement
+(deftest failed-output-retention-preserves-replacement-after-ownership-snapshot
   (let [root (temporary-root)
         owned-file (io/file root "owned.edn")
         replacement-file (io/file root "replacement.edn")
         owned (atom #{})
         remember! (private-function 'remember-output!)
-        cleanup! (private-function 'cleanup-owned-outputs!)]
+        retain! (private-function 'retain-owned-outputs!)]
     (try
       (io/make-parents owned-file)
       (spit owned-file "owned-by-this-run")
@@ -246,8 +260,11 @@
                   (.toPath owned-file)
                   (into-array StandardCopyOption
                               [StandardCopyOption/REPLACE_EXISTING]))
-      (cleanup! owned)
-      (is (= "replacement-after-write" (slurp owned-file)))
+      (let [receipt (retain! owned)]
+        (is (= "replacement-after-write" (slurp owned-file)))
+        (is (= (.getCanonicalPath owned-file)
+               (:path (first (:outputs receipt)))))
+        (is (string? (:sha256 (first (:outputs receipt))))))
       (finally
         (delete-tree! root)))))
 
