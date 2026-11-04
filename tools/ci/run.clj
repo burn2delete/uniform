@@ -939,6 +939,7 @@
              ["syntax-regression" 600
               (command "2g" "-M:dev-test"
                        "--namespace" "gravity.syntax.pipeline-test"
+                       "--namespace" "gravity.syntax.owner-calls-test"
                        "--namespace" "gravity.bootstrap-compatibility.c3-test"
                        "--namespace" "gravity.self-hosting.sh04-fresh-c2-construction-test"
                        "--namespace" "gravity.self-hosting.sh04-form-index-test"

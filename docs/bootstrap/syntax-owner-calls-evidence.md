@@ -82,10 +82,42 @@ functions are outside these five operations. No unmerged authentication code
 was adopted or executed; its acceptance does not grant this slice authority.
 Coordinate any later actual writer or incompatible invariant change.
 
-This initial scope record has no implementation/test/CI credit. This correction
+The initial scope-only commit has no implementation/test/CI credit. This correction
 does not complete Syntax migration, prove every other port use, establish
 canonical C2/C3 authentication, execute Gravity source, renew source pins or
 grant self-hosting, seed retirement, release or whole-language conformance.
 Held SH03/SH04, private compiler/authentication and retained dirty-patch routes
 remain untouched. Runtime test execution ports are explicit unit controls,
 never evidence of a genuine authenticated compiler execution.
+
+## Corrective implementation and local regression
+
+The correction resolves 17 callable uses in the five scoped functions through
+one private owner-function helper. Each use dereferences a Var before argument
+evaluation and retains a non-Var callable unchanged. It adds no public API,
+entry snapshot, admission guard, fallback owner or exception remapping. The
+existing Syntax CI regression command now includes gravity.syntax.owner-calls-test.
+
+The corrected prepatch regression ran eight tests and 42 assertions with five
+failures and no errors: the three diagnostic constructors, nested runtime
+result cleaning and runtime cause-message construction selected late owners.
+The same tests after the correction pass all 42 assertions. Other controls cover
+later-call rebinding, ordinary function ports, exact span/path/fact references,
+returning failures, native carrier acceptance, actual C3-SHAPE refusals, all five
+contained host classes, and exact interrupted/fatal exception propagation.
+
+Initial test preparation had one excess closing delimiter. The first executable
+prepatch run also observed interruption too late, after test reporting could
+consume the flag. Both observations remain preserved under the local evidence
+prefix /tmp/uniform-syntax-owner-calls-. The observer now captures the flag
+directly in the InterruptedException catch. Its corrected prepatch run passes
+that control; none of those preparation failures is attributed to production.
+
+Before the change, native capture on two actual paired source paths retained 40
+full records: 12 native outputs and 28 C3 refusals across Var and function ports.
+The metadata-aware EDN SHA256 is
+27f9c5daf0a8bf276065c793adc64f9bd3c4215604fd95f81529ab2ba9f3f977.
+The source paths, text/hash, spans and complete diagnostic/native data remain in
+the capture. Runtime execution is explicitly marked as a unit control in every
+record. Clean-candidate after-capture comparison, broader checks, independent
+review, hosted exact source/base CI and integration are still pending.
