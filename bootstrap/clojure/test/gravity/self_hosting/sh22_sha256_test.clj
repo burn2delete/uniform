@@ -189,5 +189,5 @@
     (doseq [field [:text-decoding :canonicalization :constant-time-claim
                    :secret-handling-claim]]
       (is (false? (get policy field))))
-    (is (= #{} (:effects policy)))
+    (is (= #{:memory/allocate} (:effects policy)))
     (is (= #{} (:capabilities policy)))))
