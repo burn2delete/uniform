@@ -143,6 +143,39 @@
       (is (nil? (workflow/complete! ctx {:catalog {:tasks [] :unclassified []}})))
       (is (nil? (workflow/complete! ctx {:catalog {:tasks [{:checked true}] :unclassified ["unknown/tasks.md"]}}))))))
 
+(deftest completion-needs-executed-checks-exact-review-and-current-main
+  (let [ctx (assoc (fixture/context) :config {:completion-checks [["clojure" "-M:release-check"]]
+                                             :check-executables #{"clojure"}})
+        snapshot {:base "base" :worktree (:state-dir ctx) :catalog {:tasks [{:checked true}] :unclassified []}}
+        checked (atom [])
+        review (atom {:base "base" :tree "tree" :verdict "complete" :summary "Fixture release evidence verified"
+                      :evidence ["immutable fixture receipt"] :remaining []})
+        main (atom "base")]
+    (with-redefs [rt/git (fn [& _] "tree") flow/assert-clean! (fn [& _] nil)
+                  flow/fresh-main! (fn [_] @main)
+                  codex/command! (fn [_ _ _ command] (swap! checked conj command))
+                  codex/job! (fn [& _] @review)]
+      ;; HEAD and tree are distinct identities, even in this deterministic fixture.
+      (with-redefs [rt/git (fn [_ _ & args] (if (= ["rev-parse" "HEAD"] (vec args)) "base" "tree"))]
+        (is (true? (workflow/complete! ctx snapshot)))
+        (is (= [["clojure" "-M:release-check"]] @checked))
+        (reset! main "new-main")
+        (is (false? (workflow/complete! ctx snapshot)))
+        (reset! main "base")
+        (swap! review assoc :verdict "incomplete" :remaining ["Unaccepted final seed retirement"])
+        (is (false? (workflow/complete! ctx snapshot)))
+        (swap! review assoc :base "different-source")
+        (is (thrown-with-msg? Exception #"different source" (workflow/complete! ctx snapshot)))))))
+
+(deftest campaign-is-tracked-without-resetting-operator-state-on-resume
+  (let [ctx (fixture/context) statuses (atom [])]
+    (with-redefs [gh/ensure-issue! (fn [& _] {:number 1 :node_id "campaign"})
+                  gh/status! (fn [_ issue status] (swap! statuses conj [(:number issue) status]))]
+      (workflow/ensure-campaign! ctx)
+      (workflow/ensure-campaign! ctx)
+      (is (= [[1 "Proposed"]] @statuses))
+      (is (true? (:campaign-tracked @(:state ctx)))))))
+
 (deftest operator-controls-have-independent-priority-and-execution-meaning
   (let [settings {1 {"Priority" "Highest" "Control" "Paused"} 2 {"Priority" "Low" "Control" "Active"}}]
     (is (= 0 (project/priority settings 1)))

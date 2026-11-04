@@ -44,6 +44,9 @@
       (gh/ensure-issue! ctx "campaign/implementation" (get-in ctx [:config :campaign])
         "Implement current Spec Kit task outcomes through independently reviewed, checked and verified merges. Keep canonical requirements and task files authoritative. Continue toward the complete language, self-hosting and seedless release; an empty actionable queue is not completion."
         nil "implementation:campaign")))
+  (when-not (:campaign-tracked @(:state ctx))
+    (gh/status! ctx (:campaign-issue @(:state ctx)) "Proposed")
+    (rt/update! ctx assoc :campaign-tracked true))
   (:campaign-issue @(:state ctx)))
 
 (defn mirror! [ctx snapshot base]
