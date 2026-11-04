@@ -1,7 +1,6 @@
 (ns advance.workflow-test
   "Real Git candidates and squash receipts with deterministic model/GitHub doubles."
-  (:require [advance.catalog :as catalog]
-            [advance.github :as project]
+  (:require [advance.github :as project]
             [advance.main :as main]
             [advance.workflow :as workflow]
             [clojure.data.json :as json]
@@ -23,7 +22,7 @@
                 :preserve "The value remains one; the broader parent remains open"
                 :paths ["work.edn" source-path] :dependencies []})
 
-(defn run-loop! [local-failure?]
+(defn run-loop! [local-failure? & [composition-failure?]]
   (let [ctx (fixture/context)
         {:keys [repo bare]} (git-fixture/repository! ctx)
         directory (io/file repo "specs/demo")
@@ -38,7 +37,7 @@
         ctx (assoc ctx :config config :before-implement workflow/validate-source!
                        :coordination-dir (str (io/file (:state-dir ctx) "coordination"))
                        :lock-file (str (io/file (:state-dir ctx) "advance-harness.lock")))
-        pr (atom nil) sequence (atom []) selections (atom 0) implementations (atom 0) checks (atom 0)
+        pr (atom nil) sequence (atom []) selections (atom 0) implementations (atom 0) checks (atom 0) readies (atom 0)
         issues (atom {}) closed (atom []) original-command rt/command
         response (fn [value] {:exit 0 :out (json/write-str value) :err ""})]
     (with-redefs
@@ -53,7 +52,12 @@
                                 (swap! issues assoc key issue) issue)))
        gh/draft! (fn [_ _ draft? _]
                    (swap! sequence conj (if draft? :draft-again :ready))
-                   (swap! pr assoc :draft draft? :isDraft draft?))
+                   (swap! pr assoc :draft draft? :isDraft draft?)
+                   (when (and (not draft?) (= 1 (swap! readies inc)) composition-failure?)
+                     (spit (io/file repo "upstream.edn") "{:upstream true}\n")
+                     (rt/git ctx repo "add" "upstream.edn")
+                     (rt/git ctx repo "commit" "-m" "Concurrent main increment")
+                     (rt/git ctx repo "push" "origin" "main")))
        gh/api (fn
                 ([_ endpoint]
                  (if (str/includes? endpoint "pulls?state") (if @pr [@pr] [])
@@ -91,8 +95,9 @@
                         (is (= "clojure" (first argv)))
                         (is (:isDraft @pr) "Draft is visible before local checks")
                         (swap! sequence conj :checked)
-                        (when (and local-failure? (= 1 (swap! checks inc)))
-                          (throw (ex-info "Sandboxed check failed" {:command argv :result {:exitCode 1}})))
+                        (let [n (swap! checks inc)]
+                          (when (or (and local-failure? (= 1 n)) (and composition-failure? (= 2 n)))
+                            (throw (ex-info "Sandboxed check failed" {:command argv :result {:exitCode 1}}))))
                         {:exitCode 0})
        codex/job! (fn [c job cwd _ _ _ _]
                     (cond
@@ -135,6 +140,25 @@
     (is (= 2 (count (filter #{:checked} sequence))))
     (is (= 1 (count (filter #{:merged} sequence))))
     (is (= :done (get-in state [:tasks "preserve-value" :status])))))
+
+(deftest moving-main-composition-failure-repairs-and-reviews-the-new-candidate
+  (let [{:keys [state implementations sequence]} (run-loop! false true)
+        task (get-in state [:tasks "preserve-value"])]
+    (is (= 2 implementations))
+    (is (= 3 (count (filter #{:checked} sequence))))
+    (is (= 2 (count (filter #{:reviewed} sequence))))
+    (is (= 1 (count (filter #{:merged} sequence))))
+    (is (= :done (:status task)))
+    (is (= (:candidate task) (get-in task [:review :candidate]) (get-in task [:checks :candidate])))
+    (is (.exists (io/file (get-in state [:catalog :worktree]) "upstream.edn")))))
+
+(deftest externally-merged-drafts-cannot-bypass-independent-acceptance
+  (let [ctx (fixture/context) t {:key "unaccepted" :base "base" :candidate "candidate" :tree "tree"}]
+    (with-redefs [flow/pr-info (fn [& _] {:state "MERGED" :headRefOid "candidate" :mergeCommit {:oid "external"}
+                                         :statusCheckRollup [{:state "SUCCESS"}]})
+                  gh/status! (fn [& _] (throw (AssertionError. "Unaccepted merge cannot be marked Done")))]
+      (is (thrown-with-msg? Exception #"evidence does not match" (flow/integrate! ctx t))))
+    (is (nil? (get-in @(:state ctx) [:tasks "unaccepted" :merged])))))
 
 (deftest queue-exhaustion-cannot-establish-project-completion
   (let [ctx (fixture/context)]

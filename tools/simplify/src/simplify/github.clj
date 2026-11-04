@@ -27,8 +27,7 @@
      (when-not (zero? (:exit result))
        (let [restricted (rt/authorization-denied? (str (:err result) "\n" (:out result)))]
          (when restricted
-           (rt/update! ctx assoc-in [:restricted-actions key] {:method method :endpoint endpoint :error (:err result)})
-           (rt/record-denial! ctx :github key {:method method :endpoint endpoint :error (:err result)}))
+           (rt/remember-denial! ctx :github key {:method method :endpoint endpoint :error (:err result)}))
          (rt/fail! "GitHub API failed; no automatic mutation retry"
                    {:endpoint endpoint :exit (:exit result) :error (:err result) :restricted restricted})))
      (when-not (str/blank? (:out result)) (json/read-str (:out result) :key-fn keyword)))))
@@ -40,9 +39,8 @@
                                            (re-find #"(?i)(resource not accessible|requires authentication|bad credentials|rate limit|forbidden)"
                                                     (or (:message %) ""))) (:errors response)))]
         (when restricted
-          (rt/update! ctx assoc-in [:restricted-actions (rt/digest (pr-str ["POST" "graphql"]))]
-                      {:method "POST" :endpoint "graphql" :errors (:errors response)})
-          (rt/record-denial! ctx :github (rt/digest (pr-str ["POST" "graphql"])) {:errors (:errors response)}))
+          (rt/remember-denial! ctx :github (rt/digest (pr-str ["POST" "graphql"]))
+                              {:method "POST" :endpoint "graphql" :errors (:errors response)}))
         (rt/fail! "GitHub GraphQL failed" {:errors (:errors response) :restricted restricted})))
     (:data response)))
 

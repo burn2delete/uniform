@@ -4,7 +4,11 @@
             [clojure.string :as str]
             [simplify.runtime :as rt]))
 
+(defn historical-reference? [text]
+  (boolean (re-find #"(?im)^(?:Status:\s*(?:reference pilot|historical reference)\b|# Tasks: [^\n]*\breference pilot\b)" text)))
+
 (defn parse [path text]
+  (if (historical-reference? text) []
   (let [lines (str/split-lines text)
         marked? (boolean (re-find #"<!-- [a-z0-9-]+-implementation-tasks:start -->" text))]
     (loop [remaining (map-indexed vector lines) region nil historical? false rows [] current nil]
@@ -36,7 +40,7 @@
           (let [result (cond-> rows current (conj current))]
             (when-not (= (count result) (count (set (map :key result))))
               (rt/fail! "Duplicate task identity" {:path path}))
-            result))))))
+            result)))))))
 
 (defn discover [root]
   (let [directory (io/file root "specs")
@@ -44,11 +48,16 @@
     (when (empty? files) (rt/fail! "No Spec Kit task files found" {:root root}))
     (let [entries (mapv (fn [file]
                           (let [path (str (.relativize (.toPath (io/file root)) (.toPath file)))
-                                text (slurp file)]
-                            {:path path :digest (rt/digest text) :tasks (parse path text)})) files)]
+                                text (slurp file)
+                                spec (io/file (.getParentFile file) "spec.md")
+                                historical? (or (historical-reference? text)
+                                                (and (.isFile spec) (historical-reference? (slurp spec))))]
+                            {:path path :digest (rt/digest text)
+                             :classification (if historical? :historical-reference :current-tasks)
+                             :tasks (if historical? [] (parse path text))})) files)]
       {:files (mapv #(dissoc % :tasks) entries)
        :tasks (vec (mapcat :tasks entries))
-       :unclassified (mapv :path (filter #(empty? (:tasks %)) entries))})))
+       :unclassified (mapv :path (filter #(and (empty? (:tasks %)) (not= :historical-reference (:classification %))) entries))})))
 
 (defn index [catalog]
   (update catalog :tasks #(mapv (fn [row] (dissoc row :body)) %)))

@@ -51,7 +51,9 @@ Every cycle reads `specs/**/tasks.md` from an isolated main snapshot. Marked
 their historical migration checklists are excluded. Additional marked Product
 regions remain visible even after historical sections. Unmarked feature files
 retain current checkboxes up to their historical section, with that ambiguity
-explicit for source review. Files without classified tasks remain unresolved;
+explicit for source review. Features explicitly marked as a reference pilot or
+historical reference remain catalogued as history; their checklists are not
+implementation work or completion prerequisites. Files without classified tasks remain unresolved;
 they cannot disappear from the completion decision.
 
 Identity combines the task file with its literal task ID. Unnumbered tasks use
@@ -149,6 +151,14 @@ clojure -M:run reconcile config.edn EFFECT-ID inspected-result.edn
 
 `pause` takes effect at scheduler boundaries. Inspect interrupted files, jobs,
 threads, PRs and actual GitHub effects before explicit retry or reconciliation.
+Status, catalog and pause do not write campaign state. Mutable commands reload
+state after acquiring the coordinator lock; rejected second coordinators cannot
+overwrite active mutation intents. Ordinary check failures during composition
+return to repair with the composed candidate retained. Actual sandbox permission
+denials remain restricted, including when reported through check exit/stderr.
+Externally merged drafts still require exact passed checks, independent review
+and successful head-bound CI before their outcomes can be accepted.
+
 Restricted actions cannot be retried. An uncertain external effect is never
 automatically replayed. Reconciliation uses the original operation's observed
 result and inspection evidence; see `../simplify/README.md`. Retained path claims

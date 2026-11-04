@@ -4,7 +4,6 @@
             [advance.workflow :as workflow]
             [simplify.main :as base]
             [simplify.runtime :as rt])
-  (:import [java.lang ProcessHandle])
   (:gen-class))
 
 (def defaults
@@ -42,19 +41,13 @@
 (defn -main [& [command config-path & args]]
   (try
     (when-not config-path (rt/fail! "Usage: clojure -M:run doctor|catalog|setup|run|resume|pause|status|retry|reconcile CONFIG.edn [ARGS]" {}))
-    (let [ctx (assoc (base/context! (base/config! config-path defaults)) :before-implement workflow/validate-source!)]
+    (let [ctx (assoc (base/context! (base/config! config-path defaults)) :before-implement workflow/validate-source! :command command)]
       (.addShutdownHook (Runtime/getRuntime)
         (Thread. ^Runnable
-          (fn []
-            (doseq [process @(:processes ctx)]
-              (with-open [descendants (.descendants ^Process process)]
-                (doseq [handle (.toArray descendants)] (.destroy ^ProcessHandle handle)))
-              (.destroy ^Process process))
-            (when (#{:running :waiting} (:status @(:state ctx))) (rt/update! ctx assoc :status :attention)))))
+          (fn [] (base/shutdown! ctx))))
       (rt/event! ctx :startup {:command command :config (dissoc (:config ctx) :worker-instructions)})
       (try (dispatch! ctx command args)
            (catch Exception e
-             (when (#{"run" "resume"} command) (rt/update! ctx assoc :status :attention))
              (rt/event! ctx :fatal {:message (.getMessage e) :data (ex-data e)})
              (throw e))))
     (catch Exception e

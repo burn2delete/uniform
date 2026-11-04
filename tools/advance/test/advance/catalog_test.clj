@@ -1,5 +1,6 @@
 (ns advance.catalog-test
   (:require [advance.catalog :as catalog]
+            [clojure.java.io :as io]
             [clojure.test :refer [deftest is]]))
 
 (def task-text
@@ -36,3 +37,13 @@
                  (assoc increment :paths ["src"])]]
       (is (thrown? Exception (catalog/validate-selection! source [bad] {}))))
     (is (thrown? Exception (catalog/validate-selection! source [increment] {"implement-one" {:status :done}})))))
+
+(deftest actual-reference-pilot-is-history-rather-than-open-implementation-work
+  (let [root (.getCanonicalPath (io/file "../.."))
+        path "specs/001-paired-source-core/tasks.md"
+        current (catalog/discover root)
+        entry (first (filter #(= path (:path %)) (:files current)))]
+    (is (= :historical-reference (:classification entry)))
+    (is (empty? (catalog/parse path (slurp (io/file root path)))))
+    (is (not-any? #(= path (:path %)) (:tasks current)))
+    (is (not (some #{path} (:unclassified current))))))

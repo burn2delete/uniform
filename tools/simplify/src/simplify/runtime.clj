@@ -54,6 +54,8 @@
     (locking state (write-edn! (:state-file ctx) @state))))
 
 (defn update! [ctx f & args]
+  (when (and (:coordinator-owner ctx) (not @(:coordinator-owner ctx)))
+    (fail! "Only the locked coordinator may update campaign state" {}))
   (let [state (:state ctx)]
     (locking state
       (apply swap! state f args)
@@ -86,7 +88,7 @@
        result))))
 
 (defn authorization-denied? [message]
-  (boolean (re-find #"(?i)(HTTP (401|403|429)|requested URL returned error: (401|403|429)|permission denied|permission to .+ denied|write access .+ not granted|authentication failed|resource not accessible|requires authentication|bad credentials|rate limit exceeded|secondary rate limit|not authorized)"
+(boolean (re-find #"(?i)(HTTP (401|403|429)|requested URL returned error: (401|403|429)|permission denied|operation not permitted|read-only file system|sandbox[^\n]*(denied|deny|forbidden)|permission to .+ denied|write access .+ not granted|authentication failed|resource not accessible|requires authentication|bad credentials|rate limit exceeded|secondary rate limit|not authorized)"
                     (or message ""))))
 
 (defn denials!
@@ -113,6 +115,11 @@
 (defn record-denial! [ctx kind key details]
   (denials! ctx (fn [denials] [(assoc denials [kind key] details) true])))
 
+(defn remember-denial! [ctx kind key details]
+  (record-denial! ctx kind key details)
+  (when (or (nil? (:coordinator-owner ctx)) @(:coordinator-owner ctx))
+    (update! ctx assoc-in [(case kind :command :restricted-commands :github :restricted-actions) key] details)))
+
 (defn run! [ctx cwd argv]
   (let [action (cond
                  (= ["git" "push"] (vec (take 2 argv))) ["git-push" (get-in ctx [:config :repository])]
@@ -126,8 +133,7 @@
     (when-not (zero? (:exit result))
       (let [restricted (authorization-denied? (str (:err result) "\n" (:out result)))]
         (when restricted
-          (update! ctx assoc-in [:restricted-commands key] {:argv argv :error (:err result)})
-          (record-denial! ctx :command key {:argv argv :error (:err result)}))
+          (remember-denial! ctx :command key {:argv argv :error (:err result)}))
         (fail! "Command failed" (assoc result :argv argv :restricted restricted))))
     (str/trim (:out result))))
 
@@ -171,6 +177,22 @@
 (defn with-lock [ctx f]
   (with-open [channel (FileChannel/open (.toPath (io/file (:lock-file ctx)))
                                        (into-array StandardOpenOption [StandardOpenOption/CREATE StandardOpenOption/WRITE]))]
-    (let [lock (.tryLock channel)]
+    (let [lock (try (.tryLock channel) (catch OverlappingFileLockException _ nil))]
       (when-not lock (fail! "Another harness owns this repository" {}))
-      (try (f) (finally (.release lock))))))
+      (try
+        ;; Contexts can be loaded while a coordinator is writing. Mutable
+        ;; commands use only the state observed after acquiring its lock.
+        (when (.exists (io/file (:state-file ctx)))
+          (let [state (read-edn (:state-file ctx)) config (:config ctx)]
+            (when-not (and (= 1 (:schema state))
+                           (= (:repository config) (:repository state)) (= (:campaign config) (:campaign state)))
+              (fail! "State belongs to another campaign or schema" {}))
+            (reset! (:state ctx) state)))
+        (when-let [owner (:coordinator-owner ctx)] (reset! owner true))
+        (try (f)
+             (catch Exception e
+               (when (#{"run" "resume"} (:command ctx)) (update! ctx assoc :status :attention))
+               (throw e)))
+        (finally
+          (when-let [owner (:coordinator-owner ctx)] (reset! owner false))
+          (.release lock))))))

@@ -2,8 +2,6 @@
   "Select real Spec Kit increments, implement, review and merge until proven complete."
   (:require [advance.catalog :as catalog]
             [advance.github :as project]
-            [clojure.java.io :as io]
-            [clojure.string :as str]
             [simplify.codex :as codex]
             [simplify.coordination :as coordination]
             [simplify.github :as gh]
@@ -169,15 +167,16 @@
         (and (= "complete" (:verdict review)) (seq (:evidence review)) (empty? (:remaining review))
              (= base (flow/fresh-main! ctx)))))))
 
+(defn failure! [ctx key e]
+  (if (and (= "Sandboxed check failed" (.getMessage e)) (not (:restricted (ex-data e))))
+    (do (flow/task! ctx key :feedback {:local-check (ex-data e) :instruction "Repair the actual failure without weakening checks."})
+        (flow/transition! ctx key :repair))
+    (flow/attention! ctx key e)))
+
 (defn run-worker! [ctx key]
   (try (flow/prepare! ctx key)
        (catch Exception e
-         (cond
-           (:ownership-wait (ex-data e)) (flow/transition! ctx key :repair)
-           (and (= "Sandboxed check failed" (.getMessage e)) (not (:restricted (ex-data e))))
-           (do (flow/task! ctx key :feedback {:local-check (ex-data e) :instruction "Repair the actual failure without weakening checks."})
-               (flow/transition! ctx key :repair))
-           :else (flow/attention! ctx key e)))))
+         (if (:ownership-wait (ex-data e)) (flow/transition! ctx key :repair) (failure! ctx key e)))))
 
 (defn campaign! [ctx]
   (project/setup! ctx)
@@ -191,6 +190,7 @@
   (let [pool (Executors/newFixedThreadPool (get-in ctx [:config :parallelism])) running (atom {})]
     (try
       (rt/update! ctx assoc :status :running)
+      (gh/status! ctx (:campaign-issue @(:state ctx)) "Implementing")
       (loop [selection-input nil]
         (doseq [[key job] @running :when (.isDone ^Future job)]
           (try (.get ^Future job) (catch Exception e (flow/attention! ctx key (or (.getCause e) e))))
@@ -205,12 +205,13 @@
                                      (project/runnable? settings (get-in @(:state ctx) [:source-tasks (:task t) :issue :number]))))]
             (doseq [t (flow/tasks ctx) :when (and (active? t) (#{:ci :merge} (:status t)) (not (contains? @running (:key t))))]
               (try (flow/integrate! ctx t)
-                   (catch Exception e (when-not (:ownership-wait (ex-data e)) (flow/attention! ctx (:key t) e)))))
+                   (catch Exception e (when-not (:ownership-wait (ex-data e)) (failure! ctx (:key t) e)))))
             (doseq [t (sort-by (fn [t] [(project/priority settings (get-in @(:state ctx) [:source-tasks (:task t) :issue :number])) (:key t)]) (flow/tasks ctx))]
               (when (and (active? t) (< (count @running) (get-in ctx [:config :parallelism]))
                          (not (contains? @running (:key t))) (flow/eligible? ctx t [])
                          (coordination/claim! ctx (:key t) (:paths t)))
                 (flow/transition! ctx (:key t) :implementing)
+                (rt/update! ctx assoc :status :running)
                 (swap! running assoc (:key t) (.submit pool ^Callable (reify Callable (call [_] (run-worker! ctx (:key t))))))))
             (let [base (when (and campaign-active? (empty? @running)) (flow/fresh-main! ctx))
                   fingerprint (when base (rt/digest (pr-str [base settings (vec (sort-by :identity (coordination/claims ctx)))

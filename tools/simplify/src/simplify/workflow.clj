@@ -58,10 +58,10 @@
     findings))
 
 (defn fresh-main! [ctx]
-  (let [{:keys [repo-dir remote base-branch]} (:config ctx)]
-    (let [ref (get-in ctx [:config :tracking-ref] "refs/simplify/main")]
+  (let [{:keys [repo-dir remote base-branch]} (:config ctx)
+        ref (get-in ctx [:config :tracking-ref] "refs/simplify/main")]
       (rt/git ctx repo-dir "fetch" remote (str "refs/heads/" base-branch ":" ref))
-      (rt/git ctx repo-dir "rev-parse" ref))))
+      (rt/git ctx repo-dir "rev-parse" ref)))
 
 (defn common-directory [ctx cwd]
   (let [path (io/file (rt/git ctx cwd "rev-parse" "--git-common-dir"))]
@@ -260,7 +260,9 @@
   (assert-clean! ctx (:worktree t))
   (assert-identity! ctx t)
   (rt/git ctx (:worktree t) "merge" "--no-edit" base)
-  (task! ctx (:key t) :base base :candidate (rt/git ctx (:worktree t) "rev-parse" "HEAD") :tree (rt/git ctx (:worktree t) "rev-parse" "HEAD^{tree}"))
+  (task! ctx (:key t) :base base :candidate (rt/git ctx (:worktree t) "rev-parse" "HEAD")
+         :tree (rt/git ctx (:worktree t) "rev-parse" "HEAD^{tree}") :checks nil :review nil)
+  (when (get-in ctx [:config :early-draft]) (publish! ctx (task ctx (:key t))))
   (checks! ctx (task ctx (:key t)) (get-in t [:checks :commands]))
   (assert-clean! ctx (:worktree t))
   (coordination/release! ctx (:key t))
@@ -271,7 +273,18 @@
       "changes_requested" (do (task! ctx (:key t) :feedback review) (transition! ctx (:key t) :repair))
       (rt/fail! "Composition review requires input" {:review review}))))
 
+(defn assert-evidence! [t]
+  (when-not (and (= "approved" (get-in t [:review :verdict]))
+                 (= (select-keys t [:base :candidate :tree]) (select-keys (:review t) [:base :candidate :tree]))
+                 (= (:candidate t) (get-in t [:checks :candidate]))
+                 (= (:tree t) (get-in t [:checks :tree]))
+                 (= :passed (get-in t [:checks :result])))
+    (rt/fail! "Review/check evidence does not match candidate" {:key (:key t)})))
+
 (defn finish-merge! [ctx t merged]
+  (assert-evidence! t)
+  (when-not (and (= (:candidate t) (:headRefOid merged)) (= :passed (check-state (:statusCheckRollup merged))))
+    (rt/fail! "Merged PR lacks exact-head successful CI evidence" {:pr merged}))
   (let [cwd (:worktree t)
         commit (get-in merged [:mergeCommit :oid])
         _ (when-not commit (rt/fail! "Merged PR has no merge identity" {:pr merged}))
@@ -316,12 +329,7 @@
         (if (not= base (:base t))
           (compose! ctx t base)
           (let [{:keys [repo-dir repository]} (:config ctx)]
-            (when-not (and (= "approved" (get-in t [:review :verdict]))
-                           (= (select-keys t [:base :candidate :tree]) (select-keys (:review t) [:base :candidate :tree]))
-                           (= (:candidate t) (get-in t [:checks :candidate]))
-                           (= (:tree t) (get-in t [:checks :tree]))
-                           (= :passed (get-in t [:checks :result])))
-              (rt/fail! "Review/check evidence does not match candidate" {}))
+            (assert-evidence! t)
             (assert-clean! ctx (:worktree t))
             (assert-identity! ctx t)
             (when (= (:tree t) (rt/git ctx (:worktree t) "rev-parse" (str base "^{tree}")))

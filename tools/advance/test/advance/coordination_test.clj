@@ -2,9 +2,13 @@
   (:require [clojure.java.io :as io]
             [clojure.test :refer [deftest is]]
             [simplify.coordination :as coordination]
+            [simplify.codex :as codex]
             [simplify.core-test :as fixture]
             [simplify.github :as gh]
-            [simplify.runtime :as rt]))
+            [simplify.main :as main]
+            [advance.workflow :as workflow]
+            [simplify.runtime :as rt]
+            [simplify.workflow :as flow]))
 
 (defn pair []
   (let [a (fixture/context) b (fixture/context)
@@ -51,3 +55,37 @@
         legacy (str (io/file (:coordination-dir a) ".." "simplify-harness.lock"))]
     (coordination/with-file-lock legacy
       #(is (thrown-with-msg? Exception #"Restart" (coordination/register! b))))))
+
+(deftest utility-commands-and-rejected-coordinators-cannot-overwrite-live-state
+  (let [a (assoc (fixture/context) :coordinator-owner (atom false) :processes (atom #{}) :command "run")
+        a (assoc a :lock-file (str (io/file (:state-dir a) "coordinator.lock")))
+        b (assoc a :state (atom @(:state a)) :coordinator-owner (atom false))]
+    (rt/with-lock a
+      #(do
+         (rt/update! a assoc :status :running :effects {"in-flight" {:status :pending}})
+         (let [expected (rt/read-edn (:state-file a))]
+           (with-out-str (main/dispatch! b "status" []))
+           (with-out-str (main/dispatch! b "pause" []))
+           (main/shutdown! b)
+           (is (thrown? Exception (rt/with-lock b (fn [] (rt/update! b assoc :status :running)))))
+           (main/shutdown! b)
+           (is (= expected (rt/read-edn (:state-file a))))
+           (is (thrown? Exception (rt/update! b assoc :status :attention))))))
+    (rt/with-lock b #(rt/update! b assoc-in [:effects "next"] {:status :done}))
+    (is (= {"in-flight" {:status :pending} "next" {:status :done}}
+           (:effects (rt/read-edn (:state-file a)))))
+    (is (false? @(:coordinator-owner a)))
+    (is (false? @(:coordinator-owner b)))))
+
+(deftest permission-denied-checks-cannot-repair-or-transfer
+  (let [[a b] (pair) argv ["clojure" "-M:denied-check"] opened (atom 0)]
+    (with-redefs [flow/prepare! (fn [& _]
+                                            (codex/validate-command-result! a argv {:exitCode 1 :stderr "Permission denied" :stdout ""}))
+                  gh/status! (fn [& _] nil) gh/comment! (fn [& _] nil)]
+      (workflow/run-worker! a "denied")
+      (is (= :attention (get-in @(:state a) [:tasks "denied" :status])))
+      (is (true? (get-in @(:state a) [:tasks "denied" :error :details :restricted])))
+      (is (thrown-with-msg? Exception #"Restricted" (main/dispatch! a "retry" ["denied"]))))
+    (with-redefs [codex/open! (fn [& _] (swap! opened inc))]
+      (is (thrown? Exception (codex/command! b "transfer" (:state-dir b) argv)))
+      (is (zero? @opened)))))
