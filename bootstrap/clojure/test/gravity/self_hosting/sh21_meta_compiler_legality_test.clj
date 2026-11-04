@@ -276,6 +276,45 @@
              (:compiler-lineage identity-module)))
       (is (= :compiler/analyzer (:module-id identity-module))))))
 
+(deftest sh21-preserves-long-origins-and-rejects-malformed-chains
+  (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
+    (let [base (program plan 'sh21-meta-program)
+          module-chain
+          (mapv #(assoc (first (get-in base [:modules 1 :origin-chain]))
+                        :source-id (str "source-" %))
+                (range 65))
+          generated-chain
+          (mapv #(assoc (first (get-in base [:modules 1 :generated-code
+                                           0 :origin-chain]))
+                        :source-id (str "generated-" %))
+                (range 65))
+          program (-> base
+                      (assoc-in [:modules 1 :origin-chain] module-chain)
+                      (assoc-in [:modules 1 :generated-code 0 :origin-chain]
+                                generated-chain))
+          result (check program)]
+      (is (= :accepted (:status result)))
+      (is (= module-chain
+             (get-in result [:identity-input :modules 1 :origin-chain])))
+      (is (= module-chain
+             (get-in result [:provenance :modules 1 :origin-chain])))
+      (is (= generated-chain
+             (get-in result [:identity-input :modules 1 :generated-code
+                             0 :origin-chain])))
+      (is (= result (check program)))
+      (is (= :passed
+             (:status (invoke-engine 'sh21-verify-result [program result]))))
+      (doseq [[location reason]
+              [[[:modules 1 :origin-chain] :module-origin-chain-required]
+               [[:modules 1 :generated-code 0 :origin-chain]
+                :generated-origin-chain-required]]
+              malformed [nil [] '(:source)]]
+        (let [rejected (check (assoc-in program location malformed))]
+          (is (= :rejected (:status rejected)))
+          (is (= "P3-SOURCE-MAP"
+                 (get-in rejected [:diagnostics 0 :rule])))
+          (is (= reason (get-in rejected [:diagnostics 0 :reason]))))))))
+
 (deftest sh21-keeps-physical-paths-outside-semantic-identity
   (doseq [plan [accepted-gravity-plan accepted-qst-plan]]
     (let [first-program (program plan 'sh21-meta-program)

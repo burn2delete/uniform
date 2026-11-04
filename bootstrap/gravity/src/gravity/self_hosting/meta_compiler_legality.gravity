@@ -96,9 +96,7 @@
 
 (defn sh21-origin-chain-valid? [origin-chain]
   (if (vector? origin-chain)
-    (if (> (count origin-chain) 0)
-      (<= (count origin-chain) 32)
-      false)
+    (> (count origin-chain) 0)
     false))
 
 (defn sh21-set-subset? [values allowed]
