@@ -61,8 +61,7 @@ preflight. Maintain an early draft PR and clean verified source commit.
 
 ## Unsupported boundaries
 
-This initial scope record has no implementation or executed-test credit. These
-temporary Clojure seed decoders authenticate neither raw/kind/provenance nor
+These temporary Clojure seed decoders authenticate neither raw/kind/provenance nor
 supplied callbacks. They do not open source, validate complete identifier or
 numeric grammar, define Gravity numeric families or Unicode character semantics,
 replace canonical SH03, grant effects/capabilities, impose source/work quotas,
@@ -70,3 +69,39 @@ or establish complete Reader, self-hosting, migration, release or seed retiremen
 Legacy host scalar/read-string behavior remains explicitly bounded seed behavior;
 it is not imported as a normative Gravity language rule. Held operations and prior
 authentic-source refusals remain unchanged.
+
+## Actual ownership and original comparison
+
+The original seven-path request reported ordinary busy ownership for
+tools/ci/run.clj. Its actual owner is the PR915 current-source composition
+workstream. No CI source was edited, no foreign lease was adopted/released and
+no alternative test route is substituted. The initial scope-only document/PR
+was published before the busy result was observed; that new document path had
+no ownership overlap and conveys no implementation credit. The actual current
+semantic authoring lease owns only the six disjoint Reader/component/test/map/
+evidence paths. CI namespace wiring remains explicitly deferred pending the
+original owner's known-end/actual absence and a valid claim/handoff.
+
+Original native evidence captures fifty-six literal outcomes across fifty-eight
+retained real .gravity/.qst paths: thirty-eight values and eighteen original
+refusals, plus four complete token streams with both trivia modes. Source text,
+raw spelling, kind, span, token id, exact value class, deferred data and complete
+diagnostics are retained. Raw SHA-256 is
+a65f15a6ac535fa0aaf0963480a4d189d9f555b3225e4dac8626e6d2727ba673.
+This is native structural evidence, not source/callback/C2 authentication.
+
+The six-path semantic implementation moves exactly five bodies through explicit
+ports. Static comparison proves the previous nine Reader API bodies unchanged,
+the original component table/span prefix and all five facades exact, both load
+manifests byte-identical, and the CI file unchanged. The focused Reader artifact,
+tokenizer, forms and literal tests pass seventy-three tests and 4,044 assertions.
+Language-boundary tests pass six tests and eleven assertions with no skipped
+namespace. Documentation, roadmap and workstream validators pass. Standalone
+Reader/new-test lint reports zero warnings or errors. These local results do
+not confer independent acceptance, full CI or integration authority.
+
+The initial static observer incorrectly interpreted the quoted-name vector and
+failed its own start-position assertion before comparing bodies. That helper
+and nonpass are retained; correcting only the observer yields the conservation
+result above. The earlier new-test syntax nonpass is also retained. Neither
+failure was used to weaken production behavior or acceptance requirements.

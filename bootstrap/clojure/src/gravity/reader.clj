@@ -2,7 +2,7 @@
   "Native source intake, strict UTF-8 decoding and stage0 reader artifact assembly.
 
   This namespace owns native intake through an explicit byte owner, strict decoding, source-path
-  diagnostic data, existing artifact envelopes and hosted tokenization/form construction.
+  diagnostic data, existing artifact envelopes and hosted literal/token/form construction.
   Admission, canonical parsing, syntax, source identity and diagnostic publication remain
   with their supplied owners. Operations are trusted seed dependencies, not evidence of
   canonical reader authentication or self-hosting.")
@@ -10,9 +10,34 @@
 (def ^:private namespace-contract
   {:namespace 'gravity.reader
    :governing-contracts [:D1 :D2 :D3 :D8 :D9 :L1 :C1 :C2 :C3 :C15 :BOOT1 :BOOT8 :TEST2]
-   :contract-boundary :native-reader-intake-tokenization-forms-products-report-validation-and-document-projection
+   :contract-boundary :native-reader-intake-literals-tokenization-forms-products-report-validation-and-document-projection
    :public-api
-   {'build-compatibility-forms
+   {'classify-compatibility-token
+    {:arglists '([starts-with-var token]) :returns :native-literal-kind
+     :admission :none :authenticates-inputs? false :opens-source? false
+     :operation-inputs [:starts-with-var] :callback-type-checks? false
+     :test-owner 'gravity.reader.literals-test}
+    'reject-compatibility-numeric!
+    {:arglists '([fail-var source-path raw span token-id cause])
+     :returns :original-numeric-owner-refusal :admission :none :authenticates-inputs? false :opens-source? false
+     :operation-inputs [:fail-var] :callback-type-checks? false
+     :test-owner 'gravity.reader.literals-test}
+    'decode-compatibility-atom
+    {:arglists '([operations source-path kind raw span token-id])
+     :returns :native-literal-value-or-deferred-ratio :admission :none :authenticates-inputs? false :opens-source? false
+     :operation-inputs [:starts-with-var :split-var :malformed-numeric-var]
+     :callback-type-checks? false :test-owner 'gravity.reader.literals-test}
+    'decode-compatibility-string
+    {:arglists '([read-string-var fail-var source-path raw span token-id])
+     :returns :native-seed-read-value-or-owner-refusal :admission :none :authenticates-inputs? false :opens-source? false
+     :operation-inputs [:read-string-var :fail-var] :read-eval false
+     :callback-type-checks? false :test-owner 'gravity.reader.literals-test}
+    'decode-compatibility-character
+    {:arglists '([read-string-var fail-var source-path raw span token-id])
+     :returns :native-character-or-owner-refusal :admission :none :authenticates-inputs? false :opens-source? false
+     :operation-inputs [:read-string-var :fail-var] :read-eval false :requires-character-result true
+     :callback-type-checks? false :test-owner 'gravity.reader.literals-test}
+    'build-compatibility-forms
     {:arglists '([source-path source-text table token-stream operations])
      :contract-boundary :hosted-native-token-stream-form-construction
      :returns :hosted-reader-form-products
@@ -82,12 +107,14 @@
                      :seed-reader-operations :standard-reader-options
                      :historical-reader-table :tokenizer-late-owner-vars
                      :native-token-stream :form-builder-late-owner-vars
+                     :raw-literal :literal-kind :literal-span :literal-token-id :literal-late-owner-vars
                      :captured-source-bytes :raw-byte-hash-var :diagnostic-var
                      :extension-predicate-var :path-policy-refusal-var :decoder-var :source-byte-reader-var :co-canonical-extension-set-var]
    :artifact-outputs [:gravity/stage0-reader-artifact :decoded-utf8-text
                       :hosted-compatibility-reader-products :legacy-native-reader-complete-marker
                       :gravity/native-c2-document-projection :gravity/stage1-reader-token-stream
-                      :hosted-reader-form-products
+                      :hosted-reader-form-products :native-literal-value :deferred-ratio-literal
+                      :original-literal-owner-refusal
                       :unchanged-source-encoding-failure :unchanged-source-extension-failure
                       :unchanged-source-byte-owner-failure]
    :preserves [:source-spans :metadata :reader-origin :profile-context
@@ -126,6 +153,11 @@
                          :literal-owner :supplied-decoder-vars :span-owner :supplied-span-var
                          :construction-owners [:supplied-pipeline-failure-var :supplied-failure-var]
                          :authenticates-inputs? false}
+    :hosted-literals {:owns [:legacy-kind-selection :legacy-literal-decoding :numeric-refusal-data]
+                     :rule-ids ["STAGE1READER003" "STAGE1READER007"]
+                     :construction-owner :supplied-failure-var
+                     :numeric-catch-owner :supplied-malformed-numeric-var
+                     :authenticates-inputs? false}
     :does-not-own [:namespace-shape-policy :c15-schema
                    :diagnostic-identity :redaction :rendering]}
    :dependency-direction
@@ -139,6 +171,8 @@
                  :native-document-product-or-callback-authentication
                  :tokenizer-text-table-options-callback-and-output-authentication
                  :native-form-source-table-token-callback-and-output-authentication
+                 :literal-raw-kind-provenance-and-callback-authentication
+                 :complete-literal-grammar :gravity-numeric-and-unicode-character-semantics
                  :native-document-canonical-admission-and-publication
                  :native-report-authentication
                  :compatibility-oracle-product-authentication
@@ -1377,6 +1411,112 @@
                   :read-tagged-var :form-kind-var])
     source-path source-text table token-stream)))
 
+(defn classify-compatibility-token
+  [starts-with-var token]
+  (cond
+    (= token "nil") :nil
+    (= token "true") :boolean
+    (= token "false") :boolean
+    (starts-with-var token ":") :keyword
+    (re-matches #"[+-]?(?:0[xX][0-9A-Fa-f]+|0[bB][01]+|[0-9]+)" token)
+    :integer
+    (re-matches #"[+-]?[0-9]+/[0-9]+" token) :ratio
+    (re-matches #"[+-]?(?:(?:(?:[0-9]+\.[0-9]*)|(?:[0-9]*\.[0-9]+))(?:[eE][+-]?[0-9]+)?|(?:[0-9]+[eE][+-]?[0-9]+))"
+                token)
+    :decimal
+    (re-find #"^[+-]?[0-9]" token) :malformed-number
+    :else :symbol))
+
+
+(defn reject-compatibility-numeric!
+  [fail-var source-path raw span token-id cause]
+  (fail-var
+   "STAGE1READER007" source-path raw
+   {:source-span span
+    :token-id token-id
+    :raw raw
+    :cause-message cause
+    :facts {:literal-kind :numeric
+            :raw-spelling raw}}))
+
+
+(defn decode-compatibility-atom
+  [{:keys [starts-with-var split-var malformed-numeric-var]} source-path kind raw span token-id]
+  (try
+    (case kind
+      :nil nil
+      :boolean (= "true" raw)
+      :keyword (keyword (subs raw 1))
+      :integer
+      (let [negative? (starts-with-var raw "-")
+            positive? (starts-with-var raw "+")
+            unsigned (if (or negative? positive?) (subs raw 1) raw)
+            [radix digits] (cond
+                             (re-find #"^0[xX]" unsigned)
+                             [16 (subs unsigned 2)]
+                             (re-find #"^0[bB]" unsigned)
+                             [2 (subs unsigned 2)]
+                             :else [10 unsigned])
+            value (bigint (java.math.BigInteger. digits radix))]
+        (if negative? (- value) value))
+      :ratio
+      (let [[numerator-spelling denominator-spelling] (split-var raw #"/" 2)
+            numerator (bigint numerator-spelling)
+            denominator (bigint denominator-spelling)]
+        (if (zero? denominator)
+          {:artifact :gravity/deferred-ratio-literal
+           :kind :ratio
+           :raw raw
+           :numerator-spelling numerator-spelling
+           :denominator-spelling denominator-spelling
+           :numerator numerator
+           :denominator denominator
+           :semantic-validation :deferred
+           :reason :zero-denominator}
+          (/ numerator denominator)))
+      :decimal (Double/parseDouble raw)
+      :malformed-number
+      (malformed-numeric-var
+       source-path raw span token-id
+       "numeric lexeme does not match a declared Gravity numeric shape")
+      :symbol (symbol raw)
+      raw)
+    (catch NumberFormatException ex
+      (malformed-numeric-var source-path raw span token-id
+                                        (.getMessage ex)))
+    (catch ArithmeticException ex
+      (malformed-numeric-var source-path raw span token-id
+                                        (.getMessage ex)))))
+
+
+(defn decode-compatibility-string
+  [read-string-var fail-var source-path raw span token-id]
+  (try
+    (binding [*read-eval* false]
+      (read-string-var raw))
+    (catch Exception ex
+      (fail-var "STAGE1READER003" source-path raw
+                           {:source-span span
+                            :token-id token-id
+                            :raw raw
+                            :cause-message (.getMessage ex)}))))
+
+
+(defn decode-compatibility-character
+  [read-string-var fail-var source-path raw span token-id]
+  (try
+    (let [value (binding [*read-eval* false]
+                  (read-string-var raw))]
+      (when-not (char? value)
+        (throw (ex-info "reader character token did not decode to a character"
+                        {:raw raw})))
+      value)
+    (catch Exception ex
+      (fail-var "STAGE1READER003" source-path raw
+                           {:source-span span
+                            :token-id token-id
+                            :raw raw
+                            :cause-message (.getMessage ex)}))))
 (doseq
  [name (keys (:public-api namespace-contract))
   :let [operation (get (ns-interns *ns*) name)]]
