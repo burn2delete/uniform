@@ -198,6 +198,13 @@ Use the [interoperability producer and consumer order](../runtime-workflow/plan.
 Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
 
 
+## B1-B3 dependency interface
+
+Use the [B1-B3 producer and consumer order](../backends-workflow/plan.md#b1-b3-producer-and-consumer-order) and sole selected-result table. Complete B1-B3 optional Gravity optimization verification uses early real selected target-assumption/layout/numeric/helper/pass interfaces, then actual before/after verified MIR, affected invalidation/repair/regeneration and matching check/certificate results if those passes run. It does not replace the LLVM family's separate post-emission/post-LLVM-pass verifier or make Opt mandatory for raw MIR. Later native comparisons witness their own claims, not first optimization inputs; changed metadata cannot retain stale proof or lose source/audit/diagnostic obligations.
+
+Task bodies/statuses, all twenty source criteria, historical review scopes and forty future source bindings remain unchanged. Current source/interface entailment, implementation and independent acceptance remain unassessed. No held operation is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Opt task authority

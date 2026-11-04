@@ -69,6 +69,13 @@ Use the [interoperability producer and consumer order](../runtime-workflow/plan.
 Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
 
 
+## B1-B3 dependency interface
+
+Use the [B1-B3 producer and consumer order](../backends-workflow/plan.md#b1-b3-producer-and-consumer-order) and sole selected-result table. Complete B1-B3 writer interfaces expose actual encoding/write/readback/map/manifest contracts before output construction. Consume actual admitted selected Lower/family bytes and required current records, then read back concrete C/header/LLVM/bitcode/object/debug artifacts as requested. Later conformance/release bundles follow actual subjects and are not first writer schemas. Neither both native families nor signing is universally required; preserve diagnostic/refusal products and explicit development-only evidence gaps.
+
+Task bodies/statuses, all twenty source criteria, historical review scopes and forty future source bindings remain unchanged. Current source/interface entailment, implementation and independent acceptance remain unassessed. No held operation is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Emit task authority

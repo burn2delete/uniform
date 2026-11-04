@@ -265,6 +265,13 @@ Use the [interoperability producer and consumer order](../runtime-workflow/plan.
 Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
 
 
+## B1-B3 dependency interface
+
+Use the [B1-B3 producer and consumer order](../backends-workflow/plan.md#b1-b3-producer-and-consumer-order) and sole selected-result table. Complete B1-B3 diagnostic carriers first expose real B1/B2/B3 and retained upstream C14 field/identity rules, then capture actual owner failures with MIR/domain/input/backend, source/origin, profile/target/dialect/LLVM construct, missing evidence/helper/provider, fallback and remediation as applicable. Common emission retains diagnostics instead of hiding refusals behind bytes; conformance compares expected and actual identities and metadata. Future valid outputs are not initial error schemas and redaction cannot change refusal meaning. Complete B1-B3 origins publish actual source/generated/IR/lowering/target map interfaces, then preserve genuine current target-construct-to-source-and-proof edges through emitted outputs and rejected partial artifacts. C compiler/LLVM pass diagnostics and validated metadata repair retain generated origins, debug visibility and unsafe audit links. Real maps follow actual subjects; their schema cannot depend on the future successful artifact. Missing or mismatched edges reject even when execution values match.
+
+Task bodies/statuses, all twenty source criteria, historical review scopes and forty future source bindings remain unchanged. Current source/interface entailment, implementation and independent acceptance remain unassessed. No held operation is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Diagnostics task authority

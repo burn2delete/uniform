@@ -561,6 +561,13 @@ compiler/provider/plugin/C7/C12/native/callback/device/probe/replay/migration/pr
 store/signing/product-publication action, messages no other chat, wakes no reviewer,
 publishes no preserved aggregate and merges nothing.
 
+## B1-B3 dependency interface
+
+Use the [B1-B3 producer and consumer order](../backends-workflow/plan.md#b1-b3-producer-and-consumer-order) and sole selected-result table. Complete B1-B3 Runtime selection first publishes real helper/provider/version/profile/target/ABI and genuine no-runtime support contracts for target eligibility. Later actual selected implementations/link/load products match admitted transitive use. C and LLVM selected target declarations precede final emission; their future binaries and cleanup traces are not the first service descriptor. Hidden hosted dependencies reject, and declared availability cannot establish execution or authority. Complete B1-B3 startup/panic/cleanup uses early actual family calling convention/unwind/resource/lifetime/root/debug contracts, then actual needed linked artifacts and selected provider/ABI/grant facts before the claimed program starts. Exercise real selected error/panic/resource terminal cleanup and failure paths, preserving diagnostics/debug/audit facts. Future whole-backend acceptance is not the first service interface, and a static link/manifest alone proves no execution. Native/provider execution remains held. Complete B1-B3 memory/concurrency/FFI uses early actual selected ABI/address-space/ownership/atomic-order/helper/null/error contracts. Later actual admitted checked layouts/proofs and selected linked products support the claimed allocation, region, linear transfer/release, foreign and synchronization behavior. Preserve compare/exchange failure order and volatile/MMIO boundaries; use real selected math check results only for affected certified operations. Final execution is not its own initial representation/ABI premise, and no hidden host allocator, target default or wrapper success flag proves behavior or grants device/native authority.
+
+Task bodies/statuses, all twenty source criteria, historical review scopes and forty future source bindings remain unchanged. Current source/interface entailment, implementation and independent acceptance remain unassessed. No held operation is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Runtime workflow migration

@@ -231,6 +231,120 @@ open decisions. Reconciliation progress, actual implementation, acceptance and
 integration are distinct; the first actual increment remains the Reader
 [contract-coverage reconciliation](../reader-workflow/plan.md#selected-increment-complete-contract-coverage).
 
+## B1-B3 producer and consumer order
+
+Use the [sole selected-result table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition) with the [complete B1-B3 source criteria](#complete-b1-b3-source-criteria). The twenty criteria and four existing Open task owners stay exact; this continuation refines their actual inputs and affected producer/consumer interfaces. It does not add a task namespace, second graph, new support claim or current independent acceptance.
+
+### Real interfaces before selected subject results
+
+The existing graph names coarse task producers; its feedback does not mean
+whole-task completion is the first input everywhere. Early interfaces must be
+real supported schemas, signatures, policies, ABI/layout rules, helper contracts,
+feature/availability declarations and oracle expectations. They cannot be supplied
+completion flags or stand-ins for later proof, output, execution or conformance.
+Initial interface/fixture work can proceed from those independent facts. Actual
+selected subject checks and owner results precede the downstream claims that
+consume them; final acceptance/release evidence follows the subject it checks.
+
+| Selected boundary | Early actual input and later required result |
+| --- | --- |
+| B1 declarations and eligibility | Backend version/kind/feature, profile/target/ABI, service/provider, evidence/map and refusal schemas first. Actual verified MIR or selected verified domain IR and the complete current packet precede eligibility and emission. Runtime availability or genuine no-runtime evidence is required; final family outputs cannot create their own first support contract. |
+| B2 C layout and output | Actual declared dialect/compiler/data-model/flag/ABI/layout/helper rules and independent types/ownership first. Derive concrete selected layout, then consume admitted IR and matching proof/check/audit facts for real C/header/build/map outputs. Compile required fixtures under declared flags before support claims. C11/C17 are examples alongside named extension profiles. |
+| B3 LLVM target and output | Actual selected triple/layout/CPU/features/ABI/relocation/code/sanitizer/unwind/TLS/object/helper/pass rules first. Current verified input and matching Gravity facts precede attributes, explicit operations and real requested IR/bitcode/native/debug output. Keep the adopted Linux candidate and declared extensions distinct. |
+| Proof and metadata | Actual required-fact/checker/subject/invalidation and target-map interfaces first. Actual current operation-specific evidence precedes required assumptions, checks or elision. Target metadata never proves source facts; omit optional assumptions conservatively, guard lawfully or reject. Changed source/layout/toolchain/flags/passes invalidate affected evidence. |
+| Memory and helpers | Actual address-space/range/alignment/lifetime/initialization/alias/resource/FFI/error/order and helper ABI contracts first. Concrete current facts and selected compatible provider bindings precede actual affected lowering; needed linked products precede claimed startup, panic, terminal cleanup, foreign or atomic behavior. No hidden hosted service escapes no-runtime legality. |
+| Math and optimization | Selected numeric-mode/certificate/checker and target-assumption interfaces first. Real checked certificates are needed only for affected math/check-elision claims. Optional Gravity Opt needs actual invalidation/rechecking/regeneration when it runs. Raw/unoptimized verified MIR remains legal without universal Opt, MLIR, domain IR or approximation certificates. |
+| LLVM passes | The family owns actual LLVM verification after emission and configured LLVM passes, with required Gravity source/proof/safety/capability/audit metadata preservation or validated repair before consumption. This is separate from an optional earlier Gravity Opt pipeline. Equal runtime values and verifier success alone do not prove preservation. |
+| Lower and Emit composition | Actual selected family handler/writer/common-manifest contracts first. Actual admitted Lower1-4 results and the selected backend produce genuine requested bytes and readback. The recipe selects C or LLVM; both families are not universal prerequisites and C does not gate LLVM. Common validation follows actual bytes and final conformance packs cannot be their own first output schema. |
+| Common emission and package | Actual B13 kind/hash/provenance/evidence/diagnostic schema first. Actual selected bytes or declared canonical representation and current required records precede manifest validation and source/proof/dependency queries. Genuine required reproduction/conformance governs the claimed grade. Explicit development-only gaps stay non-release and name blocked consumers; missing evidence cannot legalize source rejection. |
+| Fixtures and acceptance | Actual availability/case/oracle/ABI/helper/expected-diagnostic/artifact interfaces first. Actual permitted selected lowering, C compilation, LLVM verifier/pass, differential/MIR or semantic-reference and independent metadata/refusal results enter the corresponding conformance pack later. Unavailable targets need actual availability records; required shared checks still run. Final Release/self-hosting is not the first fixture input. |
+
+### Which actual products the owners exchange
+
+The four source-criterion consumers remain `backend-interface`, `backend-c`,
+`backend-llvm` and `backend-emission`. Lower1-4 supply actual admission,
+representation, authority-preserving helper selection and source/proof maps;
+Lower5 integrates the actual selected family. B1 owns common eligibility and
+assumption interfaces, families own concrete target behavior and their real
+verification, and common emission retains B13/Emit responsibilities. No task
+silently absorbs the others' implementation or independent checker role.
+
+MIR supplies genuine current verified raw or selected-domain products. Source
+Types/Effects/Legality/Auth owners supply actual correlated facts, legal profiles,
+sufficient resource/safety decisions and separate operation grants. Pass evidence
+binds authentic subjects and current checker results. Math's existing independent
+certificate task supplies actual required selected checker products; naming its
+future task does not establish any certificate or demand whole Math completion.
+Core-only requests have no domain-IR prerequisite; selected domain requests still
+need their actual schema/anchor/verifier/exit facts, preserving C12 restrictions.
+
+Runtime1 provides real supported helper/ABI and no-runtime declarations before
+eligibility, then genuine selected link/load support. Runtime2/3 expose actual
+startup/panic/cleanup/memory/foreign/atomic rules and later actual admitted
+execution where claimed. Their later traces do not create their first ABI/type
+premises, while a descriptor alone proves no linked or executed behavior. Host
+execution and physical access restrictions remain separate from compile-time
+legality and are not enabled by a manifest or this plan.
+
+Build resolves actual declared C/LLVM toolchain/flags/target/pass/helper inputs
+before compilation, records affected invalidation and performs real selected
+repeat-build comparison under the declared timestamp/nondeterminism policy.
+Output-affecting changes cannot keep stale evidence under an unchanged label.
+Package records consume actual content identities before signing/packaging/
+deployment and policy-required current evidence before a release-grade claim;
+future signed packages are not their own first content schema.
+
+Diagnostics expose actual B1/B2/B3 and upstream C14 carrier/context rules before
+failures, then retain real owning errors and source/generated/IR/target edges.
+Missing source/proof maps reject independently of execution equality. Common
+emission cannot suppress a lowering diagnostic by producing bytes. Required
+partial artifacts on rejection keep their maps/metadata and validation context.
+All current accepted/rejected products bind exact compiler/pass/backend/toolchain,
+profile/target/runtime/provider, input/output and checker identity.
+
+Actual check erasure retains the exact condition, dominating proof valid after all intervening transformations, active profile/target/backend preservation and emitted erased-check/proof/pass identity. If a later pass invalidates it, restore the check, genuinely recheck/regenerate or reject the affected mode. Policy/effect/grant/unsafe-audit/replay/human-review checks are discharged only by their equivalent governing policy artifacts, never for speed alone. Imported certificates need actual package digest, compiler compatibility, profile/target or permitted generalization, provider/signature, schema and non-invalidated caller-policy verification before reliance; manual review is no universal substitute. MATH5 checking stays independent from synthesis and binds EFIR/domain/branch/exception/error/roundoff/target assumptions; genuine numeric error bounds are semantic obligations, not removed project accounting.
+
+### Feedback and optional paths
+
+The coarse task feedback remains visible; adding actual selected-result roles
+does not prove a project-wide topological implementation order. For each selected
+pair, distinguish independent early declarations from later actual subject,
+acceptance and release results. In particular, B1 and Lower consume early family
+support before final outputs; evidence carriers use early assumption subjects
+before later target decisions; common emission/conformance use early schemas
+before actual artifacts and later packs. No source dependency is justified by
+its own future result. PKG2 namespace/build acyclicity and explicitly governed
+bootstrap fixed points remain independent obligations.
+
+The optional Gravity Opt path does not substitute for mandatory LLVM-family
+post-emission/configured-pass verification. Existing optional MLIR and valid
+raw/unoptimized routes remain. Math certificates, domain IR, runtime services,
+physical/device/native execution and target-specific comparisons apply only to
+their actual requested claims. No unrequested target, ISA, device, live provider,
+release substitution, generic benchmark gate, quota or per-run approval is added.
+Actual required backend fixture compilation/execution is still required later;
+its current unavailability or restriction cannot become a pass.
+
+### Evidence and remaining work
+
+The selected declarations and stages are author proposals pending independent
+current source/interface review. Twenty source criteria, every task body/status,
+forty future declarations and their source bindings, original owner obligations,
+all finite historical review subjects and receipts remain exact. No source review
+is renewed or consumed. B4-B14/AI full-source and complete global owner/interface
+conjunctions remain separately open; selected B13/B14 interfaces here do not
+accept those whole contracts. No backend, compiler, proof engine, provider,
+Runtime or conformance implementation runs in this traceability continuation.
+
+Preserve the recorded D1/C1/C5/C6 ordering and L6/L12 hermetic source issues with
+their existing owners. Preserve accounting removal and concrete semantic,
+representation, authority, provenance, platform and external-account conditions.
+Held Reader/Gravity/bootstrap/paired/provider/native/callback/device/probe/replay/
+migration/private-store/signing/publication actions and stopped C7 handoff remain
+unchanged. No other chat is messaged and no reviewer or automation is woken.
+The first actual implementation increment stays Reader
+[contract-coverage reconciliation](../reader-workflow/plan.md#selected-increment-complete-contract-coverage).
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Backends family task authority

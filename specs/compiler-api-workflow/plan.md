@@ -332,6 +332,13 @@ Use the [interoperability producer and consumer order](../runtime-workflow/plan.
 Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
 
 
+## B1-B3 dependency interface
+
+Use the [B1-B3 producer and consumer order](../backends-workflow/plan.md#b1-b3-producer-and-consumer-order) and sole selected-result table. Complete B1-B3 pass evidence first exposes actual required-fact/proof/certificate/checker/invalidation and target-assumption schemas. Later bind authentic current operation/type/profile/layout/provider/flags/pass subjects to sufficient Gravity evidence and resulting C/LLVM decisions. Target attributes, schema presence and caller success flags do not prove source facts. Required checker results precede their claimed elision/assumption; optional metadata may be omitted conservatively and raw/unoptimized paths remain valid. Future complete backend evidence is not the first proof carrier schema. Imported certificate use additionally needs actual compatible package/compiler/profile/target/provider/schema/digest and caller-policy trust verification before reliance; a package name or old signature is not sufficient.
+
+Task bodies/statuses, all twenty source criteria, historical review scopes and forty future source bindings remain unchanged. Current source/interface entailment, implementation and independent acceptance remain unassessed. No held operation is enabled.
+
+
 ## Historical workflow-transfer and source-composition plan
 
 # Implementation plan: Compiler API workflow migration
