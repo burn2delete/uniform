@@ -329,6 +329,12 @@ Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.m
 
 Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
 
+## Library source dependency interface
+
+Use the [Library source producer and consumer order](../stdlib-workflow/plan.md#library-source-producer-and-consumer-order) and the sole selected-result table. Complete STD1-STD9 selected library order: STD1-STD9 reproducibility has a real versioned module/profile/provider/source/generated/dependency/compiler/toolchain/environment recipe before construction. Genuine selected callable products and applicable exact evidence precede repeat builds/comparison and the claimed reproduction grade. Early recipe/manifest schemas are not future built outputs, and a final reproducibility result is not the first public signature or build graph. No hidden host provider, false supported profile or supplied complete flag establishes a repeatable module. Complete STD1-STD9 selected library order: STD1-STD9 package/provenance/signing begins with actual canonical payload/schema/identity and selected trust/custody policy interfaces. Real built content and current required conformance/audit/compatibility subjects precede subject-bound provenance, SBOM and permitted canonical signing/verification. Do not invent a cyclic hash premise by requiring a package to contain its own future signature/hash, or treat a signature as authorization or complete provenance. Early API construction does not wait for the final signed distribution; actual signing/publication restrictions remain.
+
+All current/future task bodies, 101 source criteria, canonical versions and historical receipt/review scopes remain exact. These selected inputs do not prove all old route edges or current global executable order. Whole-source/interface and independent acceptance remain pending; no implementation or held action is enabled.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration

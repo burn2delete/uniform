@@ -397,6 +397,12 @@ Use the [complete library foundation criteria](../stdlib-workflow/plan.md#comple
 
 Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
 
+## Library source dependency interface
+
+Use the [Library source producer and consumer order](../stdlib-workflow/plan.md#library-source-producer-and-consumer-order) and the sole selected-result table. Complete STD1-STD9 selected library order: STD2-STD9 Core lowering uses authentic early callable/macro/resource/control declarations before constructing once-only eager operand, transfer, acquire/body/handler/release and task-scope flow with full origins. Lowering neither invents callable host semantics nor proves resource/race facts. Actual selected source analyses precede checked execution; actual runtime cleanup follows the control structure it implements. Initial with-open/task-scope/Core construction cannot require its own future complete service or trace as input.
+
+All current/future task bodies, 101 source criteria, canonical versions and historical receipt/review scopes remain exact. These selected inputs do not prove all old route edges or current global executable order. Whole-source/interface and independent acceptance remain pending; no implementation or held action is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Core task authority

@@ -236,6 +236,12 @@ Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.m
 
 Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
 
+## Library source dependency interface
+
+Use the [Library source producer and consumer order](../stdlib-workflow/plan.md#library-source-producer-and-consumer-order) and the sole selected-result table. Complete STD1-STD9 selected library order: STD1-STD9 optional optimization starts with actual current typed/checked source/IR and exact value/effect/ownership/lifetime/order/proof contracts. It preserves once-only evaluation, physical collection validation, Unicode/numeric modes, race/atomic semantics, cleanup and authority/replay/redaction boundaries through selected transformations. Applicable independent proof/certificate and backend preservation precede a claimed check erasure; changed assumptions invalidate before recheck/repair/restored check or refusal. Future optimized output cannot supply its own proof premise, and an unoptimized valid implementation remains available.
+
+All current/future task bodies, 101 source criteria, canonical versions and historical receipt/review scopes remain exact. These selected inputs do not prove all old route edges or current global executable order. Whole-source/interface and independent acceptance remain pending; no implementation or held action is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Opt task authority

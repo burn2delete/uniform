@@ -485,6 +485,12 @@ Use the [complete concurrency and IO library criteria](../stdlib-workflow/plan.m
 
 Existing task identities/statuses, historical evidence, forty future declarations/source bindings and actual restrictions remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
 
+## Library source dependency interface
+
+Use the [Library source producer and consumer order](../stdlib-workflow/plan.md#library-source-producer-and-consumer-order) and the sole selected-result table. Complete STD1-STD9 selected library order: STD2-STD9 propagation consumes actual callable/protocol/callback/handler signatures and early independently inferred direct effects before deriving latent actions. Selected dispatch and callback composition preserve allocation, IO, concurrency, network, failure and phase/capability requirements; pure source labels or carried capability values do not erase later use effects. No future Runtime result or final library suite is an inference premise. Concrete checked allowance/profile/grant decisions follow source propagation before action admission. Complete STD1-STD9 selected library order: STD6-STD9 effect admission uses actual direct/latent calls and independently derived profile, capture/lifetime and operation policy facts. Check forbidden blocking, scheduler/message/atomic and stream/filesystem/DNS/TLS/websocket/listen actions plus real callback/middleware/handler boundaries before admitted use. Initial operation/provider declarations precede checking; actual selected services and cleanup/recorded results prove later execution. A future handler result cannot supply its own first legal effect premise, and filesystem execute-like effects do not grant STD16 process/shell execution.
+
+All current/future task bodies, 101 source criteria, canonical versions and historical receipt/review scopes remain exact. These selected inputs do not prove all old route edges or current global executable order. Whole-source/interface and independent acceptance remain pending; no implementation or held action is enabled.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Effects task authority
