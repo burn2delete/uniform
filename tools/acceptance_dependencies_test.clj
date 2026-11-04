@@ -383,7 +383,7 @@
           routes (filter #(c9 (:consumer %)) (:routes review))]
       (is (= 5 (count c9) (count routes)))
       (is (= c9 (set (get-in altered [:dependency-review :unresolved-consumers]))))
-      (is (= [36 43 43 46 50] (sort (map (comp count :composition-results) routes))))
+      (is (= [37 44 45 46 52] (sort (map (comp count :composition-results) routes))))
       (doseq [{:keys [consumer start-results composition-results]} routes]
         (is (empty? start-results))
         (doseq [producer composition-results]
@@ -401,7 +401,7 @@
           route (first (filter #(= id (:consumer %)) (:routes review)))]
       (is (= [id] (get-in altered [:dependency-review :unresolved-consumers])))
       (is (empty? (:start-results route)))
-      (is (= 7 (count (:composition-results route))))
+      (is (= 13 (count (:composition-results route))))
       (doseq [producer (:composition-results route)]
         (is (some #(= [(str "task:" id "/implementation") (str "task:" producer "/interface") :declared-producer-interface]
                       [(:from %) (:to %) (:kind %)]) edges))
