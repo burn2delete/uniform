@@ -964,6 +964,7 @@
                        "--progress"
                        "--namespace" "gravity.macro.pipeline-test"
                        "--namespace" "gravity.macro.native-reports-test"
+                       "--namespace" "gravity.macro.owner-calls-test"
                        "--regex" macro-pipeline-cohort-regex)]
              ["macro-receipt-controls" 900
               (apply command "2g" "-M:dev-test"

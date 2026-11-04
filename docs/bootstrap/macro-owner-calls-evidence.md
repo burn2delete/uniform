@@ -136,3 +136,42 @@ functions, input/local-operation calls, all Bootstrap/authentication/pin files,
 CI and namespace index unchanged; exactly three source-slice paths differ.
 Independent corrective review and outstanding CI/index handoff/wiring, hosted
 exact source/base CI and current-base clean integration remain pending.
+
+## Reviewed native-fix composition and CI wiring
+
+After the separate native-report correction was independently accepted, normal
+merge c41c1f6f0b4aa29e6b1f797a190dfa0bfe23ffc7, tree
+b8fc2c0e8974d2e67fe5d6e6eb854deada5dbce6, preserves both parents:
+61fbdc7c33cbcbbf0432cb65f1d6f87914eafe9a and
+f8ee2eff8951a8337bee616107cda5cb152ff062. The four incoming Native paths
+are the retired redundant late require, earlier-load ownership test, corrected
+Macro CI coverage controls and its evidence. No Macro operation body or owner
+test changes in that merge, and no source/authentication or controller authority
+is adopted. The earlier failed Native run41928851212 remains NONPASS; its
+fresh corrected run41933922570 remains separately bound to old Main3c97.
+
+The owner-call namespace is now added once to the existing Macro cohort beside
+pipeline and native-report tests. The CI harness compares the complete exact
+namespace vectors, checks that all eleven owner deftests are selected, and
+demonstrates that omitting the namespace loses its selection. Native-report
+coverage and the original disjoint receipt partitions/mutation controls remain.
+The exact 256MiB real-linter harness passes 49 tests / 522 assertions. Combined
+native/report/API-inventory/runtime controls pass 20 / 197; boundary/ownership
+passes 48 / 1202 with no skipped namespaces. Direct lint is zero warnings/errors.
+Own generated harness outputs are preserved recoverably outside the checkout
+after the process ended, with all bytes/hashes retained.
+
+A fresh six-path source-composition/CI/evidence writer owns only those actual
+paths. Original source and Native corrective tokens remain normally released;
+no token is transferred or reused. The namespace index is genuinely held by
+the active root-pr918-after1179 writer, so no index edit is made and its link
+update remains pending a normal handoff. The scoped contract already identifies
+the new test owner. Source metadata/CI wording from earlier phases records the
+state when those phases ended; it is not fresh integration authority.
+
+Current Main29711aa8532157a1d9c38c0b2df02d57957969ee separately integrates
+the controller-owned SH21 change. Only actual Main was fetched/read; that
+automated candidate, PR, leases, state and credit remain with its owner. This
+source branch has not composed those Main changes. Complete source-data parity,
+full contextual checks, independent composition/wiring acceptance, fresh fully
+wired exact-source/base hosted CI and immediate clean integration remain pending.
