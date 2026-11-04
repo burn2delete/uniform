@@ -157,13 +157,18 @@
   ([key] (marker {} key))
   ([ctx key] (str "<!-- uniform-" (get-in ctx [:config :harness-id] "simplify") ":" key " -->")))
 (defn ensure-issue! [ctx key title body milestone category]
-  (or (first (filter #(and (not (:pull_request %)) (str/includes? (or (:body %) "") (marker ctx key)))
-                     (pages ctx (repo-path ctx (str "issues?state=all&labels=" (get-in ctx [:config :work-label] "simplify"))))))
-      (rt/effect! ctx (str "issue/" key)
+  (let [cache (:issue-cache ctx)
+        issues (or (when cache @cache)
+                   (let [items (pages ctx (repo-path ctx (str "issues?state=all&labels=" (get-in ctx [:config :work-label] "simplify"))))]
+                     (when cache (reset! cache items)) items))
+        existing (first (filter #(and (not (:pull_request %)) (str/includes? (or (:body %) "") (marker ctx key))) issues))
+        issue (or existing (rt/effect! ctx (str "issue/" key)
                   #(api ctx "POST" (repo-path ctx "issues")
                         (cond-> {:title title :body (str body "\n\n" (marker ctx key))
                                  :labels [(get-in ctx [:config :work-label] "simplify") category]}
-                          milestone (assoc :milestone milestone))))))
+                          milestone (assoc :milestone milestone)))))]
+    (when (and cache (not existing)) (swap! cache conj issue))
+    issue))
 
 (defn ensure-finding-issue! [ctx key title body milestone category]
   ;; Existing state keeps legacy issue identities on resume. New lookups never
