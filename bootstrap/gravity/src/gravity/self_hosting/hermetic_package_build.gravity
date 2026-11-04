@@ -18,7 +18,6 @@
    :maximum-packages 32
    :maximum-components 32
    :maximum-component-dependencies 128
-   :maximum-source-roots 16
    :maximum-environment-variables 16
    :maximum-build-authorities 16
    :allowed-profiles #{:meta}
@@ -146,12 +145,10 @@
            values (+ index 1) (conj seen value)))
         false))))
 
-(defn sh23-string-vector? [values maximum allow-empty]
+(defn sh23-string-vector? [values allow-empty]
   (if (vector? values)
-    (if (<= (count values) maximum)
-      (if (if allow-empty true (> (count values) 0))
-        (sh23-string-vector-from? values 0 #{})
-        false)
+    (if (if allow-empty true (> (count values) 0))
+      (sh23-string-vector-from? values 0 #{})
       false)
     false))
 
@@ -189,7 +186,6 @@
           (if (sh23-nonempty-string? (get project :edition))
             (if (sh23-string-vector?
                  (get project :source-roots)
-                 (get (sh23-build-policy) :maximum-source-roots)
                  false)
               (if (= :meta (get project :profile))
                 (if (sh23-member?

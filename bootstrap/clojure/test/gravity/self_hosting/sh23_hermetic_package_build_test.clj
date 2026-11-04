@@ -163,6 +163,7 @@
     (is (= 32 (:maximum-components policy)))
     (is (= 128 (:maximum-component-dependencies policy)))
     (is (= 16 (:maximum-build-authorities policy)))
+    (is (not (contains? policy :maximum-source-roots)))
     (is (= #{:meta} (:allowed-profiles policy)))
     (is (= #{:portable-mir} (:allowed-targets policy)))
     (is (contains? (:forbidden-effects policy) :build/network))
@@ -206,6 +207,40 @@
              (:status
               (invoke-engine
                'sh23-verify-result [request result])))))))
+
+(deftest sh23-builds-with-more-than-sixteen-source-roots
+  (let [base-request
+        (request accepted-gravity-plan 'sh23-hermetic-build-request)
+        base-result (build base-request)
+        roots (mapv #(str "bootstrap/gravity/src/root-" %) (range 17))
+        expanded-request (assoc-in base-request [:project :source-roots] roots)
+        result (build expanded-request)]
+    (is (= :accepted (:status result)))
+    (is (empty? (:diagnostics result)))
+    (is (= roots (get-in result [:identity-input :project :source-roots])))
+    (is (= (assoc-in (:identity-input base-result)
+                    [:project :source-roots] roots)
+           (:identity-input result)))
+    (is (= (:actions base-result) (:actions result)))
+    (is (= (:build-graph base-result) (:build-graph result)))
+    (is (= (:artifact-requests base-result) (:artifact-requests result)))
+    (is (= (:provenance base-result) (:provenance result)))
+    (is (= result (edn/read-string (pr-str result))))
+    (is (= :passed
+           (:status (invoke-engine 'sh23-verify-result
+                                   [expanded-request result]))))))
+
+(deftest sh23-rejects-malformed-source-roots
+  (let [base-request
+        (request accepted-gravity-plan 'sh23-hermetic-build-request)]
+    (doseq [roots [nil [] '("src") ["src" "src"] [""] [17]]]
+      (testing (pr-str roots)
+        (let [result (build (assoc-in base-request [:project :source-roots]
+                                      roots))
+              diagnostic (first (:diagnostics result))]
+          (is (= :rejected (:status result)))
+          (is (= "PKG1001" (:rule diagnostic)))
+          (is (= :source-root-vector-invalid (:reason diagnostic))))))))
 
 (deftest sh23-links-sh21-sh22-and-emits-valid-sh20-requests
   (let [request
