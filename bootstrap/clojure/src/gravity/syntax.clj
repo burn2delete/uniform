@@ -2599,6 +2599,8 @@
       :reader-diagnostics
       :incremental-reader-hashes
       :reader-product-integrity])
+    :sh07-decimal-occurrence-projection
+    (:sh07-decimal-occurrence-projection c2-artifact)
     :sh03-reader-authentication
     (cond->
      {:reader-result-id
@@ -2615,6 +2617,11 @@
       (get-in
        boundary
        [:authenticated-envelope :provenance-binding-id])}
+     (get-in boundary [:adapter-contract])
+     (assoc :adapter-contract (get-in boundary [:adapter-contract]))
+     (get-in boundary [:decimal-occurrence-projection-id])
+     (assoc :decimal-occurrence-projection-id
+            (get-in boundary [:decimal-occurrence-projection-id]))
      (=
       :gravity/sh03-current-source-reader-plan-binding
       (get-in boundary [:plan-binding :artifact]))
@@ -2682,6 +2689,7 @@
  {:adapter-contract
   (or
    (get-in c2-artifact [:gravity-reader-boundary :adapter-contract])
+   (get-in c2-artifact [:sh03-reader-authentication :adapter-contract])
    :gravity/sh03-to-c2-reader-products-v2),
   :adapted-source-unit-id
   (get-in c2-artifact [:source-unit-record :source-id]),
@@ -2877,6 +2885,7 @@
      :adapter-contract
      (or
       (get-in c2-artifact [:gravity-reader-boundary :adapter-contract])
+      (get-in c2-artifact [:sh03-reader-authentication :adapter-contract])
       :gravity/sh03-to-c2-reader-products-v2),
      :semantic-reader-products semantic-core})
    envelope-id

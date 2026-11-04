@@ -99,6 +99,31 @@
             (:sh07-decimal-occurrence-projection c2-artifact)
             decimal-projection-id
             (get-in decimal-projection [:projection-id])
+            reader-authentication (:sh03-reader-authentication c2-artifact)
+            boundary-adapter-contract
+            (get-in c2-artifact [:gravity-reader-boundary
+                                  :adapter-contract])
+            authenticated-adapter-contract
+            (:adapter-contract reader-authentication)
+            adapter-contract
+            (or boundary-adapter-contract
+                authenticated-adapter-contract)
+            adapter-contract-coherent?
+            (or (nil? boundary-adapter-contract)
+                (nil? authenticated-adapter-contract)
+                (= boundary-adapter-contract authenticated-adapter-contract))
+            boundary-projection-id
+            (get-in c2-artifact [:gravity-reader-boundary
+                                  :decimal-occurrence-projection-id])
+            authenticated-projection-id
+            (:decimal-occurrence-projection-id reader-authentication)
+            descriptor-projection-id
+            (or boundary-projection-id
+                authenticated-projection-id)
+            projection-id-coherent?
+            (or (nil? boundary-projection-id)
+                (nil? authenticated-projection-id)
+                (= boundary-projection-id authenticated-projection-id))
             descriptor-summary
             (:value
              (some #(when (= :reader-product-identities (:name %)) %)
@@ -108,8 +133,7 @@
                             :semantic-projections])))
             v3-reader-boundary?
             (= :gravity/sh03-to-c2-reader-products-v3
-               (get-in c2-artifact [:gravity-reader-boundary
-                                     :adapter-contract]))
+               adapter-contract)
             decimal-projection-valid?
             (if-not v3-reader-boundary?
               true
@@ -136,6 +160,8 @@
                    (integer? (:occurrence-count decimal-projection))
                    (<= 0 (:occurrence-count decimal-projection))
                    (vector? (:occurrences decimal-projection))
+                   adapter-contract-coherent?
+                   projection-id-coherent?
                    (= (:occurrence-count decimal-projection)
                       (count (:occurrences decimal-projection)))
                    (= (vec (range (:occurrence-count decimal-projection)))
@@ -166,10 +192,11 @@
                                (:occurrence-count decimal-projection)
                                :occurrences (:occurrences decimal-projection)}))
                    (= decimal-projection-id
-                      (get-in c2-artifact [:gravity-reader-boundary
-                                            :decimal-occurrence-projection-id]))
-                   (= decimal-projection-id
-                      (:decimal-occurrence-projection-id descriptor-summary))))
+                      descriptor-projection-id)
+                   (or (not (contains? c2-artifact :gravity-reader-boundary))
+                       (= decimal-projection-id
+                          (:decimal-occurrence-projection-id
+                           descriptor-summary)))))
             expected-integrity
             (when recomputed-hashes
               (if v3-reader-boundary?
