@@ -1,10 +1,12 @@
 (ns gravity.self-hosting.sh22-sha256-test
   (:require [clojure.java.io :as io]
             [clojure.test :refer [deftest is]]
-            [gravity.bootstrap :as bootstrap]))
+            [gravity.bootstrap :as bootstrap]
+            [gravity.digest :as digest]
+            [gravity.release :as release]))
 
-;; Implementation checkpoint: actual Uniform padding execution, without a
-;; digest, caller-adoption, migration, release or seed-retirement claim.
+;; Current-source plan execution and differential development evidence only.
+;; No migration, native execution, release or seed-retirement claim.
 (def ^:private root
   (delay
     (loop [file (io/file (.toURI (io/resource "gravity/self_hosting/sh22_sha256_test.clj")))]
@@ -24,6 +26,25 @@
 
 (defn- pad [arguments]
   (call 'sh22-sha256-pad [arguments]))
+
+(defn- hash-octets [arguments]
+  (call 'sh22-sha256 [arguments]))
+
+(defn- octet-array [values]
+  (byte-array (map unchecked-byte values)))
+
+(defn- jdk-sha256 [values]
+  (apply str (map #(format "%02x" (bit-and 255 %))
+                  (.digest (java.security.MessageDigest/getInstance "SHA-256")
+                           (octet-array values)))))
+
+;; A literal-byte transport provider for the existing release file-hash caller.
+;; Byte conversion stays outside the Uniform byte kernel; no text is decoded.
+(defn- uniform-bytes-sha256 [bytes]
+  (let [result (hash-octets [(mapv #(bit-and 255 %) bytes)])]
+    (if (= :accepted (:status result))
+      (:value result)
+      (throw (ex-info "Uniform SHA-256 rejected release bytes" result)))))
 
 (defn- expected-padding [values]
   (let [size (count values)
@@ -58,22 +79,115 @@
 (deftest sh22-sha256-padding-rejects-malformed-carriers-and-non-octets
   (doseq [[arguments reason]
           (concat
-           (for [carrier [nil {} '([]) "abc" #{[]}]]
+           (for [carrier [nil {} '([]) "abc" #{[]} (byte-array [0])]]
              [carrier :expected-argument-vector])
            (for [arguments [[] [[] []] [[] [] []]]]
              [arguments :invalid-arity])
-           (for [values [nil {} '(0) #{0} "abc" :bytes]]
+           (for [values [nil {} '(0) #{0} "abc" :bytes (byte-array [0])]]
              [[values] :expected-octet-vector])
            (for [value [-1 256 1.0 1/2 false nil :byte 'byte [] {}]]
              [[[0 value 255]] :non-octet]))]
-    (is (= {:status :rejected
-            :diagnostics [{:rule "SH22SHA001" :reason reason}]}
-           (pad arguments))))
+    (doseq [operation [pad hash-octets]]
+      (is (= {:status :rejected
+              :diagnostics [{:rule "SH22SHA001" :reason reason}]}
+             (operation arguments)))))
   (let [renderings (atom 0)
         opaque (proxy [Object] []
                  (toString [] (swap! renderings inc)
                    (throw (ex-info "opaque input rendered" {}))))]
-    (is (= :expected-argument-vector (get-in (pad opaque) [:diagnostics 0 :reason])))
-    (is (= :expected-octet-vector (get-in (pad [opaque]) [:diagnostics 0 :reason])))
-    (is (= :non-octet (get-in (pad [[opaque]]) [:diagnostics 0 :reason])))
+    (doseq [operation [pad hash-octets]]
+      (is (= :expected-argument-vector (get-in (operation opaque) [:diagnostics 0 :reason])))
+      (is (= :expected-octet-vector (get-in (operation [opaque]) [:diagnostics 0 :reason])))
+      (is (= :non-octet (get-in (operation [[opaque]]) [:diagnostics 0 :reason])))
+      (is (= :invalid-arity (get-in (operation [opaque opaque]) [:diagnostics 0 :reason]))))
     (is (zero? @renderings))))
+
+(deftest sh22-sha256-computes-complete-known-answers
+  (doseq [[text expected]
+          [["" "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"]
+           ["abc" "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"]
+           ["abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"
+            "248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1"]
+           [(str "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmn"
+                 "hijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu")
+            "cf5b16a778af8380036ce59e7b0492370b249b11e8f07a51afac45037afee9d1"]]]
+    (let [values (mapv int text)
+          result (hash-octets [values])]
+      (is (= {:status :accepted :value expected} result))
+      (is (= (jdk-sha256 values) (:value result)))
+      (is (= (digest/sha256-bytes-hex (octet-array values)) (:value result)))
+      (is (= (release/bytes-sha256 (octet-array values)) (:value result))))))
+
+(deftest sh22-sha256-computes-all-octets-padding-boundaries-and-multiple-blocks
+  (doseq [size [55 56 63 64 65 119 120 127 128 129 256 1024]]
+    (let [values (vec (take size (cycle (range 256))))
+          result (hash-octets [values])]
+      (is (= :accepted (:status result)))
+      (is (= (jdk-sha256 values) (:value result)) (str "byte length " size))
+      (is (re-matches #"[0-9a-f]{64}" (:value result)))))
+  ;; Arbitrary nontext bytes, including invalid UTF-8, exercise computation
+  ;; beyond the standard vectors. The independent oracle is test-only.
+  (let [random (java.util.Random. 220256)
+        values (vec (repeatedly 193 #(.nextInt random 256)))
+        changed (update values 91 #(mod (inc %) 256))
+        actual (:value (hash-octets [values]))
+        other (:value (hash-octets [changed]))]
+    (is (= (jdk-sha256 values) actual))
+    (is (= (jdk-sha256 changed) other))
+    (is (not= actual other))
+    (is (= actual (:value (hash-octets [values]))))))
+
+(deftest sh22-sha256-does-not-accept-claimed-digests-or-provider-requests
+  (let [values [97 98 99]
+        correct (jdk-sha256 values)
+        wrong (apply str (repeat 64 "0"))]
+    ;; Both correct and incorrect supplied answers reject, rather than being
+    ;; trusted or replayed. Only an octet vector is an accepted input.
+    (doseq [claim [correct wrong]]
+      (is (= {:status :rejected
+              :diagnostics [{:rule "SH22SHA001" :reason :invalid-arity}]}
+             (hash-octets [values claim])))
+      (is (= :expected-octet-vector
+             (get-in (hash-octets [{:bytes values :digest claim}])
+                     [:diagnostics 0 :reason]))))
+    (is (= :expected-octet-vector
+           (get-in (hash-octets [{:operation :sha256 :arguments values}])
+                   [:diagnostics 0 :reason])))
+    (is (not= wrong (:value (hash-octets [values]))))))
+
+(deftest sh22-sha256-existing-release-caller-consumes-uniform-provider
+  ;; Compile before disabling the independent seed oracles: plan provenance
+  ;; still uses host hashing. The actual file identity below uses Uniform.
+  @engine
+  (let [file (java.io.File/createTempFile "uniform-sha256-" ".bin")
+        values [0 255 128 192 175 97]
+        expected (str "sha256:" (jdk-sha256 values))]
+    (try
+      (with-open [output (io/output-stream file)]
+        (.write output (octet-array values)))
+      (with-redefs [digest/sha256-bytes-hex
+                    (fn [_] (throw (ex-info "unexpected seed digest" {})))
+                    release/bytes-sha256
+                    (fn [_] (throw (ex-info "unexpected release digest" {})))]
+        (is (= expected
+               (release/file-sha256 #'uniform-bytes-sha256 #'release/file-bytes
+                                    (.getPath file)))))
+      (finally (.delete file)))))
+
+(deftest sh22-sha256-retains-explicit-internal-policy-and-audit-nonclaims
+  (let [policy (call 'sh22-sha256-policy [])]
+    (is (= :sha-256 (:algorithm policy)))
+    (is (= :unkeyed-content-hash (:mode policy)))
+    (is (= :uniform-source (:provider policy)))
+    (is (= :internal (:visibility policy)))
+    (is (= :restricted-to-unkeyed-content-identity (:primitive-policy policy)))
+    (is (= :unreviewed (:audit-status policy)))
+    (is (= :experimental (:stability policy)))
+    (is (= :explicit-modulo-4294967296 (:word-arithmetic policy)))
+    (is (= #{:octet-validation :padding :compression :hex-rendering}
+           (:implemented policy)))
+    (doseq [field [:text-decoding :canonicalization :constant-time-claim
+                   :secret-handling-claim]]
+      (is (false? (get policy field))))
+    (is (= #{} (:effects policy)))
+    (is (= #{} (:capabilities policy)))))
