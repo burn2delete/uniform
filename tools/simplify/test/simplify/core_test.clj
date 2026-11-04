@@ -27,22 +27,26 @@
         classpath (str/join java.io.File/pathSeparator
                             (map #(.getAbsolutePath (io/file %))
                                  (str/split (System/getProperty "java.class.path") (re-pattern java.io.File/pathSeparator))))
-        argv [(str (io/file (System/getProperty "java.home") "bin/java")) "-cp" classpath
-              "clojure.main" "-e" (str/replace (str "(print " (pr-str output) ") (flush) "
+        java [(str (io/file (System/getProperty "java.home") "bin/java")) "-cp" classpath "clojure.main"]
+        baseline (rt/command ctx (:state-dir ctx) (into java ["-e" "nil"]))
+        expected-error (str (:err baseline) error-output)
+        argv (into java ["-e" (str/replace (str "(print " (pr-str output) ") (flush) "
                                                   "(binding [*out* *err*] (print " (pr-str error-output) ") (flush))")
-                                               "\u0000" "\\u0000")]
+                                               "\u0000" "\\u0000")])
         result (rt/command (assoc ctx :log-file log) (:state-dir ctx) argv)
         events (mapv #(json/read-str % :key-fn keyword) (str/split-lines (slurp log)))
         streamed (fn [stream]
                    (str/join "\n" (map :line (filter #(and (= "command-output" (:event %))
                                                          (= stream (:stream %))) events))))]
     (is (zero? (:exit result)))
+    (is (zero? (:exit baseline)))
+    (is (= "" (:out baseline)))
     (is (= output (:out result)))
-    (is (= error-output (:err result)))
+    (is (= expected-error (:err result)))
     ;; Inspect only output events: command-start already redacts the argv and
     ;; must not make a leaking chunk logger look as though it redacted output.
     (is (= (rt/redact output) (streamed "stdout")))
-    (is (= error-output (streamed "stderr")))
+    (is (= (rt/redact expected-error) (streamed "stderr")))
     (is (not (str/includes? (slurp log) secret)))
     (is (str/includes? (slurp log) "[REDACTED]"))))
 
