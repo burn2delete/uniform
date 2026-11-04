@@ -185,7 +185,8 @@ clojure -M:run reconcile config.edn EFFECT-ID inspected-result.edn
 If the shared main journal also retains that original merge, its owner must
 inspect and reconcile it separately using `reconcile-main CONFIG EFFECT FILE`.
 The EDN needs `:evidence`, `:outcome :merged` with verified `:actual` commit,
-tree and parents, or `:outcome :not-applied`. Reconciliation never retries the
+tree, parents and observed `:main` commit, or `:outcome :not-applied`. Verify
+that the merge is reachable from the observed main. Reconciliation never retries the
 mutation or removes its denial. A retained unknown writer can be released only
 by its original state owner with `release-writer CONFIG LEASE.edn INSPECTION.edn`;
 the exact lease token and inspected evidence are required. Never clear either

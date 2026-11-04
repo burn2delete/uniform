@@ -549,8 +549,10 @@
                (with-redefs [shared/pr-info (fn [& _] (swap! queries inc))]
                  (is (thrown-with-msg? Exception #"reconcile-main" (w/integrate! ctx t))))
                (is (zero? @queries))
-               (let [actual {:commit commit :tree (:tree t) :parents [(:base t) (:candidate t)]}]
-                 (spit file (pr-str {:evidence "Inspected real fixture Git parents/tree and PR merge" :outcome :merged :actual actual}))
+               (let [observed (w/fresh-main! ctx)
+                     actual {:commit commit :tree (:tree t) :parents [(:base t) (:candidate t)] :main observed}]
+                 (is (= "" (rt/git ctx (get-in ctx [:config :repo-dir]) "merge-base" "--is-ancestor" commit observed)))
+                 (spit file (pr-str {:evidence "Inspected real fixture Git parents/tree, PR merge and observed main reachability" :outcome :merged :actual actual}))
                  (main/dispatch! ctx "reconcile-main" [id (str file)]))
                (main/retry! ctx "a" (str file))
                (w/integrate! ctx (w/task ctx "a"))
