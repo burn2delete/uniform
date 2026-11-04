@@ -3,7 +3,8 @@
   (:refer-clojure :exclude [run! descendants])
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
-            [gravity.process-supervision :as process-supervision]))
+            [gravity.process-supervision :as process-supervision]
+            [gravity.project-tests.scope :as project-scope]))
 
 (def output "target/ci")
 (def ^:private log-preview-max-chars 4096)
@@ -33,6 +34,17 @@
    "identical-value-thread-binding-disables-receipt-reuse"])
 (def macro-pipeline-cohort-regex
   (str "^(?!.*(?:" (str/join "|" (map #(java.util.regex.Pattern/quote %) macro-receipt-test-vars)) ")$).+"))
+
+;; Current-source development checks are optional while their source branches
+;; are being composed.  Keep the path-to-namespace mapping explicit so a
+;; missing source file is omitted rather than turning an absent feature into a
+;; runner failure.  These are ordinary execution checks, not additions to the
+;; frozen development-test namespace catalog or historical bootstrap controls.
+(def development-source-test-specs
+  "Current-source entries from the shared project-scope map that own CI children."
+  (->> project-scope/current-source-test-specs
+       (filter :ci-mode)
+       vec))
 
 ;; These are the existing owner boundaries exposed by the CI matrix.  Keep
 ;; this table deliberately small: an unlisted path is cross-cutting and must
@@ -118,6 +130,51 @@
 
 (defn command [heap & args]
   (into ["clojure" (str "-J-Xmx" heap) "-Srepro" "-Sdeps" runtime-deps] args))
+
+(defn source-test-specs-for-mode
+  "Return present current-source tests for MODE.
+
+  The optional predicate is intentionally injectable for planner tests.  CI
+  uses the shared project-scope filesystem predicate, so an uncomposed source
+  test never becomes an invalid namespace invocation."
+  ([mode]
+   (project-scope/current-source-test-specs-for-ci-mode mode))
+  ([mode present?]
+   (->> development-source-test-specs
+        (filter #(and (= mode (:ci-mode %)) (present? %)))
+        vec)))
+
+(defn source-test-command
+  "Build one existing-runner child for the supplied present test specs."
+  [mode specs]
+  (when (seq specs)
+    (let [{:keys [id timeout heap alias runner-args]}
+          (case mode
+            "bootstrap" {:id "bootstrap-macro-plan"
+                         :timeout 900
+                         :heap "2g"
+                         :alias "-M:bootstrap-validation-test"
+                         :runner-args ["--fail-fast" "--progress"]}
+            "checked-core-runtime" {:id "checked-core-source-tests"
+                                    :timeout 900
+                                    :heap "2g"
+                                    :alias "-M:compiler-composition-test"
+                                    :runner-args ["--fail-fast" "--progress"]}
+            (throw (ex-info "Unsupported current-source test mode"
+                            {:mode mode})))]
+      [id timeout
+       (apply command heap alias
+              (concat runner-args
+                      (mapcat (fn [{:keys [namespace]}]
+                                ["--namespace" (str namespace)]) specs)))])))
+
+(defn with-source-test-command
+  "Append the optional current-source child without changing base controls."
+  [mode commands]
+  (if-let [source-command (source-test-command
+                           mode (source-test-specs-for-mode mode))]
+    (conj commands source-command)
+    commands))
 
 (defn descendants [^Process process]
   (let [{:keys [handles error]}
@@ -919,37 +976,38 @@
                            (apply command "256m" "-M" "tools/ci/lint.clj" base paths)]])))
     "contracts" (contract-commands)
     "bootstrap"
-    (cond-> [["cold-bootstrap-load" 120
-              (command "1g" "-M" "-e"
-                       "(assert (nil? (find-ns 'gravity.bootstrap))) (require 'gravity.bootstrap) (println :cold-bootstrap-loaded)")]
-             ["reader-regression" 120
-              (command "1g" "-M:dev-test"
-                       "--namespace" "gravity.reader.artifact-test"
-                       "--namespace" "gravity.reader-primitives-test"
-                       "--namespace" "gravity.c3-reader-expansions-test"
-                       "--namespace" "gravity.cli.launcher-test"
-                       "--namespace" "gravity.self-hosting.seed-readable-printer-test")]
-             ["syntax-regression" 600
-              (command "2g" "-M:dev-test"
-                       "--namespace" "gravity.syntax.pipeline-test"
-                       "--namespace" "gravity.bootstrap-compatibility.c3-test"
-                       "--namespace" "gravity.self-hosting.sh04-fresh-c2-construction-test"
-                       "--namespace" "gravity.self-hosting.sh04-form-index-test"
-                       "--namespace" "gravity.self-hosting.sh04-literal-index-test")]]
-      (bootstrap-input-controls-required? selection)
-      (conj ["bootstrap-input-controls" 600
-             (command "2g" "-M:dev-test"
-                      "--namespace" "gravity.bootstrap.rebuild.inputs-test")])
-      true
-      (into [["language-boundary" 90
-              (command "512m" "-M:test" "--namespace"
-                       "gravity.self-hosting.sh01-language-boundary-test")]
-             ["catalog-controls" 120
-              (command "512m" "-M:test" "--namespace"
-                       "gravity.self-hosting.sh01-stage0-leaf-test-runner-test")]
-             ["ownership-inventory" 90
-              (command "512m" "-M:test" "--namespace"
-                       "gravity.self-hosting.sh01-ownership-test")]]))
+    (let [commands (cond-> [["cold-bootstrap-load" 120
+                             (command "1g" "-M" "-e"
+                                      "(assert (nil? (find-ns 'gravity.bootstrap))) (require 'gravity.bootstrap) (println :cold-bootstrap-loaded)")]
+                            ["reader-regression" 120
+                             (command "1g" "-M:dev-test"
+                                      "--namespace" "gravity.reader.artifact-test"
+                                      "--namespace" "gravity.reader-primitives-test"
+                                      "--namespace" "gravity.c3-reader-expansions-test"
+                                      "--namespace" "gravity.cli.launcher-test"
+                                      "--namespace" "gravity.self-hosting.seed-readable-printer-test")]
+                            ["syntax-regression" 600
+                             (command "2g" "-M:dev-test"
+                                      "--namespace" "gravity.syntax.pipeline-test"
+                                      "--namespace" "gravity.bootstrap-compatibility.c3-test"
+                                      "--namespace" "gravity.self-hosting.sh04-fresh-c2-construction-test"
+                                      "--namespace" "gravity.self-hosting.sh04-form-index-test"
+                                      "--namespace" "gravity.self-hosting.sh04-literal-index-test")]]
+                     (bootstrap-input-controls-required? selection)
+                     (conj ["bootstrap-input-controls" 600
+                            (command "2g" "-M:dev-test"
+                                     "--namespace" "gravity.bootstrap.rebuild.inputs-test")])
+                     true
+                     (into [["language-boundary" 90
+                             (command "512m" "-M:test" "--namespace"
+                                      "gravity.self-hosting.sh01-language-boundary-test")]
+                            ["catalog-controls" 120
+                             (command "512m" "-M:test" "--namespace"
+                                      "gravity.self-hosting.sh01-stage0-leaf-test-runner-test")]
+                            ["ownership-inventory" 90
+                             (command "512m" "-M:test" "--namespace"
+                                      "gravity.self-hosting.sh01-ownership-test")]]))]
+      (with-source-test-command "bootstrap" commands))
     "macro" [["macro-pipeline-cohort" 900
               (command "2g" "-M:dev-test"
                        "--progress"
@@ -988,20 +1046,22 @@
                                         (command "2g" "-M:dev-test"
                                                  "--progress"
                                                  "--namespace" "gravity.self-hosting.sh06-invocation-selection-test")]]
-    "checked-core-runtime" [["checked-core-runtime-regression" 180
-                             (command "2g" "-M:dev-test"
-                                      "--namespace" "gravity.checked-core.pipeline-test")]
-                            ["checked-core-current-binding-regression" 180
-                             (command "2g" "-M:dev-test"
-                                      "--namespace" "gravity.self-hosting.sh07-var-reference-test"
-                                      "--prefix" "sh07-current-binding"
-                                      "--exact" "sh07-b5-qualified-var-development-kernel")]
-                            ["checked-core-projection-kernel-regression" 180
-                             (command "2g" "-M:dev-test"
-                                      "--namespace" "gravity.self-hosting.sh07-mutation-test"
-                                      "--exact" "sh07-character-source-occurrence-development-kernel"
-                                      "--exact" "sh07-map-source-order-development-kernel"
-                                      "--exact" "sh07-map-quoted-duplicate-source-development-kernel")]]
+    "checked-core-runtime"
+    (let [commands [["checked-core-runtime-regression" 180
+                     (command "2g" "-M:dev-test"
+                              "--namespace" "gravity.checked-core.pipeline-test")]
+                    ["checked-core-current-binding-regression" 180
+                     (command "2g" "-M:dev-test"
+                              "--namespace" "gravity.self-hosting.sh07-var-reference-test"
+                              "--prefix" "sh07-current-binding"
+                              "--exact" "sh07-b5-qualified-var-development-kernel")]
+                    ["checked-core-projection-kernel-regression" 180
+                     (command "2g" "-M:dev-test"
+                              "--namespace" "gravity.self-hosting.sh07-mutation-test"
+                              "--exact" "sh07-character-source-occurrence-development-kernel"
+                              "--exact" "sh07-map-source-order-development-kernel"
+                              "--exact" "sh07-map-quoted-duplicate-source-development-kernel")]]]
+      (with-source-test-command "checked-core-runtime" commands))
     "leaves-portable" [["fresh-portable-leaf-catalog" 900 (leaf-command "portable" selection)]]
     "darwin-probe" [["darwin-host" 15 ["sw_vers"]]
                     ["darwin-kernel" 15 ["uname" "-a"]]

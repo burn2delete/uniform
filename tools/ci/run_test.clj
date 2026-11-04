@@ -513,13 +513,24 @@
 (deftest macro-hosted-envelope-covers-all-child-watchdogs
   (let [workflow (slurp ".github/workflows/ci.yml")
         checks (second (re-find #"(?s)\n  checks:\n(.*?)(?=\n  resolution:)" workflow))
-        [_ macro-minutes other-minutes]
-        (re-find #"timeout-minutes: \$\{\{ matrix.mode == 'macro' && (\d+) \|\| (\d+) \}\}" checks)
         watchdog-seconds (reduce + (map second (ci/commands-for-selection "macro" {:kind :full})))]
-    (is (some? macro-minutes))
-    (is (= "20" other-minutes))
-    (is (> (* 60 (Long/parseLong macro-minutes)) watchdog-seconds))
+    (is (str/includes? checks
+                       "timeout-minutes: ${{ matrix.mode == 'macro' && 50"))
+    (is (str/includes? checks "matrix.mode == 'bootstrap' && 50"))
+    (is (str/includes? checks "matrix.mode == 'checked-core-runtime' && 30"))
+    (is (> (* 60 50) watchdog-seconds))
     (is (str/includes? checks "mode: [static, contracts, bootstrap, macro, checked-core-runtime]"))))
+
+(deftest current-source-hosted-envelopes-cover-new-child-watchdogs
+  (let [workflow (slurp ".github/workflows/ci.yml")
+        checks (second (re-find #"(?s)\n  checks:\n(.*?)(?=\n  resolution:)" workflow))
+        spec [{:namespace 'gravity.example-test}]]
+    (is (= 900 (second (ci/source-test-command "bootstrap" spec))))
+    (is (= 900 (second (ci/source-test-command "checked-core-runtime" spec))))
+    (is (> (* 60 50) (+ 120 120 600 600 900 90 120 90)))
+    (is (> (* 60 30) (+ 180 180 180 900)))
+    (is (str/includes? checks "matrix.mode == 'bootstrap' && 50"))
+    (is (str/includes? checks "matrix.mode == 'checked-core-runtime' && 30"))))
 
 (deftest resolution-commands-are-complete-and-disjoint
   (let [modes ["resolution-pipeline" "resolution-unmetered"
@@ -585,6 +596,86 @@
                        "if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'"))
     (is (not (str/includes? workflow
                             "mode: [static, contracts, bootstrap, macro, resolution, checked-core-runtime]")))))
+
+(deftest current-source-test-planning-invokes-only-present-namespaces
+  (let [specs ci/development-source-test-specs
+        present-paths (set (map :path specs))
+        partial-paths #{"bootstrap/clojure/test/gravity/self_hosting/c6_core_lowering_source_execution_test.clj"
+                        "bootstrap/clojure/test/gravity/bootstrap/rebuild/macro_plan_test.clj"}
+        namespaces (fn [command]
+                     (->> (partition 2 1 (nth command 2))
+                          (keep (fn [[option value]]
+                                  (when (= "--namespace" option) value)))
+                          vec))
+        present-specs (fn [mode & _]
+                        (filterv #(and (= mode (:ci-mode %))
+                                       (contains? present-paths (:path %)))
+                                 specs))]
+    (is (= 4 (count specs)))
+    (is (= #{["checked-core-runtime"
+              "bootstrap/clojure/test/gravity/self_hosting/c6_core_lowering_source_execution_test.clj"]
+             ["checked-core-runtime"
+              "bootstrap/clojure/test/gravity/self_hosting/c6_core_lowering_source_classifier_test.clj"]
+             ["checked-core-runtime"
+              "bootstrap/clojure/test/gravity/self_hosting/canonical_core_node_source_execution_test.clj"]
+             ["bootstrap"
+              "bootstrap/clojure/test/gravity/bootstrap/rebuild/macro_plan_test.clj"]}
+           (set (map (juxt :ci-mode :path) specs))))
+    (is (= ["gravity.self-hosting.c6-core-lowering-source-execution-test"]
+           (mapv (comp str :namespace)
+                 (ci/source-test-specs-for-mode
+                  "checked-core-runtime"
+                  #(contains? partial-paths (:path %))))))
+    (with-redefs [ci/source-test-specs-for-mode present-specs]
+      (let [bootstrap-command (some #(when (= "bootstrap-macro-plan" (first %)) %)
+                                    (ci/commands-for-selection "bootstrap"
+                                                               {:kind :selected
+                                                                :paths ["bootstrap/clojure/src/gravity/reader.clj"]}))
+            checked-command (some #(when (= "checked-core-source-tests" (first %)) %)
+                                  (ci/commands-for-selection "checked-core-runtime"
+                                                             {:kind :selected
+                                                              :paths ["language/compiler/src/gravity/checked_core.gravity"]}))]
+        (is (= ["gravity.bootstrap.rebuild.macro-plan-test"]
+               (namespaces bootstrap-command)))
+        (is (= 900 (second bootstrap-command)))
+        (is (= "-M:bootstrap-validation-test"
+               (some #{"-M:bootstrap-validation-test"} (nth bootstrap-command 2))))
+        (is (= 1 (count (filter #{"--progress"} (nth bootstrap-command 2)))))
+        (is (= ["gravity.self-hosting.c6-core-lowering-source-execution-test"
+                "gravity.self-hosting.c6-core-lowering-source-classifier-test"
+                "gravity.self-hosting.canonical-core-node-source-execution-test"]
+               (namespaces checked-command)))
+        (is (= 900 (second checked-command)))
+        (is (= "-M:compiler-composition-test"
+               (some #{"-M:compiler-composition-test"} (nth checked-command 2))))
+        (is (= 1 (count (filter #{"--progress"} (nth checked-command 2)))))))))
+
+(deftest current-source-test-planning-omits-absent-population-and-retains-controls
+  (let [source-command-ids #{"bootstrap-macro-plan" "checked-core-source-tests"}
+        baseline-bootstrap
+        ["cold-bootstrap-load" "reader-regression" "syntax-regression"
+         "bootstrap-input-controls" "language-boundary" "catalog-controls"
+         "ownership-inventory"]
+        baseline-checked
+        ["checked-core-runtime-regression" "checked-core-current-binding-regression"
+         "checked-core-projection-kernel-regression"]]
+    (with-redefs [ci/source-test-specs-for-mode (constantly [])]
+      (is (= baseline-bootstrap
+             (mapv first (ci/commands-for-selection "bootstrap" {:kind :full}))))
+      (is (= baseline-checked
+             (mapv first (ci/commands-for-selection "checked-core-runtime"
+                                                    {:kind :full}))))
+      (is (empty? (filter source-command-ids
+                          (map first (ci/commands-for-selection "bootstrap"
+                                                                {:kind :full})))))
+      (is (empty? (filter source-command-ids
+                          (map first (ci/commands-for-selection "checked-core-runtime"
+                                                                {:kind :full})))))
+      ;; The released Macro partition is independent of optional source
+      ;; population and must keep all three existing children unchanged.
+      (is (= ["macro-pipeline-cohort" "macro-receipt-controls"
+              "macro-bootstrap-compatibility"]
+             (mapv first (ci/commands-for-selection "macro" {:kind :full})))))))
 
 (deftest stage-selection-follows-owned-downstream-closure
   (let [change (fn [path] {:old-mode "100644" :new-mode "100644"

@@ -751,6 +751,10 @@
         (let [target (io/file directory (.getPath file))]
           (io/make-parents target)
           (io/copy file target)))
+      (let [source (io/file "tools/gravity/project_tests/scope.clj")
+            target (io/file directory "src/gravity/project_tests/scope.clj")]
+        (io/make-parents target)
+        (io/copy source target))
       (let [target (io/file directory macros/source)]
         (io/make-parents target)
         (io/copy (io/file macros/source) target))
