@@ -268,7 +268,7 @@
                             (map #(.getAbsolutePath (io/file %))
                                  (str/split (System/getProperty "java.class.path") (re-pattern java.io.File/pathSeparator))))
         command [java "-cp" classpath "clojure.main" "-m" "simplify.fake-server"]]
-    (doseq [mode ["ok" "quoted-denial" "tool-output-data" "malformed" "failed" "interrupted" "approval"
+    (doseq [mode ["ok" "quoted-denial" "tool-output-data" "malformed" "failed" "interrupted" "unfinished-action" "approval"
                  "tool-denied-zero" "tool-denied-nonzero"]]
       (let [ctx (assoc-in (context) [:config :codex-command] (conj command mode))]
         (testing mode
@@ -281,6 +281,10 @@
               (let [failure (try (codex/job! ctx "fixture" (:state-dir ctx) :read "fixture" "fixture" schema/review)
                                  (catch Exception e e))]
                 (is (instance? Exception failure))
+                (when (= "unfinished-action" mode)
+                  (is (false? (:writer-ended? (ex-data failure))))
+                  (is (= {"fixture-active" "commandExecution"}
+                         (get-in @(:state ctx) [:jobs "fixture" :active-items]))))
                 (when (#{"tool-denied-zero" "tool-denied-nonzero"} mode)
                   (is (:restricted (ex-data failure)))
                   (is (:writer-ended? (ex-data failure)))
@@ -297,6 +301,34 @@
     (rt/update! ctx assoc-in [:tasks "blocked"] {:status :attention :error {:details {:restricted true}}})
     (with-redefs [rt/with-lock (fn [_ f] (f))]
       (is (thrown? Exception (main/dispatch! ctx "retry" ["blocked"]))))))
+
+(deftest a-refusal-does-not-interrupt-another-active-action
+  (doseq [active-type ["commandExecution" "fileChange"]]
+    (let [ctx (context)
+          queue (java.util.concurrent.LinkedBlockingQueue.)
+          client {:ctx ctx :job "parallel-fixture" :events queue
+                  :restricted (atom nil) :interrupt-requested (atom false) :active-items (atom {})}
+          interruptions (atom [])]
+      (rt/update! ctx assoc-in [:jobs "parallel-fixture"] {:thread "fixture-thread" :status :running})
+      (doseq [event [{:method "item/started" :params {:item {:id "remaining-action" :type active-type}}}
+                     {:method "item/completed"
+                      :params {:item {:id "denied-action" :type "commandExecution" :command "fixture-read"
+                                      :exitCode 0 :status "completed"
+                                      :aggregatedOutput "xcrun: error: fixture cache: Operation not permitted"}}}
+                     {:method "item/completed" :params {:item {:id "remaining-action" :type active-type :exitCode 0}}}
+                     {:method "turn/completed" :params {:turn {:id "fixture-turn" :status "interrupted"}}}]]
+        (.put queue event))
+      (with-redefs [codex/request! (fn [_ method params]
+                                    (swap! interruptions conj
+                                           {:method method :params params
+                                            :pending-action-completion
+                                            (boolean (some #(= "remaining-action" (get-in % [:params :item :id]))
+                                                           (.toArray queue)))})
+                                    {})]
+        (is (thrown? Exception (codex/await-turn! client "fixture-turn"))))
+      (is (= [{:method "turn/interrupt" :params {:threadId "fixture-thread" :turnId "fixture-turn"}
+               :pending-action-completion false}] @interruptions))
+      (is (true? (get-in @(:state ctx) [:jobs "parallel-fixture" :turn-terminal?]))))))
 
 (deftest checks-use-agentless-sandbox-protocol
   (let [classpath (str/join java.io.File/pathSeparator

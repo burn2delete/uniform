@@ -46,7 +46,7 @@
         client {:ctx ctx :job job :process process :writer (io/writer (.getOutputStream process) :encoding "UTF-8")
                 :pending (atom {}) :next-id (atom 0) :restricted (atom nil) :closed (atom false)
                 :command-output (atom []) :capture-truncated (atom false)
-                :interrupt-requested (atom false) :events (LinkedBlockingQueue.)}
+                :interrupt-requested (atom false) :active-items (atom {}) :events (LinkedBlockingQueue.)}
         reader (future
                  (try
                    (with-open [input (io/reader (.getInputStream process) :encoding "UTF-8")]
@@ -168,12 +168,25 @@
       (case method
         "harness/closed" (rt/fail! "App-server closed before turn completion"
                                    {:job (:job client) :restricted (boolean @(:restricted client))})
+        "item/started" (do
+                         (when-not (#{"agentMessage" "userMessage" "reasoning" "plan"} (get-in params [:item :type]))
+                           (swap! (:active-items client) assoc (get-in params [:item :id]) (get-in params [:item :type])))
+                         (recur messages))
         "item/completed" (let [item (:item params)]
-                           (when (and (model-command-refusal! client item)
+                           (if (and (= "commandExecution" (:type item))
+                                    (not (number? (:exitCode item)))
+                                    (not= "declined" (:status item)))
+                             ;; A completed wrapper with no process exit is not
+                             ;; evidence that its underlying command has ended.
+                             (swap! (:active-items client) assoc (:id item) (:type item))
+                             (swap! (:active-items client) dissoc (:id item)))
+                           (model-command-refusal! client item)
+                           (when (and @(:restricted client)
+                                      (empty? @(:active-items client))
                                       (compare-and-set! (:interrupt-requested client) false true))
-                             ;; This tool has actually ended. Stop inference from
-                             ;; selecting a retry, then await the terminal event;
-                             ;; do not claim worker termination from the RPC alone.
+                             ;; Every observed action has ended. Stop inference
+                             ;; from selecting a retry without cutting off a
+                             ;; parallel tool/test; still await the terminal event.
                              (try
                                (request! client "turn/interrupt"
                                          {:threadId (get-in @(:state (:ctx client)) [:jobs (:job client) :thread])
@@ -184,10 +197,14 @@
                            (recur (if (= "agentMessage" (:type item)) (conj messages item) messages)))
         "turn/completed" (if (= turn-id (get-in params [:turn :id]))
                            (do
-                             (rt/update! (:ctx client) assoc-in [:jobs (:job client) :turn-terminal?] true)
+                             (rt/update! (:ctx client) update-in [:jobs (:job client)]
+                                         assoc :turn-terminal? true :active-items @(:active-items client))
                              (when @(:restricted client)
                                (rt/fail! "Agent encountered a restriction; not retrying"
                                          {:job (:job client) :restricted true :refusal @(:restricted client)}))
+                             (when (seq @(:active-items client))
+                               (rt/fail! "Agent ended with unfinished command actions"
+                                         {:job (:job client) :active-items @(:active-items client)}))
                              (when-not (= "completed" (get-in params [:turn :status]))
                                (rt/fail! "Agent turn did not complete" {:turn (:turn params)}))
                              (or (:text (last (filter #(= "final_answer" (:phase %)) messages)))
@@ -225,5 +242,6 @@
         (rt/update! ctx update-in [:jobs job-id] merge {:status :attention :message (.getMessage e) :restricted (boolean (:restricted (ex-data e)))})
         (throw (ex-info (.getMessage e)
                         (assoc (or (ex-data e) {}) :writer-ended?
-                               (true? (get-in @(:state ctx) [:jobs job-id :turn-terminal?]))) e)))
+                               (and (true? (get-in @(:state ctx) [:jobs job-id :turn-terminal?]))
+                                    (empty? @(:active-items client)))) e)))
       (finally (close! client)))))
