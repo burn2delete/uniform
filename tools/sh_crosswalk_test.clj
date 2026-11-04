@@ -82,6 +82,35 @@
         (is (thrown? Exception
                      (sh-crosswalk/source-view)) label)))))
 
+(deftest current-source-successor-binding-authenticates-composition-census-and-joins
+  (let [bridge sh-crosswalk/readiness-source-version
+        binding (:source-successor-binding bridge)
+        transitions (:current-source-transitions bridge)
+        joins (:current-source-library-io-criterion-joins bridge)]
+    (is (= :authenticated-source-successor-binding-v1 (:kind binding)))
+    (is (= "cc8a79074fc8eeeb65d72333e5d64542b201f0d4"
+           (get-in binding [:composition :commit])))
+    (is (= "72d15504280f60dd3056bf59cb58293ed734928f"
+           (get-in binding [:composition :tree])))
+    (is (= 28 (get-in binding [:composition :current-transition-count])))
+    (is (= 47 (get-in binding [:composition :source-census-count])))
+    (is (= 9 (count (:reviewed-source-successors binding))))
+    (is (= 47 (count (:source-census binding))))
+    (is (= 31 (count joins)))
+    (is (= 23 (count (filter #(= :new-current-source-criterion (:relation %)) joins))))
+    (doseq [[label candidate]
+            [["forged successor composition tree"
+              (assoc-in bridge [:source-successor-binding :composition :tree] "forged")]
+             ["duplicate successor census path"
+              (update-in bridge [:source-successor-binding :source-census]
+                         #(conj % (first %)))]
+             ["forged successor join census"
+              (assoc-in bridge [:source-successor-binding :source-join-census] [])]]]
+      (with-redefs [sh-crosswalk/readiness-source-version candidate]
+        (is (thrown? Exception
+                     (sh-crosswalk/validate-current-source-transitions! transitions))
+            label)))))
+
 (deftest current-main-library-io-joins-bind-exact-criteria-and-frame-history
   (let [bridge sh-crosswalk/readiness-source-version
         view (sh-crosswalk/source-view)
@@ -211,13 +240,15 @@
         normalized (sh-crosswalk/normalize-source-payloads source)
         raw-spans (filter #(some (fn [entry] (= :raw (key entry))) %)
                           (filter map? (tree-seq coll? seq source)))
+        seeded-snapshots (vals (:source-snapshots source))
+        raw-payloads (concat (map :raw raw-spans) seeded-snapshots)
         refs (filter #(some (fn [entry] (= :source-snapshot-ref (key entry))) %)
                      (filter map? (tree-seq coll? seq (dissoc normalized :source-snapshots))))
         snapshots (:source-snapshots normalized)
         recovered (map #(get snapshots (:source-snapshot-ref %)) refs)]
     (is (seq raw-spans))
-    (is (= (count (distinct (map :raw raw-spans))) (count snapshots)))
-    (is (= (sort (map :raw raw-spans)) (sort recovered)))
+    (is (= (count (distinct raw-payloads)) (count snapshots)))
+    (is (= (sort raw-payloads) (sort recovered)))
     (is (every? #(= (:source-snapshot-ref %)
                    (sh-inventory/sha256 (get snapshots (:source-snapshot-ref %)))) refs))
     (is (empty? (filter #(some (fn [entry] (= :raw (key entry))) %)
@@ -813,10 +844,10 @@
     (is (= (:sha256 predecessor) (sh-inventory/sha256 prior-text)))
     (is (= (:review predecessor)
            (select-keys (:mapping-review prior) [:status :input-fingerprint :source-version-bridge])))
-    (is (= 50 (:unchanged-body-count comparisons)))
+    (is (= 36 (:unchanged-body-count comparisons)))
     (is (= (set (map :id (:changed-bodies comparisons))) changed))
-    (is (= 89 (count changed)))
-    (is (= 50 (count (remove changed (keys before)))))
+    (is (= 103 (count changed)))
+    (is (= 36 (count (remove changed (keys before)))))
     (let [refinement (:math-parent-refinement bridge)
           predecessor (:predecessor-readiness-successor refinement)
           previous-text (sh-crosswalk/git-source (:commit predecessor) (:path predecessor))
@@ -3084,7 +3115,15 @@
       (is (= (:sha256 before) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit before) p)))))
     (is (= 14 (count (:canonical-sources r))))
     (doseq [{:keys [path source-commit sha256]} (:canonical-sources r)]
-      (is (= sha256 (sh-inventory/sha256 (slurp path)) (sh-inventory/sha256 (sh-crosswalk/git-source source-commit path)))))
+      (if (= path "docs/phase-01-core-language/016-l6-effect-system-specification.md")
+        (do
+          ;; The checkpoint retains the historical L6 pin; the current
+          ;; successor binds the live document separately.
+          (is (= sha256 (sh-inventory/sha256 (sh-crosswalk/git-source source-commit path))))
+          (is (= "529b2cb63e0fe304f628ed63b0e6ef64d86200034f854836399e02e103b41f72"
+                 (sh-inventory/sha256 (slurp path)))))
+        (is (= sha256 (sh-inventory/sha256 (slurp path))
+               (sh-inventory/sha256 (sh-crosswalk/git-source source-commit path))))))
     (is (= :declared-interfaces-no-adopted-result-prerequisites (:ordinary-construction r)))
     (is (= :valid-unoptimized-verified-MIR-remains-legal-no-task-completion-gate (:program-legality r)))
     (is (= :pending (:independent-current-review r)))
@@ -3470,7 +3509,15 @@
       (is (= (:sha256 before) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit before) p)))))
     (is (= 15 (count (:canonical-sources r))))
     (doseq [{:keys [path source-commit sha256]} (:canonical-sources r)]
-      (is (= sha256 (sh-inventory/sha256 (slurp path)) (sh-inventory/sha256 (sh-crosswalk/git-source source-commit path)))))
+      (if (= path "docs/phase-01-core-language/016-l6-effect-system-specification.md")
+        (do
+          ;; This checkpoint keeps the historical L6 pin; its current
+          ;; successor authenticates the live document separately.
+          (is (= sha256 (sh-inventory/sha256 (sh-crosswalk/git-source source-commit path))))
+          (is (= "529b2cb63e0fe304f628ed63b0e6ef64d86200034f854836399e02e103b41f72"
+                 (sh-inventory/sha256 (slurp path)))))
+        (is (= sha256 (sh-inventory/sha256 (slurp path))
+               (sh-inventory/sha256 (sh-crosswalk/git-source source-commit path))))))
     (is (= :declared-interfaces-no-whole-component-or-final-suite-start-gate (:ordinary-construction r)))
     (is (= :valid-unoptimized-verified-MIR-remains-legal-no-task-completion-gate (:program-legality r)))
     (is (= :pending (:independent-current-review r)))
@@ -5362,8 +5409,8 @@
     (is (= 149 (count tasks) (count before)))
     (is (= 25 (count (:task-authorities view))))
     (is (= 32 (count (:source-files bridge))))
-    (is (= [50 89] [(get-in sh-crosswalk/readiness-source-version [:task-comparisons :unchanged-body-count])
-                     (count (get-in sh-crosswalk/readiness-source-version [:task-comparisons :changed-bodies]))]))
+    (is (= [36 103] [(get-in sh-crosswalk/readiness-source-version [:task-comparisons :unchanged-body-count])
+                      (count (get-in sh-crosswalk/readiness-source-version [:task-comparisons :changed-bodies]))]))
     (is (= [55 84] [(get-in bridge [:task-comparisons :unchanged-body-count])
                      (count (get-in bridge [:task-comparisons :changed-bodies]))]))
     (is (= (set (keys tasks)) (set (keys before))))
@@ -6125,7 +6172,8 @@
     :inspection-locators
     :additional-pinned-evidence-hashes
     :task-comparisons
-    :types-refinement]]
+   :types-refinement
+   :macro-cache-refinement]]
   (is
    (= "3adae6fc72518528ee4c43a0f003b0351aa62d21" (:commit previous)))
   (is (= (:sha256 previous) (sh-inventory/sha256 old-text)))
@@ -6134,7 +6182,11 @@
     (:projection-sha256 previous)
     (sh-inventory/sha256 projection-text)))
   (is (= (:input-fingerprint previous) (:input-fingerprint old)))
-  (is (= (apply dissoc old allowed) (apply dissoc bridge allowed)))
+  (is (= (apply dissoc
+               (assoc-in old [:macro-cache-refinement :boundary :source-snapshot-ref]
+                         (get-in bridge [:macro-cache-refinement :boundary :source-snapshot-ref]))
+               allowed)
+         (apply dissoc bridge allowed)))
   (is (= 149 (count tasks) (count before)))
   (is (= 25 (count (:task-authorities view))))
   (is
@@ -6606,20 +6658,27 @@
     :current-source-checkpoint
     :current-source-paths
     :current-source-transitions
-    :current-source-transition-history
+   :current-source-transition-history
+   :current-source-transition-successor-history
+   :source-successor-binding
+   :current-source-library-io-criterion-joins
+   :macro-cache-refinement
     :future-task-records
     :library-refinement
    :error-refinement
    :protocol-dependency-refinement
    :protocol-refinement
    :source-digests
+   :source-snapshots
     :current-source-frame-history
     :library-io-criterion-joins
     :historical-source-frame
     :source-frame-fingerprint
     :source-frame-scope
     :source-input-git-tree
-    :source-input-tree]]
+    :source-input-tree
+   :source-effects-refinement
+   :source-effects-dependency-refinement]]
   (is
    (= "1ef683ebfa505100ba47b9541d3304f06174bbaa" (:commit previous)))
   (is (= (:sha256 previous) (sh-inventory/sha256 old-text)))
@@ -6630,7 +6689,7 @@
   (is (= (:input-fingerprint previous) (:input-fingerprint old)))
   (is (= (apply dissoc old allowed) (apply dissoc bridge allowed)))
   (is
-   (= [50 89 10]
+   (= [36 103 10]
       [(get-in bridge [:task-comparisons :unchanged-body-count])
        (count (get-in bridge [:task-comparisons :changed-bodies]))
        (count (get-in bridge [:task-comparisons :added-ids]))]))
@@ -7186,7 +7245,8 @@
             (count (get-in r [:task-comparisons :changed-bodies]))]))
     (is (= 40 (count captured) (count actual)))
     (is (= [] (get-in r [:future-task-source-successor :changed-source-binding-task-ids])))
-    (is (= #{"specs/domains-workflow/tasks.md" "specs/platform-workflow/tasks.md"}
+    (is (= #{"specs/domains-workflow/tasks.md" "specs/platform-workflow/tasks.md"
+             "specs/release-workflow/tasks.md"}
            (set (get-in r [:future-task-source-successor :changed-whole-file-source-paths]))))
     (is (= 5 (count (:owner-joins r))))
     (is (= expected-owners (set (keys (:owner-joins r)))))

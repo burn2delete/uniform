@@ -245,9 +245,6 @@
  "docs/phase-18-binary-distribution-and-seedless-release/README.md"
  "45c126ec6370358245c666a2dda960a4f3d9666433f140552ade73dd52c486b5"}
 )
-(def pinned-evidence-hashes
-  (merge predecessor-pinned-evidence-hashes
-         (:additional-pinned-evidence-hashes readiness-source-version)))
 (def historical-task-transition-paths
   ;; Platform and Stdlib have an explicit authenticated historical-to-applying
   ;; source transition.  Their task rows must continue to point at the frozen
@@ -259,6 +256,23 @@
   (vec (:current-source-transitions readiness-source-version)))
 (def current-source-transition-paths
   (set (map :path current-source-transition-contracts)))
+(def current-source-successor-paths
+  (set (map :path (get-in readiness-source-version
+                          [:source-successor-binding :source-census]))))
+(def current-source-successor-evidence-hashes
+  ;; The predecessor evidence map remains immutable history.  Successor
+  ;; source-census records authenticate the current plan bytes separately;
+  ;; merge those exact successor hashes only after the census has been
+  ;; selected, so current locators do not silently reuse historical pins.
+  (into {}
+        (map (fn [record]
+               [(:path record) (get-in record [:after :sha256])])
+             (get-in readiness-source-version
+                     [:source-successor-binding :source-census]))))
+(def pinned-evidence-hashes
+  (merge predecessor-pinned-evidence-hashes
+         (:additional-pinned-evidence-hashes readiness-source-version)
+         current-source-successor-evidence-hashes))
 (defn- current-source-transition-for-path [path]
   (first (filter #(= path (:path %)) current-source-transition-contracts)))
 (defn current-source-commit
@@ -267,7 +281,10 @@
   Historical records retain their own source commit; callers use the fallback
   for paths that are outside the current-source transition census."
   [path fallback]
-  (or (:applying-ref (current-source-transition-for-path path)) fallback))
+  (or (:applying-ref (current-source-transition-for-path path))
+      (when (contains? current-source-successor-paths path)
+        (:commit requirement-sources/current-source-successor-composition))
+      fallback))
 (def preserved-scoped-evidence-source-pins
   ;; These are already accepted, narrowly scoped current records.  Preserve
   ;; their inspected source identities while the ordinary development frame
@@ -279,7 +296,9 @@
     preserved
     (if (contains? historical-task-transition-paths path)
       baseline
-      (or (get applying-source-pins path)
+      (or (when (contains? current-source-successor-paths path)
+            (:commit requirement-sources/current-source-successor-composition))
+          (get applying-source-pins path)
           (when (contains? (set (:current-source-paths readiness-source-version)) path)
             (:source-input-commit readiness-source-version))
           baseline))))
@@ -300,6 +319,18 @@
        (git-source ref source-path))
      sh-inventory/sha256
      acceptance-dependencies/require!)
+    (requirement-sources/validate-current-source-transition-successor-history!
+     (:current-source-transition-successor-history readiness-source-version)
+     (fn [ref source-path]
+       (git-source ref source-path))
+     sh-inventory/sha256
+     acceptance-dependencies/require!)
+    (requirement-sources/validate-source-successor-binding!
+     (:source-successor-binding readiness-source-version)
+     transitions
+     (fn [ref source-path]
+       (git-source ref source-path))
+     slurp sh-inventory/sha256 acceptance-dependencies/require!)
     (acceptance-dependencies/require!
      (and (vector? transitions)
           (= (count transitions) (count expected))
@@ -922,7 +953,7 @@
          ;; Successor disposition for the authenticated ff783 -> 4202
          ;; STD7-STD9 source frame.  The prior readiness fingerprint remains
          ;; in the predecessor review and in the immutable frame-history map.
-         :input-fingerprint "85c554a6cebc44c62194331a2d0e84cbee155c56a59c665f12fd10d2d4ff5db8"
+         :input-fingerprint "a47f70ddbc5de1677d7b8b698248e925506a1f11395a77b944f64dd1a9bda6f3"
          :predecessor-input-fingerprint (:input-fingerprint readiness-source-version)
          :source-version-bridge
          "specs/sh-family-crosswalk/implementation-readiness-current-source-version.edn"
@@ -932,7 +963,7 @@
                 :historical-source-version
                 "specs/sh-family-crosswalk/implementation-readiness-source-version.edn")
          :qualification
-         "Exact task-source and Governance routing successor, including foundation criteria and Domain/Platform/Release refinements. The STD7-STD9 successor binds 17 complete current-main source files and 23 new criterion/owner joins plus eight carried predicates to 4202. Original task statuses, predecessor source-frame history, pins, digests and review subjects are preserved. Future Domain, Release and Platform Product records retain pending SH composition. Current source/routing, implementation and whole-SH acceptance remain pending."))
+         "Exact task-source and Governance routing successor, including the reviewed foundation/policy/L6 records and pending facet, alternative-type, interop and backend source inputs. The composed source successor binds 28 current transition paths and a 47-file reviewed-source census to the authenticated bc7 current checkpoint while retaining the old 4202/ff783 frame, all historical pins/digests and task statuses. Current source/routing, implementation, migration, release and whole-SH acceptance remain pending."))
 
 (defn- validate-library-refinement! [ref]
   (acceptance-dependencies/require! (map? ref) "Missing L13 library source refinement")
@@ -1061,6 +1092,11 @@
             (fn [ref source-path]
               (git-source ref source-path))
             slurp sh-inventory/sha256 acceptance-dependencies/require!)
+        _ (requirement-sources/validate-current-source-library-io-criterion-joins!
+            (:current-source-library-io-criterion-joins readiness-source-version)
+            (fn [ref source-path]
+              (git-source ref source-path))
+            slurp sh-inventory/sha256 acceptance-dependencies/require!)
         components (mapv second (re-seq #"(?m)^\| [^|\n]+ / `([a-z-]+)` \|" (slurp "docs/component-roadmaps/README.md")))
         tasks (into (sorted-map) (map (fn [c] [c (task-records c)]) components))
         _ (validate-library-refinement! (:library-refinement readiness-source-version))
@@ -1169,11 +1205,14 @@
     {:schema-version 2 :kind :sh-family-derived-crosswalk :authority :read-only-acceptance-rollup
      :applying-task-source-commit baseline :original-inventory-commit original-baseline
      :applying-source-pins applying-source-pins
+     :source-snapshots (:source-snapshots readiness-source-version)
      :implementation-readiness-source-version
      (select-keys readiness-source-version
                   [:kind :status :source-input-commit :predecessor
                    :current-source-transitions :current-source-transition-history
+                   :current-source-transition-successor-history :source-successor-binding
                    :current-source-frame-history :library-io-criterion-joins
+                   :current-source-library-io-criterion-joins
                    :task-comparisons :source-criteria
                    :retained-historical-source-inputs :math-parent-refinement
                    :release-testing-refinement :domain-parent-refinement
@@ -1362,31 +1401,32 @@
   The raw bytes are keyed by their content digest; a span's own path, offsets,
   lines, commit and digest remain on the referencing record."
   [result]
-  (if (map-has-key? result :source-snapshots)
-    (let [snapshots (into (sorted-map)
-                          (map (fn [[reference snapshot]]
-                                 [reference (if (map? snapshot) (:raw snapshot) snapshot)])
-                               (:source-snapshots result)))]
-      (validate-source-snapshots!
-        (assoc result :schema-version 2 :source-snapshots snapshots)))
-    (let [snapshots (atom (sorted-map))
-          normalized
-          (walk/postwalk
-            (fn [value]
-              (if (and (map? value) (map-has-key? value :raw))
-                (let [raw (:raw value)]
-                  (when-not (string? raw)
-                    (throw (ex-info "Source snapshot must contain text bytes" {})))
-                  (let [digest (sh-inventory/sha256 raw)]
-                    (when (and (:sha256 value) (not= digest (:sha256 value)))
-                      (throw (ex-info "Source span digest does not match its bytes"
-                                      {:path (:path value)})))
-                    (swap! snapshots assoc digest raw)
-                    (assoc (dissoc value :raw) :source-snapshot-ref digest)))
-                value))
-            result)]
-      (validate-source-snapshots!
-        (assoc normalized :schema-version 2 :source-snapshots @snapshots)))))
+  (let [snapshots (atom
+                    (if (map-has-key? result :source-snapshots)
+                      (into (sorted-map)
+                            (map (fn [[reference snapshot]]
+                                   [reference (if (map? snapshot) (:raw snapshot) snapshot)])
+                                 (:source-snapshots result)))
+                      (sorted-map)))
+        normalized
+        (walk/postwalk
+          (fn [value]
+            (if (and (map? value) (map-has-key? value :raw))
+              (let [raw (:raw value)]
+                (when (map-has-key? value :source-snapshot-ref)
+                  (throw (ex-info "Source span contains both inline and referenced payloads" {})))
+                (when-not (string? raw)
+                  (throw (ex-info "Source snapshot must contain text bytes" {})))
+                (let [digest (sh-inventory/sha256 raw)]
+                  (when (and (:sha256 value) (not= digest (:sha256 value)))
+                    (throw (ex-info "Source span digest does not match its bytes"
+                                    {:path (:path value)})))
+                  (swap! snapshots assoc digest raw)
+                  (assoc (dissoc value :raw) :source-snapshot-ref digest)))
+              value))
+          (dissoc result :source-snapshots))]
+    (validate-source-snapshots!
+      (assoc normalized :schema-version 2 :source-snapshots @snapshots))))
 
 (defn normalize-existing-projection []
   (let [projection (edn/read-string (slurp output-path))]
@@ -1447,12 +1487,31 @@
         digests (into {}
                       (map (fn [[commit path digest]] [[commit path] digest])
                            (concat locators task-files)))
-        explicit-pins (for [[path commit] (:applying-source-pins result)
-                            :let [digest (or (get (:source-digests result) path)
-                                             (get digests [commit path]))]]
-                        (do (when-not digest
-                              (throw (ex-info "Explicit applying pin lacks a whole-file digest" {:path path})))
-                            [commit path digest]))]
+        successor-binding? (map? (get-in result
+                                         [:implementation-readiness-source-version
+                                          :source-successor-binding]))
+        explicit-pins
+        (mapcat
+          (fn [[path commit]]
+            (if-let [successor-digest (when successor-binding?
+                                        (get current-source-successor-evidence-hashes path))]
+              (let [historical-digest (get (:additional-pinned-evidence-hashes readiness-source-version) path)]
+                ;; Keep validating the old applying pin as historical evidence,
+                ;; then validate the authenticated successor against the live
+                ;; current-source digest. A successor must never overwrite or
+                ;; silently relabel the historical pin.
+                (when-not historical-digest
+                  (throw (ex-info "Current successor lacks its preserved historical evidence pin"
+                                  {:path path :source-commit commit})))
+                [[commit path historical-digest]
+                 [(:commit requirement-sources/current-source-successor-composition)
+                  path successor-digest]])
+              (let [digest (or (get (:source-digests result) path)
+                               (get digests [commit path]))]
+                (when-not digest
+                  (throw (ex-info "Explicit applying pin lacks a whole-file digest" {:path path})))
+                [[commit path digest]])))
+          (:applying-source-pins result))]
     (doseq [[commit path expected] (distinct (concat locators task-files explicit-pins))]
       (when-not (= expected (sh-inventory/sha256 (read-version commit path)))
         (throw (ex-info "Source differs from its applying Git pin; preserve lineage before regeneration"

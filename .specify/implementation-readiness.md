@@ -5644,3 +5644,39 @@ non-passing for the same two pre-existing files in an unchanged base checkout;
 this increment does not claim a formatter repair. These planning and
 traceability checks do not establish callable implementation, compiler/runtime,
 provider/target, native/C, proof, migration or release conformance.
+
+## Current source-successor binding continuation
+
+This bounded source successor uses the exact reviewed policy-followup input
+`895dea1ddbce13b8deae461144e57b8245caefc8` (tree
+`65c32e6f3677fdbd6492923cb10a002eb00d907a`) as a normal second parent of the
+current source checkpoint `bc7cadae5450978ac9a3ec6a0ee9b1ebb1a471cb` (tree
+`f85ed1594f21c7c975a41b531d98a1fcdffc3457`). The resulting candidate is
+`cc8a79074fc8eeeb65d72333e5d64542b201f0d4` (tree
+`72d15504280f60dd3056bf59cb58293ed734928f`), with 28 authenticated current
+source transitions and a 47-file source census across 9 reviewed successor
+segments. The follow-up delta is limited to its exact 9 policy/source paths and
+its independent receipt, while the candidate inherits the previously reviewed
+foundation, L17/L19 and backend source-successor chain through D542 with each
+prior status and receipt preserved. Later data, STD13, AI/test-metadata and
+new dependency-row proposals are not inputs here.
+
+The human decision for the follow-up is `:L12-declared-replayable-inputs`.
+The canonical L6 source retains the historical SHA256
+`a9d41d970d56d20f0fb74f10c280689407e3ab8fe075c5bc3b71925e9ccec1d5` and the
+current canonical SHA256
+`529b2cb63e0fe304f628ed63b0e6ef64d86200034f854836399e02e103b41f72`, with the
+old review and both source statuses preserved. The current feature count is
+34 versus the historical 33; this is a census fact, not implementation or
+completion credit. The authorized three-chat integration exception remains a
+coordination record only, and all remaining no-messaging holds remain in force.
+
+The source view and normalized projection preserve the historical and applying
+pins, source digests, evidence hashes, owner joins, negative controls and
+current-source provenance. They keep source/routing, implementation, migration,
+release, seedless and whole-source acceptance pending or unassessed. The later
+main checkpoint `70927eee6c8dc77d0fec2a826de29380ef068ef5` is coordinator-owned
+integration context outside this nine-path source-input identity; it is not
+silently substituted for the reviewed source successor. The report records
+status and provenance only and does not claim callable implementation or
+authority to merge.

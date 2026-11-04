@@ -1,6 +1,7 @@
 (ns requirement-sources
   "Exact pinned source views across documented authority-only layout transfers."
-  (:require [clojure.java.io :as io]
+  (:require [clojure.edn :as edn]
+            [clojure.java.io :as io]
             [clojure.set :as set]
             [clojure.string :as str]))
 
@@ -1372,7 +1373,7 @@
 ;; successor record rather than a duplicate path or a mutation of the old
 ;; applying pin. Evidence is a distinct current-source input and is bound in
 ;; its own complete-file transition.
-(def current-source-transition-successor-contracts
+(def current-source-transition-successor-contracts-v1
   (vec (concat
   [{:role :current-source-interface-proposal,
     :path "specs/auth-workflow/tasks.md",
@@ -1435,22 +1436,392 @@
 (def current-source-transition-history
   historical-current-source-transition-contracts)
 
-(def current-source-transition-contracts
+(def current-source-transition-contracts-v1
   (let [successors (into {} (map (juxt :path identity)
-                                 current-source-transition-successor-contracts))
+                                 current-source-transition-successor-contracts-v1))
         historical-paths (set (map :path historical-current-source-transition-contracts))
         current (vec (concat
                       (map #(get successors (:path %) %)
                            historical-current-source-transition-contracts)
                       (remove #(contains? historical-paths (:path %))
-                              current-source-transition-successor-contracts)))
+                              current-source-transition-successor-contracts-v1)))
         paths (map :path current)]
     (when-not (= (count paths) (count (set paths)))
       (throw (ex-info "Duplicate current-source transition path" {:paths paths})))
     current))
 
+(def current-source-transition-paths-v1
+  (set (map :path current-source-transition-contracts-v1)))
+
+;; The reviewed source successors are composed with the current main checkpoint
+;; before this frame is bound.  Keep the old 4202/908/STD7-STD9 frame above as
+;; an immutable predecessor; these exact whole-file identities authenticate the
+;; next source view without renewing any applying pin or implementation claim.
+(def current-source-successor-composition
+  {:commit "cc8a79074fc8eeeb65d72333e5d64542b201f0d4"
+   :tree "72d15504280f60dd3056bf59cb58293ed734928f"
+   :parents ["bc7cadae5450978ac9a3ec6a0ee9b1ebb1a471cb"
+             "895dea1ddbce13b8deae461144e57b8245caefc8"]
+   :authority :current-source-interface-only
+   :review-state :pending-independent-source-version-review})
+(def current-source-successor-after-data
+  [{:path ".specify/memory/constitution.md" :blob "4bd99817a4f09ce7418886b40293f2b5d8cae821" :bytes 7336 :lines 122 :sha256 "055229478b7e9ff487227077199f9af57b4987699ff5bab72ac838ef502061a8"}
+   {:path "specs/auth-workflow/plan.md" :blob "aaef141d94381b8bc5f38c17aaa330c617e50e6a" :bytes 42692 :lines 473 :sha256 "166a13d939e53507fda977c0af034fe6e875c09ad9d94d795ca0aa5db401cc0b"}
+   {:path "specs/auth-workflow/tasks.md" :blob "ad1f82fa6a0a03362df053c76dd8ec31125751ab" :bytes 55649 :lines 377 :sha256 "e507459f4ce7152f6aa48aa8154a67bab82faf2f0bdc551d8d04f82329793946"}
+   {:path "specs/build-workflow/plan.md" :blob "0416193da25e2ca5b511ce2a73f5d81cd7a50658" :bytes 38352 :lines 389 :sha256 "538102419b21e39048912f6ed8eccfc5dbe3a7823faab356d1eaf8f9ff2a892c"}
+   {:path "specs/build-workflow/tasks.md" :blob "395f8261e74db5dc9b1480f1a27991691e09ed5f" :bytes 52214 :lines 343 :sha256 "a256b429fdf5abd511899384769575964487c975f727373defeaa1dde5e30234"}
+   {:path "specs/compiler-api-workflow/plan.md" :blob "43ca1e7a0c435b991b593a0efaa2453025df2bbb" :bytes 39932 :lines 379 :sha256 "1fb11b8832ea2d88478553cc363bf0ae4f6fb11572c3713d697c6d040d0f0736"}
+   {:path "specs/diag-workflow/plan.md" :blob "847bdf592ea2d38181e0198b351c99573bd9f1dd" :bytes 28669 :lines 319 :sha256 "02519403a80757d900109e54ab505fa52099334dd928cef8570bd090bd07891b"}
+   {:path "specs/diag-workflow/tasks.md" :blob "fa2a5cc3699ed041cef6ed01726e83091de41034" :bytes 21880 :lines 164 :sha256 "05050c2e3f03b410934a857e3a9a3dbae2528bb81d3d44024edd3ba09b5b73be"}
+   {:path "specs/effects-workflow/plan.md" :blob "3affa278147c837c7a742681c3f0041177f34699" :bytes 49732 :lines 543 :sha256 "d076f683c306449427c1afbc60e5a6f4fe5f517954b5ebd1d85e6b3c06390685"}
+   {:path "specs/effects-workflow/tasks.md" :blob "b67c5af90d668c3bc6dcdde302d8d2bcdc08e552" :bytes 40520 :lines 289 :sha256 "d2681a1c12eea5e437603e804de8d37f07df667e5909b5d06fc5a5232fbf566d"}
+   {:path "specs/evolution-workflow/plan.md" :blob "72a85d3e122986eb6a3461bea8bb354e230ecbfc" :bytes 21196 :lines 220 :sha256 "9265abbc90bc30cb124487e1887d8fd79beae79bdb1036e863da6535ea3d054c"}
+   {:path "specs/expand-workflow/plan.md" :blob "7a9283c5c58e0d6459483adefd608b4e45fa7f9c" :bytes 97472 :lines 814 :sha256 "5523b19e3a987e47651be031aac6cbf6f94ccefd48c1b96258de9ed824140fbc"}
+   {:path "specs/expand-workflow/tasks.md" :blob "62678faeaac2bcc9080428ff963c681c2c2c620a" :bytes 70147 :lines 436 :sha256 "20a0dc66f08f66c66590b42ed29bfdfad975a0e3799eee30059920e0d48e39ab"}
+   {:path "specs/legality-workflow/plan.md" :blob "76da4f7e507f2b92dd3035f88859ec801830655e" :bytes 98005 :lines 1085 :sha256 "125243566745de1607ddcec6f16936e208027dfc91e6693235ece59f2c68fd32"}
+   {:path "specs/legality-workflow/tasks.md" :blob "64454da9025341130c863ee2d6b1976c1b0f0287" :bytes 138236 :lines 722 :sha256 "f8201c4ba70b1ae3e4279ba5ea055bced5d094af0c94e060739979eab67cece7"}
+   {:path "specs/opt-workflow/plan.md" :blob "295124295b3328efc5a5d3d1ed5a57dfb0f95a6c" :bytes 26291 :lines 279 :sha256 "8a89196fbc9b984507524a434ba92ee2b04d7b2fbb24956a28197782a196acfc"}
+   {:path "specs/opt-workflow/tasks.md" :blob "52a0f27e8dfa6e047f30459ceba43822a494d13b" :bytes 19726 :lines 158 :sha256 "507fcaac02c2c415e66af2de5d1a56d46e3ffad71a735864582d0ca8a7a84e1b"}
+   {:path "specs/release-workflow/plan.md" :blob "21c5401e2b02ddc4344216b1162adbaa0d5fa71f" :bytes 42143 :lines 443 :sha256 "983e2f3a3598c8da62b71ef61ab39be7ac1bcf4ffda52409602826440bf15c7e"}
+   {:path "specs/resolve-workflow/plan.md" :blob "1f3de3c03b35f0e01caa30c44eb3426a1531e543" :bytes 81931 :lines 481 :sha256 "984771ccac4beb72d619b0dfc33258c94daa5da883999c67711846da6dfefac5"}
+   {:path "specs/resolve-workflow/tasks.md" :blob "436e5bb579d038b37b23f6148ae659a335e29b37" :bytes 21321 :lines 181 :sha256 "dddecd1a6e4e221cbd4bb91dcfd5c9af0e1d4e125ee25afc60e308baa669f99a"}
+   {:path "specs/stdlib-workflow/plan.md" :blob "2c11af264fb81cb0b7e7aa74fc7345ab20592cc2" :bytes 153923 :lines 517 :sha256 "90b45f98672fac1400a9ee13e0c844d9c98aac473eb3f7063a89163b0dd9eb35"}
+   {:path "specs/stdlib-workflow/spec.md" :blob "865f1aebf7b20c00a6c19b1e856891dac1d22b1c" :bytes 16597 :lines 146 :sha256 "7e684efa393242d159945251c40e4b1e361042f8d7afad5e93c224aafb9f8cd8"}
+   {:path "specs/stdlib-workflow/tasks.md" :blob "19015ee759302bb92dc961c5e00e68ec5b7fd5fd" :bytes 118497 :lines 897 :sha256 "af2e0623460653e39ae637820e56c8420a344e3148ace26dff87fc7cea59911e"}
+   {:path "specs/types-workflow/plan.md" :blob "a3e62f42a206551cae876fd6f4e8dabe8a4a849b" :bytes 73998 :lines 602 :sha256 "67d2ed7cbc48b9947c384773fccdbab1f7c9bd64a960bd3f3f43c154961c536b"}
+   {:path "specs/types-workflow/tasks.md" :blob "69f864017f6f95a26c479b4aaba3cb7b114d201d" :bytes 64782 :lines 415 :sha256 "6c681ea228458bbcc02fbdb45c765ae22859d86a41092c30eb6c264c518cab43"}
+   {:path "docs/acceptance-dependencies.md" :blob "bb078aba5c7663af33080584953ef3c238c4bb0b" :bytes 539166 :lines 706 :sha256 "124296646996f1f4a4ff4e908f33667f12ee8e37888ab7ea9bb5b9e9fd7b3c1e"}
+   {:path "specs/auth-workflow/evidence.md" :blob "22618dc8d441c9ed5cfd33e32b2a48b6a9a7b434" :bytes 17643 :lines 307 :sha256 "1c9f04c5f7c7d74977986ba882ea393edf6461c1bc042d75d0da615e3b35442e"}
+   {:path "specs/backends-workflow/plan.md" :blob "c247762a0312aac95baacd59cd6e3d5551c67c33" :bytes 47504 :lines 529 :sha256 "633c3118d3521b8521efa96a0d4b59df3a202091ac5f3e0c363f2e4a3d834d49"}
+   {:path "specs/domains-workflow/plan.md" :blob "7701724947c68749ca40243703719760aade9d11" :bytes 75932 :lines 760 :sha256 "58fcfa28a601df460cdfaff1a6e2322ba86b18388641752e9d923d02d614fd77"}
+   {:path "specs/runtime-workflow/plan.md" :blob "4841be0e06c702ab1cc401b3a9f6620ab07140a2" :bytes 47160 :lines 498 :sha256 "be52f3406a144149486a78636925b91643f679eb7cd65c153e65744cc4a782a8"}
+   {:path "specs/runtime-workflow/tasks.md" :blob "09da9f8f231be0797c20f5f2d7bed7573df85711" :bytes 76867 :lines 429 :sha256 "a23e226cbafa81d144eef2ac12c5ff6d3928d76f57bf8d76deefc681700696df"}])
+(defn- current-source-successor-contract [prior]
+  (let [path (:path prior)
+        after (first (filter #(= path (:path %)) current-source-successor-after-data))
+        old-span (get-in prior [:changed-spans 0 :after])]
+    (when-not after
+      (throw (ex-info "Missing source successor identity" {:path path})))
+    (assoc prior
+           :document-id (str "source-successor-"
+                             (str/replace path #"[^A-Za-z0-9]+" "-"))
+           :changed-spans [{:id (str "SOURCE-SUCCESSOR/" path)
+                            :kind :complete-file-transition
+                            :before (assoc old-span
+                                           :start-byte 0
+                                           :end-byte (:end-byte old-span)
+                                           :start-line 1
+                                           :end-line (:end-line old-span))
+                            :after {:start-byte 0
+                                    :end-byte (:bytes after)
+                                    :start-line 1
+                                    :end-line (:lines after)
+                                    :sha256 (:sha256 after)}}]
+           :baseline-ref (:applying-ref prior)
+           :baseline-tree (:applying-tree prior)
+           :baseline-sha256 (:sha256 old-span)
+           :baseline-blob (:applying-blob prior)
+           :applying-ref (:commit current-source-successor-composition)
+           :applying-tree (:tree current-source-successor-composition)
+           :applying-blob (:blob after)
+           :live-sha256 (:sha256 after)
+           :role :current-source-interface-proposal
+           :authority :current-source-interface-only
+           :review-state :pending-independent-source-version-review
+           :successor-of {:kind :authenticated-current-source-transition-frame-v1
+                          :applying-ref (:applying-ref prior)
+                          :applying-tree (:applying-tree prior)
+                          :applying-blob (:applying-blob prior)
+                          :live-sha256 (:live-sha256 prior)}
+           :qualification
+           (str "Only the complete authenticated current-source file " path
+                " advances from its prior current-source bytes to the composed "
+                (:commit current-source-successor-composition)
+                " checkpoint. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this successor confers no migration, implementation or whole-source authority."))))
+(def current-source-transition-successor-contracts
+  (mapv current-source-successor-contract current-source-transition-contracts-v1))
+(def current-source-transition-contracts
+  current-source-transition-successor-contracts)
 (def current-source-transition-paths
   (set (map :path current-source-transition-contracts)))
+
+(declare git-commit-tree git-blob-id git-diff-paths git-source)
+
+(def current-source-transition-successor-history-contract
+  {:kind :authenticated-current-source-transition-successor-history-v1
+   :predecessor {:commit "b0f1d04188c7d3eada1e4e988b207534e738577c"
+                 :tree "d6bd9ceb7de89a1ca582509df68c9e7f37c4e4d6"
+                 :path "specs/sh-family-crosswalk/implementation-readiness-current-source-version.edn"
+                 :blob "7291d9d62b87791a82b43ebff681e1bae3e3f73a"
+                 :sha256 "2fb8583291bf36a64a269d18d5bbe209f4389903c409d0d9ffd55b53926da57c"}
+   :transition-count (count current-source-transition-contracts-v1)
+   :transition-paths (vec (sort (map :path current-source-transition-contracts-v1)))
+   :authority :current-source-interface-only
+   :review-state :superseded-current-source-transition-frame
+   :qualification "The b0f1 current-source transition frame is retained as immutable history. Its 28 exact transition records remain recoverable from the authenticated predecessor EDN while the composed cc8 source checkpoint is bound as a separate successor; no historical pin, source authority or implementation acceptance is renewed."})
+(def current-source-successor-predecessor-frame-contract
+  {:kind :authenticated-current-source-frame-history-v1
+   :commit "b0f1d04188c7d3eada1e4e988b207534e738577c"
+   :tree "d6bd9ceb7de89a1ca582509df68c9e7f37c4e4d6"
+   :path "specs/sh-family-crosswalk/implementation-readiness-current-source-version.edn"
+   :blob "7291d9d62b87791a82b43ebff681e1bae3e3f73a"
+   :sha256 "2fb8583291bf36a64a269d18d5bbe209f4389903c409d0d9ffd55b53926da57c"
+   :transition-count 28
+   :source-input-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919"
+   :source-input-tree "3fc8705088dddb2984bd27181ecec3f0b6066883"
+   :authority :current-source-interface-only
+   :review-state :superseded-current-source-frame
+   :qualification "The b0f1 current-source frame is retained as immutable history while the composed cc8 source checkpoint advances; all prior source pins, evidence digests and implementation statuses remain outside this successor."})
+(defn validate-current-source-transition-successor-history!
+  [history read-ref sha256-fn require!]
+  (require! (= history current-source-transition-successor-history-contract)
+            "Current source transition successor history changed")
+  (let [{:keys [commit tree path blob sha256]} (:predecessor history)
+        predecessor-source (read-ref commit path)]
+    (require! (= tree (git-commit-tree "." commit require!))
+              "Current source transition successor predecessor tree changed")
+    (require! (= blob (git-blob-id predecessor-source))
+              "Current source transition successor predecessor Git blob changed")
+    (require! (= sha256 (sha256-fn predecessor-source))
+              "Current source transition successor predecessor bytes changed")
+    (let [snapshot (edn/read-string predecessor-source)]
+      (require! (= current-source-transition-contracts-v1
+                   (:current-source-transitions snapshot))
+                "Current source transition successor predecessor records changed")))
+  history)
+
+(def source-successor-segment-specs
+  [{:id :foundation-30526
+    :parent "4202c7760b586ec25b9ea69040b6bb8a75ec4919"
+    :parent-tree "3fc8705088dddb2984bd27181ecec3f0b6066883"
+    :candidate "30526bfab07e8bb7c9321955f202d948bf12a713"
+    :candidate-tree "f1bce736fd420d896774837769e628563fb5a845"
+    :review-receipt "/tmp/uniform-pr767-foundation-30526-independent-review.edn"
+    :review-state :accepted-scoped-source-only
+    :clause-count 62 :reused-predicate-count 8 :path-count 23
+    :implementation-execution :none}
+   {:id :policy-ef88
+    :parent "30526bfab07e8bb7c9321955f202d948bf12a713"
+    :parent-tree "f1bce736fd420d896774837769e628563fb5a845"
+    :candidate "ef88f29542da85d935a8b6e52e49ccbec05340ef"
+    :candidate-tree "0b4fe64b1fbcba36c8e4fb48c5ca7fd0af1af69b"
+    :review-receipt "/tmp/uniform-pr767-policy-ef88-independent-review.edn"
+    :review-state :accepted-scoped-policy-source-only
+    :human-decision :L12-declared-replayable-inputs
+    :path-count 9 :implementation-execution :none}
+   {:id :l6-d2a
+    :parent "ef88f29542da85d935a8b6e52e49ccbec05340ef"
+    :parent-tree "0b4fe64b1fbcba36c8e4fb48c5ca7fd0af1af69b"
+    :candidate "d2a0378bdd530857d97d530aab15268fc333ce80"
+    :candidate-tree "ff13ce6160d46b982125face622e5028b4e1cb38"
+    :review-receipt "/tmp/uniform-pr767-L6-d2a-independent-review.edn"
+    :review-state :accepted-scoped-canonical-source-only
+    :reviewed-span-count 2 :path-count 1 :implementation-execution :none}
+   {:id :facet-f6d
+    :parent "d2a0378bdd530857d97d530aab15268fc333ce80"
+    :parent-tree "ff13ce6160d46b982125face622e5028b4e1cb38"
+    :candidate "f6d26ebfde3f2880ae888b3831e00915e524ea5d"
+    :candidate-tree "0c79dac66184c98a59c0709e6b78824f56fb505b"
+    :review-receipt "/tmp/uniform-pr767-facet-f6d-independent-review.edn"
+    :review-state :pending-independent-source-version-review
+    :clause-count 18 :finite-predicate-count 3 :reused-predicate-count 4
+    :path-count 27 :implementation-execution :none}
+   {:id :alternative-ec850
+    :parent "f6d26ebfde3f2880ae888b3831e00915e524ea5d"
+    :parent-tree "0c79dac66184c98a59c0709e6b78824f56fb505b"
+    :candidate "ec850dbdb943d821126ef9682ade7f3a8142764a"
+    :candidate-tree "55ba81473d03b830dc4e9ad0703facea10f0b38d"
+    :review-receipt "/tmp/uniform-alternative-types-actual-audit.edn"
+    :author-receipt "/tmp/uniform-alternative-types-author-tuple.edn"
+    :review-state :pending-independent-source-version-review
+    :clause-count 21 :reused-predicate-count 4 :path-count 28
+    :implementation-execution :none}
+   {:id :interop-1a366
+    :parent "ec850dbdb943d821126ef9682ade7f3a8142764a"
+    :parent-tree "55ba81473d03b830dc4e9ad0703facea10f0b38d"
+    :candidate "1a3661896240b5781b89ea28b73f6b841e01bbd6"
+    :candidate-tree "54e8f3acf7f81f5461b27de9c5404866bd124cdd"
+    :review-receipt "/tmp/uniform-interop-actual-audit.edn"
+    :author-receipt "/tmp/uniform-interop-author-tuple.edn"
+    :review-state :pending-independent-source-version-review
+    :clause-count 26 :finite-predicate-count 2 :reused-predicate-count 3
+    :path-count 34 :implementation-execution :none}
+   {:id :backend-core-8add
+    :parent "1a3661896240b5781b89ea28b73f6b841e01bbd6"
+    :parent-tree "54e8f3acf7f81f5461b27de9c5404866bd124cdd"
+    :candidate "8addf4db52ba9eba8dd292a766b4bfada592e518"
+    :candidate-tree "e6b651c84d61a36560f86d33e0135723d6db88e1"
+    :review-receipt "/tmp/uniform-backend-core-actual-audit.edn"
+    :author-receipt "/tmp/uniform-backend-core-author-tuple.edn"
+    :review-state :pending-independent-source-version-review
+    :clause-count 20 :restored-historical-count 7 :path-count 3
+    :implementation-execution :none}
+   {:id :backend-families-d542
+    :parent "8addf4db52ba9eba8dd292a766b4bfada592e518"
+    :parent-tree "e6b651c84d61a36560f86d33e0135723d6db88e1"
+    :candidate "d542b06ba083b9ea1972682df3b82ecec0818956"
+    :candidate-tree "f98bc6e5c467cf528ab37d3709e80c6eba84e68f"
+    :review-receipt "/tmp/uniform-backend-families-actual-audit.edn"
+    :author-receipt "/tmp/uniform-backend-families-author-tuple.edn"
+    :review-state :pending-independent-source-version-review
+    :clause-count 80 :restored-historical-count 13 :reused-predicate-count 4
+    :path-count 16 :implementation-execution :none}
+   {:id :policy-followup-895
+    :parent "d542b06ba083b9ea1972682df3b82ecec0818956"
+    :parent-tree "f98bc6e5c467cf528ab37d3709e80c6eba84e68f"
+    :candidate "895dea1ddbce13b8deae461144e57b8245caefc8"
+    :candidate-tree "65c32e6f3677fdbd6492923cb10a002eb00d907a"
+    :review-receipt "/tmp/uniform-pr767-policy-followup-895-independent-review.edn"
+    :review-state :accepted-scoped-policy-source-only
+    :human-decision :L12-declared-replayable-inputs
+    :path-count 9 :implementation-execution :none}])
+(def source-successor-join-summary-contracts
+  (mapv #(select-keys % [:id :clause-count :finite-predicate-count
+                         :reused-predicate-count :restored-historical-count
+                         :path-count :review-state :implementation-execution])
+        source-successor-segment-specs))
+
+(declare git-commit-tree git-blob-id git-diff-paths git-source)
+
+(def source-successor-l6-contract
+  {:path "docs/phase-01-core-language/016-l6-effect-system-specification.md"
+   :historical-ref "4202c7760b586ec25b9ea69040b6bb8a75ec4919"
+   :historical-sha256 "a9d41d970d56d20f0fb74f10c280689407e3ab8fe075c5bc3b71925e9ccec1d5"
+   :reviewed-ref "d2a0378bdd530857d97d530aab15268fc333ce80"
+   :reviewed-tree "ff13ce6160d46b982125face622e5028b4e1cb38"
+   :current-sha256 "529b2cb63e0fe304f628ed63b0e6ef64d86200034f854836399e02e103b41f72"
+   :review-receipt "/tmp/uniform-pr767-L6-d2a-independent-review.edn"
+   :review-state :accepted-scoped-canonical-source-only
+   :binding-status :qualified-current-source-successor
+   :reviewed-spans
+   [{:id "L6/build-effects"
+     :before {:start-byte 12282 :end-byte 12513 :start-line 246 :end-line 256
+              :sha256 "e73cf70297c5d8d41bdd51e437fbeb81deadb7e992363c26f6ff11ebfed3453b"}
+     :after {:start-byte 12282 :end-byte 13260 :start-line 246 :end-line 263
+             :sha256 "c1460f0058e42282eb90b3a5c6455ca01987331e26466d5c043c3d7445b1da8b"}}
+    {:id "L6/conformance"
+     :before {:start-byte 17137 :end-byte 17217 :start-line 342 :end-line 342
+              :sha256 "8927f7381c6443b234b235e2b91795f92a1f953254322d1f22c36025491701d6"}
+     :after {:start-byte 17884 :end-byte 18288 :start-line 349 :end-line 353
+             :sha256 "9d8f77a73d6121047d53d9cbeca2e5a00ea072fb8adc0d142b90ff5ee1bbc12"}}]})
+
+(defn- source-successor-file-facts [ref path read-ref sha256-fn _require!]
+  (let [text (read-ref ref path)
+        bytes (.getBytes ^String text "UTF-8")
+        lines (count (.split text (str (char 10)) -1))]
+    {:ref ref
+     :blob (git-blob-id text)
+     :bytes (alength bytes)
+     :lines lines
+     :sha256 (sha256-fn text)
+     :span {:start-byte 0 :end-byte (alength bytes)
+            :start-line 1 :end-line lines
+            :sha256 (sha256-fn text)}}))
+
+(defn validate-source-successor-binding!
+  "Authenticate the composed source successor and every reviewed source
+  increment.  This is deliberately source/interface provenance only: it does
+  not accept implementation, migration, release or whole-source semantics."
+  [binding _transitions read-ref read-text sha256-fn require!]
+  (let [composition (assoc current-source-successor-composition
+                           :current-transition-count (count current-source-transition-contracts)
+                           :source-census-count (count (:source-census binding)))
+        predecessor current-source-successor-predecessor-frame-contract
+        expected-segments (into {} (map (juxt :id identity) source-successor-segment-specs))
+        segments (:reviewed-source-successors binding)
+        segment-map (into {} (map (juxt :id identity) segments))
+        source-paths (vec (sort (set (map :path (:source-census binding)))))
+        expected-l6 (assoc source-successor-l6-contract
+                           :current-ref (:commit current-source-successor-composition)
+                           :current-tree (:tree current-source-successor-composition))]
+    (require! (= :authenticated-source-successor-binding-v1 (:kind binding))
+              "Source successor binding kind changed")
+    (require! (= composition (:composition binding))
+              "Source successor composition identity changed")
+    (require! (= :current-source-interface-only (:authority binding))
+              "Source successor authority changed")
+    (require! (= :pending-independent-source-version-review (:review-state binding))
+              "Source successor review state changed")
+    (require! (= :unassessed (:implementation-acceptance binding))
+              "Source successor implementation status changed")
+    (require! (= :unassessed (:migration-acceptance binding))
+              "Source successor migration status changed")
+    (require! (= predecessor (:predecessor-current-source-frame binding))
+              "Source successor predecessor frame changed")
+    (require! (= current-source-transition-successor-history-contract
+                 (:predecessor-transition-history binding))
+              "Source successor transition history reference changed")
+    (require! (= (vec (sort (map :path current-source-transition-contracts)))
+                 (:current-transition-paths binding))
+              "Source successor current-transition population changed")
+    (require! (= (count (:current-transition-paths binding))
+                 (count (set (:current-transition-paths binding))))
+              "Source successor current-transition paths are duplicated")
+    (require! (= (set (map :id segments)) (set (keys expected-segments)))
+              "Source successor segment population changed")
+    (require! (= (count segments) (count (set (map :id segments))))
+              "Source successor segment identities are duplicated")
+    (doseq [spec source-successor-segment-specs]
+      (let [segment (get segment-map (:id spec))
+            paths (:paths segment)
+            actual-diff (git-diff-paths "." (:parent spec) (:candidate spec) require!)]
+        (require! (= (select-keys spec (keys (dissoc spec :path-count)))
+                     (select-keys segment (keys (dissoc spec :path-count))))
+                  (str "Source successor segment metadata changed: " (:id spec)))
+        (require! (= (:path-count spec) (count paths))
+                  (str "Source successor segment path count changed: " (:id spec)))
+        (require! (= paths (vec (sort paths)))
+                  (str "Source successor segment path order changed: " (:id spec)))
+        (require! (= (count paths) (count (set paths)))
+                  (str "Source successor segment has duplicate paths: " (:id spec)))
+        (require! (= actual-diff paths)
+                  (str "Source successor segment path census changed: " (:id spec)))
+        (require! (= (:parent-tree spec)
+                     (git-commit-tree "." (:parent spec) require!))
+                  (str "Source successor segment parent tree changed: " (:id spec)))
+        (require! (= (:candidate-tree spec)
+                     (git-commit-tree "." (:candidate spec) require!))
+                  (str "Source successor segment candidate tree changed: " (:id spec)))
+        (doseq [path paths]
+          (read-ref (:parent spec) path)
+          (read-ref (:candidate spec) path))))
+    (require! (= source-successor-join-summary-contracts
+                 (:source-join-census binding))
+              "Source successor join census changed")
+    (require! (= expected-l6 (:canonical-l6-successor binding))
+              "Canonical L6 successor binding changed")
+    (require! (= source-paths (vec (sort source-paths)))
+              "Source successor census order changed")
+    (require! (= (count source-paths) (count (set source-paths)))
+              "Source successor census paths are duplicated")
+    (let [expected-paths (vec (sort (set (mapcat :paths segments))))]
+      (require! (= expected-paths source-paths)
+                "Source successor census does not cover every reviewed source path")
+      (doseq [record (:source-census binding)]
+        (let [path (:path record)
+              segment-ids (vec (sort (for [[id segment] segment-map
+                                           :when (some #{path} (:paths segment))]
+                                       id)))
+              expected {:path path
+                        :reviewed-segment-ids segment-ids
+                        :before (source-successor-file-facts
+                                 "4202c7760b586ec25b9ea69040b6bb8a75ec4919"
+                                 path read-ref sha256-fn require!)
+                        :after (source-successor-file-facts
+                                (:commit current-source-successor-composition)
+                                path read-ref sha256-fn require!)}]
+          (require! (= expected record)
+                    (str "Source successor file identity changed: " path))
+          (require! (= (read-ref (:commit current-source-successor-composition) path)
+                       (read-text path))
+                    (str "Source successor is not bound to checked-out source: " path)))))
+    (require! (= [:implementation-acceptance
+                  :migration-acceptance
+                  :whole-source-acceptance
+                  :unreviewed-L17-L19-backend-successors]
+                 (:nonclaims binding))
+              "Source successor nonclaims changed")
+    binding))
 
 (def current-source-transition-history-kind
   :authenticated-current-source-transition-history-v1)
@@ -1724,6 +2095,29 @@
            :review-state :pending-independent-source-version-review
            :implementation-acceptance :unassessed})
         std7-std9-library-io-criterion-data))
+
+;; The original STD7-STD9 joins remain an immutable 4202 record.  The current
+;; source successor keeps those exact criterion spans and joins, but binds them
+;; to the composed source bytes so a later source transition cannot be mistaken
+;; for a change to the accepted historical record.
+(def current-source-library-io-criterion-contracts
+  (mapv (fn [join]
+          (assoc join
+                 :source-commit (:commit current-source-successor-composition)
+                 :source-tree (:tree current-source-successor-composition)
+                 :source-blob "2c11af264fb81cb0b7e7aa74fc7345ab20592cc2"
+                 :source-sha256 "90b45f98672fac1400a9ee13e0c844d9c98aac473eb3f7063a89163b0dd9eb35"
+                 :successor-of {:source-commit (:source-commit join)
+                                :source-tree (:source-tree join)
+                                :source-blob (:source-blob join)
+                                :source-sha256 (:source-sha256 join)}
+                 :qualification
+                 (str "The current-source successor preserves the exact STD7-STD9 criterion/owner join "
+                      (:id join) " while rebinding its unchanged span to the composed current source. "
+                      "The 4202 join remains immutable historical evidence; this source/interface successor "
+                      "confers no implementation, migration or whole-source acceptance.")))
+        std7-std9-library-io-criterion-contracts))
+
 (defn validate-std7-std9-library-io-criterion-joins!
   [joins read-ref read-text sha256 require!]
   (require! (= joins std7-std9-library-io-criterion-contracts)
@@ -1756,12 +2150,10 @@
     (require! (= source-tree (git-commit-tree "." source-commit require!))
               (str "STD7-STD9 criterion source tree is not authenticated: " id))
     (let [source (read-ref source-commit path)
-          current (read-text path)
+          _current (read-text path)
           {:keys [start-byte end-byte start-line end-line]} source-span
           span-sha256 (:sha256 source-span)
           raw (utf8-span-text source start-byte end-byte require!)]
-      (require! (= source current)
-                (str "STD7-STD9 criterion source is not current: " id))
       (require! (= source-blob (git-blob-id source))
                 (str "STD7-STD9 criterion source Git blob changed: " id))
       (require! (= source-sha256 (sha256 source))
@@ -1776,6 +2168,58 @@
                 (str "STD7-STD9 criterion identity is absent from source span: " id))
       (require! (str/includes? raw (str "`" owner "`"))
                 (str "STD7-STD9 criterion owner is absent from source span: " id)))
+  joins))
+
+(defn validate-current-source-library-io-criterion-joins!
+  [joins read-ref read-text sha256 require!]
+  (require! (= joins current-source-library-io-criterion-contracts)
+            "Current-source STD7-STD9 library IO successor changed")
+  (require! (= 31 (count joins))
+            "Current-source STD7-STD9 library IO criterion count changed")
+  (require! (= 31 (count (set (map :id joins))))
+            "Current-source STD7-STD9 library IO criterion identities are not unique")
+  (doseq [{:keys [id owner path source-commit source-tree source-blob source-sha256
+                  source-span successor-of]} joins]
+    (require! (= "specs/stdlib-workflow/plan.md" path)
+              (str "Current-source STD7-STD9 criterion path changed: " id))
+    (require! (= (:commit current-source-successor-composition) source-commit)
+              (str "Current-source STD7-STD9 criterion commit changed: " id))
+    (require! (= (:tree current-source-successor-composition) source-tree)
+              (str "Current-source STD7-STD9 criterion tree changed: " id))
+    (require! (= "2c11af264fb81cb0b7e7aa74fc7345ab20592cc2" source-blob)
+              (str "Current-source STD7-STD9 criterion blob changed: " id))
+    (require! (= "90b45f98672fac1400a9ee13e0c844d9c98aac473eb3f7063a89163b0dd9eb35"
+                 source-sha256)
+              (str "Current-source STD7-STD9 criterion digest changed: " id))
+    (require! (= {:source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919"
+                  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883"
+                  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641"
+                  :source-sha256 "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a"}
+                 successor-of)
+              (str "Current-source STD7-STD9 predecessor join changed: " id))
+    (require! (= source-tree (git-commit-tree "." source-commit require!))
+              (str "Current-source STD7-STD9 criterion tree is not authenticated: " id))
+    (let [source (read-ref source-commit path)
+          current (read-text path)
+          {:keys [start-byte end-byte start-line end-line]} source-span
+          span-sha256 (:sha256 source-span)
+          raw (utf8-span-text source start-byte end-byte require!)]
+      (require! (= source current)
+                (str "Current-source STD7-STD9 criterion source is not current: " id))
+      (require! (= source-blob (git-blob-id source))
+                (str "Current-source STD7-STD9 criterion Git blob changed: " id))
+      (require! (= source-sha256 (sha256 source))
+                (str "Current-source STD7-STD9 criterion bytes changed: " id))
+      (require! (= span-sha256 (sha256 raw))
+                (str "Current-source STD7-STD9 criterion span changed: " id))
+      (require! (= start-line (utf8-line-number source start-byte))
+                (str "Current-source STD7-STD9 criterion start line changed: " id))
+      (require! (= end-line (utf8-line-number source (dec end-byte)))
+                (str "Current-source STD7-STD9 criterion end line changed: " id))
+      (require! (str/includes? raw (str "`" id "`"))
+                (str "Current-source STD7-STD9 criterion identity is absent: " id))
+      (require! (str/includes? raw (str "`" owner "`"))
+                (str "Current-source STD7-STD9 criterion owner is absent: " id)))
   joins))
 
 ;; These are the six reviewed source regions, not a text diff computed from the
@@ -2100,6 +2544,16 @@
         exit (.waitFor process)]
     (require! (zero? exit) "Source version bridge commit/path cannot be read")
     out))
+
+(defn git-diff-paths [root baseline applying require!]
+  (let [process (.start (.redirectErrorStream
+                         (ProcessBuilder. ^java.util.List
+                                          ["git" "-C" (str root) "diff" "--name-only"
+                                           baseline applying]) true))
+        out (with-open [input (.getInputStream process)] (slurp input :encoding "UTF-8"))
+        exit (.waitFor process)]
+    (require! (zero? exit) "Source successor path census could not be read")
+    (vec (sort (remove str/blank? (str/split-lines out))))))
 
 (defn git-blob-id [text]
   (let [bytes (.getBytes ^String text "UTF-8")
