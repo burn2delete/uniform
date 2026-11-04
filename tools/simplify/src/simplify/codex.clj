@@ -75,9 +75,19 @@
   @(:reader client)
   @(:stderr client))
 
+(defn check-key [ctx argv] (rt/digest (pr-str [(get-in ctx [:config :repository]) argv])))
+
+(defn validate-command-result! [ctx argv result]
+  (when-not (zero? (:exitCode result))
+    (let [restricted (rt/authorization-denied? (str (:stderr result) "\n" (:stdout result)))]
+      (when restricted (rt/record-denial! ctx :check (check-key ctx argv) {:command argv :result result}))
+      (rt/fail! "Sandboxed check failed" {:command argv :result result :restricted restricted})))
+  result)
+
 (defn command!
   "Execute checks without inference. Model-selected argv stays inside the worker sandbox."
   [ctx job-id cwd argv]
+  (rt/assert-authorized! ctx :check (check-key ctx argv))
   (let [client (open! ctx job-id cwd)]
     (try
       (request! client "initialize" {:clientInfo {:name "uniform_simplify" :title "Uniform Simplify" :version "0.1.0"}})
@@ -87,8 +97,11 @@
                               :timeoutMs (get-in ctx [:config :check-timeout-ms])
                               :sandboxPolicy {:type "workspaceWrite" :writableRoots [cwd] :networkAccess false}})]
         (when @(:restricted client) (rt/fail! "Check encountered a restricted request; not retrying" {:restricted true}))
-        (when-not (zero? (:exitCode result)) (rt/fail! "Sandboxed check failed" {:command argv :result result}))
-        result)
+        (validate-command-result! ctx argv result))
+      (catch Exception e
+        (when (:restricted (ex-data e))
+          (rt/record-denial! ctx :check (check-key ctx argv) {:command argv :message (.getMessage e)}))
+        (throw e))
       (finally (close! client)))))
 
 (defn await-turn! [client turn-id]
