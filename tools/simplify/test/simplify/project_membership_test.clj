@@ -1,5 +1,6 @@
 (ns simplify.project-membership-test
-  (:require [clojure.java.io :as io]
+  (:require [clojure.data.json :as json]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
             [simplify.github :as gh]
@@ -38,6 +39,15 @@
 (defn calls-of [calls kind]
   (filter #(if (map? %) (= kind (:kind %)) (= kind %)) @calls))
 
+(defn transport-command [calls response-fn]
+  (fn [_ _ argv input]
+    (is (= ["gh" "api" "--method" "POST" "graphql" "--input" "-"] argv))
+    (let [{:keys [query variables]} (json/read-str input :key-fn keyword)
+          kind (if (str/starts-with? query "query") :read :add)
+          call {:kind kind :query query :variables variables}]
+      (swap! calls conj call)
+      (response-fn call calls))))
+
 (deftest duplicate-add-is-read-back-once-without-repeating-add
   (let [ctx (project-context)
         calls (atom [])]
@@ -61,6 +71,92 @@
       (is (= 2 (count (calls-of calls :read))))
       (is (= :done (get-in @(:state ctx) [:effects "project-item/project/issue" :status])))
       (is (= "item-after-race" (get-in @(:state ctx) [:effects "project-item/project/issue" :result]))))))
+
+(deftest duplicate-add-from-real-graphql-transport-is-read-back-once
+  (let [ctx (project-context)
+        calls (atom [])]
+    (with-redefs [rt/command
+                  (transport-command
+                   calls
+                   (fn [{:keys [kind]} calls]
+                     (if (= :read kind)
+                       {:exit 0
+                        :out (json/write-str
+                              {:data (if (= 1 (count (calls-of calls :read)))
+                                        (membership-page [] false nil)
+                                        (membership-page [{:id "item-after-transport-race"
+                                                           :content {:id "issue"}}] false nil))})
+                        :err ""}
+                       {:exit 1
+                        :out (json/write-str {:errors [{:type "UNPROCESSABLE"
+                                                        :message "Content already exists in this project"}]})
+                        :err "GraphQL: Content already exists in this project"})))]
+      (is (= "item-after-transport-race" (gh/item! ctx {:node_id "issue"})))
+      (is (= 1 (count (calls-of calls :add))))
+      (is (= 2 (count (calls-of calls :read))))
+      (is (= :done (get-in @(:state ctx) [:effects "project-item/project/issue" :status]))))))
+
+(deftest malformed-or-mixed-graphql-output-does-not-admit-membership
+  (doseq [[label output error-text]
+          [["invalid JSON" "not-json" "GraphQL: Content already exists in this project"]
+           ["mixed errors"
+            (json/write-str {:errors [{:type "UNPROCESSABLE"
+                                       :message "Content already exists in this project"}
+                                      {:type "VALIDATION" :message "another error"}]})
+            "GraphQL: Content already exists in this project"]]]
+    (testing label
+      (let [ctx (project-context)
+            calls (atom [])]
+        (with-redefs [rt/command
+                      (transport-command
+                       calls
+                       (fn [{:keys [kind]} _]
+                         (if (= :read kind)
+                           {:exit 0
+                            :out (json/write-str {:data (membership-page [] false nil)})
+                            :err ""}
+                           {:exit 1 :out output :err error-text})))]
+          (is (thrown? Exception (gh/item! ctx {:node_id "issue"})))
+          (is (= 1 (count (calls-of calls :read))))
+          (is (= 1 (count (calls-of calls :add))))
+          (is (= :uncertain (get-in @(:state ctx) [:effects "project-item/project/issue" :status]))))))))
+
+(deftest restricted-graphql-transport-output-does-not-admit-membership
+  (doseq [[label error-type error-text]
+          [["forbidden" "FORBIDDEN" "GraphQL: Resource not accessible"]
+           ["rate limited" "RATE_LIMITED" "GraphQL: Rate limit exceeded"]
+           ["unauthorized" "UNAUTHORIZED" "GraphQL: Requires authentication"]]]
+    (testing label
+      (let [ctx (project-context)
+            calls (atom [])]
+        (with-redefs [rt/command
+                      (transport-command
+                       calls
+                       (fn [{:keys [kind]} _]
+                         (if (= :read kind)
+                           {:exit 0
+                            :out (json/write-str {:data (membership-page [] false nil)})
+                            :err ""}
+                           {:exit 1
+                            :out (json/write-str {:errors [{:type error-type :message error-text}]})
+                            :err error-text})))]
+          (is (thrown? Exception (gh/item! ctx {:node_id "issue"})))
+          (is (= 1 (count (calls-of calls :read))))
+          (is (= 1 (count (calls-of calls :add))))
+          (is (= :restricted (get-in @(:state ctx) [:effects "project-item/project/issue" :status]))))))))
+
+(deftest non-graphql-api-output-does-not-expose-graphql-errors
+  (let [ctx (project-context)
+        output (json/write-str {:errors [{:type "UNPROCESSABLE"
+                                          :message "Content already exists in this project"}]})]
+    (with-redefs [rt/command (fn [_ _ _ _] {:exit 1 :out output :err "request failed"})]
+      (try
+        (gh/api ctx "POST" "repos/example/items" {})
+        (is false "Expected non-GraphQL API failure")
+        (catch clojure.lang.ExceptionInfo error
+          (is (nil? (:errors (ex-data error))))
+          (is (= "repos/example/items" (:endpoint (ex-data error))))
+          (is (= 1 (:exit (ex-data error)))))))))
 
 (deftest preexisting-membership-still-skips-add-across-pages
   (let [ctx (project-context)
