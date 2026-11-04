@@ -96,16 +96,30 @@ The metadata-aware EDN SHA256 is
 d76b80092e45ef9dfec5b9189649a5d49772646b8284d4085c758eb245767577.
 These are explicitly native unit artifacts, not products compiled from that
 source text. Baseline output completed before source edits; file modification
-times corroborate that ordering. Clean-candidate after comparison is pending.
+times corroborate that ordering. Clean candidate
+db0b82ec6347e1e22381df231ab719315fc294b3, tree
+e50e5c36e7a08c1581445142b6ab398e27dc5b3c, reproduces all 28 complete
+records byte for byte and as parsed data with the same SHA256. The native host
+errors remain host errors and receive no diagnostic-refusal credit.
 
 Boundary/ownership checks pass 48 tests / 1198 assertions with no skipped
 namespaces. CI formatting and document/roadmap/governance validators pass.
 An initial combined legacy regression invocation incorrectly mixed cold-leaf
 tests with a Bootstrap-dependent namespace, producing two cold-load assertions.
-That harness nonpass is retained; fresh separate leaf and compatibility JVM
-runs remain to be completed. No cold-load assertion or host failure is weakened.
-Evidence files use /tmp/uniform-macro-native-reports- locally. Full parity,
-contextual lint, independent acceptance, hosted CI and integration remain pending.
+That harness nonpass is retained. Fresh separate JVMs pass the two cold-leaf
+namespaces (18 tests / 198 assertions) and the Bootstrap compatibility namespace
+(five tests / 44 assertions). No cold-load assertion or host failure is weakened.
+
+Static conservation proves both moved bodies exactly modulo the declared
+names/arglists and explicit ports, both facades and their early require, the
+unchanged shadowed constructor and all surrounding Bootstrap code, every
+existing Macro function body, the sole API count correction and the one CI
+namespace insertion. Exactly eight slice paths differ. Source authentication,
+pins and manifests remain byte-identical. Contextual lint for the six changed
+Clojure paths against source parent f40 passes with zero baseline warnings and
+zero blockers. This is local extraction validation, not a composition check
+against newer main 3c97. Evidence files use /tmp/uniform-macro-native-reports-
+locally. Independent acceptance, hosted CI and integration remain pending.
 
 Independent review also confirmed an existing Var-call timing defect in four
 other Macro operations against exact pre-extraction bodies. Those operations
