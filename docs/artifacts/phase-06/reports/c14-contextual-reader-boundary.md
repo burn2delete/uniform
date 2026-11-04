@@ -42,19 +42,41 @@ source byte counts and SHA-256 values are:
 These identify historical source, not a successful new execution. Historical
 source and execution receipts keep their original identities.
 
-## Current source-input checkpoint
+## Historical source-input checkpoint
 
-The clean composed checkpoint is commit
+The earlier clean composed checkpoint is commit
 `082231d0d8cb92e4e4c2cbeb62585d35ebb64700`, tree
-`18827cbad69d5db1a94c44546a736564a0c3b54c`. Its development source inputs
-are:
+`18827cbad69d5db1a94c44546a736564a0c3b54c`. It is retained as a historical
+source-input checkpoint, not the current reviewed candidate. Its development
+source inputs are:
 
 | Source | Bytes | SHA-256 |
 | --- | ---: | --- |
 | `bootstrap/gravity/src/gravity/bootstrap/reader.gravity` | 246369 | `eec041127cb2785f92e7e2c79d14350d869a0ea8a0194ea3da55f75d52099205` |
 | `bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity` | 563129 | `3dea275512a70ca63b9da6ed8d79e540ca4c776d6e05d21f1dc44e39e62b504b` |
-| `bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity` | 175365 | `7bf71720a67d665206ec55bcbe2be8ec1896d43097f7712f98664fbfa2ca9d597c75a` |
+| `bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity` | 175365 | `7bf71720a67d665206259fc06de9eb1c87086f7712f98664fbfa2ca9d597c75a` |
 | `bootstrap/gravity/src/gravity/compiler/c14_literal_bool_contextual_lowering.gravity` | 5406 | `99453ac8c4711892673b60dd7948ddbb4432dce511a218181968a85731138ba1` |
+
+## Current source-input checkpoint
+
+The immutable current candidate source-input checkpoint is merge commit
+`8ee4fcbe0f69e38efd83ae3fc81500ddb53b3491`, tree
+`2bb547602a8c03151f45a2be9fded8b8305ca87d`. It composes the reviewed f488
+contextual branch with current main at the normal #892 merge. Its exact current
+source inputs are:
+
+| Source | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `bootstrap/gravity/src/gravity/bootstrap/reader.gravity` | 246369 | `eec041127cb2785f92e7e2c79d14350d869a0ea8a0194ea3da55f75d52099205` |
+| `language/compiler/src/gravity/compiler/c11_mir_specification.gravity` | 593009 | `8f5e1949f84e02604919d3fb6acad7721673c53ae9a3aa2d517fdeceac90e9db` |
+| `language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity` | 175365 | `7bf71720a67d665206259fc06de9eb1c87086f7712f98664fbfa2ca9d597c75a` |
+| `language/compiler/src/gravity/compiler/c14_literal_bool_contextual_lowering.gravity` | 5406 | `99453ac8c4711892673b60dd7948ddbb4432dce511a218181968a85731138ba1` |
+
+Erratum: earlier versions of this report printed an invalid 69-character
+literal for the C13 SHA-256 in both affected source tables. That invalid record had no
+execution authority, did not establish a migration pin, and did not confer
+acceptance. The 64-character value shown in both tables is the verified hash of
+the recorded C13 bytes; this correction repairs provenance only.
 
 The default `gravity check` / exact C13 source-coverage route retains a
 NONPASS at the pinned C2 source guard: it expects Reader bytes `231576` and
@@ -65,18 +87,10 @@ repinned and no default-route failure is relabeled as a pass.
 The current-main composition moves the C11, C13 and contextual C14 source
 inputs to their canonical `language/compiler` owner paths without replaying
 the deleted bootstrap source tree. The reader remains owned by its existing
-bootstrap path. The exact current candidate source inputs are:
-
-| Source | Bytes | SHA-256 |
-| --- | ---: | --- |
-| `bootstrap/gravity/src/gravity/bootstrap/reader.gravity` | 246369 | `eec041127cb2785f92e7e2c79d14350d869a0ea8a0194ea3da55f75d52099205` |
-| `language/compiler/src/gravity/compiler/c11_mir_specification.gravity` | 563129 | `3dea275512a70ca63b9da6ed8d79e540ca4c776d6e05d21f1dc44e39e62b504b` |
-| `language/compiler/src/gravity/compiler/c13_mir_optimization_passes.gravity` | 175365 | `7bf71720a67d665206ec55bcbe2be8ec1896d43097f7712f98664fbfa2ca9d597c75a` |
-| `language/compiler/src/gravity/compiler/c14_literal_bool_contextual_lowering.gravity` | 5406 | `99453ac8c4711892673b60dd7948ddbb4432dce511a218181968a85731138ba1` |
-
-These are a current source-location and tree-composition record, not a
-successful C5/C14 execution or renewed migration pin. The historical table
-above remains unchanged and retains its original source identities.
+bootstrap path. The current tuple above is a source-location and tree-
+composition record, not a successful C5/C14 execution or renewed migration
+pin. The historical table above remains an audit record with its original
+source identities.
 
 ## Finite acceptance checklist
 
