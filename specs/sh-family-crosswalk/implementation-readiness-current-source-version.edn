@@ -21940,146 +21940,855 @@
   :tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
   :scope :reconciled-source-before-metadata},
  :source-input-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+:current-source-frame-history
+{:kind :authenticated-current-source-frame-history-v1,
+ :predecessor
+ {:path
+  "specs/sh-family-crosswalk/implementation-readiness-current-source-version.edn",
+  :source-input-commit "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :source-input-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+  :source-frame-fingerprint
+  "57d4e3415247ff5e27aae9d61b143518d6cca0f0dc3c5d73762048eeb592a3ad",
+  :tree "46627ba4a754f934c656c4f67ce65bd5302d1be1",
+  :current-source-path-count 2185,
+  :source-digest-count 35,
+  :blob "35b19c122d029877dd4b62f2864c85ba01d0da87",
+  :applying-pin-count 72,
+  :current-source-transition-count 24,
+  :commit "ff783a0ab1d324bbf9316e7de6b1db55f189e338",
+  :sha256
+  "db750ca20785c29f21babf2b61fc9b90965e0e1a69077a6054533176e4fd1402",
+  :current-source-history-count 23,
+  :input-fingerprint
+  "6f062d1a19435638e157aa62b95bbfe950275b84f82d27079186ad12b24dbfce"},
+ :authority :current-source-interface-only,
+ :review-state :superseded-current-source-frame,
+ :qualification
+ "The ff783 current-source frame is retained as immutable history. Its 24 transitions, 23 historical records, 2,185 current-source paths, 72 applying pins, 35 source digests and exact fingerprints remain conserved while STD7-STD9 advances to 4202."}
+,
+:library-io-criterion-joins
+[{:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? false,
+  :source-span
+  {:start-byte 26350,
+   :end-byte 27450,
+   :start-line 207,
+   :end-line 207,
+   :sha256
+   "c31b79557f07fd82b59b8ab8ade6f4ff51bdabf1b06ede6a8e26ca2f854fabeb"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "service-contracts",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :new-current-source-criterion,
+  :owner
+  "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? false,
+  :source-span
+  {:start-byte 27451,
+   :end-byte 28817,
+   :start-line 208,
+   :end-line 208,
+   :sha256
+   "b4650307a9261af76c8e0746d8e41ed73df655ae7f51186d2e792f3fd446f928"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "concurrency-api",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :new-current-source-criterion,
+  :owner
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? false,
+  :source-span
+  {:start-byte 28818,
+   :end-byte 29854,
+   :start-line 209,
+   :end-line 209,
+   :sha256
+   "6acee921026c085995e66210eb6fd4d40fca3959f8596b3adf536758d2bf4b9e"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "channels-and-actors",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :new-current-source-criterion,
+  :owner
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? false,
+  :source-span
+  {:start-byte 29855,
+   :end-byte 31151,
+   :start-line 210,
+   :end-line 210,
+   :sha256
+   "b3ab686bea6e919df6683314a02fabf7c75e6c645589f827f0104b86584ac4af"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "scheduler-and-atomic-apis",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :new-current-source-criterion,
+  :owner
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? false,
+  :source-span
+  {:start-byte 31152,
+   :end-byte 32238,
+   :start-line 211,
+   :end-line 211,
+   :sha256
+   "13129429b60b526b9bed75042a3d97561d5149bd958ca0605c9f4e53fd5f5483"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "stream-and-handle-apis",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :new-current-source-criterion,
+  :owner
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? false,
+  :source-span
+  {:start-byte 32239,
+   :end-byte 33133,
+   :start-line 212,
+   :end-line 212,
+   :sha256
+   "ab42f96fd11c402a66b8966e1ac53e2426e618ac00de66cf88c70db54bdda843"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "typed-path-policy",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :new-current-source-criterion,
+  :owner
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? false,
+  :source-span
+  {:start-byte 33134,
+   :end-byte 34004,
+   :start-line 213,
+   :end-line 213,
+   :sha256
+   "f07d3c06c899c2f489613771de7454868b726a6862bd5baeea77f7111869cb79"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "text-io",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :new-current-source-criterion,
+  :owner
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? false,
+  :source-span
+  {:start-byte 34005,
+   :end-byte 34800,
+   :start-line 214,
+   :end-line 214,
+   :sha256
+   "64fd85e3df4e2c6e3d1f3c62fdc1995901438fbc77c7ce5ff72304e23cca3f1a"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "directory-traversal",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :new-current-source-criterion,
+  :owner
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? false,
+  :source-span
+  {:start-byte 34801,
+   :end-byte 35703,
+   :start-line 215,
+   :end-line 215,
+   :sha256
+   "fc6bec8e38bc9c7765d8663603cdb258f4008811fa721a11eadbe3b76af47f62"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "atomic-file-replacement",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :new-current-source-criterion,
+  :owner
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? false,
+  :source-span
+  {:start-byte 35704,
+   :end-byte 36872,
+   :start-line 216,
+   :end-line 216,
+   :sha256
+   "bdfa2332f3979c0ee3d54f878d1ee963f26fcb6caed5f8f78626b69da3e38da6"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "network-surface",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :new-current-source-criterion,
+  :owner
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? false,
+  :source-span
+  {:start-byte 36873,
+   :end-byte 37999,
+   :start-line 217,
+   :end-line 217,
+   :sha256
+   "ca928d41a86300210073da1f6f04ffdf8556d6ff9d49660a71cb668cc0c3ff4a"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "http-client",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :new-current-source-criterion,
+  :owner
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? false,
+  :source-span
+  {:start-byte 38000,
+   :end-byte 39026,
+   :start-line 218,
+   :end-line 218,
+   :sha256
+   "b60ede05f2f1f1a1a3806557ac8f105c103df7902e71c406bacad485cecf5b51"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "http-server",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :new-current-source-criterion,
+  :owner
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? false,
+  :source-span
+  {:start-byte 39027,
+   :end-byte 39953,
+   :start-line 219,
+   :end-line 219,
+   :sha256
+   "2817598718a5b9bbb50559290da0b016c9247501b71cc80e435cf1c4773aa4eb"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "tls-policy",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :new-current-source-criterion,
+  :owner
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? false,
+  :source-span
+  {:start-byte 39954,
+   :end-byte 40949,
+   :start-line 220,
+   :end-line 220,
+   :sha256
+   "e795a01ad166a52270b45f23cdd6cb7be5d5b0593b309309e9782ee0fa2bd063"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "network-schema-boundary",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :new-current-source-criterion,
+  :owner
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? false,
+  :source-span
+  {:start-byte 40950,
+   :end-byte 42329,
+   :start-line 221,
+   :end-line 221,
+   :sha256
+   "3ee352972dc29677aa8b026fb9c3f2a20390a0f8cb8f862497246bc7b2aef366"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "service-profile-matrix",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :new-current-source-criterion,
+  :owner
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? false,
+  :source-span
+  {:start-byte 42330,
+   :end-byte 43340,
+   :start-line 222,
+   :end-line 222,
+   :sha256
+   "92a7ba41928ae3583c182ccdde662d8365a5cd6724449c6853fc4132e3a1ba80"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "resource-cleanup",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :new-current-source-criterion,
+  :owner
+  "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? false,
+  :source-span
+  {:start-byte 43341,
+   :end-byte 44622,
+   :start-line 223,
+   :end-line 223,
+   :sha256
+   "7e6c5aa3bdc0487ad414bfa6cf8a52cfad839ccb74cabfd7fcb2569529c16708"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "recorded-service-replay",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :new-current-source-criterion,
+  :owner
+  "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? false,
+  :source-span
+  {:start-byte 44623,
+   :end-byte 45773,
+   :start-line 224,
+   :end-line 224,
+   :sha256
+   "34904257fb26ca811ad16449ec91d3f8177f378c7f46fe383af39788c617f6e4"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "actual-service-enforcement",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :new-current-source-criterion,
+  :owner
+  "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? false,
+  :source-span
+  {:start-byte 45774,
+   :end-byte 46864,
+   :start-line 225,
+   :end-line 225,
+   :sha256
+   "5a23e9fee1b80ef184fb53d66cf74dc51af59249d46b96c35977df559f2665e6"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "service-observation",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :new-current-source-criterion,
+  :owner
+  "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? false,
+  :source-span
+  {:start-byte 46865,
+   :end-byte 47992,
+   :start-line 226,
+   :end-line 226,
+   :sha256
+   "8863a2c90e779286172f8f7b6cd38eada3fa320d5d28777edee187e02c938768"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "service-effect-admission",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :new-current-source-criterion,
+  :owner
+  "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? false,
+  :source-span
+  {:start-byte 47993,
+   :end-byte 49125,
+   :start-line 227,
+   :end-line 227,
+   :sha256
+   "a94a42e78d8440e6dcb172d4f90fb135692933ef85ef2ebdf54a703b6cf1ca6c"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "operation-grants",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :new-current-source-criterion,
+  :owner
+  "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? false,
+  :source-span
+  {:start-byte 49126,
+   :end-byte 50134,
+   :start-line 228,
+   :end-line 228,
+   :sha256
+   "bd8e4c6aabae7749d61b665023b53ef0bb7a39264a5641cdc90967baaf3e0184"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "unsafe-service-wrappers",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :new-current-source-criterion,
+  :owner
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? false,
+  :source-span
+  {:start-byte 50135,
+   :end-byte 51582,
+   :start-line 229,
+   :end-line 229,
+   :sha256
+   "176f554a076d04f5eea155ee7c68b0d194ed02e5f5b72b70caaf5c0b39dcea5e"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "library-service-conformance",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :new-current-source-criterion,
+  :owner
+  "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? true,
+  :source-span
+  {:start-byte 51583,
+   :end-byte 52192,
+   :start-line 230,
+   :end-line 230,
+   :sha256
+   "fe1c527506170e667ac19c7faee7e8255fd35c5333af7452fbea83b3de791569"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "atomic-existing",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :existing-exact-predicate,
+  :owner
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? true,
+  :source-span
+  {:start-byte 52192,
+   :end-byte 52814,
+   :start-line 231,
+   :end-line 231,
+   :sha256
+   "e43b6fc42c2632c1447862d46ce7c41f33e57e8a5f9ff4c4cb756e44ab19b868"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "channel-existing",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :existing-exact-predicate,
+  :owner
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? true,
+  :source-span
+  {:start-byte 52814,
+   :end-byte 53858,
+   :start-line 232,
+   :end-line 232,
+   :sha256
+   "18a148170b6bc76c0c691d690b3eb9ca758c5a1b136c513fe8ed11e2e12f5de4"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "preservation-existing",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :existing-exact-predicate,
+  :owner
+  "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? true,
+  :source-span
+  {:start-byte 53858,
+   :end-byte 54717,
+   :start-line 233,
+   :end-line 233,
+   :sha256
+   "43c194cfee2f0f0a026de07d611cc9436fa42cae003d431a63368a0fddacba92"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "profile-existing",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :existing-exact-predicate,
+  :owner
+  "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? true,
+  :source-span
+  {:start-byte 54717,
+   :end-byte 55764,
+   :start-line 234,
+   :end-line 234,
+   :sha256
+   "1e8af63b32c741351cf1fda8ad7302b9d620ea2f1da23935115187164b52f07b"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "race-analysis-existing",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :existing-exact-predicate,
+  :owner
+  "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? true,
+  :source-span
+  {:start-byte 55764,
+   :end-byte 57078,
+   :start-line 235,
+   :end-line 235,
+   :sha256
+   "4b6714e6b0e6685d60d9ed5e4b1339b5f3040459f826772d2b416dc1eae6ccc4"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "runtime-concurrency-existing",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :existing-exact-predicate,
+  :owner
+  "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? true,
+  :source-span
+  {:start-byte 57078,
+   :end-byte 58588,
+   :start-line 236,
+   :end-line 236,
+   :sha256
+   "cf41a2cff0de1ddca2f07e3318c1f9048a1f537b29636f3474c6bfee73368563"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "safety-existing",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :existing-exact-predicate,
+  :owner
+  "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+  :implementation-acceptance :unassessed}
+ {:path "specs/stdlib-workflow/plan.md",
+  :reused-predicate? true,
+  :source-span
+  {:start-byte 58588,
+   :end-byte 59232,
+   :start-line 237,
+   :end-line 237,
+   :sha256
+   "c0b89b2a160d0312125851f6644d3f41ef558cd486c0d543091630aa255e3ad7"},
+  :review-state :pending-independent-source-version-review,
+  :authority :current-source-interface-only,
+  :source-sha256
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :consumer-task-id
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :id "structured-existing",
+  :source-blob "4d7521645cd41846736b7c522979e8838d6aa641",
+  :relation :existing-exact-predicate,
+  :owner
+  "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis",
+  :implementation-acceptance :unassessed}]
+,
 :current-source-transitions
- [{:role :current-source-interface-proposal,
+[{:role :current-source-interface-proposal,
   :path "specs/auth-workflow/plan.md",
   :changed-spans
-  [{:id "L13/specs/auth-workflow/plan.md",
+  [{:id "STD7-STD9/specs/auth-workflow/plan.md",
     :kind :complete-file-transition,
     :before
-    {:start-byte 0,
-     :end-byte 37498,
-     :start-line 1,
-     :end-line 426,
-     :sha256
-     "40b8fa53f98cee5e7939d738f000cbe388fd109d7babc840e16cc6819aa46999"},
-    :after
     {:start-byte 0,
      :end-byte 38081,
      :start-line 1,
      :end-line 433,
      :sha256
-     "a6a7bea46f4047d878890c34fed6d019bf35633ade613a3ea468e80da3489f3c"}}],
+     "a6a7bea46f4047d878890c34fed6d019bf35633ade613a3ea468e80da3489f3c"},
+    :after
+    {:start-byte 0,
+     :end-byte 38920,
+     :start-line 1,
+     :end-line 439,
+     :sha256
+     "e4512113f4aca4a9e46451d4098dc8e53c33cbf0caea7990ccdbd3197319c9c4"}}],
   :live-sha256
-  "a6a7bea46f4047d878890c34fed6d019bf35633ade613a3ea468e80da3489f3c",
-  :applying-blob "e8c486581086c204f9c6502766607ea88fc06606",
+  "e4512113f4aca4a9e46451d4098dc8e53c33cbf0caea7990ccdbd3197319c9c4",
+  :applying-blob "0c6ac8e91e043d8fd37549a0283b0cb2484d7982",
   :review-state :pending-independent-source-version-review,
-  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :baseline-ref "ff783a0ab1d324bbf9316e7de6b1db55f189e338",
   :authority :current-source-interface-only,
-  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
-  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :baseline-tree "46627ba4a754f934c656c4f67ce65bd5302d1be1",
+  :applying-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
   :kind :authenticated-current-source-file-transition-v1,
-  :document-id "l13-specs-auth-workflow-plan-md-source-interface",
-  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :document-id "std7-std9-specs-auth-workflow-plan-mdsource-interface",
+  :applying-ref "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
   :qualification
-  "Only the complete authenticated L13 source file specs/auth-workflow/plan.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  "Only the complete authenticated STD7-STD9 current-main source file specs/auth-workflow/plan.md is transferred from the frozen ff783 current-source frame to reviewed 4202 source bytes. The 23 library IO criterion/owner joins are bound separately; historical/applying pins, task status and implementation acceptance remain separate and unchanged; this successor confers no migration, implementation or whole-source authority.",
   :baseline-sha256
-  "40b8fa53f98cee5e7939d738f000cbe388fd109d7babc840e16cc6819aa46999",
-  :baseline-blob "6102c9015800502f241a8d4826632abcad674c3b"}
+  "a6a7bea46f4047d878890c34fed6d019bf35633ade613a3ea468e80da3489f3c",
+  :baseline-blob "e8c486581086c204f9c6502766607ea88fc06606"}
  {:role :current-source-interface-proposal,
   :path "specs/auth-workflow/tasks.md",
   :changed-spans
-  [{:id "908/specs/auth-workflow/tasks.md",
+  [{:id "STD7-STD9/specs/auth-workflow/tasks.md",
     :kind :complete-file-transition,
     :before
-    {:start-byte 0,
-     :end-byte 37340,
-     :start-line 1,
-     :end-line 205,
-     :sha256
-     "d0cada75bab244e76d0985a7d22b0cc64c25f8f26625edfe1e61df8ca1a7f9e2"},
-    :after
     {:start-byte 0,
      :end-byte 46095,
      :start-line 1,
      :end-line 314,
      :sha256
-     "18f664d1dd9a19451d4d78cce3563af5f0765aeb0a67957a75b4fac1bdb19d13"}}],
-  :live-sha256
-  "18f664d1dd9a19451d4d78cce3563af5f0765aeb0a67957a75b4fac1bdb19d13",
-  :applying-blob "dbb688ec44230c84fa95c35588330d89578cd3c3",
-  :review-state :pending-independent-source-version-review,
-  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
-  :authority :current-source-interface-only,
-  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
-  :applying-tree "8fcfe6ebbb0700a8706fd9451f5219ab611ce874",
-  :kind :authenticated-current-source-file-transition-v1,
-  :document-id "908-specs-auth-workflow-tasks-md-source-interface",
-  :applying-ref "21cecf7e7c47187a3e0b7b5bd00dfd4eab77e7d9",
-  :qualification
-  "Only the complete authenticated composed Auth task file is transferred from the b886 current-source frame to the post-merge 908 checkpoint. It conserves the prior L13 Auth transition and the Main #1160 L9/provider-source additions exactly once; historical/applying pins, task status and implementation acceptance remain separate and unchanged; this successor confers no migration, implementation or whole-source authority.",
-  :baseline-sha256
-  "d0cada75bab244e76d0985a7d22b0cc64c25f8f26625edfe1e61df8ca1a7f9e2",
-  :baseline-blob "c6bee617c100cebc8da49c1899c341f540e35393"}
- {:role :current-source-interface-proposal,
-  :path "specs/auth-workflow/evidence.md",
-  :changed-spans
-  [{:id "908/specs/auth-workflow/evidence.md",
-    :kind :complete-file-transition,
-    :before
-    {:start-byte 0,
-     :end-byte 8156,
-     :start-line 1,
-     :end-line 128,
-     :sha256
-     "ba3447b29a9bda52705d9798bf4c45d83554233190f8d526d0f7490e092c714d"},
+     "18f664d1dd9a19451d4d78cce3563af5f0765aeb0a67957a75b4fac1bdb19d13"},
     :after
     {:start-byte 0,
-     :end-byte 17643,
+     :end-byte 47520,
      :start-line 1,
-     :end-line 307,
+     :end-line 323,
      :sha256
-     "1c9f04c5f7c7d74977986ba882ea393edf6461c1bc042d75d0da615e3b35442e"}}],
-  :live-sha256 "1c9f04c5f7c7d74977986ba882ea393edf6461c1bc042d75d0da615e3b35442e",
-  :applying-blob "22618dc8d441c9ed5cfd33e32b2a48b6a9a7b434",
+     "463a28e0e08739a4a2df2dab39293eea2a6d4ca3001a715d58c4f0b5f6e66f44"}}],
+  :live-sha256
+  "463a28e0e08739a4a2df2dab39293eea2a6d4ca3001a715d58c4f0b5f6e66f44",
+  :applying-blob "84d18fb7d43f9bfaa16bbc07609c10dcf2addfbf",
   :review-state :pending-independent-source-version-review,
-  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :baseline-ref "ff783a0ab1d324bbf9316e7de6b1db55f189e338",
   :authority :current-source-interface-only,
-  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
-  :applying-tree "8fcfe6ebbb0700a8706fd9451f5219ab611ce874",
+  :baseline-tree "46627ba4a754f934c656c4f67ce65bd5302d1be1",
+  :applying-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
   :kind :authenticated-current-source-file-transition-v1,
-  :document-id "908-specs-auth-workflow-evidence-md-source-interface",
-  :applying-ref "21cecf7e7c47187a3e0b7b5bd00dfd4eab77e7d9",
+  :document-id
+  "std7-std9-specs-auth-workflow-tasks-mdsource-interface",
+  :applying-ref "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
   :qualification
-  "Only the complete authenticated composed Auth evidence file is transferred from the b886 current-source frame to the post-merge 908 checkpoint. Evidence bytes remain source/interface provenance; implementation, provider execution and acceptance authority remain separate and unassessed.",
+  "Only the complete authenticated STD7-STD9 current-main source file specs/auth-workflow/tasks.md is transferred from the frozen ff783 current-source frame to reviewed 4202 source bytes. The 23 library IO criterion/owner joins are bound separately; historical/applying pins, task status and implementation acceptance remain separate and unchanged; this successor confers no migration, implementation or whole-source authority.",
   :baseline-sha256
-  "ba3447b29a9bda52705d9798bf4c45d83554233190f8d526d0f7490e092c714d",
-  :baseline-blob "30378108773dffce6486d5b38f2dbceff52f8785"}
+  "18f664d1dd9a19451d4d78cce3563af5f0765aeb0a67957a75b4fac1bdb19d13",
+  :baseline-blob "dbb688ec44230c84fa95c35588330d89578cd3c3"}
  {:role :current-source-interface-proposal,
   :path "specs/build-workflow/plan.md",
   :changed-spans
-  [{:id "L13/specs/build-workflow/plan.md",
+  [{:id "STD7-STD9/specs/build-workflow/plan.md",
     :kind :complete-file-transition,
     :before
-    {:start-byte 0,
-     :end-byte 31429,
-     :start-line 1,
-     :end-line 324,
-     :sha256
-     "53c04cef6f0f9835d7b1a7c07e60039033ad684d8da783073c27791d6d4748f5"},
-    :after
     {:start-byte 0,
      :end-byte 32078,
      :start-line 1,
      :end-line 331,
      :sha256
-     "bdaee4de655e07164652b2f9592a3038f65b48a57f848abe648adc8ac9d4af4f"}}],
+     "bdaee4de655e07164652b2f9592a3038f65b48a57f848abe648adc8ac9d4af4f"},
+    :after
+    {:start-byte 0,
+     :end-byte 32904,
+     :start-line 1,
+     :end-line 337,
+     :sha256
+     "0730f26d501836790078a190b04d868781c1b0044542ad13b1e110587524b293"}}],
   :live-sha256
-  "bdaee4de655e07164652b2f9592a3038f65b48a57f848abe648adc8ac9d4af4f",
-  :applying-blob "58913132545af334181d7a642dd968eec0febd65",
+  "0730f26d501836790078a190b04d868781c1b0044542ad13b1e110587524b293",
+  :applying-blob "8cd7c8095b1df6358e53dad42b2a871255191d89",
   :review-state :pending-independent-source-version-review,
-  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :baseline-ref "ff783a0ab1d324bbf9316e7de6b1db55f189e338",
   :authority :current-source-interface-only,
-  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
-  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :baseline-tree "46627ba4a754f934c656c4f67ce65bd5302d1be1",
+  :applying-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
   :kind :authenticated-current-source-file-transition-v1,
-  :document-id "l13-specs-build-workflow-plan-md-source-interface",
-  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :document-id
+  "std7-std9-specs-build-workflow-plan-mdsource-interface",
+  :applying-ref "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
   :qualification
-  "Only the complete authenticated L13 source file specs/build-workflow/plan.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  "Only the complete authenticated STD7-STD9 current-main source file specs/build-workflow/plan.md is transferred from the frozen ff783 current-source frame to reviewed 4202 source bytes. The 23 library IO criterion/owner joins are bound separately; historical/applying pins, task status and implementation acceptance remain separate and unchanged; this successor confers no migration, implementation or whole-source authority.",
   :baseline-sha256
-  "53c04cef6f0f9835d7b1a7c07e60039033ad684d8da783073c27791d6d4748f5",
-  :baseline-blob "1aabad4df6496b4d1cf948d80d22ef899b6a2be8"}
+  "bdaee4de655e07164652b2f9592a3038f65b48a57f848abe648adc8ac9d4af4f",
+  :baseline-blob "58913132545af334181d7a642dd968eec0febd65"}
  {:role :current-source-interface-proposal,
   :path "specs/compiler-api-workflow/plan.md",
   :changed-spans
@@ -22189,108 +22898,111 @@
  {:role :current-source-interface-proposal,
   :path "specs/effects-workflow/plan.md",
   :changed-spans
-  [{:id "L13/specs/effects-workflow/plan.md",
+  [{:id "STD7-STD9/specs/effects-workflow/plan.md",
     :kind :complete-file-transition,
     :before
-    {:start-byte 0,
-     :end-byte 44810,
-     :start-line 1,
-     :end-line 503,
-     :sha256
-     "0364c080cc8f141e7d4b33e8a7042763663539a84a06817c62a8adf3532e6005"},
-    :after
     {:start-byte 0,
      :end-byte 45410,
      :start-line 1,
      :end-line 510,
      :sha256
-     "3f086260dfdda82e4fd7a8dc06b11328fa713318a4e954cd87a5290019951ecf"}}],
+     "3f086260dfdda82e4fd7a8dc06b11328fa713318a4e954cd87a5290019951ecf"},
+    :after
+    {:start-byte 0,
+     :end-byte 46179,
+     :start-line 1,
+     :end-line 516,
+     :sha256
+     "806e80fc1849c54493d2db8b44e399ca05816415f5c27205dc7f6b820acd5d6a"}}],
   :live-sha256
-  "3f086260dfdda82e4fd7a8dc06b11328fa713318a4e954cd87a5290019951ecf",
-  :applying-blob "0f1c2d796f322f451c999c6b429a66374ce566e7",
+  "806e80fc1849c54493d2db8b44e399ca05816415f5c27205dc7f6b820acd5d6a",
+  :applying-blob "8d9cb8a65e81ec6370d14677fa5d93799870c55b",
   :review-state :pending-independent-source-version-review,
-  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :baseline-ref "ff783a0ab1d324bbf9316e7de6b1db55f189e338",
   :authority :current-source-interface-only,
-  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
-  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :baseline-tree "46627ba4a754f934c656c4f67ce65bd5302d1be1",
+  :applying-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
   :kind :authenticated-current-source-file-transition-v1,
-  :document-id "l13-specs-effects-workflow-plan-md-source-interface",
-  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :document-id
+  "std7-std9-specs-effects-workflow-plan-mdsource-interface",
+  :applying-ref "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
   :qualification
-  "Only the complete authenticated L13 source file specs/effects-workflow/plan.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  "Only the complete authenticated STD7-STD9 current-main source file specs/effects-workflow/plan.md is transferred from the frozen ff783 current-source frame to reviewed 4202 source bytes. The 23 library IO criterion/owner joins are bound separately; historical/applying pins, task status and implementation acceptance remain separate and unchanged; this successor confers no migration, implementation or whole-source authority.",
   :baseline-sha256
-  "0364c080cc8f141e7d4b33e8a7042763663539a84a06817c62a8adf3532e6005",
-  :baseline-blob "82b8db0ca49c7f78edb0a2738a45e448de4cbbc6"}
+  "3f086260dfdda82e4fd7a8dc06b11328fa713318a4e954cd87a5290019951ecf",
+  :baseline-blob "0f1c2d796f322f451c999c6b429a66374ce566e7"}
  {:role :current-source-interface-proposal,
   :path "specs/effects-workflow/tasks.md",
   :changed-spans
-  [{:id "L13/specs/effects-workflow/tasks.md",
+  [{:id "STD7-STD9/specs/effects-workflow/tasks.md",
     :kind :complete-file-transition,
     :before
-    {:start-byte 0,
-     :end-byte 32799,
-     :start-line 1,
-     :end-line 236,
-     :sha256
-     "753a8a59e29deccfee5b4b141a2114f280fc52c3d618527027e0bcf89392fd52"},
-    :after
     {:start-byte 0,
      :end-byte 34088,
      :start-line 1,
      :end-line 244,
      :sha256
-     "59aeac1148be9e492462c0834008e62a0d980954a96d1e3b7889936af7bd4913"}}],
+     "59aeac1148be9e492462c0834008e62a0d980954a96d1e3b7889936af7bd4913"},
+    :after
+    {:start-byte 0,
+     :end-byte 35538,
+     :start-line 1,
+     :end-line 253,
+     :sha256
+     "f5f6ca1571e0cbe0614ed304231c7f4a6fb39fc1ca0a158b89d364700be2ffcc"}}],
   :live-sha256
-  "59aeac1148be9e492462c0834008e62a0d980954a96d1e3b7889936af7bd4913",
-  :applying-blob "7b855d0e04658fe5392239523ac0486a1a1e2b9c",
+  "f5f6ca1571e0cbe0614ed304231c7f4a6fb39fc1ca0a158b89d364700be2ffcc",
+  :applying-blob "af17e2b63564685d400a4de4663e7f195dc9d7fb",
   :review-state :pending-independent-source-version-review,
-  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :baseline-ref "ff783a0ab1d324bbf9316e7de6b1db55f189e338",
   :authority :current-source-interface-only,
-  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
-  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :baseline-tree "46627ba4a754f934c656c4f67ce65bd5302d1be1",
+  :applying-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
   :kind :authenticated-current-source-file-transition-v1,
-  :document-id "l13-specs-effects-workflow-tasks-md-source-interface",
-  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :document-id
+  "std7-std9-specs-effects-workflow-tasks-mdsource-interface",
+  :applying-ref "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
   :qualification
-  "Only the complete authenticated L13 source file specs/effects-workflow/tasks.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  "Only the complete authenticated STD7-STD9 current-main source file specs/effects-workflow/tasks.md is transferred from the frozen ff783 current-source frame to reviewed 4202 source bytes. The 23 library IO criterion/owner joins are bound separately; historical/applying pins, task status and implementation acceptance remain separate and unchanged; this successor confers no migration, implementation or whole-source authority.",
   :baseline-sha256
-  "753a8a59e29deccfee5b4b141a2114f280fc52c3d618527027e0bcf89392fd52",
-  :baseline-blob "a0b9c482bca84847ed46cdfa015610889a6ad290"}
+  "59aeac1148be9e492462c0834008e62a0d980954a96d1e3b7889936af7bd4913",
+  :baseline-blob "7b855d0e04658fe5392239523ac0486a1a1e2b9c"}
  {:role :current-source-interface-proposal,
   :path "specs/evolution-workflow/plan.md",
   :changed-spans
-  [{:id "L13/specs/evolution-workflow/plan.md",
+  [{:id "STD7-STD9/specs/evolution-workflow/plan.md",
     :kind :complete-file-transition,
     :before
-    {:start-byte 0,
-     :end-byte 17632,
-     :start-line 1,
-     :end-line 190,
-     :sha256
-     "2b10c83aee87ffcc1a8a858c8c3cb57cf8b100f8773b5629abce85265753db56"},
-    :after
     {:start-byte 0,
      :end-byte 18234,
      :start-line 1,
      :end-line 196,
      :sha256
-     "f7ed753974edbba8b8b5b51244a24acb265ac03c7d5f6d8a8c473aa37a389182"}}],
+     "f7ed753974edbba8b8b5b51244a24acb265ac03c7d5f6d8a8c473aa37a389182"},
+    :after
+    {:start-byte 0,
+     :end-byte 19015,
+     :start-line 1,
+     :end-line 202,
+     :sha256
+     "512317e26137900be02c78dcce2192cf1e2acda1bedc5cf1cb30c1eb717b2bcb"}}],
   :live-sha256
-  "f7ed753974edbba8b8b5b51244a24acb265ac03c7d5f6d8a8c473aa37a389182",
-  :applying-blob "b07fc872f2516ea3b7cf247660cdf5d2a54073d3",
+  "512317e26137900be02c78dcce2192cf1e2acda1bedc5cf1cb30c1eb717b2bcb",
+  :applying-blob "c663c174e057fec2be2b1d414959e4e2378cd38a",
   :review-state :pending-independent-source-version-review,
-  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :baseline-ref "ff783a0ab1d324bbf9316e7de6b1db55f189e338",
   :authority :current-source-interface-only,
-  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
-  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :baseline-tree "46627ba4a754f934c656c4f67ce65bd5302d1be1",
+  :applying-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
   :kind :authenticated-current-source-file-transition-v1,
-  :document-id "l13-specs-evolution-workflow-plan-md-source-interface",
-  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :document-id
+  "std7-std9-specs-evolution-workflow-plan-mdsource-interface",
+  :applying-ref "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
   :qualification
-  "Only the complete authenticated L13 source file specs/evolution-workflow/plan.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  "Only the complete authenticated STD7-STD9 current-main source file specs/evolution-workflow/plan.md is transferred from the frozen ff783 current-source frame to reviewed 4202 source bytes. The 23 library IO criterion/owner joins are bound separately; historical/applying pins, task status and implementation acceptance remain separate and unchanged; this successor confers no migration, implementation or whole-source authority.",
   :baseline-sha256
-  "2b10c83aee87ffcc1a8a858c8c3cb57cf8b100f8773b5629abce85265753db56",
-  :baseline-blob "68552848d86e8b6f93d31a5049197daa5cbb390b"}
+  "f7ed753974edbba8b8b5b51244a24acb265ac03c7d5f6d8a8c473aa37a389182",
+  :baseline-blob "b07fc872f2516ea3b7cf247660cdf5d2a54073d3"}
  {:role :current-source-interface-proposal,
   :path "specs/expand-workflow/plan.md",
   :changed-spans
@@ -22329,38 +23041,39 @@
  {:role :current-source-interface-proposal,
   :path "specs/legality-workflow/plan.md",
   :changed-spans
-  [{:id "L13/specs/legality-workflow/plan.md",
+  [{:id "STD7-STD9/specs/legality-workflow/plan.md",
     :kind :complete-file-transition,
     :before
-    {:start-byte 0,
-     :end-byte 92271,
-     :start-line 1,
-     :end-line 1032,
-     :sha256
-     "347a9d2d863700faaf97a2a6c913fc841854700dab4a513a031cb5aeb9bcbb6d"},
-    :after
     {:start-byte 0,
      :end-byte 92851,
      :start-line 1,
      :end-line 1039,
      :sha256
-     "0a2fef2e6cd2cb4c8d008726be5c9c2c9e2b6dd7f7fc0ca0cf712d73bbde3392"}}],
+     "0a2fef2e6cd2cb4c8d008726be5c9c2c9e2b6dd7f7fc0ca0cf712d73bbde3392"},
+    :after
+    {:start-byte 0,
+     :end-byte 93672,
+     :start-line 1,
+     :end-line 1045,
+     :sha256
+     "be3665dfc93e9dd690113afbddab5d28cb8133fe39902a6db30ec92cbff27184"}}],
   :live-sha256
-  "0a2fef2e6cd2cb4c8d008726be5c9c2c9e2b6dd7f7fc0ca0cf712d73bbde3392",
-  :applying-blob "1cd71fc26d5fb575e6218f2428fe47ae95371b2f",
+  "be3665dfc93e9dd690113afbddab5d28cb8133fe39902a6db30ec92cbff27184",
+  :applying-blob "f58cbb60d67f1d435e9b6cd51c387eac82252cb9",
   :review-state :pending-independent-source-version-review,
-  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :baseline-ref "ff783a0ab1d324bbf9316e7de6b1db55f189e338",
   :authority :current-source-interface-only,
-  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
-  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :baseline-tree "46627ba4a754f934c656c4f67ce65bd5302d1be1",
+  :applying-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
   :kind :authenticated-current-source-file-transition-v1,
-  :document-id "l13-specs-legality-workflow-plan-md-source-interface",
-  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :document-id
+  "std7-std9-specs-legality-workflow-plan-mdsource-interface",
+  :applying-ref "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
   :qualification
-  "Only the complete authenticated L13 source file specs/legality-workflow/plan.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  "Only the complete authenticated STD7-STD9 current-main source file specs/legality-workflow/plan.md is transferred from the frozen ff783 current-source frame to reviewed 4202 source bytes. The 23 library IO criterion/owner joins are bound separately; historical/applying pins, task status and implementation acceptance remain separate and unchanged; this successor confers no migration, implementation or whole-source authority.",
   :baseline-sha256
-  "347a9d2d863700faaf97a2a6c913fc841854700dab4a513a031cb5aeb9bcbb6d",
-  :baseline-blob "153b922cce858ca37492aa72572e834b6065ccc3"}
+  "0a2fef2e6cd2cb4c8d008726be5c9c2c9e2b6dd7f7fc0ca0cf712d73bbde3392",
+  :baseline-blob "1cd71fc26d5fb575e6218f2428fe47ae95371b2f"}
  {:role :current-source-interface-proposal,
   :path "specs/legality-workflow/tasks.md",
   :changed-spans
@@ -22399,38 +23112,38 @@
  {:role :current-source-interface-proposal,
   :path "specs/opt-workflow/plan.md",
   :changed-spans
-  [{:id "L13/specs/opt-workflow/plan.md",
+  [{:id "STD7-STD9/specs/opt-workflow/plan.md",
     :kind :complete-file-transition,
     :before
-    {:start-byte 0,
-     :end-byte 21102,
-     :start-line 1,
-     :end-line 233,
-     :sha256
-     "c3a25ee646489793dffa2c750ea28b0619d3ead4bc63cd71e85b040539aa7c42"},
-    :after
     {:start-byte 0,
      :end-byte 21715,
      :start-line 1,
      :end-line 240,
      :sha256
-     "6c9ef876e8290819dd034ea60a94be54c723c74391aabc4b13e6c53bb9935910"}}],
+     "6c9ef876e8290819dd034ea60a94be54c723c74391aabc4b13e6c53bb9935910"},
+    :after
+    {:start-byte 0,
+     :end-byte 22536,
+     :start-line 1,
+     :end-line 246,
+     :sha256
+     "6c212448498ec8206939e359d312b8a104577783577a3ea33676e9d50fb4f7a9"}}],
   :live-sha256
-  "6c9ef876e8290819dd034ea60a94be54c723c74391aabc4b13e6c53bb9935910",
-  :applying-blob "9d04daad2cee4387cef1efb6836bee11d48aeebd",
+  "6c212448498ec8206939e359d312b8a104577783577a3ea33676e9d50fb4f7a9",
+  :applying-blob "43c4f62b3065350a9f648628fe6221c70d1293ab",
   :review-state :pending-independent-source-version-review,
-  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :baseline-ref "ff783a0ab1d324bbf9316e7de6b1db55f189e338",
   :authority :current-source-interface-only,
-  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
-  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :baseline-tree "46627ba4a754f934c656c4f67ce65bd5302d1be1",
+  :applying-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
   :kind :authenticated-current-source-file-transition-v1,
-  :document-id "l13-specs-opt-workflow-plan-md-source-interface",
-  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :document-id "std7-std9-specs-opt-workflow-plan-mdsource-interface",
+  :applying-ref "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
   :qualification
-  "Only the complete authenticated L13 source file specs/opt-workflow/plan.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  "Only the complete authenticated STD7-STD9 current-main source file specs/opt-workflow/plan.md is transferred from the frozen ff783 current-source frame to reviewed 4202 source bytes. The 23 library IO criterion/owner joins are bound separately; historical/applying pins, task status and implementation acceptance remain separate and unchanged; this successor confers no migration, implementation or whole-source authority.",
   :baseline-sha256
-  "c3a25ee646489793dffa2c750ea28b0619d3ead4bc63cd71e85b040539aa7c42",
-  :baseline-blob "40fa4b9294b5e33e86d5a3dcce36f2186136979f"}
+  "6c9ef876e8290819dd034ea60a94be54c723c74391aabc4b13e6c53bb9935910",
+  :baseline-blob "9d04daad2cee4387cef1efb6836bee11d48aeebd"}
  {:role :current-source-interface-proposal,
   :path "specs/opt-workflow/tasks.md",
   :changed-spans
@@ -22469,38 +23182,39 @@
  {:role :current-source-interface-proposal,
   :path "specs/release-workflow/plan.md",
   :changed-spans
-  [{:id "L13/specs/release-workflow/plan.md",
+  [{:id "STD7-STD9/specs/release-workflow/plan.md",
     :kind :complete-file-transition,
     :before
-    {:start-byte 0,
-     :end-byte 35941,
-     :start-line 1,
-     :end-line 390,
-     :sha256
-     "1fe02987c27cf42ebf7190b929551664de91b652ea8208c10aa4a8b60ec55f42"},
-    :after
     {:start-byte 0,
      :end-byte 36577,
      :start-line 1,
      :end-line 397,
      :sha256
-     "587d5a98bbfdf42c90b655e133f1310d1d7591c940fe6c3dd00d03ac87a5cc2a"}}],
+     "587d5a98bbfdf42c90b655e133f1310d1d7591c940fe6c3dd00d03ac87a5cc2a"},
+    :after
+    {:start-byte 0,
+     :end-byte 37441,
+     :start-line 1,
+     :end-line 403,
+     :sha256
+     "858a49b3088bda01ddbf28a548616ac93b408b98ba8d5d784b095cb6d6322a20"}}],
   :live-sha256
-  "587d5a98bbfdf42c90b655e133f1310d1d7591c940fe6c3dd00d03ac87a5cc2a",
-  :applying-blob "92ed8a4228d0a280167597c9575b3e483892ad17",
+  "858a49b3088bda01ddbf28a548616ac93b408b98ba8d5d784b095cb6d6322a20",
+  :applying-blob "6600ed16b640f06e735cf4740a62ce21201b142b",
   :review-state :pending-independent-source-version-review,
-  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :baseline-ref "ff783a0ab1d324bbf9316e7de6b1db55f189e338",
   :authority :current-source-interface-only,
-  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
-  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :baseline-tree "46627ba4a754f934c656c4f67ce65bd5302d1be1",
+  :applying-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
   :kind :authenticated-current-source-file-transition-v1,
-  :document-id "l13-specs-release-workflow-plan-md-source-interface",
-  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :document-id
+  "std7-std9-specs-release-workflow-plan-mdsource-interface",
+  :applying-ref "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
   :qualification
-  "Only the complete authenticated L13 source file specs/release-workflow/plan.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  "Only the complete authenticated STD7-STD9 current-main source file specs/release-workflow/plan.md is transferred from the frozen ff783 current-source frame to reviewed 4202 source bytes. The 23 library IO criterion/owner joins are bound separately; historical/applying pins, task status and implementation acceptance remain separate and unchanged; this successor confers no migration, implementation or whole-source authority.",
   :baseline-sha256
-  "1fe02987c27cf42ebf7190b929551664de91b652ea8208c10aa4a8b60ec55f42",
-  :baseline-blob "8083d042621a2ed298a33a688ff287478e33da76"}
+  "587d5a98bbfdf42c90b655e133f1310d1d7591c940fe6c3dd00d03ac87a5cc2a",
+  :baseline-blob "92ed8a4228d0a280167597c9575b3e483892ad17"}
  {:role :current-source-interface-proposal,
   :path "specs/resolve-workflow/plan.md",
   :changed-spans
@@ -22574,143 +23288,147 @@
  {:role :current-source-interface-proposal,
   :path "specs/stdlib-workflow/plan.md",
   :changed-spans
-  [{:id "L13/specs/stdlib-workflow/plan.md",
+  [{:id "STD7-STD9/specs/stdlib-workflow/plan.md",
     :kind :complete-file-transition,
     :before
-    {:start-byte 0,
-     :end-byte 27646,
-     :start-line 1,
-     :end-line 238,
-     :sha256
-     "e6f1cb158fc406ebb6cb4b506a8a81a68192ff62f7e89abf08c65f0c90c62ef5"},
-    :after
     {:start-byte 0,
      :end-byte 37921,
      :start-line 1,
      :end-line 288,
      :sha256
-     "734c723398c8e42946633d32ed32ecf99daf4e22b029b14732cf08c7986399f8"}}],
+     "734c723398c8e42946633d32ed32ecf99daf4e22b029b14732cf08c7986399f8"},
+    :after
+    {:start-byte 0,
+     :end-byte 78724,
+     :start-line 1,
+     :end-line 360,
+     :sha256
+     "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a"}}],
   :live-sha256
-  "734c723398c8e42946633d32ed32ecf99daf4e22b029b14732cf08c7986399f8",
-  :applying-blob "c960d1a487d87eaebf774512bfb39e0ed5302d69",
+  "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a",
+  :applying-blob "4d7521645cd41846736b7c522979e8838d6aa641",
   :review-state :pending-independent-source-version-review,
-  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :baseline-ref "ff783a0ab1d324bbf9316e7de6b1db55f189e338",
   :authority :current-source-interface-only,
-  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
-  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :baseline-tree "46627ba4a754f934c656c4f67ce65bd5302d1be1",
+  :applying-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
   :kind :authenticated-current-source-file-transition-v1,
-  :document-id "l13-specs-stdlib-workflow-plan-md-source-interface",
-  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :document-id
+  "std7-std9-specs-stdlib-workflow-plan-mdsource-interface",
+  :applying-ref "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
   :qualification
-  "Only the complete authenticated L13 source file specs/stdlib-workflow/plan.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  "Only the complete authenticated STD7-STD9 current-main source file specs/stdlib-workflow/plan.md is transferred from the frozen ff783 current-source frame to reviewed 4202 source bytes. The 23 library IO criterion/owner joins are bound separately; historical/applying pins, task status and implementation acceptance remain separate and unchanged; this successor confers no migration, implementation or whole-source authority.",
   :baseline-sha256
-  "e6f1cb158fc406ebb6cb4b506a8a81a68192ff62f7e89abf08c65f0c90c62ef5",
-  :baseline-blob "f6036c3d503c7efe73132c63451e9ab607526762"}
+  "734c723398c8e42946633d32ed32ecf99daf4e22b029b14732cf08c7986399f8",
+  :baseline-blob "c960d1a487d87eaebf774512bfb39e0ed5302d69"}
  {:role :current-source-interface-proposal,
   :path "specs/stdlib-workflow/spec.md",
   :changed-spans
-  [{:id "L13/specs/stdlib-workflow/spec.md",
+  [{:id "STD7-STD9/specs/stdlib-workflow/spec.md",
     :kind :complete-file-transition,
     :before
-    {:start-byte 0,
-     :end-byte 14135,
-     :start-line 1,
-     :end-line 138,
-     :sha256
-     "6e408abbd3dc98601395b50858addd16cdb6da71d009a2e1be154ee5e43e1057"},
-    :after
     {:start-byte 0,
      :end-byte 14689,
      :start-line 1,
      :end-line 140,
      :sha256
-     "aadd79b14a6e1312bd225421d1b59f24f3da27371fcfd744c5fc31b43da4f232"}}],
+     "aadd79b14a6e1312bd225421d1b59f24f3da27371fcfd744c5fc31b43da4f232"},
+    :after
+    {:start-byte 0,
+     :end-byte 15425,
+     :start-line 1,
+     :end-line 142,
+     :sha256
+     "8f58c18d6f9613a6d2fbf3d4547a3aa73c9c91ac7dda4ecc574406ab43a795eb"}}],
   :live-sha256
-  "aadd79b14a6e1312bd225421d1b59f24f3da27371fcfd744c5fc31b43da4f232",
-  :applying-blob "8107efb4c0d1d448867accc9104b06e2d824c2b8",
+  "8f58c18d6f9613a6d2fbf3d4547a3aa73c9c91ac7dda4ecc574406ab43a795eb",
+  :applying-blob "9edc8a8e9918c31f10e706c857aabd059af27d4e",
   :review-state :pending-independent-source-version-review,
-  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :baseline-ref "ff783a0ab1d324bbf9316e7de6b1db55f189e338",
   :authority :current-source-interface-only,
-  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
-  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :baseline-tree "46627ba4a754f934c656c4f67ce65bd5302d1be1",
+  :applying-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
   :kind :authenticated-current-source-file-transition-v1,
-  :document-id "l13-specs-stdlib-workflow-spec-md-source-interface",
-  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :document-id
+  "std7-std9-specs-stdlib-workflow-spec-mdsource-interface",
+  :applying-ref "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
   :qualification
-  "Only the complete authenticated L13 source file specs/stdlib-workflow/spec.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  "Only the complete authenticated STD7-STD9 current-main source file specs/stdlib-workflow/spec.md is transferred from the frozen ff783 current-source frame to reviewed 4202 source bytes. The 23 library IO criterion/owner joins are bound separately; historical/applying pins, task status and implementation acceptance remain separate and unchanged; this successor confers no migration, implementation or whole-source authority.",
   :baseline-sha256
-  "6e408abbd3dc98601395b50858addd16cdb6da71d009a2e1be154ee5e43e1057",
-  :baseline-blob "4bf6511ce08722c07fa25a0fb18e54ab4f1f17a2"}
+  "aadd79b14a6e1312bd225421d1b59f24f3da27371fcfd744c5fc31b43da4f232",
+  :baseline-blob "8107efb4c0d1d448867accc9104b06e2d824c2b8"}
  {:role :current-source-interface-proposal,
   :path "specs/stdlib-workflow/tasks.md",
   :changed-spans
-  [{:id "L13/specs/stdlib-workflow/tasks.md",
+  [{:id "STD7-STD9/specs/stdlib-workflow/tasks.md",
     :kind :complete-file-transition,
     :before
-    {:start-byte 0,
-     :end-byte 16965,
-     :start-line 1,
-     :end-line 133,
-     :sha256
-     "3c863b16b7798f72aa50b9297ed126c044d7357b7002bc0ef789d65fba261055"},
-    :after
     {:start-byte 0,
      :end-byte 38854,
      :start-line 1,
      :end-line 276,
      :sha256
-     "ecbf84050a1c0bec21ab3a83fbbe3ed7e55d67fd8a08fff42fdbaccfaed01bcb"}}],
+     "ecbf84050a1c0bec21ab3a83fbbe3ed7e55d67fd8a08fff42fdbaccfaed01bcb"},
+    :after
+    {:start-byte 0,
+     :end-byte 62664,
+     :start-line 1,
+     :end-line 429,
+     :sha256
+     "1411bbbea82f3aa7cbd70bb730e6118990f915613504880db14d538a13f5ffed"}}],
   :live-sha256
-  "ecbf84050a1c0bec21ab3a83fbbe3ed7e55d67fd8a08fff42fdbaccfaed01bcb",
-  :applying-blob "e2933a343359c2032086e34c996d02393e86b355",
+  "1411bbbea82f3aa7cbd70bb730e6118990f915613504880db14d538a13f5ffed",
+  :applying-blob "f11c09c5b94e3cd74680ac49ef210e07c6558171",
   :review-state :pending-independent-source-version-review,
-  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :baseline-ref "ff783a0ab1d324bbf9316e7de6b1db55f189e338",
   :authority :current-source-interface-only,
-  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
-  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :baseline-tree "46627ba4a754f934c656c4f67ce65bd5302d1be1",
+  :applying-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
   :kind :authenticated-current-source-file-transition-v1,
-  :document-id "l13-specs-stdlib-workflow-tasks-md-source-interface",
-  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :document-id
+  "std7-std9-specs-stdlib-workflow-tasks-mdsource-interface",
+  :applying-ref "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
   :qualification
-  "Only the complete authenticated L13 source file specs/stdlib-workflow/tasks.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  "Only the complete authenticated STD7-STD9 current-main source file specs/stdlib-workflow/tasks.md is transferred from the frozen ff783 current-source frame to reviewed 4202 source bytes. The 23 library IO criterion/owner joins are bound separately; historical/applying pins, task status and implementation acceptance remain separate and unchanged; this successor confers no migration, implementation or whole-source authority.",
   :baseline-sha256
-  "3c863b16b7798f72aa50b9297ed126c044d7357b7002bc0ef789d65fba261055",
-  :baseline-blob "256b28deeca97929fe7240c1b8672ce42dbf3d2a"}
+  "ecbf84050a1c0bec21ab3a83fbbe3ed7e55d67fd8a08fff42fdbaccfaed01bcb",
+  :baseline-blob "e2933a343359c2032086e34c996d02393e86b355"}
  {:role :current-source-interface-proposal,
   :path "specs/types-workflow/plan.md",
   :changed-spans
-  [{:id "L13/specs/types-workflow/plan.md",
+  [{:id "STD7-STD9/specs/types-workflow/plan.md",
     :kind :complete-file-transition,
     :before
-    {:start-byte 0,
-     :end-byte 52460,
-     :start-line 1,
-     :end-line 357,
-     :sha256
-     "cc0b0038c6f0b7849ca37bf8f682bdd63f24c272f7cd2ffa60e05bc5c9c8baf8"},
-    :after
     {:start-byte 0,
      :end-byte 53049,
      :start-line 1,
      :end-line 364,
      :sha256
-     "b586691e2a0e437de9abba206f21aa799286994741d60cd6b3b1f3f4b65e0827"}}],
+     "b586691e2a0e437de9abba206f21aa799286994741d60cd6b3b1f3f4b65e0827"},
+    :after
+    {:start-byte 0,
+     :end-byte 53774,
+     :start-line 1,
+     :end-line 370,
+     :sha256
+     "6ce077533df0984f74f12dc3e2bfab0560a7ee9955ee8e7a58b3c987b293bc48"}}],
   :live-sha256
-  "b586691e2a0e437de9abba206f21aa799286994741d60cd6b3b1f3f4b65e0827",
-  :applying-blob "d3f15f60e2886d993275db9a9871c6d8466c5158",
+  "6ce077533df0984f74f12dc3e2bfab0560a7ee9955ee8e7a58b3c987b293bc48",
+  :applying-blob "364c6948e76a89a76998960a93fd032ec66dd209",
   :review-state :pending-independent-source-version-review,
-  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :baseline-ref "ff783a0ab1d324bbf9316e7de6b1db55f189e338",
   :authority :current-source-interface-only,
-  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
-  :applying-tree "3f2115bfbf04abda8aec36b6a8edee5f5b72e9f5",
+  :baseline-tree "46627ba4a754f934c656c4f67ce65bd5302d1be1",
+  :applying-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
   :kind :authenticated-current-source-file-transition-v1,
-  :document-id "l13-specs-types-workflow-plan-md-source-interface",
-  :applying-ref "485cfd2c54c6d1a2695cbd7e8e34495fbeb34799",
+  :document-id
+  "std7-std9-specs-types-workflow-plan-mdsource-interface",
+  :applying-ref "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
   :qualification
-  "Only the complete authenticated L13 source file specs/types-workflow/plan.md is transferred from the b886 current-source frame to the reviewed 485 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
+  "Only the complete authenticated STD7-STD9 current-main source file specs/types-workflow/plan.md is transferred from the frozen ff783 current-source frame to reviewed 4202 source bytes. The 23 library IO criterion/owner joins are bound separately; historical/applying pins, task status and implementation acceptance remain separate and unchanged; this successor confers no migration, implementation or whole-source authority.",
   :baseline-sha256
-  "cc0b0038c6f0b7849ca37bf8f682bdd63f24c272f7cd2ffa60e05bc5c9c8baf8",
-  :baseline-blob "8f275c3786fcc52977ef8296fdee10a680fb2f39"}
+  "b586691e2a0e437de9abba206f21aa799286994741d60cd6b3b1f3f4b65e0827",
+  :baseline-blob "d3f15f60e2886d993275db9a9871c6d8466c5158"}
  {:role :current-source-interface-proposal,
   :path "specs/types-workflow/tasks.md",
   :changed-spans
@@ -22780,8 +23498,187 @@
   "Only the complete authenticated L13 source file docs/acceptance-dependencies.md is transferred from the b886 current-source frame to the reviewed f79 source bytes. Historical/applying pins, task status and implementation acceptance remain separate and unchanged; this record confers no migration, implementation or whole-source authority.",
   :baseline-sha256
   "765e1ea7aaec6c263d6bec7e2bbfd0cf71f6238cca5e4b80f65bbc64c0379a94",
-  :baseline-blob "9a31beeaff7e83413085f43826fd55e47e393d7f"}],
- :current-source-transition-history
+  :baseline-blob "9a31beeaff7e83413085f43826fd55e47e393d7f"}
+ {:role :current-source-interface-proposal,
+  :path "specs/auth-workflow/evidence.md",
+  :changed-spans
+  [{:id "908/specs/auth-workflow/evidence.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 8156,
+     :start-line 1,
+     :end-line 128,
+     :sha256
+     "ba3447b29a9bda52705d9798bf4c45d83554233190f8d526d0f7490e092c714d"},
+    :after
+    {:start-byte 0,
+     :end-byte 17643,
+     :start-line 1,
+     :end-line 307,
+     :sha256
+     "1c9f04c5f7c7d74977986ba882ea393edf6461c1bc042d75d0da615e3b35442e"}}],
+  :live-sha256
+  "1c9f04c5f7c7d74977986ba882ea393edf6461c1bc042d75d0da615e3b35442e",
+  :applying-blob "22618dc8d441c9ed5cfd33e32b2a48b6a9a7b434",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "b886fe2599916b1a302e17e02c45eae9ebd8a34d",
+  :authority :current-source-interface-only,
+  :baseline-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7",
+  :applying-tree "8fcfe6ebbb0700a8706fd9451f5219ab611ce874",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id "908-specs-auth-workflow-evidence-md-source-interface",
+  :applying-ref "21cecf7e7c47187a3e0b7b5bd00dfd4eab77e7d9",
+  :qualification
+  "Only the complete authenticated composed Auth evidence file is transferred from the b886 current-source frame to the post-merge 908 checkpoint. Evidence bytes remain source/interface provenance; implementation, provider execution and acceptance authority remain separate and unassessed.",
+  :baseline-sha256
+  "ba3447b29a9bda52705d9798bf4c45d83554233190f8d526d0f7490e092c714d",
+  :baseline-blob "30378108773dffce6486d5b38f2dbceff52f8785"}
+ {:role :current-source-interface-proposal,
+  :path "specs/backends-workflow/plan.md",
+  :changed-spans
+  [{:id "STD7-STD9/specs/backends-workflow/plan.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 12714,
+     :start-line 1,
+     :end-line 165,
+     :sha256
+     "6060dd1fcded73b1f57483d22ced90851f42aa1f3be18855a141a958f23be874"},
+    :after
+    {:start-byte 0,
+     :end-byte 13535,
+     :start-line 1,
+     :end-line 171,
+     :sha256
+     "293af99a5232c4d78114bd7d2cd3ed01601bdcf9c87322e52bdf91ae4fe96bde"}}],
+  :live-sha256
+  "293af99a5232c4d78114bd7d2cd3ed01601bdcf9c87322e52bdf91ae4fe96bde",
+  :applying-blob "31d05140764bfc085faba507888f8724c7a9a1ce",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "ff783a0ab1d324bbf9316e7de6b1db55f189e338",
+  :authority :current-source-interface-only,
+  :baseline-tree "46627ba4a754f934c656c4f67ce65bd5302d1be1",
+  :applying-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id
+  "std7-std9-specs-backends-workflow-plan-mdsource-interface",
+  :applying-ref "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :qualification
+  "Only the complete authenticated STD7-STD9 current-main source file specs/backends-workflow/plan.md is transferred from the frozen ff783 current-source frame to reviewed 4202 source bytes. The 23 library IO criterion/owner joins are bound separately; historical/applying pins, task status and implementation acceptance remain separate and unchanged; this successor confers no migration, implementation or whole-source authority.",
+  :baseline-sha256
+  "6060dd1fcded73b1f57483d22ced90851f42aa1f3be18855a141a958f23be874",
+  :baseline-blob "59e3894d0d1556029007e3dcb93ec9692a03d3a1"}
+ {:role :current-source-interface-proposal,
+  :path "specs/domains-workflow/plan.md",
+  :changed-spans
+  [{:id "STD7-STD9/specs/domains-workflow/plan.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 70968,
+     :start-line 1,
+     :end-line 720,
+     :sha256
+     "30a039613db68aa9a8514b591c87a2ea9ed72a520e781d5458d87582b4595b88"},
+    :after
+    {:start-byte 0,
+     :end-byte 72029,
+     :start-line 1,
+     :end-line 726,
+     :sha256
+     "a326cd5a2bb7420ae519cd58228e6de574e1d604250f4c091060ac0681421db2"}}],
+  :live-sha256
+  "a326cd5a2bb7420ae519cd58228e6de574e1d604250f4c091060ac0681421db2",
+  :applying-blob "2b91cc8bcc75a8b745ff4f047e28ca2450125b8c",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "ff783a0ab1d324bbf9316e7de6b1db55f189e338",
+  :authority :current-source-interface-only,
+  :baseline-tree "46627ba4a754f934c656c4f67ce65bd5302d1be1",
+  :applying-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id
+  "std7-std9-specs-domains-workflow-plan-mdsource-interface",
+  :applying-ref "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :qualification
+  "Only the complete authenticated STD7-STD9 current-main source file specs/domains-workflow/plan.md is transferred from the frozen ff783 current-source frame to reviewed 4202 source bytes. The 23 library IO criterion/owner joins are bound separately; historical/applying pins, task status and implementation acceptance remain separate and unchanged; this successor confers no migration, implementation or whole-source authority.",
+  :baseline-sha256
+  "30a039613db68aa9a8514b591c87a2ea9ed72a520e781d5458d87582b4595b88",
+  :baseline-blob "76eba7e94483dbb4a91309af51092203b5a6e2fd"}
+ {:role :current-source-interface-proposal,
+  :path "specs/runtime-workflow/plan.md",
+  :changed-spans
+  [{:id "STD7-STD9/specs/runtime-workflow/plan.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 23630,
+     :start-line 1,
+     :end-line 234,
+     :sha256
+     "2ff027027462153cda6763476a5cbe2474fada3bf630ca6d27accbf5cd5eff2a"},
+    :after
+    {:start-byte 0,
+     :end-byte 24556,
+     :start-line 1,
+     :end-line 240,
+     :sha256
+     "fa76e1380f17466e8969c905fed55fcf11c3aaaff704ad1e3afec46069f5370c"}}],
+  :live-sha256
+  "fa76e1380f17466e8969c905fed55fcf11c3aaaff704ad1e3afec46069f5370c",
+  :applying-blob "0b680273894589337d1adb8c93d5c0f447006309",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "ff783a0ab1d324bbf9316e7de6b1db55f189e338",
+  :authority :current-source-interface-only,
+  :baseline-tree "46627ba4a754f934c656c4f67ce65bd5302d1be1",
+  :applying-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id
+  "std7-std9-specs-runtime-workflow-plan-mdsource-interface",
+  :applying-ref "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :qualification
+  "Only the complete authenticated STD7-STD9 current-main source file specs/runtime-workflow/plan.md is transferred from the frozen ff783 current-source frame to reviewed 4202 source bytes. The 23 library IO criterion/owner joins are bound separately; historical/applying pins, task status and implementation acceptance remain separate and unchanged; this successor confers no migration, implementation or whole-source authority.",
+  :baseline-sha256
+  "2ff027027462153cda6763476a5cbe2474fada3bf630ca6d27accbf5cd5eff2a",
+  :baseline-blob "a0cf40557be745d5dfe43214b0ebab28eafa8e80"}
+ {:role :current-source-interface-proposal,
+  :path "specs/runtime-workflow/tasks.md",
+  :changed-spans
+  [{:id "STD7-STD9/specs/runtime-workflow/tasks.md",
+    :kind :complete-file-transition,
+    :before
+    {:start-byte 0,
+     :end-byte 63686,
+     :start-line 1,
+     :end-line 339,
+     :sha256
+     "a4dfbe8d903e9051a3a47b2aa22dc9400551314c08423d446f8a1a9f359de3c1"},
+    :after
+    {:start-byte 0,
+     :end-byte 69465,
+     :start-line 1,
+     :end-line 375,
+     :sha256
+     "3f58d9fce0eae45936200e09da8cbc2e4300c097b25b5e85061b7e02684da18c"}}],
+  :live-sha256
+  "3f58d9fce0eae45936200e09da8cbc2e4300c097b25b5e85061b7e02684da18c",
+  :applying-blob "af30d0dff27cd207177e5865cd3e8f1d2ed714a1",
+  :review-state :pending-independent-source-version-review,
+  :baseline-ref "ff783a0ab1d324bbf9316e7de6b1db55f189e338",
+  :authority :current-source-interface-only,
+  :baseline-tree "46627ba4a754f934c656c4f67ce65bd5302d1be1",
+  :applying-tree "3fc8705088dddb2984bd27181ecec3f0b6066883",
+  :kind :authenticated-current-source-file-transition-v1,
+  :document-id
+  "std7-std9-specs-runtime-workflow-tasks-mdsource-interface",
+  :applying-ref "4202c7760b586ec25b9ea69040b6bb8a75ec4919",
+  :qualification
+  "Only the complete authenticated STD7-STD9 current-main source file specs/runtime-workflow/tasks.md is transferred from the frozen ff783 current-source frame to reviewed 4202 source bytes. The 23 library IO criterion/owner joins are bound separately; historical/applying pins, task status and implementation acceptance remain separate and unchanged; this successor confers no migration, implementation or whole-source authority.",
+  :baseline-sha256
+  "a4dfbe8d903e9051a3a47b2aa22dc9400551314c08423d446f8a1a9f359de3c1",
+  :baseline-blob "2a5966e98f4c7e02ec48138932fb51585bf1071b"}]
+:current-source-transition-history
  {:kind :authenticated-current-source-transition-history-v1,
   :record-count 23,
   :predecessor

@@ -288,6 +288,12 @@
 (defn validate-current-source-transitions! [transitions]
   (let [expected (vec requirement-sources/current-source-transition-contracts)
         by-path (fn [xs] (into {} (map (juxt :path identity) xs)))]
+    (requirement-sources/validate-current-source-frame-history!
+     (:current-source-frame-history readiness-source-version)
+     (fn [ref source-path]
+       (git-source ref source-path))
+     sh-inventory/sha256
+     acceptance-dependencies/require!)
     (requirement-sources/validate-current-source-transition-history!
      (:current-source-transition-history readiness-source-version)
      (fn [ref source-path]
@@ -913,7 +919,11 @@
 (def mapping-review
   (assoc readiness-predecessor-mapping-review
          :status :pending-source-version-review
-         :input-fingerprint (:input-fingerprint readiness-source-version)
+         ;; Successor disposition for the authenticated ff783 -> 4202
+         ;; STD7-STD9 source frame.  The prior readiness fingerprint remains
+         ;; in the predecessor review and in the immutable frame-history map.
+         :input-fingerprint "85c554a6cebc44c62194331a2d0e84cbee155c56a59c665f12fd10d2d4ff5db8"
+         :predecessor-input-fingerprint (:input-fingerprint readiness-source-version)
          :source-version-bridge
          "specs/sh-family-crosswalk/implementation-readiness-current-source-version.edn"
          :implementation-readiness-predecessor-review
@@ -922,7 +932,7 @@
                 :historical-source-version
                 "specs/sh-family-crosswalk/implementation-readiness-source-version.edn")
          :qualification
-         "Exact task-source and Governance routing successor, including foundation criteria and Domain/Platform/Release refinements. Original task statuses and predecessor review subjects are preserved. Future Domain, Release and Platform Product records retain pending SH composition. Current source/routing, implementation and whole-SH acceptance remain pending."))
+         "Exact task-source and Governance routing successor, including foundation criteria and Domain/Platform/Release refinements. The STD7-STD9 successor binds 17 complete current-main source files and 23 new criterion/owner joins plus eight carried predicates to 4202. Original task statuses, predecessor source-frame history, pins, digests and review subjects are preserved. Future Domain, Release and Platform Product records retain pending SH composition. Current source/routing, implementation and whole-SH acceptance remain pending."))
 
 (defn- validate-library-refinement! [ref]
   (acceptance-dependencies/require! (map? ref) "Missing L13 library source refinement")
@@ -1046,6 +1056,11 @@
         _ (when-not (= (:requirements inventory) (inventory-of-original-source original-source))
             (throw (ex-info "Original source changed; retain lineage before rebinding" {})))
         _ (validate-current-source-transitions! (:current-source-transitions readiness-source-version))
+        _ (requirement-sources/validate-std7-std9-library-io-criterion-joins!
+            (:library-io-criterion-joins readiness-source-version)
+            (fn [ref source-path]
+              (git-source ref source-path))
+            slurp sh-inventory/sha256 acceptance-dependencies/require!)
         components (mapv second (re-seq #"(?m)^\| [^|\n]+ / `([a-z-]+)` \|" (slurp "docs/component-roadmaps/README.md")))
         tasks (into (sorted-map) (map (fn [c] [c (task-records c)]) components))
         _ (validate-library-refinement! (:library-refinement readiness-source-version))
@@ -1158,6 +1173,7 @@
      (select-keys readiness-source-version
                   [:kind :status :source-input-commit :predecessor
                    :current-source-transitions :current-source-transition-history
+                   :current-source-frame-history :library-io-criterion-joins
                    :task-comparisons :source-criteria
                    :retained-historical-source-inputs :math-parent-refinement
                    :release-testing-refinement :domain-parent-refinement

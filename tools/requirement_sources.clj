@@ -1274,12 +1274,106 @@
   "765e1ea7aaec6c263d6bec7e2bbfd0cf71f6238cca5e4b80f65bbc64c0379a94",
   :baseline-blob "9a31beeaff7e83413085f43826fd55e47e393d7f"}])
 
+;; The current-main STD7-STD9 source author changed only these exact files.
+;; Keep the complete-file successor contracts compactly data-driven while
+;; retaining every Git/blob/span identity as an authenticated constant.
+(def std7-std9-source-transition-data
+  [{:path "specs/auth-workflow/plan.md"
+    :before [38081 433 "a6a7bea46f4047d878890c34fed6d019bf35633ade613a3ea468e80da3489f3c" "e8c486581086c204f9c6502766607ea88fc06606"]
+    :after [38920 439 "e4512113f4aca4a9e46451d4098dc8e53c33cbf0caea7990ccdbd3197319c9c4" "0c6ac8e91e043d8fd37549a0283b0cb2484d7982"]}
+   {:path "specs/auth-workflow/tasks.md"
+    :before [46095 314 "18f664d1dd9a19451d4d78cce3563af5f0765aeb0a67957a75b4fac1bdb19d13" "dbb688ec44230c84fa95c35588330d89578cd3c3"]
+    :after [47520 323 "463a28e0e08739a4a2df2dab39293eea2a6d4ca3001a715d58c4f0b5f6e66f44" "84d18fb7d43f9bfaa16bbc07609c10dcf2addfbf"]}
+   {:path "specs/backends-workflow/plan.md"
+    :before [12714 165 "6060dd1fcded73b1f57483d22ced90851f42aa1f3be18855a141a958f23be874" "59e3894d0d1556029007e3dcb93ec9692a03d3a1"]
+    :after [13535 171 "293af99a5232c4d78114bd7d2cd3ed01601bdcf9c87322e52bdf91ae4fe96bde" "31d05140764bfc085faba507888f8724c7a9a1ce"]}
+   {:path "specs/build-workflow/plan.md"
+    :before [32078 331 "bdaee4de655e07164652b2f9592a3038f65b48a57f848abe648adc8ac9d4af4f" "58913132545af334181d7a642dd968eec0febd65"]
+    :after [32904 337 "0730f26d501836790078a190b04d868781c1b0044542ad13b1e110587524b293" "8cd7c8095b1df6358e53dad42b2a871255191d89"]}
+   {:path "specs/domains-workflow/plan.md"
+    :before [70968 720 "30a039613db68aa9a8514b591c87a2ea9ed72a520e781d5458d87582b4595b88" "76eba7e94483dbb4a91309af51092203b5a6e2fd"]
+    :after [72029 726 "a326cd5a2bb7420ae519cd58228e6de574e1d604250f4c091060ac0681421db2" "2b91cc8bcc75a8b745ff4f047e28ca2450125b8c"]}
+   {:path "specs/effects-workflow/plan.md"
+    :before [45410 510 "3f086260dfdda82e4fd7a8dc06b11328fa713318a4e954cd87a5290019951ecf" "0f1c2d796f322f451c999c6b429a66374ce566e7"]
+    :after [46179 516 "806e80fc1849c54493d2db8b44e399ca05816415f5c27205dc7f6b820acd5d6a" "8d9cb8a65e81ec6370d14677fa5d93799870c55b"]}
+   {:path "specs/effects-workflow/tasks.md"
+    :before [34088 244 "59aeac1148be9e492462c0834008e62a0d980954a96d1e3b7889936af7bd4913" "7b855d0e04658fe5392239523ac0486a1a1e2b9c"]
+    :after [35538 253 "f5f6ca1571e0cbe0614ed304231c7f4a6fb39fc1ca0a158b89d364700be2ffcc" "af17e2b63564685d400a4de4663e7f195dc9d7fb"]}
+   {:path "specs/evolution-workflow/plan.md"
+    :before [18234 196 "f7ed753974edbba8b8b5b51244a24acb265ac03c7d5f6d8a8c473aa37a389182" "b07fc872f2516ea3b7cf247660cdf5d2a54073d3"]
+    :after [19015 202 "512317e26137900be02c78dcce2192cf1e2acda1bedc5cf1cb30c1eb717b2bcb" "c663c174e057fec2be2b1d414959e4e2378cd38a"]}
+   {:path "specs/legality-workflow/plan.md"
+    :before [92851 1039 "0a2fef2e6cd2cb4c8d008726be5c9c2c9e2b6dd7f7fc0ca0cf712d73bbde3392" "1cd71fc26d5fb575e6218f2428fe47ae95371b2f"]
+    :after [93672 1045 "be3665dfc93e9dd690113afbddab5d28cb8133fe39902a6db30ec92cbff27184" "f58cbb60d67f1d435e9b6cd51c387eac82252cb9"]}
+   {:path "specs/opt-workflow/plan.md"
+    :before [21715 240 "6c9ef876e8290819dd034ea60a94be54c723c74391aabc4b13e6c53bb9935910" "9d04daad2cee4387cef1efb6836bee11d48aeebd"]
+    :after [22536 246 "6c212448498ec8206939e359d312b8a104577783577a3ea33676e9d50fb4f7a9" "43c4f62b3065350a9f648628fe6221c70d1293ab"]}
+   {:path "specs/release-workflow/plan.md"
+    :before [36577 397 "587d5a98bbfdf42c90b655e133f1310d1d7591c940fe6c3dd00d03ac87a5cc2a" "92ed8a4228d0a280167597c9575b3e483892ad17"]
+    :after [37441 403 "858a49b3088bda01ddbf28a548616ac93b408b98ba8d5d784b095cb6d6322a20" "6600ed16b640f06e735cf4740a62ce21201b142b"]}
+   {:path "specs/runtime-workflow/plan.md"
+    :before [23630 234 "2ff027027462153cda6763476a5cbe2474fada3bf630ca6d27accbf5cd5eff2a" "a0cf40557be745d5dfe43214b0ebab28eafa8e80"]
+    :after [24556 240 "fa76e1380f17466e8969c905fed55fcf11c3aaaff704ad1e3afec46069f5370c" "0b680273894589337d1adb8c93d5c0f447006309"]}
+   {:path "specs/runtime-workflow/tasks.md"
+    :before [63686 339 "a4dfbe8d903e9051a3a47b2aa22dc9400551314c08423d446f8a1a9f359de3c1" "2a5966e98f4c7e02ec48138932fb51585bf1071b"]
+    :after [69465 375 "3f58d9fce0eae45936200e09da8cbc2e4300c097b25b5e85061b7e02684da18c" "af30d0dff27cd207177e5865cd3e8f1d2ed714a1"]}
+   {:path "specs/stdlib-workflow/plan.md"
+    :before [37921 288 "734c723398c8e42946633d32ed32ecf99daf4e22b029b14732cf08c7986399f8" "c960d1a487d87eaebf774512bfb39e0ed5302d69"]
+    :after [78724 360 "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a" "4d7521645cd41846736b7c522979e8838d6aa641"]}
+   {:path "specs/stdlib-workflow/spec.md"
+    :before [14689 140 "aadd79b14a6e1312bd225421d1b59f24f3da27371fcfd744c5fc31b43da4f232" "8107efb4c0d1d448867accc9104b06e2d824c2b8"]
+    :after [15425 142 "8f58c18d6f9613a6d2fbf3d4547a3aa73c9c91ac7dda4ecc574406ab43a795eb" "9edc8a8e9918c31f10e706c857aabd059af27d4e"]}
+   {:path "specs/stdlib-workflow/tasks.md"
+    :before [38854 276 "ecbf84050a1c0bec21ab3a83fbbe3ed7e55d67fd8a08fff42fdbaccfaed01bcb" "e2933a343359c2032086e34c996d02393e86b355"]
+    :after [62664 429 "1411bbbea82f3aa7cbd70bb730e6118990f915613504880db14d538a13f5ffed" "f11c09c5b94e3cd74680ac49ef210e07c6558171"]}
+   {:path "specs/types-workflow/plan.md"
+    :before [53049 364 "b586691e2a0e437de9abba206f21aa799286994741d60cd6b3b1f3f4b65e0827" "d3f15f60e2886d993275db9a9871c6d8466c5158"]
+    :after [53774 370 "6ce077533df0984f74f12dc3e2bfab0560a7ee9955ee8e7a58b3c987b293bc48" "364c6948e76a89a76998960a93fd032ec66dd209"]}])
+(def std7-std9-source-transition-shared
+  {:role :current-source-interface-proposal
+   :review-state :pending-independent-source-version-review
+   :baseline-ref "ff783a0ab1d324bbf9316e7de6b1db55f189e338"
+   :baseline-tree "46627ba4a754f934c656c4f67ce65bd5302d1be1"
+   :applying-ref "4202c7760b586ec25b9ea69040b6bb8a75ec4919"
+   :applying-tree "3fc8705088dddb2984bd27181ecec3f0b6066883"
+   :authority :current-source-interface-only
+   :kind :authenticated-current-source-file-transition-v1})
+(def std7-std9-source-transition-contracts
+  (mapv (fn [{:keys [path before after]}]
+          (let [[before-bytes before-lines before-sha before-blob] before
+                [after-bytes after-lines after-sha after-blob] after]
+            (assoc std7-std9-source-transition-shared
+                   :path path
+                   :changed-spans [{:id (str "STD7-STD9/" path)
+                                    :kind :complete-file-transition
+                                    :before {:start-byte 0 :end-byte before-bytes
+                                             :start-line 1 :end-line before-lines
+                                             :sha256 before-sha}
+                                    :after {:start-byte 0 :end-byte after-bytes
+                                            :start-line 1 :end-line after-lines
+                                            :sha256 after-sha}}]
+                   :live-sha256 after-sha
+                   :applying-blob after-blob
+                   :document-id (str "std7-std9-"
+                                     (str/replace path #"[^A-Za-z0-9]+" "-")
+                                     "source-interface")
+                   :qualification
+                   (str "Only the complete authenticated STD7-STD9 current-main source file "
+                        path " is transferred from the frozen ff783 current-source frame to reviewed 4202 source bytes. "
+                        "The 23 library IO criterion/owner joins are bound separately; historical/applying pins, task status "
+                        "and implementation acceptance remain separate and unchanged; this successor confers no migration, "
+                        "implementation or whole-source authority.")
+                   :baseline-sha256 before-sha
+                   :baseline-blob before-blob)))
+        std7-std9-source-transition-data))
+
 ;; The 792 Auth transition remains immutable history. The composed 908 frame
 ;; contains that L13 source plus the Main #1160 Auth additions, so it needs a
 ;; successor record rather than a duplicate path or a mutation of the old
 ;; applying pin. Evidence is a distinct current-source input and is bound in
 ;; its own complete-file transition.
 (def current-source-transition-successor-contracts
+  (vec (concat
   [{:role :current-source-interface-proposal,
     :path "specs/auth-workflow/tasks.md",
     :changed-spans
@@ -1335,7 +1429,8 @@
     :applying-ref "21cecf7e7c47187a3e0b7b5bd00dfd4eab77e7d9",
     :qualification "Only the complete authenticated composed Auth evidence file is transferred from the b886 current-source frame to the post-merge 908 checkpoint. Evidence bytes remain source/interface provenance; implementation, provider execution and acceptance authority remain separate and unassessed.",
     :baseline-sha256 "ba3447b29a9bda52705d9798bf4c45d83554233190f8d526d0f7490e092c714d",
-    :baseline-blob "30378108773dffce6486d5b38f2dbceff52f8785"}])
+    :baseline-blob "30378108773dffce6486d5b38f2dbceff52f8785"}]
+  std7-std9-source-transition-contracts)))
 
 (def current-source-transition-history
   historical-current-source-transition-contracts)
@@ -1413,6 +1508,47 @@
       (require! (= expected-sha256 (sha256-fn predecessor-source))
                 "Current source transition history predecessor bytes changed"))
     history))
+
+;; A successor frame must retain the exact prior current-source projection.  A
+;; complete-file transition is not permission to discard the predecessor's
+;; source counts, pins, digests or review status.
+(def current-source-frame-history-kind
+  :authenticated-current-source-frame-history-v1)
+(def current-source-frame-history-predecessor
+  {:commit "ff783a0ab1d324bbf9316e7de6b1db55f189e338"
+   :tree "46627ba4a754f934c656c4f67ce65bd5302d1be1"
+   :path "specs/sh-family-crosswalk/implementation-readiness-current-source-version.edn"
+   :blob "35b19c122d029877dd4b62f2864c85ba01d0da87"
+   :sha256 "db750ca20785c29f21babf2b61fc9b90965e0e1a69077a6054533176e4fd1402"
+   :source-input-commit "b886fe2599916b1a302e17e02c45eae9ebd8a34d"
+   :source-input-tree "1558fa1e9612c72e19ea030e367a6288c0e2d4b7"
+   :input-fingerprint "6f062d1a19435638e157aa62b95bbfe950275b84f82d27079186ad12b24dbfce"
+   :source-frame-fingerprint "57d4e3415247ff5e27aae9d61b143518d6cca0f0dc3c5d73762048eeb592a3ad"
+   :current-source-transition-count 24
+   :current-source-history-count 23
+   :current-source-path-count 2185
+   :applying-pin-count 72
+   :source-digest-count 35})
+(defn validate-current-source-frame-history!
+  [history read-ref sha256-fn require!]
+  (require! (= {:kind current-source-frame-history-kind
+                :predecessor current-source-frame-history-predecessor
+                :authority :current-source-interface-only
+                :review-state :superseded-current-source-frame
+                :qualification
+                "The ff783 current-source frame is retained as immutable history. Its 24 transitions, 23 historical records, 2,185 current-source paths, 72 applying pins, 35 source digests and exact fingerprints remain conserved while STD7-STD9 advances to 4202."}
+               history)
+            "Current source frame history changed")
+  (let [{:keys [commit tree path blob] expected-sha256 :sha256}
+        current-source-frame-history-predecessor
+        predecessor-source (read-ref commit path)]
+    (require! (= tree (git-commit-tree "." commit require!))
+              "Current source frame history predecessor tree changed")
+    (require! (= blob (git-blob-id predecessor-source))
+              "Current source frame history predecessor Git blob changed")
+    (require! (= expected-sha256 (sha256-fn predecessor-source))
+              "Current source frame history predecessor bytes changed"))
+  history)
 
 (declare validate-snapshots!)
 
@@ -1529,6 +1665,118 @@
      :span-provenance :git-byte-and-line-spans-verified
      :authority :current-source-interface-only
      :implementation-acceptance :unassessed}))
+
+;; STD7-STD9 adds 23 exact criterion-to-owner/consumer joins to the current
+;; source frame.  The eight `*-existing` rows are carried predicates, not new
+;; implementation tasks; the distinction is authenticated below.
+(def std7-std9-reused-criterion-ids
+  #{"atomic-existing" "channel-existing" "preservation-existing"
+    "profile-existing" "race-analysis-existing" "runtime-concurrency-existing"
+    "safety-existing" "structured-existing"})
+(def std7-std9-library-io-criterion-data
+  [{:id "service-contracts" :owner "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations" :start 26350 :end 27450 :line 207 :sha "c31b79557f07fd82b59b8ab8ade6f4ff51bdabf1b06ede6a8e26ca2f854fabeb"}
+   {:id "concurrency-api" :owner "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis" :start 27451 :end 28817 :line 208 :sha "b4650307a9261af76c8e0746d8e41ed73df655ae7f51186d2e792f3fd446f928"}
+   {:id "channels-and-actors" :owner "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis" :start 28818 :end 29854 :line 209 :sha "6acee921026c085995e66210eb6fd4d40fca3959f8596b3adf536758d2bf4b9e"}
+   {:id "scheduler-and-atomic-apis" :owner "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis" :start 29855 :end 31151 :line 210 :sha "b3ab686bea6e919df6683314a02fabf7c75e6c645589f827f0104b86584ac4af"}
+   {:id "stream-and-handle-apis" :owner "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis" :start 31152 :end 32238 :line 211 :sha "13129429b60b526b9bed75042a3d97561d5149bd958ca0605c9f4e53fd5f5483"}
+   {:id "typed-path-policy" :owner "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis" :start 32239 :end 33133 :line 212 :sha "ab42f96fd11c402a66b8966e1ac53e2426e618ac00de66cf88c70db54bdda843"}
+   {:id "text-io" :owner "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis" :start 33134 :end 34004 :line 213 :sha "f07d3c06c899c2f489613771de7454868b726a6862bd5baeea77f7111869cb79"}
+   {:id "directory-traversal" :owner "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis" :start 34005 :end 34800 :line 214 :sha "64fd85e3df4e2c6e3d1f3c62fdc1995901438fbc77c7ce5ff72304e23cca3f1a"}
+   {:id "atomic-file-replacement" :owner "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis" :start 34801 :end 35703 :line 215 :sha "fc6bec8e38bc9c7765d8663603cdb258f4008811fa721a11eadbe3b76af47f62"}
+   {:id "network-surface" :owner "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis" :start 35704 :end 36872 :line 216 :sha "bdfa2332f3979c0ee3d54f878d1ee963f26fcb6caed5f8f78626b69da3e38da6"}
+   {:id "http-client" :owner "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis" :start 36873 :end 37999 :line 217 :sha "ca928d41a86300210073da1f6f04ffdf8556d6ff9d49660a71cb668cc0c3ff4a"}
+   {:id "http-server" :owner "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis" :start 38000 :end 39026 :line 218 :sha "b60ede05f2f1f1a1a3806557ac8f105c103df7902e71c406bacad485cecf5b51"}
+   {:id "tls-policy" :owner "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis" :start 39027 :end 39953 :line 219 :sha "2817598718a5b9bbb50559290da0b016c9247501b71cc80e435cf1c4773aa4eb"}
+   {:id "network-schema-boundary" :owner "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis" :start 39954 :end 40949 :line 220 :sha "e795a01ad166a52270b45f23cdd6cb7be5d5b0593b309309e9782ee0fa2bd063"}
+   {:id "service-profile-matrix" :owner "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis" :start 40950 :end 42329 :line 221 :sha "3ee352972dc29677aa8b026fb9c3f2a20390a0f8cb8f862497246bc7b2aef366"}
+   {:id "resource-cleanup" :owner "runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup" :start 42330 :end 43340 :line 222 :sha "92a7ba41928ae3583c182ccdde662d8365a5cd6724449c6853fc4132e3a1ba80"}
+   {:id "recorded-service-replay" :owner "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution" :start 43341 :end 44622 :line 223 :sha "7e6c5aa3bdc0487ad414bfa6cf8a52cfad839ccb74cabfd7fcb2569529c16708"}
+   {:id "actual-service-enforcement" :owner "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration" :start 44623 :end 45773 :line 224 :sha "34904257fb26ca811ad16449ec91d3f8177f378c7f46fe383af39788c617f6e4"}
+   {:id "service-observation" :owner "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration" :start 45774 :end 46864 :line 225 :sha "5a23e9fee1b80ef184fb53d66cf74dc51af59249d46b96c35977df559f2665e6"}
+   {:id "service-effect-admission" :owner "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering" :start 46865 :end 47992 :line 226 :sha "8863a2c90e779286172f8f7b6cd38eada3fa320d5d28777edee187e02c938768"}
+   {:id "operation-grants" :owner "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime" :start 47993 :end 49125 :line 227 :sha "a94a42e78d8440e6dcb172d4f90fb135692933ef85ef2ebdf54a703b6cf1ca6c"}
+   {:id "unsafe-service-wrappers" :owner "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis" :start 49126 :end 50134 :line 228 :sha "bd8e4c6aabae7749d61b665023b53ef0bb7a39264a5641cdc90967baaf3e0184"}
+   {:id "library-service-conformance" :owner "stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests" :start 50135 :end 51582 :line 229 :sha "176f554a076d04f5eea155ee7c68b0d194ed02e5f5b72b70caaf5c0b39dcea5e"}
+   {:id "atomic-existing" :owner "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis" :start 51583 :end 52192 :line 230 :sha "fe1c527506170e667ac19c7faee7e8255fd35c5333af7452fbea83b3de791569"}
+   {:id "channel-existing" :owner "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis" :start 52192 :end 52814 :line 231 :sha "e43b6fc42c2632c1447862d46ce7c41f33e57e8a5f9ff4c4cb756e44ab19b868"}
+   {:id "preservation-existing" :owner "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution" :start 52814 :end 53858 :line 232 :sha "18a148170b6bc76c0c691d690b3eb9ca758c5a1b136c513fe8ed11e2e12f5de4"}
+   {:id "profile-existing" :owner "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks" :start 53858 :end 54717 :line 233 :sha "43c194cfee2f0f0a026de07d611cc9436fa42cae003d431a63368a0fddacba92"}
+   {:id "race-analysis-existing" :owner "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis" :start 54717 :end 55764 :line 234 :sha "1e8af63b32c741351cf1fda8ad7302b9d620ea2f1da23935115187164b52f07b"}
+   {:id "runtime-concurrency-existing" :owner "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries" :start 55764 :end 57078 :line 235 :sha "4b6714e6b0e6685d60d9ed5e4b1339b5f3040459f826772d2b416dc1eae6ccc4"}
+   {:id "safety-existing" :owner "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries" :start 57078 :end 58588 :line 236 :sha "cf41a2cff0de1ddca2f07e3318c1f9048a1f537b29636f3474c6bfee73368563"}
+   {:id "structured-existing" :owner "stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis" :start 58588 :end 59232 :line 237 :sha "c0b89b2a160d0312125851f6644d3f41ef558cd486c0d543091630aa255e3ad7"}])
+(def std7-std9-library-io-criterion-contracts
+  (mapv (fn [{:keys [id owner start end line sha]}]
+          {:id id
+           :owner owner
+           :consumer-task-id owner
+           :path "specs/stdlib-workflow/plan.md"
+           :source-commit "4202c7760b586ec25b9ea69040b6bb8a75ec4919"
+           :source-tree "3fc8705088dddb2984bd27181ecec3f0b6066883"
+           :source-blob "4d7521645cd41846736b7c522979e8838d6aa641"
+           :source-sha256 "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a"
+           :source-span {:start-byte start :end-byte end :start-line line :end-line line :sha256 sha}
+           :relation (if (contains? std7-std9-reused-criterion-ids id)
+                       :existing-exact-predicate
+                       :new-current-source-criterion)
+           :reused-predicate? (contains? std7-std9-reused-criterion-ids id)
+           :authority :current-source-interface-only
+           :review-state :pending-independent-source-version-review
+           :implementation-acceptance :unassessed})
+        std7-std9-library-io-criterion-data))
+(defn validate-std7-std9-library-io-criterion-joins!
+  [joins read-ref read-text sha256 require!]
+  (require! (= joins std7-std9-library-io-criterion-contracts)
+            "STD7-STD9 library IO criterion/owner join contract changed")
+  (require! (= 31 (count joins)) "STD7-STD9 library IO criterion count changed")
+  (require! (= 31 (count (set (map :id joins))))
+            "STD7-STD9 library IO criterion identities are not unique")
+  (require! (= 23 (count (filter #(= :new-current-source-criterion (:relation %)) joins)))
+            "STD7-STD9 new criterion count changed")
+  (require! (= std7-std9-reused-criterion-ids
+               (set (for [{:keys [id reused-predicate?]} joins :when reused-predicate?] id)))
+            "STD7-STD9 reused predicate population changed")
+  (doseq [{:keys [id owner consumer-task-id path source-commit source-tree source-blob
+                  source-sha256 source-span relation reused-predicate?]} joins]
+    (require! (= owner consumer-task-id)
+              (str "STD7-STD9 criterion owner/consumer mismatch: " id))
+    (require! (= "specs/stdlib-workflow/plan.md" path)
+              (str "STD7-STD9 criterion source path changed: " id))
+    (require! (= "4202c7760b586ec25b9ea69040b6bb8a75ec4919" source-commit)
+              (str "STD7-STD9 criterion source commit changed: " id))
+    (require! (= "3fc8705088dddb2984bd27181ecec3f0b6066883" source-tree)
+              (str "STD7-STD9 criterion source tree changed: " id))
+    (require! (= "4d7521645cd41846736b7c522979e8838d6aa641" source-blob)
+              (str "STD7-STD9 criterion source blob changed: " id))
+    (require! (= "64e60b71d94fc5b12c3f9b342a21f573fc078c2d11b3b7e99fe7c6ae45117f9a" source-sha256)
+              (str "STD7-STD9 criterion source digest changed: " id))
+    (require! (= (if reused-predicate? :existing-exact-predicate :new-current-source-criterion)
+                 relation)
+              (str "STD7-STD9 criterion relation changed: " id))
+    (require! (= source-tree (git-commit-tree "." source-commit require!))
+              (str "STD7-STD9 criterion source tree is not authenticated: " id))
+    (let [source (read-ref source-commit path)
+          current (read-text path)
+          {:keys [start-byte end-byte start-line end-line]} source-span
+          span-sha256 (:sha256 source-span)
+          raw (utf8-span-text source start-byte end-byte require!)]
+      (require! (= source current)
+                (str "STD7-STD9 criterion source is not current: " id))
+      (require! (= source-blob (git-blob-id source))
+                (str "STD7-STD9 criterion source Git blob changed: " id))
+      (require! (= source-sha256 (sha256 source))
+                (str "STD7-STD9 criterion source bytes changed: " id))
+      (require! (= span-sha256 (sha256 raw))
+                (str "STD7-STD9 criterion span bytes changed: " id))
+      (require! (= start-line (utf8-line-number source start-byte))
+                (str "STD7-STD9 criterion start line changed: " id))
+      (require! (= end-line (utf8-line-number source (dec end-byte)))
+                (str "STD7-STD9 criterion end line changed: " id))
+      (require! (str/includes? raw (str "`" id "`"))
+                (str "STD7-STD9 criterion identity is absent from source span: " id))
+      (require! (str/includes? raw (str "`" owner "`"))
+                (str "STD7-STD9 criterion owner is absent from source span: " id)))
+  joins))
 
 ;; These are the six reviewed source regions, not a text diff computed from the
 ;; checkout.  The exact baseline/live fragment hashes make an omitted hunk,

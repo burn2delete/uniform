@@ -639,15 +639,32 @@
                        (requirement-sources/git-blob-id historical))
                     "Stdlib historical source commit blob differs from baseline")
         baseline (read-ref (:baseline-ref transition) path)
-        current-source-ref (or (:current-source-ref transition) (:applying-ref transition))
+        ;; The historical PR564 bridge remains immutable, but this path now
+        ;; has an authenticated current-source successor in the STD7-STD9
+        ;; frame. Use that successor for current row comparison while keeping
+        ;; the old current-source identity in the bridge as history.
+        current-source-successor
+        (first (filter #(= path (:path %))
+                       requirement-sources/current-source-transition-contracts))
+        _ (require! current-source-successor
+                    (str "Missing current Stdlib source successor: " path))
+        current-source-ref (or (:applying-ref current-source-successor)
+                               (:current-source-ref transition)
+                               (:applying-ref transition))
         current-source (read-ref current-source-ref path)
-        _ (require! (= (or (:current-source-tree transition) (:applying-tree transition))
+        _ (require! (= (or (:applying-tree current-source-successor)
+                           (:current-source-tree transition)
+                           (:applying-tree transition))
                        (requirement-sources/git-commit-tree "." current-source-ref require!))
                     "Stdlib current composition source commit/tree changed")
-        _ (require! (= (or (:current-source-blob transition) (:applying-blob transition))
+        _ (require! (= (or (:applying-blob current-source-successor)
+                           (:current-source-blob transition)
+                           (:applying-blob transition))
                        (requirement-sources/git-blob-id current-source))
                     "Stdlib current composition source blob changed")
-        _ (require! (= (or (:current-source-sha256 transition) (:live-sha256 transition))
+        _ (require! (= (or (:live-sha256 current-source-successor)
+                           (:current-source-sha256 transition)
+                           (:live-sha256 transition))
                        (sha256 current-source))
                     "Stdlib current composition source bytes changed")
         current (read-text path)]
@@ -1149,11 +1166,22 @@
         tasks (vec (mapcat val (:task-authorities crosswalk)))
         task-map (into {} (map (juxt :id identity) tasks))
         readiness-source-version (:implementation-readiness-source-version crosswalk)
+        current-source-transition-input-paths
+        (set (map :path (:current-source-transitions readiness-source-version)))
+        ;; Complete-file current-source contracts authenticate the checked-out
+        ;; source itself. Keep injected read functions for the surrounding
+        ;; read-only drift fixtures, but do not let a navigation-only fixture
+        ;; masquerade as a new current-source frame.
+        current-source-read
+        (fn [path]
+          (if (current-source-transition-input-paths path)
+            (slurp path)
+            (read-text path)))
         current-source-transition
         (when (contains? readiness-source-version :current-source-transitions)
           (current-source-transition-view
            (:current-source-transitions readiness-source-version)
-           read-text))
+           current-source-read))
         current-source-transition-paths (set (:paths current-source-transition))
         platform-tasks (vec (filter #(= "platform" (:component %)) tasks))
         platform-transition
