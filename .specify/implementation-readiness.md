@@ -7,8 +7,8 @@ another implementation task ledger, acceptance graph or completion denominator.
 Reconciliation remains in progress; independent acceptance and integration of
 this change are pending. No compiler or product completion is claimed.
 
-Latest source continuation: concurrency, filesystem and network libraries STD7-STD9.
-The [current checkpoint](#concurrency-and-io-library-source-continuation)
+Latest dependency continuation: current STD1-STD9 library producer/consumer order.
+The [current checkpoint](#current-library-source-dependency-continuation)
 records checks and remaining work. Whole-project semantic coverage, independent
 acceptance and integration remain unproven.
 
@@ -7768,3 +7768,138 @@ occurs; all actual holds and the stopped C7 handoff remain. No retry/transfer,
 other-chat message, reviewer/automation wake, aggregate publication or integration
 occurs. Reconciliation, implementation, independent acceptance and integration
 remain distinct.
+
+## Current library source dependency continuation
+
+Dependency source: `e996b09e6565bb337c5c25e2fe42a53d924af851`.
+Predecessor checkpoint: `6b56007d951e9055be5afb4c88d46a844cb13081`.
+Current-count test successor: `f4940eafc5597a9e40c839d276d30712b3eeea49`.
+The [Library source producer and consumer order](../specs/stdlib-workflow/plan.md#library-source-producer-and-consumer-order)
+refines existing routes against all 101 declared STD1-STD9 criteria across 23
+current task owners. The collections, foundation and concurrency/IO source
+records remain exact, including their complete canonical versions, STD3 source
+succession, reused predicates, accounting qualifications and review limits.
+Counts describe the declared source proposal, not an implementation denominator
+or proof of whole attached-owner entailment.
+
+Thirty-three existing consumer routes now state actual initial contracts and
+later required products: 24 current parents and nine existing future consumers.
+Their 348 selected producer/consumer pairs distinguish early real source/export/
+signature/profile/type/effect/provider/resource/schema/path/endpoint/recipe and
+fixture contracts, actual independently checked subjects and selected operations,
+and later audit/checker/conformance/release evidence. These selected pairs cover
+the new proposal inputs, not every older input in the selected routes. Whole
+current source/interface and global executable-order entailment remain pending.
+
+The sole dependency table retains all 3,650 previous joins and adds 104, for
+3,754 total. All 158 routes, 118 parent consumers and forty future consumers stay;
+125 other route declarations remain exact. Restoring only the 33 prior
+declarations recreates the complete predecessor dependency file. All previous
+start-result requirements and contract prefixes survive. Twelve existing plans
+expose these selected interfaces without another editable roadmap or task list.
+
+The key source-sensitive sequences are explicit:
+
+- Independent source/caller/control/type/effect/capture/lifetime facts precede
+  combined admission; future output or cleanup is no first checking premise.
+  An eligible compile-time P invocation needs its real already-available compiled
+  P, not a declaration of the future Q being compiled.
+- STD3 complete physical type/member/termination validation, including ignored
+  values and malformed tails, precedes comparison, formatting or construction.
+  Private whole-key-domain use additionally needs independent complete caller/
+  use/entry evidence. Library executes physical validation; compiler owners
+  derive their distinct caller/type/control/lifetime premises.
+- Real source admission, compatible providers/grants, required actual startup
+  and installed service gates precede admitted selected actions; real values,
+  errors, lifetime and cleanup products precede their API execution claims.
+- Real event/choice/schema/activity policy precedes actual permitted recorded
+  output, which precedes no-repeat replay. Real service events are redacted
+  before observable export; denial precedes any forbidden effect.
+- Actual independent EFIR/certificate checking precedes certified reliance.
+  A distinct current GOV9 decision concerns an actual unsafe subject and genuine
+  evidence before its safe-wrapper or release claim. Synthesis, broad Math
+  success, generic security PASS and old finite reviews are not those results.
+- Actual content/evidence subjects precede permitted provenance/SBOM/canonical
+  signing without a package requiring its own future signature/hash as its first
+  identity. Real callable subjects precede executed conformance and benchmarks;
+  those results precede the claimed module/release grade.
+
+An initial temporary proposal incorrectly made the callable HTTP API wait for
+the wider `services` integration outcome, adding that future task to coarse
+feedback. Source review corrected the direction before repository writes:
+wider service integration consumes the Library API; independently supplied typed
+handlers and schemas suffice for API construction and focused execution. The
+existing wider service obligation and later real integration remain required.
+The discarded temporary proposal receives no validation credit. Corrected
+coarse feedback preserves the exact 139-task set; it is still not a whole-task
+topological implementation order. No unmarked PKG2 build cycle or upward library
+namespace import is licensed by task feedback.
+
+All 149 current task records and forty future predicate/role/container records
+remain exact, as do all 25 complete task authority files. No task, status,
+checkbox, future binding, source criterion, review subject or individual owner
+is added, removed or reassigned. The last current-task source subject and all
+original task comparisons remain unchanged. The new root record changes four
+current source-pin fields and its pending fingerprint; the projection tool adds
+one export key. Dependency-tool and crosswalk-test code remain unchanged.
+Only two existing dependency-test count expectations change: the five Legality
+route input populations from `[36 43 43 46 50]` to `[37 44 45 46 52]`, and the
+GOV9 audit population from seven to thirteen. These reflect six added inputs in
+each group; all prior inputs and every producer-edge, missing-route, status and
+feedback assertion remain. Reversing those two substitutions restores the exact
+preceding test file. No new test is added. The initial run of 23 tests / 9,353
+assertions had two count failures and zero errors; it receives no passing credit.
+
+Final validation of this checkpoint:
+
+- All 23 dependency tests pass with 9,353 assertions, zero failures and zero
+  errors under a 512 MB host heap. The dependency check exits zero. The initial
+  two-count-failure run receives no passing credit; the corrected stable-input
+  result supersedes it without changing any other test assertion.
+- Three focused crosswalk tests pass with 46,334 assertions, zero failures and
+  zero errors under a 768 MB heap. They cover source-payload deduplication,
+  current global conservation and the frozen prior B4-B14 subject. They do not
+  prove current library source/interface or global order entailment.
+- The separate current audit passes: all 149 current records, forty complete
+  future records and 25 task files stay exact. All 3,650 old joins survive;
+  restoring 33 prior declarations recreates the whole predecessor dependency
+  file, with 125 other declarations exact. All 348 staged pairs have actual
+  declared input identities and remain unassessed. Feedback membership is exact.
+  Removing new sections recreates twelve plans. All three source records, 101
+  criteria, nine canonical versions, task-source subject and comparisons remain.
+  All 33 stage witnesses and table rows pass. Exact reversal verifies that only
+  the two declared test counts changed; all other test bytes stay exact.
+- Projection generation/check and applying local Git source pins pass. Twenty
+  new local references, heading collision, ASCII and whitespace checks pass.
+  Canonical docs validation passes for 240 documents and nineteen phase indexes;
+  the final language-boundary gate passes six tests and eleven assertions.
+- Full execution of the changed 90-test crosswalk suite remains unrun. The
+  earlier 90 / 177,322 result stays bound only to
+  `88d5f68432beb5c36cdb439fa7cf389118885334`. None of these planning/traceability
+  checks establishes actual compiler/library/provider/runtime execution or
+  independent acceptance.
+
+The pending fingerprint is
+`5abe6b0984ed07d0f87767da5235de880e0a13199f7a5ec2629dbd8862e3c3b3`.
+
+Actual source/type/profile/provider/target/encoding/Unicode/numeric/ownership/
+control/schema/path/endpoint/policy/compiler changes invalidate affected products
+before rechecking/regeneration or policy-valid reuse. Check erasure requires
+exact current dominating proof valid through transforms and target preservation;
+restore/recheck/regenerate or refuse when invalid. Valid unoptimized APIs, pure
+path/URL/source development and selected compiler-support closure do not require
+unrelated universal Opt, all Math/services or final wider release as an initial
+gate. Wider required project outcomes remain in scope.
+
+STD10-STD20, wider AI/support/foundation/nonfunctional source conjunctions,
+complete requirement/owner/task and producer/consumer entailment, all older
+dependency stages/global executable order, accounting cleanup, the recorded
+Core/Resolve and hermetic wording conflicts, Platform decisions and required
+independent current review remain open. The first implementation increment is
+still [Reader contract coverage](../specs/reader-workflow/plan.md#selected-increment-complete-contract-coverage).
+All actual holds and the stopped C7 handoff remain. No compiler/Reader/Gravity/
+bootstrap/paired/provider/C12/native/callback/device/probe/replay/migration/
+private-store/signing/publication/product execution, retry/transfer, other-chat
+message, reviewer/automation wake, aggregate publication or integration occurs.
+Reconciliation, implementation, independent acceptance and integration remain
+distinct.
