@@ -83,6 +83,9 @@
                    :diagnostics :summary-counts
                    :deterministic-ordering-key
                    :redaction-policy :rendering-version]
+   :private-verification-inputs [:diagnostic-bindings]
+   :diagnostic-binding-fields [:original-fields :request :resolved-digest]
+   :supported-verification-ordering-keys [:diagnostic-id]
    :renderers [:cli :ide :ci :safety-report :package-report]
    :golden-fixture-fields [:rule :severity :primary-span
                            :related-span-roles :stage :profile
@@ -116,9 +119,13 @@
       (c15-construction-failure (get error :rule) (get error :field)
                                 (get error :reason)))))
 
-; First executable checkpoint: validate the declared stream envelope. A valid
-; envelope is incomplete verification until records, counts, order and external
-; identity joins are checked. Policy names never establish publication safety.
+; C15 private stream verification. The eight stream fields retain their meaning.
+; Nonempty streams additionally supply :diagnostic-bindings, a vector parallel
+; to :diagnostics, of {:original-fields eleven-fields :request digest-request
+; :resolved-digest external-digest}. Empty streams may omit it. Originals and
+; digest resolution are external inputs, never inferred from the candidate.
+; Only :diagnostic-id ordering is supported: ascending lowercase SHA256 text.
+; Policy names and publication flags never establish public redaction safety.
 (defn c15-stream-envelope-error [stream]
   (if (c15-carrier-valid? stream)
     (if (map? stream)
@@ -150,20 +157,84 @@
       {:rule "C15-SCHEMA" :field :stream :reason :stream-map-required})
     {:rule "C15-SCHEMA" :field :stream :reason :unsupported-canonical-carrier}))
 
+(defn c15-stream-record-failure [result index candidate]
+  (let [diagnostic (first (get result :diagnostics))]
+    (assoc result :diagnostics
+           [(assoc diagnostic
+                   :offending-diagnostic-id (get candidate :diagnostic-id)
+                   :artifact-id (get (get candidate :primary) :artifact)
+                   :record-index index)])))
+
+(defn c15-stream-summary-valid? [summary]
+  (if (sh15-exact-keys? summary #{:error :warning :info :hint :internal-error})
+    (loop [severities [:error :warning :info :hint :internal-error]]
+      (if (= 0 (count severities)) true
+        (let [value (get summary (first severities))]
+          (if (if (integer? value) (<= 0 value) false)
+            (recur (rest severities)) false)))) false))
+
+(defn c15-stream-records-result [stream bindings]
+  (let [diagnostics (get stream :diagnostics)]
+    (loop [index 0 ids [] joins []
+           summary {:error 0 :warning 0 :info 0 :hint 0 :internal-error 0}]
+      (if (= index (count diagnostics))
+        (if (= summary (get stream :summary-counts))
+          ; SHA256 ids have fixed ASCII syntax, so canonical printed string
+          ; ordering is also their lexicographic text ordering.
+          (if (= ids (vec (sort-by-pr-str ids)))
+            {:status :passed :diagnostics [] :diagnostic-stream stream
+             :summary-counts summary :identity-request-joins joins
+             :verification-status :private-stream-structure-and-external-digest-equality}
+            (c15-construction-failure "C15-ORDER" :diagnostics :noncanonical-order))
+          (c15-construction-failure "C15-SCHEMA" :summary-counts :summary-count-mismatch))
+        (let [candidate (get diagnostics index) binding (get bindings index)]
+          (if (sh15-exact-keys? binding #{:original-fields :request :resolved-digest})
+            (let [verification
+                  (verify-c15-resolved-diagnostic
+                   (get binding :original-fields) candidate
+                   (get binding :request) (get binding :resolved-digest))]
+              (if (= :passed (get verification :status))
+                (let [id (get candidate :diagnostic-id) severity (get candidate :severity)]
+                  (if (= (get stream :stage) (get candidate :stage))
+                    (if (sh15-member? ids id)
+                      (c15-stream-record-failure
+                       (c15-construction-failure "C15-ID" :diagnostic-id :duplicate-diagnostic-id)
+                       index candidate)
+                      (recur (+ index 1) (conj ids id)
+                             (conj joins {:record-index index :diagnostic-id id
+                                          :request (get binding :request)})
+                             (assoc summary severity (+ 1 (get summary severity)))))
+                    (c15-stream-record-failure
+                     (c15-construction-failure "C15-SCHEMA" :stage :record-stage-mismatch)
+                     index candidate)))
+                (c15-stream-record-failure verification index candidate)))
+            (c15-stream-record-failure
+             (c15-construction-failure "C15-SCHEMA" :diagnostic-bindings :invalid-record-binding)
+             index candidate)))))))
+
+(defn c15-stream-result [stream]
+  (let [error (c15-stream-envelope-error stream)]
+    (if (= nil error)
+      (if (c15-stream-summary-valid? (get stream :summary-counts))
+        (if (= :diagnostic-id (get stream :deterministic-ordering-key))
+          (let [bindings (if (contains? stream :diagnostic-bindings)
+                           (get stream :diagnostic-bindings) [])]
+            (if (vector? bindings)
+              (if (= (count bindings) (count (get stream :diagnostics)))
+                (c15-stream-records-result stream bindings)
+                (c15-construction-failure "C15-ID" :diagnostic-bindings :binding-count-mismatch))
+              (c15-construction-failure "C15-SCHEMA" :diagnostic-bindings :invalid-diagnostic-bindings)))
+          (c15-construction-failure "C15-ORDER" :deterministic-ordering-key :unsupported-ordering-key))
+        (c15-construction-failure "C15-SCHEMA" :summary-counts :invalid-summary-counts))
+      (c15-construction-failure (get error :rule) (get error :field) (get error :reason)))))
+
 (defn verify-c15-diagnostic-stream [diagnostic-stream]
-  (let [error (c15-stream-envelope-error diagnostic-stream)
-        result (if (= nil error)
-                 {:status :incomplete :diagnostic-stream diagnostic-stream
-                  :verification-status :stream-envelope-only :diagnostics []}
-                 (c15-construction-failure (get error :rule) (get error :field)
-                                           (get error :reason)))]
-    (assoc result :artifact :gravity/c15-diagnostic-stream-verification
-           :schema-version 1
-           :nonclaims [:record-verification :summary-count-verification
-                       :deterministic-order-verification :identity-request-joins
-                       :digest-recomputation :upstream-source-authentication
-                       :public-safe-projection :golden-fixture-verification
-                       :self-hosting :release])))
+  (assoc (c15-stream-result diagnostic-stream)
+         :artifact :gravity/c15-diagnostic-stream-verification :schema-version 1
+         :semantic-authority :none :redaction-status :not-evaluated
+         :nonclaims [:digest-recomputation :upstream-source-authentication
+                     :public-safe-projection :golden-fixture-verification
+                     :self-hosting :release :seed-retirement]))
 
 ; Canonical first-slice construction is private DATA until an external resolver
 ; binds the declared request. It is not a safe-publication or stream verifier.
