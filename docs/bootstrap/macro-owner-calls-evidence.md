@@ -161,11 +161,11 @@ passes 48 / 1202 with no skipped namespaces. Direct lint is zero warnings/errors
 Own generated harness outputs are preserved recoverably outside the checkout
 after the process ended, with all bytes/hashes retained.
 
-A fresh six-path source-composition/CI/evidence writer owns only those actual
-paths. Original source and Native corrective tokens remain normally released;
-no token is transferred or reused. The namespace index is genuinely held by
-the active root-pr918-after1179 writer, so no index edit is made and its link
-update remains pending a normal handoff. The scoped contract already identifies
+A fresh six-path source-composition/CI/evidence writer owned only those actual
+paths. Original source and Native corrective tokens remained normally released;
+no token was transferred or reused. At that stage the namespace index was held
+by the active root-pr918-after1179 writer, so no index edit was made and its link
+update awaited a normal handoff. The scoped contract already identified
 the new test owner. Source metadata/CI wording from earlier phases records the
 state when those phases ended; it is not fresh integration authority.
 
