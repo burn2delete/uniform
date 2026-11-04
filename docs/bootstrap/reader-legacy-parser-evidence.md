@@ -69,8 +69,7 @@ substitute another test route to evade ownership.
 
 ## Unsupported boundaries
 
-This scope record has no implementation or executed-test credit. Historical
-P15 behavior includes a restricted atom grammar, Long integer parsing, simple
+Historical P15 behavior includes a restricted atom grammar, Long integer parsing, simple
 string escape handling and legacy set/map behavior. Preserve these honestly
 as seed limitations, never as normative Gravity semantics. This API does not
 authenticate source/table/operations, implement full literal/identifier/tag/
@@ -78,3 +77,51 @@ abbreviation/metadata grammar, add trivia or canonical identities, normalize
 host errors, execute Gravity-authored parsing, establish complete Reader,
 or grant canonical SH03, migration, self-hosting, release or seed retirement.
 Held operations and existing authentic-source refusals remain unchanged.
+
+## Original observations and resumed ownership
+
+Original source3ada78bda9e3944db889538b866b0ebcf6451d3f produces forty
+captured records from forty retained actual paired source paths: twenty native
+outputs, eighteen original refusals and two native Long-overflow exceptions.
+Those host exceptions remain host failures, never successful syntax refusals.
+The initial raw printed capture hash is
+3a1f313222c9338f00dee6703fbdc86011d1733b1b748937220c761ca699bc9f.
+That observer representation is not EDN-roundtrippable: historical numeric-looking
+symbols such as 1/0 print like numbers. The retained roundtrip attempt raises
+Divide by zero in the observer. It does not establish a parser rejection.
+
+The corrected observer encodes each native Symbol explicitly with its exact
+spelling, preserving all forty cases and source bytes without rewriting fixtures
+or changing parser behavior. Its complete parsed/printed comparison baseline is
+05facbbf3623085382609ddc1f6ad3d44850027e7536d461e23bee34be35c7a4.
+This is an observer encoding, not a Gravity canonical identity or authentication.
+
+The initial six-path source phase ended normally at its scope-only commit;
+its actual lease was normally released with no implementation-completion credit.
+Normal composition9babefeb8e46f548c82d38b647ead3103618cbc1 preserves the
+independently reviewed owner-order repair0c5cfb683db5a3831c0e5c933e7758787d95a69e
+and current mainf66233177d9fc3eaf29af30c7bfc3286bf4f53bc. The parser body
+itself remains byte-identical to the original baseline before extraction.
+After the original CI owner release, a fresh actual seven-path lease now owns
+all six source paths plus tools/ci/run.clj. The legacy-parser test namespace
+is inserted once in the existing Reader command; no substitute route or
+foreign token/lease was used. Earlier deferred ownership is history.
+
+## Semantic implementation and focused checks
+
+The single recursive parser body moves through six per-call operator-dereferenced
+owner Vars. This preserves function capture before span/cause argument evaluation,
+as established by the predecessor's owner-order repair, while later calls retain
+late lookup. The three-argument Bootstrap facade and execution-diagnostic suffix
+are retained; both manifests and source pins are unchanged. Reader's fourteen
+earlier public functions remain outside this extraction.
+
+Reader artifact plus new historical-parser tests pass fifty tests and 681
+assertions. Tests read the real P15 accepted/rejected Gravity fixtures and
+actual temporary .qst copies, covering all five diagnostic IDs, nested values,
+byte spans, mixed lines, Unicode, table data, first/late owner calls, original
+exception identity, no source discovery and honest native parser limitations.
+New-test and Reader lint report zero warnings/errors. The initial new-test
+parenthesis nonpass is retained and corrected without altering production
+semantics or weakening assertions. Candidate/native comparisons, broad regression,
+independent acceptance, full wired CI and integration gates remain outstanding.

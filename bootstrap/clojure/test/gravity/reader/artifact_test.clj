@@ -150,7 +150,7 @@
              'compatibility-reader-products 'validate-native-reader-report! 'native-document-projection
              'tokenize-compatibility-source 'build-compatibility-forms
              'classify-compatibility-token 'reject-compatibility-numeric! 'decode-compatibility-atom
-             'decode-compatibility-string 'decode-compatibility-character}
+             'decode-compatibility-string 'decode-compatibility-character 'parse-compatibility-records}
            (set (keys (ns-publics 'gravity.reader)))))
     (is (= (set (keys (:public-api contract)))
            (set (keep (fn [[name operation]]

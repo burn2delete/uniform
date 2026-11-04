@@ -13,7 +13,14 @@
    :contract-boundary :native-reader-intake-literals-tokenization-forms-products-report-validation-and-document-projection
    :owner-call-resolution :per-call-var-root-before-arguments
    :public-api
-   {'classify-compatibility-token
+   {'parse-compatibility-records
+    {:arglists '([source-path source-text table operations])
+     :contract-boundary :historical-p15-table-driven-parsing
+     :returns :historical-p15-form-records :admission :none
+     :authenticates-inputs? false :opens-source? false :callback-type-checks? false
+     :operation-inputs [:line-starts-var :line-terminator-var :fail-var :span-var :starts-with-var :form-kind-var]
+     :test-owner 'gravity.reader.legacy-parser-test}
+    'classify-compatibility-token
     {:arglists '([starts-with-var token]) :returns :native-literal-kind
      :admission :none :authenticates-inputs? false :opens-source? false
      :operation-inputs [:starts-with-var] :callback-type-checks? false
@@ -106,7 +113,7 @@
                      :captured-native-document-views-and-late-owner-vars
                      :compatibility-oracle-late-owner-vars
                      :seed-reader-operations :standard-reader-options
-                     :historical-reader-table :tokenizer-late-owner-vars
+                     :historical-reader-table :tokenizer-late-owner-vars :historical-parser-late-owner-vars
                      :native-token-stream :form-builder-late-owner-vars
                      :raw-literal :literal-kind :literal-span :literal-token-id :literal-late-owner-vars
                      :captured-source-bytes :raw-byte-hash-var :diagnostic-var
@@ -115,7 +122,7 @@
                       :hosted-compatibility-reader-products :legacy-native-reader-complete-marker
                       :gravity/native-c2-document-projection :gravity/stage1-reader-token-stream
                       :hosted-reader-form-products :native-literal-value :deferred-ratio-literal
-                      :original-literal-owner-refusal
+                      :original-literal-owner-refusal :historical-p15-form-records
                       :unchanged-source-encoding-failure :unchanged-source-extension-failure
                       :unchanged-source-byte-owner-failure]
    :preserves [:source-spans :metadata :reader-origin :profile-context
@@ -159,6 +166,11 @@
                      :construction-owner :supplied-failure-var
                      :numeric-catch-owner :supplied-malformed-numeric-var
                      :authenticates-inputs? false}
+    :historical-parser {:owns [:legacy-table-driven-scanning :legacy-recursive-parsing]
+                        :rule-ids ["STAGE1READER001" "STAGE1READER002" "STAGE1READER003"
+                                   "STAGE1READER004" "STAGE1READER005"]
+                        :construction-owner :supplied-failure-var :span-owner :supplied-span-var
+                        :authenticates-inputs? false}
     :does-not-own [:namespace-shape-policy :c15-schema
                    :diagnostic-identity :redaction :rendering]}
    :dependency-direction
@@ -174,6 +186,7 @@
                  :native-form-source-table-token-callback-and-output-authentication
                  :literal-raw-kind-provenance-and-callback-authentication
                  :complete-literal-grammar :gravity-numeric-and-unicode-character-semantics
+                 :historical-parser-full-grammar-and-authentication
                  :native-document-canonical-admission-and-publication
                  :native-report-authentication
                  :compatibility-oracle-product-authentication
@@ -1518,6 +1531,208 @@
                             :token-id token-id
                             :raw raw
                             :cause-message (.getMessage ex)}))))
+(defn parse-compatibility-records
+  [source-path ^String source-text table
+   {:keys [line-starts-var line-terminator-var fail-var span-var starts-with-var form-kind-var]}]
+  (let [line-starts ((deref line-starts-var) source-text)
+        whitespace (set (:whitespace table))
+        delimiters (:delimiters table)
+        dispatch (:dispatch table)
+        comment-marker (:line-comment table)
+        string-delimiter (:string-delimiter table)
+        source-length (count source-text)]
+    (letfn [(char-string [idx]
+              (str (.charAt source-text idx)))
+            (ignored? [idx]
+              (and (< idx source-length)
+                   (contains? whitespace (char-string idx))))
+            (comment? [idx]
+              (and (< idx source-length)
+                   (= comment-marker (char-string idx))))
+            (skip-ignored [idx]
+              (loop [idx idx]
+                (cond
+                  (>= idx source-length) idx
+                  (ignored? idx) (recur (inc idx))
+                  (comment? idx) (recur (loop [j idx]
+                                          (if (and (< j source-length)
+                                                   (not ((deref line-terminator-var)
+                                                         (.charAt source-text j))))
+                                            (recur (inc j))
+                                            j)))
+                  :else idx)))
+            (close-token? [idx close-token]
+              (and (< idx source-length)
+                   (= close-token (char-string idx))))
+            (unexpected-close? [idx]
+              (and (< idx source-length)
+                   (= :close (get-in delimiters [(char-string idx) :kind]))))
+            (read-string-literal [idx]
+              (let [start idx
+                    builder (StringBuilder.)]
+                (loop [idx (inc idx)]
+                  (cond
+                    (>= idx source-length)
+                    ((deref fail-var) "STAGE1READER003" source-path nil
+                                         {:source-span
+                                          ((deref span-var) source-path
+                                                              source-text
+                                                              line-starts
+                                                              start idx)})
+
+                    (= string-delimiter (char-string idx))
+                    [(.toString builder)
+                     (inc idx)
+                     ((deref span-var) source-path source-text
+                                         line-starts start (inc idx))]
+
+                    (= \\ (.charAt source-text idx))
+                    (if (< (inc idx) source-length)
+                      (do
+                        (.append builder (.charAt source-text (inc idx)))
+                        (recur (+ idx 2)))
+                      ((deref fail-var) "STAGE1READER003" source-path nil
+                                           {:source-span
+                                            ((deref span-var) source-path
+                                                                source-text
+                                                                line-starts
+                                                                start idx)}))
+
+                    :else
+                    (do
+                      (.append builder (.charAt source-text idx))
+                      (recur (inc idx)))))))
+            (atom-end [idx]
+              (loop [idx idx]
+                (if (or (>= idx source-length)
+                        (ignored? idx)
+                        (comment? idx)
+                        (contains? delimiters (char-string idx))
+                        (contains? dispatch (char-string idx)))
+                  idx
+                  (recur (inc idx)))))
+            (parse-atom [token]
+              (cond
+                (= token "nil") nil
+                (= token "true") true
+                (= token "false") false
+                ((deref starts-with-var) token ":") (keyword (subs token 1))
+                (re-matches #"-?[0-9]+" token) (Long/parseLong token)
+                :else (symbol token)))
+            (read-atom [idx]
+              (let [start idx
+                    end (atom-end idx)
+                    token (subs source-text start end)]
+                [(parse-atom token)
+                 end
+                 ((deref span-var) source-path source-text
+                                     line-starts start end)]))
+            (read-delimited [idx collection-kind close-token]
+              (let [start idx]
+                (loop [idx (inc idx)
+                       values []]
+                  (let [idx (skip-ignored idx)]
+                    (cond
+                      (>= idx source-length)
+                      ((deref fail-var) "STAGE1READER002" source-path nil
+                                           {:source-span
+                                            ((deref span-var) source-path
+                                                                source-text
+                                                                line-starts
+                                                                start idx)
+                                            :expected close-token})
+
+                      (close-token? idx close-token)
+                      (let [end (inc idx)
+                            value (case collection-kind
+                                    :list (apply list values)
+                                    :vector (vec values)
+                                    :set (set values)
+                                    :map (do
+                                           (when (odd? (count values))
+                                             ((deref fail-var)
+                                              "STAGE1READER005" source-path values
+                                              {:source-span
+                                               ((deref span-var)
+                                                source-path source-text
+                                                line-starts start end)}))
+                                           (apply hash-map values)))]
+                        [value
+                         end
+                         ((deref span-var) source-path source-text
+                                             line-starts start end)])
+
+                      :else
+                      (let [[value next-idx _span] (read-form idx)]
+                        (recur next-idx (conj values value))))))))
+            (read-dispatch [idx]
+              (let [dispatch-token (char-string idx)
+                    next-token (when (< (inc idx) source-length)
+                                 (char-string (inc idx)))
+                    dispatch-entry (get-in dispatch [dispatch-token next-token])]
+                (if (= :set-open (:kind dispatch-entry))
+                  (let [[value next-idx span]
+                        (read-delimited (inc idx) :set (:closes dispatch-entry))]
+                    [value next-idx (assoc span :dispatch dispatch-token)])
+                  ((deref fail-var) "STAGE1READER004" source-path dispatch-token
+                                       {:source-span
+                                        ((deref span-var) source-path
+                                                            source-text
+                                                            line-starts
+                                                            idx
+                                                            (min source-length
+                                                                 (+ idx 2)))}))))
+            (read-form [idx]
+              (let [idx (skip-ignored idx)]
+                (when (>= idx source-length)
+                  ((deref fail-var) "STAGE1READER002" source-path nil
+                                       {:source-span
+                                        ((deref span-var) source-path
+                                                            source-text
+                                                            line-starts
+                                                            idx idx)}))
+                (let [token (char-string idx)
+                      delimiter (get delimiters token)]
+                  (cond
+                    (unexpected-close? idx)
+                    ((deref fail-var) "STAGE1READER001" source-path token
+                                         {:source-span
+                                          ((deref span-var) source-path
+                                                              source-text
+                                                              line-starts
+                                                              idx (inc idx))})
+
+                    (= string-delimiter token)
+                    (read-string-literal idx)
+
+                    (= :list-open (:kind delimiter))
+                    (read-delimited idx :list (:closes delimiter))
+
+                    (= :vector-open (:kind delimiter))
+                    (read-delimited idx :vector (:closes delimiter))
+
+                    (= :map-open (:kind delimiter))
+                    (read-delimited idx :map (:closes delimiter))
+
+                    (contains? dispatch token)
+                    (read-dispatch idx)
+
+                    :else
+                    (read-atom idx)))))]
+      (loop [idx 0
+             form-index 0
+             records []]
+        (let [idx (skip-ignored idx)]
+          (if (>= idx source-length)
+            records
+            (let [[form next-idx span] (read-form idx)]
+              (recur next-idx
+                     (inc form-index)
+                     (conj records
+                           {:form form
+                            :kind ((deref form-kind-var) form)
+                            :span (assoc span :form-index form-index)})))))))))
+
 (doseq
  [name (keys (:public-api namespace-contract))
   :let [operation (get (ns-interns *ns*) name)]]
