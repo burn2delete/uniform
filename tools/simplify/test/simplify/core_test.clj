@@ -1,5 +1,6 @@
 (ns simplify.core-test
-  (:require [clojure.java.io :as io]
+  (:require [clojure.data.json :as json]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.test :refer [deftest is testing use-fixtures]]
             [simplify.codex :as codex]
@@ -29,6 +30,38 @@
      :log-lock (Object.) :state (atom {:schema 1 :tasks {} :jobs {} :effects {}})
      :config config}
            (rt/coordination dir config))))
+
+(deftest exact-command-capture-does-not-split-credential-redaction
+  (let [ctx (context)
+        log (str (io/file (:state-dir ctx) "capture.jsonl"))
+        secret (str "ghp_" (apply str (repeat 48 "A")))
+        output (str (apply str (repeat 4094 "x")) secret "\r\n" "nul\u0000tail")
+        error-output "stderr\rwith-cr\r\nnul\u0000tail"
+        classpath (str/join java.io.File/pathSeparator
+                            (map #(.getAbsolutePath (io/file %))
+                                 (str/split (System/getProperty "java.class.path") (re-pattern java.io.File/pathSeparator))))
+        java [(str (io/file (System/getProperty "java.home") "bin/java")) "-cp" classpath "clojure.main"]
+        baseline (rt/command ctx (:state-dir ctx) (into java ["-e" "nil"]))
+        expected-error (str (:err baseline) error-output)
+        argv (into java ["-e" (str/replace (str "(print " (pr-str output) ") (flush) "
+                                                  "(binding [*out* *err*] (print " (pr-str error-output) ") (flush))")
+                                               "\u0000" "\\u0000")])
+        result (rt/command (assoc ctx :log-file log) (:state-dir ctx) argv)
+        events (mapv #(json/read-str % :key-fn keyword) (str/split-lines (slurp log)))
+        streamed (fn [stream]
+                   (str/join "\n" (map :line (filter #(and (= "command-output" (:event %))
+                                                         (= stream (:stream %))) events))))]
+    (is (zero? (:exit result)))
+    (is (zero? (:exit baseline)))
+    (is (= "" (:out baseline)))
+    (is (= output (:out result)))
+    (is (= expected-error (:err result)))
+    ;; Inspect only output events: command-start already redacts the argv and
+    ;; must not make a leaking chunk logger look as though it redacted output.
+    (is (= (rt/redact output) (streamed "stdout")))
+    (is (= (rt/redact expected-error) (streamed "stderr")))
+    (is (not (str/includes? (slurp log) secret)))
+    (is (str/includes? (slurp log) "[REDACTED]"))))
 
 (deftest schema-rejects-unusable-results
   (is (= {:coverage ["tools"] :summary "No candidates" :findings []}
@@ -356,6 +389,36 @@
     (is (= 2 (count (filter #(str/includes? % "updateProjectV2ItemFieldValue") @calls))))
     (is (= 3 (count (:effects @(:state ctx)))))
     (is (every? #(= :done (:status %)) (vals (:effects @(:state ctx)))))))
+
+(deftest streamed-command-capture-preserves-split-utf8-bytes
+  (let [java (str (io/file (System/getProperty "java.home") "bin/java"))
+        classpath (str/join java.io.File/pathSeparator
+                            (map #(.getAbsolutePath (io/file %))
+                                 (str/split (System/getProperty "java.class.path") (re-pattern java.io.File/pathSeparator))))
+        ctx (assoc-in (context) [:config :codex-command]
+                      [java "-cp" classpath "clojure.main" "-m" "simplify.fake-server" "stream-utf8"])
+        result (codex/command! ctx "utf8-fixture" (:state-dir ctx) ["clojure" "-M:test"])]
+    (is (zero? (:exitCode result)))
+    (is (= "path-\u00e9.clj\u0000" (:stdout result)))
+    (is (= "path-\u00e9.clj\u0000" (:stderr result)))))
+
+(deftest main-reconciliation-requires-observed-main-without-requiring-it-to-equal-the-merge
+  (let [ctx (context) sha #(apply str (repeat 40 %))
+        intent {:id "merge/fixture" :base (sha "a") :candidate (sha "b") :tree (sha "c") :method :merge}
+        actual {:commit (sha "d") :tree (sha "c") :parents [(sha "a") (sha "b")]}
+        native {:status :uncertain :message "Original result unknown"}]
+    (rt/update! ctx assoc-in [:effects (:id intent)] native)
+    (rt/try-with-main-lock ctx #(rt/begin-main-merge! ctx intent))
+    (doseq [main [nil "invalid" (sha "z")]]
+      (is (thrown-with-msg? Exception #"Inspected main result differs"
+                           (rt/reconcile-main-merge! ctx (:id intent) {:outcome :merged :evidence "Fixture observation"
+                                                                     :actual (assoc actual :main main)})))
+      (is (:pending (rt/main-merge-state ctx (:id intent)))))
+    (rt/reconcile-main-merge! ctx (:id intent) {:outcome :merged :evidence "Fixture observed actual merge on advanced main"
+                                              :actual (assoc actual :main (sha "e"))})
+    (is (nil? (:pending (rt/main-merge-state ctx (:id intent)))))
+    (is (= (sha "e") (get-in (rt/main-merge-state ctx (:id intent)) [:inspection :inspection :actual :main])))
+    (is (= native (get-in @(:state ctx) [:effects (:id intent)])))))
 
 (deftest denied-project-status-cannot-be-reissued-or-reported-remotely
   (let [ctx (context) calls (atom 0) issue {:node_id "issue"}]

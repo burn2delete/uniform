@@ -35,6 +35,16 @@
     (rt/git ctx repo "push" "origin" "main")
     {:repo repo :bare bare}))
 
+(deftest nul-delimited-git-paths-remain-exact
+  (let [ctx (fixture/context) {:keys [repo]} (repository! ctx)
+        tracked "tracked space.edn" untracked "untracked\nname.edn"]
+    (spit (io/file repo tracked) "{:old true}\n")
+    (rt/git ctx repo "add" tracked)
+    (rt/git ctx repo "commit" "-m" "Tracked path fixture")
+    (spit (io/file repo tracked) "{:new true}\n")
+    (spit (io/file repo untracked) "{:new true}\n")
+    (is (= #{tracked untracked} (set (flow/changed-paths ctx repo))))))
+
 (defn run-fixture! [review-result & [options]]
   (let [ctx (fixture/context)
         {:keys [repo bare]} (repository! ctx)
@@ -46,13 +56,18 @@
         _ (rt/update! ctx assoc :repository "fixture/repo" :campaign "fixture")
         calls (atom []) audits (atom 0) pr (atom nil) merge-count (atom 0)
         merge-requests (atom 0)
+        check-count (atom 0) implementations (atom 0) claims (atom 0)
         preflight-done? (atom false)
         tracking-locks (atom [])
         other-controller (assoc ctx :main-lock-owner (atom nil))
         original-command rt/command
+        original-claim rt/claim-paths!
         response (fn [value] {:exit 0 :out (json/write-str value) :err ""})]
     (with-redefs
-      [rt/command (fn
+      [rt/claim-paths! (fn [c key paths phase]
+                        (when-not (and (:first-claim-busy options) (= 1 (swap! claims inc)))
+                          (original-claim c key paths phase)))
+       rt/command (fn
                     ([c cwd argv]
                      (swap! calls conj argv)
                      (cond
@@ -83,7 +98,9 @@
        gh/setup! (fn [_] nil)
        gh/review-threads-clear? (fn [& _] (not (and @preflight-done? (:unresolved-thread options))))
        gh/head-workflow-state (fn [& _] {:state (if (and @preflight-done? (:queued-workflow options)) :pending :passed) :runs []})
-       gh/status! (fn [_ _ status]
+       gh/status! (fn [_ issue status]
+                    (when (and (= "Attention" status) (= 1 (:number issue)))
+                      (rt/write-edn! (:control-file ctx) {:paused true}))
                     (when (= "Done" status)
                       (swap! tracking-locks conj (rt/try-with-main-lock other-controller (fn [] :available)))))
        gh/relation! (fn [& _] nil)
@@ -106,21 +123,56 @@
                      (reset! pr {:headRefOid (:candidate t)})
                      {:number 3 :node_id "pr" :html_url "https://example.invalid/pr/3" :state "open"})
                    {:state (:state body)})))
-       codex/command! (fn [_ _ _ argv] (swap! calls conj argv) {:exitCode 0 :stdout "fixture command" :stderr ""})
+       codex/command! (fn [_ _ _ argv]
+                        (swap! calls conj argv)
+                        (when (and (:first-check-failure options) (= 1 (swap! check-count inc)))
+                          (throw (ex-info "Sandboxed check failed"
+                                          (merge {:command argv :result {:exitCode 1 :stderr "Actual fixture assertion failed"} :writer-ended? true}
+                                                 (:first-check-failure options)))))
+                        {:exitCode 0 :stdout "fixture command" :stderr ""})
        codex/job! (fn [_ job cwd _ _ _ _]
                     (cond
                       (str/starts-with? job "audit-")
                       {:coverage ["work.edn"] :summary "Fixture audit" :findings (if (= 1 (swap! audits inc)) [finding] [])}
                       (str/starts-with? job "implement-")
-                      (do (spit (io/file cwd "work.edn") "{:value 1}\n")
+                      (do (spit (io/file cwd "work.edn") (str "{:value 1 :repair " (swap! implementations inc) "}\n"))
                           {:outcome "ready" :summary "Removed duplicate" :checks []})
                       :else (merge review-result (select-keys (first (flow/tasks ctx)) [:base :candidate :tree]))))]
       (flow/campaign! ctx)
       (when-let [recover (:recover options)]
         (recover ctx bare repo calls merge-requests)
+        (rt/write-edn! (:control-file ctx) {:paused false})
         (flow/campaign! ctx)))
     {:state @(:state ctx) :calls @calls :merges @merge-count :audits @audits :repo repo :ctx ctx
-     :tracking-locks @tracking-locks :merge-requests @merge-requests}))
+     :tracking-locks @tracking-locks :merge-requests @merge-requests :implementations @implementations :claims @claims}))
+
+(deftest ordinary-ended-check-failure-repairs-without-stopping-the-campaign
+  (let [{:keys [state implementations merges]} (run-fixture! {:verdict "approved" :summary "Exact acceptance" :findings []}
+                                                          {:first-check-failure {}})
+        task (get-in state [:tasks "remove-duplicate"])]
+    (is (= :complete (:status state)))
+    (is (= :done (:status task)))
+    (is (= 2 implementations))
+    (is (= 1 merges))
+    (is (= 1 (count (:failed-checks task))))
+    (is (= 1 (get-in task [:failed-checks 0 :details :result :exitCode])))))
+
+(deftest restricted-unknown-and-uncertain-checks-stay-blocked-until-explicit-pause
+  (doseq [details [{:restricted true} {:writer-ended? false} {:effect-status :uncertain}]]
+    (let [{:keys [state implementations merges]} (run-fixture! {:verdict "approved" :summary "Exact acceptance" :findings []}
+                                                            {:first-check-failure details})]
+      (is (= :paused (:status state)) "The controller reaches the explicit pause after recording Attention")
+      (is (= :attention (get-in state [:tasks "remove-duplicate" :status])))
+      (is (= 1 implementations))
+      (is (zero? merges)))))
+
+(deftest temporary-writer-contention-waits-and-continues
+  (let [{:keys [state implementations merges claims]} (run-fixture! {:verdict "approved" :summary "Exact acceptance" :findings []}
+                                                                {:first-claim-busy true})]
+    (is (= :complete (:status state)))
+    (is (= 1 implementations))
+    (is (= 1 merges))
+    (is (>= claims 2))))
 
 (deftest unverified-command-success-needs-explicit-inspected-recovery
   (let [{:keys [state merges merge-requests]}
@@ -189,7 +241,7 @@
 
 (deftest unresolved-review-does-not-merge-or-complete
   (let [{:keys [state merges audits]} (run-fixture! {:verdict "needs_input" :summary "Contract ambiguity" :findings []})]
-    (is (= :attention (:status state)))
+    (is (= :paused (:status state)))
     (is (= :attention (get-in state [:tasks "remove-duplicate" :status])))
     (is (zero? merges))
     (is (= 1 audits))))

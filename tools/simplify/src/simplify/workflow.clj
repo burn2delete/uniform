@@ -241,6 +241,20 @@
           (rt/update! ctx assoc-in [:tasks key :error :details :restricted] true))
         (rt/event! ctx :tracking-error {:message (.getMessage reporting)})))))
 
+(defn failure! [ctx key error]
+  (let [details (ex-data error)]
+    (if (and (= "Sandboxed check failed" (.getMessage error))
+             (true? (:writer-ended? details)) (not (:restricted details))
+             (not (#{:pending :uncertain :restricted} (:effect-status details))))
+      (let [failed (merge (select-keys (task ctx key) [:base :candidate :tree :status :implementation-job])
+                          {:message (.getMessage error) :details (rt/redact details)})]
+        (rt/update! ctx update-in [:tasks key :failed-checks] (fnil conj []) failed)
+        (task! ctx key :feedback {:local-check (:details failed)
+                                 :instruction "Repair the actual failure within owned paths. Preserve meaningful authenticity, provenance and semantic checks; never weaken or skip checks or route around a refusal."})
+        (try (transition! ctx key :repair)
+             (catch Exception reporting (attention! ctx key reporting))))
+      (attention! ctx key error))))
+
 (defn pr-info [ctx t]
   (json/read-str
    (rt/run! ctx (get-in ctx [:config :repo-dir])
@@ -500,7 +514,7 @@
           (try (.get ^Future job)
                (catch Exception e
                  (let [cause (or (.getCause e) e)]
-                   (if (:ownership-wait (ex-data cause)) (transition! ctx key :repair) (attention! ctx key cause)))))
+                   (if (:ownership-wait (ex-data cause)) (transition! ctx key :repair) (failure! ctx key cause)))))
           (swap! running dissoc key))
         (if (paused? ctx)
           (if (empty? @running) (rt/update! ctx assoc :status :paused)
@@ -509,7 +523,7 @@
             (doseq [t (tasks ctx) :when (= :finalizing (:status t))]
               (try (finalize-merge! ctx t) (catch Exception e (attention! ctx (:key t) e))))
             (doseq [t (tasks ctx) :when (and (#{:ci :merge} (:status t)) (not (contains? @running (:key t))))]
-              (try (integrate! ctx t) (catch Exception e (attention! ctx (:key t) e))))
+              (try (integrate! ctx t) (catch Exception e (failure! ctx (:key t) e))))
             (doseq [t (sort-by :key (tasks ctx))]
               (let [occupied (filter #(and (not= (:key t) (:key %)) (= :implementing (:status %))) (tasks ctx))]
                 (when (and (< (count @running) (get-in ctx [:config :parallelism]))
@@ -521,10 +535,15 @@
                              (.submit pool ^Callable (reify Callable (call [_] (prepare! ctx (:key t) lease)))))
                       (catch Exception e (rt/release-paths! ctx lease) (throw e)))))))
             (cond
-              (or (seq @running) (some #(#{:ci :merge :finalizing} (:status %)) (tasks ctx)))
+              (or (seq @running) (some #(#{:ready :repair :ci :merge :finalizing} (:status %)) (tasks ctx)))
               (do (Thread/sleep (get-in ctx [:config :poll-ms])) (recur))
               (some #(not (terminal (:status %))) (tasks ctx))
-              (do (rt/update! ctx assoc :status :attention) (gh/status! ctx (:campaign-issue @(:state ctx)) "Attention"))
+              (do
+                (when-not (= :attention (:status @(:state ctx)))
+                  (rt/update! ctx assoc :status :attention)
+                  (gh/status! ctx (:campaign-issue @(:state ctx)) "Attention"))
+                (Thread/sleep (get-in ctx [:config :poll-ms]))
+                (recur))
               :else
               (do
                 (doseq [[round info] (:rounds @(:state ctx)) :when (:milestone info)]

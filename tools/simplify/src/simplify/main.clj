@@ -12,6 +12,7 @@
    :project-title "Uniform Simplify" :campaign "Uniform simplification"
    :state-dir "../../target/validation/simplify" :worktree-root "../../../uniform-simplify-worktrees"
    :scope ["."] :parallelism 3 :poll-ms 15000 :check-timeout-ms 1200000
+   :repair-github-review true :wait-for-ci true
    :codex-command ["codex" "app-server" "--listen" "stdio://"]
    :check-executables #{"clojure"}
    :checks [["clojure" "-M:test" "--namespace" "gravity.self-hosting.sh01-language-boundary-test"]]})

@@ -178,11 +178,7 @@
              (= base (flow/fresh-main! ctx)))))))
 
 (defn failure! [ctx key e]
-  (if (and (= "Sandboxed check failed" (.getMessage e)) (true? (:writer-ended? (ex-data e)))
-           (not (:restricted (ex-data e))))
-    (do (flow/task! ctx key :feedback {:local-check (ex-data e) :instruction "Repair the actual failure without weakening checks."})
-        (flow/transition! ctx key :repair))
-    (flow/attention! ctx key e)))
+  (flow/failure! ctx key e))
 
 (defn run-worker! [ctx key]
   (try (flow/prepare! ctx key)

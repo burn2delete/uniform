@@ -95,7 +95,7 @@
                    (with-open [reader (io/reader stream :encoding "UTF-8")]
                      (let [out (StringBuilder.) pending (StringBuilder.) buffer (char-array 4096)]
                        (loop []
-                           (let [n (.read reader buffer) start (.length pending)]
+                         (let [n (.read reader buffer) start (.length pending)]
                            (if (pos? n)
                              (do
                                (.append out buffer 0 n)
@@ -521,6 +521,7 @@
   (validate-main-intent! intent)
   (let [parents (if (= :merge (:method intent)) [(:base intent) (:candidate intent)] [(:base intent)])]
     (when-not (and (string? (:commit actual)) (re-matches #"[0-9a-f]{40}" (:commit actual))
+                   (string? (:main actual)) (re-matches #"[0-9a-f]{40}" (:main actual))
                    (= (:tree intent) (:tree actual)) (= parents (:parents actual)))
       (fail! "Inspected main result differs from the exact intent" {:intent intent :actual actual}))))
 
