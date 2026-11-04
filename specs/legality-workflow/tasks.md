@@ -127,6 +127,13 @@ L19 complete interop profile-legality criterion (Open): Admit only actually supp
 <!-- legality-interop-source-profiles:end -->
 
 
+
+<!-- native-local-model-policy:start -->
+
+Apply [Matt's scoped native local-model decision](../../.specify/memory/constitution.md#native-local-model-library-apis) within this existing Open profile-checking task. Permit the native local-model declaration/provider/call condition only with its actual source, local-provider and ordinary native profile contracts. Actual model calls require the declared AI effect, authentic scoped provider/model capability, input/output schemas and applicable policy, taint/secret, failure and replay/audit premises; a pure declaration is not an executed call. Preserve ordinary native ABI, memory, safety and selected runtime/provider requirements. Reject ambient, missing/wrong-provider/model/grant/schema, incompatible profile, invalid generated code and any inferred unrestricted native agent/tool authority. Required evidence: real accepted/refused source/profile/grant and generated-artifact cases for exact compiler/source/provider subjects, followed by separately applicable permitted runtime results where claimed. This source record does not execute a compiler, native provider or model; all existing holds, task identities/statuses and historical review scopes remain. Canonical STD13 clarification and current-source authentication remain separate follow-ups.
+<!-- native-local-model-policy:end -->
+
+
 - [ ] `legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis` Complete ownership, borrow, initialization and lifetime analysis
 
 Status: Open

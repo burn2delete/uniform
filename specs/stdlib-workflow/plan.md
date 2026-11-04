@@ -609,11 +609,11 @@ Onboard-user emits actual graph, typed state/events, retry/idempotency and compe
 
 Distinguish declaration, checked product, first execution, restart/replay, denial, cancellation, compensation and in-flight migration. Exercise missing/changed/incompatible logs, schemas or review payloads, stale evals, injection/secret failures and forbidden effects. Fixed graphs, mocks and one receipt retain their narrow subjects, never general durability, external retention/deletion or whole agent acceptance.
 
-### Workflow/AI source policy and profile interpretation
+### Workflow/AI source policy and profile decision
 
 Apply the existing [accounting-removal authority](../accounting-removal/spec.md) and [AI mixed source dispositions](../domains-workflow/plan.md#ai-mixed-accounting-source-disposition): retire synthetic compiler/project allowances, reservations, debits, cost proofs and quota-only refusals. Keep historical budget fields/API spellings visible with actual remove/retain/history classification; fake zero telemetry, sentinels or renamed allowances are not cleanup. Genuine external-account/provider limits and usage attribution, program retry/timeout/cancellation, concrete memory/format constraints and quality thresholds retain their own meaning. This source increment changes no public name or accounting implementation.
 
-STD13's native local-model availability is a specific documented condition alongside its broader export statement. The bounded author interpretation is a conditional local-provider exception, requiring actual provider/capability/native boundary contracts and independent source review. Do not infer unrestricted native agents/tools or a selected provider. Core stays data-only; restricted profiles have no live APIs; meta artifacts undergo ordinary checking and formal work retains its modeled scope. All actual native/provider execution restrictions persist.
+Matt's [2026-11-04 scoped native local-model decision](../../.specify/memory/constitution.md#native-local-model-library-apis) explicitly selects the native local-provider condition. Actual local provider/capability, schema/effect/policy and ordinary native boundary contracts remain required; implementation, independent current source review and authentication are separate. Do not infer unrestricted native agents/tools or a selected provider. Core stays data-only; restricted profiles have no live APIs; meta artifacts undergo ordinary checking and formal work retains its modeled scope. All actual native/provider execution restrictions persist.
 
 ### Workflow/AI staging and evidence limits
 

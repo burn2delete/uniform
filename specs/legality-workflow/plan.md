@@ -974,7 +974,7 @@ Use the [schema and database library source criteria](../stdlib-workflow/plan.md
 
 ## Workflow and AI library source interface
 
-Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Enforce profile/taint/resource/secret and operation authority; preserve the narrow conditional native local-model interpretation for independent review, actual host/provider limits and requested retry semantics. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
+Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Enforce profile/taint/resource/secret and operation authority; preserve [Matt's scoped native local-model decision](../../.specify/memory/constitution.md#native-local-model-library-apis), actual host/provider limits and requested retry semantics. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
 
 ## Testing and meta library source interface
 
