@@ -9,7 +9,7 @@ native host-error containment and development evidence.
 
 ## Boundary and dependencies
 
-The proposed native API accepts actual source path/text/options/project context
+The native API accepts actual source path/text/options/project context
 and explicit late owner Vars. It constructs the existing compatibility product
 map using the existing source-unit, tokenizer, parser and record operations.
 Source-unit and reader-table construction stay outside the protected region;
@@ -77,3 +77,37 @@ The corrected expectation follows the unchanged Stage1 diagnostic owner;
 production behavior, source pins and admission gates were not altered.
 Complete post-extraction comparison, affected regressions, lint, validators and
 independent source/adversarial acceptance remain outstanding at this commit.
+
+## Verified native comparison and regression checks
+
+The complete four-record after-capture equals the original serialized bytes and
+parsed values, retaining SHA-256311c086ccd3b5e4cc3dfe64b2102b107b4011580ecc99f958733f5b6fa41e55b.
+The four prior gravity.reader function bodies, the canonical c2-reader-products
+and projection-operation suffix, and the three-argument context-discovery
+arity are exact. No authority/status field is added to the native product map.
+The current source body was recorded at351b27627d6db744af5c3353e8b3f3a621a96434.
+
+Focused Reader checks pass29 tests/339 assertions. Fresh separate JVMs pass
+C2 source-identity9/146, product-projection6/43 and compatibility7/210: a total
+of51 tests/738 assertions across the four successful runs. Added controls verify
+failure-operator selection before span lookup and tripwire canonical entrypoints
+without calling them. A separate cold process constructs native products through
+supplied Vars with Bootstrap absent and five public stage operations.
+Language6/11 and source-ownership42/1187 pass with zero skipped namespaces.
+The three-path contextual lint passes with no blocking findings or unchanged
+baseline warnings; raw context subprocess warnings remain visible. Documentation,
+roadmap and governance validators pass. Temporary raw captures, checks and logs
+use /tmp/uniform-reader-oracle-*; generated lint receipts are archived outside
+the source checkout.
+
+The initial combined compatibility/helper run failed the helper's cold-load
+assertion because Bootstrap had already loaded. It remains a nonpass; the fresh
+standalone helper runs supply their own results. A new timing test initially
+left the real reader-table constructor under an interposed span callback, so
+upstream table construction observed that callback before the intended stack
+handler. Its failed source/log remain retained. The corrected test supplies
+native source/table stubs to isolate the stated operator-order contract; genuine
+product controls remain separate. No production behavior or predicate changed.
+
+Independent implementation/adversarial review, final committed checks, own CI
+and exact current-main composition/preflight remain separate integration gates.

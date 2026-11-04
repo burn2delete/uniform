@@ -607,3 +607,35 @@
     (is (= :reader-host-stack-overflow (get-in (ex-data result) [:facts :failure-kind])))
     (is (= "java.lang.StackOverflowError"
            (get-in (ex-data result) [:facts :contained-host-error])))))
+
+(deftest compatibility-oracle-retains-failure-operator-before-span-lookup
+  (let [events (atom [])
+        path "src/stack-order.gravity"
+        context (bootstrap/reader-project-context-for-source path)
+        result
+        (with-redefs [bootstrap/c2-source-unit-record (fn [& _] {:source-id :native-source})
+                      bootstrap/stage1-reader-table (constantly :native-table)
+                      bootstrap/stage1-reader-token-stream
+                      (fn [& _] (throw (StackOverflowError. "controlled native stack")))
+                      bootstrap/source-span
+                      (fn [& _]
+                        (swap! events conj :span)
+                        (alter-var-root #'bootstrap/c2-reader-fail!
+                                        (constantly (fn [& _] :late-failure)))
+                        {:source path})
+                      bootstrap/c2-reader-fail!
+                      (fn [& _] (swap! events conj :original-failure) :original-return)]
+          (compatibility-products path "x" context))]
+    (is (= :original-return result))
+    (is (= [:span :original-failure] @events))))
+
+(deftest compatibility-oracle-does-not-enter-canonical-reader-admission
+  (let [path (fixture "accepted" "surface-syntax" ".gravity")
+        text (slurp path)
+        context (bootstrap/reader-project-context-for-source path)
+        forbidden (fn [& _] (throw (AssertionError. "canonical Reader route entered")))]
+    (with-redefs [bootstrap/c2-reader-products forbidden
+                  bootstrap/sh03-reader-resolved-result! forbidden
+                  bootstrap/sh03-reader-adapt-products! forbidden
+                  bootstrap/compiler-c2-reader-source-artifact forbidden]
+      (is (= 2 (count (:parsed-records (compatibility-products path text context))))))))
