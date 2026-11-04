@@ -372,6 +372,7 @@
 
 (defn- production-helper-registration-valid? [record contract]
   (let [helpers (get contract "production_helpers")
+        source-paths (mapv #(get-in % ["source" "path"]) helpers)
         associations (into {} (map #(production-helper-association record %) helpers))
         module-owners (:module-owners record)
         standalone-test-owners (:standalone-test-owners record)
@@ -385,6 +386,7 @@
                 test-path (get test "path")
                 owner (keyword (get helper "owner"))
                 association (get associations source-path)
+                projected-association (second (production-helper-association record helper))
                 slice (:slice association)]
             (and (map? helper)
                  (string? (get helper "id"))
@@ -400,6 +402,7 @@
                  (every? #(.isFile (path %))
                          [source-path consumer-path test-path])
                  (map? association)
+                 (= projected-association (production-helper-record record source-path))
                  (= association (production-helper-record record source-path))
                  (production-helper-slice-valid? record owner slice)
                  (= owner (get module-owners source-path))
@@ -419,7 +422,8 @@
                    true))))]
     (and (vector? helpers)
          (= (count helpers) (count (set (map #(get % "id") helpers))))
-         (= (set (map #(get-in % ["source" "path"]) helpers))
+         (= (count helpers) (count (set source-paths)))
+         (= (set source-paths)
             (set (keys (:production-helper-associations record))))
          (= associations (:production-helper-associations record))
          (every? valid-helper? helpers))))
@@ -459,7 +463,18 @@
                            "forged.clj")
                  (assoc-in contract ["production_helpers" helper-index "test" "registration"]
                            "bootstrap-free")]]
-      (is (not (production-helper-registration-valid? record bad))))))
+      (is (not (production-helper-registration-valid? record bad))))
+    ;; A duplicate source path used to overwrite the first projected entry in
+    ;; `associations`, allowing the forged first helper to borrow the valid
+    ;; last entry.  Keep this negative as an appended duplicate so the old
+    ;; map-overwrite guard would accept it.
+    (let [duplicate-helper (assoc (get-in contract ["production_helpers" helper-index])
+                                  "id" "process-supervision-duplicate")
+          masked-contract (-> contract
+                              (update "production_helpers" conj duplicate-helper)
+                              (assoc-in ["production_helpers" helper-index "source" "namespace"]
+                                        "gravity.forged"))]
+      (is (not (production-helper-registration-valid? record masked-contract))))))
 
 (deftest runtime-invocation-helper-has-an-explicit-consumer-and-test
   (let [record (ownership-record)
