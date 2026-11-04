@@ -139,6 +139,46 @@
     (is (= 2 (:expected-arity failure)))
     (is (= 1 (:actual-arity failure)))))
 
+(deftest nested-do-caller-preserves-source-owned-evaluation-order
+  (let [form '(do (do) (do 1 2) (if true (do 3) (do 4 5 6)))
+        classification-calls (atom [])
+        evaluation-calls (atom [])
+        lowered
+        (with-redefs [lowering/c6-form->core-form
+                      (fn [_]
+                        (throw (ex-info "hosted classifier was called"
+                                        {:id "C6-SOURCE-CLASSIFIER-HOST-FALLBACK"})))
+                      lowering/c6-eval-order
+                      (fn [& _]
+                        (throw (ex-info "hosted evaluation order was called"
+                                        {:id "C6-SOURCE-EVAL-ORDER-HOST-FALLBACK"})))]
+          (c6/with-operations
+            {:c6-form->core-form
+             (fn [value]
+               (swap! classification-calls conj value)
+               (@source-operation value))
+             :c6-eval-order
+             (fn [core-form child-count]
+               (swap! evaluation-calls conj [core-form child-count])
+               (@source-evaluation-order-operation core-form child-count))}
+            #(c6/c6-lowering-artifact
+              (:source-path module) module c5-artifact
+              [(syntax "nested-do" form)])))
+        nodes (:core-node-table lowered)
+        do-nodes (filterv #(= 'do (:form %)) nodes)]
+    (is (= form (:surface-form (first nodes))))
+    (is (= [form '(do) '(do 1 2)
+            '(if true (do 3) (do 4 5 6)) '(do 3) '(do 4 5 6)]
+           (filterv seq? @classification-calls)))
+    (is (= [['do 0] ['do 2] ['do 1] ['do 3] ['if 3] ['do 3]]
+           @evaluation-calls))
+    (is (= [[[:expr 0] [:expr 1] [:expr 2]] []
+            [[:expr 0] [:expr 1]] [[:expr 0]]
+            [[:expr 0] [:expr 1] [:expr 2]]]
+           (mapv :evaluation-order do-nodes)))
+    (is (= [1 2 true 3 4 5 6]
+           (mapv :value (filter #(= :literal (:form %)) nodes))))))
+
 (deftest current-source-leaves-are-used-by-c6-lowering-caller
   (let [classification-calls (atom [])
         evaluation-calls (atom [])
