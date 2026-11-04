@@ -114,7 +114,7 @@ Static conservation proves both moved bodies exactly modulo the declared
 names/arglists and explicit ports, both facades and their early require, the
 unchanged shadowed constructor and all surrounding Bootstrap code, every
 existing Macro function body, the sole API count correction and the one CI
-namespace insertion. Exactly eight slice paths differ. Source authentication,
+namespace insertion. At db0, exactly eight slice paths differ. Source authentication,
 pins and manifests remain byte-identical. Contextual lint for the six changed
 Clojure paths against source parent f40 passes with zero baseline warnings and
 zero blockers. This is local extraction validation, not a composition check
@@ -142,13 +142,14 @@ exactly one --namespace in every Macro child, while the existing cohort now
 correctly includes the native-report namespace as well. Its update must preserve
 explicit complete namespace selection and the existing disjoint receipt/source
 coverage controls; replacing the assertion with a generic lower bound would
-not establish that coverage. Root's actual active C6/CI writer owns both
-tools/ci/run.clj and tools/ci/run_test.clj, so that shared-file correction remains
-pending a coordinated owner or normal handoff, without interrupting valid checks.
+not establish that coverage. At discovery, Root's actual active C6/CI writer
+owned both tools/ci/run.clj and tools/ci/run_test.clj, so the shared-file
+correction awaited its normal handoff without interrupting valid checks.
 
 The full combined-branch lint also finds one introduced duplicate-require warning
-at component 00857 line 1. The required early native facade import left that
-older later require redundant. All 3459 baseline warnings remain unchanged.
+at component 00857 line 1. That component was byte-identical base to candidate
+in the failed run; the required early native facade import made the old later
+require redundant in the combined context. All 3459 baseline warnings remain unchanged.
 The six-path local extraction check missed the new warning at that older
 context location; its zero result is retained at its narrower scope. The actual
 provider static nonpass remains evidence and receives no integration credit.
@@ -162,3 +163,39 @@ native parity and independent review of this load-point correction remain
 pending, as do the shared CI harness correction and final fully wired CI.
 Evidence is retained under /tmp/uniform-macro-native-reports-static-failure/
 and /tmp/uniform-macro-native-reports-load-fix-*.
+
+After Root's recorded normal release and actual row absence, a fresh own
+three-path CI coverage claim owns run.clj for transaction serialization,
+run_test.clj and sh01_ownership_test.clj. It adopts no foreign token and does
+not edit run.clj. The cohort guard now compares the exact three namespace
+vectors, checks every native-report deftest is selected, explicitly proves
+omitting that namespace loses its selection, and retains all existing complete/
+disjoint receipt partitions and mutation counterexamples. Its selection model
+checks both loaded namespace and qualified/unqualified selectors.
+
+The source ownership guard now checks the actual early component 00028 import
+and native facade, forbids a duplicate at the later runtime consumer, verifies
+strict load-order precedence, and keeps its existing runtime-consumer and forged
+ownership rejections. This updates the real join instead of retaining a redundant
+import to satisfy a stale location assertion. The retained first post-removal
+ownership nonpass identifies that stale assertion.
+
+At clean load-fix source 739fbcd8ff5fb7fa91696c80b31741367de33bdf, full
+provider-context reproduction uses the original 50 paths plus the newly changed
+00857: 3459 unchanged baseline warnings and zero blockers. The first observer
+incorrectly expected 00857 to be among those 50 direct paths, failed before lint,
+and is retained; the corrected 51-path run covers the actual new change.
+Native 28-record parity retains d76b80092e45ef9dfec5b9189649a5d49772646b8284d4085c758eb245767577;
+focused rules/inventory remain 8 / 148. The updated ownership/boundary run passes
+48 / 1202 with no skipped namespaces. The exact 256MiB CI harness passes
+49 tests / 519 assertions, including real lint and all original adversarial
+controls. The first local harness attempt omitted the pinned linter from PATH;
+its three launch errors remain separate preparation evidence, not code failures.
+The corrected environment uses the same real pinned linter without skips or
+policy changes. Thirteen own generated harness output files were moved
+recoverably to /tmp/uniform-macro-native-ci-coverage-target-ci after its process
+ended, with full byte/hash preservation. No foreign checkout or source was cleaned.
+
+The corrected coverage/source join still requires final combined contextual
+lint, independent acceptance, fresh exact-head hosted CI and current-base clean
+integration. The failed a1/provider4e55 run remains NONPASS permanently.
