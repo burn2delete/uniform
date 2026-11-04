@@ -39,9 +39,49 @@
   [path]
   (gravity.release/file-bytes path))
 
+(defn p18-execute-uniform-sha256
+  "Execute current SHA source; host hashes below authenticate the plan only.
+  This is a hosted invocation boundary, not migration or release evidence."
+  [arguments]
+  (let [relative "bootstrap/gravity/src/gravity/stdlib/sha256.gravity"
+        file (p15-s23-sh07-governed-source-file relative)
+        reject! (fn [reason]
+                  (throw (ex-info "Uniform release SHA-256 binding is invalid"
+                                  {:rule "SH20SHA002" :reason reason})))]
+    (when-not file (reject! :missing-kernel-source))
+    (let [path (.getCanonicalPath ^java.io.File file)
+          source (java.nio.file.Files/readAllBytes (.toPath ^java.io.File file))
+          text (p15-s23-sh07-b51-strict-utf8 source path)
+          emitter (:emitter (c-backend-stage2-plan-emitter-source-rule! path :jvm))
+          plan (p15-s23-stage2-compiler-artifact-plan emitter path text)
+          digest (fn [value]
+                   (str "sha256:" (sha256-hex (pr-str (c-backend-canonical-value value)))))]
+      (when-not (= (str "sha256:" (sha256-bytes-hex source))
+                   (get-in plan [:source :sha256]))
+        (reject! :kernel-source-plan-mismatch))
+      (when-not (and (= :gravity/stage2-compiler-artifact-plan (:kind plan))
+                     (true? (:compiler-artifact-plan? plan))
+                     (= '{:module gravity.stdlib.sha256 :profile :meta :target :jvm
+                          :effects #{} :capabilities #{} :safety :safe
+                          :exports [sh22-sha256-policy sh22-sha256-pad sh22-sha256]}
+                        (:module plan))
+                     (= '{:arity 1 :params [arguments]}
+                        (select-keys (get-in plan [:functions 'sh22-sha256])
+                                     [:arity :params])))
+        (reject! :kernel-abi-mismatch))
+      (when-not (= (:plan-id plan) (digest (dissoc plan :plan-id)))
+        (reject! :kernel-plan-id-mismatch))
+      (when-not (java.util.Arrays/equals
+                 ^bytes source
+                 ^bytes (java.nio.file.Files/readAllBytes (.toPath ^java.io.File file)))
+        (reject! :kernel-source-changed))
+      (p15-s23-stage2-runtime-execute-function
+       {:engine :gravity-sh22-sha256 :compiler-artifact-plan? true}
+       plan 'sh22-sha256 [arguments]))))
+
 (defn p18-bytes-sha256
   [bytes]
-  (gravity.release/bytes-sha256 bytes))
+  (gravity.release/uniform-bytes-sha256 p18-execute-uniform-sha256 bytes))
 
 (defn p18-file-sha256
   [path]

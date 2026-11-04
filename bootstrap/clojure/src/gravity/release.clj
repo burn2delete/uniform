@@ -112,6 +112,7 @@
    (.toPath (java.io.File. path))))
 
 (defn bytes-sha256
+  "Retained host reference; the P18 digest caller uses uniform-bytes-sha256."
   [bytes]
   (let [digest (.digest (java.security.MessageDigest/getInstance "SHA-256")
                         bytes)]

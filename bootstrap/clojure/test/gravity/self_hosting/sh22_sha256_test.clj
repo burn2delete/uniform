@@ -38,11 +38,6 @@
                   (.digest (java.security.MessageDigest/getInstance "SHA-256")
                            (octet-array values)))))
 
-;; A literal-byte transport provider for the existing release file-hash caller.
-;; Byte conversion stays outside the Uniform byte kernel; no text is decoded.
-(defn- uniform-bytes-sha256 [bytes]
-  (release/uniform-bytes-sha256 hash-octets bytes))
-
 (defn- expected-padding [values]
   (let [size (count values)
         zeros (mod (- 55 size) 64)
@@ -153,23 +148,67 @@
     (is (not= wrong (:value (hash-octets [values]))))))
 
 (deftest sh22-sha256-existing-release-caller-consumes-uniform-provider
-  ;; Compile before disabling the independent seed oracles: plan provenance
-  ;; still uses host hashing. The actual file identity below uses Uniform.
-  @engine
+  ;; Authentication still uses host hashing; only the adopted release digest
+  ;; computation is tripwired. Exercise the actual P18 caller, not a test port.
   (let [file (java.io.File/createTempFile "uniform-sha256-" ".bin")
-        values [0 255 128 192 175 97]
-        expected (str "sha256:" (jdk-sha256 values))]
+        execute bootstrap/p15-s23-stage2-runtime-execute-function
+        calls (atom [])]
     (try
-      (with-open [output (io/output-stream file)]
-        (.write output (octet-array values)))
-      (with-redefs [digest/sha256-bytes-hex
-                    (fn [_] (throw (ex-info "unexpected seed digest" {})))
-                    release/bytes-sha256
-                    (fn [_] (throw (ex-info "unexpected release digest" {})))]
-        (is (= expected
-               (release/file-sha256 #'uniform-bytes-sha256 #'release/file-bytes
-                                    (.getPath file)))))
+      (doseq [values [[0 255 128 192 175 97] (vec (range 256)) []]]
+        (with-open [output (io/output-stream file)]
+          (.write output (octet-array values)))
+        (reset! calls [])
+        (with-redefs [release/bytes-sha256
+                      (fn [_] (throw (AssertionError. "unexpected release digest")))
+                      bootstrap/p15-s23-stage2-runtime-execute-function
+                      (fn [runtime plan callee arguments]
+                        (when (= 'sh22-sha256 callee)
+                          (swap! calls conj [(get-in plan [:module :module]) arguments]))
+                        (execute runtime plan callee arguments))]
+          (is (= (str "sha256:" (jdk-sha256 values))
+                 (bootstrap/p18-file-sha256 (.getPath file))))
+          (is (= [['gravity.stdlib.sha256 [[values]]]] @calls))))
       (finally (.delete file)))))
+
+(defn- rejection [f]
+  (try (f) nil (catch clojure.lang.ExceptionInfo error error)))
+
+(deftest sh22-sha256-release-rejects-missing-or-changed-bindings
+  (let [plan @engine
+        resolver (ns-resolve 'gravity.bootstrap 'p15-s23-sh07-governed-source-file)
+        invoke #(bootstrap/p18-bytes-sha256 (byte-array 0))
+        executions (atom 0)]
+    (with-redefs [release/bytes-sha256
+                  (fn [_] (throw (AssertionError. "legacy digest must not run")))
+                  bootstrap/p15-s23-stage2-runtime-execute-function
+                  (fn [& _] (swap! executions inc))]
+      (with-redefs-fn {resolver (constantly nil)}
+        #(is (= {:rule "SH20SHA002" :reason :missing-kernel-source}
+                (ex-data (rejection invoke)))))
+      (doseq [[changed reason]
+              [[{} :kernel-source-plan-mismatch]
+               [(assoc-in plan [:source :sha256] "sha256:changed") :kernel-source-plan-mismatch]
+               [(update plan :functions dissoc 'sh22-sha256) :kernel-abi-mismatch]
+               [(assoc-in plan [:functions 'sh22-sha256 :arity] 2) :kernel-abi-mismatch]
+               [(assoc-in plan [:functions 'sh22-sha256 :params] ['other]) :kernel-abi-mismatch]
+               [(assoc-in plan [:module :module] 'ambient.sha256) :kernel-abi-mismatch]
+               [(assoc-in plan [:module :effects] #{:io}) :kernel-abi-mismatch]
+               [(assoc plan :plan-id "sha256:changed") :kernel-plan-id-mismatch]]]
+        (with-redefs [bootstrap/p15-s23-stage2-compiler-artifact-plan (fn [& _] changed)]
+          (is (= {:rule "SH20SHA002" :reason reason}
+                 (ex-data (rejection invoke))))))
+      (let [file (java.io.File/createTempFile "uniform-sha256-source-" ".gravity")
+            source (io/file @root "bootstrap/gravity/src/gravity/stdlib/sha256.gravity")]
+        (try
+          (io/copy source file)
+          (with-redefs-fn
+            {resolver (constantly file)
+             #'bootstrap/p15-s23-stage2-compiler-artifact-plan
+             (fn [& _] (spit file "\n; source changed during construction\n" :append true) plan)}
+            #(is (= {:rule "SH20SHA002" :reason :kernel-source-changed}
+                    (ex-data (rejection invoke)))))
+          (finally (.delete file))))
+      (is (zero? @executions)))))
 
 (deftest sh22-sha256-retains-explicit-internal-policy-and-audit-nonclaims
   (let [policy (call 'sh22-sha256-policy [])]
