@@ -901,22 +901,30 @@
 (defn- register-output!
   [registered ^File file]
   (let [canonical (.getCanonicalFile file)]
-    (swap! registered assoc (.getPath canonical) {:file canonical})
+    (swap! registered assoc (.getPath canonical)
+           {:file canonical :ownership :unproven})
     canonical))
 
 (defn- remember-output!
-  [registered ^File file]
+  [registered ^File file expected]
   (let [snapshot (output-ownership file)
-        path (.getPath ^File (:file snapshot))]
-    (swap! registered update path merge snapshot {:observation :published})
+        path (.getPath ^File (:file snapshot))
+        proven? (and (= (some-> (:file-key expected) str)
+                        (some-> (:file-key snapshot) str))
+                     (= (:size expected) (:size snapshot))
+                     (= (:sha256 expected) (:sha256 snapshot)))]
+    (swap! registered update path merge snapshot
+           {:observation (if proven? :published :ownership-unproven)
+            :ownership (if proven? :proven :unproven)})
     file))
 
 (defn- last-known-output
-  [{:keys [file-key size sha256]}]
+  [{:keys [file-key size sha256 ownership]}]
   (when (or file-key size sha256)
     {:file-key (some-> file-key str)
      :size size
-     :sha256 sha256}))
+     :sha256 sha256
+     :ownership ownership}))
 
 (defn- observed-output-receipt
   [{:keys [^File file] :as registered}]
@@ -929,13 +937,20 @@
         attributes
         (if (and (.isRegularFile attributes) (some? (.fileKey attributes)))
           (let [snapshot (output-ownership canonical)
-                changed? (and (:observation registered)
+                changed? (and (= :proven (:ownership registered))
                               (or (not= (some-> (:file-key registered) str)
                                         (some-> (:file-key snapshot) str))
                                   (not= (:size registered) (:size snapshot))
                                   (not= (:sha256 registered) (:sha256 snapshot))))]
             (cond-> {:path (.getPath canonical)
-                     :observation (if changed? :replacement :published)
+                     :observation (cond changed? :replacement
+                                        (= :proven (:ownership registered))
+                                        :published
+                                        :else :ownership-unproven)
+                     :ownership (if (and (= :proven (:ownership registered))
+                                        (not changed?))
+                                  :proven
+                                  :unproven)
                      :file-key (str (:file-key snapshot))
                      :size (:size snapshot)
                      :sha256 (:sha256 snapshot)}
@@ -943,22 +958,26 @@
           {:path (.getPath canonical)
            :observation :unavailable
            :reason :not-owned-regular-file
+           :ownership (:ownership registered)
            :last-known (last-known-output registered)})
 
         (Files/exists path no-follow-links)
         {:path (.getPath canonical)
          :observation :unavailable
          :reason :not-owned-regular-file
+         :ownership (:ownership registered)
          :last-known (last-known-output registered)}
 
         :else
-        (if (= :published (:observation registered))
+        (if (= :proven (:ownership registered))
           {:path (.getPath canonical)
            :observation :unavailable
            :reason :missing-after-publication
+           :ownership :proven
            :last-known (last-known-output registered)}
           {:path (.getPath canonical)
            :observation :not-published
+           :ownership :unproven
            :last-known (last-known-output registered)})))
     (catch Exception error
       {:path (.getPath file)
@@ -966,6 +985,7 @@
        :reason :observation-error
        :cause-class (.getName (class error))
        :cause-message (.getMessage error)
+       :ownership (:ownership registered)
        :last-known (last-known-output registered)})))
 
 (defn- retained-output-receipt
@@ -1006,11 +1026,10 @@
          (let [producer (run-child! project-root
                                     (producer-expression (.getPath plan-file))
                                     :producer)
-               _ (remember-output! registered-outputs plan-file)
-               _ (assert-stable-inputs! inputs project-root :after-producer)
                payload (validate-persisted-plan! (read-edn-file! plan-file "macro plan"))
                producer-summary (:summary producer)
-               plan-sha256 (file-sha256 plan-file)
+               plan-snapshot (output-ownership plan-file)
+               plan-sha256 (:sha256 plan-snapshot)
                canonical-source-path (.getPath
                                       (canonical-file project-root macro-source-path))]
            (when-not (and (= :complete (:status producer-summary))
@@ -1033,6 +1052,8 @@
            (when-not (= (:sha256 source) (get-in payload [:plan :source :sha256]))
              (fail! :source-plan-binding "persisted plan source hash drifted"
                     {:source source :plan-source (get-in payload [:plan :source])}))
+           (remember-output! registered-outputs plan-file plan-snapshot)
+           (assert-stable-inputs! inputs project-root :after-producer)
            (register-output! registered-outputs record-file)
            (let [execution (run-child! project-root
                                        (execution-expression (.getPath plan-file)
@@ -1043,16 +1064,17 @@
                                                              revision
                                                              toolchain)
                                        :execution)
-                 _ (remember-output! registered-outputs record-file)
-                 _ (assert-stable-inputs! inputs project-root :after-execution)
                  record (read-edn-file! record-file "macro execution record")
-                 record-sha256 (file-sha256 record-file)
+                 record-snapshot (output-ownership record-file)
+                 record-sha256 (:sha256 record-snapshot)
                  macro-version (get-in payload [:identities :public-function-hashes
                                                 macro-function])
                  execution-summary (:summary execution)
                  _ (validate-execution-summary!
                     execution-summary record (get-in payload [:plan :plan-id])
                     plan-sha256 record-sha256)
+                 _ (remember-output! registered-outputs record-file record-snapshot)
+                 _ (assert-stable-inputs! inputs project-root :after-execution)
                  result (do
                           (validate-fixture-record! record project-root source
                                                     revision toolchain macro-version)

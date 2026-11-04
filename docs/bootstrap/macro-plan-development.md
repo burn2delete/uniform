@@ -39,14 +39,16 @@ compiler, a native backend, or a self-hosting proof.
   source/compiler/toolchain inputs while they remain stable across producer
   and execution children.
 - Outputs are created with CREATE_NEW, read back, and hashed. A failed run
-  retains every published output because a portable public-path delete cannot
-  be coupled atomically to the ownership observation. The failure diagnostic
-  records the retention policy and every output path registered before a child
-  starts. Each path is reported as published with its observed file key, size,
-  and digest, as a replacement/changed-after-publication with current and
-  last-known observations, or explicitly as not published or unavailable;
-  existing, raced, and replacement files are never overwritten or deleted by
-  cleanup.
+  retains every output because a portable public-path delete cannot be coupled
+  atomically to the ownership observation. A path is labeled `:published` only
+  after the child summary, output digest, and matching file-key/size snapshot
+  bind a successful child write. The failure diagnostic records the retention
+  policy and every output path registered before a child starts. A file merely
+  observed after registration is reported as ownership-unproven with its
+  actual file key, size, and digest;
+  a replacement/changed-after-publication includes current and last-known
+  observations, and missing/unavailable paths remain explicit. Existing,
+  raced, and replacement files are never overwritten or deleted by cleanup.
 
 ## Dependencies
 
@@ -93,8 +95,9 @@ substitution and canonical plan-ID tampering, exact function-shape rejection,
 lossless UTF-8 fixture snapshots, exact accepted expansion output, child
 observation/summary substitution, full structured diagnostics and C3-bound
 provenance, source/compiler/toolchain drift, output-collision,
-publish-then-fail/ordinary-I/O/replacement preservation, EDN readback,
-accepted template output, and the rejected C4-RETURN path.
+publish-then-fail/ordinary-I/O ownership-unproven receipts,
+replacement preservation, EDN readback, accepted template output, and the
+rejected C4-RETURN path.
 
 For a direct development run:
 

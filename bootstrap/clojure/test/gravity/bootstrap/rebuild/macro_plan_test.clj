@@ -248,19 +248,21 @@
         owned-file (io/file root "owned.edn")
         owned (atom {})
         register! (private-function 'register-output!)
+        snapshot! (private-function 'output-ownership)
         remember! (private-function 'remember-output!)
         retain! (private-function 'retain-owned-outputs!)]
     (try
       (io/make-parents owned-file)
       (register! owned owned-file)
       (spit owned-file "owned-by-this-run")
-      (remember! owned owned-file)
+      (remember! owned owned-file (snapshot! owned-file))
       (let [receipt (retain! owned)]
         (is (.exists owned-file))
         (is (= :retain-published-outputs (:policy receipt)))
         (is (= (.getCanonicalPath owned-file)
                (:path (first (:outputs receipt)))))
-        (is (= :published (:observation (first (:outputs receipt))))))
+        (is (= :published (:observation (first (:outputs receipt)))))
+        (is (= :proven (:ownership (first (:outputs receipt))))))
       (finally
         (delete-tree! root)))))
 
@@ -270,13 +272,14 @@
         replacement-file (io/file root "replacement.edn")
         owned (atom {})
         register! (private-function 'register-output!)
+        snapshot! (private-function 'output-ownership)
         remember! (private-function 'remember-output!)
         retain! (private-function 'retain-owned-outputs!)]
     (try
       (io/make-parents owned-file)
       (register! owned owned-file)
       (spit owned-file "owned-by-this-run")
-      (remember! owned owned-file)
+      (remember! owned owned-file (snapshot! owned-file))
       (spit replacement-file "replacement-after-write")
       (Files/move (.toPath replacement-file)
                   (.toPath owned-file)
@@ -287,6 +290,7 @@
         (is (= (.getCanonicalPath owned-file)
                (:path (first (:outputs receipt)))))
         (is (= :replacement (:observation (first (:outputs receipt)))))
+        (is (= :unproven (:ownership (first (:outputs receipt)))))
         (is (map? (:last-known (first (:outputs receipt)))))
         (is (string? (:sha256 (first (:outputs receipt))))))
       (finally
@@ -315,7 +319,7 @@
     (is (= :provenance-drift (-> error ex-data :reason)))
     (is (= :after-producer (-> error ex-data :phase)))))
 
-(deftest failed-child-publication-is-reported-on-ordinary-io-error
+(deftest preregistered-foreign-file-is-not-claimed-on-ordinary-io-error
   (let [root (temporary-root)
         component (macro-plan/development-macro-plan)
         plan-file (.getCanonicalFile
@@ -337,7 +341,7 @@
                  (fn [_ _ label]
                    (when (= :producer label)
                      (io/make-parents plan-file)
-                     (spit plan-file "published-before-summary"))
+                     (spit plan-file "foreign-before-failed-child"))
                    (throw (java.io.IOException. "summary stream closed")))}
                 (fn []
                   (caught #(macro-plan/run-development-macro-plan! "." root))))]
@@ -346,9 +350,10 @@
       (is (= "java.io.IOException" (-> error ex-data :cause-class)))
       (let [output (first (get-in (ex-data error) [:retained-outputs :outputs]))]
         (is (= (.getCanonicalPath plan-file) (:path output)))
-        (is (= :published (:observation output)))
+        (is (= :ownership-unproven (:observation output)))
+        (is (= :unproven (:ownership output)))
         (is (re-matches #"sha256:[0-9a-f]{64}" (:sha256 output))))
-      (is (= "published-before-summary" (slurp plan-file)))
+      (is (= "foreign-before-failed-child" (slurp plan-file)))
       (finally
         (delete-tree! root)))))
 
