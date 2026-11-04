@@ -119,5 +119,26 @@ The metadata-aware EDN SHA256 is
 27f9c5daf0a8bf276065c793adc64f9bd3c4215604fd95f81529ab2ba9f3f977.
 The source paths, text/hash, spans and complete diagnostic/native data remain in
 the capture. Runtime execution is explicitly marked as a unit control in every
-record. Clean-candidate after-capture comparison, broader checks, independent
-review, hosted exact source/base CI and integration are still pending.
+record. Clean candidate 64eb19e248dfca1a707569e86a6ee1ff076492e8, tree
+40d53ca65a8e9f796069e2e7cda902137474a200, reproduces the complete baseline
+byte for byte and as parsed data with that same SHA256. The regression changes
+only deliberately interposed Var-port timing; ordinary native data is unchanged.
+
+The existing pure runtime containment/interposition tests pass two tests and
+23 assertions. The language boundary gate passes six tests / 11 assertions and
+source ownership passes 42 / 1187, with no skipped namespaces. Contextual lint
+against actual main f662 covers 45 changed Clojure/EDN paths in this descendant
+cohort: 3459 unchanged baseline warnings, zero blockers. Direct lint of the
+changed source/test/CI and conservation helper has zero warnings/errors.
+tools/ci formatting and document, full-language-roadmap and workstream-governance
+validators pass. These structural checks do not prove canonical conformance.
+
+The saved conservation helper reverses exactly the 17 operator changes and
+removes only the new private helper and its scoped contract, reproducing the
+entire original Syntax file byte for byte. It also proves the single existing
+CI command insertion and exactly five changed slice paths. Thus unrelated
+Syntax code and all Bootstrap source, authentication, manifests and pin files
+are unchanged. A fresh cold load exposes the same 46 public Syntax operations
+without loading Bootstrap. Evidence logs and capture/helper files use the local
+prefix /tmp/uniform-syntax-owner-calls-. Independent review, hosted exact
+source/base CI and immediate clean integration preflight remain pending.
