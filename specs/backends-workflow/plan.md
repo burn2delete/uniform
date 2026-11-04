@@ -101,6 +101,136 @@ Use the [interoperability producer and consumer order](../runtime-workflow/plan.
 Task bodies/statuses, all source criteria, historical reviews and forty future source bindings remain unchanged. Current source/interface entailment, independent acceptance and integration remain pending. No held action is enabled.
 
 
+## Complete B1-B3 source criteria
+
+This is the source proposal for the complete [B1 interface](../../docs/phase-07-backend-architecture/098-b1-backend-interface-specification.md), [B2 C](../../docs/phase-07-backend-architecture/099-b2-c-backend-design.md) and [B3 LLVM](../../docs/phase-07-backend-architecture/100-b3-llvm-backend-design.md) contracts, read directly with the Phase 7 README. All canonical conditions, list preambles, example qualifications and following conditions remain normative. This local tranche does not establish complete B4-B14, AI, global source conjunction or attached-owner entailment. The fifteen backend task records and fourteen numbered backend documents are different populations.
+
+### Owner and historical predicate conservation
+
+Keep one task authority in [the existing ledger](tasks.md#implementation-tasks).
+B1 declaration, eligibility, target assumptions and shared diagnostic interface
+belong to `backend-interface`; B1 actual common output validation stays under
+`backend-emission`, retaining B13 and Emit/Lower responsibilities. The C and
+LLVM families retain `backend-c` and `backend-llvm`. Lower owns requested
+verified-input/ABI/provider/proof handoffs and selected-candidate integration;
+backend families implement the actual target semantics and wider target matrix.
+The AI adapter remains a separate existing family outcome, not a B15 document.
+
+Seven predicates are restored byte-for-byte from local immutable source
+`45d0083d03c6e1fc91425097b4a8153892f2d689`: B1 eligibility; C emission,
+ABI/layout, memory, numeric, helpers and the fixed-width subset refinement.
+The restoration is a current author proposal; it neither renews nor consumes
+historical acceptance. This tranche has not established remote availability of
+that local source object. Thirteen new criteria complement those predicates;
+no new implementation task or status is introduced.
+
+| Criterion | Existing owner | Source disposition |
+| --- | --- | --- |
+| `manifest` | `backend-interface` | New source proposal; independent review pending. |
+| `assumptions` | `backend-interface` | New source proposal; independent review pending. |
+| `interface-diagnostics` | `backend-interface` | New source proposal; independent review pending. |
+| `common-emission` | `backend-emission` | New source proposal; independent review pending. |
+| `llvm-target` | `backend-llvm` | New source proposal; independent review pending. |
+| `llvm-emission` | `backend-llvm` | New source proposal; independent review pending. |
+| `llvm-metadata` | `backend-llvm` | New source proposal; independent review pending. |
+| `llvm-memory` | `backend-llvm` | New source proposal; independent review pending. |
+| `llvm-numeric` | `backend-llvm` | New source proposal; independent review pending. |
+| `llvm-atomic` | `backend-llvm` | New source proposal; independent review pending. |
+| `llvm-runtime` | `backend-llvm` | New source proposal; independent review pending. |
+| `llvm-passes` | `backend-llvm` | New source proposal; independent review pending. |
+| `llvm-diagnostics` | `backend-llvm` | New source proposal; independent review pending. |
+| `eligibility` | `backend-interface` | Exact earlier predicate restored; historical scope unchanged. |
+| `c-emission` | `backend-c` | Exact earlier predicate restored; historical scope unchanged. |
+| `c-abi` | `backend-c` | Exact earlier predicate restored; historical scope unchanged. |
+| `c-memory` | `backend-c` | Exact earlier predicate restored; historical scope unchanged. |
+| `c-numeric` | `backend-c` | Exact earlier predicate restored; historical scope unchanged. |
+| `c-helpers` | `backend-c` | Exact earlier predicate restored; historical scope unchanged. |
+| `c-width` | `backend-c` | Exact earlier predicate restored; historical scope unchanged. |
+
+
+### Behavior, interfaces and accepted or refused products
+
+B1 validates the complete current verified MIR or verified domain-IR packet,
+profile/target/ABI/layout, explicit runtime or no-runtime evidence, providers,
+effects/capabilities, safety/proofs, source/debug maps and dependencies before
+emission. Eligibility includes representability, feature/provider availability,
+preservation capability and matching proof-to-target assumptions. All required
+fields are current; missing/stale fields reject. Emission has actual byte or
+artifact-kind identities and current evidence. Example manifest values are not
+an exclusive target list or permission to omit normative requirements.
+
+B2 emits actual declared-dialect translation units/headers under pinned
+compiler/version/data-model/ABI/layout and recorded flags. Freestanding C11,
+hosted C17 and a named compiler-extension profile are permitted declarations;
+the old recommendation does not make two examples exhaustive. Fixed-width
+representations, initialized storage, tags, closures, regions, linear resources,
+panic/error paths and FFI preserve Gravity semantics. Pointer arithmetic,
+aliases, casts, alignment, lifetime, MMIO/volatile and atomic order need matching
+facts or explicit audited unsafe boundaries. Checked/wrapping/saturating math,
+MATH8 modes and applicable MATH5 certificates survive compiler flags. Explicit
+profile-legal helpers belong to the graph; no hidden hosted services appear in
+firmware/kernel/no-runtime outputs. Compile actual fixtures under declared
+flags and compare required observations; merely recording C source is insufficient.
+
+B3 keeps the adopted Linux candidate distinct from explicit family extensions.
+It pins the full target/data-layout/ABI/runtime/pass configuration and implements
+the actual operation/type/control/resource/error/foreign/vector/domain mappings.
+Each LLVM attribute or metadata assumption follows matching Gravity evidence.
+In particular, wrapping behavior cannot justify a no-overflow attribute merely
+by naming the numeric mode. Omit an optional assumption, guard correctly or
+reject when evidence is absent; never introduce undef, poison or target UB for
+safe Gravity. Lifetime metadata must preserve debug/diagnostic/cleanup/audit
+requirements. Atomics retain full success/failure order and synchronization
+scope; volatile/MMIO cannot be merged, duplicated or reordered across boundaries.
+Explicit helpers, numeric modes and certificates remain part of the manifest.
+Run LLVM verification after emission and configured passes; lost Gravity
+metadata needs validated repair or a disabled/reconfigured pass before use.
+Verifier success and equal runtime values alone do not prove preservation.
+
+Each criterion requires actual positive products and expected/actual refused-case
+diagnostics with exact source/generated origin, operation/domain anchor, profile,
+target, missing evidence/provider/fact, fallback and remediation. Preserve every
+B1/B2/B3 diagnostic meaning and its owning context fields. Bind compiler/pass,
+backend/version, target toolchain, runtime/provider, input/output and applicable
+checker identities. Compare real C and LLVM outputs with Gravity/MIR fixtures
+where required, including independent metadata faults even when values agree.
+Actual conformance, current owner evidence and independent acceptance remain
+necessary; this planning tranche executes no backend or compiler behavior.
+
+### Staging within the sole dependency representation
+
+Use the [existing selected-result table](../../docs/acceptance-dependencies.md#future-task-construction-and-composition) and [Lower source interfaces](../lower-workflow/plan.md#complete-target-lowering-source-criteria). Early real envelope/feature/ABI/helper/schema/oracle declarations and versioned fixtures permit isolated interface and family work. Before claimed emission, consume actual verified selected IR, current legality/proof/source and concrete target/provider/layout results. No full backend or Runtime completion is required before its first interface; no whole C completion gates LLVM.
+
+Keep valid verified raw/unoptimized MIR paths; an optional Opt or MLIR pipeline
+is not a universal admission prerequisite. Core-only data needs no invented
+domain IR. Selected domain anchors and native/foreign/provider boundaries retain
+their actual required verified products and restrictions. Actual B13-compatible
+manifests consume actual bytes/current evidence, and later B14 family/shared
+execution and metadata packs govern their respective acceptance and release
+claims. This tranche preserves all 158 routes, 2,967 selected joins and their
+start/composition/acceptance/release distinction; deeper B1-B3 dependency
+refinement remains pending rather than implied by these prose interfaces.
+
+### Evidence, decisions and limitations
+
+Current task summaries already cite limited source artifacts; this tranche
+performs no new whole-backend implementation audit and grants those citations
+no broader authority. Existing receipts remain tied to their immutable subjects.
+All four tasks stay Open; current source/interface entailment, attached-owner
+conjunctions, implementation and independent acceptance remain unassessed.
+
+No source-language/tooling change is introduced. Keep the Clojure bootstrap and
+Gravity/Uniform destination boundary, accounting removal and meaningful
+representation/Unicode/type/index/arity/authority/provenance checks. No new
+project input/work/attempt quotas or per-run permission gates are introduced.
+Preserve held compiler/Reader/Gravity/bootstrap/provider/native/C12/callback/
+device/replay/probe/migration/private-store/signing/publication actions and the
+stopped C7 handoff. No target, ISA, device, release choice or review route is
+changed. D1/C1/C5/C6 source ordering and L6/L12 hermetic wording remain separate
+open decisions. Reconciliation progress, actual implementation, acceptance and
+integration are distinct; the first actual increment remains the Reader
+[contract-coverage reconciliation](../reader-workflow/plan.md#selected-increment-complete-contract-coverage).
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Backends family task authority
