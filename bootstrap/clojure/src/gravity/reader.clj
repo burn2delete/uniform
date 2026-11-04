@@ -2,7 +2,7 @@
   "Native source intake, strict UTF-8 decoding and stage0 reader artifact assembly.
 
   This namespace owns native intake through an explicit byte owner, strict decoding, source-path
-  diagnostic data and the existing artifact envelope and pass record.
+  diagnostic data, the existing artifact envelope and a hosted compatibility oracle.
   Admission, parsing, syntax, source identity and diagnostic publication remain
   with their supplied owners. Operations are trusted seed dependencies, not evidence of
   canonical reader authentication or self-hosting.")
@@ -10,9 +10,16 @@
 (def ^:private namespace-contract
   {:namespace 'gravity.reader
    :governing-contracts [:D1 :D2 :D3 :D8 :D9 :L1 :C1 :C2 :C3 :C15 :BOOT1 :BOOT8 :TEST2]
-   :contract-boundary :native-source-intake-diagnostics-and-stage0-reader-artifact-assembly
+   :contract-boundary :native-source-intake-diagnostics-artifact-assembly-and-compatibility-products
    :public-api
-   {'read-source-artifact
+   {'compatibility-reader-products
+    {:arglists '([source-path source-text reader-options project-context operations])
+     :returns :hosted-compatibility-reader-products
+     :admission :none :authenticates-inputs? false
+     :operation-inputs [:source-unit-record-var :reader-table-var :token-stream-var
+                        :token-record-var :parsed-products-var :form-record-var
+                        :reader-fail-var :source-span-var]}
+    'read-source-artifact
     {:arglists '([source-path source-text project-context operations])
      :returns :gravity/stage0-reader-artifact}
     'decode-source-bytes
@@ -31,10 +38,12 @@
      :operation-inputs [:gravity-source-extension-var :co-canonical-source-extensions-var
                         :sha256-bytes-hex-var :fail-var]}}
    :artifact-inputs [:source-path :decoded-source-text :explicit-project-context
+                     :compatibility-oracle-late-owner-vars
                      :seed-reader-operations :standard-reader-options
                      :captured-source-bytes :raw-byte-hash-var :diagnostic-var
                      :extension-predicate-var :path-policy-refusal-var :decoder-var :source-byte-reader-var :co-canonical-extension-set-var]
    :artifact-outputs [:gravity/stage0-reader-artifact :decoded-utf8-text
+                      :hosted-compatibility-reader-products
                       :unchanged-source-encoding-failure :unchanged-source-extension-failure
                       :unchanged-source-byte-owner-failure]
    :preserves [:source-spans :metadata :reader-origin :profile-context
@@ -45,7 +54,11 @@
     :construction :stage-owned-rule-data-with-explicit-existing-failure-var
     :admission-owner :supplied-caller
     :delegates ["C2-ENCODING"]
-    :propagates [:L1 :C2]
+    :propagates [:L1 :C2 :stage1-reader-execution]
+    :compatibility-oracle {:owns :native-host-stack-and-exception-containment
+                           :host-stack-id "C2-HASH"
+                           :malformed-source-ids :original-stage1-reader-ids
+                           :policy-owner :supplied-reader-failure-var}
     :does-not-own [:token-and-form-policy :namespace-shape-policy :c15-schema
                    :diagnostic-identity :redaction :rendering]}
    :dependency-direction
@@ -56,6 +69,7 @@
     :syntax-object-stream :l1-source-unit-artifacts :standard-reader-options
     :gravity-source-extension :gravity-source-kind :utf8-byte-count]
    :unsupported [:other-encodings :replacement-decoding :file-authority
+                 :compatibility-oracle-product-authentication
                  :operation-authentication :complete-reader-conformance
                  :migration :release :seed-retirement]
    :test-owner 'gravity.reader.artifact-test
@@ -189,6 +203,51 @@
               :remediation
               "Rename the source to .qst or .gravity; both are canonical and first-class."}
               bytes-hash (assoc :source-id bytes-hash)))))
+
+(defn compatibility-reader-products
+  "Construct the existing hosted comparison-oracle products using late owner Vars.
+
+  This does not invoke or replace canonical C2/SH03 reader admission."
+  [source-path source-text reader-options project-context
+   {:keys [source-unit-record-var reader-table-var token-stream-var
+           token-record-var parsed-products-var form-record-var
+           reader-fail-var source-span-var]}]
+  (let [source-unit ((deref source-unit-record-var)
+                     source-path source-text reader-options project-context)
+        table ((deref reader-table-var))]
+    (try
+      (let [stage1-stream ((deref token-stream-var)
+                           source-path source-text table reader-options)
+            token-stream (mapv #((deref token-record-var) % source-unit)
+                               (:tokens stage1-stream))
+            parser-stream (assoc stage1-stream :tokens token-stream)
+            parsed ((deref parsed-products-var)
+                    source-path source-text table parser-stream)
+            form-tree (mapv #((deref form-record-var) % source-unit)
+                            (:form-tree parsed))]
+        {:source-unit source-unit
+         :token-stream token-stream
+         :form-tree form-tree
+         :root-form-ids (:root-form-ids parsed)
+         :parsed-records (:records parsed)
+         :parsed-values (:parsed-values parsed)})
+      (catch StackOverflowError error
+        ((deref reader-fail-var)
+         "C2-HASH" source-path
+         {:stage :read-source
+          :source-id (:source-id source-unit)
+          :source-span ((deref source-span-var) source-path 0)
+          :reader-options reader-options}
+         {:missing-fields [:stack-safe-reader-form-construction]
+          :facts {:failure-kind :reader-host-stack-overflow
+                  :contained-host-error (.getName (class error))}}))
+      (catch clojure.lang.ExceptionInfo ex
+        (throw
+         (ex-info (.getMessage ex)
+                  (merge {:source-id (:source-id source-unit)
+                          :reader-options reader-options}
+                         (ex-data ex))
+                  ex))))))
 
 (doseq
  [name (keys (:public-api namespace-contract))

@@ -46,7 +46,34 @@ and exact-base integration preflight remain necessary before integration.
 
 ## Unsupported boundaries
 
-This initial scope commit has no implementation or executed-test credit. It
-does not establish canonical C2 conformance, SH03 product authentication, cache
+The initial scope commit has no implementation or executed-test credit. This
+bounded native extraction does not establish canonical C2 conformance, SH03 product authentication, cache
 admission, proof authority, source grants, migration, release, self-hosting or
 seed retirement. Historical failed or restricted operations remain untouched.
+
+## Implemented source and initial checks
+
+gravity.reader/compatibility-reader-products now owns the original four-argument
+body through eight explicit late Vars. The destination has no imports or
+Bootstrap resolution. The compatibility wrapper retains both arities and
+project-context discovery; canonical c2-reader-products and projection-operation
+construction remain unchanged. Diagnostic construction retains C2-HASH for
+native stack containment and propagates the parser's original STAGE1READER002
+for the actual malformed-delimiter fixture, with original cause and context.
+
+Before extraction, the native oracle accepted both surface-syntax spellings
+and refused both malformed-delimiter fixtures. Complete actual-path/text/hash,
+context and product/diagnostic records have raw SHA-256
+311c086ccd3b5e4cc3dfe64b2102b107b4011580ecc99f958733f5b6fa41e55b
+at scope source1bafe77b79f54f26bcf62e908f58420122a5a1da. This is only native
+comparison evidence, not source-product authentication. Initial focused tests
+pass27 tests/336 assertions, including real products, stable/source-sensitive
+identities, native delimiter errors, outer versus inner exceptions, exact cause
+identity, late per-token roots and controlled host-stack containment.
+
+Initial temporary capture syntax and an incorrect expected C2-DELIMITER id
+failed before producing a record. Their scripts/logs/reports remain retained.
+The corrected expectation follows the unchanged Stage1 diagnostic owner;
+production behavior, source pins and admission gates were not altered.
+Complete post-extraction comparison, affected regressions, lint, validators and
+independent source/adversarial acceptance remain outstanding at this commit.

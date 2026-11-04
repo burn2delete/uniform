@@ -145,7 +145,8 @@
 
 (deftest namespace-contract-is-narrow-and-preserves-compatibility-arities
   (let [contract (:gravity/namespace-contract (meta #'reader/read-source-artifact))]
-    (is (= #{'read-source-artifact 'decode-source-bytes 'read-source-text 'reject-source-path!} (set (keys (ns-publics 'gravity.reader)))))
+    (is (= #{'read-source-artifact 'decode-source-bytes 'read-source-text 'reject-source-path!
+             'compatibility-reader-products} (set (keys (ns-publics 'gravity.reader)))))
     (is (= (set (keys (:public-api contract)))
            (set (keep (fn [[name operation]]
                         (when (:gravity/namespace-contract (meta operation)) name))
@@ -155,7 +156,7 @@
     (is (every? #(not (:private (meta %)))
                 (vals (ns-publics 'gravity.reader))))
     (is (empty? (ns-aliases 'gravity.reader)))
-    (is (= :native-source-intake-diagnostics-and-stage0-reader-artifact-assembly (:contract-boundary contract)))
+    (is (= :native-source-intake-diagnostics-artifact-assembly-and-compatibility-products (:contract-boundary contract)))
     (is (= ['clojure.core] (get-in contract [:dependency-direction :requires])))
     (is (= ['gravity.bootstrap 'gravity.cli 'gravity.release]
            (get-in contract [:dependency-direction :forbids])))
@@ -489,3 +490,120 @@
     (is (false? (:opens-source? api)))
     (is (= '([source-path] [source-path bytes])
            (:arglists (meta #'bootstrap/source-path-policy-fail!))))))
+
+(defn- compatibility-operations []
+  {:source-unit-record-var #'bootstrap/c2-source-unit-record
+   :reader-table-var #'bootstrap/stage1-reader-table
+   :token-stream-var #'bootstrap/stage1-reader-token-stream
+   :token-record-var #'bootstrap/c2-token-record
+   :parsed-products-var #'bootstrap/stage1-reader-products-from-token-stream
+   :form-record-var #'bootstrap/c2-form-record
+   :reader-fail-var #'bootstrap/c2-reader-fail!
+   :source-span-var #'bootstrap/source-span})
+
+(defn- compatibility-products [path text context]
+  (reader/compatibility-reader-products
+   path text bootstrap/standard-reader-options context (compatibility-operations)))
+
+(deftest compatibility-oracle-emits-real-products-with-original-provenance
+  (doseq [extension [".gravity" ".qst"]]
+    (let [path (fixture "accepted" "surface-syntax" extension)
+          text (slurp path)
+          context (bootstrap/reader-project-context-for-source path)
+          product (compatibility-products path text context)
+          source-unit (:source-unit product)
+          source-id (:source-id source-unit)]
+      (is (= product (bootstrap/c2-reader-products-clojure-oracle
+                     path text bootstrap/standard-reader-options)))
+      (is (= product (bootstrap/c2-reader-products-clojure-oracle
+                     path text bootstrap/standard-reader-options context)))
+      (is (= product (compatibility-products path text context)))
+      (is (= path (:path source-unit)))
+      (is (= extension (:extension source-unit)))
+      (is (= (str "sha256:" (bootstrap/sha256-hex text)) (:bytes-hash source-unit)))
+      (is (= source-id (bootstrap/reader-canonical-hash (:identity-inputs source-unit))))
+      (is (seq (:token-stream product)))
+      (is (seq (:form-tree product)))
+      (is (= 2 (count (:parsed-records product))))
+      (is (every? #(= source-id (:source-id %) (get-in % [:span :file]))
+                  (concat (:token-stream product) (:form-tree product))))
+      (is (every? #(= path (:source-path %))
+                  (concat (:token-stream product) (:form-tree product))))
+      (is (not= source-id (get-in (compatibility-products path (str text "\n") context)
+                                 [:source-unit :source-id]))))))
+
+(deftest compatibility-oracle-retains-native-malformed-source-diagnostics
+  (doseq [extension [".gravity" ".qst"]]
+    (let [path (fixture "rejected" "surface-syntax-l1-delimiter" extension)
+          text (slurp path)
+          context (bootstrap/reader-project-context-for-source path)
+          direct (rejection #(compatibility-products path text context))
+          wrapper (rejection #(bootstrap/c2-reader-products-clojure-oracle
+                                path text bootstrap/standard-reader-options context))]
+      (is (= "STAGE1READER002" (:id (ex-data direct))))
+      (is (= (ex-message direct) (ex-message wrapper)))
+      (is (= (ex-data direct) (ex-data wrapper)))
+      (is (= bootstrap/standard-reader-options (:reader-options (ex-data direct))))
+      (is (re-matches #"sha256:[0-9a-f]{64}" (:source-id (ex-data direct))))
+      (is (= path (get-in (ex-data direct) [:source-span :source])))
+      (is (instance? clojure.lang.ExceptionInfo (ex-cause direct))))))
+
+(deftest compatibility-oracle-preserves-containment-boundaries-and-exception-causes
+  (let [path "src/compatibility.gravity"
+        context (bootstrap/reader-project-context-for-source path)]
+    (doseq [dependency [#'bootstrap/c2-source-unit-record #'bootstrap/stage1-reader-table]]
+      (let [sentinel (ex-info "outside protected region" {:origin dependency})
+            result (with-redefs-fn {dependency (fn [& _] (throw sentinel))}
+                     #(rejection (fn [] (compatibility-products path "x" context))))]
+        (is (identical? sentinel result))))
+    (let [sentinel (ex-info "native parser refusal"
+                            {:source-id :owner-id :reader-options :owner-options})
+          result (with-redefs [bootstrap/stage1-reader-products-from-token-stream
+                               (fn [& _] (throw sentinel))]
+                   (rejection #(compatibility-products path "x" context)))]
+      (is (not (identical? sentinel result)))
+      (is (identical? sentinel (ex-cause result)))
+      (is (= (ex-data sentinel) (ex-data result)))
+      (is (= (ex-message sentinel) (ex-message result))))
+    (let [sentinel (IllegalStateException. "opaque native parser failure")
+          result (with-redefs [bootstrap/stage1-reader-products-from-token-stream
+                               (fn [& _] (throw sentinel))]
+                   (try (compatibility-products path "x" context)
+                        (catch Throwable error error)))]
+      (is (identical? sentinel result)))))
+
+(deftest compatibility-oracle-preserves-late-owner-lookups-and-stack-containment
+  (let [events (atom [])
+        captured (compatibility-operations)
+        replacement (fn [token source]
+                      (swap! events conj :late-token)
+                      (assoc token :source-id (:source-id source)))
+        source-unit {:source-id :native-source}
+        product
+        (with-redefs [bootstrap/c2-source-unit-record
+                      (fn [& _] (swap! events conj :source) source-unit)
+                      bootstrap/stage1-reader-table
+                      (fn [] (swap! events conj :table) :native-table)
+                      bootstrap/stage1-reader-token-stream
+                      (fn [& _] (swap! events conj :tokens)
+                        (alter-var-root #'bootstrap/c2-token-record (constantly replacement))
+                        {:tokens [{:index 0} {:index 1}]})
+                      bootstrap/c2-token-record (fn [& _] (throw (AssertionError. "stale owner")))
+                      bootstrap/stage1-reader-products-from-token-stream
+                      (fn [_ _ _ stream] (swap! events conj :parse)
+                        {:form-tree [] :root-form-ids [] :records []
+                         :parsed-values (:tokens stream)})]
+          (reader/compatibility-reader-products "native.gravity" "" {} {} captured))]
+    (is (= [:source :table :tokens :late-token :late-token :parse] @events))
+    (is (identical? source-unit (:source-unit product)))
+    (is (= (:token-stream product) (:parsed-values product))))
+  (let [path "src/stack.gravity"
+        context (bootstrap/reader-project-context-for-source path)
+        result (with-redefs [bootstrap/stage1-reader-token-stream
+                             (fn [& _] (throw (StackOverflowError. "controlled native stack")))]
+                 (rejection #(compatibility-products path "x" context)))]
+    (is (= "C2-HASH" (:id (ex-data result))))
+    (is (= [:stack-safe-reader-form-construction] (:missing-fields (ex-data result))))
+    (is (= :reader-host-stack-overflow (get-in (ex-data result) [:facts :failure-kind])))
+    (is (= "java.lang.StackOverflowError"
+           (get-in (ex-data result) [:facts :contained-host-error])))))
