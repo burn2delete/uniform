@@ -130,3 +130,21 @@ regression command in tools/ci/run.clj, so ordinary CI executes its owning tests
 This is the only CI command change; watchdogs, selection policy and runtime
 coordination APIs remain unchanged. Lint, validators, independent exact source
 acceptance, own CI and current-main integration remain outstanding.
+
+## Companion manifest lint repair
+
+The first full contextual lint refused the changed semantic_mid_order.edn as
+an absent source fragment. The lint planner already treats load_order.edn and
+semantic_late_order.edn as EDN manifests, but omitted this existing companion.
+The narrow repair recognizes the exact middle-manifest path for whole-context
+selection and separate EDN lint, preserving source-fragment membership checks.
+A regression selects both companion manifests and still refuses unlisted .clj
+and .edn paths. No wildcard, source-manifest bypass or loader pin changes.
+
+CI runner/context controls pass49 tests/517 assertions. Their initial run had
+three tool-launch errors because its inherited PATH lacked clj-kondo; that log
+and generated receipts are retained. Corrected execution uses the existing
+pinned executable and passes without changing test or production semantics.
+The initial CI conservation helper also misencoded its expected command string;
+its failed source/log remain retained. The corrected helper compares the exact
+single namespace insertion using literal command tokens.
