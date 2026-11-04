@@ -56,7 +56,7 @@
           plan (p15-s23-stage2-compiler-artifact-plan emitter path text)
           expected-module
           '{:module gravity.stdlib.sha256 :profile :meta :target :jvm
-            :effects #{} :capabilities #{} :safety :safe
+            :effects #{:memory/allocate} :capabilities #{} :safety :safe
             :exports [sh22-sha256-policy sh22-sha256-pad sh22-sha256]}
           digest (fn [value]
                    (str "sha256:" (sha256-hex (pr-str (c-backend-canonical-value value)))))]

@@ -163,11 +163,12 @@
                       bootstrap/p15-s23-stage2-runtime-execute-function
                       (fn [runtime plan callee arguments]
                         (when (= 'sh22-sha256 callee)
-                          (swap! calls conj [(get-in plan [:module :module]) arguments]))
+                          (swap! calls conj [(get-in plan [:module :module])
+                                             (get-in plan [:module :effects]) arguments]))
                         (execute runtime plan callee arguments))]
           (is (= (str "sha256:" (jdk-sha256 values))
                  (bootstrap/p18-file-sha256 (.getPath file))))
-          (is (= [['gravity.stdlib.sha256 [[values]]]] @calls))))
+          (is (= [['gravity.stdlib.sha256 #{:memory/allocate} [[values]]]] @calls))))
       (finally (.delete file)))))
 
 (defn- rejection [f]
@@ -218,7 +219,10 @@
                [(assoc-in plan [:functions 'sh22-sha256 :arity] 2) :kernel-abi-mismatch]
                [(assoc-in plan [:functions 'sh22-sha256 :params] ['other]) :kernel-abi-mismatch]
                [(assoc-in plan [:module :module] 'ambient.sha256) :kernel-abi-mismatch]
+               [(update plan :module dissoc :effects) :kernel-abi-mismatch]
+               [(assoc-in plan [:module :effects] #{}) :kernel-abi-mismatch]
                [(assoc-in plan [:module :effects] #{:io}) :kernel-abi-mismatch]
+               [(assoc-in plan [:module :effects] #{:memory/allocate :io}) :kernel-abi-mismatch]
                [(assoc plan :plan-id "sha256:changed") :kernel-plan-id-mismatch]]]
         (with-redefs [bootstrap/p15-s23-stage2-compiler-artifact-plan (fn [& _] changed)]
           (is (= {:rule "SH20SHA002" :reason reason}
