@@ -2,6 +2,7 @@
   (:require [advance.catalog :as catalog]
             [advance.github :as project]
             [advance.workflow :as workflow]
+            [simplify.coordination :as coordination]
             [simplify.main :as base]
             [simplify.runtime :as rt])
   (:gen-class))
@@ -32,7 +33,9 @@
 (defn dispatch! [ctx command args]
   (case command
     "catalog" (println (pr-str (catalog/index (catalog/discover (get-in ctx [:config :repo-dir])))))
-    "setup" (rt/with-lock ctx #(do (project/setup! ctx) (workflow/ensure-campaign! ctx)))
+    "setup" (rt/with-lock ctx #(do (coordination/register! ctx)
+                                 (try (project/setup! ctx) (workflow/ensure-campaign! ctx)
+                                      (finally (coordination/unregister! ctx)))))
     "run" (rt/with-lock ctx #(when-not (= :complete (:status @(:state ctx))) (workflow/campaign! ctx)))
     "resume" (rt/with-lock ctx #(when-not (= :complete (:status @(:state ctx)))
                                  (rt/write-edn! (:control-file ctx) {:paused false}) (workflow/campaign! ctx)))
