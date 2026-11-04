@@ -560,6 +560,14 @@
           (accept! ctx (:key t) (get-in t [:checks :commands]))
           (transition! ctx (:key t) :repair))))))
 
+(defn- assert-candidate-acceptance! [t]
+  (when-not (and (= "approved" (get-in t [:review :verdict]))
+                 (= (select-keys t [:base :candidate :tree]) (select-keys (:review t) [:base :candidate :tree]))
+                 (= (:candidate t) (get-in t [:checks :candidate]))
+                 (= (:tree t) (get-in t [:checks :tree]))
+                 (= :passed (get-in t [:checks :result])))
+    (rt/fail! "Acceptance/check evidence does not bind this main candidate" {})))
+
 (defn assert-merge-provider! [ctx t]
   (let [info (shared/pr-info ctx t)]
     (assert-pr-identity! ctx t (pull-request-by-number! ctx (get-in t [:pr :number])) (:candidate t))
@@ -604,12 +612,9 @@
          :else
          (do
            (assert-pr-identity! ctx t (pull-request-by-number! ctx (get-in t [:pr :number])) (:candidate t))
-           (when-not (and (= (get-in ctx [:config :base-branch]) (:baseRefName info))
-                          (= "approved" (get-in t [:review :verdict]))
-                          (= (select-keys t [:base :candidate :tree]) (select-keys (:review t) [:base :candidate :tree]))
-                          (= (:candidate t) (get-in t [:checks :candidate]))
-                          (= (:tree t) (get-in t [:checks :tree])) (= :passed (get-in t [:checks :result])))
-             (rt/fail! "Acceptance/check evidence does not bind this main candidate" {}))
+           (when-not (= (get-in ctx [:config :base-branch]) (:baseRefName info))
+             (rt/fail! "PR does not target this main branch" {:remote-pr-refusal true}))
+           (assert-candidate-acceptance! t)
            (doseq [dep (:dependencies t)]
              (rt/git ctx (:worktree t) "merge-base" "--is-ancestor" (:merged (task ctx dep)) base))
            (when (gh/open-review-threads? ctx (get-in t [:pr :number]))
@@ -648,9 +653,13 @@
     (let [info (shared/pr-info ctx t) ci (shared/check-state (:statusCheckRollup info))]
       (cond
         (= "MERGED" (:state info))
-        (let [actual (rt/try-with-main-lock ctx #(do (assert-merged-pr-identity! ctx t)
-                                                     (verify-merge! ctx t info)))]
-          (when (:commit actual) (finish-merge! ctx t info actual)))
+        (do
+          (assert-merged-pr-identity! ctx t)
+          (assert-candidate-acceptance! t)
+          (if (= :passed ci)
+            (let [actual (rt/try-with-main-lock ctx #(verify-merge! ctx t info))]
+              (when (:commit actual) (finish-merge! ctx t info actual)))
+            (rt/event! ctx :waiting {:slice (:key t) :reason :merged-pr-ci :ci ci})))
         (not= "OPEN" (:state info)) (rt/fail! "PR closed without a verified merge" {:pr info})
         (not= (:candidate t) (:headRefOid info)) (rt/fail! "Remote head changed outside this controller" {:pr info})
         (= :failed ci) (do (task! ctx (:key t) :feedback {:ci (:statusCheckRollup info)

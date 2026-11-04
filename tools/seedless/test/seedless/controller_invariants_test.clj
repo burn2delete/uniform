@@ -139,6 +139,32 @@
         (is (:remote-pr-refusal data))
         (is (false? @finished))))))
 
+(deftest observed-merge-requires-candidate-acceptance-and-ci
+  (doseq [scenario [:missing-checks :stale-review :pending-ci :accepted]]
+    (let [ctx (context)
+          accepted (assoc (task "slice") :pr {:number 7}
+                          :checks {:candidate "candidate" :tree "tree" :result :passed}
+                          :review {:base "base" :candidate "candidate" :tree "tree" :verdict "approved"})
+          t (case scenario
+              :missing-checks (dissoc accepted :checks)
+              :stale-review (assoc-in accepted [:review :candidate] "old")
+              accepted)
+          verified (atom 0) finished (atom 0)
+          checks [{:status (if (= :pending-ci scenario) "IN_PROGRESS" "COMPLETED")
+                   :conclusion "SUCCESS"}]]
+      (rt/update! ctx assoc-in [:tasks "slice"] t)
+      (with-redefs [shared/pr-info (fn [& _] {:state "MERGED" :statusCheckRollup checks})
+                    workflow/assert-identity! (fn [& _])
+                    gh/api (fn [& _] (full-pr t "closed" "candidate"))
+                    rt/event! (fn [& _])
+                    rt/try-with-main-lock (fn [_ f] (f))
+                    workflow/verify-merge! (fn [& _] (swap! verified inc) {:commit "merge"})
+                    workflow/finish-merge! (fn [& _] (swap! finished inc))]
+        (let [data (ex-data-of #(workflow/integrate! ctx t))]
+          (is (= (contains? #{:missing-checks :stale-review} scenario) (some? data)))
+          (is (= (if (= :accepted scenario) 1 0) @verified))
+          (is (= (if (= :accepted scenario) 1 0) @finished)))))))
+
 (defn merge-command [_ _ & args]
   (case args
     ["rev-list" "--parents" "-n" "1" "merge"] "merge base candidate"
