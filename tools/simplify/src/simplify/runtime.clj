@@ -173,9 +173,9 @@
      :snapshot-lock (Object.)
      :main-lock-owner (atom nil)}))
 
-(defn fresh-main! [ctx]
+(defn fresh-main! [{:keys [snapshot-lock] :as ctx}]
   (let [{:keys [repo-dir remote base-branch]} (:config ctx)]
-    (locking (:snapshot-lock ctx)
+    (locking snapshot-lock
       ;; Neither FETCH_HEAD nor another campaign's tracking ref is our snapshot.
       (git ctx repo-dir "fetch" "--no-write-fetch-head" "--refmap=" remote
            (str "refs/heads/" base-branch ":" (:snapshot-ref ctx)))
@@ -203,7 +203,7 @@
     (locking monitor
       (with-open [channel (FileChannel/open (.toPath (io/file path))
                                            (into-array StandardOpenOption [StandardOpenOption/CREATE StandardOpenOption/WRITE]))
-                  lock (.lock channel)]
+                  _lock (.lock channel)]
         (let [file (io/file (:coordination-file ctx))
               state (if (.exists file) (read-edn file) {:schema 1 :writers {} :main-effects {} :history []})]
           (when-not (= 1 (:schema state)) (fail! "Unknown shared coordination schema" {}))
