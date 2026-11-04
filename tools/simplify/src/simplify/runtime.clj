@@ -15,6 +15,23 @@
 
 (defn fail! [message data] (throw (ex-info message data)))
 (defn canonical [path] (.getCanonicalPath (io/file path)))
+
+(defn common-git-directory
+  "Read checkout metadata without commands or campaign state writes before lock acquisition."
+  [repo-dir]
+  (let [entry (io/file repo-dir ".git")
+        gitdir (if (.isDirectory entry) entry
+                   (let [path (when (.isFile entry) (second (re-matches #"gitdir: ([^\r\n]+)\r?\n?" (slurp entry))))]
+                     (when-not path (fail! "Configured checkout has no readable Git directory" {:repo-dir repo-dir}))
+                     (let [file (io/file path)] (if (.isAbsolute file) file (io/file repo-dir path)))))
+        common-file (io/file gitdir "commondir")
+        common (if (.isFile common-file)
+                 (let [file (io/file (str/trim (slurp common-file)))]
+                   (if (.isAbsolute file) file (io/file gitdir (str file))))
+                 gitdir)]
+    (when-not (.isDirectory common) (fail! "Git common directory is unavailable" {:repo-dir repo-dir}))
+    (canonical common)))
+
 (defn digest [value]
   (format "%064x" (BigInteger. 1 (.digest (MessageDigest/getInstance "SHA-256")
                                         (.getBytes (str value) "UTF-8")))))
@@ -121,8 +138,9 @@
   (let [prior (get-in @(:state ctx) [:effects id])]
     (case (:status prior)
       :done (:result prior)
-      :restricted (fail! "Restricted effect cannot be retried" {:effect id :restricted true})
-      (:pending :uncertain) (fail! "External effect needs reconciliation; not replaying" {:effect id :prior prior})
+      :restricted (fail! "Restricted effect cannot be retried" {:effect id :effect-status :restricted :restricted true})
+      (:pending :uncertain) (fail! "External effect needs reconciliation; not replaying"
+                                  {:effect id :effect-status (:status prior) :prior prior})
       (do
         (update! ctx assoc-in [:effects id] {:status :pending})
         (try
@@ -145,7 +163,7 @@
                (let [status (get-in @(:state ctx) [:effects prior :status])]
                  (when-not (= :done status)
                    (fail! "Tracking effect needs reconciliation; not issuing another write"
-                          {:effect prior :restricted (= :restricted status)}))))
+                          {:effect prior :effect-status status :restricted (= :restricted status)}))))
              (let [n (inc (or (:tracking-sequence @(:state ctx)) 0))
                    id (str key "/" n)]
                (update! ctx #(-> % (assoc :tracking-sequence n) (assoc-in [:tracking-intents key] id)))
@@ -172,9 +190,9 @@
      :snapshot-lock (Object.)
      :main-lock-owner (atom nil)}))
 
-(defn fresh-main! [ctx]
+(defn fresh-main! [{:keys [snapshot-lock] :as ctx}]
   (let [{:keys [repo-dir remote base-branch]} (:config ctx)]
-    (locking (:snapshot-lock ctx)
+    (locking snapshot-lock
       ;; Neither FETCH_HEAD nor another campaign's tracking ref is our snapshot.
       (git ctx repo-dir "fetch" "--no-write-fetch-head" "--refmap=" remote
            (str "refs/heads/" base-branch ":" (:snapshot-ref ctx)))
@@ -202,7 +220,7 @@
     (locking monitor
       (with-open [channel (FileChannel/open (.toPath (io/file path))
                                            (into-array StandardOpenOption [StandardOpenOption/CREATE StandardOpenOption/WRITE]))
-                  lock (.lock channel)]
+                  _lock (.lock channel)]
         (let [file (io/file (:coordination-file ctx))
               state (if (.exists file) (read-edn file) {:schema 1 :writers {} :main-effects {} :history []})]
           (when-not (= 1 (:schema state)) (fail! "Unknown shared coordination schema" {}))

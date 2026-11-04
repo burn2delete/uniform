@@ -48,7 +48,7 @@
         ctx {:config config :state-dir (str directory) :state-file path :control-file (str (io/file directory "control.edn"))
              :log-file (str (io/file directory "events.jsonl")) :log-lock (Object.) :processes (atom #{})
              :state (atom (read-state! config path))}]
-    (merge ctx (rt/coordination (workflow/common-directory ctx (:repo-dir config)) config))))
+    (merge ctx (rt/coordination (rt/common-git-directory (:repo-dir config)) config))))
 
 (defn with-current-state [ctx f]
   (rt/with-lock ctx
@@ -109,8 +109,15 @@
                             (when-not (= :attention (:status t)) (rt/fail! "Only an inspected Attention finding can be retried" {:finding key}))
                             (when (true? (get-in t [:error :details :restricted]))
                               (rt/fail! "Restricted actions are retained as denied history and cannot be retried" {:finding key}))
-                            (workflow/task! ctx key :feedback (:error t) :status :repair)
-                            (println "Finding queued for repair. Use resume to continue.")))
+                            (when (#{:pending :uncertain :restricted}
+                                    (get-in @(:state ctx) [:effects (get-in t [:error :details :effect]) :status]))
+                              (rt/fail! "Current external effect needs inspected reconciliation before retry" {:finding key}))
+                            (workflow/task! ctx key :feedback (:error t)
+                                            :status (cond (:merge-verification t) :finalizing
+                                                          (:merged t) :ci
+                                                          (#{:ci :merge} (:resume-status t)) :ci
+                                                          :else :repair))
+                            (println "Finding queued at its inspected recovery phase. Use resume to continue.")))
     "reconcile" (with-current-state ctx #(reconcile! ctx (first args) (second args)))
     "reconcile-main" (with-current-state ctx #(rt/reconcile-main-merge! ctx (first args) (rt/read-edn (second args))))
     "release-writer" (with-current-state ctx #(rt/inspect-release-paths! ctx (rt/read-edn (first args))
