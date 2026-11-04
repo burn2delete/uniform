@@ -988,6 +988,10 @@ Use the [platform and hardware library source criteria](../stdlib-workflow/plan.
 
 Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Keep actual secret/resource/taint/unsafe and generated-program checks, sink-specific UI trust and profile rules. Secret-safe policy metadata is no proof of provider behavior or constant-time internals. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Performance contract source interface
+
+Use the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria). Parse/check genuine selected realtime latency/jitter/allocation/blocking/preemption/loop-recursion contracts and failure modes. Physical/program bounds retain meaning and retired project quotas do not return. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Legality task authority

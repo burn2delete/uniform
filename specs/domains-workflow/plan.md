@@ -662,6 +662,10 @@ Use the [crypto UI and stability library source criteria](../stdlib-workflow/pla
 
 Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Supply actual AI/workflow/schema model/prompt/tool/memory/policy/review, recorded/live-only traces and source-bound schema facts. Specialist tools consume these rather than redefining domain engines or provider authority. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Performance contract source interface
+
+Use the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria). Supply genuine selected domain/math/proof/certificate input/output and checker evidence. EML form identity, a provider name or sampled equality does not prove equivalence or an approximation bound. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Domains workflow migration

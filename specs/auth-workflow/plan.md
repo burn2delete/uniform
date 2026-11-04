@@ -411,6 +411,10 @@ Use the [command and source service source criteria](../tools-workflow/plan.md#c
 
 Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Supply authentic current operation-specific inspection, mutation, tool, provider, profiler and endpoint grants with scope/revocation/lifetime; views and session identity issue no authority. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Performance contract source interface
+
+Use the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria). Supply actual current operation-specific compile-time/provider/profiler/device grants, policy scope and revocation/lifetime; performance, PGO or tuning metadata grants no authority. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Auth task authority

@@ -375,6 +375,10 @@ Use the [crypto UI and stability library source criteria](../stdlib-workflow/pla
 
 Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Consume actual scoped specialist service/protocol/measurement/report results where the selected recipe or claimed release requires them. Wider tool portfolio, independent acceptance and full-language/bootstrap/seed-retirement remain distinct outcomes. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Performance contract source interface
+
+Use the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria). Implement the existing independent performance-regression task's actual manifests, samples/statistics, compatible fingerprints, correctness/safety gates, threshold/drift/noise classification and reviewed baseline use, with real worst-case evidence for realtime claims. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Release workflow migration

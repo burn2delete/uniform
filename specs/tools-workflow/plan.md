@@ -644,6 +644,10 @@ All existing task identities/statuses and historical reviews remain unchanged. C
 
 Preserve Clojure bootstrap/Gravity destination, current ownership/review and all compiler/Reader/Gravity/bootstrap/paired/provider/C12/plugin/native/callback/device/probe/replay/migration/private-store/signing/publication holds. The stopped public-contract-cluster handoff and denied reviewer wake remain held. Human review/integration coordination grants no service execution or Main acceptance.
 
+## Performance contract source interface
+
+Use the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria). Display actual before/after/residual/guard/layout/proof/invalidation, PGO/variant and measured environment/sample/regression facts; fixed samples, fields or proof names do not create accepted claims. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Developer Tools workflow migration

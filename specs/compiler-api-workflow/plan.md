@@ -318,6 +318,10 @@ Use the [command and source service source criteria](../tools-workflow/plan.md#c
 
 Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Supply actual current versioned stage/fact/origin/input/output and verifier/preservation products. Source-only views require only applicable inputs, and tools cannot invent later facts or authorize compiler mutation. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Performance contract source interface
+
+Use the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria). Supply genuine risk/evidence policy and scoped checker/translation-validation interfaces, including existing C18 minimum scope; Opt invokes actual verifiers and consumes results without creating a second checker. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer and source-composition plan
 
 # Implementation plan: Compiler API workflow migration

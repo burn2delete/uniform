@@ -198,6 +198,412 @@ Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#co
 
 Use the [crypto UI and stability library source criteria](../stdlib-workflow/plan.md#complete-crypto-ui-and-stability-library-source-criteria). Preserve actual secret and constant-time facts or invalidate/reverify against genuine selected input/output subjects. Equal sampled results, declarations and proof filenames do not establish side-channel properties. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Complete performance contract source criteria
+
+[PERF1](../../docs/phase-04-performance-model/059-perf1-performance-model-specification.md), [PERF2](../../docs/phase-04-performance-model/060-perf2-zero-cost-abstractions-specification.md), [PERF3](../../docs/phase-04-performance-model/061-perf3-specialization-and-partial-evaluation-design.md), [PERF4](../../docs/phase-04-performance-model/062-perf4-memory-layout-optimization-design.md), [PERF5](../../docs/phase-04-performance-model/063-perf5-benchmark-suite-and-performance-governance.md), [PERF6](../../docs/phase-04-performance-model/064-perf6-profile-guided-optimization-design.md), [PERF7](../../docs/phase-04-performance-model/065-perf7-autotuning-and-multiversioning-design.md), [PERF8](../../docs/phase-04-performance-model/066-perf8-simd-vectorization-and-cache-optimization-strategy.md), [PERF9](../../docs/phase-04-performance-model/067-perf9-realtime-and-deterministic-latency-performance-model.md), [PERF10](../../docs/phase-04-performance-model/068-perf10-performance-safety-check-elision-rules.md), [D6](../../docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md), [D8](../../docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md), [D9](../../docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md) define the selected complete Phase4 performance behavior and supporting safety/evidence constraints. All thirteen documents and the Phase4 README were read directly. D6/D8/D9 retain their wider foundational obligations; this refinement does not claim whole-project safety or evidence conjunctions. Preserve examples, conditional profiles/targets and proof/measurement limitations. Source hashes and links establish navigation, not semantic entailment or implementation.
+
+### Performance existing task authority
+
+| Role | Existing sole task |
+| --- | --- |
+| authority | [`auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`](../../specs/auth-workflow/tasks.md#implementation-tasks) |
+| baseline-review | [`evolution/change-review`](../../specs/evolution-workflow/tasks.md#governance-implementation-task-authority) |
+| benchmark | [`release/remaining-tasks-and-evidence/execute-performance-regression-fixtures`](../../specs/release-workflow/tasks.md#implementation-tasks) |
+| build-cache | [`build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation`](../../specs/build-workflow/tasks.md#implementation-tasks) |
+| build-inputs | [`build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects`](../../specs/build-workflow/tasks.md#implementation-tasks) |
+| firmware | [`firmware`](../../specs/platform-workflow/tasks.md#implementation-tasks) |
+| formal | [`formal`](../../specs/domains-workflow/tasks.md#implementation-tasks) |
+| inspector | [`tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| layout | [`lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout`](../../specs/lower-workflow/tasks.md#implementation-tasks) |
+| lower-emission | [`lower/current-evidence-and-remaining-work/lower5-integrate-target-emission`](../../specs/lower-workflow/tasks.md#implementation-tasks) |
+| lower-proof | [`lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins`](../../specs/lower-workflow/tasks.md#implementation-tasks) |
+| math | [`math/independent-proof-and-certificate-checking`](../../specs/domains-workflow/tasks.md#implementation-tasks) |
+| pass-contract | [`opt/current-evidence-and-remaining-work/opt1-execute-pass-contracts`](../../specs/opt-workflow/tasks.md#implementation-tasks) |
+| pass-evidence | [`pass-evidence`](../../specs/compiler-api-workflow/tasks.md#implementation-tasks) |
+| pipeline | [`opt/current-evidence-and-remaining-work/opt5-integrate-reproducible-pipeline`](../../specs/opt-workflow/tasks.md#implementation-tasks) |
+| profile-checks | [`legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks`](../../specs/legality-workflow/tasks.md#implementation-tasks) |
+| profiler | [`tools/finite-service-outcomes-and-remaining-work/profile-performance-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) |
+| runtime-bounds | [`runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| runtime-observation | [`runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| safety | [`opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors`](../../specs/opt-workflow/tasks.md#implementation-tasks) |
+| transform | [`opt/current-evidence-and-remaining-work/opt2-implement-structural-families`](../../specs/opt-workflow/tasks.md#implementation-tasks) |
+| verification | [`opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate`](../../specs/opt-workflow/tasks.md#implementation-tasks) |
+
+Opt owns actual transformations, performance/variant decisions and invoked preservation checks. Lower owns target layout and emitted-assumption preservation; Legality checks selected realtime contracts, Runtime actual bounded services and Release the independent performance regression harness. Build/Auth supply real inputs/cache/scope; Math/Formal/Compiler-API retain actual certificates, evidence policy and checkers. Tools displays real results and Governance makes accountable baseline/normalization decisions. Existing C13 pass-contract/check/verification/pipeline predicates are reused unchanged; no parallel optimizer, profiler, checker, baseline authority or roadmap is created.
+
+| Selected criterion | Existing task |
+| --- | --- |
+| complete-claim-and-evidence | [`opt/current-evidence-and-remaining-work/opt5-integrate-reproducible-pipeline`](../../specs/opt-workflow/tasks.md#implementation-tasks) |
+| zero-cost-comparison | [`opt/current-evidence-and-remaining-work/opt5-integrate-reproducible-pipeline`](../../specs/opt-workflow/tasks.md#implementation-tasks) |
+| specialization-keys-guards-and-maps | [`opt/current-evidence-and-remaining-work/opt2-implement-structural-families`](../../specs/opt-workflow/tasks.md#implementation-tasks) |
+| partial-evaluation-and-invalidation | [`opt/current-evidence-and-remaining-work/opt2-implement-structural-families`](../../specs/opt-workflow/tasks.md#implementation-tasks) |
+| internal-layout-transformations | [`opt/current-evidence-and-remaining-work/opt2-implement-structural-families`](../../specs/opt-workflow/tasks.md#implementation-tasks) |
+| target-layout-and-boundaries | [`lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout`](../../specs/lower-workflow/tasks.md#implementation-tasks) |
+| pgo-identity-staleness-and-privacy | [`opt/current-evidence-and-remaining-work/opt2-implement-structural-families`](../../specs/opt-workflow/tasks.md#implementation-tasks) |
+| pgo-transformations-and-reproduction | [`opt/current-evidence-and-remaining-work/opt2-implement-structural-families`](../../specs/opt-workflow/tasks.md#implementation-tasks) |
+| autotuning-candidates-and-selection | [`opt/current-evidence-and-remaining-work/opt2-implement-structural-families`](../../specs/opt-workflow/tasks.md#implementation-tasks) |
+| variant-guards-fallback-and-overhead | [`opt/current-evidence-and-remaining-work/opt5-integrate-reproducible-pipeline`](../../specs/opt-workflow/tasks.md#implementation-tasks) |
+| simd-lanes-bounds-and-math | [`opt/current-evidence-and-remaining-work/opt2-implement-structural-families`](../../specs/opt-workflow/tasks.md#implementation-tasks) |
+| cache-order-and-intrinsic-products | [`opt/current-evidence-and-remaining-work/opt2-implement-structural-families`](../../specs/opt-workflow/tasks.md#implementation-tasks) |
+| check-class-proof-and-policy | [`opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors`](../../specs/opt-workflow/tasks.md#implementation-tasks) |
+| proof-invalidation-and-current-verification | [`opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate`](../../specs/opt-workflow/tasks.md#implementation-tasks) |
+| lowered-assumption-preservation | [`lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins`](../../specs/lower-workflow/tasks.md#implementation-tasks) |
+| realtime-contract-and-static-checks | [`legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks`](../../specs/legality-workflow/tasks.md#implementation-tasks) |
+| realtime-runtime-and-preemption | [`runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries`](../../specs/runtime-workflow/tasks.md#implementation-tasks) |
+| performance-preservation-of-latency | [`opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors`](../../specs/opt-workflow/tasks.md#implementation-tasks) |
+| benchmark-manifests-and-statistics | [`release/remaining-tasks-and-evidence/execute-performance-regression-fixtures`](../../specs/release-workflow/tasks.md#implementation-tasks) |
+| regressions-baseline-and-governance | [`release/remaining-tasks-and-evidence/execute-performance-regression-fixtures`](../../specs/release-workflow/tasks.md#implementation-tasks) |
+| worst-case-latency-evidence | [`release/remaining-tasks-and-evidence/execute-performance-regression-fixtures`](../../specs/release-workflow/tasks.md#implementation-tasks) |
+
+### Performance PERF1 Evidence Classes
+
+Performance evidence includes:
+
+- Static cost model.
+- Benchmark measurement.
+- Target feature availability.
+- Layout proof.
+- Range proof.
+- Alias proof.
+- Memory locality proof.
+- Dispatch elimination proof.
+- Allocation elimination proof.
+- Math certificate.
+- Runtime trace or profile data.
+- Autotuning result.
+
+The required evidence depends on the claim. Benchmark evidence alone cannot
+justify removing safety checks.
+
+### Performance PERF1 Target Fingerprint
+
+Benchmark and optimization artifacts record:
+
+- CPU, GPU, accelerator, or runtime id.
+- Feature flags.
+- OS or execution environment.
+- Compiler version.
+- Backend version.
+- Runtime provider versions.
+- Memory provider.
+- Numeric provider.
+- Build flags.
+- Thermal or power mode when relevant.
+
+Without a fingerprint, benchmark results are advisory.
+
+### Performance PERF2 Abstraction Families
+
+The zero-cost model applies to:
+
+- Protocol dispatch.
+- Interface calls.
+- Generic functions.
+- Records and field access.
+- Newtype or wrapper values.
+- Iterator and sequence pipelines.
+- Collection views and slices.
+- Pattern matching.
+- Macros.
+- Facet-generated forms.
+- Higher-order functions.
+- Error/result wrappers.
+- Resource wrappers.
+- Numeric mode wrappers.
+- Standard-library convenience APIs.
+
+Each family declares what cost should erase and what residual work is acceptable.
+
+### Performance PERF2 Residual Costs
+
+Residual costs include:
+
+- Allocation.
+- Boxing or unboxing.
+- Dynamic dispatch.
+- Reflection.
+- Synchronization.
+- Runtime bounds checks.
+- Runtime type checks.
+- Capability provider calls.
+- FFI boundary calls.
+- Host runtime calls.
+- Iterator state machines.
+- Closure allocation.
+- Virtual table lookup.
+- Branch guard.
+
+Residual work may be acceptable, but it is not zero-cost unless the equivalent
+handwritten form would contain the same work.
+
+### Performance PERF3 Specialization Inputs
+
+Specialization may use:
+
+- Type arguments.
+- Const generics.
+- Literal values.
+- Collection shape.
+- Array length.
+- Schema shape.
+- Protocol implementation.
+- Numeric mode.
+- Profile.
+- Target features.
+- Memory layout.
+- Capability provider.
+- Effect set.
+- Proof facts.
+
+If a fact affects behavior but is missing from the key, specialization is invalid.
+
+### Performance PERF3 Invalidation
+
+Specialization is invalidated by changes to:
+
+- Source or macro expansion.
+- Type arguments.
+- Const values.
+- Profile or target.
+- Target features.
+- Memory layout.
+- Provider selection.
+- Numeric mode.
+- Build effects and replay records.
+- Proof facts.
+- Dependency versions.
+
+The cache key includes all invalidation inputs.
+
+### Performance PERF4 Transformation Families
+
+Layout transformations include:
+
+- Field reordering.
+- Field packing.
+- Padding insertion or removal.
+- Array-of-structs to struct-of-arrays.
+- Struct-of-arrays to array-of-structs.
+- Hot/cold field splitting.
+- Inline storage.
+- Unboxed representation.
+- Tagged union representation selection.
+- Cache-line alignment.
+- Device transfer packing.
+- Hardware register layout.
+
+Each family declares required proofs and forbidden boundaries.
+
+### Performance PERF4 ABI and Persistence Boundaries
+
+Layouts are fixed at:
+
+- C ABI boundaries.
+- Foreign struct boundaries.
+- Kernel and driver ABI boundaries.
+- Serialized formats.
+- Database or file persistence.
+- Network protocols.
+- Hardware ports and registers.
+- Public package ABI.
+
+The optimizer cannot reorder or repack across those boundaries unless the
+boundary declares a compatible representation or generated adapter.
+
+### Performance PERF5 Benchmark Families
+
+Initial benchmark families include:
+
+- Core immutable data.
+- Numeric kernels.
+- Pattern matching and dispatch.
+- Memory layout and allocation.
+- FFI boundaries.
+- Concurrency and atomics.
+- Standard library IO and parsing.
+- GPU and accelerator kernels.
+- Workflow and AI trace overhead.
+- Compiler and macro expansion.
+- Package/build performance.
+
+Each family has positive performance fixtures and correctness/safety fixtures.
+
+### Performance PERF5 Regression Policy
+
+A regression report classifies:
+
+- No regression.
+- Noise suspected.
+- Environment drift.
+- Compiler regression.
+- Backend regression.
+- Runtime/provider regression.
+- Dependency regression.
+- Semantic or safety change.
+- Baseline invalid.
+
+Regression gates fail when the measured regression exceeds threshold and cannot
+be attributed to accepted environment drift or intentional semantic change.
+
+### Performance PERF6 Staleness Policy
+
+Staleness modes:
+
+- `:reject-if-source-differs`
+- `:reject-if-mir-hash-differs`
+- `:advisory-if-similar`
+- `:require-exact`
+- `:ignore`
+
+Release builds default to rejecting mismatched source or MIR hashes unless a
+policy explicitly accepts advisory data.
+
+### Performance PERF7 Variant Guards
+
+Variant guards may include:
+
+- Target feature.
+- CPU/GPU model.
+- Input length or shape.
+- Alignment.
+- Numeric domain.
+- Error-bound domain.
+- Memory layout.
+- Provider availability.
+- Profile.
+- Runtime PGO data.
+
+Guards must be complete and deterministic. If no guard matches, the dispatch
+falls back to a valid baseline.
+
+### Performance PERF8 Intrinsic Mapping
+
+Intrinsic maps record:
+
+- Source operation.
+- Target instruction or intrinsic.
+- Required feature.
+- Numeric mode.
+- Alignment requirement.
+- Memory order.
+- Fallback.
+- Proof or certificate.
+
+If fallback is unavailable, the variant guard must prevent execution on
+unsupported targets.
+
+### Performance PERF9 Bounded Work
+
+Bounded work evidence includes:
+
+- Static loop bounds.
+- Recursion depth.
+- Bounded data structure traversal.
+- Fixed-size allocation.
+- Fixed retry count.
+- Fixed timeout.
+- Bounded lock hold time.
+- Bounded queue operation.
+- Bounded interrupt latency.
+
+Unbounded data-dependent loops require a profile-specific proof, timeout, or
+rejection.
+
+### Performance PERF9 Evidence Modes
+
+Latency evidence may be:
+
+- Static worst-case path analysis.
+- Bounded model checking.
+- Hardware timing analysis.
+- Empirical bound under fixed target and workload fingerprint.
+- Hybrid static plus empirical report.
+
+Empirical evidence must identify target, clock, power mode, runtime provider,
+input shape, and measurement method.
+
+### Performance PERF10 Elision Rule Table
+
+| Check class | Elidable when | Required artifact | Policy checks |
+| --- | --- | --- | --- |
+| Bounds | Dominating range proof shows `0 <= index < count` at the use site | `:proof/range` plus residual-check report | no |
+| Integer overflow | Bit-width range proof covers the operator result, or source chose wrapping or saturating semantics | `:proof/int-range` or explicit operator record | no |
+| Division by zero | Divisor nonzero proof dominates division | `:proof/nonzero` | no |
+| Shift count | Shift count range proof covers target width | `:proof/shift-range` | no |
+| Null/option access | Type excludes null/none or pattern match proves the case | `:proof/non-null` or match coverage record | no |
+| Initialization | Definite-init analysis proves all bytes or fields read are initialized | `:proof/definite-init` | no |
+| Region lifetime | Escape analysis proves value cannot outlive region | `:proof/region-non-escape` | no |
+| Borrow/alias | Borrow graph proves legal alias state | `:proof/alias-exclusive` | no |
+| Linear resource | Flow graph proves exactly-once terminal state | `:proof/linear-flow` | no |
+| Data race | Ownership or synchronization proof proves no race | `:proof/race-free` | no |
+| Taint sink | Validator proof proves sink contract | `:proof/taint-cleared` | no |
+| Capability/effect | Compile-time validation proves exact grant and deployment policy | capability validation artifact | yes |
+| Unsafe audit | Review policy satisfied before build or deployment | unsafe audit artifact | yes |
+| Workflow replay | Step recorded, deterministic, or replay-safe | replay contract artifact | yes |
+| AI human-review | Policy proves no human-review gate applies at the site, the gate is already satisfied, or the gate is represented by workflow state | policy proof or workflow gate | yes |
+
+Policy checks marked yes are not removed for performance alone. They can be
+discharged only by equivalent policy artifacts.
+
+### Performance PERF10 Dominance and Invalidation
+
+The proof must dominate the operation in the relevant IR. Dominance can be:
+
+- Control-flow dominance.
+- Data-flow dominance.
+- Pattern-match dominance.
+- Type-refinement dominance.
+- Loop-invariant dominance.
+- Profile or target manifest dominance.
+
+Invalidation occurs after transformations that change control flow, data flow,
+layout, numeric mode, ownership, aliases, profile, target, provider, or backend
+assumptions.
+
+The complete PERF10 table above maps its actual operation/proof/policy cases to the existing Opt check-protection task, current proof regeneration to Opt verification and emitted assumption preservation to Lower. Retain each row's conditional alternative: source-selected wrap/saturate, actual matching pattern/validation facts and equivalent policy/workflow artifacts are not universal mathematical-proof requirements. Benchmarks cannot replace those required artifacts.
+
+### Performance producer and consumer interfaces
+
+| Producer | Consumer | Required selected product and scope |
+| --- | --- | --- |
+| [`opt/current-evidence-and-remaining-work/opt1-execute-pass-contracts`](../../specs/opt-workflow/tasks.md#implementation-tasks) | [`opt/current-evidence-and-remaining-work/opt2-implement-structural-families`](../../specs/opt-workflow/tasks.md#implementation-tasks) | Actual verified MIR/current analysis, lawful pass input/output and preserved/invalidated contract products; performance hints never create semantic facts. |
+| [`build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects`](../../specs/build-workflow/tasks.md#implementation-tasks) | [`opt/current-evidence-and-remaining-work/opt2-implement-structural-families`](../../specs/opt-workflow/tasks.md#implementation-tasks) | Authentic selected source/build-effect/grant/replay/profile-data/tuning inputs under actual L12 policy; pure constants retain separate restrictions. |
+| [`build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation`](../../specs/build-workflow/tasks.md#implementation-tasks) | [`opt/current-evidence-and-remaining-work/opt2-implement-structural-families`](../../specs/opt-workflow/tasks.md#implementation-tasks) | Actual all-source/macro/type/const/profile/target/features/layout/provider/numeric/effect/replay/proof/dependency cache invalidation decisions before reuse. |
+| [`lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout`](../../specs/lower-workflow/tasks.md#implementation-tasks) | [`opt/current-evidence-and-remaining-work/opt2-implement-structural-families`](../../specs/opt-workflow/tasks.md#implementation-tasks) | Actual target layout/ABI/alignment/address/boundary contracts; internal transformations cannot silently repack public/persisted/foreign data. |
+| [`opt/current-evidence-and-remaining-work/opt2-implement-structural-families`](../../specs/opt-workflow/tasks.md#implementation-tasks) | [`lower/current-evidence-and-remaining-work/lower5-integrate-target-emission`](../../specs/lower-workflow/tasks.md#implementation-tasks) | Actual specialized/vector/cache/variant outputs and source/proof/guard obligations; Lower/Backends own target instruction and intrinsic emission. |
+| [`opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate`](../../specs/opt-workflow/tasks.md#implementation-tasks) | [`lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins`](../../specs/lower-workflow/tasks.md#implementation-tasks) | Actual current verifier and exact-subject semantic/proof/invalidation/regeneration products; declarations or previous artifact success are insufficient. |
+| [`pass-evidence`](../../specs/compiler-api-workflow/tasks.md#implementation-tasks) | [`opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate`](../../specs/opt-workflow/tasks.md#implementation-tasks) | Applicable risk/evidence policy and genuine checkers/translation-validation scope; no second checker or waived C18 minimum. |
+| [`math/independent-proof-and-certificate-checking`](../../specs/domains-workflow/tasks.md#implementation-tasks) | [`opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors`](../../specs/opt-workflow/tasks.md#implementation-tasks) | Actual selected EFIR/EML/domain/numeric/error/roundoff/branch/target approximation certificates checked by their owning checker; EML identity is no equality oracle. |
+| [`formal`](../../specs/domains-workflow/tasks.md#implementation-tasks) | [`opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate`](../../specs/opt-workflow/tasks.md#implementation-tasks) | Genuine applicable proof/certificate artifacts and declared checker/assumption scope, only where required; valid bounded work needs no whole future theory completion. |
+| [`legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks`](../../specs/legality-workflow/tasks.md#implementation-tasks) | [`runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries`](../../specs/runtime-workflow/tasks.md#implementation-tasks) | Actual latency/jitter/path/allocation/blocking/preemption contract and accepted/refused static facts, not a runtime observation. |
+| [`runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries`](../../specs/runtime-workflow/tasks.md#implementation-tasks) | [`release/remaining-tasks-and-evidence/execute-performance-regression-fixtures`](../../specs/release-workflow/tasks.md#implementation-tasks) | Actual permitted bounded service/scheduler/interrupt/cleanup and residual-check traces tied to the declared target/path. |
+| [`runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration`](../../specs/runtime-workflow/tasks.md#implementation-tasks) | [`tools/finite-service-outcomes-and-remaining-work/profile-performance-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | Actual source-linked samples/provider/retry/replay/review observations with declared measurement overhead and target support. |
+| [`firmware`](../../specs/platform-workflow/tasks.md#implementation-tasks) | [`release/remaining-tasks-and-evidence/execute-performance-regression-fixtures`](../../specs/release-workflow/tasks.md#implementation-tasks) | Actual selected physical target/clock/power/stack/latency/preemption and simulator/live scope; library or profile selection does not adopt a device/Product. |
+| [`tools/finite-service-outcomes-and-remaining-work/profile-performance-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | [`release/remaining-tasks-and-evidence/execute-performance-regression-fixtures`](../../specs/release-workflow/tasks.md#implementation-tasks) | Genuine selected measurement/environment/sample and comparison inputs; independent regression suite owns its actual run and acceptance. |
+| [`evolution/change-review`](../../specs/evolution-workflow/tasks.md#governance-implementation-task-authority) | [`release/remaining-tasks-and-evidence/execute-performance-regression-fixtures`](../../specs/release-workflow/tasks.md#implementation-tasks) | Actual accountable baseline-update/normalization decision and preserved history; benchmark comparison cannot approve its own regression waiver. |
+| [`opt/current-evidence-and-remaining-work/opt5-integrate-reproducible-pipeline`](../../specs/opt-workflow/tasks.md#implementation-tasks) | [`tools/finite-service-outcomes-and-remaining-work/ir-explorer-compiler-tool-maintainer`](../../specs/tools-workflow/tasks.md#implementation-tasks) | Actual pre/post/erased/residual/guard/layout/claim/decision/proof/invalidation/source products for honest structured display. |
+| [`release/remaining-tasks-and-evidence/execute-performance-regression-fixtures`](../../specs/release-workflow/tasks.md#implementation-tasks) | [`opt/current-evidence-and-remaining-work/opt5-integrate-reproducible-pipeline`](../../specs/opt-workflow/tasks.md#implementation-tasks) | Actual subject-matched performance data and gate status used for claims and candidate selection, never a semantic/proof substitute or first source declaration prerequisite. |
+
+### Performance accepted and refused products
+
+Instantiate actual declared dot/vector/fixed-map/layout/benchmark/PGO/tuning/SIMD/realtime/check-elision examples with genuine source/type/profile/target/provider/policy and proof/measurement inputs; example widths, flags, sampled values and targets select no global product or quota. Every significant claim is bounded to its exact input domain, layout, numeric mode, actual target/environment and evidence. Zero-cost compares an equivalent lower-level form and genuine residual work. Realtime uses declared worst-case or bounded empirical/static/hybrid scope rather than average throughput. Pure/declared-replayable partial evaluation and all specialization invalidation inputs preserve actual human L12 policy.
+
+Preserve every individual PERF1-PERF10 diagnostic meaning and applicable D6/D8/D9 safety/evidence errors at its owning boundary, with canonical per-family source/function/type/field/loop/path/pass/IR/claim/profile/target/device/feature/guard/provider/workload/benchmark/fingerprint/proof/checker/policy/threshold/failure-mode context, expected/observed facts and remediation. Missing, stale, wrong-subject, invalid, unsupported or unverifiable evidence rejects the affected claim. A verifier label, fixed cost/sample, source metadata or report name cannot establish optimization legality, proof, target behavior or measurement.
+
+### Performance safety and trust
+
+Safe performance preserves the four D8 dangerous-operation outcomes and genuine safe-wrapper/unsafe-audit policy. EML remains proof/search normalization rather than equality or runtime representation; actual math certificates retain domain/mode/branch/roundoff/target/checker assumptions. Current C18 affected-function translation-validation minima remain effective; stronger mechanized proof is conditional and must establish its required scope. Keep lawful residual checks or reject when proof validity is unclear. No source declaration, benchmark win, variant selection or backend UB silently changes safe semantics, grants, policy, numeric modes or target assumptions.
+
+PERF9 program latency/jitter, loop/recursion/retry/timeout, allocation/lock/physical memory/clock/power constraints and PERF5 statistical methods/quality thresholds remain real semantic and claim requirements. They do not reinstate retired project compiler-work/fuel/input/token/call quotas. PERF7 dispatch overhead and T11 real external billing/cost remain observed performance, not project allowances. Actual counter/device/provider availability and simulation versus physical scope stay explicit.
+
+### Performance stage order and implementation disposition
+
+Use the [sole dependency representation](../../docs/acceptance-dependencies.md#future-task-construction-and-composition). Declare actual claim/schema/pass/fact/guard/layout/latency/benchmark interfaces first, and develop bounded transformations or fixture protocols against authentic available products. Generic source correctness and valid unoptimized MIR need no whole optimizer/tuning/benchmark completion. Actual required proof/guard/grant/policy and admitted candidate facts precede protected transformation, narrowed use or measurement; actual transformed products precede their verifiers and consumers. Real measurement and independent correctness/safety/regression checks precede performance acceptance, reviewed baselines precede their use, and exact release/target evidence precedes wider claims. Construction interfaces, actual composition, acceptance and release are separate stages in the existing sole dependency representation. This refinement edits no shared route or current binding; exact selected-stage entailment remains separate.
+
+All task identities/statuses and historical scopes remain unchanged. This source increment expands no complete implementation audit and executes no compiler/Gravity/optimizer/specialization/provider/tuning/benchmark/profiler/device/realtime/proof/translation-validation/replay/migration/signing route. Current source-owner/interface entailment, independent acceptance, binding and Main integration remain pending. No narrower historical performance receipt is promoted to whole Phase4 or project acceptance. Reader contract-coverage reconciliation remains first; D1/C1/C5/C6 ordering stays separate and wider foundational conjunctions remain unproven.
+
+Preserve Clojure bootstrap/Gravity destination, current ownership/review and all compiler/Reader/Gravity/bootstrap/paired/provider/C12/plugin/native/callback/device/probe/replay/migration/private-store/signing/publication holds. The stopped public-contract-cluster handoff and denied reviewer wake remain held. Human review/integration coordination grants no product execution or Main acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Opt task authority

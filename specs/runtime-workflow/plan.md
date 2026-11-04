@@ -459,6 +459,10 @@ Use the [command and source service source criteria](../tools-workflow/plan.md#c
 
 Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Supply actual permitted debug/interactive/process/replay and source-linked measurement/provider observations with before-action enforcement and cleanup. Static records and target descriptors are no live frames, samples or device activity. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Performance contract source interface
+
+Use the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria). Supply actual permitted bounded memory/scheduler/GC/lock/interrupt/provider and source-linked measurement observations, explicit target support and cleanup; average throughput or fixed reports prove no runtime bound. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Runtime workflow migration

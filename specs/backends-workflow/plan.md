@@ -445,6 +445,10 @@ Use the [crypto UI and stability library source criteria](../stdlib-workflow/pla
 
 Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Supply actual target-specific debug/source/ABI/runtime assumptions and supported device/counter features. Unsupported/optimized-away/unavailable facts remain explicit; no target or product adoption follows from a tooling view. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Performance contract source interface
+
+Use the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria). Preserve actual target feature/ABI/layout/volatile-order/intrinsic/numeric/proof assumptions and valid fallback or refuse unsupported emission. Target labels and optimizer metadata do not establish safe executable variants. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Backends family task authority

@@ -64,6 +64,8 @@ required families and applicable positive/negative preservation, invalidation,
 determinism and performance evidence. Preserve current writers and restrictions;
 independent acceptance, integration and release remain separate.
 
+The [performance contract source criteria](plan.md#complete-performance-contract-source-criteria) refine PERF1-PERF10 actual performance claims, zero-cost comparisons, specialization/layout/PGO/tuning/SIMD, realtime and proof-backed check elision over existing Opt/Lower/Legality/Runtime/Release and supporting authorities. Current proofs, actual residual work and measured matching-target evidence remain distinct; existing C13/C18 checks, task identities/statuses, historical evidence and held actions persist.
+
 ## Historical task-authority-transfer specification
 
 # Feature specification: Opt implementation workflow

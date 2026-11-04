@@ -134,6 +134,17 @@ Apply [Matt's scoped native local-model decision](../../.specify/memory/constitu
 <!-- native-local-model-policy:end -->
 
 
+
+<!-- performance-contract-source-realtime-contract-and-static-checks:start -->
+
+Apply the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Performance contract realtime-contract-and-static-checks criterion (Open). Sources: [PERF9](../../docs/phase-04-performance-model/067-perf9-realtime-and-deterministic-latency-performance-model.md), [D6](../../docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md).
+
+Parse and enforce actual selected latency/jitter target/workload/allocation/blocking/preemption/loop-recursion/failure-mode contracts for their functions/modules/handlers/kernels/workflow/hardware paths. Check genuine bounded traversal/allocation/regions/arenas/pools, retries/timeouts/locks/queues/interrupts and runtime-check costs; reject unbounded data-dependent work unless actual profile proof/timeout policy permits it. Reject hidden GC/dynamic loading/reflection/unbounded allocation or locks and network/model/tool/file/database calls in deterministic paths unless isolated or genuinely profile-bounded with evidence. Exercise valid declarations and every required missing/exceeded/unproved constraint; these program bounds and physical limits do not restore project compiler-work quotas. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- performance-contract-source-realtime-contract-and-static-checks:end -->
+
+
 - [ ] `legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis` Complete ownership, borrow, initialization and lifetime analysis
 
 Status: Open

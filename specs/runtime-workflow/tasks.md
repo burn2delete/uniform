@@ -274,6 +274,17 @@ Supply actual permitted typed FFI/host-provider/UI adapter boundaries with authe
 <!-- library-crypto-ui-stability-source-crypto-ui-runtime-boundary:end -->
 
 
+
+<!-- performance-contract-source-realtime-runtime-and-preemption:start -->
+
+Apply the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Performance contract realtime-runtime-and-preemption criterion (Open). Sources: [PERF9](../../docs/phase-04-performance-model/067-perf9-realtime-and-deterministic-latency-performance-model.md).
+
+Provide actual selected bounded allocation/provider, scheduler/GC, maximum wait/lock-hold, priority-inversion and interrupt/preemption behavior and evidence consumed by the declared deterministic path. Enforce authentic grants and source/runtime/profile/target context without hidden host services; isolate excluded nondeterministic services with actual noninterference evidence. Exercise real permitted selected service traces and unbounded pause/allocation/lock, unsupported provider, missing cleanup or unauthorized effects. Static latency manifests and mean throughput do not establish the runtime bound or authorize held native/device/provider sessions. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- performance-contract-source-realtime-runtime-and-preemption:end -->
+
+
 - [ ] `runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution` Connect distributed/AI replay and interactive execution
 
 Status: Open

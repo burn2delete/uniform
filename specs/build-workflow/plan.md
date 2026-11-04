@@ -324,6 +324,10 @@ Use the [command and source service source criteria](../tools-workflow/plan.md#c
 
 Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Supply actual current source/dependency invalidation, target/artifact identities, package access/verification and provenance products. Dev-only data and fixed report hashes cannot satisfy release or package verification. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Performance contract source interface
+
+Use the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria). Supply authentic declared compile-time/profile-data/tuning inputs and all source/macro/type/const/profile/target/feature/layout/provider/numeric/effect/replay/proof/dependency invalidation products under the human L12 policy. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration

@@ -267,6 +267,10 @@ Use the [command and source service source criteria](../tools-workflow/plan.md#c
 
 Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Supply genuine codes/spans/manifest and generated origins and preserve compiler/CLI/editor agreement. Redaction, failure-stage and stale/unsupported context remain explicit in actual structured exports. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
 
+## Performance contract source interface
+
+Use the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria). Preserve complete PERF1-PERF10 and applicable D6/D8/D9 meanings, canonical source/IR/pass/claim/proof/target/fingerprint/guard/metric/policy context and expected/observed failures without conflating missing proof and missing measurements. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Diagnostics task authority

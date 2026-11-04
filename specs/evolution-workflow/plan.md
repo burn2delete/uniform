@@ -234,3 +234,7 @@ Use the [crypto UI and stability library source criteria](../stdlib-workflow/pla
 ## Specialist tool service interface
 
 Use the [specialist tool service criteria](../tools-workflow/plan.md#complete-specialist-tool-service-criteria). Supply actual distinct unsafe/security review and yank/advisory/governance records with exact conditions, evidence and missing/revalidation state. Registry and safety views cannot synthesize acceptance or change policy. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
+## Performance contract source interface
+
+Use the [performance contract source criteria](../opt-workflow/plan.md#complete-performance-contract-source-criteria). Own actual accountable baseline-update/normalization/security-impact decisions and preserved history. Benchmarks cannot approve their own regression waiver or hide a correctness/safety change. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
