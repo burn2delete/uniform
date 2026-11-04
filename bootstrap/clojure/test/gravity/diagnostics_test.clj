@@ -3,6 +3,11 @@
             [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as bootstrap]
             [gravity.c15-diagnostics :as c15]
+            [gravity.c15-diagnostics.artifact :as artifact]
+            [gravity.c15-diagnostics.operations :as c15-ops]
+            [gravity.c15-diagnostics.projection :as projection]
+            [gravity.c15-diagnostics.records :as records]
+            [gravity.c15-diagnostics.validation :as validation]
             [gravity.diagnostics :as diagnostics]))
 
 (defn- captured-exception-info
@@ -77,7 +82,9 @@
     (is (= '([id message data]) (:arglists (meta #'diagnostics/fail!))))
     (is (= #{'diagnostic 'fail! 'stable-id 'diagnostic-record
              'resolve-request-id 'bind-private-record 'verify-private-record 'source-overrides 'native-catalog
-             'native-context-valid? 'native-primary-valid? 'validate-native!}
+             'native-context-valid? 'native-primary-valid? 'validate-native!
+             'native-fixture-diagnostics 'native-artifact-base 'native-capability-proof
+             'native-failure! 'native-validate-source-overrides! 'native-source-artifact 'native-file-artifact}
            (set (keys (ns-publics 'gravity.diagnostics))))))
   (testing "the namespace contract states its API and ownership boundary"
     (let [contract-var
@@ -89,16 +96,22 @@
              (:contract-boundary contract)))
       (is (= #{'diagnostic 'fail! 'stable-id 'diagnostic-record
                'resolve-request-id 'bind-private-record 'verify-private-record 'source-overrides 'native-catalog
-               'native-context-valid? 'native-primary-valid? 'validate-native!}
+               'native-context-valid? 'native-primary-valid? 'validate-native!
+               'native-fixture-diagnostics 'native-artifact-base 'native-capability-proof
+               'native-failure! 'native-validate-source-overrides! 'native-source-artifact 'native-file-artifact}
              (set (keys (:public-api contract)))))
       (is (= [:native-c15-artifacts :native-validation-configuration :explicit-native-validation-operations
               :native-compiler-metadata :native-c15-rule-id-order :rule-id :human-message :structured-data :explicit-span-and-identity-operations
               :native-seed-diagnostic-fields :source-invocation :canonical-request-digest
-              :original-eleven-c15-fields :private-candidate :complete-digest-request]
+              :original-eleven-c15-fields :private-candidate :complete-digest-request
+              :trusted-native-source-module-configuration-and-c14-parent
+              :trusted-zero-argument-operation-suppliers]
              (:artifact-inputs contract)))
       (is (= [:native-phase-and-primary-predicates :native-record-validation-result
               :native-source-overrides :native-c15-catalog :stage0-exception-info-carrier :native-seed-diagnostic-record :legacy-diagnostic-id
-              :resolved-request-data :private-c15-binding :source-owned-rejection]
+              :resolved-request-data :private-c15-binding :source-owned-rejection
+              :native-c15-fixture-diagnostics-artifact-and-capability-data
+              :native-failure-payload-or-original-callback-result]
              (:artifact-outputs contract)))
       (is (= ['clojure.core 'clojure.string]
              (get-in contract [:dependency-direction :requires])))
@@ -109,6 +122,17 @@
       (is (true? (:bootstrap-hosted? contract)))
       (is (true? (:clojure-seed-boundary? contract)))
       (is (false? (:self-hosted? contract))))))
+
+(deftest complete-stage-api-retains-explicit-metadata-and-native-boundaries
+  (let [publics (ns-publics 'gravity.diagnostics)
+        contract (:gravity/namespace-contract (meta #'diagnostics/diagnostic))]
+    (is (= 19 (count publics)))
+    (is (= (set (keys publics)) (set (keys (:public-api contract)))))
+    (doseq [[name operation] publics]
+      (is (= contract (:gravity/namespace-contract (meta operation))))
+      (is (= (:arglists (meta operation)) (get-in contract [:public-api name :arglists]))))
+    (is (some #{'gravity.c15-diagnostics.artifact} (get-in contract [:dependency-direction :consumed-by])))
+    (is (some #{:canonical-stream-ordering} (get-in contract [:diagnostic-ownership :does-not-own])))))
 
 (deftest bootstrap-record-wrapper-preserves-phase-context
   (doseq [context [{} {:profile :kernel :target :llvm :syntax-id "caller-syntax-id"}]]
@@ -282,3 +306,125 @@
                         path {}))]
       (is (identical? sentinel observed))
       (is (empty? @calls)))))
+
+;; Native fixture data only; no C14 authentication or publication authority.
+(defn- native-pipeline-operations []
+  {:read-source-form-records (fn [_ _] [{:form '(ns native.diagnostics.pipeline (:profile :hosted))}])
+   :validate-ns-syntax! (fn [_ _] nil)
+   :parse-module (fn [path _] {:module 'native.diagnostics.pipeline :source-path path
+                              :profile :hosted :target :jvm :effects #{} :capabilities #{}
+                              :safety :safe :metadata {}})
+   :compiler-c14-lowering-source-artifact
+   (fn [_ _] {:kind :gravity/stage0-c14-target-lowering-artifact :task "P06-D093"
+              :artifact-id "fixture:unbound-native-c14"
+              :target-artifact-manifest {:artifact :gravity/target-artifact-manifest}
+              :capability-based-proof {:status :complete}})})
+
+(deftest native-file-invoke-is-captured-before-source-reading
+  (let [calls (atom []) marker (Object.)
+        original (fn [key _ & values] (swap! calls conj [key values]) marker)]
+    (with-redefs [c15-ops/invoke original
+                  clojure.core/slurp
+                  (fn [path]
+                    (is (= "native-port.qst" path))
+                    (alter-var-root #'c15-ops/invoke
+                                    (constantly (fn [& _] (throw (AssertionError. "Late invoke root")))))
+                    "native source text")]
+      (is (identical? marker (artifact/file-artifact {} "native-port.qst"))))
+    (is (= [[:compiler-c15-diagnostics-source-artifact ["native-port.qst" "native source text"]]] @calls))))
+
+(deftest native-override-failure-root-precedes-name-evaluation
+  (let [calls (atom []) marker (Object.)
+        original (fn [& args] (swap! calls conj args) marker)
+        named (reify clojure.lang.Named
+                (getName [_]
+                  (alter-var-root #'validation/fail!
+                                  (constantly (fn [& _] (throw (AssertionError. "Late failure root")))))
+                  "native-name")
+                (getNamespace [_] nil))
+        configuration {:compiler-verification-override-diagnostics {named ["C15-SCHEMA" :native-subject]}
+                       :c15-diagnostics-diagnostic-ids ["C15-SCHEMA"]}]
+    (with-redefs [validation/fail! original]
+      (is (identical? marker (validation/validate-source-overrides! configuration "native-port.gravity" {:fail named}))))
+    (is (= 1 (count @calls)))
+    (is (= [configuration "C15-SCHEMA" "native-port.gravity"] (vec (take 3 (first @calls)))))
+    (is (= "c15-invalid-native-name" (:diagnostic-id (nth (first @calls) 3))))))
+
+(deftest native-fixture-record-root-precedes-span-arguments
+  ;; These minimal records observe trusted seed callback timing only.
+  (let [record-var (ns-resolve 'gravity.c15-diagnostics.artifact 'diagnostic-record)
+        build (var-get (ns-resolve 'gravity.c15-diagnostics.artifact 'diagnostics))
+        events (atom [])
+        after (fn [rule & _] (swap! events conj [:after rule]) {:ordering-key [rule] :rule rule})
+        before (fn [rule & _] (swap! events conj [:before rule]) {:ordering-key [rule] :rule rule})
+        result (with-redefs-fn
+                 {record-var before
+                  #'records/source-span
+                  (fn [& _] (alter-var-root record-var (constantly after)) {:source "native-span"})}
+                 #(build "native-port.qst" "native-parent" {}))]
+    (is (= [[:before "C15-FACTS"] [:before "C15-ORIGIN"]
+            [:after "C15-REDACTION"] [:after "C15-GOLDEN"]] @events))
+    (is (= ["C15-FACTS" "C15-GOLDEN" "C15-ORIGIN" "C15-REDACTION"] (mapv :rule result)))))
+
+(deftest native-source-assembly-uses-validation-rebound-during-projection
+  (let [events (atom []) base {:native :base} proof {:native :proof}
+        after (fn [_ path value]
+                (is (= "native-port.gravity" path)) (is (identical? base value))
+                (swap! events conj :late-validation))
+        result
+        (with-redefs [projection/artifact-base
+                      (fn [& _] (alter-var-root #'validation/validate! (constantly after))
+                        (swap! events conj :projection) base)
+                      validation/validate!
+                      (fn [& _] (throw (AssertionError. "Early validation root")))]
+          (c15/with-operations
+            (assoc (native-pipeline-operations) :c15-diagnostics-capability-proof (constantly proof)
+                               :c4-artifact-id (constantly "native-result"))
+            #(c15/compiler-c15-diagnostics-source-artifact "native-port.gravity" "source")))]
+    (is (= [:projection :late-validation] @events))
+    (is (= {:native :base :capability-based-proof proof :artifact-id "native-result"} result))))
+
+(deftest native-capability-projection-keeps-later-predicates-live
+  (let [value (c15/with-operations (native-pipeline-operations)
+                #(c15/compiler-c15-diagnostics-source-artifact "native-port.gravity" "source"))
+        identity-operation records/stable-id context-operation validation/context-valid?
+        primary-operation validation/primary-valid? events (atom [])
+        after-primary (fn [record] (swap! events conj :primary) (primary-operation record))
+        after-context (fn [record]
+                        (swap! events conj :context)
+                        (alter-var-root #'validation/primary-valid? (constantly after-primary))
+                        (context-operation record))
+        result
+        (with-redefs [records/stable-id
+                      (fn [record] (swap! events conj :identity)
+                        (alter-var-root #'validation/context-valid? (constantly after-context))
+                        (identity-operation record))
+                      validation/context-valid? (fn [& _] (throw (AssertionError. "Early context root")))
+                      validation/primary-valid? (fn [& _] (throw (AssertionError. "Early primary root")))]
+          (c15/c15-diagnostics-capability-proof value))]
+    (is (= (vec (concat (repeat 4 :identity) (repeat 4 :context) (repeat 4 :primary))) @events))
+    (is (= :complete (:status result)))))
+
+(deftest native-failure-captures-nested-invoke-and-preserves-exceptions
+  (let [original c15-ops/invoke span {:source "native-fallback"}
+        observed
+        (with-redefs [c15-ops/invoke original]
+          (try
+            (c15/with-operations
+              {:source-span
+               (fn [& _]
+                 (alter-var-root #'c15-ops/invoke
+                                 (constantly (fn [& _] (throw (AssertionError. "Late nested invoke root")))))
+                 span)}
+              #(c15/c15-diagnostics-fail! "C15-SCHEMA" "native-port.qst" {:source-span false} {:stage nil}))
+            nil (catch clojure.lang.ExceptionInfo e e)))]
+    (is (= "C15-SCHEMA" (:id (ex-data observed))))
+    (is (identical? span (:source-span (ex-data observed))))
+    (is (contains? (ex-data observed) :stage))
+    (is (nil? (:stage (ex-data observed))))
+    (let [error (ex-info "original callback failure" {})
+          caught (try
+                   (c15/with-operations {:fail! (fn [& _] (throw error))}
+                     #(c15/c15-diagnostics-fail! "C15-SCHEMA" "native-port.qst" {} {}))
+                   nil (catch clojure.lang.ExceptionInfo e e))]
+      (is (identical? error caught)))))
