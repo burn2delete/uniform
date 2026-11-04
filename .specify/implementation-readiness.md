@@ -7,8 +7,8 @@ another implementation task ledger, acceptance graph or completion denominator.
 Reconciliation remains in progress; independent acceptance and integration of
 this change are pending. No compiler or product completion is claimed.
 
-Latest source continuation: B1-B3 source and selected-result dependency
-proposals. The [current checkpoint](#complete-b1-b3-selected-result-dependency-continuation)
+Latest source continuation: B4-B14 family and shared backend source
+proposals. The [current checkpoint](#complete-b4-b14-backend-source-continuation)
 records checks and remaining work. Whole-project semantic coverage, independent
 acceptance and integration remain unproven.
 
@@ -7119,5 +7119,187 @@ external-account conditions remain. Source links and stage records establish no
 whole B4-B14/AI, supporting-source or global owner/interface entailment. Wider
 library/support sources, accounting cleanup, product decisions and required
 independent review remain open. The first actual implementation increment stays
+`reader/finite-remaining-work/contract-coverage-reconciliation` in its
+[selected plan](../specs/reader-workflow/plan.md#selected-increment-complete-contract-coverage).
+
+## Complete B4-B14 backend source continuation
+
+Corrected source proposal: `dfed08199ad7467e0dd24fde7a1f60dcdf202921`.
+Initial source: `de7ca1e945b9d4a32880af21411ca368fd93596d`.
+Predecessor readiness checkpoint: `1a95e8de90e4024aed8e288c931bdbadb3199d60`.
+The [complete B4-B14 criteria](../specs/backends-workflow/plan.md#complete-b4-b14-source-criteria)
+add source-backed behavior, accepted/refused cases and evidence obligations to
+the remaining eleven backend contracts, under the existing task authorities.
+Together with the retained B1-B3 proposal, all fourteen numbered backend sources
+now have author proposals. Current whole-source/owner/interface entailment,
+independent acceptance, implementation and integration remain unproven.
+
+The direct review covered the Phase 7 README and full B4-B14 documents. All
+4,185 preserved facet identities and 532 occurrence identities and byte hashes
+remain. The source population has 3,300 source-criterion fragments, 650 layout
+fragments, 223 structural fragments and twelve external-behavior fragments;
+these are not independent requirement or completion units. Current mapping
+retains 3,716 facets in predicate conjunctions and 469 in hierarchy/dependency
+context, with 353 predicate occurrences, 179 context occurrences, 135 complete
+section-conjunction proposals and 64 original owner obligations. All original
+owner task identities and obligations remain; their whole attached predicates
+and independent current entailment stay unassessed. Matching spans, counts,
+links and allocated witnesses do not establish semantic coverage.
+
+Eighty-four criteria use twelve existing Open task keys in the sole Backends
+ledger: 67 new source criteria (58 source-owner and nine full-family contracts),
+thirteen exact restorations and four unchanged current predicates. Restorations
+preserve 20,397 bytes from immutable local task source
+`45d0083d03c6e1fc91425097b4a8153892f2d689`: four Wasm async-function/future/
+SIMD/atomic predicates, three B13 hashing/common-validation/provenance predicates
+and six TEST6 ABI/differential/manifest/report/source-map/unsupported predicates.
+Their original IDs, roles and qualifiers remain; no review is renewed or
+consumed, and remote availability of that source object remains unestablished.
+Historical B13 175/77 membership counts retain only their earlier context.
+
+The four current predicates preserve 3,918 bytes: GPU synchronization, hardware
+concurrency, the narrower hardware-parallel/counter criterion and the selected
+B1 emission interface. They retain their original scopes; none independently
+accepts complete B8/B9/B13. B10 model/provider binding stays with `backend-ai`,
+with Workflow/Schema/Auth/Runtime retaining their actual responsibilities. AI
+is an existing adapter family, not a fifteenth numbered backend document.
+
+The substantive source differences now made actionable are:
+
+- Wasm requires actual declared core/component/embedder feature and memory
+  contracts, WIT-like worlds/interfaces/resources, canonical ownership/ABI and
+  per-boundary schemas/grants, explicit composition, typed async functions,
+  single-completion futures, streams/backpressure/cancellation and recorded host
+  nondeterminism. Synchronous core execution or a sandbox label proves none of
+  the async, resource or authority obligations.
+- JVM requires real class/JAR/module and optional native-image artifacts,
+  stable symbols, typed/null/rooting/equality/error/affinity boundaries, explicit
+  dynamic authority and deterministic linear cleanup despite GC. JS/TS requires
+  real runtime/module/API/source artifacts, actual validation of untrusted
+  inputs, nullish/error/promise/event/cancel handling, explicit globals/packages,
+  numeric/serialization semantics and selected UI/hydration metadata.
+- MLIR needs real dialect/operation/type mappings, source/proof/effect/grant/
+  ownership back edges, actual before/after verifiers, conversion legality and
+  accepted repair/invalidation before downstream LLVM/GPU handoff. Dialect
+  assumptions and verifier success never replace Gravity semantics; the path
+  remains optional.
+- GPU needs actual eligible kernels, buffer/address/lifetime/ownership facts,
+  explicit transfers/launch/cleanup, queue/barrier/fence/atomic order and scope,
+  target geometry/resources and real numeric/reduction evidence. HDL needs
+  actual hardware-anchored cycle semantics, fixed widths/state, ports/protocols,
+  clock/reset/timing and policy-valid CDC plus source-linked benches/traces.
+  Generic unsafe metadata does not waive hardware CDC policy or adopt a device.
+- Workflow/AI graph artifacts need real schemas/state/events, restart/replay,
+  idempotency/retry/timeout/cancel/compensation, provider/model/prompt/tool/evaluation
+  identity and actual grant/review/taint decisions. Replay reissues effects only
+  under explicit replay-safe/idempotent graph policy and event-log guards;
+  prompt/tool/model output creates no authority.
+- Relational output needs actual parameterized plans, dialect/null/three-valued/
+  collation/timezone/numeric/JSON/array/enum semantics, validated rows, proven
+  predicate movement, transaction/grant/workflow records and genuine migration
+  compatibility/preservation or explicit loss approval. Mobile needs real
+  platform bundles/bindings/permissions/lifecycle/thread/storage-sync metadata
+  and required platform-specific smoke evidence, with signing/store/device
+  authority kept separate.
+- B13 requires actual typed manifests, content hashing and a full source-through-
+  emission graph with compiler/pass/generator/dependency/source/proof origins,
+  metadata, target/ABI/runtime, reproducibility and conformance. A family manifest
+  replaces no common graph, and meaningful B1 maps create no new B13 exemption.
+  Explicit development-only gaps stay non-release and cannot suppress source
+  refusals or legalize missing safety/authority evidence.
+- B14 requires actual complete shared/per-family/domain positive and negative
+  matrices, exact diagnostic and missing-fact expectations, differential/reference
+  or semantic comparison, independent metadata/artifact checks, recorded
+  nondeterminism and real packs consumed downstream. Availability explains only
+  justified target skips while required shared checks still run. The restored
+  TEST6 conditional SHOULD cannot weaken B14. Default-target samples and equal
+  values cannot accept the wider required matrix.
+
+The nine family contracts preserve the owning diagnostic fields and identifiers;
+the eleven sources declare 117 distinct family diagnostic identities. These are
+required future behavior, not claims of current emitted diagnostics. B10 has two
+explicitly qualified source occurrences: historical project budget/rate/work/
+cost/input/attempt requirements are superseded while meaningful provider/grant/
+review policy and actual external account/service limits remain. Real numeric
+error/roundoff, target/platform memory/launch/width/state constraints and requested
+program retry/timeout/cancel semantics remain independently meaningful. None
+reintroduces arbitrary quotas on otherwise valid compiler inputs.
+
+All 149 current task keys, 25 authorities, forty future declarations, source
+bindings, task statuses, checkboxes and historical receipts remain. Of the
+original 139 task bodies, 27 are identical and 112 have declared amendments;
+these counts are conservation accounting, not implementation credit. Fourteen
+existing plans and the existing Backends spec/ledger are refined. The dependency
+table, 158 routes, 118 current parent consumers, 3,144 input joins and 139 coarse
+feedback members remain exact. B1-B3 and L19 stages supply context; complete
+B4-B14 selected-result staging and global executable-order entailment remain
+open. Optional/raw/Core-only paths and genuine selected requirements retain
+separate scopes.
+
+Validation of this corrected source and metadata proposal:
+
+- Three focused crosswalk tests pass with 49,646 assertions, zero failures and
+  zero errors under a 768 MB host heap for the larger source population. They
+  cover the full current eleven-document source/owner/witness population,
+  literal historical suffix and criterion containment, the entire frozen prior
+  B1-B3 dependency subject and current global conservation. Full current
+  90-test crosswalk execution is unrun; the earlier complete 68-test /
+  44,978-assertion run remains bound only to
+  `25a96a0c03536270001449c00676e644ea353521`.
+- Twenty-three dependency tests pass with 8,089 assertions and zero failures or
+  errors. Both current projection checks and all applying local Git source pins
+  pass. The pending fingerprint is
+  `028d272b38758491371532f3b4d09bb4919f1bf6fb04a1ebbef30846addaa9d5`.
+- Canonical documentation validation passes for 240 documents and nineteen phase
+  indexes. Full-language roadmap structural validation passes; its dated counts
+  are not current implementation execution or acceptance evidence.
+- The language-boundary gate passes six tests and eleven assertions. Source-scope
+  reverse auditing passes, preserving the preceding test's exact assertion body
+  and all other prior bytes apart from three declared current census constants.
+- Strict whole-file authority/receipt conservation, local links/anchors, ASCII
+  and whitespace pass. The report reaches 4,357 local references across 91
+  changed files and 85 Markdown files. All 139 original routes, 48 historical
+  spec/plan suffixes and 48 original task/evidence contents are conserved after
+  declared additions are removed. The corrected Backends historical task suffix
+  is additionally literal-byte identical without removing any additions.
+- The initial source-placement/count failure described below receives no
+  validation or acceptance credit. All passing checks above bind the corrected
+  source; no new focused test failed after that correction.
+- These are planning and traceability checks. They establish no backend,
+  compiler, proof, runtime, target, conformance, release or self-hosting behavior.
+  Preserved local census and restored-predicate source objects do not establish
+  aggregate remote availability or fresh-clone reproducibility.
+
+The initial source commit placed nine new conformance blocks after the editable
+region. The metadata task-count guard observed only eleven changed task bodies
+instead of twelve and failed before writing metadata. Correction
+`dfed08199ad7467e0dd24fde7a1f60dcdf202921` relocates those exact blocks inside
+`backend-conformance`; all predicate bytes and other source files remain exact,
+and the entire historical migration suffix is now byte-for-byte unchanged.
+The initial source/failed guard receives no acceptance or passing-validation
+credit. The new regression checks both criterion containment and the literal
+historical suffix, in addition to whole-file removal conservation.
+
+Temporary preparation delimiter/quote errors were caught before their mutators
+ran. Census digest text and a copied capture-template support key/status were
+corrected before metadata capture. The corrected count/custody guards passed;
+no source semantics, existing predicate, task status or historical assertion was
+relaxed. The source-version root changes six pin/comparison fields, its pending
+fingerprint and `:backend-families-refinement`; all other prior records remain
+exact. The preceding dependency test is frozen to its entire 1a95 bridge,
+projection and source readers with original assertion-body bytes preserved.
+Only three current census constants change to 27/112. The projection tool adds
+one derived source-view key; dependency tools, source bindings and selectors
+remain unchanged.
+
+No complete backend implementation audit or compiler/backend/provider/proof/
+Runtime/native/callback/device/replay/migration/private-store/signing/publication
+execution occurred. All actual restrictions and the stopped C7 handoff remain;
+no retry/transfer, other-chat message, reviewer wake, automation, aggregate
+publication or integration occurs. Existing inspected code and receipts retain
+their narrow subjects. Wider library/support source/task conjunctions, deeper
+family dependencies, global owner/interface entailment, concrete accounting
+cleanup, recorded source conflicts, product decisions and independent review
+remain. The exact first implementation increment is still
 `reader/finite-remaining-work/contract-coverage-reconciliation` in its
 [selected plan](../specs/reader-workflow/plan.md#selected-increment-complete-contract-coverage).
