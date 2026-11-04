@@ -32,6 +32,16 @@
     (rt/git ctx repo "push" "origin" "main")
     {:repo repo :bare bare}))
 
+(deftest nul-delimited-git-paths-remain-exact
+  (let [ctx (fixture/context) {:keys [repo]} (repository! ctx)
+        tracked "tracked space.edn" untracked "untracked\nname.edn"]
+    (spit (io/file repo tracked) "{:old true}\n")
+    (rt/git ctx repo "add" tracked)
+    (rt/git ctx repo "commit" "-m" "Tracked path fixture")
+    (spit (io/file repo tracked) "{:new true}\n")
+    (spit (io/file repo untracked) "{:new true}\n")
+    (is (= #{tracked untracked} (set (flow/changed-paths ctx repo))))))
+
 (defn run-fixture! [review-result]
   (let [ctx (fixture/context)
         {:keys [repo bare]} (repository! ctx)
