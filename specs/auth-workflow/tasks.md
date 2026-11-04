@@ -19,6 +19,16 @@ Evidence baseline: [Hosted contract](../../bootstrap/clojure/src/gravity/capabil
 
 Closing evidence: Typed provider fixtures with deterministic selection and incompatible-provider rejection
 
+Local declaration increment `auth.provider-declaration.explicit-fields-v1`:
+implemented the pure bootstrap validator and record producer described in the
+[explicit declaration plan](plan.md#explicit-provider-declaration-increment).
+The actual producer is exercised by complete filesystem and missing/malformed
+declaration fixtures; exact checks and scoped results are in
+[Auth evidence](evidence.md#explicit-provider-declaration-increment).
+This records local implementation only. Deterministic compatible selection,
+resolved behavior/contracts, grants, execution and independent acceptance remain
+pending. Status stays Open and the parent checkbox stays unchecked.
+
 <!-- auth-canonical-memory-model-provider-contract:start -->
 
 Apply the [complete source memory-model and provider criteria](../legality-workflow/plan.md#complete-source-memory-model-and-provider-criteria) within this existing task. Status remains Open; frozen finite review does not accept the new whole-source or current composition.
