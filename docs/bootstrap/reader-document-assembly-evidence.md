@@ -17,7 +17,11 @@ proof/conformance projection, pure-text/resource policy projection and final
 artifact identity. The ten owner ports are governing document, diagnostic ids,
 uncredited entrypoints, trivia records, rejected designs, native validation,
 proof projection, pure-text classification, resource classification and identity.
-No source, file, canonical C2, SH03, cache or authentication callback is supplied.
+No unlisted source-intake, product-construction, SH03, cache or authentication
+callback is supplied; the listed native C2 tail operations remain explicit.
+The carrier requires exactly the ten listed keys before observing views. It
+does not validate callback types, dereference early, add defaults or discover
+Bootstrap roots.
 The destination imports no Bootstrap or downstream namespace.
 
 All facade arities, input admission, source/SH03 authentication, product and
