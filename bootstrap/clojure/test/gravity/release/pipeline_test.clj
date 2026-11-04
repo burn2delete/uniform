@@ -202,7 +202,7 @@
         #(is (identical? token (wrapped value))))
       (is (identical? value (last @calls)))
       (if (= wrapped #'bootstrap/p18-bytes-sha256)
-        (is (identical? bootstrap/p18-execute-uniform-sha256 (first @calls)))
+        (is (identical? bootstrap/release-execute-uniform-sha256 (first @calls)))
         (is (every? var? (take port-count @calls))))))
   (doseq [[name operation] (ns-publics 'gravity.release)]
     (let [contract (:gravity/namespace-contract (meta operation))]
@@ -229,7 +229,7 @@
   (let [calls (atom 0)
         opaque (proxy [Object] []
                  (toString [] (throw (AssertionError. "opaque input rendered"))))]
-    (with-redefs [bootstrap/p18-execute-uniform-sha256 (fn [_] (swap! calls inc))]
+    (with-redefs [bootstrap/release-execute-uniform-sha256 (fn [_] (swap! calls inc))]
       (doseq [value [nil "abc" [0 1] '(0 1) (int-array [0 1]) opaque]
               invoke [#(release/uniform-bytes-sha256
                         (fn [_] (swap! calls inc)) value)
@@ -246,7 +246,7 @@
                     {:status :accepted :value (apply str (repeat 64 "a")) :extra true}]]
       (with-redefs [release/bytes-sha256
                     (fn [_] (throw (AssertionError. "legacy digest must not run")))
-                    bootstrap/p18-execute-uniform-sha256 (fn [_] result)]
+                    bootstrap/release-execute-uniform-sha256 (fn [_] result)]
         (doseq [invoke [#(release/uniform-bytes-sha256 (fn [_] result) (byte-array 0))
                         #(bootstrap/p18-bytes-sha256 (byte-array 0))]]
           (is (= {:rule "SH20SHA001" :reason :invalid-kernel-output}

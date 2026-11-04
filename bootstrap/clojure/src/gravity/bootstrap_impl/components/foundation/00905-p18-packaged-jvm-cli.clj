@@ -39,7 +39,7 @@
   [path]
   (gravity.release/file-bytes path))
 
-(defn p18-execute-uniform-sha256
+(defn release-execute-uniform-sha256
   "Execute current SHA source; host hashes below authenticate the plan only.
   This is a hosted invocation boundary, not migration or release evidence."
   [arguments]
@@ -90,7 +90,7 @@
 
 (defn p18-bytes-sha256
   [bytes]
-  (gravity.release/uniform-bytes-sha256 p18-execute-uniform-sha256 bytes))
+  (gravity.release/uniform-bytes-sha256 release-execute-uniform-sha256 bytes))
 
 (defn p18-file-sha256
   [path]
