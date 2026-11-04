@@ -41,7 +41,7 @@
                   (let [value (get request field)]
                     (when (valid? value)
                       [field (case field
-                               :source-span (select-keys value [:line :column])
+                               :source-span {:line (:line value) :column (:column value)}
                                :requested-keys (vec (sort value))
                                (public-reference value))]))))
           request-fields)))

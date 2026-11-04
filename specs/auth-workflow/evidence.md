@@ -447,3 +447,97 @@ be supplied by these self-checks. Controller integration is unperformed. Parent
 task identity, captured criteria, checkbox and Open status remain unchanged;
 this finite computation is useful construction evidence, not parent completion
 or a release/self-hosting/seed-retirement authority claim.
+
+### Span-map metadata correction (2026-11-04)
+
+Applied the `speckit-implement` workflow to review finding P2 for
+`auth.environment-scope.eight-layer-intersection-v1`. Supplied review identity:
+base `70927eee6c8dc77d0fec2a826de29380ef068ef5`, candidate
+`1547770a2e22130938933d98db6bf8ec069a6cba`, tree
+`acc7247a37ea68eb51e60f625be3175cded76c35`. These are supplied identities, not
+fresh Git inspection results. The initial `git status --short` exited 0 with
+empty output. This correction is an uncommitted worktree change to the four
+owned paths; it supersedes the earlier source/test hashes for current checks
+without rewriting their historical results.
+
+`select-keys` retained metadata on an otherwise valid source-span map. The
+public projection now constructs a fresh map containing only validated line
+and column integers. SAFE10's Secrets requirement and this increment's payload
+omission contract require dropping this payload while retaining source
+coordinates. No compatibility API, permission-row meaning, policy decision,
+diagnostic ID or public carrier field changes.
+
+The new `source-span-metadata-is-omitted-from-public-results` fixture supplies a
+valid span with secret-marker map metadata. It exercises success, explicit
+scope denial (assessment and diagnostic), phase identity mismatch and malformed
+request rejection. Every emitted request/context retains line 12, column 3,
+has nil span metadata and matches the clean-span result. The complete result
+is inspected with `*print-meta* true` to ensure the marker is absent; ordinary
+Clojure equality alone would miss this defect.
+
+Before changing the projection, the following regression control exited 1:
+
+```clojure
+["clojure" "-J-Xmx512m" "-M:dev-test" "--namespace"
+ "gravity.capabilities.environment-scope-test" "--exact"
+ "source-span-metadata-is-omitted-from-public-results"]
+;; 1 test, 26 assertions, 9 failures, 0 errors: metadata and marker leaked.
+```
+
+After the correction, the following commands exited 0:
+
+```clojure
+["clojure" "-J-Xmx512m" "-M:dev-test" "--namespace"
+ "gravity.capabilities.environment-scope-test"]
+;; 11 tests, 1344 assertions, 0 failures, 0 errors.
+
+["clojure" "-J-Xmx512m" "-M:dev-test" "--namespace"
+ "gravity.providers.declarations-test"]
+;; 8 tests, 387 assertions, 0 failures, 0 errors.
+
+["clojure" "-J-Xmx512m" "-M:dev-test" "--namespace"
+ "gravity.capability-validation-test"]
+;; 6 tests, 56 assertions, 0 failures, 0 errors.
+
+["clojure" "-J-Xmx512m" "-M:test" "--namespace"
+ "gravity.self-hosting.sh01-language-boundary-test"]
+;; 6 tests, 11 assertions, 0 failures, 0 errors; 0 skipped namespaces.
+
+["clojure" "-J-Xmx512m" "-M" "tools/validate_gravity_docs.clj"]
+;; Passed: 240 docs, 19 phase indexes, ASCII, no placeholders.
+
+["clojure" "-J-Xmx512m" "-M" "tools/validate_full_language_roadmap.clj"]
+;; Passed: structural claims only; dated snapshot is non-authoritative,
+;; completion admission remains disabled.
+```
+
+Acceptance dependency control also exited 0:
+
+```clojure
+["clojure" "-J-Xmx512m" "-M" "tools/acceptance_dependencies_test.clj"]
+;; 24 tests, 5489 assertions, 0 failures, 0 errors.
+```
+
+Passive Clojure SHA256 reads of current bytes yielded source
+`4efadf9d0809f0388b49465a73c867a47fc7e2748d205e42ff5e478dcac5583c`
+and test `e8e703e691bb8f63dd59094c10f825d4e3e875d52c8b0bc18ed09f55183cb872`.
+The pinned plan remains
+`f1890883dcbdf6eddf407268502f905f1c0b2522b739dcf2c253cd9896f549be`.
+Captured task bodies, source-version records, Open statuses and historical
+evidence were not edited; the tasks change is after the task-region end marker.
+
+The supplied review reports restricted Git cache-write inspection and a focused
+test blocked by classpath-cache permissions. Those historical limitations are
+retained. No restricted Git/cache inspection, whitespace action, cache permission
+change or privileged request was performed. The ordinary repository Clojure
+checks above ran under the normal check sandbox without a cache override; no
+actual check denial occurred in this correction. Network access was not used.
+
+No new semantic ambiguity is introduced. The existing missing authority and
+unresolved semantics above remain: caller policy authenticity, scope/redaction
+reference resolution and redaction-policy combination are not established here.
+Real grants, attenuation/lifetime/revocation, redaction enforcement and actual
+action-boundary composition remain parent obligations. Independent acceptance
+and controller integration are still missing; the parent remains Open. Full
+compiler, live-provider, release, self-hosting and seed-retirement checks were
+not run or claimed. No commit or external application change was made.

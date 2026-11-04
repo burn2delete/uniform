@@ -180,6 +180,24 @@
       (is (= (expected "SAFE10-SCOPE" [:policies layer] :unexpected-fields layer)
              (fault (assess request (assoc-in outside [layer :scope-satisfied?] true))))))))
 
+(deftest source-span-metadata-is-omitted-from-public-results
+  (let [secret "SECRET-MARKER-DO-NOT-EMIT"]
+    (doseq [[r p status]
+            [[request policies :within-scope]
+             [request (assoc-in policies [:source :denied-keys] #{"COMMON"}) :rejected]
+             [request (assoc-in policies [:source :phase] :build) :rejected]
+             [(assoc request :scope-satisfied? true) policies :rejected]]]
+      (let [result (assess (update r :source-span with-meta {:payload secret}) p)
+            contexts (cond-> (mapv :context (:diagnostics result))
+                       (:assessment result) (conj (get-in result [:assessment :request])))]
+        (is (= status (:status result)))
+        (is (= (assess r p) result))
+        (is (seq contexts))
+        (doseq [context contexts]
+          (is (= {:line 12 :column 3} (:source-span context)))
+          (is (nil? (meta (:source-span context)))))
+        (is (not (str/includes? (binding [*print-meta* true] (pr-str result)) secret)))))))
+
 (deftest malformed-inputs-and-secret-marker-controls
   (let [secret "SECRET-MARKER-DO-NOT-EMIT"
         bad {:payload secret}

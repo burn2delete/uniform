@@ -273,7 +273,12 @@ carry exact sorted refused keys, policy source and requested/effective scope.
 
 Public identities, key names and policy references must contain no secret
 values. Unknown/malformed payloads, provider extensions, symbol metadata and
-nested span payloads are omitted, including on success. This is payload minimization, not arbitrary
+nested span payloads and span-map metadata are omitted, including on success.
+Construct a fresh metadata-free line/column span for assessment requests and
+diagnostic contexts. Fixtures must cover metadata-bearing spans on success,
+scope denial, policy identity mismatch and malformed-request rejection, checking
+the entire public result with metadata printing enabled and retaining valid
+coordinates. This is payload minimization, not arbitrary
 secret classification, redaction enforcement or public export acceptance.
 
 Fixtures call the actual operation: common-key intersection, reordered maps,
