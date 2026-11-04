@@ -264,8 +264,7 @@ the reproducibility/target-matrix task owns real repeat-build typed-Core byte
 comparisons. An environment grant without its declared key/value policy, or a
 network/shell/model/tool grant without the required replayable provider or
 pinned result, is refused before action. Actual accepted and rejected input,
-provider, phase, redaction and replay records remain required. Canonical L6
-wording clarification and its source successor remain separate work; no held
+provider, phase, redaction and replay records remain required. Canonical L6 clarification was authored and independently source-reviewed at `d2a0378bdd530857d97d530aab15268fc333ce80`; authenticated current-source succession, `main` integration and implementation remain separate; no historical L6 applying review is renewed; no held
 build or provider operation is enabled by this plan.
 
 ## Complete facet source interface

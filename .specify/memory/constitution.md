@@ -35,9 +35,12 @@ existing execution restrictions remain. This decision enables no held action
 and supplies no implementation, independent review or release acceptance.
 Pure constant evaluation keeps its separate prohibition on these effects.
 
-Build and Expand apply this selection in their existing tasks. L6's retained
-unconditional wording still requires a separately reviewed canonical
-clarification and authenticated source successor. This record changes neither
+Build and Expand apply this selection in their existing tasks. The ef88 checkpoint recorded a future canonical clarification. That
+clarification was authored and independently source-reviewed at
+`d2a0378bdd530857d97d530aab15268fc333ce80`, with L6 SHA-256
+`529b2cb63e0fe304f628ed63b0e6ef64d86200034f854836399e02e103b41f72`.
+Authenticated current-source succession, `main` integration and implementation
+evidence remain separate. No historical L6 applying source review is renewed. This record changes neither
 the canonical bytes nor their historical source/review identities.
 
 ## Autonomy without project accounting quotas
