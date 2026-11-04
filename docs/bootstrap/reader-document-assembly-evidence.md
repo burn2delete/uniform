@@ -132,3 +132,32 @@ the actual source/checking phase ends, preserving all prior history.
 Complete candidate/final raw comparison, committed conservation, regressions,
 cold stage, lint, validators, independent exact source acceptance, own CI and
 current-main composition/preflight remain separate verification/integration gates.
+
+## Verified implementation checks
+
+The complete candidate capture observes the actual non-authority envelope and
+matches both original six-product captures byte-for-byte and as parsed data,
+retaining SHA-256fab4ab22f2b91d9d08aaaa784ad95e7743f9822196a77f9ebdec25981cb3ae44.
+The committed callback control also has exact raw/parsed old-tail parity, late
+snapshots, duplicate proof calls and the identical proof/conformance-enriched
+legacy identity input. Structural checks preserve all six earlier Reader bodies,
+all twenty-one source prelude bindings, guards/arities/remap/pure facade, seventeen
+captured inputs, and every old tail binding/identity expression except its explicit
+late Var ports. The envelope is outside those expressions.
+
+Owning Reader42/585 and compatibility7/210 pass:49 tests/795 assertions.
+Language/source ownership48/1198 passes with zero skipped namespaces. Cold Reader
+loads seven public operations and constructs/refuses native controls without
+Bootstrap; its opaque control identity has no real identity credit. Committed
+three-path contextual lint has zero blocking findings and zero unchanged baseline
+warnings; raw context warnings remain visible. Documentation, roadmap and
+governance validators pass. Receipts use /tmp/uniform-reader-document-assembly-*.
+
+Both independent source reviews accept implementation2726c23c7997c934dbf8561d9bbdd372c2c0068a,
+tree568912250355f3f788458f7d4b93a0e7f862bac5. An initial conservation helper matched
+the report validator's internal doseq instead of the final metadata registry;
+its failed source/log remain retained. The corrected exact registry locator
+passes without changing production source or weakening any comparison.
+Current-main composition, final metadata acceptance, own CI/artifact acceptance,
+original-owner lease inspection/release and immediate integration preflight remain
+separate obligations.
