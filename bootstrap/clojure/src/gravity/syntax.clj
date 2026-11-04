@@ -842,6 +842,8 @@
     conformance)]
   (assoc artifact :artifact-id (c3-artifact-id artifact))))
 
+(declare registered-literal-integrity-view)
+
 (defn
  reader-products-authentic?
  "Recompute the existing reader-to-syntax association and envelope checks."
@@ -894,7 +896,10 @@
      (if
       gravity-boundary
       (let
-       [result
+       [integrity-report
+        (c3-c2-reader-integrity-report
+         (registered-literal-integrity-view c2-artifact))
+        result
         (:resolved-syntax-result gravity-boundary)
         result-stream
         (:syntax-object-stream result)
@@ -920,6 +925,7 @@
          result-stream
          (repeat serialization-id))]
        (and
+        (:authentic? integrity-report)
         (sh04-syntax-registered-literal-projection-authentic?
          c2-artifact
          gravity-boundary)
@@ -2381,6 +2387,50 @@
    (.interrupt (Thread/currentThread))
    (throw interrupted))
   (catch Throwable _ false)))
+
+(defn-
+ registered-literal-integrity-view
+ [c2-artifact]
+ "Restore host literal values before re-running C2 integrity.
+
+  The C3 reader view intentionally projects registered Date/UUID values to
+  serializable Gravity descriptors. C2 integrity is defined over the
+  unprojected reader products, so validate that view without treating the
+  projection itself as a new C2 product."
+ (let [bindings
+       (get-in c2-artifact [:registered-literal-projection :bindings])
+       replacements
+       (into
+        {}
+        (keep
+         (fn [{:keys [tag descriptor]}]
+           (case
+            tag
+            inst
+            (when-let [milliseconds
+                       (get-in descriptor [:canonical-value :epoch-milliseconds])]
+              [descriptor (java.util.Date. (Long/parseLong milliseconds))])
+            uuid
+            (when-let [canonical-text
+                       (get-in descriptor [:canonical-value :canonical-text])]
+              [descriptor (java.util.UUID/fromString canonical-text)])
+            nil))
+         bindings))]
+   (if-not (seq replacements)
+     c2-artifact
+     (letfn [(restore [value]
+               (cond
+                (contains? replacements value) (get replacements value)
+                (map? value)
+                (into (empty value)
+                      (map (fn [[key child]] [(restore key) (restore child)]) value))
+                (vector? value) (mapv restore value)
+                (set? value) (into #{} (map restore) value)
+                (seq? value) (apply list (map restore value))
+                :else value))]
+       (dissoc
+        (restore (dissoc c2-artifact :registered-literal-projection))
+        :registered-literal-projection)))))
 
 (defn
  current-reader-identity-view
