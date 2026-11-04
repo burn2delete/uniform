@@ -173,7 +173,7 @@
             expected-integrity
             (when recomputed-hashes
               (if v3-reader-boundary?
-                (invoke :c2-reader-product-integrity-record
+                (invoke :c2-reader-product-integrity-record-v3
                         source-unit top-level-form-ids recomputed-hashes
                         literal-records deferred-records decimal-projection-id)
                 (invoke :c2-reader-product-integrity-record

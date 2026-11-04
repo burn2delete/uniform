@@ -133,7 +133,7 @@
           incremental-hashes (c2-incremental-hashes
                               source-unit token-stream form-tree syntax-seeds
                               extension-invocations diagnostics)
-          integrity-record (c2-reader-product-integrity-record
+          integrity-record (c2-reader-product-integrity-record-v3
                             source-unit top-level-form-ids incremental-hashes
                             literal-records deferred-literals
                             (:projection-id decimal-occurrence-projection))

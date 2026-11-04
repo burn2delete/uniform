@@ -1,9 +1,9 @@
 (ns gravity.c2-artifact-identity.artifacts)
 
-(defn reader-product-integrity-record
+(defn- reader-product-integrity-record*
   [{:keys [c2-path-neutral-span reader-canonical-hash]}
    source-unit top-level-form-ids incremental-hashes literal-records
-   deferred-literal-records & [decimal-occurrence-projection-id]]
+   deferred-literal-records decimal-occurrence-projection-id]
   (let [literal-input (mapv #(update % :span c2-path-neutral-span) literal-records)
         deferred-input (mapv #(update % :span c2-path-neutral-span)
                              deferred-literal-records)
@@ -25,6 +25,20 @@
      :input input
      :integrity-hash (reader-canonical-hash input)
      :status :verified}))
+
+(defn reader-product-integrity-record
+  [context source-unit top-level-form-ids incremental-hashes literal-records
+   deferred-literal-records]
+  (reader-product-integrity-record*
+   context source-unit top-level-form-ids incremental-hashes literal-records
+   deferred-literal-records nil))
+
+(defn reader-product-integrity-record-v3
+  [context source-unit top-level-form-ids incremental-hashes literal-records
+   deferred-literal-records decimal-occurrence-projection-id]
+  (reader-product-integrity-record*
+   context source-unit top-level-form-ids incremental-hashes literal-records
+   deferred-literal-records decimal-occurrence-projection-id))
 
 (defn reader-artifact-id [reader-canonical-hash artifact]
   (let [preimage {:kind (:kind artifact)

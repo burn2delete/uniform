@@ -23,7 +23,7 @@
         (c2-incremental-hashes source-unit token-stream form-tree syntax-seeds
                                extension-invocations diagnostics)
         integrity-record
-        (c2-reader-product-integrity-record
+        (c2-reader-product-integrity-record-v3
          source-unit (:top-level-form-ids artifact) incremental-hashes
          (:literal-decoding-records artifact)
          (get-in artifact
