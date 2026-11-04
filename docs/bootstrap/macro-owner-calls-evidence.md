@@ -117,5 +117,22 @@ diagnostics and four exact known-diagnostic propagations. Source text/hash,
 paths and full native result/diagnostic data are preserved; all runtime ports
 are marked explicit unit controls. Metadata-aware EDN SHA256:
 3583b32416da3feb5e0af7faf47d6ed08468bba5ca5639147f2c9b6793ffd259.
-Clean after-capture, conservation, broader local checks, independent corrective
-review and the outstanding CI/index handoff/wiring remain pending.
+Clean candidate 411e6bf396b4630b12dba870c0ab516fb86f068c, tree
+49a20d0f37755eb686fd63b4c8e891a2a1b35fb9, reproduces all 40 records byte
+for byte and as parsed data with that same SHA256. Constructed diagnostics and
+known-diagnostic propagation remain separately counted.
+
+The combined native/report/API-inventory/runtime-control regression passes
+20 tests / 197 assertions. Boundary/ownership passes 48 / 1198 with no skipped
+namespaces. Contextual lint against source parent a1 covers the two changed
+Clojure paths with zero baseline warnings and zero blockers; this is local
+correction validation, not newer-main composition. Document, roadmap and
+governance validators pass. Cold load retains 52 public APIs without Bootstrap.
+
+The conservation helper reverses exactly the 16 operator changes and removes
+only the new private helper and scoped contract, reproducing the entire parent
+Macro file byte for byte. It proves the native-report pair, all other Macro
+functions, input/local-operation calls, all Bootstrap/authentication/pin files,
+CI and namespace index unchanged; exactly three source-slice paths differ.
+Independent corrective review and outstanding CI/index handoff/wiring, hosted
+exact source/base CI and current-base clean integration remain pending.
