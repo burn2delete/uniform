@@ -174,39 +174,8 @@
   (c4-macro-evidence/c4-macro-safety-report
    trace-records safety-declarations))
 
+(clojure.core/require 'gravity.macro)
+
 (defn c4-macro-capability-proof
   [artifact]
-  (let [trace-records (:macro-expansion-trace artifact)
-        diagnostics (set (map :diagnostic (:rejected-design-coverage artifact)))
-        cache-key (:expansion-cache-key artifact)
-        replay (:trace-replay-report artifact)
-        safety (:macro-safety-report artifact)
-        build-log (:build-effect-log artifact)]
-    {:syntax-input-output-valid?
-     (boolean (and (seq (get-in artifact [:c3-syntax-object-artifact
-                                          :syntax-object-stream]))
-                   (seq (:expanded-syntax-stream artifact))))
-     :deterministic-expansion-trace?
-     (boolean (and (seq trace-records)
-                   (every? #(and (re-find #"^sha256:" (str (first (:output-syntax %))))
-                                 (:macro-version %))
-                           trace-records)))
-     :hygiene-and-capture-recorded?
-     (boolean (and (seq (:hygiene-capture-records artifact))
-                   (every? #(contains? % :hygiene) trace-records)))
-     :build-effects-authorized?
-     (every? #(#{:granted :not-required} (:authorization %))
-             (:records build-log))
-     :generated-origin-present?
-     (every? #(seq (:generated-origin %)) trace-records)
-     :generated-unsafe-checked?
-     (boolean (and (= :complete (:status safety))
-                   (seq (:generated-unsafe safety))))
-     :cache-replay-guarded?
-     (boolean (and (re-find #"^sha256:" (:hash cache-key))
-                   (= :passed (:status replay))))
-     :diagnostics-covered?
-     (= (set c4-macro-diagnostic-ids) diagnostics)
-     :self-hosting-comparison-ready?
-     (= :ready (get-in artifact [:self-hosting-comparison-inputs :status]))
-     :status :complete}))
+  (gravity.macro/native-capability-proof artifact #'c4-macro-diagnostic-ids))

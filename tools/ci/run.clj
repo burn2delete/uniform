@@ -963,6 +963,7 @@
               (command "2g" "-M:dev-test"
                        "--progress"
                        "--namespace" "gravity.macro.pipeline-test"
+                       "--namespace" "gravity.macro.native-reports-test"
                        "--regex" macro-pipeline-cohort-regex)]
              ["macro-receipt-controls" 900
               (apply command "2g" "-M:dev-test"

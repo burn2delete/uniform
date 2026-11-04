@@ -99,7 +99,7 @@
   (let [contract (:gravity/namespace-contract (meta #'macro/expand))
         ops (operations)]
     (is (= 'gravity.macro (:namespace contract)))
-    (is (= 50 (count (:public-api contract))))
+    (is (= 52 (count (:public-api contract))))
     (is (= (set (keys (:public-api contract))) (set (keys (ns-publics 'gravity.macro)))))
     (is (= (set (:operation-inputs contract)) (set (keys ops))))
     (doseq [[name api] (:public-api contract)]

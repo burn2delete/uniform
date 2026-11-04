@@ -10,8 +10,23 @@
 
 (def
  ^{:private true} namespace-contract
- '{:public-api
-   {source-eligible?
+ '{:native-report-contract
+   {:governing-contracts [D1 D2 D3 D8 D9 L4 L12 L16 C1 C4 C15 TEST2]
+    :boundary :native-c4-proof-predicates-and-ordered-refusals
+    :inputs [:native-macro-artifact :diagnostic-catalog-var :proof-var :failure-var]
+    :outputs [:unchanged-native-proof-map :complete-or-owner-refusal]
+    :diagnostics [C4-RETURN C4-TRACE C4-HYGIENE C4-BUILD-EFFECT C4-GENERATED-UNSAFE]
+    :preserves [:native-truthiness :vacuous-predicates :refusal-order :source-provenance :owner-exceptions]
+    :depends-on [] :consumed-by [gravity.bootstrap]
+    :test-owner gravity.macro.native-reports-test
+    :authenticates? false :certifies? false
+    :unsupported [:source-execution :canonical-c4 :grant-validation :replay-validation :migration :self-hosting :release]}
+   :public-api
+   {native-capability-proof
+    {:arglists ([artifact diagnostic-ids-var]), :operation-inputs []},
+    validate-native!
+    {:arglists ([source-path artifact proof-var failure-var]), :operation-inputs []},
+    source-eligible?
     {:arglists ([source-path module forms operations]),
      :operation-inputs
      [:sh05-authoritative-compiler-source-path?
@@ -426,6 +441,60 @@
     :envelope-descriptor
     :verification-report],
    :contract-boundary :gravity-macro-artifacts-and-pinned-execution})
+
+(defn native-capability-proof
+  [artifact diagnostic-ids-var]
+  (let [trace-records (:macro-expansion-trace artifact)
+        diagnostics (set (map :diagnostic (:rejected-design-coverage artifact)))
+        cache-key (:expansion-cache-key artifact)
+        replay (:trace-replay-report artifact)
+        safety (:macro-safety-report artifact)
+        build-log (:build-effect-log artifact)]
+    {:syntax-input-output-valid?
+     (boolean (and (seq (get-in artifact [:c3-syntax-object-artifact
+                                          :syntax-object-stream]))
+                   (seq (:expanded-syntax-stream artifact))))
+     :deterministic-expansion-trace?
+     (boolean (and (seq trace-records)
+                   (every? #(and (re-find #"^sha256:" (str (first (:output-syntax %))))
+                                 (:macro-version %))
+                           trace-records)))
+     :hygiene-and-capture-recorded?
+     (boolean (and (seq (:hygiene-capture-records artifact))
+                   (every? #(contains? % :hygiene) trace-records)))
+     :build-effects-authorized?
+     (every? #(#{:granted :not-required} (:authorization %))
+             (:records build-log))
+     :generated-origin-present?
+     (every? #(seq (:generated-origin %)) trace-records)
+     :generated-unsafe-checked?
+     (boolean (and (= :complete (:status safety))
+                   (seq (:generated-unsafe safety))))
+     :cache-replay-guarded?
+     (boolean (and (re-find #"^sha256:" (:hash cache-key))
+                   (= :passed (:status replay))))
+     :diagnostics-covered?
+     (= (set (deref diagnostic-ids-var)) diagnostics)
+     :self-hosting-comparison-ready?
+     (= :ready (get-in artifact [:self-hosting-comparison-inputs :status]))
+     :status :complete}))
+
+(defn validate-native!
+  [source-path artifact proof-var failure-var]
+  (let [proof ((deref proof-var) artifact)]
+    (doseq [[field id] [[:syntax-input-output-valid? "C4-RETURN"]
+                        [:deterministic-expansion-trace? "C4-TRACE"]
+                        [:hygiene-and-capture-recorded? "C4-HYGIENE"]
+                        [:build-effects-authorized? "C4-BUILD-EFFECT"]
+                        [:generated-origin-present? "C4-TRACE"]
+                        [:generated-unsafe-checked? "C4-GENERATED-UNSAFE"]
+                        [:cache-replay-guarded? "C4-TRACE"]
+                        [:diagnostics-covered? "C4-TRACE"]
+                        [:self-hosting-comparison-ready? "C4-TRACE"]]]
+      (when-not (get proof field)
+        ((deref failure-var) id source-path {:stage :macro-expansion}
+                        {:missing-fields [field]}))))
+  :complete)
 
 (def ^{:private true} macro-operation-owner (ThreadLocal.))
 (def ^{:private true, :dynamic true} *macro-operation-context* nil)

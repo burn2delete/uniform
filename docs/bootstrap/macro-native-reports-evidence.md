@@ -71,3 +71,43 @@ authority, or promote legacy report labels into certificates. Existing weak nati
 predicates, malformed-native host failures, source dispatch and unsupported forms
 remain honest boundaries. Held compiler/authentication routes and retained dirty
 patches are not exercised or adopted.
+
+## Implementation and initial local evidence
+
+The two original rule bodies now live in gravity.macro, with only name/arglist
+changes and explicit diagnostic-catalog, proof and failure Var ports. Catalog
+lookup stays at its original expression position; proof/failure Vars resolve
+their current functions in operator position. The two original Bootstrap names
+and arities delegate to those APIs. Component 00028 explicitly requires the
+stage immediately before its early native facade: the first focused run caught
+the previous later-only load point, and that nonpass is retained.
+
+The source/test/CI contract exposes 52 Macro APIs, adds only the new focused
+namespace to the existing Macro cohort, and changes only the existing API count
+in its inventory test. Focused native predicates/refusals plus inventory pass
+eight tests / 148 assertions. A separate cold load exposes 52 APIs without
+Bootstrap. No other existing Macro operation body is modified.
+
+Before extraction, 28 native capture records on the two actual accepted fixture
+paths retain full input/proof/diagnostic data and actual source text/hash.
+Proof projection yields 26 records and two original malformed-cache host errors;
+validation yields four returns, 22 C4 refusals and the same two host errors.
+The metadata-aware EDN SHA256 is
+d76b80092e45ef9dfec5b9189649a5d49772646b8284d4085c758eb245767577.
+These are explicitly native unit artifacts, not products compiled from that
+source text. Baseline output completed before source edits; file modification
+times corroborate that ordering. Clean-candidate after comparison is pending.
+
+Boundary/ownership checks pass 48 tests / 1198 assertions with no skipped
+namespaces. CI formatting and document/roadmap/governance validators pass.
+An initial combined legacy regression invocation incorrectly mixed cold-leaf
+tests with a Bootstrap-dependent namespace, producing two cold-load assertions.
+That harness nonpass is retained; fresh separate leaf and compatibility JVM
+runs remain to be completed. No cold-load assertion or host failure is weakened.
+Evidence files use /tmp/uniform-macro-native-reports- locally. Full parity,
+contextual lint, independent acceptance, hosted CI and integration remain pending.
+
+Independent review also confirmed an existing Var-call timing defect in four
+other Macro operations against exact pre-extraction bodies. Those operations
+are byte-identical in this increment; the separate corrective work remains open.
+This extraction does not claim that those other ports are fully verified.

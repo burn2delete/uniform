@@ -2,20 +2,8 @@
 
 (defn c4-macro-validate!
   [source-path artifact]
-  (let [proof (c4-macro-capability-proof artifact)]
-    (doseq [[field id] [[:syntax-input-output-valid? "C4-RETURN"]
-                        [:deterministic-expansion-trace? "C4-TRACE"]
-                        [:hygiene-and-capture-recorded? "C4-HYGIENE"]
-                        [:build-effects-authorized? "C4-BUILD-EFFECT"]
-                        [:generated-origin-present? "C4-TRACE"]
-                        [:generated-unsafe-checked? "C4-GENERATED-UNSAFE"]
-                        [:cache-replay-guarded? "C4-TRACE"]
-                        [:diagnostics-covered? "C4-TRACE"]
-                        [:self-hosting-comparison-ready? "C4-TRACE"]]]
-      (when-not (get proof field)
-        (c4-macro-fail! id source-path {:stage :macro-expansion}
-                        {:missing-fields [field]}))))
-  :complete)
+  (gravity.macro/validate-native! source-path artifact
+                                  #'c4-macro-capability-proof #'c4-macro-fail!))
 
 (defn compiler-c4-macro-source-artifact
   [source-path source-text]
