@@ -350,13 +350,16 @@
      :tracked-source-status status-text}))
 
 (defn- source-compiler-inputs
-  [source compiler-revision]
-  {:source source :compiler-revision compiler-revision})
+  [source compiler-revision toolchain]
+  {:source source :compiler-revision compiler-revision :toolchain toolchain})
+
+(declare toolchain-record!)
 
 (defn- assert-stable-inputs!
   [before project-root phase]
   (let [after (source-compiler-inputs (source-identity! project-root)
-                                      (compiler-revision! project-root))]
+                                      (compiler-revision! project-root)
+                                      (toolchain-record! project-root))]
     (when-not (= before after)
       (fail! :provenance-drift
              "source or compiler inputs changed during macro plan run"
@@ -509,6 +512,22 @@
    " (contains? compiler-metadata :sh05-request))"
    " (:sh05-request compiler-metadata) {})"
    " request (b/sh05-deep-merge base-request request-overrides)"
+   " c3-provenance {:source-id (get-in syntax [:span :primary :file])"
+   " :call-site-syntax-id (:syntax/id syntax)"
+   " :call-site-span (:span syntax)"
+   " :origin-chain (vec (:origin syntax))"
+   " :reader-semantic-binding-id (get-in c3 [:gravity-syntax-boundary :reader-semantic-binding :semantic-binding-id])"
+   " :source-revision-id (get-in c3 [:gravity-syntax-boundary :reader-source-revision :revision-id])"
+   " :definition-syntax-id (get-in request [:call :definition-syntax-id])"
+   " :trace-replay-id (get-in request [:context :trace-replay-id])}"
+   " _ (when-not (and"
+   " (= (:call-site-syntax-id c3-provenance) (get-in request [:call :call-site-syntax-id]))"
+   " (= (:call-site-span c3-provenance) (get-in request [:call :call-site-span]))"
+   " (= (:origin-chain c3-provenance) (vec (get-in request [:call :origin-chain])))"
+   " (= (:reader-semantic-binding-id c3-provenance) (:reader-semantic-binding-id request))"
+   " (= (:source-revision-id c3-provenance) (:source-revision-id request)))"
+   " (throw (ex-info \"authenticated macro request is not bound to its C3 source\""
+   " {:reason :c3-request-binding})))"
    " result (m/execute-plan! source binding 'sh05-expand-macro-template"
    " [request] operations)"
    " template (:expansion-template result)"
@@ -526,6 +545,7 @@
    " :macro (:macro template) :macro-version (:macro-version template)"
    " :expanded-syntax-recipe (:expanded-syntax-recipe template)"
    " :expanded-forms expanded-forms"
+   " :c3-provenance c3-provenance"
    " :diagnostic (get-in result [:diagnostics 0 :rule])"
    " :diagnostics (:diagnostics result)}))"
    " accepted (run-fixture " (literal (select-keys accepted-fixture
@@ -615,11 +635,11 @@
     :scalar-start :byte-start :byte-end :column-start})
 
 (defn- valid-c4-span?
-  [span source]
+  [span source source-id]
   (and (map? span)
        (= c4-source-span-keys (set (keys span)))
        (= source (:source span))
-       (sha256-id? (:file span))
+       (= source-id (:file span))
        (every? #(and (integer? %) (not (neg? %)))
                (vals (select-keys span [:scalar-start :scalar-end
                                         :byte-start :byte-end])))
@@ -630,15 +650,35 @@
        (<= (:byte-start span) (:byte-end span))))
 
 (defn- valid-c4-call-site-span?
-  [span source]
+  [span source source-id]
   (and (map? span)
        (= #{:all :primary} (set (keys span)))
        (= 1 (count (:all span)))
        (= (:primary span) (first (:all span)))
-       (valid-c4-span? (:primary span) source)))
+       (valid-c4-span? (:primary span) source source-id)))
+
+(def ^:private c3-provenance-keys
+  #{:source-id :call-site-syntax-id :call-site-span :origin-chain
+    :reader-semantic-binding-id :source-revision-id :definition-syntax-id
+    :trace-replay-id})
+
+(defn- valid-observed-c3-provenance?
+  [provenance source]
+  (let [source-id (:source-id provenance)
+        span (:call-site-span provenance)]
+    (and (map? provenance)
+         (= c3-provenance-keys (set (keys provenance)))
+         (sha256-id? source-id)
+         (sha256-id? (:call-site-syntax-id provenance))
+         (sha256-id? (:reader-semantic-binding-id provenance))
+         (sha256-id? (:source-revision-id provenance))
+         (sha256-id? (:definition-syntax-id provenance))
+         (sha256-id? (:trace-replay-id provenance))
+         (valid-c4-call-site-span? span source source-id)
+         (vector? (:origin-chain provenance)))))
 
 (defn- valid-c4-origin-chain?
-  [diagnostic source]
+  [diagnostic source source-id observed]
   (let [origin (first (:origin-chain diagnostic))
         producer (:producer origin)]
     (and (vector? (:origin-chain diagnostic))
@@ -654,16 +694,18 @@
          (= 'gravity.bootstrap.reader (:name producer))
          (sha256-id? (:identity producer))
          (sha256-id? (:source-id producer))
-         (= (:source-id producer) (:file (:span origin)))
+         (= source-id (:file (:span origin)))
+         (= source-id (:source-id producer))
          (nil? (:generated-form-id producer))
          (= "SH-03" (:producer-version origin))
          (= [] (:input-syntax-ids origin))
          (= :source-read (:generation-reason origin))
          (= [] (:build-effects origin))
-         (valid-c4-span? (:span origin) source))))
+         (= (:origin-chain observed) (:origin-chain diagnostic))
+         (valid-c4-span? (:span origin) source source-id))))
 
 (defn- valid-c4-diagnostic-preimage?
-  [request diagnostic macro-version]
+  [request diagnostic macro-version observed]
   (let [preimage (:preimage request)]
     (and (map? request)
          (= #{:ordinal :purpose :preimage} (set (keys request)))
@@ -680,14 +722,17 @@
          (= (:build-effects diagnostic) (:requested-build-effects preimage))
          (= (:capabilities diagnostic) (:requested-capabilities preimage))
          (= {:source nil} (:semantic-call-span preimage))
-         (every? sha256-id?
-                 (map preimage [:call-site-syntax-id
-                                :definition-syntax-id
-                                :reader-semantic-binding-id
-                                :source-revision-id])))))
+         (= (:call-site-syntax-id observed)
+            (:call-site-syntax-id preimage))
+         (= (:definition-syntax-id observed)
+            (:definition-syntax-id preimage))
+         (= (:reader-semantic-binding-id observed)
+            (:reader-semantic-binding-id preimage))
+         (= (:source-revision-id observed)
+            (:source-revision-id preimage)))))
 
 (defn- valid-c4-diagnostic?
-  [diagnostic source macro-version digest-requests]
+  [diagnostic source macro-version digest-requests observed]
   (let [expected (select-keys rejected-diagnostic
                                [:artifact :rule :severity :lifecycle :stage
                                 :generated-span :profile :target :build-effects
@@ -702,8 +747,13 @@
              :byte-start 0
              :byte-end macro-source-byte-count}
             (:definition-span diagnostic))
-         (valid-c4-call-site-span? (:call-site-span diagnostic) source)
-         (valid-c4-origin-chain? diagnostic source)
+         (valid-observed-c3-provenance? observed source)
+         (= (:primary (:call-site-span observed))
+            (:primary (:call-site-span diagnostic)))
+         (valid-c4-call-site-span? (:call-site-span diagnostic)
+                                   source (:source-id observed))
+         (valid-c4-origin-chain? diagnostic source (:source-id observed)
+                                 observed)
          (map? facts)
          (= c4-diagnostic-facts-keys (set (keys facts)))
          (= (select-keys (:facts rejected-diagnostic)
@@ -713,13 +763,16 @@
                                 :generated-unsafe? :catalog-mapping]))
          (sha256-id? (:trace-replay-id facts))
          (= (:trace-replay-id facts) (:recorded-trace-replay-id facts))
+         (= (:trace-replay-id observed) (:trace-replay-id facts))
          (valid-c4-diagnostic-preimage? (first digest-requests)
-                                        diagnostic macro-version))))
+                                        diagnostic macro-version observed))))
 
 (defn- validate-fixture-record!
   [record project-root source compiler-revision toolchain macro-version]
   (let [accepted (:accepted record)
         rejected (:rejected record)
+        accepted-source (.getPath
+                         (canonical-file project-root (:path accepted-fixture)))
         rejected-source (.getPath
                          (canonical-file project-root (:path rejected-fixture)))]
     (when-not (and (= {:loaded-plan? true
@@ -763,6 +816,8 @@
                    (true? (:expansion-template? accepted))
                    (= 'gravity.core/defn (:macro accepted))
                    (sha256-id? (:macro-version accepted))
+                   (valid-observed-c3-provenance? (:c3-provenance accepted)
+                                                  accepted-source)
                    (map? (:expanded-syntax-recipe accepted))
                    (= (:expected-expanded-forms accepted-fixture)
                       (:expanded-forms accepted))
@@ -786,10 +841,13 @@
                    (= (:diagnostic rejected-fixture) (:diagnostic rejected))
                    (vector? (:diagnostics rejected))
                    (= 1 (count (:diagnostics rejected)))
+                   (valid-observed-c3-provenance? (:c3-provenance rejected)
+                                                  rejected-source)
                    (valid-c4-diagnostic? (first (:diagnostics rejected))
                                          rejected-source
                                          macro-version
-                                         (:digest-requests rejected)))
+                                         (:digest-requests rejected)
+                                         (:c3-provenance rejected)))
       (fail! :conformance "macro execution child produced unexpected fixture outcomes"
              {:accepted (select-keys accepted
                                      [:status :artifact :schema-version
@@ -840,19 +898,80 @@
      :size (.size attributes)
      :sha256 (file-sha256 canonical)}))
 
+(defn- register-output!
+  [registered ^File file]
+  (let [canonical (.getCanonicalFile file)]
+    (swap! registered assoc (.getPath canonical) {:file canonical})
+    canonical))
+
 (defn- remember-output!
-  [owned ^File file]
-  (swap! owned conj (output-ownership file))
-  file)
+  [registered ^File file]
+  (let [snapshot (output-ownership file)
+        path (.getPath ^File (:file snapshot))]
+    (swap! registered update path merge snapshot {:observation :published})
+    file))
+
+(defn- last-known-output
+  [{:keys [file-key size sha256]}]
+  (when (or file-key size sha256)
+    {:file-key (some-> file-key str)
+     :size size
+     :sha256 sha256}))
+
+(defn- observed-output-receipt
+  [{:keys [^File file] :as registered}]
+  (try
+    (let [canonical (.getCanonicalFile file)
+          path (.toPath canonical)
+          no-follow-links (into-array LinkOption [LinkOption/NOFOLLOW_LINKS])
+          attributes (output-attributes canonical)]
+      (cond
+        attributes
+        (if (and (.isRegularFile attributes) (some? (.fileKey attributes)))
+          (let [snapshot (output-ownership canonical)
+                changed? (and (:observation registered)
+                              (or (not= (some-> (:file-key registered) str)
+                                        (some-> (:file-key snapshot) str))
+                                  (not= (:size registered) (:size snapshot))
+                                  (not= (:sha256 registered) (:sha256 snapshot))))]
+            (cond-> {:path (.getPath canonical)
+                     :observation (if changed? :replacement :published)
+                     :file-key (str (:file-key snapshot))
+                     :size (:size snapshot)
+                     :sha256 (:sha256 snapshot)}
+              changed? (assoc :last-known (last-known-output registered))))
+          {:path (.getPath canonical)
+           :observation :unavailable
+           :reason :not-owned-regular-file
+           :last-known (last-known-output registered)})
+
+        (Files/exists path no-follow-links)
+        {:path (.getPath canonical)
+         :observation :unavailable
+         :reason :not-owned-regular-file
+         :last-known (last-known-output registered)}
+
+        :else
+        (if (= :published (:observation registered))
+          {:path (.getPath canonical)
+           :observation :unavailable
+           :reason :missing-after-publication
+           :last-known (last-known-output registered)}
+          {:path (.getPath canonical)
+           :observation :not-published
+           :last-known (last-known-output registered)})))
+    (catch Exception error
+      {:path (.getPath file)
+       :observation :unavailable
+       :reason :observation-error
+       :cause-class (.getName (class error))
+       :cause-message (.getMessage error)
+       :last-known (last-known-output registered)})))
 
 (defn- retained-output-receipt
-  [owned]
-  (mapv (fn [{:keys [^File file file-key size sha256]}]
-          {:path (.getPath file)
-           :file-key (str file-key)
-           :size size
-           :sha256 sha256})
-        @owned))
+  [registered]
+  (mapv (fn [[_ entry]] (observed-output-receipt entry))
+        (sort-by key @registered)))
 
 (defn- retain-owned-outputs!
   [owned]
@@ -873,7 +992,7 @@
          source (source-identity! project-root)
          revision (compiler-revision! project-root)
          toolchain (toolchain-record! project-root)
-         inputs (source-compiler-inputs source revision)
+         inputs (source-compiler-inputs source revision toolchain)
          output-root (.getCanonicalFile (io/file (str output-root)))
          plan-file (canonical-file output-root (:output-plan-path component))
          record-file (canonical-file output-root (:output-record-path component))]
@@ -881,12 +1000,13 @@
        (when (.exists file)
          (fail! :output-exists "bootstrap macro output already exists"
                 {:path (.getPath file)})))
-     (let [owned-outputs (atom #{})]
+     (let [registered-outputs (atom {})]
        (try
+         (register-output! registered-outputs plan-file)
          (let [producer (run-child! project-root
                                     (producer-expression (.getPath plan-file))
                                     :producer)
-               _ (remember-output! owned-outputs plan-file)
+               _ (remember-output! registered-outputs plan-file)
                _ (assert-stable-inputs! inputs project-root :after-producer)
                payload (validate-persisted-plan! (read-edn-file! plan-file "macro plan"))
                producer-summary (:summary producer)
@@ -913,6 +1033,7 @@
            (when-not (= (:sha256 source) (get-in payload [:plan :source :sha256]))
              (fail! :source-plan-binding "persisted plan source hash drifted"
                     {:source source :plan-source (get-in payload [:plan :source])}))
+           (register-output! registered-outputs record-file)
            (let [execution (run-child! project-root
                                        (execution-expression (.getPath plan-file)
                                                              (.getPath record-file)
@@ -922,7 +1043,7 @@
                                                              revision
                                                              toolchain)
                                        :execution)
-                 _ (remember-output! owned-outputs record-file)
+                 _ (remember-output! registered-outputs record-file)
                  _ (assert-stable-inputs! inputs project-root :after-execution)
                  record (read-edn-file! record-file "macro execution record")
                  record-sha256 (file-sha256 record-file)
@@ -955,6 +1076,18 @@
                                   :failure-output-policy
                                   (:failure-output-policy component)
                                   :retained-outputs
-                                  (retain-owned-outputs! owned-outputs))
+                                  (retain-owned-outputs! registered-outputs))
+                           error)))
+         (catch Exception error
+           (throw (ex-info "bootstrap macro plan run failed"
+                           {:diagnostic "BOOT-MACRO-PLAN"
+                            :component-id component-id
+                            :reason :runtime-error
+                            :cause-class (.getName (class error))
+                            :cause-message (.getMessage error)
+                            :failure-output-policy
+                            (:failure-output-policy component)
+                            :retained-outputs
+                            (retain-owned-outputs! registered-outputs)}
                            error)))
          )))))

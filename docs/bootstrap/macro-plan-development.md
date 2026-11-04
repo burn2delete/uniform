@@ -33,15 +33,20 @@ compiler, a native backend, or a self-hosting proof.
 - The rejected fixture must retain the complete structured C4 diagnostic and
   provenance: macro identity/version, definition and call-site spans, origin
   chain, profile/target, effects/capabilities, hygiene, facts, remediation,
-  and the authenticated diagnostic digest preimage. The record must bind the
+  and the authenticated diagnostic digest preimage. The diagnostic span and
+  preimage identities must be bound to a data-only projection observed from
+  the trusted fresh C3 request. The record must bind the
   source/compiler/toolchain inputs while they remain stable across producer
   and execution children.
 - Outputs are created with CREATE_NEW, read back, and hashed. A failed run
   retains every published output because a portable public-path delete cannot
   be coupled atomically to the ownership observation. The failure diagnostic
-  records the retention policy and each output's observed file key, size, and
-  digest; existing, raced, and replacement files are never overwritten or
-  deleted by cleanup.
+  records the retention policy and every output path registered before a child
+  starts. Each path is reported as published with its observed file key, size,
+  and digest, as a replacement/changed-after-publication with current and
+  last-known observations, or explicitly as not published or unavailable;
+  existing, raced, and replacement files are never overwritten or deleted by
+  cleanup.
 
 ## Dependencies
 
@@ -67,16 +72,18 @@ It writes:
 The record contains the accepted SH-05 macro template and its data-only digest
 requests, the exact accepted expansion datum, and the rejected C4-RETURN
 observation. It records the loaded plan ID/hash, the producer's observed
-compiler revision and dirty status, and the child seed/toolchain facts. It does
-not claim digest resolution, downstream artifact assembly, or native execution.
+compiler revision and dirty status, the child seed/toolchain facts, and a
+data-only C3 provenance projection used to bind the diagnostic. It does not
+serialize a C3 artifact, Reader authority, or operation closure, and does not
+claim digest resolution, downstream artifact assembly, or native execution.
 The provenance also records the authenticated macro source identity and the
 stable-input result checked around both child processes.
 The record labels the producer as Clojure stage0 and the fresh consumer as the
 generic Clojure stage2 rule runner; both labels are live-worktree development
 provenance, not self-hosting authority.
 On failure, the thrown diagnostic includes `:failure-output-policy
-:retain-published-outputs` and a `:retained-outputs` receipt for the outputs
-already published by that run.
+:retain-published-outputs` and a `:retained-outputs` receipt for every output
+registered by that run, including publish-then-fail and ordinary I/O paths.
 
 ## Conformance and acceptance
 
@@ -84,8 +91,9 @@ The focused test namespace is
 gravity.bootstrap.rebuild.macro-plan-test. It checks plan identity
 substitution and canonical plan-ID tampering, exact function-shape rejection,
 lossless UTF-8 fixture snapshots, exact accepted expansion output, child
-observation/summary substitution, full structured diagnostics and stable
-provenance, output-collision/race/replacement preservation, EDN readback,
+observation/summary substitution, full structured diagnostics and C3-bound
+provenance, source/compiler/toolchain drift, output-collision,
+publish-then-fail/ordinary-I/O/replacement preservation, EDN readback,
 accepted template output, and the rejected C4-RETURN path.
 
 For a direct development run:
