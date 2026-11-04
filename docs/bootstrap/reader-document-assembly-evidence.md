@@ -49,7 +49,12 @@ construction. The source facade retains diagnostic remapping and publication.
 
 Use the old tail only as a structural native comparison over real paired
 compatibility products, lexical views, hashes and integrity records. Do not
-invoke canonical source admission or use the comparison as C2/SH03 acceptance.
+invoke canonical source construction or use the comparison as C2/SH03 acceptance.
+Separately exercise only the existing public four-argument precomputed-product
+refusal once with a coherently rehashed native forgery. Reader/SH03/projection
+tripwires confirm that this guard stops before construction; no candidate token,
+other arity or previously refused source operation is used. This negative does
+not prove authentication by the native projection or enter the tail comparison.
 Capture complete raw/parsed artifacts, actual paths/bytes/digests, proof and
 identity. Reject real altered native views; test all policy branches, callback
 timing/identity, span/proof refusals before digest, envelope exclusion, source
@@ -68,3 +73,62 @@ source/file/provider authority, admit a C2/SH03 artifact or cache record, replac
 the guarded source facade, or establish complete Reader, migration, release,
 self-hosting or seed retirement. Earlier SourceC9/default Reader refusals and
 all held/restricted routes remain untouched.
+
+## Implemented native source and original comparison
+
+The original artifact-base map and tail now live in native-document-projection.
+Its closed ten-key carrier is checked before observing the seventeen captured
+views; it adds no callback/Var/carrier type guard, default or Bootstrap lookup.
+The source constructor retains all twenty-one prelude bindings and every
+arity/guard, the surrounding catch/remap, and the pure-source facade suffix.
+The raw legacy map is built, validated, enriched, policy-projected and hashed
+before it is returned inside the explicit non-authoritative envelope.
+
+The original tail is evaluated only as native structural comparison, from the
+immutable predecessor source. An additional raw-text control preserves literal
+evaluation rather than assuming map field order from an AST printer. Both
+original controls emit six real paired native projections across standard,
+pure-text and resource policy records, retaining actual source paths, text,
+source-unit identities, lexical views, hashes and integrity records. Thirty
+altered native views retain existing C2 refusals. The complete raw capture has
+SHA-256fab4ab22f2b91d9d08aaaa784ad95e7743f9822196a77f9ebdec25981cb3ae44;
+raw-text and AST comparison captures are equal. These policies are native
+record projections; no pure/resource source handler or provider is executed.
+
+Initial owning checks pass42 tests/585 assertions. Tests cover real artifacts
+and input-reference/metadata retention, envelope exclusion from identity,
+five physical altered-view refusals, all ten report-field refusals before policy
+or identity, closed ports before view observation, opaque input errors, original
+owner exceptions, policy branches and reconstruction inputs, duplicate proof
+calls and late scalar/function snapshots. A separate single public four-argument
+guard control refuses a coherently rehashed native proof before Reader/SH03 or
+native projection; it provides only that early caller-admission refusal evidence.
+
+The measured old callback trace is trivia, validation, internal proof, second
+proof, pure-text classification, resource classification and late identity.
+The old map's governing document, initial diagnostic ids, uncredited entries and
+rejected designs observe roots changed by trivia; conformance observes diagnostic
+ids changed by validation. The new body retains complete raw/parsed interposition
+parity. It does not impose a new source-textual map evaluation order.
+
+Retained nonpasses include a raw-capture clean-worktree guard after the scope
+document was edited while Bootstrap loaded, and an initial opaque-input test
+that incorrectly assumed product lookup preceded trivia. The raw capture ran
+again only after a clean scope commit; the opaque tests now separately verify
+original input failure and absence of callback type guards. No production rule
+or callback order was changed to satisfy either test.
+
+## Coordination handover and remaining gates
+
+During authoring, actual merged PR922 sourcebf1cb9b60bb719488afadd73680fb30a0fe40ec1
+introduced protocol2. Only its fifteen verified tools/simplify blobs were pinned
+in an isolated caller; the compiler/test checkout was not updated for tooling.
+The original active manual state/key and actual imported lease/token remain
+bound to the same full canonical owner, in needs-inspection status. No legacy
+registry mutation, invented lease or release occurs at this source commit.
+Original-owner inspected release will use only the accepted merged API after
+the actual source/checking phase ends, preserving all prior history.
+
+Complete candidate/final raw comparison, committed conservation, regressions,
+cold stage, lint, validators, independent exact source acceptance, own CI and
+current-main composition/preflight remain separate verification/integration gates.

@@ -2,7 +2,7 @@
   "Native source intake, strict UTF-8 decoding and stage0 reader artifact assembly.
 
   This namespace owns native intake through an explicit byte owner, strict decoding, source-path
-  diagnostic data, the existing artifact envelope and a hosted compatibility oracle.
+  diagnostic data, existing artifact envelopes and a hosted compatibility oracle.
   Admission, parsing, syntax, source identity and diagnostic publication remain
   with their supplied owners. Operations are trusted seed dependencies, not evidence of
   canonical reader authentication or self-hosting.")
@@ -10,9 +10,23 @@
 (def ^:private namespace-contract
   {:namespace 'gravity.reader
    :governing-contracts [:D1 :D2 :D3 :D8 :D9 :L1 :C1 :C2 :C3 :C15 :BOOT1 :BOOT8 :TEST2]
-   :contract-boundary :native-reader-intake-products-and-report-validation
+   :contract-boundary :native-reader-intake-products-report-validation-and-document-projection
    :public-api
-   {'validate-native-reader-report!
+   {'native-document-projection
+    {:arglists '([source-path source-text project-context reader-options views operations])
+     :returns :gravity/native-c2-document-projection
+     :admission :none :authenticates-inputs? false
+     :captured-view-fields [:overrides :products :module-context :source-unit
+                            :lexical-token-stream? :nested-form-tree? :token-stream :form-tree
+                            :top-level-form-ids :lexical-validation :syntax-seeds :literal-records
+                            :extension-invocations :deferred-literals :diagnostics
+                            :incremental-hashes :integrity-record]
+     :operation-inputs [:governing-document-var :diagnostic-ids-var :uncredited-entrypoints-var
+                        :trivia-records-var :rejected-designs-var :validate-var :capability-proof-var
+                        :pure-text-options-var :resource-options-var :artifact-id-var]
+     :closed-operation-keys? true :callback-type-checks? false
+     :envelope-in-identity? false}
+    'validate-native-reader-report!
     {:arglists '([proof-var fail-var source-span-var source-path artifact])
      :returns :legacy-complete-marker-or-owner-failure
      :admission :none :authenticates-inputs? false
@@ -43,12 +57,14 @@
      :operation-inputs [:gravity-source-extension-var :co-canonical-source-extensions-var
                         :sha256-bytes-hex-var :fail-var]}}
    :artifact-inputs [:source-path :decoded-source-text :explicit-project-context
+                     :captured-native-document-views-and-late-owner-vars
                      :compatibility-oracle-late-owner-vars
                      :seed-reader-operations :standard-reader-options
                      :captured-source-bytes :raw-byte-hash-var :diagnostic-var
                      :extension-predicate-var :path-policy-refusal-var :decoder-var :source-byte-reader-var :co-canonical-extension-set-var]
    :artifact-outputs [:gravity/stage0-reader-artifact :decoded-utf8-text
                       :hosted-compatibility-reader-products :legacy-native-reader-complete-marker
+                      :gravity/native-c2-document-projection
                       :unchanged-source-encoding-failure :unchanged-source-extension-failure
                       :unchanged-source-byte-owner-failure]
    :preserves [:source-spans :metadata :reader-origin :profile-context
@@ -69,6 +85,11 @@
                                :proof-owner :supplied-proof-var
                                :policy-owner :supplied-failure-var
                                :authenticates-inputs? false}
+    :native-document-projection {:owns :assembly-and-late-port-sequencing
+                                 :port-shape-id :native-c2-assembly-operations
+                                 :delegates [:native-report-policy :identity-policy]
+                                 :remapping-owner :guarded-source-facade
+                                 :authenticates-inputs? false}
     :does-not-own [:token-and-form-policy :namespace-shape-policy :c15-schema
                    :diagnostic-identity :redaction :rendering]}
    :dependency-direction
@@ -79,6 +100,8 @@
     :syntax-object-stream :l1-source-unit-artifacts :standard-reader-options
     :gravity-source-extension :gravity-source-kind :utf8-byte-count]
    :unsupported [:other-encodings :replacement-decoding :file-authority
+                 :native-document-product-or-callback-authentication
+                 :native-document-canonical-admission-and-publication
                  :native-report-authentication
                  :compatibility-oracle-product-authentication
                  :operation-authentication :complete-reader-conformance
@@ -283,6 +306,168 @@
           :reader-options (get-in artifact [:source-unit-record :reader-options])}
          {:missing-fields [field]}))))
   :complete)
+
+(defn native-document-projection
+  "Project the native C2 document tail without admission or input authentication."
+  [source-path source-text project-context reader-options views operations]
+  (let [required #{:governing-document-var :diagnostic-ids-var :uncredited-entrypoints-var
+                   :trivia-records-var :rejected-designs-var :validate-var :capability-proof-var
+                   :pure-text-options-var :resource-options-var :artifact-id-var}
+        actual (set (keys operations))]
+    (when-not (= required actual)
+      (throw (ex-info "Native C2 document projection requires exactly ten owner ports"
+                      {:id :native-c2-assembly-operations :required-keys required :actual-keys actual}))))
+  (let [{:keys [overrides products module-context source-unit lexical-token-stream?
+                nested-form-tree? token-stream form-tree top-level-form-ids
+                lexical-validation syntax-seeds literal-records extension-invocations
+                deferred-literals diagnostics incremental-hashes integrity-record]} views
+        {:keys [governing-document-var diagnostic-ids-var uncredited-entrypoints-var
+                trivia-records-var rejected-designs-var validate-var capability-proof-var
+                pure-text-options-var resource-options-var artifact-id-var]} operations
+        artifact-base
+        {:kind :gravity/stage0-c2-reader-document-artifact
+         :task "P06-D081"
+         :document-set ["C2"]
+         :governing-document (deref governing-document-var)
+         :pass {:name :c2-reader-document-coverage
+                :input :source-bytes
+                :output :reader-document-proof
+                :requires [:source-unit :reader-policy]
+                :preserves [:source-spans :raw-literal-facts
+                            :reader-origin :trivia :diagnostics]
+                :emits [:source-unit-record :token-stream :form-tree
+                        :syntax-seed-stream :reader-source-map
+                        :literal-decoding-records
+                        :reader-extension-invocation-records
+                        :reader-diagnostics :incremental-reader-hash]
+                :rejects (deref diagnostic-ids-var)}
+         :source-overrides overrides
+           ;; Diagnostic observations only; never SH03 authentication authority.
+         :extension-dispatch-observations
+         (:extension-dispatch-observations products)
+         :module (assoc (dissoc module-context :namespace-clause-syntax)
+                        :source-path source-path)
+         :source-unit-record source-unit
+         :gravity-reader-boundary
+         {:slice :SH-03
+          :owner :gravity-source
+          :plan-binding (:sh03-reader-plan-binding products)
+          :resolved-reader-result
+          (select-keys (:sh03-reader-result products)
+                       [:artifact :schema-version :status
+                        :actual-path-provenance
+                        :incremental-reader-hashes
+                        :semantic-reader-template
+                        :execution-boundary])
+          :adapter-contract (:sh03-reader-adapter-contract products)
+          :uncredited-source-models
+          {:status :not-executed
+           :entrypoints (deref uncredited-entrypoints-var)
+           :self-hosting-credit? false
+           :seed-retirement-credit? false
+           :release-credit? false}
+          :semantic-value-table-id
+          (:sh03-semantic-value-table-id products)
+          :authenticated-envelope-descriptor
+          (:sh02-reader-envelope-descriptor products)
+          :authenticated-envelope (:sh02-reader-envelope products)
+          :target-source-reread? false
+          :clojure-adapter-residual? true
+          :self-hosted? false}
+         :representation-boundary
+         {:token-stream :ordered-utf8-lexical-token-stream
+          :form-tree :recursive-delimiter-linked-form-tree
+          :lexical-token-stream? lexical-token-stream?
+          :nested-form-tree? nested-form-tree?
+          :remaining-reader-boundaries
+          [:full-language-literal-surface
+           :full-language-reader-abbreviation-surface
+           :full-language-reader-extension-registry
+           :host-and-seed-retirement]
+          :sh03-bootstrap-subset-status :complete
+          :status (if (and lexical-token-stream? nested-form-tree?)
+                    :complete-for-slice
+                    :failed)}
+         :token-stream token-stream
+         :form-tree form-tree
+         :top-level-form-ids top-level-form-ids
+         :parsed-semantic-values (:parsed-values products)
+         :lexical-product-validation lexical-validation
+         :syntax-seed-stream syntax-seeds
+         :reader-source-map (mapv #(select-keys % [:syntax-id :form-id :span])
+                                  syntax-seeds)
+         :gravity-reader-source-map (:gravity-reader-source-map products)
+         :literal-decoding-records literal-records
+         :trivia-retention-records ((deref trivia-records-var) token-stream)
+         :reader-extension-policy
+         {:artifact :gravity/reader-extension-policy
+          :extensions
+          [{:tag 'inst
+            :handler 'gravity.reader.standard/read-inst
+            :build-effects #{}
+            :capabilities #{}
+            :profiles #{:kernel :core :hosted :meta}
+            :output :syntax-seed}
+           {:tag 'uuid
+            :handler 'gravity.reader.standard/read-uuid
+            :build-effects #{}
+            :capabilities #{}
+            :profiles #{:kernel :core :hosted :meta}
+            :output :syntax-seed}]
+          :status :registered}
+         :reader-extension-invocation-records extension-invocations
+         :semantic-error-deferment-record
+         {:artifact :gravity/semantic-error-deferment
+          :forms-retained [:unknown-symbol :profile-illegal-form
+                           :zero-denominator-ratio
+                           :host-independent-decimal-range]
+          :deferred-literal-records deferred-literals
+          :semantic-analysis-in-reader? false
+          :module-parser-invoked? false
+          :deferred? true
+          :owner-phases [:namespace-analysis :type-check :profile-validate
+                         :numeric-mode-validation]}
+         :reader-diagnostics diagnostics
+         :incremental-reader-hashes incremental-hashes
+         :reader-product-integrity integrity-record
+         :rejected-design-coverage (deref rejected-designs-var)
+         :diagnostics []}
+        _ ((deref validate-var) source-path artifact-base)
+        capability-proof ((deref capability-proof-var) artifact-base)
+        conformance {:documents ["C2"]
+                     :task "P06-D081"
+                     :required-diagnostic-ids (deref diagnostic-ids-var)
+                     :source-unit-status :complete
+                     :token-stream-status :complete-for-slice
+                     :form-tree-status :complete-for-slice
+                     :span-status :exact-utf8-byte-and-line-column
+                     :abbreviation-status :complete-bootstrap-subset
+                     :literal-status :complete-bootstrap-subset
+                     :trivia-status :reader-option-sensitive
+                     :extension-status :complete-bootstrap-subset
+                     :incremental-hash-status :complete-for-slice
+                     :diagnostic-status :complete-bootstrap-subset
+                     :semantic-deferment-status :complete-for-slice
+                     :status :partial}
+        artifact (assoc artifact-base
+                        :capability-based-proof capability-proof
+                        :c2-reader-results conformance)
+        artifact
+        (if ((deref pure-text-options-var) reader-options)
+          (-> artifact
+              (assoc-in [:reader-extension-policy :extensions]
+                        [{:tag 'text :handler 'sh03-reader-read-text
+                          :build-effects #{} :capabilities #{} :profiles #{:meta}
+                          :output :syntax-seed}])
+              (assoc-in [:gravity-reader-boundary :pure-text-reconstruction-input]
+                        {:source-text source-text :project-context project-context}))
+          (if ((deref resource-options-var) reader-options)
+            (assoc-in artifact [:reader-extension-policy :extensions]
+                      [{:tag 'resource :handler 'gravity.reader/read-input
+                        :build-effects #{:build/read-file} :capabilities #{:fs/read}
+                        :profiles #{:meta} :output :syntax-seed}])
+            artifact))]
+    {:kind :gravity/native-c2-document-projection :admission :none :authenticates-inputs? false :artifact (assoc artifact :artifact-id ((deref artifact-id-var) artifact))}))
 
 (doseq
  [name (keys (:public-api namespace-contract))

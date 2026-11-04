@@ -1,7 +1,8 @@
 (ns gravity.reader.artifact-test
   (:require [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as bootstrap]
-            [gravity.reader :as reader]))
+            [gravity.reader :as reader]
+            [gravity.reader.pure-text :as pure-text]))
 
 (defn- fixture [disposition stem extension]
   (str "bootstrap/clojure/fixtures/" disposition "/" stem extension))
@@ -146,7 +147,7 @@
 (deftest namespace-contract-is-narrow-and-preserves-compatibility-arities
   (let [contract (:gravity/namespace-contract (meta #'reader/read-source-artifact))]
     (is (= #{'read-source-artifact 'decode-source-bytes 'read-source-text 'reject-source-path!
-             'compatibility-reader-products 'validate-native-reader-report!}
+             'compatibility-reader-products 'validate-native-reader-report! 'native-document-projection}
            (set (keys (ns-publics 'gravity.reader)))))
     (is (= (set (keys (:public-api contract)))
            (set (keep (fn [[name operation]]
@@ -157,7 +158,7 @@
     (is (every? #(not (:private (meta %)))
                 (vals (ns-publics 'gravity.reader))))
     (is (empty? (ns-aliases 'gravity.reader)))
-    (is (= :native-reader-intake-products-and-report-validation (:contract-boundary contract)))
+    (is (= :native-reader-intake-products-report-validation-and-document-projection (:contract-boundary contract)))
     (is (= ['clojure.core] (get-in contract [:dependency-direction :requires])))
     (is (= ['gravity.bootstrap 'gravity.cli 'gravity.release]
            (get-in contract [:dependency-direction :forbids])))
@@ -746,3 +747,255 @@
             (with-redefs-fn {dependency (fn [& _] (throw sentinel))}
               #(rejection (fn [] (validate-native-report "native.gravity" {})))))]
       (is (identical? sentinel result)))))
+
+(defn- native-document-operations []
+  {:governing-document-var #'bootstrap/c2-reader-governing-document
+   :diagnostic-ids-var #'bootstrap/c2-reader-diagnostic-ids
+   :uncredited-entrypoints-var #'bootstrap/sh03-reader-uncredited-source-model-entrypoints
+   :trivia-records-var #'bootstrap/c2-trivia-records
+   :rejected-designs-var #'bootstrap/c2-reader-rejected-designs
+   :validate-var #'bootstrap/c2-reader-validate!
+   :capability-proof-var #'bootstrap/c2-reader-capability-proof
+   :pure-text-options-var #'pure-text/options?
+   :resource-options-var #'bootstrap/reader-resource-options?
+   :artifact-id-var #'bootstrap/c2-reader-artifact-id})
+
+(defn- native-document-views [path text]
+  (let [products (compatibility-products path text (bootstrap/reader-project-context-for-source path))
+        source (:source-unit products) tokens (:token-stream products) forms (:form-tree products)
+        module (bootstrap/reader-module-context (:parsed-values products))
+        seeds (bootstrap/c2-syntax-seed-stream path products module)
+        literals (bootstrap/c2-literal-records forms)
+        deferred (bootstrap/c2-deferred-semantic-literals forms)
+        extensions (bootstrap/c2-reader-extension-invocations forms)
+        lexical (bootstrap/c2-lexical-product-validation text tokens forms (:root-form-ids products))
+        hashes (bootstrap/c2-incremental-hashes source tokens forms seeds extensions [])]
+    {:overrides (bootstrap/c2-reader-overrides-from-forms (:parsed-values products))
+     :products products :module-context module :source-unit source
+     :lexical-token-stream? (every? true? (map lexical [:ordered-token-ids-unique? :token-raw-slices-exact? :token-provenance-complete? :no-token-contains-top-level-form?]))
+     :nested-form-tree? (every? true? (map lexical [:form-ids-unique? :graph-valid? :root-form-ids-resolve? :form-raw-slices-exact? :form-links-resolve? :parent-spans-enclose-children? :collection-delimiters-resolve?]))
+     :token-stream tokens :form-tree forms :top-level-form-ids (:root-form-ids products)
+     :lexical-validation lexical :syntax-seeds seeds :literal-records literals
+     :extension-invocations extensions :deferred-literals deferred :diagnostics []
+     :incremental-hashes hashes
+     :integrity-record (bootstrap/c2-reader-product-integrity-record source (:root-form-ids products) hashes literals deferred)}))
+
+(defn- project-native-document [path text context views operations]
+  (reader/native-document-projection path text context bootstrap/standard-reader-options views operations))
+
+(deftest native-document-projection-emits-real-products-with-preserved-identity
+  (doseq [extension [".gravity" ".qst"]]
+    (let [path (fixture "accepted" "surface-syntax" extension) text (slurp path)
+          context (bootstrap/reader-project-context-for-source path)
+          views (native-document-views path text)
+          source (with-meta (:source-unit views) {:ai/human-review :required})
+          overrides {:unsafe-island :native-fixture :ai/human-review :required}
+          views (assoc views :source-unit source :overrides overrides)
+          envelope (project-native-document path text context views (native-document-operations))
+          artifact (:artifact envelope)]
+      (is (= {:kind :gravity/native-c2-document-projection :admission :none :authenticates-inputs? false}
+             (dissoc envelope :artifact)))
+      (is (= :gravity/stage0-c2-reader-document-artifact (:kind artifact)))
+      (is (= :partial (get-in artifact [:capability-based-proof :status])))
+      (is (= :partial (get-in artifact [:c2-reader-results :status])))
+      (is (true? (get-in artifact [:gravity-reader-boundary :clojure-adapter-residual?])))
+      (is (false? (get-in artifact [:gravity-reader-boundary :self-hosted?])))
+      (is (identical? source (:source-unit-record artifact)))
+      (is (identical? overrides (:source-overrides artifact)))
+      (is (= {:ai/human-review :required} (meta (:source-unit-record artifact))))
+      (doseq [[input output] [[:token-stream :token-stream] [:form-tree :form-tree]
+                              [:syntax-seeds :syntax-seed-stream] [:literal-records :literal-decoding-records]
+                              [:integrity-record :reader-product-integrity] [:incremental-hashes :incremental-reader-hashes]]]
+        (is (identical? (get views input) (get artifact output))))
+      (is (= path (get-in artifact [:module :source-path])))
+      (is (= (:artifact-id artifact) (bootstrap/c2-reader-artifact-id artifact)))
+      (is (not= (:artifact-id artifact) (bootstrap/c2-reader-artifact-id envelope)))
+      (is (= envelope (project-native-document path text context views (native-document-operations)))))))
+
+(deftest native-document-projection-refuses-real-altered-views-before-identity
+  (let [path (fixture "accepted" "surface-syntax" ".gravity") text (slurp path)
+        context (bootstrap/reader-project-context-for-source path)
+        views (native-document-views path text)]
+    (doseq [[changed id field]
+            [[(assoc-in views [:source-unit :source-id] "changed") "C2-HASH" :source-unit-hash-stable?]
+             [(assoc views :literal-records []) "C2-STRING" :literal-facts-present?]
+             [(assoc-in views [:incremental-hashes :token-stream] "changed") "C2-HASH" :incremental-hashes-stable?]
+             [(assoc views :lexical-validation {}) "C2-HASH" :lexical-token-stream?]
+             [(assoc-in views [:source-unit :reader-options :retain-comments] false) "C2-HASH" :trivia-retained?]]]
+      (let [failure
+            (with-redefs [bootstrap/c2-reader-artifact-id (fn [& _] (throw (AssertionError. "identity after refusal")))]
+              (rejection #(project-native-document path text context changed (native-document-operations))))]
+        (is (= id (:id (ex-data failure))))
+        (is (= [field] (:missing-fields (ex-data failure))))
+        (is (= path (get-in (ex-data failure) [:source-span :source])))))))
+
+(deftest native-document-projection-closes-ports-before-view-observation
+  (let [observations (atom 0)
+        views (reify clojure.lang.ILookup
+                (valAt [_ _] (swap! observations inc) (throw (AssertionError. "views observed")))
+                (valAt [_ _ _] (swap! observations inc) (throw (AssertionError. "views observed"))))
+        operations (native-document-operations)]
+    (doseq [ports (concat (map #(dissoc operations %) (keys operations))
+                          [(assoc operations :source-constructor (fn [& _] :forbidden)) {}])]
+      (let [failure (rejection #(project-native-document "native.gravity" "" {} views ports))]
+        (is (= :native-c2-assembly-operations (:id (ex-data failure))))))
+    (is (zero? @observations))))
+
+(deftest native-document-projection-preserves-opaque-inputs-without-callback-type-guards
+  (let [sentinel (ex-info "original opaque product lookup" {:native :opaque})
+        products (reify clojure.lang.ILookup
+                   (valAt [_ _] (throw sentinel))
+                   (valAt [_ _ _] (throw sentinel)))
+        views {:products products}
+        operations (native-document-operations)
+        result (rejection #(project-native-document "native.gravity" "" {} views operations))]
+    (is (identical? sentinel result)))
+  (let [sentinel (ex-info "original opaque view lookup" {:native :opaque-view})
+        views (reify clojure.lang.ILookup
+                (valAt [_ _] (throw sentinel))
+                (valAt [_ _ _] (throw sentinel)))
+        operations (zipmap (keys (native-document-operations)) (repeat (Object.)))
+        result (rejection #(project-native-document "native.gravity" "" {} views operations))]
+    (is (identical? sentinel result))))
+
+(deftest native-document-projection-preserves-original-late-snapshots-and-duplicate-proof
+  (let [path (fixture "accepted" "surface-syntax" ".gravity") text (slurp path)
+        context (bootstrap/reader-project-context-for-source path)
+        views (native-document-views path text)
+        events (atom []) proofs (atom []) proof-inputs (atom []) validation-input (atom nil) identity-input (atom nil)
+        original-trivia bootstrap/c2-trivia-records
+        late-id (fn [artifact] (swap! events conj :late-identity) (reset! identity-input artifact) :native-control-id)
+        envelope
+        (with-redefs-fn
+          {#'bootstrap/c2-reader-governing-document :before-trivia-document
+           #'bootstrap/c2-reader-diagnostic-ids ["before-trivia-id"]
+           #'bootstrap/sh03-reader-uncredited-source-model-entrypoints [:before-trivia-entrypoint]
+           #'bootstrap/c2-reader-rejected-designs [:before-trivia-design]
+           #'bootstrap/c2-trivia-records
+           (fn [tokens]
+             (swap! events conj :trivia)
+             (alter-var-root #'bootstrap/c2-reader-governing-document (constantly :after-trivia-document))
+             (alter-var-root #'bootstrap/c2-reader-diagnostic-ids (constantly ["after-trivia-id"]))
+             (alter-var-root #'bootstrap/sh03-reader-uncredited-source-model-entrypoints (constantly [:after-trivia-entrypoint]))
+             (alter-var-root #'bootstrap/c2-reader-rejected-designs (constantly [:after-trivia-design]))
+             (original-trivia tokens))
+           #'bootstrap/c2-reader-validate!
+           (fn [_ artifact]
+             (swap! events conj :validate) (reset! validation-input artifact)
+             (bootstrap/c2-reader-capability-proof artifact)
+             (alter-var-root #'bootstrap/c2-reader-diagnostic-ids (constantly ["after-validation-id"])) :ignored)
+           #'bootstrap/c2-reader-capability-proof
+           (fn [artifact]
+             (swap! events conj :proof) (swap! proof-inputs conj artifact)
+             (let [proof {:status :partial :native-control-proof (inc (count @proofs))}]
+               (swap! proofs conj proof) proof))
+           #'pure-text/options?
+           (fn [_] (swap! events conj :pure)
+             (alter-var-root #'bootstrap/c2-reader-artifact-id (constantly late-id)) false)
+           #'bootstrap/reader-resource-options? (fn [_] (swap! events conj :resource) false)
+           #'bootstrap/c2-reader-artifact-id (fn [& _] (throw (AssertionError. "stale identity callback")))}
+          #(project-native-document path text context views (native-document-operations)))
+        artifact (:artifact envelope)]
+    ;; This trace and these snapshots were measured from the original raw tail.
+    ;; Native map literal evaluation must not be inferred from textual field order.
+    (is (= [:trivia :validate :proof :proof :pure :resource :late-identity] @events))
+    (is (= :after-trivia-document (:governing-document artifact)))
+    (is (= ["after-trivia-id"] (get-in artifact [:pass :rejects])))
+    (is (= [:after-trivia-entrypoint] (get-in artifact [:gravity-reader-boundary :uncredited-source-models :entrypoints])))
+    (is (= [:after-trivia-design] (:rejected-design-coverage artifact)))
+    (is (= ["after-validation-id"] (get-in artifact [:c2-reader-results :required-diagnostic-ids])))
+    (is (= 2 (count @proofs)))
+    (is (every? #(identical? @validation-input %) @proof-inputs))
+    (is (identical? (second @proofs) (:capability-based-proof artifact)))
+    (is (not (contains? @validation-input :capability-based-proof)))
+    (is (not (contains? @validation-input :artifact-id)))
+    (is (= (dissoc artifact :artifact-id) @identity-input))
+    (is (= :gravity/stage0-c2-reader-document-artifact (:kind @identity-input)))
+    (is (not (contains? @identity-input :admission)))
+    (is (= :native-control-id (:artifact-id artifact)))))
+
+(deftest native-document-projection-preserves-policy-branches-without-source-execution
+  (let [path (fixture "accepted" "surface-syntax" ".gravity") text (slurp path)
+        context (bootstrap/reader-project-context-for-source path)
+        views (native-document-views path text)
+        options bootstrap/standard-reader-options
+        forbidden (fn [& _] (throw (AssertionError. "source construction from native policy projection")))]
+    (doseq [mode [:standard :pure-text :resource]]
+      (let [events (atom []) identity-input (atom nil)
+            envelope
+            (with-redefs-fn
+              {#'pure-text/options? (fn [observed] (is (identical? options observed))
+                                     (swap! events conj :pure) (= mode :pure-text))
+               #'bootstrap/reader-resource-options? (fn [observed] (is (identical? options observed))
+                                                      (swap! events conj :resource) (= mode :resource))
+               #'bootstrap/c2-reader-artifact-id (fn [artifact] (reset! identity-input artifact) :policy-control-id)
+               #'bootstrap/compiler-c2-reader-source-artifact forbidden
+               #'bootstrap/sh03-reader-resolved-result! forbidden
+               #'bootstrap/reader-resource-products! forbidden}
+              #(reader/native-document-projection path text context options views (native-document-operations)))
+            artifact (:artifact envelope)
+            extensions (get-in artifact [:reader-extension-policy :extensions])]
+        (is (= (if (= mode :pure-text) [:pure] [:pure :resource]) @events))
+        (is (= (dissoc artifact :artifact-id) @identity-input))
+        (case mode
+          :standard
+          (do (is (= ['inst 'uuid] (mapv :tag extensions)))
+              (is (not (contains? (:gravity-reader-boundary artifact) :pure-text-reconstruction-input))))
+          :pure-text
+          (do (is (= [{:tag 'text :handler 'sh03-reader-read-text :build-effects #{}
+                       :capabilities #{} :profiles #{:meta} :output :syntax-seed}] extensions))
+              (is (identical? text (get-in artifact [:gravity-reader-boundary :pure-text-reconstruction-input :source-text])))
+              (is (identical? context (get-in artifact [:gravity-reader-boundary :pure-text-reconstruction-input :project-context]))))
+          :resource
+          (do (is (= [{:tag 'resource :handler 'gravity.reader/read-input :build-effects #{:build/read-file}
+                       :capabilities #{:fs/read} :profiles #{:meta} :output :syntax-seed}] extensions))
+              (is (not (contains? (:gravity-reader-boundary artifact) :pure-text-reconstruction-input)))))
+        (is (= :none (:admission envelope)))
+        (is (false? (:authenticates-inputs? envelope)))))))
+
+(deftest native-document-projection-propagates-owner-exceptions-unchanged
+  (let [path (fixture "accepted" "surface-syntax" ".gravity") text (slurp path)
+        context (bootstrap/reader-project-context-for-source path)
+        views (native-document-views path text)]
+    (doseq [dependency [#'bootstrap/c2-trivia-records #'bootstrap/c2-reader-validate!
+                        #'bootstrap/c2-reader-capability-proof #'pure-text/options?
+                        #'bootstrap/reader-resource-options? #'bootstrap/c2-reader-artifact-id]]
+      (let [sentinel (ex-info "native projection owner exception" {:owner dependency})
+            result (with-redefs-fn {dependency (fn [& _] (throw sentinel))}
+                     #(rejection (fn [] (project-native-document path text context views (native-document-operations)))))]
+        (is (identical? sentinel result))))))
+
+(deftest native-document-projection-keeps-every-proof-refusal-before-policy-and-identity
+  (let [path (fixture "accepted" "surface-syntax" ".gravity") text (slurp path)
+        context (bootstrap/reader-project-context-for-source path)
+        views (native-document-views path text)
+        truthy (zipmap (map first native-reader-rules) (repeat true))
+        forbidden (fn [& _] (throw (AssertionError. "policy or identity after native refusal")))]
+    (doseq [[field id] native-reader-rules]
+      (let [failure
+            (with-redefs-fn {#'bootstrap/c2-reader-capability-proof (constantly (assoc truthy field false))
+                            #'pure-text/options? forbidden
+                            #'bootstrap/reader-resource-options? forbidden
+                            #'bootstrap/c2-reader-artifact-id forbidden}
+              #(rejection (fn [] (project-native-document path text context views (native-document-operations)))))]
+        (is (= id (:id (ex-data failure))))
+        (is (= [field] (:missing-fields (ex-data failure))))))))
+
+(deftest public-four-argument-precomputed-route-refuses-a-forged-native-proof
+  (let [path (fixture "accepted" "surface-syntax" ".gravity") text (slurp path)
+        context (bootstrap/reader-project-context-for-source path)
+        views (native-document-views path text)
+        artifact (:artifact (project-native-document path text context views (native-document-operations)))
+        forged (assoc-in artifact [:capability-based-proof :status] :complete)
+        forged (assoc forged :artifact-id (bootstrap/c2-reader-artifact-id forged))
+        forbidden (fn [& _] (throw (AssertionError. "construction after public precomputed guard")))
+        failure
+        (with-redefs [bootstrap/c2-reader-products forbidden
+                      bootstrap/sh03-reader-resolved-result! forbidden
+                      bootstrap/sh03-reader-adapt-products! forbidden
+                      reader/native-document-projection forbidden]
+          (rejection #(bootstrap/compiler-c2-reader-source-artifact path text context forged)))]
+    ;; One public four-argument refusal only; no candidate token or other arity.
+    (is (= "C2-HASH" (:id (ex-data failure))))
+    (is (= [:internal-sh03-precomputed-product-authority] (:missing-fields (ex-data failure))))
+    (is (= path (get-in (ex-data failure) [:source-span :source])))))
