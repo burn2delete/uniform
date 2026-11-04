@@ -37,6 +37,8 @@
                                 :checks [["clojure" "-M" "fixture-check.clj"]] :check-executables #{"clojure"}})
         _ (.mkdirs (io/file (get-in ctx [:config :worktree-root])))
         calls (atom []) audits (atom 0) pr (atom nil) merge-count (atom 0)
+        tracking-locks (atom [])
+        other-controller (assoc ctx :main-lock-owner (atom nil))
         original-command rt/command
         response (fn [value] {:exit 0 :out (json/write-str value) :err ""})]
     (with-redefs
@@ -60,7 +62,9 @@
                        :else (original-command c cwd argv)))
                     ([c cwd argv input] (original-command c cwd argv input)))
        gh/setup! (fn [_] nil)
-       gh/status! (fn [& _] nil)
+       gh/status! (fn [_ _ status]
+                    (when (= "Done" status)
+                      (swap! tracking-locks conj (rt/try-with-main-lock other-controller (fn [] :available)))))
        gh/relation! (fn [& _] nil)
        gh/comment! (fn [& _] nil)
        gh/ensure-milestone! (fn [_ round] {:number round})
@@ -74,6 +78,8 @@
                    (str/includes? endpoint "pulls?state") []
                    :else (throw (ex-info "Unexpected fixture read" {:endpoint endpoint}))))
                 ([c method endpoint body]
+                 (when (and (= "PATCH" method) (= "closed" (:state body)))
+                   (swap! tracking-locks conj (rt/try-with-main-lock other-controller (fn [] :available))))
                  (if (and (= "POST" method) (str/ends-with? endpoint "/pulls"))
                    (let [t (first (flow/tasks c))]
                      (reset! pr {:headRefOid (:candidate t)})
@@ -89,15 +95,18 @@
                           {:outcome "ready" :summary "Removed duplicate" :checks []})
                       :else (merge review-result (select-keys (first (flow/tasks ctx)) [:base :candidate :tree]))))]
       (flow/campaign! ctx))
-    {:state @(:state ctx) :calls @calls :merges @merge-count :audits @audits :repo repo :ctx ctx}))
+    {:state @(:state ctx) :calls @calls :merges @merge-count :audits @audits :repo repo :ctx ctx
+     :tracking-locks @tracking-locks}))
 
 (deftest complete-loop-verifies-real-git-result
-  (let [{:keys [state merges audits calls]} (run-fixture! {:verdict "approved" :summary "Independent fixture approval" :findings []})
+  (let [{:keys [state merges audits calls tracking-locks]} (run-fixture! {:verdict "approved" :summary "Independent fixture approval" :findings []})
         t (get-in state [:tasks "remove-duplicate"])]
     (is (= :complete (:status state)))
     (is (= :done (:status t)))
     (is (= 1 merges))
     (is (= 2 audits))
+    (is (= (repeat 5 :available) tracking-locks) "Post-merge tracking does not hold the main lock")
+    (is (= (:merged t) (get-in t [:merge-verification :actual :commit])))
     (is (= (:candidate t) (get-in t [:review :candidate])))
     (is (= (:candidate t) (get-in t [:checks :candidate])))
     (is (some #(and (= "clojure" (first %)) (some #{"--candidate-tree"} %)) calls))

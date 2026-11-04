@@ -148,8 +148,10 @@ clojure -M:run retry config.edn FINDING-KEY
 Pause stops dispatch and merges at scheduler boundaries; active workers finish.
 Resume preserves existing PRs, commits, threads and dispositions. Interrupted
 authors/reviewers require inspection rather than automatic redispatch. `retry`
-explicitly queues an inspected Attention item for repair; restricted actions
-cannot use this route. Attention is not completion.
+queues an inspected Attention item at its retained recovery phase: verified
+merges finish tracking, existing CI candidates return to CI, and unfinished
+implementation returns to repair. Restricted actions and unresolved current
+external effects cannot use this route. Attention is not completion.
 
 Non-idempotent mutations have durable intents. A connection loss may leave an
 operation applied without its result saved. Such effects are uncertain and are
@@ -194,6 +196,8 @@ back into Git or acquire the main lock.
 Inside the native `effect!` callback, call `begin-main-merge!` before the provider
 mutation. After actual Git/provider verification, call `complete-main-merge!`
 with the observed commit/tree/parents/main, before post-merge bookkeeping. A
+verified merge is saved as `:finalizing`; issue closure and Project updates run
+after releasing the main lock and never reauthor the merged candidate. A
 crash or uncertain result leaves a durable shared fence even when the file
 lock is released. Another campaign cannot merge until the original owner
 records the inspected outcome; it can continue independent source work.

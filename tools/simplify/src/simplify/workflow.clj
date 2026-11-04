@@ -64,7 +64,7 @@
                    (= expected (rt/git ctx cwd "rev-parse" "HEAD"))
                    (= (or (:tree t) (rt/git ctx cwd "rev-parse" (str expected "^{tree}")))
                       (rt/git ctx cwd "rev-parse" "HEAD^{tree}")))
-      (rt/fail! "Worktree identity differs from recorded candidate" {:finding (:key t) :worktree cwd}))))
+      (rt/fail! "Worktree identity differs from recorded candidate" {:finding (:key t) :worktree cwd :writer-ended? true}))))
 
 (defn worktree! [ctx name base]
   (let [{:keys [repo-dir worktree-root]} (:config ctx)
@@ -120,7 +120,7 @@
 
 (defn assert-clean! [ctx cwd]
   (when-not (str/blank? (rt/git ctx cwd "status" "--porcelain"))
-    (rt/fail! "Candidate worktree is dirty; generated output must be outside tracked inputs" {:worktree cwd})))
+    (rt/fail! "Candidate worktree is dirty; generated output must be outside tracked inputs" {:worktree cwd :writer-ended? true})))
 
 (defn publish! [ctx t]
   (assert-clean! ctx (:worktree t))
@@ -152,7 +152,7 @@
     (doseq [key (:dependencies t)
             :let [dependency (task ctx key)]]
       (when-not (and (= :done (:status dependency)) (:merged dependency))
-        (rt/fail! "Dependency has no verified merge" {:dependency key}))
+        (rt/fail! "Dependency has no verified merge" {:dependency key :writer-ended? true}))
       (rt/git ctx (:worktree t) "merge-base" "--is-ancestor" (:merged dependency) base))
     (when-not (= base (:base t))
       (rt/git ctx (:worktree t) "merge-base" "--is-ancestor" (:base t) base)
@@ -210,7 +210,8 @@
        (rt/fail! "Independent review requires input" {:review result})))))
 
 (defn attention! [ctx key e]
-  (task! ctx key :error {:message (.getMessage e) :details (rt/redact (ex-data e))})
+  (task! ctx key :resume-status (:status (task ctx key))
+         :error {:message (.getMessage e) :details (rt/redact (ex-data e))})
   (rt/event! ctx :attention {:finding key :message (.getMessage e) :details (ex-data e)})
   (if (or (:restricted (ex-data e)) (#{:pending :uncertain :restricted} (:effect-status (ex-data e))))
     (task! ctx key :status :attention)
@@ -259,7 +260,7 @@
         "changes_requested" (do (task! ctx (:key t) :feedback review) (transition! ctx (:key t) :repair))
         (rt/fail! "Composition review requires input" {:review review})))))
 
-(defn finish-merge! [ctx t merged & [intent]]
+(defn verify-merge! [ctx t merged & [intent]]
   (let [cwd (:worktree t)
         commit (get-in merged [:mergeCommit :oid])
         _ (when-not commit (rt/fail! "Merged PR has no merge identity" {:pr merged}))
@@ -272,15 +273,28 @@
       (rt/fail! "Actual merge differs from reviewed composition" {:expected (select-keys t [:base :tree]) :actual {:base parent :tree actual-tree :commit commit}}))
     (when intent
       (rt/complete-main-merge! ctx intent {:commit commit :tree actual-tree :parents (vec parents) :main main}))
-    (task! ctx (:key t) :merged commit)
-    (transition! ctx (:key t) :done)
+    (let [actual {:commit commit :tree actual-tree :parents (vec parents) :main main}]
+      (task! ctx (:key t) :merged commit :status :finalizing
+             :merge-verification (merge (select-keys t [:base :candidate :tree]) {:actual actual}))
+      actual)))
+
+(defn finalize-merge! [ctx t]
+  (let [verification (:merge-verification t)]
+    (when-not (and (= (select-keys t [:base :candidate :tree]) (select-keys verification [:base :candidate :tree]))
+                   (:merged t) (= (:merged t) (get-in verification [:actual :commit])))
+      (rt/fail! "Finalization needs the recorded exact merge verification" {:finding (:key t)}))
     (rt/effect! ctx (str "close/" (:key t))
-                #(gh/api ctx "PATCH" (gh/repo-path ctx (str "issues/" (get-in t [:issue :number]))) {:state "closed" :state_reason "completed"}))))
+                #(gh/api ctx "PATCH" (gh/repo-path ctx (str "issues/" (get-in t [:issue :number]))) {:state "closed" :state_reason "completed"}))
+    (transition! ctx (:key t) :done)))
+
+(defn finish-merge! [ctx t merged]
+  (let [result (rt/try-with-main-lock ctx #(verify-merge! ctx t merged))]
+    (when (:commit result) (finalize-merge! ctx (task ctx (:key t))))))
 
 (defn integrate! [ctx t]
   (let [info (pr-info ctx t)]
     (cond
-      (= "MERGED" (:state info)) (rt/try-with-main-lock ctx #(finish-merge! ctx t info))
+      (= "MERGED" (:state info)) (finish-merge! ctx t info)
       (not= "OPEN" (:state info)) (rt/fail! "PR was closed without merge" {:pr info})
       (not= (get-in ctx [:config :base-branch]) (:baseRefName info)) (rt/fail! "PR targets a different base branch" {:pr info})
       (not= (:candidate t) (:headRefOid info)) (rt/fail! "Remote PR head differs from reviewed candidate" {:pr info})
@@ -332,8 +346,9 @@
                                          #(do (rt/begin-main-merge! ctx intent)
                                               (rt/run! ctx repo-dir ["gh" "pr" "merge" (get-in t [:pr :html_url]) "--repo" repository
                                                                      "--squash" "--match-head-commit" (:candidate t)])))
-                             (finish-merge! ctx t (pr-info ctx t) intent)))))))))]
-            (when (:compose result) (compose! ctx t (:compose result))))))
+                             (verify-merge! ctx t (pr-info ctx t) intent)))))))))]
+            (when (:compose result) (compose! ctx t (:compose result)))
+            (when (:commit result) (finalize-merge! ctx (task ctx (:key t)))))))
       :else (rt/event! ctx :waiting {:finding (:key t) :ci (check-state (:statusCheckRollup info)) :review (:reviewDecision info)}))))
 
 (defn admit! [ctx round base findings]
@@ -417,6 +432,8 @@
           (if (empty? @running) (rt/update! ctx assoc :status :paused)
               (do (Thread/sleep 250) (recur)))
           (do
+            (doseq [t (tasks ctx) :when (= :finalizing (:status t))]
+              (try (finalize-merge! ctx t) (catch Exception e (attention! ctx (:key t) e))))
             (doseq [t (tasks ctx) :when (#{:ci :merge} (:status t))]
               (try (integrate! ctx t) (catch Exception e (attention! ctx (:key t) e))))
             (doseq [t (sort-by :key (tasks ctx))]
@@ -430,7 +447,7 @@
                              (.submit pool ^Callable (reify Callable (call [_] (prepare! ctx (:key t) lease)))))
                       (catch Exception e (rt/release-paths! ctx lease) (throw e)))))))
             (cond
-              (or (seq @running) (some #(#{:ci :merge} (:status %)) (tasks ctx)))
+              (or (seq @running) (some #(#{:ci :merge :finalizing} (:status %)) (tasks ctx)))
               (do (Thread/sleep (get-in ctx [:config :poll-ms])) (recur))
               (some #(not (terminal (:status %))) (tasks ctx))
               (do (rt/update! ctx assoc :status :attention) (gh/status! ctx (:campaign-issue @(:state ctx)) "Attention"))

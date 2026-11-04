@@ -54,6 +54,37 @@
     (is (= 1 @calls))
     (is (= :uncertain (get-in (rt/read-edn (:state-file ctx)) [:effects "ambiguous" :status])))))
 
+(deftest recovery-keeps-verified-merges-out-of-authoring
+  (let [ctx (context)
+        cases [[{:merge-verification {:actual {:commit "merged"}} :merged "merged"} :finalizing]
+               [{:merged "merged"} :ci]
+               [{:resume-status :ci} :ci]
+               [{:resume-status :merge} :ci]
+               [{:resume-status :implementing} :repair]]]
+    (doseq [[extra phase] cases]
+      (rt/update! ctx assoc-in [:tasks "recovery"] (merge {:key "recovery" :status :attention} extra))
+      (main/dispatch! ctx "retry" ["recovery"])
+      (is (= phase (:status (flow/task ctx "recovery")))))
+    (doseq [status [:pending :uncertain :restricted]]
+      (rt/update! ctx assoc-in [:tasks "recovery"] {:key "recovery" :status :attention :merged "merged"
+                                                    :error {:details {:effect "close/recovery"}}})
+      (rt/update! ctx assoc-in [:effects "close/recovery"] {:status status})
+      (is (thrown-with-msg? Exception #"reconciliation before retry" (main/dispatch! ctx "retry" ["recovery"])))
+      (is (= :attention (:status (flow/task ctx "recovery")))))))
+
+(deftest retained-uncertain-effects-do-not-trigger-attention-writes
+  (let [ctx (context) calls (atom 0)]
+    (doseq [status [:pending :uncertain :restricted]]
+      (rt/update! ctx assoc-in [:effects "close/finding"] {:status status})
+      (rt/update! ctx assoc-in [:tasks "finding"] {:key "finding" :status :finalizing})
+      (with-redefs [gh/status! (fn [& _] (swap! calls inc))
+                    gh/comment! (fn [& _] (swap! calls inc))]
+        (try (rt/effect! ctx "close/finding" #(swap! calls inc))
+             (catch Exception e (flow/attention! ctx "finding" e))))
+      (is (= :attention (:status (flow/task ctx "finding"))))
+      (is (= :finalizing (:resume-status (flow/task ctx "finding")))))
+    (is (zero? @calls))))
+
 (deftest redacts-known-secrets
   (is (= {:apiKey "[REDACTED]" :message "Bearer [REDACTED]" :value "[REDACTED]"}
          (rt/redact {:apiKey "private" :message "Bearer abc.def.ghi" :value "ghp_somecredential"}))))

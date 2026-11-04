@@ -121,8 +121,9 @@
   (let [prior (get-in @(:state ctx) [:effects id])]
     (case (:status prior)
       :done (:result prior)
-      :restricted (fail! "Restricted effect cannot be retried" {:effect id :restricted true})
-      (:pending :uncertain) (fail! "External effect needs reconciliation; not replaying" {:effect id :prior prior})
+      :restricted (fail! "Restricted effect cannot be retried" {:effect id :effect-status :restricted :restricted true})
+      (:pending :uncertain) (fail! "External effect needs reconciliation; not replaying"
+                                  {:effect id :effect-status (:status prior) :prior prior})
       (do
         (update! ctx assoc-in [:effects id] {:status :pending})
         (try
@@ -145,7 +146,7 @@
                (let [status (get-in @(:state ctx) [:effects prior :status])]
                  (when-not (= :done status)
                    (fail! "Tracking effect needs reconciliation; not issuing another write"
-                          {:effect prior :restricted (= :restricted status)}))))
+                          {:effect prior :effect-status status :restricted (= :restricted status)}))))
              (let [n (inc (or (:tracking-sequence @(:state ctx)) 0))
                    id (str key "/" n)]
                (update! ctx #(-> % (assoc :tracking-sequence n) (assoc-in [:tracking-intents key] id)))

@@ -8,6 +8,7 @@
             [simplify.github :as gh]
             [simplify.main :as main]
             [simplify.runtime :as rt]
+            [simplify.workflow :as flow]
             [simplify.workflow-test :as git-fixture]))
 
 (defn campaign [common name]
@@ -26,6 +27,25 @@
 (def merged (apply str (repeat 40 "d")))
 (def intent {:id (str "merge/" candidate) :base base :candidate candidate :tree tree :method :merge})
 (def actual {:commit merged :tree tree :parents [base candidate] :main merged})
+
+(deftest ended-author-validation-does-not-reserve-an-idle-writer
+  (let [[a b] (pair)
+        {:keys [repo]} (git-fixture/repository! a)
+        base (rt/git a repo "rev-parse" "HEAD")
+        a (assoc-in a [:config :repo-dir] repo)
+        t (merge git-fixture/finding {:worktree repo :branch "main" :base base :status :ready})]
+    (rt/update! a assoc-in [:tasks (:key t)] t)
+    (with-redefs [flow/fresh-main! (fn [_] base)
+                  gh/status! (fn [& _] nil)
+                  codex/job! (fn [& _]
+                               (spit (io/file repo "unowned.edn") "{:preserve true}\n")
+                               {:outcome "ready" :checks []})]
+      (is (thrown-with-msg? Exception #"unowned path" (flow/prepare! a (:key t)))))
+    (is (.exists (io/file repo "unowned.edn")) "The author's rejected edit remains available for inspection")
+    (is (empty? (:writers (shared-state a))))
+    (let [lease (rt/claim-paths! b "next" (:paths t) :implementing)]
+      (is lease)
+      (rt/release-paths! b lease))))
 
 (deftest controller-locks-are-independent-main-lock-is-shared
   (let [[a b] (pair) writes (atom 0)]
