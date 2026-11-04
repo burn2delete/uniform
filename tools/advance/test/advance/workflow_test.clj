@@ -14,6 +14,7 @@
             [simplify.github :as gh]
             [simplify.main :as simplify-main]
             [simplify.runtime :as rt]
+            [simplify.schema :as schema]
             [simplify.workflow :as flow]
             [simplify.workflow-test :as git-fixture]))
 
@@ -21,6 +22,97 @@
 
 (def source-path "specs/demo/tasks.md")
 (def source-key (str source-path "#demo/value"))
+
+(deftest blocker-schema-uses-only-the-current-catalog
+  (let [output {:summary "Environment notes stay here" :coverage [] :increments []
+                :blockers [{:task source-key :reason "Needs remaining implementation"}]}
+        contract (workflow/selection-output-schema {:tasks [{:key source-key} {:key "second-task"}]})]
+    (is (= [source-key "second-task"] (get-in contract [:properties :blockers :items :properties :task :enum])))
+    (is (= output (schema/validate! contract output)))
+    (doseq [unknown ["local Git inspection" "removed-task"]]
+      (is (thrown-with-msg? Exception #"Invalid structured output enum"
+                           (schema/validate! contract (assoc-in output [:blockers 0 :task] unknown)))))
+    (let [empty-contract (workflow/selection-output-schema {:tasks []})]
+      (is (= 0 (get-in empty-contract [:properties :blockers :maxItems])))
+      (is (nil? (get-in empty-contract [:properties :blockers :items :properties :task :enum])))
+      (is (= (assoc output :blockers []) (schema/validate! empty-contract (assoc output :blockers [])))))))
+
+(deftest selector-uses-supplied-identities-and-preserves-rejected-job-history
+  (let [ctx (fixture/context)
+        history [{:job "select-23" :status :rejected :output {:original "unchanged"}
+                  :restriction "Git/cache writes were denied; no replay or executable transfer"}]
+        pending {:job "select-23" :status :rejected :admitted false}
+        output {:summary "Environment refusal preserved; implementation still needed"
+                :coverage [source-path] :increments []
+                :blockers [{:task source-key :reason "Broader acceptance remains missing"}]}
+        calls (atom [])]
+    (rt/update! ctx assoc :operator-planning history :pending-selection pending)
+    (with-redefs [rt/command (fn [& _] (throw (AssertionError. "No identity inspection or command replay")))
+                  coordination/claims (fn [_] [])
+                  codex/job! (fn [_ _ _ mode instructions prompt contract]
+                               (swap! calls conj :model)
+                               (is (= :read mode))
+                               (is (str/includes? prompt "Base: supplied-base\nTree: supplied-tree"))
+                               (is (str/includes? prompt "select-23"))
+                               (is (str/includes? prompt "Git/cache writes were denied"))
+                               (is (str/includes? instructions "never replay, transfer to another tool or executable"))
+                               (is (str/includes? instructions "Put environment and restriction notes in summary"))
+                               (is (= [source-key] (get-in contract [:properties :blockers :items :properties :task :enum])))
+                               output)
+                  gh/comment! (fn [& _] (swap! calls conj :comment))
+                  workflow/admit! (fn [_ _ _ increments] (is (empty? increments)) (swap! calls conj :admit))]
+      (is (= output (workflow/select! ctx {:base "supplied-base" :tree "supplied-tree" :worktree "/fixture"
+                                          :catalog {:tasks [{:key source-key}]}} {} []))))
+    (is (= [:model :comment :admit] @calls))
+    (is (= history (:operator-planning @(:state ctx))))
+    (is (= pending (:pending-selection @(:state ctx))))))
+
+(deftest invalid-selection-retains-output-without-provider-writes-or-retry
+  (doseq [[catalog output message settings]
+          [[{:tasks [{:key source-key}]}
+            {:summary "Environment issue" :coverage [] :increments []
+             :blockers [{:task "local Git inspection" :reason "Denied cache write"}]} #"Invalid structured output enum" {}]
+           [{:tasks []}
+            {:summary "No source tasks" :coverage [] :increments []
+             :blockers [{:task source-key :reason "Not in empty catalog"}]} #"Blocker names an unknown source task" {}]
+           [{:tasks [{:key source-key}]}
+            {:summary "Attempt blocked task" :coverage []
+             :increments [{:key "scoped" :task source-key :title "Scoped task" :evidence "Actual evidence"
+                           :proposal "Implement scoped task" :preserve "Keep parent open" :paths [source-path] :dependencies []}]
+             :blockers []} #"Selector chose an operator-paused or blocked task" {8 {"Control" "Paused"}}]]]
+    (let [ctx (fixture/context) attempts (atom 0)
+          previous {:base "previous-base" :output {:summary "Original valid selection"}}
+          history [{:job "select-23" :status :rejected :output {:original "retained"}}]
+          pending {:job "select-23" :admitted false :status :rejected}]
+      (rt/update! ctx assoc :selection previous :operator-planning history :pending-selection pending
+                  :source-tasks {source-key {:issue {:number 8}}})
+      (with-redefs [coordination/claims (fn [_] [])
+                    rt/command (fn [& _] (throw (AssertionError. "No command replay")))
+                    codex/job! (fn [& _] (swap! attempts inc) output)
+                    gh/comment! (fn [& _] (throw (AssertionError. "No provider write for invalid selection")))
+                    workflow/admit! (fn [& _] (throw (AssertionError. "No invalid selection admission")))]
+        (is (thrown-with-msg? Exception message
+                             (workflow/select! ctx {:base "base" :tree "tree" :worktree "/fixture" :catalog catalog} settings []))))
+      (is (= 1 @attempts))
+      (is (= previous (:selection @(:state ctx))))
+      (is (= history (:operator-planning @(:state ctx))))
+      (is (= pending (:pending-selection @(:state ctx))))
+      (let [rejection (last (:selection-rejections @(:state ctx)))]
+        (is (= output (:output rejection)))
+        (is (= {:base "base" :tree "tree" :admitted false} (select-keys rejection [:base :tree :admitted])))
+        (is (re-find message (:message rejection)))))))
+
+(deftest snapshot-supplies-its-observed-tree-without-an-extra-read
+  (let [ctx (fixture/context) reads (atom []) snapshot {:tasks [] :files []}
+        base "0123456789abcdef0123456789abcdef01234567"]
+    (with-redefs [flow/fresh-main! (fn [_] base)
+                  flow/worktree! (fn [& _] {:worktree "/fixture"})
+                  catalog/discover (fn [_] snapshot)
+                  workflow/mirror! (fn [& _] nil)
+                  rt/git (fn [_ cwd & args] (swap! reads conj [cwd (vec args)]) "tree")]
+      (is (= {:base base :tree "tree" :worktree "/fixture" :catalog snapshot} (workflow/snapshot! ctx))))
+    (is (= [["/fixture" ["rev-parse" "HEAD^{tree}"]]] @reads))
+    (is (= "tree" (get-in @(:state ctx) [:catalog :tree])))))
 
 (deftest incompatible-startup-is-refused-before-github-or-state-writes
   (let [ctx (fixture/context) before @(:state ctx) mutations (atom [])]
