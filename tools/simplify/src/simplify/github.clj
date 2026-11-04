@@ -13,6 +13,14 @@
    ["simplify:duplication" "d4c5f9" "Consolidate equivalent implementation"]
    ["simplify:obsolete" "ededed" "Remove unused or superseded machinery"]])
 
+(defn- graphql-errors-from-output [endpoint output]
+  (when (= "graphql" endpoint)
+    (try
+      (let [payload (json/read-str output :key-fn keyword)]
+        (when (and (map? payload) (vector? (:errors payload)))
+          (:errors payload)))
+      (catch Exception _ nil))))
+
 (defn api
   ([ctx endpoint] (api ctx "GET" endpoint nil))
   ([ctx method endpoint body]
@@ -25,13 +33,15 @@
                               body (into ["--input" "-"]))
                             (when body (json/write-str body)))]
      (when-not (zero? (:exit result))
-       (let [restricted (rt/authorization-denied? (str (:err result) "\n" (:out result)))]
+       (let [restricted (rt/authorization-denied? (str (:err result) "\n" (:out result)))
+             errors (graphql-errors-from-output endpoint (:out result))]
          (when restricted
            (let [refusal {:method method :endpoint endpoint :error (:err result)}]
              (rt/update! ctx assoc-in [:restricted-actions key] refusal)
              (rt/shared-restrict! ctx :api key refusal)))
          (rt/fail! "GitHub API failed; no automatic mutation retry"
-                   {:endpoint endpoint :exit (:exit result) :error (:err result) :restricted restricted})))
+                   (cond-> {:endpoint endpoint :exit (:exit result) :error (:err result) :restricted restricted}
+                     (seq errors) (assoc :errors errors)))))
      (when-not (str/blank? (:out result)) (json/read-str (:out result) :key-fn keyword)))))
 
 (defn graphql [ctx query variables]
