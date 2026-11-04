@@ -268,6 +268,13 @@ provider, phase, redaction and replay records remain required. Canonical L6
 wording clarification and its source successor remain separate work; no held
 build or provider operation is enabled by this plan.
 
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Resolve authentic facet identity/version/range/source/schema locks before compilation, integrating selected-engine/shared semantic cache boundaries and actual current-policy reuse. Syntax/IR/lowering/profile/schema/privacy/grant changes invalidate affected products before owner regeneration; version metadata alone is not compatibility acceptance.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration

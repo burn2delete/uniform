@@ -148,6 +148,13 @@ Use the [source memory-model dependency order](../legality-workflow/plan.md#sour
 
 Current selected source/dependency review and implementation acceptance remain pending/unassessed. No actual provider, device, review or publication operation is performed here; all current restrictions and sole task authorities remain.
 
+## Complete facet source interface
+
+Use the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria). Keep hardware source/domain design separate from actual HDL backend emission and physical device/product acceptance. The L14 counter preserves clock/reset/enable/register/width/overflow and timing products; host threads, allocation or IO are not circuit semantics. Existing target/device decisions remain unresolved.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Platform workflow migration

@@ -170,6 +170,15 @@ Library service service-effect-admission criterion (Open): Check direct and late
 <!-- library-service-source-service-effect-admission:end -->
 
 
+
+<!-- effects-facet-source-effects:start -->
+
+Apply the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 actual facet effect-admission criterion (Open): Derive and preserve real runtime, build and compiler effects at each facet boundary, including generated wrappers, agent/tool/query composition, schema decoder allocation/decode and external solver/synthesizer/model/package-tool actions. Admit only when actual inferred requirements fit the caller allowance and applicable profile/service/safety rules, with Auth independently checking authentic grants. Compiler IR read/write and artifact generation remain explicit effects; declaring a facet or hiding an operation inside IR cannot widen authority or erase effects. Reject undeclared/hidden/transitive effects and incompatible caller context before affected action or backend lowering. Required evidence: actual accepted/refused summaries and source-bound L14/owning diagnostics, with pure source transport distinct from later effectful use.
+<!-- effects-facet-source-effects:end -->
+
+
 - [ ] `effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation` effects/4: Record replay and invalidation
 
 Current evidence/status: Open; partial source evidence above is not closure

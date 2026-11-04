@@ -515,6 +515,213 @@ Use the [complete library-principles source criteria](../stdlib-workflow/plan.md
 Current source/interface entailment and independent acceptance remain pending. Task identities/statuses, finite historical reviews and actual restrictions survive; no held action is enabled.
 
 
+## Complete facet source criteria
+
+Read complete [L14](../../docs/phase-01-core-language/024-l14-language-facet-system-specification.md),
+the selected facet's owning domain and the existing source contracts. This
+proposal reuses literal task authorities; the table's criterion keys are source
+joins within those tasks, not new tasks or another roadmap. Current independent
+source/interface review and implementation acceptance remain pending.
+
+| Criterion | Existing task | Source requirement |
+| --- | --- | --- |
+| `manifest` | `expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros` | L14 complete facet-manifest criterion (Open) |
+| `dispatch` | `expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros` | L14 complete facet-dispatch criterion (Open) |
+| `composition` | `expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs` | L14 complete facet-composition criterion (Open) |
+| `artifacts` | `expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs` | L14 complete facet-artifact criterion (Open) |
+| `stability` | `expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs` | L14 complete facet-stability criterion (Open) |
+| `namespace` | `resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries` | L14 actual facet lexical-scope criterion (Open) |
+| `syntax` | `syntax/current-evidence-and-remaining-work/syntax2-preserve-transformations` | L14 actual facet syntax-provenance criterion (Open) |
+| `typed` | `types/current-evidence-and-remaining-work/types2-check-declared-abstractions` | L14 actual facet type-and-fact criterion (Open) |
+| `effects` | `effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering` | L14 actual facet effect-admission criterion (Open) |
+| `grants` | `auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime` | L14 actual facet authority criterion (Open) |
+| `profiles` | `legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks` | L14 actual facet profile-and-safety criterion (Open) |
+| `registration` | `plugins` | L14 actual facet extension-registration criterion (Open) |
+| `ir` | `domain-ir-boundaries` | L14 complete facet IR-carrier criterion (Open) |
+| `families` | `domain-ir-boundaries` | L14 complete initial-facet composition criterion (Open) |
+| `lock` | `build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution` | L14 actual facet lock-and-version criterion (Open) |
+| `reuse` | `build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation` | L14 actual facet invalidation criterion (Open) |
+| `diagnostics` | `diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema` | L14 complete facet diagnostic-carrier criterion (Open) |
+| `examples` | `expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs` | L14 actual facet example-and-conformance criterion (Open) |
+| `finite-activate-declared-extension` | `expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros` | Restore exact earlier finite predicate; historical scope unchanged. |
+| `finite-migrate-stable-contract` | `expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs` | Restore exact earlier finite predicate; historical scope unchanged. |
+| `finite-preserve-disclosure-boundary` | `expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs` | Restore exact earlier finite predicate; historical scope unchanged. |
+| `generated-existing` | `expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs` | Preserve the complete existing criterion bytes and owner. |
+| `schema-typed-existing` | `types/current-evidence-and-remaining-work/types2-check-declared-abstractions` | Preserve the complete existing criterion bytes and owner. |
+| `agent-existing` | `ai` | Preserve the complete existing criterion bytes and owner. |
+| `hardware-existing` | `backend-hdl` | Preserve the complete existing criterion bytes and owner. |
+
+
+The original L14 source population has 114 facets, 87 source occurrences and
+eight original owner obligations. Read whole section conjunctions, including
+preambles, examples, lists and following conditions. The source identity census
+is preserved local custody only; it does not establish current semantic
+acceptance or publish/adopt the aggregate. Its original Auth admission and
+Expand schema-generation references remain inherited role contexts alongside
+actual Effects and Types/Schema witnesses, with no silent ownership transfer.
+
+Three earlier profile74 predicates are absent and restored exactly under the
+same Expand tasks: manifest activation (515 bytes), stable-facet migration
+(1,201 bytes) and disclosure preservation (1,464 bytes). Their published Expand
+source at `45fc1420cfe4373e5a20b1fcd80d46f87e4edb63` was read and compared with
+local Git; its whole task-file hash is
+`036ad7a35059a4d34456b4be1ea011de8b5c21dee1eeb0f03891adc9d5d86f39`.
+The current exact agent, hardware-counter, schema-typing and generated-program
+criteria remain unchanged. Every historical review keeps its exact source,
+role, dependency and qualification; restoration does not renew or consume it.
+
+### Manifest, lexical scope and stage interfaces
+
+Load the real selected manifest before dependent expansion. Keep facet id and
+version, surface, profiles, requirements, runtime/build effects, capabilities,
+lowerings, artifacts, stability and tests explicit. The illustrative workflow
+manifest's version/effects are source example data, not defaults or grants.
+Resolve namespace activation; imports do not transitively activate facets in
+the importer. Macro-generated nested activation needs provenance. Aliases or
+explicit activation resolve shared surfaces; remaining ambiguity rejects.
+
+Expose L14's nine actual stages: read syntax, resolve activation, expand base
+macros, dispatch to the owner, check facet-local bindings/domain constraints,
+emit forms/IR, validate generated Gravity normally, verify facet IR, then emit
+provenance-bound artifacts. Declared checked Core, domain IR or both preserve
+one language. Local structural and independent type premises can be produced
+earlier; final checked outputs consume actual later owner verdicts. Fused or
+interleaved passes preserve equivalent products and invalidation. Preserve the
+unresolved D1/C1/C5/C6 ordering decision; this table does not adjudicate it.
+
+Allowed external syntax becomes structured syntax/IR with original-source
+mapping. It cannot become a privileged opaque string language. Keep macro
+hygiene, spans, generated origins, types/effects, profile and safety assumptions
+and authentic compiler/build/grant identities across every boundary. Changed
+subjects require affected owner regeneration and verification before reuse.
+
+### Ten initial facets and existing semantic producers
+
+| Facet | Existing producer route; actual required product |
+| --- | --- |
+| `:gravity.facet.schema` | Domain `schema`, Types abstraction/static projection and Expand generated checking: actual descriptors, validators/codecs/contracts, field diagnostics and source-schema identity. |
+| `:gravity.facet.efir` | Domain `math` plus existing Math producers and independent checker: EFIR semantics, genuine domain/mode/proof products; EML remains proof/search. |
+| `:gravity.facet.zk` | Existing future Domain `crypto` and `formal`, with Schema/Types/Auth: actual relation/public-private split, custody/disclosure/provider-trust and proof/verifier schema products. |
+| `:gravity.facet.hardware` | Platform `hardware`, existing `backend-hdl`, Types/Effects/Legality: actual explicit circuit/state/clock/reset/register/memory/timing/source products and HDL, without host-thread substitution. |
+| `:gravity.facet.workflow` | Domain `workflow` with its Runtime services: actual durable typed graph/retry/timer/signal/compensation/replay products and source identity. |
+| `:gravity.facet.agent` | Domain `ai` with declared Schema/Auth/Runtime services: actual model/prompt/tool/memory/evaluation/trace/guardrail artifacts; source generation grants no live call. |
+| `:gravity.facet.ui` | Domain `ui` and selected Backends/Runtime: actual typed UI/component/layout/event forms, target lowering and allowed handler effects. |
+| `:gravity.facet.query` | Domain `query` and declared data/provider services: actual typed relational/graph/document/streaming boundaries, row shapes and effect/grant facts. |
+| `:gravity.facet.compiler` | Existing Compiler API `plugins`/`pipeline`/`domain-ir-boundaries` with actual pass owners: real versioned registration, authorized IR access and checked transformation products. |
+| `:gravity.facet.ffi` | Existing Runtime typed-FFI task with Types/Lower/ABI owners: actual declarations/marshalling/ownership-transfer/exception boundaries and preserved source/profile/target facts. |
+
+The registry task composes those real products and does not implement their
+payload semantics itself. The ten-facet L14 population is distinct from C12's
+nine baseline IR families; Core-only facets need no invented IR. Package facets
+obey the same manifest, compatibility, effects, profiles and conformance rules.
+No registration count accepts an initial facet or closes a future owner.
+
+### Actual checking and authority
+
+Facet checkers refine rather than silently replace base type semantics. Schema
+presence, circuit width, workflow replay safety, query row shape, zk public-only
+disclosure, tool schema, UI handler context and EFIR proof are eight source fact
+examples; each needs its actual owner/checker or proof product. Types does not
+infer their truth from a label. An alternative type-system change follows its
+existing contract and compatibility authority.
+
+Effects and grants remain separate. Actual model/tool/query composition shows
+all three effects and capability requirements. Compiler reads/writes declare
+`:compiler/read-ir`/`:compiler/write-ir` plus authentically scoped
+`:compiler/ir-transform`; read-mir grants no write-mir. Artifact generation
+requires declared `:build/write-artifact`; external solver, synthesizer, model
+or package-tool calls require matching effects and grants. Package/facet/trust
+labels, source metadata or prompt prose grant no privilege.
+
+Profiles reject unsupported use before backend lowering: portable Core fully
+lowers; hosted loading/reflection stays declared; native layout/ABI/linker
+assumptions stay explicit; kernel/firmware/hardware avoid managed-runtime
+assumptions unless represented by that target; distributed keeps replay-safe
+and deterministic artifacts; ai keeps model/prompt/tool/memory/evaluation
+provenance; meta uses only declared compiler APIs. Ordinary memory, ownership
+and D8 safety outcomes remain. Physical runtime memory capacity, Unicode,
+types, indices/arity, actual host restrictions and target representation retain
+their meaning; project work/input/cost/attempt quotas stay removed. The agent
+example's bounded-memory configuration concerns actual stored memory, not
+compiler admission or a work allowance.
+
+### IR, privacy, examples and evidence
+
+Verify all ten L14 IR field groups: id/version, source spans, generated origins,
+type/effect annotations, profile/target assumptions, capabilities, build inputs/
+outputs, validation/proof obligations, stable serialization and compatibility.
+C12 adds real schema/verifier and semantic-anchor requirements. Actual output
+checking precedes emission; source maps survive optimizers, verifiers, package
+tools, visualizers and runtime consumers. Privacy composition preserves labels,
+witness provenance, reveal reason and public-output schema unless an actual
+checked declassification boundary permits their change. Private witness/value,
+encrypted value, commitment, credential and proof representations are covered.
+Expose relation/public-private split/custody/disclosure/provider-trust/verifier
+shape; an opaque backend proof call or assigned success flag is insufficient.
+
+Execute actual User descriptor, validator, requested JSON codec metadata, tool
+schema and field diagnostics through ordinary generated checking. Decode keeps
+its real allocation/decode effects. The exact existing HDL counter criterion
+retains clock/reset/enable/register/width/overflow/timing semantics and forbidden
+host-service cases. The exact SupportAgent criterion retains prompt/tool/model/
+evaluation/trace/guardrails and declared memory without authorizing live calls.
+The source counter and agent are semantic examples, not physical target or
+provider adoption decisions.
+
+Keep six named composition interfaces: workflow/schema, agent/query, UI/schema,
+hardware/schema, compiler/EFIR and zk/schema/security/formal. Actual conformance
+requires at least two facets plus the separately required zk privacy population,
+with normal generated validation, versioned mapped IR, compatibility/migration
+and inactive/ambiguous/profile/build-effect/grant/opaque/untracked/privilege
+negatives. Owner fixtures can start before later independent harness execution;
+actual acceptance needs actual producers and consumer results. Held or
+unavailable required cases remain Open; source records cannot turn them green.
+
+Preserve all six artifact families and eleven L14 diagnostic meanings with
+facet/version/profile/source/generated/effect/capability/failed-rule context.
+Privacy failures also identify value/witness, public schema, reveal reason when
+present and erasing edge under proper redaction. A source failure is diagnosed
+before lowering when its premises suffice; a backend crash is no substitute.
+
+Build owns actual facet identity/version/range/source/schema locks and affected
+reuse/invalidation. Expand owns stable-facet migration products and checked
+rewrites or justified infeasibility; Governance retains actual applicable change
+decisions. Experimental/draft/stable/deprecated/removed remain distinct, with
+migration diagnostics for deprecated acceptance and refusal of removed forms.
+No version comparison is final approval or a per-run development permission.
+
+Current bounded source inspection at `d2a0378bdd530857d97d530aab15268fc333ce80`
+covers the selected foundation recorder, its immediate call checker, the seven
+compatibility call specifications, argument-value projection and record append,
+and the invoked generic effect/capability checker. The
+[call checker](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00099-check-call-node.clj)
+checks argument nodes, unions their and the specification's effects/capabilities,
+and runs ordinary admission before the
+[facet recorder](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00081-record-standard-library-call.clj).
+This is partial outer-call and carrier behavior. The recorder projects argument
+values and assigns generated-check/domain-validation/privacy-preserved flags;
+those assignments do not execute a loader, facet expander, generated-payload
+checker, domain verifier, privacy operation or migration rewrite. The
+[compatibility table](../../bootstrap/clojure/src/gravity/bootstrap_impl/data/foundation/00055-call-specs-047-manifest-through-compat-event.edn)
+uses `:compiler/ir` for its domain-IR call; the canonical scoped
+`:compiler/ir-transform` requirement is not established by that spelling or
+these status fields. Alias/scope equivalence and other implementations remain
+unassessed. No compiler or provider is executed, and this bounded inspection
+proves neither complete implementation nor full absence.
+No implementation, provider/plugin/callback/C12/device/probe/replay/migration/
+private-store/signing/publication execution occurs. Complete selected-result
+L14 staging remains pending in the existing dependency representation; current
+joins/cycles and all forty future declarations/source bindings stay unchanged.
+
+Current preservation context: L14 and SAFE12 canonical bytes match the original
+source-author versions. This proposal preserves the newer base's actual L4
+finite-expansion/no-project-quota rule and the separately reviewed L6/L12
+declared/replayable-input clarification selected by Matt. No old macro denial,
+source hash or review acceptance is restored. The source clarification, current
+shared bindings and main integration remain separate subjects. Historical
+source-census identities locate the original proposal; they are not a new
+requirement denominator, aggregate adoption or implementation evidence.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Expand task authority

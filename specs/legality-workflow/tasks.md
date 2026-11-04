@@ -100,6 +100,15 @@ Apply the [complete error-handling source criteria](../core-workflow/plan.md#com
 L9 concrete profile-failure criterion (Open): Define and check the active profile's throw/try/panic disposition from actual error/type/effect/service facts: permitted host exceptions, explicit Result rewriting, panic, trap, workflow failure or rejection where governed. Preserve hosted exception/task-abort, native handler, kernel trap/platform panic, firmware reset/halt, hardware runtime-panic rejection or permitted synthesis-time unreachable/trap artifact, distributed durable failure state and AI policy/orchestration failure records. Reject unsupported/undeclared dispositions and panic used as ordinary stable-API control flow with L9-PANIC-PROFILE. Required evidence: actual source-bound profile/error/panic lowering matrix, lawful positive/refusal cases and selected service/layout/proof conditions; a profile label, host default or constrained target does not supply semantics or authority.
 <!-- legality-error-source-profiles:end -->
 
+
+<!-- legality-facet-source-profiles:start -->
+
+Apply the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 actual facet profile-and-safety criterion (Open): Reject use outside declared supported profiles before backend lowering, retaining ordinary type/effect/capability/ownership/memory/safety checks. Core facets fully lower to portable typed Core; hosted reflection/loading requires declared authority; native ABI/layout/vector/FFI/linker artifacts retain actual target contracts. Kernel/firmware/hardware avoid managed-runtime assumptions unless modeled by that target; distributed preserves replay-safe effects/deterministic artifacts; ai preserves model/prompt/tool/memory/evaluation provenance; meta inspects only declared compiler APIs. Hardware counter addition is width-aware and overflow-defined; host allocation/GC/reflection/threads/IO cannot stand in for hardware constructs. Preserve D8's four outcomes and actual physical/type/index/target conditions while removed project work/input quotas stay removed. Required evidence: actual supported/refused tuple and unsafe-boundary cases with source diagnostics, never backend crashes or missing symbols as legality checks.
+<!-- legality-facet-source-profiles:end -->
+
+
 - [ ] `legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis` Complete ownership, borrow, initialization and lifetime analysis
 
 Status: Open

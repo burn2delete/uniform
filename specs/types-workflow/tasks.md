@@ -188,6 +188,15 @@ Apply the [complete library-principles source criteria](../stdlib-workflow/plan.
 L13 actual public library type-contract criterion (Open): Check actual public function/type/macro/protocol/constructor declarations and selected calls against independently derived argument/result/generic/schema facts and genuine resolved export identities. Preserve declared effect, capability, allocation, failure and profile contracts as inputs without treating them as completed effect/safety admission or callable implementation. Source schemas and intrinsic signatures are authentic; invalid/generated forms follow normal checks. Reject declaration/implementation/call mismatch, unsupported overloads, invented shape or host-default types, retaining actual source/export/version identity and typed accepted/refused cases. Library publishes contracts and implements APIs; Types supplies real type/compatibility facts, while other owners retain effects, grants, safety and target judgments.
 <!-- types-library-source-typed:end -->
 
+
+<!-- types-facet-source-typed:start -->
+
+Apply the [complete facet source criteria](../expand-workflow/plan.md#complete-facet-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L14 actual facet type-and-fact criterion (Open): Check real facet-local bindings, generated ordinary code and declared domain constraints using independent type/schema/shape premises and authentic owner verifier results. Facet rules may refine base typing but cannot replace its meaning without the existing alternative-system contract. Keep schema presence, signal width, workflow replay safety, query row shape, zk public-only disclosure, prompt-tool schema, UI handler effects and EFIR proof obligations as eight distinct source examples of facts requiring their actual producer evidence. Emit typed artifacts or proof records consumed by later passes, preserving checker/subject/profile/target identity and invalidation. Reject invented shape facts, manifest-only proof, incompatible generated types and an alternative checker that silently changes semantics. Required evidence: actual checked/refused generated/local cases and fact/proof consumption; Types does not implement a domain validator, grant authority or accept a proof label.
+<!-- types-facet-source-typed:end -->
+
+
 - [ ] `types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit` types/3: Make dynamic boundaries explicit
 
 Current evidence/status: Open; partial source evidence above is not closure
