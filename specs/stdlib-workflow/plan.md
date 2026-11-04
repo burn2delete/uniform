@@ -623,6 +623,112 @@ All tasks remain Open; historical receipts retain immutable scope. This incremen
 
 Preserve Clojure bootstrap/Gravity destination, accounting removal, existing ownership/review and all compiler/Reader/Gravity/bootstrap/paired/provider/C12/native/callback/device/probe/replay/migration/private-store/signing/publication holds. The stopped public-contract-cluster handoff and denied reviewer wake remain held. User-authorized review/integration coordination supplies no implementation acceptance or main credit.
 
+## Complete testing and meta library source criteria
+
+[STD14](../../docs/phase-16-standard-library/224-std14-testing-library-specification.md), [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md), [TEST1](../../docs/phase-14-testing-verification-and-conformance/190-test1-language-conformance-test-plan.md), [TEST2](../../docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md), [TEST3](../../docs/phase-14-testing-verification-and-conformance/192-test3-runtime-test-strategy.md), [TEST13](../../docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md), [C17](../../docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md), [SAFE12](../../docs/phase-02-safety/041-safe12-macro-safety.md), [L12](../../docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md) define the selected callable APIs and their supporting evidence and compiler interfaces. STD14/STD15 are this refinement's API scope; supporting suites and compiler contracts retain their broader owners. Normative list conditions, examples, profile qualifications and follow-on evidence requirements remain. Source hashes and navigation establish no semantic entailment or implementation.
+
+### Testing/meta existing task authority
+
+| Role | Existing sole task |
+| --- | --- |
+| audits | [`evolution/security-review`](../../specs/evolution-workflow/tasks.md#governance-implementation-task-authority) |
+| authority | [`auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`](../../specs/auth-workflow/tasks.md#implementation-tasks) |
+| compiler-suite | [`release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures`](../../specs/release-workflow/tasks.md#implementation-tasks) |
+| conformance | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| effects | [`effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering`](../../specs/effects-workflow/tasks.md#implementation-tasks) |
+| inventory | [`stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| library-suite | [`release/remaining-tasks-and-evidence/execute-library-conformance-fixtures`](../../specs/release-workflow/tasks.md#implementation-tasks) |
+| meta | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| pass-evidence | [`pass-evidence`](../../specs/compiler-api-workflow/tasks.md#implementation-tasks) |
+| pipeline | [`pipeline`](../../specs/compiler-api-workflow/tasks.md#implementation-tasks) |
+| plugins | [`plugins`](../../specs/compiler-api-workflow/tasks.md#implementation-tasks) |
+| property-suite | [`release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures`](../../specs/release-workflow/tasks.md#implementation-tasks) |
+| stage-comparison | [`release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler`](../../specs/release-workflow/tasks.md#implementation-tasks) |
+| testing | [`stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+
+Library owns actual test and meta APIs. Compiler-API/Pipeline/Syntax/Expand/Core/MIR/Opt retain their real artifact, transformation, verification and invalidation work. Auth produces scoped grants, Effects performs static admission, plugin host enforces actual contexts and Runtime supplies permitted fixture/service execution. Release owns independent suites and stage comparison; Governance owns distinct unsafe audit verdicts. One editable task authority remains for each outcome; no second compiler, fixture suite or roadmap is created.
+
+| Selected criterion | Existing task |
+| --- | --- |
+| callable-exports | [`stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| test-definition-and-assertion | [`stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| fixtures-and-goldens | [`stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| properties-and-fuzzing | [`stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| diagnostic-assertion | [`stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| mocks-and-live-authority | [`stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| eval-and-performance-tests | [`stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| suite-selection-and-reports | [`stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| meta-syntax-values | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| meta-hygiene-and-resolution | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| meta-macro-expansion | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| meta-compile-time-values | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| meta-stable-ir-views | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| meta-pass-api | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| meta-plugin-api | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| meta-trust-and-self-hosting | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| meta-profile-contract | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+| test-meta-authority | [`auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`](../../specs/auth-workflow/tasks.md#implementation-tasks) |
+| test-meta-effects | [`effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering`](../../specs/effects-workflow/tasks.md#implementation-tasks) |
+| plugin-context-enforcement | [`plugins`](../../specs/compiler-api-workflow/tasks.md#implementation-tasks) |
+| library-example-conformance | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) |
+
+### Testing/meta STD14 callable surface
+
+- Test forms: `deftest`, `testing`, `is`, `are`, `throws?`, `diagnostic?`, and `test-var`.
+- Fixtures: `fixture`, `with-fixture`, `temp-resource`, `golden`, `golden-update`, and `artifact-fixture`.
+- Property testing: `defproperty`, `for-all`, `gen`, `shrink`, `seed`, and `counterexample`.
+- Fuzzing: `deffuzz`, `fuzz-input`, `corpus`, `minimize`, and `coverage-guided`.
+- Mocks: `fake-capability`, `mock-effect`, `record-calls`, and `expect-call`.
+- Conformance: `conformance-suite`, `profile-suite`, `backend-suite`, `stdlib-suite`, and `report`.
+- AI eval: `eval-case`, `eval-dataset`, `metric`, `threshold`, and `probe`.
+- Reporting: `test-report`, `junit`, `json-report`, `coverage-report`, and `evidence-pack`.
+
+### Testing/meta STD15 callable surface
+
+- Syntax: `syntax`, `quote-syntax`, `syntax?`, `syntax-value`, `syntax-span`, `syntax-meta`, and `with-syntax-meta`.
+- Hygiene: `gensym`, `bind`, `resolve`, `namespace-context`, `hygiene-mark`, and `fresh-name`.
+- Macro helpers: `defmacro`, `macroexpand`, `syntax-case`, `syntax-match`, `emit`, and `diagnose`.
+- Compile-time values: `const`, `compile-time`, `eval-ct`, `ct-capability`, and `phase`.
+- IR APIs: `inspect-core`, `inspect-mir`, `mir-node`, `mir-effect`, `mir-type`, and `source-map`.
+- Pass APIs: `defpass`, `analysis`, `transform`, `preserves`, `invalidates`, and `pass-artifact`.
+- Plugin APIs: `defplugin`, `plugin-capability`, `compiler-hook`, and `plugin-manifest`.
+
+### Testing/meta producer and consumer interfaces
+
+| Producer | Consumer | Required selected product and scope |
+| --- | --- | --- |
+| [`pipeline`](../../specs/compiler-api-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual typed syntax/Core/MIR, phase/context, source/hygiene/effect/grant and generated-checking products; Library exposes APIs without redefining the pipeline. |
+| [`plugins`](../../specs/compiler-api-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual pre-load compatibility, scoped context, registration/output verifier and trace products; callbacks and manifests are distinct from execution. |
+| [`pass-evidence`](../../specs/compiler-api-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Actual subject-bound proof/checker/verifier/invalidation evidence; declared pass fields alone prove no preservation. |
+| [`auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime`](../../specs/auth-workflow/tasks.md#implementation-tasks) | [`plugins`](../../specs/compiler-api-workflow/tasks.md#implementation-tasks) | Authentic current scoped compiler grants; host denies before initialization or protected mutation. |
+| [`stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | [`release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures`](../../specs/release-workflow/tasks.md#implementation-tasks) | Usable typed fixture/mock/golden/assertion/report products; independent compiler preservation suite executes its own subjects. |
+| [`stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | [`release/remaining-tasks-and-evidence/execute-fuzz-and-property-fixtures`](../../specs/release-workflow/tasks.md#implementation-tasks) | Real generator/seed/shrinker/counterexample and replay interfaces; API tests do not close an independent fuzz campaign. |
+| [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | [`release/remaining-tasks-and-evidence/execute-library-conformance-fixtures`](../../specs/release-workflow/tasks.md#implementation-tasks) | Actual source-bound callable module/profile fixtures and reports; independent Library suite owns its run. |
+| [`release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler`](../../specs/release-workflow/tasks.md#implementation-tasks) | [`stdlib/remaining-tasks-and-evidence/complete-schemaqueryworkflowaimetacryptoui-adapters`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Matching declared-stage source/compiler/lockfile/target/output and accepted difference/TCB/provenance evidence for actual self-hosting claims. |
+| [`evolution/security-review`](../../specs/evolution-workflow/tasks.md#governance-implementation-task-authority) | [`stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests`](../../specs/stdlib-workflow/tasks.md#implementation-tasks) | Distinct exact-island/source/owner/profile/target audit verdict; a review name or signature is not its accepted evidence. |
+
+### Testing/meta accepted and refused products
+
+Compile the documented assoc-then-get property and when macro under their declared profiles. Actual test assertions retain expected/observed values and spans; property/fuzz failures retain seed/generator/shrinker and minimized inputs; goldens have hash/version/update history; diagnostic expectations match structured identities. Mocks declare their replacements and grant no ambient live effect. Meta calls retain syntax/hygiene/context/phase/origins, stable IR tiers, genuine grants, declared pass invariants/invalidation/proofs and verifier results.
+
+Preserve each STD14001-STD14008 and STD15001-STD15008 refusal meaning, expected/actual missing facts, source/generated/fixture/profile/target/compiler/runtime/package/plugin/pass/artifact/grant context and applicable owning TEST/C17/SAFE12 diagnostics. Exercise failure fields and missing/stale/wrong-subject evidence independently of value equality. A test name, metadata/status flag, report filename, compatibility hook or compiler capability spelling is no accepted behavior.
+
+### Testing/meta profile, authority and trust
+
+STD14 pure Core tests and profile-specific restricted-host/native/hosted/distributed/AI/meta/formal adapters keep their actual source conditions. A named harness, fake or live-test opt-in cannot bypass profile/effect/grant, redaction or held execution restrictions. STD15 Core syntax data, full meta APIs, capability-bearing hosted/native tooling, restricted dynamic evaluation, checked AI/distributed generated artifacts and formal stable/proof views remain distinct. Stable views do not permit unstable compiler mutation. Authentic read scope cannot grant write/register/proof or artifact emission.
+
+General compile-time inputs follow Matt's recorded L12 declared/replayable policy and separately reviewed L6 clarification; pure constant evaluation retains its separate prohibitions. Preserve the canonical scoped compiler/ir-transform requirement and actual compiler/read-ir effect; compatibility compiler/ir alias/scope equivalence remains unassessed. Generated forms and plugin outputs undergo ordinary checks; unsafe extensions require actual review/audit evidence. Seed assumptions and TCB claims remain visible, never inferred from Gravity source or a signed unrelated artifact.
+
+### Testing/meta stage order and evidence limits
+
+Use the [sole dependency representation](../../docs/acceptance-dependencies.md#future-task-construction-and-composition). Initial source/export/signature/schema/pass-context and fixture/report contracts permit bounded development. Actual available eligible APIs, authentic compiler/grant/source products, verifier/invalidation and selected runtime/checker outcomes precede their consumers; matching real independent suites/audits/stage comparisons precede their respective acceptance and release claims. Whole compiler/bootstrap/library completion is no first declaration prerequisite. This text changes no shared route or future source binding; exact stage reconciliation remains separate.
+
+TEST2 focused development tests and affected composition do not require fresh bootstrap authority merely to test current source. Authoritative migration, stage advancement and release retain TEST13/BOOT provenance/equivalence/conformance and TCB evidence. This distinction revokes no explicit existing execution hold.
+
+All implementation tasks remain Open and historical receipts keep immutable scope. This source increment performs no complete implementation audit and executes no compiler, test API, fuzz run, plugin, provider, proof engine, bootstrap stage, callback or live fixture. Current source-owner/interface entailment, independent review, binding and main integration remain pending. Retired project accounting/allowances do not return; genuine format/layout/resource/provider/profile constraints, quality thresholds and requested test/replay semantics retain their own meaning. D1/C1/C5/C6 ordering stays separate. Reader contract-coverage reconciliation remains the first actual implementation increment.
+
+Preserve Clojure bootstrap/Gravity destination, current ownership/review and all compiler/Reader/Gravity/bootstrap/paired/provider/C12/plugin/native/callback/device/probe/replay/migration/private-store/signing/publication holds. The stopped public-contract-cluster handoff and denied reviewer wake remain held. User-authorized review/integration coordination supplies no implementation or main acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Standard Library workflow migration

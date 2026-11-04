@@ -218,3 +218,7 @@ Current source/interface entailment and independent acceptance remain pending. P
 Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Existing conditional change-review/stabilization owners consume affected old/new ABI/schema/type/error/resource/profile/target/lock and incumbent parity facts for actual stable changes or shim promotion. Keep compatibility/deprecation and temporary shim state explicit. This adds no task body, review renewal or ordinary per-run approval/migration-proof gate.
 
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+## Testing and meta library source interface
+
+Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Keep independent exact-island unsafe audit and affected compatibility/stabilization decisions separate from library APIs, declared pass contracts and ordinary implementation tests. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.

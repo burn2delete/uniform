@@ -82,6 +82,8 @@ The [schema and database library source criteria](plan.md#complete-schema-and-da
 
 The [workflow and AI library source criteria](plan.md#complete-workflow-and-ai-library-source-criteria) refine callable STD12/STD13 behavior over existing Workflow, AI, Backend, Schema, Auth, Effects and Runtime owners. Actual typed events/state, activity isolation, replay/compensation/in-flight migration, provider/tool/memory/review, generated-code and eval results remain distinct from declaration artifacts. Task statuses, historical scopes, accounting removal and held actions persist.
 
+The [testing and meta library source criteria](plan.md#complete-testing-and-meta-library-source-criteria) refine callable STD14/STD15 behavior over existing compiler, test, Auth, Effects, Runtime and Governance producers. Actual structured failures, reproducible counterexamples, report/golden artifacts, stable IR views, scoped pass execution and seed/provenance evidence remain distinct from names or metadata. Task status, historical review and held actions persist.
+
 ## Historical workflow-transfer specification
 
 # Feature specification: Standard Library workflow migration

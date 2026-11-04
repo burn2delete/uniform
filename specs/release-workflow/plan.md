@@ -359,6 +359,10 @@ Use the [schema and database library source criteria](../stdlib-workflow/plan.md
 
 Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Consume actual callable example/subject, denial/replay/compensation/migration/generated-code and provider/tool/memory/eval/probe evidence. Existing independent suites retain their own exact execution and acceptance. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
 
+## Testing and meta library source interface
+
+Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Consume actual library/subject fixtures and exact compiler/runtime/profile/target reports for independent library/compiler/property/formal/performance and stage comparisons. API availability does not execute or close those suites. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Release workflow migration

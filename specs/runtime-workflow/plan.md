@@ -439,6 +439,10 @@ Use the [schema and database library source criteria](../stdlib-workflow/plan.md
 
 Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Supply actual selected service/provider/tool/memory/scheduler/state/log/error/cleanup products with before-action enforcement and recorded replay. Manifest completeness is no execution. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
 
+## Testing and meta library source interface
+
+Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Provide actual permitted fixture/service resources, effects, cleanup and denied-before-action observations. Fake/recorded/live scopes stay explicit and unavailable services remain unrun. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Runtime workflow migration

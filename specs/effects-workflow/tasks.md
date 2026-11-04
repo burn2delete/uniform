@@ -217,6 +217,17 @@ Infer and check actual direct/latent workflow/service/clock/random/model/tool/me
 <!-- library-workflow-ai-source-effect-admission:end -->
 
 
+
+<!-- library-testing-meta-source-test-meta-effects:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library test-meta-effects criterion (Open). Sources: [STD14](../../docs/phase-16-standard-library/224-std14-testing-library-specification.md), [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md), [L12](../../docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md).
+
+Check actual test setup/body/teardown and meta direct/latent build/provider/compiler effects under the active target profile and phase, preserving declared mocks and real grants. Pure assertions or syntax data do not hide live services or mutation. Exercise checked-program positive/refusal for undeclared effects, illegal latent use, forbidden profile and phase capture. Keep selected L12 hermetic inputs distinct from pure constants; static admission proves neither actual service enforcement nor pass correctness. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-test-meta-effects:end -->
+
+
 - [ ] `effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation` effects/4: Record replay and invalidation
 
 Current evidence/status: Open; partial source evidence above is not closure

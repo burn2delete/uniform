@@ -247,6 +247,10 @@ Use the [schema and database library source criteria](../stdlib-workflow/plan.md
 
 Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Preserve individual STD12001-STD12008 and STD13001-STD13008 plus owning AI/Workflow/Profile/Runtime ids, missing facts, source/agent/step/provider/review/replay context and redaction. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
 
+## Testing and meta library source interface
+
+Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Retain each STD14001-STD14008/STD15001-STD15008 and owning TEST/C17/SAFE12 diagnostic meaning, structured expected/actual fields, source/generated context and secret redaction. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Diagnostics task authority

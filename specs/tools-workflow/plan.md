@@ -173,6 +173,10 @@ Use the [schema and database library source criteria](../stdlib-workflow/plan.md
 
 Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Inspect authentic graph/state/log/schema/provider/prompt/tool/memory/policy/review/eval and redacted source diagnostics; a supplied score or event list is no executed claim. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
 
+## Testing and meta library source interface
+
+Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Consume actual packageable structured reports, diagnostic goldens, counterexamples, stable IR views and provenance. A report hook or filename is no test run or proof. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Developer Tools workflow migration

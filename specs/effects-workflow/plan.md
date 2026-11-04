@@ -461,6 +461,10 @@ Use the [schema and database library source criteria](../stdlib-workflow/plan.md
 
 Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Check actual direct/latent service/model/tool/memory/workflow effects and phases; pure data or meta graph generation is distinct from executing effects. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
 
+## Testing and meta library source interface
+
+Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Check actual test setup/body/teardown and meta direct/latent effects, active target profile and phase, declared replacements and authentic grants. Static summaries establish no execution or enforcement. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Effects task authority

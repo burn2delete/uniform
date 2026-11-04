@@ -976,6 +976,10 @@ Use the [schema and database library source criteria](../stdlib-workflow/plan.md
 
 Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Enforce profile/taint/resource/secret and operation authority; preserve the narrow conditional native local-model interpretation for independent review, actual host/provider limits and requested retry semantics. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
 
+## Testing and meta library source interface
+
+Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Preserve actual profile, ownership/resource/taint/unsafe and generated-program rules. No mock, test runner or compiler plugin bypasses them; semantic constraints do not restore retired compiler quotas. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Legality task authority

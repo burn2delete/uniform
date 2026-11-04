@@ -304,6 +304,10 @@ Use the [schema and database library source criteria](../stdlib-workflow/plan.md
 
 Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Track source/schema/version/graph/log/prompt/model/tool/provider/policy/eval/generated-program inputs in invalidation and reproduction; stale subjects invalidate matching acceptance. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
 
+## Testing and meta library source interface
+
+Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Track source/compiler/API/plugin/package/grants/profile/target/policy, fixture/golden/generator and actual artifact inputs for invalidation/reproduction. Changed subjects invalidate stale evidence. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration

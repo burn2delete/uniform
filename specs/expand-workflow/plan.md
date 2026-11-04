@@ -744,6 +744,10 @@ Use the [schema and database library source criteria](../stdlib-workflow/plan.md
 
 Use the [workflow and AI library source criteria](../stdlib-workflow/plan.md#complete-workflow-and-ai-library-source-criteria). Preserve ordinary generated checking, hygiene/source/phase/provenance and recorded L12/L6 inputs. Meta generation grants no live provider call or compiler authority. Preserve existing task identities/statuses, historical reviews and held actions; current interface and implementation acceptance remain unassessed.
 
+## Testing and meta library source interface
+
+Use the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria). Ordinary generated checking, hygiene, safety/taint and source provenance apply to library macro helpers. General L12 replayable input rules and pure constants remain distinct. Preserve existing task statuses, historical scopes, actual holds and pending current acceptance.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Expand task authority

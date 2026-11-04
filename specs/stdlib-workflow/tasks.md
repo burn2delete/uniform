@@ -120,6 +120,17 @@ Bind every named gravity.workflow/gravity.ai export to an actual callable implem
 <!-- library-workflow-ai-source-callable-inventory:end -->
 
 
+
+<!-- library-testing-meta-source-callable-exports:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library callable-exports criterion (Open). Sources: [STD14](../../docs/phase-16-standard-library/224-std14-testing-library-specification.md), [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md).
+
+Bind all named gravity.test and gravity.meta exports to actual callable implementations or explicit remaining work, with exact namespace/export/version, input/output, profile/target, effects/grants, failure, artifact and stability contracts. Named hooks, compatibility spellings and a module inventory are no callable export proof. Evidence: accepted/refused imports and real calls plus matching module/API-tier/profile manifests for exact source/compiler/runtime/provider/target subjects. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-callable-exports:end -->
+
+
 - [ ] `stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis` Complete pure core, collections, text, numeric and testing APIs
 
 Status: Open
@@ -576,6 +587,83 @@ Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#comp
 
 Library foundation inequality criterion (Open): Implement binary not= as Bool complement of the applicable Gravity binary equality, with left-to-right once-only operands, preserved effects and transfer-aborted invocation. Do not add equality domains, coercions, object identity, variadic rules or stored-payload evaluation beyond equality's own contract. Refuse unselected equality/target/profile behavior. Evidence: actual equal/unequal and supported family cases, operand-order/effect/transfer fixtures and exact domain/arity/type refusals, with numeric/collection/safety ownership retained.
 <!-- library-base-source-inequality:end -->
+
+
+
+<!-- library-testing-meta-source-test-definition-and-assertion:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library test-definition-and-assertion criterion (Open). Sources: [STD14](../../docs/phase-16-standard-library/224-std14-testing-library-specification.md), [TEST1](../../docs/phase-14-testing-verification-and-conformance/190-test1-language-conformance-test-plan.md), [TEST2](../../docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md).
+
+Implement deftest/testing/is/are/throws?/diagnostic?/test-var over real test definitions and structured assertions. Each test declares profile, target constraints, effects, capabilities, fixtures and expected artifacts; assertions retain actual expected/observed values and stable source spans. Exercise passing and deliberate failing value/error cases, malformed metadata and source identity. A prose message or supplied pass flag is insufficient; portable and profile-specific semantics stay distinct. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-test-definition-and-assertion:end -->
+
+
+
+<!-- library-testing-meta-source-fixtures-and-goldens:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library fixtures-and-goldens criterion (Open). Sources: [STD14](../../docs/phase-16-standard-library/224-std14-testing-library-specification.md).
+
+Implement fixture/with-fixture/temp-resource/golden/golden-update/artifact-fixture with actual setup/body/teardown and resource cleanup on success, failure, cancellation and partial initialization. Hash/version golden artifacts and record explicit reviewable updates. Exercise deterministic source/artifact comparisons and missing/stale/unrecorded golden changes, cleanup failures and resource leaks. Updating an expected output cannot silently turn a regression into conformance. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-fixtures-and-goldens:end -->
+
+
+
+<!-- library-testing-meta-source-properties-and-fuzzing:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library properties-and-fuzzing criterion (Open). Sources: [STD14](../../docs/phase-16-standard-library/224-std14-testing-library-specification.md).
+
+Implement defproperty/for-all/gen/shrink/seed/counterexample and deffuzz/fuzz-input/corpus/minimize/coverage-guided APIs. Preserve actual generator and seed, shrinking/minimization strategy, original failing subject and minimized counterexample or crash reproducer. Exercise reproducible failures and replay from exact seed/generator/compiler/profile/target, including the documented assoc-then-get property. Refuse missing seed/minimized-input artifacts; a fuzz corpus or counterexample label is no executed test result. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-properties-and-fuzzing:end -->
+
+
+
+<!-- library-testing-meta-source-diagnostic-assertion:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library diagnostic-assertion criterion (Open). Sources: [STD14](../../docs/phase-16-standard-library/224-std14-testing-library-specification.md), [TEST1](../../docs/phase-14-testing-verification-and-conformance/190-test1-language-conformance-test-plan.md), [TEST2](../../docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md).
+
+Match actual diagnostic id, span class, active profile and remediation category, retaining target, source/generated origin and expected/actual context where required. Exercise deliberate wrong-id/span/profile/remediation and missing-source cases independently of result equality. Free-form text matching alone rejects; distinguish reader syntax errors from semantic errors and keep structured diagnostic goldens tied to exact compiler and fixture subjects. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-diagnostic-assertion:end -->
+
+
+
+<!-- library-testing-meta-source-mocks-and-live-authority:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library mocks-and-live-authority criterion (Open). Sources: [STD14](../../docs/phase-16-standard-library/224-std14-testing-library-specification.md), [TEST3](../../docs/phase-14-testing-verification-and-conformance/192-test3-runtime-test-strategy.md).
+
+Implement fake-capability/mock-effect/record-calls/expect-call with explicit replaced effect/capability, active target profile and fixture grants. A fake intercepts only its declared behavior and creates no live authority. Live time/random/file/network/database/model/hardware/host tests require actual capabilities and secret redaction, never ambient services. Exercise fake call observations, undeclared replacement and denied live access before effects; mock/recorded/live scopes remain distinct and held service operations remain unrun. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-mocks-and-live-authority:end -->
+
+
+
+<!-- library-testing-meta-source-eval-and-performance-tests:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library eval-and-performance-tests criterion (Open). Sources: [STD14](../../docs/phase-16-standard-library/224-std14-testing-library-specification.md).
+
+Expose eval-case/dataset/metric/threshold/probe and benchmark assertions with actual model identity, prompt version, dataset, metric, threshold, target/profile/compiler/runtime and benchmark settings. Consume the owning AI and performance subject/oracle products. Exercise actual callable scoring/measurement and stale/missing/wrong-subject reports; source/API generation is not an eval or benchmark run. Quality/performance thresholds and real provider restrictions remain distinct from retired project work allowances. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-eval-and-performance-tests:end -->
+
+
+
+<!-- library-testing-meta-source-suite-selection-and-reports:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library suite-selection-and-reports criterion (Open). Sources: [STD14](../../docs/phase-16-standard-library/224-std14-testing-library-specification.md), [TEST1](../../docs/phase-14-testing-verification-and-conformance/190-test1-language-conformance-test-plan.md), [TEST2](../../docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md), [TEST3](../../docs/phase-14-testing-verification-and-conformance/192-test3-runtime-test-strategy.md), [TEST13](../../docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md).
+
+Implement conformance-suite, profile-suite, backend-suite, stdlib-suite, report, test-report, junit, json-report, coverage-report and evidence-pack APIs as actual packageable artifacts. Select by profile, target, module, diagnostic id and artifact type; preserve source/package/compiler/runtime/target, seed, fixture and artifact hashes, results and unavailable/failed/unrun cases. Support seed/self-hosted compiler, runtime and package consumers with precise subjects. Exercise actual report generation/consumption and malformed/missing provenance; a coverage file or test runner hook does not accept a suite, bootstrap stage or release. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-suite-selection-and-reports:end -->
 
 
 - [ ] `stdlib/remaining-tasks-and-evidence/complete-resourceconcurrencyionetwork-apis` Complete resource/concurrency/IO/network APIs
@@ -1159,6 +1247,105 @@ Enforce full AI, workflow-integrated distributed and explicitly enabled hosted d
 <!-- library-workflow-ai-source-ai-profile:end -->
 
 
+
+<!-- library-testing-meta-source-meta-syntax-values:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library meta-syntax-values criterion (Open). Sources: [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md), [SAFE12](../../docs/phase-02-safety/041-safe12-macro-safety.md).
+
+Implement syntax, quote-syntax, syntax?, syntax-value, syntax-span, syntax-meta and with-syntax-meta as actual typed syntax APIs preserving required source spans, hygiene marks, namespace context, metadata, phase, profile and generated origins. Metadata transformations cannot silently erase safety-critical context or forge provenance. Exercise real syntax inspection/transformation and span/hygiene/context/phase-loss refusals; ordinary immutable Core syntax data grants no compiler mutation or dynamic evaluation authority. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-meta-syntax-values:end -->
+
+
+
+<!-- library-testing-meta-source-meta-hygiene-and-resolution:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library meta-hygiene-and-resolution criterion (Open). Sources: [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md), [SAFE12](../../docs/phase-02-safety/041-safe12-macro-safety.md).
+
+Implement gensym/bind/resolve/namespace-context/hygiene-mark/fresh-name over the owning Syntax/Resolve/Expand products. Preserve legitimate lexical identity, explicit marked capture and source trails; reject unexpected capture of user, privileged, capability, provider, secret or compiler bindings. Exercise actual hygienic and permitted explicit capture cases with matching policy/grants and exact macro definition/call/generated-origin diagnostics. A fresh-name string alone does not establish hygiene. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-meta-hygiene-and-resolution:end -->
+
+
+
+<!-- library-testing-meta-source-meta-macro-expansion:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library meta-macro-expansion criterion (Open). Sources: [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md), [SAFE12](../../docs/phase-02-safety/041-safe12-macro-safety.md).
+
+Implement defmacro/macroexpand/syntax-case/syntax-match/emit/diagnose over the ordinary expansion and generated-program route. Preserve metadata, hygiene, source/provenance, taint, effects/capabilities and safety declarations; all generated forms undergo normal type/effect/capability/memory/profile/safety/package checks. Compile the documented when macro and exercise valid expansion, invalid generated forms and undeclared unsafe/capture/taint loss. A library hook or alternative engine has no privileged bypass; generated unsafe islands require their real SAFE6/audit conditions. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-meta-macro-expansion:end -->
+
+
+
+<!-- library-testing-meta-source-meta-compile-time-values:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library meta-compile-time-values criterion (Open). Sources: [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md), [L12](../../docs/phase-01-core-language/022-l12-compile-time-evaluation-specification.md), [SAFE12](../../docs/phase-02-safety/041-safe12-macro-safety.md).
+
+Implement const/compile-time/eval-ct/ct-capability/phase with actual phase, profile, effects and authentic compile-time grants. Preserve pure constant evaluation's separate prohibitions and the recorded L12 declared/replayable-input policy plus reviewed L6 clarification for general compile-time execution. Runtime handles, capabilities and deployment-only secrets cannot be captured. Exercise actual eligible results and undeclared/ungranted/nonreplayable-input, phase/profile and runtime-authority refusals. Dynamic evaluation is unavailable in kernel/firmware/hardware; this does not invent a blanket prohibition on permitted static compiler transformations. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-meta-compile-time-values:end -->
+
+
+
+<!-- library-testing-meta-source-meta-stable-ir-views:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library meta-stable-ir-views criterion (Open). Sources: [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md), [C17](../../docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md).
+
+Implement inspect-core/inspect-mir/mir-node/mir-effect/mir-type/source-map as actual stable public IR views, distinctly versioned from unstable internals. Require the actual L6 compiler/read-ir effect and scoped compiler/ir-transform authority for artifact kind, namespace, phase and package. Read-MIR never grants write-MIR; metadata or package identity creates no grant. Exercise permitted reads and wrong-scope/phase/internal-mutation denials. Compatibility compiler/ir spelling does not establish canonical alias/scope equivalence; actual compiler access remains held where restricted. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-meta-stable-ir-views:end -->
+
+
+
+<!-- library-testing-meta-source-meta-pass-api:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library meta-pass-api criterion (Open). Sources: [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md), [C17](../../docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md), [TEST2](../../docs/phase-14-testing-verification-and-conformance/191-test2-compiler-test-strategy.md).
+
+Expose defpass/analysis/transform/preserves/invalidates/pass-artifact over actual declared input/output IR, required facts, preserved invariants, invalidated analyses, regeneration and proof obligations. Actual allowed transformed output passes its owning verifier before consumption; stale analyses/proofs are invalidated and recomputed as required. Exercise genuine selected before/after products and missing contract, lost fact, unsound transform and stale reuse refusals. Compiler-API owns execution contexts and pass evidence, not a second library pass engine; a preserves field or verifier flag proves no invariant. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-meta-pass-api:end -->
+
+
+
+<!-- library-testing-meta-source-meta-plugin-api:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library meta-plugin-api criterion (Open). Sources: [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md), [C17](../../docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md).
+
+Expose defplugin/plugin-capability/compiler-hook/plugin-manifest using real package identity, API/compiler version compatibility, trust, effects/grants, supported passes/artifacts, signing metadata and conformance. Check compatibility/policy before code initialization; reject hidden mutation, ungranted build effects, opaque domain/facet payloads and invalid outputs. Library APIs consume the existing plugin host and verifier products; named callbacks or signed identity do not establish execution or grants. Keep signing/package publication and plugin/C12/callback execution restrictions effective. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-meta-plugin-api:end -->
+
+
+
+<!-- library-testing-meta-source-meta-trust-and-self-hosting:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library meta-trust-and-self-hosting criterion (Open). Sources: [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md), [TEST13](../../docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md).
+
+Expose actual macro/plugin-to-generated-compiler provenance and keep seed assumptions, trusted inputs, unsafe audit records and TCB deltas visible in self-hosting API/artifacts. Preserve compiler/API tier/version and authentic source/input/output/pass identities. Exercise missing/wrong/stale provenance/audit and hidden seed assumptions; consume applicable stage/rebuild/conformance/equivalence evidence rather than inferring self-hosting from Gravity source or meta API use. Final stage acceptance is not a first ordinary meta declaration prerequisite. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-meta-trust-and-self-hosting:end -->
+
+
+
+<!-- library-testing-meta-source-meta-profile-contract:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library meta-profile-contract criterion (Open). Sources: [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md).
+
+Enforce full meta syntax/macro/IR/pass/plugin APIs, ordinary immutable Core syntax data, explicitly capability-bearing hosted/native compiler tooling, restricted dynamic CT evaluation, policy-checked distributed/AI artifact generation and formal stable views/proof hooks without unstable mutation. Exercise real accepted/refused profile examples and actual API tier/compiler compatibility. Named native tooling is no release-target adoption or permission to execute held compiler/plugin/native/provider actions. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-meta-profile-contract:end -->
+
+
 - [ ] `stdlib/remaining-tasks-and-evidence/integrate-platform-modules-and-close-release-manifests` Integrate platform modules and close release manifests
 
 Status: Open
@@ -1231,6 +1418,17 @@ Workflow/AI library library-conformance criterion (Open). Sources: [STD12](../..
 
 Consume actual callable exports/profiles/adapters, graph/state/log/schema, provider/prompt/tool/memory/policy/review/eval/generated-program and applicable independent checker products for exact source/compiler/runtime/provider/target subjects. Preserve STD12001-STD12008 and STD13001-STD13008 meanings and owning AI/Workflow/Profile/Runtime diagnostics with source and redaction. Compile onboard-user/support-agent and exercise genuine selected accepted/refused replay/compensation/migration/injection/schema/grant/review paths. Independent Release/TEST7/TEST8 execution remains separate; catalogues, mocks, fixed graphs or one receipt do not accept whole surfaces. Bind actual source, compiler, profile, target, schema, provider and input/output subjects applicable to the claim. Implementation and independent current acceptance remain unassessed.
 <!-- library-workflow-ai-source-library-conformance:end -->
+
+
+
+<!-- library-testing-meta-source-library-example-conformance:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library library-example-conformance criterion (Open). Sources: [STD14](../../docs/phase-16-standard-library/224-std14-testing-library-specification.md), [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md).
+
+Compose actual callable test/meta exports and profile examples, structured assertion failures, property/fuzz reproduction, golden updates, diagnostic matching, mock/live denial, stable IR views, generated checking, pass invalidation, plugin compatibility/output and seed provenance results. Preserve individual STD14001-STD14008 and STD15001-STD15008 refusal meanings with source/compiler/package/profile/target/runtime/fixture/plugin/pass/grant context and actual expected/observed products. Compile assoc-then-get and when under their declared profiles and exercise forbidden-profile cases. Existing independent Release/testing/Governance authorities retain suite execution, audit and exact acceptance; no mock, scaffold or one receipt accepts complete library, compiler or self-hosting. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-library-example-conformance:end -->
 
 <!-- stdlib-implementation-tasks:end -->
 

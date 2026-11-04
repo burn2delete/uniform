@@ -217,6 +217,17 @@ Produce authentic model/tool/memory/service/workflow grants with principal/packa
 <!-- library-workflow-ai-source-action-authority:end -->
 
 
+
+<!-- library-testing-meta-source-test-meta-authority:start -->
+
+Apply the [testing and meta library source criteria](../stdlib-workflow/plan.md#complete-testing-and-meta-library-source-criteria) within this existing Open task. Preserve prior criteria, historical reviews and held actions.
+
+Testing/meta library test-meta-authority criterion (Open). Sources: [STD14](../../docs/phase-16-standard-library/224-std14-testing-library-specification.md), [STD15](../../docs/phase-16-standard-library/225-std15-compiler-meta-programming-library-specification.md), [C17](../../docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md).
+
+Produce authentic fixture/live-service and compiler-operation grants with exact principal/package/provider/artifact/namespace/phase, intersection/attenuation/revocation and lifetime. Distinguish fake replaced authority from live grants and read/write/register/proof/artifact compiler scopes. Exercise actual permitted and stale/revoked/wrong-scope/phase/artifact decisions. Compiler host or Runtime enforces before the operation; trusted package or test-runner identity cannot issue authority. Current implementation and independent source/interface acceptance remain unassessed.
+<!-- library-testing-meta-source-test-meta-authority:end -->
+
+
 - [ ] `auth/remaining-tasks-and-evidence/bind-compiler-decisions-to-runtimebuild-enforcement-hooks` Bind compiler decisions to runtime/build enforcement hooks
 
 Status: Open
