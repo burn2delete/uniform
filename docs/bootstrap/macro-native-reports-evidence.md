@@ -125,3 +125,40 @@ Independent review also confirmed an existing Var-call timing defect in four
 other Macro operations against exact pre-extraction bodies. Those operations
 are byte-identical in this increment; the separate corrective work remains open.
 This extraction does not claim that those other ports are fully verified.
+
+## Hosted static nonpass and load-point correction
+
+Own hosted run 41928851212 attempt 1 uses actual base
+3c97ad75341c5ef6506cf1bba050b9017301695b, source
+a1c019b2f480c0df43282846e98cd2dc6be07b14 and provider
+4e55c8a050572a39145466dacb83663f7a53d898. Provider tree
+bae43fa23fa67f98fb802e188c8db11c7bc9b7aa is the reviewed composition of
+that source and four exact incoming Main paths; it differs from source tree
+82f4917258b74aa116314688c61e7d5b840a6094. Neither source review nor
+local extraction lint establishes that combined branch's CI acceptance.
+
+Static job 126921175037 failed two actual checks. The CI harness still requires
+exactly one --namespace in every Macro child, while the existing cohort now
+correctly includes the native-report namespace as well. Its update must preserve
+explicit complete namespace selection and the existing disjoint receipt/source
+coverage controls; replacing the assertion with a generic lower bound would
+not establish that coverage. Root's actual active C6/CI writer owns both
+tools/ci/run.clj and tools/ci/run_test.clj, so that shared-file correction remains
+pending a coordinated owner or normal handoff, without interrupting valid checks.
+
+The full combined-branch lint also finds one introduced duplicate-require warning
+at component 00857 line 1. The required early native facade import left that
+older later require redundant. All 3459 baseline warnings remain unchanged.
+The six-path local extraction check missed the new warning at that older
+context location; its zero result is retained at its narrower scope. The actual
+provider static nonpass remains evidence and receives no integration credit.
+
+A fresh two-path source claim owns only component 00857 and this evidence;
+the old eight-path token stays released. The correction removes only the old
+later require and its following blank line, preserving the earlier native
+facade import and every operation body. It does not add suppression, change a
+warning policy or move any source/admission rule. Full contextual reproduction,
+native parity and independent review of this load-point correction remain
+pending, as do the shared CI harness correction and final fully wired CI.
+Evidence is retained under /tmp/uniform-macro-native-reports-static-failure/
+and /tmp/uniform-macro-native-reports-load-fix-*.
