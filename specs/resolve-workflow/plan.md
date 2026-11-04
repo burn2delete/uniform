@@ -398,6 +398,13 @@ Use the [complete facet source criteria](../expand-workflow/plan.md#complete-fac
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Resolve binds actual foreign symbols/endpoints/schemas/imports and generated target namespaces to authentic versioned source/provider/profile/target facts. An import neither invokes a provider nor grants authority; unsupported host behavior cannot leak through a package name.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Resolve task authority

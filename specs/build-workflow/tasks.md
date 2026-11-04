@@ -59,6 +59,24 @@ L14 actual facet lock-and-version criterion (Open): Resolve and record each sele
 <!-- build-facet-source-lock:end -->
 
 
+
+<!-- build-alternative-types-source-locks:start -->
+
+Apply the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 actual type-provider identity and lock criterion (Open): Record the actual deterministically selected custom type provider/version, fact/proof schema, restrictions and required solver/package/compiler inputs in typed-Core metadata, package locks and the artifact graph before dependent compilation/reuse. Preserve declared supported profiles/facets/features and authentic source identity; the example provider name/version/schema is not a default selection. Reject ambiguous/missing providers, incompatible lock/schema identities and coherently substituted providers that reuse another checker's facts or soundness evidence. Required evidence: real resolved-provider/typed-Core/lock joins and changed-provider/source/schema refusal fixtures; completed Build/release and an external solver are not universal prerequisites for local declaration construction.
+<!-- build-alternative-types-source-locks:end -->
+
+
+
+<!-- build-interop-source-locks:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 actual boundary identity and compatibility-lock criterion (Open): Resolve authentic incumbent/provider/schema/runtime/ABI/protocol/version/range/source and profile/target constraints into real package/lock/artifact identities before dependent generation or admitted reuse. Preserve declared compatibility/deprecation and temporary-shim state; a generated file or host package name cannot supply its own first source identity or grant. Reject ambiguous/missing/incompatible or coherently substituted foreign/schema/target/lock records. Required evidence: genuine declaration-to-resolved-lock joins, changed-version/source refusals and explicit missing support; ordinary source construction needs no final release, signing or live package mutation.
+<!-- build-interop-source-locks:end -->
+
+
 - [ ] `build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects` Execute typed graph under declared build effects
 
 Status: Open
@@ -140,6 +158,24 @@ Apply the [complete facet source criteria](../expand-workflow/plan.md#complete-f
 
 L14 actual facet invalidation criterion (Open): Include authentic selected facet identity/version/source/schema/surface/activation, required facets, profile/target, lowering/checker/provider and declared effect/grant/build-input identities in the applicable semantic cache dependency graph. Changed syntax, IR, lowering, profiles, schema, privacy policy or grants invalidates affected expansion, typed/domain verification, proof, artifacts and diagnostics before real owner regeneration and current-policy admission. Preserve the existing selected-engine/shared-Build cache boundary; source-only inspection can precede semantic products. Reject stale facet proof/validation reuse, hidden build inputs and silent stable compatibility drift. Required evidence: actual unchanged hit, changed-input miss/refusal and clean/rebuilt products; identical keys or assigned preserved flags alone do not establish current validity.
 <!-- build-facet-source-reuse:end -->
+
+
+
+<!-- build-alternative-types-source-cache:start -->
+
+Apply the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 actual type-provider cache and invalidation criterion (Open): Include authentic selected provider/version/fact/proof/solver dependencies, source/compiler/profile/target/macro/facet/grant and permitted build-effect inputs in applicable semantic identities. Source/provider/profile/target/macro/facet/grant changes invalidate affected types, checks, ownership/domain facts, proofs, diagnostics and downstream artifacts before actual owner regeneration/current-policy reuse. Matching digests cannot grant authority or validate a stale proof; early real dependency/checker interfaces precede later actual products. Required evidence: genuine unchanged hit and changed-input miss/refusal with clean-versus-regenerated outputs, without project work/input/cost/attempt allowances or fresh migration proofs as ordinary editing prerequisites.
+<!-- build-alternative-types-source-cache:end -->
+
+
+
+<!-- build-interop-source-cache:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 actual interop regeneration and drift-cache criterion (Open): Bind actual source/schema/provider/ABI/runtime/version/layout/profile/target/lock/compiler/generator/effect/grant inputs and their declared compatibility policy to generated bindings, codecs, wrapper audits, type/error/ownership maps, diagnostics and parity artifacts. Changed schema/ABI/CString layout or governing inputs invalidate affected claims before real owner regeneration/rechecking and current-policy reuse; matching digests do not prove wrapper or parity semantics. Reject stale/drifted/coherently substituted products and missing dependencies. Required evidence: real unchanged reuse and changed-input miss/refusal, regenerated source/facts and source-bound drift diagnostics; no project work/input/cost/attempt quota is added.
+<!-- build-interop-source-cache:end -->
 
 
 - [ ] `build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records` Produce and verify package/provenance/signing records
@@ -256,6 +292,15 @@ Apply the [complete library foundation criteria](../stdlib-workflow/plan.md#comp
 
 Library foundation recipe criterion (Open): Produce the actual standard-library release recipe and repeat-build comparison over controlled source/project/lock/compiler/toolchain/graph/profile/target/environment/locale/timezone/order/timestamp/seed/network/generated/blob/FFI inputs and output identities. Record permitted nondeterminism and policy exceptions and bind actual canonical content/manifests rather than filenames or supplied matching hashes. Refuse missing/changed/unrecorded inputs and false reproducibility. Evidence: real locked build recipes, actual repeated content/manifest comparisons, invalidation and exact package/STD1 refusals; future signed outputs are no first recipe inputs.
 <!-- library-base-source-recipe:end -->
+
+
+
+<!-- build-interop-source-reproducibility:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 actual versioned binding and artifact reproducibility criterion (Open): Repeat selected real declared generation/builds from the same authentic incumbent/schema/provider/compiler/target/lock and permitted effect inputs, comparing actual binding/codecs/metadata/provenance artifacts under the governing reproducibility contract. Versioned labels and assigned reproducible flags do not establish equality, compatibility, privacy or incumbent parity. Preserve accurate source identity even where selected semantic outputs are stable; unavailable inputs cannot pass. Required evidence: genuine repeated locked-build/generation comparisons and changed-input/missing-source negatives, with final selfhost/release equivalence and authorized signing/publication remaining separate.
+<!-- build-interop-source-reproducibility:end -->
 
 <!-- build-implementation-tasks:end -->
 

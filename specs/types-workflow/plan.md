@@ -296,6 +296,219 @@ Use the [complete facet source criteria](../expand-workflow/plan.md#complete-fac
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete alternative type system source criteria
+
+Read complete [L17](../../docs/phase-01-core-language/027-l17-alternative-type-system-contract.md),
+L5/C7, the selected provider and actual profile/facet/evidence contracts. Existing
+[task authorities](tasks.md#implementation-tasks) retain all editable outcomes;
+criterion keys below are source joins within those tasks, not new tasks. The
+source proposal preserves every prior status/checkbox and original C7
+publication reservation. Current source/interface entailment, independent
+acceptance and integration remain pending.
+
+| Criterion | Existing task | Source requirement |
+| --- | --- | --- |
+| `provider` | `auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection` | L17 complete type-provider declaration and selection criterion (Open) |
+| `claims` | `auth/remaining-tasks-and-evidence/publish-conformance-and-remaining-trust-assumptions` | L17 complete selected-provider soundness-claim criterion (Open) |
+| `solve` | `types/current-evidence-and-remaining-work/types1-solve-core-constraints` | L17 actual selected alternative-checker execution criterion (Open) |
+| `typed-facts` | `types/current-evidence-and-remaining-work/types2-check-declared-abstractions` | L17 actual type-provider abstraction and fact-boundary criterion (Open) |
+| `boundaries` | `types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit` | L17 complete gradual and dynamic-boundary criterion (Open) |
+| `exports` | `types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts` | L17 complete common typed-Core and fact-export criterion (Open) |
+| `verify` | `types/current-evidence-and-remaining-work/types5-integrate-typed-core` | L17 actual common typed-Core verification and consumer criterion (Open) |
+| `corpus` | `types/current-evidence-and-remaining-work/types5-integrate-typed-core` | L17 actual reference-corpus compatibility criterion (Open) |
+| `effects` | `effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering` | L17 actual alternative-type function-effect admission criterion (Open) |
+| `grants` | `auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime` | L17 actual typed-capability and checker-authority criterion (Open) |
+| `ownership` | `legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis` | L17 actual alternative ownership-analysis boundary criterion (Open) |
+| `profile` | `legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks` | L17 actual alternative-checker profile-soundness criterion (Open) |
+| `unsafe` | `legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries` | L17 actual alternative-checker unsafe-boundary criterion (Open) |
+| `refinement` | `opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors` | L17 actual refinement-proof consumption criterion (Open) |
+| `regeneration` | `opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate` | L17 actual alternative-fact regeneration criterion (Open) |
+| `layout` | `lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout` | L17 actual alternative-type layout consumer criterion (Open) |
+| `locks` | `build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution` | L17 actual type-provider identity and lock criterion (Open) |
+| `cache` | `build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation` | L17 actual type-provider cache and invalidation criterion (Open) |
+| `diagnostics` | `diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema` | L17 complete alternative-type diagnostic-carrier criterion (Open) |
+| `origins` | `diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order` | L17 actual alternative-type source diagnostic mapping criterion (Open) |
+| `runtime` | `runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup` | L17 actual inserted-runtime-check execution criterion (Open) |
+| `provider-declaration-existing` | `auth/remaining-tasks-and-evidence/complete-provider-declaration-and-deterministic-selection` | Preserve the complete existing criterion bytes and owner. |
+| `reference-boundary-existing` | `types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit` | Preserve the complete existing criterion bytes and owner. |
+| `typed-interface-existing` | `types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts` | Preserve the complete existing criterion bytes and owner. |
+| `verifier-existing` | `types/current-evidence-and-remaining-work/types5-integrate-typed-core` | Preserve the complete existing criterion bytes and owner. |
+
+
+The preserved original L17 population has 95 source facets, 66 occurrences and
+six owner obligations. Read complete section preambles, lists, examples and
+following conditions. The source census is preserved local identity/custody,
+not aggregate publication/adoption or semantic acceptance. Four current L15/
+L5/C7 criteria remain exact. The selected profile74 operation/binding records
+contain no exact alternative-soundness/refinement predicate for the two queried
+ids; those original obligations remain task-reference-only with full predicate
+joins pending in the preserved census. New clauses supply current source joins;
+this is not proof no other review exists and renews none.
+
+### Replacement machinery and actual provider selection
+
+Preserve thirteen permitted replacement families: inference, constraints,
+refinements, gradual checking, ownership/borrowing, regions, linear resources,
+nullability, taint, schema synthesis, hardware widths, workflow states and agent
+tool schemas. Purpose examples additionally allow dependent fragments and
+effect-polymorphic inference when claimed. The selected engine must actually
+produce compatible checked facts/results; declaration and emitted records
+alone implement none of those features.
+
+Eight boundaries remain authoritative: core evaluation, effect legality,
+capability checks, memory safety, profile validation, unsafe rules, artifact
+provenance and backend layout contracts unless actual required facts are
+exported. Alternative machinery may strengthen facts under its declared claim,
+but cannot weaken the same profile or replace Gravity with host type semantics.
+The ordinary reference mode retains its complete L5/C7 rules. A compatible
+delegated analysis need not be reimplemented in a second engine merely to
+satisfy a workflow label.
+
+Validate authentic selected provider/version, supported profiles/facets/features,
+fact/proof schemas, solver dependencies, build effects, capabilities, conformance
+suites and restrictions. Preserve L15 deterministic choice and ambiguity refusal.
+Actual selected provider identity reaches typed Core metadata, locks and the
+artifact graph. The illustrative provider is not a default implementation,
+profile set, grant or proof. A local pure checker needs no universal live solver,
+plugin, native runtime, complete Build or final release gate; actual selected
+external/plugin actions retain their own real authority and holds.
+
+### Five exact soundness meanings and actual evidence
+
+| Declared claim | Canonical L17 meaning and decisive evidence |
+| --- | --- |
+| `:reference-equivalent` | Same L5 accepted and rejected programs up to diagnostic precision; actual corresponding corpus/comparison and applicable profile evidence. |
+| `:strict-extension` | An L5 subset with stronger facts; preserve this source definition rather than the usual intuition from the name. Actual compared restrictions/facts and profile evidence remain required. |
+| `:conservative-extension` | All L5 programs plus additional annotated programs while preserving safe-code guarantees; actual comparison and extra-annotation/fact/profile evidence. |
+| `:gradual` | Partially typed programs through explicit checked boundaries with actual representation/profile legality, failure and blame. |
+| `:domain-specific` | Declared facet/namespace scope lowering to ordinary typed Core with actual exported boundary facts. |
+
+Each safe-profile claim identifies its actual supporting theorem, proof,
+test-suite or audit artifact. Do not force every claim to identical acceptance,
+claim a finite fixture count proves an unrestricted theorem, require stronger
+methods than its governing policy, or accept supplied passed/safe flags. Types
+owns actual checker/common-Core fixture products, existing Release harnesses
+independently execute applicable language/compiler/profile/safety/formal cases,
+and Auth consumes real claim/profile/compatibility results for admission and
+reporting. Missing, incompatible, stale, unavailable or held evidence stays
+explicit. No historical review becomes current acceptance or a routine per-run
+permission gate.
+
+### Common typed Core, facts and preserved legality
+
+Verify all ten output groups: expression/binding types; function effect sets;
+capability requirements; panic/errors; relevant ownership/lifetimes; relevant
+allocation/resources; inserted casts/checks; erased-check proof references;
+profile assumptions; source mapping. Eight artifact families remain provider
+declaration, typed-Core lowering, fact exports, proof/refinement artifacts,
+cast/runtime-check records, diagnostic maps, reference compatibility and
+profile soundness. Optimizers, safety checkers, lowerers, docs, package auditors
+and language servers consume common schemas rather than the whole theory.
+
+Preserve function effects/capabilities/panic/allocation/resource behavior and
+explicit ownership/borrow/region/linear/init/nullability/taint/schema facts when
+used. A checker unable to model effects is restricted to explicit-effect
+contexts the reference effect checker can verify. Auth independently checks
+actual grants and authentic linear/affine capability-value facts; typed values
+remain ordinary values with authority metadata. Scope read/write IR separately,
+with no authority inferred from provider/package/proof/soundness labels.
+
+Nine ownership analysis families remain borrowing, moves, regions, arenas,
+linear resources, uniqueness, initialization, pinning and foreign-handle
+lifetimes. Export enough actual facts for memory safety, release, concurrency
+transfer and layout. An unproved required property retains a permitted real
+runtime check, rejection or explicit audited unsafe boundary; no unknown-safe
+outcome exists. Safe Gravity keeps D8 guarantees. Gradual checks require legal
+runtime metadata/allocation/representation and five real boundary fields:
+source span, expected type, inserted check, failure type and blame. The
+accept-json/checked-cast example must yield its actual accepted value or declared
+DecodeError behavior; unchecked casts stay unsafe and never prove safe elision.
+
+Six facet fact families cross boundaries through actual typed artifacts: Schema
+record/validator, EFIR domain/range/differentiability/proof, Hardware width/clock/
+bus/reset, Workflow durable/replay/signal/retry, Agent prompt/tool/model-shape/
+guardrail and Query row/cardinality/nullability/transaction. Source comments,
+backend assumptions and a fact-export flag are no producer evidence. The
+inherited Legality dynamic owner remains profile legality alongside Types
+boundary construction and Runtime execution; original Types4 artifact ownership
+remains alongside actual Types5 verification. No original role is transferred.
+
+### Transformations, diagnostics, source applicability and next work
+
+Use a fact only from the actual selected provider, current profile/target,
+serialized typed-Core proof/refinement or proof artifact, stable for the selected
+transform and actually rechecked/invalidated with changed source/provider/
+profile/target/macro/facet/grants. Every erased check retains the proof reference
+that actually justified it under governing D9/SAFE15/PERF10/C18 obligations.
+Unchecked casts, structural validity, normal-result equality or trusted labels
+are not that evidence. Available real checker interfaces precede work; actual
+required proof/validation, owner regeneration and new-subject verification
+precede use. Valid unoptimized source needs no universal optimizer or whole
+future Formal implementation. Lower consumes authentic required layout facts;
+Build binds provider/fact/proof/solver identity and actual current-policy reuse.
+
+All ten L17 diagnostic meanings retain actual provider id/version, profile,
+source span, generated origins, type expression, effects, capabilities, relevant
+proof and failed core rule. Macro/generated/facet mapping points back to original
+source and actual type facts; gradual failure/blame remains. Diag transports
+real owner failures under proper redaction and cannot fabricate an outcome.
+Reject effect/capability erasure, unsafe casts as safe proof, hidden nullable
+references, unconsumable common output, lost domain facts and unsupported
+soundness/profile claims with actual positive/refused cases.
+
+Current bounded source inspection covers the complete selected
+[alternative-type recorder](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00084-record-alternative-type-call.clj),
+its immediate ordinary call checker and thirteen compatibility specifications,
+the selected conformance collector and its typed-artifact emission caller. These
+inspected source files at `f6d26ebfde3f2880ae888b3831e00915e524ea5d` are byte-identical
+to actual main `bf1cb9b60bb719488afadd73680fb30a0fe40ec1`. The
+[call checker](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00099-check-call-node.clj)
+checks argument nodes and applies the specification's outer effects/capabilities
+before recording. The recorder then projects argument values and assigns
+deterministic-selection/lock/downstream/soundness/check/proof/profile flags.
+The [selected collector](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00105-l17-required-alternative-type-families.clj)
+counts eighteen family tokens from record/status presence and emits
+complete/incomplete; its
+[typed-artifact caller](../../bootstrap/clojure/src/gravity/bootstrap_impl/semantic_early/12567-typed-artifact-phase-03.clj)
+places that collector result in the artifact, and the emission catalogue includes
+the corresponding field. This is partial outer-call/carrier/collection behavior,
+not an executed alternative solver, selected provider invocation, L5 corpus
+comparison, checked proof replay or profile-soundness result. The compatibility
+specification's `:compiler/ir` spelling does not establish canonical scoped
+`:compiler/ir-transform` authority. Other implementations and alias/scope
+equivalence remain unassessed. No helper or compiler executes during this
+inspection, and no whole absence or whole implementation is inferred.
+
+Complete L17 selected-result staging still belongs in the existing dependency
+representation. The original source proposal's 2,665 joins, 147 routes, 107
+parents and 128-task feedback figures describe its historical checkpoint, not
+this current composition. This text-only increment changes no shared route or
+future binding; the forty future task identities remain. Original unique
+dependency predicates still require current-source reconciliation rather than
+restoring a historical declaration wholesale. Initial declarations/interfaces,
+actual checked outputs, independent conformance and final acceptance remain
+distinct. Global source/owner/task and interface entailment remain unassessed.
+Reader contract coverage stays the first actual implementation increment.
+Preserve the separate D1/C1/C5/C6 ordering decision, actual restrictions and
+source reservations. Hermetic inputs follow Matt's recorded L12 selection and
+the separately reviewed L6 clarification already in this author base; those
+source objects still require current binding and main integration. No older
+macro denial or source-review acceptance is restored. Unicode/type/index/arity/
+representation/authenticity and real host/storage/platform/external-billing
+conditions remain; removed project work/input/cost/attempt quotas do not return.
+No held compiler/provider/plugin/C7-publication/C12/native/callback/device/probe/
+replay/migration/private-store/signing operation is performed. The user has
+authorized review/integration coordination; the stopped public-contract-cluster
+handoff and recorded denied reviewer wake remain restricted. No aggregate is
+adopted or published, and no main merge or implementation acceptance is claimed.
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Types checks complete foreign declarations, six directional mapping families and actual null/error/ownership/layout facts, exports all ten artifact families and verifies ordinary generated consumers. Declared Option absence remains legal; lossy conversions are explicit and fallible conversions return Result or the declared boundary error.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Types task authority

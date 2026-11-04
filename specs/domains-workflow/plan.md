@@ -625,6 +625,27 @@ Use the [complete facet source criteria](../expand-workflow/plan.md#complete-fac
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Keep actual Schema/EFIR/Hardware/Workflow/Agent/Query fact producers and six family meanings. Their typed artifacts carry record/validator, numeric domain/range/differentiability/proof, width/clock/bus/reset, durable/replay/signal/retry, prompt/tool/model-shape/guardrail and row/cardinality/nullability/transaction facts across boundaries. This interface does not accept whole domain implementations.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Existing Schema/Query/Workflow/AI and other domain owners supply actual source schemas, types/codecs/validators and claimed typed/service results behind declared L19 boundaries. Seven shim examples remain real conditional input/output contracts, not implementations inferred from names. Pure generation supplies no live model/tool/database/store or physical-device authority.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Keep actual EFIR/math/GPU/hardware/workflow/query/schema/UI/AI source semantics and verified domain anchor/schema/entry/verifier/exit products distinct from backend family implementation. Selected consumers need real typed/lifetime/order/numeric/policy facts, independent certificate results where required and current source/provenance. Core-only paths need no invented domain IR. Preserve every existing future declaration/source binding and C12/provider/device/migration/replay restriction.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Domains workflow migration

@@ -124,6 +124,24 @@ Library foundation cleanup-runtime criterion (Open): Release real linear resourc
 <!-- library-base-source-cleanup-runtime:end -->
 
 
+
+<!-- runtime-alternative-types-source-runtime:start -->
+
+Apply the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L17 actual inserted-runtime-check execution criterion (Open): Execute each selected checker-inserted permitted gradual/cast/runtime check against its actual value/expected type and profile/representation/allocation contract, yielding the declared accepted value or typed failure with source span, failure type and blame. Preserve relevant ownership/release/panic behavior and authentic provider/check identity; unchecked casts remain explicit unsafe and never a successful safe check or optimization proof. Reject missing/forged check records, unsupported runtime metadata and mismatched source/failure/blame obligations. Required evidence: real selected accept-json-style success and DecodeError/failure cases plus forbidden-profile/unchecked-cast refusals and actual execution traces. Source-only typing needs no universal live runtime or provider; records saying runtime-checked do not execute the check.
+<!-- runtime-alternative-types-source-runtime:end -->
+
+
+
+<!-- runtime-interop-source-hosts:start -->
+
+Apply the [complete interoperability and migration source criteria](plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 complete hosted bridge behavior criterion (Open): Execute selected declared bridge runtime version/reflection-or-dynamic-dispatch/object-lifetime-rooting/threading/exception/performance-allocation/missing-feature contracts, preserving all seven host-declaration fields. Host runtime behavior remains behind an explicit boundary artifact measured and replaceable during migration, not part of portable Gravity. Actual null/error conversion and deterministic resource cleanup use their real owners; host GC alone cannot establish linear release. Reject unknown runtime versions, hidden reflection, unsafe roots/thread affinity, unmodeled failures and hosted behavior in unsupported profiles. Required evidence: actual selected host values/errors/roots/cleanup/source maps and non-hosted refusals; a fixed JVM/JS/Wasm adapter manifest does not execute a bridge or establish those results.
+<!-- runtime-interop-source-hosts:end -->
+
+
 - [ ] `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries` Implement memory, concurrency and typed FFI boundaries
 
 Status: Open
@@ -214,6 +232,15 @@ Library foundation allocation-runtime criterion (Open): Execute the selected all
 <!-- library-base-source-allocation-runtime:end -->
 
 
+
+<!-- runtime-interop-source-execute:start -->
+
+Apply the [complete interoperability and migration source criteria](plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 actual foreign conversion, call and cleanup criterion (Open): At each selected permitted boundary, execute actual declared directional value conversion/call/ownership transfer/borrow/release under real provider/ABI/layout/grant/profile/thread/blocking contracts. Preserve six pointer facts, seven ownership modes and named release behavior across success and failure, with actual synchronized sharing where claimed. Translate foreign exceptions, panics, error codes/errno, rejected promises, signals and process exits into declared Gravity errors before safe entry; unexpected or undeclared null cannot enter non-null types, while declared Option absence remains legal. Reject incomplete maps, wrong allocator/thread/ownership, unmodeled foreign failure and unsafe casts disguised safe. Required evidence: real values/errors/resource and concurrency traces and refusal fixtures; current native/callback/provider/device execution restrictions remain, so manifests and status flags do not close this task.
+<!-- runtime-interop-source-execute:end -->
+
+
 - [ ] `runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution` Connect distributed/AI replay and interactive execution
 
 Status: Open
@@ -281,6 +308,15 @@ Apply the [complete concurrency and IO library criteria](../stdlib-workflow/plan
 
 Library service recorded-service-replay criterion (Open): Record actual replay-relevant scheduling choices and service inputs/outputs/errors with task/step/event/schema/provider/authority identity; replay consumes the recorded results and deterministic choices without repeating recorded external effects. Filesystem/network workflow operations must be recorded, idempotent under the governing contract or activity-isolated; an idempotent label cannot authorize a live call inside a stricter recorded-output segment. Preserve typed timeout/retry/backpressure, cancellation/cleanup and genuine failure/idempotency policy. AI execution preserves tool/model authorization, required review, policy and eval-event order, separately qualifying superseded project budget passages and actual external account restrictions. Reject unrecorded required scheduler/IO/network nondeterminism, changed records and hidden live service reacquisition during replay. Evidence: actual permitted record/replay values, ordering/equality/failure/denial and no-repeat traces with STD7005/STD8007/STD9007 and applicable AI diagnostics; held replay/external actions remain unrun.
 <!-- library-service-source-recorded-service-replay:end -->
+
+
+
+<!-- runtime-interop-source-replay:start -->
+
+Apply the [complete interoperability and migration source criteria](plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 actual process/network/service and migration execution criterion (Open): For selected distributed/AI/workflow/process/tool boundaries, execute declared typed protocol/schema/provider/effect/grant/error/ownership/threading behavior with genuine required replay/audit and no repeated external side effect in replay. Preserve actual status/signal/exit/promise/exception translation and schema-versioned migration compatibility. Source binding or shim generation alone authorizes no live service, subprocess, model/tool or store; unsupported or held requirements stay explicit. Required evidence: real selected input/output/error/release/replay/audit and denied/unsupported cases tied to provider/schema/target/lock identities without inventing a workflow profile or overriding actual restrictions.
+<!-- runtime-interop-source-replay:end -->
 
 
 - [ ] `runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration` Close enforcement and observability integration

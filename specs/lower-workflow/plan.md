@@ -177,6 +177,27 @@ Use the [complete error-handling source criteria](../core-workflow/plan.md#compl
 
 Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Derive actual concrete layout/ABI from authentic common typed-Core representation/ownership/resource facts and current target assumptions. An alternative checker cannot replace layout contracts without exported facts. Early type/ABI contracts, final layouts and actual runtime calls remain separate products.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Actual target ABI/wire/type/layout and foreign allocator/null/error/thread/wrapper assumptions reach lowering with authentic source/provider/profile/target identity. Early ABI rules and independent preliminary types precede concrete layouts; future Runtime traces are no initial layout contract, and held native/backend actions stay held.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Actual selected family feature/ABI/layout/provider/helper/schema/verifier interfaces precede construction, then real verified MIR or required domain input/current proofs precede actual lowering and legal fallback. Preserve source/effects/grants/safety/audit/numeric/order into C/Wasm/managed/MLIR/GPU/HDL/graph/query/mobile outputs and common emission. Optional MLIR/Opt and unselected families are not universal prerequisites; real selected claims still require their actual products.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Lower task authority

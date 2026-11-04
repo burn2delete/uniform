@@ -722,6 +722,20 @@ shared bindings and main integration remain separate subjects. Historical
 source-census identities locate the original proposal; they are not a new
 requirement denominator, aggregate adoption or implementation evidence.
 
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Generated programs retain actual definition/call/generated provenance and enter the selected compatible checker under ordinary source/profile/effect/grant rules. Alternative typing does not bypass Q revalidation or grant build/solver authority; P and Q checks remain distinct actual products.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). The original generated-program task retains schema-binding and scoped-shim ownership. Restore the two exact published finite predicates, produce actual types/codecs/initial wrapper declarations and normally check generated source under L12. Preserve all nine schema fields, seven illustrative shim inputs and real incumbent parity without authorizing live foreign/model/tool or provider execution.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Expand task authority

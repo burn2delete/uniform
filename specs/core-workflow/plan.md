@@ -333,6 +333,20 @@ Use the [complete library foundation criteria](../stdlib-workflow/plan.md#comple
 
 Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
 
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Provide actual common evaluation/binding/control semantics and structural premises before selected checker inference, then consume genuine owner legality products for checked export. Alternative theories replace declared analysis machinery rather than core evaluation, and expected results cannot invent source facts.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Foreign values and errors enter safe Core only through their actual declared directional typed/check/wrapper boundaries; ordinary Core evaluation is unchanged. Preliminary structural candidates precede combined owner admission, while checked exports retain actual facts and unsafe obligations.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Core task authority

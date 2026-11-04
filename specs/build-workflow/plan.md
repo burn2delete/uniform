@@ -275,6 +275,27 @@ Use the [complete facet source criteria](../expand-workflow/plan.md#complete-fac
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Bind actual custom type-provider/version/fact/proof/solver identity in locks and artifact metadata. Reuse depends on authentic source/compiler/profile/target/macro/facet/grants and current effects/policy; changed provider facts/proofs require real owner regeneration. No whole Build/release gates initial declarations.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Build binds real incumbent/schema/provider/runtime/ABI/compiler/generator/profile/target/lock and effect/grant inputs, versions generated artifacts and records compatibility/deprecation. Changed source/schema/ABI/CString layout invalidates affected wrappers, types, codecs and parity before actual regeneration; repeated locked generation needs actual comparison rather than flags.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Resolve actual declared family/runtime/toolchain/dialect/ABI/schema/module/feature/pass/helper/resource/provider inputs before compilation and invalidate affected products on changes. Actual content bytes/canonical representation, common provenance graph, hashes, output-affecting environment and nondeterminism/timestamp policy precede claimed package/reproduction results. Final signing/release is not first artifact schema or authority.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Build workflow migration

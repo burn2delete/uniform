@@ -285,6 +285,27 @@ Use the [complete facet source criteria](../expand-workflow/plan.md#complete-fac
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Expose real versioned selected-checker/typed-Core/fact/proof/verifier interfaces through ordinary stage contracts and check actual outputs before consumption. C17 applies when the provider uses that plugin path; type providers acquire no mandatory plugin loading or hidden compiler privilege. Preserve unresolved source-stage ordering and every callback/C7/C12 hold.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Ordinary source/pipeline/verifier interfaces preserve complete foreign/schema/generated type/effect/grant/profile/resource/unsafe/provenance contracts. A plugin applies only when selected; no universal callback/plugin or new unsafe host facility follows. Existing C7/C12 and native/callback holds remain.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Preserve actual verified selected MIR/domain/anchor and current correlated type/effect/grant/profile/ownership/safety/proof inputs at family handoffs. MLIR dialect/verifier success, target attributes and manifest flags cannot establish source facts. Optional pipelines and later conformance packs do not become first schema inputs; preserve current source-order issues and C12/plugin restrictions.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical workflow-transfer and source-composition plan
 
 # Implementation plan: Compiler API workflow migration

@@ -210,6 +210,15 @@ Complete macro phase and authority criterion (Open): Check compile-time macro pr
 <!-- macro-source-phase:end -->
 
 
+
+<!-- expand-interop-source-compile-time:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 actual schema-import and binding-generation action criterion (Open): Before schema loading or generator execution, check actual source identity, declared compiler/build/read-file effects, authentic schema/file/tool/provider grants and phase/isolation/hermetic/replay contracts under L12/L15. The import-schema example grants no schema/read capability and does not make network or process actions pure. Actual available checked P precedes invocation and generated Q then receives normal checks; final Q acceptance cannot provide the first generator interface. Reject undeclared/ungranted/wrong-phase or unsupported actions and preserve source/generated origins and recorded actual inputs. Required evidence: genuine allowed/denied generation and no action after denial, without executing held provider/plugin/probe operations in this planning change.
+<!-- expand-interop-source-compile-time:end -->
+
+
 - [ ] `expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination` expand/4: Validate reuse and termination
 
 Status: Open; partial source evidence above is not closure
@@ -349,6 +358,42 @@ Apply the [complete facet source criteria](plan.md#complete-facet-source-criteri
 
 Source obligation `language/facet/preserve-disclosure-boundary`: Preserve private witness/value/credential/proof disclosure labels and provenance across facet conversions unless a checked boundary explicitly declassifies them. Accept: Carry privacy labels, witness-generation provenance, reveal reason and public-output schema through conversions of private witnesses/encrypted values/credentials/proofs unless a checked boundary explicitly declassifies them. Facet IR exposes the relation, public/private split, custody, disclosure policy, provider trust and verification-artifact shape; test zk composition with schema/security/formal artifacts as source data. Reject: Reject an opaque proof/private-computation backend call or any erased custody/label/provenance/disclosure field; L14-PRIVACY-BOUNDARY includes witness/value ID, public schema, reveal reason when present and erasing edge. Required outputs: Typed facet privacy/declassification records, relation/custody/provider/verifier schema, preserved/erased-boundary fixtures and structured diagnostics. Dependencies consume versioned facts/receipts from auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime, types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts, effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering; they do not require blanket component completion. Implementation status remains Open.
 <!-- expand-facet-source-finite-preserve-disclosure-boundary:end -->
+
+
+
+<!-- expand-interop-source-generate:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 complete schema-binding and scoped-shim generation criterion (Open): Generate actual Gravity types, functions, codecs and initial wrapper declarations from authentic declared incumbent/schema sources, preserving schema digest/version, generated types/codecs, field nullability, error/status maps, runtime effects/grants, changed-schema compatibility and diagnostic provenance. Cover all nine schema-binding fields and normal L12 read/build authorization, ordinary generated-source checking and foreign origin rather than relabel output handwritten. Claimed C-header, selected Java classes, TypeScript declarations, Python-model tool boundaries, SQL schema/query migrations, GraphQL operations/validators and ABI-safe Rust examples retain their distinct actual inputs and outputs; support for a foreign language adds no bootstrap/tooling language. Keep shims temporary unless promoted and expose preserved/emulated/narrowed/rejected behavior, owner, stability and parity. Reject stale identity/drift, obscured loss, missing mappings or bypassed checks. Required evidence: actual reproducible source/codec/shim products and schema-drift/parity negatives, with original Expand ownership and all held executions preserved.
+<!-- expand-interop-source-generate:end -->
+
+
+
+<!-- expand-interop-source-parity:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+L19 complete incumbent compatibility and migration evidence criterion (Open): Supply actual selected shim/binding/wrapper cases and incumbent oracles for golden behavior, directional type-map round trips, errors, ownership transfer, resource release, concurrency/blocking, performance envelopes where replacement is sensitive and unsupported-profile rejection. Preserve all eight evidence families and at least one real incumbent-language/schema parity report, with provider/schema versions, target manifests and lockfiles. Actual generators and runtime/type/resource owners produce their results; existing independent Release language/compiler/profile/runtime/safety/library harnesses execute applicable selected fixtures. A supplied passed report or equal demonstration value proves neither omitted behavior nor full interoperability. Required evidence: actual declared preserved/emulated/narrowed/rejected comparison and failures, exact identities and explicit held/unavailable cases; shims remain temporary unless promoted.
+<!-- expand-interop-source-parity:end -->
+
+
+
+<!-- expand-interop-source-finite-emit-scoped-migration-shim:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+Source obligation `language/interop/emit-scoped-migration-shim`: Emit a migration shim with an explicit incumbent/Gravity boundary contract recording preserved, narrowed or rejected behavior, ownership, generated files, effects/authority, stability/owner and scoped parity evidence. Accept: Generate a shim for a declared native/host/schema/process/service incumbent boundary, naming incumbent source, Gravity namespace, preserved/emulated/narrowed/rejected behavior, effects/grants, safety, generated files, parity tests, owner and stability. Keep it temporary unless promoted; bind evidence to provider/schema/target/lock versions. Compare golden behavior, directional type round trips, errors, ownership/release, concurrency/blocking, performance where sensitive and unsupported-profile rejection; supply at least one incumbent-language/schema parity report. Reject: Reject obscured behavior loss, stale source/provider/schema/target/lock evidence, missing ownership/release/error mapping or failed incumbent parity; report L19-MIGRATION-PARITY. Required outputs: Generated shim/provenance, compatibility/deprecation records, scoped parity/round-trip/error/lifetime/concurrency reports and negative diagnostics. Dependencies consume versioned facts/receipts from runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries, types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime, build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects; they do not require blanket component completion. Implementation status remains Open.
+<!-- expand-interop-source-finite-emit-scoped-migration-shim:end -->
+
+
+
+<!-- expand-interop-source-finite-generate-schema-binding:start -->
+
+Apply the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria) within this existing Open task. Preserve original criteria, historical review scopes and actual restrictions; current source/interface and implementation acceptance remain pending.
+
+Decision criterion interface/language/interop/generate-schema-binding: Generate typed foreign/schema bindings and codecs reproducibly from named source digest/version; retain nullability, status/error/effect/grant maps and source/foreign provenance. Reject: Reject stale schema/provider/target/lock identities, missing required mapping and generated bindings bypassing ordinary compile-time policy. Required outputs: Binding/codec/schema and provenance manifests, reproducible/parity fixture outputs and schema-drift/missing-map rejection.
+<!-- expand-interop-source-finite-generate-schema-binding:end -->
 
 <!-- expand-implementation-tasks:end -->
 

@@ -144,6 +144,27 @@ Use the [complete error-handling source criteria](../core-workflow/plan.md#compl
 
 Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Use common typed-Core/fact/proof/diagnostic schemas for actual documentation and language-server semantic views, without requiring every tool to know the alternative theory. Source-only inspection can start earlier; claimed semantic results need current selected-provider products and source maps.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Documentation, LSP, debug and inspection services consume actual foreign/schema/generated source, type/error/ownership/provider/version/target and wrapper/migration artifacts. Origins map to real source spans or manifest entries with redaction; tools cannot fabricate normalization, parity or executed foreign behavior.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Use stable common artifact-kind schemas and genuine source/generated/IR/target/proof/dependency graphs without loading backend implementation code. Queries and diagnostic views must resolve actual emitted constructs to source and justifying evidence, preserving current toolchain/profile/target/provider/fixture identity and invalidation. A graph-shaped supplied record, hash or equal execution result cannot establish provenance or conformance.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Developer Tools workflow migration

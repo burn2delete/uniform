@@ -947,6 +947,27 @@ Use the [complete facet source criteria](../expand-workflow/plan.md#complete-fac
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Consume authentic exported selected-provider ownership/borrow/region/linear/init/nullability/taint facts and applicable profile soundness evidence. Compatible delegated analysis need not duplicate machinery, but required properties retain actual checks/rejection/explicit unsafe boundaries. Gradual representation must be permitted and unchecked casts never prove safe optimization.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Legality preserves original wrapper-safety ownership, actual invariant proof/checks, seven ownership modes, six foreign pointer facts and eight-profile legality, including Core schema-only portability and Workflow as a distributed facet. Actual D8 outcomes and sufficient owner facts precede safe export; manifests or assigned audits cannot prove safety.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Profiles, resource/safety/ownership/taint and separate authority legality precede target use. Host null/errors/reflection, GPU host/device transfers, hardware fixed widths/CDC, replay side effects, SQL taint and mobile permission/lifecycle are real boundaries, not backend/runtime-only legalization. Preserve four safety outcomes, independent meaningful target/semantic bounds and accounting removal; no generic unsafe label waives hardware/review policy.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Legality task authority

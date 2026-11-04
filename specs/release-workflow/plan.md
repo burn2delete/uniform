@@ -330,6 +330,27 @@ Use the [complete facet source criteria](../expand-workflow/plan.md#complete-fac
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Consume actual owner L5 accepted/rejected and provider/common-Core fixtures through existing independent language/compiler/profile/safety/formal harnesses as applicable. Compare the exact declared soundness population; one fixture, family counter or compatibility status cannot establish full provider or profile support.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Existing independent language/compiler/profile/runtime/safety/library harnesses execute actual selected owner cases and incumbent oracles for all eight compatibility-evidence families, including performance where sensitive and at least one real incumbent-language/schema parity report. Unavailable/held execution remains Open; projected passed reports and final release checkboxes are not first fixtures.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Compose actual B14 shared/per-family matrices and exact diagnostic/metadata/artifact/differential-reference/replay packs, including accepted/refused and partial-output cases. Target availability explains only justified skips; required shared checks remain and a default-target run cannot accept wider support. Preserve TEST6's original conditional scope without weakening B14. Actual policy-required conformance/reproduction and content provenance govern stabilization/release; final self-hosting/seedless work is not the first family fixture gate.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Release workflow migration

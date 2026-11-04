@@ -43,6 +43,13 @@ Use the [complete error-handling source criteria](../core-workflow/plan.md#compl
 
 Task identities/statuses, historical review scopes and actual restrictions remain. Current full source/interface entailment and independent acceptance are pending; no held operation is enabled.
 
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Expose actual kind/encoding/write/readback/map and common-manifest interfaces, then write real selected family artifacts and current required metadata. Full source-to-target graph, type/effect/grant/safety/proof/audit/source/helper/dependency/conformance/reproduction remain inspectable. Explicit development-only gaps stay non-release and cannot legalize invalid inputs; signing or future complete packs are not first writer inputs.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Emit task authority

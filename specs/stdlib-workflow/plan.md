@@ -420,6 +420,13 @@ Initial real signatures, provider/profile rules, schema/ABI and fixture expectat
 
 Current-main preservation qualification: the source-identity and non-execution statements above describe the original author proposal. The user subsequently authorized review/integration coordination to land remaining changes on main. That exception does not authorize the stopped public-contract-cluster handoff or any held implementation operation. The preserved source transitions and owner proposals require binding to the actual current-main frame and independent review; source custody is not whole-source entailment or acceptance.
 
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Existing resource APIs own actual safe foreign wrappers, conversions and named release over selected real Runtime/provider services; schema/service adapters own usable typed codecs/validators and declared normal effects/grants. Metadata, function names, host GC and generation-only bundles cannot establish executed value/error/cleanup behavior.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Standard Library workflow migration

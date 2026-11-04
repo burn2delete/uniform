@@ -362,6 +362,27 @@ Use the [complete facet source criteria](../expand-workflow/plan.md#complete-fac
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Validate actual selected type-provider declarations/identity/feature/profile/schema/solver restrictions and preserve deterministic L15 choice. Actual checker/corpus/profile/proof owners supply soundness evidence; Auth admits and reports claims, with real scoped grants and exported linear/affine capability facts. The five L17 claim meanings remain exact.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Auth retains original foreign-boundary admission and real provider/phase/scope/grant checks, consuming actual complete Types/Resolve/profile/resource/wrapper/error facts rather than replacing those owners. Declaration, import, shim or wrapper names grant no authority.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Keep actual selected host/global/import/device/database/model/tool/provider identity, source effects, grants, trust/taint and human-review policy distinct from backend availability or OS permission. Foreign schemas, package names and prompt/tool output issue no authority. Imported certificate compatibility/trust and actual operation gates remain required for affected claims; no held action becomes enabled.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Auth task authority

@@ -169,6 +169,27 @@ Use the [complete library foundation criteria](../stdlib-workflow/plan.md#comple
 
 Existing task status, historical evidence, actual restrictions and forty future declarations/bindings remain. Current whole-source/interface acceptance is pending; no held operation is enabled.
 
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Consume only selected-provider, current profile/target, serialized proof/refinement facts stable under the actual transform. Erased checks retain their actual justifying proof reference and governing checked evidence; seven changed-input categories force real rechecking/invalidation. Valid unoptimized source gains no universal Formal gate.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). Actual foreign effects, failures, pointer lifetime/threading, alias/allocator/release, safe-wrapper checks and target assumptions survive transformations under their governing preservation evidence. Changed source/schema/ABI/layout invalidates affected proofs/facts; valid unoptimized input remains possible.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Selected transformations preserve actual source/domain semantics, numeric modes, ownership/alias/order/effect/grant/profile facts, source/audit and certificate identities or perform required accepted invalidation/repair/regeneration. MLIR passes need actual before/after verifiers and downstream legality; strict GPU reductions, host/null boundaries and database predicate movement cannot inherit host/dialect defaults. Optional paths remain optional and actual required certificate/reference evidence is not a metadata flag.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Opt task authority

@@ -218,6 +218,27 @@ Use the [complete facet source criteria](../expand-workflow/plan.md#complete-fac
 Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
 
 
+## Complete alternative type system source interface
+
+Use the [complete alternative type system source criteria](../types-workflow/plan.md#complete-alternative-type-system-source-criteria). Preserve all ten genuine L17 diagnostic meanings and provider/version/profile/span/generated/type/effect/grant/proof/rule context. Actual checker and consumer failures supply records; source/macro/facet maps and gradual blame/failure provenance survive transport and redaction.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete interoperability and migration source interface
+
+Use the [complete interoperability and migration source criteria](../runtime-workflow/plan.md#complete-interoperability-and-migration-source-criteria). All eleven L19 diagnostic meanings retain ten actual context fields, foreign/source/generated origins and wrapper/migration remediation. Real owning failures supply the carrier; a diagnostic catalog or map-preserved label proves no checker, parity or source-map result.
+
+Current source/interface entailment and independent acceptance remain pending. Preserve existing task identities/statuses, historical review scopes and every actual restriction. No held execution is enabled.
+
+
+## Complete B4-B14 source interface
+
+Use the [complete B4-B14 source criteria](../backends-workflow/plan.md#complete-b4-b14-source-criteria). Carry every B4-B14 diagnostic identity and its distinct owning source/generated/IR/domain/host/world/ABI/async/kernel/clock/workflow/query/platform/artifact/fixture context through success and rejected partial outputs. Common emission cannot suppress upstream failures; independent metadata faults must remain observable even when values agree. Redaction preserves refusal meaning.
+
+Original task identities/statuses, source predicates and historical review scopes remain; current whole-source/interface entailment and implementation acceptance are unassessed. No held operation is enabled.
+
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Diagnostics task authority
