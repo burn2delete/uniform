@@ -1,7 +1,9 @@
 (ns gravity.ownership.pipeline-test
   (:require [clojure.test :refer [deftest is]]
+            [clojure.java.io :as io]
             [gravity.bootstrap :as b]
             [gravity.c9-ownership-checker :as c9]
+            [gravity.c9-ownership-checker.catalog :as catalog]
             [gravity.c9-ownership-checker.graphs :as graphs]
             [gravity.c9-ownership-checker.lifecycles :as lifecycles]
             [gravity.c9-ownership-checker.resources :as resources]
@@ -26,7 +28,9 @@
            'native-linear-resource-flow-graph 'native-transfer-records
            'native-runtime-check-records 'native-unsafe-audit-references
            'native-ownership-diagnostics 'native-linear-paths-exact?
-           'native-verifier-report 'native-ownership-capability-proof 'native-validate!}
+           'native-verifier-report 'native-ownership-capability-proof 'native-validate!
+           'native-diagnostic-ids 'native-governing-document 'native-rejected-designs
+           'native-override-diagnostics 'native-ownership-message}
          (set (keys (ns-publics 'gravity.ownership)))))
   (doseq [[name operation] (ns-publics 'gravity.ownership)]
     (let [contract (:gravity/namespace-contract (meta operation))]
@@ -36,6 +40,69 @@
       (is (false? (:authenticates-inputs? contract)))
       (is (false? (:issues-verifier-certificates? contract)))
       (is (some #{:general-c9-analysis} (:unsupported contract))))))
+
+(deftest native-catalog-values-retain-stable-diagnostics-paths-and-snapshots
+  (let [ids ownership/native-diagnostic-ids
+        document ownership/native-governing-document
+        designs ownership/native-rejected-designs
+        overrides ownership/native-override-diagnostics]
+    (is (= ["C9-USE-AFTER-MOVE" "C9-USE-AFTER-CONSUME" "C9-BORROW-ESCAPE"
+            "C9-MUT-ALIAS" "C9-MOVE-WHILE-BORROWED" "C9-REGION-ESCAPE"
+            "C9-ARENA-GENERATION" "C9-LINEAR-LEAK" "C9-LINEAR-DOUBLE"
+            "C9-TRANSFER" "C9-RUNTIME-CHECK" "C9-UNSAFE"] ids))
+    (is (= ids (mapv :diagnostic designs)))
+    (is (= (set ids) (set (vals overrides))))
+    (is (.isFile (io/file document)))
+    (doseq [design designs]
+      (is (.isFile (io/file (:fixture design)))))
+    (doseq [[stage helper facade]
+            [[ids catalog/diagnostic-ids c9/c9-ownership-diagnostic-ids]
+             [document catalog/governing-document c9/c9-ownership-governing-document]
+             [designs catalog/rejected-designs c9/c9-ownership-rejected-designs]
+             [overrides catalog/override-diagnostics c9/c9-ownership-override-diagnostics]]]
+      (is (identical? stage helper))
+      (is (identical? stage facade)))
+    (with-redefs [ownership/native-diagnostic-ids ["stage-rebound"]
+                  ownership/native-governing-document "stage-rebound"
+                  ownership/native-rejected-designs []
+                  ownership/native-override-diagnostics {}]
+      ;; Compatibility aliases keep their original initialization snapshots.
+      (is (identical? ids catalog/diagnostic-ids))
+      (is (identical? ids c9/c9-ownership-diagnostic-ids))
+      (is (identical? document catalog/governing-document))
+      (is (identical? designs catalog/rejected-designs))
+      (is (identical? overrides catalog/override-diagnostics))))
+  (doseq [name '[native-diagnostic-ids native-governing-document
+                native-rejected-designs native-override-diagnostics]]
+    (let [contract (:gravity/namespace-contract (meta (ns-resolve 'gravity.ownership name)))]
+      (is (= :native-catalog-data (get-in contract [:public-api name :kind])))
+      (is (true? (:native-catalog-status-is-data? contract))))))
+
+(deftest native-messages-and-original-facade-interposition-remain-exact
+  (doseq [message [ownership/native-ownership-message catalog/ownership-message c9/c9-ownership-message]]
+    (is (= "owned value is used after move" (message "C9-USE-AFTER-MOVE")))
+    (is (= "linear resource may reach multiple terminal operations" (message "C9-LINEAR-DOUBLE")))
+    (is (= "required dynamic ownership check is unavailable in the active profile"
+           (message "C9-RUNTIME-CHECK")))
+    (doseq [id [nil false :C9-USE-AFTER-MOVE "unknown" {} []]]
+      (is (= "Ownership checking failed" (message id))))
+    (doseq [id ownership/native-diagnostic-ids]
+      (is (not= "Ownership checking failed" (message id)))))
+  (let [calls (atom [])]
+    (is (= :interposed
+           (c9/with-operations {:c9-ownership-message (fn [id] (swap! calls conj id) :interposed)}
+             #(c9/c9-ownership-message :unknown))))
+    (is (= [:unknown] @calls)))
+  (with-redefs [catalog/ownership-message (constantly :helper-rebound)]
+    (is (= :helper-rebound (c9/c9-ownership-message "C9-UNSAFE"))))
+  (let [ids ["provided-native-id"] designs [{:diagnostic "provided-native-id" :fixture "provided"}]
+        registry (c9/with-operations
+                   {:c9-ownership-diagnostic-ids ids :c9-ownership-rejected-designs designs
+                    :source-span (fn [path index] {:source path :form-index index})}
+                   #(c9/c9-ownership-diagnostics "provided-native-source" {}))]
+    (is (identical? ids (:required-diagnostic-ids registry)))
+    (is (= ["provided-native-id"] (mapv :diagnostic (:diagnostics registry))))
+    (is (= "C9-USE-AFTER-MOVE" (first catalog/diagnostic-ids)))))
 
 (def ^:private validation-rules
   [[:ownership-graph-complete? "C9-USE-AFTER-MOVE"]

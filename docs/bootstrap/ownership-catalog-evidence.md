@@ -39,6 +39,30 @@ own CI/artifact audit, current-main composition and immediate exact clean
 integration preflight. This declaration precedes implementation and makes no
 acceptance or integration claim.
 
+The working extraction passes 17 owning tests / 855 assertions. New tests
+check all twelve stable IDs and design ordering, every fixture path, original
+helper/facade object identity and initialization snapshots, catalog metadata,
+all message/default cases, original facade interposition and unchanged
+explicit catalog overrides. All twenty-four earlier function bodies and the
+four original literal forms remain exact, including surrounding helper bytes.
+The stage exposes twenty-nine public functions/data Vars and still imports
+only clojure.set. Pinned stage/helper/test lint reports zero errors/warnings.
+The separate cold C9 regression passes 4 / 94 with Bootstrap absent;
+language and source ownership gates pass 48 / 1198, zero skipped namespaces.
+Document, roadmap and governance validators pass.
+
+The clean original capture SHA-256 is
+b0bb630f707da8e099c296b60de9db00d1bf87989e7dfd582035592395a36d54.
+It retains all four catalog values and fifteen message views, thirteen
+validation-callback cases, two diagnostic-order/source-span cases, seven
+linear and four proof-label views, eleven native profiles (four accepted and
+seven refused), six altered-record refusals and eight opaque-module failures.
+Separately actual paired normalized Gravity plans and the current engine
+execute eight accepted and twenty-eight rejected requests. Actual new-checkout
+source paths/bytes/hashes and recomputed plan identities remain retained.
+Committed capture/lint, independent source acceptance, own CI/artifact audit
+and integration evidence remain outstanding.
+
 The prior source-to-C9 C2-HASH refusal remains untouched and uncredited. Do not
 call, retry, repin, transfer or route around that refused source operation.
 Native catalog and existing normalized fixture boundaries replace no authority.

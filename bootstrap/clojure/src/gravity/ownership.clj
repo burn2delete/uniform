@@ -14,6 +14,14 @@
   {:arglists ([node-ids node module effect-graph]),
    :admission :none,
    :native-compatibility-only? true},
+  native-ownership-message
+  {:admission :none,
+   :native-compatibility-only? true,
+   :arglists ([id])},
+  native-rejected-designs
+  {:admission :none,
+   :native-compatibility-only? true,
+   :kind :native-catalog-data},
   native-unsafe-audit-references
   {:arglists ([module]),
    :admission :none,
@@ -38,6 +46,10 @@
   expected-managed-node-ids
   {:arglists ([forwarded-value-node-ids nodes]), :admission :none},
   persistent-aliasing-valid? {:arglists ([node]), :admission :none},
+  native-governing-document
+  {:admission :none,
+   :native-compatibility-only? true,
+   :kind :native-catalog-data},
   native-transfer-records
   {:arglists ([module]),
    :admission :none,
@@ -46,6 +58,10 @@
   {:arglists ([module]),
    :admission :none,
    :native-compatibility-only? true},
+  native-override-diagnostics
+  {:admission :none,
+   :native-compatibility-only? true,
+   :kind :native-catalog-data},
   native-arena-generation-graph
   {:arglists ([module]),
    :admission :none,
@@ -97,6 +113,10 @@
      ownership]),
    :admission :none,
    :native-compatibility-only? true},
+  native-diagnostic-ids
+  {:admission :none,
+   :native-compatibility-only? true,
+   :kind :native-catalog-data},
   native-region-lifetime-graph
   {:arglists ([module]),
    :admission :none,
@@ -112,13 +132,15 @@
    gravity.c9-ownership-checker.graphs
    gravity.c9-ownership-checker.lifecycles
    gravity.c9-ownership-checker.resources
-   gravity.c9-ownership-checker.verification],
+   gravity.c9-ownership-checker.verification
+   gravity.c9-ownership-checker.catalog],
   :forbids
   [gravity.bootstrap
    gravity.c9-ownership-checker
    gravity.cli
    gravity.release]},
  :performs-runtime-checks? false,
+ :native-catalog-status-is-data? true,
  :preserves-native-records
  [:record-fields-and-collection-types
   :ordering
@@ -131,6 +153,12 @@
  :runtime-check-profile-flags-are-data? true,
  :native-verification-boundary
  :c9-native-diagnostic-and-verifier-projections,
+ :preserves-native-catalog
+ [:literal-values-and-collection-types
+  :catalog-order
+  :compatibility-alias-initialization-and-snapshots
+  :fixture-paths
+  :exact-message-and-default-behavior],
  :native-record-boundary :c9-native-lifecycle-and-resource-records,
  :governing-contracts
  [D1
@@ -154,6 +182,7 @@
   BOOT8
   TEST2
   D6],
+ :native-catalog-boundary :c9-native-diagnostic-catalog-data,
  :preserves-native-verification
  [:diagnostic-order-and-source-spans
   :truthiness-and-vacuity
@@ -186,7 +215,8 @@
   :explicit-native-module-and-profile-data
   :explicit-native-artifact-views
   :diagnostic-id-and-design-data
-  :linear-predicate-proof-and-failure-callbacks],
+  :linear-predicate-proof-and-failure-callbacks
+  :explicit-native-diagnostic-id],
  :preserves-native-graphs
  [:callback-lookup-and-invocation-order
   :exception-identity
@@ -207,7 +237,11 @@
   [:original-c9-validation-decisions
    :original-rule-order-and-payloads
    :callback-owner-retains-exception-construction
-   :original-host-failures]},
+   :original-host-failures],
+  :native-catalog
+  [:original-stable-rule-ids
+   :original-message-and-default-text
+   :caller-retains-validation-and-exception-construction]},
  :artifact-outputs
  [:persistent-ownership-records
   :forwarded-node-identities
@@ -228,7 +262,9 @@
   :native-ownership-diagnostic-registry
   :native-verifier-report
   :native-proof-label-data
-  :native-validation-result],
+  :native-validation-result
+  :native-c9-catalog-values
+  :native-c9-message-string],
  :contract-boundary :native-seed-persistent-ownership-data}
 )
 
@@ -651,6 +687,53 @@
         (fail! id source-path {:stage :ownership-lifetime-region-check}
                {:missing-fields [field]}))))
   :complete)
+
+(def native-diagnostic-ids
+  ["C9-USE-AFTER-MOVE" "C9-USE-AFTER-CONSUME" "C9-BORROW-ESCAPE"
+   "C9-MUT-ALIAS" "C9-MOVE-WHILE-BORROWED" "C9-REGION-ESCAPE"
+   "C9-ARENA-GENERATION" "C9-LINEAR-LEAK" "C9-LINEAR-DOUBLE"
+   "C9-TRANSFER" "C9-RUNTIME-CHECK" "C9-UNSAFE"])
+
+(def native-governing-document
+  "docs/phase-06-compiler-architecture/088-c9-ownership-lifetime-and-region-checker-design.md")
+
+(def native-rejected-designs
+  [{:diagnostic "C9-USE-AFTER-MOVE" :fixture "bootstrap/clojure/fixtures/rejected/compiler-c9-use-after-move.gravity" :rejected-design :use-after-move}
+   {:diagnostic "C9-USE-AFTER-CONSUME" :fixture "bootstrap/clojure/fixtures/rejected/compiler-c9-use-after-consume.gravity" :rejected-design :use-after-terminal-consume}
+   {:diagnostic "C9-BORROW-ESCAPE" :fixture "bootstrap/clojure/fixtures/rejected/compiler-c9-borrow-escape.gravity" :rejected-design :borrow-outlives-valid-scope}
+   {:diagnostic "C9-MUT-ALIAS" :fixture "bootstrap/clojure/fixtures/rejected/compiler-c9-mut-alias.gravity" :rejected-design :mutable-access-while-aliased}
+   {:diagnostic "C9-MOVE-WHILE-BORROWED" :fixture "bootstrap/clojure/fixtures/rejected/compiler-c9-move-while-borrowed.gravity" :rejected-design :move-during-active-borrow}
+   {:diagnostic "C9-REGION-ESCAPE" :fixture "bootstrap/clojure/fixtures/rejected/compiler-c9-region-escape.gravity" :rejected-design :region-value-escapes}
+   {:diagnostic "C9-ARENA-GENERATION" :fixture "bootstrap/clojure/fixtures/rejected/compiler-c9-arena-generation.gravity" :rejected-design :stale-arena-generation}
+   {:diagnostic "C9-LINEAR-LEAK" :fixture "bootstrap/clojure/fixtures/rejected/compiler-c9-linear-leak.gravity" :rejected-design :missing-terminal-resource-state}
+   {:diagnostic "C9-LINEAR-DOUBLE" :fixture "bootstrap/clojure/fixtures/rejected/compiler-c9-linear-double.gravity" :rejected-design :duplicate-terminal-resource-state}
+   {:diagnostic "C9-TRANSFER" :fixture "bootstrap/clojure/fixtures/rejected/compiler-c9-transfer.gravity" :rejected-design :invalid-ownership-transfer}
+   {:diagnostic "C9-RUNTIME-CHECK" :fixture "bootstrap/clojure/fixtures/rejected/compiler-c9-runtime-check.gravity" :rejected-design :runtime-check-unavailable}
+   {:diagnostic "C9-UNSAFE" :fixture "bootstrap/clojure/fixtures/rejected/compiler-c9-unsafe.gravity" :rejected-design :manual-lifetime-or-resource-flow-without-audit}])
+
+(def native-override-diagnostics
+  {:use-after-move "C9-USE-AFTER-MOVE" :use-after-consume "C9-USE-AFTER-CONSUME"
+   :borrow-escape "C9-BORROW-ESCAPE" :mut-alias "C9-MUT-ALIAS"
+   :move-while-borrowed "C9-MOVE-WHILE-BORROWED" :region-escape "C9-REGION-ESCAPE"
+   :arena-generation "C9-ARENA-GENERATION" :linear-leak "C9-LINEAR-LEAK"
+   :linear-double "C9-LINEAR-DOUBLE" :transfer "C9-TRANSFER"
+   :runtime-check "C9-RUNTIME-CHECK" :unsafe "C9-UNSAFE"})
+
+(defn native-ownership-message [id]
+  (case id
+    "C9-USE-AFTER-MOVE" "owned value is used after move"
+    "C9-USE-AFTER-CONSUME" "linear or owned value is used after terminal consumption"
+    "C9-BORROW-ESCAPE" "borrow outlives owner, region, provider, callback, or task scope"
+    "C9-MUT-ALIAS" "mutable access overlaps active aliases"
+    "C9-MOVE-WHILE-BORROWED" "owner is moved while an active borrow exists"
+    "C9-REGION-ESCAPE" "region value escapes its valid lifetime"
+    "C9-ARENA-GENERATION" "arena value is used after reset generation invalidation"
+    "C9-LINEAR-LEAK" "linear resource may miss a terminal operation"
+    "C9-LINEAR-DOUBLE" "linear resource may reach multiple terminal operations"
+    "C9-TRANSFER" "ownership transfer lacks explicit destination cleanup or lifetime proof"
+    "C9-RUNTIME-CHECK" "required dynamic ownership check is unavailable in the active profile"
+    "C9-UNSAFE" "manual lifetime, alias, or resource behavior lacks unsafe audit evidence"
+    "Ownership checking failed"))
 
 (doseq [[_ operation] (ns-publics *ns*)]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))
