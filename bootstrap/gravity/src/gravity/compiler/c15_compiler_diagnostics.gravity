@@ -190,9 +190,14 @@
         (let [candidate (get diagnostics index) binding (get bindings index)]
           (if (sh15-exact-keys? binding #{:original-fields :request :resolved-digest})
             (let [verification
-                  (verify-c15-resolved-diagnostic
-                   (get binding :original-fields) candidate
-                   (get binding :request) (get binding :resolved-digest))]
+                  ; Join the parallel binding to this candidate before the
+                  ; per-record verifier compares the full reconstructed record.
+                  (if (= (get candidate :diagnostic-id-request) (get binding :request))
+                    (verify-c15-resolved-diagnostic
+                     (get binding :original-fields) candidate
+                     (get binding :request) (get binding :resolved-digest))
+                    (c15-construction-failure
+                     "C15-ID" :diagnostic-id-request :request-substitution))]
               (if (= :passed (get verification :status))
                 (let [id (get candidate :diagnostic-id) severity (get candidate :severity)]
                   (if (= (get stream :stage) (get candidate :stage))
